@@ -1,14 +1,16 @@
 require "utils.utils"
 require "session_tracker"
+require "utils.corpse_util"
 require "group"
 require "player_list"
 require "poll"
-require "score"
+--require "score"
 
 ---- enable maps here ----
 
+require "maps.biter_battles"
 --require "maps.cave_miner"
-require "maps.deep_jungle"
+--require "maps.deep_jungle"
 --require "maps.endless_desert"
 
 -----------------------------

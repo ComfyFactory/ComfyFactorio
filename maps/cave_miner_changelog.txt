@@ -1,3 +1,8 @@
+0.13
+biter attack events frequency reduced
+players in vehicles are safe from random biter spawns
+hunger gain from passing time reduced
+
 0.12
 reduced ore spill from rock destruction to reduce lagspike
 ore veins are usually bigger now and can appear earlier

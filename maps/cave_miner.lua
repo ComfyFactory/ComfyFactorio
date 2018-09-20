@@ -837,11 +837,13 @@ local function biter_attack_event()
 	local surface = game.surfaces[1]
 	local valid_positions = {}
 	for _, player in pairs(game.connected_players) do
-		local position = {x = player.position.x, y = player.position.y}
-		local p = find_first_entity_spiral_scan(position, {"rock-huge", "rock-big", "sand-rock-big"}, 32)		
-		if p then
-			if p.x^2 + p.y^2 > global.spawn_dome_size then table.insert(valid_positions, p) end
-		end				
+		if player.character.driving == false then
+			local position = {x = player.position.x, y = player.position.y}
+			local p = find_first_entity_spiral_scan(position, {"rock-huge", "rock-big", "sand-rock-big"}, 32)		
+			if p then
+				if p.x^2 + p.y^2 > global.spawn_dome_size then table.insert(valid_positions, p) end
+			end
+		end
 	end
 	if valid_positions[1] then
 		if #valid_positions == 1 then
@@ -929,7 +931,7 @@ local function on_tick(event)
 			darkness_events()	
 		end		
 		
-		if game.tick % 3600 == 1800 then
+		if game.tick % 5400 == 2700 then
 			for _, player in pairs(game.connected_players) do
 				if player.afk_time < 18000 then	hunger_update(player, -1) end		
 			end
