@@ -4,6 +4,7 @@
 
 local simplex_noise = require 'utils.simplex_noise'
 local event = require 'utils.event' 
+require "maps.tools.lazy_chunk_loader"
 
 local function treasure_chest(position)
 	local p = game.surfaces["deep_jungle"].find_non_colliding_position("wooden-chest",position, 2,0.5)
@@ -100,52 +101,6 @@ function rare_treasure_chest(position)
 	end		
 end
 
-local function secret_shop(pos)
-	local secret_market_items = {		
-    {price = {{"raw-fish", math.random(250,450)}}, offer = {type = 'give-item', item = 'combat-shotgun'}},
-    {price = {{"raw-fish", math.random(75,125)}}, offer = {type = 'give-item', item = 'rocket-launcher'}},
-    {price = {{"raw-fish", math.random(2,4)}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine'}},
-    {price = {{"raw-fish", math.random(8,16)}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine'}},  
-    {price = {{"raw-fish", math.random(8,16)}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell'}},
-    {price = {{"raw-fish", math.random(8,16)}}, offer = {type = 'give-item', item = 'rocket'}},
-    {price = {{"raw-fish", math.random(10,20)}}, offer = {type = 'give-item', item = 'explosive-rocket'}},        
-    {price = {{"raw-fish", math.random(15,30)}}, offer = {type = 'give-item', item = 'explosive-cannon-shell'}},
-    {price = {{"raw-fish", math.random(25,35)}}, offer = {type = 'give-item', item = 'explosive-uranium-cannon-shell'}},   
-    {price = {{"raw-fish", math.random(20,40)}}, offer = {type = 'give-item', item = 'cluster-grenade'}}, 
-	{price = {{"raw-fish", math.random(1,3)}}, offer = {type = 'give-item', item = 'land-mine'}},	
-    {price = {{"raw-fish", math.random(250,500)}}, offer = {type = 'give-item', item = 'modular-armor'}},
-    {price = {{"raw-fish", math.random(1500,3000)}}, offer = {type = 'give-item', item = 'power-armor'}},
-	{price = {{"raw-fish", math.random(18000,23000)}}, offer = {type = 'give-item', item = 'power-armor-mk2'}},
-    {price = {{"raw-fish", math.random(4000,7000)}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment'}},
-    {price = {{"raw-fish", math.random(50,100)}}, offer = {type = 'give-item', item = 'battery-equipment'}},
-    {price = {{"raw-fish", math.random(700,1100)}}, offer = {type = 'give-item', item = 'battery-mk2-equipment'}},
-    {price = {{"raw-fish", math.random(400,700)}}, offer = {type = 'give-item', item = 'belt-immunity-equipment'}},
-    {price = {{"raw-fish", math.random(12000,16000)}}, offer = {type = 'give-item', item = 'night-vision-equipment'}},
-    {price = {{"raw-fish", math.random(300,500)}}, offer = {type = 'give-item', item = 'exoskeleton-equipment'}},
-    {price = {{"raw-fish", math.random(350,500)}}, offer = {type = 'give-item', item = 'personal-roboport-equipment'}},
-    {price = {{"raw-fish", math.random(25,50)}}, offer = {type = 'give-item', item = 'construction-robot'}},
-    {price = {{"raw-fish", math.random(250,450)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
-    {price = {{"raw-fish", math.random(350,550)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
-    {price = {{"raw-fish", math.random(125,250)}}, offer = {type = 'give-item', item = 'railgun'}},
-    {price = {{"raw-fish", math.random(2,4)}}, offer = {type = 'give-item', item = 'railgun-dart'}},
-	{price = {{"raw-fish", math.random(100,175)}}, offer = {type = 'give-item', item = 'loader'}},
-	{price = {{"raw-fish", math.random(200,350)}}, offer = {type = 'give-item', item = 'fast-loader'}},
-	{price = {{"raw-fish", math.random(400,600)}}, offer = {type = 'give-item', item = 'express-loader'}}
-	}
-	local surface = game.surfaces["deep_jungle"]										
-	local market = surface.create_entity {name = "market", position = pos}
-	market.destructible = false	
-	local market_items_to_add = math.random(8,12)
-	while market_items_to_add >= 0 do		
-		local i = math.random(1,#secret_market_items)
-		if secret_market_items[i] then
-			market.add_market_item(secret_market_items[i])
-			market_items_to_add = market_items_to_add - 1
-			secret_market_items[i] = nil
-		end
-	end
-end
-
 local function get_noise(name, pos)	
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local noise_seed_add = 25000
@@ -190,9 +145,69 @@ local function get_noise(name, pos)
 	end
 end
 
-local function on_chunk_generated(event)
-	local surface = game.surfaces["deep_jungle"]		
-	local tiles = {}	
+table.insert(global.generate_chunk_tiles_functions, function(chunk_piece) 
+	local area = chunk_piece.area
+	local surface = game.surfaces["deep_jungle"] 
+	if chunk_piece.surface ~= surface then return end			
+	local tiles = {}		
+	local entities = surface.find_entities(area)
+	for _, e in pairs(entities) do
+		if e.type == "tree" or e.force.name == "enemy" then
+			e.destroy()				
+		end
+	end		
+	local tile_to_insert = false	
+	for x = 0, 7, 1 do
+		for y = 0, 7, 1 do			
+			local pos_x = area.left_top.x + x
+			local pos_y = area.left_top.y + y
+			local pos = {x = pos_x, y = pos_y}
+			tile_distance_to_center = pos_x^2 + pos_y^2
+			tile_to_insert = false								
+			
+			local noise_3 = get_noise(3, pos)
+			if noise_3 > -0.1 and noise_3 < 0.1 then
+				if noise_3 > -0.05 and noise_3 < 0.05 then
+					tile_to_insert = "water"					
+				end
+				if noise_3 > -0.03 and noise_3 < 0.03 then
+					tile_to_insert = "deepwater"										
+				end
+			else
+				local noise_1 = get_noise(1, pos)
+				local noise_2 = get_noise(2, pos)
+				local noise_4 = get_noise(4, pos)							
+				if noise_4 < -0.8 or noise_4 > 0.8 then tile_to_insert = "dirt-6" end
+				if noise_3 < -0.1 then												
+					if noise_1 > 0.2 then						
+						if noise_1 > 0.8 and tile_distance_to_center > 8000 then
+							 tile_to_insert = "water-green"
+						end
+					end												
+				else																								
+					if noise_2 < -0.2 then						
+						if noise_2 < -0.8 and tile_distance_to_center > 8000 then
+							 tile_to_insert = "water-green"
+						end
+					end
+				end
+			end			
+			
+			if tile_to_insert == false then
+				table.insert(tiles, {name = "grass-1", position = {pos_x,pos_y}}) 
+			else
+				table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) 
+			end					
+		end							
+	end
+	surface.set_tiles(tiles,true)	
+end
+)
+
+table.insert(global.generate_chunk_entities_functions, function(chunk_piece)
+	local area = chunk_piece.area
+	local surface = game.surfaces["deep_jungle"] 
+	if chunk_piece.surface ~= surface then return end		
 	local enemy_building_positions = {}
 	local enemy_worm_positions = {}
 	local worm_raffle = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
@@ -200,41 +215,29 @@ local function on_chunk_generated(event)
 	local rock_positions = {}
 	local fish_positions = {}
 	local rare_treasure_chest_positions = {}
-	local treasure_chest_positions = {}
-	local secret_shop_locations = {}	
-	local tree_positions = {}
-	
-	local entities = surface.find_entities(event.area)
-	for _, e in pairs(entities) do
-		if e.type == "tree" or e.force.name == "enemy" then
-			e.destroy()				
-		end
-	end	
-	
-	local tile_to_insert = false	
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do			
-			local pos_x = event.area.left_top.x + x
-			local pos_y = event.area.left_top.y + y
+	local treasure_chest_positions = {}	
+	local tree_positions = {}	
+		
+	for x = 0, 7, 1 do
+		for y = 0, 7, 1 do			
+			local pos_x = area.left_top.x + x
+			local pos_y = area.left_top.y + y
 			local pos = {x = pos_x, y = pos_y}
-			tile_distance_to_center = pos_x^2 + pos_y^2
-			tile_to_insert = false								
-			--game.print(#tree_pool)
+			tile_distance_to_center = pos_x^2 + pos_y^2									
+			
 			local noise_3 = get_noise(3, pos)
 			if noise_3 > -0.1 and noise_3 < 0.1 then
-				if noise_3 > -0.05 and noise_3 < 0.05 then
-					tile_to_insert = "water"
+				if noise_3 > -0.05 and noise_3 < 0.05 then					
 					table.insert(fish_positions, pos)
 				end
-				if noise_3 > -0.03 and noise_3 < 0.03 then
-					tile_to_insert = "deepwater"					
+				if noise_3 > -0.03 and noise_3 < 0.03 then										
 					table.insert(fish_positions, pos)
 				end
 			else
 				local noise_1 = get_noise(1, pos)
 				local noise_2 = get_noise(2, pos)
 				local noise_4 = get_noise(4, pos)
-				if tile_distance_to_center > 8000 then
+				if tile_distance_to_center > 10000 then
 					table.insert(enemy_worm_positions, pos)					
 					if noise_4 > -0.1 and noise_4 < 0.1 and noise_1 > 0.3 and noise_2 > 0.3 then
 						table.insert(rock_positions, pos)
@@ -245,10 +248,7 @@ local function on_chunk_generated(event)
 					if noise_1 > 0.2 then
 						table.insert(tree_positions, {"tree-02", pos})
 						table.insert(rare_treasure_chest_positions, pos)
-						table.insert(treasure_chest_positions, pos)
-						if noise_1 > 0.8 and tile_distance_to_center > 8000 then
-							 tile_to_insert = "water-green"
-						end
+						table.insert(treasure_chest_positions, pos)						
 					end						
 					if noise_1 < -0.2 then
 						table.insert(tree_positions, {"tree-04", pos})
@@ -270,24 +270,12 @@ local function on_chunk_generated(event)
 					if noise_2 < -0.2 then
 						table.insert(tree_positions, {"tree-09", pos})
 						table.insert(rare_treasure_chest_positions, pos)
-						table.insert(treasure_chest_positions, pos)
-						if noise_2 < -0.8 and tile_distance_to_center > 8000 then
-							 tile_to_insert = "water-green"
-						end
+						table.insert(treasure_chest_positions, pos)						
 					end
 				end
-			end
-			
-			
-			if tile_to_insert == false then
-				table.insert(tiles, {name = "grass-1", position = {pos_x,pos_y}}) 
-			else
-				table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) 
-			end					
+			end								
 		end							
-	end
-	surface.set_tiles(tiles,true)
-	
+	end			
 	
 	for _, p in pairs(enemy_building_positions) do	
 		if math.random(1,40)==1 then			
@@ -316,12 +304,12 @@ local function on_chunk_generated(event)
 		end
 	end			
 	for _, p in pairs(treasure_chest_positions) do	
-		if math.random(1,1000)==1 then 
+		if math.random(1,1250)==1 then 
 			treasure_chest(p)
 		end
 	end
 	for _, p in pairs(rare_treasure_chest_positions) do	
-		if math.random(1,10000)==1 then 
+		if math.random(1,7500)==1 then 
 			rare_treasure_chest(p)
 		end
 	end		
@@ -340,8 +328,9 @@ local function on_chunk_generated(event)
 		  decorative_names[#decorative_names+1] = k
 		end
 	 end	 
-	surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})		
+	surface.regenerate_decorative(decorative_names, {{x=math.floor(area.left_top.x/8),y=math.floor(area.left_top.y/8)}})
 end
+)
 
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
@@ -355,9 +344,9 @@ local function on_player_joined_game(event)
 			["stone"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["copper-ore"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["iron-ore"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["crude-oil"] = {frequency = "normal", size = "normal", richness = "good"},
-			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["enemy-base"] = {frequency = "normal", size = "normal", richness = "good"}			
+			["crude-oil"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["trees"] = {frequency = "none", size = "none", richness = "none"},
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}			
 		}
 		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 		game.create_surface("deep_jungle", map_gen_settings)		
@@ -380,36 +369,20 @@ local function on_player_joined_game(event)
 	end
 end
 
-local function on_tick(event)			
-	if global.map_pregeneration_is_active then
-		if game.tick % 600 == 0 then
-			local r = 1
-			for x = 1,32,1 do
-				if game.forces.map_pregen.is_chunk_charted(game.surfaces["deep_jungle"], {x,x}) then r = x end
-			end
-			game.print("Map chunks are generating... current radius " .. r, { r=0.22, g=0.99, b=0.99})				
-			if game.forces.map_pregen.is_chunk_charted(game.surfaces["deep_jungle"], {32,32}) then
-				game.print("Map generation done!", { r=0.22, g=0.99, b=0.99})
-				
-				game.players[1].force = game.forces["player"]
-				global.map_pregeneration_is_active = nil
-			end
-		end
-	end		
-end
-
 local function on_marked_for_deconstruction(event)
 	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" or event.entity.name == "fish" or event.entity.type == "tree" then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 	end
 end
 
-function map_pregen()
-	local radius = 1024
-	if not game.forces.map_pregen then game.create_force("map_pregen") end
-	game.players[1].force = game.forces["map_pregen"]
-	game.forces.map_pregen.chart(game.surfaces["deep_jungle"],{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
-	global.map_pregeneration_is_active = true
+local function on_entity_died(event)
+	if event.entity.type == "tree" then
+		if math.random(1,8) == 1 then
+			local surface = game.surfaces["deep_jungle"]
+			local p = surface.find_non_colliding_position("small-biter" , event.entity.position, 2, 0.5)			
+			if p then surface.create_entity {name="small-biter", position=event.entity.position} end
+		end
+	end
 end
 	
 function cheat_mode()
@@ -432,7 +405,6 @@ function cheat_mode()
 	end
 end
 
+event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_tick, on_tick)	
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

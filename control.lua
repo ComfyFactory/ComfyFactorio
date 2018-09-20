@@ -7,7 +7,9 @@ require "score"
 
 ---- enable maps here ----
 
-require "maps.endless_desert"
+--require "maps.cave_miner"
+require "maps.deep_jungle"
+--require "maps.endless_desert"
 
 -----------------------------
 

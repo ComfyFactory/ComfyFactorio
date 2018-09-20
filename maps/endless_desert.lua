@@ -10,9 +10,9 @@ local function get_noise(name, pos)
 	seed = seed + noise_seed_add
 	if name == 1 then
 		local noise = {}
-		noise[1] = simplex_noise.d2(pos.x * 0.01, pos.y * 0.01, seed)
+		noise[1] = simplex_noise.d2(pos.x * 0.001, pos.y * 0.001, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise.d2(pos.x * 0.1, pos.y * 0.1, seed)
+		noise[2] = simplex_noise.d2(pos.x * 0.01, pos.y * 0.01, seed)
 		local noise = noise[1] + noise[2] * 0.1
 		return noise
 	end
@@ -48,9 +48,10 @@ local function get_noise(name, pos)
 	end
 end
 
-function generate_chunk_tiles(chunk_piece)
+table.insert(global.generate_chunk_tiles_functions, function(chunk_piece) 
 	local area = chunk_piece.area
-	local surface = chunk_piece.surface		
+	local surface = game.surfaces["endless_desert"] 
+	if chunk_piece.surface ~= surface then return end
 	local tiles = {}		
 	local entities = surface.find_entities(area)
 	for _, e in pairs(entities) do
@@ -67,19 +68,30 @@ function generate_chunk_tiles(chunk_piece)
 			tile_distance_to_center = pos_x^2 + pos_y^2
 			tile_to_insert = false										
 			--local noise_3 = get_noise(3, pos)						
+			local noise_1 = get_noise(1, pos)
+			if noise_1 > 0.3 then 
+				tile_to_insert = "sand-1"
+			end
+			if noise_1 < -0.3 then 
+				tile_to_insert = "sand-2"
+			end
+			
 			if tile_to_insert == false then
 				table.insert(tiles, {name = "sand-3", position = {pos_x,pos_y}}) 
 			else
 				table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) 
-			end				
+			end		
+			
 		end							
 	end
 	surface.set_tiles(tiles,true)		
 end
+)
 
-function generate_chunk_entities(chunk_piece)
+table.insert(global.generate_chunk_entities_functions, function(chunk_piece)
 	local area = chunk_piece.area
-	local surface = chunk_piece.surface			
+	local surface = game.surfaces["endless_desert"] 
+	if chunk_piece.surface ~= surface then return end	
 	local enemy_building_positions = {}
 	local enemy_worm_positions = {}
 	local worm_raffle = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
@@ -97,27 +109,12 @@ function generate_chunk_entities(chunk_piece)
 			local pos_y = area.left_top.y + y
 			local pos = {x = pos_x, y = pos_y}
 			tile_distance_to_center = pos_x^2 + pos_y^2
-			if surface.can_place_entity({name="tree-04", position=pos}) then surface.create_entity {name="tree-04", position=pos} end							
-			--local noise_3 = get_noise(3, pos)												
+			--if surface.can_place_entity({name="tree-03", position=pos}) then surface.create_entity {name="tree-03", position=pos} end							
+			local noise_1 = get_noise(1, pos)			
 		end							
 	end
 end
-
-
-function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
-end
-
-	
+)
 
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
@@ -148,8 +145,7 @@ local function on_player_joined_game(event)
 	if player.online_time < 10 then		
 		player.insert {name = 'raw-fish', count = 1}		
 		player.insert {name = 'iron-axe', count = 1}			
-	end
-	
+	end	
 end
 
 local function on_marked_for_deconstruction(event)
@@ -172,7 +168,7 @@ function cheat_mode()
 		surface.daytime = 1
 		game.player.force.research_all_technologies()
 		game.forces["enemy"].evolution_factor = 0.2
-		local chart = 300
+		local chart = 400
 		local surface = game.surfaces["endless_desert"]	
 		game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})		
 	end
