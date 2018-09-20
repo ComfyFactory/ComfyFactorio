@@ -2,6 +2,7 @@
 
 local simplex_noise = require 'utils.simplex_noise'
 local event = require 'utils.event' 
+require "maps.tools.lazy_chunk_loader"
 
 local function get_noise(name, pos)	
 	local seed = game.surfaces[1].map_gen_settings.seed
@@ -47,7 +48,7 @@ local function get_noise(name, pos)
 	end
 end
 
-local function generate_chunk_tiles(chunk_piece)
+function generate_chunk_tiles(chunk_piece)
 	local area = chunk_piece.area
 	local surface = chunk_piece.surface		
 	local tiles = {}		
@@ -76,7 +77,7 @@ local function generate_chunk_tiles(chunk_piece)
 	surface.set_tiles(tiles,true)		
 end
 
-local function generate_chunk_entities(chunk_piece)
+function generate_chunk_entities(chunk_piece)
 	local area = chunk_piece.area
 	local surface = chunk_piece.surface			
 	local enemy_building_positions = {}
@@ -96,16 +97,10 @@ local function generate_chunk_entities(chunk_piece)
 			local pos_y = area.left_top.y + y
 			local pos = {x = pos_x, y = pos_y}
 			tile_distance_to_center = pos_x^2 + pos_y^2
-			if surface.can_place_entity({name="biter-spawner", position=p}) then surface.create_entity {name="biter-spawner", position=p} end							
-			--local noise_3 = get_noise(3, pos)						
-			if tile_to_insert == false then
-				table.insert(tiles, {name = "sand-3", position = {pos_x,pos_y}}) 
-			else
-				table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) 
-			end				
+			if surface.can_place_entity({name="tree-04", position=pos}) then surface.create_entity {name="tree-04", position=pos} end							
+			--local noise_3 = get_noise(3, pos)												
 		end							
 	end
-	surface.set_tiles(tiles,true)
 end
 
 
@@ -122,22 +117,7 @@ function dump(o)
    end
 end
 
---cut chunks into 8x8 pieces and fill them into global.chunk_pieces
-local function on_chunk_generated(event)	
-	if not global.chunk_pieces then global.chunk_pieces = {} end
-	if not global.chunk_pieces_tile_index then global.chunk_pieces_tile_index = 1 end
-	if not global.chunk_pieces_entity_index then global.chunk_pieces_entity_index = 1 end
-	local a
-	for pos_y = 0, 24, 8 do
-		for pos_x = 0, 24, 8 do
-			a = {
-				left_top = {x = event.area.left_top.x + pos_x, y = event.area.left_top.y + pos_y},
-				right_bottom = {x = event.area.left_top.x + pos_x + 8, y = event.area.left_top.y + pos_y + 8}
-			}			
-			table.insert(global.chunk_pieces, {area = a, surface = event.surface})
-		end
-	end	 
-end	
+	
 
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
@@ -177,18 +157,6 @@ local function on_marked_for_deconstruction(event)
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 	end
 end
-
-local function on_tick()			
-	if global.chunk_pieces[global.chunk_pieces_tile_index] then
-		generate_chunk_tiles(global.chunk_pieces[global.chunk_pieces_tile_index])
-		global.chunk_pieces_tile_index = global.chunk_pieces_tile_index + 1
-	else
-		if global.chunk_pieces[global.chunk_entity_tile_index] then
-			generate_chunk_entities(global.chunk_pieces[global.chunk_pieces_tile_index])
-			global.chunk_entity_tile_index = global.chunk_entity_tile_index + 1
-		end
-	end	
-end
 	
 function cheat_mode()
 	local cheat_mode_enabed = true
@@ -210,7 +178,5 @@ function cheat_mode()
 	end
 end
 
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_tick, on_tick)	
+event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)	
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
