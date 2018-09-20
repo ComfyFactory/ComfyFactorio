@@ -1,4 +1,4 @@
---Factorio Cave Miner -- mewmew made this --
+--deep jungle-- mewmew made this --
 --You can use /c map_pregen() command to pre-generate the world before playing to avoid any possible microstutter while playing.--
 --Use /c spaghetti() to play without bots.
 
