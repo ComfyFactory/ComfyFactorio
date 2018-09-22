@@ -139,7 +139,9 @@ local function on_player_joined_game(event)
 	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
 		player.teleport(surface.find_non_colliding_position("player", {0,0}, 2, 1), "endless_desert")
 	else
-		player.teleport({0,0}, "endless_desert")
+		if player.online_time < 5 then
+			player.teleport({0,0}, "endless_desert")
+		end
 	end
 	
 	if player.online_time < 10 then		

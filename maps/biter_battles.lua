@@ -1097,7 +1097,7 @@ local function on_tick(event)
 				if e.type == "simple-entity" or e.type == "resource" or e.type == "tree" then e.destroy()	end
 			end			
 			surface.destroy_decoratives({{-10,-10},{10,10}})
-			game.print("Spawn generation done.")
+			game.print("Spawn generation done!", { r=0.22, g=0.99, b=0.99})
 		end
 	end
 	if global.game_lobby_active then

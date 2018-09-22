@@ -34,7 +34,7 @@ local function on_player_joined_game(event)
 	if not global.tracker_init_done then		
 		global.movement_done = 0
 		global.file_name = ""
-		global.movement_amount_required = 8
+		global.movement_amount_required = 16
 		global.player_totals = {}
 		for _, session in pairs(play_sessions) do									
 			for _, player_data in pairs(session) do

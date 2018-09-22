@@ -1,137 +1,170 @@
-
+require "maps.tools.lazy_chunk_loader"
 local simplex_noise = require 'utils.simplex_noise'
-local Event = require 'utils.event'
+local event = require 'utils.event'
+
 biter_battles_terrain = {}
 
 local function on_chunk_generated(event)
-	if not global.noise_seed then global.noise_seed = math.random(1,5000000) end
-	
-	if not game.surfaces["surface"] then return end
-	
-	local surface = game.surfaces["surface"]	
-	local ore_amount = 2500
-	local ores = {"copper-ore", "iron-ore", "stone", "coal"}
-	local noise = {}
-	local tiles = {}	
-	
-	local aa = 0.0113
-	local bb = 21
-	local xx = 1.1
-	local cc = xx - (aa * bb)
-	
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			tiles = {}	
-			local pos_x = event.area.left_top.x + x
-			local pos_y = event.area.left_top.y + y														
-			local tile_to_insert = false
-			local entity_has_been_placed = false		
+	global.generate_chunk_tiles_functions["surface"] = function(chunk_piece) 
+		local area = chunk_piece.area
+		if not game.surfaces["surface"] then return end
+		local surface = game.surfaces["surface"] 
+		if chunk_piece.surface ~= surface then return end	
+		if not global.noise_seed then global.noise_seed = game.surfaces[1].map_gen_settings.seed end
 			
-			noise[1] = simplex_noise.d2(pos_x/250, pos_y/250,global.noise_seed)
-			noise[2] = simplex_noise.d2(pos_x/75, pos_y/75,global.noise_seed+10000)	
-			noise[8] = simplex_noise.d2(pos_x/15, pos_y/15,global.noise_seed+40000)					
-			noise[3] = noise[1] + noise[2] * 0.2 + noise[8]*0.02
-			
-			noise[4] = simplex_noise.d2(pos_x/200, pos_y/200,global.noise_seed+15000)	
-			noise[5] = simplex_noise.d2(pos_x/20, pos_y/20,global.noise_seed+20000)	
-			noise[6] = simplex_noise.d2(pos_x/8, pos_y/8,global.noise_seed+25000)
-			noise[7] = simplex_noise.d2(pos_x/400, pos_y/400,global.noise_seed+35000)			
-			local water_noise = noise[4] + (noise[6] * 0.006) + (noise[5] * 0.04)
-			
-			local a = ore_amount * (1+(noise[2]*0.3))						
-			xx = 1.1
-			if noise[3] >= cc then
-				for yy = 1, bb, 1 do
-					local z = (yy % 4) + 1
-					xx = xx - aa
-					if noise[3] > xx then					
-						if surface.can_place_entity {name=ores[z], position={pos_x,pos_y}, amount=a} then
-							surface.create_entity {name=ores[z], position={pos_x,pos_y}, amount=a}
-						end
-						entity_has_been_placed = true
-						break
-					end				
-				end
-			end
-			if entity_has_been_placed == false then
-				if water_noise < -0.92 and water_noise < noise[7] then
-					tile_to_insert = "water"					
-				end
-				if water_noise < -0.97 and water_noise < noise[7] then
-					tile_to_insert = "deepwater"							
-				end
-			end
-			if tile_to_insert then table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
-			surface.set_tiles(tiles,true)
-			
-			if tile_to_insert == "water" or tile_to_insert == "deepwater" then
-				if surface.can_place_entity{name="fish", position={pos_x,pos_y}} and math.random(1,12) == 1 then
-					surface.create_entity {name="fish", position={pos_x,pos_y}} 
-				end
-			end
-		end							
-	end
+		local noise = {}
+		local tiles = {}	
 		
-	if event.area.left_top.y < 160 or event.area.left_top.y > -192 then	
-		local tiles = {}		
-		local spawn_tile = surface.get_tile(game.forces.south.get_spawn_position(surface))	
-		local radius = 24  --starting pond radius
-		local radsquare = radius*radius
-		for x = 0, 31, 1 do
-			for y = 0, 31, 1 do
-				tiles = {}
-				local pos_x = event.area.left_top.x + x
-				local pos_y = event.area.left_top.y + y														
-				local tile_to_insert = false				
-				local tile_distance_to_center = pos_x^2 + pos_y^2
-				noise[4] = simplex_noise.d2(pos_x/85, pos_y/85,global.noise_seed+20000)		
-				noise[5] = simplex_noise.d2(pos_x/7, pos_y/7,global.noise_seed+30000)	
-				noise[7] = 1 + (noise[4]+(noise[5]*0.75))*0.11						
-				if pos_y >= ((global.horizontal_border_width/2)*-1)*noise[7] and pos_y <= (global.horizontal_border_width/2)*noise[7] then
-					if pos_x < 20 and pos_x > -20 then
-						local entities = surface.find_entities({{pos_x, pos_y}, {pos_x+1, pos_y+1}})						
-						for _, e in pairs(entities) do
-							if e.type == "simple-entity" or e.type == "resource" or e.type == "tree" then
-								e.destroy()
-							end
-						end
-					end
-					tile_to_insert = "deepwater"
-				else
-					local t = surface.get_tile(pos_x,pos_y)
-					if t.name == "deepwater" or t.name =="water" then					
-						if tile_distance_to_center < 20000 then
-							if spawn_tile.name == "water" or spawn_tile.name == "deepwater" then 
-								tile_to_insert = "sand-1"
-							else
-								tile_to_insert = spawn_tile.name
-							end
-						end
-					end
-				end					
-				if tile_distance_to_center <= radsquare then
-						if tile_distance_to_center >= radsquare/10 then
-							tile_to_insert = "deepwater"
-						else
-							tile_to_insert = "sand-1"
-							if tile_distance_to_center >= radsquare/18 then
-								tile_to_insert = "refined-concrete"
-							end
-						end
-				end			
-				if tile_to_insert then table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
-				surface.set_tiles(tiles,true)
+		local aa = 0.0113
+		local bb = 21
+		local xx = 1.1
+		local cc = xx - (aa * bb)
+		
+		for x = 0, 7, 1 do
+			for y = 0, 7, 1 do
+				tiles = {}	
+				local pos_x = area.left_top.x + x
+				local pos_y = area.left_top.y + y														
+				local tile_to_insert = false
+				local entity_has_been_placed = false		
 				
-				if tile_to_insert == "deepwater" then
-					if surface.can_place_entity{name="fish", position={pos_x,pos_y}} and math.random(1,35) == 1 then
-						surface.create_entity {name="fish", position={pos_x,pos_y}} 
-					end	
+				noise[1] = simplex_noise.d2(pos_x/250, pos_y/250,global.noise_seed)
+				noise[2] = simplex_noise.d2(pos_x/75, pos_y/75,global.noise_seed+10000)	
+				noise[8] = simplex_noise.d2(pos_x/15, pos_y/15,global.noise_seed+40000)					
+				noise[3] = noise[1] + noise[2] * 0.2 + noise[8]*0.02
+				
+				noise[4] = simplex_noise.d2(pos_x/200, pos_y/200,global.noise_seed+15000)	
+				noise[5] = simplex_noise.d2(pos_x/20, pos_y/20,global.noise_seed+20000)	
+				noise[6] = simplex_noise.d2(pos_x/8, pos_y/8,global.noise_seed+25000)
+				noise[7] = simplex_noise.d2(pos_x/400, pos_y/400,global.noise_seed+35000)			
+				local water_noise = noise[4] + (noise[6] * 0.006) + (noise[5] * 0.04)
+															
+				if noise[3] >= cc then
+					entity_has_been_placed = true
+				end
+				
+				if entity_has_been_placed == false then
+					if water_noise < -0.92 and water_noise < noise[7] then
+						tile_to_insert = "water"					
+					end
+					if water_noise < -0.97 and water_noise < noise[7] then
+						tile_to_insert = "deepwater"							
+					end
+				end
+				
+				if tile_to_insert then table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
+				surface.set_tiles(tiles,true)						
+			end							
+		end
+			
+		if area.left_top.y < 160 or area.left_top.y > -192 then	
+			local tiles = {}		
+			local spawn_tile = surface.get_tile(game.forces.south.get_spawn_position(surface))	
+			local radius = 24  --starting pond radius
+			local radsquare = radius*radius
+			for x = 0, 31, 1 do
+				for y = 0, 31, 1 do
+					tiles = {}
+					local pos_x = area.left_top.x + x
+					local pos_y = area.left_top.y + y														
+					local tile_to_insert = false				
+					local tile_distance_to_center = pos_x^2 + pos_y^2
+					noise[4] = simplex_noise.d2(pos_x/85, pos_y/85,global.noise_seed+20000)		
+					noise[5] = simplex_noise.d2(pos_x/7, pos_y/7,global.noise_seed+30000)	
+					noise[7] = 1 + (noise[4]+(noise[5]*0.75))*0.11						
+					if pos_y >= ((global.horizontal_border_width/2)*-1)*noise[7] and pos_y <= (global.horizontal_border_width/2)*noise[7] then
+						if pos_x < 20 and pos_x > -20 then
+							local entities = surface.find_entities({{pos_x, pos_y}, {pos_x+1, pos_y+1}})						
+							for _, e in pairs(entities) do
+								if e.type == "simple-entity" or e.type == "resource" or e.type == "tree" then
+									e.destroy()
+								end
+							end
+						end
+						tile_to_insert = "deepwater"
+					else
+						local t = surface.get_tile(pos_x,pos_y)
+						if t.name == "deepwater" or t.name =="water" then					
+							if tile_distance_to_center < 20000 then
+								if spawn_tile.name == "water" or spawn_tile.name == "deepwater" then 
+									tile_to_insert = "sand-1"
+								else
+									tile_to_insert = spawn_tile.name
+								end
+							end
+						end
+					end					
+					if tile_distance_to_center <= radsquare then
+							if tile_distance_to_center >= radsquare/10 then
+								tile_to_insert = "deepwater"
+							else
+								tile_to_insert = "sand-1"
+								if tile_distance_to_center >= radsquare/18 then
+									tile_to_insert = "refined-concrete"
+								end
+							end
+					end			
+					if tile_to_insert then table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
+					surface.set_tiles(tiles,true)								
+				end
+			end								
+		end		
+	end	
+
+	global.generate_chunk_entities_functions["surface"] = function(chunk_piece) 
+		local area = chunk_piece.area
+		if not game.surfaces["surface"] then return end
+		local surface = game.surfaces["surface"] 
+		if chunk_piece.surface ~= surface then return end	
+		if not global.noise_seed then global.noise_seed = game.surfaces[1].map_gen_settings.seed end
+				
+		local ore_amount = 2500
+		local ores = {"copper-ore", "iron-ore", "stone", "coal"}
+		local noise = {}		
+		
+		local aa = 0.0113
+		local bb = 21
+		local xx = 1.1
+		local cc = xx - (aa * bb)
+		
+		for x = 0, 7, 1 do
+			for y = 0, 7, 1 do			
+				local pos_x = area.left_top.x + x
+				local pos_y = area.left_top.y + y
+				
+				noise[1] = simplex_noise.d2(pos_x/250, pos_y/250,global.noise_seed)
+				noise[2] = simplex_noise.d2(pos_x/75, pos_y/75,global.noise_seed+10000)	
+				noise[8] = simplex_noise.d2(pos_x/15, pos_y/15,global.noise_seed+40000)					
+				noise[3] = noise[1] + noise[2] * 0.2 + noise[8]*0.02
+				
+				local a = ore_amount * (1+(noise[2]*0.3))						
+				xx = 1.1
+				if noise[3] >= cc then
+					for yy = 1, bb, 1 do
+						local z = (yy % 4) + 1
+						xx = xx - aa
+						if noise[3] > xx then					
+							if surface.can_place_entity {name=ores[z], position={pos_x,pos_y}, amount=a} then
+								surface.create_entity {name=ores[z], position={pos_x,pos_y}, amount=a}
+							end						
+							break
+						end				
+					end
+				end
+				
+				local tile = surface.get_tile({pos_x,pos_y})
+				if tile.name == "deepwater" or tile.name == "water" or tile.name == "water-green" then
+					if math.random(1,20) == 1 then
+						if surface.can_place_entity{name="fish", position={pos_x,pos_y}} then
+							surface.create_entity {name="fish", position={pos_x,pos_y}} 
+						end
+					end
 				end
 			end
-		end								
-	end		
+		end					
+	end	
 end
-
+	
 local function find_tile_placement_spot_around_target_position(tilename, position, mode, density)
 	local x = position.x
 	local y = position.y
@@ -647,4 +680,4 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
 	end
 end
 
-Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_chunk_generated, on_chunk_generated)
