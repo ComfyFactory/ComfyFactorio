@@ -1,4 +1,4 @@
---deep jungle-- mewmew made this --
+--lost desert-- mewmew made this --
 
 local chunk_loader = require "maps.tools.lazy_chunk_loader"
 local simplex_noise = require 'utils.simplex_noise'
@@ -210,9 +210,9 @@ chunk_loader.add(function(chunk_piece)
 			if noise_1 > 0.9 then tile_to_insert = "deepwater" end
 
 			if tile_to_insert ~= "deepwater" and tile_to_insert ~= "water" and noise_1 < 0.7 then	
-				if math_random(1,10000) == 1 and noise_1 < 0.65 then
+				if math_random(1,20000) == 1 and noise_1 < 0.65 then
 					local spread = 1
-					local amount = math_random(math.ceil(math.sqrt(tile_distance_to_center),0),math.ceil(math.sqrt(tile_distance_to_center)*2,0))
+					local amount = math_random(400,600)
 					local size = math.ceil(math.sqrt(tile_distance_to_center),0)
 					local ore = ore_spawn_raffle[math_random(1,#ore_spawn_raffle)]
 					if ore == "crude-oil" then
@@ -336,13 +336,14 @@ local function on_player_joined_game(event)
 		end
 	end	
 	if player.online_time < 10 then				
-		player.insert {name = 'raw-fish', count = 3}				
+		player.insert {name = 'raw-fish', count = 3}
+		player.insert {name = 'iron-axe', count = 1}
 		player.insert {name = 'light-armor', count = 1}
 	end	
 end
 	
 function cheat_mode()
-	local cheat_mode_enabed = true
+	local cheat_mode_enabed = false
 	if cheat_mode_enabed == true then
 		local surface = game.surfaces["lost_desert"]
 		game.player.cheat_mode=true

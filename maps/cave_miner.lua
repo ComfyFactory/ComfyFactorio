@@ -384,9 +384,7 @@ local function on_chunk_generated(event)
 								table.insert(rock_positions, {pos_x,pos_y})
 								table.insert(enemy_worm_positions, {pos_x,pos_y})
 								table.insert(enemy_worm_positions, {pos_x,pos_y})
-								table.insert(enemy_worm_positions, {pos_x,pos_y})
-								table.insert(enemy_worm_positions, {pos_x,pos_y})
-								table.insert(enemy_worm_positions, {pos_x,pos_y})
+								table.insert(enemy_worm_positions, {pos_x,pos_y})								
 							else
 								tile_to_insert = "sand-3"
 								table.insert(treasure_chest_positions, {pos_x,pos_y})
@@ -419,7 +417,7 @@ local function on_chunk_generated(event)
 							table.insert(enemy_building_positions, {pos_x,pos_y})
 						else
 							table.insert(rock_positions, {pos_x,pos_y})
-							table.insert(enemy_worm_positions, {pos_x,pos_y})
+							if math.random(1,3) == 1 then table.insert(enemy_worm_positions, {pos_x,pos_y}) end
 						end
 						if cave_noise_2 > 0.85 and tile_distance_to_center > global.spawn_dome_size + 25000 then
 							if math.random(1,48) == 1 then

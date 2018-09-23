@@ -1,0 +1,27 @@
+local playsession = {
+	{"Gerkiz", {1443962}},
+	{"mewmew", {634048}},
+	{"flojogame", {8519}},
+	{"rlidwka", {64281}},
+	{"redlabel", {1017952}},
+	{"cko6o4ku", {435629}},
+	{"Patton1918", {47774}},
+	{"sabreman", {27903}},
+	{"Wolfhunter10000", {203673}},
+	{"dredge44", {306468}},
+	{"Visstick", {713291}},
+	{"Cramly", {4947}},
+	{"dpoba", {1764982}},
+	{"blesmrt", {16048}},
+	{"DraugTheWhopper", {16390}},
+	{"hunblade", {2935}},
+	{"RedSlimeySlime", {58017}},
+	{"Wizard7187", {12300}},
+	{"EG_Mike", {8662}},
+	{"Terarink", {2793441}},
+	{"VincentMonster", {34191}},
+	{"ANV1L", {3881}},
+	{"pickles28", {16580}},
+	{"Noctrem", {8012}}
+}
+return playsession
