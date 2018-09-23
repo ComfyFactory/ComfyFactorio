@@ -43,6 +43,23 @@ local function on_console_command(event)
 	end
 end
 
+local function on_player_built_tile(event)
+	local placed_tiles = event.tiles
+	local player = game.players[event.player_index]	
+	
+	--landfill history to find griefers--
+	if placed_tiles[1].old_tile.name == "deepwater" or placed_tiles[1].old_tile.name == "water" or placed_tiles[1].old_tile.name == "water-green" then		
+		if not global.landfill_history then global.landfill_history = {} end
+		if #global.landfill_history > 999 then global.landfill_history = {} end
+		local str = player.name .. " placed landfill at X:"
+		str = str .. placed_tiles[1].position.x
+		str = str .. " Y:"
+		str = str .. placed_tiles[1].position.y
+		table.insert(global.landfill_history, str)		
+	end	
+end
+
+event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_console_command, on_console_command)
 event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)

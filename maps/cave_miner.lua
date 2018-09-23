@@ -1046,7 +1046,7 @@ local function pre_player_mined_item(event)
 					player.print("You notice something " .. ore_prints[mined_loot][1] .. " underneath the rubble covered floor. It´s a " .. size[1] .. " vein of " ..  ore_prints[mined_loot][2] .. "!!", { r=0.98, g=0.66, b=0.22})
 					tile_distance_to_center = math.sqrt(tile_distance_to_center)
 					local ore_entities_placed = 0
-					local modifier_raffle = {{0,-1},{-1,0},{0,-1},{0,1}}
+					local modifier_raffle = {{0,-1},{-1,0},{1,0},{0,1}}
 					while ore_entities_placed < math.random(size[2],size[3]) do						
 						local a = math.ceil((math.random(tile_distance_to_center*4, tile_distance_to_center*5)) / 1 + ore_entities_placed * 0.5, 0)						
 						for x = 1, 150, 1 do

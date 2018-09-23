@@ -11,7 +11,7 @@ local function on_chunk_generated(event)
 	if not global.chunk_pieces then global.chunk_pieces = {} end
 	if not global.chunk_pieces_entities then global.chunk_pieces_entities = {} end	
 	if not global.chunk_pieces_load_amount then global.chunk_pieces_load_amount = 128 end
-	if not global.chunk_pieces_load_speed then global.chunk_pieces_load_speed = 3 end -- how many ticks until one operation happens
+	if not global.chunk_pieces_load_speed then global.chunk_pieces_load_speed = 2 end -- how many ticks until one operation happens
 	if game.tick > 300 then global.chunk_pieces_load_amount = 1 end -- how many pieces are processed per one operation
 	local index = event.surface.index	
 	for pos_y = 0, 24, 8 do
