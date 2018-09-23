@@ -960,7 +960,7 @@ local function on_tick(event)
 				end
 				game.print("Map chunks are generating... current radius " .. r, { r=0.22, g=0.99, b=0.99})				
 				if game.forces.map_pregen.is_chunk_charted(game.surfaces[1], {32,32}) then
-					game.print("Map generation done!", { r=0.22, g=0.99, b=0.99})
+					game.print("Map generation done!", {r=0.22, g=0.99, b=0.99})
 					
 					game.players[1].force = game.forces["player"]
 					global.map_pregeneration_is_active = nil

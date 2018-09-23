@@ -12,7 +12,6 @@ require "score"
 --require "maps.biter_battles"
 --require "maps.cave_miner"
 require "maps.deep_jungle"
---require "maps.deep_jungle_oldgen"
 --require "maps.lost_desert"
 
 -----------------------------

@@ -66,7 +66,11 @@ local function get_formatted_playtime(x)
 end
 
 local function get_rank(player)
-	local m = player.online_time  / 3600
+	local t = 0
+	if global.player_totals then
+		if global.player_totals[player.name] then t = global.player_totals[player.name][1] end
+	end
+	local m = (player.online_time + t)  / 3600
 	
 	local ranks = {
 	"item/iron-axe","item/burner-mining-drill","item/burner-inserter","item/stone-furnace","item/light-armor","item/steam-engine",	
@@ -80,7 +84,7 @@ local function get_rank(player)
 	
 	--52 ranks
 	
-	local time_needed = 15 -- in minutes between rank upgrades
+	local time_needed = 60 -- in minutes between rank upgrades
 	m = m / time_needed
 	m = math.floor(m)
 	m = m + 1
@@ -305,7 +309,7 @@ local function on_gui_click(event)
 			if player.gui.left["player-list-panel"] then
 				player.gui.left["player-list-panel"].destroy()		
 			else
-				player_list_show(player,"time_played_desc")
+				player_list_show(player,"total_time_played_desc")
 			end			
 		end
 		
@@ -364,7 +368,7 @@ local function on_gui_click(event)
 		end
 	end					
 end
-
+--[[
 local function on_tick()
 	if game.tick % 1200 == 0 then
 		for _,player in pairs(game.connected_players) do				
@@ -382,7 +386,7 @@ local function on_tick()
 		end
 	end
 end
-
 Event.add(defines.events.on_tick, on_tick)
+]]--
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)

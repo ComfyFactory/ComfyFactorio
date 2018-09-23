@@ -382,7 +382,7 @@ local function on_entity_died(event)
 end
 	
 function cheat_mode()
-	local cheat_mode_enabed = false
+	local cheat_mode_enabed = true
 	if cheat_mode_enabed == true then
 		local surface = game.surfaces["deep_jungle"]
 		game.player.cheat_mode=true
