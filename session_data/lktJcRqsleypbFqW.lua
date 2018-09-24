@@ -1,6 +1,6 @@
 local playsession = {
 	{"Gerkiz", {1443962}},
-	{"mewmew", {634048}},
+	{"mewmew", {641842}},
 	{"flojogame", {8519}},
 	{"rlidwka", {64281}},
 	{"redlabel", {1017952}},
@@ -9,7 +9,7 @@ local playsession = {
 	{"sabreman", {27903}},
 	{"Wolfhunter10000", {203673}},
 	{"dredge44", {306468}},
-	{"Visstick", {713291}},
+	{"Visstick", {841162}},
 	{"Cramly", {4947}},
 	{"dpoba", {1764982}},
 	{"blesmrt", {16048}},
@@ -18,10 +18,15 @@ local playsession = {
 	{"RedSlimeySlime", {58017}},
 	{"Wizard7187", {12300}},
 	{"EG_Mike", {8662}},
-	{"Terarink", {2793441}},
+	{"Terarink", {5009491}},
 	{"VincentMonster", {34191}},
 	{"ANV1L", {3881}},
 	{"pickles28", {16580}},
-	{"Noctrem", {8012}}
+	{"Noctrem", {8012}},
+	{"coucounoir", {9235}},
+	{"OmegaLunch", {626}},
+	{"Paperpersonplan", {10212}},
+	{"legogo29", {78186}},
+	{"Gouzi001", {329744}}
 }
 return playsession

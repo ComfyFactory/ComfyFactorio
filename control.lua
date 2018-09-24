@@ -1,7 +1,8 @@
 require "utils.utils"
+require "utils.corpse_util"
+require "bot"
 require "session_tracker"
 require "antigrief"
-require "utils.corpse_util"
 require "group"
 require "player_list"
 require "poll"
@@ -10,10 +11,10 @@ require "score"
 ---- enable maps here ----
 
 --require "maps.biter_battles"
---require "maps.cave_miner"
+require "maps.cave_miner"
 --require "maps.deep_jungle"
-require "maps.lost_desert"
-
+--require "maps.lost_desert"
+--require "maps.labyrinth"
 -----------------------------
 
 local Event = require 'utils.event'

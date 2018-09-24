@@ -881,7 +881,7 @@ end
 
 local function darkness_checks()
 	for _, p in pairs (game.connected_players) do
-		p.character.disable_flashlight()
+		if p.character then p.character.disable_flashlight() end		
 		local tile_distance_to_center = math.sqrt(p.position.x^2 + p.position.y^2)
 		if tile_distance_to_center < math.sqrt(global.spawn_dome_size) then
 			global.darkness_threat_level[p.name] = 0
