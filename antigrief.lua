@@ -1,5 +1,13 @@
 local event = require 'utils.event'
 
+local function jail(player)
+	
+end
+
+local function free(player)
+	
+end
+
 local function on_marked_for_deconstruction(event)
 	local player = game.players[event.player_index]
 	if player.admin == true then return end
@@ -35,6 +43,7 @@ end
 
 local function on_console_command(event)
 	if event.command ~= "silent-command" then return end
+	if not event.player_index then return end
 	local player = game.players[event.player_index]	
 	for _, p in pairs(game.connected_players) do
 		if p.admin == true and p.name ~= player.name then
@@ -47,7 +56,7 @@ local function on_player_built_tile(event)
 	local placed_tiles = event.tiles
 	local player = game.players[event.player_index]	
 	
-	--landfill history to find griefers--
+	--landfill history--
 	if placed_tiles[1].old_tile.name == "deepwater" or placed_tiles[1].old_tile.name == "water" or placed_tiles[1].old_tile.name == "water-green" then		
 		if not global.landfill_history then global.landfill_history = {} end
 		if #global.landfill_history > 999 then global.landfill_history = {} end

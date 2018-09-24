@@ -10,9 +10,9 @@ require "score"
 ---- enable maps here ----
 
 --require "maps.biter_battles"
-require "maps.cave_miner"
+--require "maps.cave_miner"
 --require "maps.deep_jungle"
---require "maps.lost_desert"
+require "maps.lost_desert"
 
 -----------------------------
 

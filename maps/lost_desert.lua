@@ -1,5 +1,5 @@
 --lost desert-- mewmew made this --
-
+require "maps.tools.map_intro"
 local chunk_loader = require "maps.tools.lazy_chunk_loader"
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
