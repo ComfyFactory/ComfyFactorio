@@ -23,7 +23,7 @@ local function player_created(event)
 	player.gui.top.style = 'slot_table_spacing_horizontal_flow'
 	player.gui.left.style = 'slot_table_spacing_vertical_flow'
 	
-	player.print("Join the comfy discord >> comfyplay.net", {r = 110, g = 0, b = 220})
+	player.print("Join the comfy discord >> comfyplay.net/discord", {r = 110, g = 0, b = 220})
 end
 
 function spaghetti()
