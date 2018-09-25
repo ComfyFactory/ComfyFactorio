@@ -1,7 +1,7 @@
 local event = require 'utils.event'
 
 local main_caption = " --Labyrinth-- "
-local sub_caption = " ...where ...where am i"
+local sub_caption = " *...where am i* "
 local info = [[
 How did i end up in this strange place?
 
