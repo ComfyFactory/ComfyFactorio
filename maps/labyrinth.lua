@@ -82,11 +82,60 @@ local function is_canditate_chunk_valid(chunk, surface)
 	if invalid_places > 2 then return false end
 end
 
-local worm_raffle = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
-local rock_raffle = {"sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local worm_raffle = {}
+worm_raffle[1] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret"}
+worm_raffle[2] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret"}
+worm_raffle[3] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret"}
+worm_raffle[4] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret"}
+worm_raffle[5] = {"small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
+worm_raffle[6] = {"small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
+worm_raffle[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
+worm_raffle[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
+worm_raffle[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
+worm_raffle[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
+local rock_raffle = {"sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
-local room_layouts = {"quad_stone", "single_center_stone", "three_horizontal_stones"}
-local room_enemies = {"only_biters", "only_spitters", "spawners", "biters_and_spitters"}
+local room_layouts = {"quad_rocks", "single_center_rock", "three_horizontal_rocks", "three_vertical_rocks", "tree_and_lake", "forest", "forest_fence"}
+local biter_raffle = {
+	{"small-biter"},
+	{"small-biter","small-biter","small-biter","medium-biter"},
+	{"small-biter","small-biter","medium-biter","medium-biter"},
+	{"small-biter","medium-biter","medium-biter","medium-biter"},
+	{"small-biter","medium-biter","medium-biter","big-biter"},
+	{"medium-biter","medium-biter","medium-biter","big-biter"},
+	{"medium-biter","medium-biter","big-biter","big-biter"},
+	{"medium-biter","big-biter","big-biter","big-biter"},
+	{"big-biter","big-biter","big-biter","behemoth-biter"},
+	{"big-biter","big-biter","behemoth-biter","behemoth-biter"}	
+}
+local spitter_raffle = {
+	{"small-spitter"},
+	{"small-spitter","small-spitter","small-spitter","medium-spitter"},
+	{"small-spitter","small-spitter","medium-spitter","medium-spitter"},
+	{"small-spitter","medium-spitter","medium-spitter","medium-spitter"},
+	{"small-spitter","medium-spitter","medium-spitter","big-spitter"},
+	{"medium-spitter","medium-spitter","medium-spitter","big-spitter"},
+	{"medium-spitter","medium-spitter","big-spitter","big-spitter"},
+	{"medium-spitter","big-spitter","big-spitter","big-spitter"},
+	{"big-spitter","big-spitter","big-spitter","behemoth-spitter"},
+	{"big-spitter","big-spitter","behemoth-spitter","behemoth-spitter"}	
+}
+local room_enemies = {}
+local room_enemy_weights = {
+	{"only_biters", 2},
+	{"only_spitters", 2},
+	{"biters_and_spitters", 2},
+	{"spawners", 2},
+	{"only_worms", 2},
+	{"worms_and_spawners", 2},
+	{"gun_turrets", 2}
+}
+
+for _, t in pairs (room_enemy_weights) do
+	for x = 1, t[2], 1 do
+		table.insert(room_enemies, t[1])
+	end			
+end
 
 local function grow_cell(chunk_position, surface)
 	local math_random = math.random
@@ -107,9 +156,19 @@ local function grow_cell(chunk_position, surface)
 		end
 	end	
 	if #valid_chunks == 0 then game.print("Dead end reached.") return end
+	
+	local tree_raffle = {}
+	for _, e in pairs(game.entity_prototypes) do
+		if e.type == "tree" then
+			table.insert(tree_raffle, e.name)
+		end			
+	end
 		
-	global.labyrinth_size = global.labyrinth_size + 1	
-		
+	global.labyrinth_size = global.labyrinth_size + 1
+	local evolution = global.labyrinth_size / 250
+	if evolution > 1 then evolution = 1 end
+	game.forces.enemy.evolution_factor = evolution
+	
 	for x = 1, math_random(1,#valid_chunks), 1 do
 		local chunk_position = valid_chunks[x]
 		local left_top_x = chunk_position.x * 32
@@ -122,14 +181,18 @@ local function grow_cell(chunk_position, surface)
 		enemy_buildings = {},
 		trees = {},
 		fish = {},		
-		shipwrecks = {}		
+		biters = {},
+		spitters = {},
+		gun_turrets = {}
 		}
-				
+		 
+		local tree_name = tree_raffle[math_random(1,#tree_raffle)]
+		
 		local layout = room_layouts[math_random(1,#room_layouts)]
 		local enemies = room_enemies[math_random(1,#room_enemies)]
-		
-		if layout == "quad_stone" then
-			while #entities_to_place.rocks < 1 do
+				
+		if layout == "quad_rocks" then
+			while not entities_to_place.rocks[1] do
 				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 8, left_top_y + 8}) end
 				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 24, left_top_y + 8}) end
 				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 8, left_top_y + 24}) end
@@ -137,31 +200,122 @@ local function grow_cell(chunk_position, surface)
 			end
 		end
 		
-		if layout == "single_center_stone" then
+		if layout == "single_center_rock" then
 			table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 16})	
 		end
 		
-		if layout == "three_horizontal_stones" then
-			while #entities_to_place.rocks < 1 do
+		if layout == "tree_and_lake" then
+			table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 16})	
+		end
+		
+		if layout == "forest_fence" then
+			table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 16})
+		end
+
+		if layout == "forest" then
+			while not entities_to_place.rocks[1] do
+				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 8}) end
+				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 8, left_top_y + 24}) end
+				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 24, left_top_y + 24}) end
+			end
+		end
+		
+		if layout == "three_horizontal_rocks" then
+			while not entities_to_place.rocks[1] do
 				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 8, left_top_y + 16}) end
 				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 16}) end
 				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 24, left_top_y + 16}) end
 			end
 		end
-		local random_max = 500 - global.labyrinth_size * 16
-		if random_max < 1 then random_modifier = 1 end
+		
+		if layout == "three_vertical_rocks" then
+			while not entities_to_place.rocks[1] do
+				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 8}) end
+				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 16}) end
+				if math_random(1,3) ~= 1 then table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 24}) end
+			end
+		end
+		
+		if global.labyrinth_size < 16 then					
+			while enemies == "gun_turrets" or enemies == "only_worms" or enemies == "worms_and_spawners" do
+				enemies = room_enemies[math_random(1,#room_enemies)]
+			end
+		end
+		
+		local placed_enemies = 0
+		local enemy_counter = global.labyrinth_size
+		if enemy_counter > 2000 then enemy_counter = 2000 end
+		while placed_enemies < enemy_counter do
+			if not enemies then break end
+			for x = 0, 31, 1 do
+				for y = 0, 31, 1 do
+					local pos = {x = left_top_x + x, y = left_top_y + y}
+					local random_max = 400
+					if enemies == "spawners" then
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.biters, pos) end
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.spitters, pos) end
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.enemy_buildings, pos) end				
+					end
+					if enemies == "worms_and_spawners" then
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.enemy_buildings, pos) end
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.worms, pos) end					
+					end
+					if enemies == "only_worms" then
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.worms, pos) end				
+					end
+					if enemies == "only_biters" then
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.biters, pos) end				
+					end
+					if enemies == "only_spitters" then
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.spitters, pos) end				
+					end
+					if enemies == "biters_and_spitters" then
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.biters, pos) end
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.spitters, pos) end							
+					end
+					if enemies == "gun_turrets" then
+						if math_random(1,random_max) == 1 then table.insert(entities_to_place.gun_turrets, pos) end				
+					end				
+				end
+			end
+			placed_enemies = #entities_to_place.biters * 0.5 + #entities_to_place.spitters * 0.5 + #entities_to_place.enemy_buildings * 2 + #entities_to_place.worms * 2 + #entities_to_place.gun_turrets * 2
+		end	
 		
 		for x = 0, 31, 1 do
 			for y = 0, 31, 1 do				
 				local pos = {x = left_top_x + x, y = left_top_y + y}
-			
-				if math_random(1,random_max) == 1 then table.insert(entities_to_place.enemy_buildings, pos) end				
-				
 				tile_to_insert = "dirt-5"
+				
+				if layout == "tree_and_lake" then
+					if x > 12 and x < 20 and y > 12 and y < 20 then
+						tile_to_insert = "water"
+					end
+					if x > 10 and x < 22 and y > 10 and y < 22 then
+						if math_random(1,2) == 1 then table.insert(entities_to_place.trees, pos) end
+					end					
+				end
+				
+				if layout == "forest" then
+					if math_random(1,8) == 1 then table.insert(entities_to_place.trees, pos) end
+				end
+				
+				if layout == "forest_fence" then
+					if x > 29 or x < 3 or y > 29 or y < 3 then				
+						if math_random(1,4) == 1 then table.insert(entities_to_place.trees, pos) end
+					end
+				end
+				
+				
+				
+				
+				
 				table.insert(tiles, {name = tile_to_insert, position = pos}) 								
 			end							
 		end		
 		surface.set_tiles(tiles, true)
+		
+		game.print(enemies)
+		
 		for _, p in pairs(entities_to_place.enemy_buildings) do						
 			if math_random(1,3) == 1 then
 				if surface.can_place_entity({name="spitter-spawner", position=p}) then surface.create_entity {name="spitter-spawner", position=p} end	
@@ -169,21 +323,56 @@ local function grow_cell(chunk_position, surface)
 				if surface.can_place_entity({name="biter-spawner", position=p}) then surface.create_entity {name="biter-spawner", position=p} end	
 			end		
 		end
+		
+		for _, p in pairs(entities_to_place.worms) do
+			local i = math.ceil(global.labyrinth_size / 25, 0)
+			local raffle = worm_raffle[i]
+			local n = raffle[math.random(1,#raffle)]
+			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end					
+		end
+		
+		for _, p in pairs(entities_to_place.biters) do
+			local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+			local raffle = biter_raffle[evolution]
+			local n = raffle[math.random(1,#raffle)]
+			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end				
+		end
+		
+		for _, p in pairs(entities_to_place.spitters) do
+			local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+			local raffle = spitter_raffle[evolution]
+			local n = raffle[math.random(1,#raffle)]
+			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end				
+		end				
+		
+		for _, p in pairs(entities_to_place.gun_turrets) do			
+			local e = surface.create_entity {name = "gun-turret", position = p, force = "enemy"}
+			local ammo = "firearm-magazine"
+			if global.labyrinth_size > 100 then ammo = "piercing-rounds-magazine" end
+			if global.labyrinth_size > 500 then ammo = "uranium-rounds-magazine" end
+			e.insert({name = ammo, count = math.random(50,150)})
+		end
+		
 		for _, p in pairs(entities_to_place.rocks) do			
 			local e = rock_raffle[math.random(1,#rock_raffle)]
-			surface.create_entity {name=e, position=p} 				
+			surface.create_entity {name = e, position = p} 				
 		end
+		
+		for _, p in pairs(entities_to_place.trees) do			 
+			if surface.can_place_entity({name = tree_name, position = p}) then surface.create_entity {name = tree_name, position = p} end				
+		end
+		
 	end		
 end
 
 local function treasure_chest(position, surface)		
 	treasure_chest_raffle_table = {}
 	treasure_chest_loot_weights = {}
-	table.insert(treasure_chest_loot_weights, {{name = 'combat-shotgun', count = 1},5})
+	table.insert(treasure_chest_loot_weights, {{name = 'combat-shotgun', count = 1},3})
 	table.insert(treasure_chest_loot_weights, {{name = 'piercing-shotgun-shell', count = math.random(8,24)},5})
-	table.insert(treasure_chest_loot_weights, {{name = 'flamethrower', count = 1},5})
-	table.insert(treasure_chest_loot_weights, {{name = 'rocket-launcher', count = 1},5})
-	table.insert(treasure_chest_loot_weights, {{name = 'flamethrower-ammo', count = math.random(8,16)},5})		
+	table.insert(treasure_chest_loot_weights, {{name = 'flamethrower', count = 1},2})
+	table.insert(treasure_chest_loot_weights, {{name = 'rocket-launcher', count = 1},4})
+	table.insert(treasure_chest_loot_weights, {{name = 'flamethrower-ammo', count = math.random(8,16)},3})		
 	table.insert(treasure_chest_loot_weights, {{name = 'rocket', count = math.random(8,16)},5})
 	table.insert(treasure_chest_loot_weights, {{name = 'explosive-rocket', count = math.random(8,16)},5})
 	table.insert(treasure_chest_loot_weights, {{name = 'modular-armor', count = 1},3})
@@ -222,7 +411,7 @@ local function treasure_chest(position, surface)
 	table.insert(treasure_chest_loot_weights, {{name = 'sulfur', count = math.random(20,50)},7})
 	table.insert(treasure_chest_loot_weights, {{name = 'explosives', count = math.random(20,50)},6})
 	table.insert(treasure_chest_loot_weights, {{name = 'shotgun', count = 1},2})
-	table.insert(treasure_chest_loot_weights, {{name = 'stone-brick', count = math.random(80,100)},4})
+	table.insert(treasure_chest_loot_weights, {{name = 'stone-brick', count = math.random(80,100)},6})
 	table.insert(treasure_chest_loot_weights, {{name = 'small-lamp', count = math.random(3,10)},4})
 	table.insert(treasure_chest_loot_weights, {{name = 'rail', count = math.random(32,100)},4})
 	table.insert(treasure_chest_loot_weights, {{name = 'assembling-machine-1', count = math.random(1,4)},2})
@@ -266,6 +455,25 @@ local function spawn_infinity_chest(pos, surface)
 	e.operable = false
 end
 
+
+local biter_fragmentation = {
+	{"medium-biter","small-biter",3,5},
+	{"big-biter","medium-biter",2,2},
+	{"behemoth-biter","big-biter",2,2}
+}
+
+local biter_building_inhabitants = {}
+biter_building_inhabitants[1] = {{"small-biter",8,16}}
+biter_building_inhabitants[2] = {{"small-biter",12,24}}
+biter_building_inhabitants[3] = {{"small-biter",8,16},{"medium-biter",1,2}}
+biter_building_inhabitants[4] = {{"small-biter",4,8},{"medium-biter",4,8}}
+biter_building_inhabitants[5] = {{"small-biter",3,5},{"medium-biter",8,12}}
+biter_building_inhabitants[6] = {{"small-biter",3,5},{"medium-biter",5,7},{"big-biter",1,2}}
+biter_building_inhabitants[7] = {{"medium-biter",6,8},{"big-biter",3,5}}
+biter_building_inhabitants[8] = {{"medium-biter",2,4},{"big-biter",6,8}}
+biter_building_inhabitants[9] = {{"medium-biter",2,3},{"big-biter",7,9}}
+biter_building_inhabitants[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
+
 local entity_drop_amount = {
     ['small-biter'] = {low = 1, high = 20},
     ['small-spitter'] = {low = 1, high = 20},
@@ -280,7 +488,30 @@ local entity_drop_amount = {
 }
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
+
 local function on_entity_died(event)
+	
+	for _, fragment in pairs(biter_fragmentation) do
+		if event.entity.name == fragment[1] then
+			for x=1,math.random(fragment[3],fragment[4]),1 do
+				local p = event.entity.surface.find_non_colliding_position(fragment[2] , event.entity.position, 2, 1)				
+				if p then event.entity.surface.create_entity {name=fragment[2], position=p} end
+				p = nil				
+			end
+			return
+		end
+	end
+	
+	if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
+		local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)		
+		for _, t in pairs (biter_building_inhabitants[e]) do		
+			for x = 1, math.random(t[2],t[3]), 1 do
+				local p = event.entity.surface.find_non_colliding_position(t[1] , event.entity.position, 6, 1)			
+				if p then event.entity.surface.create_entity {name=t[1], position=p} end
+			end
+		end
+	end
+	
 	if entity_drop_amount[event.entity.name] then
 		event.entity.surface.spill_item_stack(event.entity.position,{name = ore_spill_raffle[math.random(1,#ore_spill_raffle)], count = math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high)},true)
 		return
@@ -293,10 +524,10 @@ local function on_entity_died(event)
 		if event.entity.name == "rock-big" then treasure_chest(pos, surface) end
 		if event.entity.name == "sand-rock-big" then
 			local n = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
+			local amount_modifier = 1 + global.labyrinth_size / 25
 			if n == "crude-oil" then
-				create_cluster(n, pos, math.random(4,6), surface, 10, math.random(300000,500000))
-			else
-				amount_modifier = 1 + global.labyrinth_size / 25
+				create_cluster(n, pos, math.random(1,4), surface, 10, math.random(300000 * amount_modifier, 500000 * amount_modifier))
+			else				
 				create_cluster(n, pos, math.random(30,100), surface, 1, math.random(math.floor(350 * amount_modifier, 0), math.floor(450 * amount_modifier, 0)))
 			end
 		end
@@ -410,8 +641,7 @@ local function on_player_joined_game(event)
 	end	
 	if player.online_time < 10 then				
 		player.insert {name = 'raw-fish', count = 3}
-		player.insert {name = 'iron-axe', count = 1}
-		player.insert {name = 'light-armor', count = 1}
+		player.insert {name = 'iron-axe', count = 1}		
 		player.insert {name = 'pistol', count = 1}
 		player.insert {name = 'firearm-magazine', count = 32}
 	end	
