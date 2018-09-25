@@ -753,6 +753,10 @@ local function on_built_entity(event)
 	if name == "flamethrower-turret" or name == "laser-turret" then --or name == "gun-turret" then
 		if event.created_entity.position.y < 0 then 		
 			event.created_entity.die("enemy")
+			if event.player_index then
+				local player = game.players[event.player_index]
+				player.print("The laser and flamethrower-turrets seem to be malfunctioning in this place.", { r=0.75, g=0.0, b=0.0})
+			end
 		end
 	end
 end
