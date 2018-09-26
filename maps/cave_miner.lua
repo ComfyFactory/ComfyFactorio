@@ -249,7 +249,7 @@ local function secret_shop(pos)
 	{price = {{"raw-fish", math.random(1,3)}}, offer = {type = 'give-item', item = 'land-mine'}},	
     {price = {{"raw-fish", math.random(250,500)}}, offer = {type = 'give-item', item = 'modular-armor'}},
     {price = {{"raw-fish", math.random(1500,3000)}}, offer = {type = 'give-item', item = 'power-armor'}},
-	{price = {{"raw-fish", math.random(18000,23000)}}, offer = {type = 'give-item', item = 'power-armor-mk2'}},
+	{price = {{"raw-fish", math.random(15000,20000)}}, offer = {type = 'give-item', item = 'power-armor-mk2'}},
     {price = {{"raw-fish", math.random(4000,7000)}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment'}},
     {price = {{"raw-fish", math.random(50,100)}}, offer = {type = 'give-item', item = 'battery-equipment'}},
     {price = {{"raw-fish", math.random(700,1100)}}, offer = {type = 'give-item', item = 'battery-mk2-equipment'}},

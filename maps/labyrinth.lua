@@ -67,19 +67,32 @@ local function is_chunk_allowed_to_grow(chunk_position, surface)
 end
 
 local function is_canditate_chunk_valid(chunk, surface)
-	local modifiers = {{0,-1},{-1,0},{1,0},{0,1}, {-1,-1},{1,1},{1,-1},{-1,1}}
+	local modifiers = {{-1,-1},{0,-1},{1,-1},{1,0}, {1,1},{0,1},{-1,1},{-1,0}}
 	local invalid_places = 0
+	local invalid_chunk_found = "false"
 	for _, m in pairs(modifiers) do
 		local testing_chunk = {x = chunk.x + m[1], y = chunk.y + m[2]}
 		local left_top_x = testing_chunk.x * 32
 		local left_top_y = testing_chunk.y * 32
 		--game.print("x: " .. left_top_x .. " y: " .. left_top_y)
-		local tile = surface.get_tile({left_top_x, left_top_y})
-		if tile.name ~= "out-of-map" then invalid_places = invalid_places + 1 end
+		local tile = surface.get_tile({left_top_x, left_top_y})		
+		if tile.name ~= "out-of-map" then
+			invalid_places = invalid_places + 1
+			
+			if invalid_chunk_found then				
+				if invalid_chunk_found == "true" then					
+					invalid_places = invalid_places - 1 ---if chunks are connected, raise the allowance of expansion one time
+					invalid_chunk_found = nil
+				end
+			end
+			if invalid_chunk_found then invalid_chunk_found = "true" end			
+		else
+			if invalid_chunk_found then invalid_chunk_found = "false" end
+		end
 	end
-	if math.random(1,40) == 1 and chunk.y < -3 then return true end
-	if invalid_places <= 2 then return true end
-	if invalid_places > 2 then return false end
+	if math.random(1,50) == 1 and chunk.y < -3 then return true end
+	if invalid_places <= 1 then return true end
+	if invalid_places > 1 then return false end
 end
 
 local worm_raffle = {}
@@ -93,9 +106,10 @@ worm_raffle[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turre
 worm_raffle[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-local rock_raffle = {"sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
 local room_layouts = {"quad_rocks", "single_center_rock", "three_horizontal_rocks", "three_vertical_rocks", "tree_and_lake", "forest", "forest_fence"}
+--local unique_rooms = {"flamethrower_cross", "railway_roundabout"}
 local biter_raffle = {
 	{"small-biter"},
 	{"small-biter","small-biter","small-biter","medium-biter"},
@@ -128,9 +142,9 @@ local room_enemy_weights = {
 	{"spawners", 7},
 	{"only_worms", 5},
 	{"worms_and_spawners", 5},
-	{"gun_turrets", 5},
-	{"allied_entities", 3},
-	{"allied_entities_mixed", 1}
+	{"gun_turrets", 4},
+	{"allied_entities", 4},
+	{"allied_entities_mixed", 2}
 }
 
 for _, t in pairs (room_enemy_weights) do
@@ -157,7 +171,7 @@ local function grow_cell(chunk_position, surface)
 			table.insert(valid_chunks, {x = chunk.x, y = chunk.y})
 		end
 	end	
-	if #valid_chunks == 0 then game.print("Dead end reached.") return end
+	--if #valid_chunks == 0 then game.print("Dead end reached.") return end
 	
 	local tree_raffle = {}
 	for _, e in pairs(game.entity_prototypes) do
@@ -167,7 +181,7 @@ local function grow_cell(chunk_position, surface)
 	end
 	
 	local allied_entity_raffle = {}
-	local types = {"inserter", "transport-belt", "underground-belt", "electric-pole", "pipe", "furnace", "assembling-machine", "splitter"}
+	local types = {"inserter", "inserter", "transport-belt", "transport-belt", "transport-belt","underground-belt", "electric-pole", "electric-pole", "pipe", "furnace", "assembling-machine", "splitter", "splitter", "straight-rail"}
 	for _, e in pairs(game.entity_prototypes) do
 		for _, t in pairs(types) do
 			if e.type == t then
@@ -176,8 +190,8 @@ local function grow_cell(chunk_position, surface)
 		end
 	end
 	
-	global.labyrinth_size = global.labyrinth_size + 1
-	local evolution = global.labyrinth_size / 250
+	if #valid_chunks > 0 then global.labyrinth_size = global.labyrinth_size + 1 end	
+	local evolution = global.labyrinth_size / 500
 	if evolution > 1 then evolution = 1 end
 	game.forces.enemy.evolution_factor = evolution
 	
@@ -265,6 +279,7 @@ local function grow_cell(chunk_position, surface)
 		if enemy_counter > 2000 then enemy_counter = 2000 end
 		local random_max = 400
 		if global.labyrinth_size > 50 then random_max = 200 end
+		if global.labyrinth_size > 100 then random_max = 100 end
 		while placed_enemies < enemy_counter do
 			if not enemies then break end
 			for x = 0, 31, 1 do
@@ -306,7 +321,7 @@ local function grow_cell(chunk_position, surface)
 					end					
 				end
 			end
-			placed_enemies = #entities_to_place.biters * 0.5 + #entities_to_place.spitters * 0.5 + #entities_to_place.enemy_buildings * 2 + #entities_to_place.worms * 3 + #entities_to_place.gun_turrets * 2 + #entities_to_place.allied_entities * 2
+			placed_enemies = #entities_to_place.biters * 0.35 + #entities_to_place.spitters * 0.35 + #entities_to_place.enemy_buildings * 2 + #entities_to_place.worms * 3 + #entities_to_place.gun_turrets * 3 + #entities_to_place.allied_entities
 		end	
 		
 		for x = 0, 31, 1 do
@@ -323,7 +338,7 @@ local function grow_cell(chunk_position, surface)
 					end					
 				end
 				
-				if layout == "forest" then
+				if layout == "forest" then					
 					if math_random(1,6) == 1 then table.insert(entities_to_place.trees, pos) end
 				end
 				
@@ -516,7 +531,7 @@ local entity_drop_amount = {
 	['biter-spawner'] = {low = 40, high = 50},
 	['spitter-spawner'] = {low = 40, high = 50}
 }
-local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
+local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
 
 local function on_entity_died(event)	
@@ -555,9 +570,9 @@ local function on_entity_died(event)
 			local n = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local amount_modifier = 1 + global.labyrinth_size / 25
 			if n == "crude-oil" then
-				create_cluster(n, pos, math.random(1,4), surface, 10, math.random(300000 * amount_modifier, 500000 * amount_modifier))
+				create_cluster(n, pos, math.random(1,4), surface, 10, math.random(200000 * amount_modifier, 300000 * amount_modifier))
 			else				
-				create_cluster(n, pos, math.random(30,100), surface, 1, math.random(math.floor(350 * amount_modifier, 0), math.floor(450 * amount_modifier, 0)))
+				create_cluster(n, pos, math.random(125,175), surface, 1, math.random(math.floor(550 * amount_modifier, 0), math.floor(650 * amount_modifier, 0)))
 			end
 		end
 		event.entity.destroy()
@@ -787,11 +802,11 @@ function cheat_mode()
 		game.players[1].insert({name="personal-laser-defense-equipment", count=8})
 		game.players[1].insert({name="rocket-launcher"})		
 		game.players[1].insert({name="explosive-rocket", count=200})		
-		game.speed = 3
+		game.speed = 5
 		surface.daytime = 1
 		game.player.force.research_all_technologies()
 		game.forces["enemy"].evolution_factor = 0.2
-		local chart = 500
+		local chart = 200
 		local surface = game.surfaces["labyrinth"]	
 		game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})		
 	end
