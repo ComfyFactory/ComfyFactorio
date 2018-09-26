@@ -2,7 +2,8 @@
 require "maps.labyrinth_map_intro"
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
-local event = require 'utils.event' 
+local event = require 'utils.event'
+local unique_rooms = require "maps.labyrinth_unique_rooms"
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -109,7 +110,6 @@ worm_raffle[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turr
 local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
 local room_layouts = {"quad_rocks", "single_center_rock", "three_horizontal_rocks", "three_vertical_rocks", "tree_and_lake", "forest", "forest_fence"}
---local unique_rooms = {"flamethrower_cross", "railway_roundabout"}
 local biter_raffle = {
 	{"small-biter"},
 	{"small-biter","small-biter","small-biter","medium-biter"},
@@ -146,6 +146,7 @@ local room_enemy_weights = {
 	{"allied_entities", 4},
 	{"allied_entities_mixed", 2}
 }
+local unique_room_raffle = {"flamethrower_cross", "railway_roundabout"}
 
 for _, t in pairs (room_enemy_weights) do
 	for x = 1, t[2], 1 do
@@ -210,6 +211,7 @@ local function grow_cell(chunk_position, surface)
 		biters = {},
 		spitters = {},
 		gun_turrets = {},
+		misc = {},
 		allied_entities = {}
 		}
 		 
@@ -217,7 +219,16 @@ local function grow_cell(chunk_position, surface)
 		
 		local layout = room_layouts[math_random(1,#room_layouts)]
 		local enemies = room_enemies[math_random(1,#room_enemies)]
-				
+		
+		local unique_room = true
+		if global.labyrinth_size > 16 and math_random(1,50) == 1 then
+			layout = nil
+			enemies = nil
+			unique_room = unique_room_raffle[math_random(1,#unique_room_raffle)]
+		else
+			unique_room = false
+		end		
+		
 		if layout == "quad_rocks" then
 			while not entities_to_place.rocks[1] do
 				if math_random(1,2) == 1 then table.insert(entities_to_place.rocks, {left_top_x + 8, left_top_y + 8}) end
@@ -261,6 +272,17 @@ local function grow_cell(chunk_position, surface)
 				if math_random(1,2) == 1 then table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 16}) end
 				if math_random(1,2) == 1 then table.insert(entities_to_place.rocks, {left_top_x + 16, left_top_y + 24}) end
 			end
+		end
+		
+		if unique_room == "flamethrower_cross" or unique_room == "railway_roundabout" then
+			table.insert(entities_to_place.rocks, {left_top_x + 6, left_top_y + 6})
+			table.insert(entities_to_place.rocks, {left_top_x + 26, left_top_y + 6})
+			table.insert(entities_to_place.rocks, {left_top_x + 6, left_top_y + 26})
+			table.insert(entities_to_place.rocks, {left_top_x + 26, left_top_y + 26})
+		end
+		
+		if unique_room == "railway_roundabout" then
+			
 		end
 		
 		local allied_entity
@@ -318,7 +340,8 @@ local function grow_cell(chunk_position, surface)
 							allied_entity = allied_entity_raffle[math_random(1,#allied_entity_raffle)]
 							table.insert(entities_to_place.allied_entities, {allied_entity, pos})
 						end				
-					end					
+					end
+					
 				end
 			end
 			placed_enemies = #entities_to_place.biters * 0.35 + #entities_to_place.spitters * 0.35 + #entities_to_place.enemy_buildings * 2 + #entities_to_place.worms * 3 + #entities_to_place.gun_turrets * 3 + #entities_to_place.allied_entities
@@ -338,8 +361,8 @@ local function grow_cell(chunk_position, surface)
 					end					
 				end
 				
-				if layout == "forest" then					
-					if math_random(1,6) == 1 then table.insert(entities_to_place.trees, pos) end
+				if layout == "forest" or unique_room == "railway_roundabout" then					
+					if math_random(1,5) == 1 then table.insert(entities_to_place.trees, pos) end
 				end
 				
 				if layout == "forest_fence" then
@@ -348,11 +371,32 @@ local function grow_cell(chunk_position, surface)
 					end
 				end
 				
+				if unique_room then
+					local room = unique_rooms[unique_room]
+					for _, e in pairs(room.entities) do
+						if math.floor(e.position.x, 0) == x and math.floor(e.position.y, 0) == y then															
+							table.insert(entities_to_place.misc,
+							{name = e.name, position = {left_top_x + e.position.x, left_top_y + e.position.y}, direction = e.direction, force = e.force})
+							break
+						end						
+					end
+					for _, t in pairs(room.tiles) do
+						if math.floor(t.position.x, 0) == x and math.floor(t.position.y, 0) == y then
+							tile_to_insert = t.name
+							break
+						end						
+					end					
+				end				
 				table.insert(tiles, {name = tile_to_insert, position = pos}) 								
 			end							
 		end		
 		surface.set_tiles(tiles, true)
 		
+		if unique_room == "railway_roundabout" then
+			local e = surface.create_entity {name="big-ship-wreck-1", position={left_top_x + 16, left_top_y + 22}, force = "player"}
+			e.insert({name = 'locomotive', count = 1})
+			e.insert({name = 'nuclear-fuel', count = 1})
+		end
 		
 		for _, p in pairs(entities_to_place.enemy_buildings) do						
 			if math_random(1,3) == 1 then
@@ -382,8 +426,21 @@ local function grow_cell(chunk_position, surface)
 			local n = raffle[math.random(1,#raffle)]
 			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end				
 		end				
-		
-		
+				
+		for _, e in pairs(entities_to_place.misc) do			 
+			if surface.can_place_entity({name = e.name, position = e.position, force = e.force, direction = e.direction}) then
+				local entity = surface.create_entity {name = e.name, position = e.position, force = e.force, direction = e.direction}
+				if entity.name == "gun-turret" then
+					local ammo = "firearm-magazine"
+					if global.labyrinth_size > 100 then ammo = "piercing-rounds-magazine" end
+					if global.labyrinth_size > 300 then ammo = "uranium-rounds-magazine" end
+					entity.insert({name = ammo, count = math.random(50,150)})
+				end
+				if entity.name == "storage-tank" then
+					entity.fluidbox[1] = {name = "crude-oil", amount = 25000}					
+				end
+			end				
+		end
 		
 		for _, p in pairs(entities_to_place.gun_turrets) do			
 			local e = surface.create_entity {name = "gun-turret", position = p, force = "enemy"}
@@ -481,11 +538,11 @@ end
 local function spawn_infinity_chest(pos, surface)
 	local math_random = math.random
 	local infinity_chests = {		
-		{"raw-wood", 1},
+		{"raw-wood", math_random(1,3)},
 		{"coal", 1},
-		{"stone", 1},
-		{"iron-ore", math_random(1,2)},
-		{"copper-ore", math_random(1,2)},
+		{"stone", math_random(1,3)},
+		{"iron-ore", 1},
+		{"copper-ore", 1},
 		{"crude-oil-barrel", 1},		
 		{"iron-plate", 1},
 		{"copper-plate", 1},
@@ -493,9 +550,7 @@ local function spawn_infinity_chest(pos, surface)
 		{"iron-gear-wheel", 1},
 		{"copper-cable", math_random(1,4)}
 	}
-	local x = math.floor((global.labyrinth_size * 0.5) + 3, 0)
-	if x > #infinity_chests then x = #infinity_chests end
-	x = math_random(1, x)
+	local x = math_random(1, #infinity_chests)
 	local e = surface.create_entity {name = "infinity-chest", position = pos, force = "player"}
 	e.set_infinity_filter(1, {name = infinity_chests[x][1], count = infinity_chests[x][2]})
 	e.minable = false
@@ -532,7 +587,7 @@ local entity_drop_amount = {
 	['spitter-spawner'] = {low = 40, high = 50}
 }
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
-local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
+local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
 
 local function on_entity_died(event)	
 	for _, fragment in pairs(biter_fragmentation) do
@@ -570,7 +625,7 @@ local function on_entity_died(event)
 			local n = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local amount_modifier = 1 + global.labyrinth_size / 25
 			if n == "crude-oil" then
-				create_cluster(n, pos, math.random(1,4), surface, 10, math.random(200000 * amount_modifier, 300000 * amount_modifier))
+				create_cluster(n, pos, math.random(1,5), surface, 10, math.random(200000 * amount_modifier, 300000 * amount_modifier))
 			else				
 				create_cluster(n, pos, math.random(125,175), surface, 1, math.random(math.floor(550 * amount_modifier, 0), math.floor(650 * amount_modifier, 0)))
 			end
@@ -748,7 +803,7 @@ local function on_built_entity(event)
 			}
 			local i = surface.find_entities_filtered{area = a, name = inserters}
 			if #i > 1 then
-				if math.random(1,11) == 1 then
+				if math.random(1,12) == 1 then
 					break
 				else
 					for _, x in pairs (i) do
@@ -791,6 +846,48 @@ local function on_entity_damaged(event)
 		end
 	end
 end
+
+function dump_layout()
+	local surface = game.surfaces["labyrinth"]
+	game.write_file("layout.lua", "" , false)
+	
+	local area = {
+			left_top = {x = 0, y = 0},
+			right_bottom = {x = 32, y = 32}
+			}
+			
+	local entities = surface.find_entities_filtered{area = area}
+	local tiles = surface.find_tiles_filtered{area = area}
+	
+	for _, e in pairs(entities) do
+		local str = "{position = {x = " ..  e.position.x
+		str = str .. ", y = "
+		str = str .. e.position.y
+		str = str .. '}, name = "'
+		str = str .. e.name
+		str = str .. '", direction = '
+		str = str .. tostring(e.direction)
+		str = str .. ', force = "'
+		str = str .. e.force.name
+		str = str .. '"},'							
+		game.write_file("layout.lua", str .. '\n' , true)
+	end
+	
+	game.write_file("layout.lua",'\n' , true)
+	game.write_file("layout.lua",'\n' , true)
+	game.write_file("layout.lua",'Tiles: \n' , true)
+	
+	for _, t in pairs(tiles) do
+		local str = "{position = {x = " ..  t.position.x
+		str = str .. ", y = "
+		str = str .. t.position.y
+		str = str .. '}, name = "'
+		str = str .. t.name
+		str = str .. '"},'
+		game.write_file("layout.lua", str .. '\n' , true)
+	end
+		
+end
 	
 function cheat_mode()
 	local cheat_mode_enabed = false
@@ -802,8 +899,9 @@ function cheat_mode()
 		game.players[1].insert({name="personal-laser-defense-equipment", count=8})
 		game.players[1].insert({name="rocket-launcher"})		
 		game.players[1].insert({name="explosive-rocket", count=200})		
-		game.speed = 5
+		game.speed = 2
 		surface.daytime = 1
+		surface.freeze_daytime = 1
 		game.player.force.research_all_technologies()
 		game.forces["enemy"].evolution_factor = 0.2
 		local chart = 200
