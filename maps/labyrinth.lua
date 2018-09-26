@@ -146,7 +146,7 @@ local room_enemy_weights = {
 	{"allied_entities", 4},
 	{"allied_entities_mixed", 2}
 }
-local unique_room_raffle = {"forgotten_place_1", "flamethrower_cross", "railway_roundabout", "big_worm_crossing", "deadly_crossing"}
+local unique_room_raffle = {"forgotten_place", "flamethrower_cross", "railway_roundabout", "big_worm_crossing", "deadly_crossing", "mini_labyrinth"}
 
 for _, t in pairs (room_enemy_weights) do
 	for x = 1, t[2], 1 do
@@ -230,7 +230,7 @@ local function grow_cell(chunk_position, surface)
 		end
 		--layout = nil
 		--enemies = nil		
-		--unique_room = "deadly_crossing"
+		--unique_room = "forgotten_place"
 		
 		if layout == "quad_rocks" then
 			while not entities_to_place.rocks[1] do
