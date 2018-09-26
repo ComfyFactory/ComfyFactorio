@@ -146,7 +146,7 @@ local room_enemy_weights = {
 	{"allied_entities", 4},
 	{"allied_entities_mixed", 2}
 }
-local unique_room_raffle = {"flamethrower_cross", "railway_roundabout"}
+local unique_room_raffle = {"forgotten_place_1", "flamethrower_cross", "railway_roundabout", "big_worm_crossing", "deadly_crossing"}
 
 for _, t in pairs (room_enemy_weights) do
 	for x = 1, t[2], 1 do
@@ -221,13 +221,16 @@ local function grow_cell(chunk_position, surface)
 		local enemies = room_enemies[math_random(1,#room_enemies)]
 		
 		local unique_room = true
-		if global.labyrinth_size > 16 and math_random(1,50) == 1 then
+		if global.labyrinth_size > 10 and math_random(1,50) == 1 then
 			layout = nil
 			enemies = nil
 			unique_room = unique_room_raffle[math_random(1,#unique_room_raffle)]
 		else
 			unique_room = false
-		end		
+		end
+		--layout = nil
+		--enemies = nil		
+		--unique_room = "deadly_crossing"
 		
 		if layout == "quad_rocks" then
 			while not entities_to_place.rocks[1] do
@@ -560,7 +563,7 @@ end
 
 
 local biter_fragmentation = {
-	{"medium-biter","small-biter",3,5},
+	{"medium-biter","small-biter",2,3},
 	{"big-biter","medium-biter",2,2},
 	{"behemoth-biter","big-biter",2,2}
 }
@@ -803,7 +806,7 @@ local function on_built_entity(event)
 			}
 			local i = surface.find_entities_filtered{area = a, name = inserters}
 			if #i > 1 then
-				if math.random(1,12) == 1 then
+				if math.random(1,11) == 1 then
 					break
 				else
 					for _, x in pairs (i) do
