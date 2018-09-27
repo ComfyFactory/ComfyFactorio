@@ -8,7 +8,22 @@ local function on_chunk_generated(event)
 	local surface = game.surfaces[1]
 	if event.surface.name ~= surface then return end
 	
+	
+end
 
+---kyte
+local function on_player_rotated_entity(event)
+	if event.entity.type ~= "inserter" then return end
+	local surface = game.surfaces[1]
+	local tiles = {}
+	if event.entity.position.x == 459 and event.entity.position.y == 1 then 
+		for x = -11, 21, 1 do
+			for y = -4, 0, 1 do
+				table.insert(tiles, {name = "dirt-6", position = {x = event.entity.position.x + x, y = event.entity.position.y + y}})
+			end
+		end
+		surface.set_tiles(tiles, true)		
+	end	
 end
 
 function cheat_mode()
