@@ -5,6 +5,23 @@ simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
 local unique_rooms = require "maps.labyrinth_unique_rooms"
 
+local labyrinth_difficulty_curve = 500  --- How much size the labyrinth needs to have the highest difficulty.
+
+local function create_labyrinth_difficulty_gui(player)		
+	if player.gui.top["labyrinth_difficulty"] then player.gui.top["labyrinth_difficulty"].destroy() end
+	if not global.labyrinth_size then return end
+	local str = tostring(math.ceil((global.labyrinth_size / labyrinth_difficulty_curve) * 100, 0)) .. "%"
+	local b = player.gui.top.add({ type = "button", name = "labyrinth_difficulty", caption = "Difficulty: " .. str })
+	b.style.minimal_height = 38
+	b.style.minimal_width = 38
+	b.style.top_padding = 2
+	b.style.left_padding = 4
+	b.style.right_padding = 4
+	b.style.bottom_padding = 2
+	b.style.font = "default"
+	b.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+end
+
 local function shuffle(tbl)
 	local size = #tbl
 		for i = size, 1, -1 do
@@ -85,7 +102,6 @@ local function is_canditate_chunk_valid(chunk, surface)
 		local testing_chunk = {x = chunk.x + m[1], y = chunk.y + m[2]}
 		local left_top_x = testing_chunk.x * 32
 		local left_top_y = testing_chunk.y * 32
-		--game.print("x: " .. left_top_x .. " y: " .. left_top_y)
 		local tile = surface.get_tile({left_top_x, left_top_y})		
 		if tile.name ~= "out-of-map" then
 			invalid_places = invalid_places + 1
@@ -154,7 +170,7 @@ local room_enemy_weights = {
 	{"only_worms", 5},
 	{"worms_and_spawners", 5},
 	{"gun_turrets", 4},
-	{"allied_entities", 4},
+	{"allied_entities", 2},
 	{"allied_entities_mixed", 2}
 }
 local unique_room_raffle = {"forgotten_place", "flamethrower_cross", "railway_roundabout", "big_worm_crossing", "deadly_crossing", "mini_labyrinth"}
@@ -183,7 +199,6 @@ local function grow_cell(chunk_position, surface)
 			table.insert(valid_chunks, {x = chunk.x, y = chunk.y})
 		end
 	end	
-	--if #valid_chunks == 0 then game.print("Dead end reached.") return end
 	
 	local tree_raffle = {}
 	for _, e in pairs(game.entity_prototypes) do
@@ -203,9 +218,13 @@ local function grow_cell(chunk_position, surface)
 	end
 	
 	if #valid_chunks > 0 then global.labyrinth_size = global.labyrinth_size + 1 end	
-	local evolution = global.labyrinth_size / 500
+	local evolution = global.labyrinth_size / labyrinth_difficulty_curve
 	if evolution > 1 then evolution = 1 end
 	game.forces.enemy.evolution_factor = evolution
+	for _, player in pairs(game.connected_players) do
+		create_labyrinth_difficulty_gui(player)
+	end
+	
 	for x = 1, math_random(1,#valid_chunks), 1 do
 		local chunk_position = valid_chunks[x]
 		local left_top_x = chunk_position.x * 32
@@ -241,7 +260,6 @@ local function grow_cell(chunk_position, surface)
 		--layout = nil
 		--enemies = nil		
 		--unique_room = "railway_roundabout"
-		--game.print(unique_room)
 		
 		if layout == "quad_rocks" then
 			while not entities_to_place.rocks[1] do
@@ -491,9 +509,9 @@ local function treasure_chest(position, surface)
 	local math_random = math.random
 	local chest_raffle = {}
 	local chest_loot = {			
-		{{name = "steel-axe", count = math_random(1,3)}, weight = 5, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "steel-axe", count = math_random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "submachine-gun", count = math_random(1,3)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
-		{{name = "slowdown-capsule", count = math_random(16,32)}, weight = 3, evolution_min = 0.0, evolution_max = 1},
+		{{name = "slowdown-capsule", count = math_random(16,32)}, weight = 1, evolution_min = 0.0, evolution_max = 1},
 		{{name = "poison-capsule", count = math_random(16,32)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
 		{{name = "uranium-cannon-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.6, evolution_max = 1},
 		{{name = "cannon-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.4, evolution_max = 0.7},
@@ -509,7 +527,7 @@ local function treasure_chest(position, surface)
 		{{name = "rocket", count = math_random(16,32)}, weight = 10, evolution_min = 0.2, evolution_max = 0.7},		
 		{{name = "explosive-rocket", count = math_random(16,32)}, weight = 10, evolution_min = 0.3, evolution_max = 1},
 		{{name = "land-mine", count = math_random(16,32)}, weight = 10, evolution_min = 0.2, evolution_max = 0.7},
-		{{name = "grenade", count = math_random(16,32)}, weight = 10, evolution_min = 0.0, evolution_max = 0.4},
+		{{name = "grenade", count = math_random(16,32)}, weight = 10, evolution_min = 0.0, evolution_max = 0.5},
 		{{name = "cluster-grenade", count = math_random(16,32)}, weight = 5, evolution_min = 0.4, evolution_max = 1},
 		{{name = "firearm-magazine", count = math_random(32,128)}, weight = 10, evolution_min = 0, evolution_max = 0.3},
 		{{name = "piercing-rounds-magazine", count = math_random(32,128)}, weight = 10, evolution_min = 0.1, evolution_max = 0.8},
@@ -538,10 +556,9 @@ local function treasure_chest(position, surface)
 		{{name = "personal-laser-defense-equipment", count = 1}, weight = 2, evolution_min = 0.4, evolution_max = 1},
 		{{name = "exoskeleton-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},
 						
-		{{name = "raw-wood", count = math_random(25,50)}, weight = 1, evolution_min = 0.0, evolution_max = 0.1},
+		
 		{{name = "iron-gear-wheel", count = math_random(80,100)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "copper-cable", count = math_random(100,200)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
-		{{name = "coal", count = math_random(25,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.1, evolution_max = 0.5},
 		{{name = "electric-engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.4, evolution_max = 0.8},
 		{{name = "battery", count = math_random(100,200)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
@@ -574,34 +591,34 @@ local function treasure_chest(position, surface)
 		{{name = "assembling-machine-1", count = math_random(4,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "assembling-machine-2", count = math_random(4,16)}, weight = 3, evolution_min = 0.2, evolution_max = 0.8},
 		{{name = "assembling-machine-3", count = math_random(4,16)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
-		{{name = "accumulator", count = math_random(25,50)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
+		{{name = "accumulator", count = math_random(8,16)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
 		{{name = "offshore-pump", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
-		{{name = "beacon", count = math_random(8,16)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
-		{{name = "boiler", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
-		{{name = "steam-engine", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.5},
-		{{name = "steam-turbine", count = math_random(8,16)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		{{name = "beacon", count = math_random(4,8)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
+		{{name = "boiler", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "steam-engine", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.5},
+		{{name = "steam-turbine", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
 		{{name = "nuclear-reactor", count = 1}, weight = 2, evolution_min = 0.5, evolution_max = 1},
 		{{name = "centrifuge", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-		{{name = "heat-pipe", count = math_random(16,32)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-		{{name = "heat-exchanger", count = math_random(8,16)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-		{{name = "arithmetic-combinator", count = math_random(25,50)}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-		{{name = "constant-combinator", count = math_random(25,50)}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-		{{name = "decider-combinator", count = math_random(25,50)}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-		{{name = "power-switch", count = math_random(25,50)}, weight = 1, evolution_min = 0.2, evolution_max = 1},		
-		{{name = "programmable-speaker", count = math_random(8,16)}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-		{{name = "green-wire", count = math_random(100,200)}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-		{{name = "red-wire", count = math_random(100,200)}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-		{{name = "chemical-plant", count = math_random(8,16)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
+		{{name = "heat-pipe", count = math_random(8,16)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		{{name = "heat-exchanger", count = math_random(4,8)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		{{name = "arithmetic-combinator", count = math_random(25,50)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "constant-combinator", count = math_random(25,50)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "decider-combinator", count = math_random(25,50)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "power-switch", count = math_random(25,50)}, weight = 1, evolution_min = 0.1, evolution_max = 1},		
+		{{name = "programmable-speaker", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "green-wire", count = math_random(100,200)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "red-wire", count = math_random(100,200)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "chemical-plant", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
 		{{name = "burner-mining-drill", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "electric-mining-drill", count = math_random(8,16)}, weight = 3, evolution_min = 0.2, evolution_max = 0.6},		
 		{{name = "express-transport-belt", count = math_random(50,100)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
-		{{name = "express-underground-belt", count = math_random(25,50)}, weight = 3, evolution_min = 0.5, evolution_max = 1},		
+		{{name = "express-underground-belt", count = math_random(8,32)}, weight = 3, evolution_min = 0.5, evolution_max = 1},		
 		{{name = "express-splitter", count = math_random(8,16)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
 		{{name = "fast-transport-belt", count = math_random(50,100)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
-		{{name = "fast-underground-belt", count = math_random(25,50)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "fast-underground-belt", count = math_random(8,32)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
 		{{name = "fast-splitter", count = math_random(8,16)}, weight = 3, evolution_min = 0.2, evolution_max = 0.3},
 		{{name = "transport-belt", count = math_random(50,100)}, weight = 3, evolution_min = 0, evolution_max = 0.3},
-		{{name = "underground-belt", count = math_random(25,50)}, weight = 3, evolution_min = 0, evolution_max = 0.3},
+		{{name = "underground-belt", count = math_random(8,32)}, weight = 3, evolution_min = 0, evolution_max = 0.3},
 		{{name = "splitter", count = math_random(8,16)}, weight = 3, evolution_min = 0, evolution_max = 0.3},		
 		{{name = "oil-refinery", count = math_random(2,4)}, weight = 2, evolution_min = 0.3, evolution_max = 1},
 		{{name = "pipe", count = math_random(40,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
@@ -609,20 +626,20 @@ local function treasure_chest(position, surface)
 		{{name = "pumpjack", count = math_random(8,16)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
 		{{name = "pump", count = math_random(8,16)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
 		{{name = "solar-panel", count = math_random(8,16)}, weight = 3, evolution_min = 0.4, evolution_max = 0.9},
-		{{name = "electric-furnace", count = math_random(8,16)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
-		{{name = "steel-furnace", count = math_random(8,16)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
-		{{name = "stone-furnace", count = math_random(25,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
+		{{name = "electric-furnace", count = math_random(4,8)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "steel-furnace", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "stone-furnace", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
 		{{name = "radar", count = math_random(4,8)}, weight = 1, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "rail-signal", count = math_random(25,50)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},
 		{{name = "rail-chain-signal", count = math_random(25,50)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},		
 		{{name = "stone-wall", count = math_random(50,100)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
 		{{name = "gate", count = math_random(25,50)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
 		{{name = "storage-tank", count = math_random(8,16)}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
-		{{name = "train-stop", count = math_random(4,8)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "train-stop", count = math_random(2,4)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
 		{{name = "express-loader", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
 		{{name = "fast-loader", count = math_random(2,4)}, weight = 2, evolution_min = 0.2, evolution_max = 0.7},
 		{{name = "loader", count = math_random(2,4)}, weight = 2, evolution_min = 0.0, evolution_max = 0.5},
-		{{name = "lab", count = math_random(4,16)}, weight = 2, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "lab", count = math_random(4,8)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1},
 	
 		--{{name = "roboport", count = math_random(2,4)}, weight = 2, evolution_min = 0.6, evolution_max = 1},
 		--{{name = "flamethrower-turret", count = math_random(4,8)}, weight = 3, evolution_min = 0.5, evolution_max = 1},		
@@ -636,7 +653,7 @@ local function treasure_chest(position, surface)
 			end
 		end			
 	end
-	local chest_type_raffle = {"steel-chest", "iron-chest", "iron-chest", "wooden-chest", "wooden-chest", "wooden-chest"}
+	local chest_type_raffle = {"steel-chest", "iron-chest", "wooden-chest"}
 	local e = surface.create_entity {name = chest_type_raffle[math_random(1,#chest_type_raffle)], position = position, force = "player"}
 	local i = e.get_inventory(defines.inventory.chest)
 	for x = 1, math_random(3,4), 1 do
@@ -650,10 +667,14 @@ local function spawn_infinity_chest(pos, surface)
 	local infinity_chests = {		
 		{"raw-wood", math_random(1,3)},
 		{"coal", 1},
+		{"coal", 1},
+		{"stone", math_random(1,3)},
 		{"stone", math_random(1,3)},
 		{"iron-ore", 1},
+		{"iron-ore", 1},
+		{"iron-ore", 1},
 		{"copper-ore", 1},
-		{"crude-oil-barrel", 1},		
+		{"copper-ore", 1},	
 		{"iron-plate", 1},
 		{"copper-plate", 1},
 		{"stone-brick", 1},
@@ -697,7 +718,7 @@ local entity_drop_amount = {
 	['spitter-spawner'] = {low = 40, high = 50}
 }
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
-local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
+local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore","crude-oil","crude-oil"}
 
 local function on_entity_died(event)	
 	for _, fragment in pairs(biter_fragmentation) do
@@ -735,7 +756,7 @@ local function on_entity_died(event)
 			local n = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local amount_modifier = 1 + global.labyrinth_size / 25
 			if n == "crude-oil" then
-				create_cluster(n, pos, math.random(1,5), surface, 10, math.random(200000 * amount_modifier, 300000 * amount_modifier))
+				create_cluster(n, pos, math.random(3,6), surface, 10, math.random(300000 * amount_modifier, 400000 * amount_modifier))
 			else				
 				create_cluster(n, pos, math.random(125,175), surface, 1, math.random(math.floor(550 * amount_modifier, 0), math.floor(650 * amount_modifier, 0)))
 			end
@@ -874,7 +895,7 @@ local function on_player_joined_game(event)
 		
 		--game.forces["player"].set_ammo_damage_modifier("flamethrower", -0.95)
 		--game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.95)
-		game.forces["player"].set_turret_attack_modifier("gun-turret", -0.50)
+		game.forces["player"].set_turret_attack_modifier("gun-turret", -0.25)
 		--game.forces["player"].set_turret_attack_modifier("laser-turret", -0.75)
 		
 		if not global.labyrinth_size then	global.labyrinth_size = 1 end
