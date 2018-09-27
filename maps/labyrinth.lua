@@ -518,7 +518,7 @@ local function treasure_chest(position, surface)
 		{{name = "explosive-uranium-cannon-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.6, evolution_max = 1},
 		{{name = "explosive-cannon-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.4, evolution_max = 0.8},
 		{{name = "shotgun", count = 1}, weight = 5, evolution_min = 0.0, evolution_max = 0.2},
-		{{name = "shotgun-shell", count = 1}, weight = 5, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "shotgun-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "combat-shotgun", count = 1}, weight = 10, evolution_min = 0.3, evolution_max = 0.8},
 		{{name = "piercing-shotgun-shell", count = math_random(16,32)}, weight = 10, evolution_min = 0.2, evolution_max = 1},
 		{{name = "flamethrower", count = 1}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
@@ -592,7 +592,7 @@ local function treasure_chest(position, surface)
 		{{name = "assembling-machine-2", count = math_random(4,16)}, weight = 3, evolution_min = 0.2, evolution_max = 0.8},
 		{{name = "assembling-machine-3", count = math_random(4,16)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
 		{{name = "accumulator", count = math_random(8,16)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
-		{{name = "offshore-pump", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
+		{{name = "offshore-pump", count = math_random(4,8)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1},
 		{{name = "beacon", count = math_random(4,8)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
 		{{name = "boiler", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "steam-engine", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.5},
@@ -636,9 +636,9 @@ local function treasure_chest(position, surface)
 		{{name = "gate", count = math_random(25,50)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
 		{{name = "storage-tank", count = math_random(8,16)}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
 		{{name = "train-stop", count = math_random(2,4)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
-		{{name = "express-loader", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-		{{name = "fast-loader", count = math_random(2,4)}, weight = 2, evolution_min = 0.2, evolution_max = 0.7},
-		{{name = "loader", count = math_random(2,4)}, weight = 2, evolution_min = 0.0, evolution_max = 0.5},
+		{{name = "express-loader", count = math_random(2,4)}, weight = 1, evolution_min = 0.5, evolution_max = 1},
+		{{name = "fast-loader", count = math_random(2,4)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "loader", count = math_random(2,4)}, weight = 1, evolution_min = 0.0, evolution_max = 0.5},
 		{{name = "lab", count = math_random(4,8)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1},
 	
 		--{{name = "roboport", count = math_random(2,4)}, weight = 2, evolution_min = 0.6, evolution_max = 1},
@@ -918,6 +918,7 @@ local function on_player_joined_game(event)
 end
 
 local inserters = {"inserter", "long-handed-inserter", "burner-inserter", "fast-inserter", "filter-inserter", "stack-filter-inserter", "stack-inserter"}
+local loaders = {"loader", "fast-loader", "express-loader"}
 local function on_built_entity(event)
 	for _, e in pairs(inserters) do
 		if e == event.created_entity.name then			
@@ -950,7 +951,25 @@ local function on_built_entity(event)
 			break
 		end
 	end
-
+	
+	for _, e in pairs(loaders) do
+		if e == event.created_entity.name then
+			local surface = event.created_entity.surface
+			local a = {
+			left_top = {x = event.created_entity.position.x - 2, y = event.created_entity.position.y - 2},
+			right_bottom = {x = event.created_entity.position.x + 2, y = event.created_entity.position.y + 2}
+			}
+			local found = surface.find_entities_filtered{area = a, name = "infinity-chest"}						
+			if found[1] then 
+				event.created_entity.die("enemy")
+				if event.player_index then
+					local player = game.players[event.player_index]
+					player.print("The mysterious chest noticed your greed and devoured your device.", { r=0.75, g=0.0, b=0.0})
+				end
+			end
+		end
+	end
+		
 	local name = event.created_entity.name
 	if name == "flamethrower-turret" or name == "laser-turret" then --or name == "gun-turret" then
 		if event.created_entity.position.y < 0 then 		
@@ -1032,8 +1051,12 @@ function cheat_mode()
 		game.players[1].insert({name="fusion-reactor-equipment", count=4})
 		game.players[1].insert({name="personal-laser-defense-equipment", count=8})
 		game.players[1].insert({name="rocket-launcher"})		
-		game.players[1].insert({name="explosive-rocket", count=200})		
-		game.speed = 2
+		game.players[1].insert({name="explosive-rocket", count=200})	
+		game.players[1].insert({name="loader"})
+		game.players[1].insert({name="fast-loader"})
+		game.players[1].insert({name="express-loader"})
+		game.players[1].insert({name="infinity-chest"})
+		game.speed = 3
 		surface.daytime = 1
 		surface.freeze_daytime = 1
 		game.player.force.research_all_technologies()
