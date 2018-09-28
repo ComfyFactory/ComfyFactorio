@@ -14,8 +14,10 @@ require "score"
 --require "maps.cave_miner"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
-require "maps.labyrinth"
+--require "maps.labyrinth"
+require "maps.spaghettorio"
 -----------------------------
+--require "maps.tools.cheat_mode"
 
 local Event = require 'utils.event'
 

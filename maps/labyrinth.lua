@@ -99,7 +99,7 @@ worm_raffle[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turre
 worm_raffle[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-local rock_raffle = {"sand-rock-big","sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local rock_raffle = {"sand-rock-big","sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
 local room_layouts = {"quad_rocks", "single_center_rock", "three_horizontal_rocks", "three_vertical_rocks", "tree_and_lake", "forest", "forest_fence"}
 local biter_raffle = {
@@ -215,7 +215,7 @@ local function grow_cell(chunk_position, surface)
 		local enemies = room_enemies[math_random(1,#room_enemies)]
 		
 		local unique_room = true
-		if global.labyrinth_size > 12 and math_random(1,44) == 1 then
+		if global.labyrinth_size > 12 and math_random(1,50) == 1 then
 			layout = nil
 			enemies = nil
 			unique_room = unique_room_raffle[math_random(1,#unique_room_raffle)]
@@ -1020,33 +1020,7 @@ function dump_layout()
 		str = str .. t.name
 		str = str .. '"},'
 		game.write_file("layout.lua", str .. '\n' , true)
-	end
-		
-end
-	
-function cheat_mode()
-	local cheat_mode_enabed = false
-	if cheat_mode_enabed == true then
-		local surface = game.surfaces["labyrinth"]
-		game.player.cheat_mode=true
-		game.players[1].insert({name="power-armor-mk2"})
-		game.players[1].insert({name="fusion-reactor-equipment", count=4})
-		game.players[1].insert({name="personal-laser-defense-equipment", count=8})
-		game.players[1].insert({name="rocket-launcher"})		
-		game.players[1].insert({name="explosive-rocket", count=200})	
-		game.players[1].insert({name="loader"})
-		game.players[1].insert({name="fast-loader"})
-		game.players[1].insert({name="express-loader"})
-		game.players[1].insert({name="infinity-chest"})
-		game.speed = 3
-		surface.daytime = 1
-		surface.freeze_daytime = 1
-		game.player.force.research_all_technologies()
-		--game.forces["enemy"].evolution_factor = 0.2
-		local chart = 500
-		local surface = game.surfaces["labyrinth"]	
-		game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})		
-	end
+	end		
 end
 
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
