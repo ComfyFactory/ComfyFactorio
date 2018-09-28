@@ -104,20 +104,11 @@ local function poll(player)
 	local frame = player.gui.left["poll-assembler"]
 	frame = frame.table_poll_assembler
 	
-	global.poll_question = ""
-	global.poll_question = frame.textfield_question.text
-	if (global.poll_question == "") then
-		return
-	end
+	if frame.textfield_question.text == "" then	return end
+	if frame.textfield_answer_1.text == "" and frame.textfield_answer_2.text == "" and frame.textfield_answer_3.text == "" then return end
 	
-	
-	global.poll_answers = {"","",""}
-	global.poll_answers[1] = frame.textfield_answer_1.text
-	global.poll_answers[2] = frame.textfield_answer_2.text
-	global.poll_answers[3] = frame.textfield_answer_3.text
-	if (global.poll_answers[3] .. global.poll_answers[2] .. global.poll_answers[1] == "") then
-		return
-	end
+	global.poll_question = frame.textfield_question.text	
+	global.poll_answers = {frame.textfield_answer_1.text, frame.textfield_answer_2.text, frame.textfield_answer_3.text}
 	
 	local msg = player.name
 	msg = msg .. " has created a new Poll!"
@@ -147,7 +138,7 @@ local function poll(player)
 			poll_show(player)
 		end
 		
-		player.print(msg)
+		player.print(msg, { r=0.22, g=0.99, b=0.99})
 		
 		x = x + 1
 	end

@@ -1,5 +1,6 @@
 --labyrinth-- mewmew made this --
 require "maps.labyrinth_map_intro"
+local map_functions = require "maps.tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
@@ -29,42 +30,6 @@ local function shuffle(tbl)
 			tbl[i], tbl[rand] = tbl[rand], tbl[i]
 		end
 	return tbl
-end
-
-local function create_cluster(name, pos, size, surface, spread, resource_amount)		
-	local p = {x = pos.x, y = pos.y}
-	local math_random = math.random
-	local original_pos = {x = pos.x, y = pos.y}
-	local entity_has_been_placed = false
-	for z = 1, size, 1 do
-		entity_has_been_placed = false
-		local y = 1
-		if spread then y = math_random(1, spread) end	
-		local modifier_raffle = {{0,y*-1},{y*-1,0},{y,0},{0,y},{y*-1,y*-1},{y,y},{y,y*-1},{y*-1,y}}
-		modifier_raffle = shuffle(modifier_raffle)
-		for x = 1, 8, 1 do					
-			local m = modifier_raffle[x]
-			local pos = {x = p.x + m[1], y = p.y + m[2]}
-			if resource_amount then
-				if surface.can_place_entity({name=name, position=pos, amount=resource_amount}) then
-					surface.create_entity {name=name, position=pos, amount=resource_amount}				
-					p = {x = pos.x, y = pos.y}
-					entity_has_been_placed = true
-					break
-				end
-			else
-				if surface.can_place_entity({name=name, position=pos}) then
-					surface.create_entity {name=name, position=pos}
-					p = {x = pos.x, y = pos.y}	
-					entity_has_been_placed = true
-					break
-				end
-			end
-		end
-		if entity_has_been_placed == false then
-			p = {x = original_pos.x, y = original_pos.y}
-		end
-	end
 end
 
 local function get_entity_chunk_position(entity_position)
@@ -134,7 +99,7 @@ worm_raffle[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turre
 worm_raffle[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local rock_raffle = {"sand-rock-big","sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
 local room_layouts = {"quad_rocks", "single_center_rock", "three_horizontal_rocks", "three_vertical_rocks", "tree_and_lake", "forest", "forest_fence"}
 local biter_raffle = {
@@ -169,7 +134,7 @@ local room_enemy_weights = {
 	{"spawners", 7},
 	{"only_worms", 5},
 	{"worms_and_spawners", 5},
-	{"gun_turrets", 4},
+	{"gun_turrets", 3},
 	{"allied_entities", 2},
 	{"allied_entities_mixed", 2}
 }
@@ -250,7 +215,7 @@ local function grow_cell(chunk_position, surface)
 		local enemies = room_enemies[math_random(1,#room_enemies)]
 		
 		local unique_room = true
-		if global.labyrinth_size > 12 and math_random(1,40) == 1 then
+		if global.labyrinth_size > 12 and math_random(1,44) == 1 then
 			layout = nil
 			enemies = nil
 			unique_room = unique_room_raffle[math_random(1,#unique_room_raffle)]
@@ -459,8 +424,8 @@ local function grow_cell(chunk_position, surface)
 		end
 		
 		for _, p in pairs(entities_to_place.worms) do
-			local i = math.ceil(global.labyrinth_size / 25, 0)
-			local raffle = worm_raffle[i]
+			local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+			local raffle = worm_raffle[evolution]
 			local n = raffle[math.random(1,#raffle)]
 			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end					
 		end
@@ -517,7 +482,7 @@ local function treasure_chest(position, surface)
 		{{name = "cannon-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.4, evolution_max = 0.7},
 		{{name = "explosive-uranium-cannon-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.6, evolution_max = 1},
 		{{name = "explosive-cannon-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.4, evolution_max = 0.8},
-		{{name = "shotgun", count = 1}, weight = 5, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "shotgun", count = 1}, weight = 2, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "shotgun-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "combat-shotgun", count = 1}, weight = 10, evolution_min = 0.3, evolution_max = 0.8},
 		{{name = "piercing-shotgun-shell", count = math_random(16,32)}, weight = 10, evolution_min = 0.2, evolution_max = 1},
@@ -588,9 +553,9 @@ local function treasure_chest(position, surface)
 		{{name = "steel-chest", count = math_random(25,50)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
 		{{name = "small-lamp", count = math_random(8,50)}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "rail", count = math_random(50,100)}, weight = 3, evolution_min = 0.1, evolution_max = 0.6},
-		{{name = "assembling-machine-1", count = math_random(4,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
-		{{name = "assembling-machine-2", count = math_random(4,16)}, weight = 3, evolution_min = 0.2, evolution_max = 0.8},
-		{{name = "assembling-machine-3", count = math_random(4,16)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "assembling-machine-1", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "assembling-machine-2", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.8},
+		{{name = "assembling-machine-3", count = math_random(4,8)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
 		{{name = "accumulator", count = math_random(8,16)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
 		{{name = "offshore-pump", count = math_random(4,8)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1},
 		{{name = "beacon", count = math_random(4,8)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
@@ -709,13 +674,13 @@ biter_building_inhabitants[9] = {{"medium-biter",2,3},{"big-biter",7,9}}
 biter_building_inhabitants[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
 
 local entity_drop_amount = {
-    ['small-biter'] = {low = 1, high = 20},
-    ['small-spitter'] = {low = 1, high = 20},
-    ['medium-spitter'] = {low = 10, high = 30},
+    ['small-biter'] = {low = 10, high = 20},
+    ['small-spitter'] = {low = 10, high = 20},
+    ['medium-spitter'] = {low = 15, high = 30},
     ['big-spitter'] = {low = 20, high = 40},
     ['behemoth-spitter'] = {low = 30, high = 50},
-	['biter-spawner'] = {low = 40, high = 50},
-	['spitter-spawner'] = {low = 40, high = 50}
+	['biter-spawner'] = {low = 50, high = 100},
+	['spitter-spawner'] = {low = 50, high = 100}
 }
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore","crude-oil","crude-oil"}
@@ -743,7 +708,10 @@ local function on_entity_died(event)
 	end
 	
 	if entity_drop_amount[event.entity.name] then
-		event.entity.surface.spill_item_stack(event.entity.position,{name = ore_spill_raffle[math.random(1,#ore_spill_raffle)], count = math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high)},true)
+		if game.forces.enemy.evolution_factor < 0.5 then
+			local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * (0.5 - game.forces.enemy.evolution_factor) * 2, 0)		
+			event.entity.surface.spill_item_stack(event.entity.position,{name = ore_spill_raffle[math.random(1,#ore_spill_raffle)], count = amount},true)
+		end
 		return
 	end
 
@@ -754,11 +722,11 @@ local function on_entity_died(event)
 		if event.entity.name == "rock-big" then treasure_chest(pos, surface) end
 		if event.entity.name == "sand-rock-big" then
 			local n = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
-			local amount_modifier = 1 + global.labyrinth_size / 25
-			if n == "crude-oil" then
-				create_cluster(n, pos, math.random(3,6), surface, 10, math.random(300000 * amount_modifier, 400000 * amount_modifier))
+			local amount_modifier = 1 + ((global.labyrinth_size / labyrinth_difficulty_curve) * 10)
+			if n == "crude-oil" then				
+				map_functions.draw_oil_circle(pos, n, surface, 10, 100000 * amount_modifier)
 			else				
-				create_cluster(n, pos, math.random(125,175), surface, 1, math.random(math.floor(550 * amount_modifier, 0), math.floor(650 * amount_modifier, 0)))
+				map_functions.draw_smoothed_out_ore_circle(pos, n, surface, 10, 750 * amount_modifier)
 			end
 		end
 		event.entity.destroy()
@@ -829,8 +797,22 @@ local function on_chunk_generated(event)
 				if pos.y >= 196 + noise * 20 then	
 					local noise = get_noise("island", pos)
 					if noise > 0.85 then tile_to_insert = "grass-1" end
-					if noise > 0.88 then
-						if math_random(1,15) == 1 then surface.create_entity {name="tree-05", position=pos} end
+					if noise > 0.88 then						
+						if math_random(1,50) == 1 then
+							local a = {
+								left_top = {x = pos.x - 100, y = pos.y - 100},
+								right_bottom = {x = pos.x + 100, y = pos.y + 100}
+							}
+							if surface.count_entities_filtered{area = a, name = "infinity-chest", limit = 1} == 0 then
+								local e = surface.create_entity {name="infinity-chest", position = pos, force = "player"}
+								e.minable = false
+								e.destructible = false
+								e.operable = false
+								e.remove_unfiltered_items = true
+							end
+						else
+							if math_random(1,15) == 1 then surface.create_entity {name="tree-05", position=pos} end
+						end
 					end
 				end
 			end
@@ -895,7 +877,7 @@ local function on_player_joined_game(event)
 		
 		--game.forces["player"].set_ammo_damage_modifier("flamethrower", -0.95)
 		--game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.95)
-		game.forces["player"].set_turret_attack_modifier("gun-turret", -0.25)
+		--game.forces["player"].set_turret_attack_modifier("gun-turret", -0.25)
 		--game.forces["player"].set_turret_attack_modifier("laser-turret", -0.75)
 		
 		if not global.labyrinth_size then	global.labyrinth_size = 1 end
@@ -1061,7 +1043,7 @@ function cheat_mode()
 		surface.freeze_daytime = 1
 		game.player.force.research_all_technologies()
 		--game.forces["enemy"].evolution_factor = 0.2
-		local chart = 200
+		local chart = 500
 		local surface = game.surfaces["labyrinth"]	
 		game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})		
 	end

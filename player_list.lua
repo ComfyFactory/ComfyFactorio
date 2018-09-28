@@ -166,16 +166,24 @@ local function get_sorted_list(sort_by)
 					player_list[i2] = a				
 				end				
 			end
-			if sort_by == "name_asc" then 
-				if player_list[i].name > player_list[i2].name then
+			if sort_by == "name_asc" then
+				local str_byte_1 = string.byte(player_list[i].name, 1)
+				local str_byte_2 = string.byte(player_list[i2].name, 1)
+				if str_byte_1 < 97 then str_byte_1 = str_byte_1 + 32 end
+				if str_byte_2 < 97 then str_byte_2 = str_byte_2 + 32 end
+				if str_byte_1 > str_byte_2 then
 					local a = player_list[i]
 					local b = player_list[i2]
 					player_list[i] = b
 					player_list[i2] = a				
 				end				
 			end
-			if sort_by == "name_desc" then 
-				if player_list[i].name < player_list[i2].name then
+			if sort_by == "name_desc" then
+				local str_byte_1 = string.byte(player_list[i].name, 1)
+				local str_byte_2 = string.byte(player_list[i2].name, 1)
+				if str_byte_1 < 97 then str_byte_1 = str_byte_1 + 32 end
+				if str_byte_2 < 97 then str_byte_2 = str_byte_2 + 32 end
+				if str_byte_1 < str_byte_2 then
 					local a = player_list[i]
 					local b = player_list[i2]
 					player_list[i] = b
