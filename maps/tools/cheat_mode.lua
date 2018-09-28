@@ -1,5 +1,5 @@
 function cheat_mode()
-	local surface = game.surfaces["spaghettorio"]
+	local surface = game.players[1].surface
 	game.player.cheat_mode=true
 	game.players[1].insert({name="power-armor-mk2"})
 	game.players[1].insert({name="fusion-reactor-equipment", count=4})

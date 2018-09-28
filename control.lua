@@ -7,7 +7,7 @@ require "group"
 require "player_list"
 require "poll"
 require "score"
-
+require "maps.tools.teleporters"
 ---- enable maps here ----
 
 --require "maps.biter_battles"
@@ -15,9 +15,9 @@ require "score"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
 --require "maps.labyrinth"
-require "maps.spaghettorio"
+--require "maps.spaghettorio"
 -----------------------------
---require "maps.tools.cheat_mode"
+require "maps.tools.cheat_mode"
 
 local Event = require 'utils.event'
 
