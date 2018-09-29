@@ -1,5 +1,7 @@
 --labyrinth-- mewmew made this --
 require "maps.labyrinth_map_intro"
+require "maps.tools.teleporters"
+require "maps.tools.map_pregen"
 local map_functions = require "maps.tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
@@ -533,7 +535,7 @@ local function treasure_chest(position, surface)
 		{{name = "explosives", count = math_random(25,50)}, weight = 1, evolution_min = 0.2, evolution_max = 0.6},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evolution_min = 0.3, evolution_max = 0.5},
 		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},
-		{{name = "small-plane", count = 1}, weight = 1, evolution_min = 0.7, evolution_max = 1},
+		{{name = "computer", count = 1}, weight = 2, evolution_min = 0, evolution_max = 1},
 		{{name = "steel-plate", count = math_random(50,100)}, weight = 2, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "nuclear-fuel", count = 1}, weight = 2, evolution_min = 0.7, evolution_max = 1},
 				

@@ -92,7 +92,7 @@ local function on_chunk_generated(event)
 					table.insert(tiles, {name = "water", position = pos})
 					break
 				end
-				if noise_water > 0.7 then
+				if noise_water > 0.68 then
 					if math_random(1,50) == 1 then
 						local a = {
 								left_top = {x = pos.x - 75, y = pos.y - 75},

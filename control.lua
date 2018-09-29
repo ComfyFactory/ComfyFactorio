@@ -7,7 +7,7 @@ require "group"
 require "player_list"
 require "poll"
 require "score"
---require "maps.tools.teleporters"
+
 --require "maps.tools.cheat_mode"
 
 ---- enable maps here ----
@@ -15,7 +15,7 @@ require "score"
 --require "maps.cave_miner"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
---require "maps.labyrinth"
+require "maps.labyrinth"
 --require "maps.spaghettorio"
 -----------------------------
 

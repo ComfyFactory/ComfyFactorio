@@ -48,7 +48,9 @@ end
 
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
-	create_map_intro(player)
+	if player.online_time < 36000 then
+		create_map_intro(player)
+	end
 end
 
 local function on_gui_click(event)
