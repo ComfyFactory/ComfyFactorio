@@ -10,6 +10,7 @@ function cheat_mode()
 	game.players[1].insert({name="fast-loader"})
 	game.players[1].insert({name="express-loader"})
 	game.players[1].insert({name="infinity-chest"})
+	game.players[1].insert({name="computer", count=10})
 	game.speed = 3
 	surface.daytime = 1
 	surface.freeze_daytime = 1

@@ -141,6 +141,9 @@ local function on_chunk_generated(event)
 			local entity = surface.create_entity{name = e.name, position = e.position, direction = d, force = "player"}
 			entity.minable = false
 			entity.destructible = false
+			if entity.name == "stone-furnace" or entity.name == "steel-furnace" then
+				entity.energy = 1
+			end
 		end
 	end
 end

@@ -1,8 +1,31 @@
 local event = require 'utils.event' 
-local key_item = "small-plane"
-local key_item = "transport-belt"
+local key_item = "computer"
 local blacklisted_tiles = {"out-of-map", "water", "deepwater", "water-green", "lab-white", "lab-dark-1"}
-local teleporter_names = {"Stuedrik", "Wrirrirb", "Cekoht", "Deokels", "Gnaecl", "Yffolf", "Xuohsywae", "Flublodoe", "Dicyhnea", "Ruovyk", "Truecuhz", "Vaux'ers", "Gyttux", "Flys", "Qlammed", "Gynneo", "Xraeqoeht", "Phuashlk", "Cuahnennu", "Kneizigh", "Zruex'iz", "Stux'ar", "Zrihq", "Opsyms", "Ogigh", "Nek'oke", "Knoebhybeo", "Kluetryrceo", "Chahz", "Xralarb", "Wrib", "Breipuhz", "Nueglahloe", "Wuammea", "Iblameo", "Wuansyrfua", "Flohlilue", "Vev'unnae", "Deivrym", "Atahz", "Zrux'ysk", "Kyq'yks", "Gnyf'ilm", "Knaegnom", "Gnaelphiss", "Kmaek'irba", "Zruffira", "Kicremme", "Tuot'az", "Ouprard", "Tyv'im", "Get'yks", "Essyh", "Vliln", "Glucutha", "Teoblux", "Feohshowtha", "Dedrapt"}
+local teleporter_names = {"Stuedrik", "Wrirrirb", "Cekoht", "Deokels", "Gnaecl", "Yffolf", "Xuohsywae", "Flublodoe", "Dicyhnea", "Ruovyk", "Truecuhz", "Vaux'ers", "Gyttux", "Flys", "Qlammed", "Gynneo", "Xraeqoeht", "Phuashlk", "Cuahnennu", "Kneizigh", "Zruex'iz", "Stux'ar", "Zrihq", "Opsyms", "Ogigh", "Nek'oke", "Knoebhybeo", "Kluetryrceo", "Chahz", "Xralarb", "Wrib", "Breipuhz", "Nueglahloe", "Wuammea", "Iblameo", "Wuansyrfua", "Flohlilue", "Vev'unnae", "Deivrym", "Atahz", "Zrux'ysk", "Kyq'yks", "Gnyf'ilm", "Knaegnom", "Gnaelphiss", "Kmaek'irba", "Zruffira", "Kicremme", "Tuot'az", "Ouprard", "Tyv'im", "Get'yks", "Essyh", "Vliln", "Glucutha", "Teoblux", "Feohshowtha", "Dedrapt", "Isom", "Xoxxywth", "Qrokmeg", "Uzzuhz", "Achumea", "Caelhume", "Diewylfi", "Deak'yrbie", "Bepsilp", "Uogeptue", "Gouq'oht", "Strauyb", "Evvyks", "Riux", "Ielfahs", "Myls", "Dael'eth", "Tluymnyrbu", "Qluephaulpie", "Bruetheltua"}
+
+local charged_accumulators_required = 8
+function get_power_status(teleporter_index, drain_power)
+	local surface = game.surfaces[global.teleporters[teleporter_index].surface]
+	local a = {
+				left_top = {x = global.teleporters[teleporter_index].position.x - 5, y = global.teleporters[teleporter_index].position.y - 5},
+				right_bottom = {x = global.teleporters[teleporter_index].position.x + 5, y = global.teleporters[teleporter_index].position.y + 5}
+				}
+	local power_cells = surface.find_entities_filtered({area = a, name = "accumulator"})
+	if not power_cells[1] then return "No energy source found - Operation not possible" end
+	if #power_cells < charged_accumulators_required then return "Low Energy - More energy sources needed" end
+	local charged_cells = {}
+	for _, cell in pairs(power_cells) do
+		if cell.energy >= 5000000 then table.insert(charged_cells, cell) end
+		if #charged_cells == charged_accumulators_required then break end
+	end
+	if #charged_cells < charged_accumulators_required then return "Low Energy - Not enough accumulator charge" end
+	if drain_power == true then
+		for _, cell in pairs(charged_cells) do
+			cell.energy = 0
+		end
+	end
+	return true	
+end
 
 local function gui_spawn_new_teleporter(player)		
 	if player.gui.left["spawn_new_teleporter_button"] then player.gui.left["spawn_new_teleporter_button"].destroy() end	
@@ -17,54 +40,92 @@ local function gui_spawn_new_teleporter(player)
 	b.style.font_color = {r = 0.35, g = 0.5, b = 1}
 end
 
-local function gui_teleporter(player, blacklisted_teleporter_index)
+local function gui_teleporter(player, visited_teleporter_index)
 	if player.gui.left["gui_teleporter"] then player.gui.left["gui_teleporter"].destroy() end	
 	local frame = player.gui.left.add({ type = "frame", name = "gui_teleporter", direction = "vertical"})
-	local t = frame.add({type = "table", column_count = 2})
+	local t = frame.add({type = "table", column_count = 2, name = "teleporter_heading"})
 	local l = t.add({type = "label", caption = "<Teleporter> "})
 	l.style.font_color = {r = 0.35, g = 0.5, b = 1}
 	l.style.font = "default-frame"
-	local l = t.add({type = "label", caption = global.teleporters[blacklisted_teleporter_index].name})
+	local l = t.add({type = "label", caption = global.teleporters[visited_teleporter_index].name, name = visited_teleporter_index})
 	l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 	l.style.font = "default-bold"
 	l.style.top_padding = 4
 	
 	local frame2 = frame.add({ type = "frame", direction = "vertical"})
+	frame2.style.maximal_height = 400
+	frame2.style.top_padding = 8
+	frame2.style.font = "default-bold"
+	frame2.style.font_color = {r = 0.88, g = 0.22, b = 0.22}
+		
 	if #global.teleporters < 2 then
-		frame2.caption = "No other connected teleporters found."
-		frame2.style.font = "default-bold"
+		frame2.caption = "No connected teleporters found."
+		frame2.style.top_padding = 14
+		frame2.style.bottom_padding = 0
+		return
+	end		
+	
+	local power_status = get_power_status(visited_teleporter_index)
+	if power_status ~= true then
+		frame2.caption = power_status
+		frame2.style.top_padding = 14
+		frame2.style.bottom_padding = 0
 		return
 	end
-	for x, teleporter in pairs(global.teleporters) do
-		if x ~= blacklisted_teleporter_index then
-			local t = frame2.add({ type = "table", column_count = 2})
+		
+	local scroll_pane = frame2.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
+	
+	for x = #global.teleporters, 1, -1 do
+		if x ~= visited_teleporter_index then
+		
+			local t = scroll_pane.add({ type = "table", column_count = 2})
 			
-			local b = t.add({type = "button", caption = teleporter.name})
-			b.style.minimal_width = 200
+			local b = t.add({type = "button", caption = "> " .. global.teleporters[x].name .. " <", name = "teleporter_" .. x})
+			b.style.minimal_width = 250
 			b.style.font_color = {r = 0.35, g = 0.5, b = 1}
-			b.style.font = "default-frame"
+			b.style.font = "default-listbox"
+			b.style.top_padding = 7
+			b.style.bottom_padding = 7
 						
 			local tt = t.add({ type = "table", column_count = 2})
 			
-			local l = tt.add({type = "label", caption = "Position: "})
+			local l = tt.add({type = "label", caption = global.teleporters[x].surface .. ": "})
 			l.style.font_color = {r = 0.22, g = 0.88, b = 0.44}
 			l.style.font = "default-bold"
 			l.style.minimal_width = 65
-			 
-			local l = tt.add({type = "label", caption = "X: " .. tostring(teleporter.position.x) .. "  Y: " .. tostring(teleporter.position.y)})
+			l.style.top_padding = 0
+			l.style.bottom_padding = 0 
+			l.style.left_padding = 8
+			
+			local l = tt.add({type = "label", caption = "X: " .. tostring(global.teleporters[x].position.x) .. "  Y: " .. tostring(global.teleporters[x].position.y)})
 			l.style.font = "default"
 			l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 			l.style.minimal_width = 100
+			l.style.top_padding = 0
+			l.style.bottom_padding = 0
 			
 			local l = tt.add({type = "label", caption = "Distance: "})
 			l.style.font_color = {r = 0.22, g = 0.88, b = 0.44}
 			l.style.font = "default-bold"
 			l.style.minimal_width = 65
+			l.style.top_padding = 0
+			l.style.bottom_padding = 0
+			l.style.left_padding = 8
 			
-			local l = tt.add({type = "label", caption = tostring(math.ceil(math.sqrt((teleporter.position.x - player.position.x)^2 + (teleporter.position.y - player.position.y)^2), 0)) .. " Units"})
+			local l = tt.add({type = "label", caption = tostring(math.ceil(math.sqrt((global.teleporters[x].position.x - player.position.x)^2 + (global.teleporters[x].position.y - player.position.y)^2), 0)) .. " Units"})
 			l.style.font = "default"
 			l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 			l.style.minimal_width = 100
+			l.style.top_padding = 0
+			l.style.bottom_padding = 0
+			
+			if #global.teleporters > 2 and x ~= 1 then
+				local l = scroll_pane.add({ type = "label", caption = "-----------------------------------------------------------------"})
+				l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+				l.style.font = "default"
+				l.style.top_padding = 0
+				l.style.bottom_padding = 0				
+			end
 		end
 	end
 end
@@ -87,11 +148,11 @@ local function spawn_teleporter(player)
 		end		
 		if removed_item_count ~= 1 then return end		
 		local str = teleporter_names[math.random(1, #teleporter_names)]
-		local str = str2
+		local str2 = str
 		while str == str2 do
 			str2 = teleporter_names[math.random(1, #teleporter_names)]
 		end		
-		table.insert(global.teleporters, {position = {x = pos.x, y = pos.y}, name = str .. " " .. str2})
+		table.insert(global.teleporters, {position = {x = pos.x, y = pos.y}, name = str .. " " .. str2, surface = surface.name})
 		local tiles = {
 						{name = "lab-white", position = pos},	
 						{name = "lab-dark-1", position = {pos.x - 1, pos.y - 1}},
@@ -103,7 +164,8 @@ local function spawn_teleporter(player)
 						{name = "lab-dark-1", position = {pos.x - 1, pos.y + 1}},
 						{name = "lab-dark-1", position = {pos.x - 1, pos.y}},						
 						}		
-		surface.set_tiles(tiles, true)				
+		surface.set_tiles(tiles, true)
+		game.print(player.name .. " has deployed a Teleporter!", {r = 0.35, g = 0.5, b = 1})
 	end
 end
 
@@ -118,6 +180,7 @@ end
 
 local function on_player_changed_position(event)
 	if not global.teleporters then return end
+	--if game.tick % 2 == 1 then return end
 	local player = game.players[event.player_index]
 	local a = {
 				left_top = {x = player.position.x - 1, y = player.position.y - 1},
@@ -154,7 +217,24 @@ local function on_gui_click(event)
 	if not event.element.valid then return end	
 	local player = game.players[event.element.player_index]
 	local name = event.element.name
-	if name == "spawn_new_teleporter_button" then spawn_teleporter(player) end
+	if name == "spawn_new_teleporter_button" then spawn_teleporter(player) end	
+	if string.sub(name, 1, 10) ~= "teleporter" then return end
+	local index = tonumber(string.sub(name, 12))
+	local visited_teleporter_index = tonumber(player.gui.left["gui_teleporter"]["teleporter_heading"].children[2].name)	
+	local status = get_power_status(visited_teleporter_index, true)	
+	if status == true then				
+		for _, p in pairs(game.connected_players) do			
+			p.play_sound{path="utility/armor_insert", volume_modifier=1, position = global.teleporters[visited_teleporter_index].position}
+			p.play_sound{path="utility/armor_insert", volume_modifier=1, position = global.teleporters[index].position}
+		end
+		local surface = game.surfaces[global.teleporters[index].surface]
+		local p = surface.find_non_colliding_position("player",global.teleporters[index].position, 2,0.5)
+		if p then
+			player.teleport(p, global.teleporters[index].surface)
+		else
+			player.teleport(global.teleporters[index].position, global.teleporters[index].surface)
+		end
+	end
 end
 
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
