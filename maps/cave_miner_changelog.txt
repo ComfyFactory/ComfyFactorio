@@ -1,3 +1,8 @@
+0.15
+players in vehicles no longer get hungry
+faster mining speed but lower ore yield for more exploration
+new fully staged chest loot
+
 0.14
 hunger over time reduced
 reduced worms

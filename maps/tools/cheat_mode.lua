@@ -10,12 +10,13 @@ function cheat_mode()
 	game.players[1].insert({name="fast-loader"})
 	game.players[1].insert({name="express-loader"})
 	game.players[1].insert({name="infinity-chest"})
-	game.players[1].insert({name="computer", count=10})
-	game.speed = 3
+	game.players[1].insert({name="computer", count=2})
+	game.players[1].insert({name="raw-fish", count=100})
+	game.speed = 1
 	surface.daytime = 1
 	surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()
 	--game.forces["enemy"].evolution_factor = 0.2
-	local chart = 500	
+	local chart = 200	
 	game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})			
 end
