@@ -7,6 +7,20 @@
 local Event = require 'utils.event' 
 local play_sessions = require 'session_data'
 
+function write_session_file()
+	if global.file_name_found then
+		game.remove_path(global.file_name)
+		game.write_file(global.file_name, "local playsession = {\n" , true)
+		for x = 1, #game.players, 1 do
+			local p = game.players[x]
+			local str = ""
+			if game.players[x+1] then str = "," end
+			game.write_file(global.file_name, '\t{"' .. p.name .. '", {' .. p.online_time .. '}}' .. str .. '\n' , true)
+		end
+		game.write_file(global.file_name, "}\nreturn playsession" , true)
+	end
+end
+
 local function on_player_changed_position(event)
 	if not global.file_name_found then
 		if global.movement_done < global.movement_amount_required then
@@ -52,15 +66,7 @@ end
 local function on_tick()
 	if global.file_name_found then
 		if game.tick % 36000 == 0 then
-			game.remove_path(global.file_name)
-			game.write_file(global.file_name, "local playsession = {\n" , true)
-			for x = 1, #game.players, 1 do
-				local p = game.players[x]
-				local str = ""
-				if game.players[x+1] then str = "," end
-				game.write_file(global.file_name, '\t{"' .. p.name .. '", {' .. p.online_time .. '}}' .. str .. '\n' , true)
-			end
-			game.write_file(global.file_name, "}\nreturn playsession" , true)
+			write_session_file()
 		end
 	end
 end
