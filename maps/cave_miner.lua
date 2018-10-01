@@ -686,7 +686,7 @@ end
 
 local function hunger_update(player, food_value)
 	
-	if food_value == -1 and player.character.driving == true then game.print("driving") return end
+	if food_value == -1 and player.character.driving == true then return end
 	
 	local past_hunger = global.player_hunger[player.name]	
 	global.player_hunger[player.name] = global.player_hunger[player.name] + food_value
