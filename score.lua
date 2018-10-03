@@ -245,7 +245,7 @@ local score_table = {
 	["spitter-spawner"] = 200,
 	["small-worm-turret"] = 50,
 	["medium-worm-turret"] = 150,
-	["big-worm-turret"] = 300
+	["big-worm-turret"] = 300,
 	["player"] = 1000
 }
 
