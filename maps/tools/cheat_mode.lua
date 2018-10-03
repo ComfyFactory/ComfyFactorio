@@ -6,13 +6,16 @@ function cheat_mode()
 	game.players[1].insert({name="personal-laser-defense-equipment", count=8})
 	game.players[1].insert({name="rocket-launcher"})		
 	game.players[1].insert({name="explosive-rocket", count=200})	
+	
 	game.players[1].insert({name="loader"})
 	game.players[1].insert({name="fast-loader"})
 	game.players[1].insert({name="express-loader"})
 	game.players[1].insert({name="infinity-chest"})
 	game.players[1].insert({name="computer", count=2})
 	game.players[1].insert({name="raw-fish", count=100})
-	game.speed = 1
+	game.players[1].insert({name="submachine-gun", count=1})
+	game.players[1].insert({name="uranium-rounds-magazine", count=200})
+	game.speed = 3
 	surface.daytime = 1
 	surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()
