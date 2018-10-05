@@ -211,25 +211,56 @@ local function player_list_show(player, sort_by)
 	
 	
 	local t = frame.add { type = "table", name = "player_list_panel_header_table", column_count = 5 }	
-	
-	local label = t.add { type = "label", name = "player_list_panel_header_1", caption = "    " .. #game.connected_players }
-	label.style.font = "default-game"
-	label.style.font_color = { r=0.00, g=0.00, b=0.00}
-	label.style.minimal_width = 35	
+	local label = t.add { type = "label", caption = "" }
+	label.style.minimal_width = 36
+	label.style.maximal_width = 36
+	local label = t.add { type = "label", caption = "" }
+	label.style.minimal_width = 200
+	label.style.maximal_width = 200
+	local label = t.add { type = "label", caption = "" }
+	label.style.minimal_width = 160
+	label.style.maximal_width = 160
+	local label = t.add { type = "label", caption = "" }
+	label.style.minimal_width = 130
+	label.style.maximal_width = 130
+	local label = t.add { type = "label", caption = "" }
+	label.style.minimal_width = 35
+	label.style.maximal_width = 35
+		
+	local label = t.add { type = "label", name = "player_list_panel_header_1", caption = tostring(#game.connected_players) }
+	label.style.font = "default-frame"
+	label.style.font_color = { r=0.10, g=0.70, b=0.10}
+	label.style.bottom_padding = 3
+	label.style.minimal_width = 36
+	label.style.maximal_width = 36
+	label.style.align = "right"
 	
 	local str = ""
 	if sort_by == "name_asc" then str = symbol_asc .. " " end
-	if sort_by == "name_desc" then str = symbol_desc .. " " end
+	if sort_by == "name_desc" then str = symbol_desc .. " " end		
 	if #game.connected_players > 1 then
 		str = str .. "Players online"
 	else
 		str = str .. "Player online"
 	end
-	local label = t.add { type = "label", name = "player_list_panel_header_2", caption =  str }
+	
+	local tt = t.add({ type = "table", column_count = 5 })
+	local label = tt.add { type = "label", name = "player_list_panel_header_2", caption =  str }
 	label.style.font = "default-listbox"
 	label.style.font_color = { r=0.98, g=0.66, b=0.22}
-	label.style.minimal_width = 160
-	label.style.maximal_width = 160
+	
+	if #game.connected_players ~= #game.players then		
+		local label = tt.add { type = "label", caption = "/" }
+		label.style.font = "default-listbox"
+		label.style.font_color = { r=0.98, g=0.66, b=0.22}				
+		local label = tt.add { type = "label", caption = tostring(#game.players - #game.connected_players) }
+		label.style.font = "default-bold"
+		label.style.font_color = { r=0.70, g=0.10, b=0.10}
+		label.style.minimal_width = 9		
+		local label = tt.add { type = "label", caption = " Offline" }
+		label.style.font = "default-bold"
+		label.style.font_color = { r=0.98, g=0.66, b=0.22}		
+	end	
 	
 	str = ""
 	if sort_by == "total_time_played_asc" then str = symbol_asc .. " " end
@@ -237,25 +268,20 @@ local function player_list_show(player, sort_by)
 	local label = t.add { type = "label", name = "player_list_panel_header_5", caption = str .. "Total Time" }
 	label.style.font = "default-listbox"
 	label.style.font_color = { r=0.98, g=0.66, b=0.22}
-	label.style.minimal_width = 160
-	label.style.maximal_width = 160
 	
 	str = ""
 	if sort_by == "time_played_asc" then str = symbol_asc .. " " end
 	if sort_by == "time_played_desc" then str = symbol_desc .. " " end
 	local label = t.add { type = "label", name = "player_list_panel_header_3", caption = str .. "Current Time" }
 	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}
-	label.style.minimal_width = 130
-	label.style.maximal_width = 130
+	label.style.font_color = { r=0.98, g=0.66, b=0.22}	
 	
 	str = ""
 	if sort_by == "pokes_asc" then str = symbol_asc .. " " end
 	if sort_by == "pokes_desc" then str = symbol_desc .. " " end
 	local label = t.add { type = "label", name = "player_list_panel_header_4", caption = str .. "Poke" }
 	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}
-	label.style.minimal_width = 35	
+	label.style.font_color = { r=0.98, g=0.66, b=0.22}		
 	
 	local player_list_panel_table = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
 	player_list_panel_table.style.maximal_height = 530
@@ -267,7 +293,7 @@ local function player_list_show(player, sort_by)
 	for i = 1, #player_list, 1 do	
 		
 		local sprite = player_list_panel_table.add { type = "sprite", name = "player_rank_sprite_" .. i, sprite = player_list[i].rank }
-		sprite.style.minimal_width = 35
+		sprite.style.minimal_width = 36
 		
 		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_names_" .. i, caption = player_list[i].name }		
 		label.style.font = "default"				
@@ -276,8 +302,8 @@ local function player_list_show(player, sort_by)
 			g = .4 + game.players[player_list[i].player_index].color.g * 0.6,
 			b = .4 + game.players[player_list[i].player_index].color.b * 0.6,
 		}
-		label.style.minimal_width = 160
-		label.style.maximal_width = 160
+		label.style.minimal_width = 200
+		label.style.maximal_width = 200
 				
 		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_total_time_played_" .. i, caption = player_list[i].total_played_time }		
 		label.style.minimal_width = 160
