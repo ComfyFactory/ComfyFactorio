@@ -49,7 +49,7 @@ local function show_score(player)
 		
 	local frame = player.gui.left.add { type = "frame", name = "score_panel", direction = "vertical" }
 		
-	local t = frame.add { type = "table", column_count = 4}
+	local t = frame.add { type = "table", column_count = 5}
 	
 	local l = t.add { type = "label", caption = "Rockets launched: "}	
 	l.style.font = "default-game"			
@@ -73,7 +73,10 @@ local function show_score(player)
 	local l = t.add { type = "label", caption = str}
 	l.style.font = "default-frame"
 	l.style.font_color = { r=0.9, g=0.9, b=0.9}
-	l.style.minimal_width = 30
+	l.style.minimal_width = 145
+	
+	local l = t.add { type = "checkbox", caption = "Show floating numbers", state = global.show_floating_killscore[player.name], name = "show_floating_killscore_texts"	}
+	l.style.font_color = { r=0.8, g=0.8, b=0.8}	
 	
 	local l = frame.add { type = "label", caption = "---------------------------------------------------------------------------------------------------------------"}
 	l.style.font_color = { r=0.9, g=0.9, b=0.9}
@@ -125,7 +128,11 @@ local function show_score(player)
 	
 	if #game.connected_players > 1 then
 		score_list = get_sorted_list(global.score_sort_by[player.name].method, global.score_sort_by[player.name].column, score_list)
-	end
+	end	
+	
+	local scroll_pane = frame.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
+	scroll_pane.style.maximal_height = 400	
+	local t = scroll_pane.add { type = "table", column_count = 5}
 	
 	for _, entry in pairs(score_list) do		
 		local l = t.add { type = "label", caption = entry.name}	
@@ -140,11 +147,13 @@ local function show_score(player)
 		l.style.font = "default"			
 		l.style.font_color = { r=0.9, g=0.9, b=0.9}
 		l.style.minimal_width = 140
+		l.style.maximal_width = 140
 		
 		local l = t.add { type = "label", caption = tostring(entry.deaths)}	
 		l.style.font = "default"			
 		l.style.font_color = { r=0.9, g=0.9, b=0.9}
 		l.style.minimal_width = 140
+		l.style.maximal_width = 140
 		
 		local l = t.add { type = "label", caption = tostring(entry.built_entities)}	
 		l.style.font = "default"			
@@ -155,7 +164,7 @@ local function show_score(player)
 		l.style.font = "default"			
 		l.style.font_color = { r=0.9, g=0.9, b=0.9}
 		l.style.minimal_width = 140
-		
+		l.style.maximal_width = 140
 	end	
 end
 
@@ -176,9 +185,10 @@ local function on_player_joined_game(event)
 	if not global.score_sort_by then global.score_sort_by = {} end
 	if not global.score_sort_by[player.name] then
 		global.score_sort_by[player.name] = {method = "descending", column = "killscore"}
-	end	
-	create_score_button(player)
-	
+	end
+	if not global.show_floating_killscore then global.show_floating_killscore = {} end
+	if not global.show_floating_killscore[player.name] then global.show_floating_killscore[player.name] = true end	
+	create_score_button(player)	
 end
 
 local function on_player_left_game(event)
@@ -199,6 +209,14 @@ local function on_gui_click(event)
 		else
 			global.score_sort_by[player.name].get_sorted_list = true
 			show_score(player)
+		end
+	end
+	
+	if name == "show_floating_killscore_texts" then
+		if event.element.state == true then
+			global.show_floating_killscore[player.name] = true			
+		else
+			global.show_floating_killscore[player.name] = false			
 		end
 	end
 	
@@ -271,14 +289,16 @@ local function on_entity_died(event)
 	if not global.score[event.force.name].players then global.score[event.force.name].players[player.name] = {} end
 	
 	if score_table[event.entity.name] then
-	
+		
 		if not global.score[event.force.name].kills then
 			global.score[event.force.name].kills = 1
 		else
 			global.score[event.force.name].kills = global.score[event.force.name].kills + 1
 		end
 		
+		local show_floating_text = false
 		if player then
+			if global.show_floating_killscore[player.name] == true then show_floating_text = true end
 			if not global.score[event.force.name].players[player.name].killscore then
 				global.score[event.force.name].players[player.name].killscore = score_table[event.entity.name]
 			else
@@ -296,6 +316,7 @@ local function on_entity_died(event)
 		
 		if train_passengers then
 			for _, player in pairs(train_passengers) do
+				if global.show_floating_killscore[player.name] == true then show_floating_text = true end
 				if not global.score[event.force.name].players[player.name].killscore then
 					global.score[event.force.name].players[player.name].killscore = score_table[event.entity.name]
 				else
@@ -304,7 +325,9 @@ local function on_entity_died(event)
 			end
 		end
 		
-		event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = tostring(score_table[event.entity.name]), color = {r=0.98, g=0.66, b=0.22}})
+		if show_floating_text == true then
+			event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = tostring(score_table[event.entity.name]), color = {r=0.98, g=0.66, b=0.22}})
+		end
 	end
 	refresh_score()
 end
