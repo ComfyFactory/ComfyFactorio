@@ -15,7 +15,7 @@ require "maps.tools.cheat_mode"
 --require "maps.cave_miner"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
---require "maps.labyrinth"
+require "maps.labyrinth"
 --require "maps.spaghettorio"
 -----------------------------
 

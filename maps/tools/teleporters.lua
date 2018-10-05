@@ -76,7 +76,9 @@ local function gui_teleporter(player, visited_teleporter_index)
 	local scroll_pane = frame2.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
 	
 	for x = #global.teleporters, 1, -1 do
-		if x ~= visited_teleporter_index then
+		local surface = game.surfaces[global.teleporters[x].surface]
+		local tile = surface.get_tile(global.teleporters[x].position)
+		if x ~= visited_teleporter_index and tile.name == "lab-white" then
 		
 			local t = scroll_pane.add({ type = "table", column_count = 2})
 			
@@ -222,18 +224,20 @@ local function on_gui_click(event)
 	local index = tonumber(string.sub(name, 12))
 	local visited_teleporter_index = tonumber(player.gui.left["gui_teleporter"]["teleporter_heading"].children[2].name)	
 	local status = get_power_status(visited_teleporter_index, true)	
-	if status == true then				
-		for _, p in pairs(game.connected_players) do			
-			p.play_sound{path="utility/armor_insert", volume_modifier=1, position = global.teleporters[visited_teleporter_index].position}
-			p.play_sound{path="utility/armor_insert", volume_modifier=1, position = global.teleporters[index].position}
-		end
+	if status == true then	
 		local surface = game.surfaces[global.teleporters[index].surface]
+		for _, p in pairs(game.connected_players) do			
+			p.play_sound{path="utility/armor_insert", volume_modifier=1, position = global.teleporters[visited_teleporter_index].position}			
+			p.play_sound{path="utility/armor_insert", volume_modifier=1, position = global.teleporters[index].position}			
+		end
+		surface.create_entity({name = "water-splash", position = player.position})
+		surface.create_entity({name = "blood-explosion-big", position = player.position})		
 		local p = surface.find_non_colliding_position("player",global.teleporters[index].position, 2,0.5)
 		if p then
 			player.teleport(p, global.teleporters[index].surface)
 		else
 			player.teleport(global.teleporters[index].position, global.teleporters[index].surface)
-		end
+		end		
 	end
 end
 
