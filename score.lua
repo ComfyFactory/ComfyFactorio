@@ -130,7 +130,7 @@ local function show_score(player)
 		score_list = get_sorted_list(global.score_sort_by[player.name].method, global.score_sort_by[player.name].column, score_list)
 	end	
 	
-	local scroll_pane = frame.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
+	local scroll_pane = frame.add({ type = "scroll-pane", name = "score_scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
 	scroll_pane.style.maximal_height = 400	
 	local t = scroll_pane.add { type = "table", column_count = 5}
 	
@@ -168,10 +168,51 @@ local function show_score(player)
 	end	
 end
 
-function refresh_score()
-	for _, p in pairs(game.connected_players) do
-		if p.gui.left["score_panel"] then
-			show_score(p)
+local function refresh_score_full()
+	for _, player in pairs(game.connected_players) do
+		if player.gui.left["score_panel"] then
+			show_score(player)
+		end
+	end
+end
+
+local function refresh_score()
+	for _, player in pairs(game.connected_players) do
+		if player.gui.left["score_panel"] then
+			if global.score[player.force.name].rocket_launches then player.gui.left["score_panel"].children[1].children[2].caption = global.score[player.force.name].rocket_launches end
+			if global.score[player.force.name].kills then player.gui.left["score_panel"].children[1].children[4].caption = global.score[player.force.name].kills end			
+			local score = global.score[player.force.name]
+			local score_list = {}
+			for _, p in pairs(game.connected_players) do
+				local killscore = 0
+				if score.players[p.name].killscore then killscore = score.players[p.name].killscore end
+				local deaths = 0
+				if score.players[p.name].deaths then deaths = score.players[p.name].deaths end
+				local built_entities = 0
+				if score.players[p.name].built_entities then built_entities = score.players[p.name].built_entities end
+				local mined_entities = 0
+				if score.players[p.name].mined_entities then mined_entities = score.players[p.name].mined_entities end
+				table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})		
+			end
+			if #game.connected_players > 1 then
+				score_list = get_sorted_list(global.score_sort_by[player.name].method, global.score_sort_by[player.name].column, score_list)
+			end			
+			local index = 1
+			for _, entry in pairs(score_list) do		
+				player.gui.left["score_panel"].children[4].children[1].children[index].caption = entry.name
+				local p = game.players[entry.name]
+				local color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
+				player.gui.left["score_panel"].children[4].children[1].children[index].style.font_color = color				
+				index = index + 1
+				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.killscore)					
+				index = index + 1
+				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.deaths)
+				index = index + 1
+				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.built_entities)
+				index = index + 1
+				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.mined_entities)
+				index = index + 1				
+			end								
 		end
 	end
 end
@@ -188,11 +229,13 @@ local function on_player_joined_game(event)
 	end
 	if not global.show_floating_killscore then global.show_floating_killscore = {} end
 	if not global.show_floating_killscore[player.name] then global.show_floating_killscore[player.name] = true end	
-	create_score_button(player)	
+		
+	create_score_button(player)
+	refresh_score_full()
 end
 
 local function on_player_left_game(event)
-	refresh_score()
+	refresh_score_full()
 end
 
 local function on_gui_click(event)
@@ -210,7 +253,8 @@ local function on_gui_click(event)
 			global.score_sort_by[player.name].get_sorted_list = true
 			show_score(player)
 		end
-	end
+		return
+	end	
 	
 	if name == "show_floating_killscore_texts" then
 		if event.element.state == true then
@@ -218,11 +262,12 @@ local function on_gui_click(event)
 		else
 			global.show_floating_killscore[player.name] = false			
 		end
+		return
 	end
 	
 	local int_sort_columns = {"score_killscore", "killscore", "score_deaths", "deaths", "score_built_entities", "built_entities", "score_mined_entities", "mined_entities"}
 	for x = 1, #int_sort_columns, 2 do
-		if name == int_sort_columns[x] then		
+		if name == int_sort_columns[x] then			
 			if global.score_sort_by[player.name].column == int_sort_columns[x + 1] then
 				if global.score_sort_by[player.name].method == "ascending" then
 					global.score_sort_by[player.name].method = "descending"
@@ -232,7 +277,8 @@ local function on_gui_click(event)
 			else
 				global.score_sort_by[player.name] = {method = "descending", column = int_sort_columns[x + 1]}
 			end
-			show_score(player)		
+			show_score(player)
+			break
 		end	
 	end
 end
@@ -241,7 +287,7 @@ local function on_rocket_launched(event)
 	local force_name = event.rocket_silo.force.name
 	if not global.score[force_name] then global.score[force_name] = {} end
 	if not global.score[force_name].rocket_launches then
-		global.score[force_name].rocket_launches = 1
+		global.score[force_name].rocket_launches = 1		
 	else
 		global.score[force_name].rocket_launches = global.score[force_name].rocket_launches + 1
 	end	
@@ -294,7 +340,7 @@ local function on_entity_died(event)
 			global.score[event.force.name].kills = 1
 		else
 			global.score[event.force.name].kills = global.score[event.force.name].kills + 1
-		end
+		end		
 		
 		local show_floating_text = false
 		if player then
