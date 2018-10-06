@@ -1091,7 +1091,7 @@ local function pre_player_mined_item(event)
 		if math.random(1,3) == 1 then hunger_update(player, -1) end
 		
 		surface.spill_item_stack(player.position,{name = "raw-fish", count = math.random(3,4)},true)
-		local bonus_amount = math.ceil((tile_distance_to_center - math.sqrt(global.spawn_dome_size)) * 0.2, 0) 
+		local bonus_amount = math.ceil((tile_distance_to_center - math.sqrt(global.spawn_dome_size)) * 0.15, 0) 
 		if bonus_amount < 1 then bonus_amount = 0 end		
 		local amount = (math.random(55,65) + bonus_amount)*(1+game.forces.player.mining_drill_productivity_bonus)
 		

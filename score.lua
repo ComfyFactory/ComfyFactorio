@@ -291,8 +291,7 @@ local function on_rocket_launched(event)
 	else
 		global.score[force_name].rocket_launches = global.score[force_name].rocket_launches + 1
 	end	
-	game.print ("A rocket has been launched!", {r=0.98, g=0.66, b=0.22})	
-	
+	game.print ("A rocket has been launched!", {r=0.98, g=0.66, b=0.22})		
 	refresh_score()
 end
 
@@ -374,8 +373,7 @@ local function on_entity_died(event)
 		if show_floating_text == true then
 			event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = tostring(score_table[event.entity.name]), color = {r=0.98, g=0.66, b=0.22}})
 		end
-	end
-	refresh_score()
+	end	
 end
 
 local function on_player_died(event)
@@ -387,8 +385,7 @@ local function on_player_died(event)
 		global.score[player.force.name].players[player.name].deaths = 1
 	else
 		global.score[player.force.name].players[player.name].deaths = global.score[player.force.name].players[player.name].deaths + 1
-	end
-	refresh_score()
+	end	
 end
 
 local function on_player_mined_entity(event)
@@ -400,8 +397,7 @@ local function on_player_mined_entity(event)
 		global.score[player.force.name].players[player.name].mined_entities = 1
 	else
 		global.score[player.force.name].players[player.name].mined_entities = global.score[player.force.name].players[player.name].mined_entities + 1
-	end
-	refresh_score()
+	end	
 end
 
 local function on_built_entity(event)	
@@ -413,10 +409,16 @@ local function on_built_entity(event)
 		global.score[player.force.name].players[player.name].built_entities = 1
 	else
 		global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities + 1
-	end	
-	refresh_score()
+	end		
 end
 
+local function on_tick(event)
+	if game.tick % 300 == 0 then
+		refresh_score()
+	end
+end
+
+event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_built_entity, on_built_entity)
