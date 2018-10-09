@@ -223,7 +223,7 @@ local function level_finished()
 	end
 	local radius = global.current_beaten_chunk.x * 32
 	if radius < 0 then radius = radius * -1 end
-	radius = radius + 96
+	radius = radius + 160
 	game.forces.player.chart(surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 end
 
@@ -234,16 +234,34 @@ local function get_furthest_chunk()
 	local surface = game.surfaces["spiral_troopers"]
 	local x = 1
 	while true do
-		if not surface.is_chunk_generated({0, 0 + x}) then break end
+		if not surface.is_chunk_generated({0 + x, 0}) then break end
 		x = x + 1
 	end
-	x = x - 1 
-	return x
+	x = x - 1
+	local y = 1
+	while true do
+		if not surface.is_chunk_generated({0, 0 + y}) then break end
+		y = y + 1
+	end
+	y = y - 1
+	return x, y
+end
+
+local function clear_chunk_of_enemies(chunk, surface)
+	local a = {
+		left_top = {x = chunk.y * 32, y = chunk.y * 32},
+		right_bottom = {x = (chunk.y * 32) + 31, y = (chunk.y * 32) + 31}
+		}
+	local enemies = surface.find_entities_filtered({force = "enemy", area = a})
+	if enemies[1] then		
+		for i = 1, #enemies, 1 do				
+			enemies[i].destroy()
+		end		
+	end
 end
 
 local function grow_level()	
-	if not global.current_chunk then global.current_chunk = {x = 0, y = -1} end
-	if get_furthest_chunk() < global.current_chunk.y + 3 then return end
+	if not global.current_chunk then global.current_chunk = {x = 0, y = -1} end	
 	local surface = game.surfaces["spiral_troopers"]
 	local entities = {}
 	local spiral_cords = {
@@ -253,7 +271,7 @@ local function grow_level()
 	{x = 1, y = 0}
 	}
 	if not global.spiral_troopers_level then 
-		global.spiral_troopers_level = 1
+		global.spiral_troopers_level = 1			
 	else
 		global.spiral_troopers_level = global.spiral_troopers_level + 1
 	end	
@@ -283,25 +301,32 @@ local function grow_level()
 			y = checkpoint_chunk.y + spiral_cords[reward_chunk_offset].y
 			}
 			
+			clear_chunk_of_enemies(checkpoint_chunk, surface)
+			clear_chunk_of_enemies(reward_chunk, surface)
+			
 			for x = -1, 32, 1 do
 				for y = -1, 32, 1 do
 					local pos = {x = checkpoint_chunk.x * 32 + x, y = checkpoint_chunk.y * 32 + y}					
 					if math.random(1,2) == 1 then
-						table.insert(entities,{name = rock_raffle[math.random(1,#rock_raffle)], position = pos})		
+						table.insert(entities,{name = rock_raffle[math.random(1,#rock_raffle)], position = pos})
 					end
 				end
-			end						
+			end
+						
 			for x = 0, 31, 1 do
 				for y = 0, 31, 1 do
-					local pos = {x = reward_chunk.x * 32 + x, y = reward_chunk.y * 32 + y}
+					local pos = {x = reward_chunk.x * 32 + x, y = reward_chunk.y * 32 + y}					
 					if x == 16 and y == 16 then
-						map_functions.draw_smoothed_out_ore_circle(pos, ore_rotation[current_growth_direction], surface, 13, 750 * global.spiral_troopers_level)
-						table.insert(entities, {name = "burner-inserter", position = pos, force = "player"})
+						map_functions.draw_smoothed_out_ore_circle(pos, ore_rotation[current_growth_direction], surface, 14, 500 * global.spiral_troopers_level)
+						local unlocker = surface.create_entity({name = "burner-inserter", position = pos, force = "player"})
+						unlocker.destructible = false
+						unlocker.minable = false
 					end
-					if x >= 4 and x <= 5 and y >= 4 and y <= 5 then if math.random(1,2) == 1 then treasure_chest(pos, surface) end end
-					if x >= 26 and x <= 27 and y >= 26 and y <= 27 then if math.random(1,2) == 1 then treasure_chest(pos, surface) end end
-					if x >= 26 and x <= 27 and y >= 4 and y <= 5 then if math.random(1,2) == 1 then treasure_chest(pos, surface) end end
-					if x >= 4 and x <= 5 and y >= 26 and y <= 27 then if math.random(1,2) == 1 then treasure_chest(pos, surface) end end
+					
+					if x >= 4 and x <= 5 and y >= 4 and y <= 5 then if math.random(1,3) ~= 1 then treasure_chest(pos, surface) end end
+					if x >= 26 and x <= 27 and y >= 26 and y <= 27 then if math.random(1,3) ~= 1 then treasure_chest(pos, surface) end end
+					if x >= 26 and x <= 27 and y >= 4 and y <= 5 then if math.random(1,3) ~= 1 then treasure_chest(pos, surface) end end
+					if x >= 4 and x <= 5 and y >= 26 and y <= 27 then if math.random(1,3) ~= 1 then treasure_chest(pos, surface) end end
 					
 					if x >= 3 and x <= 6 and y >= 3 and y <= 6 then table.insert(tiles,{name = "concrete", position = pos}) end
 					if x >= 25 and x <= 28 and y >= 25 and y <= 28 then table.insert(tiles,{name = "concrete", position = pos}) end
@@ -353,8 +378,7 @@ local function on_chunk_generated(event)
 			map_functions.draw_smoothed_out_ore_circle({x = 48, y = 16}, "copper-ore", surface, 16, 500)
 			global.spiral_troopers_spawn_ores = true
 		end
-	end
-	grow_level()
+	end		
 	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
@@ -367,15 +391,27 @@ local function on_chunk_generated(event)
 						surface.create_entity({name = "biter-spawner", position = pos})
 					end
 				end
-				if surface.can_place_entity({name = "big-worm-turret", position = pos}) and math.random(1,1600) == 1 then
-					local index = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
-					if index < 1 then index = 1 end					
+				if surface.can_place_entity({name = "big-worm-turret", position = pos}) and math.random(1,1500) == 1 then
+					local level = 0.1
+					if global.spiral_troopers_level then level = global.spiral_troopers_level / 40 end	
+					if level > 1 then level = 1 end
+					local index = math.ceil(level * 10, 0)
+					if index < 1 then index = 1 end
+					if index > 10 then index = 10 end					
 					local name = worm_raffle[index][math.random(1, #worm_raffle[index])]
 					surface.create_entity({name = name, position = pos})
 				end
 			end
 		end
 	end
+	
+	local chunk_position_x = event.area.left_top.x / 32
+	local chunk_position_y = event.area.left_top.y / 32
+	if chunk_position_x < 0 then chunk_position_x = chunk_position_x * -1 end
+	if chunk_position_y < 0 then chunk_position_y = chunk_position_y * -1 end
+	local level = 1
+	if global.spiral_troopers_level then level = (global.spiral_troopers_level / 2) + 3 end	
+	if chunk_position_x > level and chunk_position_y > level then grow_level() end	
 end
 
 local function on_player_joined_game(event)
@@ -389,6 +425,7 @@ local function on_player_joined_game(event)
 			["stone"] = {frequency = "none", size = "none", richness = "none"},
 			["copper-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
+			["uranium-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
@@ -402,7 +439,9 @@ local function on_player_joined_game(event)
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false			
 		game.forces["player"].technologies["artillery-shell-speed-1"].enabled = false
 		game.forces["player"].technologies["artillery"].enabled = false
-								
+		local surface = game.surfaces["spiral_troopers"]
+		local radius = 256
+		game.forces.player.chart(surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 		global.map_init_done = true						
 	end	
 	local surface = game.surfaces["spiral_troopers"]
