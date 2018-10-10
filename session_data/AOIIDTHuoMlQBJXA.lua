@@ -1,5 +1,5 @@
 local playsession = {
-	{"mewmew", {2116733}},
+	{"mewmew", {2147416}},
 	{"Gerkiz", {609960}},
 	{"MEWNUMBATWO", {21439}},
 	{"first10101", {426697}},
@@ -12,7 +12,7 @@ local playsession = {
 	{"Catbert", {7757}},
 	{"air20", {607260}},
 	{"nmy", {3551}},
-	{"badbeachboy", {4637623}},
+	{"badbeachboy", {4673623}},
 	{"brfbrf", {105646}},
 	{"wotwotvodka", {65125}},
 	{"NewEpoch", {12154}},
@@ -41,7 +41,7 @@ local playsession = {
 	{"Headscrew", {28457}},
 	{"pato1", {4783}},
 	{"SpwnX", {7639}},
-	{"Terarink", {5602370}},
+	{"Terarink", {5638370}},
 	{"froody", {803684}},
 	{"DoxxMulder", {723}},
 	{"soni", {2786708}},
@@ -67,7 +67,7 @@ local playsession = {
 	{"cko6o4ku", {64351}},
 	{"sankang2004", {173901}},
 	{"sid123", {2651}},
-	{"aledeludx", {1255778}},
+	{"aledeludx", {1291778}},
 	{"cocoilove", {388959}},
 	{"Didalus", {165360}},
 	{"Hugo3play", {170282}},
@@ -129,7 +129,7 @@ local playsession = {
 	{"lintaba", {677347}},
 	{"luuxi", {26203}},
 	{"GhostSenpai", {5832}},
-	{"Amker", {76512}},
+	{"Amker", {97485}},
 	{"kean", {2009650}},
 	{"Terminutter", {4026}},
 	{"untamedx2", {8111}},
@@ -177,6 +177,7 @@ local playsession = {
 	{"empirebuilder1", {13240}},
 	{"tokastar", {1134}},
 	{"the-trashmaster", {9891}},
-	{"Aquaeyes", {61596}}
+	{"Aquaeyes", {61596}},
+	{"Lumyex", {30522}}
 }
 return playsession

@@ -1,10 +1,10 @@
 local playsession = {
-	{"mewmew", {96825}},
+	{"mewmew", {106755}},
 	{"Giatros", {43068}},
 	{"Terarink", {3750560}},
 	{"Vancleave", {1110671}},
 	{"dpoba", {64673}},
-	{"Natty", {317369}},
+	{"Natty", {330165}},
 	{"Catbert", {97556}},
 	{"Delqvs", {1444474}},
 	{"LaszloK", {11380}},
@@ -20,7 +20,7 @@ local playsession = {
 	{"Hummerback", {437368}},
 	{"303Mark", {497213}},
 	{"Hempy", {366822}},
-	{"Fantagma", {799635}},
+	{"Fantagma", {1051375}},
 	{"ANV1L", {352443}},
 	{"CrazyBot33", {88975}},
 	{"joe32", {5905}},
@@ -93,6 +93,6 @@ local playsession = {
 	{"Sokyra", {4950}},
 	{"Nibilonies", {5233}},
 	{"beranabus", {21641}},
-	{"untamedx2", {16257}}
+	{"untamedx2", {70911}}
 }
 return playsession
