@@ -36,32 +36,65 @@ local function on_player_joined_game(event)
 end
 
 local function get_formatted_playtime(x)
-	local y = x / 216000
-	y = tostring(y)
-	local h = ""
-	for i=1,10,1 do 		
-		local z = string.sub(y, i, i)	
-	
-		if z == "." then
-			break
-		else			
-			h = h .. z			
-		end		
-	end
-	
-	local m = x % 216000
-	m = m / 3600
-	m = math.floor(m)
-	m = tostring(m)
-	
-	if h == "0" then
-		local str = m .. " minutes"
-		return str
+	local time_one = 216000
+	local time_two = 3600
+
+	if x < 5184000 then
+		local y = x / 216000
+		y = tostring(y)
+		local h = ""
+		for i=1,10,1 do 		
+			local z = string.sub(y, i, i)	
+		
+			if z == "." then
+				break
+			else			
+				h = h .. z			
+			end		
+		end
+		
+		local m = x % 216000
+		m = m / 3600
+		m = math.floor(m)
+		m = tostring(m)
+		
+		if h == "0" then
+			local str = m .. " minutes"
+			return str
+		else
+			local str = h .. " hours "
+			str = str .. m
+			str = str .. " minutes"
+			return str
+		end
 	else
-		local str = h .. " hours "
-		str = str .. m
-		str = str .. " minutes"
-		return str
+		local y = x / 5184000
+		y = tostring(y)
+		local h = ""
+		for i=1,10,1 do 		
+			local z = string.sub(y, i, i)	
+		
+			if z == "." then
+				break
+			else			
+				h = h .. z			
+			end		
+		end
+		
+		local m = x % 5184000
+		m = m / 216000
+		m = math.floor(m)
+		m = tostring(m)
+		
+		if h == "0" then
+			local str = m .. " days"
+			return str
+		else
+			local str = h .. " days "
+			str = str .. m
+			str = str .. " hours"
+			return str
+		end
 	end
 end
 
@@ -336,71 +369,65 @@ local function on_gui_click(event)
 	if not event.element.valid then return end
 	if not event.element.name then return end
 	
-		local player = game.players[event.element.player_index]
-		local name = event.element.name
-		
-		if (name == "player_list_button") then			
-			if player.gui.left["player-list-panel"] then
-				player.gui.left["player-list-panel"].destroy()		
-			else
-				player_list_show(player,"total_time_played_desc")
-			end			
+	local player = game.players[event.element.player_index]
+	local name = event.element.name
+	
+	if (name == "player_list_button") then			
+		if player.gui.left["player-list-panel"] then
+			player.gui.left["player-list-panel"].destroy()		
+		else
+			player_list_show(player,"total_time_played_desc")
+		end			
+	end
+	
+	if (name == "player_list_panel_header_2") then	
+		if string.find(event.element.caption, symbol_desc) then
+			player_list_show(player,"name_asc")
+		else
+			player_list_show(player,"name_desc")
+		end						
+	end
+	if (name == "player_list_panel_header_3") then
+		if string.find(event.element.caption, symbol_desc) then
+			player_list_show(player,"time_played_asc")
+		else
+			player_list_show(player,"time_played_desc")
 		end
-		
-		if (name == "player_list_panel_header_2") then	
-			if string.find(event.element.caption, symbol_desc) then
-				player_list_show(player,"name_asc")
-			else
-				player_list_show(player,"name_desc")
-			end						
+	end		
+	if (name == "player_list_panel_header_4") then						
+		if string.find(event.element.caption, symbol_desc) then
+			player_list_show(player,"pokes_asc")
+		else
+			player_list_show(player,"pokes_desc")
+		end			
+	end	
+	if (name == "player_list_panel_header_5") then
+		if string.find(event.element.caption, symbol_desc) then
+			player_list_show(player,"total_time_played_asc")
+		else
+			player_list_show(player,"total_time_played_desc")
 		end
-		if (name == "player_list_panel_header_3") then
-			if string.find(event.element.caption, symbol_desc) then
-				player_list_show(player,"time_played_asc")
-			else
-				player_list_show(player,"time_played_desc")
-			end
-		end		
-		if (name == "player_list_panel_header_4") then						
-			if string.find(event.element.caption, symbol_desc) then
-				player_list_show(player,"pokes_asc")
-			else
-				player_list_show(player,"pokes_desc")
-			end			
-		end	
-		if (name == "player_list_panel_header_5") then
-			if string.find(event.element.caption, symbol_desc) then
-				player_list_show(player,"total_time_played_asc")
-			else
-				player_list_show(player,"total_time_played_desc")
-			end
-		end
-		
-		--Poke other players	
-	if event.element.type == "button" then
-		local x = string.find(name, "poke_player_")
-		if x ~= nil then
-			local y = string.len(event.element.name)
-			local poked_player = string.sub(event.element.name, 13, y)
-			if player.name ~= poked_player then
-				local x = global.poke_spam_protection[event.element.player_index] + 420
-				if x < game.tick then				
-					local str = ">> "
-					str = str .. player.name 
-					str = str .. " has poked "
-					str = str .. poked_player					
-					str = str .. " with "
-					local z = math.random(1,#pokemessages)
-					str = str .. pokemessages[z]
-					str = str .. " <<"
-					game.print(str)										
-					global.poke_spam_protection[event.element.player_index] = game.tick
-					local p = game.players[poked_player]
-					global.player_list_pokes_counter[p.index] = global.player_list_pokes_counter[p.index] + 1
-				end
-			end
-		end
-	end					
+	end
+	
+	--Poke other players				 
+	if string.sub(event.element.name, 1, 11) == "poke_player" then
+		local poked_player = string.sub(event.element.name, 13, string.len(event.element.name))
+		if player.name == poked_player then return end
+		if global.poke_spam_protection[event.element.player_index] + 420 < game.tick then				
+			local str = ">> "
+			str = str .. player.name 
+			str = str .. " has poked "
+			str = str .. poked_player					
+			str = str .. " with "
+			local z = math.random(1,#pokemessages)
+			str = str .. pokemessages[z]
+			str = str .. " <<"
+			game.print(str)										
+			global.poke_spam_protection[event.element.player_index] = game.tick
+			local p = game.players[poked_player]
+			global.player_list_pokes_counter[p.index] = global.player_list_pokes_counter[p.index] + 1
+		end			
+	end						
 end
 --[[
 local function on_tick()
