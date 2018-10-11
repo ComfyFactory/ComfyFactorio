@@ -1,3 +1,8 @@
+0.16
+oil should no longer clutter
+increased rock destruction performance (maybe)
+rocks now heal over time
+
 0.15
 players in vehicles no longer get hungry
 faster mining speed but lower ore yield for more exploration

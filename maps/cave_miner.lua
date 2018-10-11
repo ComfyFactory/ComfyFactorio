@@ -7,6 +7,94 @@ local simplex_noise = require 'utils.simplex_noise'
 local Event = require 'utils.event' 
 local market_items = require "maps.cave_miner_market_items"
 
+local darkness_messages = {
+		"Something is lurking in the dark...",
+		"A shadow moves. I doubt it is friendly...",
+		"The silence grows louder...",
+		"Trust not your eyes. They are useless in the dark.",
+		"The darkness hides only death. Turn back now.",
+		"You hear noises...",
+		"They chitter as if laughing, hungry for their next foolish meal...",
+		"Despite what the radars tell you, it is not safe here...",
+		"The shadows are moving...",
+		"You feel like, something is watching you...",		
+		}
+
+local rock_inhabitants = {
+		[1] = {"small-biter"},
+		[2] = {"small-biter","small-biter","small-biter","small-biter","small-biter","medium-biter"},
+		[3] = {"small-biter","small-biter","small-biter","small-biter","medium-biter","medium-biter"},
+		[4] = {"small-biter","small-biter","small-biter","medium-biter","medium-biter","small-spitter"},
+		[5] = {"small-biter","small-biter","medium-biter","medium-biter","medium-biter","small-spitter"},
+		[6] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","small-spitter"},
+		[7] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
+		[8] = {"small-biter","medium-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
+		[9] = {"small-biter","medium-biter","medium-biter","big-biter","big-biter","medium-spitter"},
+		[10] = {"medium-biter","medium-biter","medium-biter","big-biter","big-biter","big-spitter"},
+		[11] = {"medium-biter","medium-biter","big-biter","big-biter","big-biter","big-spitter"},
+		[12] = {"medium-biter","big-biter","big-biter","big-biter","big-biter","big-spitter"},
+		[13] = {"big-biter","big-biter","big-biter","big-biter","big-biter","big-spitter"},
+		[14] = {"big-biter","big-biter","big-biter","big-biter","behemoth-biter","big-spitter"},
+		[15] = {"big-biter","big-biter","big-biter","behemoth-biter","behemoth-biter","big-spitter"},
+		[16] = {"big-biter","big-biter","big-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
+		[17] = {"big-biter","big-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
+		[18] = {"big-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
+		[19] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
+		[20] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter","behemoth-spitter"}
+	}		
+
+local worm_raffle_table = {
+		[1] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret"},
+		[2] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret"},
+		[3] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret"},
+		[4] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret"},
+		[5] = {"small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
+		[6] = {"small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
+		[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
+		[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
+		[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"},
+		[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
+	}
+
+local player_hunger_fish_food_value = 10
+local player_hunger_spawn_value = 80				
+local player_hunger_stages = {}
+for x = 1, 200, 1 do
+	if x <= 200 then player_hunger_stages[x] = "Obese" end						
+	if x <= 179 then player_hunger_stages[x] = "Stuffed" end
+	if x <= 150 then player_hunger_stages[x] = "Bloated" end
+	if x <= 130 then player_hunger_stages[x] = "Sated" end
+	if x <= 110 then player_hunger_stages[x] = "Well Fed" end
+	if x <= 89 then player_hunger_stages[x] = "Nourished" end			
+	if x <= 70 then player_hunger_stages[x] = "Hungry" end
+	if x <= 35 then player_hunger_stages[x] = "Starving" end			
+end	
+
+local player_hunger_color_list = {}
+for x = 1, 50, 1 do
+	player_hunger_color_list[x] = 		{r = 0.5 + x*0.01, g = x*0.01, b = x*0.005}
+	player_hunger_color_list[50+x] = {r = 1 - x*0.02, g = 0.5 + x*0.01, b = 0.25}
+	player_hunger_color_list[100+x] = {r = 0 + x*0.02, g = 1 - x*0.01, b = 0.25}
+	player_hunger_color_list[150+x] = {r = 1 - x*0.01, g = 0.5 - x*0.01, b = 0.25 - x*0.005}
+end
+
+local player_hunger_buff = {}
+local buff_top_value = 0.70		
+for x = 1, 200, 1 do
+	player_hunger_buff[x] = buff_top_value
+end
+local y = 1
+for x = 89, 1, -1 do			
+	player_hunger_buff[x] = buff_top_value - y * 0.015
+	y = y + 1
+end
+local y = 1		
+for x = 111, 200, 1 do			
+	player_hunger_buff[x] = buff_top_value - y * 0.015
+	y = y + 1
+end
+
+		
 local function create_cave_miner_button(player)		
 	if player.gui.top["caver_miner_stats_toggle_button"] then player.gui.top["caver_miner_stats_toggle_button"].destroy() end	
 	local b = player.gui.top.add({ type = "sprite-button", name = "caver_miner_stats_toggle_button", sprite = "item/iron-axe" })
@@ -65,10 +153,10 @@ local function create_cave_miner_stats_gui(player)
 	
 	local str = tostring(global.player_hunger[player.name])
 	str = str .. "% "
-	str = str .. global.player_hunger_stages[global.player_hunger[player.name]]
+	str = str .. player_hunger_stages[global.player_hunger[player.name]]
 	local caption_hunger = frame.add { type = "label", caption = str  }
 	caption_hunger.style.font = "default-bold"
-	caption_hunger.style.font_color = global.player_hunger_color_list[global.player_hunger[player.name]]
+	caption_hunger.style.font_color = player_hunger_color_list[global.player_hunger[player.name]]
 	caption_hunger.style.top_padding = 2		
 	
 	local frame = player.gui.top.add { type = "frame", name = "caver_miner_stats_frame" }
@@ -89,7 +177,7 @@ local function create_cave_miner_stats_gui(player)
 	separators[2] = t.add { type = "label", caption = "|"}
 	
 	captions[3] = t.add { type = "label", caption = "Efficiency" }
-	local x = math.ceil(game.forces.player.manual_mining_speed_modifier * 100 + global.player_hunger_buff[global.player_hunger[player.name]] * 100, 0)
+	local x = math.ceil(game.forces.player.manual_mining_speed_modifier * 100 + player_hunger_buff[global.player_hunger[player.name]] * 100, 0)
 	local str = ""
 	if x > 0 then str = str .. "+" end
 	str = str .. tostring(x)
@@ -533,7 +621,9 @@ local function on_chunk_generated(event)
 						if cave_noise_2 > 0.85 and tile_distance_to_center > global.spawn_dome_size + 25000 then
 							if math.random(1,48) == 1 then
 								local p = surface.find_non_colliding_position("crude-oil",{pos_x,pos_y}, 5,1)
-								local e = surface.create_entity {name="crude-oil", position={pos_x,pos_y}, amount=math.floor(math.random(25000+tile_distance_to_center*0.5,50000+tile_distance_to_center),0)}
+								if p then
+									surface.create_entity {name="crude-oil", position=p, amount=math.floor(math.random(25000+tile_distance_to_center*0.5,50000+tile_distance_to_center),0)}
+								end
 							end
 						end
 					else
@@ -628,7 +718,7 @@ local function on_chunk_generated(event)
 				local raffle_index = math.ceil((tile_distance_to_center-global.worm_free_zone_radius)*0.01, 0)
 				if raffle_index < 1 then raffle_index = 1 end
 				if raffle_index > 10 then raffle_index = 10 end					
-				local entity_name = global.worm_raffle_table[raffle_index][math.random(1,#global.worm_raffle_table[raffle_index])]												
+				local entity_name = worm_raffle_table[raffle_index][math.random(1,#worm_raffle_table[raffle_index])]												
 				surface.create_entity {name=entity_name, position=p}
 			end
 		end
@@ -641,7 +731,7 @@ local function on_chunk_generated(event)
 				local raffle_index = math.ceil((tile_distance_to_center-global.worm_free_zone_radius)*0.01, 0)
 				if raffle_index < 1 then raffle_index = 1 end
 				if raffle_index > 10 then raffle_index = 10 end					
-				local entity_name = global.worm_raffle_table[raffle_index][math.random(1,#global.worm_raffle_table[raffle_index])]												
+				local entity_name = worm_raffle_table[raffle_index][math.random(1,#worm_raffle_table[raffle_index])]												
 				if surface.can_place_entity({name=entity_name, position=p}) then surface.create_entity {name=entity_name, position=p} end
 			end
 		end
@@ -693,34 +783,34 @@ local function hunger_update(player, food_value)
 	if global.player_hunger[player.name] > 200 then global.player_hunger[player.name] = 200 end
 			
 	if past_hunger == 200 and global.player_hunger[player.name] + food_value > 200 then
-		global.player_hunger[player.name] = global.player_hunger_spawn_value
+		global.player_hunger[player.name] = player_hunger_spawn_value
 		player.character.die("player")
 		local t = {" ate too much and exploded.", " should have gone on a diet.", " needs to work on their bad eating habbits.", " should have skipped dinner today."}
 		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})				
 	end	
 	
 	if global.player_hunger[player.name] < 1 then
-		global.player_hunger[player.name] = global.player_hunger_spawn_value
+		global.player_hunger[player.name] = player_hunger_spawn_value
 		player.character.die("player")
 		local t = {" ran out of foodstamps.", " starved.", " should not have skipped breakfast today."}
 		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})	
 	end
 	
 	if player.character then
-		if global.player_hunger_stages[global.player_hunger[player.name]] ~= global.player_hunger_stages[past_hunger] then
-			local print_message = "You feel " .. global.player_hunger_stages[global.player_hunger[player.name]] .. "."
-			if global.player_hunger_stages[global.player_hunger[player.name]] == "Obese" then
-				print_message = "You have become " .. global.player_hunger_stages[global.player_hunger[player.name]]  .. "."					
+		if player_hunger_stages[global.player_hunger[player.name]] ~= player_hunger_stages[past_hunger] then
+			local print_message = "You feel " .. player_hunger_stages[global.player_hunger[player.name]] .. "."
+			if player_hunger_stages[global.player_hunger[player.name]] == "Obese" then
+				print_message = "You have become " .. player_hunger_stages[global.player_hunger[player.name]]  .. "."					
 			end
-			if global.player_hunger_stages[global.player_hunger[player.name]] == "Starving" then
+			if player_hunger_stages[global.player_hunger[player.name]] == "Starving" then
 				print_message = "You are starving!"
 			end
-			player.print(print_message, global.player_hunger_color_list[global.player_hunger[player.name]])
+			player.print(print_message, player_hunger_color_list[global.player_hunger[player.name]])
 		end
 	end
 	
-	player.character.character_running_speed_modifier = global.player_hunger_buff[global.player_hunger[player.name]] * 0.5
-	player.character.character_mining_speed_modifier  = global.player_hunger_buff[global.player_hunger[player.name]]
+	player.character.character_running_speed_modifier = player_hunger_buff[global.player_hunger[player.name]] * 0.5
+	player.character.character_mining_speed_modifier  = player_hunger_buff[global.player_hunger[player.name]]
 end
 
 local function on_player_joined_game(event)
@@ -754,67 +844,9 @@ But be careful, eating too much might have it´s consequences too.
 
 Darkness is a hazard in the mines, stay near your lamps..
 ]]
-		
-		global.player_hunger_fish_food_value = 10
-		global.player_hunger_spawn_value = 80
-		global.player_hunger = {}		
-		global.player_hunger_stages = {}
-		for x = 1, 200, 1 do
-			if x <= 200 then global.player_hunger_stages[x] = "Obese" end						
-			if x <= 179 then global.player_hunger_stages[x] = "Stuffed" end
-			if x <= 150 then global.player_hunger_stages[x] = "Bloated" end
-			if x <= 130 then global.player_hunger_stages[x] = "Sated" end
-			if x <= 110 then global.player_hunger_stages[x] = "Well Fed" end
-			if x <= 89 then global.player_hunger_stages[x] = "Nourished" end			
-			if x <= 70 then global.player_hunger_stages[x] = "Hungry" end
-			if x <= 35 then global.player_hunger_stages[x] = "Starving" end			
-		end	
-		
-		global.player_hunger_color_list = {}
-		for x = 1, 50, 1 do
-			global.player_hunger_color_list[x] = 		{r = 0.5 + x*0.01, g = x*0.01, b = x*0.005}
-			global.player_hunger_color_list[50+x] = {r = 1 - x*0.02, g = 0.5 + x*0.01, b = 0.25}
-			global.player_hunger_color_list[100+x] = {r = 0 + x*0.02, g = 1 - x*0.01, b = 0.25}
-			global.player_hunger_color_list[150+x] = {r = 1 - x*0.01, g = 0.5 - x*0.01, b = 0.25 - x*0.005}
-		end
-		
-		global.player_hunger_buff = {}
-		local buff_top_value = 0.70		
-		for x = 1, 200, 1 do
-			global.player_hunger_buff[x] = buff_top_value
-		end
-		local y = 1
-		for x = 89, 1, -1 do			
-			global.player_hunger_buff[x] = buff_top_value - y * 0.015
-			y = y + 1
-		end
-		local y = 1		
-		for x = 111, 200, 1 do			
-			global.player_hunger_buff[x] = buff_top_value - y * 0.015
-			y = y + 1
-		end
-		
-		global.rock_inhabitants = {}
-		global.rock_inhabitants[1] = {"small-biter"}
-		global.rock_inhabitants[2] = {"small-biter","small-biter","small-biter","small-biter","small-biter","medium-biter"}
-		global.rock_inhabitants[3] = {"small-biter","small-biter","small-biter","small-biter","medium-biter","medium-biter"}
-		global.rock_inhabitants[4] = {"small-biter","small-biter","small-biter","medium-biter","medium-biter","small-spitter"}
-		global.rock_inhabitants[5] = {"small-biter","small-biter","medium-biter","medium-biter","medium-biter","small-spitter"}
-		global.rock_inhabitants[6] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","small-spitter"}
-		global.rock_inhabitants[7] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","medium-spitter"}
-		global.rock_inhabitants[8] = {"small-biter","medium-biter","medium-biter","medium-biter","big-biter","medium-spitter"}
-		global.rock_inhabitants[9] = {"small-biter","medium-biter","medium-biter","big-biter","big-biter","medium-spitter"}
-		global.rock_inhabitants[10] = {"medium-biter","medium-biter","medium-biter","big-biter","big-biter","big-spitter"}
-		global.rock_inhabitants[11] = {"medium-biter","medium-biter","big-biter","big-biter","big-biter","big-spitter"}
-		global.rock_inhabitants[12] = {"medium-biter","big-biter","big-biter","big-biter","big-biter","big-spitter"}
-		global.rock_inhabitants[13] = {"big-biter","big-biter","big-biter","big-biter","big-biter","big-spitter"}
-		global.rock_inhabitants[14] = {"big-biter","big-biter","big-biter","big-biter","behemoth-biter","big-spitter"}
-		global.rock_inhabitants[15] = {"big-biter","big-biter","big-biter","behemoth-biter","behemoth-biter","big-spitter"}
-		global.rock_inhabitants[16] = {"big-biter","big-biter","big-biter","behemoth-biter","behemoth-biter","behemoth-spitter"}
-		global.rock_inhabitants[17] = {"big-biter","big-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"}
-		global.rock_inhabitants[18] = {"big-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"}
-		global.rock_inhabitants[19] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"}
-		global.rock_inhabitants[20] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter","behemoth-spitter"}	
+		global.player_hunger = {}
+						
+		global.damaged_rocks = {}
 		
 		global.biter_spawn_amount_weights = {}				
 		global.biter_spawn_amount_weights[1] = {64, 1}
@@ -832,18 +864,7 @@ Darkness is a hazard in the mines, stay near your lamps..
 		
 		global.rock_density = 62  ---- insert value up to 100
 		global.rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
-		
-		global.worm_raffle_table = {}
-		global.worm_raffle_table[1] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret"}
-		global.worm_raffle_table[2] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret"}
-		global.worm_raffle_table[3] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret"}
-		global.worm_raffle_table[4] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret"}
-		global.worm_raffle_table[5] = {"small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
-		global.worm_raffle_table[6] = {"small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
-		global.worm_raffle_table[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
-		global.worm_raffle_table[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
-		global.worm_raffle_table[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-		global.worm_raffle_table[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}						
+										
 		global.worm_free_zone_radius = math.sqrt(global.spawn_dome_size) + 40
 		
 		global.biter_spawn_schedule = {}										
@@ -865,25 +886,13 @@ Darkness is a hazard in the mines, stay near your lamps..
 			end			
 		end
 
-		global.darkness_threat_level = {}
-		global.darkness_messages = {
-		"Something is lurking in the dark...",
-		"A shadow moves. I doubt it is friendly...",
-		"The silence grows louder...",
-		"Trust not your eyes. They are useless in the dark.",
-		"The darkness hides only death. Turn back now.",
-		"You hear noises...",
-		"They chitter as if laughing, hungry for their next foolish meal...",
-		"Despite what the radars tell you, it is not safe here...",
-		"The shadows are moving...",
-		"You feel like, something is watching you...",		
-		}					
+		global.darkness_threat_level = {}							
 		
 		global.cave_miner_init_done = true						
 	end
 	if player.online_time < 10 then
 		create_cave_miner_info(player)
-		global.player_hunger[player.name] = global.player_hunger_spawn_value
+		global.player_hunger[player.name] = player_hunger_spawn_value
 		hunger_update(player, 0)
 		global.darkness_threat_level[player.name] = 0
 		player.insert {name = 'pistol', count = 1}
@@ -903,7 +912,7 @@ local function spawn_cave_inhabitant(pos, target_position)
 	local rock_inhabitants_index = math.ceil((tile_distance_to_center-math.sqrt(global.spawn_dome_size))*0.015, 0)
 	if rock_inhabitants_index < 1 then rock_inhabitants_index = 1 end
 	if rock_inhabitants_index > 20 then rock_inhabitants_index = 20 end					
-	local entity_name = global.rock_inhabitants[rock_inhabitants_index][math.random(1,#global.rock_inhabitants[rock_inhabitants_index])]
+	local entity_name = rock_inhabitants[rock_inhabitants_index][math.random(1,#rock_inhabitants[rock_inhabitants_index])]
 	local p = surface.find_non_colliding_position(entity_name , pos, 6, 0.5)
 	local biter = 1
 	if p then biter = surface.create_entity {name=entity_name, position=p} end
@@ -986,7 +995,7 @@ local function darkness_events()
 			p.character.damage(math.random(global.darkness_threat_level[p.name]*2,global.darkness_threat_level[p.name]*3),"enemy")
 		end		
 		if global.darkness_threat_level[p.name] == 2 then
-			p.print(global.darkness_messages[math.random(1,#global.darkness_messages)],{ r=0.65, g=0.0, b=0.0})				
+			p.print(darkness_messages[math.random(1,#darkness_messages)],{ r=0.65, g=0.0, b=0.0})				
 		end
 		global.darkness_threat_level[p.name] = global.darkness_threat_level[p.name] + 1
 	end
@@ -1022,6 +1031,24 @@ local function darkness_checks()
 	end
 end
 
+local healing_amount = {
+		["rock-big"] = 4,
+		["sand-rock-big"] = 4,
+		["rock-huge"] = 16
+	}
+local function heal_rocks()
+	for key, rock in pairs(global.damaged_rocks) do
+		if rock.last_damage + 300 < game.tick then
+			if rock.entity.valid then
+				rock.entity.health = rock.entity.health + healing_amount[rock.entity.name]
+				if rock.entity.prototype.max_health == rock.entity.health then global.damaged_rocks[key] = nil end
+			else
+				global.damaged_rocks[key] = nil
+			end
+		end
+	end
+end
+
 local function on_tick(event)		
 	if game.tick % 30 == 0 then
 		if global.biter_spawn_schedule then										
@@ -1038,7 +1065,8 @@ local function on_tick(event)
 	
 	if game.tick % 240 == 0 then
 		darkness_checks()	
-		darkness_events()	
+		darkness_events()
+		heal_rocks()
 	end		
 	
 	if game.tick % 5400 == 2700 then
@@ -1199,7 +1227,10 @@ local function on_entity_damaged(event)
 			end			
 		end
 		if event.entity.health <= 0 then rock_is_alive = false end		
-		if rock_is_alive == false then			
+		if rock_is_alive then
+			global.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] = {last_damage = game.tick, entity = event.entity}
+		else
+			global.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] = nil
 			if event.force.name == "player" then	
 				if math.random(1,12) == 1 then								
 					for x = 1, math.random(6,10), 1 do
@@ -1213,7 +1244,7 @@ local function on_entity_damaged(event)
 			game.surfaces[1].spill_item_stack(p,{name = "stone", count = drop_amount},true)
 			global.stats_rocks_brocken = global.stats_rocks_brocken + 1
 			global.stats_ores_found = global.stats_ores_found + drop_amount
-			refresh_gui()						
+			--refresh_gui()						
 		end
 	end	
 end
@@ -1221,7 +1252,7 @@ end
 local function on_player_respawned(event)
 	local player = game.players[event.player_index]
 	player.character.disable_flashlight()
-	global.player_hunger[player.name] = global.player_hunger_spawn_value
+	global.player_hunger[player.name] = player_hunger_spawn_value
 	hunger_update(player, 0)
 	refresh_gui()
 end
@@ -1257,7 +1288,7 @@ end
 local function on_player_used_capsule(event)
 	if event.item.name == "raw-fish" then
 		local player = game.players[event.player_index]				
-		hunger_update(player, global.player_hunger_fish_food_value)		
+		hunger_update(player, player_hunger_fish_food_value)		
 		player.play_sound{path="utility/armor_insert", volume_modifier=1}		
 		refresh_gui()
 	end
