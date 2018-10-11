@@ -44,7 +44,7 @@ local function treasure_chest(position, surface)
 		{{name = "defender-capsule", count = math_random(8,16)}, weight = 10, evolution_min = 0.0, evolution_max = 0.7},
 		{{name = "distractor-capsule", count = math_random(8,16)}, weight = 10, evolution_min = 0.2, evolution_max = 1},
 		{{name = "destroyer-capsule", count = math_random(8,16)}, weight = 10, evolution_min = 0.3, evolution_max = 1},
-		{{name = "atomic-bomb", count = math_random(8,16)}, weight = 1, evolution_min = 0.2, evolution_max = 1},		
+		{{name = "atomic-bomb", count = math_random(1,2)}, weight = 1, evolution_min = 0.2, evolution_max = 1},		
 		{{name = "light-armor", count = 1}, weight = 3, evolution_min = 0, evolution_max = 0.1},		
 		{{name = "heavy-armor", count = 1}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "modular-armor", count = 1}, weight = 2, evolution_min = 0.2, evolution_max = 0.6},

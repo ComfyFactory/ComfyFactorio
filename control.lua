@@ -17,7 +17,7 @@ require "score"
 --require "maps.lost_desert"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
-require "maps.spiral_troopers"
+--require "maps.spiral_troopers"
 -----------------------------
 
 local Event = require 'utils.event'

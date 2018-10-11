@@ -364,8 +364,7 @@ end
 
 local function on_gui_click(event)
 	if not event then return end
-	if not event.element then return end
-	if not event.element.type then return end
+	if not event.element then return end	
 	if not event.element.valid then return end
 	if not event.element.name then return end
 	
