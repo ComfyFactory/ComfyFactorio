@@ -8,7 +8,7 @@ function get_power_status(teleporter_index, drain_power)
 	local surface = game.surfaces[global.teleporters[teleporter_index].surface]
 	local a = {
 				left_top = {x = global.teleporters[teleporter_index].position.x - 5, y = global.teleporters[teleporter_index].position.y - 5},
-				right_bottom = {x = global.teleporters[teleporter_index].position.x + 5, y = global.teleporters[teleporter_index].position.y + 5}
+				right_bottom = {x = global.teleporters[teleporter_index].position.x + 6, y = global.teleporters[teleporter_index].position.y + 6}
 				}
 	local power_cells = surface.find_entities_filtered({area = a, name = "accumulator"})
 	if not power_cells[1] then return "No energy source found - Operation not possible" end

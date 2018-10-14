@@ -490,7 +490,8 @@ local function on_player_joined_game(event)
 			player.teleport({0,0}, "spiral_troopers")
 		end
 	end	
-	if player.online_time < 10 then				
+	if player.online_time < 10 then
+		if global.show_floating_killscore then global.show_floating_killscore[player.name] = true end		
 		player.insert {name = 'iron-axe', count = 1}
 		player.insert {name = 'iron-plate', count = 32}
 		player.insert {name = 'pistol', count = 1}
@@ -510,11 +511,29 @@ local disabled_entities = {"gun-turret", "laser-turret", "flamethrower-turret"}
 local function on_built_entity(event)
 	for _, e in pairs(disabled_entities) do
 		if e == event.created_entity.name then
-			event.created_entity.die("enemy")
-			if event.player_index then
-				--local player = game.players[event.player_index]
-				--player.print("Turrets outside of conquered zones are disabled.", {r=0.75, g=0.0, b=0.0})
+			local a = {
+				left_top = {x = event.created_entity.position.x - 31, y = event.created_entity.position.y - 31},
+				right_bottom = {x = event.created_entity.position.x + 32, y = event.created_entity.position.y + 32}
+				} 
+			local enemy_count = event.created_entity.surface.count_entities_filtered({force = "enemy", area = a, limit = 1})
+			if enemy_count > 0 then  
+				event.created_entity.active = false
+				if event.player_index then
+					local player = game.players[event.player_index]				
+					player.print("The turret seems to be malfunctioning near those creatures.", {r=0.75, g=0.0, b=0.0})
+				end
 			end
+		end
+	end
+end
+
+local function on_entity_damaged(event)
+	for _, e in pairs(disabled_entities) do
+		if e == event.entity.name then
+			if event.entity.health <= event.final_damage_amount then				
+				event.entity.active = true
+				event.entity.die("enemy")
+			end 			
 		end
 	end
 end
@@ -610,6 +629,7 @@ local function on_tick(event)
 end
 
 event.add(defines.events.on_tick, on_tick)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)

@@ -228,7 +228,7 @@ local function on_player_joined_game(event)
 		global.score_sort_by[player.name] = {method = "descending", column = "killscore"}
 	end
 	if not global.show_floating_killscore then global.show_floating_killscore = {} end
-	if not global.show_floating_killscore[player.name] then global.show_floating_killscore[player.name] = true end	
+	if not global.show_floating_killscore[player.name] then global.show_floating_killscore[player.name] = false end	
 		
 	create_score_button(player)
 	refresh_score_full()
