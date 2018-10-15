@@ -172,7 +172,7 @@ local function create_cave_miner_stats_gui(player)
 	separators[1] = t.add { type = "label", caption = "|"}
 	
 	captions[2] = t.add { type = "label", caption = "Rocks broken:" }
-	stat_numbers[2] = t.add { type = "label", caption = global.stats_rocks_brocken }
+	stat_numbers[2] = t.add { type = "label", caption = global.stats_rocks_broken }
 							
 	separators[2] = t.add { type = "label", caption = "|"}
 	
@@ -211,7 +211,7 @@ local function create_cave_miner_stats_gui(player)
 		end
 	end
 	stat_numbers[1].style.minimal_width = 9 * string.len(tostring(global.stats_ores_found))
-	stat_numbers[2].style.minimal_width = 9 * string.len(tostring(global.stats_rocks_brocken))
+	stat_numbers[2].style.minimal_width = 9 * string.len(tostring(global.stats_rocks_broken))
 end
 
 local function refresh_gui()
@@ -870,7 +870,7 @@ Darkness is a hazard in the mines, stay near your lamps..
 		global.biter_spawn_schedule = {}										
 		
 		global.ore_spill_cap = 35
-		global.stats_rocks_brocken = 0
+		global.stats_rocks_broken = 0
 		global.stats_ores_found = 0
 		global.total_ores_mined = 0
 		
@@ -1055,8 +1055,9 @@ local function on_tick(event)
 			for x = 1, #global.biter_spawn_schedule, 1 do
 				if global.biter_spawn_schedule[x] then					
 					if game.tick >= global.biter_spawn_schedule[x][1] then
-						spawn_cave_inhabitant(global.biter_spawn_schedule[x][2])
+						local pos = {x = global.biter_spawn_schedule[x][2].x, y = global.biter_spawn_schedule[x][2].y}
 						global.biter_spawn_schedule[x] = nil
+						spawn_cave_inhabitant(pos)
 					end						
 				end
 			end								
@@ -1153,7 +1154,7 @@ local function pre_player_mined_item(event)
 			surface.spill_item_stack(rock_position,{name = "stone", count = amount_of_stone},true)
 		end
 		
-		global.stats_rocks_brocken = global.stats_rocks_brocken + 1		
+		global.stats_rocks_broken = global.stats_rocks_broken + 1		
 		refresh_gui()
 		
 		if math.random(1,32) == 1 then				
@@ -1242,7 +1243,7 @@ local function on_entity_damaged(event)
 			local drop_amount = math.random(4,8)
 			event.entity.destroy()
 			game.surfaces[1].spill_item_stack(p,{name = "stone", count = drop_amount},true)
-			global.stats_rocks_brocken = global.stats_rocks_brocken + 1
+			global.stats_rocks_broken = global.stats_rocks_broken + 1
 			global.stats_ores_found = global.stats_ores_found + drop_amount
 			--refresh_gui()						
 		end
