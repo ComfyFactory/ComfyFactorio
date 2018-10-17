@@ -319,7 +319,7 @@ local function grow_level()
 					local pos = {x = reward_chunk.x * 32 + x, y = reward_chunk.y * 32 + y}					
 					if x == 16 and y == 16 then
 						local ore = ore_rotation[current_growth_direction]
-						if global.spiral_troopers_level % 11 == 0 then ore = "uranium-ore" end
+						if global.spiral_troopers_level % 12 == 0 then ore = "uranium-ore" end
 						map_functions.draw_smoothed_out_ore_circle(pos, ore, surface, 14, 400 * global.spiral_troopers_level)
 						local unlocker = surface.create_entity({name = "burner-inserter", position = pos, force = "player"})
 						unlocker.destructible = false

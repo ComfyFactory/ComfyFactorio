@@ -44,13 +44,41 @@ f.draw_smoothed_out_ore_circle = function(position, name, surface, radius, richn
 	for y = radius*-1, radius, 1 do
 		for x = radius*-1, radius, 1 do
 			local pos = {x = x + position.x, y = y + position.y}		
-			local noise_1 = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
+			local noise_1 = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
 			seed = seed + noise_seed_add
-			local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+			local noise_2 = simplex_noise(pos.x * 0.15, pos.y * 0.15, seed)
 			local noise = noise_1 + noise_2 * 0.2
 			local distance_to_center = math.sqrt(x^2 + y^2)						
 			local a = richness - richness_part * distance_to_center
 			if distance_to_center + ((1 + noise) * 3) < radius and a > 1 then			
+				if surface.can_place_entity({name = name, position = pos, amount = a}) then
+					surface.create_entity{name = name, position = pos, amount = a}									
+				end
+			end			
+		end
+	end
+end
+
+f.draw_crazy_smoothed_out_ore_circle = function(position, name, surface, radius, richness)
+	if not position then return end
+	if not name then return end
+	if not surface then return end
+	if not radius then return end
+	if not richness then return end
+	local math_random = math.random	
+	local noise_seed_add = 25000	
+	local richness_part = richness / radius
+	for y = radius*-1, radius, 1 do
+		for x = radius*-1, radius, 1 do
+			local pos = {x = x + position.x, y = y + position.y}	
+			local seed = game.surfaces[1].map_gen_settings.seed
+			local noise_1 = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
+			seed = seed + noise_seed_add
+			local noise_2 = simplex_noise(pos.x * 0.2, pos.y * 0.2, seed)
+			local noise = noise_1 + noise_2 * 0.2
+			local distance_to_center = math.sqrt(x^2 + y^2)						
+			local a = richness - richness_part * distance_to_center
+			if distance_to_center < radius * noise and a > 1 then			
 				if surface.can_place_entity({name = name, position = pos, amount = a}) then
 					surface.create_entity{name = name, position = pos, amount = a}									
 				end
