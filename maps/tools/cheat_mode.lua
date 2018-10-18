@@ -15,7 +15,9 @@ function cheat_mode()
 	game.players[1].insert({name="raw-fish", count=100})
 	game.players[1].insert({name="submachine-gun", count=1})
 	game.players[1].insert({name="uranium-rounds-magazine", count=200})
-	game.speed = 3
+	game.players[1].insert({name="steel-chest", count=200})
+	game.players[1].insert({name="explosives", count=2000})
+	game.speed = 1
 	surface.daytime = 1
 	surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()

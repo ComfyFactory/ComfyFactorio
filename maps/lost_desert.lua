@@ -325,5 +325,5 @@ local function on_player_joined_game(event)
 end
 
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+--event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
