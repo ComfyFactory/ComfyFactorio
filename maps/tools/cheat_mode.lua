@@ -17,6 +17,8 @@ function cheat_mode()
 	game.players[1].insert({name="uranium-rounds-magazine", count=200})
 	game.players[1].insert({name="steel-chest", count=200})
 	game.players[1].insert({name="explosives", count=2000})
+	game.forces.player.manual_mining_speed_modifier = 100
+	game.forces.player.character_reach_distance_bonus = 10000
 	game.speed = 1
 	surface.daytime = 1
 	surface.freeze_daytime = 1

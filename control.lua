@@ -8,7 +8,7 @@ require "player_list"
 require "poll"
 require "score"
 
-require "maps.tools.kaboomstick"
+--require "maps.tools.kaboomstick"
 require "maps.tools.cheat_mode"
 
 ---- enable maps here ----
@@ -19,6 +19,7 @@ require "maps.tools.cheat_mode"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
 --require "maps.spiral_troopers"
+require "maps.empty_map"
 -----------------------------
 
 local Event = require 'utils.event'
