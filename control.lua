@@ -8,7 +8,7 @@ require "player_list"
 require "poll"
 require "score"
 
---require "maps.tools.kaboomstick"
+require "maps.tools.kaboomstick"
 require "maps.tools.cheat_mode"
 
 ---- enable maps here ----
