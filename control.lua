@@ -19,7 +19,7 @@ require "maps.tools.cheat_mode"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
 --require "maps.spiral_troopers"
-require "maps.empty_map"
+--require "maps.empty_map"
 -----------------------------
 
 local Event = require 'utils.event'

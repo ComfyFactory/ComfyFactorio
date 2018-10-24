@@ -1,6 +1,6 @@
 local event = require 'utils.event'
 
-local damage_per_explosive = 50000
+local damage_per_explosive = 10
 local empty_tile_damage_absorption = 50
 local out_of_map_tile_health = 500
 local replacement_tile = "dirt-5"
@@ -42,88 +42,115 @@ local function shuffle(tbl)
 	return tbl
 end		
 	
-local function on_entity_damaged(event)	
-	if event.entity.type == "container" then
-		if math_random(1,1) == 1 then kaboom(event.entity) end
+local function process_explosion_tile(pos, explosion_index)
+	local surface = game.surfaces[global.explosion_schedule[explosion_index].surface]
+		
+	surface.create_entity({name = "explosion", position = pos})
+		
+	local target_entities = surface.find_entities_filtered({area={{pos.x - 0.5, pos.y - 0.5},{pos.x + 0.499, pos.y + 0.499}}})  
+	for _, entity in pairs(target_entities) do
+		if entity.health then
+			if entity.health < global.explosion_schedule[explosion_index].damage_remaining then			
+				global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
+				entity.damage(99999, "player", "explosion")				
+				return true
+			else				
+				entity.damage(global.explosion_schedule[explosion_index].damage_remaining, "player", "explosion")
+				global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
+				return false
+			end
+		end
 	end
+	return true
+	--[[
+	
+	
+	if target_entity[1] and target_entity[1].health then							
+		local damage_dealt = 0
+		local explosives_needed = math.ceil(target_entity[1].health / damage_per_explosive, 0)
+		for z = 1, explosives_needed, 1 do
+			explosives_amount = explosives_amount - 1
+			damage_dealt = damage_dealt + damage_per_explosive
+			if explosives_amount < 1 then break end
+		end
+		--if damage_dealt > target_entity[1].health then damage_dealt = target_entity[1].health end
+		global.explosion_schedule[#global.explosion_schedule][current_radius][index].entity_to_damage = {target_entity[1], damage_dealt}							
+	else
+		local tile = surface.get_tile(pos)	
+		if tile.name == "out-of-map" then
+			local explosives_needed = out_of_map_tile_health / damage_per_explosive
+			if explosives_amount >= explosives_needed then
+				explosives_amount = explosives_amount - explosives_needed
+			end
+			if explosives_amount >= 0 then global.explosion_schedule[#global.explosion_schedule][current_radius][index].tile_to_convert = {tile, replacement_tile} end						
+		else
+			local explosives_needed = empty_tile_damage_absorption / damage_per_explosive					
+			explosives_amount = explosives_amount - explosives_needed							
+		end						
+		if explosives_amount < 1 then return end
+	end
+	
+	]]--	
 end
 
-local function on_tick(event)
-	if global.kaboom_schedule then		
-		if #global.kaboom_schedule == 0 then global.kaboom_schedule = nil return end
-		local tick = game.tick
-		for explosion_index = 1, #global.kaboom_schedule, 1 do	
-			if global.kaboom_schedule[explosion_index] then
-				local surface = global.kaboom_schedule[explosion_index].surface			
-				for radius = 1, #global.kaboom_schedule[explosion_index], 1 do
-					if global.kaboom_schedule[explosion_index][radius] then						
-						if global.kaboom_schedule[explosion_index][radius].trigger_tick == tick then	
-							for tile_index = 1, #global.kaboom_schedule[explosion_index][radius], 1 do							
-								surface.create_entity({name = global.kaboom_schedule[explosion_index][radius][tile_index].animation.name, position = global.kaboom_schedule[explosion_index][radius][tile_index].animation.position})
-							end							
-							if radius == #global.kaboom_schedule[explosion_index] then global.kaboom_schedule[explosion_index] = nil end
-							break
-						end						
-					end										
-				end				
-			end			
-		end		
-	end
-end
-
-function kaboom(entity)		
+local function create_explosion_schedule(entity)		
 	local i = entity.get_inventory(defines.inventory.chest)
 	local explosives_amount = i.get_item_count("explosives")
-	if explosives_amount < 1 then return end	
-	local current_radius = 0
+	if explosives_amount < 1 then return end		
 	local center_position = entity.position
-	local surface = entity.surface
 	
-	if not global.kaboom_schedule then global.kaboom_schedule = {} end
-	global.kaboom_schedule[#global.kaboom_schedule + 1] = {}
-	global.kaboom_schedule[#global.kaboom_schedule].surface = surface
-		
+	if not global.explosion_schedule then global.explosion_schedule = {} end
+	global.explosion_schedule[#global.explosion_schedule + 1] = {}
+	global.explosion_schedule[#global.explosion_schedule].surface = entity.surface.name
+	global.explosion_schedule[#global.explosion_schedule].damage_remaining = damage_per_explosive * explosives_amount
+	
 	for current_radius = 1, 23, 1 do
 		
-		global.kaboom_schedule[#global.kaboom_schedule][current_radius] = {}
-		global.kaboom_schedule[#global.kaboom_schedule][current_radius].trigger_tick = game.tick + (current_radius * 5)
+		global.explosion_schedule[#global.explosion_schedule][current_radius] = {}
+		global.explosion_schedule[#global.explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 5)
 		
 		local circle_coords = shuffle(circle_coordinates[current_radius])
 		
 		for index, tile_position in pairs(circle_coords) do												
-			local pos = {x = center_position.x + tile_position.x, y = center_position.y + tile_position.y} 
-			
-			global.kaboom_schedule[#global.kaboom_schedule][current_radius][index] = {}					
-			global.kaboom_schedule[#global.kaboom_schedule][current_radius][index].animation = {position = {x = pos.x, y = pos.y}, name = "big-artillery-explosion"}
-			
-			
-			local target_entity = surface.find_entities_filtered({position = pos, limit = 1})    ---- some might not have health
-			if target_entity[1] and target_entity[1].health then							
-				local damage_dealt = 0
-				local explosives_needed = math.ceil(target_entity[1].health / damage_per_explosive, 0)
-				for z = 1, explosives_needed, 1 do
-					explosives_amount = explosives_amount - 1
-					damage_dealt = damage_dealt + damage_per_explosive
-					if explosives_amount < 1 then break end
-				end
-				global.kaboom_schedule[#global.kaboom_schedule][current_radius][index].entity_to_damage = {target_entity[1], damage_dealt}							
-			else
-				local tile = surface.get_tile(pos)	
-				if tile.name == "out-of-map" then
-					local explosives_needed = math.ceil(out_of_map_tile_health / damage_per_explosive, 0)
-					if explosives_amount >= explosives_needed then
-						explosives_amount = explosives_amount - explosives_needed
-					end
-					if explosives_amount >= 0 then global.kaboom_schedule[#global.kaboom_schedule][current_radius][index].tile_to_convert = {tile, replacement_tile} end						
-				else
-					local explosives_needed = math.ceil(empty_tile_damage_absorption / damage_per_explosive, 0)						
-					explosives_amount = explosives_amount - explosives_needed							
-				end						
-				if explosives_amount < 1 then return end
-			end
-			
+			local pos = {x = center_position.x + tile_position.x, y = center_position.y + tile_position.y} 											
+			global.explosion_schedule[#global.explosion_schedule][current_radius][index] = {x = pos.x, y = pos.y}
 		end	
-	end	
+		
+	end
+	entity.die("player")
+end
+
+local function on_entity_damaged(event)	
+	if event.entity.type == "container" then
+		if math_random(1,1) == 1 then create_explosion_schedule(event.entity) end
+	end
+end
+
+local function on_tick(event)
+	if global.explosion_schedule then		
+		local tick = game.tick
+		local explosion_schedule_is_alive = false
+		for explosion_index = 1, #global.explosion_schedule, 1 do			
+			if #global.explosion_schedule[explosion_index] > 0 then
+				explosion_schedule_is_alive = true
+				local surface = game.surfaces[global.explosion_schedule[explosion_index].surface]
+				for radius = 1, #global.explosion_schedule[explosion_index], 1 do														
+					if global.explosion_schedule[explosion_index][radius].trigger_tick == tick then	
+						for tile_index = 1, #global.explosion_schedule[explosion_index][radius], 1 do							
+							local continue_explosion = process_explosion_tile(global.explosion_schedule[explosion_index][radius][tile_index], explosion_index)
+							if not continue_explosion then
+								global.explosion_schedule[explosion_index] = {}
+								break
+							end														
+						end							
+						if radius == #global.explosion_schedule[explosion_index] then global.explosion_schedule[explosion_index] = {} end
+						break
+					end																					
+				end				
+			end			
+		end
+		if not explosion_schedule_is_alive then global.explosion_schedule = nil end
+	end
 end
 
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
