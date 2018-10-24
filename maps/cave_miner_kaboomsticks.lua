@@ -5,9 +5,7 @@ local event = require 'utils.event'
 
 local damage_per_explosive = 100
 local empty_tile_damage_decay = 100
-local out_of_map_tile_health = 1000
-local math_random = math.random
-local math_sqrt = math.sqrt
+local out_of_map_tile_health = 1500
 
 local circle_coordinates = {
 	[1] = {{x = 0, y = 0}},
@@ -34,15 +32,6 @@ local circle_coordinates = {
 	[22] = {{x = -3, y = -21},{x = -4, y = -21},{x = -1, y = -21},{x = -2, y = -21},{x = 1, y = -21},{x = 0, y = -21},{x = 3, y = -21},{x = 2, y = -21},{x = 4, y = -21},{x = -10, y = -19},{x = -9, y = -19},{x = -8, y = -19},{x = -7, y = -20},{x = -5, y = -20},{x = -6, y = -20},{x = 5, y = -20},{x = 7, y = -20},{x = 6, y = -20},{x = 9, y = -19},{x = 8, y = -19},{x = 10, y = -19},{x = -13, y = -17},{x = -12, y = -17},{x = -11, y = -18},{x = -10, y = -18},{x = 11, y = -18},{x = 10, y = -18},{x = 13, y = -17},{x = 12, y = -17},{x = -15, y = -15},{x = -13, y = -16},{x = -14, y = -16},{x = 13, y = -16},{x = 15, y = -15},{x = 14, y = -16},{x = -17, y = -13},{x = -16, y = -14},{x = -16, y = -13},{x = 17, y = -13},{x = 16, y = -13},{x = 16, y = -14},{x = -17, y = -12},{x = -18, y = -11},{x = 17, y = -12},{x = 18, y = -11},{x = -19, y = -10},{x = -19, y = -9},{x = -18, y = -10},{x = 18, y = -10},{x = 19, y = -10},{x = 19, y = -9},{x = -19, y = -8},{x = -20, y = -7},{x = 19, y = -8},{x = 20, y = -7},{x = -20, y = -6},{x = -20, y = -5},{x = 20, y = -6},{x = 20, y = -5},{x = -21, y = -4},{x = -21, y = -3},{x = 21, y = -3},{x = 21, y = -4},{x = -21, y = -2},{x = -21, y = -1},{x = 21, y = -1},{x = 21, y = -2},{x = -21, y = 0},{x = -21, y = 1},{x = 21, y = 1},{x = 21, y = 0},{x = -21, y = 2},{x = -21, y = 3},{x = 21, y = 3},{x = 21, y = 2},{x = -21, y = 4},{x = -20, y = 5},{x = 20, y = 5},{x = 21, y = 4},{x = -20, y = 7},{x = -20, y = 6},{x = 20, y = 7},{x = 20, y = 6},{x = -19, y = 9},{x = -19, y = 8},{x = 19, y = 9},{x = 19, y = 8},{x = -19, y = 10},{x = -18, y = 11},{x = -18, y = 10},{x = 18, y = 11},{x = 18, y = 10},{x = 19, y = 10},{x = -17, y = 13},{x = -17, y = 12},{x = -16, y = 13},{x = 16, y = 13},{x = 17, y = 13},{x = 17, y = 12},{x = -16, y = 14},{x = -15, y = 15},{x = 15, y = 15},{x = 16, y = 14},{x = -14, y = 16},{x = -13, y = 16},{x = -13, y = 17},{x = -12, y = 17},{x = 13, y = 16},{x = 13, y = 17},{x = 12, y = 17},{x = 14, y = 16},{x = -11, y = 18},{x = -10, y = 18},{x = -10, y = 19},{x = -9, y = 19},{x = -8, y = 19},{x = 9, y = 19},{x = 8, y = 19},{x = 11, y = 18},{x = 10, y = 18},{x = 10, y = 19},{x = -7, y = 20},{x = -6, y = 20},{x = -5, y = 20},{x = -3, y = 21},{x = -4, y = 21},{x = -1, y = 21},{x = -2, y = 21},{x = 1, y = 21},{x = 0, y = 21},{x = 3, y = 21},{x = 2, y = 21},{x = 4, y = 21},{x = 5, y = 20},{x = 7, y = 20},{x = 6, y = 20}},
 	[23] = {{x = -8, y = -21},{x = -7, y = -21},{x = -6, y = -21},{x = -5, y = -21},{x = -3, y = -22},{x = -4, y = -22},{x = -1, y = -22},{x = -2, y = -22},{x = 1, y = -22},{x = 0, y = -22},{x = 3, y = -22},{x = 2, y = -22},{x = 5, y = -21},{x = 4, y = -22},{x = 7, y = -21},{x = 6, y = -21},{x = 8, y = -21},{x = -12, y = -19},{x = -11, y = -19},{x = -10, y = -20},{x = -9, y = -20},{x = -8, y = -20},{x = 9, y = -20},{x = 8, y = -20},{x = 11, y = -19},{x = 10, y = -20},{x = 12, y = -19},{x = -14, y = -17},{x = -13, y = -18},{x = -12, y = -18},{x = 13, y = -18},{x = 12, y = -18},{x = 14, y = -17},{x = -15, y = -16},{x = -16, y = -15},{x = 15, y = -16},{x = 16, y = -15},{x = -17, y = -14},{x = -18, y = -13},{x = 17, y = -14},{x = 18, y = -13},{x = -19, y = -12},{x = -19, y = -11},{x = -18, y = -12},{x = 18, y = -12},{x = 19, y = -12},{x = 19, y = -11},{x = -20, y = -10},{x = -20, y = -9},{x = 20, y = -10},{x = 20, y = -9},{x = -21, y = -8},{x = -21, y = -7},{x = -20, y = -8},{x = 20, y = -8},{x = 21, y = -8},{x = 21, y = -7},{x = -21, y = -6},{x = -21, y = -5},{x = 21, y = -6},{x = 21, y = -5},{x = -22, y = -4},{x = -22, y = -3},{x = 22, y = -3},{x = 22, y = -4},{x = -22, y = -2},{x = -22, y = -1},{x = 22, y = -1},{x = 22, y = -2},{x = -22, y = 0},{x = -22, y = 1},{x = 22, y = 1},{x = 22, y = 0},{x = -22, y = 2},{x = -22, y = 3},{x = 22, y = 3},{x = 22, y = 2},{x = -22, y = 4},{x = -21, y = 5},{x = 21, y = 5},{x = 22, y = 4},{x = -21, y = 7},{x = -21, y = 6},{x = 21, y = 7},{x = 21, y = 6},{x = -21, y = 8},{x = -20, y = 9},{x = -20, y = 8},{x = 20, y = 8},{x = 20, y = 9},{x = 21, y = 8},{x = -19, y = 11},{x = -20, y = 10},{x = 19, y = 11},{x = 20, y = 10},{x = -19, y = 12},{x = -18, y = 13},{x = -18, y = 12},{x = 18, y = 13},{x = 18, y = 12},{x = 19, y = 12},{x = -17, y = 14},{x = -16, y = 15},{x = 16, y = 15},{x = 17, y = 14},{x = -15, y = 16},{x = -14, y = 17},{x = 14, y = 17},{x = 15, y = 16},{x = -13, y = 18},{x = -12, y = 18},{x = -12, y = 19},{x = -11, y = 19},{x = 11, y = 19},{x = 13, y = 18},{x = 12, y = 18},{x = 12, y = 19},{x = -10, y = 20},{x = -9, y = 20},{x = -8, y = 20},{x = -8, y = 21},{x = -7, y = 21},{x = -6, y = 21},{x = -5, y = 21},{x = 5, y = 21},{x = 7, y = 21},{x = 6, y = 21},{x = 8, y = 20},{x = 9, y = 20},{x = 8, y = 21},{x = 10, y = 20},{x = -4, y = 22},{x = -3, y = 22},{x = -2, y = 22},{x = -1, y = 22},{x = 0, y = 22},{x = 1, y = 22},{x = 2, y = 22},{x = 3, y = 22},{x = 4, y = 22}}
 	}
-
-local function shuffle(tbl)
-	local size = #tbl
-		for i = size, 1, -1 do
-			local rand = math.random(size)
-			tbl[i], tbl[rand] = tbl[rand], tbl[i]
-		end
-	return tbl
-end		
 	
 local function process_explosion_tile(pos, explosion_index, current_radius)
 	local surface = game.surfaces[global.explosion_schedule[explosion_index].surface]					
@@ -95,8 +84,10 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 	return true		
 end
 
-local function create_explosion_schedule(entity)		
-	local i = entity.get_inventory(defines.inventory.chest)
+local function create_explosion_schedule(entity)
+	local inventory = defines.inventory.chest
+	if entity.name == "car" then inventory = defines.inventory.car_trunk end
+	local i = entity.get_inventory(inventory)
 	local explosives_amount = i.get_item_count("explosives")
 	if explosives_amount < 1 then return end		
 	local center_position = entity.position
@@ -111,7 +102,7 @@ local function create_explosion_schedule(entity)
 		global.explosion_schedule[#global.explosion_schedule][current_radius] = {}
 		global.explosion_schedule[#global.explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
 		
-		local circle_coords = shuffle(circle_coordinates[current_radius])
+		local circle_coords = circle_coordinates[current_radius]
 		
 		for index, tile_position in pairs(circle_coords) do												
 			local pos = {x = center_position.x + tile_position.x, y = center_position.y + tile_position.y} 											
@@ -123,8 +114,8 @@ local function create_explosion_schedule(entity)
 end
 
 local function on_entity_damaged(event)	
-	if event.entity.type == "container" then
-		if math_random(1,1) == 1 then create_explosion_schedule(event.entity) end
+	if event.entity.type == "container" or event.entity.type == "logistic-container" or event.entity.type == "cargo-wagon" or event.entity.name == "car" then
+		if math.random(1,3) == 1 or event.entity.health <= 0 then create_explosion_schedule(event.entity) end
 	end
 end
 
