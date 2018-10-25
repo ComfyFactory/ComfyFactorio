@@ -323,37 +323,79 @@ local score_table = {
 	["player"] = 1000
 }
 
-local function on_entity_died(event)	
-	if not event.cause then return end
+local function on_entity_died(event)
 	local player = false
 	local passenger = false
 	local train_passengers = false
-	if event.cause.name == "player" then player = event.cause.player end	
-	if event.cause.type == "car" then
-		player = event.cause.get_driver()
-		passenger = event.cause.get_passenger()
-		if player then player = player.player end
-		if passenger then passenger = passenger.player end
-	end
-	if event.cause.type == "locomotive" then
-		train_passengers = event.cause.train.passengers
-	end
-	if not train_passengers and not passenger and not player then return end
-	if event.cause.force.name == event.entity.force.name then return end
-	init_player_table(player)
-	
-	if score_table[event.entity.name] then		
-		
-		local show_floating_text = false
-		if player then
-			if global.show_floating_killscore[player.name] == true then show_floating_text = true end
-			if not global.score[event.force.name].players[player.name].killscore then
-				global.score[event.force.name].players[player.name].killscore = score_table[event.entity.name]
-			else
-				global.score[event.force.name].players[player.name].killscore = global.score[event.force.name].players[player.name].killscore + score_table[event.entity.name]
+	local proximity_list = {}
+
+	-- Handles worm kills with no cause
+	if event.entity.type == "turret" and string.find(event.entity.name, "worm") then
+		local radius = 24
+		local position = event.entity.position
+		local insert = table.insert
+		--Since we cannot reliably get the player who killed the worm, get all players in a radius and award them xp
+		for _, p in pairs(game.connected_players) do
+			if p.position.x < position.x + radius and p.position.x > position.x - radius and p.position.y < position.y + radius and p.position.y > position.y - radius then
+				insert(proximity_list, {player = p})
 			end
 		end
+	end
+	
+	-- Unit/Spawner Kills
+	if event.entity.type == "unit" or  event.entity.type == "unit-spawner" then
+		if event.cause.name then player = event.cause.player end
+		--Check for passengers
+		if event.cause.type == "car" then
+			player = event.cause.get_driver()
+			passenger = event.cause.get_passenger()
+			if player then player = player.player end
+			if passenger then passenger = passenger.player end
+		end
+		if event.cause.type == "locomotive" then
+		player = event.cause.get_driver()
+		train_passengers = event.cause.train.passengers
+		end
+		if not train_passengers and not passenger and not player then return end
+		if event.cause.force.name == event.entity.force.name then return end
+		if not global.score[event.force.name] then global.score[event.force.name] = {} end
+		if not global.score[event.force.name].players then global.score[event.force.name].players = {} end
+		if not global.score[event.force.name].players then global.score[event.force.name].players[player.name] = {} end
+	end
+
+	if score_table[event.entity.name] then
+		if not global.score[event.force.name].kills then
+			global.score[event.force.name].kills = 1
+		else
+			global.score[event.force.name].kills = global.score[event.force.name].kills + 1
+		end		
 		
+		local show_floating_text = false
+		
+		--Award all players near a worm score
+		 if #proximity_list > 0 then
+			for i=1, #proximity_list, 1 do
+				player = proximity_list[i].player
+				if player then
+					if global.show_floating_killscore[player.name] == true then show_floating_text = true end
+					if not global.score[event.force.name].players[player.name].killscore then
+						global.score[event.force.name].players[player.name].killscore = score_table[event.entity.name]
+					else
+						global.score[event.force.name].players[player.name].killscore = global.score[event.force.name].players[player.name].killscore + score_table[event.entity.name]
+					end
+				end
+			end
+		else
+			if player then
+				if global.show_floating_killscore[player.name] == true then show_floating_text = true end
+				if not global.score[event.force.name].players[player.name].killscore then
+					global.score[event.force.name].players[player.name].killscore = score_table[event.entity.name]
+				else
+					global.score[event.force.name].players[player.name].killscore = global.score[event.force.name].players[player.name].killscore + score_table[event.entity.name]
+				end
+			end
+		end
+			
 		if passenger then
 			if not global.score[event.force.name].players[passenger.name].killscore then
 				global.score[event.force.name].players[passenger.name].killscore = score_table[event.entity.name]
@@ -376,7 +418,7 @@ local function on_entity_died(event)
 		if show_floating_text == true then
 			event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = tostring(score_table[event.entity.name]), color = {r=0.98, g=0.66, b=0.22}})
 		end
-	end	
+	end
 end
 
 local function on_player_died(event)
