@@ -43,6 +43,15 @@ local function get_sorted_list(method, column_name, score_list)
 	return score_list
 end
 
+local biters = {"small-biter", "medium-biter", "big-biter", "behemoth-biter", "small-spitter", "medium-spitter", "big-spitter", "behemoth-spitter"}
+local function get_total_biter_killcount(force)
+	local count = 0
+	for _, biter in pairs(biters) do
+		count = count + force.kill_count_statistics.get_input_count(biter)
+	end
+	return count
+end
+
 local function show_score(player)
 	if player.gui.left["score_panel"] then player.gui.left["score_panel"].destroy() end
 	local score = global.score[player.force.name]
@@ -68,9 +77,7 @@ local function show_score(player)
 	l.style.font_color = { r=0.90, g=0.3, b=0.3}
 	l.style.minimal_width = 100
 	
-	local str = "0"
-	if score.kills then str = tostring(score.kills) end
-	local l = t.add { type = "label", caption = str}
+	local l = t.add { type = "label", caption = tostring(get_total_biter_killcount(player.force))}
 	l.style.font = "default-frame"
 	l.style.font_color = { r=0.9, g=0.9, b=0.9}
 	l.style.minimal_width = 145
@@ -180,7 +187,7 @@ local function refresh_score()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["score_panel"] then
 			if global.score[player.force.name].rocket_launches then player.gui.left["score_panel"].children[1].children[2].caption = global.score[player.force.name].rocket_launches end
-			if global.score[player.force.name].kills then player.gui.left["score_panel"].children[1].children[4].caption = global.score[player.force.name].kills end			
+			player.gui.left["score_panel"].children[1].children[4].caption = get_total_biter_killcount(player.force)
 			local score = global.score[player.force.name]
 			local score_list = {}
 			for _, p in pairs(game.connected_players) do
@@ -333,13 +340,7 @@ local function on_entity_died(event)
 	if not global.score[event.force.name].players then global.score[event.force.name].players = {} end
 	if not global.score[event.force.name].players then global.score[event.force.name].players[player.name] = {} end
 	
-	if score_table[event.entity.name] then
-		
-		if not global.score[event.force.name].kills then
-			global.score[event.force.name].kills = 1
-		else
-			global.score[event.force.name].kills = global.score[event.force.name].kills + 1
-		end		
+	if score_table[event.entity.name] then		
 		
 		local show_floating_text = false
 		if player then

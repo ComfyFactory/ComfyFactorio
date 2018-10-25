@@ -1,3 +1,8 @@
+0.17
+explosives are now a new game mechanic
+loot rebalances
+ore yield balance
+
 0.16
 oil should no longer clutter
 increased rock destruction performance (maybe)

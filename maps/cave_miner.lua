@@ -121,7 +121,7 @@ local function create_cave_miner_info(player)
 	local l = tt.add {type = "label", caption = " *diggy diggy hole* "}
 	l.style.font = "default"
 	l.style.font_color = {r=0.99, g=0.99, b=0.2}
-	l.style.minimal_width = 320	
+	l.style.minimal_width = 340	
 	
 	local b = tt.add {type = "button", caption = "X", name = "close_cave_miner_info", align = "right"}	
 	b.style.font = "default"
@@ -1248,7 +1248,7 @@ local function on_entity_damaged(event)
 			event.entity.destroy()			
 			game.surfaces[1].spill_item_stack(p,{name = "stone", count = drop_amount},true)
 			
-			local drop_amount_ore = math.random(24, 32)
+			local drop_amount_ore = math.random(16, 32)
 			local ore = global.rock_mining_raffle_table[math.random(1, #global.rock_mining_raffle_table)]
 			game.surfaces[1].spill_item_stack(p,{name = ore, count = drop_amount_ore},true)
 			
