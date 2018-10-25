@@ -224,12 +224,16 @@ local function refresh_score()
 	end
 end
 
+local function init_player_table(player)
+	if not global.score[player.force.name] then global.score[player.force.name] = {} end
+	if not global.score[player.force.name].players then global.score[player.force.name].players = {} end
+	if not global.score[player.force.name].players[player.name] then global.score[player.force.name].players[player.name] = {} end
+end
+
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.score then global.score = {} end
-	if not global.score[player.force.name] then global.score[player.force.name] = {} end
-	if not global.score[player.force.name].players then global.score[player.force.name].players = {} end	
-	if not global.score[player.force.name].players[player.name] then global.score[player.force.name].players[player.name] = {} end	
+	init_player_table(player)	
 	if not global.score_sort_by then global.score_sort_by = {} end
 	if not global.score_sort_by[player.name] then
 		global.score_sort_by[player.name] = {method = "descending", column = "killscore"}
@@ -336,9 +340,7 @@ local function on_entity_died(event)
 	end
 	if not train_passengers and not passenger and not player then return end
 	if event.cause.force.name == event.entity.force.name then return end
-	if not global.score[event.force.name] then global.score[event.force.name] = {} end
-	if not global.score[event.force.name].players then global.score[event.force.name].players = {} end
-	if not global.score[event.force.name].players then global.score[event.force.name].players[player.name] = {} end
+	init_player_table(player)
 	
 	if score_table[event.entity.name] then		
 		
@@ -379,9 +381,7 @@ end
 
 local function on_player_died(event)
 	local player = game.players[event.player_index]
-	if not global.score[player.force.name] then global.score[player.force.name] = {} end
-	if not global.score[player.force.name].players then global.score[player.force.name].players = {} end
-	if not global.score[player.force.name].players then global.score[player.force.name].players[player.name] = {} end
+	init_player_table(player)
 	if not global.score[player.force.name].players[player.name].deaths then
 		global.score[player.force.name].players[player.name].deaths = 1
 	else
@@ -391,9 +391,7 @@ end
 
 local function on_player_mined_entity(event)
 	local player = game.players[event.player_index]
-	if not global.score[player.force.name] then global.score[player.force.name] = {} end
-	if not global.score[player.force.name].players then global.score[player.force.name].players = {} end
-	if not global.score[player.force.name].players then global.score[player.force.name].players[player.name] = {} end
+	init_player_table(player)
 	if not global.score[player.force.name].players[player.name].mined_entities then
 		global.score[player.force.name].players[player.name].mined_entities = 1
 	else
@@ -403,9 +401,7 @@ end
 
 local function on_built_entity(event)	
 	local player = game.players[event.player_index]
-	if not global.score[player.force.name] then global.score[player.force.name] = {} end
-	if not global.score[player.force.name].players then global.score[player.force.name].players = {} end
-	if not global.score[player.force.name].players then global.score[player.force.name].players[player.name] = {} end
+	init_player_table(player)
 	if not global.score[player.force.name].players[player.name].built_entities then
 		global.score[player.force.name].players[player.name].built_entities = 1
 	else
