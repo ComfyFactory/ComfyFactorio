@@ -17,7 +17,7 @@ local function on_marked_for_deconstruction(event)
 			playtime = player.online_time + global.player_totals[player.name][1]
 		end
 	end 
-	if playtime < 1296000 then
+	if playtime < 2592000 then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
 		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
 	end
