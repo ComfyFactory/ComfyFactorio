@@ -86,7 +86,7 @@ end
 
 local function create_explosion_schedule(entity)
 	local inventory = defines.inventory.chest
-	if entity.name == "car" then inventory = defines.inventory.car_trunk end
+	if entity.type == "car" then inventory = defines.inventory.car_trunk end
 	local i = entity.get_inventory(inventory)
 	local explosives_amount = i.get_item_count("explosives")
 	if explosives_amount < 1 then return end		
@@ -113,9 +113,14 @@ local function create_explosion_schedule(entity)
 	entity.die("player")
 end
 
-local function on_entity_damaged(event)	
-	if event.entity.type == "container" or event.entity.type == "logistic-container" or event.entity.type == "cargo-wagon" or event.entity.name == "car" then
-		if math.random(1,3) == 1 or event.entity.health <= 0 then create_explosion_schedule(event.entity) end
+local function on_entity_damaged(event)
+	local entity = event.entity
+	if entity.type == "container" or entity.type == "logistic-container" then
+		if math.random(1,3) == 1 or entity.health <= 0 then create_explosion_schedule(event.entity) return end
+	end
+	if entity.type == "cargo-wagon" or entity.type == "car" then
+		if entity.health <= 0 then create_explosion_schedule(entity) return end
+		if entity.health < 150 and math.random(1,3) == 1 then create_explosion_schedule(entity) return end
 	end
 end
 

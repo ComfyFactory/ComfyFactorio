@@ -1,3 +1,6 @@
+0.18
+cargo wagons, tanks and cars can now only detonate with less than 150 health
+
 0.17
 explosives are now a new game mechanic
 loot rebalances

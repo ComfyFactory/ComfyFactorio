@@ -8,7 +8,7 @@ simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
 local unique_rooms = require "maps.labyrinth_unique_rooms"
 
-local labyrinth_difficulty_curve = 500  --- How much size the labyrinth needs to have the highest difficulty.
+local labyrinth_difficulty_curve = 400  --- How much size the labyrinth needs to have the highest difficulty.
 
 local function create_labyrinth_difficulty_gui(player)		
 	if player.gui.top["labyrinth_difficulty"] then player.gui.top["labyrinth_difficulty"].destroy() end
@@ -898,7 +898,8 @@ local function on_player_joined_game(event)
 		player.insert {name = 'iron-axe', count = 1}		
 		player.insert {name = 'pistol', count = 1}
 		player.insert {name = 'firearm-magazine', count = 32}
-	end	
+	end
+	create_labyrinth_difficulty_gui(player)
 end
 
 local inserters = {"inserter", "long-handed-inserter", "burner-inserter", "fast-inserter", "filter-inserter", "stack-filter-inserter", "stack-inserter"}
