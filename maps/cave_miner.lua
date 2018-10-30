@@ -1313,8 +1313,10 @@ local bank_messages = {
 	"Hungry? Take a look at our credit offers! No questions asked.",
 	"Fishbank. The only choice.",
 	"Smart miners use Fishbank!",
-	"Your wealth is save with Fishbank!",
-	"Fishbank, because inventory space matters!"
+	"Your wealth is safe with Fishbank!",
+	"Fishbank, because inventory space matters!",
+	"Have you heard of our Caviar Card? Don't ask, we will ask you..",
+	"9 out of 10 felines only trust in Fishbank."
 	}
 	
 local function on_market_item_purchased(event)	
@@ -1332,8 +1334,9 @@ local function on_market_item_purchased(event)
 		local fish_removed = player.remove_item({name = "raw-fish", count = 999999})
 		if fish_removed == 0 then return end
 		global.fish_bank[player.name] = global.fish_bank[player.name] + fish_removed				
-		player.print(fish_removed .. " Fish deposited into your account. Your balance is " .. global.fish_bank[player.name] .. ".", { r=0.10, g=0.75, b=0.5})
+		player.print(fish_removed .. " Fish deposited into your account. Your balance is " .. global.fish_bank[player.name] .. ".", {r=0.10, g=0.75, b=0.5})
 		player.print(bank_messages[math.random(1,#bank_messages)], { r=0.77, g=0.77, b=0.77})
+		player.surface.create_entity({name = "flying-text", position = player.position, text = tostring(fish_removed .. " Fish deposited"), color = {r=0.10, g=0.75, b=0.5}})
 	end
 	
 	if offer_index == 2 then				
@@ -1351,6 +1354,7 @@ local function on_market_item_purchased(event)
 		global.fish_bank[player.name] = global.fish_bank[player.name] - (fish_withdrawn + fee)
 		player.print(fish_withdrawn .. " Fish withdrawn from your account. Your balance is " .. global.fish_bank[player.name] .. ".", { r=0.10, g=0.75, b=0.5})
 		player.print(bank_messages[math.random(1,#bank_messages)], { r=0.77, g=0.77, b=0.77})
+		player.surface.create_entity({name = "flying-text", position = player.position, text = tostring(fish_withdrawn .. " Fish withdrawn"), color = {r=0.10, g=0.75, b=0.5}})
 	end	
 	
 	if offer_index == 3 then						
