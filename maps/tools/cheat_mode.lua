@@ -12,11 +12,11 @@ function cheat_mode()
 	game.players[1].insert({name="express-loader"})
 	game.players[1].insert({name="infinity-chest"})
 	game.players[1].insert({name="computer", count=2})
-	game.players[1].insert({name="raw-fish", count=100})
+	game.players[1].insert({name="raw-fish", count=2000})
 	game.players[1].insert({name="submachine-gun", count=1})
 	game.players[1].insert({name="uranium-rounds-magazine", count=200})
 	game.players[1].insert({name="steel-chest", count=200})
-	game.players[1].insert({name="explosives", count=2000})
+	game.players[1].insert({name="explosives", count=1000})
 	game.forces.player.manual_mining_speed_modifier = 100
 	game.forces.player.character_reach_distance_bonus = 10000
 	game.speed = 1
