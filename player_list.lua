@@ -408,7 +408,7 @@ local function on_gui_click(event)
 		end
 	end
 	
-	--Poke other players				 
+	--Poke other players
 	if string.sub(event.element.name, 1, 11) == "poke_player" then
 		local poked_player = string.sub(event.element.name, 13, string.len(event.element.name))
 		if player.name == poked_player then return end

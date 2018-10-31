@@ -330,7 +330,7 @@ local function on_entity_died(event)
 	local proximity_list = {}
 
 	-- Handles worm kills with no cause
-	if event.entity.type == "turret" and string.find(event.entity.name, "worm") then
+	if event.entity.type == "turret" then           --------------
 		local radius = 24
 		local position = event.entity.position
 		local insert = table.insert
@@ -344,23 +344,29 @@ local function on_entity_died(event)
 	
 	-- Unit/Spawner Kills
 	if event.entity.type == "unit" or  event.entity.type == "unit-spawner" then
-		if event.cause.name then player = event.cause.player end
-		--Check for passengers
-		if event.cause.type == "car" then
+		if event.cause then
+		
+			if event.cause.name == "player" then player = event.cause.player end
+		
+			--Check for passengers
+			if event.cause.type == "car" then
+				player = event.cause.get_driver()
+				passenger = event.cause.get_passenger()
+				if player then player = player.player end
+				if passenger then passenger = passenger.player end
+			end
+			if event.cause.type == "locomotive" then
 			player = event.cause.get_driver()
-			passenger = event.cause.get_passenger()
-			if player then player = player.player end
-			if passenger then passenger = passenger.player end
+			train_passengers = event.cause.train.passengers
+			end
+			
+			if not train_passengers and not passenger and not player then return end
+			if event.cause.force.name == event.entity.force.name then return end
+			init_player_table(player)
+			if not global.score[event.force.name] then global.score[event.force.name] = {} end
+			if not global.score[event.force.name].players then global.score[event.force.name].players = {} end
+			if not global.score[event.force.name].players then global.score[event.force.name].players[player.name] = {} end
 		end
-		if event.cause.type == "locomotive" then
-		player = event.cause.get_driver()
-		train_passengers = event.cause.train.passengers
-		end
-		if not train_passengers and not passenger and not player then return end
-		if event.cause.force.name == event.entity.force.name then return end
-		if not global.score[event.force.name] then global.score[event.force.name] = {} end
-		if not global.score[event.force.name].players then global.score[event.force.name].players = {} end
-		if not global.score[event.force.name].players then global.score[event.force.name].players[player.name] = {} end
 	end
 
 	if score_table[event.entity.name] then

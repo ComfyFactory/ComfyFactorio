@@ -95,6 +95,14 @@ for x = 111, 200, 1 do
 	y = y + 1
 end
 
+local function shuffle(tbl)
+	local size = #tbl
+		for i = size, 1, -1 do
+			local rand = math.random(size)
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	return tbl
+end
 		
 local function create_cave_miner_button(player)		
 	if player.gui.top["caver_miner_stats_toggle_button"] then player.gui.top["caver_miner_stats_toggle_button"].destroy() end	
@@ -466,6 +474,8 @@ local function secret_shop(pos)
 	{price = {{"raw-fish", math.random(200,350)}}, offer = {type = 'give-item', item = 'fast-loader'}},
 	{price = {{"raw-fish", math.random(400,600)}}, offer = {type = 'give-item', item = 'express-loader'}}
 	}
+	secret_market_items = shuffle(secret_market_items)
+	
 	local surface = game.surfaces[1]										
 	local market = surface.create_entity {name = "market", position = pos}
 	market.destructible = false	
@@ -473,14 +483,8 @@ local function secret_shop(pos)
 	market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Withdraw Fish - 2% Bank Fee'}})
 	market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Show Account Balance'}})	
 	
-	local market_items_to_add = math.random(8,12)
-	while market_items_to_add >= 0 do		
-		local i = math.random(1,#secret_market_items)
-		if secret_market_items[i] then
-			market.add_market_item(secret_market_items[i])
-			market_items_to_add = market_items_to_add - 1
-			secret_market_items[i] = nil
-		end
+	for i = 1, math.random(8,12), 1 do
+		market.add_market_item(secret_market_items[i])
 	end
 end
 

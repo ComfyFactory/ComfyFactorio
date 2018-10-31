@@ -54,7 +54,7 @@ local rewards_loot = {
 
 local function create_reward_button(player)		
 	if not player.gui.top.rewards then
-		local button = player.gui.top.add({ type = "sprite-button", name = "rewards", sprite = "item/submachine-gun" })
+		local b = player.gui.top.add({ type = "sprite-button", name = "rewards", sprite = "item/submachine-gun" })
 		b.style.minimal_height = 38
 		b.style.minimal_width = 38
 		b.style.top_padding = 2
@@ -177,6 +177,7 @@ local function reward_messages(data)
 end
 
 local function kill_rewards(event)
+	if not event.cause then return end
 	local player = event.cause.player
 	local pinsert = player.insert
 	local score = global.score[player.force.name]
