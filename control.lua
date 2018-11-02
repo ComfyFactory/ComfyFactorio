@@ -8,16 +8,16 @@ require "player_list"
 require "poll"
 require "score"
 
-require "maps.tools.cheat_mode"
+--require "maps.tools.cheat_mode"
 
 ---- enable maps here ----
 --require "maps.biter_battles"
---require "maps.cave_miner"
+require "maps.cave_miner"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
-require "maps.spiral_troopers"
+--require "maps.spiral_troopers"
 --require "maps.empty_map"
 -----------------------------
 

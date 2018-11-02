@@ -1104,8 +1104,17 @@ local function on_tick(event)
 	end						
 end
 
-local function on_marked_for_deconstruction(event)
-	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then
+local disabled_for_deconstruction = {
+		["fish"] = true,
+		["rock-huge"] = true,
+		["rock-big"] = true,
+		["sand-rock-big"] = true,
+		["tree-02"] = true,
+		["tree-04"] = true
+	}
+	
+local function on_marked_for_deconstruction(event)	
+	if disabled_for_deconstruction[event.entity.name] then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 	end
 end

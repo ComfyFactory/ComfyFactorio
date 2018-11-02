@@ -3,7 +3,7 @@
 local event = require 'utils.event'
 require "maps.tools.map_pregen"
 local map_functions = require "maps.tools.map_functions"
-require "rewards"
+--require "rewards"
 
 local function shuffle(tbl)
 	local size = #tbl

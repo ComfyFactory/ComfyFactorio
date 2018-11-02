@@ -1,3 +1,7 @@
+0.19
+markets are now also fish bank terminals
+fish can not be deconstructed anymore
+
 0.18
 cargo wagons, tanks and cars can now only detonate with less than 150 health
 
