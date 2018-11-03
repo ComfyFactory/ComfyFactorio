@@ -68,6 +68,34 @@ local function on_player_built_tile(event)
 	end	
 end
 
+local function on_built_entity(event)
+	if event.created_entity.type == "entity-ghost" then
+		local player = game.players[event.player_index]
+		
+		if player.admin == true then return end
+		
+		local playtime = player.online_time
+		if global.player_totals then
+			if global.player_totals[player.name] then
+				playtime = player.online_time + global.player_totals[player.name][1]
+			end
+		end
+		
+		if playtime < 1296000 then
+			event.created_entity.destroy()
+			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
+			if global.score then
+				if global.score[player.force.name] then
+					if global.score[player.force.name].players[player.name] then
+						global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+					end
+				end
+			end
+		end		
+	end
+end
+
+event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_console_command, on_console_command)
 event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
