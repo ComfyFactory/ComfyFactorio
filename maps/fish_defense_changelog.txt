@@ -1,2 +1,9 @@
+0.02
+biters sometimes drop loot
+biter waves are slower but bigger
+added teleporters as loot
+removed trees and cliffs on the biter side
+biter wave changes
+
 0.01
 blubby blubby fish

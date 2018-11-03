@@ -3,26 +3,237 @@
 local event = require 'utils.event'
 require "maps.fish_defense_map_intro"
 require "maps.fish_defense_kaboomsticks"
+require "maps.tools.teleporters"
 local math_random = math.random
 local insert = table.insert
+
+local function shuffle(tbl)
+	local size = #tbl
+		for i = size, 1, -1 do
+			local rand = math.random(size)
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	return tbl
+end
+
+local function spill_loot(position)
+	local chest_raffle = {}
+	local chest_loot = {					
+		{{name = "slowdown-capsule", count = math_random(4,8)}, weight = 1, evolution_min = 0.3, evolution_max = 0.7},
+		{{name = "poison-capsule", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
+		{{name = "uranium-cannon-shell", count = math_random(8,16)}, weight = 5, evolution_min = 0.6, evolution_max = 1},
+		{{name = "cannon-shell", count = math_random(8,16)}, weight = 5, evolution_min = 0.4, evolution_max = 0.7},
+		{{name = "explosive-uranium-cannon-shell", count = math_random(8,16)}, weight = 5, evolution_min = 0.6, evolution_max = 1},
+		{{name = "explosive-cannon-shell", count = math_random(8,16)}, weight = 5, evolution_min = 0.4, evolution_max = 0.8},
+		{{name = "shotgun", count = 1}, weight = 2, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "shotgun-shell", count = math_random(16,32)}, weight = 5, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "combat-shotgun", count = 1}, weight = 3, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "piercing-shotgun-shell", count = math_random(16,32)}, weight = 10, evolution_min = 0.2, evolution_max = 1},
+		{{name = "flamethrower", count = 1}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
+		{{name = "flamethrower-ammo", count = math_random(8,16)}, weight = 5, evolution_min = 0.3, evolution_max = 1},
+		{{name = "rocket-launcher", count = 1}, weight = 3, evolution_min = 0.2, evolution_max = 0.6},
+		{{name = "rocket", count = math_random(8,16)}, weight = 5, evolution_min = 0.2, evolution_max = 0.7},		
+		{{name = "explosive-rocket", count = math_random(8,16)}, weight = 5, evolution_min = 0.3, evolution_max = 1},
+		{{name = "land-mine", count = math_random(8,16)}, weight = 5, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "grenade", count = math_random(8,16)}, weight = 5, evolution_min = 0.0, evolution_max = 0.5},
+		{{name = "cluster-grenade", count = math_random(8,16)}, weight = 5, evolution_min = 0.4, evolution_max = 1},
+		{{name = "firearm-magazine", count = math_random(16,48)}, weight = 5, evolution_min = 0, evolution_max = 0.3},
+		{{name = "piercing-rounds-magazine", count = math_random(16,48)}, weight = 5, evolution_min = 0.1, evolution_max = 0.8},
+		{{name = "uranium-rounds-magazine", count = math_random(16,48)}, weight = 5, evolution_min = 0.5, evolution_max = 1},
+		{{name = "railgun", count = 1}, weight = 1, evolution_min = 0.2, evolution_max = 1},
+		{{name = "railgun-dart", count = math_random(16,32)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "defender-capsule", count = math_random(8,16)}, weight = 2, evolution_min = 0.0, evolution_max = 0.7},
+		{{name = "distractor-capsule", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 1},
+		{{name = "destroyer-capsule", count = math_random(8,16)}, weight = 2, evolution_min = 0.3, evolution_max = 1},
+		{{name = "atomic-bomb", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},		
+		{{name = "light-armor", count = 1}, weight = 3, evolution_min = 0, evolution_max = 0.1},		
+		{{name = "heavy-armor", count = 1}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
+		{{name = "modular-armor", count = 1}, weight = 2, evolution_min = 0.2, evolution_max = 0.6},
+		{{name = "power-armor", count = 1}, weight = 2, evolution_min = 0.4, evolution_max = 1},
+		--{{name = "power-armor-mk2", count = 1}, weight = 1, evolution_min = 0.9, evolution_max = 1},
+		{{name = "battery-equipment", count = 1}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},
+		{{name = "battery-mk2-equipment", count = 1}, weight = 2, evolution_min = 0.6, evolution_max = 1},
+		{{name = "belt-immunity-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},
+		{{name = "solar-panel-equipment", count = math_random(1,4)}, weight = 5, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "discharge-defense-equipment", count = 1}, weight = 1, evolution_min = 0.5, evolution_max = 0.8},
+		{{name = "energy-shield-equipment", count = math_random(1,2)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "energy-shield-mk2-equipment", count = 1}, weight = 2, evolution_min = 0.7, evolution_max = 1},
+		{{name = "exoskeleton-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},
+		{{name = "fusion-reactor-equipment", count = 1}, weight = 1, evolution_min = 0.5, evolution_max = 1},
+		{{name = "night-vision-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "personal-laser-defense-equipment", count = 1}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		{{name = "exoskeleton-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},
+								
+		{{name = "iron-gear-wheel", count = math_random(50,75)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "copper-cable", count = math_random(50,100)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.1, evolution_max = 0.5},
+		{{name = "electric-engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.4, evolution_max = 0.8},
+		{{name = "battery", count = math_random(50,75)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "advanced-circuit", count = math_random(50,75)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
+		{{name = "electronic-circuit", count = math_random(50,75)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
+		{{name = "processing-unit", count = math_random(50,75)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
+		{{name = "explosives", count = math_random(40,50)}, weight = 10, evolution_min = 0.0, evolution_max = 1},
+		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evolution_min = 0.3, evolution_max = 0.5},
+		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},
+		{{name = "computer", count = 2}, weight = 1, evolution_min = 0, evolution_max = 1},
+		{{name = "steel-plate", count = math_random(25,75)}, weight = 2, evolution_min = 0.1, evolution_max = 0.3},
+		{{name = "nuclear-fuel", count = 1}, weight = 2, evolution_min = 0.7, evolution_max = 1},
+				
+		{{name = "burner-inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
+		{{name = "inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
+		{{name = "long-handed-inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},		
+		{{name = "fast-inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.1, evolution_max = 1},
+		{{name = "filter-inserter", count = math_random(8,16)}, weight = 1, evolution_min = 0.2, evolution_max = 1},		
+		{{name = "stack-filter-inserter", count = math_random(4,8)}, weight = 1, evolution_min = 0.4, evolution_max = 1},
+		{{name = "stack-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},				
+		{{name = "small-electric-pole", count = math_random(16,24)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "medium-electric-pole", count = math_random(8,16)}, weight = 3, evolution_min = 0.2, evolution_max = 1},
+		{{name = "big-electric-pole", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
+		{{name = "substation", count = math_random(2,4)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "wooden-chest", count = math_random(16,24)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "iron-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.1, evolution_max = 0.4},
+		{{name = "steel-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
+		{{name = "small-lamp", count = math_random(16,32)}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
+		{{name = "rail", count = math_random(25,50)}, weight = 3, evolution_min = 0.1, evolution_max = 0.6},
+		{{name = "assembling-machine-1", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "assembling-machine-2", count = math_random(2,4)}, weight = 3, evolution_min = 0.2, evolution_max = 0.8},
+		{{name = "assembling-machine-3", count = math_random(1,2)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "accumulator", count = math_random(4,8)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
+		{{name = "offshore-pump", count = math_random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1},
+		{{name = "beacon", count = math_random(1,2)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
+		{{name = "boiler", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "steam-engine", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.5},
+		{{name = "steam-turbine", count = math_random(1,2)}, weight = 2, evolution_min = 0.6, evolution_max = 1},
+		--{{name = "nuclear-reactor", count = 1}, weight = 1, evolution_min = 0.6, evolution_max = 1},
+		{{name = "centrifuge", count = math_random(1,2)}, weight = 1, evolution_min = 0.6, evolution_max = 1},
+		{{name = "heat-pipe", count = math_random(4,8)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		{{name = "heat-exchanger", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		{{name = "arithmetic-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "constant-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "decider-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "power-switch", count = math_random(1,2)}, weight = 1, evolution_min = 0.1, evolution_max = 1},		
+		{{name = "programmable-speaker", count = math_random(4,8)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "green-wire", count = math_random(25,55)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "red-wire", count = math_random(25,55)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "chemical-plant", count = math_random(1,3)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
+		{{name = "burner-mining-drill", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "electric-mining-drill", count = math_random(2,4)}, weight = 3, evolution_min = 0.2, evolution_max = 0.6},		
+		{{name = "express-transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "express-underground-belt", count = math_random(4,8)}, weight = 3, evolution_min = 0.5, evolution_max = 1},		
+		{{name = "express-splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "fast-transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "fast-underground-belt", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "fast-splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0.2, evolution_max = 0.3},
+		{{name = "transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0, evolution_max = 0.3},
+		{{name = "underground-belt", count = math_random(4,8)}, weight = 3, evolution_min = 0, evolution_max = 0.3},
+		{{name = "splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0, evolution_max = 0.3},		
+		--{{name = "oil-refinery", count = math_random(2,4)}, weight = 2, evolution_min = 0.3, evolution_max = 1},
+		{{name = "pipe", count = math_random(30,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "pipe-to-ground", count = math_random(4,8)}, weight = 1, evolution_min = 0.2, evolution_max = 0.5},
+		{{name = "pumpjack", count = math_random(1,3)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "pump", count = math_random(1,2)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "solar-panel", count = math_random(2,4)}, weight = 3, evolution_min = 0.4, evolution_max = 0.9},
+		{{name = "electric-furnace", count = math_random(2,4)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "steel-furnace", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "stone-furnace", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
+		{{name = "radar", count = math_random(1,2)}, weight = 1, evolution_min = 0.1, evolution_max = 0.3},
+		{{name = "rail-signal", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},
+		{{name = "rail-chain-signal", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},		
+		{{name = "stone-wall", count = math_random(25,75)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
+		{{name = "gate", count = math_random(4,8)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
+		{{name = "storage-tank", count = math_random(1,4)}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
+		{{name = "train-stop", count = math_random(1,2)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
+		--{{name = "express-loader", count = math_random(1,3)}, weight = 1, evolution_min = 0.5, evolution_max = 1},
+		--{{name = "fast-loader", count = math_random(1,3)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
+		--{{name = "loader", count = math_random(1,3)}, weight = 1, evolution_min = 0.0, evolution_max = 0.5},
+		{{name = "lab", count = math_random(1,2)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1}	
+	}
+	
+	for _, t in pairs (chest_loot) do
+		for x = 1, t.weight, 1 do
+			if t.evolution_min <= game.forces.enemy.evolution_factor and t.evolution_max >= game.forces.enemy.evolution_factor then
+				table.insert(chest_raffle, t[1])
+			end
+		end			
+	end
+	
+	local loot = chest_raffle[math.random(1,#chest_raffle)]
+	game.surfaces[1].spill_item_stack(position, loot, true)
+			
+end
 
 local function increase_difficulty()
 	if game.map_settings.enemy_expansion.max_expansion_cooldown < 7200 then return end
 	game.map_settings.enemy_expansion.max_expansion_cooldown = game.map_settings.enemy_expansion.max_expansion_cooldown - 3600	 
 end
 
-function biter_attack_wave()
+local function get_biters()
+	local surface = game.surfaces[1]
+	local biters_found = {}					
+	for x = 0, 8000, 32 do
+		if not surface.is_chunk_generated({math.ceil(x / 32, 0), 0}) then return biters_found end
+		local area = {
+					left_top = {x = x, y = -96},
+					right_bottom = {x = x + 32, y = 128}
+				}
+		local entities = surface.find_entities_filtered({area = area, type = "unit", limit = global.wave_count})
+		if not entities then game.print("NIIIL") end
+		for _, entity in pairs(entities) do
+			if #biters_found > global.wave_count then break end
+			insert(biters_found, entity)
+		end
+		if #biters_found >= global.wave_count then return biters_found end
+	end		
+end
+
+local function biter_attack_wave()
 	if not global.market then return end
 	
 	local surface = game.surfaces[1]
 	if not global.wave_count then
-		global.wave_count = 1
+		global.wave_count = 2
 	else
-		global.wave_count = global.wave_count + 1
+		global.wave_count = global.wave_count + 2
 	end
 	
-	surface.set_multi_command{command = {type=defines.command.attack_area, destination=global.market.position, radius=2, distraction=defines.distraction.by_anything}, unit_count = global.wave_count, force = "enemy", unit_search_distance = 5000}
+	if global.wave_count > 8 then				
+		local biters = get_biters()		
+		local group_coords = {
+			{x = 140, y = -64},
+			{x = 140, y = -32},
+			{x = 140, y = 0},
+			{x = 140, y = 32},
+			{x = 140, y = 64},
+			{x = 140, y = 96}
+		}
+		group_coords = shuffle(group_coords)
+		
+		local max_group_size = math.ceil(global.wave_count / #group_coords, 0)
+		
+		local biter_counter = 0
+		local biter_attack_groups = {}
+		for i = 1, #group_coords, 1 do
+			if biter_counter > global.wave_count then break end 
+			biter_attack_groups[i] = surface.create_unit_group({position=group_coords[i]})
+			for x = 1, max_group_size, 1 do	
+				biter_counter = biter_counter + 1
+				if biter_counter > global.wave_count then break end				
+				if not biters[biter_counter] then break end
+				biter_attack_groups[i].add_member(biters[biter_counter])				
+			end				
+		end
+				
+		for _, group in pairs(biter_attack_groups) do	
+			if math_random(1,10) == 1 then
+				group.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
+			else
+				group.set_command({type=defines.command.attack_area, destination={x = group.position.x - 200, y = group.position.y}, radius=12, distraction=defines.distraction.by_anything})
+			end
+		end
+		return
+	end
 	
+	surface.set_multi_command{command = {type=defines.command.attack_area, destination=global.market.position, radius=2, distraction=defines.distraction.by_anything}, unit_count = global.wave_count, force = "enemy", unit_search_distance = 2000}
 end
 
 local function is_game_lost()
@@ -33,10 +244,20 @@ local function is_game_lost()
 		local f = player.gui.left.add({ type = "frame", name = "fish_defense_game_lost", caption = "The fish market was destroyed! :(" })
 		f.style.font_color = {r=0.99, g=0.15, b=0.15}
 		f.add({type = "label", caption = "It survived for " .. math.ceil(((global.market_age / 60) / 60), 0) .. " minutes."})
+		for _, player in pairs(game.connected_players) do
+			player.play_sound{path="utility/game_won", volume_modifier=1}
+		end
 	end
 end
 
 local function on_entity_died(event)
+	if event.entity.force.name == "enemy" then
+		if math_random(1, 150) == 1 then
+			spill_loot(event.entity.position)
+		end
+		return
+	end
+	
 	if event.entity == global.market then
 		global.market = nil
 		global.market_age = game.tick
@@ -59,20 +280,18 @@ local function on_player_joined_game(event)
 		local surface = game.surfaces[1]
 		
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_expansion.max_expansion_distance = 10
-		game.map_settings.enemy_expansion.settler_group_min_size = 10
+		game.map_settings.enemy_expansion.max_expansion_distance = 15
+		game.map_settings.enemy_expansion.settler_group_min_size = 12
 		game.map_settings.enemy_expansion.settler_group_max_size = 20
 		game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 216000
 				
-		game.map_settings.enemy_evolution.destroy_factor = 0.002
+		game.map_settings.enemy_evolution.destroy_factor = 0.003
 		game.map_settings.enemy_evolution.time_factor = 0.000008 
 		game.map_settings.enemy_evolution.pollution_factor = 0.000015
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false			
 		game.forces["player"].technologies["artillery-shell-speed-1"].enabled = false
 		game.forces["player"].technologies["artillery"].enabled = false
-		game.forces.player.recipes["laser-turret"].enabled = false
-		game.forces.player.recipes["flamethrower-turret"].enabled = false
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
 		
@@ -116,9 +335,20 @@ local function on_chunk_generated(event)
 		end
 	end
 	surface.set_tiles(tiles, false)
+	
+	
+	
 	if left_top.x < 160 then return end
 	
-	local entities = {}	
+	local entities = surface.find_entities_filtered({area = area, type = "tree"})
+	for _, entity in pairs(entities) do
+		entity.destroy()
+	end
+	
+	local entities = surface.find_entities_filtered({area = area, type = "cliff"})
+	for _, entity in pairs(entities) do
+		entity.destroy()
+	end
 	
 	for x = 0, 31, 1 do	
 		for y = 0, 31, 1 do		
@@ -136,13 +366,8 @@ local function on_chunk_generated(event)
 	end
 end
 
-local function on_research_finished(event)
-	game.forces.player.recipes["laser-turret"].enabled = false
-	game.forces.player.recipes["flamethrower-turret"].enabled = false
-end
-
 local function on_built_entity(event)
-	if "gun-turret" == event.created_entity.name then
+	if "gun-turret" == event.created_entity.name or "flamethrower-turret" == event.created_entity.name or "laser-turret" == event.created_entity.name then
 		event.created_entity.die()
 	end
 end
@@ -156,7 +381,7 @@ local function on_tick()
 		increase_difficulty()		
 	end
 	
-	if game.tick % 3600 == 1800 then
+	if game.tick % 7200 == 3600 then
 		biter_attack_wave()
 	end	
 end
@@ -164,7 +389,6 @@ end
 event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
