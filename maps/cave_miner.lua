@@ -1020,7 +1020,7 @@ local function darkness_checks()
 		if tile_distance_to_center < math.sqrt(global.spawn_dome_size) then
 			global.darkness_threat_level[p.name] = 0
 		else
-			if p.character.driving == true then
+			if p.character and p.character.driving == true then
 				global.darkness_threat_level[p.name] = 0
 			else
 				local light_source_entities = game.surfaces[1].find_entities_filtered{area={{p.position.x-12,p.position.y-12},{p.position.x+12,p.position.y+12}}, name="small-lamp"}		

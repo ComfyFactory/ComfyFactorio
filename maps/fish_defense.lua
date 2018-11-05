@@ -45,7 +45,7 @@ local function spill_loot(position)
 		{{name = "defender-capsule", count = math_random(8,16)}, weight = 2, evolution_min = 0.0, evolution_max = 0.7},
 		{{name = "distractor-capsule", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 1},
 		{{name = "destroyer-capsule", count = math_random(8,16)}, weight = 2, evolution_min = 0.3, evolution_max = 1},
-		{{name = "atomic-bomb", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},		
+		--{{name = "atomic-bomb", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},		
 		{{name = "light-armor", count = 1}, weight = 3, evolution_min = 0, evolution_max = 0.1},		
 		{{name = "heavy-armor", count = 1}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "modular-armor", count = 1}, weight = 2, evolution_min = 0.2, evolution_max = 0.6},
@@ -64,15 +64,15 @@ local function spill_loot(position)
 		{{name = "personal-laser-defense-equipment", count = 1}, weight = 2, evolution_min = 0.5, evolution_max = 1},
 		{{name = "exoskeleton-equipment", count = 1}, weight = 1, evolution_min = 0.3, evolution_max = 1},
 								
-		{{name = "iron-gear-wheel", count = math_random(50,75)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "iron-gear-wheel", count = math_random(25,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "copper-cable", count = math_random(50,100)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
-		{{name = "engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.1, evolution_max = 0.5},
-		{{name = "electric-engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.4, evolution_max = 0.8},
-		{{name = "battery", count = math_random(50,75)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
-		{{name = "advanced-circuit", count = math_random(50,75)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
-		{{name = "electronic-circuit", count = math_random(50,75)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
-		{{name = "processing-unit", count = math_random(50,75)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
-		{{name = "explosives", count = math_random(40,50)}, weight = 10, evolution_min = 0.0, evolution_max = 1},
+		{{name = "engine-unit", count = math_random(8,16)}, weight = 2, evolution_min = 0.1, evolution_max = 0.5},
+		{{name = "electric-engine-unit", count = math_random(8,16)}, weight = 2, evolution_min = 0.4, evolution_max = 0.8},
+		{{name = "battery", count = math_random(25,50)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "advanced-circuit", count = math_random(25,50)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
+		{{name = "electronic-circuit", count = math_random(25,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
+		{{name = "processing-unit", count = math_random(25,50)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
+		{{name = "explosives", count = math_random(40,50)}, weight = 5, evolution_min = 0.0, evolution_max = 1},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evolution_min = 0.3, evolution_max = 0.5},
 		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},
 		{{name = "computer", count = 2}, weight = 1, evolution_min = 0, evolution_max = 1},
@@ -162,6 +162,19 @@ local function spill_loot(position)
 			
 end
 
+local function create_wave_gui(player)
+	if player.gui.top["fish_defense_waves"] then player.gui.top["fish_defense_waves"].destroy() end
+	local b = player.gui.top.add({ type = "button", name = "fish_defense_waves", caption = "Wave: " .. (global.wave_count / 2) })
+	b.style.font_color = {r=0.88, g=0.88, b=0.88}
+	b.style.font = "default-listbox"
+	b.style.minimal_height = 38
+	b.style.minimal_width = 38
+	b.style.top_padding = 2
+	b.style.left_padding = 4
+	b.style.right_padding = 4
+	b.style.bottom_padding = 2
+end
+
 local function increase_difficulty()
 	if game.map_settings.enemy_expansion.max_expansion_cooldown < 7200 then return end
 	game.map_settings.enemy_expansion.max_expansion_cooldown = game.map_settings.enemy_expansion.max_expansion_cooldown - 3600	 
@@ -177,13 +190,16 @@ local function get_biters()
 					right_bottom = {x = x + 32, y = 128}
 				}
 		local entities = surface.find_entities_filtered({area = area, type = "unit", limit = global.wave_count})
-		if not entities then game.print("NIIIL") end
 		for _, entity in pairs(entities) do
 			if #biters_found > global.wave_count then break end
 			insert(biters_found, entity)
 		end
 		if #biters_found >= global.wave_count then return biters_found end
 	end		
+end
+
+local function get_group_coords()
+
 end
 
 local function biter_attack_wave()
@@ -196,15 +212,21 @@ local function biter_attack_wave()
 		global.wave_count = global.wave_count + 2
 	end
 	
-	if global.wave_count > 8 then				
+	for _, player in pairs(game.connected_players) do
+		create_wave_gui(player)
+	end
+	
+	game.print("Wave " .. tostring(global.wave_count / 2) .. " incoming!", {r = 0.9, g = 0.05, b = 0.4})
+	
+	if global.wave_count > 100 then				
 		local biters = get_biters()		
 		local group_coords = {
-			{x = 140, y = -64},
-			{x = 140, y = -32},
-			{x = 140, y = 0},
-			{x = 140, y = 32},
-			{x = 140, y = 64},
-			{x = 140, y = 96}
+			{x = 175, y = -64},
+			{x = 175, y = -32},
+			{x = 175, y = 0},
+			{x = 175, y = 32},
+			{x = 175, y = 64},
+			{x = 175, y = 96}
 		}
 		group_coords = shuffle(group_coords)
 		
@@ -224,10 +246,10 @@ local function biter_attack_wave()
 		end
 				
 		for _, group in pairs(biter_attack_groups) do	
-			if math_random(1,10) == 1 then
+			if math_random(1,6) == 1 then
 				group.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
 			else
-				group.set_command({type=defines.command.attack_area, destination={x = group.position.x - 200, y = group.position.y}, radius=12, distraction=defines.distraction.by_anything})
+				group.set_command({type=defines.command.attack_area, destination={x = group.position.x - 180, y = group.position.y}, radius=12, distraction=defines.distraction.by_anything})
 			end
 		end
 		return
@@ -241,8 +263,8 @@ local function is_game_lost()
 	
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["fish_defense_game_lost"] then player.gui.left["fish_defense_game_lost"].destroy() end
-		local f = player.gui.left.add({ type = "frame", name = "fish_defense_game_lost", caption = "The fish market was destroyed! :(" })
-		f.style.font_color = {r=0.99, g=0.15, b=0.15}
+		local f = player.gui.left.add({ type = "frame", name = "fish_defense_game_lost", caption = "The fish market was destroyed! ;_;" })
+		f.style.font_color = {r = 0.6, g = 0.05, b = 0.9}
 		f.add({type = "label", caption = "It survived for " .. math.ceil(((global.market_age / 60) / 60), 0) .. " minutes."})
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=1}
@@ -250,11 +272,68 @@ local function is_game_lost()
 	end
 end
 
+local biter_building_inhabitants = {}
+biter_building_inhabitants[1] = {{"small-biter",8,16}}
+biter_building_inhabitants[2] = {{"small-biter",12,24}}
+biter_building_inhabitants[3] = {{"small-biter",8,16},{"medium-biter",1,2}}
+biter_building_inhabitants[4] = {{"small-biter",4,8},{"medium-biter",4,8}}
+biter_building_inhabitants[5] = {{"small-biter",3,5},{"medium-biter",8,12}}
+biter_building_inhabitants[6] = {{"small-biter",3,5},{"medium-biter",5,7},{"big-biter",1,2}}
+biter_building_inhabitants[7] = {{"medium-biter",6,8},{"big-biter",3,5}}
+biter_building_inhabitants[8] = {{"medium-biter",2,4},{"big-biter",6,8}}
+biter_building_inhabitants[9] = {{"medium-biter",2,3},{"big-biter",7,9}}
+biter_building_inhabitants[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
+
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
 		if math_random(1, 150) == 1 then
 			spill_loot(event.entity.position)
 		end
+		
+		if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
+			local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)		
+			for _, t in pairs (biter_building_inhabitants[e]) do		
+				for x = 1, math.random(t[2],t[3]), 1 do
+					local p = event.entity.surface.find_non_colliding_position(t[1] , event.entity.position, 6, 1)			
+					if p then event.entity.surface.create_entity {name=t[1], position=p} end
+				end
+			end
+		end
+				
+		if event.entity.name == "medium-biter" then
+			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
+			local entities_to_damage = event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 1, event.entity.position.y - 1},{event.entity.position.x + 1, event.entity.position.y + 1}}})
+			for _, entity in pairs(entities_to_damage) do
+				if entity.health then
+					if entity.force.name ~= "enemy" then
+						entity.health = entity.health - 25
+						if entity.health <= 0 then entity.die("enemy") end
+					end
+				end
+			end
+		end
+		
+		if event.entity.name == "big-biter" then
+			for x = 1, math_random(3, 5), 1 do
+				local p = event.entity.surface.find_non_colliding_position("small-biter", event.entity.position, 5, 1)
+				event.entity.surface.create_entity({name = "small-biter", position = p})
+			end
+			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
+			local entities_to_damage = event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 2, event.entity.position.y - 2},{event.entity.position.x + 2, event.entity.position.y + 2}}})
+			for _, entity in pairs(entities_to_damage) do
+				if entity.health then
+					if entity.force.name ~= "enemy" then
+						entity.health = entity.health - 50
+						if entity.health <= 0 then entity.die("enemy") end
+					end
+				end
+			end
+		end
+		
+		--if event.entity.name == "behemoth-biter" then
+			
+		--end		
+		
 		return
 	end
 	
@@ -286,8 +365,8 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 216000
 				
-		game.map_settings.enemy_evolution.destroy_factor = 0.003
-		game.map_settings.enemy_evolution.time_factor = 0.000008 
+		game.map_settings.enemy_evolution.destroy_factor = 0.008
+		game.map_settings.enemy_evolution.time_factor = 0.000012 
 		game.map_settings.enemy_evolution.pollution_factor = 0.000015
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false			
 		game.forces["player"].technologies["artillery-shell-speed-1"].enabled = false
@@ -300,15 +379,24 @@ local function on_player_joined_game(event)
 		global.market.minable = false
 		global.market.add_market_item({price = {{"coal", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}})
 		
+		local radius = 512
+		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+		
 		global.fish_defense_init_done = true
 	end
 	
 	if player.online_time < 1 then
 		player.insert({name = "pistol", count = 1})
-		player.insert({name = "firearm-magazine", count = 16})
-		player.insert({name = "iron-plate", count = 16})
+		player.insert({name = "iron-axe", count = 1})
+		player.insert({name = "raw-fish", count = 3})
+		player.insert({name = "firearm-magazine", count = 32})
+		player.insert({name = "grenade", count = 3})
+		player.insert({name = "iron-plate", count = 32})
+		player.insert({name = "light-armor", count = 1})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = true end
 	end
+	
+	if global.wave_count then create_wave_gui(player) end
 	
 	is_game_lost()
 end
@@ -336,9 +424,7 @@ local function on_chunk_generated(event)
 	end
 	surface.set_tiles(tiles, false)
 	
-	
-	
-	if left_top.x < 160 then return end
+	if left_top.x < 196 then return end
 	
 	local entities = surface.find_entities_filtered({area = area, type = "tree"})
 	for _, entity in pairs(entities) do
@@ -353,12 +439,27 @@ local function on_chunk_generated(event)
 	for x = 0, 31, 1 do	
 		for y = 0, 31, 1 do		
 			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if math_random(1,10) == 1 then
+			if math_random(1,32) == 1 then
 				if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
 					if math_random(1,4) == 1 then
 						surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})
 					else
 						surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})
+					end
+				end
+			end
+		end
+	end
+	
+	for x = 0, 31, 1 do	
+		for y = 0, 31, 1 do		
+			local pos = {x = left_top.x + x, y = left_top.y + y}
+			if math_random(1, 16) == 1 then
+				if surface.can_place_entity({name = "big-worm-turret", force = "enemy", position = pos}) then
+					if math_random(1,2) == 1 then
+						surface.create_entity({name = "big-worm-turret", force = "enemy", position = pos})
+					else
+						surface.create_entity({name = "big-worm-turret", force = "enemy", position = pos})
 					end
 				end
 			end

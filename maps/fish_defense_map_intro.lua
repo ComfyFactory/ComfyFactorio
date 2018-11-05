@@ -1,14 +1,13 @@
 local event = require 'utils.event'
 
 local main_caption = " --Fish Defense-- "
-local sub_caption = " *blubby blubby blub* "
+local sub_caption = " *blb blubby blub* "
 local info = [[
 	The hungry biters have catched the scent of fish in the market.
-	Defend it as long as possible!
 	
-	Turrets will not work here.
+	Fend them off as long as possible!			
 	
-	Producing mines or putting explosives in containers could be helpful.
+	Turrets will not work in this world.
 ]]
 
 local function create_map_intro(player)

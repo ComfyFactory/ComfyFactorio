@@ -1,9 +1,20 @@
+0.04
+even more biters explosions
+
+
+0.03
+biters explode and splice
+added worms
+added wave message
+spawners spawn biters
+
 0.02
 biters sometimes drop loot
 biter waves are slower but bigger
 added teleporters as loot
 removed trees and cliffs on the biter side
 biter wave changes
+added wave counter
 
 0.01
 blubby blubby fish
