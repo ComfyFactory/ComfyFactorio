@@ -4,6 +4,7 @@ local event = require 'utils.event'
 require "maps.fish_defense_map_intro"
 require "maps.fish_defense_kaboomsticks"
 require "maps.tools.teleporters"
+local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local wave_interval = 5400
@@ -433,7 +434,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.enabled = false
 
 		game.map_settings.enemy_evolution.destroy_factor = 0.008
-		game.map_settings.enemy_evolution.time_factor = 0.00003
+		game.map_settings.enemy_evolution.time_factor = 0.00005
 		game.map_settings.enemy_evolution.pollution_factor = 0.000015
 		
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false
@@ -450,8 +451,8 @@ local function on_player_joined_game(event)
 		local radius = 512
 		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 
-		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})
-
+		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})		
+		
 		global.fish_defense_init_done = true
 	end
 
@@ -472,6 +473,7 @@ local function on_player_joined_game(event)
 end
 
 local map_height = 96
+
 local function on_chunk_generated(event)
 	local surface = game.surfaces[1]
 	local area = event.area
@@ -480,10 +482,41 @@ local function on_chunk_generated(event)
 	local entities = surface.find_entities_filtered({area = area, force = "enemy"})
 	for _, entity in pairs(entities) do
 		entity.destroy()
+	end	
+	
+	if left_top.x >= -160 and left_top.x < 160 then
+		local entities = surface.find_entities_filtered({area = area, type = "resource"})
+		for _, entity in pairs(entities) do
+			entity.destroy()
+		end
+		--[[
+		local tiles = {}
+		for x = 0, 31, 1 do
+			for y = 0, 31, 1 do
+				local pos = {x = left_top.x + x, y = left_top.y + y}
+				local tile = surface.get_tile(pos)
+				if tile.name == "deepwater" or tile.name == "water" then
+					insert(tiles, {name = "grass-1", position = pos})
+				end
+			end
+		end
+		surface.set_tiles(tiles, true)
+		]]
 	end
-
+	
+	if left_top.x >= 256 then
+		if not global.spawn_ores_generated then
+			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -64}, "copper-ore", surface, 15, 2500)
+			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -32}, "iron-ore", surface, 15, 2500)
+			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 32}, "coal", surface, 15, 1500)
+			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 64}, "stone", surface, 15, 1500)			
+			global.spawn_ores_generated = true
+		end
+	end
+	
 	local tiles = {}
 	local hourglass_center_piece_length = 64
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}

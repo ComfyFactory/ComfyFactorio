@@ -1,3 +1,6 @@
+0.06
+custom spawn ores
+
 0.05
 hourglass map layout changes
 wave interval is slower
