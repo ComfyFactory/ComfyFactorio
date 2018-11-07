@@ -6,8 +6,6 @@ local info = [[
 	The hungry biters have catched the scent of fish in the market.
 	
 	Fend them off as long as possible!			
-	
-	Turrets will not work in this world.
 ]]
 
 local function create_map_intro(player)

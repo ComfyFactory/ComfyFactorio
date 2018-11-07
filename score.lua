@@ -370,11 +370,11 @@ local function on_entity_died(event)
 	end
 
 	if score_table[event.entity.name] then
-		if not global.score[event.force.name].kills then
-			global.score[event.force.name].kills = 1
-		else
-			global.score[event.force.name].kills = global.score[event.force.name].kills + 1
-		end		
+		--if not global.score[event.force.name].kills then
+			--global.score[event.force.name].kills = 1
+		--else
+			--global.score[event.force.name].kills = global.score[event.force.name].kills + 1
+		--end		
 		
 		local show_floating_text = false
 		

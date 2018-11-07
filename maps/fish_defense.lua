@@ -6,6 +6,7 @@ require "maps.fish_defense_kaboomsticks"
 require "maps.tools.teleporters"
 local math_random = math.random
 local insert = table.insert
+local wave_interval = 10800
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -164,26 +165,39 @@ end
 
 local function create_wave_gui(player)
 	if player.gui.top["fish_defense_waves"] then player.gui.top["fish_defense_waves"].destroy() end
-	local b = player.gui.top.add({ type = "button", name = "fish_defense_waves", caption = "Wave: " .. (global.wave_count / 2) })
-	b.style.font_color = {r=0.88, g=0.88, b=0.88}
-	b.style.font = "default-listbox"
-	b.style.minimal_height = 38
-	b.style.minimal_width = 38
-	b.style.top_padding = 2
-	b.style.left_padding = 4
-	b.style.right_padding = 4
-	b.style.bottom_padding = 2
+	local frame = player.gui.top.add({ type = "frame", name = "fish_defense_waves"})
+	frame.style.maximal_height = 38
+	
+	local wave_count = 0
+	if global.wave_count then wave_count = global.wave_count / 3 end
+	
+	local label = frame.add({ type = "label", caption = "Wave: " .. wave_count })
+	label.style.font_color = {r=0.88, g=0.88, b=0.88}
+	label.style.font = "default-listbox"	
+	label.style.left_padding = 4
+	label.style.right_padding = 4	
+	label.style.font_color = {r=0.33, g=0.66, b=0.9}
+	
+--	local next_level_progress = ((game.tick % wave_interval) / (wave_interval / 100)) * 0.01	
+	local next_level_progress = game.tick % wave_interval / wave_interval
+
+	
+	local progressbar = frame.add({ type = "progressbar", value = next_level_progress})
+	progressbar.style.minimal_width = 120
+	progressbar.style.maximal_width = 120
+	progressbar.style.top_padding = 10
+	
 end
 
-local function increase_difficulty()
-	if game.map_settings.enemy_expansion.max_expansion_cooldown < 7200 then return end
-	game.map_settings.enemy_expansion.max_expansion_cooldown = game.map_settings.enemy_expansion.max_expansion_cooldown - 3600	 
-end
+--local function increase_difficulty()
+	--if game.map_settings.enemy_expansion.max_expansion_cooldown < 7200 then return end
+	--game.map_settings.enemy_expansion.max_expansion_cooldown = game.map_settings.enemy_expansion.max_expansion_cooldown - 3600	 
+--end
 
 local function get_biters()
 	local surface = game.surfaces[1]
 	local biters_found = {}					
-	for x = 0, 8000, 32 do
+	for x = 224, 8000, 32 do
 		if not surface.is_chunk_generated({math.ceil(x / 32, 0), 0}) then return biters_found end
 		local area = {
 					left_top = {x = x, y = -96},
@@ -207,26 +221,21 @@ local function biter_attack_wave()
 	
 	local surface = game.surfaces[1]
 	if not global.wave_count then
-		global.wave_count = 2
+		global.wave_count = 3
 	else
-		global.wave_count = global.wave_count + 2
+		global.wave_count = global.wave_count + 3
 	end
 	
-	for _, player in pairs(game.connected_players) do
-		create_wave_gui(player)
-	end
-	
-	game.print("Wave " .. tostring(global.wave_count / 2) .. " incoming!", {r = 0.9, g = 0.05, b = 0.4})
+	game.print("Wave " .. tostring(global.wave_count / 3) .. " incoming!", {r = 0.9, g = 0.05, b = 0.4})
 	
 	if global.wave_count > 100 then				
 		local biters = get_biters()		
 		local group_coords = {
-			{x = 175, y = -64},
-			{x = 175, y = -32},
-			{x = 175, y = 0},
-			{x = 175, y = 32},
-			{x = 175, y = 64},
-			{x = 175, y = 96}
+			{x = 256, y = -64},
+			{x = 256, y = -32},
+			{x = 256, y = 0},
+			{x = 256, y = 32},
+			{x = 256, y = 64}			
 		}
 		group_coords = shuffle(group_coords)
 		
@@ -249,7 +258,7 @@ local function biter_attack_wave()
 			if math_random(1,6) == 1 then
 				group.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
 			else
-				group.set_command({type=defines.command.attack_area, destination={x = group.position.x - 180, y = group.position.y}, radius=12, distraction=defines.distraction.by_anything})
+				group.set_command({type=defines.command.attack_area, destination={x = group.position.x - 268, y = group.position.y}, radius=12, distraction=defines.distraction.by_anything})
 			end
 		end
 		return
@@ -262,12 +271,12 @@ local function is_game_lost()
 	if global.market then return end
 	
 	for _, player in pairs(game.connected_players) do
-		if player.gui.left["fish_defense_game_lost"] then player.gui.left["fish_defense_game_lost"].destroy() end
+		if player.gui.left["fish_defense_game_lost"] then return end
 		local f = player.gui.left.add({ type = "frame", name = "fish_defense_game_lost", caption = "The fish market was destroyed! ;_;" })
 		f.style.font_color = {r = 0.6, g = 0.05, b = 0.9}
 		f.add({type = "label", caption = "It survived for " .. math.ceil(((global.market_age / 60) / 60), 0) .. " minutes."})
 		for _, player in pairs(game.connected_players) do
-			player.play_sound{path="utility/game_won", volume_modifier=1}
+			player.play_sound{path="utility/game_lost", volume_modifier=1}
 		end
 	end
 end
@@ -283,6 +292,22 @@ biter_building_inhabitants[7] = {{"medium-biter",6,8},{"big-biter",3,5}}
 biter_building_inhabitants[8] = {{"medium-biter",2,4},{"big-biter",6,8}}
 biter_building_inhabitants[9] = {{"medium-biter",2,3},{"big-biter",7,9}}
 biter_building_inhabitants[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
+
+local function damage_entities_in_radius(position, radius, damage)
+	local entities_to_damage = game.surfaces[1].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
+	for _, entity in pairs(entities_to_damage) do
+		if entity.health then
+			if entity.force.name ~= "enemy" then
+				if entity.name == "player" then
+					entity.damage(damage, "enemy")
+				else
+					entity.health = entity.health - damage
+					if entity.health <= 0 then entity.die("enemy") end
+				end											
+			end
+		end
+	end
+end
 
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
@@ -302,32 +327,16 @@ local function on_entity_died(event)
 				
 		if event.entity.name == "medium-biter" then
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
-			local entities_to_damage = event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 1, event.entity.position.y - 1},{event.entity.position.x + 1, event.entity.position.y + 1}}})
-			for _, entity in pairs(entities_to_damage) do
-				if entity.health then
-					if entity.force.name ~= "enemy" then
-						entity.health = entity.health - 25
-						if entity.health <= 0 then entity.die("enemy") end
-					end
-				end
-			end
+			damage_entities_in_radius(event.entity.position, 1, 25)
 		end
 		
 		if event.entity.name == "big-biter" then
-			for x = 1, math_random(3, 5), 1 do
-				local p = event.entity.surface.find_non_colliding_position("small-biter", event.entity.position, 5, 1)
-				event.entity.surface.create_entity({name = "small-biter", position = p})
-			end
+			--for x = 1, math_random(3, 5), 1 do
+				--local p = event.entity.surface.find_non_colliding_position("small-biter", event.entity.position, 5, 1)
+				--event.entity.surface.create_entity({name = "small-biter", position = p})
+			--end
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
-			local entities_to_damage = event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 2, event.entity.position.y - 2},{event.entity.position.x + 2, event.entity.position.y + 2}}})
-			for _, entity in pairs(entities_to_damage) do
-				if entity.health then
-					if entity.force.name ~= "enemy" then
-						entity.health = entity.health - 50
-						if entity.health <= 0 then entity.die("enemy") end
-					end
-				end
-			end
+			damage_entities_in_radius(event.entity.position, 2, 50)
 		end
 		
 		--if event.entity.name == "behemoth-biter" then
@@ -345,10 +354,28 @@ local function on_entity_died(event)
 end
 
 local function on_entity_damaged(event)
+	if event.cause then
+		if event.cause.name == "big-spitter" then
+			local surface = event.cause.surface
+			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
+			if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 3 then
+				local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 3, 1)
+				surface.create_entity({name = "small-biter", position = pos})
+			end
+		end
+		
+		if event.cause.force.name == "enemy" then
+			event.entity.health = event.entity.health - (event.final_damage_amount * global.wave_count * 0.0005)
+		
+		end
+	end
+	
 	if event.entity.name == "market" then
 		if event.cause.force.name == "enemy" then return end
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
+	
+	
 end
 
 
@@ -358,7 +385,7 @@ local function on_player_joined_game(event)
 	if not global.fish_defense_init_done then
 		local surface = game.surfaces[1]
 		
-		game.map_settings.enemy_expansion.enabled = true
+		game.map_settings.enemy_expansion.enabled = false
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
 		game.map_settings.enemy_expansion.settler_group_min_size = 12
 		game.map_settings.enemy_expansion.settler_group_max_size = 20
@@ -381,6 +408,8 @@ local function on_player_joined_game(event)
 		
 		local radius = 512
 		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+		
+		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})
 		
 		global.fish_defense_init_done = true
 	end
@@ -413,18 +442,33 @@ local function on_chunk_generated(event)
 	end
 	
 	local tiles = {}
-	
-	if left_top.y > map_height or left_top.y < map_height * -1 then
-		for x = 0, 31, 1 do	
-			for y = 0, 31, 1 do		
-				local pos = {x = left_top.x + x, y = left_top.y + y}
-				insert(tiles, {name = "out-of-map", position = pos})
+	local hourglass_center_piece_length = 64	
+	for x = 0, 31, 1 do	
+		for y = 0, 31, 1 do		
+			local pos = {x = left_top.x + x, y = left_top.y + y}
+			if pos.y >= map_height then
+				if pos.y > pos.x - hourglass_center_piece_length and pos.x > 0 then
+					insert(tiles, {name = "out-of-map", position = pos})
+				end
+				if pos.y > (pos.x + hourglass_center_piece_length) * -1 and pos.x <= 0 then
+					insert(tiles, {name = "out-of-map", position = pos})
+				end
+			end	
+			if pos.y < map_height * -1 then
+				if pos.y < (pos.x - hourglass_center_piece_length) * -1 and pos.x > 0 then
+					insert(tiles, {name = "out-of-map", position = pos})
+				end
+				if pos.y < pos.x + hourglass_center_piece_length and pos.x <= 0 then
+					insert(tiles, {name = "out-of-map", position = pos})
+				end
 			end
 		end
 	end
+	
 	surface.set_tiles(tiles, false)
 	
-	if left_top.x < 196 then return end
+		
+	if left_top.x < 160 then return end		
 	
 	local entities = surface.find_entities_filtered({area = area, type = "tree"})
 	for _, entity in pairs(entities) do
@@ -436,10 +480,24 @@ local function on_chunk_generated(event)
 		entity.destroy()
 	end
 	
+	local entities = surface.find_entities_filtered({area = area, type = "resource"})
+	for _, entity in pairs(entities) do
+		surface.create_entity({name = "uranium-ore", position = entity.position, amount = math_random(200, 8000)})
+		entity.destroy()
+	end
+	
+	local tiles = {}
+	
 	for x = 0, 31, 1 do	
 		for y = 0, 31, 1 do		
 			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if math_random(1,32) == 1 then
+			
+			local tile = surface.get_tile(pos)
+			if tile.name ~= "out-of-map" then
+				insert(tiles, {name = "dirt-6", position = pos})
+			end
+			
+			if left_top.x > 256 and math_random(1,32) == 1 then
 				if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
 					if math_random(1,4) == 1 then
 						surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})
@@ -450,26 +508,79 @@ local function on_chunk_generated(event)
 			end
 		end
 	end
+	surface.set_tiles(tiles, true)
 	
-	for x = 0, 31, 1 do	
-		for y = 0, 31, 1 do		
-			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if math_random(1, 16) == 1 then
-				if surface.can_place_entity({name = "big-worm-turret", force = "enemy", position = pos}) then
-					if math_random(1,2) == 1 then
-						surface.create_entity({name = "big-worm-turret", force = "enemy", position = pos})
-					else
-						surface.create_entity({name = "big-worm-turret", force = "enemy", position = pos})
-					end
-				end
-			end
+	local decorative_names = {}
+	for k,v in pairs(game.decorative_prototypes) do
+		if v.autoplace_specification then
+		  decorative_names[#decorative_names+1] = k
 		end
-	end
+	 end	 
+	surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})	
+	
 end
 
+local build_limit_radius = 64
 local function on_built_entity(event)
-	if "gun-turret" == event.created_entity.name or "flamethrower-turret" == event.created_entity.name or "laser-turret" == event.created_entity.name then
+	if "flamethrower-turret" == event.created_entity.name then
 		event.created_entity.die()
+		return
+	end
+	
+	if event.created_entity.name == "gun-turret" then
+		local surface = event.created_entity.surface
+		local area = {{event.created_entity.position.x - build_limit_radius, event.created_entity.position.y - build_limit_radius}, {event.created_entity.position.x + build_limit_radius, event.created_entity.position.y + build_limit_radius}}
+		local turrets_count_in_area = surface.count_entities_filtered({area = area, name = "gun-turret", limit = 3})
+			
+		if turrets_count_in_area <= 2 then
+			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 2 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
+		else 
+			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = "Too many turrets in area", color = {r=0.82, g=0.11, b=0.11}})
+			if event.player_index then
+				local player = game.players[event.player_index]
+				event.created_entity.destroy()
+				player.insert({name = "gun-turret", count = 1})
+				if global.score then
+					if global.score[player.force.name] then
+						if global.score[player.force.name].players[player.name] then
+							global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+						end
+					end
+				end
+				return
+			else
+				event.created_entity.die()
+				return
+			end			
+		end
+	end
+	
+	if event.created_entity.name == "laser-turret" then
+		local surface = event.created_entity.surface
+		local area = {{event.created_entity.position.x - build_limit_radius, event.created_entity.position.y - build_limit_radius}, {event.created_entity.position.x + build_limit_radius, event.created_entity.position.y + build_limit_radius}}
+		local turrets_count_in_area = surface.count_entities_filtered({area = area, name = "laser-turret", limit = 2})
+			
+		if turrets_count_in_area <= 1 then
+			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 1 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
+		else 
+			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = "Too many turrets in area", color = {r=0.82, g=0.11, b=0.11}})
+			if event.player_index then
+				local player = game.players[event.player_index]
+				event.created_entity.destroy()
+				player.insert({name = "laser-turret", count = 1})
+				if global.score then
+					if global.score[player.force.name] then
+						if global.score[player.force.name].players[player.name] then
+							global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+						end
+					end
+				end
+				return
+			else
+				event.created_entity.die()
+				return
+			end			
+		end
 	end
 end
 
@@ -478,16 +589,32 @@ local function on_robot_built_entity(event)
 end
 
 local function on_tick()
-	if game.tick % 21600 == 10800 then
-		increase_difficulty()		
+	if game.tick % 60 == 0 then
+		if global.market then
+			for _, player in pairs(game.connected_players) do				
+				create_wave_gui(player)				
+			end
+		end
 	end
 	
-	if game.tick % 7200 == 3600 then
+	if game.tick % wave_interval == wave_interval - 1 then
 		biter_attack_wave()
 	end	
 end
 
+local function on_player_changed_position(event)
+	local player = game.players[event.player_index]
+	if player.position.x >= 160 then
+		player.teleport({player.position.x - 1, player.position.y}, game.surfaces[1])
+		if player.character then
+			player.character.health = player.character.health - 10
+			if player.character.health <= 0 then player.die("enemy") end
+		end
+	end
+end
+
 event.add(defines.events.on_tick, on_tick)
+event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
