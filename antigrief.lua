@@ -81,7 +81,7 @@ local function on_built_entity(event)
 			end
 		end
 		
-		if playtime < 1296000 then
+		if playtime < 432000 then
 			event.created_entity.destroy()
 			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
 			if global.score then

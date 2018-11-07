@@ -1356,7 +1356,7 @@ local function on_market_item_purchased(event)
 		local requested_withdraw_amount = 500
 		local fee = 10		
 		if global.fish_bank[player.name] < requested_withdraw_amount + fee then		
-			fee = math.ceil(global.fish_bank[player.name] * 0.02, 0)
+			fee = math.ceil(global.fish_bank[player.name] * 0.01, 0)
 			requested_withdraw_amount = global.fish_bank[player.name] - fee
 		end			
 		local fish_withdrawn = player.insert({name = "raw-fish", count = requested_withdraw_amount})

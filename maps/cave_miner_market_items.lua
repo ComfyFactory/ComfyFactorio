@@ -1,7 +1,7 @@
 local items = {}
 items.spawn = {
 	{price = {}, offer = {type = 'nothing', effect_description = 'Deposit Fish'}},
-	{price = {}, offer = {type = 'nothing', effect_description = 'Withdraw Fish - 2% Bank Fee'}},
+	{price = {}, offer = {type = 'nothing', effect_description = 'Withdraw Fish - 1% Bank Fee'}},
 	{price = {}, offer = {type = 'nothing', effect_description = 'Show Account Balance'}},
 	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'rail', count = 4}},
 	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'rail-signal', count = 2}},
