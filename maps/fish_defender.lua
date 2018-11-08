@@ -213,13 +213,13 @@ local function get_biters()
 	end
 end
 
-local function get_group_coords()
-
-end
-
 local function biter_attack_wave()
 	if not global.market then return end
-
+	
+	--for _, player in pairs(game.connected_players) do
+		--player.play_sound{path="utility/new_objective", volume_modifier=0.5}
+	--end
+	
 	local surface = game.surfaces[1]
 	if not global.wave_count then
 		global.wave_count = 2
@@ -257,7 +257,7 @@ local function biter_attack_wave()
 			{spawn = {x = 256, y = 128}, target = {x = 0, y = 64}},
 			{spawn = {x = 256, y = 160}, target = {x = 0, y = 64}}
 		}
-		number_of_groups = math.ceil(global.wave_count / 50, 0)
+		number_of_groups = math.ceil(global.wave_count / 100, 0)
     if number_of_groups > #group_coords then number_of_groups = #group_coords end
 	end
 
@@ -434,7 +434,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.enabled = false
 
 		game.map_settings.enemy_evolution.destroy_factor = 0.008
-		game.map_settings.enemy_evolution.time_factor = 0.00005
+		game.map_settings.enemy_evolution.time_factor = 0.00004
 		game.map_settings.enemy_evolution.pollution_factor = 0.000015
 		
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false
@@ -452,6 +452,8 @@ local function on_player_joined_game(event)
 		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 
 		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})		
+		
+		game.players[1].insert({name = "gun-turret", count = 1})
 		
 		global.fish_defense_init_done = true
 	end
@@ -594,7 +596,7 @@ local function on_chunk_generated(event)
 
 end
 
-local build_limit_radius = 64
+local build_limit_radius = 32
 local function on_built_entity(event)
 	if "flamethrower-turret" == event.created_entity.name then
 		event.created_entity.die()
@@ -604,10 +606,10 @@ local function on_built_entity(event)
 	if event.created_entity.name == "gun-turret" then
 		local surface = event.created_entity.surface
 		local area = {{event.created_entity.position.x - build_limit_radius, event.created_entity.position.y - build_limit_radius}, {event.created_entity.position.x + build_limit_radius, event.created_entity.position.y + build_limit_radius}}
-		local turrets_count_in_area = surface.count_entities_filtered({area = area, name = "gun-turret", limit = 3})
+		local turrets_count_in_area = surface.count_entities_filtered({area = area, name = "gun-turret", limit = 2})
 
-		if turrets_count_in_area <= 2 then
-			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 2 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
+		if turrets_count_in_area <= 1 then
+			--surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 2 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
 		else
 			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = "Too many turrets in area", color = {r=0.82, g=0.11, b=0.11}})
 			if event.player_index then
@@ -635,7 +637,7 @@ local function on_built_entity(event)
 		local turrets_count_in_area = surface.count_entities_filtered({area = area, name = "laser-turret", limit = 2})
 
 		if turrets_count_in_area <= 1 then
-			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 1 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
+			--surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 1 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
 		else
 			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = "Too many turrets in area", color = {r=0.82, g=0.11, b=0.11}})
 			if event.player_index then

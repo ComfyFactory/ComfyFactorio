@@ -18,7 +18,7 @@ require "score"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
 --require "maps.spiral_troopers"
-require "maps.fish_defense"
+require "maps.fish_defender"
 --require "maps.empty_map"
 -----------------------------
 
