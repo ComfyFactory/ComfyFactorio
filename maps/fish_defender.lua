@@ -1,9 +1,10 @@
 -- fish defense -- by mewmew --
 
 local event = require 'utils.event'
-require "maps.fish_defense_map_intro"
-require "maps.fish_defense_kaboomsticks"
-require "maps.tools.teleporters"
+require "maps.fish_defender_map_intro"
+require "maps.fish_defender_kaboomsticks"
+--require "maps.tools.teleporters"
+local market_items = require "maps.fish_defender_market_items"
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
@@ -179,9 +180,7 @@ local function create_wave_gui(player)
 	label.style.right_padding = 4
 	label.style.font_color = {r=0.33, g=0.66, b=0.9}
 
---	local next_level_progress = ((game.tick % wave_interval) / (wave_interval / 100)) * 0.01
 	local next_level_progress = game.tick % wave_interval / wave_interval
-
 
 	local progressbar = frame.add({ type = "progressbar", value = next_level_progress})
 	progressbar.style.minimal_width = 120
@@ -189,11 +188,6 @@ local function create_wave_gui(player)
 	progressbar.style.top_padding = 10
 
 end
-
---local function increase_difficulty()
-	--if game.map_settings.enemy_expansion.max_expansion_cooldown < 7200 then return end
-	--game.map_settings.enemy_expansion.max_expansion_cooldown = game.map_settings.enemy_expansion.max_expansion_cooldown - 3600
---end
 
 local function get_biters()
 	local surface = game.surfaces[1]
@@ -214,11 +208,7 @@ local function get_biters()
 end
 
 local function biter_attack_wave()
-	if not global.market then return end
-	
-	--for _, player in pairs(game.connected_players) do
-		--player.play_sound{path="utility/new_objective", volume_modifier=0.5}
-	--end
+	if not global.market then return end		
 	
 	local surface = game.surfaces[1]
 	if not global.wave_count then
@@ -245,17 +235,17 @@ local function biter_attack_wave()
 
 	if global.wave_count > 50 then
 		group_coords = {
-			{spawn = {x = 256, y = -160}, target = {x = 0, y = -64}},
-			{spawn = {x = 256, y = -128}, target = {x = 0, y = -64}},
-			{spawn = {x = 256, y = -96}, target = {x = 0, y = -48}},
-			{spawn = {x = 256, y = -64}, target = {x = 0, y = -32}},
-			{spawn = {x = 256, y = -32}, target = {x = 0, y = -16}},
-			{spawn = {x = 256, y = 0}, target = {x = 0, y = 0}},
-			{spawn = {x = 256, y = 32}, target = {x = 0, y = 16}},
-			{spawn = {x = 256, y = 64}, target = {x = 0, y = 32}},
-			{spawn = {x = 256, y = 96}, target = {x = 0, y = 48}},
-			{spawn = {x = 256, y = 128}, target = {x = 0, y = 64}},
-			{spawn = {x = 256, y = 160}, target = {x = 0, y = 64}}
+			{spawn = {x = 256, y = -160}, target = {x = -32, y = -64}},
+			{spawn = {x = 256, y = -128}, target = {x = -32, y = -64}},
+			{spawn = {x = 256, y = -96}, target = {x = -32, y = -48}},
+			{spawn = {x = 256, y = -64}, target = {x = -32, y = -32}},
+			{spawn = {x = 256, y = -32}, target = {x = -32, y = -16}},
+			{spawn = {x = 256, y = 0}, target = {x = -32, y = 0}},
+			{spawn = {x = 256, y = 32}, target = {x = -32, y = 16}},
+			{spawn = {x = 256, y = 64}, target = {x = -32, y = 32}},
+			{spawn = {x = 256, y = 96}, target = {x = -32, y = 48}},
+			{spawn = {x = 256, y = 128}, target = {x = -32, y = 64}},
+			{spawn = {x = 256, y = 160}, target = {x = -32, y = 64}}
 		}
 		number_of_groups = math.ceil(global.wave_count / 100, 0)
     if number_of_groups > #group_coords then number_of_groups = #group_coords end
@@ -290,14 +280,45 @@ local function biter_attack_wave()
 			end
 		end
 	end
+end
 
-	--for _, group in pairs(biter_attack_groups) do
-		--if math_random(1,6) == 1 then
-			--group.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
-		--else
-			--group.set_command({type=defines.command.attack_area, destination={x = group.position.x - 268, y = group.position.y}, radius=12, distraction=defines.distraction.by_anything})
-		--end
-	--end
+local function get_sorted_list(column_name, score_list)		
+	for x = 1, #score_list, 1 do
+		for y = 1, #score_list, 1 do			
+			if not score_list[y + 1] then break end
+			if score_list[y][column_name] < score_list[y + 1][column_name] then
+				local key = score_list[y]
+				score_list[y] = score_list[y + 1]
+				score_list[y + 1] = key
+			end
+		end		
+	end	
+	return score_list
+end
+
+local function get_mvps()
+	if not global.score["player"] then return false end
+	local score = global.score["player"]
+	local score_list = {}
+	for _, p in pairs(game.players) do
+		local killscore = 0
+		if score.players[p.name].killscore then killscore = score.players[p.name].killscore end
+		local deaths = 0
+		if score.players[p.name].deaths then deaths = score.players[p.name].deaths end
+		local built_entities = 0
+		if score.players[p.name].built_entities then built_entities = score.players[p.name].built_entities end
+		local mined_entities = 0
+		if score.players[p.name].mined_entities then mined_entities = score.players[p.name].mined_entities end
+		table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})		
+	end
+	local mvp = {}
+	score_list = get_sorted_list("killscore", score_list)
+	mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
+	score_list = get_sorted_list("deaths", score_list)
+	mvp.deaths = {name = score_list[1].name, score = score_list[1].deaths}
+	score_list = get_sorted_list("built_entities", score_list)
+	mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
+	return mvp
 end
 
 local function is_game_lost()
@@ -305,9 +326,49 @@ local function is_game_lost()
 
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["fish_defense_game_lost"] then return end
-		local f = player.gui.left.add({ type = "frame", name = "fish_defense_game_lost", caption = "The fish market was destroyed! ;_;" })
-		f.style.font_color = {r = 0.6, g = 0.05, b = 0.9}
-		f.add({type = "label", caption = "It survived for " .. math.ceil(((global.market_age / 60) / 60), 0) .. " minutes."})
+		local f = player.gui.left.add({ type = "frame", name = "fish_defense_game_lost", caption = "The fish market was overrun! The biters are having a feast :3", direction = "vertical"})
+		f.style.font_color = {r = 0.65, g = 0.1, b = 0.99}
+		
+		local t = f.add({type = "table", column_count = 2})
+		local l = t.add({type = "label", caption = "Survival Time >> "})
+		l.style.font = "default-listbox"
+		l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+		
+		if global.market_age >= 216000 then
+			local l = t.add({type = "label", caption = math.floor(((global.market_age / 60) / 60) / 60) .. " hours " .. math.ceil((global.market_age % 216000 / 60) / 60) .. " minutes"})
+			l.style.font = "default-bold"
+			l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		else
+			local l = t.add({type = "label", caption = math.ceil((global.market_age % 216000 / 60) / 60) .. " minutes"})
+			l.style.font = "default-bold"
+			l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		end
+		
+		local mvp = get_mvps()		
+		if mvp then
+			
+			local l = t.add({type = "label", caption = "MVP Defender >> "})
+			l.style.font = "default-listbox"
+			l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+			local l = t.add({type = "label", caption = mvp.killscore.name .. " with a score of " .. mvp.killscore.score})
+			l.style.font = "default-bold"
+			l.style.font_color = {r=0.33, g=0.66, b=0.9}
+			
+			local l = t.add({type = "label", caption = "MVP Builder >> "})
+			l.style.font = "default-listbox"
+			l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+			local l = t.add({type = "label", caption = mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things"})
+			l.style.font = "default-bold"
+			l.style.font_color = {r=0.33, g=0.66, b=0.9}
+			
+			local l = t.add({type = "label", caption = "MVP Deaths >> "})
+			l.style.font = "default-listbox"
+			l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+			local l = t.add({type = "label", caption = mvp.deaths.name .. " died " .. mvp.deaths.score .. " times"})						
+			l.style.font = "default-bold"
+			l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		end
+		
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=1}
 		end
@@ -349,11 +410,27 @@ local function damage_entities_in_radius(position, radius, damage)
 	end
 end
 
+local coin_earnings = {
+	["small-biter"] = 1,
+	["medium-biter"] = 2,
+	["big-biter"] = 3,
+	["behemoth-biter"] = 5,
+	["small-spitter"] = 1,
+	["medium-spitter"] = 2,
+	["big-spitter"] = 3,
+	["behemoth-spitter"] = 5	
+}
+
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
-		if math_random(1, 150) == 1 then
-			spill_loot(event.entity.position)
+		if event.cause then
+			if event.cause.name == "player" and event.entity.type == "unit" then
+				event.cause.insert({name = "coin", count = coin_earnings[event.entity.name]})
+			end
 		end
+		--if math_random(1, 150) == 1 then
+			--spill_loot(event.entity.position)
+		--end
 
 		if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
 			local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)
@@ -368,14 +445,14 @@ local function on_entity_died(event)
 		if event.entity.name == "medium-biter" then
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
 			local damage = 25
-			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 50), 0) end
+			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 25), 0) end
 			damage_entities_in_radius(event.entity.position, 1, damage)
 		end
 
 		if event.entity.name == "big-biter" then
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
-			local damage = 50
-			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 100), 0) end
+			local damage = 35
+			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 50), 0) end
 			damage_entities_in_radius(event.entity.position, 2, damage)
 		end
 
@@ -434,7 +511,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.enabled = false
 
 		game.map_settings.enemy_evolution.destroy_factor = 0.008
-		game.map_settings.enemy_evolution.time_factor = 0.00004
+		game.map_settings.enemy_evolution.time_factor = 0.00005
 		game.map_settings.enemy_evolution.pollution_factor = 0.000015
 		
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false
@@ -442,11 +519,34 @@ local function on_player_joined_game(event)
 		game.forces["player"].technologies["artillery"].enabled = false
 
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
-
+		
+		local pos = surface.find_non_colliding_position("player",{4, 0}, 50, 1)
+		game.players[1].teleport(pos, surface)
+		
 		local pos = surface.find_non_colliding_position("market",{0, 0}, 50, 1)
-		global.market = surface.create_entity({name = "market", position = pos, force = "player"})
-		global.market.minable = false
-		global.market.add_market_item({price = {{"coal", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}})
+					
+			
+			--[[
+			map_functions.draw_noise_tile_circle({x = 10, y = 0}, replacement_tile, surface, 16)			
+			local decorative_names = {}
+			for k,v in pairs(game.decorative_prototypes) do
+				if v.autoplace_specification then
+				  decorative_names[#decorative_names+1] = k
+				end
+			 end
+			local regen_coords = {}
+			surface.regenerate_decorative(decorative_names, {{x=0,y=0}})
+			surface.regenerate_decorative(decorative_names, {{x=0,y=-1}})
+			surface.regenerate_decorative(decorative_names, {{x=-1,y=0}})
+			surface.regenerate_decorative(decorative_names, {{x=-1,y=-1}})	
+			]]
+			
+			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
+			global.market.minable = false
+			for _, item in pairs(market_items) do
+				global.market.add_market_item(item)
+			end
+		
 
 		local radius = 512
 		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
@@ -454,6 +554,8 @@ local function on_player_joined_game(event)
 		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})		
 		
 		game.players[1].insert({name = "gun-turret", count = 1})
+		
+		
 		
 		global.fish_defense_init_done = true
 	end
@@ -463,10 +565,8 @@ local function on_player_joined_game(event)
 		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 3})
 		player.insert({name = "firearm-magazine", count = 32})
-		player.insert({name = "grenade", count = 3})
-		player.insert({name = "iron-plate", count = 32})
-		player.insert({name = "light-armor", count = 1})
-		if global.show_floating_killscore then global.show_floating_killscore[player.name] = true end
+		player.insert({name = "iron-plate", count = 64})
+		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 
 	if global.wave_count then create_wave_gui(player) end
@@ -491,19 +591,21 @@ local function on_chunk_generated(event)
 		for _, entity in pairs(entities) do
 			entity.destroy()
 		end
-		--[[
+		
 		local tiles = {}
-		for x = 0, 31, 1 do
-			for y = 0, 31, 1 do
-				local pos = {x = left_top.x + x, y = left_top.y + y}
-				local tile = surface.get_tile(pos)
-				if tile.name == "deepwater" or tile.name == "water" then
-					insert(tiles, {name = "grass-1", position = pos})
+		if global.market.position then
+			local replacement_tile = surface.get_tile(global.market.position)
+			for x = 0, 31, 1 do
+				for y = 0, 31, 1 do
+					local pos = {x = left_top.x + x, y = left_top.y + y}
+					local tile = surface.get_tile(pos)
+					if tile.name == "deepwater" or tile.name == "water" then
+						insert(tiles, {name = replacement_tile.name, position = pos})
+					end
 				end
 			end
-		end
-		surface.set_tiles(tiles, true)
-		]]
+			surface.set_tiles(tiles, true)
+		end		
 	end
 	
 	if left_top.x >= 256 then
@@ -511,7 +613,8 @@ local function on_chunk_generated(event)
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -64}, "copper-ore", surface, 15, 2500)
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -32}, "iron-ore", surface, 15, 2500)
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 32}, "coal", surface, 15, 1500)
-			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 64}, "stone", surface, 15, 1500)			
+			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 64}, "stone", surface, 15, 1500)	
+			map_functions.draw_noise_tile_circle({x = -32, y = 0}, "water", surface, 16)			
 			global.spawn_ores_generated = true
 		end
 	end
@@ -596,7 +699,7 @@ local function on_chunk_generated(event)
 
 end
 
-local build_limit_radius = 32
+local build_limit_radius = 24
 local function on_built_entity(event)
 	if "flamethrower-turret" == event.created_entity.name then
 		event.created_entity.die()

@@ -1,3 +1,10 @@
+0.07
+biters no longer drop random items
+biter kills now grant coins
+market has items to sell for coins
+fixed spawn water
+a certain amount of gun or laser turrets can be placed per area
+
 0.06
 custom spawn ores
 

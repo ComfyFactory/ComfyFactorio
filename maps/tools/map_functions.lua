@@ -2,6 +2,32 @@ local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local f = {}
 
+f.draw_noise_tile_circle = function(position, name, surface, radius)
+	if not position then return end
+	if not name then return end
+	if not surface then return end
+	if not radius then return end
+	local math_random = math.random
+	local insert = table.insert	
+	local noise_seed_add = 25000
+	local tiles = {}			
+	for y = radius*-1, radius, 1 do
+		for x = radius*-1, radius, 1 do
+			local pos = {x = x + position.x, y = y + position.y}	
+			local seed = game.surfaces[1].map_gen_settings.seed
+			local noise_1 = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
+			seed = seed + noise_seed_add
+			local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+			local noise = noise_1 + noise_2 * 0.5
+			local distance_to_center = math.sqrt(x^2 + y^2)								
+			if distance_to_center + noise * radius * 0.3 < radius then			
+				insert(tiles, {name = name, position = pos})
+			end			
+		end
+	end
+	surface.set_tiles(tiles, true)
+end
+
 f.draw_oil_circle = function(position, name, surface, radius, richness)
 	if not position then return end
 	if not name then return end

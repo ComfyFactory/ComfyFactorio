@@ -1,11 +1,16 @@
 local event = require 'utils.event'
 
-local main_caption = " --Fish Defense-- "
+local main_caption = " --Fish Defender-- "
 local sub_caption = " *blb blubby blub* "
 local info = [[
-	The hungry biters have catched the scent of fish in the market.
+	The biters have catched the scent of fish in the market.
 	
-	Fend them off as long as possible!			
+	Fend them off as long as possible!
+
+	Gun and laser turrets only work in a limited way here.
+	The flamethrower turret is disabled.
+	
+	Defending will earn you coins which you can spend at the market.
 ]]
 
 local function create_map_intro(player)
