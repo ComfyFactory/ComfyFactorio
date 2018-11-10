@@ -8,7 +8,9 @@ local function on_chunk_generated(event)
 	
 	if not game.surfaces["surface"] then return end
 	
-	local surface = game.surfaces["surface"]	
+	local surface = game.surfaces["surface"]
+	if event.surface.name ~= surface.name then return end
+	
 	local ore_amount = 2500
 	local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 	local noise = {}
