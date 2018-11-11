@@ -356,8 +356,8 @@ local function on_entity_died(event)
 				if passenger then passenger = passenger.player end
 			end
 			if event.cause.type == "locomotive" then
-			player = event.cause.get_driver()
-			train_passengers = event.cause.train.passengers
+				player = event.cause.get_driver()
+				train_passengers = event.cause.train.passengers
 			end
 			
 			if not train_passengers and not passenger and not player then return end
@@ -369,12 +369,7 @@ local function on_entity_died(event)
 		end
 	end
 
-	if score_table[event.entity.name] then
-		--if not global.score[event.force.name].kills then
-			--global.score[event.force.name].kills = 1
-		--else
-			--global.score[event.force.name].kills = global.score[event.force.name].kills + 1
-		--end		
+	if score_table[event.entity.name] then		
 		
 		local show_floating_text = false
 		

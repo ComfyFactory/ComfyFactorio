@@ -277,9 +277,27 @@ local coin_earnings = {
 
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
-		if event.cause then
-			if event.cause.name == "player" and event.entity.type == "unit" then
-				event.cause.insert({name = "coin", count = coin_earnings[event.entity.name]})
+		if event.cause and event.entity.type == "unit" then
+			local players_to_reward = {}
+			if event.cause.name == "player" then
+				insert(players_to_reward, event.cause)				
+			end			
+			if event.cause.type == "car" then
+				player = event.cause.get_driver()
+				passenger = event.cause.get_passenger()
+				if player then insert(players_to_reward, player.player)	end
+				if passenger then insert(players_to_reward, passenger.player) end				
+			end
+			if event.cause.type == "locomotive" then
+				train_passengers = event.cause.train.passengers			
+				if train_passengers then
+					for _, passenger in pairs(train_passengers) do
+						insert(players_to_reward, passenger)
+					end
+				end
+			end
+			for _, player in pairs(players_to_reward) do
+				player.insert({name = "coin", count = coin_earnings[event.entity.name]})
 			end
 		end		
 
@@ -375,30 +393,13 @@ local function on_player_joined_game(event)
 		game.players[1].teleport(pos, surface)
 		
 		local pos = surface.find_non_colliding_position("market",{0, 0}, 50, 1)
-					
-			
-			--[[
-			map_functions.draw_noise_tile_circle({x = 10, y = 0}, replacement_tile, surface, 16)			
-			local decorative_names = {}
-			for k,v in pairs(game.decorative_prototypes) do
-				if v.autoplace_specification then
-				  decorative_names[#decorative_names+1] = k
-				end
-			 end
-			local regen_coords = {}
-			surface.regenerate_decorative(decorative_names, {{x=0,y=0}})
-			surface.regenerate_decorative(decorative_names, {{x=0,y=-1}})
-			surface.regenerate_decorative(decorative_names, {{x=-1,y=0}})
-			surface.regenerate_decorative(decorative_names, {{x=-1,y=-1}})	
-			]]
-			
-			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
-			global.market.minable = false
-			for _, item in pairs(market_items) do
-				global.market.add_market_item(item)
-			end
+										
+		global.market = surface.create_entity({name = "market", position = pos, force = "player"})
+		global.market.minable = false
+		for _, item in pairs(market_items) do
+			global.market.add_market_item(item)
+		end
 		
-
 		local radius = 512
 		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 

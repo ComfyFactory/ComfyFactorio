@@ -1,3 +1,6 @@
+0.08
+players and passengers in cars, tanks and trains now properly get their coin rewards
+
 0.07
 biters no longer drop random items
 biter kills now grant coins
