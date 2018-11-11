@@ -45,7 +45,7 @@ end
 local function get_biters()
 	local surface = game.surfaces[1]
 	local biters_found = {}
-	for x = 256, 8000, 32 do
+	for x = 288, 8000, 32 do
 		if not surface.is_chunk_generated({math.ceil(x / 32, 0), 0}) then return biters_found end
 		local area = {
 					left_top = {x = x, y = -1024},
@@ -85,20 +85,21 @@ local function biter_attack_wave()
 		{spawn = {x = 256, y = 0}, target = {x = 0, y = 0}}
 		}
 	local number_of_groups = 1
-
+	
+	local spawn_x = 242
 	if global.wave_count > 50 then
 		group_coords = {
-			{spawn = {x = 256, y = -160}, target = {x = -32, y = -64}},
-			{spawn = {x = 256, y = -128}, target = {x = -32, y = -64}},
-			{spawn = {x = 256, y = -96}, target = {x = -32, y = -48}},
-			{spawn = {x = 256, y = -64}, target = {x = -32, y = -32}},
-			{spawn = {x = 256, y = -32}, target = {x = -32, y = -16}},
-			{spawn = {x = 256, y = 0}, target = {x = -32, y = 0}},
-			{spawn = {x = 256, y = 32}, target = {x = -32, y = 16}},
-			{spawn = {x = 256, y = 64}, target = {x = -32, y = 32}},
-			{spawn = {x = 256, y = 96}, target = {x = -32, y = 48}},
-			{spawn = {x = 256, y = 128}, target = {x = -32, y = 64}},
-			{spawn = {x = 256, y = 160}, target = {x = -32, y = 64}}
+			{spawn = {x = spawn_x, y = -160}, target = {x = -32, y = -64}},
+			{spawn = {x = spawn_x, y = -128}, target = {x = -32, y = -64}},
+			{spawn = {x = spawn_x, y = -96}, target = {x = -32, y = -48}},
+			{spawn = {x = spawn_x, y = -64}, target = {x = -32, y = -32}},
+			{spawn = {x = spawn_x, y = -32}, target = {x = -32, y = -16}},
+			{spawn = {x = spawn_x, y = 0}, target = {x = -32, y = 0}},
+			{spawn = {x = spawn_x, y = 32}, target = {x = -32, y = 16}},
+			{spawn = {x = spawn_x, y = 64}, target = {x = -32, y = 32}},
+			{spawn = {x = spawn_x, y = 96}, target = {x = -32, y = 48}},
+			{spawn = {x = spawn_x, y = 128}, target = {x = -32, y = 64}},
+			{spawn = {x = spawn_x, y = 160}, target = {x = -32, y = 64}}
 		}
 		number_of_groups = math.ceil(global.wave_count / 100, 0)
     if number_of_groups > #group_coords then number_of_groups = #group_coords end
