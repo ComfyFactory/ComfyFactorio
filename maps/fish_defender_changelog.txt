@@ -1,3 +1,8 @@
+0.09
+biter wave fixes
+new turret and land mine limits
+evolution scales with wave count
+
 0.08
 players and passengers in cars, tanks and trains now properly get their coin rewards
 

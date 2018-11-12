@@ -69,7 +69,11 @@ local function biter_attack_wave()
 	else
 		global.wave_count = global.wave_count + 2
 	end
-
+			
+	local evolution = (global.wave_count / 2) * 0.0025
+	if evolution > 1 then evolution = 1 end
+	game.forces.enemy.evolution_factor = evolution
+	
 	if game.forces.enemy.evolution_factor > 0.9 then
 		if not global.endgame_modifier then
 			global.endgame_modifier = 0.01
@@ -101,7 +105,7 @@ local function biter_attack_wave()
 			{spawn = {x = spawn_x, y = 128}, target = {x = -32, y = 64}},
 			{spawn = {x = spawn_x, y = 160}, target = {x = -32, y = 64}}
 		}
-		number_of_groups = math.ceil(global.wave_count / 100, 0)
+		number_of_groups = math.ceil(global.wave_count / 125, 0)
     if number_of_groups > #group_coords then number_of_groups = #group_coords end
 	end
 
@@ -110,7 +114,7 @@ local function biter_attack_wave()
 	local biters = get_biters()
 
 	local max_group_size = math.ceil(global.wave_count / number_of_groups, 0)
-	if max_group_size > 200 then max_group_size = 200 end
+	if max_group_size > 150 then max_group_size = 150 end
 
 	local biter_counter = 0
 	local biter_attack_groups = {}
@@ -334,6 +338,10 @@ local function on_entity_died(event)
 		global.market_age = game.tick
 		is_game_lost()
 	end
+	
+	if global.entity_limits[event.entity.name] then
+		global.entity_limits[event.entity.name].placed = global.entity_limits[event.entity.name].placed - 1
+	end
 end
 
 local function on_entity_damaged(event)
@@ -359,6 +367,7 @@ local function on_entity_damaged(event)
 		if event.cause.force.name == "enemy" then
 			if global.endgame_modifier then
 				event.entity.health = event.entity.health - (event.final_damage_amount * global.endgame_modifier)
+				if event.entity.health <= 0 then event.entity.die() end
 			end
 		end
 	end
@@ -380,10 +389,13 @@ local function on_player_joined_game(event)
 
 		game.map_settings.enemy_expansion.enabled = false
 
-		game.map_settings.enemy_evolution.destroy_factor = 0.008
-		game.map_settings.enemy_evolution.time_factor = 0.00005
-		game.map_settings.enemy_evolution.pollution_factor = 0.000015
-		
+		--game.map_settings.enemy_evolution.destroy_factor = 0.008
+		--game.map_settings.enemy_evolution.time_factor = 0.00005
+		--game.map_settings.enemy_evolution.pollution_factor = 0.000015
+		game.map_settings.enemy_evolution.destroy_factor = 0
+		game.map_settings.enemy_evolution.time_factor = 0
+		game.map_settings.enemy_evolution.pollution_factor = 0
+				
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false
 		game.forces["player"].technologies["artillery-shell-speed-1"].enabled = false
 		game.forces["player"].technologies["artillery"].enabled = false
@@ -408,7 +420,12 @@ local function on_player_joined_game(event)
 		
 		game.players[1].insert({name = "gun-turret", count = 1})
 		
-		
+		global.entity_limits = {
+			["gun-turret"] = {placed = 0, limit = 7, str = "gun turret"},
+			["laser-turret"] = {placed = 0, limit = 3, str = "laser turret"},
+			["flamethrower-turret"] =  {placed = 0, limit = 1, str = "flamethrower turret"},
+			["land-mine"] =  {placed = 0, limit = 250, str = "landmine"}
+		}
 		
 		global.fish_defense_init_done = true
 	end
@@ -560,72 +577,49 @@ local function on_chunk_generated(event)
 
 end
 
-local build_limit_radius = 24
 local function on_built_entity(event)
-	if "flamethrower-turret" == event.created_entity.name then
-		event.created_entity.die()
-		return
-	end
-
-	if event.created_entity.name == "gun-turret" then
-		local surface = event.created_entity.surface
-		local area = {{event.created_entity.position.x - build_limit_radius, event.created_entity.position.y - build_limit_radius}, {event.created_entity.position.x + build_limit_radius, event.created_entity.position.y + build_limit_radius}}
-		local turrets_count_in_area = surface.count_entities_filtered({area = area, name = "gun-turret", limit = 2})
-
-		if turrets_count_in_area <= 1 then
-			--surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 2 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
+	local entity = event.created_entity
+	if global.entity_limits[entity.name] then
+		local surface = entity.surface
+		
+		if global.entity_limits[entity.name].placed < global.entity_limits[entity.name].limit then
+			global.entity_limits[entity.name].placed = global.entity_limits[entity.name].placed + 1		
+			surface.create_entity(
+				{name = "flying-text", position = entity.position, text = global.entity_limits[entity.name].placed .. " / " .. global.entity_limits[entity.name].limit .. " " .. global.entity_limits[entity.name].str .. "s", color = {r=0.98, g=0.66, b=0.22}}
+				)
 		else
-			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = "Too many turrets in area", color = {r=0.82, g=0.11, b=0.11}})
-			if event.player_index then
-				local player = game.players[event.player_index]
-				event.created_entity.destroy()
-				player.insert({name = "gun-turret", count = 1})
-				if global.score then
-					if global.score[player.force.name] then
-						if global.score[player.force.name].players[player.name] then
-							global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
-						end
+			surface.create_entity({name = "flying-text", position = entity.position, text = global.entity_limits[entity.name].str .. " limit reached.", color = {r=0.82, g=0.11, b=0.11}})			 
+			local player = game.players[event.player_index]			
+			player.insert({name = entity.name, count = 1})
+			if global.score then
+				if global.score[player.force.name] then
+					if global.score[player.force.name].players[player.name] then
+						global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
 					end
 				end
-				return
-			else
-				event.created_entity.die()
-				return
-			end
-		end
-	end
-
-	if event.created_entity.name == "laser-turret" then
-		local surface = event.created_entity.surface
-		local area = {{event.created_entity.position.x - build_limit_radius, event.created_entity.position.y - build_limit_radius}, {event.created_entity.position.x + build_limit_radius, event.created_entity.position.y + build_limit_radius}}
-		local turrets_count_in_area = surface.count_entities_filtered({area = area, name = "laser-turret", limit = 2})
-
-		if turrets_count_in_area <= 1 then
-			--surface.create_entity({name = "flying-text", position = event.created_entity.position, text = turrets_count_in_area .. " / 1 Turrets built in area", color = {r=0.98, g=0.66, b=0.22}})
-		else
-			surface.create_entity({name = "flying-text", position = event.created_entity.position, text = "Too many turrets in area", color = {r=0.82, g=0.11, b=0.11}})
-			if event.player_index then
-				local player = game.players[event.player_index]
-				event.created_entity.destroy()
-				player.insert({name = "laser-turret", count = 1})
-				if global.score then
-					if global.score[player.force.name] then
-						if global.score[player.force.name].players[player.name] then
-							global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
-						end
-					end
-				end
-				return
-			else
-				event.created_entity.die()
-				return
-			end
+			end		
+			entity.destroy()
 		end
 	end
 end
 
 local function on_robot_built_entity(event)
-	on_built_entity(event)
+	local entity = event.created_entity
+	if global.entity_limits[entity.name] then
+		local surface = entity.surface
+		
+		if global.entity_limits[entity.name].placed < global.entity_limits[entity.name].limit then
+			global.entity_limits[entity.name].placed = global.entity_limits[entity.name].placed + 1		
+			surface.create_entity(
+				{name = "flying-text", position = entity.position, text = global.entity_limits[entity.name].placed .. " / " .. global.entity_limits[entity.name].limit .. " " .. global.entity_limits[entity.name].str .. "s", color = {r=0.98, g=0.66, b=0.22}}
+				)
+		else
+			surface.create_entity({name = "flying-text", position = entity.position, text = global.entity_limits[entity.name].str .. " limit reached.", color = {r=0.82, g=0.11, b=0.11}})
+			local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+			inventory.insert({name = entity.name, count = 1})
+			entity.destroy()												
+		end
+	end
 end
 
 local function on_tick()
@@ -657,10 +651,24 @@ local function on_player_changed_position(event)
 	end
 end
 
+local function on_player_mined_entity(event)
+	if global.entity_limits[event.entity.name] then
+		global.entity_limits[event.entity.name].placed = global.entity_limits[event.entity.name].placed - 1
+	end
+end
+
+local function on_robot_mined_entity(event)
+	if global.entity_limits[event.entity.name] then
+		global.entity_limits[event.entity.name].placed = global.entity_limits[event.entity.name].placed - 1
+	end
+end
+	
 event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
