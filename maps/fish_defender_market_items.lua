@@ -1,4 +1,7 @@
 local items = {
+	--{price = {{"coin", 50}}, offer = {type = 'nothing', effect_description = 'Buy Turret Slot'}},
+	--{price = {{"coin", 250}}, offer = {type = 'nothing', effect_description = 'Buy Laser Turret Slot'}},
+	--{price = {{"coin", 10}}, offer = {type = 'nothing', effect_description = 'Buy Mine Slot'}},
 	{price = {{"coin", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
 	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 1}},
 	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'explosives', count = 2}},
