@@ -718,17 +718,6 @@ local function on_entity_died(event)
 		damage_entities_in_radius(event.entity.position, 1, damage)
 	end
 
-	if event.entity.name == "big-biter" then
-		event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
-		local damage = 35
-		damage_entities_in_radius(event.entity.position, 2, damage)
-	end
-	
-	if event.entity.name == "behemoth-biter" then
-		event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
-		local damage = 45
-		damage_entities_in_radius(event.entity.position, 3, damage)
-	end
 end
 
 local function get_valid_biters(requested_amount, y_modifier, pos_x, pos_y, radius_inc)
@@ -1190,6 +1179,23 @@ end
 
 --Silo grief prevention--
 local function on_entity_damaged(event)
+
+	--flamethrower turret nerf
+	if event.cause then
+		if event.cause.name == "flamethrower-turret" and event.entity.force.name == "enemy" then
+			for i = 1, 2, 1 do
+				if event.cause.fluidbox[i] then					
+					if event.cause.fluidbox[i].amount > 0.1 then
+						local fluid_name = event.cause.fluidbox[i].name
+						local new_amount = event.cause.fluidbox[i].amount - 0.30
+						if new_amount < 0 then new_amount = 0 end
+						event.cause.fluidbox[i] = {name = fluid_name, amount = new_amount}
+					end
+				end
+			end
+		end
+	end
+
 	--biter rage damage modifier
 	if event.entity.force.name == "north" then 
 		if event.force.name == "enemy" then

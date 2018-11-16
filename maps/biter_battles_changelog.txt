@@ -1,6 +1,7 @@
 0.31
 map generation fixes
-medium, big and behemoth biters now explode with a visual effect
+medium biters now explode with a visual effect
+flamethrower turrets consume alot more fuel
 
 0.30
 join team message fixed
