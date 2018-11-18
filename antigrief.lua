@@ -1,11 +1,36 @@
+--antigrief things made by mewmew
+
 local event = require 'utils.event'
 
-local function jail(player)
-	
+local function create_admin_button(player)
+	if player.gui.top["admin_button"] then return end
+	local b = player.gui.top.add({type = "button", caption = "Admin", name = "admin_button"})
+	b.style.font_color = {r = 0.95, g = 0.11, b = 0.11}
+	b.style.font = "default-bold"
+	b.style.minimal_height = 38
+	b.style.minimal_width = 38
+	b.style.top_padding = 2
+	b.style.left_padding = 4
+	b.style.right_padding = 4
+	b.style.bottom_padding = 2
 end
 
-local function free(player)
-	
+local function on_player_joined_game(event)
+	local player = game.players[event.player_index]
+	if player.admin == true then
+		create_admin_button(player)
+	end
+end
+
+local function on_player_promoted(event)
+	local player = game.players[event.player_index]	
+	create_admin_button(player)
+end
+
+local function on_player_demoted(event)
+	local player = game.players[event.player_index]	
+	if player.gui.top["admin_button"] then player.gui.top["admin_button"].destroy() end
+	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 end
 
 local function on_marked_for_deconstruction(event)
@@ -41,7 +66,7 @@ local function on_player_ammo_inventory_changed(event)
 	end
 end
 
-local function on_console_command(event)
+local function on_console_command(event)	
 	if event.command ~= "silent-command" then return end
 	if not event.player_index then return end
 	local player = game.players[event.player_index]	
@@ -49,7 +74,7 @@ local function on_console_command(event)
 		if p.admin == true and p.name ~= player.name then
 			p.print(player.name .. " did a silent-command: " .. event.parameters, { r=0.22, g=0.99, b=0.99})
 		end
-	end
+	end		
 end
 
 local function on_player_built_tile(event)
@@ -60,7 +85,7 @@ local function on_player_built_tile(event)
 	if placed_tiles[1].old_tile.name == "deepwater" or placed_tiles[1].old_tile.name == "water" or placed_tiles[1].old_tile.name == "water-green" then		
 		if not global.landfill_history then global.landfill_history = {} end
 		if #global.landfill_history > 999 then global.landfill_history = {} end
-		local str = player.name .. " placed landfill at X:"
+		local str = player.name .. " at X:"
 		str = str .. placed_tiles[1].position.x
 		str = str .. " Y:"
 		str = str .. placed_tiles[1].position.y
@@ -69,6 +94,8 @@ local function on_player_built_tile(event)
 end
 
 local function on_built_entity(event)
+	if game.tick < 1296000 then return end
+	
 	if event.created_entity.type == "entity-ghost" then
 		local player = game.players[event.player_index]
 		
@@ -95,6 +122,9 @@ local function on_built_entity(event)
 	end
 end
 
+event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_promoted, on_player_promoted)
+event.add(defines.events.on_player_demoted, on_player_demoted)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_console_command, on_console_command)
