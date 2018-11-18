@@ -451,6 +451,7 @@ local function join_team(player, team)
 			end
 			permission_group.set_allows_action(defines.input_action.write_to_console, true)
 			permission_group.set_allows_action(defines.input_action.gui_click, true)
+			permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
 			permission_group.set_allows_action(defines.input_action.start_walking, true)
 			permission_group.set_allows_action(defines.input_action.open_kills_gui, true)
 			permission_group.set_allows_action(defines.input_action.open_character_gui, true)

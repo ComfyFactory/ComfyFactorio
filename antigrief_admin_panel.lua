@@ -23,6 +23,7 @@ local function jail(player, source_player)
 		end
 		permission_group.set_allows_action(defines.input_action.write_to_console, true)
 		permission_group.set_allows_action(defines.input_action.gui_click, true)
+		permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)		
 	end
 	permission_group.add_player(player.name)
 	game.print(player.name .. " has been jailed. " .. jail_messages[math.random(1, #jail_messages)], { r=0.98, g=0.66, b=0.22})
