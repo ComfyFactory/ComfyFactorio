@@ -224,7 +224,7 @@ local function create_biter_battle_menu(player)
 	local t = frame.add { type = "table", column_count = 3 }	
 	local l = t.add  { type = "label", caption = "Team North"}
 	l.style.font = "default-bold"
-	l.style.font_color = { r=0.98, g=0.66, b=0.22}
+	l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
 	local l = t.add  { type = "label", caption = "  -  "}
 	local l = t.add  { type = "label", caption = #game.forces["north"].connected_players .. " Players "}
 	l.style.font_color = { r=0.22, g=0.88, b=0.22}
@@ -251,20 +251,20 @@ local function create_biter_battle_menu(player)
 		l.tooltip = "Damage nerf of the team."
 		local l = t.add  { type = "label", caption = math.round(global.team_nerf["north"]*100,1) .. " "}
 		l.style.minimal_width = 40
-		l.style.font_color = { r=0.90, g=0.1, b=0.1}
+		l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
 		l.style.font = "default-bold"		
 		local l = t.add  { type = "label", caption = " Biter Rage: "}
 		l.style.minimal_width = 25
 		l.tooltip = "Increases damage and the amount of angry biters."
 		local l = t.add  { type = "label", caption = math.round(global.biter_rage["north"],0)}	
-		l.style.font_color = { r=0.90, g=0.1, b=0.1}
+		l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
 	end
 	
 	if player.force.name == "player" then
 		local c = "JOIN NORTH"		
-		local font_color = { r=0.98, g=0.0, b=0.0}
+		local font_color =  {r = 0.55, g = 0.55, b = 0.99}
 		if global.game_lobby_active then
 			font_color = { r=0.7, g=0.7, b=0.7}
 			c = c .. " (waiting for players...  "
@@ -294,7 +294,7 @@ local function create_biter_battle_menu(player)
 	local t = frame.add { type = "table", column_count = 3 }	
 	local l = t.add  { type = "label", caption = "Team South"}
 	l.style.font = "default-bold"
-	l.style.font_color = { r=0.98, g=0.66, b=0.22}
+	l.style.font_color = {r = 0.99, g = 0.33, b = 0.33}
 	local l = t.add  { type = "label", caption = "  -  "}
 	local l = t.add  { type = "label", caption = #game.forces["south"].connected_players .. " Players "}
 	l.style.font_color = { r=0.22, g=0.88, b=0.22}
@@ -321,20 +321,20 @@ local function create_biter_battle_menu(player)
 		l.style.minimal_width = 25
 		local l = t.add  { type = "label", caption = math.round(global.team_nerf["south"]*100,1) .. " "}
 		l.style.minimal_width = 40
-		l.style.font_color = { r=0.90, g=0.1, b=0.1}
+		l.style.font_color = {r = 0.99, g = 0.44, b = 0.44}
 		l.style.font = "default-bold"		
 		local l = t.add  { type = "label", caption = " Biter Rage: "}
 		l.style.minimal_width = 25
 		l.tooltip = "Increases damage and the amount of angry biters."
 		local l = t.add  { type = "label", caption = math.round(global.biter_rage["south"],0)}	
-		l.style.font_color = { r=0.90, g=0.1, b=0.1}
+		l.style.font_color = {r = 0.99, g = 0.44, b = 0.44}
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
 	end
 	
 	if player.force.name == "player" then
 		local c = "JOIN SOUTH"		
-		local font_color = { r=0.98, g=0.0, b=0.0}
+		local font_color = {r = 0.99, g = 0.33, b = 0.33}
 		if global.game_lobby_active then
 			font_color = { r=0.7, g=0.7, b=0.7}
 			c = c .. " (waiting for players...  "
@@ -457,7 +457,6 @@ local function join_team(player, team)
 			permission_group.set_allows_action(defines.input_action.open_character_gui, true)
 			permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
 			permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
-			permission_group.set_allows_action(defines.input_action.edit_permission_group, true)
 			permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)				
 		end
 		permission_group.add_player(player.name)
