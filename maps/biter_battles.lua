@@ -1187,7 +1187,7 @@ local function on_entity_damaged(event)
 				if event.cause.fluidbox[i] then					
 					if event.cause.fluidbox[i].amount > 0.1 then
 						local fluid_name = event.cause.fluidbox[i].name
-						local new_amount = event.cause.fluidbox[i].amount - 0.30
+						local new_amount = event.cause.fluidbox[i].amount - 0.25
 						if new_amount < 0 then new_amount = 0 end
 						event.cause.fluidbox[i] = {name = fluid_name, amount = new_amount}
 					end
