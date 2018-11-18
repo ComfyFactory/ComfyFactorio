@@ -122,15 +122,17 @@ local function show_score(player)
 		
 	local score_list = {}
 	for _, p in pairs(game.connected_players) do
-		local killscore = 0
-		if score.players[p.name].killscore then killscore = score.players[p.name].killscore end
-		local deaths = 0
-		if score.players[p.name].deaths then deaths = score.players[p.name].deaths end
-		local built_entities = 0
-		if score.players[p.name].built_entities then built_entities = score.players[p.name].built_entities end
-		local mined_entities = 0
-		if score.players[p.name].mined_entities then mined_entities = score.players[p.name].mined_entities end
-		table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})		
+		if score.players[p.name] then
+			local killscore = 0
+			if score.players[p.name].killscore then killscore = score.players[p.name].killscore end
+			local deaths = 0
+			if score.players[p.name].deaths then deaths = score.players[p.name].deaths end
+			local built_entities = 0
+			if score.players[p.name].built_entities then built_entities = score.players[p.name].built_entities end
+			local mined_entities = 0
+			if score.players[p.name].mined_entities then mined_entities = score.players[p.name].mined_entities end
+			table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})
+		end
 	end
 	
 	if #game.connected_players > 1 then
@@ -183,6 +185,7 @@ local function refresh_score_full()
 	end
 end
 
+--[[
 local function refresh_score()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["score_panel"] then
@@ -223,6 +226,7 @@ local function refresh_score()
 		end
 	end
 end
+]]
 
 local function init_player_table(player)
 	if not global.score[player.force.name] then global.score[player.force.name] = {} end
@@ -303,7 +307,7 @@ local function on_rocket_launched(event)
 		global.score[force_name].rocket_launches = global.score[force_name].rocket_launches + 1
 	end	
 	game.print ("A rocket has been launched!", {r=0.98, g=0.66, b=0.22})		
-	refresh_score()
+	refresh_score_full()
 end
 
 local score_table = {
@@ -454,7 +458,7 @@ end
 
 local function on_tick(event)
 	if game.tick % 300 == 0 then
-		refresh_score()
+		refresh_score_full()
 	end
 end
 

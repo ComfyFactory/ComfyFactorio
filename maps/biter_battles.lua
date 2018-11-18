@@ -76,6 +76,111 @@ local function create_biter_battle_sprite_button(player)
 	end
 end
 
+local function get_sorted_list(column_name, score_list)		
+	for x = 1, #score_list, 1 do
+		for y = 1, #score_list, 1 do			
+			if not score_list[y + 1] then break end
+			if score_list[y][column_name] < score_list[y + 1][column_name] then
+				local key = score_list[y]
+				score_list[y] = score_list[y + 1]
+				score_list[y + 1] = key
+			end
+		end		
+	end	
+	return score_list
+end
+
+local function get_mvps(force)
+	if not global.score[force] then return false end
+	local score = global.score[force]
+	local score_list = {}
+	for _, p in pairs(game.players) do
+		if score.players[p.name] then
+			local killscore = 0
+			if score.players[p.name].killscore then killscore = score.players[p.name].killscore end
+			local deaths = 0
+			if score.players[p.name].deaths then deaths = score.players[p.name].deaths end
+			local built_entities = 0
+			if score.players[p.name].built_entities then built_entities = score.players[p.name].built_entities end
+			local mined_entities = 0
+			if score.players[p.name].mined_entities then mined_entities = score.players[p.name].mined_entities end
+			table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})	
+		end
+	end
+	local mvp = {}
+	score_list = get_sorted_list("killscore", score_list)
+	mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
+	score_list = get_sorted_list("deaths", score_list)
+	mvp.deaths = {name = score_list[1].name, score = score_list[1].deaths}
+	score_list = get_sorted_list("built_entities", score_list)
+	mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
+	return mvp
+end
+
+local function show_mvps(player)
+	if not global.score then return end
+	if player.gui.left["mvps"] then return end
+	local frame = player.gui.left.add({type = "frame", direction = "vertical"})
+	local l = frame.add({type = "label", caption = "MVPs - North:"})
+	l.style.font = "default-frame"
+	l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
+		
+	local t = frame.add({type = "table", column_count = 2})
+	local mvp = get_mvps("north")		
+	if mvp then
+		
+		local l = t.add({type = "label", caption = "Defender >> "})
+		l.style.font = "default-listbox"
+		l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+		local l = t.add({type = "label", caption = mvp.killscore.name .. " with a score of " .. mvp.killscore.score})
+		l.style.font = "default-bold"
+		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		
+		local l = t.add({type = "label", caption = "Builder >> "})
+		l.style.font = "default-listbox"
+		l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+		local l = t.add({type = "label", caption = mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things"})
+		l.style.font = "default-bold"
+		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		
+		local l = t.add({type = "label", caption = "Deaths >> "})
+		l.style.font = "default-listbox"
+		l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+		local l = t.add({type = "label", caption = mvp.deaths.name .. " died " .. mvp.deaths.score .. " times"})						
+		l.style.font = "default-bold"
+		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+	end
+	
+	local l = frame.add({type = "label", caption = "MVPs - South:"})
+	l.style.font = "default-frame"
+	l.style.font_color = {r = 0.99, g = 0.33, b = 0.33}
+	
+	local t = frame.add({type = "table", column_count = 2})
+	local mvp = get_mvps("south")		
+	if mvp then			
+		local l = t.add({type = "label", caption = "Defender >> "})
+		l.style.font = "default-listbox"
+		l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+		local l = t.add({type = "label", caption = mvp.killscore.name .. " with a score of " .. mvp.killscore.score})
+		l.style.font = "default-bold"
+		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		
+		local l = t.add({type = "label", caption = "Builder >> "})
+		l.style.font = "default-listbox"
+		l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+		local l = t.add({type = "label", caption = mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things"})
+		l.style.font = "default-bold"
+		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		
+		local l = t.add({type = "label", caption = "Deaths >> "})
+		l.style.font = "default-listbox"
+		l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+		local l = t.add({type = "label", caption = mvp.deaths.name .. " died " .. mvp.deaths.score .. " times"})						
+		l.style.font = "default-bold"
+		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+	end
+end
+
 local function create_biter_battle_menu(player)
 	if global.rocket_silo_destroyed then 
 		local frame = player.gui.left.add { type = "frame", name = "victory_popup", direction = "vertical" }			
@@ -86,6 +191,7 @@ local function create_biter_battle_menu(player)
 		l.style.left_padding = 20
 		l.style.right_padding = 20
 		l.style.bottom_padding = 10
+		show_mvps(player)
 		return
 	end
 		
