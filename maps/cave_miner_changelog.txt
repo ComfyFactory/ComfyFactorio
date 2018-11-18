@@ -1,3 +1,6 @@
+0.20
+a big part of the lootboxes are now hidden within the rocks
+
 0.19
 markets are now also fish bank terminals
 fish can not be deconstructed anymore

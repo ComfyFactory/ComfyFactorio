@@ -682,7 +682,7 @@ local function on_chunk_generated(event)
 	surface.set_tiles(tiles,true)
 		
 	for _, k in pairs(treasure_chest_positions) do	
-		if math.random(1,300)==1 then 
+		if math.random(1,800)==1 then 
 			treasure_chest(k[1], k[2])
 		end
 	end
@@ -1125,17 +1125,24 @@ local function pre_player_mined_item(event)
 	
 	if math.random(1,12) == 1 then
 		if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then		
-			for x = 1, math.random(6,8), 1 do
+			for x = 1, math.random(6, 10), 1 do
 				table.insert(global.biter_spawn_schedule, {game.tick + 15*x, event.entity.position})		
 			end			
 		end
 	end
-	
+				
 	if event.entity.type == "tree" then surface.spill_item_stack(player.position,{name = "raw-fish", count = math.random(1,2)},true) end
 	
 	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then		
 		local rock_position = {x = event.entity.position.x, y = event.entity.position.y}
 		event.entity.destroy()
+		
+		local distance_to_center = rock_position.x ^ 2 + rock_position.y ^ 2
+		if math.random(1, 150) == 1 then
+			treasure_chest(rock_position, distance_to_center)
+			player.print("You notice an old crate within the rubble. It´s filled with treasure!", { r=0.98, g=0.66, b=0.22})
+		end
+		
 		local tile_distance_to_center = math.sqrt(rock_position.x^2 + rock_position.y^2)
 				
 		if math.random(1,3) == 1 then hunger_update(player, -1) end
