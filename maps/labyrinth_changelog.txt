@@ -1,0 +1,3 @@
+0.01
+loot table adjustments
+the dungeon inhabitants will now try to swarm to the entrance sometimes
