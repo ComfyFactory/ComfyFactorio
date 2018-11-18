@@ -1359,11 +1359,17 @@ local function on_market_item_purchased(event)
 		player.surface.create_entity({name = "flying-text", position = player.position, text = tostring(fish_removed .. " Fish deposited"), color = {r=0.10, g=0.75, b=0.5}})
 	end
 	
-	if offer_index == 2 then				
+	if offer_index == 2 then
+		if global.fish_bank[player.name] == 0 then
+			player.print("No fish in your Bank account :(", { r=0.10, g=0.75, b=0.5})
+			return
+		end
+		
 		local requested_withdraw_amount = 500
 		local fee = 10		
 		if global.fish_bank[player.name] < requested_withdraw_amount + fee then		
 			fee = math.ceil(global.fish_bank[player.name] * 0.01, 0)
+			if global.fish_bank[player.name] < 10 then fee = 0 end
 			requested_withdraw_amount = global.fish_bank[player.name] - fee
 		end			
 		local fish_withdrawn = player.insert({name = "raw-fish", count = requested_withdraw_amount})
