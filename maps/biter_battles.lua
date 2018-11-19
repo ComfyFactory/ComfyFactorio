@@ -1,6 +1,6 @@
 -- Biter Battles -- mewmew made this --
 
-require 'biter_battles_terrain'
+local biter_battles_terrain = require 'biter_battles_terrain'
 local event = require 'utils.event'
 local math_random = math.random
 
@@ -120,7 +120,7 @@ end
 local function show_mvps(player)
 	if not global.score then return end
 	if player.gui.left["mvps"] then return end
-	local frame = player.gui.left.add({type = "frame", direction = "vertical"})
+	local frame = player.gui.left.add({type = "frame", name = "mvps", direction = "vertical"})
 	local l = frame.add({type = "label", caption = "MVPs - North:"})
 	l.style.font = "default-frame"
 	l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}

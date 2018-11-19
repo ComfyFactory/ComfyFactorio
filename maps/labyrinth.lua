@@ -983,8 +983,16 @@ local function on_entity_damaged(event)
 	end
 end
 
+local attack_messages = {
+		"You hear their screeching in the depths. They are trying to reach the entrance!",
+		"They are coming for you..",
+		"Something stirred them up..",
+		"Something must have triggered them..",
+		"These noises, this can´t be good.."
+	}
+	
 local function on_tick(event)
-	if game.tick % 4000 == 0 then		
+	if game.tick % 4600 == 0 then		
 		if math.random(1, 4) ~= 1 then return end
 		local surface = game.surfaces["labyrinth"]
 		local area = {{-10000, -10000}, {10000, 0}}
@@ -993,7 +1001,7 @@ local function on_tick(event)
 			biter.set_command({type=defines.command.attack_area, destination={x = 16, y = 16}, radius=15, distraction=defines.distraction.by_anything})	
 		end
 		if #biters > 0 then
-			game.print("You hear them screeching in the depths. They are trying to reach the entrance!", {r=0.75, g=0, b=0})
+			game.print(attack_messages[math.random(1, #attack_messages)], {r=0.75, g=0, b=0})
 		end
 	end
 end

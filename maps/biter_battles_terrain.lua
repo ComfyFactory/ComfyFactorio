@@ -1,10 +1,14 @@
 
 local simplex_noise = require 'utils.simplex_noise'
-local Event = require 'utils.event'
-biter_battles_terrain = {}
+local simplex_noise = simplex_noise.d2
+local event = require 'utils.event'
+local biter_battles_terrain = {}
+local math_random = math.random
+local table_insert = table.insert
 
 local function on_chunk_generated(event)
-	if not global.noise_seed then global.noise_seed = game.surfaces[1].map_gen_settings.seed end
+	
+	local seed = game.surfaces[1].map_gen_settings.seed
 	
 	if not game.surfaces["surface"] then return end
 	
@@ -14,7 +18,7 @@ local function on_chunk_generated(event)
 	local ore_amount = 2500
 	local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 	local noise = {}
-	local tiles = {}	
+	--local tiles = {}	
 	
 	local aa = 0.0113
 	local bb = 21
@@ -23,21 +27,21 @@ local function on_chunk_generated(event)
 	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
-			tiles = {}	
+		--	tiles = {}	
 			local pos_x = event.area.left_top.x + x
 			local pos_y = event.area.left_top.y + y														
 			local tile_to_insert = false
 			local entity_has_been_placed = false		
 			
-			noise[1] = simplex_noise.d2(pos_x/250, pos_y/250,global.noise_seed)
-			noise[2] = simplex_noise.d2(pos_x/75, pos_y/75,global.noise_seed+10000)	
-			noise[8] = simplex_noise.d2(pos_x/15, pos_y/15,global.noise_seed+40000)					
+			noise[1] = simplex_noise(pos_x/250, pos_y/250,seed)
+			noise[2] = simplex_noise(pos_x/75, pos_y/75,seed+10000)	
+			noise[8] = simplex_noise(pos_x/15, pos_y/15,seed+40000)					
 			noise[3] = noise[1] + noise[2] * 0.2 + noise[8]*0.02
 			
-			noise[4] = simplex_noise.d2(pos_x/200, pos_y/200,global.noise_seed+15000)	
-			noise[5] = simplex_noise.d2(pos_x/20, pos_y/20,global.noise_seed+20000)	
-			noise[6] = simplex_noise.d2(pos_x/8, pos_y/8,global.noise_seed+25000)
-			noise[7] = simplex_noise.d2(pos_x/400, pos_y/400,global.noise_seed+35000)			
+			noise[4] = simplex_noise(pos_x/200, pos_y/200,seed+15000)	
+			noise[5] = simplex_noise(pos_x/20, pos_y/20,seed+20000)	
+			noise[6] = simplex_noise(pos_x/8, pos_y/8,seed+25000)
+			noise[7] = simplex_noise(pos_x/400, pos_y/400,seed+35000)			
 			local water_noise = noise[4] + (noise[6] * 0.006) + (noise[5] * 0.04)
 			
 			local a = ore_amount * (1+(noise[2]*0.3))						
@@ -63,11 +67,11 @@ local function on_chunk_generated(event)
 					tile_to_insert = "deepwater"							
 				end
 			end
-			if tile_to_insert then table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
-			surface.set_tiles(tiles,true)
-			
+			--if tile_to_insert then table_insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
+			if tile_to_insert then surface.set_tiles({{name = tile_to_insert, position = {pos_x,pos_y}}}, true) end
+					
 			if tile_to_insert == "water" or tile_to_insert == "deepwater" then
-				if surface.can_place_entity{name="fish", position={pos_x,pos_y}} and math.random(1,12) == 1 then
+				if surface.can_place_entity{name="fish", position={pos_x,pos_y}} and math_random(1,14) == 1 then
 					surface.create_entity {name="fish", position={pos_x,pos_y}} 
 				end
 			end
@@ -79,6 +83,7 @@ local function on_chunk_generated(event)
 		local spawn_tile = surface.get_tile(game.forces.south.get_spawn_position(surface))	
 		local radius = 24  --starting pond radius
 		local radsquare = radius*radius
+		local horizontal_border_width = global.horizontal_border_width
 		for x = 0, 31, 1 do
 			for y = 0, 31, 1 do
 				tiles = {}
@@ -86,10 +91,10 @@ local function on_chunk_generated(event)
 				local pos_y = event.area.left_top.y + y														
 				local tile_to_insert = false				
 				local tile_distance_to_center = pos_x^2 + pos_y^2
-				noise[4] = simplex_noise.d2(pos_x/85, pos_y/85,global.noise_seed+20000)		
-				noise[5] = simplex_noise.d2(pos_x/7, pos_y/7,global.noise_seed+30000)	
+				noise[4] = simplex_noise(pos_x/85, pos_y/85,seed+20000)		
+				noise[5] = simplex_noise(pos_x/7, pos_y/7,seed+30000)	
 				noise[7] = 1 + (noise[4]+(noise[5]*0.75))*0.11						
-				if pos_y >= ((global.horizontal_border_width/2)*-1)*noise[7] and pos_y <= (global.horizontal_border_width/2)*noise[7] then
+				if pos_y >= ((horizontal_border_width/2)*-1)*noise[7] and pos_y <= (horizontal_border_width/2)*noise[7] then
 					if pos_x < 20 and pos_x > -20 then
 						local entities = surface.find_entities({{pos_x, pos_y}, {pos_x+1, pos_y+1}})						
 						for _, e in pairs(entities) do
@@ -121,11 +126,11 @@ local function on_chunk_generated(event)
 							end
 						end
 				end			
-				if tile_to_insert then table.insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
+				if tile_to_insert then table_insert(tiles, {name = tile_to_insert, position = {pos_x,pos_y}}) end
 				surface.set_tiles(tiles,true)
 				
 				if tile_to_insert == "deepwater" then
-					if surface.can_place_entity{name="fish", position={pos_x,pos_y}} and math.random(1,35) == 1 then
+					if surface.can_place_entity{name="fish", position={pos_x,pos_y}} and math_random(1,35) == 1 then
 						surface.create_entity {name="fish", position={pos_x,pos_y}} 
 					end	
 				end
@@ -147,7 +152,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 	
 	local scanned_tile = surface.get_tile(x,y)
 	if scanned_tile.name ~= tilename then
-		table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+		table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 		surface.set_tiles(cluster_tiles,auto_correct)
 		return true, x, y
 	end
@@ -156,22 +161,22 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 	local r = 1		
 	
 	if mode == "ball" then
-		if math.random(1,2) == 1 then 
+		if math_random(1,2) == 1 then 
 			density = density * -1
 		end
-		r = math.random(1,4)
+		r = math_random(1,4)
 	end
 	if mode == "line" then
 		density = 1
-		r = math.random(1,4)
+		r = math_random(1,4)
 	end
 	if mode == "line_down" then
 		density = density * -1
-		r = math.random(1,4)
+		r = math_random(1,4)
 	end
 	if mode == "line_up" then
 		density = 1
-		r = math.random(1,4)
+		r = math_random(1,4)
 	end
 	if mode == "block" then
 		r = 1
@@ -186,7 +191,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)				
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -195,7 +200,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -204,7 +209,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -213,7 +218,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -232,7 +237,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				x = x + density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -241,7 +246,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				y = y + density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -250,7 +255,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				x = x - density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -259,7 +264,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				y = y - density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -276,7 +281,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -285,7 +290,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -294,7 +299,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -303,7 +308,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 			for a = 1, i, 1 do				
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -322,7 +327,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				y = y + density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -331,7 +336,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				x = x - density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -340,7 +345,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				y = y - density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -349,7 +354,7 @@ local function find_tile_placement_spot_around_target_position(tilename, positio
 				x = x + density
 				local scanned_tile = surface.get_tile(x,y)
 				if scanned_tile.name ~= tilename then	
-					table.insert(cluster_tiles, {name = tilename, position = {x,y}})
+					table_insert(cluster_tiles, {name = tilename, position = {x,y}})
 					surface.set_tiles(cluster_tiles,auto_correct)
 					return true, x, y
 				end
@@ -370,7 +375,7 @@ local function create_tile_cluster(tilename,position,amount)
 	for i = 1, amount, 1 do
 		local b,x,y = find_tile_placement_spot_around_target_position(tilename, pos, mode)
 		if b == true then						
-			if 1 == math.random(1,16) then
+			if 1 == math_random(1,16) then
 				pos.x = x
 				pos.y = y
 			end			
@@ -412,7 +417,7 @@ function biter_battles_terrain.generate_spawn_water_pond()
 		for y = -200, 200, 1 do						
 			local t = surface.get_tile(x,y)
 			if t.name == "water-green" then 
-				if surface.can_place_entity{name="fish", position={x,y}} and math.random(1,10) == 1 then
+				if surface.can_place_entity{name="fish", position={x,y}} and math_random(1,10) == 1 then
 					surface.create_entity {name="fish", position={x,y}} 
 				end			
 			end			
@@ -493,12 +498,12 @@ function biter_battles_terrain.generate_artillery()
 		m.add_market_item{price={{"raw-fish", 20}}, offer={type="give-item", item="artillery-targeting-remote"}}		
 		for y = -1,1,1 do
 			for x = -2,2,1 do
-				table.insert(tiles, {name = "refined-hazard-concrete-left", position = {e.position.x + x, e.position.y + y}}) 				
+				table_insert(tiles, {name = "refined-hazard-concrete-left", position = {e.position.x + x, e.position.y + y}}) 				
 			end
 		end
 		for y = -2,2,1 do
 			for x = -1,1,1 do
-				table.insert(tiles, {name = "refined-hazard-concrete-left", position = {e.position.x + x, e.position.y + y}}) 				
+				table_insert(tiles, {name = "refined-hazard-concrete-left", position = {e.position.x + x, e.position.y + y}}) 				
 			end
 		end		 
 	end		
@@ -507,6 +512,7 @@ end
 
 function biter_battles_terrain.generate_spawn_ores(ore_layout)		
 	local surface = game.surfaces["surface"]
+	local seed = game.surfaces[1].map_gen_settings.seed
 	local tiles = {}
 	--generate ores around silos
 	local ore_layout = "windows"
@@ -519,7 +525,7 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
 			local tiles = {}
 			for x = (size+1)*-1, size+1, 1 do
 				for y = (size+1)*-1, size+1, 1 do
-					table.insert(tiles, {name = "stone-path", position = {rocket_silo.position.x + x,rocket_silo.position.y + y}})							
+					table_insert(tiles, {name = "stone-path", position = {rocket_silo.position.x + x,rocket_silo.position.y + y}})							
 				end
 			end
 			surface.set_tiles(tiles,true)
@@ -592,27 +598,27 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
 		local m4 = 23
 				
 		for x = m4*-1, m4, 1 do						
-			local noise = simplex_noise.d2(x*m1, 1*m1,global.noise_seed+50000)			
+			local noise = simplex_noise(x*m1, 1*m1,seed+50000)			
 			noise = noise*m2 + m3						
 			for y = (m4+1)*-1*noise, m4*noise, 1 do				
-				table.insert(tiles, {name = "stone-path", position = {global.rocket_silo["north"].position.x + x,global.rocket_silo["north"].position.y + y}})						
+				table_insert(tiles, {name = "stone-path", position = {global.rocket_silo["north"].position.x + x,global.rocket_silo["north"].position.y + y}})						
 			end
-			local noise = simplex_noise.d2(x*m1, 1*m1,global.noise_seed+60000)
+			local noise = simplex_noise(x*m1, 1*m1,seed+60000)
 			noise = noise*m2 + m3
 			for y = (m4+1)*-1*noise, m4*noise, 1 do	
-				table.insert(tiles, {name = "stone-path", position = {global.rocket_silo["south"].position.x + x,global.rocket_silo["south"].position.y + y}})
+				table_insert(tiles, {name = "stone-path", position = {global.rocket_silo["south"].position.x + x,global.rocket_silo["south"].position.y + y}})
 			end
 		end
 		for y = (m4+1)*-1, m4, 1 do
-			local noise = simplex_noise.d2(y*m1, 1*m1,global.noise_seed+50000)
+			local noise = simplex_noise(y*m1, 1*m1,seed+50000)
 			noise = noise*m2 + m3
 			for x = m4*-1*noise, m4*noise, 1 do				
-				table.insert(tiles, {name = "stone-path", position = {global.rocket_silo["north"].position.x + x,global.rocket_silo["north"].position.y + y}})	
+				table_insert(tiles, {name = "stone-path", position = {global.rocket_silo["north"].position.x + x,global.rocket_silo["north"].position.y + y}})	
 			end
-			local noise = simplex_noise.d2(y*m1, 1*m1,global.noise_seed+60000)
+			local noise = simplex_noise(y*m1, 1*m1,seed+60000)
 			noise = noise*m2 + m3
 			for x = m4*-1*noise, m4*noise, 1 do				
-				table.insert(tiles, {name = "stone-path", position = {global.rocket_silo["south"].position.x + x,global.rocket_silo["south"].position.y + y}})					
+				table_insert(tiles, {name = "stone-path", position = {global.rocket_silo["south"].position.x + x,global.rocket_silo["south"].position.y + y}})					
 			end
 		end
 		surface.set_tiles(tiles,true)
@@ -649,4 +655,6 @@ function biter_battles_terrain.generate_spawn_ores(ore_layout)
 	end
 end
 
-Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_chunk_generated, on_chunk_generated)
+
+return biter_battles_terrain
