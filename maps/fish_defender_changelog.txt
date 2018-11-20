@@ -1,3 +1,7 @@
+0.10
+biter waves complete rework
+turret slots can now be purchased in the market
+
 0.09
 biter wave fixes
 new turret and land mine limits

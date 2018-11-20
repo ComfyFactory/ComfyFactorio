@@ -6,7 +6,7 @@ function cheat_mode()
 	game.players[1].insert({name="personal-laser-defense-equipment", count=8})
 	game.players[1].insert({name="rocket-launcher"})		
 	game.players[1].insert({name="explosive-rocket", count=200})	
-	
+	game.players[1].insert({name="coin", count = 1000})
 	game.players[1].insert({name="loader"})
 	game.players[1].insert({name="fast-loader"})
 	game.players[1].insert({name="express-loader"})

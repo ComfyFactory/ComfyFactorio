@@ -3,11 +3,10 @@
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
 require "maps.fish_defender_kaboomsticks"
-local market_items = require "maps.fish_defender_market_items"
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
-local wave_interval = 5400
+local wave_interval = 3600
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -24,7 +23,7 @@ local function create_wave_gui(player)
 	frame.style.maximal_height = 38
 
 	local wave_count = 0
-	if global.wave_count then wave_count = global.wave_count / 2 end
+	if global.wave_count then wave_count = global.wave_count end
 
 	local label = frame.add({ type = "label", caption = "Wave: " .. wave_count })
 	label.style.font_color = {r=0.88, g=0.88, b=0.88}
@@ -42,22 +41,107 @@ local function create_wave_gui(player)
 
 end
 
-local function get_biters()
-	local surface = game.surfaces[1]
-	local biters_found = {}
-	for x = 288, 8000, 32 do
-		if not surface.is_chunk_generated({math.ceil(x / 32, 0), 0}) then return biters_found end
-		local area = {
-					left_top = {x = x, y = -1024},
-					right_bottom = {x = x + 32, y = 1024}
-				}
-		local entities = surface.find_entities_filtered({area = area, type = "unit", limit = global.wave_count})
-		for _, entity in pairs(entities) do
-			if #biters_found > global.wave_count then break end
-			insert(biters_found, entity)
-		end
-		if #biters_found >= global.wave_count then return biters_found end
+local threat_values = {
+	["small_biter"] = 1,
+	["medium_biter"] = 4,
+	["big_biter"] = 8,
+	["behemoth_biter"] = 16,
+	["small_spitter"] = 1,
+	["medium_spitter"] = 4,
+	["big_spitter"] = 8,
+	["behemoth_spitter"] = 16
+}
+
+local function get_biter_initial_pool()
+	local biter_pool = {}
+	if game.forces.enemy.evolution_factor < 0.1 then
+		biter_pool = {
+			{name = "small-biter", threat = threat_values.small_biter, weight = 3},			
+			{name = "small-spitter", threat = threat_values.small_spitter, weight = 1}		
+		}
+		return biter_pool
 	end
+	if game.forces.enemy.evolution_factor < 0.25 then
+		biter_pool = {
+			{name = "small-biter", threat = threat_values.small_biter, weight = 10},
+			{name = "medium-biter", threat = threat_values.medium_biter, weight = 2},
+			{name = "small-spitter", threat = threat_values.small_spitter, weight = 5},
+			{name = "medium-spitter", threat = threat_values.medium_spitter, weight = 1}
+		}
+		return biter_pool
+	end
+	if game.forces.enemy.evolution_factor < 0.4 then
+		biter_pool = {
+			{name = "small-biter", threat = threat_values.small_biter, weight = 2},
+			{name = "medium-biter", threat = threat_values.medium_biter, weight = 8},
+			{name = "big-biter", threat = threat_values.big_biter, weight = 2},
+			{name = "small-spitter", threat = threat_values.small_spitter, weight = 1},
+			{name = "medium-spitter", threat = threat_values.medium_spitter, weight = 4},
+			{name = "big-spitter", threat = threat_values.big_spitter, weight = 1}
+		}
+		return biter_pool
+	end
+	if game.forces.enemy.evolution_factor < 0.6 then
+		biter_pool = {
+			{name = "small-biter", threat = threat_values.small_biter, weight = 2},
+			{name = "medium-biter", threat = threat_values.medium_biter, weight = 4},
+			{name = "big-biter", threat = threat_values.big_biter, weight = 8},
+			{name = "small-spitter", threat = threat_values.small_spitter, weight = 1},
+			{name = "medium-spitter", threat = threat_values.medium_spitter, weight = 2},
+			{name = "big-spitter", threat = threat_values.big_spitter, weight = 4}
+		}
+		return biter_pool
+	end
+	if game.forces.enemy.evolution_factor < 0.8 then
+		biter_pool = {
+			{name = "behemoth-biter", threat = threat_values.small_biter, weight = 2},
+			{name = "medium-biter", threat = threat_values.medium_biter, weight = 6},
+			{name = "big-biter", threat = threat_values.big_biter, weight = 10},
+			{name = "behemoth-spitter", threat = threat_values.small_spitter, weight = 1},
+			{name = "medium-spitter", threat = threat_values.medium_spitter, weight = 3},
+			{name = "big-spitter", threat = threat_values.big_spitter, weight = 5}
+		}
+		return biter_pool
+	end
+	if game.forces.enemy.evolution_factor <= 1 then
+		biter_pool = {
+			{name = "big-biter", threat = threat_values.big_biter, weight = 4},
+			{name = "behemoth-biter", threat = threat_values.behemoth_biter, weight = 2},
+			{name = "big-spitter", threat = threat_values.big_spitter, weight = 2},
+			{name = "behemoth-spitter", threat = threat_values.behemoth_spitter, weight = 1}
+		}
+		return biter_pool
+	end	
+end
+
+local function get_biter_pool()
+	local surface = game.surfaces[1]
+	local biter_pool = get_biter_initial_pool()
+	local biter_raffle = {}
+	for _, biter_type in pairs(biter_pool) do
+		for x = 1, biter_type.weight, 1 do
+			insert(biter_raffle, {name = biter_type.name, threat = biter_type.threat})
+		end
+	end
+	return biter_raffle
+end
+
+local function spawn_biter_attack_group(pos, amount_of_biters)
+	if global.attack_wave_threat < 1 then return false end
+	local surface = game.surfaces[1]
+	local biter_pool = get_biter_pool()
+
+	local unit_group = surface.create_unit_group({position=pos})
+	
+	while global.attack_wave_threat > 0 do
+		biter_pool = shuffle(biter_pool)
+		global.attack_wave_threat = global.attack_wave_threat - biter_pool[1].threat
+		local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 50, 0.5)
+		unit_group.add_member(surface.create_entity({name = biter_pool[1].name, position = valid_pos}))
+		amount_of_biters = amount_of_biters - 1
+		if amount_of_biters == 0 then break end
+	end
+	return unit_group
 end
 
 local function biter_attack_wave()
@@ -65,16 +149,17 @@ local function biter_attack_wave()
 	
 	local surface = game.surfaces[1]
 	if not global.wave_count then
-		global.wave_count = 2
+		global.wave_count = 1
 	else
-		global.wave_count = global.wave_count + 2
+		global.wave_count = global.wave_count + 1
 	end
-			
-	local evolution = (global.wave_count / 2) * 0.0025
+	global.attack_wave_threat = global.wave_count * 5
+	
+	local evolution = global.wave_count * 0.00125
 	if evolution > 1 then evolution = 1 end
 	game.forces.enemy.evolution_factor = evolution
 	
-	if game.forces.enemy.evolution_factor > 0.9 then
+	if game.forces.enemy.evolution_factor > 0.98 then
 		if not global.endgame_modifier then
 			global.endgame_modifier = 0.01
 			game.print("Endgame enemy evolution reached. Biter damage is rising...", {r = 0.7, g = 0.1, b = 0.1})
@@ -83,60 +168,105 @@ local function biter_attack_wave()
 		end
 	end
 
-	--game.print("Wave " .. tostring(global.wave_count / 2) .. " incoming!", {r = 0.9, g = 0.05, b = 0.4})
-
-	local group_coords = {
-		{spawn = {x = 256, y = 0}, target = {x = 0, y = 0}}
-		}
-	local number_of_groups = 1
-	
 	local spawn_x = 242
-	if global.wave_count > 50 then
-		group_coords = {
+	local group_coords = {
 			{spawn = {x = spawn_x, y = -160}, target = {x = -32, y = -64}},
-			{spawn = {x = spawn_x, y = -128}, target = {x = -32, y = -64}},
-			{spawn = {x = spawn_x, y = -96}, target = {x = -32, y = -48}},
-			{spawn = {x = spawn_x, y = -64}, target = {x = -32, y = -32}},
-			{spawn = {x = spawn_x, y = -32}, target = {x = -32, y = -16}},
-			{spawn = {x = spawn_x, y = 0}, target = {x = -32, y = 0}},
-			{spawn = {x = spawn_x, y = 32}, target = {x = -32, y = 16}},
-			{spawn = {x = spawn_x, y = 64}, target = {x = -32, y = 32}},
-			{spawn = {x = spawn_x, y = 96}, target = {x = -32, y = 48}},
-			{spawn = {x = spawn_x, y = 128}, target = {x = -32, y = 64}},
+			{spawn = {x = spawn_x, y = -128}, target = {x = -32, y = -48}},
+			{spawn = {x = spawn_x, y = -96}, target = {x = -32, y = -36}},
+			{spawn = {x = spawn_x, y = -64}, target = {x = -8, y = -24}},
+			{spawn = {x = spawn_x, y = -32}, target = {x = -8, y = -12}},
+			{spawn = {x = spawn_x, y = 0}, target = {x = -8, y = 0}},
+			{spawn = {x = spawn_x, y = 32}, target = {x = -8, y = 12}},
+			{spawn = {x = spawn_x, y = 64}, target = {x = -8, y = 24}},
+			{spawn = {x = spawn_x, y = 96}, target = {x = -32, y = 36}},
+			{spawn = {x = spawn_x, y = 128}, target = {x = -32, y = 48}},
 			{spawn = {x = spawn_x, y = 160}, target = {x = -32, y = 64}}
 		}
-		number_of_groups = math.ceil(global.wave_count / 125, 0)
-    if number_of_groups > #group_coords then number_of_groups = #group_coords end
-	end
-
 	group_coords = shuffle(group_coords)
-
-	local biters = get_biters()
-
-	local max_group_size = math.ceil(global.wave_count / number_of_groups, 0)
-	if max_group_size > 150 then max_group_size = 150 end
-
-	local biter_counter = 0
-	local biter_attack_groups = {}
-	for i = 1, number_of_groups, 1 do
-		if biter_counter > global.wave_count then break end
-		biter_attack_groups[i] = surface.create_unit_group({position=group_coords[i].spawn})
-		for x = 1, max_group_size, 1 do
-			biter_counter = biter_counter + 1
-			if biter_counter > global.wave_count then break end
-			if not biters[biter_counter] then break end
-			biter_attack_groups[i].add_member(biters[biter_counter])
-		end
-		
-		if number_of_groups == 1 then
-			biter_attack_groups[i].set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
+	
+	local max_group_size = 25 * math.ceil(global.wave_count / 100)		
+	if max_group_size > 300 then max_group_size = 300 end
+	if global.wave_count < 35 then max_group_size = 200 end
+	
+	for i = 1, #group_coords, 1 do		
+		local biter_squad = spawn_biter_attack_group(group_coords[i].spawn, max_group_size)
+		if biter_squad == false then return end
+			
+		if global.wave_count < 35 then
+			biter_squad.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
 		else
 			if math_random(1,6) == 1 then
-				biter_attack_groups[i].set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
+				biter_squad.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
 			else
-				biter_attack_groups[i].set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=12, distraction=defines.distraction.by_anything})
+				biter_squad.set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=12, distraction=defines.distraction.by_anything})
 			end
 		end
+	end
+end
+
+local function refresh_market_offers()
+	if not global.market then return end
+	for i = 1, 100, 1 do
+		local a = global.market.remove_market_item(1)
+		if a == false then break end
+	end
+	
+	local str1 = "Turret Slot for " .. tostring(global.entity_limits["gun-turret"].limit * global.entity_limits["gun-turret"].slot_price)
+	str1 = str1 .. " Coins."
+	local str2 = "Laser Turret Slot for " .. tostring(global.entity_limits["laser-turret"].limit * global.entity_limits["laser-turret"].slot_price)
+	str2 = str2 .. " Coins."
+	local str3 = "Landmine Slot for " .. tostring(global.entity_limits["land-mine"].limit * global.entity_limits["land-mine"].slot_price)
+	str3 = str3 .. " Coins."
+	
+	local market_items = {
+		{price = {}, offer = {type = 'nothing', effect_description = str1}},
+		{price = {}, offer = {type = 'nothing', effect_description = str2}},
+		{price = {}, offer = {type = 'nothing', effect_description = str3}},
+		{price = {{"coin", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
+		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 4}},
+		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'explosives', count = 4}},
+		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
+		{price = {{"coin", 60}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
+		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
+		{price = {{"coin", 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
+		{price = {{"coin", 650}}, offer = {type = 'give-item', item = 'tank', count = 1}},
+		{price = {{"coin", 6}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
+		{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
+		{price = {{"coin", 75}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
+		{price = {{"coin", 750}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},	
+		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
+		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
+		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'shotgun-shell', count = 1}},	
+		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 1}},
+		{price = {{"coin", 50}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}},
+		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},	
+		{price = {{"coin", 500}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},	
+		{price = {{"coin", 35}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},	
+		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
+		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
+		{price = {{"coin", 1000}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
+		{price = {{"coin", 150}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
+		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
+		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
+		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},		
+		{price = {{"coin", 150}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
+		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},	
+		{price = {{"coin", 1500}}, offer = {type = 'give-item', item = 'power-armor', count = 1}},
+		{price = {{"coin", 2500}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}},
+		{price = {{"coin", 100}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}},	
+		{price = {{"coin", 75}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},	
+		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'energy-shield-equipment', count = 1}},		
+		{price = {{"coin", 175}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}},		
+		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}},
+		{price = {{"coin", 500}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
+		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
+		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
+	}
+	
+	for _, item in pairs(market_items) do
+		global.market.add_market_item(item)
 	end
 end
 
@@ -405,27 +535,28 @@ local function on_player_joined_game(event)
 		local pos = surface.find_non_colliding_position("player",{4, 0}, 50, 1)
 		game.players[1].teleport(pos, surface)
 		
-		local pos = surface.find_non_colliding_position("market",{0, 0}, 50, 1)
-										
+		global.entity_limits = {
+			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
+			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 350},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 100},
+			["land-mine"] =  {placed = 0, limit = 5, str = "landmine", slot_price = 1}
+		}
+		
+		local pos = surface.find_non_colliding_position("market",{0, 0}, 50, 1)										
 		global.market = surface.create_entity({name = "market", position = pos, force = "player"})
 		global.market.minable = false
-		for _, item in pairs(market_items) do
-			global.market.add_market_item(item)
-		end
+		refresh_market_offers()
 		
-		local radius = 512
+		local pos = surface.find_non_colliding_position("gun-turret",{4, 1}, 50, 1)
+		local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
+		turret.insert({name = "firearm-magazine", count = 32})
+		
+		local radius = 256
 		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 
-		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})		
+		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})				
 		
-		game.players[1].insert({name = "gun-turret", count = 1})
 		
-		global.entity_limits = {
-			["gun-turret"] = {placed = 0, limit = 7, str = "gun turret"},
-			["laser-turret"] = {placed = 0, limit = 3, str = "laser turret"},
-			["flamethrower-turret"] =  {placed = 0, limit = 1, str = "flamethrower turret"},
-			["land-mine"] =  {placed = 0, limit = 250, str = "landmine"}
-		}
 		
 		global.fish_defense_init_done = true
 	end
@@ -551,10 +682,14 @@ local function on_chunk_generated(event)
 
 			local tile = surface.get_tile(pos)
 			if tile.name ~= "out-of-map" then
-				insert(tiles, {name = "dirt-6", position = pos})
-			end
-
-			if left_top.x > 256 and math_random(1,32) == 1 then
+				if pos.x > 312 then
+					insert(tiles, {name = "out-of-map", position = pos})
+				else
+					insert(tiles, {name = "dirt-6", position = pos})
+				end
+				
+				if pos.x > 296 and pos.x < 312 and math_random(1,64) == 1 then
+				
 				if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
 					if math_random(1,4) == 1 then
 						surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})
@@ -562,7 +697,8 @@ local function on_chunk_generated(event)
 						surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})
 					end
 				end
-			end
+				end
+			end		
 		end
 	end
 	surface.set_tiles(tiles, true)
@@ -629,6 +765,9 @@ local function on_tick()
 				create_wave_gui(player)
 			end
 		end
+		if game.tick % 240 == 0 then
+			game.forces.player.chart(game.players[1].surface,{{x = 0, y = -256}, {x = 288, y = 256}})
+		end
 	end
 
 	if game.tick % wave_interval == wave_interval - 1 then
@@ -662,8 +801,41 @@ local function on_robot_mined_entity(event)
 		global.entity_limits[event.entity.name].placed = global.entity_limits[event.entity.name].placed - 1
 	end
 end
+
+
+	
+local function on_market_item_purchased(event)
+	local player = game.players[event.player_index]	
+	local market = event.market
+	local offer_index = event.offer_index	
+	local offers = market.get_market_items()	
+	local bought_offer = offers[offer_index].offer	
+	if bought_offer.type ~= "nothing" then return end
+	local slot_upgrade_offers = {
+		[1] = {"gun-turret", "gun turret"},
+		[2] = {"laser-turret", "gun turret"},
+		[3] = {"land-mine", "land mine"}
+	}
+	for x = 1, 3, 1 do
+		if offer_index == x then		
+			local price = global.entity_limits[slot_upgrade_offers[x][1]].limit * global.entity_limits[slot_upgrade_offers[x][1]].slot_price
+			local coins_removed = player.remove_item({name = "coin", count = price})		
+			if coins_removed ~= price then
+				if coins_removed > 0 then
+					player.insert({name = "coin", count = coins_removed})
+				end
+				player.print("Not enough coins.", {r = 0.22, g = 0.77, b = 0.44})
+				return
+			end
+			global.entity_limits[slot_upgrade_offers[x][1]].limit = global.entity_limits[slot_upgrade_offers[x][1]].limit + 1
+			game.print(player.name .. " has bought a " .. slot_upgrade_offers[x][2] .. " slot for " .. price .. " coins!", {r = 0.22, g = 0.77, b = 0.44})
+			refresh_market_offers()
+		end
+	end
+end	
 	
 event.add(defines.events.on_tick, on_tick)
+event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
