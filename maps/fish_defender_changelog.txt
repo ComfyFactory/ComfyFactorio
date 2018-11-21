@@ -1,3 +1,8 @@
+0.12
+added starting no-attack grace period
+added flamethrower turret
+added non-player coin drops
+
 0.11
 added spawn oil
 wave adjustments

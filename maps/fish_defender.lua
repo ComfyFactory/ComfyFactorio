@@ -24,21 +24,37 @@ local function create_wave_gui(player)
 
 	local wave_count = 0
 	if global.wave_count then wave_count = global.wave_count end
+	
+	if not global.wave_grace_period then
+		local label = frame.add({ type = "label", caption = "Wave: " .. wave_count })
+		label.style.font_color = {r=0.88, g=0.88, b=0.88}
+		label.style.font = "default-listbox"
+		label.style.left_padding = 4
+		label.style.right_padding = 4
+		label.style.minimal_width = 68
+		label.style.font_color = {r=0.33, g=0.66, b=0.9}
 
-	local label = frame.add({ type = "label", caption = "Wave: " .. wave_count })
-	label.style.font_color = {r=0.88, g=0.88, b=0.88}
-	label.style.font = "default-listbox"
-	label.style.left_padding = 4
-	label.style.right_padding = 4
-	label.style.font_color = {r=0.33, g=0.66, b=0.9}
+		local next_level_progress = game.tick % wave_interval / wave_interval
 
-	local next_level_progress = game.tick % wave_interval / wave_interval
-
-	local progressbar = frame.add({ type = "progressbar", value = next_level_progress})
-	progressbar.style.minimal_width = 120
-	progressbar.style.maximal_width = 120
-	progressbar.style.top_padding = 10
-
+		local progressbar = frame.add({ type = "progressbar", value = next_level_progress})
+		progressbar.style.minimal_width = 120
+		progressbar.style.maximal_width = 120
+		progressbar.style.top_padding = 10
+	else
+	
+		local time_remaining = math.floor(((global.wave_grace_period - (game.tick % global.wave_grace_period)) / 60) / 60)		
+		if time_remaining <= 0 then
+			global.wave_grace_period = nil
+			create_wave_gui(player)
+		end
+			
+		local label = frame.add({ type = "label", caption = "Waves will start in " .. time_remaining .. " minutes."})
+		label.style.font_color = {r=0.88, g=0.88, b=0.88}
+		label.style.font = "default-listbox"
+		label.style.left_padding = 4
+		label.style.right_padding = 4
+		label.style.font_color = {r=0.33, g=0.66, b=0.9}				
+	end
 end
 
 local threat_values = {
@@ -154,7 +170,7 @@ local function get_biter_initial_pool()
 end
 
 local function get_biter_pool()
-	local surface = game.surfaces[1]
+	local surface = game.surfaces["fish_defender"]
 	local biter_pool = get_biter_initial_pool()
 	local biter_raffle = {}
 	for _, biter_type in pairs(biter_pool) do
@@ -167,7 +183,7 @@ end
 
 local function spawn_biter_attack_group(pos, amount_of_biters)
 	if global.attack_wave_threat < 1 then return false end
-	local surface = game.surfaces[1]
+	local surface = game.surfaces["fish_defender"]
 	local biter_pool = get_biter_pool()
 
 	local unit_group = surface.create_unit_group({position=pos})
@@ -185,13 +201,15 @@ end
 
 local function biter_attack_wave()
 	if not global.market then return end		
+	if global.wave_grace_period then return end
 	
-	local surface = game.surfaces[1]
+	local surface = game.surfaces["fish_defender"]
 	if not global.wave_count then
 		global.wave_count = 1
 	else
 		global.wave_count = global.wave_count + 1
 	end
+	
 	global.attack_wave_threat = global.wave_count * 5
 	
 	local evolution = global.wave_count * 0.00125
@@ -254,12 +272,17 @@ local function refresh_market_offers()
 		if a == false then break end
 	end
 	
-	local str1 = "Turret Slot for " .. tostring(global.entity_limits["gun-turret"].limit * global.entity_limits["gun-turret"].slot_price)
+	local str1 = "Gun Turret Slot for " .. tostring(global.entity_limits["gun-turret"].limit * global.entity_limits["gun-turret"].slot_price)
 	str1 = str1 .. " Coins."
+	
 	local str2 = "Laser Turret Slot for " .. tostring(global.entity_limits["laser-turret"].limit * global.entity_limits["laser-turret"].slot_price)
 	str2 = str2 .. " Coins."
-	local str3 = "Flamethrower Turret Slot for " .. tostring(global.entity_limits["flamethrower-turret"].limit * global.entity_limits["flamethrower-turret"].slot_price)
+	
+	local current_limit = 1
+	if global.entity_limits["flamethrower-turret"].limit ~= 0 then current_limit = current_limit + global.entity_limits["flamethrower-turret"].limit end
+	local str3 = "Flamethrower Turret Slot for " .. tostring(current_limit * global.entity_limits["flamethrower-turret"].slot_price)
 	str3 = str3 .. " Coins."
+	
 	local str4 = "Landmine Slot for " .. tostring(global.entity_limits["land-mine"].limit * global.entity_limits["land-mine"].slot_price)
 	str4 = str4 .. " Coins."
 	
@@ -276,15 +299,15 @@ local function refresh_market_offers()
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
 		{price = {{"coin", 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
 		{price = {{"coin", 800}}, offer = {type = 'give-item', item = 'tank', count = 1}},
-		{price = {{"coin", 6}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
-		{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
+		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
 		{price = {{"coin", 300}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},	
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
 		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'shotgun-shell', count = 1}},	
 		{price = {{"coin", 6}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 1}},
-		{price = {{"coin", 50}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}},
+		{price = {{"coin", 30}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}},
 		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},	
 		{price = {{"coin", 500}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},	
 		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},	
@@ -432,7 +455,7 @@ local biter_building_inhabitants = {
 }
 
 local function damage_entities_in_radius(position, radius, damage)
-	local entities_to_damage = game.surfaces[1].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
+	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health then
 			if entity.force.name ~= "enemy" then
@@ -460,8 +483,8 @@ local coin_earnings = {
 
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
-		if event.cause and event.entity.type == "unit" then
-			local players_to_reward = {}
+		local players_to_reward = {}
+		if event.cause and event.entity.type == "unit" then			
 			if event.cause.name == "player" then
 				insert(players_to_reward, event.cause)				
 			end			
@@ -481,9 +504,13 @@ local function on_entity_died(event)
 			end
 			for _, player in pairs(players_to_reward) do
 				player.insert({name = "coin", count = coin_earnings[event.entity.name]})
-			end
+			end			
 		end		
-
+		
+		if math_random(1, 10) == 1 and #players_to_reward == 0 then
+			event.entity.surface.spill_item_stack(event.entity.position,{name = "coin", count = 1}, true) 
+		end
+		
 		if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
 			local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)
 			for _, t in pairs (biter_building_inhabitants[e]) do
@@ -560,9 +587,29 @@ end
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 
-	if not global.fish_defense_init_done then
-		local surface = game.surfaces[1]
-
+	if not global.fish_defense_init_done then	
+		local map_gen_settings = {}
+		map_gen_settings.water = "small"
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 22, cliff_elevation_0 = 22}		
+		map_gen_settings.autoplace_controls = {
+			["coal"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["stone"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["copper-ore"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["iron-ore"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["crude-oil"] = {frequency = "high", size = "big", richness = "normal"},
+			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
+			["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+		}		
+		game.create_surface("fish_defender", map_gen_settings)							
+		local surface = game.surfaces["fish_defender"]
+		
+		local radius = 256
+		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+		
 		game.map_settings.enemy_expansion.enabled = false
 		game.map_settings.enemy_evolution.destroy_factor = 0
 		game.map_settings.enemy_evolution.time_factor = 0
@@ -573,31 +620,16 @@ local function on_player_joined_game(event)
 		game.forces["player"].technologies["artillery"].enabled = false
 
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
-		
-		local pos = surface.find_non_colliding_position("player",{4, 0}, 50, 1)
-		game.players[1].teleport(pos, surface)
-		
+				
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
-			["flamethrower-turret"] =  {placed = 0, limit = 1, str = "flamethrower turret", slot_price = 25000},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 12500},
 			["land-mine"] =  {placed = 0, limit = 5, str = "landmine", slot_price = 1}
 		}
 		
-		local pos = surface.find_non_colliding_position("market",{0, 0}, 50, 1)										
-		global.market = surface.create_entity({name = "market", position = pos, force = "player"})
-		global.market.minable = false
-		refresh_market_offers()
+		global.wave_grace_period = wave_interval * 21
 		
-		local pos = surface.find_non_colliding_position("gun-turret",{4, 1}, 50, 1)
-		local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
-		turret.insert({name = "firearm-magazine", count = 64})
-		
-		local radius = 256
-		game.forces.player.chart(game.players[1].surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
-
-		surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})				
-				
 		global.fish_defense_init_done = true
 	end
 
@@ -609,16 +641,19 @@ local function on_player_joined_game(event)
 		player.insert({name = "iron-plate", count = 64})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
-
-	if global.wave_count then create_wave_gui(player) end
-
-	is_game_lost()
+	
+	if global.wave_grace_period then			
+		global.wave_grace_period = global.wave_grace_period - 3600
+		if global.wave_grace_period <= 0 then global.wave_grace_period = nil end
+	end	
+	create_wave_gui(player)		
 end
 
 local map_height = 96
 
 local function on_chunk_generated(event)
-	local surface = game.surfaces[1]
+	local surface = game.surfaces["fish_defender"]
+	if surface.name ~= event.surface.name then return end
 	local area = event.area
 	local left_top = area.left_top
 
@@ -657,7 +692,7 @@ local function on_chunk_generated(event)
 		surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})
 	end
 	
-	if left_top.x >= 256 then
+	if left_top.x >= 160 then
 		if not global.spawn_ores_generated then
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -64}, "copper-ore", surface, 15, 2500)
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -32}, "iron-ore", surface, 15, 2500)
@@ -666,7 +701,7 @@ local function on_chunk_generated(event)
 			map_functions.draw_noise_tile_circle({x = -32, y = 0}, "water", surface, 16)		
 			map_functions.draw_oil_circle({x = -64, y = 0}, "crude-oil", surface, 8, 200000)			
 			global.spawn_ores_generated = true
-		end
+		end		
 	end
 	
 	local tiles = {}
@@ -799,13 +834,48 @@ end
 
 local function on_tick()
 	if game.tick % 30 == 0 then
+		if game.tick == 30 then
+			local surface = game.surfaces["fish_defender"]
+			local pos = surface.find_non_colliding_position("player",{4, 0}, 50, 1)
+			game.forces["player"].set_spawn_position(pos, surface)
+			for _, p in pairs(game.connected_players) do
+				p.teleport({4, 0}, surface)
+			end			
+			local pos = surface.find_non_colliding_position("market",{0, 0}, 50, 1)										
+			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
+			global.market.minable = false
+			refresh_market_offers()
+			
+			local pos = surface.find_non_colliding_position("gun-turret",{4, 1}, 50, 1)
+			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
+			turret.insert({name = "firearm-magazine", count = 32})				
+			surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})
+			return
+		end	
+	
 		if global.market then
 			for _, player in pairs(game.connected_players) do
 				create_wave_gui(player)
-			end
+			end					
 		end
-		if game.tick % 240 == 0 then
-			game.forces.player.chart(game.players[1].surface,{{x = 0, y = -256}, {x = 288, y = 256}})
+		if game.tick % 180 == 0 then
+			game.forces.player.chart(game.surfaces["fish_defender"], {{x = 0, y = -256}, {x = 288, y = 256}})
+		end
+		
+		if global.market_age then
+			if not global.game_restart_timer then
+				global.game_restart_timer = 7200
+			else
+				if global.game_restart_timer < 0 then return end
+				global.game_restart_timer = global.game_restart_timer - 30
+			end
+			if global.game_restart_timer % 900 == 0 then 
+				if global.game_restart_timer > 0 then game.print("Map will restart in " .. global.game_restart_timer / 60 .. " seconds!", { r=0.22, g=0.88, b=0.22}) end
+				if global.game_restart_timer == 0 then
+					game.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
+					game.write_file("commandPipe", ":loadscenario --force", false, 0)
+				end							
+			end
 		end
 	end
 
@@ -817,9 +887,9 @@ end
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if player.position.x >= 160 then
-		player.teleport({player.position.x - 1, player.position.y}, game.surfaces[1])
+		player.teleport({player.position.x - 1, player.position.y}, game.surfaces["fish_defender"])
 		if player.position.y > map_height or player.position.y < map_height * -1 then
-			player.teleport({player.position.x, 0}, game.surfaces[1])
+			player.teleport({player.position.x, 0}, game.surfaces["fish_defender"])
 		end
 		if player.character then
 			player.character.health = player.character.health - 25
@@ -850,13 +920,19 @@ local function on_market_item_purchased(event)
 	if bought_offer.type ~= "nothing" then return end
 	local slot_upgrade_offers = {
 		[1] = {"gun-turret", "gun turret"},
-		[2] = {"laser-turret", "gun turret"},
+		[2] = {"laser-turret", "laser turret"},
 		[3] = {"flamethrower-turret", "flamethrower turret"},
 		[4] = {"land-mine", "land mine"}
 	}
 	for x = 1, 4, 1 do
-		if offer_index == x then		
+		if offer_index == x then
+						
 			local price = global.entity_limits[slot_upgrade_offers[x][1]].limit * global.entity_limits[slot_upgrade_offers[x][1]].slot_price
+			
+			if slot_upgrade_offers[x][1] == "flamethrower-turret" then
+				price = (global.entity_limits[slot_upgrade_offers[x][1]].limit + 1) * global.entity_limits[slot_upgrade_offers[x][1]].slot_price
+			end			
+			
 			local coins_removed = player.remove_item({name = "coin", count = price})		
 			if coins_removed ~= price then
 				if coins_removed > 0 then

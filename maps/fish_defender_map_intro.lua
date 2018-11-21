@@ -7,7 +7,9 @@ local info = [[
 	
 	Fend them off as long as possible!
 		
-	Defending will earn you coins which you can spend at the market.
+	The Market will gladly take any coin you might find.
+	
+	Defending with your character will earn you alot more coins.
 ]]
 
 local function create_map_intro(player)
