@@ -32,6 +32,7 @@ local playsession = {
 	{"DuelleuD", {35821}},
 	{"flooxy", {5082}},
 	{"corbin9228", {1549}},
-	{"PoPiSowy", {23785}}
+	{"PoPiSowy", {383785}},
+	{"Malarthyn", {90876}}
 }
 return playsession

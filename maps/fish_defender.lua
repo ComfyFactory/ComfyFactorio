@@ -45,7 +45,7 @@ local function create_wave_gui(player)
 		local time_remaining = math.floor(((global.wave_grace_period - (game.tick % global.wave_grace_period)) / 60) / 60)		
 		if time_remaining <= 0 then
 			global.wave_grace_period = nil
-			create_wave_gui(player)
+			return
 		end
 			
 		local label = frame.add({ type = "label", caption = "Waves will start in " .. time_remaining .. " minutes."})
@@ -225,8 +225,11 @@ local function biter_attack_wave()
 		end
 	end
 	
-	if global.wave_count > 100 then
-		surface.set_multi_command{command={type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy}, unit_count=999, force="enemy", unit_search_distance=400}
+	if global.wave_count > 1 then
+		local units = surface.find_entities_filtered({type = "unit", area = {{224, -256},{360, 256}}})
+		for _, unit in pairs(units) do
+			unit.destroy()
+		end
 	end
 	
 	local spawn_x = 242
@@ -507,7 +510,7 @@ local function on_entity_died(event)
 			end			
 		end		
 		
-		if math_random(1, 10) == 1 and #players_to_reward == 0 then
+		if math_random(1, 8) == 1 and #players_to_reward == 0 then
 			event.entity.surface.spill_item_stack(event.entity.position,{name = "coin", count = 1}, true) 
 		end
 		
@@ -614,17 +617,18 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.destroy_factor = 0
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0
-				
+					
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false
 		game.forces["player"].technologies["artillery-shell-speed-1"].enabled = false
 		game.forces["player"].technologies["artillery"].enabled = false
-
+		
+		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.75)	
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
 				
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 12500},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 25000},
 			["land-mine"] =  {placed = 0, limit = 5, str = "landmine", slot_price = 1}
 		}
 		
@@ -642,6 +646,15 @@ local function on_player_joined_game(event)
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 	
+	local surface = game.surfaces["fish_defender"]
+	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
+		player.teleport(surface.find_non_colliding_position("player", {-10, 0}, 2, 1), "fish_defender")
+	else
+		if player.online_time < 5 then
+			player.teleport({16, 0}, "fish_defender")
+		end
+	end
+	
 	if global.wave_grace_period then			
 		global.wave_grace_period = global.wave_grace_period - 3600
 		if global.wave_grace_period <= 0 then global.wave_grace_period = nil end
@@ -653,7 +666,11 @@ local map_height = 96
 
 local function on_chunk_generated(event)
 	local surface = game.surfaces["fish_defender"]
-	if surface.name ~= event.surface.name then return end
+	
+	if surface then
+		if surface.name ~= event.surface.name then return end
+	end
+	
 	local area = event.area
 	local left_top = area.left_top
 
@@ -662,44 +679,55 @@ local function on_chunk_generated(event)
 		entity.destroy()
 	end	
 	
-	if left_top.x >= -160 and left_top.x < 160 then
-		local entities = surface.find_entities_filtered({area = area, type = "resource"})
-		for _, entity in pairs(entities) do
-			entity.destroy()
-		end
-		
-		local tiles = {}
-		if global.market.position then
-			local replacement_tile = surface.get_tile(global.market.position)
-			for x = 0, 31, 1 do
-				for y = 0, 31, 1 do
-					local pos = {x = left_top.x + x, y = left_top.y + y}
-					local tile = surface.get_tile(pos)
-					if tile.name == "deepwater" or tile.name == "water" then
-						insert(tiles, {name = replacement_tile.name, position = pos})
-					end
-				end
-			end
-			surface.set_tiles(tiles, true)
-		end	
-		
-		local decorative_names = {}
-		for k,v in pairs(game.decorative_prototypes) do
-			if v.autoplace_specification then
-			  decorative_names[#decorative_names+1] = k
-			end
-		 end
-		surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})
-	end
-	
-	if left_top.x >= 160 then
+	if left_top.x >= 192 then
 		if not global.spawn_ores_generated then
+		
+			local pos = surface.find_non_colliding_position("market",{-8, 0}, 50, 1)										
+			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
+			global.market.minable = false
+			refresh_market_offers()
+			
+			local pos = surface.find_non_colliding_position("gun-turret",{-6, 1}, 50, 1)
+			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
+			turret.insert({name = "firearm-magazine", count = 32})	
+			
+			surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})
+			
+			local pos = surface.find_non_colliding_position("player",{-10, 0}, 50, 1)
+			game.forces["player"].set_spawn_position(pos, surface)
+		
+			local tiles = {}			
+			local replacement_tile = surface.get_tile(global.market.position)
+			local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater"}})
+			
+			for _, tile in pairs(water_tiles) do
+				insert(tiles, {name = replacement_tile.name, position = {tile.position.x, tile.position.y}})
+			end				
+			surface.set_tiles(tiles, true)
+			
+			local entities = surface.find_entities_filtered({type = "resource"})
+			for _, entity in pairs(entities) do
+				entity.destroy()
+			end											
+			
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -64}, "copper-ore", surface, 15, 2500)
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -32}, "iron-ore", surface, 15, 2500)
 			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 32}, "coal", surface, 15, 1500)
-			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 64}, "stone", surface, 15, 1500)				
+			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 64}, "stone", surface, 15, 1500)			
 			map_functions.draw_noise_tile_circle({x = -32, y = 0}, "water", surface, 16)		
-			map_functions.draw_oil_circle({x = -64, y = 0}, "crude-oil", surface, 8, 200000)			
+			map_functions.draw_oil_circle({x = -64, y = 0}, "crude-oil", surface, 8, 200000)
+			
+			local decorative_names = {}
+			for k,v in pairs(game.decorative_prototypes) do
+				if v.autoplace_specification then
+				  decorative_names[#decorative_names+1] = k
+				end
+			 end
+			for x = -4, 4, 1 do
+				for y = -3, 3, 1 do
+					surface.regenerate_decorative(decorative_names, {{x,y}})
+				end
+			end
 			global.spawn_ores_generated = true
 		end		
 	end
@@ -833,26 +861,7 @@ local function on_robot_built_entity(event)
 end
 
 local function on_tick()
-	if game.tick % 30 == 0 then
-		if game.tick == 30 then
-			local surface = game.surfaces["fish_defender"]
-			local pos = surface.find_non_colliding_position("player",{4, 0}, 50, 1)
-			game.forces["player"].set_spawn_position(pos, surface)
-			for _, p in pairs(game.connected_players) do
-				p.teleport({4, 0}, surface)
-			end			
-			local pos = surface.find_non_colliding_position("market",{0, 0}, 50, 1)										
-			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
-			global.market.minable = false
-			refresh_market_offers()
-			
-			local pos = surface.find_non_colliding_position("gun-turret",{4, 1}, 50, 1)
-			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
-			turret.insert({name = "firearm-magazine", count = 32})				
-			surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})
-			return
-		end	
-	
+	if game.tick % 30 == 0 then		
 		if global.market then
 			for _, player in pairs(game.connected_players) do
 				create_wave_gui(player)

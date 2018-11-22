@@ -685,7 +685,7 @@ local entity_drop_amount = {
 	['spitter-spawner'] = {low = 50, high = 100}
 }
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
-local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore","crude-oil","crude-oil"}
+local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore","crude-oil","crude-oil"}
 
 local function on_entity_died(event)	
 	for _, fragment in pairs(biter_fragmentation) do
@@ -865,13 +865,13 @@ local function on_player_joined_game(event)
 		local surface = game.surfaces["labyrinth"]
 		surface.create_entity {name="rock-big",position={16,-16}}
 		
-		game.forces["player"].technologies["gun-turret-damage-1"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-2"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-3"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-4"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-5"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-6"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-1"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-2"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-3"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-4"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-5"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-6"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
 		game.forces["player"].technologies["artillery"].enabled = false
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false		
 		game.forces["player"].technologies["artillery-shell-speed-1"].enabled = false						
@@ -956,13 +956,57 @@ local function on_built_entity(event)
 	end
 		
 	local name = event.created_entity.name
-	if name == "flamethrower-turret" or name == "laser-turret" then --or name == "gun-turret" then
-		if event.created_entity.position.y < 0 then 		
-			event.created_entity.die("enemy")
+	if name == "flamethrower-turret" or name == "laser-turret" then
+		if event.created_entity.position.y < 0 then 					
 			if event.player_index then
 				local player = game.players[event.player_index]
-				player.print("The laser and flamethrower-turrets seem to be malfunctioning in this place.", { r=0.75, g=0.0, b=0.0})
+				player.insert({name = name, count = 1})
+				event.created_entity.destroy()
+				if global.score then
+					if global.score[player.force.name] then
+						if global.score[player.force.name].players[player.name] then
+							global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+						end
+					end
+				end
+				player.print("The device seems to be malfunctioning in this strange place.", { r=0.75, g=0.0, b=0.0})
+			else
+				if event.robot then
+					local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+					inventory.insert({name = name, count = 1})
+					event.created_entity.destroy()
+				end
 			end
+		end
+	end
+	
+	if name == "gun-turret" then
+		local surface = event.created_entity.surface		
+		local amount_of_enemy_structures = surface.count_entities_filtered({
+			name = {"spitter-spawner", "biter-spawner"},
+			area = {{event.created_entity.position.x - 18, event.created_entity.position.y - 18},{event.created_entity.position.x + 18, event.created_entity.position.y + 18}},
+			force = "enemy",
+			limit = 1			
+			})
+		
+		if event.player_index and amount_of_enemy_structures > 0 then
+			local player = game.players[event.player_index]
+			player.insert({name = name, count = 1})
+			event.created_entity.destroy()
+			player.print("Their nests aura seems to deny the placement of any close turrets.", { r=0.75, g=0.0, b=0.0})
+			if global.score then
+				if global.score[player.force.name] then
+					if global.score[player.force.name].players[player.name] then
+						global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+					end
+				end
+			end					
+		end
+		
+		if event.robot and amount_of_enemy_structures > 0 then
+			local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+			inventory.insert({name = name, count = 1})
+			event.created_entity.destroy()
 		end
 	end
 end
