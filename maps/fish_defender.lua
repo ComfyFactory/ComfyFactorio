@@ -667,10 +667,9 @@ local map_height = 96
 local function on_chunk_generated(event)
 	local surface = game.surfaces["fish_defender"]
 	
-	if surface then
-		if surface.name ~= event.surface.name then return end
-	end
-	
+	if not surface then return end
+	if surface.name ~= event.surface.name then return end
+		
 	local area = event.area
 	local left_top = area.left_top
 
@@ -868,7 +867,9 @@ local function on_tick()
 			end					
 		end
 		if game.tick % 180 == 0 then
-			game.forces.player.chart(game.surfaces["fish_defender"], {{x = 0, y = -256}, {x = 288, y = 256}})
+			if game.surfaces["fish_defender"] then
+				game.forces.player.chart(game.surfaces["fish_defender"], {{x = 0, y = -256}, {x = 288, y = 256}})
+			end
 		end
 		
 		if global.market_age then

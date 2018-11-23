@@ -138,6 +138,37 @@ local function turn_off_global_speakers(player, source_player)
 	end
 end
 
+local function delete_all_blueprints(player, source_player)
+	local counter = 0
+	for _, ghost in pairs(source_player.surface.find_entities_filtered({type = {"entity-ghost", "tile-ghost"}})) do
+		ghost.destroy()
+		counter = counter + 1
+	end	
+	if counter == 0 then return end
+	if counter == 1 then
+		game.print(counter .. " blueprint has been cleared!", { r=0.98, g=0.66, b=0.22})		
+	else
+		game.print(counter .. " blueprints have been cleared!", { r=0.98, g=0.66, b=0.22})		
+	end
+	admin_only_message(source_player.name .. " has cleared all blueprints.")
+end
+--[[
+local function remove_all_deconstruction_orders(player, source_player)
+	local counter = 0
+	for _, entity in pairs(source_player.surface.find_entities_filtered({})) do
+		local b = entity.cancel_deconstruction(game.players[event.player_index].force.name)	
+		if b then counter = counter + 1 end
+	end
+	
+	if counter == 0 then return end
+	if counter == 1 then
+		game.print(counter .. " deconstruction order has been canceled!", { r=0.98, g=0.66, b=0.22})		
+	else
+		game.print(counter .. " deconstruction orders have been canceled!", { r=0.98, g=0.66, b=0.22})		
+	end
+	admin_only_message(source_player.name .. " has canceled all deconstruction orders.")
+end
+]]--
 local function create_admin_panel(player)
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 	
@@ -180,9 +211,11 @@ local function create_admin_panel(player)
 	
 	local l = frame.add({type = "label", caption = "----------------------------------------------"})
 	local l = frame.add({type = "label", caption = "Global Actions:"})
-	local t = frame.add({type = "table", column_count = 3})
+	local t = frame.add({type = "table", column_count = 2})
 	local buttons = {
-		t.add({type = "button", caption = "Nuke all Global Speakers", name = "turn_off_global_speakers"})
+		t.add({type = "button", caption = "Destroy global speakers", name = "turn_off_global_speakers", tooltip = "Destroys all speakers that are set to play sounds globally."}),
+		t.add({type = "button", caption = "Delete blueprints", name = "delete_all_blueprints", tooltip = "Deletes all placed blueprints on the map."})
+	---	t.add({type = "button", caption = "Cancel all deconstruction orders", name = "remove_all_deconstruction_orders"})
 	}
 	for _, button in pairs(buttons) do
 		button.style.font = "default-bold"
@@ -211,6 +244,8 @@ local admin_functions = {
 		["damage"] = damage,
 		["kill"] = kill,	
 		["turn_off_global_speakers"] = turn_off_global_speakers,
+		["delete_all_blueprints"] = delete_all_blueprints,
+		--["remove_all_deconstruction_orders"] = remove_all_deconstruction_orders,
 		["enemy"] = enemy,
 		["ally"] = ally,
 		["go_to_player"] = go_to_player
