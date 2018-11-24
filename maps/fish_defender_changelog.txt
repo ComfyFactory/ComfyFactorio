@@ -1,3 +1,13 @@
+0.13
+more lategame modifier adjustments
+explosions get stronger in very lategame
+artillery allowed, added to the market and added to slots
+behemoths can spawn worms in endgame stage
+market price adjustments
+player entities beyond the barrier will get damaged each wave
+player blueprints beyond the barrier will get removed each wave
+biter explosions no create visual explosions on the entities they affect
+
 0.12
 added starting no-attack grace period
 added flamethrower turret
