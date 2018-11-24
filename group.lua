@@ -195,15 +195,15 @@ local function on_gui_click(event)
 			
 			frame.frame2.group_table.new_group_name.text = "Name"
 			frame.frame2.group_table.new_group_description.text = "Description"
-			refresh_gui()						
+			refresh_gui()
+			return
 		end		
 	end
 	
 	local p = event.element.parent
 	if p then p = p.parent end
 	if p then
-		if p.name == "groups_table" then
-		
+		if p.name == "groups_table" then			
 			if event.element.type == "button" and event.element.caption == "Join" then		
 				global.player_group[player.name] = event.element.parent.name
 				local str = "[" .. event.element.parent.name
@@ -215,7 +215,8 @@ local function on_gui_click(event)
 					game.print(player.name .. ' has joined group "' .. event.element.parent.name .. '"', color)
 					global.join_spam_protection[player.name] = game.tick
 				end				
-				refresh_gui()	
+				refresh_gui()
+				return
 			end
 
 			if event.element.type == "button" and event.element.caption == "Delete" then
@@ -231,6 +232,7 @@ local function on_gui_click(event)
 				game.print(player.name .. ' deleted group "' .. event.element.parent.name .. '"')
 				global.tag_groups[event.element.parent.name] = nil
 				refresh_gui()	
+				return
 			end
 
 			if event.element.type == "button" and event.element.caption == "Leave" then		
@@ -238,8 +240,8 @@ local function on_gui_click(event)
 				player.gui.top["group_button"].caption = "[Group]"
 				player.tag = ""				
 				refresh_gui()	
-			end
-			
+				return
+			end			
 		end
 	end
 	
