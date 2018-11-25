@@ -9,7 +9,7 @@ require "player_list"
 require "poll"
 require "score"
 
-require "maps.tools.cheat_mode"
+--require "maps.tools.cheat_mode"
 
 ---- enable maps here ----
 --require "maps.biter_battles"
