@@ -122,6 +122,22 @@ local function on_built_entity(event)
 	end
 end
 
+local function on_player_used_capsule(event)
+	local player = game.players[event.player_index]
+	local position = event.position
+	local used_item = event.item
+	if used_item.name == "artillery-targeting-remote" then
+		if not global.artillery_history then global.artillery_history = {} end
+		if #global.artillery_history > 999 then global.artillery_history = {} end
+		local str = player.name .. " at X:"
+		str = str .. math.floor(position.x)
+		str = str .. " Y:"
+		str = str .. math.floor(position.y)
+		table.insert(global.artillery_history, str)
+	end
+end
+
+event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_promoted, on_player_promoted)
 event.add(defines.events.on_player_demoted, on_player_demoted)

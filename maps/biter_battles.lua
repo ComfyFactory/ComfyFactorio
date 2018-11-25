@@ -194,7 +194,9 @@ local function create_biter_battle_menu(player)
 		show_mvps(player)
 		return
 	end
-		
+	
+	if player.gui.left["biter_battle_menu"] then player.gui.left["biter_battle_menu"].destroy() end
+	
 	local frame = player.gui.left.add { type = "frame", name = "biter_battle_menu", direction = "vertical" }
 
 	if player.force.name == "north" or player.force.name == "south" then			

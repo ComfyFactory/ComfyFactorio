@@ -1,4 +1,4 @@
--- fish defense -- by mewmew --
+-- fish defender -- by mewmew --
 
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
@@ -702,7 +702,11 @@ local function on_player_joined_game(event)
 		global.wave_grace_period = global.wave_grace_period - 3600
 		if global.wave_grace_period <= 0 then global.wave_grace_period = nil end
 	end	
-	create_wave_gui(player)		
+	create_wave_gui(player)
+	
+	if game.tick > 900 then
+		is_game_lost()
+	end
 end
 
 local map_height = 96
@@ -771,7 +775,29 @@ local function on_chunk_generated(event)
 				end
 			end
 			global.spawn_ores_generated = true
-		end		
+		end				
+	end
+	
+	if left_top.x <= -256 then
+		if math_random(1, 24) == 1 then
+			local positions = {}
+			for x = 0, 31, 1 do
+				for y = 0, 31, 1 do
+					insert(positions, {x = left_top.x + x, y = left_top.y + y})					
+				end
+			end
+			positions = shuffle(positions)
+			for _, pos in pairs(positions) do
+				if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
+					if math_random(1,4) == 1 then
+						local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})												
+					else						
+						local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})												
+					end
+					break
+				end
+			end
+		end
 	end
 	
 	local tiles = {}

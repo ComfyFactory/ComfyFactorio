@@ -223,17 +223,36 @@ local function create_admin_panel(player)
 		button.style.minimal_width = 80
 	end
 	
-	if global.landfill_history then
+	
+	if global.landfill_history or global.artillery_history then
 		local l = frame.add({type = "label", caption = "----------------------------------------------"})
-		local l = frame.add({type = "label", caption = "Landfill History:"})
+	end
+	
+	local t = frame.add({type = "table", column_count = 2})
+	
+	if global.landfill_history then
+		local tt = t.add({type = "table", column_count = 1})
+		local l = tt.add({type = "label", caption = "Landfill History:"})
 		l.style.font = "default-listbox"
 		l.style.font_color = { r=0.98, g=0.66, b=0.22}
-		local scroll_pane = frame.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
+		local scroll_pane = tt.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
 		scroll_pane.style.maximal_height = 160
 		for i = #global.landfill_history, 1, -1 do
 			scroll_pane.add({type = "label", caption = global.landfill_history[i]})
 		end
 	end
+	
+	if global.artillery_history then
+		local tt = t.add({type = "table", column_count = 1})
+		local l = tt.add({type = "label", caption = "Artillery History:"})
+		l.style.font = "default-listbox"
+		l.style.font_color = { r=0.98, g=0.66, b=0.22}
+		local scroll_pane = tt.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
+		scroll_pane.style.maximal_height = 160
+		for i = #global.artillery_history, 1, -1 do
+			scroll_pane.add({type = "label", caption = global.artillery_history[i]})
+		end
+	end	
 end
 
 local admin_functions = {
