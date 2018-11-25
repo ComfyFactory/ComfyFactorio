@@ -446,7 +446,8 @@ local function on_player_mined_entity(event)
 	end	
 end
 
-local function on_built_entity(event)	
+local function on_built_entity(event)
+	if event.created_entity.type == "entity-ghost" then return end
 	local player = game.players[event.player_index]
 	init_player_table(player)
 	if not global.score[player.force.name].players[player.name].built_entities then

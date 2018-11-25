@@ -111,13 +111,6 @@ local function on_built_entity(event)
 		if playtime < 432000 then
 			event.created_entity.destroy()
 			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
-			if global.score then
-				if global.score[player.force.name] then
-					if global.score[player.force.name].players[player.name] then
-						global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
-					end
-				end
-			end
 		end		
 	end
 end

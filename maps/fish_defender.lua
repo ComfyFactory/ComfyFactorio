@@ -535,7 +535,7 @@ local function on_entity_died(event)
 			end			
 		end		
 		
-		if math_random(1, 8) == 1 and #players_to_reward == 0 then
+		if math_random(1, 6) == 1 and #players_to_reward == 0 then
 			event.entity.surface.spill_item_stack(event.entity.position,{name = "coin", count = 1}, true) 
 		end
 		
