@@ -130,12 +130,33 @@ local function on_player_used_capsule(event)
 	end
 end
 
-event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_promoted, on_player_promoted)
-event.add(defines.events.on_player_demoted, on_player_demoted)
+local function on_gui_opened(event)
+	if not event.entity then return end
+	if event.entity.name ~= "character-corpse" then return end
+	local player = game.players[event.player_index].name
+	local corpse_owner = game.players[event.entity.character_corpse_player_index].name
+	if player ~= corpse_owner then
+		game.print(player .. " is looting " .. corpse_owner .. "´s body.", { r=0.85, g=0.85, b=0.85})
+	end
+end
+
+local function on_pre_player_mined_item(event)
+	if event.entity.name ~= "character-corpse" then return end
+	local player = game.players[event.player_index].name	
+	local corpse_owner = game.players[event.entity.character_corpse_player_index].name
+	if player ~= corpse_owner then
+		game.print(player .. " has looted " .. corpse_owner .. "´s body.", { r=0.85, g=0.85, b=0.85})	
+	end
+end
+
 event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_console_command, on_console_command)
-event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
+event.add(defines.events.on_gui_opened, on_gui_opened)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
+event.add(defines.events.on_player_built_tile, on_player_built_tile)
+event.add(defines.events.on_player_demoted, on_player_demoted)
+event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
+event.add(defines.events.on_player_promoted, on_player_promoted)
+event.add(defines.events.on_player_used_capsule, on_player_used_capsule)

@@ -252,17 +252,17 @@ local function biter_attack_wave()
 		
 	local spawn_x = 242
 	local group_coords = {
-			{spawn = {x = spawn_x, y = -160}, target = {x = -32, y = -70}},
-			{spawn = {x = spawn_x, y = -128}, target = {x = -32, y = -56}},
-			{spawn = {x = spawn_x, y = -96}, target = {x = -32, y = -42}},
+			{spawn = {x = spawn_x, y = -160}, target = {x = -16, y = -70}},
+			{spawn = {x = spawn_x, y = -128}, target = {x = -16, y = -56}},
+			{spawn = {x = spawn_x, y = -96}, target = {x = -16, y = -42}},
 			{spawn = {x = spawn_x, y = -64}, target = {x = -8, y = -28}},
 			{spawn = {x = spawn_x, y = -32}, target = {x = -8, y = -14}},
 			{spawn = {x = spawn_x, y = 0}, target = {x = -8, y = 0}},
 			{spawn = {x = spawn_x, y = 32}, target = {x = -8, y = 14}},
 			{spawn = {x = spawn_x, y = 64}, target = {x = -8, y = 28}},
-			{spawn = {x = spawn_x, y = 96}, target = {x = -32, y = 42}},
-			{spawn = {x = spawn_x, y = 128}, target = {x = -32, y = 56}},
-			{spawn = {x = spawn_x, y = 160}, target = {x = -32, y = 70}}
+			{spawn = {x = spawn_x, y = 96}, target = {x = -16, y = 42}},
+			{spawn = {x = spawn_x, y = 128}, target = {x = -16, y = 56}},
+			{spawn = {x = spawn_x, y = 160}, target = {x = -16, y = 70}}
 		}
 	group_coords = shuffle(group_coords)
 	
@@ -277,10 +277,10 @@ local function biter_attack_wave()
 		if global.wave_count <= 50 then
 			biter_squad.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
 		else
-			if math_random(1,6) == 1 then
+			if math_random(1,8) == 1 then
 				biter_squad.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
 			else
-				biter_squad.set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=12, distraction=defines.distraction.by_anything})
+				biter_squad.set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=200, distraction=defines.distraction.by_anything})
 			end
 		end
 	end
@@ -506,36 +506,49 @@ local coin_earnings = {
 	["small-spitter"] = 1,
 	["medium-spitter"] = 2,
 	["big-spitter"] = 3,
-	["behemoth-spitter"] = 5	
+	["behemoth-spitter"] = 5,
+	["spitter-spawner"] = 32,
+	["biter-spawner"] = 32	
 }
 
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
 		local players_to_reward = {}
-		if event.cause and event.entity.type == "unit" then			
-			if event.cause.name == "player" then
-				insert(players_to_reward, event.cause)				
-			end			
-			if event.cause.type == "car" then
-				player = event.cause.get_driver()
-				passenger = event.cause.get_passenger()
-				if player then insert(players_to_reward, player.player)	end
-				if passenger then insert(players_to_reward, passenger.player) end				
-			end
-			if event.cause.type == "locomotive" then
-				train_passengers = event.cause.train.passengers			
-				if train_passengers then
-					for _, passenger in pairs(train_passengers) do
-						insert(players_to_reward, passenger)
+		local reward_has_been_given = false
+		if event.cause then
+			if event.entity.type == "unit" or event.entity.type == "unit-spawner" then
+				if event.cause.name == "player" then
+					insert(players_to_reward, event.cause)
+					reward_has_been_given = true
+				end			
+				if event.cause.type == "car" then
+					player = event.cause.get_driver()
+					passenger = event.cause.get_passenger()
+					if player then insert(players_to_reward, player.player)	end
+					if passenger then insert(players_to_reward, passenger.player) end
+					reward_has_been_given = true
+				end
+				if event.cause.type == "locomotive" then
+					train_passengers = event.cause.train.passengers			
+					if train_passengers then
+						for _, passenger in pairs(train_passengers) do
+							insert(players_to_reward, passenger)
+						end
+						reward_has_been_given = true
 					end
 				end
+				for _, player in pairs(players_to_reward) do
+					player.insert({name = "coin", count = coin_earnings[event.entity.name]})
+				end
+				
+				if event.cause.name == "artillery-turret" then
+					event.entity.surface.spill_item_stack(event.cause.position,{name = "coin", count = coin_earnings[event.entity.name]}, true)
+					reward_has_been_given = true
+				end
 			end
-			for _, player in pairs(players_to_reward) do
-				player.insert({name = "coin", count = coin_earnings[event.entity.name]})
-			end			
 		end		
-		
-		if math_random(1, 5) == 1 and #players_to_reward == 0 then
+				
+		if math_random(1, 5) == 1 and reward_has_been_given == false then
 			event.entity.surface.spill_item_stack(event.entity.position,{name = "coin", count = 1}, true) 
 		end
 		
@@ -626,7 +639,9 @@ local function on_entity_damaged(event)
 	end
 	if event.entity.valid then
 		if event.entity.name == "market" then
-			if event.cause.force.name == "enemy" then return end
+			if event.cause then
+				if event.cause.force.name == "enemy" then return end
+			end
 			event.entity.health = event.entity.health + event.final_damage_amount
 		end
 	end
@@ -778,8 +793,8 @@ local function on_chunk_generated(event)
 		end				
 	end
 	
-	if left_top.x <= -256 then
-		if math_random(1, 24) == 1 then
+	if left_top.x <= -352 then
+		if math_random(1, 32) == 1 then
 			local positions = {}
 			for x = 0, 31, 1 do
 				for y = 0, 31, 1 do

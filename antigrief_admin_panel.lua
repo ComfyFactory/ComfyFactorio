@@ -173,10 +173,8 @@ local function create_admin_panel(player)
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 	
 	local player_names = {}
-	for _, p in pairs(game.connected_players) do
-		--if player.name ~= p.name then
-		table.insert(player_names, p.name)
-		--end
+	for _, p in pairs(game.connected_players) do		
+		table.insert(player_names, tostring(p.name))		
 	end	
 	
 	local frame = player.gui.left.add({type = "frame", name = "admin_panel", direction = "vertical"})

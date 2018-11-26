@@ -1,3 +1,8 @@
+0.14
+the artillery now yields full coin rewards
+spawners now grant coins
+less biters in the west
+
 0.13
 more lategame modifier adjustments
 explosions get stronger in very lategame
