@@ -229,6 +229,7 @@ end
 ]]
 
 local function init_player_table(player)
+	if not player then return end
 	if not global.score[player.force.name] then global.score[player.force.name] = {} end
 	if not global.score[player.force.name].players then global.score[player.force.name].players = {} end
 	if not global.score[player.force.name].players[player.name] then global.score[player.force.name].players[player.name] = {} end
