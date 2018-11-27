@@ -228,11 +228,11 @@ local attack_group_count_thresholds = {
 			{0, 1},
 			{100, 2},
 			{200, 3},
-			{1000, 4},
-			{1500, 5},
+			{300, 4},
+			{1000, 5},
 			{2000, 6},
-			{2500, 7},
-			{3000, 8}
+			{3000, 7},
+			{4000, 8}
 		}
 		
 local function get_number_of_attack_groups()	
@@ -304,7 +304,7 @@ local function biter_attack_wave()
 	
 	local unit_groups = {}
 	if global.wave_count > 50 and math_random(1,4) == 1 then		
-		for i = 1, #group_coords, 1 do
+		for i = 1, math_random(4, #group_coords), 1 do
 			unit_groups[i] = surface.create_unit_group({position = group_coords[i].spawn})
 		end
 	else	
