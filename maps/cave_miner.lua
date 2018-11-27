@@ -923,7 +923,7 @@ local function spawn_cave_inhabitant(pos, target_position)
 	local tile_distance_to_center = math.sqrt(pos.x^2 + pos.y^2)			
 	local rock_inhabitants_index = math.ceil((tile_distance_to_center-math.sqrt(global.spawn_dome_size))*0.015, 0)
 	if rock_inhabitants_index < 1 then rock_inhabitants_index = 1 end
-	if rock_inhabitants_index > 20 then rock_inhabitants_index = 20 end					
+	if rock_inhabitants_index > #rock_inhabitants then rock_inhabitants_index = #rock_inhabitants end					
 	local entity_name = rock_inhabitants[rock_inhabitants_index][math.random(1,#rock_inhabitants[rock_inhabitants_index])]
 	local p = surface.find_non_colliding_position(entity_name , pos, 6, 0.5)
 	local biter = 1

@@ -6,7 +6,8 @@ require "maps.fish_defender_kaboomsticks"
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
-local wave_interval = 3600
+local wave_interval = 3600		--interval between waves in ticks
+local biter_count_limit = 4000	--maximum biters on the east side of the map, next wave will not spawn if the maximum has been reached, if there are too biters the game might go slow 
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -59,17 +60,25 @@ end
 
 local threat_values = {
 	["small_biter"] = 1,
-	["medium_biter"] = 4,
-	["big_biter"] = 8,
-	["behemoth_biter"] = 16,
+	["medium_biter"] = 3,
+	["big_biter"] = 6,
+	["behemoth_biter"] = 12,
 	["small_spitter"] = 1,
-	["medium_spitter"] = 4,
-	["big_spitter"] = 8,
-	["behemoth_spitter"] = 16
+	["medium_spitter"] = 3,
+	["big_spitter"] = 6,
+	["behemoth_spitter"] = 12
 }
 
 local function get_biter_initial_pool()
 	local biter_pool = {}
+	if global.wave_count > 2000 then
+		biter_pool = {
+			{name = "big-biter", threat = threat_values.big_biter, weight = 1},
+			{name = "behemoth-biter", threat = threat_values.behemoth_biter, weight = 1},			
+			{name = "behemoth-spitter", threat = threat_values.behemoth_spitter, weight = 1}
+		}
+		return biter_pool
+	end
 	if global.wave_count > 1000 then
 		biter_pool = {
 			{name = "big-biter", threat = threat_values.big_biter, weight = 3},
@@ -193,9 +202,7 @@ local function spawn_biter_attack_group(pos, amount_of_biters)
 	if global.attack_wave_threat < 1 then return false end
 	local surface = game.surfaces["fish_defender"]
 	local biter_pool = get_biter_pool()
-
-	local unit_group = surface.create_unit_group({position=pos})
-	
+	local unit_group = surface.create_unit_group({position=pos})	
 	while global.attack_wave_threat > 0 do
 		biter_pool = shuffle(biter_pool)
 		global.attack_wave_threat = global.attack_wave_threat - biter_pool[1].threat
@@ -207,11 +214,47 @@ local function spawn_biter_attack_group(pos, amount_of_biters)
 	return unit_group
 end
 
+local function spawn_biter(pos, biter_pool)
+	if global.attack_wave_threat < 1 then return false end
+	local surface = game.surfaces["fish_defender"]	
+	biter_pool = shuffle(biter_pool)
+	global.attack_wave_threat = global.attack_wave_threat - biter_pool[1].threat
+	local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 0.25)
+	local biter = surface.create_entity({name = biter_pool[1].name, position = valid_pos})	
+	return biter
+end
+
+local attack_group_count_thresholds = {
+			{0, 1},
+			{100, 2},
+			{200, 3},
+			{1000, 4},
+			{1500, 5},
+			{2000, 6},
+			{2500, 7},
+			{3000, 8}
+		}
+		
+local function get_number_of_attack_groups()	
+	local n = 1
+	for _, entry in pairs(attack_group_count_thresholds) do
+		if global.wave_count >= entry[1] then
+			n = entry[2]
+		end
+	end
+	return n
+end
+
 local function biter_attack_wave()
 	if not global.market then return end		
 	if global.wave_grace_period then return end
-	
 	local surface = game.surfaces["fish_defender"]
+	
+	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
+		game.print("Biter limit reached, wave stalled.", {r = 0.7, g = 0.1, b = 0.1})
+		return 
+	end
+	
 	if not global.wave_count then
 		global.wave_count = 1
 	else
@@ -219,6 +262,7 @@ local function biter_attack_wave()
 	end
 	
 	global.attack_wave_threat = global.wave_count * 5
+	if global.attack_wave_threat > 25000 then global.attack_wave_threat = 25000 end
 	
 	local evolution = global.wave_count * 0.00125
 	if evolution > 1 then evolution = 1 end
@@ -251,24 +295,84 @@ local function biter_attack_wave()
 	end
 		
 	local spawn_x = 242
-	local group_coords = {
-			{spawn = {x = spawn_x, y = -160}, target = {x = -16, y = -70}},
-			{spawn = {x = spawn_x, y = -128}, target = {x = -16, y = -56}},
-			{spawn = {x = spawn_x, y = -96}, target = {x = -16, y = -42}},
-			{spawn = {x = spawn_x, y = -64}, target = {x = -8, y = -28}},
-			{spawn = {x = spawn_x, y = -32}, target = {x = -8, y = -14}},
-			{spawn = {x = spawn_x, y = 0}, target = {x = -8, y = 0}},
-			{spawn = {x = spawn_x, y = 32}, target = {x = -8, y = 14}},
-			{spawn = {x = spawn_x, y = 64}, target = {x = -8, y = 28}},
-			{spawn = {x = spawn_x, y = 96}, target = {x = -16, y = 42}},
-			{spawn = {x = spawn_x, y = 128}, target = {x = -16, y = 56}},
-			{spawn = {x = spawn_x, y = 160}, target = {x = -16, y = 70}}
-		}
+	local target_x = 32
+	local group_coords = {}
+	for a = -80, 80, 8 do
+		insert(group_coords, {spawn = {x = spawn_x, y = a * 2}, target = {x = target_x, y = a}})
+	end						
 	group_coords = shuffle(group_coords)
 	
-	local max_group_size = 25 + math.ceil(global.wave_count / 10)
-	if max_group_size > 250 then max_group_size = 250 end
-	if global.wave_count <= 50 then max_group_size = 300 end
+	local unit_groups = {}
+	if global.wave_count > 50 and math_random(1,4) == 1 then		
+		for i = 1, #group_coords, 1 do
+			unit_groups[i] = surface.create_unit_group({position = group_coords[i].spawn})
+		end
+	else	
+		for i = 1, get_number_of_attack_groups(), 1 do
+			unit_groups[i] = surface.create_unit_group({position = group_coords[i].spawn})
+		end
+	end
+
+	local biter_pool = get_biter_pool()
+	while global.attack_wave_threat > 0 do
+		for i = 1, #unit_groups, 1 do
+			local biter = spawn_biter(unit_groups[i].position, biter_pool)
+			if biter then
+				unit_groups[i].add_member(biter)
+			else
+				break
+			end			
+		end
+	end
+	
+	for i = 1, #unit_groups, 1 do								
+		unit_groups[i].set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+					{
+						type=defines.command.attack_area,
+						destination=group_coords[i].target,
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack,
+						target=global.market,
+						distraction=defines.distraction.by_enemy
+					}
+				}
+		})			
+	end
+	
+	--[[
+	
+	{spawn = {x = spawn_x, y = -160}, target = {x = target_x, y = -80}},
+	{spawn = {x = spawn_x, y = -128}, target = {x = target_x, y = -64}},
+	{spawn = {x = spawn_x, y = -96}, target = {x = target_x, y = -48}},
+	{spawn = {x = spawn_x, y = -64}, target = {x = target_x, y = -32}},
+	{spawn = {x = spawn_x, y = -32}, target = {x = target_x, y = -16}},
+	{spawn = {x = spawn_x, y = 0}, target = {x = target_x, y = 0}},
+	{spawn = {x = spawn_x, y = 32}, target = {x = target_x, y = 16}},
+	{spawn = {x = spawn_x, y = 64}, target = {x = target_x, y = 32}},
+	{spawn = {x = spawn_x, y = 96}, target = {x = target_x, y = 48}},
+	{spawn = {x = spawn_x, y = 128}, target = {x = target_x, y = 64}},
+	{spawn = {x = spawn_x, y = 160}, target = {x = target_x, y = 80}}
+	
+	for i = 1, #unit_groups, 1 do						
+		if math_random(1,8) == 1 then
+			unit_groups[i].set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
+		else
+			unit_groups[i].set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=128, distraction=defines.distraction.by_anything})
+		end		
+	end
+	
+	
+	
+	local max_group_size = 25 + math.ceil(global.wave_count / 8)
+	if max_group_size > 300 then max_group_size = 300 end
+	if global.wave_count <= 60 then max_group_size = 300 end
+	if math_random(1,3) ~= 1 then max_group_size = 300 end
 	
 	for i = 1, #group_coords, 1 do		
 		local biter_squad = spawn_biter_attack_group(group_coords[i].spawn, max_group_size)
@@ -283,7 +387,7 @@ local function biter_attack_wave()
 				biter_squad.set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=200, distraction=defines.distraction.by_anything})
 			end
 		end
-	end
+	end]]
 end
 
 local function refresh_market_offers()
@@ -318,11 +422,11 @@ local function refresh_market_offers()
 		{price = {}, offer = {type = 'nothing', effect_description = str5}},
 		{price = {{"coin", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 8}},		
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
+		{price = {{"coin", 9}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
 		{price = {{"coin", 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
-		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
+		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
 		{price = {{"coin", 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
-		{price = {{"coin", 900}}, offer = {type = 'give-item', item = 'tank', count = 1}},
+		{price = {{"coin", 1200}}, offer = {type = 'give-item', item = 'tank', count = 1}},
 		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
