@@ -1144,7 +1144,7 @@ local function pre_player_mined_item(event)
 		end
 		
 		local tile_distance_to_center = math.sqrt(rock_position.x^2 + rock_position.y^2)
-				
+		if tile_distance_to_center > 1450 then tile_distance_to_center = 1450 end	
 		if math.random(1,3) == 1 then hunger_update(player, -1) end
 		
 		surface.spill_item_stack(player.position,{name = "raw-fish", count = math.random(3,4)},true)
@@ -1327,7 +1327,6 @@ local function on_player_used_capsule(event)
 end
 
 local bank_messages = {
-	"Thank you for using our Fishbank terminal!",
 	"Caves are dangerous. Did you hear about our insurance programs?",
 	"Get your wealth flowing today with Fishbank!",
 	"Hungry? Take a look at our credit offers! No questions asked.",

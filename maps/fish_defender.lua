@@ -219,20 +219,20 @@ local function spawn_biter(pos, biter_pool)
 	local surface = game.surfaces["fish_defender"]	
 	biter_pool = shuffle(biter_pool)
 	global.attack_wave_threat = global.attack_wave_threat - biter_pool[1].threat
-	local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 0.25)
+	local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 0.75)
 	local biter = surface.create_entity({name = biter_pool[1].name, position = valid_pos})	
 	return biter
 end
 
 local attack_group_count_thresholds = {
 			{0, 1},
-			{100, 2},
-			{200, 3},
-			{300, 4},
-			{1000, 5},
-			{2000, 6},
-			{3000, 7},
-			{4000, 8}
+			{50, 2},
+			{100, 3},
+			{150, 4},
+			{200, 5},
+			{1000, 6},
+			{2000, 7},
+			{3000, 8}
 		}
 		
 local function get_number_of_attack_groups()	
@@ -279,8 +279,25 @@ local function biter_attack_wave()
 		
 	local units = surface.find_entities_filtered({type = "unit", area = {{192, -256},{360, 256}}})
 	for _, unit in pairs(units) do		
-		unit.destroy()		
+		unit.set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+					{
+						type=defines.command.attack_area,
+						destination={x = 32, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack,
+						target=global.market,
+						distraction=defines.distraction.by_enemy
+					}
+				}
+			})
 	end
+	
 	local units = surface.find_entities_filtered({force = "player", area = {{160, -256},{360, 256}}})
 	for _, unit in pairs(units) do
 		if unit.health then
@@ -297,14 +314,14 @@ local function biter_attack_wave()
 	local spawn_x = 242
 	local target_x = 32
 	local group_coords = {}
-	for a = -80, 80, 8 do
+	for a = -80, 80, 16 do
 		insert(group_coords, {spawn = {x = spawn_x, y = a * 2}, target = {x = target_x, y = a}})
 	end						
 	group_coords = shuffle(group_coords)
 	
 	local unit_groups = {}
-	if global.wave_count > 50 and math_random(1,4) == 1 then		
-		for i = 1, math_random(4, #group_coords), 1 do
+	if global.wave_count > 100 and math_random(1,3) == 1 then		
+		for i = 1, #group_coords, 1 do
 			unit_groups[i] = surface.create_unit_group({position = group_coords[i].spawn})
 		end
 	else	
@@ -344,50 +361,6 @@ local function biter_attack_wave()
 				}
 		})			
 	end
-	
-	--[[
-	
-	{spawn = {x = spawn_x, y = -160}, target = {x = target_x, y = -80}},
-	{spawn = {x = spawn_x, y = -128}, target = {x = target_x, y = -64}},
-	{spawn = {x = spawn_x, y = -96}, target = {x = target_x, y = -48}},
-	{spawn = {x = spawn_x, y = -64}, target = {x = target_x, y = -32}},
-	{spawn = {x = spawn_x, y = -32}, target = {x = target_x, y = -16}},
-	{spawn = {x = spawn_x, y = 0}, target = {x = target_x, y = 0}},
-	{spawn = {x = spawn_x, y = 32}, target = {x = target_x, y = 16}},
-	{spawn = {x = spawn_x, y = 64}, target = {x = target_x, y = 32}},
-	{spawn = {x = spawn_x, y = 96}, target = {x = target_x, y = 48}},
-	{spawn = {x = spawn_x, y = 128}, target = {x = target_x, y = 64}},
-	{spawn = {x = spawn_x, y = 160}, target = {x = target_x, y = 80}}
-	
-	for i = 1, #unit_groups, 1 do						
-		if math_random(1,8) == 1 then
-			unit_groups[i].set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
-		else
-			unit_groups[i].set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=128, distraction=defines.distraction.by_anything})
-		end		
-	end
-	
-	
-	
-	local max_group_size = 25 + math.ceil(global.wave_count / 8)
-	if max_group_size > 300 then max_group_size = 300 end
-	if global.wave_count <= 60 then max_group_size = 300 end
-	if math_random(1,3) ~= 1 then max_group_size = 300 end
-	
-	for i = 1, #group_coords, 1 do		
-		local biter_squad = spawn_biter_attack_group(group_coords[i].spawn, max_group_size)
-		if biter_squad == false then return end
-			
-		if global.wave_count <= 50 then
-			biter_squad.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
-		else
-			if math_random(1,8) == 1 then
-				biter_squad.set_command({type=defines.command.attack , target=global.market, distraction=defines.distraction.by_enemy})
-			else
-				biter_squad.set_command({type=defines.command.attack_area, destination=group_coords[i].target, radius=200, distraction=defines.distraction.by_anything})
-			end
-		end
-	end]]
 end
 
 local function refresh_market_offers()
@@ -448,7 +421,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 750}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
 		{price = {{"coin", 90}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
-		{price = {{"coin", 30}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
+		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
 		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
 		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},		
 		{price = {{"coin", 150}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
@@ -615,6 +588,13 @@ local coin_earnings = {
 	["biter-spawner"] = 32	
 }
 
+local entities_that_earn_coins = {
+		["artillery-turret"] = true
+		--["defender"] = true,
+	--	["distractor"] = true,
+	--	["destroyer"] = true
+	}
+
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
 		local players_to_reward = {}
@@ -645,15 +625,15 @@ local function on_entity_died(event)
 					player.insert({name = "coin", count = coin_earnings[event.entity.name]})
 				end
 				
-				if event.cause.name == "artillery-turret" then
+				if entities_that_earn_coins[event.cause.name] then
 					event.entity.surface.spill_item_stack(event.cause.position,{name = "coin", count = coin_earnings[event.entity.name]}, true)
 					reward_has_been_given = true
-				end
+				end				
 			end
 		end		
 				
-		if math_random(1, 5) == 1 and reward_has_been_given == false then
-			event.entity.surface.spill_item_stack(event.entity.position,{name = "coin", count = 1}, true) 
+		if reward_has_been_given == false and coin_earnings[event.entity.name] then
+			event.entity.surface.spill_item_stack(event.entity.position,{name = "coin", count = coin_earnings[event.entity.name]}, true) 
 		end
 		
 		if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
@@ -787,11 +767,11 @@ local function on_player_joined_game(event)
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
 				
 		global.entity_limits = {
-			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
-			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
+			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 150},
+			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 350},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
-			["land-mine"] =  {placed = 0, limit = 10, str = "landmine", slot_price = 1}
+			["land-mine"] =  {placed = 0, limit = 1, str = "landmine", slot_price = 3}
 		}
 		
 		global.wave_grace_period = wave_interval * 21

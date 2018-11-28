@@ -1,3 +1,7 @@
+0.16
+all non-player kills will yield full coin rewards
+turret slot price adjustments
+
 0.15
 max biter limit to prevent slowdown
 wave spawn changes
