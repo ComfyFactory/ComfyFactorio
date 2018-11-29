@@ -8,11 +8,10 @@ local info = [[
 	Fend them off as long as possible!
 		
 	The Market will gladly take any coin you might find.
-	
-	Defending with your character will earn you alot more coins.
 ]]
 
 local function create_map_intro(player)
+	if player.gui.left["map_intro_frame"] then player.gui.left["map_intro_frame"].destroy() end
 	local frame = player.gui.left.add {type = "frame", name = "map_intro_frame", direction = "vertical"}
 	local t = frame.add {type = "table", column_count = 1}	
 	

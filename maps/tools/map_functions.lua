@@ -11,8 +11,8 @@ f.draw_noise_tile_circle = function(position, name, surface, radius)
 	local insert = table.insert	
 	local noise_seed_add = 25000
 	local tiles = {}			
-	for y = radius*-1, radius, 1 do
-		for x = radius*-1, radius, 1 do
+	for y = radius * -2, radius * 2, 1 do
+		for x = radius * -2, radius * 2, 1 do
 			local pos = {x = x + position.x, y = y + position.y}	
 			local seed = game.surfaces[1].map_gen_settings.seed
 			local noise_1 = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
@@ -66,8 +66,8 @@ f.draw_smoothed_out_ore_circle = function(position, name, surface, radius, richn
 	local math_random = math.random	
 	local noise_seed_add = 25000	
 	local richness_part = richness / radius
-	for y = radius*-1, radius, 1 do
-		for x = radius*-1, radius, 1 do
+	for y = radius * -2, radius * 2, 1 do
+		for x = radius * -2, radius * 2, 1 do
 			local pos = {x = x + position.x, y = y + position.y}
 			local seed = game.surfaces[1].map_gen_settings.seed
 			local noise_1 = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)

@@ -169,7 +169,7 @@ local function remove_all_deconstruction_orders(player, source_player)
 	admin_only_message(source_player.name .. " has canceled all deconstruction orders.")
 end
 ]]--
-local function create_admin_panel(player)
+local function create_admin_panel(player)	
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 	
 	local player_names = {}
@@ -183,8 +183,16 @@ local function create_admin_panel(player)
 	l.style.font = "default-listbox"
 	l.style.font_color = { r=0.98, g=0.66, b=0.22}
 	
+	local selected_index = #player_names
+	if global.admin_panel_selected_player_index then
+		if global.admin_panel_selected_player_index[player.name] then
+			if player_names[global.admin_panel_selected_player_index[player.name]] then
+				selected_index = global.admin_panel_selected_player_index[player.name]
+			end
+		end
+	end
 	
-	local drop_down = frame.add({type = "drop-down", name = "admin_player_select", items = player_names, selected_index = #player_names})
+	local drop_down = frame.add({type = "drop-down", name = "admin_player_select", items = player_names, selected_index = selected_index})
 	drop_down.style.right_padding = 12
 	drop_down.style.left_padding = 12
 			
@@ -274,6 +282,8 @@ local function on_gui_click(event)
 	local name = event.element.name
 	if name == "admin_button" then		
 		if player.gui.left["admin_panel"] then
+			if not global.admin_panel_selected_player_index then global.admin_panel_selected_player_index = {} end
+			global.admin_panel_selected_player_index[player.name] = player.gui.left["admin_panel"]["admin_player_select"].selected_index
 			player.gui.left["admin_panel"].destroy()
 		else
 			create_admin_panel(player)

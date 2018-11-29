@@ -285,7 +285,7 @@ local function biter_attack_wave()
 			commands = {
 					{
 						type=defines.command.attack_area,
-						destination={x = 32, y = 0},
+						destination={x = -32, y = 0},
 						radius=16,
 						distraction=defines.distraction.by_anything
 					},
@@ -312,7 +312,7 @@ local function biter_attack_wave()
 	end
 		
 	local spawn_x = 242
-	local target_x = 32
+	local target_x = -32
 	local group_coords = {}
 	for a = -80, 80, 16 do
 		insert(group_coords, {spawn = {x = spawn_x, y = a * 2}, target = {x = target_x, y = a}})
@@ -349,8 +349,14 @@ local function biter_attack_wave()
 			commands = {
 					{
 						type=defines.command.attack_area,
+						destination={group_coords[i].target.x + 100, group_coords[i].target.y},
+						radius=32,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
 						destination=group_coords[i].target,
-						radius=16,
+						radius=32,
 						distraction=defines.distraction.by_anything
 					},
 					{
@@ -418,7 +424,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
-		{price = {{"coin", 750}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
+		{price = {{"coin", 1000}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
 		{price = {{"coin", 90}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
 		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
@@ -435,9 +441,9 @@ local function refresh_market_offers()
 		{price = {{"coin", 750}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}},	
 		{price = {{"coin", 175}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}},		
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}},
-		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
+		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
 		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
-		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
+		{price = {{"coin", 30}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
 	}
 	
 	for _, item in pairs(market_items) do
@@ -593,8 +599,8 @@ local entities_that_earn_coins = {
 		--["defender"] = true,
 	--	["distractor"] = true,
 	--	["destroyer"] = true
-	}
-
+	}	
+	
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then
 		local players_to_reward = {}
@@ -699,7 +705,7 @@ local function on_entity_damaged(event)
 		if event.cause.name == "big-spitter" then
 			local surface = event.cause.surface
 			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-			if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 3 then
+			if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 5 then
 				local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 3, 1)
 				surface.create_entity({name = "small-biter", position = pos})
 			end
@@ -708,7 +714,7 @@ local function on_entity_damaged(event)
 		if event.cause.name == "behemoth-spitter" then
 			local surface = event.cause.surface
 			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-			if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 3 then
+			if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 5 then
 				local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 1)
 				surface.create_entity({name = "medium-biter", position = pos})
 			end
@@ -763,7 +769,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0					
 		
-		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.75)	
+		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.5)	
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
 				
 		global.entity_limits = {
@@ -789,11 +795,11 @@ local function on_player_joined_game(event)
 	end
 	
 	local surface = game.surfaces["fish_defender"]
-	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {-10, 0}, 2, 1), "fish_defender")
+	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
+		player.teleport(surface.find_non_colliding_position("player", {-75, 4}, 50, 1), "fish_defender")
 	else
-		if player.online_time < 5 then
-			player.teleport({16, 0}, "fish_defender")
+		if player.online_time < 2 then
+			player.teleport({-50, 0}, "fish_defender")
 		end
 	end
 	
@@ -806,6 +812,19 @@ local function on_player_joined_game(event)
 	if game.tick > 900 then
 		is_game_lost()
 	end
+end
+
+local function get_replacement_tile(surface)
+	local tilename = "grass-1"
+	for x = -160, 160, 1 do
+		for y = -96, 90, 1 do
+			local tile = surface.get_tile(x, y)
+			if tile.name ~= "water" and tile.name ~= "deepwater" then
+				tilename = tile.name
+			end
+		end
+	end
+	return tilename	
 end
 
 local map_height = 96
@@ -824,43 +843,26 @@ local function on_chunk_generated(event)
 		entity.destroy()
 	end	
 	
-	if left_top.x >= 192 then
+	if left_top.x >= 160 then
 		if not global.spawn_ores_generated then
 		
-			local pos = surface.find_non_colliding_position("market",{-8, 0}, 50, 1)										
-			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
-			global.market.minable = false
-			refresh_market_offers()
-			
-			local pos = surface.find_non_colliding_position("gun-turret",{-6, 1}, 50, 1)
-			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
-			turret.insert({name = "firearm-magazine", count = 32})	
-			
+			local spawn_position_x = -76
+								
 			surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})
-			
-			local pos = surface.find_non_colliding_position("player",{-10, 0}, 50, 1)
-			game.forces["player"].set_spawn_position(pos, surface)
-		
-			local tiles = {}			
-			local replacement_tile = surface.get_tile(global.market.position)
+								
+			local tiles = {}
+			local replacement_tile = get_replacement_tile(surface)
 			local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater"}})
 			
 			for _, tile in pairs(water_tiles) do
-				insert(tiles, {name = replacement_tile.name, position = {tile.position.x, tile.position.y}})
+				insert(tiles, {name = replacement_tile, position = {tile.position.x, tile.position.y}})
 			end				
 			surface.set_tiles(tiles, true)
 			
-			local entities = surface.find_entities_filtered({type = "resource"})
+			local entities = surface.find_entities_filtered({type = "resource", area = {{-160, -96},{160, 96}}})
 			for _, entity in pairs(entities) do
 				entity.destroy()
 			end											
-			
-			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -64}, "copper-ore", surface, 15, 2500)
-			map_functions.draw_smoothed_out_ore_circle({x = -64, y = -32}, "iron-ore", surface, 15, 2500)
-			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 32}, "coal", surface, 15, 1500)
-			map_functions.draw_smoothed_out_ore_circle({x = -64, y = 64}, "stone", surface, 15, 1500)			
-			map_functions.draw_noise_tile_circle({x = -32, y = 0}, "water", surface, 16)		
-			map_functions.draw_oil_circle({x = -64, y = 0}, "crude-oil", surface, 8, 200000)
 			
 			local decorative_names = {}
 			for k,v in pairs(game.decorative_prototypes) do
@@ -873,6 +875,42 @@ local function on_chunk_generated(event)
 					surface.regenerate_decorative(decorative_names, {{x,y}})
 				end
 			end
+			
+			map_functions.draw_smoothed_out_ore_circle({x = -128, y = -64}, "copper-ore", surface, 15, 2500)
+			map_functions.draw_smoothed_out_ore_circle({x = -128, y = -32}, "iron-ore", surface, 15, 2500)
+			map_functions.draw_smoothed_out_ore_circle({x = -128, y = 32}, "coal", surface, 15, 1500)
+			map_functions.draw_smoothed_out_ore_circle({x = -128, y = 64}, "stone", surface, 15, 1500)			
+			map_functions.draw_noise_tile_circle({x = -96, y = 0}, "water", surface, 16)		
+			map_functions.draw_oil_circle({x = -128, y = 0}, "crude-oil", surface, 8, 200000)
+			
+			local pos = surface.find_non_colliding_position("market",{spawn_position_x, 0}, 50, 1)										
+			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
+			global.market.minable = false
+			refresh_market_offers()
+			
+			local pos = surface.find_non_colliding_position("gun-turret",{spawn_position_x + 5, 1}, 50, 1)
+			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
+			turret.insert({name = "firearm-magazine", count = 32})
+			
+			for x = -20, 20, 1 do
+				for y = -20, 20, 1 do
+					local pos = {x = global.market.position.x + x, y = global.market.position.y + y}
+					local distance_to_center = math.sqrt(x^2 + y^2)
+					if distance_to_center > 8 and distance_to_center < 15 then
+						if math_random(1,3) == 1 and surface.can_place_entity({name = "wooden-chest", position = pos, force = "player"}) then
+							local chest = surface.create_entity({name = "wooden-chest", position = pos, force = "player"})
+						end
+					end
+				end
+			end
+			
+			local pos = surface.find_non_colliding_position("player",{spawn_position_x + 1, 4}, 50, 1)
+			game.forces["player"].set_spawn_position(pos, surface)
+			for _, player in pairs(game.connected_players) do
+				local pos = surface.find_non_colliding_position("player",{spawn_position_x + 1, 4}, 50, 1)
+				player.teleport(pos, surface)
+			end
+					
 			global.spawn_ores_generated = true
 		end				
 	end
@@ -946,7 +984,7 @@ local function on_chunk_generated(event)
 	end
 
 	local tiles = {}
-
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}
@@ -956,20 +994,19 @@ local function on_chunk_generated(event)
 				if pos.x > 312 then
 					insert(tiles, {name = "out-of-map", position = pos})
 				else
-					insert(tiles, {name = "dirt-7", position = pos})
+					--insert(tiles, {name = "dirt-7", position = pos})
 				end
 				
-				if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then
-				
-				if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
-					if math_random(1,4) == 1 then
-						local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})						
-						entity.active = false
-					else						
-						local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})						
-						entity.active = false
+				if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then				
+					if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
+						if math_random(1,4) == 1 then
+							local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})						
+							entity.active = false
+						else						
+							local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})						
+							entity.active = false
+						end
 					end
-				end
 				end
 			end		
 		end
@@ -1038,7 +1075,7 @@ local function on_tick()
 		end
 		if game.tick % 180 == 0 then
 			if game.surfaces["fish_defender"] then
-				game.forces.player.chart(game.surfaces["fish_defender"], {{x = 0, y = -256}, {x = 288, y = 256}})
+				game.forces.player.chart(game.surfaces["fish_defender"], {{x = -64, y = -256}, {x = 288, y = 256}})
 			end
 		end
 		
