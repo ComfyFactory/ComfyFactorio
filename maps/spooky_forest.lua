@@ -36,9 +36,9 @@ local biters_in_the_trees = {
 		[1] = {"small-biter"},
 		[2] = {"small-biter","small-biter","small-biter","small-biter","small-biter","medium-biter"},
 		[3] = {"small-biter","small-biter","small-biter","small-biter","medium-biter","medium-biter"},
-		[4] = {"small-biter","small-biter","small-biter","medium-biter","medium-biter","small-spitter"},
-		[5] = {"small-biter","small-biter","medium-biter","medium-biter","medium-biter","small-spitter"},
-		[6] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","small-spitter"},
+		[4] = {"small-biter","small-biter","small-biter","medium-biter","medium-biter","medium-spitter"},
+		[5] = {"small-biter","small-biter","medium-biter","medium-biter","medium-biter","medium-spitter"},
+		[6] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
 		[7] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
 		[8] = {"small-biter","medium-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
 		[9] = {"small-biter","medium-biter","medium-biter","big-biter","big-biter","medium-spitter"},
@@ -101,7 +101,7 @@ local function get_entity(position)
 			entity_name = "tree-04"
 			if noise > 0.6 then
 				entity_name = rock_raffle[math_random(1, #rock_raffle)]
-				if math_random(1, 24) == 1 then
+				if math_random(1, 16) == 1 then
 					local e = math.ceil(game.forces.enemy.evolution_factor*10)
 					if e < 1 then e = 1 end								
 					entity_name = worm_raffle_table[e][math_random(1, #worm_raffle_table[e])]
@@ -129,13 +129,17 @@ local function get_noise_tile(position)
 	end
 	
 	local noise = get_noise("water", position)
-	if noise > 0.55 then
+	if noise > 0.75 then
 		tile_name = "water"
-		if noise > 0.65 then
+		if noise > 0.85 then
 			tile_name = "deepwater"
 		end			
 	end
-		
+	
+	if noise < -0.8 then
+		tile_name = "water-green"			
+	end
+	
 	return tile_name
 end
 
@@ -250,15 +254,15 @@ local function on_entity_died(event)
 			end
 		end
 		
-		local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
-		local pos = {x = event.entity.position.x, y = event.entity.position.y}
-		
-		
-		local amount_modifier = 1 + game.forces.enemy.evolution_factor * 10
-		if name == "crude-oil" then				
-			map_functions.draw_oil_circle(pos, name, surface, 6, math.ceil(100000 * amount_modifier))
-		else				
-			map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 6, math.ceil(750 * amount_modifier))
+		if math_random(1,2) == 1 then
+			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
+			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
+			local amount_modifier = 1 + game.forces.enemy.evolution_factor * 10
+			if name == "crude-oil" then				
+				map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
+			else				
+				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 6, math.ceil(500 * amount_modifier))
+			end
 		end
 	end
 	
@@ -303,7 +307,7 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position({0, 0}, surface)
 		
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_evolution.destroy_factor = 0.006
+		game.map_settings.enemy_evolution.destroy_factor = 0.005
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0
 							
@@ -314,7 +318,6 @@ local function on_player_joined_game(event)
 		player.insert({name = "submachine-gun", count = 1})
 		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 5})
-		player.insert({name = "grenade", count = 3})
 		player.insert({name = "land-mine", count = 5})
 		player.insert({name = "light-armor", count = 1})
 		player.insert({name = "firearm-magazine", count = 128})
@@ -361,11 +364,11 @@ end
 local function on_player_mined_entity(event)
 	local player = game.players[event.player_index]
 	if event.entity.type == "tree" then
-		if math_random(1, 96) then
+		if math_random(1, 96) == 1 then
 			player.print("You anger the tree, it hits you with a low branch uppercut.", {r = 0.77, g = 0, b = 0})
 			player.character.damage(25, "enemy")
 		end
-		if math_random(1, 4) == 1 then return end
+		if math_random(1, 3) ~= 1 then return end
 		spawn_biter(event.entity.surface, event.entity.position)				
 	end
 end
