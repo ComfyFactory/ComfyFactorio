@@ -33,15 +33,15 @@ local worm_raffle_table = {
 	}
 
 local biters_in_the_trees = {
-		[1] = {"small-biter"},
-		[2] = {"small-biter","small-biter","small-biter","small-biter","small-biter","medium-biter"},
-		[3] = {"small-biter","small-biter","small-biter","small-biter","medium-biter","medium-biter"},
+		[1] = {"small-biter","small-biter","small-biter","small-biter","small-spitter","small-spitter"},
+		[2] = {"small-biter","small-biter","small-biter","small-spitter","small-spitter","medium-biter"},
+		[3] = {"small-biter","small-biter","small-biter","small-biter","medium-biter","medium-spitter"},
 		[4] = {"small-biter","small-biter","small-biter","medium-biter","medium-biter","medium-spitter"},
 		[5] = {"small-biter","small-biter","medium-biter","medium-biter","medium-biter","medium-spitter"},
-		[6] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
-		[7] = {"small-biter","small-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
-		[8] = {"small-biter","medium-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
-		[9] = {"small-biter","medium-biter","medium-biter","big-biter","big-biter","medium-spitter"},
+		[6] = {"small-biter","medium-biter","medium-biter","medium-biter","medium-biter","medium-spitter"},
+		[7] = {"medium-biter","medium-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
+		[8] = {"medium-biter","medium-biter","medium-biter","medium-biter","big-biter","big-spitter"},
+		[9] = {"medium-biter","medium-biter","medium-biter","big-biter","big-biter","big-spitter"},
 		[10] = {"medium-biter","medium-biter","medium-biter","big-biter","big-biter","big-spitter"},
 		[11] = {"medium-biter","medium-biter","big-biter","big-biter","big-biter","big-spitter"},
 		[12] = {"medium-biter","big-biter","big-biter","big-biter","big-biter","big-spitter"},
@@ -62,7 +62,9 @@ local function spawn_biter(surface, position)
 	if e < 1 then e = 1 end
 	if e > 20 then e = 20 end		
 	local biter = biters_in_the_trees[e][math_random(1, #biters_in_the_trees[e])]
-	surface.create_entity{name = biter, position = position}
+	local p = surface.find_non_colliding_position(biter , position, 16, 0.5)
+	if not p then return end
+	surface.create_entity{name = biter, position = p}
 end	
 	
 local function get_noise(name, pos)	
@@ -97,14 +99,19 @@ local function get_entity(position)
 	local noise = get_noise("trees", position)
 	local entity_name = false
 	if noise > 0 then
-		if math_random(1,2) == 1 then
+		if math_random(1, 3) ~= 1 then
 			entity_name = "tree-04"
+			if math_random(1,7) == 1 then
+				entity_name = "dead-tree-desert"
+			end
 			if noise > 0.6 then
 				entity_name = rock_raffle[math_random(1, #rock_raffle)]
-				if math_random(1, 16) == 1 then
-					local e = math.ceil(game.forces.enemy.evolution_factor*10)
-					if e < 1 then e = 1 end								
-					entity_name = worm_raffle_table[e][math_random(1, #worm_raffle_table[e])]
+				if math_random(1, 20) == 1 then
+					if position.x > 32 or position.x < -32 or position.y > 32 or position.y < -32 then
+						local e = math.ceil(game.forces.enemy.evolution_factor*10)
+						if e < 1 then e = 1 end								
+						entity_name = worm_raffle_table[e][math_random(1, #worm_raffle_table[e])]
+					end
 				end 
 			end
 		end	
@@ -136,7 +143,7 @@ local function get_noise_tile(position)
 		end			
 	end
 	
-	if noise < -0.8 then
+	if noise < -0.85 then
 		tile_name = "water-green"			
 	end
 	
@@ -204,7 +211,7 @@ local function uncover_map_for_player(player)
 		surface.set_tiles(tiles, true)
 	end
 	for _, pos in pairs(uncover_map_schedule) do
-		uncover_map(surface, pos, 1, 9)	
+		uncover_map(surface, pos, 1, 14)	
 	end	
 	for _, fish in pairs(fishes) do
 		surface.create_entity({name = "fish", position = fish}) 
@@ -254,14 +261,14 @@ local function on_entity_died(event)
 			end
 		end
 		
-		if math_random(1,2) == 1 then
+		if math_random(1, 2) == 1 then
 			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
 			local amount_modifier = 1 + game.forces.enemy.evolution_factor * 10
 			if name == "crude-oil" then				
 				map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
 			else				
-				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 6, math.ceil(500 * amount_modifier))
+				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 7, math.ceil(500 * amount_modifier))
 			end
 		end
 	end
@@ -307,7 +314,7 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position({0, 0}, surface)
 		
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_evolution.destroy_factor = 0.005
+		game.map_settings.enemy_evolution.destroy_factor = 0.0035
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0
 							
@@ -317,10 +324,11 @@ local function on_player_joined_game(event)
 	if player.online_time < 1 then
 		player.insert({name = "submachine-gun", count = 1})
 		player.insert({name = "iron-axe", count = 1})
+		player.insert({name = "grenade", count = 1})
 		player.insert({name = "raw-fish", count = 5})
 		player.insert({name = "land-mine", count = 5})
 		player.insert({name = "light-armor", count = 1})
-		player.insert({name = "firearm-magazine", count = 128})
+		player.insert({name = "firearm-magazine", count = 96})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 	
