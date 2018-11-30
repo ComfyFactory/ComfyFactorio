@@ -219,7 +219,7 @@ local function spawn_biter(pos, biter_pool)
 	local surface = game.surfaces["fish_defender"]	
 	biter_pool = shuffle(biter_pool)
 	global.attack_wave_threat = global.attack_wave_threat - biter_pool[1].threat
-	local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 0.75)
+	local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 2)
 	local biter = surface.create_entity({name = biter_pool[1].name, position = valid_pos})	
 	return biter
 end
@@ -411,7 +411,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
 		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
 		{price = {{"coin", 500}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}},
-		{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
+		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
 		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
 		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
@@ -565,6 +565,7 @@ local biter_building_inhabitants = {
 }
 
 local function damage_entities_in_radius(position, radius, damage)
+	if radius > 8 then radius = 8 end
 	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health then
@@ -595,10 +596,10 @@ local coin_earnings = {
 }
 
 local entities_that_earn_coins = {
-		["artillery-turret"] = true
-		--["defender"] = true,
-	--	["distractor"] = true,
-	--	["destroyer"] = true
+		["artillery-turret"] = true,
+		["gun-turret"] = true,
+		["laser-turret"] = true,
+		["gun-turret"] = true
 	}	
 	
 local function on_entity_died(event)
@@ -655,14 +656,14 @@ local function on_entity_died(event)
 		if event.entity.name == "medium-biter" then
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
 			local damage = 25
-			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.05), 0) end
+			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.005), 0) end
 			damage_entities_in_radius(event.entity.position, 1 + math.floor(global.wave_count * 0.001), damage)
 		end
 
 		if event.entity.name == "big-biter" then
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
 			local damage = 35
-			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 0.1), 0) end
+			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 0.01), 0) end
 			damage_entities_in_radius(event.entity.position, 2 + math.floor(global.wave_count * 0.001), damage)
 		end
 
@@ -705,18 +706,18 @@ local function on_entity_damaged(event)
 		if event.cause.name == "big-spitter" then
 			local surface = event.cause.surface
 			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-			if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 5 then
-				local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 3, 1)
-				surface.create_entity({name = "small-biter", position = pos})
+			if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 3 then
+				local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 3, 0.5)
+				if pos then surface.create_entity({name = "small-biter", position = pos}) end
 			end
 		end
 
 		if event.cause.name == "behemoth-spitter" then
 			local surface = event.cause.surface
 			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-			if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 5 then
-				local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 1)
-				surface.create_entity({name = "medium-biter", position = pos})
+			if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 3 then
+				local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
+				if pos then surface.create_entity({name = "medium-biter", position = pos}) end
 			end
 		end
 
