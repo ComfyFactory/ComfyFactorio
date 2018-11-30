@@ -747,11 +747,11 @@ local function on_player_joined_game(event)
 		map_gen_settings.water = "small"
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 22, cliff_elevation_0 = 22}		
 		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["stone"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["copper-ore"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["iron-ore"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["crude-oil"] = {frequency = "high", size = "big", richness = "normal"},
+			["coal"] = {frequency = "very-high", size = "very-big", richness = "normal"},
+			["stone"] = {frequency = "very-high", size = "very-big", richness = "normal"},
+			["copper-ore"] = {frequency = "very-high", size = "very-big", richness = "normal"},
+			["iron-ore"] = {frequency = "very-high", size = "very-big", richness = "normal"},
+			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
 			["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
@@ -804,10 +804,13 @@ local function on_player_joined_game(event)
 		end
 	end
 	
+	--[[
 	if global.wave_grace_period then			
 		global.wave_grace_period = global.wave_grace_period - 3600
 		if global.wave_grace_period <= 0 then global.wave_grace_period = nil end
-	end	
+	end
+	]]
+	
 	create_wave_gui(player)
 	
 	if game.tick > 900 then
@@ -916,8 +919,9 @@ local function on_chunk_generated(event)
 		end				
 	end
 	
+	--[[
 	if left_top.x <= -352 then
-		if math_random(1, 32) == 1 then
+		if math_random(1, 128) == 1 then
 			local positions = {}
 			for x = 0, 31, 1 do
 				for y = 0, 31, 1 do
@@ -936,7 +940,7 @@ local function on_chunk_generated(event)
 				end
 			end
 		end
-	end
+	end]]
 	
 	local tiles = {}
 	local hourglass_center_piece_length = 64
