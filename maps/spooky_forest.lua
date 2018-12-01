@@ -27,9 +27,9 @@ local worm_raffle_table = {
 		[5] = {"small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
 		[6] = {"small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
 		[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
+		[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"},
+		[9] = {"medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"},
+		[10] = {"medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
 	}
 
 local biters_in_the_trees = {
@@ -129,25 +129,42 @@ end
 local function get_noise_tile(position)
 	local noise = get_noise("grass", position)
 	local tile_name
+	--local decorative = false
 	if noise > 0 then
 		tile_name = "grass-1"
+		--decorative = "green-pita"
 	else
 		tile_name = "grass-2"
+		--decorative = "green-hairy-grass"
+		--	table.insert(decoratives, {name = "green-croton", position = pos, amount = 3})
+		--table.insert(decoratives, {name = "green-asterisk", position = pos, amount = 2})		
 	end
 	
 	local noise = get_noise("water", position)
 	if noise > 0.75 then
 		tile_name = "water"
+		--decorative = false
 		if noise > 0.85 then
-			tile_name = "deepwater"
+			tile_name = "deepwater"			
 		end			
 	end
 	
 	if noise < -0.85 then
-		tile_name = "water-green"			
+		tile_name = "water-green"
+		--decorative = false
 	end
 	
 	return tile_name
+end
+
+local function create_decoratives(surface, position)
+	local decoratives = {}
+	if decorative then
+		insert(decoratives, {name = decorative, position = pos, amount = 2})
+	end
+	if #decoratives > 0 then
+		surface.create_decoratives{check_collision=false, decoratives=decoratives}
+	end
 end
 
 local function uncover_map(surface, position, radius_min, radius_max)
@@ -191,8 +208,7 @@ local function uncover_map_for_player(player)
 			local pos = {x = position.x + position_modifier.x, y = position.y + position_modifier.y} 
 			if surface.get_tile(pos).name == "out-of-map" then
 				local tile_name = get_noise_tile(pos)
-				insert(tiles, {name = tile_name, position = pos})
-				
+				insert(tiles, {name = tile_name, position = pos})				
 				if tile_name == "water" or tile_name == "deepwater" then
 					if math_random(1, 8) == 1 then insert(fishes, pos) end
 				end
@@ -207,9 +223,11 @@ local function uncover_map_for_player(player)
 			end				
 		end
 	end
+	
 	if #tiles > 0 then
 		surface.set_tiles(tiles, true)
-	end
+	end		
+	
 	for _, pos in pairs(uncover_map_schedule) do
 		uncover_map(surface, pos, 1, 14)	
 	end	
@@ -260,17 +278,16 @@ local function on_entity_died(event)
 				if p then surface.create_entity {name=t[1], position=p} end
 			end
 		end
-		
-		if math_random(1, 2) == 1 then
-			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
-			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
-			local amount_modifier = 1 + game.forces.enemy.evolution_factor * 10
-			if name == "crude-oil" then				
-				map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
-			else				
-				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 7, math.ceil(500 * amount_modifier))
-			end
+				
+		local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
+		local pos = {x = event.entity.position.x, y = event.entity.position.y}						
+		local amount_modifier = 1 + game.forces.enemy.evolution_factor * 10
+		if name == "crude-oil" then				
+			map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
+		else				
+			map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 7, math.ceil(600 * amount_modifier))
 		end
+		
 	end
 	
 	if entity_drop_amount[event.entity.name] then
@@ -282,7 +299,7 @@ local function on_entity_died(event)
 	end	
 	
 	if event.entity.type == "tree" then
-		if math_random(1, 2) == 1 then return end
+		--if math_random(1, 2) == 1 then return end
 		spawn_biter(event.entity.surface, event.entity.position)			
 	end
 end

@@ -7,7 +7,7 @@ local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local wave_interval = 3600		--interval between waves in ticks
-local biter_count_limit = 4000	--maximum biters on the east side of the map, next wave will not spawn if the maximum has been reached, if there are too biters the game might go slow 
+local biter_count_limit = 4200	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -196,22 +196,6 @@ local function get_biter_pool()
 		end
 	end
 	return biter_raffle
-end
-
-local function spawn_biter_attack_group(pos, amount_of_biters)
-	if global.attack_wave_threat < 1 then return false end
-	local surface = game.surfaces["fish_defender"]
-	local biter_pool = get_biter_pool()
-	local unit_group = surface.create_unit_group({position=pos})	
-	while global.attack_wave_threat > 0 do
-		biter_pool = shuffle(biter_pool)
-		global.attack_wave_threat = global.attack_wave_threat - biter_pool[1].threat
-		local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 50, 0.5)
-		unit_group.add_member(surface.create_entity({name = biter_pool[1].name, position = valid_pos}))
-		amount_of_biters = amount_of_biters - 1
-		if amount_of_biters == 0 then break end
-	end
-	return unit_group
 end
 
 local function spawn_biter(pos, biter_pool)
@@ -565,7 +549,7 @@ local biter_building_inhabitants = {
 }
 
 local function damage_entities_in_radius(position, radius, damage)
-	if radius > 8 then radius = 8 end
+	if radius > 5 then radius = 5 end
 	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health then
@@ -599,7 +583,7 @@ local entities_that_earn_coins = {
 		["artillery-turret"] = true,
 		["gun-turret"] = true,
 		["laser-turret"] = true,
-		["gun-turret"] = true
+		["flamethrower-turret"] = true
 	}	
 	
 local function on_entity_died(event)
@@ -657,6 +641,7 @@ local function on_entity_died(event)
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
 			local damage = 25
 			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.005), 0) end
+			if damage > 50 then damage = 50 end
 			damage_entities_in_radius(event.entity.position, 1 + math.floor(global.wave_count * 0.001), damage)
 		end
 
@@ -664,6 +649,7 @@ local function on_entity_died(event)
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
 			local damage = 35
 			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 0.01), 0) end
+			if damage > 100 then damage = 100 end
 			damage_entities_in_radius(event.entity.position, 2 + math.floor(global.wave_count * 0.001), damage)
 		end
 
@@ -680,7 +666,7 @@ local function on_entity_died(event)
 			end
 			if spawn_entity then
 				local surface = event.entity.surface
-				if surface.count_entities_filtered({area = {{event.entity.position.x - 3, event.entity.position.y - 3},{event.entity.position.x + 3, event.entity.position.y + 3}}, name = spawn_entity}) == 0 then	
+				if surface.count_entities_filtered({area = {{event.entity.position.x - 4, event.entity.position.y - 4},{event.entity.position.x + 4, event.entity.position.y + 4}}, name = spawn_entity}) == 0 then	
 					surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
 					surface.create_entity({name = spawn_entity, position = event.entity.position})
 				end
@@ -778,7 +764,7 @@ local function on_player_joined_game(event)
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 350},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
-			["land-mine"] =  {placed = 0, limit = 1, str = "landmine", slot_price = 3}
+			["land-mine"] =  {placed = 0, limit = 1, str = "landmine", slot_price = 2}
 		}
 		
 		global.wave_grace_period = wave_interval * 21
