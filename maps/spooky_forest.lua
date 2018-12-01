@@ -157,13 +157,18 @@ local function get_noise_tile(position)
 	return tile_name
 end
 
-local function create_decoratives(surface, position)
+local function create_decoratives_around_position(surface, position)
 	local decoratives = {}
-	if decorative then
-		insert(decoratives, {name = decorative, position = pos, amount = 2})
+		
+	for _, position_modifier in pairs(shapes.circles[uncover_radius - 2]) do
+		local pos = {x = position.x + position_modifier.x, y = position.y + position_modifier.y}
+		local area = {{pos.x - 0.01, pos.y - 0.01},{pos.x + 0.01, pos.y + 0.01}}
+		surface.destroy_decoratives(area)		
+		insert(decoratives, {name = "green-pita", position = pos, amount = 1})	
 	end
+		
 	if #decoratives > 0 then
-		surface.create_decoratives{check_collision=false, decoratives=decoratives}
+		surface.create_decoratives{check_collision=true, decoratives=decoratives}
 	end
 end
 
@@ -227,6 +232,8 @@ local function uncover_map_for_player(player)
 	if #tiles > 0 then
 		surface.set_tiles(tiles, true)
 	end		
+	
+	--create_decoratives_around_position(surface, position)
 	
 	for _, pos in pairs(uncover_map_schedule) do
 		uncover_map(surface, pos, 1, 14)	
