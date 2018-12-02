@@ -150,6 +150,31 @@ local function on_entity_died(event)
 	global.friendly_fire_history[#global.friendly_fire_history + 1] = str	
 end
 
+--Mining Thieves History
+local blacklisted_types = {
+	["transport-belt"] = true,
+	["inserter"] = true
+}
+local function on_player_mined_entity(event)
+	if not event.entity.last_user then return end
+	local player = game.players[event.player_index]
+	if event.entity.last_user.name == player.name then return end
+	if event.entity.force.name ~= player.force.name then return end
+	if blacklisted_types[event.entity.type] then return end
+		 	
+	if not global.mining_history then global.mining_history = {} end
+	if #global.mining_history > 999 then global.mining_history = {} end
+	
+	local str = player.name .. " mined "
+	str = str .. event.entity.name
+	str = str .. " at X:"	
+	str = str .. math.floor(event.entity.position.x)
+	str = str .. " Y:"
+	str = str .. math.floor(event.entity.position.y)
+	
+	global.mining_history[#global.mining_history + 1] = str	
+end
+
 local function on_gui_opened(event)
 	if not event.entity then return end
 	if event.entity.name ~= "character-corpse" then return end
@@ -169,6 +194,7 @@ local function on_pre_player_mined_item(event)
 	end
 end
 
+event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_console_command, on_console_command)

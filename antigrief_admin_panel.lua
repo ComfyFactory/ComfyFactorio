@@ -234,7 +234,7 @@ local function create_admin_panel(player)
 		local l = frame.add({type = "label", caption = "----------------------------------------------"})
 	end
 	
-	local t = frame.add({type = "table", column_count = 3})
+	local t = frame.add({type = "table", column_count = 4})
 	
 	if global.friendly_fire_history then
 		local tt = t.add({type = "table", column_count = 1})
@@ -245,6 +245,18 @@ local function create_admin_panel(player)
 		scroll_pane.style.maximal_height = 160
 		for i = #global.friendly_fire_history, 1, -1 do
 			scroll_pane.add({type = "label", caption = global.friendly_fire_history[i]})
+		end
+	end
+	
+	if global.mining_history then
+		local tt = t.add({type = "table", column_count = 1})
+		local l = tt.add({type = "label", caption = "Mining History:"})
+		l.style.font = "default-listbox"
+		l.style.font_color = { r=0.98, g=0.66, b=0.22}
+		local scroll_pane = tt.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
+		scroll_pane.style.maximal_height = 160
+		for i = #global.mining_history, 1, -1 do
+			scroll_pane.add({type = "label", caption = global.mining_history[i]})
 		end
 	end
 	
