@@ -115,20 +115,36 @@ local function on_built_entity(event)
 	end
 end
 
---Artillery History
+--Artillery History and Antigrief
 local function on_player_used_capsule(event)
 	local player = game.players[event.player_index]
 	local position = event.position
-	local used_item = event.item
-	if used_item.name == "artillery-targeting-remote" then
-		if not global.artillery_history then global.artillery_history = {} end
-		if #global.artillery_history > 999 then global.artillery_history = {} end
-		local str = player.name .. " at X:"
-		str = str .. math.floor(position.x)
-		str = str .. " Y:"
-		str = str .. math.floor(position.y)
-		table.insert(global.artillery_history, str)
-	end
+	local used_item = event.item			
+	if used_item.name ~= "artillery-targeting-remote" then return end	
+	
+	local playtime = player.online_time
+	if global.player_totals then
+		if global.player_totals[player.name] then
+			playtime = player.online_time + global.player_totals[player.name][1]
+		end
+	end 
+	if playtime < 1296000 and player.admin == false then	
+		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
+		local area = {{position.x - 1, position.y - 1},{position.x + 1, position.y + 1}}
+		local entities = player.surface.find_entities_filtered({area = area, name = "artillery-flare"})
+		for _, e in pairs(entities) do			
+			e.destroy()		
+		end
+		return
+	end	
+	
+	if not global.artillery_history then global.artillery_history = {} end
+	if #global.artillery_history > 999 then global.artillery_history = {} end
+	local str = player.name .. " at X:"
+	str = str .. math.floor(position.x)
+	str = str .. " Y:"
+	str = str .. math.floor(position.y)
+	table.insert(global.artillery_history, str)	
 end
 
 local blacklisted_types = {
