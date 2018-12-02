@@ -420,6 +420,11 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+local function on_research_finished(event)	
+	game.forces.player.recipes["flamethrower-turret"].enabled = false
+end
+
+event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)	
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)	
 event.add(defines.events.on_entity_died, on_entity_died)

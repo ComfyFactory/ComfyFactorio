@@ -385,7 +385,7 @@ local function refresh_market_offers()
 		{price = {}, offer = {type = 'nothing', effect_description = str5}},
 		{price = {{"coin", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 8}},		
-		{price = {{"coin", 9}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
 		{price = {{"coin", 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
 		{price = {{"coin", 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
@@ -395,7 +395,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
 		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
 		{price = {{"coin", 500}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}},
-		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
 		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
 		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
@@ -404,7 +404,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 30}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}},
 		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},	
 		{price = {{"coin", 650}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},	
-		{price = {{"coin", 35}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},	
+		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},	
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
@@ -412,12 +412,12 @@ local function refresh_market_offers()
 		{price = {{"coin", 90}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
 		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
+		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
 		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},		
-		{price = {{"coin", 150}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
+		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
 		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},	
 		{price = {{"coin", 1500}}, offer = {type = 'give-item', item = 'power-armor', count = 1}},
-		{price = {{"coin", 12500}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
+		{price = {{"coin", 12000}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},
 		{price = {{"coin", 2250}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}},
 		{price = {{"coin", 100}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}},				
@@ -427,7 +427,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}},
 		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
 		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
-		{price = {{"coin", 30}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
+		{price = {{"coin", 20}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
 	}
 	
 	for _, item in pairs(market_items) do
@@ -760,8 +760,8 @@ local function on_player_joined_game(event)
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
 				
 		global.entity_limits = {
-			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 150},
-			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 350},
+			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
+			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 250},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "landmine", slot_price = 2}

@@ -115,6 +115,7 @@ local function on_built_entity(event)
 	end
 end
 
+--Artillery History
 local function on_player_used_capsule(event)
 	local player = game.players[event.player_index]
 	local position = event.position
@@ -128,6 +129,25 @@ local function on_player_used_capsule(event)
 		str = str .. math.floor(position.y)
 		table.insert(global.artillery_history, str)
 	end
+end
+
+--Friendly Fire History
+local function on_entity_died(event)
+	if not event.cause then return end
+	if event.cause.name ~= "player" then return end	
+	if event.cause.force.name ~= event.entity.force.name then return end
+	local player = event.cause.player		
+	if not global.friendly_fire_history then global.friendly_fire_history = {} end
+	if #global.friendly_fire_history > 999 then global.friendly_fire_history = {} end
+	
+	local str = player.name .. " destroyed "
+	str = str .. event.entity.name
+	str = str .. " at X:"	
+	str = str .. math.floor(event.entity.position.x)
+	str = str .. " Y:"
+	str = str .. math.floor(event.entity.position.y)
+	
+	global.friendly_fire_history[#global.friendly_fire_history + 1] = str	
 end
 
 local function on_gui_opened(event)
@@ -149,6 +169,7 @@ local function on_pre_player_mined_item(event)
 	end
 end
 
+event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_console_command, on_console_command)
 event.add(defines.events.on_gui_opened, on_gui_opened)
