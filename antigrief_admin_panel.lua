@@ -5,7 +5,7 @@ local event = require 'utils.event'
 local function admin_only_message(str)
 	for _, player in pairs(game.connected_players) do
 		if player.admin == true then
-			player.print("Admins-only-message: " .. str, { r=0.88, g=0.88, b=0.88})
+			player.print("Admins-only-message: " .. str, {r=0.88, g=0.88, b=0.88})
 		end
 	end
 end
@@ -47,6 +47,10 @@ local bring_player_messages = {
 	"What are you up to?"
 }
 local function bring_player(player, source_player)
+	if player.driving == true then
+		source_player.print("Target player is in a vehicle, teleport not available.", { r=0.88, g=0.88, b=0.88})
+		return
+	end
 	local pos = source_player.surface.find_non_colliding_position("player", source_player.position, 50, 1)
 	if pos then
 		player.teleport(pos, source_player.surface)
@@ -172,17 +176,14 @@ end
 local function create_admin_panel(player)	
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 	
-	local player_names = {}
+	local player_names = {}	
 	for _, p in pairs(game.connected_players) do		
 		table.insert(player_names, tostring(p.name))		
 	end	
+	table.insert(player_names, "Select Player")
 	
-	local frame = player.gui.left.add({type = "frame", name = "admin_panel", direction = "vertical"})
-	
-	local l = frame.add({type = "label", caption = "Select Player:"})
-	l.style.font = "default-listbox"
-	l.style.font_color = { r=0.98, g=0.66, b=0.22}
-	
+	local frame = player.gui.left.add({type = "frame", name = "admin_panel", direction = "vertical"})	
+		
 	local selected_index = #player_names
 	if global.admin_panel_selected_player_index then
 		if global.admin_panel_selected_player_index[player.name] then
@@ -215,7 +216,7 @@ local function create_admin_panel(player)
 		button.style.minimal_width = 96
 	end
 	
-	local l = frame.add({type = "label", caption = "----------------------------------------------"})
+	--local l = frame.add({type = "label", caption = "----------------------------------------------"})
 	local l = frame.add({type = "label", caption = "Global Actions:"})
 	local t = frame.add({type = "table", column_count = 2})
 	local buttons = {
@@ -229,60 +230,45 @@ local function create_admin_panel(player)
 		button.style.minimal_width = 80
 	end
 	
+	local histories = {}	
+	if global.friendly_fire_history then table.insert(histories, "Friendly Fire History") end
+	if global.mining_history then table.insert(histories, "Mining History") end
+	if global.landfill_history then table.insert(histories, "Landfill History") end
+	if global.artillery_history then table.insert(histories, "Artillery History") end
 	
-	if global.landfill_history or global.artillery_history then
-		local l = frame.add({type = "label", caption = "----------------------------------------------"})
-	end
+	if #histories == 0 then return end
 	
-	local t = frame.add({type = "table", column_count = 4})
+	local l = frame.add({type = "label", caption = "----------------------------------------------"})
 	
-	if global.friendly_fire_history then
-		local tt = t.add({type = "table", column_count = 1})
-		local l = tt.add({type = "label", caption = "Friendly Fire History:"})
-		l.style.font = "default-listbox"
-		l.style.font_color = { r=0.98, g=0.66, b=0.22}
-		local scroll_pane = tt.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
-		scroll_pane.style.maximal_height = 160
-		for i = #global.friendly_fire_history, 1, -1 do
-			scroll_pane.add({type = "label", caption = global.friendly_fire_history[i]})
+	local selected_index = 1
+	if global.admin_panel_selected_history_index then
+		if global.admin_panel_selected_history_index[player.name] then		
+			selected_index = global.admin_panel_selected_history_index[player.name]			
 		end
 	end
+		
+	local drop_down = frame.add({type = "drop-down", name = "admin_history_select", items = histories, selected_index = selected_index})
+	drop_down.style.right_padding = 12
+	drop_down.style.left_padding = 12
 	
-	if global.mining_history then
-		local tt = t.add({type = "table", column_count = 1})
-		local l = tt.add({type = "label", caption = "Mining History:"})
-		l.style.font = "default-listbox"
-		l.style.font_color = { r=0.98, g=0.66, b=0.22}
-		local scroll_pane = tt.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
-		scroll_pane.style.maximal_height = 160
-		for i = #global.mining_history, 1, -1 do
-			scroll_pane.add({type = "label", caption = global.mining_history[i]})
-		end
+	local history = player.gui.left["admin_panel"]["admin_history_select"].items[player.gui.left["admin_panel"]["admin_history_select"].selected_index]
+	
+	local history_index = {
+		["Friendly Fire History"] = global.friendly_fire_history,
+		["Mining History"] = global.mining_history,
+		["Landfill History"] = global.landfill_history,
+		["Artillery History"] = global.artillery_history
+	}
+		
+	local t = frame.add({type = "table", column_count = 1})
+	l.style.font = "default-listbox"
+	l.style.font_color = { r=0.98, g=0.66, b=0.22}
+	local scroll_pane = t.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
+	scroll_pane.style.maximal_height = 200
+	for i = #history_index[history], 1, -1 do
+		scroll_pane.add({type = "label", caption = history_index[history][i]})
 	end
-	
-	if global.landfill_history then
-		local tt = t.add({type = "table", column_count = 1})
-		local l = tt.add({type = "label", caption = "Landfill History:"})
-		l.style.font = "default-listbox"
-		l.style.font_color = { r=0.98, g=0.66, b=0.22}
-		local scroll_pane = tt.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
-		scroll_pane.style.maximal_height = 160
-		for i = #global.landfill_history, 1, -1 do
-			scroll_pane.add({type = "label", caption = global.landfill_history[i]})
-		end
-	end
-	
-	if global.artillery_history then
-		local tt = t.add({type = "table", column_count = 1})
-		local l = tt.add({type = "label", caption = "Artillery History:"})
-		l.style.font = "default-listbox"
-		l.style.font_color = { r=0.98, g=0.66, b=0.22}
-		local scroll_pane = tt.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
-		scroll_pane.style.maximal_height = 160
-		for i = #global.artillery_history, 1, -1 do
-			scroll_pane.add({type = "label", caption = global.artillery_history[i]})
-		end
-	end	
+
 end
 
 local admin_functions = {
@@ -318,6 +304,10 @@ local function on_gui_click(event)
 	if admin_functions[name] then
 		local target_player_name = player.gui.left["admin_panel"]["admin_player_select"].items[player.gui.left["admin_panel"]["admin_player_select"].selected_index]
 		if not target_player_name then return end
+		if target_player_name == "Select Player" then
+			player.print("No target player selected.", {r=0.88, g=0.88, b=0.88})
+			return			
+		end
 		local target_player = game.players[target_player_name]
 		if target_player.connected == true then
 			admin_functions[name](target_player, player)
@@ -325,4 +315,17 @@ local function on_gui_click(event)
 	end
 end
 
+local function on_gui_selection_state_changed(event)
+	local player = game.players[event.player_index]	
+	local name = event.element.name
+	
+	if name == "admin_history_select" then	
+		if not global.admin_panel_selected_history_index then global.admin_panel_selected_history_index = {} end
+		global.admin_panel_selected_history_index[player.name] = event.element.selected_index
+		player.gui.left["admin_panel"].destroy()
+		create_admin_panel(player)
+	end
+end
+
 event.add(defines.events.on_gui_click, on_gui_click)
+event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
