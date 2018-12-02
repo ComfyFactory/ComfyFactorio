@@ -182,13 +182,14 @@ local function uncover_map(surface, position, radius_min, radius_max)
 			if surface.get_tile(pos).name == "out-of-map" then
 				local tile_name = get_noise_tile(pos)
 				insert(tiles, {name = tile_name, position = pos})
-				if tile_name == "water" or tile_name == "deepwater" then
-					if math_random(1, 8) == 1 then insert(fishes, pos) end
-				end
-				local entity = get_entity(pos)
-				if entity then
-					surface.create_entity({name = entity, position = pos})						
-				end				
+				if tile_name == "water" or tile_name == "deepwater" or tile_name == "water-green" then
+					if math_random(1, 9) == 1 then insert(fishes, pos) end
+				else
+					local entity = get_entity(pos)
+					if entity then
+						surface.create_entity({name = entity, position = pos})						
+					end
+				end								
 			end				
 		end
 	end
@@ -214,17 +215,17 @@ local function uncover_map_for_player(player)
 			if surface.get_tile(pos).name == "out-of-map" then
 				local tile_name = get_noise_tile(pos)
 				insert(tiles, {name = tile_name, position = pos})				
-				if tile_name == "water" or tile_name == "deepwater" then
-					if math_random(1, 8) == 1 then insert(fishes, pos) end
-				end
-				
-				local entity = get_entity(pos)
-				if entity then
-					surface.create_entity({name = entity, position = pos})
-					if entity == "biter-spawner" or entity == "spitter-spawner" then
-						insert(uncover_map_schedule, {x = pos.x, y = pos.y})
+				if tile_name == "water" or tile_name == "deepwater" or tile_name == "water-green" then
+					if math_random(1, 9) == 1 then insert(fishes, pos) end
+				else
+					local entity = get_entity(pos)
+					if entity then
+						surface.create_entity({name = entity, position = pos})
+						if entity == "biter-spawner" or entity == "spitter-spawner" then
+							insert(uncover_map_schedule, {x = pos.x, y = pos.y})
+						end
 					end
-				end
+				end								
 			end				
 		end
 	end
@@ -285,16 +286,16 @@ local function on_entity_died(event)
 				if p then surface.create_entity {name=t[1], position=p} end
 			end
 		end
-				
-		local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
-		local pos = {x = event.entity.position.x, y = event.entity.position.y}						
-		local amount_modifier = 1 + game.forces.enemy.evolution_factor * 10
-		if name == "crude-oil" then				
-			map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
-		else				
-			map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 7, math.ceil(600 * amount_modifier))
+		if math_random(1, 4) == 1 then
+			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
+			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
+			local amount_modifier = 1 + game.forces.enemy.evolution_factor * 10
+			if name == "crude-oil" then				
+				map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
+			else				
+				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 7, math.ceil(600 * amount_modifier))
+			end
 		end
-		
 	end
 	
 	if entity_drop_amount[event.entity.name] then
@@ -338,7 +339,7 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position({0, 0}, surface)
 		
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_evolution.destroy_factor = 0.0035
+		game.map_settings.enemy_evolution.destroy_factor = 0.0012
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0
 							

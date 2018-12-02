@@ -131,11 +131,24 @@ local function on_player_used_capsule(event)
 	end
 end
 
+local blacklisted_types = {
+	["transport-belt"] = true,
+	["wall"] = true,
+	["underground-belt"] = true,
+	["inserter"] = true,
+	["land-mine"] = true,
+	["gate"] = true,
+	["lamp"] = true,
+	["mining-drill"] = true,
+	["splitter"] = true	
+}
+
 --Friendly Fire History
 local function on_entity_died(event)
 	if not event.cause then return end
 	if event.cause.name ~= "player" then return end	
 	if event.cause.force.name ~= event.entity.force.name then return end
+	if blacklisted_types[event.entity.type] then return end
 	local player = event.cause.player		
 	if not global.friendly_fire_history then global.friendly_fire_history = {} end
 	if #global.friendly_fire_history > 999 then global.friendly_fire_history = {} end
@@ -151,10 +164,6 @@ local function on_entity_died(event)
 end
 
 --Mining Thieves History
-local blacklisted_types = {
-	["transport-belt"] = true,
-	["inserter"] = true
-}
 local function on_player_mined_entity(event)
 	if not event.entity.last_user then return end
 	local player = game.players[event.player_index]

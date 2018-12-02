@@ -417,7 +417,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
 		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},	
 		{price = {{"coin", 1500}}, offer = {type = 'give-item', item = 'power-armor', count = 1}},
-		{price = {{"coin", 12000}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
+		{price = {{"coin", 10000}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},
 		{price = {{"coin", 2250}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}},
 		{price = {{"coin", 100}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}},				
@@ -552,7 +552,7 @@ local function damage_entities_in_radius(position, radius, damage)
 	if radius > 5 then radius = 5 end
 	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
-		if entity.health then
+		if entity.health and entity.name ~= "land-mine" then
 			if entity.force.name ~= "enemy" then
 				if entity.name == "player" then
 					entity.damage(damage, "enemy")
@@ -764,7 +764,7 @@ local function on_player_joined_game(event)
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 250},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
-			["land-mine"] =  {placed = 0, limit = 1, str = "landmine", slot_price = 2}
+			["land-mine"] =  {placed = 0, limit = 1, str = "landmine", slot_price = 1}
 		}
 		
 		global.wave_grace_period = wave_interval * 21
