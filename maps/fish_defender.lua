@@ -393,9 +393,9 @@ local function refresh_market_offers()
 		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
-		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
-		{price = {{"coin", 500}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
+		{price = {{"coin", 300}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
+		{price = {{"coin", 450}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}},
+		{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
 		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
 		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
@@ -417,7 +417,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
 		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},	
 		{price = {{"coin", 1500}}, offer = {type = 'give-item', item = 'power-armor', count = 1}},
-		{price = {{"coin", 10000}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
+		{price = {{"coin", 12000}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},
 		{price = {{"coin", 2250}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}},
 		{price = {{"coin", 100}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}},				
@@ -758,7 +758,8 @@ local function on_player_joined_game(event)
 		
 		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.5)	
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
-				
+		game.forces["player"].technologies["artillery"].researched=true
+		
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 250},

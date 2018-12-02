@@ -1,3 +1,8 @@
+0.17
+artillery tech is now unlocked from the start
+artillery shells are now more expensive
+land mines are immune to biter explosions
+
 0.16
 all non-player kills will yield full coin rewards
 turret slot price adjustments

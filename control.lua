@@ -19,9 +19,9 @@ require "score"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
 --require "maps.spiral_troopers"
---require "maps.fish_defender"
+require "maps.fish_defender"
 --require "maps.crossing"
-require "maps.spooky_forest"
+--require "maps.spooky_forest"
 --require "maps.empty_map"
 -----------------------------
 
