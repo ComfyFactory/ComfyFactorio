@@ -1,13 +1,13 @@
 local playsession = {
 	{"Gerkiz", {6930}},
-	{"ChinaNumba1", {353032}},
-	{"marrygrim", {82396}},
-	{"sayionara", {43608}},
-	{"dog80", {338644}},
-	{"PhaseMachine", {328081}},
-	{"antuan309", {4220}},
-	{"johnluke93", {238821}},
-	{"Xoxlohunter", {166355}},
-	{"FAChyba", {26251}}
+	{"Nikkichu", {14599}},
+	{"PTP17", {483}},
+	{"Elrael", {1475}},
+	{"Xoxlohunter", {155588}},
+	{"rocifier", {138007}},
+	{"dog80", {60212}},
+	{"greattohave", {4866}},
+	{"Degg", {46760}},
+	{"Rubs10", {37159}}
 }
 return playsession

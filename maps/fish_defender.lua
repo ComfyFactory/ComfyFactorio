@@ -408,7 +408,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
-		{price = {{"coin", 1000}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
+		{price = {{"coin", 1500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
 		{price = {{"coin", 90}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
 		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
