@@ -7,13 +7,17 @@ local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local wave_interval = 3600		--interval between waves in ticks
-local biter_count_limit = 3600	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
+local biter_count_limit = 2400	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
 	[100] = {{name = "behemoth-biter", count = 1}},
-	[200] = {{name = "behemoth-biter", count = 3}, {name = "behemoth-spitter", count = 6}},
-	[300] = {{name = "behemoth-biter", count = 8}, {name = "behemoth-spitter", count = 16}},
-	[400] = {{name = "behemoth-biter", count = 16}, {name = "behemoth-spitter", count = 32}}
+	[150] = {{name = "behemoth-spitter", count = 4}, {name = "big-spitter", count = 16}},
+	[200] = {{name = "behemoth-biter", count = 4}, {name = "behemoth-spitter", count = 2}},
+	[250] = {{name = "behemoth-biter", count = 8}, {name = "behemoth-spitter", count = 4}},
+	[300] = {{name = "behemoth-biter", count = 12}, {name = "behemoth-spitter", count = 6}},
+	[350] = {{name = "behemoth-biter", count = 16}, {name = "behemoth-spitter", count = 8}},
+	[400] = {{name = "behemoth-biter", count = 20}, {name = "behemoth-spitter", count = 10}},
+	[450] = {{name = "behemoth-biter", count = 24}, {name = "behemoth-spitter", count = 12}}
 }
 
 local function shuffle(tbl)
@@ -249,6 +253,7 @@ local function spawn_boss_units(surface)
 	if not boss_waves[global.wave_count] then return end
 	if global.wave_count == 50 then game.print("The Big Biter Gang", {r = 0.7, g = 0.1, b = 0.1}) end
 	if global.wave_count == 100 then game.print("Biterzilla", {r = 0.7, g = 0.1, b = 0.1}) end
+	if global.wave_count == 150 then game.print("The Spitter Squad", {r = 0.7, g = 0.1, b = 0.1}) end
 	local position = {x = 216, y = 0}
 	local biter_group = surface.create_unit_group({position = position})
 	for _, entry in pairs(boss_waves[global.wave_count]) do
@@ -349,7 +354,7 @@ local function biter_attack_wave()
 		global.wave_count = global.wave_count + 1
 	end
 				
-	if global.wave_count % 100 == 0 or global.wave_count == 50 then
+	if global.wave_count % 50 == 0 then
 		game.print("Boss Wave " .. global.wave_count, {r = 0.7, g = 0.1, b = 0.1})
 		global.attack_wave_threat = global.wave_count * 10
 		spawn_boss_units(surface)
@@ -872,14 +877,16 @@ local function on_player_joined_game(event)
 		game.forces["player"].technologies["gun-turret-damage-5"].enabled = false
 		game.forces["player"].technologies["gun-turret-damage-6"].enabled = false
 		game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
+		game.forces["player"].technologies["laser-turret-speed-6"].enabled = false
+		game.forces["player"].technologies["laser-turret-speed-7"].enabled = false
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)				
 		
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
-			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 250},
+			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 35000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		

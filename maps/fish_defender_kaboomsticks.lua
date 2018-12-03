@@ -5,7 +5,7 @@ local event = require 'utils.event'
 
 local damage_per_explosive = 100
 local empty_tile_damage_decay = 100
-local out_of_map_tile_health = 1500
+local out_of_map_tile_health = 150000
 
 local circle_coordinates = {
 	[1] = {{x = 0, y = 0}},

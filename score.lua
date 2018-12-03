@@ -377,6 +377,7 @@ local function on_entity_died(event)
 	if score_table[event.entity.name] then		
 		
 		local show_floating_text = false
+		local color = {r=0.98, g=0.66, b=0.22}
 		
 		--Award all players near a worm score
 		 if #proximity_list > 0 then
@@ -399,6 +400,10 @@ local function on_entity_died(event)
 				else
 					global.score[event.force.name].players[player.name].killscore = global.score[event.force.name].players[player.name].killscore + score_table[event.entity.name]
 				end
+				color = player.color
+				color.r = color.r * 0.6 + 0.4
+				color.g = color.g * 0.6 + 0.4
+				color.b = color.b * 0.6 + 0.4
 			end
 		end
 			
@@ -422,7 +427,7 @@ local function on_entity_died(event)
 		end
 		
 		if show_floating_text == true then
-			event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = tostring(score_table[event.entity.name]), color = {r=0.98, g=0.66, b=0.22}})
+			event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = tostring(score_table[event.entity.name]), color = color})
 		end
 	end
 end
