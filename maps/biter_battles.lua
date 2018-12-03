@@ -510,38 +510,36 @@ local function on_player_joined_game(event)
 		global.game_lobby_timeout = 599940
 		global.biter_battle_view_players = {}	
 		global.spectator_spam_protection = {}
-		global.force_area = {}		
-		game.forces["north"].technologies["artillery-shell-range-1"].enabled = false	
-		game.forces["south"].technologies["artillery-shell-range-1"].enabled = false	
-		game.forces["north"].technologies["artillery-shell-speed-1"].enabled = false	
-		game.forces["south"].technologies["artillery-shell-speed-1"].enabled = false						
-		game.forces["north"].technologies["atomic-bomb"].enabled = false	
-		game.forces["south"].technologies["atomic-bomb"].enabled = false				
-		game.forces["spectator"].technologies["toolbelt"].researched=true
+		global.force_area = {}
 		
 		global.team_chosen = {}
-		global.team_nerf = {} 
-		global.team_nerf["north"] = 0
-		global.team_nerf["south"] = 0
+		global.team_nerf = {}
 		global.biter_rage = {}
-		global.biter_rage["north"] = 0
-		global.biter_rage["south"] = 0						
-		
-		
-		--global.biter_buildings_fragmentation[5] = {"small-worm-turret","small-spitter",2,3}
-		--global.biter_buildings_fragmentation[6] = {"medium-worm-turret","medium-spitter",2,3}
-		--global.biter_buildings_fragmentation[7] = {"big-worm-turret","big-spitter",1,2}		
-		
-		game.forces["north"].set_turret_attack_modifier("flamethrower-turret", -0.75)
-		game.forces["south"].set_turret_attack_modifier("flamethrower-turret", -0.75)
-		game.forces["north"].set_ammo_damage_modifier("artillery-shell", -0.95)
-		game.forces["south"].set_ammo_damage_modifier("artillery-shell", -0.95)
-		game.forces["north"].set_ammo_damage_modifier("shotgun-shell", 0.5)
-		game.forces["south"].set_ammo_damage_modifier("shotgun-shell", 0.5)		
-		
-		      
-		
 		global.spy_fish_timeout = {}
+		
+		local force_names = {"north", "south"}
+		for _, name in pairs(force_names) do
+			game.forces[name].technologies["artillery"].enabled = false
+			game.forces[name].technologies["artillery-shell-range-1"].enabled = false					
+			game.forces[name].technologies["artillery-shell-speed-1"].enabled = false	
+			game.forces[name].technologies["flamethrower-damage-1"].enabled = false	
+			game.forces[name].technologies["flamethrower-damage-2"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-3"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-4"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-5"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-6"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-7"].enabled = false
+			game.forces[name].technologies["atomic-bomb"].enabled = false
+
+			global.team_nerf[name] = 0
+			global.biter_rage[name] = 0
+			
+			game.forces[name].set_turret_attack_modifier("flamethrower-turret", -0.5)
+			--game.forces[name].set_ammo_damage_modifier("artillery-shell", -0.95)			
+			game.forces[name].set_ammo_damage_modifier("shotgun-shell", 0.5)
+		end
+						
+		game.forces["spectator"].technologies["toolbelt"].researched=true
 		
 		local f = game.forces['north']
 		f.set_cease_fire('player', true)
@@ -1287,7 +1285,8 @@ end
 
 --Silo grief prevention--
 local function on_entity_damaged(event)
-
+	
+	--[[
 	--flamethrower turret nerf
 	if event.cause then
 		if event.cause.name == "flamethrower-turret" and event.entity.force.name == "enemy" then
@@ -1302,7 +1301,7 @@ local function on_entity_damaged(event)
 				end
 			end
 		end
-	end
+	end]]
 
 	--biter rage damage modifier
 	if event.entity.force.name == "north" then 

@@ -1,3 +1,8 @@
+0.32
+flamethrower damage upgrade research removed
+flamethrower fuel consumption reverted to normal
+artillery disabled
+
 0.31
 map generation fixes
 medium biters now explode with a visual effect

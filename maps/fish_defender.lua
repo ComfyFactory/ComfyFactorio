@@ -279,13 +279,7 @@ local function spawn_boss_units(surface)
 		})
 end
 
-local function biter_attack_wave()
-	if not global.market then return end		
-	if global.wave_grace_period then return end
-	local surface = game.surfaces["fish_defender"]
-	
-	clear_corpses(surface)
-	
+local function wake_up_idle_biters(surface)
 	surface.set_multi_command({
 		command={
 			type=defines.command.attack,
@@ -316,10 +310,16 @@ local function biter_attack_wave()
 			commands = {
 					{
 						type=defines.command.attack_area,
-						destination={x = -32, y = 0},
+						destination={x = -160, y = 0},
 						radius=16,
 						distraction=defines.distraction.by_anything
-					},
+					},					
+					{
+						type=defines.command.attack_area,
+						destination={x = -80, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},					
 					{
 						type=defines.command.attack,
 						target=global.market,
@@ -328,6 +328,15 @@ local function biter_attack_wave()
 				}
 			})
 	end
+end
+
+local function biter_attack_wave()
+	if not global.market then return end		
+	if global.wave_grace_period then return end
+	local surface = game.surfaces["fish_defender"]
+	
+	clear_corpses(surface)
+	wake_up_idle_biters(surface)
 	
 	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
 		game.print("Biter limit reached, wave stalled.", {r = 0.7, g = 0.1, b = 0.1})
@@ -733,16 +742,16 @@ local function on_entity_died(event)
 		if event.entity.name == "medium-biter" then
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
 			local damage = 25
-			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.005), 0) end
-			if damage > 50 then damage = 50 end
+			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0) end
+			if damage > 75 then damage = 75 end
 			damage_entities_in_radius(event.entity.position, 1 + math.floor(global.wave_count * 0.001), damage)
 		end
 
 		if event.entity.name == "big-biter" then
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
 			local damage = 35
-			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 0.01), 0) end
-			if damage > 100 then damage = 100 end
+			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 0.05), 0) end
+			if damage > 150 then damage = 150 end
 			damage_entities_in_radius(event.entity.position, 2 + math.floor(global.wave_count * 0.001), damage)
 		end
 
@@ -785,7 +794,7 @@ local function on_entity_damaged(event)
 			local surface = event.cause.surface
 			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
 			if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 3 then
-				local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 3, 0.5)
+				local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 4, 0.5)
 				if pos then surface.create_entity({name = "small-biter", position = pos}) end
 			end
 		end
@@ -794,7 +803,7 @@ local function on_entity_damaged(event)
 			local surface = event.cause.surface
 			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
 			if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 3 then
-				local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
+				local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 4, 0.5)
 				if pos then surface.create_entity({name = "medium-biter", position = pos}) end
 			end
 		end
@@ -871,7 +880,7 @@ local function on_player_joined_game(event)
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 250},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
-			["land-mine"] =  {placed = 0, limit = 1, str = "landmine", slot_price = 1}
+			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		
 		global.wave_grace_period = wave_interval * 21
@@ -896,14 +905,7 @@ local function on_player_joined_game(event)
 			player.teleport({-50, 0}, "fish_defender")
 		end
 	end
-	
-	--[[
-	if global.wave_grace_period then			
-		global.wave_grace_period = global.wave_grace_period - 3600
-		if global.wave_grace_period <= 0 then global.wave_grace_period = nil end
-	end
-	]]
-	
+			
 	create_wave_gui(player)
 	
 	if game.tick > 900 then
@@ -1017,30 +1019,7 @@ local function on_chunk_generated(event)
 					
 			global.spawn_ores_generated = true
 		end				
-	end
-	
-	--[[
-	if left_top.x <= -352 then
-		if math_random(1, 128) == 1 then
-			local positions = {}
-			for x = 0, 31, 1 do
-				for y = 0, 31, 1 do
-					insert(positions, {x = left_top.x + x, y = left_top.y + y})					
-				end
-			end
-			positions = shuffle(positions)
-			for _, pos in pairs(positions) do
-				if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
-					if math_random(1,4) == 1 then
-						local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})												
-					else						
-						local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})												
-					end
-					break
-				end
-			end
-		end
-	end]]
+	end		
 	
 	local tiles = {}
 	local hourglass_center_piece_length = 64
