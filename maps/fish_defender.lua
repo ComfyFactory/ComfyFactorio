@@ -61,12 +61,12 @@ end
 local threat_values = {
 	["small_biter"] = 1,
 	["medium_biter"] = 3,
-	["big_biter"] = 6,
-	["behemoth_biter"] = 12,
+	["big_biter"] = 5,
+	["behemoth_biter"] = 10,
 	["small_spitter"] = 1,
 	["medium_spitter"] = 3,
-	["big_spitter"] = 6,
-	["behemoth_spitter"] = 12
+	["big_spitter"] = 5,
+	["behemoth_spitter"] = 10
 }
 
 local function get_biter_initial_pool()
@@ -594,7 +594,7 @@ local biter_building_inhabitants = {
 }
 
 local function damage_entities_in_radius(position, radius, damage)
-	if radius > 5 then radius = 5 end
+	if radius > 8 then radius = 8 end
 	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health and entity.name ~= "land-mine" then

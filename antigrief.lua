@@ -34,6 +34,7 @@ local function on_player_demoted(event)
 end
 
 local function on_marked_for_deconstruction(event)
+	if not event.player_index then return end
 	local player = game.players[event.player_index]
 	if player.admin == true then return end
 	local playtime = player.online_time
