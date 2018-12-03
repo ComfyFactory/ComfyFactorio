@@ -5,6 +5,7 @@ added corpse cleaning every wave start
 removed flamethrower damage upgrades
 wave improvements
 atomic bomb is a lot more expensive
+added boss waves
 
 0.17
 artillery tech is now unlocked from the start
