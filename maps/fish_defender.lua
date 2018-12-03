@@ -7,7 +7,7 @@ local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local wave_interval = 3600		--interval between waves in ticks
-local biter_count_limit = 4200	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
+local biter_count_limit = 3600	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -229,10 +229,43 @@ local function get_number_of_attack_groups()
 	return n
 end
 
+local function clear_corpses(surface)
+	local area = {{x = -256, y = -256}, {x = 256, y = 256}}
+	for _, entity in pairs(surface.find_entities_filtered{area = area, type = "corpse"}) do
+		if math_random(1,2) == 1 then
+			entity.destroy()
+		end
+	end
+end
+
 local function biter_attack_wave()
 	if not global.market then return end		
 	if global.wave_grace_period then return end
 	local surface = game.surfaces["fish_defender"]
+	
+	clear_corpses(surface)
+	
+	surface.set_multi_command({
+		command={
+			type=defines.command.attack,
+			target=global.market,
+			distraction=defines.distraction.by_enemy
+			},
+		unit_count = 500,
+		force = "enemy",
+		unit_search_distance=64
+		})
+	
+	surface.set_multi_command({
+		command={
+			type=defines.command.attack,
+			target=global.market,
+			distraction=defines.distraction.none
+			},
+		unit_count = 100,
+		force = "enemy",
+		unit_search_distance=16
+		})
 	
 	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
 		game.print("Biter limit reached, wave stalled.", {r = 0.7, g = 0.1, b = 0.1})
@@ -333,7 +366,19 @@ local function biter_attack_wave()
 			commands = {
 					{
 						type=defines.command.attack_area,
-						destination={group_coords[i].target.x + 100, group_coords[i].target.y},
+						destination={group_coords[i].target.x + 180, group_coords[i].target.y},
+						radius=32,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
+						destination={group_coords[i].target.x + 120, group_coords[i].target.y},
+						radius=32,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
+						destination={group_coords[i].target.x + 60, group_coords[i].target.y},
 						radius=32,
 						distraction=defines.distraction.by_anything
 					},
@@ -403,12 +448,12 @@ local function refresh_market_offers()
 		{price = {{"coin", 6}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 1}},
 		{price = {{"coin", 30}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}},
 		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},	
-		{price = {{"coin", 650}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},	
+		{price = {{"coin", 450}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},	
 		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},	
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
-		{price = {{"coin", 1500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
+		{price = {{"coin", 5000}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
 		{price = {{"coin", 90}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
 		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
@@ -619,7 +664,7 @@ local function on_entity_died(event)
 				if entities_that_earn_coins[event.cause.name] then
 					event.entity.surface.spill_item_stack(event.cause.position,{name = "coin", count = coin_earnings[event.entity.name]}, true)
 					reward_has_been_given = true
-				end				
+				end								
 			end
 		end		
 				
@@ -756,9 +801,16 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0					
 		
-		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.5)	
-		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)
-		game.forces["player"].technologies["artillery"].researched=true
+		--game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.5)
+		game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
+		game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
+		game.forces["player"].technologies["flamethrower-damage-3"].enabled = false
+		game.forces["player"].technologies["flamethrower-damage-4"].enabled = false
+		game.forces["player"].technologies["flamethrower-damage-5"].enabled = false
+		game.forces["player"].technologies["flamethrower-damage-6"].enabled = false
+		game.forces["player"].technologies["flamethrower-damage-7"].enabled = false
+		
+		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)				
 		
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
@@ -777,8 +829,8 @@ local function on_player_joined_game(event)
 		player.insert({name = "pistol", count = 1})
 		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 3})
-		player.insert({name = "firearm-magazine", count = 32})
-		player.insert({name = "iron-plate", count = 64})
+		player.insert({name = "firearm-magazine", count = 16})
+		player.insert({name = "iron-plate", count = 32})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 	
@@ -895,6 +947,13 @@ local function on_chunk_generated(event)
 				end
 			end
 			
+			local area = {{x = -160, y = -96}, {x = 160, y = 96}}
+			for _, tile in pairs(surface.find_tiles_filtered({name = "water", area = area})) do
+				if math_random(1,16) == 1 then
+					surface.create_entity({name = "fish", position = tile.position})
+				end
+			end
+			
 			local pos = surface.find_non_colliding_position("player",{spawn_position_x + 1, 4}, 50, 1)
 			game.forces["player"].set_spawn_position(pos, surface)
 			for _, player in pairs(game.connected_players) do
@@ -992,11 +1051,13 @@ local function on_chunk_generated(event)
 				if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then				
 					if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
 						if math_random(1,4) == 1 then
-							local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})						
+							local entity = surface.create_entity({name = "spitter-spawner", force = "player", position = pos})						
 							entity.active = false
+							entity.destructible = false
 						else						
-							local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})						
+							local entity = surface.create_entity({name = "biter-spawner", force = "player", position = pos})						
 							entity.active = false
+							entity.destructible = false
 						end
 					end
 				end
@@ -1157,15 +1218,23 @@ local function on_market_item_purchased(event)
 		end
 	end
 end	
-	
-event.add(defines.events.on_tick, on_tick)
+
+local function on_research_finished(event)
+	local research = event.research.name
+	if research ~= "tanks" then return end
+	game.forces["player"].technologies["artillery"].researched=true
+	game.forces.player.recipes["artillery-wagon"].enabled = false
+end
+
+event.add(defines.events.on_built_entity, on_built_entity)
+event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
+event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+event.add(defines.events.on_research_finished, on_research_finished)	
+event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
+event.add(defines.events.on_tick, on_tick)

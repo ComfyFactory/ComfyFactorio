@@ -8,6 +8,8 @@ local info = [[
 	Fend them off as long as possible!
 		
 	The Market will gladly take any coin you might find.
+	
+	Researching Tanks will unlock the artillery early.
 ]]
 
 local function create_map_intro(player)

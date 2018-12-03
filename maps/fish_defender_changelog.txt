@@ -1,3 +1,11 @@
+0.18
+artillery tech is no longer available from start
+researching tanks will grant the artillery tech early
+added corpse cleaning every wave start
+removed flamethrower damage upgrades
+wave improvements
+atomic bomb is a lot more expensive
+
 0.17
 artillery tech is now unlocked from the start
 artillery shells are now more expensive
