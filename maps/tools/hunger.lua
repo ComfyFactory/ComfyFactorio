@@ -1,5 +1,9 @@
 -- hunger module by mewmew --
 
+local event = require 'utils.event'
+local math_random = math.random
+
+local respawn_fish = true
 local player_hunger_fish_food_value = 10
 local player_hunger_spawn_value = 80				
 local player_hunger_stages = {}
@@ -52,8 +56,7 @@ local function create_hunger_gui(player)
 	caption_hunger.style.top_padding = 2	
 end
 
-local function hunger_update(player, food_value)
-	
+local function hunger_update(player, food_value)	
 	if food_value == -1 and player.character.driving == true then return end
 	
 	local past_hunger = global.player_hunger[player.name]	
@@ -62,13 +65,14 @@ local function hunger_update(player, food_value)
 			
 	if past_hunger == 200 and global.player_hunger[player.name] + food_value > 200 then
 		global.player_hunger[player.name] = player_hunger_spawn_value
+		player.surface.create_entity({name = "big-artillery-explosion", position = player.character.position})
 		player.character.die("player")
-		local t = {" ate too much and exploded.", " should have gone on a diet.", " needs to work on their bad eating habbits.", " should have skipped dinner today."}
+		local t = {" ate too much and exploded.", " needs to work on their bad eating habbits.", " should have skipped dinner today."}
 		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})				
 	end	
 	
 	if global.player_hunger[player.name] < 1 then
-		global.player_hunger[player.name] = player_hunger_spawn_value
+		global.player_hunger[player.name] = player_hunger_spawn_value		
 		player.character.die("player")
 		local t = {" ran out of foodstamps.", " starved.", " should not have skipped breakfast today."}
 		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})	
@@ -89,6 +93,24 @@ local function hunger_update(player, food_value)
 	
 	player.character.character_running_speed_modifier = player_hunger_buff[global.player_hunger[player.name]] * 0.5
 	player.character.character_mining_speed_modifier  = player_hunger_buff[global.player_hunger[player.name]]
+	
+	create_hunger_gui(player)
+end
+
+local function respawn_fishes()
+	for _, surface in pairs(game.surfaces) do
+		local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}})
+		for _, tile in pairs(water_tiles) do
+			local area_entities = {{tile.position.x - 2, tile.position.y - 2},{tile.position.x + 2, tile.position.y + 2}}
+			local area_tiles = {{tile.position.x - 1, tile.position.y - 1},{tile.position.x + 1, tile.position.y + 1}}
+			
+			if surface.count_entities_filtered({area = area_entities, name = "fish"}) == 0 and surface.count_tiles_filtered({area = area_tiles, name = {"water", "deepwater", "water-green"}}) > 3 then
+				if math_random(1, 32) == 1 then
+					surface.create_entity({name = "fish", position = tile.position})
+				end
+			end
+		end
+	end
 end
 
 local function on_player_joined_game(event)
@@ -100,3 +122,26 @@ local function on_player_joined_game(event)
 	end
 	create_hunger_gui(player)
 end
+
+local function on_player_used_capsule(event)
+	if event.item.name == "raw-fish" then
+		local player = game.players[event.player_index]				
+		hunger_update(player, player_hunger_fish_food_value)		
+		player.play_sound{path="utility/armor_insert", volume_modifier=0.75}				
+	end
+end
+
+local function on_tick(event)
+	if game.tick % 5400 == 2700 then
+		for _, player in pairs(game.connected_players) do
+			if player.afk_time < 18000 then	hunger_update(player, -1) end		
+		end
+		if respawn_fish then
+			respawn_fishes()
+		end
+	end
+end
+
+event.add(defines.events.on_tick, on_tick)	
+event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
+event.add(defines.events.on_player_joined_game, on_player_joined_game)

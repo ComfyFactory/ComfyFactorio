@@ -10,6 +10,17 @@ local unique_rooms = require "maps.labyrinth_unique_rooms"
 
 local labyrinth_difficulty_curve = 400  --- How much size the labyrinth needs to have the highest difficulty.
 
+local threat_values = {
+	["small-biter"] = 1,
+	["medium-biter"] = 3,
+	["big-biter"] = 5,
+	["behemoth-biter"] = 10,
+	["small-spitter"] = 1,
+	["medium-spitter"] = 3,
+	["big-spitter"] = 5,
+	["behemoth-spitter"] = 10
+}
+
 local function create_labyrinth_difficulty_gui(player)		
 	if player.gui.top["labyrinth_difficulty"] then player.gui.top["labyrinth_difficulty"].destroy() end
 	if not global.labyrinth_size then return end
@@ -101,7 +112,7 @@ worm_raffle[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turre
 worm_raffle[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-local rock_weights = {{"sand-rock-big", 8}, {"rock-big", 32}, {"rock-huge", 1}}
+local rock_weights = {{"sand-rock-big", 9}, {"rock-big", 32}, {"rock-huge", 1}}
 local rock_raffle = {}
 for _, t in pairs (rock_weights) do
 	for x = 1, t[2], 1 do
@@ -438,17 +449,27 @@ local function grow_cell(chunk_position, surface)
 			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end					
 		end
 		
+		local threat_amount = global.labyrinth_size * 4
+		
 		for _, p in pairs(entities_to_place.biters) do
 			local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
 			local raffle = biter_raffle[evolution]
-			local n = raffle[math.random(1,#raffle)]
+			local n = raffle[math.random(1,#raffle)]			
+			if threat_values[n] then
+				threat_amount = threat_amount - threat_values[n]	
+				if threat_amount < 0 then break end
+			end				
 			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end				
 		end
 		
 		for _, p in pairs(entities_to_place.spitters) do
 			local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
 			local raffle = spitter_raffle[evolution]
-			local n = raffle[math.random(1,#raffle)]
+			local n = raffle[math.random(1,#raffle)]			
+			if threat_values[n] then
+				threat_amount = threat_amount - threat_values[n]	
+				if threat_amount < 0 then break end
+			end				
 			if surface.can_place_entity({name = n, position = p}) then surface.create_entity {name = n, position = p} end				
 		end						
 		
@@ -731,7 +752,7 @@ local function on_entity_died(event)
 			local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 5)
 			
 			if n == "crude-oil" then				
-				map_functions.draw_oil_circle(pos, n, surface, 10, 100000 * amount_modifier)
+				map_functions.draw_oil_circle(pos, n, surface, 6, 100000 * amount_modifier)
 			else				
 				map_functions.draw_smoothed_out_ore_circle(pos, n, surface, 9 + amount_modifier, 200 * amount_modifier)
 			end

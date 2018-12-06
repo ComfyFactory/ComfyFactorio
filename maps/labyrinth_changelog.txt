@@ -1,4 +1,5 @@
 0.03
+biters will spawn weighted
 drops from enemies will stop more soon
 infinity chests have been nerfed
 more ore patches
