@@ -12,12 +12,14 @@ local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
 	[100] = {{name = "behemoth-biter", count = 1}},
 	[150] = {{name = "behemoth-spitter", count = 4}, {name = "big-spitter", count = 16}},
-	[200] = {{name = "behemoth-biter", count = 4}, {name = "behemoth-spitter", count = 2}},
-	[250] = {{name = "behemoth-biter", count = 8}, {name = "behemoth-spitter", count = 4}},
-	[300] = {{name = "behemoth-biter", count = 12}, {name = "behemoth-spitter", count = 6}},
-	[350] = {{name = "behemoth-biter", count = 16}, {name = "behemoth-spitter", count = 8}},
-	[400] = {{name = "behemoth-biter", count = 20}, {name = "behemoth-spitter", count = 10}},
-	[450] = {{name = "behemoth-biter", count = 24}, {name = "behemoth-spitter", count = 12}}
+	[200] = {{name = "behemoth-biter", count = 4}, {name = "behemoth-spitter", count = 2}, {name = "big-biter", count = 32}},
+	[250] = {{name = "behemoth-biter", count = 8}, {name = "behemoth-spitter", count = 4}, {name = "big-spitter", count = 32}},
+	[300] = {{name = "behemoth-biter", count = 16}, {name = "behemoth-spitter", count = 8}},
+	[350] = {{name = "behemoth-biter", count = 24}, {name = "behemoth-spitter", count = 12}},
+	[400] = {{name = "behemoth-biter", count = 32}, {name = "behemoth-spitter", count = 16}},
+	[450] = {{name = "behemoth-biter", count = 40}, {name = "behemoth-spitter", count = 20}},
+	[500] = {{name = "behemoth-biter", count = 48}, {name = "behemoth-spitter", count = 24}},
+	[550] = {{name = "behemoth-biter", count = 56}, {name = "behemoth-spitter", count = 28}}
 }
 
 local function shuffle(tbl)
@@ -243,17 +245,63 @@ end
 local function clear_corpses(surface)
 	local area = {{x = -256, y = -256}, {x = 256, y = 256}}
 	for _, entity in pairs(surface.find_entities_filtered{area = area, type = "corpse"}) do
-		if math_random(1,2) == 1 then
+		if math_random(1, 3) == 1 then
 			entity.destroy()
 		end
 	end
 end
 
+local boss_wave_names = {
+	[50] = "The Big Biter Gang",
+	[100] = "Biterzilla",
+	[150] = "The Spitter Squad",
+	[200] = "Wall Nibblers",
+	[250] = "Conveyor Munchers",
+	[350] = "Cable Chewers",
+	[400] = "Turret Devourers",
+	[450] = "Assembler Annihilators",
+	[500] = "Inserter Crunchers",
+	[550] = "Engineer Eaters",
+	[600] = "Belt Unbalancers",
+	[650] = "Power Pole Thieves",
+	[700] = "Pipe Perforators",
+	[750] = "Desync Bros",
+	[800] = "Ratio Randomizers",
+	[850] = "Wire Chompers",
+	[900] = "The Bus Mixers",
+	[950] = "Roundabout Deadlockers",
+	[1000] = "Happy Tree Friends",	
+	[1050] = "Uranium Digesters",
+	[1100] = "Bot Banishers",
+	[1150] = "Furnace Freezers",
+	[1200] = "Cargo Wagon Scratchers",
+	[1250] = "Transport Belt Surfers",
+	[1300] = "Pumpjack Pulverizers",
+	[1350] = "Radar Ravagers",
+	[1400] = "Mall Deconstrutors",
+	[1450] = "Lamp Dimmers",
+	[1500] = "Roboport Disablers",
+	[1550] = "Chest Crushers",
+	[1600] = "Brick Tramplers",
+	[1650] = "Drill Destroyers",
+	[1700] = "Gearwheel Grinders",
+	[1750] = "Silo Seekers",
+	[1800] = "Circuit Breakers",
+	[1850] = "Bullet Absorbers",
+	[1900] = "Oil Guzzlers",
+	[1950] = "Signal Spammers",
+	[2000] = "Bluescreen Factor"
+}
+
 local function spawn_boss_units(surface)
-	if not boss_waves[global.wave_count] then return end
-	if global.wave_count == 50 then game.print("The Big Biter Gang", {r = 0.7, g = 0.1, b = 0.1}) end
-	if global.wave_count == 100 then game.print("Biterzilla", {r = 0.7, g = 0.1, b = 0.1}) end
-	if global.wave_count == 150 then game.print("The Spitter Squad", {r = 0.7, g = 0.1, b = 0.1}) end
+	if boss_wave_names[global.wave_count] then
+		game.print("Boss Wave " .. global.wave_count .. " - - " .. boss_wave_names[global.wave_count], {r = 0.8, g = 0.1, b = 0.1})
+	else
+		game.print("Boss Wave " .. global.wave_count, {r = 0.8, g = 0.1, b = 0.1})
+	end
+		
+	if not boss_waves[global.wave_count] then return end		
+	
 	local position = {x = 216, y = 0}
 	local biter_group = surface.create_unit_group({position = position})
 	for _, entry in pairs(boss_waves[global.wave_count]) do
@@ -354,8 +402,7 @@ local function biter_attack_wave()
 		global.wave_count = global.wave_count + 1
 	end
 				
-	if global.wave_count % 50 == 0 then
-		game.print("Boss Wave " .. global.wave_count, {r = 0.7, g = 0.1, b = 0.1})
+	if global.wave_count % 50 == 0 then				
 		global.attack_wave_threat = global.wave_count * 10
 		spawn_boss_units(surface)
 	else
@@ -515,7 +562,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
-		{price = {{"coin", 5000}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
+		{price = {{"coin", 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
 		{price = {{"coin", 90}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
 		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
@@ -761,20 +808,28 @@ local function on_entity_died(event)
 		end
 
 		if event.entity.name == "behemoth-biter" then
-			local spawn_entity = false
-			if global.endgame_modifier then																				
-				if global.endgame_modifier > 500 then
-					spawn_entity = "big-worm-turret"
-				else
-					spawn_entity = "medium-worm-turret"
-				end														
-			end
-						
-			if spawn_entity then
-				local surface = event.entity.surface
-				if surface.count_entities_filtered({area = {{event.entity.position.x - 5, event.entity.position.y - 5},{event.entity.position.x + 5, event.entity.position.y + 5}}, name = spawn_entity}) == 0 then	
-					surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
-					surface.create_entity({name = spawn_entity, position = event.entity.position})
+			local surface = event.entity.surface
+			
+			if math_random(1, 2) ~= 1 then
+				local count = math_random(2, 4)
+				for i = 1, count, 1 do
+					local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
+					if p then surface.create_entity {name = "medium-biter", position = p} end
+				end
+			else
+				local spawn_entity = false
+				if global.endgame_modifier then																				
+					if global.endgame_modifier > 500 then
+						spawn_entity = "big-worm-turret"
+					else
+						spawn_entity = "medium-worm-turret"
+					end														
+				end							
+				if spawn_entity then					
+					if surface.count_entities_filtered({area = {{event.entity.position.x - 5, event.entity.position.y - 5},{event.entity.position.x + 5, event.entity.position.y + 5}}, name = spawn_entity}) == 0 then	
+						surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
+						surface.create_entity({name = spawn_entity, position = event.entity.position})
+					end
 				end
 			end
 		end
@@ -861,8 +916,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.destroy_factor = 0
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0					
-		
-		--game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.5)
+				
 		game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
 		game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
 		game.forces["player"].technologies["flamethrower-damage-3"].enabled = false
@@ -870,23 +924,25 @@ local function on_player_joined_game(event)
 		game.forces["player"].technologies["flamethrower-damage-5"].enabled = false
 		game.forces["player"].technologies["flamethrower-damage-6"].enabled = false
 		game.forces["player"].technologies["flamethrower-damage-7"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-1"].enabled = false	
-		game.forces["player"].technologies["gun-turret-damage-2"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-3"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-4"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-5"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-6"].enabled = false
-		game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
-		game.forces["player"].technologies["laser-turret-speed-6"].enabled = false
-		game.forces["player"].technologies["laser-turret-speed-7"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-1"].enabled = false	
+		--game.forces["player"].technologies["gun-turret-damage-2"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-3"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-4"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-5"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-6"].enabled = false
+		--game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
+		--game.forces["player"].technologies["laser-turret-speed-6"].enabled = false
+		--game.forces["player"].technologies["laser-turret-speed-7"].enabled = false
+		--game.forces["player"].technologies["atomic-bomb"].enabled = false
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)				
+		game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 35000},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 15000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		
@@ -949,7 +1005,13 @@ local function on_chunk_generated(event)
 		entity.destroy()
 	end	
 	
-	if left_top.x >= 160 then
+	if left_top.x <= -196 then
+		
+		local search_area = {{left_top.x - 32, left_top.y - 32}, {left_top.x + 32, left_top.y + 32}}
+		if surface.count_tiles_filtered({name = "water", area = search_area}) == 0 and math_random(1,22) == 1 then
+			map_functions.draw_noise_tile_circle({x = left_top.x + math_random(1,30), y = left_top.y + math_random(1,30)}, "water", surface, math_random(6, 12))
+		end
+	
 		if not global.spawn_ores_generated then
 		
 			local spawn_position_x = -76
@@ -1012,7 +1074,7 @@ local function on_chunk_generated(event)
 			
 			local area = {{x = -160, y = -96}, {x = 160, y = 96}}
 			for _, tile in pairs(surface.find_tiles_filtered({name = "water", area = area})) do
-				if math_random(1,16) == 1 then
+				if math_random(1, 32) == 1 then
 					surface.create_entity({name = "fish", position = tile.position})
 				end
 			end
@@ -1055,7 +1117,13 @@ local function on_chunk_generated(event)
 
 	surface.set_tiles(tiles, false)
 
-
+	for _, tile in pairs(surface.find_tiles_filtered({name = "water", area = event.area})) do
+		if math_random(1, 32) == 1 then
+			surface.create_entity({name = "fish", position = tile.position})
+		end
+	end
+	
+	
 	if left_top.x < 160 then return end
 
 	local entities = surface.find_entities_filtered({area = area, type = "tree"})
@@ -1091,13 +1159,13 @@ local function on_chunk_generated(event)
 				if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then				
 					if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
 						if math_random(1,4) == 1 then
-							local entity = surface.create_entity({name = "spitter-spawner", force = "player", position = pos})						
+							local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})						
 							entity.active = false
-							entity.destructible = false
+							--entity.destructible = false
 						else						
-							local entity = surface.create_entity({name = "biter-spawner", force = "player", position = pos})						
+							local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})						
 							entity.active = false
-							entity.destructible = false
+							--entity.destructible = false
 						end
 					end
 				end
@@ -1113,6 +1181,8 @@ local function on_chunk_generated(event)
 		end
 	 end
 	surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})
+		
+	
 end
 
 local function on_built_entity(event)

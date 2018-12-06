@@ -791,8 +791,16 @@ end
 
 local function on_entity_died(event)
 	if not global.rocket_silo_destroyed then 
-		if event.entity == global.rocket_silo["south"] or event.entity == global.rocket_silo["north"] then 							
-			if event.entity == global.rocket_silo["south"] then global.rocket_silo_destroyed = "North Team Won!" else global.rocket_silo_destroyed = "South Team Won!" end				
+		if event.entity == global.rocket_silo["south"] or event.entity == global.rocket_silo["north"] then 
+		
+			if event.entity == global.rocket_silo["south"] then
+				global.rocket_silo_destroyed = "North Team Won!"
+				print("team$north"
+			else
+				global.rocket_silo_destroyed = "South Team Won!"
+				print("team$south"
+			end		
+			
 			for _, player in pairs(game.connected_players) do
 				player.play_sound{path="utility/game_won", volume_modifier=1}
 			end

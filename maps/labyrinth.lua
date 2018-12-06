@@ -101,7 +101,13 @@ worm_raffle[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turre
 worm_raffle[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
 worm_raffle[10] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local rock_weights = {{"sand-rock-big", 8}, {"rock-big", 32}, {"rock-huge", 1}}
+local rock_raffle = {}
+for _, t in pairs (rock_weights) do
+	for x = 1, t[2], 1 do
+		table.insert(rock_raffle, t[1])
+	end			
+end
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
 local room_layouts = {"quad_rocks", "single_center_rock", "three_horizontal_rocks", "three_vertical_rocks", "tree_and_lake", "forest", "forest_fence"}
 local biter_raffle = {
@@ -633,20 +639,14 @@ local function spawn_infinity_chest(pos, surface)
 	local math_random = math.random
 	local infinity_chests = {		
 		{"raw-wood", math_random(1,3)},
-		{"coal", 1},
-		{"coal", 1},
-		{"stone", math_random(1,3)},
-		{"stone", math_random(1,3)},
-		{"iron-ore", 1},
-		{"iron-ore", 1},
-		{"iron-ore", 1},
-		{"copper-ore", 1},
-		{"copper-ore", 1},	
-		{"iron-plate", 1},
-		{"copper-plate", 1},
-		{"stone-brick", 1},
-		{"iron-gear-wheel", 1},
-		{"copper-cable", math_random(1,4)}
+		{"coal", 1},		
+		{"stone", math_random(2,4)},
+		{"stone", math_random(2,4)},
+		{"stone", math_random(2,4)},
+		{"stone", math_random(2,4)},
+		{"stone", math_random(2,4)},		
+		{"iron-ore", 1},		
+		{"copper-ore", 1},								
 	}
 	local x = math_random(1, #infinity_chests)
 	local e = surface.create_entity {name = "infinity-chest", position = pos, force = "player"}
@@ -684,8 +684,8 @@ local entity_drop_amount = {
 	['biter-spawner'] = {low = 50, high = 100},
 	['spitter-spawner'] = {low = 50, high = 100}
 }
-local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore", "landfill", "landfill", "landfill"}
-local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore","crude-oil","crude-oil"}
+local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","coal","coal","stone", "landfill"}
+local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore","crude-oil"}
 
 local function on_entity_died(event)	
 	for _, fragment in pairs(biter_fragmentation) do
@@ -711,8 +711,11 @@ local function on_entity_died(event)
 	
 	if entity_drop_amount[event.entity.name] then
 		if game.forces.enemy.evolution_factor < 0.5 then
-			local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * (0.5 - game.forces.enemy.evolution_factor) * 2, 0)		
-			event.entity.surface.spill_item_stack(event.entity.position,{name = ore_spill_raffle[math.random(1,#ore_spill_raffle)], count = amount},true)
+			local evolution_drop_modifier = (0.1 - game.forces.enemy.evolution_factor) * 10
+			if evolution_drop_modifier > 0 then
+				local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * evolution_drop_modifier)			 
+				event.entity.surface.spill_item_stack(event.entity.position,{name = ore_spill_raffle[math.random(1,#ore_spill_raffle)], count = amount},true)
+			end
 		end
 		return
 	end
@@ -724,11 +727,13 @@ local function on_entity_died(event)
 		if event.entity.name == "rock-big" then treasure_chest(pos, surface) end
 		if event.entity.name == "sand-rock-big" then
 			local n = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
-			local amount_modifier = 1 + ((global.labyrinth_size / labyrinth_difficulty_curve) * 10)
+			--local amount_modifier = 1 + ((global.labyrinth_size / labyrinth_difficulty_curve) * 10)
+			local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 5)
+			
 			if n == "crude-oil" then				
 				map_functions.draw_oil_circle(pos, n, surface, 10, 100000 * amount_modifier)
 			else				
-				map_functions.draw_smoothed_out_ore_circle(pos, n, surface, 10, 750 * amount_modifier)
+				map_functions.draw_smoothed_out_ore_circle(pos, n, surface, 9 + amount_modifier, 200 * amount_modifier)
 			end
 		end
 		event.entity.destroy()
@@ -1037,7 +1042,7 @@ local attack_messages = {
 	
 local function on_tick(event)
 	if game.tick % 4600 == 0 then		
-		if math.random(1, 4) ~= 1 then return end
+		if math.random(1, 6) ~= 1 then return end
 		local surface = game.surfaces["labyrinth"]
 		local area = {{-10000, -10000}, {10000, 0}}
 		local biters = surface.find_entities_filtered({type = "unit", force = "enemy", area = area})

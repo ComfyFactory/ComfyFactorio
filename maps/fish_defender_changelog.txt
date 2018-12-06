@@ -1,3 +1,6 @@
+0.19
+added water ponds to the west
+
 0.18
 artillery tech is no longer available from start
 researching tanks will grant the artillery tech early
