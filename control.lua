@@ -10,7 +10,6 @@ require "poll"
 require "score"
 
 require "maps.tools.cheat_mode"
-require "maps.tools.hunger"
 
 ---- enable maps here ----
 --require "maps.biter_battles"
@@ -22,7 +21,7 @@ require "maps.tools.hunger"
 --require "maps.spiral_troopers"
 --require "maps.fish_defender"
 --require "maps.crossing"
---require "maps.spooky_forest"
+require "maps.spooky_forest"
 --require "maps.empty_map"
 -----------------------------
 

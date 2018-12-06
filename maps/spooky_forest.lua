@@ -1,5 +1,6 @@
 -- spooky forest -- by mewmew --
 
+require "maps.tools.hunger"
 local shapes = require "maps.tools.shapes"
 local event = require 'utils.event'
 local map_functions = require "maps.tools.map_functions"
@@ -56,6 +57,65 @@ local biters_in_the_trees = {
 	}	
 
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+
+local function secret_shop(pos, surface)
+	local secret_market_items = {		
+    {price = {{"raw-fish", math_random(75,125)}}, offer = {type = 'give-item', item = 'combat-shotgun'}},
+    {price = {{"raw-fish", math_random(40,60)}}, offer = {type = 'give-item', item = 'rocket-launcher'}},	 
+    {price = {{"raw-fish", math_random(1,2)}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine'}},
+    {price = {{"raw-fish", math_random(3,6)}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine'}},  
+    {price = {{"raw-fish", math_random(1,4)}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell'}},
+    {price = {{"raw-fish", math_random(1,2)}}, offer = {type = 'give-item', item = 'rocket'}},
+    {price = {{"raw-fish", math_random(2,3)}}, offer = {type = 'give-item', item = 'explosive-rocket'}},        
+    {price = {{"raw-fish", math_random(1,2)}}, offer = {type = 'give-item', item = 'explosive-cannon-shell'}},
+    {price = {{"raw-fish", math_random(3,6)}}, offer = {type = 'give-item', item = 'explosive-uranium-cannon-shell'}},   
+    {price = {{"raw-fish", math_random(4,8)}}, offer = {type = 'give-item', item = 'cluster-grenade'}}, 
+	{price = {{"raw-fish", math_random(1,2)}}, offer = {type = 'give-item', item = 'land-mine'}},	
+	{price = {{"raw-fish", math_random(25,50)}}, offer = {type = 'give-item', item = 'heavy-armor'}},
+    {price = {{"raw-fish", math_random(125,250)}}, offer = {type = 'give-item', item = 'modular-armor'}},
+    {price = {{"raw-fish", math_random(300,600)}}, offer = {type = 'give-item', item = 'power-armor'}},
+    {price = {{"raw-fish", math_random(300,600)}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment'}},
+    {price = {{"raw-fish", math_random(20,40)}}, offer = {type = 'give-item', item = 'battery-equipment'}},
+    {price = {{"raw-fish", math_random(100,150)}}, offer = {type = 'give-item', item = 'belt-immunity-equipment'}},
+    {price = {{"raw-fish", math_random(40,80)}}, offer = {type = 'give-item', item = 'night-vision-equipment'}},
+    {price = {{"raw-fish", math_random(60,120)}}, offer = {type = 'give-item', item = 'exoskeleton-equipment'}},
+    {price = {{"raw-fish", math_random(60,120)}}, offer = {type = 'give-item', item = 'personal-roboport-equipment'}},
+    {price = {{"raw-fish", math_random(10,20)}}, offer = {type = 'give-item', item = 'construction-robot'}},
+    {price = {{"raw-fish", math_random(75,150)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
+    {price = {{"raw-fish", math_random(150,300)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
+    {price = {{"raw-fish", math_random(20,30)}}, offer = {type = 'give-item', item = 'railgun'}},
+    {price = {{"raw-fish", math_random(1,2)}}, offer = {type = 'give-item', item = 'railgun-dart', count = 2}},
+	{price = {{"raw-fish", math_random(30,60)}}, offer = {type = 'give-item', item = 'loader'}},
+	{price = {{"raw-fish", math_random(50,80)}}, offer = {type = 'give-item', item = 'fast-loader'}},
+	{price = {{"raw-fish", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},
+	{price = {{"raw-fish", math_random(30,60)}}, offer = {type = 'give-item', item = 'locomotive'}},
+	{price = {{"raw-fish", math_random(15,35)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},
+	{price = {{"raw-fish", math_random(1,4)}}, offer = {type = 'give-item', item = 'grenade'}},
+	{price = {{"raw-fish", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},
+	{price = {{"raw-fish", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},
+	{price = {{"raw-fish", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail', count = 4}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-signal', count = 2}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-chain-signal', count = 2}},
+	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'train-stop'}},	
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'small-lamp'}},
+	{price = {{"raw-fish", 2}}, offer = {type = 'give-item', item = 'firearm-magazine'}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 25}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'iron-ore', count = 25}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'copper-ore', count = 25}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'stone', count = 25}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'coal', count = 25}},	
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = 20}}
+	}
+	secret_market_items = shuffle(secret_market_items)
+										
+	local market = surface.create_entity {name = "market", position = pos}
+	market.destructible = false			
+	
+	for i = 1, math.random(4, 8), 1 do
+		market.add_market_item(secret_market_items[i])
+	end
+end
 	
 local function spawn_biter(surface, position)
 	local e = math.ceil(game.forces.enemy.evolution_factor*20)
@@ -106,7 +166,7 @@ local function get_entity(position)
 			end
 			if noise > 0.6 then
 				entity_name = rock_raffle[math_random(1, #rock_raffle)]
-				if math_random(1, 20) == 1 then
+				if math_random(1, 32) == 1 then
 					if position.x > 32 or position.x < -32 or position.y > 32 or position.y < -32 then
 						local e = math.ceil(game.forces.enemy.evolution_factor*10)
 						if e < 1 then e = 1 end								
@@ -115,12 +175,16 @@ local function get_entity(position)
 				end 
 			end
 		end	
-	else	
-		if math_random(1, 96) == 1 then
+	else
+		if math_random(1, 1024) == 1 then
+			entity_name = "market"				
+		end
+				
+		if math_random(1, 48) == 1 and noise < -0.5 then
 			entity_name = "biter-spawner"
 			if math_random(1,5) == 1 then
 				entity_name = "spitter-spawner"
-			end			
+			end									
 		end
 	end
 	return entity_name
@@ -141,7 +205,7 @@ local function get_noise_tile(position)
 	end
 	
 	local noise = get_noise("water", position)
-	if noise > 0.75 then
+	if noise > 0.72 then
 		tile_name = "water"
 		--decorative = false
 		if noise > 0.85 then
@@ -149,7 +213,7 @@ local function get_noise_tile(position)
 		end			
 	end
 	
-	if noise < -0.85 then
+	if noise < -0.82 then
 		tile_name = "water-green"
 		--decorative = false
 	end
@@ -183,11 +247,18 @@ local function uncover_map(surface, position, radius_min, radius_max)
 				local tile_name = get_noise_tile(pos)
 				insert(tiles, {name = tile_name, position = pos})
 				if tile_name == "water" or tile_name == "deepwater" or tile_name == "water-green" then
-					if math_random(1, 9) == 1 then insert(fishes, pos) end
+					if math_random(1, 24) == 1 then insert(fishes, pos) end
 				else
 					local entity = get_entity(pos)
 					if entity then
-						surface.create_entity({name = entity, position = pos})						
+						if entity == "market" then
+							local area = {{pos.x - 64, pos.y - 64}, {pos.x + 64, pos.y + 64}}
+							if surface.count_entities_filtered({name = "market", area = area}) == 0 then
+								secret_shop(pos, surface)
+							end
+						else
+							surface.create_entity({name = entity, position = pos})
+						end
 					end
 				end								
 			end				
@@ -216,11 +287,18 @@ local function uncover_map_for_player(player)
 				local tile_name = get_noise_tile(pos)
 				insert(tiles, {name = tile_name, position = pos})				
 				if tile_name == "water" or tile_name == "deepwater" or tile_name == "water-green" then
-					if math_random(1, 9) == 1 then insert(fishes, pos) end
+					if math_random(1, 24) == 1 then insert(fishes, pos) end
 				else
 					local entity = get_entity(pos)
 					if entity then
-						surface.create_entity({name = entity, position = pos})
+						if entity == "market" then
+							local area = {{pos.x - 64, pos.y - 64}, {pos.x + 64, pos.y + 64}}
+							if surface.count_entities_filtered({name = "market", area = area}) == 0 then
+								secret_shop(pos, surface)
+							end
+						else
+							surface.create_entity({name = entity, position = pos})
+						end						
 						if entity == "biter-spawner" or entity == "spitter-spawner" then
 							insert(uncover_map_schedule, {x = pos.x, y = pos.y})
 						end
@@ -237,7 +315,7 @@ local function uncover_map_for_player(player)
 	--create_decoratives_around_position(surface, position)
 	
 	for _, pos in pairs(uncover_map_schedule) do
-		uncover_map(surface, pos, 1, 14)	
+		uncover_map(surface, pos, 1, 16)	
 	end	
 	for _, fish in pairs(fishes) do
 		surface.create_entity({name = "fish", position = fish}) 
@@ -245,8 +323,8 @@ local function uncover_map_for_player(player)
 end
 
 local biter_building_inhabitants = {}
-biter_building_inhabitants[1] = {{"small-biter",8,16}}
-biter_building_inhabitants[2] = {{"small-biter",12,24}}
+biter_building_inhabitants[1] = {{"small-biter",4,8}}
+biter_building_inhabitants[2] = {{"small-biter",8,12}}
 biter_building_inhabitants[3] = {{"small-biter",8,16},{"medium-biter",1,2}}
 biter_building_inhabitants[4] = {{"small-biter",4,8},{"medium-biter",4,8}}
 biter_building_inhabitants[5] = {{"small-biter",3,5},{"medium-biter",8,12}}
@@ -289,11 +367,12 @@ local function on_entity_died(event)
 		--if math_random(1, 4) == 1 then
 			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
-			local amount_modifier = 1 + game.forces.enemy.evolution_factor * 15
+			local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 15)
+			local size_modifier = math.floor(game.forces.enemy.evolution_factor * 5)
 			if name == "crude-oil" then				
 				map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
 			else				
-				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 5, math.ceil(500 * amount_modifier))
+				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 6 + size_modifier, math.ceil(500 * amount_modifier))
 			end
 		--end
 	end

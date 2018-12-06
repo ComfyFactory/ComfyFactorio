@@ -101,12 +101,12 @@ local function respawn_fishes()
 	for _, surface in pairs(game.surfaces) do
 		local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}})
 		for _, tile in pairs(water_tiles) do
-			local area_entities = {{tile.position.x - 2, tile.position.y - 2},{tile.position.x + 2, tile.position.y + 2}}
-			local area_tiles = {{tile.position.x - 1, tile.position.y - 1},{tile.position.x + 1, tile.position.y + 1}}
-			
-			if surface.count_entities_filtered({area = area_entities, name = "fish"}) == 0 and surface.count_tiles_filtered({area = area_tiles, name = {"water", "deepwater", "water-green"}}) > 3 then
-				if math_random(1, 32) == 1 then
-					surface.create_entity({name = "fish", position = tile.position})
+			if math_random(1, 64) == 1 then
+				local area_entities = {{tile.position.x - 2, tile.position.y - 2},{tile.position.x + 2, tile.position.y + 2}}
+				local area_tiles = {{tile.position.x - 1, tile.position.y - 1},{tile.position.x + 1, tile.position.y + 1}}			
+				if surface.count_entities_filtered({area = area_entities, name = "fish"}) == 0 and surface.count_tiles_filtered({area = area_tiles, name = {"water", "deepwater", "water-green"}}) > 3 then		
+					surface.create_entity({name = "water-splash", position = tile.position})
+					surface.create_entity({name = "fish", position = tile.position})				
 				end
 			end
 		end
@@ -124,15 +124,16 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_used_capsule(event)
-	if event.item.name == "raw-fish" then
-		local player = game.players[event.player_index]				
+	if event.item.name == "raw-fish" then		
+		local player = game.players[event.player_index]
+		if player.character.health < 250 then return end		
 		hunger_update(player, player_hunger_fish_food_value)		
-		player.play_sound{path="utility/armor_insert", volume_modifier=0.75}				
+		player.play_sound{path="utility/armor_insert", volume_modifier=0.65}				
 	end
 end
 
 local function on_tick(event)
-	if game.tick % 5400 == 2700 then
+	if game.tick % 3600 == 1800 then
 		for _, player in pairs(game.connected_players) do
 			if player.afk_time < 18000 then	hunger_update(player, -1) end		
 		end
