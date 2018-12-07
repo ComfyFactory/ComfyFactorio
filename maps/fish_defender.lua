@@ -14,12 +14,7 @@ local boss_waves = {
 	[150] = {{name = "behemoth-spitter", count = 4}, {name = "big-spitter", count = 16}},
 	[200] = {{name = "behemoth-biter", count = 4}, {name = "behemoth-spitter", count = 2}, {name = "big-biter", count = 32}},
 	[250] = {{name = "behemoth-biter", count = 8}, {name = "behemoth-spitter", count = 4}, {name = "big-spitter", count = 32}},
-	[300] = {{name = "behemoth-biter", count = 16}, {name = "behemoth-spitter", count = 8}},
-	[350] = {{name = "behemoth-biter", count = 24}, {name = "behemoth-spitter", count = 12}},
-	[400] = {{name = "behemoth-biter", count = 32}, {name = "behemoth-spitter", count = 16}},
-	[450] = {{name = "behemoth-biter", count = 40}, {name = "behemoth-spitter", count = 20}},
-	[500] = {{name = "behemoth-biter", count = 48}, {name = "behemoth-spitter", count = 24}},
-	[550] = {{name = "behemoth-biter", count = 56}, {name = "behemoth-spitter", count = 28}}
+	[300] = {{name = "behemoth-biter", count = 16}, {name = "behemoth-spitter", count = 8}}	
 }
 
 local function shuffle(tbl)
@@ -256,40 +251,41 @@ local boss_wave_names = {
 	[100] = "Biterzilla",
 	[150] = "The Spitter Squad",
 	[200] = "The Wall Nibblers",
-	[250] = "The Conveyor Munchers",
-	[350] = "The Cable Chewers",
-	[400] = "The Power Pole Thieves",
-	[450] = "The Assembler Annihilators",
-	[500] = "The Inserter Crunchers",
-	[550] = "The Engineer Eaters",
-	[600] = "The Belt Unbalancers",
-	[650] = "The Turret Devourers",
-	[700] = "The Pipe Perforators",
-	[750] = "The Desync Bros",
-	[800] = "The Ratio Randomizers",
-	[850] = "The Wire Chompers",
+	[250] = "Conveyor Munchers",
+	[300] = "Furnace Freezers",
+	[350] = "Cable Chewers",	
+	[400] = "Power Pole Thieves",
+	[450] = "Assembler Annihilators",
+	[500] = "Inserter Crunchers",
+	[550] = "Engineer Eaters",
+	[600] = "Belt Unbalancers",
+	[650] = "Turret Devourers",
+	[700] = "Pipe Perforators",
+	[750] = "Desync Bros",
+	[800] = "Ratio Randomizers",
+	[850] = "Wire Chompers",
 	[900] = "The Bus Mixers",
-	[950] = "The Roundabout Deadlockers",
+	[950] = "Roundabout Deadlockers",
 	[1000] = "Happy Tree Friends",	
 	[1050] = "Uranium Digesters",
-	[1100] = "The Bot Banishers",
-	[1150] = "The Furnace Freezers",
+	[1100] = "Bot Banishers",
+	[1150] = "Chest Crushers",
 	[1200] = "Cargo Wagon Scratchers",
 	[1250] = "Transport Belt Surfers",
-	[1300] = "The Pumpjack Pulverizers",
-	[1350] = "The Radar Ravagers",
-	[1400] = "The Mall Deconstrutors",
-	[1450] = "The Lamp Dimmers",
-	[1500] = "The Chest Crushers",
-	[1550] = "The Signal Spammers",
+	[1300] = "Pumpjack Pulverizers",
+	[1350] = "Radar Ravagers",
+	[1400] = "Mall Deconstrutors",
+	[1450] = "Lamp Dimmers",
+	[1500] = "Roboport Disablers",
+	[1550] = "Signal Spammers",
 	[1600] = "Brick Tramplers",
 	[1650] = "Drill Destroyers",
-	[1700] = "The Gearwheel Grinders",
+	[1700] = "Gearwheel Grinders",
 	[1750] = "Silo Seekers",
 	[1800] = "Circuit Breakers",
 	[1850] = "Bullet Absorbers",
 	[1900] = "Oil Guzzlers",
-	[1950] = "Roboport Disablers",
+	[1950] = "Belt Rotators",
 	[2000] = "Bluescreen Factor"
 }
 
@@ -300,7 +296,9 @@ local function spawn_boss_units(surface)
 		game.print("Boss Wave " .. global.wave_count, {r = 0.8, g = 0.1, b = 0.1})
 	end
 		
-	if not boss_waves[global.wave_count] then return end		
+	if not boss_waves[global.wave_count] then
+		boss_waves[global.wave_count] = {{name = "behemoth-biter", count = math.floor(global.wave_count / 16)}, {name = "behemoth-spitter", count = math.floor(global.wave_count / 32)}}
+	end		
 	
 	local position = {x = 216, y = 0}
 	local biter_group = surface.create_unit_group({position = position})
@@ -549,7 +547,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
 		{price = {{"coin", 300}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
 		{price = {{"coin", 450}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}},
-		{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
+		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
 		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
 		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
@@ -810,9 +808,8 @@ local function on_entity_died(event)
 		if event.entity.name == "behemoth-biter" then
 			local surface = event.entity.surface
 			
-			if math_random(1, 2) ~= 1 then
-				local count = math_random(2, 4)
-				for i = 1, count, 1 do
+			if math_random(1, 32) ~= 1 then
+				for i = 1, math_random(1, 2), 1 do
 					local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "medium-biter", position = p} end
 				end
@@ -894,10 +891,10 @@ local function on_player_joined_game(event)
 		map_gen_settings.water = "small"
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 22, cliff_elevation_0 = 22}		
 		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "very-high", size = "very-big", richness = "normal"},
-			["stone"] = {frequency = "very-high", size = "very-big", richness = "normal"},
-			["copper-ore"] = {frequency = "very-high", size = "very-big", richness = "normal"},
-			["iron-ore"] = {frequency = "very-high", size = "very-big", richness = "normal"},
+			["coal"] = {frequency = "high", size = "very-big", richness = "normal"},
+			["stone"] = {frequency = "high", size = "very-big", richness = "normal"},
+			["copper-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
+			["iron-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
 			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
@@ -917,9 +914,9 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0					
 				
-		game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
-		game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
-		game.forces["player"].technologies["flamethrower-damage-3"].enabled = false
+		--game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
+		--game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
+		--game.forces["player"].technologies["flamethrower-damage-3"].enabled = false
 		game.forces["player"].technologies["flamethrower-damage-4"].enabled = false
 		game.forces["player"].technologies["flamethrower-damage-5"].enabled = false
 		game.forces["player"].technologies["flamethrower-damage-6"].enabled = false
@@ -936,13 +933,13 @@ local function on_player_joined_game(event)
 		--game.forces["player"].technologies["atomic-bomb"].enabled = false
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)				
-		game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
+		--game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 15000},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 10000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		
@@ -1322,7 +1319,9 @@ local function on_market_item_purchased(event)
 				player.print("Not enough coins.", {r = 0.22, g = 0.77, b = 0.44})
 				return
 			end
-			global.entity_limits[slot_upgrade_offers[x][1]].limit = global.entity_limits[slot_upgrade_offers[x][1]].limit + 1
+			local gain = 1
+			if offer_index == 5 then gain = 3 end
+			global.entity_limits[slot_upgrade_offers[x][1]].limit = global.entity_limits[slot_upgrade_offers[x][1]].limit + gain
 			game.print(player.name .. " has bought a " .. slot_upgrade_offers[x][2] .. " slot for " .. price .. " coins!", {r = 0.22, g = 0.77, b = 0.44})
 			refresh_market_offers()
 		end
