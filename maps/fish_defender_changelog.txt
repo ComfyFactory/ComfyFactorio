@@ -1,3 +1,7 @@
+0.20
+mine slots are cheaper
+flamethrower slots are cheaper
+
 0.19
 added water ponds to the west
 

@@ -526,7 +526,7 @@ local function refresh_market_offers()
 	local str4 = "Flamethrower Turret Slot for " .. tostring(current_limit * global.entity_limits["flamethrower-turret"].slot_price)
 	str4 = str4 .. " Coins."
 	
-	local str5 = "Landmine Slot for " .. tostring(global.entity_limits["land-mine"].limit * global.entity_limits["land-mine"].slot_price)
+	local str5 = "Landmine Slot for " .. tostring(math.ceil((global.entity_limits["land-mine"].limit / 3) * global.entity_limits["land-mine"].slot_price))
 	str5 = str5 .. " Coins."
 	
 	local market_items = {
@@ -1307,6 +1307,12 @@ local function on_market_item_purchased(event)
 						
 			local price = global.entity_limits[slot_upgrade_offers[x][1]].limit * global.entity_limits[slot_upgrade_offers[x][1]].slot_price
 			
+			local gain = 1
+			if offer_index == 5 then
+				price = math.ceil((global.entity_limits[slot_upgrade_offers[x][1]].limit  / 3) * global.entity_limits[slot_upgrade_offers[x][1]].slot_price)
+				gain = 3
+			end
+			
 			if slot_upgrade_offers[x][1] == "flamethrower-turret" then
 				price = (global.entity_limits[slot_upgrade_offers[x][1]].limit + 1) * global.entity_limits[slot_upgrade_offers[x][1]].slot_price
 			end			
@@ -1319,8 +1325,7 @@ local function on_market_item_purchased(event)
 				player.print("Not enough coins.", {r = 0.22, g = 0.77, b = 0.44})
 				return
 			end
-			local gain = 1
-			if offer_index == 5 then gain = 3 end
+						 
 			global.entity_limits[slot_upgrade_offers[x][1]].limit = global.entity_limits[slot_upgrade_offers[x][1]].limit + gain
 			game.print(player.name .. " has bought a " .. slot_upgrade_offers[x][2] .. " slot for " .. price .. " coins!", {r = 0.22, g = 0.77, b = 0.44})
 			refresh_market_offers()
