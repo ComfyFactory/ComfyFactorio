@@ -1,0 +1,27 @@
+local playsession = {
+	{"Food_lp", {707054}},
+	{"Timfee", {716065}},
+	{"Matik12", {542285}},
+	{"Ed9210", {825345}},
+	{"Cruzgoh", {596679}},
+	{"foggyliziouz", {623265}},
+	{"chrisisthebe", {261413}},
+	{"Tornado_05", {3049}},
+	{"Altenius", {1176}},
+	{"zarduhasselfrau", {2459}},
+	{"matam666", {492698}},
+	{"Gerkiz", {534002}},
+	{"maoul", {5692}},
+	{"Ruuyji", {55332}},
+	{"FireLeaf", {195574}},
+	{"wot_tak", {207537}},
+	{"Wiedrock", {338734}},
+	{"red11", {319786}},
+	{"WeedyKiller", {257882}},
+	{"realDonaldTrump", {187017}},
+	{"firstandlast", {206707}},
+	{"Elrael", {160264}},
+	{"mewmew", {121741}},
+	{"Reyand", {631}}
+}
+return playsession

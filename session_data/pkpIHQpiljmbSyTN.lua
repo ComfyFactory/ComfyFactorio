@@ -1,6 +1,6 @@
 local playsession = {
 	{"Gerkiz", {6772}},
-	{"CmonMate497", {150613}},
+	{"CmonMate497", {447668}},
 	{"Olekplane1", {3778}},
 	{"exabyte", {540}},
 	{"dreadpr", {2031}},
@@ -10,10 +10,16 @@ local playsession = {
 	{"kaimix", {2859}},
 	{"dog80", {62699}},
 	{"DKarma", {3470}},
-	{"ruetama", {222247}},
-	{"PogomanD", {205807}},
+	{"ruetama", {635712}},
+	{"PogomanD", {601345}},
 	{"AngelicFlame", {2712}},
 	{"mar123322", {42534}},
-	{"cawsey21", {3068}}
+	{"cawsey21", {415728}},
+	{"mewmew", {16571}},
+	{"scotty2586", {23494}},
+	{"jrw2002730", {9861}},
+	{"CommanderFrog", {4348}},
+	{"exirpit", {1042}},
+	{"dragongod21", {14661}}
 }
 return playsession
