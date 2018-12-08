@@ -22,7 +22,9 @@ require "score"
 --require "maps.fish_defender"
 --require "maps.crossing"
 --require "maps.spooky_forest"
-require "maps.atoll"
+--require "maps.atoll"
+require "maps.island_resort"
+--require "maps.atoll"
 --require "maps.empty_map"
 -----------------------------
 
