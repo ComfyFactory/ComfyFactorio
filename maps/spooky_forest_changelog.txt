@@ -1,3 +1,7 @@
+0.06
+added markets
+added hunger and respawning fish
+
 0.05
 map reveal fixes
 reduced evolution

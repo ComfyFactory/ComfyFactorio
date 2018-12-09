@@ -1,3 +1,6 @@
+0.33
+flamethrower-turret disabled
+
 0.32
 flamethrower damage upgrade research removed
 flamethrower fuel consumption reverted to normal

@@ -522,13 +522,13 @@ local function on_player_joined_game(event)
 			game.forces[name].technologies["artillery"].enabled = false
 			game.forces[name].technologies["artillery-shell-range-1"].enabled = false					
 			game.forces[name].technologies["artillery-shell-speed-1"].enabled = false	
-			game.forces[name].technologies["flamethrower-damage-1"].enabled = false	
-			game.forces[name].technologies["flamethrower-damage-2"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-3"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-4"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-5"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-6"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-7"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-1"].enabled = false	
+			--game.forces[name].technologies["flamethrower-damage-2"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-3"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-4"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-5"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-6"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-7"].enabled = false
 			game.forces[name].technologies["atomic-bomb"].enabled = false
 
 			global.team_nerf[name] = 0
@@ -795,10 +795,10 @@ local function on_entity_died(event)
 		
 			if event.entity == global.rocket_silo["south"] then
 				global.rocket_silo_destroyed = "North Team Won!"
-				print("team$north"
+				print("team$north")
 			else
 				global.rocket_silo_destroyed = "South Team Won!"
-				print("team$south"
+				print("team$south")
 			end		
 			
 			for _, player in pairs(game.connected_players) do
@@ -1145,9 +1145,12 @@ local function biter_attack_silo(team, requested_amount, mode)
 	mode = nil
 end
 
-function swarm(team,amount,mode)
-	if not team then return end
-	biter_attack_silo(team, amount,mode)
+local function clear_corpses()
+	for _, entity in pairs(game.surfaces["surface"].find_entities_filtered{type = "corpse"}) do
+		if math_random(1, 3) == 1 then
+			entity.destroy()
+		end
+	end
 end
 
 local function on_tick(event)
@@ -1185,10 +1188,11 @@ local function on_tick(event)
 		end
 	end	
 	if game.tick % 12600 == 6300 then	
+		clear_corpses()
 		if global.biter_rage["north"] >= 1 then
 			local c = math.round(global.biter_rage["north"], 0)
 			if c > 999 then c = 999 end
-			biter_attack_silo("north", c)								
+			biter_attack_silo("north", c)			
 		end
 		refresh_gui()
 		return
@@ -1291,7 +1295,6 @@ local function on_console_chat(event)
 end
 --------------------------------------
 
---Silo grief prevention--
 local function on_entity_damaged(event)
 	
 	--[[
@@ -1311,26 +1314,26 @@ local function on_entity_damaged(event)
 		end
 	end]]
 
-	--biter rage damage modifier
-	if event.entity.force.name == "north" then 
-		if event.force.name == "enemy" then
+	--Biter rage damage modifier
+	if event.force.name == "enemy" then
+		if event.entity.force.name == "north" then 			
 			local additional_damage = event.final_damage_amount  * math.round((global.biter_rage["north"]/3)/100, 2)
 			event.entity.health = event.entity.health - additional_damage
-			return
-		end		
-	end
-	if event.entity.force.name == "south" then 
-		if event.force.name == "enemy" then
+			return					
+		end
+		if event.entity.force.name == "south" then 		
 			local additional_damage = event.final_damage_amount  * math.round((global.biter_rage["south"]/3)/100, 2)
 			event.entity.health = event.entity.health - additional_damage
-			return
-		end		
+			return					
+		end
 	end
 	
 	if event.entity.force.name == "spectator" then 					
 		event.entity.health = event.entity.health + event.final_damage_amount		
 		return
-	end		
+	end
+
+	--Silo grief prevention
 	if event.entity == global.rocket_silo["north"] then
 		if event.force.name == "north" then 
 			global.rocket_silo["north"].health = global.rocket_silo["north"].health + event.final_damage_amount
@@ -1342,7 +1345,9 @@ local function on_entity_damaged(event)
 			global.rocket_silo["south"].health = global.rocket_silo["south"].health + event.final_damage_amount
 			return
 		end		
-	end	
+	end
+
+	--Biter spawner damage reduction
 	if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
 		if event.entity.health - event.final_damage_amount <= 0 then event.entity.die(event.force.name) end
 		event.entity.health = event.entity.health + event.final_damage_amount * (game.forces["enemy"].evolution_factor * 0.8)		
@@ -1439,6 +1444,12 @@ local function on_player_died(event)
 	end
 end
 
+local function on_research_finished(event)	
+	game.forces.north.recipes["flamethrower-turret"].enabled = false
+	game.forces.south.recipes["flamethrower-turret"].enabled = false
+end
+
+event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)

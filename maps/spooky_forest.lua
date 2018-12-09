@@ -1,6 +1,6 @@
 -- spooky forest -- by mewmew --
 
-require "maps.tools.hunger"
+require "maps.modules.hunger"
 local shapes = require "maps.tools.shapes"
 local event = require 'utils.event'
 local map_functions = require "maps.tools.map_functions"
@@ -100,12 +100,12 @@ local function secret_shop(pos, surface)
 	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'train-stop'}},	
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'small-lamp'}},
 	{price = {{"raw-fish", 2}}, offer = {type = 'give-item', item = 'firearm-magazine'}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 25}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'iron-ore', count = 25}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'copper-ore', count = 25}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'stone', count = 25}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'coal', count = 25}},	
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = 20}}
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = math_random(25,75)}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'iron-ore', count = math_random(25,75)}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'copper-ore', count = math_random(25,75)}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'stone', count = math_random(25,75)}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'coal', count = math_random(25,75)}},	
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = math_random(25,75)}}
 	}
 	secret_market_items = shuffle(secret_market_items)
 										
@@ -153,6 +153,13 @@ local function get_noise(name, pos)
 		local noise = noise[1]
 		return noise
 	end
+	seed = seed + noise_seed_add
+	if name == "spawners" then		
+		noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
+		seed = seed + noise_seed_add
+		local noise = noise[1]
+		return noise
+	end
 end
 
 local function get_entity(position)
@@ -180,11 +187,14 @@ local function get_entity(position)
 			entity_name = "market"				
 		end
 				
-		if math_random(1, 48) == 1 and noise < -0.5 then
-			entity_name = "biter-spawner"
-			if math_random(1,5) == 1 then
-				entity_name = "spitter-spawner"
-			end									
+		if math_random(1, 12) == 1 then
+			local noise_spawners = get_noise("spawners", position)
+			if noise_spawners > 0.25 then
+				entity_name = "biter-spawner"
+				if math_random(1,5) == 1 then
+					entity_name = "spitter-spawner"
+				end
+			end
 		end
 	end
 	return entity_name
@@ -205,15 +215,15 @@ local function get_noise_tile(position)
 	end
 	
 	local noise = get_noise("water", position)
-	if noise > 0.72 then
+	if noise > 0.7 then
 		tile_name = "water"
 		--decorative = false
-		if noise > 0.85 then
+		if noise > 0.78 then
 			tile_name = "deepwater"			
 		end			
 	end
 	
-	if noise < -0.82 then
+	if noise < -0.75 then
 		tile_name = "water-green"
 		--decorative = false
 	end
@@ -257,7 +267,14 @@ local function uncover_map(surface, position, radius_min, radius_max)
 								secret_shop(pos, surface)
 							end
 						else
-							surface.create_entity({name = entity, position = pos})
+							if entity == "biter-spawner" or entity == "spitter-spawner" then
+								local area = {{pos.x - 4, pos.y - 4}, {pos.x + 4, pos.y + 4}}
+								if surface.count_entities_filtered({name = "biter-spawner", area = area}) == 0 then
+									surface.create_entity({name = entity, position = pos})
+								end								
+							else
+								surface.create_entity({name = entity, position = pos})
+							end
 						end
 					end
 				end								
@@ -297,7 +314,14 @@ local function uncover_map_for_player(player)
 								secret_shop(pos, surface)
 							end
 						else
-							surface.create_entity({name = entity, position = pos})
+							if entity == "biter-spawner" or entity == "spitter-spawner" then
+								local area = {{pos.x - 4, pos.y - 4}, {pos.x + 4, pos.y + 4}}
+								if surface.count_entities_filtered({name = "biter-spawner", area = area}) == 0 then
+									surface.create_entity({name = entity, position = pos})
+								end								
+							else
+								surface.create_entity({name = entity, position = pos})
+							end
 						end						
 						if entity == "biter-spawner" or entity == "spitter-spawner" then
 							insert(uncover_map_schedule, {x = pos.x, y = pos.y})
@@ -323,8 +347,8 @@ local function uncover_map_for_player(player)
 end
 
 local biter_building_inhabitants = {}
-biter_building_inhabitants[1] = {{"small-biter",4,8}}
-biter_building_inhabitants[2] = {{"small-biter",8,12}}
+biter_building_inhabitants[1] = {{"small-biter",3,6}}
+biter_building_inhabitants[2] = {{"small-biter",6,12}}
 biter_building_inhabitants[3] = {{"small-biter",8,16},{"medium-biter",1,2}}
 biter_building_inhabitants[4] = {{"small-biter",4,8},{"medium-biter",4,8}}
 biter_building_inhabitants[5] = {{"small-biter",3,5},{"medium-biter",8,12}}
@@ -376,7 +400,10 @@ local function on_entity_died(event)
 			end
 		--end
 	end
-	
+		
+	if event.entity.type == "unit" and math_random(1, 256) == 1 then
+		surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 1}, true)
+	end
 	--[[
 	if entity_drop_amount[event.entity.name] then
 		if game.forces.enemy.evolution_factor < 0.5 then
@@ -420,7 +447,7 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position({0, 0}, surface)
 		
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_evolution.destroy_factor = 0.0012
+		game.map_settings.enemy_evolution.destroy_factor = 0.0016
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0
 							
@@ -430,11 +457,12 @@ local function on_player_joined_game(event)
 	if player.online_time < 1 then
 		player.insert({name = "submachine-gun", count = 1})
 		player.insert({name = "iron-axe", count = 1})
-		player.insert({name = "grenade", count = 1})
+		player.insert({name = "iron-plate", count = 64})
+		player.insert({name = "grenade", count = 3})
 		player.insert({name = "raw-fish", count = 5})
 		player.insert({name = "land-mine", count = 5})
 		player.insert({name = "light-armor", count = 1})
-		player.insert({name = "firearm-magazine", count = 96})
+		player.insert({name = "firearm-magazine", count = 128})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 	
