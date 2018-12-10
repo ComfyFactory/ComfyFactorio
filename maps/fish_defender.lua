@@ -7,7 +7,7 @@ local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local wave_interval = 3600		--interval between waves in ticks
-local biter_count_limit = 2400	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
+local biter_count_limit = 1600	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
 	[100] = {{name = "behemoth-biter", count = 1}},
@@ -353,7 +353,34 @@ local function wake_up_idle_biters(surface)
 		unit_search_distance=16
 		})
 	
-	local units = surface.find_entities_filtered({type = "unit", area = {{192, -256},{360, 256}}})
+	local units = surface.find_entities_filtered({type = "unit", area = {{160, -256},{360, -64}}})
+	for _, unit in pairs(units) do		
+		unit.set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+					{
+						type=defines.command.attack_area,
+						destination={x = -160, y = -64},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack_area,
+						destination={x = -80, y = -64},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack,
+						target=global.market,
+						distraction=defines.distraction.by_enemy
+					}
+				}
+			})
+	end
+	
+	local units = surface.find_entities_filtered({type = "unit", area = {{160, -64},{360, 64}}})
 	for _, unit in pairs(units) do		
 		unit.set_command({
 			type = defines.command.compound,
@@ -368,6 +395,33 @@ local function wake_up_idle_biters(surface)
 					{
 						type=defines.command.attack_area,
 						destination={x = -80, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack,
+						target=global.market,
+						distraction=defines.distraction.by_enemy
+					}
+				}
+			})
+	end
+	
+	local units = surface.find_entities_filtered({type = "unit", area = {{160, 64},{360, 256}}})
+	for _, unit in pairs(units) do		
+		unit.set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+					{
+						type=defines.command.attack_area,
+						destination={x = -160, y = 64},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack_area,
+						destination={x = -80, y = 64},
 						radius=16,
 						distraction=defines.distraction.by_anything
 					},					
@@ -444,7 +498,7 @@ local function biter_attack_wave()
 	group_coords = shuffle(group_coords)
 	
 	local unit_groups = {}
-	if global.wave_count > 100 and math_random(1,3) == 1 then		
+	if global.wave_count > 100 and math_random(1, 8) == 1 then		
 		for i = 1, #group_coords, 1 do
 			unit_groups[i] = surface.create_unit_group({position = group_coords[i].spawn})
 		end
@@ -676,7 +730,7 @@ local function is_game_lost()
 		
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=1}
-		end
+		end				
 	end
 	
 	game.map_settings.enemy_expansion.enabled = true
@@ -1041,12 +1095,14 @@ local function on_chunk_generated(event)
 				end
 			end
 			
-			map_functions.draw_smoothed_out_ore_circle({x = -128, y = -64}, "copper-ore", surface, 15, 2500)
-			map_functions.draw_smoothed_out_ore_circle({x = -128, y = -32}, "iron-ore", surface, 15, 2500)
-			map_functions.draw_smoothed_out_ore_circle({x = -128, y = 32}, "coal", surface, 15, 1500)
-			map_functions.draw_smoothed_out_ore_circle({x = -128, y = 64}, "stone", surface, 15, 1500)			
+			local ore_positions = {{x = -128, y = -64},{x = -128, y = -32},{x = -128, y = 32},{x = -128, y = 64},{x = -128, y = 0}}
+			ore_positions = shuffle(ore_positions)
+			map_functions.draw_smoothed_out_ore_circle(ore_positions[1], "copper-ore", surface, 15, 2500)
+			map_functions.draw_smoothed_out_ore_circle(ore_positions[2], "iron-ore", surface, 15, 2500)
+			map_functions.draw_smoothed_out_ore_circle(ore_positions[3], "coal", surface, 15, 1500)
+			map_functions.draw_smoothed_out_ore_circle(ore_positions[4], "stone", surface, 15, 1500)			
 			map_functions.draw_noise_tile_circle({x = -96, y = 0}, "water", surface, 16)		
-			map_functions.draw_oil_circle({x = -128, y = 0}, "crude-oil", surface, 8, 200000)
+			map_functions.draw_oil_circle(ore_positions[5], "crude-oil", surface, 8, 200000)
 			
 			local pos = surface.find_non_colliding_position("market",{spawn_position_x, 0}, 50, 1)										
 			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
@@ -1340,6 +1396,13 @@ local function on_research_finished(event)
 	game.forces.player.recipes["artillery-wagon"].enabled = false
 end
 
+local function on_player_respawned(event)
+	if not global.market_age then return end
+	local player = game.players[event.player_index]	
+	player.character.destructible = false	
+end
+
+event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)

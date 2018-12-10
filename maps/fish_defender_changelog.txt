@@ -1,3 +1,7 @@
+0.21
+players become untargetable after market loss
+randomized spawn ore locations
+
 0.20
 mine slots are cheaper
 flamethrower slots are cheaper
