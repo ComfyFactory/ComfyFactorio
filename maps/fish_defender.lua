@@ -315,29 +315,103 @@ local function spawn_boss_units(surface)
 		type = defines.command.compound,
 		structure_type = defines.compound_command.return_last,
 		commands = {
-				{
-					type=defines.command.attack_area,
-					destination={x = -32, y = 0},
-					radius=16,
-					distraction=defines.distraction.by_anything
-				},
-				{
-					type=defines.command.attack,
-					target=global.market,
-					distraction=defines.distraction.by_enemy
-				}
+					{
+						type=defines.command.attack_area,
+						destination={x = 160, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
+						destination={x = 128, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
+						destination={x = 96, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
+						destination={x = 64, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
+						destination={x = 32, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},
+					{
+						type=defines.command.attack_area,
+						destination={x = -32, y = 0},
+						radius=16,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack,
+						target=global.market,
+						distraction=defines.distraction.by_enemy
+					}
 			}
 		})
 end
 
 local function wake_up_idle_biters(surface)
+	for y = -256, 256, 32 do	
+		local units = surface.find_entities_filtered({type = "unit", area = {{192, y},{360, y + 32}}})
+		local unit_group = surface.create_unit_group({position = {x = 224, y = math.floor(y / 2)}})
+		for _, unit in pairs(units) do
+			unit_group.add_member(unit)						
+		end
+		
+		unit_group.set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+					{
+						type=defines.command.attack_area,
+						destination={x = 160, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},				
+					{
+						type=defines.command.attack_area,
+						destination={x = 96, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack_area,
+						destination={x = 32, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack_area,
+						destination={x = -32, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack,
+						target=global.market,
+						distraction=defines.distraction.by_enemy
+					}
+				}
+			})
+	end
+	
 	surface.set_multi_command({
 		command={
 			type=defines.command.attack,
 			target=global.market,
 			distraction=defines.distraction.by_enemy
 			},
-		unit_count = 500,
+		unit_count = 100,
 		force = "enemy",
 		unit_search_distance=64
 		})
@@ -352,87 +426,6 @@ local function wake_up_idle_biters(surface)
 		force = "enemy",
 		unit_search_distance=16
 		})
-	
-	local units = surface.find_entities_filtered({type = "unit", area = {{160, -256},{360, -64}}})
-	for _, unit in pairs(units) do		
-		unit.set_command({
-			type = defines.command.compound,
-			structure_type = defines.compound_command.return_last,
-			commands = {
-					{
-						type=defines.command.attack_area,
-						destination={x = -160, y = -64},
-						radius=16,
-						distraction=defines.distraction.by_anything
-					},					
-					{
-						type=defines.command.attack_area,
-						destination={x = -80, y = -64},
-						radius=16,
-						distraction=defines.distraction.by_anything
-					},					
-					{
-						type=defines.command.attack,
-						target=global.market,
-						distraction=defines.distraction.by_enemy
-					}
-				}
-			})
-	end
-	
-	local units = surface.find_entities_filtered({type = "unit", area = {{160, -64},{360, 64}}})
-	for _, unit in pairs(units) do		
-		unit.set_command({
-			type = defines.command.compound,
-			structure_type = defines.compound_command.return_last,
-			commands = {
-					{
-						type=defines.command.attack_area,
-						destination={x = -160, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_anything
-					},					
-					{
-						type=defines.command.attack_area,
-						destination={x = -80, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_anything
-					},					
-					{
-						type=defines.command.attack,
-						target=global.market,
-						distraction=defines.distraction.by_enemy
-					}
-				}
-			})
-	end
-	
-	local units = surface.find_entities_filtered({type = "unit", area = {{160, 64},{360, 256}}})
-	for _, unit in pairs(units) do		
-		unit.set_command({
-			type = defines.command.compound,
-			structure_type = defines.compound_command.return_last,
-			commands = {
-					{
-						type=defines.command.attack_area,
-						destination={x = -160, y = 64},
-						radius=16,
-						distraction=defines.distraction.by_anything
-					},					
-					{
-						type=defines.command.attack_area,
-						destination={x = -80, y = 64},
-						radius=16,
-						distraction=defines.distraction.by_anything
-					},					
-					{
-						type=defines.command.attack,
-						target=global.market,
-						distraction=defines.distraction.by_enemy
-					}
-				}
-			})
-	end
 end
 
 local function biter_attack_wave()
@@ -444,7 +437,7 @@ local function biter_attack_wave()
 	wake_up_idle_biters(surface)
 	
 	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
-		game.print("Biter limit reached, wave stalled.", {r = 0.7, g = 0.1, b = 0.1})
+		game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})
 		return 
 	end
 	
@@ -525,35 +518,53 @@ local function biter_attack_wave()
 			type = defines.command.compound,
 			structure_type = defines.compound_command.return_last,
 			commands = {
-					{
-						type=defines.command.attack_area,
-						destination={group_coords[i].target.x + 180, group_coords[i].target.y},
-						radius=32,
-						distraction=defines.distraction.by_anything
-					},
-					{
-						type=defines.command.attack_area,
-						destination={group_coords[i].target.x + 120, group_coords[i].target.y},
-						radius=32,
-						distraction=defines.distraction.by_anything
-					},
-					{
-						type=defines.command.attack_area,
-						destination={group_coords[i].target.x + 60, group_coords[i].target.y},
-						radius=32,
-						distraction=defines.distraction.by_anything
-					},
-					{
-						type=defines.command.attack_area,
-						destination=group_coords[i].target,
-						radius=32,
-						distraction=defines.distraction.by_anything
-					},
-					{
-						type=defines.command.attack,
-						target=global.market,
-						distraction=defines.distraction.by_enemy
-					}
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 192, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 160, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 128, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 96, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 64, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 32, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},					
+						{
+							type=defines.command.attack_area,
+							destination=group_coords[i].target,
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack,
+							target=global.market,
+							distraction=defines.distraction.by_enemy
+						}
 				}
 		})			
 	end
