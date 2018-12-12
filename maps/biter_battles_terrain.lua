@@ -417,7 +417,7 @@ function biter_battles_terrain.generate_spawn_water_pond()
 		for y = -200, 200, 1 do						
 			local t = surface.get_tile(x,y)
 			if t.name == "water-green" then 
-				if surface.can_place_entity{name="fish", position={x,y}} and math_random(1,10) == 1 then
+				if surface.can_place_entity{name="fish", position={x,y}} and math_random(1,12) == 1 then
 					surface.create_entity {name="fish", position={x,y}} 
 				end			
 			end			

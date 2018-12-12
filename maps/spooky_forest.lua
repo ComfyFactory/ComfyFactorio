@@ -443,7 +443,7 @@ local function on_player_joined_game(event)
 		game.create_surface("spooky_forest", map_gen_settings)							
 		local surface = game.surfaces["spooky_forest"]
 		surface.daytime = 0.5
-		surface.freeze_daytime = 1
+		--surface.freeze_daytime = 1
 		game.forces["player"].set_spawn_position({0, 0}, surface)
 		
 		game.map_settings.enemy_expansion.enabled = true

@@ -574,7 +574,7 @@ local function on_entity_died(event)
                 if p then event.entity.surface.create_entity {name=t[1], position=p} end
             end
         end	 
-		if math.random(1,150) == 1 then
+		if math.random(1, 75) == 1 then
 			local amount = 100000 * (1 + (game.forces.enemy.evolution_factor * 20))
 			event.entity.surface.create_entity({name = "crude-oil", position = event.entity.position, amount = amount})
 		end

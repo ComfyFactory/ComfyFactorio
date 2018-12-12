@@ -757,6 +757,9 @@ local function on_gui_click(event)
 		global.biter_battle_view_players[player.name] = true 
 		refresh_gui() 
 	end
+	
+	if not global.terrain_init_done then player.print("Waiting for spawn to generate.", { r=0.98, g=0.66, b=0.22}) return end
+	
 	if (name == "join_north_button") and global.game_lobby_active == false then join_team(player, "north") end	
 	if (name == "join_south_button") and global.game_lobby_active == false then join_team(player, "south") end
 	if (name == "join_north_button") and global.game_lobby_active == true then player.print("Waiting for more players to join the game.", { r=0.98, g=0.66, b=0.22}) end
@@ -1206,37 +1209,7 @@ local function on_tick(event)
 		refresh_gui()
 		return
 	end
-	if not global.terrain_init_done then
-		if game.tick == 240 then	
-			local surface = game.surfaces["surface"]
-			global.rocket_silo = {}
-			global.rocket_silo["north"] = surface.create_entity {name="rocket-silo", position={0,(global.horizontal_border_width*3.8)*-1}, force="north"}
-			global.rocket_silo["north"].minable=false		
-			global.rocket_silo["south"]=surface.create_entity {name="rocket-silo", position={0,global.horizontal_border_width*3.8}, force="south"}
-			global.rocket_silo["south"].minable=false
-			
-			global.biter_attack_main_target = {}
-			global.biter_attack_main_target["north"] = global.rocket_silo["north"].position
-			global.biter_attack_main_target["south"] = global.rocket_silo["south"].position
-			
-			biter_battles_terrain.clear_spawn_ores()
-			biter_battles_terrain.generate_spawn_water_pond()
-			biter_battles_terrain.generate_spawn_ores("windows")
-			biter_battles_terrain.generate_market()
-			--biter_battles_terrain.generate_artillery()	
-			global.terrain_init_done = true
-					
-			surface.regenerate_decorative()
-			surface.regenerate_entity({"tree-01", "tree-02","tree-03","tree-04","tree-05","tree-06","tree-07","tree-08","tree-09","dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","rock-big","rock-huge"})
-			--surface.regenerate_entity({"dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","rock-big","rock-huge"})
-			local entities = surface.find_entities({{-10,-10},{10,10}})			
-			for _, e in pairs(entities) do
-				if e.type == "simple-entity" or e.type == "resource" or e.type == "tree" then e.destroy()	end
-			end			
-			surface.destroy_decoratives({{-10,-10},{10,10}})
-			game.print("Spawn generation done!", { r=0.22, g=0.99, b=0.99})
-		end
-	end
+	
 	if global.game_lobby_active then
 		if game.tick % 60 == 0 then			
 			if global.game_lobby_timeout-game.tick <= 0 then global.game_lobby_active = false end
@@ -1259,6 +1232,44 @@ local function on_tick(event)
 			end	
 		end
 	end]]--
+end
+
+local function on_chunk_generated(event)
+	if global.terrain_init_done then return end
+	
+	local surface = game.surfaces["surface"]
+	if event.surface ~= surface then return end
+	
+	if event.area.left_top.x > 128 then																							
+		global.rocket_silo = {}
+		global.rocket_silo["north"] = surface.create_entity {name="rocket-silo", position={0,(global.horizontal_border_width*3.8)*-1}, force="north"}
+		global.rocket_silo["north"].minable=false		
+		global.rocket_silo["south"] = surface.create_entity {name="rocket-silo", position={0,global.horizontal_border_width*3.8}, force="south"}
+		global.rocket_silo["south"].minable=false
+		
+		global.biter_attack_main_target = {}
+		global.biter_attack_main_target["north"] = global.rocket_silo["north"].position
+		global.biter_attack_main_target["south"] = global.rocket_silo["south"].position
+		
+		biter_battles_terrain.clear_spawn_ores()
+		biter_battles_terrain.generate_spawn_water_pond()
+		biter_battles_terrain.generate_spawn_ores("windows")
+		biter_battles_terrain.generate_market()
+								
+		--biter_battles_terrain.generate_artillery()	
+						
+		surface.regenerate_decorative()
+		surface.regenerate_entity({"tree-01", "tree-02","tree-03","tree-04","tree-05","tree-06","tree-07","tree-08","tree-09","dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","rock-big","rock-huge"})
+		--surface.regenerate_entity({"dead-dry-hairy-tree","dead-grey-trunk","dead-tree-desert","dry-hairy-tree","dry-tree","rock-big","rock-huge"})
+		local entities = surface.find_entities({{-10,-10},{10,10}})			
+		for _, e in pairs(entities) do
+			if e.type == "simple-entity" or e.type == "resource" or e.type == "tree" then e.destroy()	end
+		end			
+		surface.destroy_decoratives({{-10,-10},{10,10}})
+		game.print("Spawn generation done!", { r=0.22, g=0.99, b=0.99})
+			
+		global.terrain_init_done = true
+	end
 end
 
 ----------share chat with player and spectator force-------------------
@@ -1449,6 +1460,7 @@ local function on_research_finished(event)
 	game.forces.south.recipes["flamethrower-turret"].enabled = false
 end
 
+event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_built_entity, on_built_entity)

@@ -98,8 +98,19 @@ local function hunger_update(player, food_value)
 end
 
 local function respawn_fishes()
+	if not global.respawn_fish_cake_piece then global.respawn_fish_cake_piece = 1 end
+	if global.respawn_fish_cake_piece > 4 then global.respawn_fish_cake_piece = 1 end
+	
+	local r = 1000000
+	local area = {{0, r * -1}, {r, 0}}
+	if global.respawn_fish_cake_piece == 2 then area = {{0, 0}, {r, r}} end
+	if global.respawn_fish_cake_piece == 3 then area = {{r * -1, 0}, {0, r}} end
+	if global.respawn_fish_cake_piece == 4 then area = {{r * -1, r * -1}, {0, 0}} end
+	
+	global.respawn_fish_cake_piece  = global.respawn_fish_cake_piece + 1
+	
 	for _, surface in pairs(game.surfaces) do
-		local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}})
+		local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}, area = area})
 		for _, tile in pairs(water_tiles) do
 			if math_random(1, 64) == 1 then
 				local area_entities = {{tile.position.x - 2, tile.position.y - 2},{tile.position.x + 2, tile.position.y + 2}}
