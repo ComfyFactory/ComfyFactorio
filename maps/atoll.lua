@@ -74,7 +74,7 @@ local function on_chunk_generated(event)
 	local entities = {}
 	
 	if not global.spawn_generated and left_top.x <= -160 then
-		map_functions.draw_noise_tile_circle({x = 0, y = 0}, "grass-1", surface, 80)
+		map_functions.draw_noise_tile_circle({x = 0, y = 0}, "grass-1", surface, 20)
 		map_functions.draw_smoothed_out_ore_circle({x = -32, y = -32}, "copper-ore", surface, 15, 2500)
 		map_functions.draw_smoothed_out_ore_circle({x = -32, y = 32}, "iron-ore", surface, 15, 2500)
 		map_functions.draw_smoothed_out_ore_circle({x = 32, y = 32}, "coal", surface, 15, 2500)
@@ -94,26 +94,6 @@ local function on_chunk_generated(event)
 	end
 	surface.set_tiles(tiles, true)
 	
-end
-	
-function cheat_mode()
-	local cheat_mode_enabed = true
-	if cheat_mode_enabed == true then
-		local surface = game.surfaces["atoll"]
-		game.player.cheat_mode=true
-		game.players[1].insert({name="power-armor-mk2"})
-		game.players[1].insert({name="fusion-reactor-equipment", count=4})
-		game.players[1].insert({name="personal-laser-defense-equipment", count=8})
-		game.players[1].insert({name="rocket-launcher"})		
-		game.players[1].insert({name="explosive-rocket", count=200})		
-		game.speed = 2
-		surface.daytime = 1
-		game.player.force.research_all_technologies()
-		game.forces["enemy"].evolution_factor = 0.2
-		local chart = 300
-		local surface = game.surfaces["atoll"]	
-		game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})		
-	end
 end
 
 event.add(defines.events.on_entity_died, on_entity_died)

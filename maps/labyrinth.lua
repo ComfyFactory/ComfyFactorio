@@ -659,13 +659,14 @@ end
 local function spawn_infinity_chest(pos, surface)
 	local math_random = math.random
 	local infinity_chests = {		
-		{"raw-wood", math_random(1,3)},
+		--{"raw-wood", math_random(1,3)},
 		{"coal", 1},		
-		{"stone", math_random(2,4)},
-		{"stone", math_random(2,4)},
-		{"stone", math_random(2,4)},
-		{"stone", math_random(2,4)},
-		{"stone", math_random(2,4)},		
+		{"stone", math_random(3,5)},
+		{"stone", math_random(3,5)},
+		{"stone", math_random(3,5)},
+		{"stone", math_random(3,5)},
+		{"stone", math_random(3,5)},
+		{"stone", math_random(3,5)},		
 		{"iron-ore", 1},		
 		{"copper-ore", 1},								
 	}
@@ -808,6 +809,25 @@ local function on_chunk_generated(event)
 	local tile_to_insert = false
 	local chunk_position_x = event.area.left_top.x / 32
 	local chunk_position_y = event.area.left_top.y / 32
+	
+		
+	if not global.spawn_ores_generated then
+		if event.area.left_top.x > 96 then
+			map_functions.draw_entity_circle({x = 16, y = 16}, "coal", surface, 9, false, 750)
+			map_functions.draw_entity_circle({x = 16, y = 16}, "iron-ore", surface, 9, false, 750)
+			map_functions.draw_entity_circle({x = 16, y = 16}, "copper-ore", surface, 9, false, 750)
+			map_functions.draw_entity_circle({x = 16, y = 16}, "tree-05", surface, 9, true)
+			--map_functions.draw_smoothed_out_ore_circle({x = 16, y = 8}, "coal", surface, 7, 750)
+			--map_functions.draw_smoothed_out_ore_circle({x = 16, y = 8}, "coal", surface, 7, 750)
+			--map_functions.draw_smoothed_out_ore_circle({x = 8, y = 24}, "iron-ore", surface, 7, 750)
+			--map_functions.draw_smoothed_out_ore_circle({x = 24, y = 24}, "copper-ore", surface, 7, 750)
+			--surface.create_entity({name = "tree-05", position = {16, 24}})
+			--surface.create_entity({name = "tree-05", position = {24, 12}})
+			--surface.create_entity({name = "tree-05", position = {8, 12}})
+			global.spawn_ores_generated = true
+		end
+	end
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			tile_to_insert = false
@@ -845,7 +865,7 @@ local function on_chunk_generated(event)
 				end
 			end
 			if chunk_position_x == 0 and chunk_position_y == 0 then
-				tile_to_insert = "grass-1"
+				tile_to_insert = "grass-1"				
 			end
 			if chunk_position_x == 0 and chunk_position_y == -1 then
 				tile_to_insert = "dirt-5"
@@ -887,7 +907,7 @@ local function on_player_joined_game(event)
 		}
 		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 		game.create_surface("labyrinth", map_gen_settings)		
-		game.forces["player"].set_spawn_position({16,16},game.surfaces["labyrinth"])
+		game.forces["player"].set_spawn_position({16, 0},game.surfaces["labyrinth"])
 		local surface = game.surfaces["labyrinth"]
 		surface.create_entity {name="rock-big",position={16,-16}}
 		
@@ -913,10 +933,10 @@ local function on_player_joined_game(event)
 	end	
 	local surface = game.surfaces["labyrinth"]
 	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {16,16}, 2, 1), "labyrinth")
+		player.teleport(surface.find_non_colliding_position("player", {16, 0}, 2, 1), "labyrinth")
 	else
 		if player.online_time < 5 then
-			player.teleport({16,16}, "labyrinth")
+			player.teleport({16, 0}, "labyrinth")
 		end
 	end	
 	if player.online_time < 10 then				

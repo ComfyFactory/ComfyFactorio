@@ -1308,12 +1308,12 @@ local function on_tick()
 		
 		if global.market_age then
 			if not global.game_restart_timer then
-				global.game_restart_timer = 7200
+				global.game_restart_timer = 18000
 			else
 				if global.game_restart_timer < 0 then return end
 				global.game_restart_timer = global.game_restart_timer - 30
 			end
-			if global.game_restart_timer % 900 == 0 then 
+			if global.game_restart_timer % 1800 == 0 then 
 				if global.game_restart_timer > 0 then game.print("Map will restart in " .. global.game_restart_timer / 60 .. " seconds!", { r=0.22, g=0.88, b=0.22}) end
 				if global.game_restart_timer == 0 then
 					game.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})

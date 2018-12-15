@@ -13,7 +13,7 @@ require "score"
 --require "maps.tools.cheat_mode"
 
 ---- enable maps here ----
-require "maps.biter_battles"
+--require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
@@ -22,7 +22,7 @@ require "maps.biter_battles"
 --require "maps.spiral_troopers"
 --require "maps.fish_defender"
 --require "maps.crossing"
---require "maps.spooky_forest"
+require "maps.spooky_forest"
 --require "maps.atoll"
 --require "maps.empty_map"
 -----------------------------

@@ -4,6 +4,7 @@ local event = require 'utils.event'
 local math_random = math.random
 
 local respawn_fish = true
+
 local player_hunger_fish_food_value = 10
 local player_hunger_spawn_value = 80				
 local player_hunger_stages = {}
@@ -97,27 +98,20 @@ local function hunger_update(player, food_value)
 	create_hunger_gui(player)
 end
 
-local function respawn_fishes()
-	if not global.respawn_fish_cake_piece then global.respawn_fish_cake_piece = 1 end
-	if global.respawn_fish_cake_piece > 4 then global.respawn_fish_cake_piece = 1 end
-	
-	local r = 1000000
-	local area = {{0, r * -1}, {r, 0}}
-	if global.respawn_fish_cake_piece == 2 then area = {{0, 0}, {r, r}} end
-	if global.respawn_fish_cake_piece == 3 then area = {{r * -1, 0}, {0, r}} end
-	if global.respawn_fish_cake_piece == 4 then area = {{r * -1, r * -1}, {0, 0}} end
-	
-	global.respawn_fish_cake_piece  = global.respawn_fish_cake_piece + 1
-	
-	for _, surface in pairs(game.surfaces) do
-		local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}, area = area})
-		for _, tile in pairs(water_tiles) do
-			if math_random(1, 64) == 1 then
-				local area_entities = {{tile.position.x - 2, tile.position.y - 2},{tile.position.x + 2, tile.position.y + 2}}
-				local area_tiles = {{tile.position.x - 1, tile.position.y - 1},{tile.position.x + 1, tile.position.y + 1}}			
-				if surface.count_entities_filtered({area = area_entities, name = "fish"}) == 0 and surface.count_tiles_filtered({area = area_tiles, name = {"water", "deepwater", "water-green"}}) > 3 then		
-					surface.create_entity({name = "water-splash", position = tile.position})
-					surface.create_entity({name = "fish", position = tile.position})				
+local function respawn_fishes()				
+	local surface = game.players[1].surface
+	for chunk in surface.get_chunks() do
+		if math_random(1, 4) == 1 then
+			local area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}
+			local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}, area = area})
+			for _, tile in pairs(water_tiles) do
+				if math_random(1, 32) == 1 then
+					local area_entities = {{tile.position.x - 2, tile.position.y - 2},{tile.position.x + 2, tile.position.y + 2}}
+					local area_tiles = {{tile.position.x - 1, tile.position.y - 1},{tile.position.x + 1, tile.position.y + 1}}			
+					if surface.count_entities_filtered({area = area_entities, name = "fish"}) == 0 and surface.count_tiles_filtered({area = area_tiles, name = {"water", "deepwater", "water-green"}}) > 3 then
+						surface.create_entity({name = "water-splash", position = tile.position})
+						surface.create_entity({name = "fish", position = tile.position})				
+					end
 				end
 			end
 		end

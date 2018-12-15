@@ -1,6 +1,38 @@
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local f = {}
+local math_random = math.random
+local insert = table.insert
+
+f.draw_entity_circle = function(position, name, surface, radius, check_collision, amount)
+	if not position then return end
+	if not name then return end
+	if not surface then return end
+	if not radius then return end						
+	for y = radius * -1, radius, 1 do
+		for x = radius * -1, radius, 1 do
+			local pos = {x = x + position.x, y = y + position.y}				
+			local distance_to_center = math.sqrt(x^2 + y^2)								
+			if distance_to_center <= radius then
+				if check_collision then
+					if surface.can_place_entity({name = name, position = pos}) then
+						if amount then
+							surface.create_entity({name = name, position = pos, amount = amount})
+						else
+							surface.create_entity({name = name, position = pos})
+						end				
+					end					
+				else
+					if amount then
+						surface.create_entity({name = name, position = pos, amount = amount})
+					else
+						surface.create_entity({name = name, position = pos})
+					end				
+				end						
+			end			
+		end
+	end	
+end
 
 f.draw_noise_tile_circle = function(position, name, surface, radius)
 	if not position then return end
