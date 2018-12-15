@@ -10,7 +10,7 @@ require "poll"
 require "score"
 
 --require "maps.modules.hunger"
---require "maps.tools.cheat_mode"
+require "maps.tools.cheat_mode"
 
 ---- enable maps here ----
 --require "maps.biter_battles"
@@ -20,9 +20,9 @@ require "score"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
 --require "maps.spiral_troopers"
---require "maps.fish_defender"
+require "maps.fish_defender"
 --require "maps.crossing"
-require "maps.spooky_forest"
+--require "maps.spooky_forest"
 --require "maps.atoll"
 --require "maps.empty_map"
 -----------------------------

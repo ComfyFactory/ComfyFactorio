@@ -1429,18 +1429,7 @@ local function on_player_built_tile(event)
 			table.insert(tiles, {name = "deepwater", position = t.position})														
 			game.surfaces["surface"].set_tiles(tiles,true)
 		end				
-	end
-	
-	--landfill history to find griefers--
-	if placed_tiles[1].old_tile.name == "deepwater" or placed_tiles[1].old_tile.name == "water" or placed_tiles[1].old_tile.name == "water-green" then		
-		if not global.land_fill_history then global.land_fill_history = {} end
-		if #global.land_fill_history > 999 then global.land_fill_history = {} end
-		local str = player.name .. " placed landfill at X:"
-		str = str .. placed_tiles[1].position.x
-		str = str .. " Y:"
-		str = str .. placed_tiles[1].position.y
-		table.insert(global.land_fill_history, str)		
-	end	
+	end		
 end
 
 local function on_player_died(event)

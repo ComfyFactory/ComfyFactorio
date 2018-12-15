@@ -411,9 +411,9 @@ local function wake_up_idle_biters(surface)
 			target=global.market,
 			distraction=defines.distraction.by_enemy
 			},
-		unit_count = 100,
+		unit_count = 64,
 		force = "enemy",
-		unit_search_distance=64
+		unit_search_distance=96
 		})
 	
 	surface.set_multi_command({
@@ -422,7 +422,7 @@ local function wake_up_idle_biters(surface)
 			target=global.market,
 			distraction=defines.distraction.none
 			},
-		unit_count = 100,
+		unit_count = 96,
 		force = "enemy",
 		unit_search_distance=16
 		})
@@ -1001,7 +1001,7 @@ local function on_player_joined_game(event)
 		--game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {
-			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
+			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 10000},

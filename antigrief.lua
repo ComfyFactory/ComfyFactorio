@@ -80,18 +80,35 @@ end
 
 local function on_player_built_tile(event)
 	local placed_tiles = event.tiles
-	local player = game.players[event.player_index]	
+	if placed_tiles[1].old_tile.name ~= "deepwater" and placed_tiles[1].old_tile.name ~= "water" and placed_tiles[1].old_tile.name ~= "water-green" then return end
+	local player = game.players[event.player_index]
 	
-	--landfill history--
-	if placed_tiles[1].old_tile.name == "deepwater" or placed_tiles[1].old_tile.name == "water" or placed_tiles[1].old_tile.name == "water-green" then		
-		if not global.landfill_history then global.landfill_history = {} end
-		if #global.landfill_history > 999 then global.landfill_history = {} end
-		local str = player.name .. " at X:"
-		str = str .. placed_tiles[1].position.x
-		str = str .. " Y:"
-		str = str .. placed_tiles[1].position.y
-		table.insert(global.landfill_history, str)		
-	end	
+	if not player.admin then
+		local playtime = player.online_time
+		if global.player_totals then
+			if global.player_totals[player.name] then
+				playtime = player.online_time + global.player_totals[player.name][1]
+			end
+		end 
+		if playtime < 648000 then
+			local tiles = {}
+			for _, t in pairs(placed_tiles) do										
+				table.insert(tiles, {name = t.old_tile.name, position = t.position})																
+			end	
+			player.insert({name = "landfill", count = #placed_tiles})
+			player.surface.set_tiles(tiles, true)			
+			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
+		end
+	end
+	
+	--landfill history--		
+	if not global.landfill_history then global.landfill_history = {} end
+	if #global.landfill_history > 999 then global.landfill_history = {} end
+	local str = player.name .. " at X:"
+	str = str .. placed_tiles[1].position.x
+	str = str .. " Y:"
+	str = str .. placed_tiles[1].position.y
+	table.insert(global.landfill_history, str)				
 end
 
 local function on_built_entity(event)
