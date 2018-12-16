@@ -1,0 +1,26 @@
+local playsession = {
+	{"Taylor3", {3837}},
+	{"amgonakilyou", {457}},
+	{"chrisisthebe", {223}},
+	{"St4telyRaven", {7390}},
+	{"Twitch93", {496}},
+	{"TiTaN", {520687}},
+	{"Menander", {518760}},
+	{"rocifier", {375678}},
+	{"redlabel", {375169}},
+	{"Nukesman", {2581}},
+	{"jadenw45", {114842}},
+	{"Benzor", {2248}},
+	{"anghelnicky", {232745}},
+	{"Zory", {215814}},
+	{"asurakiller1", {7109}},
+	{"Shelter_", {99803}},
+	{"Attackerdino", {189606}},
+	{"Kruv", {54831}},
+	{"Abjoe", {24051}},
+	{"dpcks617", {3974}},
+	{"stin7777", {14388}},
+	{"rykstar", {47352}},
+	{"Nikkichu", {4180}}
+}
+return playsession
