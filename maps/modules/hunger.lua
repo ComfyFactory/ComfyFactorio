@@ -81,7 +81,7 @@ local function hunger_update(player, food_value)
 	
 	if player.character then
 		if player_hunger_stages[global.player_hunger[player.name]] ~= player_hunger_stages[past_hunger] then
-			local print_message = "You feel " .. player_hunger_stages[global.player_hunger[player.name]] .. "."
+			local print_message = "You are " .. player_hunger_stages[global.player_hunger[player.name]] .. "."
 			if player_hunger_stages[global.player_hunger[player.name]] == "Obese" then
 				print_message = "You have become " .. player_hunger_stages[global.player_hunger[player.name]]  .. "."					
 			end
@@ -101,7 +101,7 @@ end
 local function respawn_fishes()				
 	local surface = game.players[1].surface
 	for chunk in surface.get_chunks() do
-		if math_random(1, 4) == 1 then
+		if math_random(1, 32) == 1 then
 			local area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}
 			local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}, area = area})
 			for _, tile in pairs(water_tiles) do
@@ -137,10 +137,12 @@ local function on_player_used_capsule(event)
 	end
 end
 
-local function on_tick(event)
-	if game.tick % 3600 == 1800 then
-		for _, player in pairs(game.connected_players) do
-			if player.afk_time < 18000 then	hunger_update(player, -1) end		
+local function on_tick()	
+	if game.tick % 360 == 0 then
+		if game.tick % 3600 == 0 then
+			for _, player in pairs(game.connected_players) do
+				if player.afk_time < 18000 then	hunger_update(player, -1) end		
+			end			
 		end
 		if respawn_fish then
 			respawn_fishes()

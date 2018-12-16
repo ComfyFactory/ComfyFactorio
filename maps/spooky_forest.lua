@@ -81,9 +81,9 @@ local function secret_shop(pos, surface)
     {price = {{"raw-fish", math_random(60,120)}}, offer = {type = 'give-item', item = 'exoskeleton-equipment'}},
     {price = {{"raw-fish", math_random(60,120)}}, offer = {type = 'give-item', item = 'personal-roboport-equipment'}},
     {price = {{"raw-fish", math_random(10,20)}}, offer = {type = 'give-item', item = 'construction-robot'}},
-    {price = {{"raw-fish", math_random(75,150)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
-    {price = {{"raw-fish", math_random(150,300)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
-    {price = {{"raw-fish", math_random(20,30)}}, offer = {type = 'give-item', item = 'railgun'}},
+    {price = {{"raw-fish", math_random(100,200)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
+    {price = {{"raw-fish", math_random(200,400)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
+    {price = {{"raw-fish", math_random(25,50)}}, offer = {type = 'give-item', item = 'railgun'}},
     {price = {{"raw-fish", math_random(1,2)}}, offer = {type = 'give-item', item = 'railgun-dart', count = 2}},
 	{price = {{"raw-fish", math_random(30,60)}}, offer = {type = 'give-item', item = 'loader'}},
 	{price = {{"raw-fish", math_random(50,80)}}, offer = {type = 'give-item', item = 'fast-loader'}},
@@ -91,12 +91,9 @@ local function secret_shop(pos, surface)
 	{price = {{"raw-fish", math_random(30,60)}}, offer = {type = 'give-item', item = 'locomotive'}},
 	{price = {{"raw-fish", math_random(15,35)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},
 	{price = {{"raw-fish", math_random(1,4)}}, offer = {type = 'give-item', item = 'grenade'}},
-	{price = {{"raw-fish", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},
-	{price = {{"raw-fish", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},
-	{price = {{"raw-fish", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail', count = 4}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-signal', count = 2}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-chain-signal', count = 2}},
+--	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-signal', count = 2}},
+--	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'rail-chain-signal', count = 2}},
 	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'train-stop'}},	
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'small-lamp'}},
 	{price = {{"raw-fish", 2}}, offer = {type = 'give-item', item = 'firearm-magazine'}},
@@ -183,7 +180,7 @@ local function get_entity(position)
 			end
 		end	
 	else
-		if math_random(1, 1024) == 1 then
+		if math_random(1, 2048) == 1 then
 			entity_name = "market"				
 		end
 				
@@ -534,6 +531,46 @@ local function on_research_finished(event)
 	game.forces.player.recipes["flamethrower-turret"].enabled = false
 end
 
+local function break_some_random_trees(surface)	
+	local trees = {}
+	local chunks = {}
+	
+	for chunk in surface.get_chunks() do
+		table.insert(chunks, {x = chunk.x, y = chunk.y})
+	end
+	chunks = shuffle(chunks)
+	
+	for _, chunk in pairs(chunks) do
+		local area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}	
+		trees = surface.find_entities_filtered({type = "tree", area = area})
+		if #trees > 1 then break end
+	end	
+	if #trees == 0 then return end	
+	trees = shuffle(trees)
+	for i = 1, math_random(4, 8), 1 do
+		if not trees[i] then break end
+		trees[i].die("enemy")					
+	end
+end
+
+local function on_tick()	
+	if game.tick % 9000 ~= 0 then return end
+	if math_random(1, 2) ~= 1 then return end
+	
+	local surface = game.surfaces["spooky_forest"]
+	
+	break_some_random_trees(surface)
+	
+	local biters = surface.find_entities_filtered({type = "unit", force = "enemy", limit = 24})
+	if biters[1] then
+		biters = shuffle(biters)
+		for _, biter in pairs(biters) do		
+			biter.set_command({type = defines.command.attack_area, destination = {x = 0, y = 0}, radius = 64, distraction = defines.distraction.by_anything})	
+		end
+	end		
+end
+
+event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)	
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)	
