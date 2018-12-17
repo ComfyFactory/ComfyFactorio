@@ -80,7 +80,7 @@ local function secret_shop(pos, surface)
     {price = {{"raw-fish", math_random(40,80)}}, offer = {type = 'give-item', item = 'night-vision-equipment'}},
     {price = {{"raw-fish", math_random(60,120)}}, offer = {type = 'give-item', item = 'exoskeleton-equipment'}},
     {price = {{"raw-fish", math_random(60,120)}}, offer = {type = 'give-item', item = 'personal-roboport-equipment'}},
-    {price = {{"raw-fish", math_random(10,20)}}, offer = {type = 'give-item', item = 'construction-robot'}},
+    {price = {{"raw-fish", math_random(3,9)}}, offer = {type = 'give-item', item = 'construction-robot'}},
     {price = {{"raw-fish", math_random(100,200)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
     {price = {{"raw-fish", math_random(200,400)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
     {price = {{"raw-fish", math_random(25,50)}}, offer = {type = 'give-item', item = 'railgun'}},
@@ -212,7 +212,7 @@ local function get_noise_tile(position)
 	end
 	
 	local noise = get_noise("water", position)
-	if noise > 0.7 then
+	if noise > 0.71 then
 		tile_name = "water"
 		--decorative = false
 		if noise > 0.78 then
@@ -220,7 +220,7 @@ local function get_noise_tile(position)
 		end			
 	end
 	
-	if noise < -0.75 then
+	if noise < -0.76 then
 		tile_name = "water-green"
 		--decorative = false
 	end
@@ -371,7 +371,14 @@ local entity_drop_amount = {
 	['big-worm-turret'] = {low = 196, high = 254}
 }
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal"}
-local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","uranium-ore","crude-oil"}
+local ore_spawn_raffle = {
+		"iron-ore","iron-ore","iron-ore","iron-ore", "iron-ore","iron-ore","iron-ore","iron-ore", "iron-ore","iron-ore",
+		"copper-ore","copper-ore","copper-ore", "copper-ore","copper-ore","copper-ore", "copper-ore",
+		"coal","coal", "coal","coal", "coal",
+		"stone", "stone", "stone",
+		"uranium-ore",
+		"crude-oil"
+	}
 
 local function on_entity_died(event)
 	local surface = event.entity.surface
@@ -385,13 +392,13 @@ local function on_entity_died(event)
 				if p then surface.create_entity {name=t[1], position=p} end
 			end
 		end
-		--if math_random(1, 4) == 1 then
+		--if math_random(1, 3) ~= 1 then
 			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
 			local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 15)
 			local size_modifier = math.floor(game.forces.enemy.evolution_factor * 5)
 			if name == "crude-oil" then				
-				map_functions.draw_oil_circle(pos, name, surface, 5, math.ceil(100000 * amount_modifier))
+				map_functions.draw_oil_circle(pos, name, surface, 4, math.ceil(100000 * amount_modifier))
 			else				
 				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 6 + size_modifier, math.ceil(500 * amount_modifier))
 			end
@@ -485,19 +492,42 @@ local function on_chunk_generated(event)
 	
 	local position_left_top = event.area.left_top
 	
+	local entities = {}
 	local tiles = {}
+	
+	if position_left_top.x > 128 then return end
+	if position_left_top.y > 128 then return end
 	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local tile_to_insert = "out-of-map"
 			local pos = {x = position_left_top.x + x, y = position_left_top.y + y}
-			if pos.x > uncover_radius * -1 and pos.x < uncover_radius and pos.y > uncover_radius * -1 and pos.y < uncover_radius then
+			if pos.x > -9 and pos.x < 9 and pos.y > -9 and pos.y < 9 then
 				tile_to_insert = get_noise_tile(pos)
+				
+				if math_random(1, 4) == 1 then
+					tile_to_insert = "stone-path"
+				end
+				
+				if pos.x <= -7 or pos.x >= 7 or pos.y <= -7 or pos.y >= 7 then
+					if math_random(1, 3) ~= 1 then
+						table.insert(entities, {name = "stone-wall", position = {x = pos.x, y = pos.y}})
+					end
+				end
 			end
+			
+			if tile_to_insert == "water" or tile_to_insert == "water-green" or tile_to_insert == "deepwater" then
+				tile_to_insert = "grass-2"
+			end
+			
 			insert(tiles, {name = tile_to_insert, position = pos})			
 		end
 	end 
 	surface.set_tiles(tiles, true)
+	
+	for _, entity in pairs(entities) do
+		surface.create_entity(entity)
+	end		
 end
 
 local function on_player_mined_entity(event)
@@ -507,7 +537,7 @@ local function on_player_mined_entity(event)
 			player.print("You anger the tree, it hits you with a low branch uppercut.", {r = 0.77, g = 0, b = 0})
 			player.character.damage(25, "enemy")
 		end
-		if math_random(1, 3) ~= 1 then return end
+		if math_random(1, 6) ~= 1 then return end
 		spawn_biter(event.entity.surface, event.entity.position)				
 	end
 end
@@ -547,21 +577,21 @@ local function break_some_random_trees(surface)
 	end	
 	if #trees == 0 then return end	
 	trees = shuffle(trees)
-	for i = 1, math_random(4, 8), 1 do
+	for i = 1, math_random(4 + math.floor(game.forces.enemy.evolution_factor*8), 8 + math.floor(game.forces.enemy.evolution_factor*16)), 1 do
 		if not trees[i] then break end
 		trees[i].die("enemy")					
 	end
 end
 
 local function on_tick()	
-	if game.tick % 9000 ~= 0 then return end
-	if math_random(1, 2) ~= 1 then return end
+	if game.tick % 4500 ~= 0 then return end
+	if math_random(1, 4) ~= 1 then return end
 	
 	local surface = game.surfaces["spooky_forest"]
 	
 	break_some_random_trees(surface)
 	
-	local biters = surface.find_entities_filtered({type = "unit", force = "enemy", limit = 24})
+	local biters = surface.find_entities_filtered({type = "unit", force = "enemy", limit = 32})
 	if biters[1] then
 		biters = shuffle(biters)
 		for _, biter in pairs(biters) do		

@@ -1,6 +1,7 @@
 0.07
 added randomly breaking trees
 added randomly attacking biters
+added spawn area
 
 0.06
 added markets
