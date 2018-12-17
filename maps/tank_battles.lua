@@ -60,32 +60,30 @@ end
 local loot = {
 	{{name = "submachine-gun", count = 1}, weight = 2},
 	{{name = "combat-shotgun", count = 1}, weight = 2},
-	{{name = "flamethrower", count = 1}, weight = 2},
+	{{name = "flamethrower", count = 1}, weight = 1},
 	{{name = "rocket-launcher", count = 1}, weight = 2},
-	{{name = "railgun", count = 1}, weight = 2},
 	
 	{{name = "flamethrower-ammo", count = 16}, weight = 2},
 	{{name = "piercing-shotgun-shell", count = 16}, weight = 2},
 	{{name = "piercing-rounds-magazine", count = 16}, weight = 2},
 	{{name = "uranium-rounds-magazine", count = 8}, weight = 1},
 	{{name = "explosive-rocket", count = 8}, weight = 2},
-	{{name = "rocket", count = 8}, weight = 2},
-	{{name = "railgun-dart", count = 8}, weight = 2},
+	{{name = "rocket", count = 8}, weight = 2},	
 	
-	{{name = "grenade", count = 16}, weight = 3},
+	{{name = "grenade", count = 16}, weight = 2},
 	{{name = "cluster-grenade", count = 8}, weight = 2},
-	{{name = "poison-capsule", count = 4}, weight = 2},		 
-	{{name = "defender-capsule", count = 8}, weight = 2},
-	{{name = "distractor-capsule", count = 8}, weight = 2},
-	{{name = "destroyer-capsule", count = 8}, weight = 2},
+	{{name = "poison-capsule", count = 4}, weight = 1},		 
+	{{name = "defender-capsule", count = 6}, weight = 1},
+	{{name = "distractor-capsule", count = 2}, weight = 1},
+	--{{name = "destroyer-capsule", count = 1}, weight = 1},
 			
 	{{name = "cannon-shell", count = 16}, weight = 16},
 	{{name = "explosive-cannon-shell", count = 16}, weight = 16},
 	{{name = "uranium-cannon-shell", count = 16}, weight = 5},
 	{{name = "explosive-uranium-cannon-shell", count = 16}, weight = 5},				
 	
-	{{name = "light-armor", count = 1}, weight = 5},
-	{{name = "heavy-armor", count = 1}, weight = 4},
+	--{{name = "light-armor", count = 1}, weight = 5},
+	{{name = "heavy-armor", count = 1}, weight = 2},
 	{{name = "modular-armor", count = 1}, weight = 3},
 	{{name = "power-armor", count = 1}, weight = 2},
 	{{name = "power-armor-mk2", count = 1}, weight = 1},
@@ -94,10 +92,11 @@ local loot = {
 	{{name = "energy-shield-equipment", count = 1}, weight = 2},
 	{{name = "exoskeleton-equipment", count = 1}, weight = 2},
 	{{name = "fusion-reactor-equipment", count = 1}, weight = 2},
-			
-	{{name = "raw-wood", count = 100}, weight = 8},
-	{{name = "coal", count = 32}, weight = 6},
-	{{name = "solid-fuel", count = 16}, weight = 4},
+	
+	{{name = "repair-pack", count = 1}, weight = 6},
+	
+	{{name = "coal", count = 32}, weight = 3},
+	{{name = "solid-fuel", count = 8}, weight = 2},
 	{{name = "nuclear-fuel", count = 1}, weight = 1},
 	
 	{{name = "gate", count = 8}, weight = 2},
@@ -138,9 +137,10 @@ local function put_players_into_arena()
 		local permissions_group = game.permissions.get_group("Default")	
 		permissions_group.add_player(player.name)
 		
-		if not player.character then
-			player.create_character()
-		end
+		player.character.destroy()
+		player.character = nil
+		player.create_character()
+		
 		
 		player.insert({name = "pistol", count = 1})
 		player.insert({name = "firearm-magazine", count = 512})
@@ -150,8 +150,8 @@ local function put_players_into_arena()
 		
 		player.teleport(pos, surface)
 		local tank = surface.create_entity({name = "tank", force = game.forces[player.index], position = pos})
-		tank.insert({name = "coal", count = 50})
-		tank.insert({name = "cannon-shell", count = 64})		
+		tank.insert({name = "coal", count = 24})
+		tank.insert({name = "cannon-shell", count = 16})		
 		tank.set_driver(player)
 	end
 end
@@ -178,9 +178,11 @@ function create_new_arena()
 	local surface = game.surfaces["tank_battles"]
 	surface.request_to_generate_chunks({0,0}, math.ceil(arena_size / 32) + 2)
 	surface.force_generate_chunk_requests()
+	surface.daytime = 1
+	surface.freeze_daytime = 1
 	
-	global.current_arena_size = arena_size
-	
+	global.current_arena_size = arena_size * 1	
+		
 	put_players_into_arena()
 	
 	global.game_stage = "ongoing_game"
@@ -193,6 +195,11 @@ local function on_player_joined_game(event)
 	end
 	
 	player.force = game.forces[event.player_index]
+	game.forces[event.player_index].technologies["follower-robot-count-1"].researched = true
+	game.forces[event.player_index].technologies["follower-robot-count-2"].researched = true
+	game.forces[event.player_index].technologies["follower-robot-count-3"].researched = true
+	game.forces[event.player_index].technologies["follower-robot-count-4"].researched = true
+	game.forces[event.player_index].technologies["follower-robot-count-5"].researched = true
 	
 	if not global.map_init_done then
 			
@@ -205,15 +212,13 @@ local function on_player_joined_game(event)
 		spectator_permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
 		spectator_permission_group.set_allows_action(defines.input_action.start_walking, true)
 		spectator_permission_group.set_allows_action(defines.input_action.open_kills_gui, true)
-		--spectator_permission_group.set_allows_action(defines.input_action.open_character_gui, true)
+		spectator_permission_group.set_allows_action(defines.input_action.open_character_gui, true)
 		--spectator_permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
 		spectator_permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
 		spectator_permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)				
 		
 		--game.forces[event.player_index].set_spawn_position({0,0}, surface)								
-						
-		--local radius = 256
-		--player.force.chart(surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+								
 		global.tank_battles_score = {}
 		global.game_stage = "lobby"
 		
@@ -222,6 +227,13 @@ local function on_player_joined_game(event)
 		
 	if not game.surfaces["tank_battles"] then
 		if global.lobby_timer then global.lobby_timer = 1800 end
+		if player.online_time < 1 then
+			player.insert({name = "concrete", count = 500})
+			player.insert({name = "hazard-concrete", count = 500})
+			player.insert({name = "stone-brick", count = 500})		
+			player.insert({name = "refined-concrete", count = 500})
+			player.insert({name = "refined-hazard-concrete", count = 500})
+		end
 		return
 	end
 	
@@ -229,7 +241,11 @@ local function on_player_joined_game(event)
 	permissions_group.add_player(player.name)	
 	player.character.destroy()
 	player.character = nil
-	player.teleport({0, 0}, game.surfaces["tank_battles"])	
+	player.teleport({0, 0}, game.surfaces["tank_battles"])
+	
+	if #global.tank_battles_score > 0 then
+		create_tank_battle_score_gui()
+	end
 end
 
 local function on_marked_for_deconstruction(event)
@@ -241,15 +257,16 @@ function shrink_arena()
 	
 	if global.current_arena_size < 16 then return end
 	
-	global.current_arena_size = global.current_arena_size - 1
+	local shrink_width = 8
+	local current_arena_size = global.current_arena_size
+	local tiles = {}
 	
-	local tiles = {}	
 	for x = arena_size * -1, arena_size, 1 do
-		for y = arena_size * -1, arena_size, 1 do
+		for y = current_arena_size * -1 - shrink_width, current_arena_size * -1, 1 do
 			local pos = {x = x, y = y}
 			if surface.get_tile(pos).name ~= "water" and surface.get_tile(pos).name ~= "deepwater" then
-				if x > global.current_arena_size or y > global.current_arena_size or x < global.current_arena_size * -1 or y < global.current_arena_size * -1 then				
-					if math_random(1, 2) == 1 then
+				if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then				
+					if math_random(1, 3) ~= 1 then
 						table_insert(tiles, {name = "water", position = pos})
 					end
 				end
@@ -257,6 +274,47 @@ function shrink_arena()
 		end
 	end	
 		
+	for x = arena_size * -1, arena_size, 1 do
+		for y = current_arena_size, current_arena_size + shrink_width, 1 do
+			local pos = {x = x, y = y}
+			if surface.get_tile(pos).name ~= "water" and surface.get_tile(pos).name ~= "deepwater" then
+				if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then				
+					if math_random(1, 3) ~= 1 then
+						table_insert(tiles, {name = "water", position = pos})
+					end
+				end
+			end
+		end
+	end	
+	
+	for x = current_arena_size * -1 - shrink_width, current_arena_size * -1, 1 do
+		for y = arena_size * -1, arena_size, 1 do
+			local pos = {x = x, y = y}
+			if surface.get_tile(pos).name ~= "water" and surface.get_tile(pos).name ~= "deepwater" then
+				if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then				
+					if math_random(1, 3) ~= 1 then
+						table_insert(tiles, {name = "water", position = pos})
+					end
+				end
+			end
+		end
+	end	
+	
+	for x = current_arena_size, current_arena_size + shrink_width, 1 do
+		for y = arena_size * -1, arena_size, 1 do
+			local pos = {x = x, y = y}
+			if surface.get_tile(pos).name ~= "water" and surface.get_tile(pos).name ~= "deepwater" then
+				if x > current_arena_size or y > current_arena_size or x < current_arena_size * -1 or y < current_arena_size * -1 then				
+					if math_random(1, 3) ~= 1 then
+						table_insert(tiles, {name = "water", position = pos})
+					end
+				end
+			end
+		end
+	end	
+	
+	global.current_arena_size = global.current_arena_size - 1
+	
 	surface.set_tiles(tiles, true)
 end
 
@@ -273,7 +331,7 @@ local function render_arena_chunk(event)
 			if pos.x > arena_size or pos.y > arena_size or pos.x < arena_size * -1 or pos.y < arena_size * -1 then
 				table_insert(tiles, {name = "water", position = pos})
 			else
-				if math_random(1, 128) == 1 then
+				if math_random(1, 160) == 1 then
 					if surface.can_place_entity({name = "wooden-chest", position = pos, force = "enemy"}) then
 						surface.create_entity({name = "wooden-chest", position = pos, force = "enemy"})
 					end
@@ -311,10 +369,14 @@ local function check_for_game_over()
 	for _, player in pairs(game.connected_players) do
 		if player.character and player.surface.name == "tank_battles" then
 			alive_players = alive_players + 1
+			local tile = surface.get_tile(player.position)
+			if tile.name == "water" or tile.name == "deepwater" then
+				player.character.die()
+			end
 		end
 	end		
 	
-	if alive_players > 0 then return end
+	if alive_players > 1 then return end
 	
 	local player
 	for _, p in pairs(game.connected_players) do
@@ -330,11 +392,9 @@ local function check_for_game_over()
 			global.tank_battles_score[player.index] = global.tank_battles_score[player.index] + 1
 		end
 		game.print(player.name .. " has won the battle!", {r = 150, g = 150, b = 0})
-	end
-	
-	global.game_stage = "lobby"
-	
-	create_tank_battle_score_gui()
+		create_tank_battle_score_gui()
+	end	
+	global.game_stage = "lobby"		
 end
 
 local function on_chunk_generated(event)
@@ -351,26 +411,38 @@ local function on_player_respawned(event)
 	player.character = nil
 end
 
-local function lobby()	
-	if #game.connected_players < 1 then return 	end
+local function lobby()		
 	if game.surfaces["tank_battles"] then
 		game.delete_surface(game.surfaces["tank_battles"])
 		for _, player in pairs(game.connected_players) do
 			if player.character then
 				player.character.destroy()
 				player.character = nil
-			end
-			if not player.character then
-				player.create_character()
 			end			
-			player.insert({name = "concrete", count = 500})
-			player.insert({name = "hazard-concrete", count = 500})
-			player.insert({name = "stone-brick", count = 500})
-			player.insert({name = "stone-wall", count = 500})
-			player.insert({name = "refined-concrete", count = 500})
-			player.insert({name = "refined-hazard-concrete", count = 500})
 		end
 	end
+	
+	for _, player in pairs(game.connected_players) do	
+		local permissions_group = game.permissions.get_group("Default")	
+		permissions_group.add_player(player.name)
+		
+		if not player.character and player.ticks_to_respawn == nil then
+			player.create_character()
+			local pos = player.surface.find_non_colliding_position("player", {0,0}, 16, 3)
+			player.insert({name = "concrete", count = 500})
+			player.insert({name = "hazard-concrete", count = 500})
+			player.insert({name = "stone-brick", count = 500})		
+			player.insert({name = "refined-concrete", count = 500})
+			player.insert({name = "refined-hazard-concrete", count = 500})
+			player.teleport({math_random(1, 32), math_random(1, 32)}, game.surfaces[1])
+		 end		
+	end
+	
+	if #game.connected_players < 2 then
+		--game.print("Waiting for players.", {r = 0, g = 150, b = 150})
+		return
+	end
+	
 	if not global.lobby_timer then global.lobby_timer = 1800 end
 	if global.lobby_timer % 600 == 0 then
 		if global.lobby_timer <= 0 then 
@@ -403,12 +475,58 @@ end
 
 local function on_entity_died(event)
 	if event.entity.name == "wooden-chest" then
-		event.entity.surface.spill_item_stack(event.entity.position, loot_raffle[math_random(1, #loot_raffle)], true)
+		local loot = loot_raffle[math_random(1, #loot_raffle)]
+		event.entity.surface.spill_item_stack(event.entity.position, loot, true)
+		--event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = loot.name, color = {r=0.98, g=0.66, b=0.22}})
+	end
+end
+
+local function on_player_died(event)
+	local player = game.players[event.player_index]
+	local str = " "
+	if event.cause then
+		if event.cause.name ~= nil then str = " by " .. event.cause.name end	
+		if event.cause.name == "player" then str = " by " .. event.cause.player.name end
+		if event.cause.name == "tank" then
+			local driver = event.cause.get_driver()
+			if driver.player then 
+				str = " by " .. driver.player.name
+			end
+		end
+	end
+	for _, target_player in pairs(game.connected_players) do
+		if target_player.name ~= player.name then
+			player.print(player.name .. " was killed" .. str, { r=0.99, g=0.0, b=0.0})
+		end
+	end
+	
+end
+
+----------share chat with player and spectator force-------------------
+local function on_console_chat(event)
+	if not event.message then return end	
+	if not event.player_index then return end	
+	local player = game.players[event.player_index] 
+	
+	local color = {}
+	color = player.color
+	color.r = color.r * 0.6 + 0.35
+	color.g = color.g * 0.6 + 0.35
+	color.b = color.b * 0.6 + 0.35
+	color.a = 1	
+	
+	for _, target_player in pairs(game.connected_players) do
+		if target_player.name ~= player.name then
+			target_player.print(player.name .. ": ".. event.message, color)
+		end
 	end
 end
 
 event.add(defines.events.on_tick, on_tick)
+event.add(defines.events.on_console_chat, on_console_chat)
 event.add(defines.events.on_entity_died, on_entity_died)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
+event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_respawned, on_player_respawned)
