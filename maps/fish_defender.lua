@@ -859,15 +859,17 @@ local function on_entity_died(event)
 			local damage = 25
 			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0) end
 			if damage > 75 then damage = 75 end
-			damage_entities_in_radius(event.entity.position, 1 + math.floor(global.wave_count * 0.001), damage)
+			damage_entities_in_radius(event.entity.position, 1, damage)
+			--damage_entities_in_radius(event.entity.position, 1 + math.floor(global.wave_count * 0.001), damage)
 		end
 
 		if event.entity.name == "big-biter" then
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
 			local damage = 35
-			if global.endgame_modifier then damage = 50 + math.ceil((global.endgame_modifier * 0.05), 0) end
+			if global.endgame_modifier then damage = 35 + math.ceil((global.endgame_modifier * 0.05), 0) end
 			if damage > 150 then damage = 150 end
-			damage_entities_in_radius(event.entity.position, 2 + math.floor(global.wave_count * 0.001), damage)
+			damage_entities_in_radius(event.entity.position, 2, damage)
+			--damage_entities_in_radius(event.entity.position, 2 + math.floor(global.wave_count * 0.001), damage)
 		end
 
 		if event.entity.name == "behemoth-biter" then

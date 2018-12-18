@@ -395,8 +395,8 @@ local function on_entity_died(event)
 		if math_random(1, 2) ~= 1 then
 			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
-			local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 15)
-			local size_modifier = math.floor(game.forces.enemy.evolution_factor * 5)
+			local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 10)
+			local size_modifier = math.floor(game.forces.enemy.evolution_factor * 4)
 			if name == "crude-oil" then				
 				map_functions.draw_oil_circle(pos, name, surface, 4, math.ceil(100000 * amount_modifier))
 			else				

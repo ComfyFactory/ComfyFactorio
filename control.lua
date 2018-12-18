@@ -1,6 +1,7 @@
 require "utils.utils"
 require "utils.corpse_util"
 require "bot"
+require "chatbot"
 require "session_tracker"
 require "antigrief"
 require "antigrief_admin_panel"
@@ -20,22 +21,20 @@ require "score"
 --require "maps.labyrinth"
 --require "maps.spaghettorio"
 --require "maps.spiral_troopers"
---require "maps.fish_defender"
+require "maps.fish_defender"
 --require "maps.crossing"
 --require "maps.spooky_forest"
 --require "maps.atoll"
-require "maps.tank_battles"
+--require "maps.tank_battles"
 --require "maps.empty_map"
 -----------------------------
 
 local Event = require 'utils.event'
 
-local function player_created(event)	
+local function on_player_created(event)	
 	local player = game.players[event.player_index]	
 	player.gui.top.style = 'slot_table_spacing_horizontal_flow'
 	player.gui.left.style = 'slot_table_spacing_vertical_flow'
-	
-	player.print("Join the comfy discord >> comfyplay.net/discord", {r = 110, g = 0, b = 220})
 end
 
 function spaghetti()
@@ -65,4 +64,4 @@ function spaghetti()
 	game.forces["player"].technologies["worker-robots-speed-6"].enabled = false
 end
 
-Event.add(defines.events.on_player_created, player_created)
+Event.add(defines.events.on_player_created, on_player_created)
