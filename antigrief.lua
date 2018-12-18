@@ -186,7 +186,7 @@ local function on_entity_died(event)
 	local player = event.cause.player		
 	if not global.friendly_fire_history then global.friendly_fire_history = {} end
 	if #global.friendly_fire_history > 999 then global.friendly_fire_history = {} end
-	
+	if not player then return end
 	local str = player.name .. " destroyed "
 	str = str .. event.entity.name
 	str = str .. " at X:"	
@@ -230,7 +230,8 @@ end
 
 local function on_pre_player_mined_item(event)
 	if event.entity.name ~= "character-corpse" then return end
-	local player = game.players[event.player_index].name	
+	local player = game.players[event.player_index].name
+	if event.entity.force.name ~= player.force.name then return end
 	local corpse_owner = game.players[event.entity.character_corpse_player_index].name
 	if player ~= corpse_owner then
 		game.print(player .. " has looted " .. corpse_owner .. "´s body.", { r=0.85, g=0.85, b=0.85})	

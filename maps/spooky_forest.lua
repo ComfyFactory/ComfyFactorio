@@ -392,7 +392,7 @@ local function on_entity_died(event)
 				if p then surface.create_entity {name=t[1], position=p} end
 			end
 		end
-		--if math_random(1, 3) ~= 1 then
+		if math_random(1, 2) ~= 1 then
 			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local pos = {x = event.entity.position.x, y = event.entity.position.y}						
 			local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 15)
@@ -402,7 +402,7 @@ local function on_entity_died(event)
 			else				
 				map_functions.draw_smoothed_out_ore_circle(pos, name, surface, 6 + size_modifier, math.ceil(500 * amount_modifier))
 			end
-		--end
+		end
 	end
 		
 	if event.entity.type == "unit" and math_random(1, 256) == 1 then

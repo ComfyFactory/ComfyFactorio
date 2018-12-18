@@ -4,7 +4,7 @@ local event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
 local map_functions = require "maps.tools.map_functions"
-local arena_size = 128
+local arena_size = 160
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -58,48 +58,48 @@ local function create_tank_battle_score_gui()
 end
 
 local loot = {
-	{{name = "submachine-gun", count = 1}, weight = 2},
-	{{name = "combat-shotgun", count = 1}, weight = 2},
-	{{name = "flamethrower", count = 1}, weight = 1},
-	{{name = "rocket-launcher", count = 1}, weight = 2},
+	--{{name = "submachine-gun", count = 1}, weight = 2},
+	--{{name = "combat-shotgun", count = 1}, weight = 2},
+	--{{name = "flamethrower", count = 1}, weight = 1},
+	--{{name = "rocket-launcher", count = 1}, weight = 2},
 	
 	{{name = "flamethrower-ammo", count = 16}, weight = 2},
 	{{name = "piercing-shotgun-shell", count = 16}, weight = 2},
-	{{name = "piercing-rounds-magazine", count = 16}, weight = 2},
-	{{name = "uranium-rounds-magazine", count = 8}, weight = 1},
+	--{{name = "piercing-rounds-magazine", count = 16}, weight = 2},
+	--{{name = "uranium-rounds-magazine", count = 8}, weight = 1},
 	{{name = "explosive-rocket", count = 8}, weight = 2},
 	{{name = "rocket", count = 8}, weight = 2},	
 	
 	{{name = "grenade", count = 16}, weight = 2},
 	{{name = "cluster-grenade", count = 8}, weight = 2},
-	{{name = "poison-capsule", count = 4}, weight = 1},		 
+	--{{name = "poison-capsule", count = 4}, weight = 1},		 
 	{{name = "defender-capsule", count = 6}, weight = 1},
-	{{name = "distractor-capsule", count = 2}, weight = 1},
+	{{name = "distractor-capsule", count = 3}, weight = 1},
 	--{{name = "destroyer-capsule", count = 1}, weight = 1},
 			
-	{{name = "cannon-shell", count = 16}, weight = 16},
-	{{name = "explosive-cannon-shell", count = 16}, weight = 16},
-	{{name = "uranium-cannon-shell", count = 16}, weight = 5},
-	{{name = "explosive-uranium-cannon-shell", count = 16}, weight = 5},				
+	{{name = "cannon-shell", count = 8}, weight = 16},
+	{{name = "explosive-cannon-shell", count = 8}, weight = 16},
+	{{name = "uranium-cannon-shell", count = 8}, weight = 6},
+	{{name = "explosive-uranium-cannon-shell", count = 8}, weight = 6},				
 	
 	--{{name = "light-armor", count = 1}, weight = 5},
-	{{name = "heavy-armor", count = 1}, weight = 2},
+	--{{name = "heavy-armor", count = 1}, weight = 2},
 	{{name = "modular-armor", count = 1}, weight = 3},
 	{{name = "power-armor", count = 1}, weight = 2},
 	{{name = "power-armor-mk2", count = 1}, weight = 1},
 	
-	{{name = "battery-mk2-equipment", count = 1}, weight = 2},
+	--{{name = "battery-mk2-equipment", count = 1}, weight = 2},
 	{{name = "energy-shield-equipment", count = 1}, weight = 2},
 	{{name = "exoskeleton-equipment", count = 1}, weight = 2},
 	{{name = "fusion-reactor-equipment", count = 1}, weight = 2},
 	
 	{{name = "repair-pack", count = 1}, weight = 6},
 	
-	{{name = "coal", count = 32}, weight = 3},
-	{{name = "solid-fuel", count = 8}, weight = 2},
+	{{name = "coal", count = 16}, weight = 3},
+	--{{name = "solid-fuel", count = 8}, weight = 2},
 	{{name = "nuclear-fuel", count = 1}, weight = 1},
 	
-	{{name = "gate", count = 8}, weight = 2},
+	{{name = "gate", count = 16}, weight = 2},
 	{{name = "stone-wall", count = 16}, weight = 2}
 }
 local loot_raffle = {}
@@ -142,8 +142,10 @@ local function put_players_into_arena()
 		player.create_character()
 		
 		
-		player.insert({name = "pistol", count = 1})
-		player.insert({name = "firearm-magazine", count = 512})
+		player.insert({name = "combat-shotgun", count = 1})
+		player.insert({name = "rocket-launcher", count = 1})
+		player.insert({name = "flamethrower", count = 1})
+		--player.insert({name = "firearm-magazine", count = 512})
 		
 		local surface = game.surfaces["tank_battles"]
 		local pos = get_valid_random_spawn_position(surface)
@@ -255,7 +257,7 @@ end
 function shrink_arena()
 	local surface = game.surfaces["tank_battles"]	
 	
-	if global.current_arena_size < 16 then return end
+	if global.current_arena_size < 0 then return end
 	
 	local shrink_width = 8
 	local current_arena_size = global.current_arena_size
@@ -331,9 +333,36 @@ local function render_arena_chunk(event)
 			if pos.x > arena_size or pos.y > arena_size or pos.x < arena_size * -1 or pos.y < arena_size * -1 then
 				table_insert(tiles, {name = "water", position = pos})
 			else
-				if math_random(1, 160) == 1 then
+				if math_random(1, 256) == 1 then
 					if surface.can_place_entity({name = "wooden-chest", position = pos, force = "enemy"}) then
 						surface.create_entity({name = "wooden-chest", position = pos, force = "enemy"})
+					end
+				end
+				if math_random(1, 1024) == 1 then
+					if math_random(1, 32) == 1 then
+						if surface.can_place_entity({name = "assembling-machine-1", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "assembling-machine-1", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 32) == 1 then
+						if surface.can_place_entity({name = "big-worm-turret", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "big-worm-turret", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 32) == 1 then
+						if surface.can_place_entity({name = "medium-worm-turret", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "medium-worm-turret", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 64) == 1 then
+						if surface.can_place_entity({name = "behemoth-biter", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "behemoth-biter", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 64) == 1 then
+						if surface.can_place_entity({name = "big-biter", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "big-biter", position = pos, force = "enemy"})
+						end
 					end
 				end
 			end			
@@ -357,7 +386,7 @@ local function render_spawn_chunk(event)
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}
-			table_insert(tiles, {name = "tutorial-grid", position = pos})
+			table_insert(tiles, {name = "grass-2", position = pos})
 		end
 	end
 	surface.set_tiles(tiles, true)
