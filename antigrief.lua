@@ -1,4 +1,5 @@
 --antigrief things made by mewmew
+--as an admin, write trust/untrust and the players name in the chat to grant/revoke immunity from protection
 
 local event = require 'utils.event'
 
@@ -15,8 +16,10 @@ local function create_admin_button(player)
 	b.style.bottom_padding = 2
 end
 
-local function on_player_joined_game(event)
+local function on_player_joined_game(event)		
 	local player = game.players[event.player_index]
+	if not global.trusted_players then global.trusted_players = {} end
+	if not global.trusted_players[player.name] then global.trusted_players[player.name] = false end	
 	if player.admin == true then
 		create_admin_button(player)
 	end
@@ -35,8 +38,10 @@ end
 
 local function on_marked_for_deconstruction(event)
 	if not event.player_index then return end
-	local player = game.players[event.player_index]
+	local player = game.players[event.player_index]	
 	if player.admin == true then return end
+	if global.trusted_players[player.name] == true then return end
+	
 	local playtime = player.online_time
 	if global.player_totals then
 		if global.player_totals[player.name] then
@@ -52,6 +57,8 @@ end
 local function on_player_ammo_inventory_changed(event)
 	local player = game.players[event.player_index]
 	if player.admin == true then return end
+	if global.trusted_players[player.name] == true then return end
+	
 	local playtime = player.online_time
 	if global.player_totals then
 		if global.player_totals[player.name] then
@@ -62,20 +69,9 @@ local function on_player_ammo_inventory_changed(event)
 		local nukes = player.remove_item({name="atomic-bomb", count=1000})
 		if nukes > 0 then
 			player.surface.spill_item_stack(player.position, {name = "atomic-bomb", count = nukes}, false)
-			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
+			player.print("You have not grown accustomed to this technology yet.", {r=0.22, g=0.99, b=0.99})
 		end
 	end
-end
-
-local function on_console_command(event)	
-	if event.command ~= "silent-command" then return end
-	if not event.player_index then return end
-	local player = game.players[event.player_index]	
-	for _, p in pairs(game.connected_players) do
-		if p.admin == true and p.name ~= player.name then
-			p.print(player.name .. " did a silent-command: " .. event.parameters, { r=0.22, g=0.99, b=0.99})
-		end
-	end		
 end
 
 local function on_player_built_tile(event)
@@ -83,7 +79,8 @@ local function on_player_built_tile(event)
 	if placed_tiles[1].old_tile.name ~= "deepwater" and placed_tiles[1].old_tile.name ~= "water" and placed_tiles[1].old_tile.name ~= "water-green" then return end
 	local player = game.players[event.player_index]
 	
-	if not player.admin then
+	--[[		
+	if not player.admin and not global.trusted_players[player.name] then
 		local playtime = player.online_time
 		if global.player_totals then
 			if global.player_totals[player.name] then
@@ -99,7 +96,7 @@ local function on_player_built_tile(event)
 			player.surface.set_tiles(tiles, true)			
 			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
 		end
-	end
+	end]]
 	
 	--landfill history--		
 	if not global.landfill_history then global.landfill_history = {} end
@@ -118,6 +115,7 @@ local function on_built_entity(event)
 		local player = game.players[event.player_index]
 		
 		if player.admin == true then return end
+		if global.trusted_players[player.name] == true then return end
 		
 		local playtime = player.online_time
 		if global.player_totals then
@@ -146,7 +144,7 @@ local function on_player_used_capsule(event)
 			playtime = player.online_time + global.player_totals[player.name][1]
 		end
 	end 
-	if playtime < 1296000 and player.admin == false then	
+	if playtime < 1296000 and player.admin == false and global.trusted_players[player.name] == false then	
 		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
 		local area = {{position.x - 1, position.y - 1},{position.x + 1, position.y + 1}}
 		local entities = player.surface.find_entities_filtered({area = area, name = "artillery-flare"})
@@ -221,19 +219,20 @@ end
 local function on_gui_opened(event)
 	if not event.entity then return end
 	if event.entity.name ~= "character-corpse" then return end
-	local player = game.players[event.player_index].name
-	local corpse_owner = game.players[event.entity.character_corpse_player_index].name
-	if player ~= corpse_owner then
+	local player = game.players[event.player_index]
+	local corpse_owner = game.players[event.entity.character_corpse_player_index]
+	if corpse_owner.force.name ~= player.force.name then return end
+	if player.name ~= corpse_owner.name then
 		game.print(player .. " is looting " .. corpse_owner .. "´s body.", { r=0.85, g=0.85, b=0.85})
 	end
 end
 
 local function on_pre_player_mined_item(event)
 	if event.entity.name ~= "character-corpse" then return end
-	local player = game.players[event.player_index].name
-	if event.entity.force.name ~= player.force.name then return end
-	local corpse_owner = game.players[event.entity.character_corpse_player_index].name
-	if player ~= corpse_owner then
+	local player = game.players[event.player_index]
+	local corpse_owner = game.players[event.entity.character_corpse_player_index]
+	if corpse_owner.force.name ~= player.force.name then return end
+	if player.name ~= corpse_owner.name then
 		game.print(player .. " has looted " .. corpse_owner .. "´s body.", { r=0.85, g=0.85, b=0.85})	
 	end
 end
@@ -241,7 +240,6 @@ end
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_console_command, on_console_command)
 event.add(defines.events.on_gui_opened, on_gui_opened)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)

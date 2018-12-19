@@ -422,7 +422,12 @@ local function check_for_game_over()
 		end
 		game.print(player.name .. " has won the battle!", {r = 150, g = 150, b = 0})
 		create_tank_battle_score_gui()
-	end	
+	end
+
+	if alive_players == 0 then
+		game.print("No alive players! Round ends in a draw!", {r = 150, g = 150, b = 0})
+	end
+	
 	global.game_stage = "lobby"		
 end
 
