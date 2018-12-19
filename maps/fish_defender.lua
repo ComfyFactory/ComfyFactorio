@@ -3,6 +3,7 @@
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
 require "maps.fish_defender_kaboomsticks"
+require "maps.modules.railgun_enhancer"
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
@@ -626,8 +627,8 @@ local function refresh_market_offers()
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
 		{price = {{"coin", 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
-		{price = {{"coin", 90}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
-		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
+		{price = {{"coin", 260}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
 		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
 		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
 		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},		

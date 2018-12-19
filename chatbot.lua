@@ -71,6 +71,7 @@ local function on_console_chat(event)
 	process_bot_answers(event)	
 end
 
+--share vision of silent-commands with other admins
 local function on_console_command(event)		
 	if event.command ~= "silent-command" then return end
 	if not event.player_index then return end
