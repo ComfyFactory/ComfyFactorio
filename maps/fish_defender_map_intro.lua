@@ -4,12 +4,18 @@ local main_caption = " --Fish Defender-- "
 local sub_caption = " *blb blubby blub* "
 local info = [[
 	The biters have catched the scent of fish in the market.
-	
 	Fend them off as long as possible!
 		
 	The Market will gladly take any coin you might find.
 	
-	Researching Tanks will unlock the artillery early.
+	Buy slots for your team,
+	to increase the maximum number of turrets/mines that can be placed.
+	
+	The railgun has been enhanced greatly.
+	The shotgun has recieved a damage buff.
+	
+	Researching Tanks will unlock the artillery tech early
+	to allow you to produce shells.
 ]]
 
 local function create_map_intro(player)

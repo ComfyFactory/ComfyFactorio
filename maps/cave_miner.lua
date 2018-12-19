@@ -995,16 +995,18 @@ local function biter_attack_event()
 end	
 
 local function darkness_events()
-	for _, p in pairs (game.connected_players) do		
+	for _, p in pairs (game.connected_players) do
 		if global.darkness_threat_level[p.name] > 4 then						
 			for x = 1, 2 + global.darkness_threat_level[p.name], 1 do
 				spawn_cave_inhabitant(p.position)	
 			end				
 			local biters_found = game.surfaces[1].find_enemy_units(p.position, 12, "player")
-			for _, biter in pairs(biters_found) do				
-				biter.set_command({type=defines.command.attack, target=p.character, distraction=defines.distraction.none})					
+			if p.character then
+				for _, biter in pairs(biters_found) do
+					biter.set_command({type=defines.command.attack, target=p.character, distraction=defines.distraction.none})					
+				end
+				p.character.damage(math.random(global.darkness_threat_level[p.name]*2,global.darkness_threat_level[p.name]*3),"enemy")
 			end
-			p.character.damage(math.random(global.darkness_threat_level[p.name]*2,global.darkness_threat_level[p.name]*3),"enemy")
 		end		
 		if global.darkness_threat_level[p.name] == 2 then
 			p.print(darkness_messages[math.random(1,#darkness_messages)],{ r=0.65, g=0.0, b=0.0})				
@@ -1292,7 +1294,7 @@ local function on_player_respawned(event)
 end
 
 local function on_research_finished(event)
-	game.forces.player.manual_mining_speed_modifier = game.forces.player.mining_drill_productivity_bonus * 6
+	game.forces.player.manual_mining_speed_modifier = game.forces.player.mining_drill_productivity_bonus * 5
 	game.forces.player.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 500
 	refresh_gui()
 end
