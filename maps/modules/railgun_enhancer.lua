@@ -1,8 +1,9 @@
 -- improves the damage of the railgun and adds visual effects -- by mewmew
+-- laser turret research will increase it´s damage even further --
 
 local event = require 'utils.event'
-local damage_min = 1000
-local damage_max = 2000
+local damage_min = 400
+local damage_max = 800
 local math_random = math.random
 local additional_visual_effects = true
 local do_splash_damage = true
@@ -15,42 +16,47 @@ local biological_target_types = {
 }
 
 local function create_visuals(source_entity, target_entity)
-	if additional_visual_effects then
-		local surface = target_entity.surface		
-		surface.create_entity({name = "water-splash", position = target_entity.position})
-		if biological_target_types[target_entity.type] then
-			surface.create_entity({name = "blood-explosion-big", position = target_entity.position})
-			for x = -8, 8, 1 do
-				for y = -8, 8, 1 do
-					if math_random(1, 16) == 1 then
-						surface.create_entity({name = "blood-fountain", position = {target_entity.position.x + (x * 0.1), target_entity.position.y + (y * 0.1)}})
-						surface.create_entity({name = "blood-fountain-big", position = {target_entity.position.x + (x * 0.1), target_entity.position.y + (y * 0.1)}})
-					end
+	if not additional_visual_effects then return end
+	local surface = target_entity.surface		
+	surface.create_entity({name = "water-splash", position = target_entity.position})
+	if biological_target_types[target_entity.type] then
+		surface.create_entity({name = "blood-explosion-big", position = target_entity.position})
+		for x = -8, 8, 1 do
+			for y = -8, 8, 1 do
+				if math_random(1, 16) == 1 then
+					surface.create_entity({name = "blood-fountain", position = {target_entity.position.x + (x * 0.1), target_entity.position.y + (y * 0.1)}})
+					surface.create_entity({name = "blood-fountain-big", position = {target_entity.position.x + (x * 0.1), target_entity.position.y + (y * 0.1)}})
 				end
 			end
-		else
-			if math_random(1, 2) == 1 then
-				surface.create_entity({name = "fire-flame", position = target_entity.position})
-			end
-			for x = -3, 3, 1 do
-				for y = -3, 3, 1 do													
-					if math_random(1, 3) == 1 then
-						surface.create_trivial_smoke({name="smoke-fast", position={target_entity.position.x + (x * 0.35), target_entity.position.y + (y * 0.35)}})						
-					end
-					if math_random(1, 5) == 1 then
-						surface.create_trivial_smoke({name="train-smoke", position={target_entity.position.x + (x * 0.35), target_entity.position.y + (y * 0.35)}})						
-					end
+		end
+	else
+		if math_random(1, 3) ~= 1 then
+			surface.create_entity({name = "fire-flame", position = target_entity.position})
+		end
+		for x = -3, 3, 1 do
+			for y = -3, 3, 1 do													
+				if math_random(1, 3) == 1 then
+					surface.create_trivial_smoke({name="smoke-fast", position={target_entity.position.x + (x * 0.35), target_entity.position.y + (y * 0.35)}})						
+				end
+				if math_random(1, 5) == 1 then
+					surface.create_trivial_smoke({name="train-smoke", position={target_entity.position.x + (x * 0.35), target_entity.position.y + (y * 0.35)}})						
 				end
 			end
-		end		
-	end
+		end
+	end			
 end
 
-local function do_splash_damage_around_entity(source_entity)
+local function do_splash_damage_around_entity(source_entity, player)
 	if not do_splash_damage then return end
-	local entities = source_entity.surface.find_entities_filtered({area = {{source_entity.position.x - 2.5, source_entity.position.y - 2.5}, {source_entity.position.x + 2.5, source_entity.position.y + 2.5}}})
+	local research_damage_bonus = player.force.get_ammo_damage_modifier("laser-turret") + 1
+	local research_splash_radius_bonus = player.force.get_ammo_damage_modifier("laser-turret") * 0.5
+	local splash_area = {
+			{source_entity.position.x - (2.5 + research_splash_radius_bonus), source_entity.position.y - (2.5 + research_splash_radius_bonus)},
+			{source_entity.position.x + (2.5 + research_splash_radius_bonus), source_entity.position.y + (2.5 + research_splash_radius_bonus)}
+		}
+	local entities = source_entity.surface.find_entities_filtered({area = splash_area})
 	for _, entity in pairs(entities) do
-		if entity.health and entity ~= source_entity then
+		if entity.health and entity ~= source_entity and entity ~= player then
 			if additional_visual_effects then
 				local surface = entity.surface
 				surface.create_entity({name = "railgun-beam", position = source_entity.position, source = source_entity.position, target = entity.position})
@@ -58,8 +64,9 @@ local function do_splash_damage_around_entity(source_entity)
 				if biological_target_types[entity.type] then								
 					surface.create_entity({name = "blood-fountain", position = entity.position})				
 				end
-			end		
-			entity.damage(math_random(math.ceil(damage_min / 45), math.ceil(damage_max / 45)), source_entity.force, "physical")	
+			end
+			local damage = math_random(math.ceil((damage_min * research_damage_bonus) / 32), math.ceil((damage_max * research_damage_bonus) / 32))			
+			entity.damage(damage, player.force, "physical")	
 		end
 	end
 end
@@ -77,10 +84,13 @@ local function on_entity_damaged(event)
 	
 	create_visuals(event.cause, event.entity)
 	
-	do_splash_damage_around_entity(event.entity)
+	do_splash_damage_around_entity(event.entity, player)
 	
 	event.entity.health = event.entity.health + event.final_damage_amount
-	event.entity.damage(math_random(damage_min, damage_max), player.force, "physical")	
+	
+	local research_damage_bonus = player.force.get_ammo_damage_modifier("laser-turret") + 1	
+	local damage = math_random(math.ceil(damage_min * research_damage_bonus), math.ceil(damage_max * research_damage_bonus))
+	event.entity.damage(damage, player.force, "physical")	
 end
 
 event.add(defines.events.on_entity_damaged, on_entity_damaged)

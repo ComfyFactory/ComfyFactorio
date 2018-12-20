@@ -627,8 +627,8 @@ local function refresh_market_offers()
 		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
 		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
 		{price = {{"coin", 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
-		{price = {{"coin", 360}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
-		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
+		{price = {{"coin", 325}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
 		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
 		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
 		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},		
@@ -1000,7 +1000,7 @@ local function on_player_joined_game(event)
 		--game.forces["player"].technologies["laser-turret-speed-7"].enabled = false
 		--game.forces["player"].technologies["atomic-bomb"].enabled = false
 		
-		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 0.5)				
+		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 1)				
 		--game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {

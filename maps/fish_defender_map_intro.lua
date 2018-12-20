@@ -8,14 +8,15 @@ local info = [[
 		
 	The Market will gladly take any coin you might find.
 	
-	Buy slots for your team,
-	to increase the maximum number of turrets/mines that can be placed.
+	Additional turret slots can be bought at the market.
 	
 	The railgun has been enhanced greatly.
+	Researching Laser Turret Damage will improve it even further.
+	
 	The shotgun has recieved a damage buff.
 	
 	Researching Tanks will unlock the artillery tech early
-	to allow you to produce shells.
+	allowing you to produce shells.
 ]]
 
 local function create_map_intro(player)
