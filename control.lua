@@ -26,9 +26,9 @@ require "score"
 --require "maps.crossing"
 --require "maps.spooky_forest"
 --require "maps.atoll"
-require "maps.tank_battles"
+--require "maps.tank_battles"
 --require "maps.empty_map"
---require "maps.custom_start"
+require "maps.custom_start"
 -----------------------------
 
 local Event = require 'utils.event'

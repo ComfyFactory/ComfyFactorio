@@ -274,7 +274,7 @@ local function create_admin_panel(player)
 	local scroll_pane = t.add({ type = "scroll-pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
 	scroll_pane.style.maximal_height = 200
 	for i = #history_index[history], 1, -1 do
-		scroll_pane.add({type = "label", caption = history_index[history][i]})
+		scroll_pane.add({type = "label", caption = history_index[history][i], tooltip = "Click to open mini camera."})
 	end
 
 end
@@ -338,6 +338,7 @@ local function on_gui_click(event)
 			if not global.admin_panel_selected_player_index then global.admin_panel_selected_player_index = {} end
 			global.admin_panel_selected_player_index[player.name] = player.gui.left["admin_panel"]["admin_player_select"].selected_index
 			player.gui.left["admin_panel"].destroy()
+			if player.gui.center["mini_camera"] then player.gui.center["mini_camera"].destroy() end
 		else
 			create_admin_panel(player)
 		end
@@ -360,11 +361,20 @@ local function on_gui_click(event)
 	if name == "mini_camera" or name == "mini_cam_element" then
 		player.gui.center["mini_camera"].destroy()
 		return
+	end		
+	
+	if not player.gui.left["admin_panel"] then return end
+	if not event.element.caption then return end
+	local position = get_position_from_string(event.element.caption)	
+	if not position then return end
+	
+	if player.gui.center["mini_camera"] then
+		if player.gui.center["mini_camera"].caption == event.element.caption then
+			player.gui.center["mini_camera"].destroy()
+			return
+		end
 	end
 	
-	if not event.element.caption then return end
-	local position = get_position_from_string(event.element.caption)
-	if not position then return end		
 	create_mini_camera_gui(player, event.element.caption, position)	
 end
 
