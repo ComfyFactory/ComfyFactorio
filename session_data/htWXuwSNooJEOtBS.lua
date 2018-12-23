@@ -1,5 +1,5 @@
 local playsession = {
-	{"mewmew", {608923}},
+	{"mewmew", {652912}},
 	{"NekoBaron", {2828646}},
 	{"BubblesAndSuch", {324757}},
 	{"xXRippedGeekXx", {4686}},
@@ -63,9 +63,9 @@ local playsession = {
 	{"Aceriterium_A", {10058}},
 	{"valhader", {13735}},
 	{"Baldr29", {2259}},
-	{"Krezal", {4121701}},
+	{"Krezal", {4193701}},
 	{"drill95", {1732233}},
-	{"Zory", {3174650}},
+	{"Zory", {3246650}},
 	{"Tornado_05", {4366}},
 	{"lemarkiz", {1112487}},
 	{"CmonMate497", {62456}},
@@ -87,6 +87,7 @@ local playsession = {
 	{"soiamglad", {758}},
 	{"tmoneyfizzle", {6482}},
 	{"dragonsword222", {8692}},
-	{"sohu1233", {12493}}
+	{"sohu1233", {12493}},
+	{"BallisticGamer04", {44366}}
 }
 return playsession

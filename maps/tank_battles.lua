@@ -169,12 +169,8 @@ function create_new_arena()
 		["copper-ore"] = {frequency = "none", size = "none", richness = "none"},
 		["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 		["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
-		--["trees"] = {frequency = "none", size = "none", richness = "none"},
-		["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
-		--["grass"] = {frequency = "none", size = "none", richness = "none"},
-		--["sand"] = {frequency = "none", size = "none", richness = "none"},
-		--["desert"] = {frequency = "none", size = "none", richness = "none"},
-		--["dirt"] = {frequency = "none", size = "none", richness = "none"}
+		["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
+		["enemy-base"] = {frequency = "none", size = "none", richness = "none"}		
 	}		
 	game.create_surface("tank_battles", map_gen_settings)	
 	local surface = game.surfaces["tank_battles"]
@@ -190,18 +186,23 @@ function create_new_arena()
 	global.game_stage = "ongoing_game"
 end
 
+
+local function set_unique_player_force(player)
+	if not game.forces[player.index] then
+		game.create_force(player.index)
+		game.forces[player.index].technologies["follower-robot-count-1"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-2"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-3"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-4"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-5"].researched = true
+	end
+	player.force = game.forces[player.index]	
+end
+
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
-	if not game.forces[event.player_index] then
-		game.create_force(event.player_index)
-	end
 	
-	player.force = game.forces[event.player_index]
-	game.forces[event.player_index].technologies["follower-robot-count-1"].researched = true
-	game.forces[event.player_index].technologies["follower-robot-count-2"].researched = true
-	game.forces[event.player_index].technologies["follower-robot-count-3"].researched = true
-	game.forces[event.player_index].technologies["follower-robot-count-4"].researched = true
-	game.forces[event.player_index].technologies["follower-robot-count-5"].researched = true
+	set_unique_player_force(player)	
 	
 	if not global.map_init_done then
 			
@@ -217,17 +218,29 @@ local function on_player_joined_game(event)
 		spectator_permission_group.set_allows_action(defines.input_action.open_character_gui, true)
 		--spectator_permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
 		spectator_permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
-		spectator_permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)				
-		
-		--game.forces[event.player_index].set_spawn_position({0,0}, surface)								
+		spectator_permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)									
 								
 		global.tank_battles_score = {}
 		global.game_stage = "lobby"
 		
 		global.map_init_done = true
 	end		
-		
+	
+	if #global.tank_battles_score > 0 then
+		create_tank_battle_score_gui()
+	end
+	
+	if game.surfaces["tank_battles"] then
+		player.character.destroy()
+		player.character = nil
+		local permissions_group = game.permissions.get_group("Spectator")	
+		permissions_group.add_player(player.name)			
+		player.teleport({0, 0}, game.surfaces["tank_battles"])
+	end	
+	
 	if not game.surfaces["tank_battles"] then
+		player.character.destroy()
+		player.character = nil
 		if global.lobby_timer then global.lobby_timer = 1800 end
 		if player.online_time < 1 then
 			player.insert({name = "concrete", count = 500})
@@ -237,16 +250,6 @@ local function on_player_joined_game(event)
 			player.insert({name = "refined-hazard-concrete", count = 500})
 		end
 		return
-	end
-	
-	local permissions_group = game.permissions.get_group("Spectator")	
-	permissions_group.add_player(player.name)	
-	player.character.destroy()
-	player.character = nil
-	player.teleport({0, 0}, game.surfaces["tank_battles"])
-	
-	if #global.tank_battles_score > 0 then
-		create_tank_battle_score_gui()
 	end
 end
 
@@ -339,12 +342,12 @@ local function render_arena_chunk(event)
 					end
 				end
 				if math_random(1, 1024) == 1 then
-					if math_random(1, 32) == 1 then
+					if math_random(1, 64) == 1 then
 						if surface.can_place_entity({name = "assembling-machine-1", position = pos, force = "enemy"}) then
 							surface.create_entity({name = "assembling-machine-1", position = pos, force = "enemy"})
 						end
 					end
-					if math_random(1, 32) == 1 then
+					if math_random(1, 64) == 1 then
 						if surface.can_place_entity({name = "big-worm-turret", position = pos, force = "enemy"}) then
 							surface.create_entity({name = "big-worm-turret", position = pos, force = "enemy"})
 						end
@@ -354,7 +357,7 @@ local function render_arena_chunk(event)
 							surface.create_entity({name = "medium-worm-turret", position = pos, force = "enemy"})
 						end
 					end
-					if math_random(1, 64) == 1 then
+					if math_random(1, 512) == 1 then
 						if surface.can_place_entity({name = "behemoth-biter", position = pos, force = "enemy"}) then
 							surface.create_entity({name = "behemoth-biter", position = pos, force = "enemy"})
 						end
@@ -392,20 +395,39 @@ local function render_spawn_chunk(event)
 	surface.set_tiles(tiles, true)
 end
 
+local function kill_idle_players()
+	for _, player in pairs(game.connected_players) do
+		if player.character then
+			if player.afk_time > 600 then
+				local area = {{player.position.x - 1, player.position.y - 1}, {player.position.x + 1, player.position.y + 1}}
+				local water_tile_count = player.surface.count_tiles_filtered({name = {"water", "deepwater"}, area = area})
+				if water_tile_count > 3 then
+					player.character.die()
+					game.print(player.name .. " drowned.", {r = 150, g = 150, b = 0})
+				else
+					if player.afk_time > 9000 then					
+						player.character.die()
+						game.print(player.name .. " was idle for too long.", {r = 150, g = 150, b = 0})
+					end
+				end
+			end
+		end
+	end
+end
+
 local function check_for_game_over()
 	local surface = game.surfaces["tank_battles"]
+	
+	kill_idle_players()
+	
 	local alive_players = 0
 	for _, player in pairs(game.connected_players) do
 		if player.character and player.surface.name == "tank_battles" then
-			alive_players = alive_players + 1
-			local tile = surface.get_tile(player.position)
-			if tile.name == "water" or tile.name == "deepwater" then
-				player.character.die()
-			end
+			alive_players = alive_players + 1			
 		end
 	end		
 	
-	if alive_players > 1 then return end
+	if alive_players > 1 then return end -----------------
 	
 	local player
 	for _, p in pairs(game.connected_players) do
@@ -456,10 +478,11 @@ local function lobby()
 		end
 	end
 	
-	for _, player in pairs(game.connected_players) do	
-		local permissions_group = game.permissions.get_group("Default")	
-		permissions_group.add_player(player.name)
-		
+	local connected_players_count = 0
+	local permissions_group = game.permissions.get_group("Default")
+	
+	for _, player in pairs(game.connected_players) do				
+		permissions_group.add_player(player.name)		
 		if not player.character and player.ticks_to_respawn == nil then
 			player.create_character()
 			local pos = player.surface.find_non_colliding_position("player", {0,0}, 16, 3)
@@ -469,10 +492,11 @@ local function lobby()
 			player.insert({name = "refined-concrete", count = 500})
 			player.insert({name = "refined-hazard-concrete", count = 500})
 			player.teleport({math_random(1, 32), math_random(1, 32)}, game.surfaces[1])
-		 end		
+		 end		 
+		 connected_players_count = connected_players_count + 1
 	end
 	
-	if #game.connected_players < 2 then
+	if connected_players_count < 2 then
 		--game.print("Waiting for players.", {r = 0, g = 150, b = 150})
 		return
 	end
@@ -493,7 +517,6 @@ end
 
 local function on_tick(event)
 	if game.tick % 300 == 0 then
-		--game.print(global.game_stage)
 		if global.game_stage == "lobby" then			
 			lobby()
 		end
