@@ -179,7 +179,7 @@ function create_new_arena()
 	surface.daytime = 1
 	surface.freeze_daytime = 1
 	
-	global.current_arena_size = arena_size * 1	
+	global.current_arena_size = arena_size
 		
 	put_players_into_arena()
 	

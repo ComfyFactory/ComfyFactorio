@@ -173,6 +173,14 @@ local function remove_all_deconstruction_orders(player, source_player)
 	admin_only_message(source_player.name .. " has canceled all deconstruction orders.")
 end
 ]]--
+local function create_mini_camera_gui(player, caption, position)
+	if player.gui.center["mini_camera"] then player.gui.center["mini_camera"].destroy() end
+	local frame = player.gui.center.add({type = "frame", name = "mini_camera", caption = caption})
+	local camera = frame.add({type = "camera", name = "mini_cam_element", position = position, zoom = 0.6, surface_index = player.surface.index})
+	camera.style.minimal_width = 640
+	camera.style.minimal_height = 480
+end
+
 local function create_admin_panel(player)	
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 	
@@ -286,6 +294,41 @@ local admin_functions = {
 		["go_to_player"] = go_to_player
 	}
 
+local function get_position_from_string(str)
+	if not str then return end
+	if str == "" then return end
+	str = string.lower(str)
+	local x_pos = string.find(str, "x:")
+	local y_pos = string.find(str, "y:")
+	if not x_pos then return false end
+	if not y_pos then return false end
+	x_pos = x_pos + 2
+	y_pos = y_pos + 2
+	
+	local a = 1
+	for i = 1, string.len(str), 1 do
+		local s = string.sub(str, x_pos + i, x_pos + i)
+		if not s then break end
+		if string.byte(s) == 32 then break end
+		a = a + 1			
+	end	
+	local x = string.sub(str, x_pos, x_pos + a)
+	
+	local a = 1
+	for i = 1, string.len(str), 1 do
+		local s = string.sub(str, y_pos + i, y_pos + i)
+		if not s then break end
+		if string.byte(s) == 32 then break end
+		a = a + 1			
+	end	
+	
+	local y = string.sub(str, y_pos, y_pos + a)	
+	x = tonumber(x)
+	y = tonumber(y)		
+	local position = {x = x, y = y}
+	return position
+end	
+	
 local function on_gui_click(event)
 	local player = game.players[event.player_index]
 	
@@ -313,6 +356,16 @@ local function on_gui_click(event)
 			admin_functions[name](target_player, player)
 		end
 	end
+	
+	if name == "mini_camera" or name == "mini_cam_element" then
+		player.gui.center["mini_camera"].destroy()
+		return
+	end
+	
+	if not event.element.caption then return end
+	local position = get_position_from_string(event.element.caption)
+	if not position then return end		
+	create_mini_camera_gui(player, event.element.caption, position)	
 end
 
 local function on_gui_selection_state_changed(event)
