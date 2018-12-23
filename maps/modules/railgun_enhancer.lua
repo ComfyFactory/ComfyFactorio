@@ -65,7 +65,7 @@ local function do_splash_damage_around_entity(source_entity, player)
 					surface.create_entity({name = "blood-fountain", position = entity.position})				
 				end
 			end
-			local damage = math_random(math.ceil((damage_min * research_damage_bonus) / 32), math.ceil((damage_max * research_damage_bonus) / 32))			
+			local damage = math_random(math.ceil((damage_min * research_damage_bonus) / 16), math.ceil((damage_max * research_damage_bonus) / 16))			
 			entity.damage(damage, player.force, "physical")	
 		end
 	end

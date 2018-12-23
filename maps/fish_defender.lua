@@ -80,10 +80,25 @@ local threat_values = {
 
 local function get_biter_initial_pool()
 	local biter_pool = {}
-	if global.wave_count > 2000 then
+	if global.wave_count > 1750 then
+		biter_pool = {			
+			{name = "behemoth-biter", threat = threat_values.behemoth_biter, weight = 2},			
+			{name = "behemoth-spitter", threat = threat_values.behemoth_spitter, weight = 1}
+		}
+		return biter_pool
+	end
+	if global.wave_count > 1500 then
 		biter_pool = {
 			{name = "big-biter", threat = threat_values.big_biter, weight = 1},
-			{name = "behemoth-biter", threat = threat_values.behemoth_biter, weight = 1},			
+			{name = "behemoth-biter", threat = threat_values.behemoth_biter, weight = 2},			
+			{name = "behemoth-spitter", threat = threat_values.behemoth_spitter, weight = 1}
+		}
+		return biter_pool
+	end
+	if global.wave_count > 1250 then
+		biter_pool = {
+			{name = "big-biter", threat = threat_values.big_biter, weight = 2},
+			{name = "behemoth-biter", threat = threat_values.behemoth_biter, weight = 2},			
 			{name = "behemoth-spitter", threat = threat_values.behemoth_spitter, weight = 1}
 		}
 		return biter_pool
@@ -239,9 +254,16 @@ local function get_number_of_attack_groups()
 end
 
 local function clear_corpses(surface)
+	if not global.wave_count then return end
 	local area = {{x = -256, y = -256}, {x = 256, y = 256}}
-	for _, entity in pairs(surface.find_entities_filtered{area = area, type = "corpse"}) do
-		if math_random(1, 3) == 1 then
+	local chance = 32
+	if global.wave_count > 250 then chance = 8 end
+	if global.wave_count > 500 then chance = 4 end
+	if global.wave_count > 750 then chance = 3 end
+	if global.wave_count > 1000 then chance = 2 end
+	
+	for _, entity in pairs(surface.find_entities_filtered{area = area, type = "corpse"}) do		
+		if math_random(1, chance) == 1 then
 			entity.destroy()
 		end
 	end
@@ -767,7 +789,6 @@ local biter_building_inhabitants = {
 }
 
 local function damage_entities_in_radius(position, radius, damage)
-	if radius > 8 then radius = 8 end
 	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health and entity.name ~= "land-mine" then
@@ -859,8 +880,10 @@ local function on_entity_died(event)
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
 			local damage = 25
 			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0) end
-			if damage > 75 then damage = 75 end
-			damage_entities_in_radius(event.entity.position, 1, damage)
+			if damage > 75 then damage = 75 end			
+			local radius = 1
+			if global.wave_count > 1500 then radius = 2 end			
+			damage_entities_in_radius(event.entity.position, radius, damage)
 			--damage_entities_in_radius(event.entity.position, 1 + math.floor(global.wave_count * 0.001), damage)
 		end
 
@@ -869,7 +892,9 @@ local function on_entity_died(event)
 			local damage = 35
 			if global.endgame_modifier then damage = 35 + math.ceil((global.endgame_modifier * 0.05), 0) end
 			if damage > 150 then damage = 150 end
-			damage_entities_in_radius(event.entity.position, 2, damage)
+			local radius = 2
+			if global.wave_count > 1500 then radius = 3 end
+			damage_entities_in_radius(event.entity.position, radius, damage)
 			--damage_entities_in_radius(event.entity.position, 2 + math.floor(global.wave_count * 0.001), damage)
 		end
 
@@ -1007,7 +1032,7 @@ local function on_player_joined_game(event)
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
 			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 10000},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 15000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		
