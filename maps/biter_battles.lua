@@ -670,15 +670,15 @@ local function feed_the_biters(food_type,player)
 								
 		local lowest_possible_modifier = -0.95
 		
-		local ammo_types = 		{"grenade", 	"bullet",	"artillery-shell",		"flamethrower",	"cannon-shell",	"shotgun-shell","rocket",	"electric"}
-		local ammo_modifier = 	{0.2, 			0.8,				0,						0.8,					0.2,					0.2,					0.2,			0.2}
-		local turret_types = 		{"laser-turret",	"flamethrower-turret", 	"gun-turret"}		
-		local turret_modifier = 	{0.9,					1, 								0.8}		
+		local ammo_types = 		{"grenade", 	"bullet",	"artillery-shell",		"flamethrower",	"cannon-shell",	"shotgun-shell","rocket",	"electric",	"laser-turret"}
+		local ammo_modifier = 	{0.2, 			0.8,				0,						0.8,					0.2,					0.2,					0.2,			0.2,			1.5}
+		local turret_types = 		{"flamethrower-turret", 	"gun-turret"}		
+		local turret_modifier = 	{1, 								0.8}		
 		local ammo_speed = 				{"bullet",	"cannon-shell",	"shotgun-shell",		"rocket",	"laser-turret"	}
 		local ammo_speed_modifier = 	{0.3, 		0.3,					0.3,						0.3,			0.3,				}		
 		
 		-------------
-		local f = game.forces[enemy_team]
+		local f = game.forces[enemy_team]		
 		-----------                   -!!!!!--------------
 		local m = nerf_gain		
 		

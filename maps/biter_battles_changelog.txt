@@ -1,3 +1,6 @@
+0.35
+the laser turret now gets nerfed properly
+
 0.34
 fixes to spawn generation
 
