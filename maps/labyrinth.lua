@@ -8,7 +8,7 @@ simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
 local unique_rooms = require "maps.labyrinth_unique_rooms"
 
-local labyrinth_difficulty_curve = 400  --- How much size the labyrinth needs to have the highest difficulty.
+local labyrinth_difficulty_curve = 333  --- How much size the labyrinth needs to have the highest difficulty.
 
 local threat_values = {
 	["small-biter"] = 1,
@@ -813,10 +813,10 @@ local function on_chunk_generated(event)
 		
 	if not global.spawn_ores_generated then
 		if event.area.left_top.x > 96 then
-			map_functions.draw_entity_circle({x = 16, y = 16}, "coal", surface, 9, false, 750)
-			map_functions.draw_entity_circle({x = 16, y = 16}, "iron-ore", surface, 9, false, 750)
-			map_functions.draw_entity_circle({x = 16, y = 16}, "copper-ore", surface, 9, false, 750)
-			map_functions.draw_entity_circle({x = 16, y = 16}, "tree-05", surface, 9, true)
+			map_functions.draw_entity_circle({x = 16, y = 16}, "coal", surface, 7, false, 750)
+			map_functions.draw_entity_circle({x = 16, y = 16}, "iron-ore", surface, 7, false, 750)
+			map_functions.draw_entity_circle({x = 16, y = 16}, "copper-ore", surface, 7, false, 750)
+			--map_functions.draw_entity_circle({x = 16, y = 16}, "tree-05", surface, 7, true)
 			--map_functions.draw_smoothed_out_ore_circle({x = 16, y = 8}, "coal", surface, 7, 750)
 			--map_functions.draw_smoothed_out_ore_circle({x = 16, y = 8}, "coal", surface, 7, 750)
 			--map_functions.draw_smoothed_out_ore_circle({x = 8, y = 24}, "iron-ore", surface, 7, 750)
