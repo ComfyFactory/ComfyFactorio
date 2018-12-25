@@ -7,7 +7,7 @@ local message_color = {r = 255, g = 150, b = 0}
 
 local max_fill_percentages = {
 	["storage-tank"] = 0.1,
-	["pipe"] = 0.5
+	["pipe"] = 0.25
 }
 
 local function on_player_mined_entity(event)	
@@ -63,6 +63,6 @@ local function on_player_mined_entity(event)
 	player.print(messages[math_random(1, #messages)], message_color)
 end
 
-		--/c x = game.player.surface.create_entity({name = "storage-tank", position = {0, -10}, force = "player"}) x.fluidbox[1] = {name = "crude-oil", amount = 25000}	
+		--/c x = game.player.surface.create_entity({name = "storage-tank", position = {0, -10}, force = "player"}) x.fluidbox[1] = {name = "light-oil", amount = 25000}	
 		
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
