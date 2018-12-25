@@ -12,10 +12,11 @@ require "score"
 
 --require "maps.tools.map_pregen"
 --require "maps.modules.hunger"
-require "maps.tools.cheat_mode"
---require "maps.modules.dynamic_landfill"
+--require "maps.tools.cheat_mode"
+require "maps.modules.dynamic_landfill"
 require "maps.modules.restrictive_fluid_mining"
 require "maps.modules.fluids_are_explosive"
+require "maps.modules.explosives_are_explosive"
 
 ---- enable maps here ----
 --require "maps.biter_battles"
@@ -28,10 +29,10 @@ require "maps.modules.fluids_are_explosive"
 --require "maps.fish_defender"
 --require "maps.crossing"
 --require "maps.spooky_forest"
---require "maps.atoll"
+require "maps.atoll"
 --require "maps.tank_battles"
 --require "maps.empty_map"
-require "maps.custom_start"
+--require "maps.custom_start"
 -----------------------------
 
 local Event = require 'utils.event'
