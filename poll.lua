@@ -81,9 +81,8 @@ local function poll_show(player)
 	local poll_panel_button_table = frame.poll_panel_button_table
 	poll_panel_button_table.add { type = "button", caption = "New Poll", name = "new_poll_assembler_button" }
 	
-
-	
-	global.poll_panel_creation_time[player.index] = game.tick
+	if not global.poll_panel_creation_times then global.poll_panel_creation_times = {} end
+	global.poll_panel_creation_times[player.index] = {player_index = player.index, tick = 5940}
 	
 	local str = "Hide (" .. global.poll_duration_in_seconds
 	str = str .. ")"
@@ -205,7 +204,6 @@ function poll_sync_for_new_joining_player(event)
 	if not global.poll_voted then global.poll_voted = {} end
 	if not global.autoshow_polls_for_player then global.autoshow_polls_for_player = {} end
 	if not global.poll_duration_in_seconds then global.poll_duration_in_seconds = 99 end
-	if not global.poll_panel_creation_time then global.poll_panel_creation_time = {} end
 	if not global.score_total_polls_created then global.score_total_polls_created = 0 end
 		
 	local player = game.players[event.player_index]	
@@ -295,26 +293,29 @@ local function on_gui_click(event)
 end
 
 local function on_tick()	
-	if game.tick % 60 == 0 then		
-		for _, player in pairs(game.connected_players) do			
-			if global.poll_panel_creation_time[player.index] then
-				local frame = player.gui.left["poll-panel"]				
-				if frame then				
-					local y = (game.tick - global.poll_panel_creation_time[player.index]) / 60
-					local y = global.poll_duration_in_seconds - y
-					y = math.round(y, 0)
-					if y <= 0 then
-						frame.destroy()
-						global.poll_panel_creation_time[player.index] = nil
-					else
-						y = "Hide (" .. y
-						y = y .. ")"
-						frame.poll_panel_button_table.poll_hide_button.caption = y
-					end
-				end
+	if not global.poll_panel_creation_times then return end
+	if #global.poll_panel_creation_times == 0 then
+		global.poll_panel_creation_times = nil
+		return
+	end
+	if game.tick % 60 ~= 0 then return end
+	
+	for _, creation_time in pairs(global.poll_panel_creation_times) do
+		local player = game.players[creation_time.player_index]
+		
+		local frame = player.gui.left["poll-panel"]
+		if frame then
+			global.poll_panel_creation_times[player.index].tick = global.poll_panel_creation_times[player.index].tick - 60
+			if global.poll_panel_creation_times[player.index].tick <= 0 then
+				frame.destroy()
+				global.poll_panel_creation_times[player.index] = nil
+			else
+				local str = "Hide (" .. math.ceil(global.poll_panel_creation_times[player.index].tick / 60)
+				str = str .. ")"
+				frame.poll_panel_button_table.poll_hide_button.caption = str
 			end
 		end
-	end	
+	end		
 end
 
 Event.add(defines.events.on_tick, on_tick)

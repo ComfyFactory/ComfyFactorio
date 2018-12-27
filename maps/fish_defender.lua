@@ -2,8 +2,13 @@
 
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
-require "maps.fish_defender_kaboomsticks"
+
 require "maps.modules.railgun_enhancer"
+require "maps.modules.dynamic_landfill"
+require "maps.modules.restrictive_fluid_mining"
+require "maps.modules.fluids_are_explosive"
+require "maps.modules.explosives_are_explosive"
+
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
@@ -877,10 +882,12 @@ local function on_entity_died(event)
 		end
 
 		if event.entity.name == "medium-biter" then
-			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
+			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})		
 			local damage = 25
-			if global.endgame_modifier then damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0) end
-			if damage > 75 then damage = 75 end			
+			if global.endgame_modifier then
+				damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0)				
+			end
+			if damage > 250 then damage = 250 end			
 			local radius = 1
 			if global.wave_count > 1500 then radius = 2 end			
 			damage_entities_in_radius(event.entity.position, radius, damage)
@@ -891,7 +898,7 @@ local function on_entity_died(event)
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
 			local damage = 35
 			if global.endgame_modifier then damage = 35 + math.ceil((global.endgame_modifier * 0.05), 0) end
-			if damage > 150 then damage = 150 end
+			if damage > 350 then damage = 350 end
 			local radius = 2
 			if global.wave_count > 1500 then radius = 3 end
 			damage_entities_in_radius(event.entity.position, radius, damage)
@@ -902,7 +909,11 @@ local function on_entity_died(event)
 			local surface = event.entity.surface
 			
 			if math_random(1, 32) ~= 1 then
-				for i = 1, math_random(1, 2), 1 do
+				if math_random(1, 2) == 1 then
+					local p = surface.find_non_colliding_position("big-biter", event.entity.position, 3, 0.5)
+					if p then surface.create_entity {name = "big-biter", position = p} end
+				end
+				for i = 1, math_random(1, 3), 1 do
 					local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "medium-biter", position = p} end
 				end
@@ -1023,16 +1034,16 @@ local function on_player_joined_game(event)
 		--game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
 		--game.forces["player"].technologies["laser-turret-speed-6"].enabled = false
 		--game.forces["player"].technologies["laser-turret-speed-7"].enabled = false
-		--game.forces["player"].technologies["atomic-bomb"].enabled = false
+		game.forces["player"].technologies["atomic-bomb"].enabled = false
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 1)				
 		--game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {
-			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
-			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
+			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
+			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 350},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 15000},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 35000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		
@@ -1098,7 +1109,7 @@ local function on_chunk_generated(event)
 	if left_top.x <= -196 then
 		
 		local search_area = {{left_top.x - 32, left_top.y - 32}, {left_top.x + 32, left_top.y + 32}}
-		if surface.count_tiles_filtered({name = "water", area = search_area}) == 0 and math_random(1, 48) == 1 then
+		if surface.count_tiles_filtered({name = "water", area = search_area}) == 0 and math_random(1, 64) == 1 then
 			map_functions.draw_noise_tile_circle({x = left_top.x + math_random(1,30), y = left_top.y + math_random(1,30)}, "water", surface, math_random(6, 12))
 		end
 	

@@ -1,3 +1,6 @@
+0.36
+removed "line" attacks
+
 0.35
 the laser turret now gets nerfed properly
 

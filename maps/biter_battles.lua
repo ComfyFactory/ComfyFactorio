@@ -9,7 +9,7 @@ local food_names = {
 	["science-pack-2"] = 				"green science",
 	["military-science-pack"] =		"military science",
 	["science-pack-3"] = 				"blue science",
-	["production-science-pack"] =	"production science",
+	["production-science-pack"] ="production science",
 	["high-tech-science-pack"] =	"high tech science",
 	["space-science-pack"] = 		"space science"
 }
@@ -19,7 +19,7 @@ local food_values = {
 	["science-pack-2"] = 				0.00000292,
 	["military-science-pack"] =		0.00001950,
 	["science-pack-3"] = 				0.00003792,
-	["production-science-pack"] =	0.00008000,
+	["production-science-pack"] =0.00008000,
 	["high-tech-science-pack"] =	0.00021000,
 	["space-science-pack"] = 		0.00042000
 }
@@ -890,8 +890,9 @@ local function biter_attack_silo(team, requested_amount, mode)
 	local biters_selected_for_attack = {}
 	
 	if not mode then
-		local modes = {"spread", "ball", "line"}
-		mode = modes[math_random(1,3)]
+		--local modes = {"spread", "ball", "line"}
+		local modes = {"spread", "ball"}
+		mode = modes[math_random(1, #modes)]
 	end
 	
 	if mode == "spread" then	
@@ -925,6 +926,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 		end
 	end
 	
+	--[[
 	if mode == "line" then
 		local valid_biters = get_valid_biters(requested_amount, y_modifier, 0, 150*y_modifier, 500)	
 		if #valid_biters < requested_amount then
@@ -960,6 +962,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 			game.players[1].print(#biters_selected_for_attack .. " going for a line attack, table start = " .. array_start)					
 		end
 	end	
+	]]
 	
 	if mode == "ball" then			
 		local height = 0
