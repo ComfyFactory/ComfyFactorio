@@ -314,6 +314,8 @@ local function on_tick()
 				str = str .. ")"
 				frame.poll_panel_button_table.poll_hide_button.caption = str
 			end
+		else
+			global.poll_panel_creation_times[player.index] = nil
 		end
 	end		
 end
