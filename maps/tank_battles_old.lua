@@ -4,8 +4,6 @@ local event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
 local map_functions = require "maps.tools.map_functions"
-local simplex_noise = require 'utils.simplex_noise'
-simplex_noise = simplex_noise.d2
 local arena_size = 160
 
 local function shuffle(tbl)
@@ -15,40 +13,6 @@ local function shuffle(tbl)
 			tbl[i], tbl[rand] = tbl[rand], tbl[i]
 		end
 	return tbl
-end
-
-local function get_noise(name, pos)	
-	local seed = global.noise_seed
-	local noise = {}
-	local noise_seed_add = 25000
-	if name == "rocks" then		
-		noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
-		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		seed = seed + noise_seed_add
-		local noise = noise[1] + noise[2] * 0.2
-		return noise
-	end
-	seed = seed + noise_seed_add
-	seed = seed + noise_seed_add
-	if name == "rocks_2" then		
-		noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
-		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		seed = seed + noise_seed_add
-		local noise = noise[1] + noise[2] * 0.2
-		return noise
-	end
-	seed = seed + noise_seed_add
-	seed = seed + noise_seed_add
-	if name == "terrain" then		
-		noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
-		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		seed = seed + noise_seed_add
-		local noise = noise[1] + noise[2] * 0.2
-		return noise
-	end
 end
 
 local function create_tank_battle_score_gui()
@@ -173,23 +137,18 @@ local function put_players_into_arena()
 		local permissions_group = game.permissions.get_group("Default")	
 		permissions_group.add_player(player.name)
 		
-		if player.character then
-			player.character.destroy()
-			player.character = nil
-		end
-		
-		
-		
+		player.character.destroy()
+		player.character = nil
 		player.create_character()
+		
 		
 		player.insert({name = "combat-shotgun", count = 1})
 		player.insert({name = "rocket-launcher", count = 1})
 		player.insert({name = "flamethrower", count = 1})
+		--player.insert({name = "firearm-magazine", count = 512})
 		
-		local surface = game.surfaces["nauvis"]
+		local surface = game.surfaces["tank_battles"]
 		local pos = get_valid_random_spawn_position(surface)
-		
-		player.force.chart(surface,{{x = -1 * arena_size, y = -1 * arena_size}, {x = arena_size, y = arena_size}})
 		
 		player.teleport(pos, surface)
 		local tank = surface.create_entity({name = "tank", force = game.forces[player.index], position = pos})
@@ -199,56 +158,23 @@ local function put_players_into_arena()
 	end
 end
 
-local function regenerate_arena()
-	local surface = game.surfaces["nauvis"]
-	for chunk in surface.get_chunks() do
-		surface.set_chunk_generated_status(chunk, defines.chunk_generated_status.custom_tiles	)
-	end
-	global.noise_seed = nil	
-	surface.request_to_generate_chunks({0,0}, math.ceil(arena_size / 32) + 3)
-	
-	local tree_raffle = {}
-	for _, e in pairs(game.entity_prototypes) do
-		if e.type == "tree" then
-			table.insert(tree_raffle, e.name)
-		end			
-	end
-	global.arena_tree = tree_raffle[math_random(1, #tree_raffle)]
-	
-	local entity_raffle = {}
-	local types = {"furnace", "assembling-machine", "power-switch", "programmable-speaker", "reactor"}
-	for _, e in pairs(game.entity_prototypes) do
-		for _, t in pairs(types) do
-			if e.type == t then
-				table.insert(entity_raffle, e.name)				
-			end
-		end
-	end
-	global.secret_entity = entity_raffle[math_random(1, #entity_raffle)]
-	
-	local tile_raffle = {}
-	local tile_blacklist = {
-			["water"] = true,
-			["deepwater"] = true,
-			["water-green"] = true,
-			["out-of-map"] = true,
-			["hazard-concrete-left"] = true,
-			["hazard-concrete-right"] = true,
-			["lab-dark-1"] = true,
-			["lab-dark-2"] = true,
-			["lab-white"] = true,
-			["refined-hazard-concrete-left"] = true,
-			["refined-hazard-concrete-right"] = true,			
-			["tutorial-grid"] = true
-		}
-	for _, t in pairs(game.tile_prototypes) do		
-		if not tile_blacklist[t.name] then
-			table.insert(tile_raffle, t.name)
-		end		
-	end
-	global.arena_tile_1 = tile_raffle[math_random(1, #tile_raffle)]
-	global.arena_tile_2 = tile_raffle[math_random(1, #tile_raffle)]
-	
+function create_new_arena()			
+	local map_gen_settings = {}
+	map_gen_settings.seed = math_random(1, 2097152)
+	map_gen_settings.water = "none"
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}		
+	map_gen_settings.autoplace_controls = {
+		["coal"] = {frequency = "none", size = "none", richness = "none"},
+		["stone"] = {frequency = "none", size = "none", richness = "none"},
+		["copper-ore"] = {frequency = "none", size = "none", richness = "none"},
+		["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
+		["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
+		["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
+		["enemy-base"] = {frequency = "none", size = "none", richness = "none"}		
+	}		
+	game.create_surface("tank_battles", map_gen_settings)	
+	local surface = game.surfaces["tank_battles"]
+	surface.request_to_generate_chunks({0,0}, math.ceil(arena_size / 32) + 2)
 	surface.force_generate_chunk_requests()
 	surface.daytime = 1
 	surface.freeze_daytime = 1
@@ -260,8 +186,79 @@ local function regenerate_arena()
 	global.game_stage = "ongoing_game"
 end
 
+
+local function set_unique_player_force(player)
+	if not game.forces[player.index] then
+		game.create_force(player.index)
+		game.forces[player.index].technologies["follower-robot-count-1"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-2"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-3"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-4"].researched = true
+		game.forces[player.index].technologies["follower-robot-count-5"].researched = true
+	end
+	player.force = game.forces[player.index]	
+end
+
+local function on_player_joined_game(event)	
+	local player = game.players[event.player_index]
+	
+	set_unique_player_force(player)	
+	
+	if not global.map_init_done then
+			
+		local spectator_permission_group = game.permissions.create_group("Spectator")
+		for action_name, _ in pairs(defines.input_action) do
+			spectator_permission_group.set_allows_action(defines.input_action[action_name], false)
+		end
+		spectator_permission_group.set_allows_action(defines.input_action.write_to_console, true)
+		spectator_permission_group.set_allows_action(defines.input_action.gui_click, true)
+		spectator_permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
+		spectator_permission_group.set_allows_action(defines.input_action.start_walking, true)
+		spectator_permission_group.set_allows_action(defines.input_action.open_kills_gui, true)
+		spectator_permission_group.set_allows_action(defines.input_action.open_character_gui, true)
+		--spectator_permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
+		spectator_permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
+		spectator_permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)									
+								
+		global.tank_battles_score = {}
+		global.game_stage = "lobby"
+		
+		global.map_init_done = true
+	end		
+	
+	if #global.tank_battles_score > 0 then
+		create_tank_battle_score_gui()
+	end
+	
+	if game.surfaces["tank_battles"] then
+		player.character.destroy()
+		player.character = nil
+		local permissions_group = game.permissions.get_group("Spectator")	
+		permissions_group.add_player(player.name)			
+		player.teleport({0, 0}, game.surfaces["tank_battles"])
+	end	
+	
+	if not game.surfaces["tank_battles"] then
+		player.character.destroy()
+		player.character = nil
+		if global.lobby_timer then global.lobby_timer = 1800 end
+		if player.online_time < 1 then
+			player.insert({name = "concrete", count = 500})
+			player.insert({name = "hazard-concrete", count = 500})
+			player.insert({name = "stone-brick", count = 500})		
+			player.insert({name = "refined-concrete", count = 500})
+			player.insert({name = "refined-hazard-concrete", count = 500})
+		end
+		return
+	end
+end
+
+local function on_marked_for_deconstruction(event)
+	event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
+end
+
 function shrink_arena()
-	local surface = game.surfaces["nauvis"]	
+	local surface = game.surfaces["tank_battles"]	
 	
 	if global.current_arena_size < 0 then return end
 	
@@ -326,63 +323,60 @@ function shrink_arena()
 	surface.set_tiles(tiles, true)
 end
 
-local function get_arena_entity(surface, pos)
-	local entity = false
-	local noise = get_noise("rocks", pos)
-	local noise2 = get_noise("rocks_2", pos)
+local function render_arena_chunk(event)
+	if event.surface.name ~= "tank_battles" then return end
+	local surface = event.surface
 	
-	if noise > -0.1 and noise < 0.1 and noise2 > -0.3 and noise2 < 0.3 then
-		return {name = "rock-big", position = pos}
-	end
+	local left_top = event.area.left_top
 	
-	if math_random(1, 16) == 1 and noise2 > 0.78 then
-		if surface.can_place_entity({name = "wooden-chest", position = pos, force = "enemy"}) then
-			return {name = "wooden-chest", position = pos, force = "enemy"}
-		end
-	end
-	
-	if math_random(1, 16) == 1 and noise2 < -0.78 then
-		if surface.can_place_entity({name = "wooden-chest", position = pos, force = "enemy"}) then
-			return {name = "wooden-chest", position = pos, force = "enemy"}
-		end
-	end
-	
-	if math_random(1, 16) == 1 and noise > 0.5 then
-		return {name = global.arena_tree, position = pos}		
-	end
-	
-	if math_random(1, 1024) == 1 then
-		if math_random(1, 16) == 1 then
-			if surface.can_place_entity({name = global.secret_entity, position = pos, force = "enemy"}) then
-				return {name = global.secret_entity, position = pos, force = "enemy"}
-			end
-		end
-		if math_random(1, 64) == 1 then
-			if surface.can_place_entity({name = "big-worm-turret", position = pos, force = "enemy"}) then
-				return {name = "big-worm-turret", position = pos, force = "enemy"}
-			end
-		end
-		if math_random(1, 32) == 1 then
-			if surface.can_place_entity({name = "medium-worm-turret", position = pos, force = "enemy"}) then
-				return {name = "medium-worm-turret", position = pos, force = "enemy"}
-			end
-		end
-		if math_random(1, 512) == 1 then
-			if surface.can_place_entity({name = "behemoth-biter", position = pos, force = "enemy"}) then
-				return {name = "behemoth-biter", position = pos, force = "enemy"}
-			end
-		end
-		if math_random(1, 64) == 1 then
-			if surface.can_place_entity({name = "big-biter", position = pos, force = "enemy"}) then
-				return {name = "big-biter", position = pos, force = "enemy"}
-			end
+	local tiles = {}
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local pos = {x = left_top.x + x, y = left_top.y + y}
+			if pos.x > arena_size or pos.y > arena_size or pos.x < arena_size * -1 or pos.y < arena_size * -1 then
+				table_insert(tiles, {name = "water", position = pos})
+			else
+				if math_random(1, 256) == 1 then
+					if surface.can_place_entity({name = "wooden-chest", position = pos, force = "enemy"}) then
+						surface.create_entity({name = "wooden-chest", position = pos, force = "enemy"})
+					end
+				end
+				if math_random(1, 1024) == 1 then
+					if math_random(1, 64) == 1 then
+						if surface.can_place_entity({name = "assembling-machine-1", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "assembling-machine-1", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 64) == 1 then
+						if surface.can_place_entity({name = "big-worm-turret", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "big-worm-turret", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 32) == 1 then
+						if surface.can_place_entity({name = "medium-worm-turret", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "medium-worm-turret", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 512) == 1 then
+						if surface.can_place_entity({name = "behemoth-biter", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "behemoth-biter", position = pos, force = "enemy"})
+						end
+					end
+					if math_random(1, 64) == 1 then
+						if surface.can_place_entity({name = "big-biter", position = pos, force = "enemy"}) then
+							surface.create_entity({name = "big-biter", position = pos, force = "enemy"})
+						end
+					end
+				end
+			end			
 		end
 	end
+	surface.set_tiles(tiles, true)	
 end
 
-local function render_arena_chunk(event)
-	if not global.noise_seed then global.noise_seed = math_random(1, 2097152) end
-	local surface = event.surface	
+local function render_spawn_chunk(event)
+	if event.surface.name ~= "nauvis" then return end
+	local surface = event.surface
 	local left_top = event.area.left_top
 	
 	for _, entity in pairs(surface.find_entities_filtered({area = event.area})) do
@@ -395,21 +389,10 @@ local function render_arena_chunk(event)
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if pos.x > arena_size or pos.y > arena_size or pos.x < arena_size * -1 or pos.y < arena_size * -1 then
-				table_insert(tiles, {name = "water", position = pos})
-			else
-				local noise = get_noise("terrain", pos)
-				if noise > 0 then
-					table_insert(tiles, {name = global.arena_tile_1, position = pos})
-				else
-					table_insert(tiles, {name = global.arena_tile_2, position = pos})
-				end
-				local entity = get_arena_entity(surface, pos)
-				if entity then surface.create_entity(entity) end															
-			end			
+			table_insert(tiles, {name = "grass-2", position = pos})
 		end
 	end
-	surface.set_tiles(tiles, true)	
+	surface.set_tiles(tiles, true)
 end
 
 local function kill_idle_players()
@@ -433,13 +416,13 @@ local function kill_idle_players()
 end
 
 local function check_for_game_over()
-	local surface = game.surfaces["nauvis"]
+	local surface = game.surfaces["tank_battles"]
 	
 	kill_idle_players()
 	
 	local alive_players = 0
 	for _, player in pairs(game.connected_players) do
-		if player.character then
+		if player.character and player.surface.name == "tank_battles" then
 			alive_players = alive_players + 1			
 		end
 	end		
@@ -448,7 +431,7 @@ local function check_for_game_over()
 	
 	local player
 	for _, p in pairs(game.connected_players) do
-		if p.character then
+		if p.character and p.surface.name == "tank_battles" then
 			player = p
 		end
 	end
@@ -470,70 +453,9 @@ local function check_for_game_over()
 	global.game_stage = "lobby"		
 end
 
-local function set_unique_player_force(player)
-	if not game.forces[player.index] then
-		game.create_force(player.index)
-		game.forces[player.index].technologies["follower-robot-count-1"].researched = true
-		game.forces[player.index].technologies["follower-robot-count-2"].researched = true
-		game.forces[player.index].technologies["follower-robot-count-3"].researched = true
-		game.forces[player.index].technologies["follower-robot-count-4"].researched = true
-		game.forces[player.index].technologies["follower-robot-count-5"].researched = true
-	end
-	player.force = game.forces[player.index]	
-end
-
-local function on_player_joined_game(event)	
-	local player = game.players[event.player_index]
-	
-	set_unique_player_force(player)	
-	
-	if not global.map_init_done then
-			
-		local spectator_permission_group = game.permissions.create_group("Spectator")
-		for action_name, _ in pairs(defines.input_action) do
-			spectator_permission_group.set_allows_action(defines.input_action[action_name], false)
-		end
-		spectator_permission_group.set_allows_action(defines.input_action.write_to_console, true)
-		spectator_permission_group.set_allows_action(defines.input_action.gui_click, true)
-		spectator_permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
-		spectator_permission_group.set_allows_action(defines.input_action.start_walking, true)
-		spectator_permission_group.set_allows_action(defines.input_action.open_kills_gui, true)
-		spectator_permission_group.set_allows_action(defines.input_action.open_character_gui, true)
-		--spectator_permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
-		spectator_permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
-		spectator_permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)									
-			
-		global.secret_entity = "stone-furnace"
-		global.arena_tree = "tree-04"
-		global.arena_tile_1 = "grass-2"
-		global.arena_tile_2 = "dirt-5"
-			
-		global.tank_battles_score = {}
-		global.game_stage = "lobby"
-		
-		global.map_init_done = true
-	end		
-	
-	if #global.tank_battles_score > 0 then
-		create_tank_battle_score_gui()
-	end
-	
-	if game.surfaces["nauvis"] then
-		player.character.destroy()
-		player.character = nil
-		local permissions_group = game.permissions.get_group("Spectator")	
-		permissions_group.add_player(player.name)			
-		player.teleport({0, 0}, game.surfaces["nauvis"])
-		if global.lobby_timer then global.lobby_timer = 1200 end
-	end	
-end
-
-local function on_marked_for_deconstruction(event)
-	event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
-end
-
 local function on_chunk_generated(event)
 	render_arena_chunk(event)
+	render_spawn_chunk(event)	
 end
 
 local function on_player_respawned(event)
@@ -543,15 +465,34 @@ local function on_player_respawned(event)
 	permissions_group.add_player(player.name)	
 	player.character.destroy()
 	player.character = nil
-	
-	player.print("You are now spectating.", {r = 0, g = 150, b = 150})
 end
 
-local function lobby()				
+local function lobby()		
+	if game.surfaces["tank_battles"] then
+		game.delete_surface(game.surfaces["tank_battles"])
+		for _, player in pairs(game.connected_players) do
+			if player.character then
+				player.character.destroy()
+				player.character = nil
+			end			
+		end
+	end
+	
 	local connected_players_count = 0
 	local permissions_group = game.permissions.get_group("Default")
 	
 	for _, player in pairs(game.connected_players) do				
+		permissions_group.add_player(player.name)		
+		if not player.character and player.ticks_to_respawn == nil then
+			player.create_character()
+			local pos = player.surface.find_non_colliding_position("player", {0,0}, 16, 3)
+			player.insert({name = "concrete", count = 500})
+			player.insert({name = "hazard-concrete", count = 500})
+			player.insert({name = "stone-brick", count = 500})		
+			player.insert({name = "refined-concrete", count = 500})
+			player.insert({name = "refined-hazard-concrete", count = 500})
+			player.teleport({math_random(1, 32), math_random(1, 32)}, game.surfaces[1])
+		 end		 
 		 connected_players_count = connected_players_count + 1
 	end
 	
@@ -560,7 +501,7 @@ local function lobby()
 		return
 	end
 	
-	if not global.lobby_timer then global.lobby_timer = 1200 end
+	if not global.lobby_timer then global.lobby_timer = 1800 end
 	if global.lobby_timer % 600 == 0 then
 		if global.lobby_timer <= 0 then 
 			game.print("Round has started!", {r = 0, g = 150, b = 150})
@@ -571,7 +512,7 @@ local function lobby()
 	global.lobby_timer = global.lobby_timer - 300
 	if global.lobby_timer >= 0 then return end
 	global.lobby_timer = nil
-	global.game_stage = "regenerate_arena"
+	global.game_stage = "create_arena"
 end
 
 local function on_tick(event)
@@ -579,8 +520,8 @@ local function on_tick(event)
 		if global.game_stage == "lobby" then			
 			lobby()
 		end
-		if global.game_stage == "regenerate_arena" then
-			regenerate_arena()
+		if global.game_stage == "create_arena" then
+			create_new_arena()
 		end
 		if global.game_stage == "ongoing_game" then
 			shrink_arena()
