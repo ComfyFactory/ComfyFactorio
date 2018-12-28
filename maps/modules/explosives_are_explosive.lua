@@ -56,15 +56,21 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 	end	
 	
 	for _, entity in pairs(target_entities) do
-		if entity.health then						
-			if entity.health < global.explosion_schedule[explosion_index].damage_remaining then
-				explosion_animation = "big-explosion"
-				if entity.health > 500 then explosion_animation = "big-artillery-explosion" end
-				global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
-				entity.damage(999999, "player", "explosion")
-			else				
-				entity.damage(global.explosion_schedule[explosion_index].damage_remaining, "player", "explosion")
-				global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health				
+		if entity.valid then
+			if entity.health then						
+				if entity.health < global.explosion_schedule[explosion_index].damage_remaining then
+					explosion_animation = "big-explosion"
+					if entity.health > 500 then explosion_animation = "big-artillery-explosion" end
+					global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
+					if entity.name ~= "player" then
+						entity.damage(2097152, "player", "explosion")
+					else
+						entity.die("player")
+					end
+				else				
+					entity.damage(global.explosion_schedule[explosion_index].damage_remaining, "player", "explosion")
+					global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health				
+				end
 			end
 		end
 	end
@@ -115,6 +121,9 @@ end
 
 local function on_entity_damaged(event)
 	local entity = event.entity
+	if not entity.health then return end
+	if entity.health > entity.prototype.max_health * 0.75 then return end
+	
 	if entity.type == "container" or entity.type == "logistic-container" then
 		if math.random(1,3) == 1 or entity.health <= 0 then create_explosion_schedule(event.entity) return end
 	end

@@ -78,15 +78,21 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 	end	
 	
 	for _, entity in pairs(target_entities) do
-		if entity.health then						
-			if entity.health <= global.explosion_schedule[explosion_index].damage_remaining then
-				explosion_animation = "big-explosion"
-				if entity.health > 500 then explosion_animation = "big-artillery-explosion" end
-				global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
-				entity.damage(2097152, "player", "explosion")		
-			else
-				entity.damage(global.explosion_schedule[explosion_index].damage_remaining, "player", "explosion")
-				global.explosion_schedule[explosion_index].damage_remaining = 0
+		if entity.valid then
+			if entity.health then						
+				if entity.health <= global.explosion_schedule[explosion_index].damage_remaining then
+					explosion_animation = "big-explosion"
+					if entity.health > 500 then explosion_animation = "big-artillery-explosion" end
+					global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
+					if entity.name ~= "player" then
+						entity.damage(2097152, "player", "explosion")
+					else
+						entity.die("player")
+					end
+				else
+					entity.damage(global.explosion_schedule[explosion_index].damage_remaining, "player", "explosion")
+					global.explosion_schedule[explosion_index].damage_remaining = 0
+				end
 			end
 		end
 	end

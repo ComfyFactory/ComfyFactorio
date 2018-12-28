@@ -13,11 +13,11 @@ require "score"
 ---- enable modules here ----
 --require "maps.tools.map_pregen"
 --require "maps.modules.hunger"
---require "maps.tools.cheat_mode"
+require "maps.tools.cheat_mode"
 --require "maps.modules.dynamic_landfill"
 --require "maps.modules.restrictive_fluid_mining"
---require "maps.modules.fluids_are_explosive"
---require "maps.modules.explosives_are_explosive"
+require "maps.modules.fluids_are_explosive"
+require "maps.modules.explosives_are_explosive"
 --require "maps.modules.railgun_enhancer"
 -----------------------------
 
@@ -33,7 +33,7 @@ require "score"
 --require "maps.crossing"
 --require "maps.spooky_forest"
 --require "maps.atoll"
-require "maps.tank_battles"
+--require "maps.tank_battles"
 --require "maps.empty_map"
 --require "maps.custom_start"
 -----------------------------
