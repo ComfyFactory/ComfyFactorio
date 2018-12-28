@@ -22,7 +22,7 @@ require "score"
 -----------------------------
 
 ---- enable maps here ----
-require "maps.biter_battles"
+--require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
@@ -33,7 +33,7 @@ require "maps.biter_battles"
 --require "maps.crossing"
 --require "maps.spooky_forest"
 --require "maps.atoll"
---require "maps.tank_battles"
+require "maps.tank_battles"
 --require "maps.empty_map"
 --require "maps.custom_start"
 -----------------------------

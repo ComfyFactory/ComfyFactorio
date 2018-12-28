@@ -199,13 +199,8 @@ local function put_players_into_arena()
 	end
 end
 
-local function regenerate_arena()
-	local surface = game.surfaces["nauvis"]
-	for chunk in surface.get_chunks() do
-		surface.set_chunk_generated_status(chunk, defines.chunk_generated_status.custom_tiles	)
-	end
-	global.noise_seed = nil	
-	surface.request_to_generate_chunks({0,0}, math.ceil(arena_size / 32) + 3)
+local function get_arena_layout_modifiers()
+	global.arena_layout_modifiers = {}
 	
 	local tree_raffle = {}
 	for _, e in pairs(game.entity_prototypes) do
@@ -213,7 +208,9 @@ local function regenerate_arena()
 			table.insert(tree_raffle, e.name)
 		end			
 	end
-	global.arena_tree = tree_raffle[math_random(1, #tree_raffle)]
+	global.arena_layout_modifiers.arena_tree = tree_raffle[math_random(1, #tree_raffle)]
+	global.arena_layout_modifiers.arena_tree_chance = math_random(4, 20)
+	global.arena_layout_modifiers.arena_tree_noise = math_random(0, 75) * 0.01
 	
 	local entity_raffle = {}
 	local types = {"furnace", "assembling-machine", "power-switch", "programmable-speaker", "reactor"}
@@ -224,7 +221,7 @@ local function regenerate_arena()
 			end
 		end
 	end
-	global.secret_entity = entity_raffle[math_random(1, #entity_raffle)]
+	global.arena_layout_modifiers.secret_entity = entity_raffle[math_random(1, #entity_raffle)]
 	
 	local tile_raffle = {}
 	local tile_blacklist = {
@@ -246,8 +243,19 @@ local function regenerate_arena()
 			table.insert(tile_raffle, t.name)
 		end		
 	end
-	global.arena_tile_1 = tile_raffle[math_random(1, #tile_raffle)]
-	global.arena_tile_2 = tile_raffle[math_random(1, #tile_raffle)]
+	global.arena_layout_modifiers.arena_tile_1 = tile_raffle[math_random(1, #tile_raffle)]
+	global.arena_layout_modifiers.arena_tile_2 = tile_raffle[math_random(1, #tile_raffle)]
+end
+
+local function regenerate_arena()
+	local surface = game.surfaces["nauvis"]
+	for chunk in surface.get_chunks() do
+		surface.set_chunk_generated_status(chunk, defines.chunk_generated_status.custom_tiles	)
+	end
+	global.noise_seed = nil	
+	surface.request_to_generate_chunks({0,0}, math.ceil(arena_size / 32) + 3)
+		
+	get_arena_layout_modifiers()
 	
 	surface.force_generate_chunk_requests()
 	surface.daytime = 1
@@ -346,15 +354,15 @@ local function get_arena_entity(surface, pos)
 			return {name = "wooden-chest", position = pos, force = "enemy"}
 		end
 	end
-	
-	if math_random(1, 16) == 1 and noise > 0.5 then
-		return {name = global.arena_tree, position = pos}		
+
+	if math_random(1, global.arena_layout_modifiers.arena_tree_chance) == 1 and noise > global.arena_layout_modifiers.arena_tree_noise then
+		return {name = global.arena_layout_modifiers.arena_tree, position = pos}		
 	end
 	
 	if math_random(1, 1024) == 1 then
 		if math_random(1, 16) == 1 then
-			if surface.can_place_entity({name = global.secret_entity, position = pos, force = "enemy"}) then
-				return {name = global.secret_entity, position = pos, force = "enemy"}
+			if surface.can_place_entity({name = global.arena_layout_modifiers.secret_entity, position = pos, force = "enemy"}) then
+				return {name = global.arena_layout_modifiers.secret_entity, position = pos, force = "enemy"}
 			end
 		end
 		if math_random(1, 64) == 1 then
@@ -400,9 +408,9 @@ local function render_arena_chunk(event)
 			else
 				local noise = get_noise("terrain", pos)
 				if noise > 0 then
-					table_insert(tiles, {name = global.arena_tile_1, position = pos})
+					table_insert(tiles, {name = global.arena_layout_modifiers.arena_tile_1, position = pos})
 				else
-					table_insert(tiles, {name = global.arena_tile_2, position = pos})
+					table_insert(tiles, {name = global.arena_layout_modifiers.arena_tile_2, position = pos})
 				end
 				local entity = get_arena_entity(surface, pos)
 				if entity then surface.create_entity(entity) end															
@@ -503,10 +511,7 @@ local function on_player_joined_game(event)
 		spectator_permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
 		spectator_permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)									
 			
-		global.secret_entity = "stone-furnace"
-		global.arena_tree = "tree-04"
-		global.arena_tile_1 = "grass-2"
-		global.arena_tile_2 = "dirt-5"
+		get_arena_layout_modifiers()
 			
 		global.tank_battles_score = {}
 		global.game_stage = "lobby"

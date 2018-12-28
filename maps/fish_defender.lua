@@ -5,7 +5,6 @@ require "maps.fish_defender_map_intro"
 
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
-require "maps.modules.restrictive_fluid_mining"
 require "maps.modules.fluids_are_explosive"
 require "maps.modules.explosives_are_explosive"
 
