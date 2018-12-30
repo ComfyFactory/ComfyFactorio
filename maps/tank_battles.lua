@@ -228,6 +228,7 @@ local function get_arena_layout_modifiers()
 			["water"] = true,
 			["deepwater"] = true,
 			["water-green"] = true,
+			["deepwater-green"] = true,			
 			["out-of-map"] = true,
 			["hazard-concrete-left"] = true,
 			["hazard-concrete-right"] = true,

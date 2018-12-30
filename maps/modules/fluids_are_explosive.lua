@@ -56,17 +56,17 @@ local function shuffle(tbl)
 end
 
 local function process_explosion_tile(pos, explosion_index, current_radius)
-	local surface = game.surfaces[global.explosion_schedule[explosion_index].surface]					
+	local surface = game.surfaces[global.fluid_explosion_schedule[explosion_index].surface]					
 	local target_entities = surface.find_entities_filtered({area={{pos.x - 0.5, pos.y - 0.5},{pos.x + 0.499, pos.y + 0.499}}}) 
 	local explosion_animation = "explosion"
 	
 	local tile = surface.get_tile(pos)	
 	if tile.name == "out-of-map" then						
-		if global.explosion_schedule[explosion_index].damage_remaining >= out_of_map_tile_health then
+		if global.fluid_explosion_schedule[explosion_index].damage_remaining >= out_of_map_tile_health then
 			explosion_animation = "big-explosion"
 			surface.set_tiles({{name = "dirt-5", position = pos}}, true)
 		end
-		global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
+		global.fluid_explosion_schedule[explosion_index].damage_remaining = global.fluid_explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
 	else
 		local decay_explosion = true
 		for _, entity in pairs(target_entities) do
@@ -74,30 +74,30 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 				decay_explosion = false
 			end			
 		end
-		if decay_explosion then global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay end
+		if decay_explosion then global.fluid_explosion_schedule[explosion_index].damage_remaining = global.fluid_explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay end
 	end	
 	
 	for _, entity in pairs(target_entities) do
 		if entity.valid then
 			if entity.health then						
-				if entity.health <= global.explosion_schedule[explosion_index].damage_remaining then
+				if entity.health <= global.fluid_explosion_schedule[explosion_index].damage_remaining then
 					explosion_animation = "big-explosion"
 					if entity.health > 500 then explosion_animation = "big-artillery-explosion" end
-					global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
+					global.fluid_explosion_schedule[explosion_index].damage_remaining = global.fluid_explosion_schedule[explosion_index].damage_remaining - entity.health
 					if entity.name ~= "player" then
 						entity.damage(2097152, "player", "explosion")
 					else
 						entity.die("player")
 					end
 				else
-					entity.damage(global.explosion_schedule[explosion_index].damage_remaining, "player", "explosion")
-					global.explosion_schedule[explosion_index].damage_remaining = 0
+					entity.damage(global.fluid_explosion_schedule[explosion_index].damage_remaining, "player", "explosion")
+					global.fluid_explosion_schedule[explosion_index].damage_remaining = 0
 				end
 			end
 		end
 	end
 	
-	if global.explosion_schedule[explosion_index].damage_remaining > 5000 and current_radius < 2 then
+	if global.fluid_explosion_schedule[explosion_index].damage_remaining > 5000 and current_radius < 2 then
 		if math.random(1,2) ==  1 then
 			explosion_animation = "big-explosion"
 		else
@@ -107,7 +107,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 	
 	surface.create_entity({name = explosion_animation, position = pos})
 	
-	if global.explosion_schedule[explosion_index].damage_remaining <= 0 then return false end
+	if global.fluid_explosion_schedule[explosion_index].damage_remaining <= 0 then return false end
 	
 	return true		
 end
@@ -118,11 +118,11 @@ local function create_explosion_schedule(entity)
 	if explosives_amount < 1 then return end		
 	local center_position = entity.position
 	
-	if not global.explosion_schedule then global.explosion_schedule = {} end
-	global.explosion_schedule[#global.explosion_schedule + 1] = {}
-	global.explosion_schedule[#global.explosion_schedule].surface = entity.surface.name
+	if not global.fluid_explosion_schedule then global.fluid_explosion_schedule = {} end
+	global.fluid_explosion_schedule[#global.fluid_explosion_schedule + 1] = {}
+	global.fluid_explosion_schedule[#global.fluid_explosion_schedule].surface = entity.surface.name
 	
-	global.explosion_schedule[#global.explosion_schedule].damage_remaining = fluid_damages[entity.fluidbox[1].name] * explosives_amount
+	global.fluid_explosion_schedule[#global.fluid_explosion_schedule].damage_remaining = fluid_damages[entity.fluidbox[1].name] * explosives_amount
 	
 	local circle_coordinates = {
 		[1] = {{x = 0, y = 0}},
@@ -145,15 +145,15 @@ local function create_explosion_schedule(entity)
 			
 	for current_radius = 1, 16, 1 do
 		
-		global.explosion_schedule[#global.explosion_schedule][current_radius] = {}
-		global.explosion_schedule[#global.explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
+		global.fluid_explosion_schedule[#global.fluid_explosion_schedule][current_radius] = {}
+		global.fluid_explosion_schedule[#global.fluid_explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
 		
 		local circle_coords = circle_coordinates[current_radius]
 		circle_coords = shuffle(circle_coords)
 		
 		for index, tile_position in pairs(circle_coords) do												
 			local pos = {x = center_position.x + tile_position.x, y = center_position.y + tile_position.y} 											
-			global.explosion_schedule[#global.explosion_schedule][current_radius][index] = {x = pos.x, y = pos.y}
+			global.fluid_explosion_schedule[#global.fluid_explosion_schedule][current_radius][index] = {x = pos.x, y = pos.y}
 		end	
 		
 	end
@@ -172,29 +172,29 @@ local function on_entity_damaged(event)
 end
 
 local function on_tick(event)
-	if global.explosion_schedule then		
+	if global.fluid_explosion_schedule then		
 		local tick = game.tick
 		local explosion_schedule_is_alive = false
-		for explosion_index = 1, #global.explosion_schedule, 1 do			
-			if #global.explosion_schedule[explosion_index] > 0 then
+		for explosion_index = 1, #global.fluid_explosion_schedule, 1 do			
+			if #global.fluid_explosion_schedule[explosion_index] > 0 then
 				explosion_schedule_is_alive = true
-				local surface = game.surfaces[global.explosion_schedule[explosion_index].surface]
-				for radius = 1, #global.explosion_schedule[explosion_index], 1 do														
-					if global.explosion_schedule[explosion_index][radius].trigger_tick == tick then	
-						for tile_index = 1, #global.explosion_schedule[explosion_index][radius], 1 do							
-							local continue_explosion = process_explosion_tile(global.explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
+				local surface = game.surfaces[global.fluid_explosion_schedule[explosion_index].surface]
+				for radius = 1, #global.fluid_explosion_schedule[explosion_index], 1 do														
+					if global.fluid_explosion_schedule[explosion_index][radius].trigger_tick == tick then	
+						for tile_index = 1, #global.fluid_explosion_schedule[explosion_index][radius], 1 do							
+							local continue_explosion = process_explosion_tile(global.fluid_explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
 							if not continue_explosion then
-								global.explosion_schedule[explosion_index] = {}
+								global.fluid_explosion_schedule[explosion_index] = {}
 								break
 							end														
 						end							
-						if radius == #global.explosion_schedule[explosion_index] then global.explosion_schedule[explosion_index] = {} end
+						if radius == #global.fluid_explosion_schedule[explosion_index] then global.fluid_explosion_schedule[explosion_index] = {} end
 						break
 					end																					
 				end				
 			end			
 		end
-		if not explosion_schedule_is_alive then global.explosion_schedule = nil end
+		if not explosion_schedule_is_alive then global.fluid_explosion_schedule = nil end
 	end
 end
 

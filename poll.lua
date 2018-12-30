@@ -1,9 +1,10 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
--- Create Polls for your Factory Workers                                
+-- create polls for players to vote on                              
 -- by MewMew -- with some help from RedLabel, Klonan, Morcup, BrainClot   
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 local Event = require 'utils.event'
+local poll_duration_in_seconds = 99
 
 local function create_poll_gui(event)
 	local player = game.players[event.player_index]
@@ -21,8 +22,6 @@ local function create_poll_gui(event)
 end
 
 local function poll_show(player)
-	
-	--player.gui.left.direction = "horizontal"	
 	local frame = player.gui.left.add { type = "frame", name = "poll-panel", direction = "vertical" }	
 
 	frame.add { type = "table", name = "poll_panel_table", column_count = 2 }
@@ -44,9 +43,7 @@ local function poll_show(player)
 		
 		poll_panel_table.add { type = "label", caption = str, single_line = false, name = "poll_number_label" }
 		poll_panel_table.poll_number_label.style.font_color = { r=0.75, g=0.75, b=0.75}
-		poll_panel_table.add { type = "label"}	
-		--poll_panel_table.add { caption = "----------------------------", type = "label" }
-		--poll_panel_table.add { type = "label" }			
+		poll_panel_table.add { type = "label"}					
 		poll_panel_table.add { type = "label", caption = global.poll_question, name = "question_label" }
 		poll_panel_table.question_label.style.maximal_width = 208
 		poll_panel_table.question_label.style.maximal_height = 170
@@ -58,18 +55,14 @@ local function poll_show(player)
 	
 	local y = 1
 	while (y < 4) do
-
-		if not (global.poll_answers[y] == "") then		
-		
-			local z = tostring(y)
-						
+		if not (global.poll_answers[y] == "") then				
+			local z = tostring(y)						
 			local l = poll_panel_table.add { type = "label", caption = global.poll_answers[y], name = "answer_label_" .. z }		
 			l.style.maximal_width = 208
 			l.style.minimal_width = 208
 			l.style.maximal_height = 165
 			l.style.font = "default"
-			l.style.single_line = false
-			
+			l.style.single_line = false			
 			local answerbutton = poll_panel_table.add  { type = "button", caption = global.poll_button_votes[y], name = "answer_button_" .. z }	
 			answerbutton.style.font = "default-listbox"
 			answerbutton.style.minimal_width = 32
@@ -84,10 +77,9 @@ local function poll_show(player)
 	if not global.poll_panel_creation_times then global.poll_panel_creation_times = {} end
 	global.poll_panel_creation_times[player.index] = {player_index = player.index, tick = 5940}
 	
-	local str = "Hide (" .. global.poll_duration_in_seconds
+	local str = "Hide (" .. poll_duration_in_seconds
 	str = str .. ")"
-	
-	
+		
 	poll_panel_button_table.add { type = "button", caption = str, name = "poll_hide_button" }
 	
 	poll_panel_button_table.poll_hide_button.style.minimal_width = 70		
@@ -130,7 +122,7 @@ local function poll(player)
 		local frame = player.gui.left["poll-panel"]	
 	
 		if (frame) then
-				frame.destroy()
+			frame.destroy()
 		end
 		
 		if (global.autoshow_polls_for_player[player.name] == true) then
@@ -141,29 +133,16 @@ local function poll(player)
 		
 		x = x + 1
 	end
-	
-	
-	---------------------
-	-- data for score.lua
-	---------------------
-	--global.score_total_polls_created = global.score_total_polls_created + 1
-	--refresh_score()
-	
 end
 
 
-local function poll_refresh()
-	
+local function poll_refresh()	
 	local x = 1
-	
 	while (game.players[x] ~= nil) do
-	
-		local player = game.players[x]
-		
+		local player = game.players[x]		
 		if (player.gui.left["poll-panel"]) then		
 			local frame = player.gui.left["poll-panel"]
-			frame = frame.poll_panel_table
-		
+			frame = frame.poll_panel_table		
 				if not (frame.answer_button_1 == nil) then		
 					frame.answer_button_1.caption = global.poll_button_votes[1]
 				end
@@ -175,8 +154,7 @@ local function poll_refresh()
 				end										
 		end
 		x = x + 1
-	end
-		
+	end		
 end
 
 local function poll_assembler(player)				
@@ -192,31 +170,30 @@ local function poll_assembler(player)
 	frame_table.add { type = "textfield", name = "textfield_answer_3", text = "" }
 	frame_table.add { type = "label", caption = "" }
 	frame_table.add { type = "button", name = "create_new_poll_button", caption = "Create" }
-
 end
 
-function poll_sync_for_new_joining_player(event)
-
-	if not global.poll_voted then global.poll_voted = {} end
-	if not global.poll_question then global.poll_question = "" end
-	if not global.poll_answers then global.poll_answers = {"","",""} end
-	if not global.poll_button_votes then global.poll_button_votes = {0,0,0} end
-	if not global.poll_voted then global.poll_voted = {} end
-	if not global.autoshow_polls_for_player then global.autoshow_polls_for_player = {} end
-	if not global.poll_duration_in_seconds then global.poll_duration_in_seconds = 99 end
-	if not global.score_total_polls_created then global.score_total_polls_created = 0 end
-		
-	local player = game.players[event.player_index]	
-	
-	global.autoshow_polls_for_player[player.name] = true
-	
-	local frame = player.gui.left["poll-panel"]	
-	if (frame == nil) then
-			if not (global.poll_question == "") then
-				poll_show(player)
-			end
+function on_player_joined_game(event)
+	if not global.poll_init_done then
+		global.poll_voted = {}
+		global.poll_question = ""
+		global.poll_answers = {"","",""}
+		global.poll_button_votes = {0,0,0}
+		global.poll_voted = {}
+		global.autoshow_polls_for_player = {}
+		global.score_total_polls_created = 0
+		global.poll_init_done = true
 	end	
 	
+	local player = game.players[event.player_index]	
+	
+	if global.autoshow_polls_for_player[player.name] == nil then 
+		global.autoshow_polls_for_player[player.name] = true
+	end
+	
+	if player.gui.left["poll-panel"]	then return end		
+	if global.poll_question == "" then return end
+	
+	poll_show(player)			
 end
 
 local function on_gui_click(event)
@@ -323,4 +300,4 @@ end
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, create_poll_gui)
-Event.add(defines.events.on_player_joined_game, poll_sync_for_new_joining_player)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
