@@ -17,16 +17,14 @@ local biter_building_inhabitants = {
 }
 
 local function on_entity_died(event)	
-	if event.entity.type == "unit-spawner" then
-		local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)		
-		for _, t in pairs (biter_building_inhabitants[e]) do		
-			for x = 1, math_random(t[2],t[3]), 1 do
-				local p = event.entity.surface.find_non_colliding_position(t[1] , event.entity.position, 6, 1)			
-				if p then event.entity.surface.create_entity {name=t[1], position=p} end
-			end
+	if event.entity.type ~= "unit-spawner" then return end
+	local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)		
+	for _, t in pairs (biter_building_inhabitants[e]) do		
+		for x = 1, math_random(t[2],t[3]), 1 do
+			local p = event.entity.surface.find_non_colliding_position(t[1] , event.entity.position, 6, 1)			
+			if p then event.entity.surface.create_entity {name=t[1], position=p} end
 		end
-		return
-	end
+	end	
 end
 	
 event.add(defines.events.on_entity_died, on_entity_died)

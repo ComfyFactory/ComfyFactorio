@@ -10,8 +10,43 @@ require "maps.modules.splice"
 require "maps.modules.explosive_biters"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.spawners_contain_biters"
+require "maps.modules.railgun_enhancer"
+require "maps.modules.dynamic_landfill"
 
 local spawn_turret_amount = 8
+
+local market_items = {	
+		{price = {{"coin", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
+		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 4}},		
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
+		{price = {{"coin", 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
+		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
+		{price = {{"coin", 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
+		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
+		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
+		{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
+		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'shotgun-shell', count = 1}},	
+		{price = {{"coin", 6}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 1}},
+		{price = {{"coin", 35}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}},
+		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},	
+		{price = {{"coin", 450}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},	
+		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},	
+		{price = {{"coin", 185}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
+		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
+		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
+		{price = {{"coin", 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
+		{price = {{"coin", 325}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
+		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},
+		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
+		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},		
+		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
+		{price = {{"coin", 650}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},	
+		{price = {{"coin", 2500}}, offer = {type = 'give-item', item = 'power-armor', count = 1}},
+		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},		
+		{price = {{"coin", 275}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
+		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
+		{price = {{"coin", 20}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
+	}
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -62,7 +97,7 @@ local function send_attack_group(surface)
 		unit_group.add_member(biters[i])
 	end
 	
-	if global.rocket_silo.valid then
+	if global.market.valid then
 		unit_group.set_command({
 			type = defines.command.compound,
 			structure_type = defines.compound_command.return_last,
@@ -75,7 +110,7 @@ local function send_attack_group(surface)
 						},									
 						{
 							type = defines.command.attack,
-							target = global.rocket_silo,
+							target = global.market,
 							distraction = defines.distraction.by_enemy
 						}
 				}
@@ -216,16 +251,15 @@ local function generate_spawn_area(surface)
 		end
 	end
 	
-	global.rocket_silo = surface.create_entity({name = "rocket-silo", position = {0, 0}, force = "player"})
-	global.rocket_silo.minable = false
-	
-	local radius = 256
-	game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+	global.market = surface.create_entity({name = "market", position = {0, 0}, force = "player"})
+	global.market.minable = false
+	for _, item in pairs(market_items) do
+		global.market.add_market_item(item)
+	end
 end
 			
 local function on_chunk_generated(event)
 	local surface = game.surfaces["nightfall"]
-	--local seed = game.surfaces[1].map_gen_settings.seed
 	if event.surface.name ~= surface.name then return end
 	local left_top = event.area.left_top
 	local tiles = {}		
@@ -239,11 +273,12 @@ local function on_chunk_generated(event)
 end
 
 local function on_entity_damaged(event)
-	if not event.cause then return end
-	if event.entity.valid then		
-		if event.entity == global.rocket_silo then	
-			if event.cause.force.name == "enemy" then return end
-			event.entity.health = event.entity.health + event.final_damage_amount
+	if event.cause then
+		if event.cause.force.name == "enemy" then return end
+	end
+	if event.entity.valid then
+		if event.entity.name == "market" then		
+			event.entity.health = event.entity.health + event.final_damage_amount		
 		end
 	end
 end
@@ -260,20 +295,21 @@ local function on_tick(event)
 		set_daytime_modifiers(surface)
 	end
 	
-	if global.rocket_silo then
-		if global.rocket_silo.valid then return end
+	if global.market then
+		if global.market.valid then return end
 	end
 	
 	if game.tick < 3600 then return end
 			
 	if not global.game_restart_timer then
 		global.game_restart_timer = 7200
+		game.print("The market has fallen!", {r=0.22, g=0.88, b=0.22})
 	else
 		if global.game_restart_timer < 0 then return end
 		global.game_restart_timer = global.game_restart_timer - 600
 	end
 	if global.game_restart_timer % 1800 == 0 then 
-		if global.game_restart_timer > 0 then game.print("Map will restart in " .. global.game_restart_timer / 60 .. " seconds!", { r=0.22, g=0.88, b=0.22}) end
+		if global.game_restart_timer > 0 then game.print("Map will restart in " .. global.game_restart_timer / 60 .. " seconds!", {r=0.22, g=0.88, b=0.22}) end
 		if global.game_restart_timer == 0 then
 			game.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
 			game.write_file("commandPipe", ":loadscenario --force", false, 0)
@@ -321,17 +357,18 @@ local function on_player_joined_game(event)
 		player.insert({name = "pistol", count = 1})
 		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 3})
-		player.insert({name = "firearm-magazine", count = 16})
-		player.insert({name = "iron-plate", count = 32})
+		player.insert({name = "firearm-magazine", count = 32})
+		player.insert({name = "iron-plate", count = 64})
+		player.insert({name = "stone", count = 32})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 	
 	local surface = game.surfaces["nightfall"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {0, 8}, 50, 1), "nightfall")
+		player.teleport(surface.find_non_colliding_position("player", {0, 16}, 50, 1), "nightfall")
 	else
 		if player.online_time < 2 then
-			player.teleport({0, 8}, "nightfall")
+			player.teleport({0, 16}, "nightfall")
 		end
 	end
 	
