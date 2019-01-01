@@ -121,6 +121,7 @@ end
 
 local function on_entity_damaged(event)
 	local entity = event.entity
+	if not entity.valid then return end
 	if not entity.health then return end
 	if entity.health > entity.prototype.max_health * 0.75 then return end
 	

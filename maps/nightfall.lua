@@ -212,8 +212,19 @@ local function clear_corpses(surface)
 	end
 end
 
+local spawner_search_areas = {
+		[1] = {{0, -10000},{10000, 0}},
+		[2] = {{0, 0},{10000, 10000}},
+		[3] = {{-10000, 0},{0, -10000}},
+		[4] = {{-10000, -10000},{0, 0}}
+	}
+
 local function send_attack_group(surface)
-	local spawners = surface.find_entities_filtered({type = "unit-spawner"})
+	if not global.area_rotation then global.area_rotation = 0 end
+	global.area_rotation = global.area_rotation + 1
+	if global.area_rotation > 4 then global.area_rotation = 1 end
+	
+	local spawners = surface.find_entities_filtered({type = "unit-spawner", area = spawner_search_areas[global.area_rotation]})
 	if not spawners[1] then return end
 	
 	local spawner = spawners[math_random(1, #spawners)]	
@@ -228,7 +239,7 @@ local function send_attack_group(surface)
 	
 	local unit_group = surface.create_unit_group({position=pos, force="enemy"})
 	
-	local group_size = 4 + (global.night_count * 4)
+	local group_size = 8 + (global.night_count * 8)
 	if group_size > 200 then group_size = 200 end
 	
 	for i = 1, group_size, 1 do
@@ -270,19 +281,30 @@ local function send_attack_group(surface)
 	end
 end
 
+local daytime_messages = {
+	"It´s daytime!",
+	"The sun is rising, they are calming down."
+}
+
 local function set_daytime_modifiers(surface)
-	if surface.peaceful_mode == true then return end
+	if game.map_settings.enemy_expansion.enabled == false then return end
 	
 	game.map_settings.enemy_expansion.enabled = false
 	surface.peaceful_mode = true
 	
-	game.print("It´s daytime!", {r = 255, g = 255, b = 50})
+	game.print(daytime_messages[math_random(1, #daytime_messages)], {r = 255, g = 255, b = 50})
 	
 	clear_corpses(surface)
 end
 
+local nightfall_messages = {
+	"Night is falling.",
+	"It is getting dark.",
+	"They are becoming restless."
+}
+
 local function set_nighttime_modifiers(surface)
-	if surface.peaceful_mode == false then return end
+	if game.map_settings.enemy_expansion.enabled == true then return end
 	
 	if not global.night_count then
 		global.night_count = 1
@@ -322,7 +344,7 @@ local function set_nighttime_modifiers(surface)
 	if max_expansion_cooldown < 1800 then max_expansion_cooldown = 1800 end
 	game.map_settings.enemy_expansion.max_expansion_cooldown = max_expansion_cooldown
 
-	game.print("Night is falling!", {r = 150, g = 0, b = 0})	
+	game.print(nightfall_messages[math_random(1, #nightfall_messages)], {r = 150, g = 0, b = 0})	
 end
 
 local function generate_spawn_area(surface)		
@@ -441,7 +463,7 @@ local function on_tick(event)
 	local surface = game.surfaces["nightfall"]
 	if surface.daytime > 0.25 and surface.daytime < 0.75 then
 		set_nighttime_modifiers(surface)
-		if surface.daytime < 0.55 then
+		if surface.daytime < 0.65 then
 			send_attack_group(surface)
 		end
 	else
@@ -494,12 +516,14 @@ local function on_player_joined_game(event)
 		game.create_surface("nightfall", map_gen_settings)							
 		local surface = game.surfaces["nightfall"]
 		
+		surface.ticks_per_day = surface.ticks_per_day * 3
+		
 		local radius = 512
 		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})											
 		
-		--game.map_settings.enemy_evolution.destroy_factor = 0
-		--game.map_settings.enemy_evolution.time_factor = 0
-		--game.map_settings.enemy_evolution.pollution_factor = 0	
+		game.map_settings.enemy_evolution.destroy_factor = 0.004
+		game.map_settings.enemy_evolution.time_factor = 0.000008
+		game.map_settings.enemy_evolution.pollution_factor = 0.00003
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 1)		
 		

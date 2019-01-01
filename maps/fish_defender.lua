@@ -3,6 +3,7 @@
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
 
+require "maps.modules.biters_yield_coins"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
 
@@ -777,19 +778,6 @@ local function is_game_lost()
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 600
 end
 
-local biter_building_inhabitants = {
-	[1] = {{"small-biter",8,16}},
-	[2] = {{"small-biter",12,24}},
-	[3] = {{"small-biter",8,16},{"medium-biter",1,2}},
-	[4] = {{"small-biter",4,8},{"medium-biter",4,8}},
-	[5] = {{"small-biter",3,5},{"medium-biter",8,12}},
-	[6] = {{"small-biter",3,5},{"medium-biter",5,7},{"big-biter",1,2}},
-	[7] = {{"medium-biter",6,8},{"big-biter",3,5}},
-	[8] = {{"medium-biter",2,4},{"big-biter",6,8}},
-	[9] = {{"medium-biter",2,3},{"big-biter",7,9}},
-	[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
-}
-
 local function damage_entities_in_radius(position, radius, damage)
 	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
@@ -806,77 +794,9 @@ local function damage_entities_in_radius(position, radius, damage)
 		end
 	end
 end
-
-local coin_earnings = {
-	["small-biter"] = 1,
-	["medium-biter"] = 2,
-	["big-biter"] = 3,
-	["behemoth-biter"] = 5,
-	["small-spitter"] = 1,
-	["medium-spitter"] = 2,
-	["big-spitter"] = 3,
-	["behemoth-spitter"] = 5,
-	["spitter-spawner"] = 32,
-	["biter-spawner"] = 32	
-}
-
-local entities_that_earn_coins = {
-		["artillery-turret"] = true,
-		["gun-turret"] = true,
-		["laser-turret"] = true,
-		["flamethrower-turret"] = true
-	}	
 	
 local function on_entity_died(event)
-	if event.entity.force.name == "enemy" then
-		local players_to_reward = {}
-		local reward_has_been_given = false
-		if event.cause then
-			if event.entity.type == "unit" or event.entity.type == "unit-spawner" then
-				if event.cause.name == "player" then
-					insert(players_to_reward, event.cause)
-					reward_has_been_given = true
-				end			
-				if event.cause.type == "car" then
-					player = event.cause.get_driver()
-					passenger = event.cause.get_passenger()
-					if player then insert(players_to_reward, player.player)	end
-					if passenger then insert(players_to_reward, passenger.player) end
-					reward_has_been_given = true
-				end
-				if event.cause.type == "locomotive" then
-					train_passengers = event.cause.train.passengers			
-					if train_passengers then
-						for _, passenger in pairs(train_passengers) do
-							insert(players_to_reward, passenger)
-						end
-						reward_has_been_given = true
-					end
-				end
-				for _, player in pairs(players_to_reward) do
-					player.insert({name = "coin", count = coin_earnings[event.entity.name]})
-				end
-				
-				if entities_that_earn_coins[event.cause.name] then
-					event.entity.surface.spill_item_stack(event.cause.position,{name = "coin", count = coin_earnings[event.entity.name]}, true)
-					reward_has_been_given = true
-				end								
-			end
-		end		
-				
-		if reward_has_been_given == false and coin_earnings[event.entity.name] then
-			event.entity.surface.spill_item_stack(event.entity.position,{name = "coin", count = coin_earnings[event.entity.name]}, true) 
-		end
-		
-		if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
-			local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)
-			for _, t in pairs (biter_building_inhabitants[e]) do
-				for x = 1, math.random(t[2],t[3]), 1 do
-					local p = event.entity.surface.find_non_colliding_position(t[1] , event.entity.position, 6, 1)
-					if p then event.entity.surface.create_entity {name=t[1], position=p} end
-				end
-			end
-		end
+	if event.entity.force.name == "enemy" then			
 
 		if event.entity.name == "medium-biter" then
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})		

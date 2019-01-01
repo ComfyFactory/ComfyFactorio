@@ -1,7 +1,7 @@
 local event = require 'utils.event'
 
 local main_caption = " --Nightfall-- "
-local sub_caption = "*something is lurking in the dark*"
+local sub_caption = "*can you make it through the night*"
 local info = [[
 	They come out at night. 
 	Trying to nom your rocket silo.
@@ -12,7 +12,7 @@ local info = [[
 	There seem to be shipwrecks of misfortunate explorers all over this place.
 	It might be worth scavenging a few.
 	
-	The wreck loot quality increases with distance.
+	Wreck loot quality increases with distance.
 ]]
 
 local function create_map_intro(player)
