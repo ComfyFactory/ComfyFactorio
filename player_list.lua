@@ -11,7 +11,7 @@ to your scenario control.lua.
 ---MewMew---
 --]]
 
-local Event = require 'utils.event'
+local event = require 'utils.event'
 
 local symbol_asc = "▲"
 local symbol_desc = "▼"
@@ -420,7 +420,7 @@ local function on_player_joined_game(event)
 	if not global.player_list_pokes_counter then global.player_list_pokes_counter = {} end	
 	
 	if player.gui.top.player_list_button == nil then
-		local button = player.gui.top.add({ type = "sprite-button", name = "player_list_button", sprite = "item/heavy-armor" })		
+		local button = player.gui.top.add({ type = "sprite-button", name = "player_list_button", sprite = "item/heavy-armor", tooltip = "Player List" })		
 		button.style.minimal_height = 38
 		button.style.minimal_width = 38
 		button.style.top_padding = 2
@@ -434,25 +434,6 @@ local function on_player_joined_game(event)
 		player_list_show(player,"total_time_played_desc")
 	end
 end
---[[
-local function on_tick()
-	if game.tick % 1200 == 0 then
-		for _,player in pairs(game.connected_players) do				
-			if player.gui.left["player-list-panel"] then
-				local sort_method
-				if string.find(player.gui.left["player-list-panel"].player_list_panel_header_table.player_list_panel_header_2.caption, symbol_desc) then sort_method = "name_desc" end
-				if string.find(player.gui.left["player-list-panel"].player_list_panel_header_table.player_list_panel_header_2.caption, symbol_asc) then sort_method = "name_asc" end
-				if string.find(player.gui.left["player-list-panel"].player_list_panel_header_table.player_list_panel_header_3.caption, symbol_desc) then sort_method = "time_played_desc" end
-				if string.find(player.gui.left["player-list-panel"].player_list_panel_header_table.player_list_panel_header_3.caption, symbol_asc) then sort_method = "time_played_asc" end
-				if string.find(player.gui.left["player-list-panel"].player_list_panel_header_table.player_list_panel_header_4.caption, symbol_desc) then sort_method = "pokes_desc" end
-				if string.find(player.gui.left["player-list-panel"].player_list_panel_header_table.player_list_panel_header_4.caption, symbol_asc) then sort_method = "pokes_asc" end				
-				player.gui.left["player-list-panel"].destroy()
-				player_list_show(player,sort_method)
-			end			
-		end
-	end
-end
-Event.add(defines.events.on_tick, on_tick)
-]]--
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_gui_click, on_gui_click)
+
+event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_gui_click, on_gui_click)

@@ -5,7 +5,7 @@ local sorting_symbol = {ascending = "▲", descending = "▼"}
 
 local function create_score_button(player)
 	if not player.gui.top.score then
-		local button = player.gui.top.add({ type = "sprite-button", name = "score", sprite = "item/rocket-silo" })		
+		local button = player.gui.top.add({ type = "sprite-button", name = "score", sprite = "item/rocket-silo", tooltip = "Scoreboard" })		
 		button.style.minimal_height = 38
 		button.style.minimal_width = 38
 		button.style.top_padding = 2

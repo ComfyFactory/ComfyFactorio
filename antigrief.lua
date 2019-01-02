@@ -5,7 +5,7 @@ local event = require 'utils.event'
 
 local function create_admin_button(player)
 	if player.gui.top["admin_button"] then return end
-	local b = player.gui.top.add({type = "button", caption = "Admin", name = "admin_button"})
+	local b = player.gui.top.add({type = "button", caption = "Admin", name = "admin_button", tooltip = "Use your powers wisely"})
 	b.style.font_color = {r = 0.95, g = 0.11, b = 0.11}
 	b.style.font = "default-bold"
 	b.style.minimal_height = 38
