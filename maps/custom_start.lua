@@ -2,13 +2,9 @@ local event = require 'utils.event'
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-end
-
-local function on_player_created(event)	
-	local player = game.players[event.player_index]			
+	if not global.new_player_equipped then global.new_player_equipped = {} end
 	
-	--game.forces.player.recipes["snow-pump"].enabled = false
-	if player.online_time < 2 then
+	if not global.new_player_equipped[player.name] then
 		player.insert({name = "raw-fish", count = 3})
 		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "iron-plate", count = 128})
@@ -20,7 +16,13 @@ local function on_player_created(event)
 		player.insert({name = "shotgun", count = 1})
 		player.insert({name = "shotgun-shell", count = 32})
 		player.insert({name = "light-armor", count = 1})
+		global.new_player_equipped[player.name] = true
 	end
+end
+
+local function on_player_created(event)	
+	local player = game.players[event.player_index]			
+	
 end
 
 local function on_research_finished(event)

@@ -239,7 +239,7 @@ local function send_attack_group(surface)
 	
 	local unit_group = surface.create_unit_group({position=pos, force="enemy"})
 	
-	local group_size = 8 + (global.night_count * 8)
+	local group_size = 6 + (global.night_count * 6)
 	if group_size > 200 then group_size = 200 end
 	
 	for i = 1, group_size, 1 do
@@ -328,13 +328,13 @@ local function set_nighttime_modifiers(surface)
 	if max_expansion_distance > 20 then max_expansion_distance = 20 end
 	game.map_settings.enemy_expansion.max_expansion_distance = max_expansion_distance
 	
-	local settler_group_min_size = global.night_count
+	local settler_group_min_size = math.ceil(global.night_count / 3)
 	if settler_group_min_size > 20 then settler_group_min_size = 20 end
 	game.map_settings.enemy_expansion.settler_group_min_size = settler_group_min_size
 	
-	local settler_group_min_size = global.night_count
-	if settler_group_min_size > 50 then settler_group_min_size = 50 end
-	game.map_settings.enemy_expansion.settler_group_max_size = settler_group_min_size
+	local settler_group_max_size = math.ceil(global.night_count / 2)
+	if settler_group_max_size > 50 then settler_group_max_size = 50 end
+	game.map_settings.enemy_expansion.settler_group_max_size = settler_group_max_size
 	
 	local min_expansion_cooldown = 54000 - global.night_count * 1800
 	if min_expansion_cooldown < 1800 then min_expansion_cooldown = 1800 end
