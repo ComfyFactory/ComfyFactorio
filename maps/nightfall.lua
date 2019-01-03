@@ -212,22 +212,39 @@ local function clear_corpses(surface)
 	end
 end
 
-local spawner_search_areas = {
-		[1] = {{0, -10000},{10000, 0}},
-		[2] = {{0, 0},{10000, 10000}},
-		[3] = {{-10000, 0},{0, -10000}},
-		[4] = {{-10000, -10000},{0, 0}}
-	}
-
-local function send_attack_group(surface)
-	if not global.area_rotation then global.area_rotation = 0 end
-	global.area_rotation = global.area_rotation + 1
-	if global.area_rotation > 4 then global.area_rotation = 1 end
+local function get_spawner(surface)
+	local spawners = surface.find_entities_filtered({type = "unit-spawner"})
+	if not spawners[1] then return false end
+	spawners = shuffle(spawners)
 	
-	local spawners = surface.find_entities_filtered({type = "unit-spawner", area = spawner_search_areas[global.area_rotation]})
-	if not spawners[1] then return end
+	if not global.last_spawners then
+		global.last_spawners = {{x = spawners[1].position.x, y = spawners[1].position.y}}
+		return spawners[1]
+	end
 	
-	local spawner = spawners[math_random(1, #spawners)]	
+	for i = 1, #spawners, 1 do
+		local spawner_valid = true
+		for i2 = #global.last_spawners, #global.last_spawners - 4, -1 do
+			if i2 < 1 then break end
+			local distance = math.sqrt((spawners[i].position.x - global.last_spawners[i2].x)^2 + (spawners[i].position.y - global.last_spawners[i2].y)^2)
+			if distance < 200 then
+				spawner_valid = false
+				break
+			end
+		end
+		if spawner_valid then
+			global.last_spawners[#global.last_spawners + 1] = {x = spawners[i].position.x, y = spawners[i].position.y}
+			if #global.last_spawners > 8 then global.last_spawners[#global.last_spawners - 8] = nil end
+			return spawners[i]
+		end
+	end
+	
+	return false
+end
+	
+local function send_attack_group(surface)	
+	local spawner = get_spawner(surface)
+	if not spawner then return false end
 	
 	local biters = surface.find_enemy_units(spawner.position, 96, "player")	
 	if not biters[1] then return end
@@ -312,8 +329,8 @@ local function set_nighttime_modifiers(surface)
 	else
 		global.night_count = global.night_count + 1
 		if game.forces["enemy"].evolution_factor > 0.25 then
-			global.splice_modifier = global.splice_modifier + 0.1
-			if global.splice_modifier > 16 then global.splice_modifier = 16 end
+			global.splice_modifier = global.splice_modifier + 0.05
+			if global.splice_modifier > 4 then global.splice_modifier = 4 end
 		end	
 	end
 	
@@ -324,24 +341,24 @@ local function set_nighttime_modifiers(surface)
 	surface.peaceful_mode = false	
 	game.map_settings.enemy_expansion.enabled = true
 	
-	local max_expansion_distance = global.night_count
+	local max_expansion_distance = math.ceil(global.night_count / 3)
 	if max_expansion_distance > 20 then max_expansion_distance = 20 end
 	game.map_settings.enemy_expansion.max_expansion_distance = max_expansion_distance
 	
-	local settler_group_min_size = math.ceil(global.night_count / 3)
+	local settler_group_min_size = math.ceil(global.night_count / 6)
 	if settler_group_min_size > 20 then settler_group_min_size = 20 end
 	game.map_settings.enemy_expansion.settler_group_min_size = settler_group_min_size
 	
-	local settler_group_max_size = math.ceil(global.night_count / 2)
+	local settler_group_max_size = math.ceil(global.night_count / 3)
 	if settler_group_max_size > 50 then settler_group_max_size = 50 end
 	game.map_settings.enemy_expansion.settler_group_max_size = settler_group_max_size
 	
-	local min_expansion_cooldown = 54000 - global.night_count * 1800
-	if min_expansion_cooldown < 1800 then min_expansion_cooldown = 1800 end
+	local min_expansion_cooldown = 54000 - global.night_count * 540
+	if min_expansion_cooldown < 3600 then min_expansion_cooldown = 3600 end
 	game.map_settings.enemy_expansion.min_expansion_cooldown = min_expansion_cooldown
 	
-	local max_expansion_cooldown = 108000 - global.night_count * 1800
-	if max_expansion_cooldown < 1800 then max_expansion_cooldown = 1800 end
+	local max_expansion_cooldown = 108000 - global.night_count * 1080
+	if max_expansion_cooldown < 3600 then max_expansion_cooldown = 3600 end
 	game.map_settings.enemy_expansion.max_expansion_cooldown = max_expansion_cooldown
 
 	game.print(nightfall_messages[math_random(1, #nightfall_messages)], {r = 150, g = 0, b = 0})	
@@ -447,9 +464,15 @@ local function on_chunk_generated(event)
 	end
 end
 
-local function on_entity_damaged(event)
+local function on_entity_damaged(event)	
 	if event.cause then
-		if event.cause.force.name == "enemy" then return end
+		if event.cause.force.name == "enemy" then
+			if global.night_count then
+				event.entity.health = event.entity.health - (event.final_damage_amount * global.night_count * 0.05)
+				if event.entity.health <= 0 then event.entity.die() end
+			end
+		end
+		if event.cause.force.name == "enemy" then return end				
 	end
 	if event.entity.valid then
 		if event.entity == global.rocket_silo then		
@@ -516,7 +539,7 @@ local function on_player_joined_game(event)
 		game.create_surface("nightfall", map_gen_settings)							
 		local surface = game.surfaces["nightfall"]
 		
-		surface.ticks_per_day = surface.ticks_per_day * 3
+		surface.ticks_per_day = surface.ticks_per_day * 2
 		
 		local radius = 512
 		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})											
@@ -555,6 +578,11 @@ local function on_player_joined_game(event)
 	create_time_gui(player)
 end
 
+local function on_research_finished(event)	
+	game.forces.player.recipes["flamethrower-turret"].enabled = false
+end
+
+event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
