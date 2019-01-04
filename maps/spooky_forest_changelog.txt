@@ -1,3 +1,6 @@
+0.08
+spawn is now biter free
+
 0.07
 added randomly breaking trees
 added randomly attacking biters

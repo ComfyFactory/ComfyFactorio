@@ -453,6 +453,7 @@ local function on_player_mined_entity(event)
 end
 
 local function on_built_entity(event)
+	if not event.created_entity.valid then return end
 	if event.created_entity.type == "entity-ghost" then return end
 	local player = game.players[event.player_index]
 	init_player_table(player)

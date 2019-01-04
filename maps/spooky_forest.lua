@@ -186,7 +186,7 @@ local function get_entity(position)
 				
 		if math_random(1, 12) == 1 then
 			local noise_spawners = get_noise("spawners", position)
-			if noise_spawners > 0.25 then
+			if noise_spawners > 0.25 and position.x^2 + position.y^2 > 3000 then
 				entity_name = "biter-spawner"
 				if math_random(1,5) == 1 then
 					entity_name = "spitter-spawner"
