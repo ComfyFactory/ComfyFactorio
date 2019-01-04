@@ -3,7 +3,7 @@
 -- by MewMew -- with some help from RedLabel, Klonan, Morcup, BrainClot   
 ----------------------------------------------------------------------------------------------------------------------------------------
 
-local Event = require 'utils.event'
+local event = require 'utils.event'
 local poll_duration_in_seconds = 99
 
 local function create_poll_gui(player)
@@ -19,6 +19,7 @@ local function create_poll_gui(player)
 end
 
 local function poll_show(player)
+	if player.gui.left["poll-panel"]	then player.gui.left["poll-panel"].destroy() end
 	
 	local frame = player.gui.left.add { type = "frame", name = "poll-panel", direction = "vertical" }	
 
@@ -167,8 +168,7 @@ function on_player_joined_game(event)
 	end
 	
 	create_poll_gui(player)
-	
-	if player.gui.left["poll-panel"]	then return end		
+			
 	if global.poll_question == "" then return end
 		
 	poll_show(player)			
@@ -264,18 +264,18 @@ local function process_timeout(creation_time)
 end
 
 local function on_tick()	
+	if game.tick % 60 ~= 0 then return end
 	if not global.poll_panel_creation_times then return end
 	if #global.poll_panel_creation_times == 0 then
 		global.poll_panel_creation_times = nil
 		return
 	end
-	if game.tick % 60 ~= 0 then return end
 	
 	for _, creation_time in pairs(global.poll_panel_creation_times) do
 		process_timeout(creation_time)						
 	end		
 end
 
-Event.add(defines.events.on_tick, on_tick)
-Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_tick, on_tick)
+event.add(defines.events.on_gui_click, on_gui_click)
+event.add(defines.events.on_player_joined_game, on_player_joined_game)
