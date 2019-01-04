@@ -3,8 +3,6 @@
 local event = require 'utils.event'
 local math_random = math.random
 
-local respawn_fish = true
-
 local player_hunger_fish_food_value = 10
 local player_hunger_spawn_value = 80				
 local player_hunger_stages = {}
@@ -98,26 +96,6 @@ local function hunger_update(player, food_value)
 	create_hunger_gui(player)
 end
 
-local function respawn_fishes()				
-	local surface = game.players[1].surface
-	for chunk in surface.get_chunks() do
-		if math_random(1, 32) == 1 then
-			local area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}
-			local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater", "water-green"}, area = area})
-			for _, tile in pairs(water_tiles) do
-				if math_random(1, 32) == 1 then
-					local area_entities = {{tile.position.x - 2, tile.position.y - 2},{tile.position.x + 2, tile.position.y + 2}}
-					local area_tiles = {{tile.position.x - 1, tile.position.y - 1},{tile.position.x + 1, tile.position.y + 1}}			
-					if surface.count_entities_filtered({area = area_entities, name = "fish"}) == 0 and surface.count_tiles_filtered({area = area_tiles, name = {"water", "deepwater", "water-green"}}) > 3 then
-						surface.create_entity({name = "water-splash", position = tile.position})
-						surface.create_entity({name = "fish", position = tile.position})				
-					end
-				end
-			end
-		end
-	end
-end
-
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.player_hunger then global.player_hunger = {} end
@@ -137,17 +115,12 @@ local function on_player_used_capsule(event)
 	end
 end
 
-local function on_tick()	
-	if game.tick % 360 == 0 then
-		if game.tick % 3600 == 0 then
-			for _, player in pairs(game.connected_players) do
-				if player.afk_time < 18000 then	hunger_update(player, -1) end		
-			end			
-		end
-		if respawn_fish then
-			respawn_fishes()
-		end
-	end
+local function on_tick()		
+	if game.tick % 3600 == 0 then
+		for _, player in pairs(game.connected_players) do
+			if player.afk_time < 18000 then	hunger_update(player, -1) end		
+		end			
+	end		
 end
 
 event.add(defines.events.on_tick, on_tick)	

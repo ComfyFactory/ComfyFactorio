@@ -1,13 +1,16 @@
 -- this module respawns fish in all water tiles on every surface with a player on it -- by mewmew --
+-- cpu heavy -- fixed processing rate is 1 chunk per tick																	
+																																		
 
-local respawn_interval = 3600							--interval in ticks 
-local respawn_amount_per_chunk = 8				--maximum amount of fish to generate in one chunk per interval 
-local max_amount_of_fish_in_one_chunk = 32	--maximum amount of fish one chunk is allowed to contain
+local respawn_interval = 25200											--interval in ticks 
+global.fish_respawner_water_tiles_per_fish = 32					--amount of water tiles required per fish >> high values = less fish density, low values = high fish density
+global.fish_respawner_max_respawnrate_per_chunk = 2		--maximum amount of fish that will spawn each interval in one chunk				
+
 local valid_water_tiles = {
-		"water",
-		"deepwater", 
-		"water-green",
-		"deepwater-green"
+			"water",
+			"deepwater", 
+			"water-green",
+			"deepwater-green"
 		}
 
 local event = require 'utils.event'
@@ -16,7 +19,7 @@ local math_random = math.random
 local function shuffle(tbl)
 	local size = #tbl
 		for i = size, 1, -1 do
-			local rand = math.random(size)
+			local rand = math_random(size)
 			tbl[i], tbl[rand] = tbl[rand], tbl[i]
 		end
 	return tbl
@@ -53,11 +56,17 @@ local function respawn_fishes_in_chunk(schedule)
 	local surface = game.surfaces[schedule.surface_index]
 	local chunk = schedule.chunk
 	local chunk_area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}
-	local chunk_fish_count = surface.count_entities_filtered({area = chunk_area, name = "fish"})
-	if chunk_fish_count > max_amount_of_fish_in_one_chunk then return end 	
-	local fish_to_spawn = respawn_amount_per_chunk
-	local water_tiles = surface.find_tiles_filtered({name = valid_water_tiles, area = chunk_area})
-	if not water_tiles[1] then return end
+	
+	local water_tiles = surface.find_tiles_filtered({area = chunk_area, name = valid_water_tiles})
+	if #water_tiles < global.fish_respawner_water_tiles_per_fish then return end
+	
+	local chunk_fish_count = surface.count_entities_filtered({area = chunk_area, type = "fish"})
+		
+	local fish_to_spawn = math.floor((#water_tiles - (global.fish_respawner_water_tiles_per_fish * chunk_fish_count)) / global.fish_respawner_water_tiles_per_fish)
+	if fish_to_spawn <= 0 then return end
+	
+	if fish_to_spawn > global.fish_respawner_max_respawnrate_per_chunk then fish_to_spawn = global.fish_respawner_max_respawnrate_per_chunk end
+	
 	water_tiles = shuffle(water_tiles)
 	for _, tile in pairs(water_tiles) do
 		if surface.can_place_entity({name = "fish", position = tile.position}) then
@@ -69,7 +78,6 @@ local function respawn_fishes_in_chunk(schedule)
 	end				
 end
 
--- one chunk per tick
 local function on_tick()
 	local i = game.tick % respawn_interval
 	if i == 0 then create_new_fish_spawn_schedule() return end

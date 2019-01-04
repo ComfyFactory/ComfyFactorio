@@ -1,6 +1,9 @@
 -- spooky forest -- by mewmew --
 
 require "maps.modules.hunger"
+require "maps.modules.fish_respawner"
+global.fish_respawner_water_tiles_per_fish = 16
+
 local shapes = require "maps.tools.shapes"
 local event = require 'utils.event'
 local map_functions = require "maps.tools.map_functions"
@@ -511,7 +514,7 @@ local function on_chunk_generated(event)
 				
 				if pos.x <= -7 or pos.x >= 7 or pos.y <= -7 or pos.y >= 7 then
 					if math_random(1, 3) ~= 1 then
-						table.insert(entities, {name = "stone-wall", position = {x = pos.x, y = pos.y}})
+						table.insert(entities, {name = "stone-wall", position = {x = pos.x, y = pos.y}, force = "player"})
 					end
 				end
 			end
