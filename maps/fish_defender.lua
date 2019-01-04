@@ -2,10 +2,13 @@
 
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
+require "maps.modules.rocket_launch_always_yields_science"
+require "maps.modules.launch_10000_fish_to_win"
 
 require "maps.modules.biters_yield_coins"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
+
 
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
@@ -32,7 +35,7 @@ end
 
 local function create_wave_gui(player)
 	if player.gui.top["fish_defense_waves"] then player.gui.top["fish_defense_waves"].destroy() end
-	local frame = player.gui.top.add({ type = "frame", name = "fish_defense_waves"})
+	local frame = player.gui.top.add({ type = "frame", name = "fish_defense_waves", tooltip = "Click to show map info"})
 	frame.style.maximal_height = 38
 
 	local wave_count = 0
@@ -626,7 +629,7 @@ local function refresh_market_offers()
 		{price = {}, offer = {type = 'nothing', effect_description = str3}},
 		{price = {}, offer = {type = 'nothing', effect_description = str4}},
 		{price = {}, offer = {type = 'nothing', effect_description = str5}},
-		{price = {{"coin", 3}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
+		{price = {{"coin", 5}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 8}},		
 		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
 		{price = {{"coin", 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
@@ -1253,7 +1256,9 @@ local function on_tick()
 	if game.tick % 30 == 0 then		
 		if global.market then
 			for _, player in pairs(game.connected_players) do
-				create_wave_gui(player)
+				if game.surfaces["fish_defender"].peaceful_mode == false then
+					create_wave_gui(player) 
+				end				
 			end					
 		end
 		if game.tick % 180 == 0 then
@@ -1280,6 +1285,7 @@ local function on_tick()
 	end
 
 	if game.tick % wave_interval == wave_interval - 1 then
+		if game.surfaces["fish_defender"].peaceful_mode == true then return end
 		biter_attack_wave()
 	end
 end

@@ -1,3 +1,6 @@
+0.24
+evacuate 10000 fish to win the game
+
 0.23
 very late waves will only yield behemoths now
 shotgun damage increase
