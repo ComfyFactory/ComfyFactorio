@@ -1210,6 +1210,7 @@ end
 
 local function on_built_entity(event)
 	local entity = event.created_entity
+	if not entity.valid then return end
 	if global.entity_limits[entity.name] then
 		local surface = entity.surface
 		
