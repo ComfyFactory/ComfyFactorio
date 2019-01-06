@@ -17,6 +17,9 @@ local function on_player_joined_game(event)
 		player.insert({name = "shotgun-shell", count = 32})
 		player.insert({name = "light-armor", count = 1})
 		global.new_player_equipped[player.name] = true
+		
+		local radius = 320
+		game.forces.player.chart(game.surfaces[1], {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})	
 	end
 end
 

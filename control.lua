@@ -28,7 +28,7 @@ require "score"
 --require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"
-require "maps.spooky_forest"
+--require "maps.spooky_forest"
 --require "maps.nightfall"
 --require "maps.atoll"
 --require "maps.tank_battles"
@@ -39,7 +39,7 @@ require "maps.spooky_forest"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
 --require "maps.empty_map"
---require "maps.custom_start"
+require "maps.custom_start"
 -----------------------------
 
 local Event = require 'utils.event'

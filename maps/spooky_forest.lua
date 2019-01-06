@@ -2,7 +2,8 @@
 
 require "maps.modules.hunger"
 require "maps.modules.fish_respawner"
-global.fish_respawner_water_tiles_per_fish = 16
+global.fish_respawner_water_tiles_per_fish = 10
+global.fish_respawner_max_respawnrate_per_chunk = 1
 
 local shapes = require "maps.tools.shapes"
 local event = require 'utils.event'
@@ -358,21 +359,6 @@ biter_building_inhabitants[8] = {{"medium-biter",2,4},{"big-biter",6,8}}
 biter_building_inhabitants[9] = {{"medium-biter",2,3},{"big-biter",7,9}}
 biter_building_inhabitants[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
 
-local entity_drop_amount = {
-    ['small-biter'] = {low = 16, high = 24},
-    ['small-spitter'] = {low = 16, high = 24},
-	['medium-biter'] = {low = 24, high = 32},
-    ['medium-spitter'] = {low = 24, high = 32},
-	['big-biter'] = {low = 32, high = 40},
-    ['big-spitter'] = {low = 32, high = 40},
-    ['behemoth-biter'] = {low = 40, high = 48},
-	['behemoth-spitter'] = {low = 40, high = 48},
-	['biter-spawner'] = {low = 64, high = 128},
-	['spitter-spawner'] = {low = 64, high = 128},
-	['small-worm-turret'] = {low = 64, high = 128},
-	['medium-worm-turret'] = {low = 128, high = 196},
-	['big-worm-turret'] = {low = 196, high = 254}
-}
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal"}
 local ore_spawn_raffle = {
 		"iron-ore","iron-ore","iron-ore","iron-ore", "iron-ore","iron-ore","iron-ore","iron-ore", "iron-ore","iron-ore",
@@ -411,18 +397,8 @@ local function on_entity_died(event)
 	if event.entity.type == "unit" and math_random(1, 256) == 1 then
 		surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 1}, true)
 	end
-	--[[
-	if entity_drop_amount[event.entity.name] then
-		if game.forces.enemy.evolution_factor < 0.5 then
-			local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high))
-			surface.spill_item_stack(event.entity.position,{name = ore_spill_raffle[math.random(1,#ore_spill_raffle)], count = amount},true)
-		end
-		return
-	end	
-	]]
-	
-	if event.entity.type == "tree" then
-		--if math_random(1, 2) == 1 then return end
+		
+	if event.entity.type == "tree" then		
 		spawn_biter(event.entity.surface, event.entity.position)			
 	end
 end
@@ -498,8 +474,8 @@ local function on_chunk_generated(event)
 	local entities = {}
 	local tiles = {}
 	
-	if position_left_top.x > 128 then return end
-	if position_left_top.y > 128 then return end
+	--if position_left_top.x > 128 then return end
+	--if position_left_top.y > 128 then return end
 	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
@@ -551,7 +527,8 @@ local disabled_for_deconstruction = {
 		["rock-big"] = true,
 		["sand-rock-big"] = true,
 		["tree-02"] = true,
-		["tree-04"] = true
+		["tree-04"] = true,
+		["dead-tree-desert"] = true		
 	}
 	
 local function on_marked_for_deconstruction(event)	

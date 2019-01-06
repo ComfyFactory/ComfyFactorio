@@ -2,9 +2,9 @@
 -- cpu heavy -- fixed processing rate is 1 chunk per tick																	
 																																		
 
-local respawn_interval = 25200											--interval in ticks 
+local respawn_interval = 7200											--interval in ticks 
 global.fish_respawner_water_tiles_per_fish = 32					--amount of water tiles required per fish >> high values = less fish density, low values = high fish density
-global.fish_respawner_max_respawnrate_per_chunk = 2		--maximum amount of fish that will spawn each interval in one chunk				
+global.fish_respawner_max_respawnrate_per_chunk = 1		--maximum amount of fish that will spawn each interval in one chunk				
 
 local valid_water_tiles = {
 			"water",

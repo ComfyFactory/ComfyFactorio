@@ -55,7 +55,8 @@ local function create_hunger_gui(player)
 	caption_hunger.style.top_padding = 2	
 end
 
-local function hunger_update(player, food_value)	
+local function hunger_update(player, food_value)
+	if not player.character then return end
 	if food_value == -1 and player.character.driving == true then return end
 	
 	local past_hunger = global.player_hunger[player.name]	
@@ -85,6 +86,7 @@ local function hunger_update(player, food_value)
 			end
 			if player_hunger_stages[global.player_hunger[player.name]] == "Starving" then
 				print_message = "You are starving!"
+				game.print(player.name .. " is starving!", player_hunger_color_list[global.player_hunger[player.name]])
 			end
 			player.print(print_message, player_hunger_color_list[global.player_hunger[player.name]])
 		end
