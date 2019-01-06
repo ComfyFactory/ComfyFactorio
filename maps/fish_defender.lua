@@ -937,7 +937,8 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.destroy_factor = 0
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0					
-				
+		game.map_settings.pollution.enabled = false
+		
 		--game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
 		--game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
 		--game.forces["player"].technologies["flamethrower-damage-3"].enabled = false
