@@ -1,6 +1,9 @@
--- this script adds a group button to create groups for your players -- 
+-- Anarchy mode - by mewmew
+-- all players have their own force
+-- create a tag group to form alliances
+-- empty groups will be deleted
 
-local Event = require 'utils.event' 
+local event = require 'utils.event' 
 
 local function build_group_gui(player)
 	local group_name_width = 160
@@ -10,8 +13,8 @@ local function build_group_gui(player)
 	local actions_width = 60
 	local total_height = 350
 	
-	if not player.gui.top["group_button"] then
-		local b = player.gui.top.add({type = "button", name = "group_button", caption = global.player_group[player.name], tooltip = "Join / Create a group"})
+	if not player.gui.top["anarchy_group_button"] then
+		local b = player.gui.top.add({type = "button", name = "anarchy_group_button", caption = global.player_group[player.name], tooltip = "Join / Create a group"})
 		b.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 		b.style.font = "default-bold"
 		b.style.minimal_height = 38
@@ -24,8 +27,8 @@ local function build_group_gui(player)
 	
 	if player.online_time < 1 then return end
 	
-	if player.gui.left["group_frame"] then player.gui.left["group_frame"].destroy() end
-	local frame = player.gui.left.add({type = "frame", name = "group_frame", direction = "vertical"})
+	if player.gui.left["anarchy_group_frame"] then player.gui.left["anarchy_group_frame"].destroy() end
+	local frame = player.gui.left.add({type = "frame", name = "anarchy_group_frame", direction = "vertical"})
 	frame.style.minimal_height = total_height
 	
 	local t = frame.add({type = "table", column_count = 5})
@@ -129,15 +132,15 @@ end
 
 local function refresh_gui()
 	for _, p in pairs(game.connected_players) do
-		if p.gui.left["group_frame"] then
+		if p.gui.left["anarchy_group_frame"] then
 		
-			local frame = p.gui.left["group_frame"]
+			local frame = p.gui.left["anarchy_group_frame"]
 			local new_group_name = frame.frame2.group_table.new_group_name.text
 			local new_group_description = frame.frame2.group_table.new_group_description.text
 			
 			build_group_gui(p)
 			
-			local frame = p.gui.left["group_frame"]
+			local frame = p.gui.left["anarchy_group_frame"]
 			frame.frame2.group_table.new_group_name.text = new_group_name
 			frame.frame2.group_table.new_group_description.text = new_group_description
 			
@@ -145,50 +148,72 @@ local function refresh_gui()
 	end
 end
 
-local function on_player_joined_game(event)
+local function set_alliance_for_player(player)
+	if not global.tag_groups then return end
+	if not global.player_group then return end
+	local player_group = global.player_group[player.name]		
+	if player_group == "[Group]" then set_unique_player_force(player) return end
+	if not global.tag_groups[player_group] then set_unique_player_force(player) return end
+	local group_founder = global.tag_groups[player_group].founder
+	player.force = game.forces[group_founder]
+end
 
-	local player = game.players[event.player_index]
-	
-	if not global.player_group then global.player_group = {} end
-	if not global.player_group[player.name] then global.player_group[player.name] = "[Group]" end
-	
-	if not global.join_spam_protection then global.join_spam_protection = {} end	
-	if not global.join_spam_protection[player.name] then global.join_spam_protection[player.name] = game.tick end
-	
-	
-	if not global.tag_groups then global.tag_groups = {} end
-	
-	if player.online_time < 10 then  
-		build_group_gui(player)
+local function request_alliance(requesting_player, accepting_player)
+	for _, player in pairs(game.players) do
+		if player.gui.center[requesting_player.name] then accepting_player.gui.center[requesting_player.name].destroy() end
+	end	
+	local frame = accepting_player.gui.center.add({type = "frame", caption = requesting_player.name .. " wants to join your group.", name = requesting_player.name})
+	frame.add({type = "button", caption = "Accept"})
+	frame.add({type = "button", caption = "Deny"})
+end
+
+local function check_for_double_founder(founder)
+	for _, group in pairs(global.tag_groups) do
+		if group.founder == founder then return true end
 	end
+	return false
+end
+
+local function join_group(group_owner, player)
+	global.player_group[player.name] = global.player_group[group_owner]
+	
+	local str = "[" .. group
+	str = str .. "]"
+	player.gui.top["anarchy_group_button"].caption = str
+	player.tag = str
+	if game.tick - global.join_spam_protection[player.name] > 600 then
+		local color = {r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1}
+		game.print(player.name .. " has joined " .. founder .. "'s group " .. '"' .. group .. '"', color)
+		global.join_spam_protection[player.name] = game.tick
+	end				
+	refresh_gui()
 end
 
 local function on_gui_click(event)
 	if not event then return end
 	if not event.element then return end
 	if not event.element.valid then return end	
-
 	local player = game.players[event.element.player_index]
 	local name = event.element.name
-	local frame = player.gui.left["group_frame"]
 	
-	if name == "group_button" then
-		if frame then
-			frame.destroy()
-		else
-			build_group_gui(player)
-		end
+	if event.element.caption == "Accept" then
+		local requesting_player = game.players[event.element.parent.name]
+		join_group(player, requesting_player)
 	end
-	if not event.element.valid then return end
 	
-	if name == "close_group_frame" then
-		frame.destroy()
+	if event.element.caption == "Deny" then
+		event.element.destroy()
+		game.print()
+		return
 	end
-	if not event.element.valid then return end
 	
-	if not frame then return end
-	
-	if name == "create_new_group" then			
+	local frame = player.gui.left["anarchy_group_frame"]
+	if name == "create_new_group" then
+		if check_for_double_founder(player.name) then
+			player.print("You can not own more than one group.", { r=0.90, g=0.0, b=0.0})
+			return
+		end			
+			
 		local new_group_name = frame.frame2.group_table.new_group_name.text
 		local new_group_description = frame.frame2.group_table.new_group_description.text
 		if new_group_name ~= "" and new_group_name ~= "Name" and new_group_description ~= "Description" then
@@ -211,6 +236,9 @@ local function on_gui_click(event)
 			
 			frame.frame2.group_table.new_group_name.text = "Name"
 			frame.frame2.group_table.new_group_description.text = "Description"
+			
+			global.player_group[player.name] = new_group_name		
+			
 			refresh_gui()
 			return
 		end		
@@ -220,19 +248,13 @@ local function on_gui_click(event)
 	if p then p = p.parent end
 	if p then
 		if p.name == "groups_table" then			
-			if event.element.type == "button" and event.element.caption == "Join" then		
-				global.player_group[player.name] = event.element.parent.name
-				local str = "[" .. event.element.parent.name
-				str = str .. "]"
-				player.gui.top["group_button"].caption = str
-				player.tag = str
-				if game.tick - global.join_spam_protection[player.name] > 600 then
-					local color = {r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1}
-					game.print(player.name .. ' has joined group "' .. event.element.parent.name .. '"', color)
-					global.join_spam_protection[player.name] = game.tick
-				end				
-				refresh_gui()
-				return
+			if event.element.type == "button" and event.element.caption == "Join" then
+				local founder = global.tag_groups[event.element.parent.name].founder
+				if founder == player.name then															
+					return
+				else
+					request_alliance(player, game.players[founder])
+				end
 			end
 
 			if event.element.type == "button" and event.element.caption == "Delete" then
@@ -240,7 +262,7 @@ local function on_gui_click(event)
 					if global.player_group[p.name] then
 						if global.player_group[p.name] == event.element.parent.name then
 							global.player_group[p.name] = "[Group]"
-							p.gui.top["group_button"].caption = "[Group]"
+							p.gui.top["anarchy_group_button"].caption = "[Group]"
 							p.tag = ""
 						end
 					end
@@ -251,16 +273,48 @@ local function on_gui_click(event)
 				return
 			end
 
-			if event.element.type == "button" and event.element.caption == "Leave" then		
+			if event.element.type == "button" and event.element.caption == "Leave" then
+				if global.player_group[player.name] == event.element.parent.name then return end
 				global.player_group[player.name] = "[Group]"
-				player.gui.top["group_button"].caption = "[Group]"
+				player.gui.top["anarchy_group_button"].caption = "[Group]"
 				player.tag = ""				
 				refresh_gui()	
 				return
 			end			
 		end
-	end		
+	end
+	
+	if name == "anarchy_group_button" then
+		if frame then
+			frame.destroy()
+		else
+			build_group_gui(player)
+		end
+	end
+	
+	if name == "close_group_frame" then
+		frame.destroy()
+	end
 end
 
-Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+local function on_player_joined_game(event)
+	local player = game.players[event.player_index]
+	
+	if player.gui.left["group_frame"] then player.gui.left["group_frame"].destroy() end
+	if player.gui.top["group_button"] then player.gui.top["group_button"].destroy() end
+	
+	if not global.player_group then global.player_group = {} end
+	if not global.player_group[player.name] then global.player_group[player.name] = "[Group]" end
+	
+	if not global.join_spam_protection then global.join_spam_protection = {} end	
+	if not global.join_spam_protection[player.name] then global.join_spam_protection[player.name] = game.tick end
+		
+	if not global.tag_groups then global.tag_groups = {} end
+	
+	if player.online_time < 10 then  
+		build_group_gui(player)
+	end
+end
+
+event.add(defines.events.on_gui_click, on_gui_click)
+event.add(defines.events.on_player_joined_game, on_player_joined_game)

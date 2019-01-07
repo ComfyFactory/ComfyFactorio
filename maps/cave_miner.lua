@@ -2,11 +2,16 @@
 --You can use /c map_pregen() command to pre-generate the world before playing to avoid any possible microstutter while playing.--
 --Use /c spaghetti() to play without bots.
 
+local enable_fishbank_terminal = false
+
 require "maps.cave_miner_kaboomsticks"
 require "maps.tools.map_pregen"
 local simplex_noise = require 'utils.simplex_noise'
 local Event = require 'utils.event' 
 local market_items = require "maps.cave_miner_market_items"
+local math_random = math.random
+
+local spawn_dome_size = 10000
 
 local darkness_messages = {
 		"Something is lurking in the dark...",
@@ -98,7 +103,7 @@ end
 local function shuffle(tbl)
 	local size = #tbl
 		for i = size, 1, -1 do
-			local rand = math.random(size)
+			local rand = math_random(size)
 			tbl[i], tbl[rand] = tbl[rand], tbl[i]
 		end
 	return tbl
@@ -234,7 +239,7 @@ local function refresh_gui()
 end
 
 local function treasure_chest(position, distance_to_center)	
-	local math_random = math.random
+	
 	local chest_raffle = {}
 	local chest_loot = {			
 		{{name = "steel-axe", count = math_random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.5},
@@ -374,7 +379,7 @@ local function treasure_chest(position, distance_to_center)
 		{{name = "gun-turret", count = math_random(2,6)}, weight = 3, evolution_min = 0.2, evolution_max = 0.9}		
 	}
 	
-	distance_to_center = distance_to_center - global.spawn_dome_size
+	distance_to_center = distance_to_center - spawn_dome_size
 	if distance_to_center < 1 then
 		distance_to_center = 0.1
 	else
@@ -395,8 +400,8 @@ local function treasure_chest(position, distance_to_center)
 	local e = game.surfaces[1].create_entity({name=n, position=position, force="player"})	
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
-	for x = 1, math.random(3,5), 1 do
-		local loot = chest_raffle[math.random(1,#chest_raffle)]
+	for x = 1, math_random(3,5), 1 do
+		local loot = chest_raffle[math_random(1,#chest_raffle)]
 		i.insert(loot)
 	end		
 end
@@ -408,22 +413,22 @@ function rare_treasure_chest(position)
 	local rare_treasure_chest_raffle_table = {}
 	local rare_treasure_chest_loot_weights = {}
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'combat-shotgun', count = 1},5})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'piercing-shotgun-shell', count = math.random(16,48)},5})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'piercing-shotgun-shell', count = math_random(16,48)},5})
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'flamethrower', count = 1},5})
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'rocket-launcher', count = 1},5})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'flamethrower-ammo', count = math.random(16,48)},5})		
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'rocket', count = math.random(16,48)},5})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'explosive-rocket', count = math.random(16,48)},5})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'flamethrower-ammo', count = math_random(16,48)},5})		
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'rocket', count = math_random(16,48)},5})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'explosive-rocket', count = math_random(16,48)},5})
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'modular-armor', count = 1},3})
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'power-armor', count = 1},1})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'uranium-rounds-magazine', count = math.random(16,48)},3})	
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'piercing-rounds-magazine', count = math.random(64,128)},3})	
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'uranium-rounds-magazine', count = math_random(16,48)},3})	
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'piercing-rounds-magazine', count = math_random(64,128)},3})	
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun', count = 1},4})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun-dart', count = math.random(16,48)},4})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun-dart', count = math_random(16,48)},4})
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'exoskeleton-equipment', count = 1},2})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'defender-capsule', count = math.random(8,16)},5})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'distractor-capsule', count = math.random(4,8)},4})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'destroyer-capsule', count = math.random(4,8)},3})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'defender-capsule', count = math_random(8,16)},5})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'distractor-capsule', count = math_random(4,8)},4})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'destroyer-capsule', count = math_random(4,8)},3})
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'atomic-bomb', count = 1},1})		
 	for _, t in pairs (rare_treasure_chest_loot_weights) do
 		for x = 1, t[2], 1 do
@@ -434,62 +439,65 @@ function rare_treasure_chest(position)
 	local e = game.surfaces[1].create_entity {name="steel-chest",position=p, force="player"}
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
-	for x = 1, math.random(2,3), 1 do
-		local loot = rare_treasure_chest_raffle_table[math.random(1,#rare_treasure_chest_raffle_table)]
+	for x = 1, math_random(2,3), 1 do
+		local loot = rare_treasure_chest_raffle_table[math_random(1,#rare_treasure_chest_raffle_table)]
 		i.insert(loot)
 	end		
 end
 
 local function secret_shop(pos)
 	local secret_market_items = {		
-    {price = {{"raw-fish", math.random(250,450)}}, offer = {type = 'give-item', item = 'combat-shotgun'}},
-    {price = {{"raw-fish", math.random(250,450)}}, offer = {type = 'give-item', item = 'flamethrower'}},
-    {price = {{"raw-fish", math.random(75,125)}}, offer = {type = 'give-item', item = 'rocket-launcher'}},
-    {price = {{"raw-fish", math.random(2,4)}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine'}},
-    {price = {{"raw-fish", math.random(8,16)}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine'}},  
-    {price = {{"raw-fish", math.random(8,16)}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell'}},
-    {price = {{"raw-fish", math.random(6,12)}}, offer = {type = 'give-item', item = 'flamethrower-ammo'}},
-    {price = {{"raw-fish", math.random(8,16)}}, offer = {type = 'give-item', item = 'rocket'}},
-    {price = {{"raw-fish", math.random(10,20)}}, offer = {type = 'give-item', item = 'explosive-rocket'}},        
-    {price = {{"raw-fish", math.random(15,30)}}, offer = {type = 'give-item', item = 'explosive-cannon-shell'}},
-    {price = {{"raw-fish", math.random(25,35)}}, offer = {type = 'give-item', item = 'explosive-uranium-cannon-shell'}},   
-    {price = {{"raw-fish", math.random(20,40)}}, offer = {type = 'give-item', item = 'cluster-grenade'}}, 
-	{price = {{"raw-fish", math.random(1,3)}}, offer = {type = 'give-item', item = 'land-mine'}},	
-    {price = {{"raw-fish", math.random(250,500)}}, offer = {type = 'give-item', item = 'modular-armor'}},
-    {price = {{"raw-fish", math.random(1500,3000)}}, offer = {type = 'give-item', item = 'power-armor'}},
-	{price = {{"raw-fish", math.random(15000,20000)}}, offer = {type = 'give-item', item = 'power-armor-mk2'}},
-    {price = {{"raw-fish", math.random(4000,7000)}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment'}},
-    {price = {{"raw-fish", math.random(50,100)}}, offer = {type = 'give-item', item = 'battery-equipment'}},
-    {price = {{"raw-fish", math.random(700,1100)}}, offer = {type = 'give-item', item = 'battery-mk2-equipment'}},
-    {price = {{"raw-fish", math.random(400,700)}}, offer = {type = 'give-item', item = 'belt-immunity-equipment'}},
-    {price = {{"raw-fish", math.random(12000,16000)}}, offer = {type = 'give-item', item = 'night-vision-equipment'}},
-    {price = {{"raw-fish", math.random(300,500)}}, offer = {type = 'give-item', item = 'exoskeleton-equipment'}},
-    {price = {{"raw-fish", math.random(350,500)}}, offer = {type = 'give-item', item = 'personal-roboport-equipment'}},
-    {price = {{"raw-fish", math.random(25,50)}}, offer = {type = 'give-item', item = 'construction-robot'}},
-    {price = {{"raw-fish", math.random(250,450)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
-    {price = {{"raw-fish", math.random(350,550)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
-    {price = {{"raw-fish", math.random(125,250)}}, offer = {type = 'give-item', item = 'railgun'}},
-    {price = {{"raw-fish", math.random(2,4)}}, offer = {type = 'give-item', item = 'railgun-dart'}},
-	{price = {{"raw-fish", math.random(100,175)}}, offer = {type = 'give-item', item = 'loader'}},
-	{price = {{"raw-fish", math.random(200,350)}}, offer = {type = 'give-item', item = 'fast-loader'}},
-	{price = {{"raw-fish", math.random(400,600)}}, offer = {type = 'give-item', item = 'express-loader'}}
+    {price = {{"raw-fish", math_random(250,450)}}, offer = {type = 'give-item', item = 'combat-shotgun'}},
+    {price = {{"raw-fish", math_random(250,450)}}, offer = {type = 'give-item', item = 'flamethrower'}},
+    {price = {{"raw-fish", math_random(75,125)}}, offer = {type = 'give-item', item = 'rocket-launcher'}},
+    {price = {{"raw-fish", math_random(2,4)}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine'}},
+    {price = {{"raw-fish", math_random(8,16)}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine'}},  
+    {price = {{"raw-fish", math_random(8,16)}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell'}},
+    {price = {{"raw-fish", math_random(6,12)}}, offer = {type = 'give-item', item = 'flamethrower-ammo'}},
+    {price = {{"raw-fish", math_random(8,16)}}, offer = {type = 'give-item', item = 'rocket'}},
+    {price = {{"raw-fish", math_random(10,20)}}, offer = {type = 'give-item', item = 'explosive-rocket'}},        
+    {price = {{"raw-fish", math_random(15,30)}}, offer = {type = 'give-item', item = 'explosive-cannon-shell'}},
+    {price = {{"raw-fish", math_random(25,35)}}, offer = {type = 'give-item', item = 'explosive-uranium-cannon-shell'}},   
+    {price = {{"raw-fish", math_random(20,40)}}, offer = {type = 'give-item', item = 'cluster-grenade'}}, 
+	{price = {{"raw-fish", math_random(1,3)}}, offer = {type = 'give-item', item = 'land-mine'}},	
+    {price = {{"raw-fish", math_random(250,500)}}, offer = {type = 'give-item', item = 'modular-armor'}},
+    {price = {{"raw-fish", math_random(1500,3000)}}, offer = {type = 'give-item', item = 'power-armor'}},
+	{price = {{"raw-fish", math_random(15000,20000)}}, offer = {type = 'give-item', item = 'power-armor-mk2'}},
+    {price = {{"raw-fish", math_random(4000,7000)}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment'}},
+    {price = {{"raw-fish", math_random(50,100)}}, offer = {type = 'give-item', item = 'battery-equipment'}},
+    {price = {{"raw-fish", math_random(700,1100)}}, offer = {type = 'give-item', item = 'battery-mk2-equipment'}},
+    {price = {{"raw-fish", math_random(400,700)}}, offer = {type = 'give-item', item = 'belt-immunity-equipment'}},
+    {price = {{"raw-fish", math_random(12000,16000)}}, offer = {type = 'give-item', item = 'night-vision-equipment'}},
+    {price = {{"raw-fish", math_random(300,500)}}, offer = {type = 'give-item', item = 'exoskeleton-equipment'}},
+    {price = {{"raw-fish", math_random(350,500)}}, offer = {type = 'give-item', item = 'personal-roboport-equipment'}},
+    {price = {{"raw-fish", math_random(25,50)}}, offer = {type = 'give-item', item = 'construction-robot'}},
+    {price = {{"raw-fish", math_random(250,450)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
+    {price = {{"raw-fish", math_random(350,550)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
+    {price = {{"raw-fish", math_random(125,250)}}, offer = {type = 'give-item', item = 'railgun'}},
+    {price = {{"raw-fish", math_random(2,4)}}, offer = {type = 'give-item', item = 'railgun-dart'}},
+	{price = {{"raw-fish", math_random(100,175)}}, offer = {type = 'give-item', item = 'loader'}},
+	{price = {{"raw-fish", math_random(200,350)}}, offer = {type = 'give-item', item = 'fast-loader'}},
+	{price = {{"raw-fish", math_random(400,600)}}, offer = {type = 'give-item', item = 'express-loader'}}
 	}
 	secret_market_items = shuffle(secret_market_items)
 	
 	local surface = game.surfaces[1]										
 	local market = surface.create_entity {name = "market", position = pos}
-	market.destructible = false	
-	market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Deposit Fish'}})
-	market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Withdraw Fish - 2% Bank Fee'}})
-	market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Show Account Balance'}})	
+	market.destructible = false
 	
-	for i = 1, math.random(8,12), 1 do
+	if enable_fishbank_terminal then 
+		market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Deposit Fish'}})
+		market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Withdraw Fish - 1% Bank Fee'}})
+		market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Show Account Balance'}})	
+	end
+	
+	for i = 1, math_random(8,12), 1 do
 		market.add_market_item(secret_market_items[i])
 	end
 end
 
 local function on_chunk_generated(event)
-	if not global.noise_seed then global.noise_seed = math.random(1,5000000) end	
+	if not global.noise_seed then global.noise_seed = math_random(1,5000000) end	
 	local surface = game.surfaces[1]	
 	local noise = {}
 	local tiles = {}	
@@ -559,9 +567,9 @@ local function on_chunk_generated(event)
 			current_noise_seed_add = noise_seed_add	
 			
 			tile_to_insert = false	
-			if tile_distance_to_center > global.spawn_dome_size then												
+			if tile_distance_to_center > spawn_dome_size then												
 			
-				if tile_distance_to_center > (global.spawn_dome_size + 5000) * (cave_noise_3 * 0.05 + 1.1) then
+				if tile_distance_to_center > (spawn_dome_size + 5000) * (cave_noise_3 * 0.05 + 1.1) then
 					if cave_noise > 1 then
 						tile_to_insert = "deepwater"
 						table.insert(fish_positions, {pos_x,pos_y})
@@ -613,7 +621,7 @@ local function on_chunk_generated(event)
 				if tile_to_insert == false then
 					if cave_noise < m1 and cave_noise > m1*-1 then
 						tile_to_insert = "dirt-7"
-						if cave_noise < 0.06 and cave_noise > -0.06 and noise[1] > 0.4 and tile_distance_to_center > global.spawn_dome_size + 5000 then
+						if cave_noise < 0.06 and cave_noise > -0.06 and noise[1] > 0.4 and tile_distance_to_center > spawn_dome_size + 5000 then
 							table.insert(enemy_can_place_worm_positions, {pos_x,pos_y})
 							table.insert(enemy_can_place_worm_positions, {pos_x,pos_y})
 							table.insert(enemy_can_place_worm_positions, {pos_x,pos_y})
@@ -625,13 +633,13 @@ local function on_chunk_generated(event)
 							table.insert(enemy_building_positions, {pos_x,pos_y})
 						else
 							table.insert(rock_positions, {pos_x,pos_y})
-							if math.random(1,3) == 1 then table.insert(enemy_worm_positions, {pos_x,pos_y}) end
+							if math_random(1,3) == 1 then table.insert(enemy_worm_positions, {pos_x,pos_y}) end
 						end
-						if cave_noise_2 > 0.85 and tile_distance_to_center > global.spawn_dome_size + 25000 then
-							if math.random(1,48) == 1 then
+						if cave_noise_2 > 0.85 and tile_distance_to_center > spawn_dome_size + 25000 then
+							if math_random(1,48) == 1 then
 								local p = surface.find_non_colliding_position("crude-oil",{pos_x,pos_y}, 5,1)
 								if p then
-									surface.create_entity {name="crude-oil", position=p, amount=math.floor(math.random(25000+tile_distance_to_center*0.5,50000+tile_distance_to_center),0)}
+									surface.create_entity {name="crude-oil", position=p, amount=math.floor(math_random(25000+tile_distance_to_center*0.5,50000+tile_distance_to_center),0)}
 								end
 							end
 						end
@@ -652,7 +660,7 @@ local function on_chunk_generated(event)
 					end
 				end
 				
-				if tile_distance_to_center < global.spawn_dome_size * (cave_noise_3 * 0.05 + 1.1)  then	
+				if tile_distance_to_center < spawn_dome_size * (cave_noise_3 * 0.05 + 1.1)  then	
 					if tile_to_insert == false then table.insert(rock_positions, {pos_x,pos_y}) end
 					tile_to_insert = "dirt-7"					
 				end
@@ -662,13 +670,13 @@ local function on_chunk_generated(event)
 					table.insert(fish_positions, {pos_x,pos_y})
 				else
 					tile_to_insert = "grass-1"
-					if cave_noise_3 > 0 and tile_distance_to_center + 3000 < global.spawn_dome_size then
+					if cave_noise_3 > 0 and tile_distance_to_center + 3000 < spawn_dome_size then
 						table.insert(spawn_tree_positions, {pos_x,pos_y})
 					end
 				end				
 			end
 			
-			if tile_distance_to_center < global.spawn_dome_size and tile_distance_to_center > global.spawn_dome_size - 500 and tile_to_insert == "grass-1" then
+			if tile_distance_to_center < spawn_dome_size and tile_distance_to_center > spawn_dome_size - 500 and tile_to_insert == "grass-1" then
 				table.insert(rock_positions, {pos_x,pos_y})	
 			end						
 			
@@ -682,35 +690,35 @@ local function on_chunk_generated(event)
 	surface.set_tiles(tiles,true)
 		
 	for _, k in pairs(treasure_chest_positions) do	
-		if math.random(1,800)==1 then 
+		if math_random(1,800)==1 then 
 			treasure_chest(k[1], k[2])
 		end
 	end
 	for _, p in pairs(rare_treasure_chest_positions) do	
-		if math.random(1,100)==1 then 
+		if math_random(1,100)==1 then 
 			rare_treasure_chest(p)
 		end
 	end
 	
 	for _, p in pairs(rock_positions) do
-		local x = math.random(1,100)
+		local x = math_random(1,100)
 		if x < global.rock_density then	
-			surface.create_entity {name=global.rock_raffle[math.random(1,#global.rock_raffle)], position=p}						
+			surface.create_entity {name=global.rock_raffle[math_random(1,#global.rock_raffle)], position=p}						
 		end
 		--[[
 		local z = 1
 		if p[2] % 2 == 1 then z = 0 end
 		if p[1] % 2 == z then
-			surface.create_entity {name=global.rock_raffle[math.random(1,#global.rock_raffle)], position=p}			
+			surface.create_entity {name=global.rock_raffle[math_random(1,#global.rock_raffle)], position=p}			
 		end
 		]]--
 	end
 	
 	for _, p in pairs(enemy_building_positions) do	
-		if math.random(1,50)==1 then
+		if math_random(1,50)==1 then
 			local pos = surface.find_non_colliding_position("biter-spawner", p, 8, 1)
 			if pos then
-				if math.random(1,3) == 1 then
+				if math_random(1,3) == 1 then
 					surface.create_entity {name="spitter-spawner",position=pos}
 				else
 					surface.create_entity {name="biter-spawner",position=pos}
@@ -720,33 +728,33 @@ local function on_chunk_generated(event)
 	end	
 	
 	for _, p in pairs(enemy_worm_positions) do		
-		if math.random(1,300)==1 then
+		if math_random(1,300)==1 then
 			local tile_distance_to_center = math.sqrt(p[1]^2 + p[2]^2)
 			if tile_distance_to_center > global.worm_free_zone_radius then						
 				local raffle_index = math.ceil((tile_distance_to_center-global.worm_free_zone_radius)*0.01, 0)
 				if raffle_index < 1 then raffle_index = 1 end
 				if raffle_index > 10 then raffle_index = 10 end					
-				local entity_name = worm_raffle_table[raffle_index][math.random(1,#worm_raffle_table[raffle_index])]												
+				local entity_name = worm_raffle_table[raffle_index][math_random(1,#worm_raffle_table[raffle_index])]												
 				surface.create_entity {name=entity_name, position=p}
 			end
 		end
 	end	
 	
 	for _, p in pairs(enemy_can_place_worm_positions) do		
-		if math.random(1,30)==1 then
+		if math_random(1,30)==1 then
 			local tile_distance_to_center = math.sqrt(p[1]^2 + p[2]^2)
 			if tile_distance_to_center > global.worm_free_zone_radius then						
 				local raffle_index = math.ceil((tile_distance_to_center-global.worm_free_zone_radius)*0.01, 0)
 				if raffle_index < 1 then raffle_index = 1 end
 				if raffle_index > 10 then raffle_index = 10 end					
-				local entity_name = worm_raffle_table[raffle_index][math.random(1,#worm_raffle_table[raffle_index])]												
+				local entity_name = worm_raffle_table[raffle_index][math_random(1,#worm_raffle_table[raffle_index])]												
 				if surface.can_place_entity({name=entity_name, position=p}) then surface.create_entity {name=entity_name, position=p} end
 			end
 		end
 	end
 		
 	for _, p in pairs(fish_positions) do	
-		if math.random(1,16)==1 then
+		if math_random(1,16)==1 then
 			if surface.can_place_entity({name="fish",position=p}) then
 				surface.create_entity {name="fish",position=p}
 			end
@@ -754,7 +762,7 @@ local function on_chunk_generated(event)
 	end
 		
 	for _, p in pairs(secret_shop_locations) do	
-		if math.random(1,10)==1 then
+		if math_random(1,10)==1 then
 			if surface.count_entities_filtered{area={{p[1]-125,p[2]-125},{p[1]+125,p[2]+125}}, name="market", limit=1} == 0 then
 				secret_shop(p)
 			end
@@ -762,13 +770,13 @@ local function on_chunk_generated(event)
 	end		
 	
 	for _, p in pairs(spawn_tree_positions) do	
-		if math.random(1,6)==1 then 
+		if math_random(1,6)==1 then 
 			surface.create_entity {name="tree-04",position=p}
 		end
 	end	
 	
 	for _, p in pairs(extra_tree_positions) do	
-		if math.random(1,20)==1 then 
+		if math_random(1,20)==1 then 
 			surface.create_entity {name="tree-02",position=p}
 		end
 	end				
@@ -794,14 +802,14 @@ local function hunger_update(player, food_value)
 		global.player_hunger[player.name] = player_hunger_spawn_value
 		player.character.die("player")
 		local t = {" ate too much and exploded.", " should have gone on a diet.", " needs to work on their bad eating habbits.", " should have skipped dinner today."}
-		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})				
+		game.print(player.name .. t[math_random(1,#t)], { r=0.75, g=0.0, b=0.0})				
 	end	
 	
 	if global.player_hunger[player.name] < 1 then
 		global.player_hunger[player.name] = player_hunger_spawn_value
 		player.character.die("player")
 		local t = {" ran out of foodstamps.", " starved.", " should not have skipped breakfast today."}
-		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})	
+		game.print(player.name .. t[math_random(1,#t)], { r=0.75, g=0.0, b=0.0})	
 	end
 	
 	if player.character then
@@ -839,8 +847,6 @@ local function on_player_joined_game(event)
 		
 		game.map_settings.enemy_evolution.destroy_factor = 0.004
 		
-		global.spawn_dome_size = 20000
-		
 		global.cave_miner_map_info = [[
 Delve deep for greater treasures, but also face increased dangers.
 Mining productivity research, will overhaul your mining equipment,
@@ -877,7 +883,7 @@ Darkness is a hazard in the mines, stay near your lamps..
 		global.rock_density = 62  ---- insert value up to 100
 		global.rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 										
-		global.worm_free_zone_radius = math.sqrt(global.spawn_dome_size) + 40
+		global.worm_free_zone_radius = math.sqrt(spawn_dome_size) + 40
 		
 		global.biter_spawn_schedule = {}										
 		
@@ -921,10 +927,10 @@ local function spawn_cave_inhabitant(pos, target_position)
 	if not pos.y then return nil end
 	local surface = game.surfaces[1]
 	local tile_distance_to_center = math.sqrt(pos.x^2 + pos.y^2)			
-	local rock_inhabitants_index = math.ceil((tile_distance_to_center-math.sqrt(global.spawn_dome_size))*0.015, 0)
+	local rock_inhabitants_index = math.ceil((tile_distance_to_center-math.sqrt(spawn_dome_size))*0.015, 0)
 	if rock_inhabitants_index < 1 then rock_inhabitants_index = 1 end
 	if rock_inhabitants_index > #rock_inhabitants then rock_inhabitants_index = #rock_inhabitants end					
-	local entity_name = rock_inhabitants[rock_inhabitants_index][math.random(1,#rock_inhabitants[rock_inhabitants_index])]
+	local entity_name = rock_inhabitants[rock_inhabitants_index][math_random(1,#rock_inhabitants[rock_inhabitants_index])]
 	local p = surface.find_non_colliding_position(entity_name , pos, 6, 0.5)
 	local biter = 1
 	if p then biter = surface.create_entity {name=entity_name, position=p} end
@@ -973,20 +979,20 @@ local function biter_attack_event()
 			local position = {x = player.position.x, y = player.position.y}
 			local p = find_first_entity_spiral_scan(position, {"rock-huge", "rock-big", "sand-rock-big"}, 32)		
 			if p then
-				if p.x^2 + p.y^2 > global.spawn_dome_size then table.insert(valid_positions, p) end
+				if p.x^2 + p.y^2 > spawn_dome_size then table.insert(valid_positions, p) end
 			end
 		end
 	end
 	if valid_positions[1] then
 		if #valid_positions == 1 then
-			for x = 1, global.biter_spawn_amount_raffle[math.random(1,#global.biter_spawn_amount_raffle)],1 do
+			for x = 1, global.biter_spawn_amount_raffle[math_random(1,#global.biter_spawn_amount_raffle)],1 do
 				table.insert(global.biter_spawn_schedule, {game.tick + 20*x, valid_positions[1]})
 			end
 		end
 		if #valid_positions > 1 then
-			for y = math.random(1,2), #valid_positions, 2 do
+			for y = math_random(1,2), #valid_positions, 2 do
 				if y > #valid_positions then break end
-				for x = 1, global.biter_spawn_amount_raffle[math.random(1,#global.biter_spawn_amount_raffle)],1 do
+				for x = 1, global.biter_spawn_amount_raffle[math_random(1,#global.biter_spawn_amount_raffle)],1 do
 					table.insert(global.biter_spawn_schedule, {game.tick + 20*x, valid_positions[y]})
 				end
 			end
@@ -1005,11 +1011,11 @@ local function darkness_events()
 				for _, biter in pairs(biters_found) do
 					biter.set_command({type=defines.command.attack, target=p.character, distraction=defines.distraction.none})					
 				end
-				p.character.damage(math.random(global.darkness_threat_level[p.name]*2,global.darkness_threat_level[p.name]*3),"enemy")
+				p.character.damage(math_random(global.darkness_threat_level[p.name]*2,global.darkness_threat_level[p.name]*3),"enemy")
 			end
 		end		
 		if global.darkness_threat_level[p.name] == 2 then
-			p.print(darkness_messages[math.random(1,#darkness_messages)],{ r=0.65, g=0.0, b=0.0})				
+			p.print(darkness_messages[math_random(1,#darkness_messages)],{ r=0.65, g=0.0, b=0.0})				
 		end
 		global.darkness_threat_level[p.name] = global.darkness_threat_level[p.name] + 1
 	end
@@ -1019,7 +1025,7 @@ local function darkness_checks()
 	for _, p in pairs (game.connected_players) do
 		if p.character then p.character.disable_flashlight() end		
 		local tile_distance_to_center = math.sqrt(p.position.x^2 + p.position.y^2)
-		if tile_distance_to_center < math.sqrt(global.spawn_dome_size) then
+		if tile_distance_to_center < math.sqrt(spawn_dome_size) then
 			global.darkness_threat_level[p.name] = 0
 		else
 			if p.character and p.character.driving == true then
@@ -1090,7 +1096,7 @@ local function on_tick(event)
 		end
 		refresh_gui()
 		
-		if math.random(1,2) == 1 then biter_attack_event() end
+		if math_random(1,2) == 1 then biter_attack_event() end
 	end
 	
 	if game.tick == 30 then
@@ -1098,6 +1104,12 @@ local function on_tick(event)
 		local p = game.surfaces[1].find_non_colliding_position("market",{0,-15},60,0.5)
 		local market = surface.create_entity {name = "market", position = p}
 		market.destructible = false
+		
+		if enable_fishbank_terminal then 
+			market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Deposit Fish'}})
+			market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Withdraw Fish - 1% Bank Fee'}})
+			market.add_market_item({price = {}, offer = {type = 'nothing', effect_description = 'Show Account Balance'}})	
+		end
 		
 		for _, item in pairs(market_items.spawn) do
 			market.add_market_item(item)
@@ -1121,13 +1133,19 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+local treasure_chest_messages = {
+		"You notice an old crate within the rubble. It's filled with treasure!",
+		"You find a chest underneath the broken rocks. It's filled with goodies!",
+		"We has found the precious!"		
+	}
+
 local function pre_player_mined_item(event)
 	local surface = game.surfaces[1]
 	local player = game.players[event.player_index]
 	
-	if math.random(1,12) == 1 then
+	if math_random(1,12) == 1 then
 		if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then		
-			for x = 1, math.random(6, 10), 1 do
+			for x = 1, math_random(6, 10), 1 do
 				table.insert(global.biter_spawn_schedule, {game.tick + 15*x, event.entity.position})		
 			end			
 		end
@@ -1140,26 +1158,26 @@ local function pre_player_mined_item(event)
 		event.entity.destroy()
 		
 		local distance_to_center = rock_position.x ^ 2 + rock_position.y ^ 2
-		if math.random(1, 150) == 1 then
+		if math_random(1, 250) == 1 then
 			treasure_chest(rock_position, distance_to_center)
-			player.print("You notice an old crate within the rubble. It´s filled with treasure!", { r=0.98, g=0.66, b=0.22})
+			player.print(treasure_chest_messages[math_random(1, #treasure_chest_messages)], { r=0.98, g=0.66, b=0.22})
 		end
 		
 		local tile_distance_to_center = math.sqrt(rock_position.x^2 + rock_position.y^2)
 		if tile_distance_to_center > 1450 then tile_distance_to_center = 1450 end	
-		if math.random(1,3) == 1 then hunger_update(player, -1) end
+		if math_random(1,3) == 1 then hunger_update(player, -1) end
 		
-		surface.spill_item_stack(player.position,{name = "raw-fish", count = math.random(3,4)},true)
-		local bonus_amount = math.ceil((tile_distance_to_center - math.sqrt(global.spawn_dome_size)) * 0.10, 0) 
+		surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(3,4)},true)
+		local bonus_amount = math.ceil((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10, 0) 
 		if bonus_amount < 1 then bonus_amount = 0 end		
-		local amount = (math.random(45,55) + bonus_amount)*(1+game.forces.player.mining_drill_productivity_bonus)
+		local amount = (math_random(45,55) + bonus_amount)*(1+game.forces.player.mining_drill_productivity_bonus)
 		
 		amount = math.round(amount, 0)
 		amount_of_stone = math.round(amount * 0.15,0)		
 		
 		global.stats_ores_found = global.stats_ores_found + amount + amount_of_stone
 		
-		local mined_loot = global.rock_mining_raffle_table[math.random(1,#global.rock_mining_raffle_table)]
+		local mined_loot = global.rock_mining_raffle_table[math_random(1,#global.rock_mining_raffle_table)]
 		if amount > global.ore_spill_cap then
 			surface.spill_item_stack(rock_position,{name = mined_loot, count = global.ore_spill_cap},true)
 			amount = amount - global.ore_spill_cap
@@ -1187,23 +1205,23 @@ local function pre_player_mined_item(event)
 		global.stats_rocks_broken = global.stats_rocks_broken + 1		
 		refresh_gui()
 		
-		if math.random(1,32) == 1 then				
+		if math_random(1,32) == 1 then				
 			local p = {x = rock_position.x, y = rock_position.y}
 			local tile_distance_to_center = p.x^2 + p.y^2
-			if	tile_distance_to_center > global.spawn_dome_size + 100 then
+			if	tile_distance_to_center > spawn_dome_size + 100 then
 				local radius = 32
 				if surface.count_entities_filtered{area={{p.x - radius,p.y - radius},{p.x + radius,p.y + radius}}, type="resource", limit=1} == 0 then
 					local size_raffle = {{"huge", 33, 42},{"big", 17, 32},{"", 8, 16},{"tiny", 3, 7}}
-					local size = size_raffle[math.random(1,#size_raffle)]
+					local size = size_raffle[math_random(1,#size_raffle)]
 					local ore_prints = {coal = {"dark", "Coal"}, ["iron-ore"] = {"shiny", "Iron"}, ["copper-ore"] = {"glimmering", "Copper"}, ["uranium-ore"] = {"glowing", "Uranium"}}
-					player.print("You notice something " .. ore_prints[mined_loot][1] .. " underneath the rubble covered floor. It´s a " .. size[1] .. " vein of " ..  ore_prints[mined_loot][2] .. "!!", { r=0.98, g=0.66, b=0.22})
+					player.print("You notice something " .. ore_prints[mined_loot][1] .. " underneath the rubble covered floor. It's a " .. size[1] .. " vein of " ..  ore_prints[mined_loot][2] .. "!!", { r=0.98, g=0.66, b=0.22})
 					tile_distance_to_center = math.sqrt(tile_distance_to_center)
 					local ore_entities_placed = 0
 					local modifier_raffle = {{0,-1},{-1,0},{1,0},{0,1}}
-					while ore_entities_placed < math.random(size[2],size[3]) do						
-						local a = math.ceil((math.random(tile_distance_to_center*4, tile_distance_to_center*5)) / 1 + ore_entities_placed * 0.5, 0)						
+					while ore_entities_placed < math_random(size[2],size[3]) do						
+						local a = math.ceil((math_random(tile_distance_to_center*4, tile_distance_to_center*5)) / 1 + ore_entities_placed * 0.5, 0)						
 						for x = 1, 150, 1 do
-							local m = modifier_raffle[math.random(1,#modifier_raffle)]
+							local m = modifier_raffle[math_random(1,#modifier_raffle)]
 							local pos = {x = p.x + m[1], y = p.y + m[2]}
 							if surface.can_place_entity({name=mined_loot, position=pos, amount=a}) then
 								surface.create_entity {name=mined_loot, position=pos, amount=a}
@@ -1224,10 +1242,10 @@ local function on_player_mined_entity(event)
 		event.buffer.clear()
 	end
 	if event.entity.name == "fish" then
-		if math.random(1,2) == 1 then
+		if math_random(1,2) == 1 then
 			local player = game.players[event.player_index]	
 			local health = player.character.health
-			player.character.damage(math.random(50,150),"enemy")			
+			player.character.damage(math_random(50,150),"enemy")			
 			if not player.character then
 				game.print(player.name .. " should have kept their hands out of the foggy lake waters.",{ r=0.75, g=0.0, b=0.0} )
 			else
@@ -1235,14 +1253,15 @@ local function on_player_mined_entity(event)
 					player.print("You got bitten by an angry cave piranha.",{ r=0.75, g=0.0, b=0.0})
 				else
 					local messages = {"Ouch.. That hurt! Better be careful now.", "Just a fleshwound.", "Better keep those hands to yourself or you might loose them."}
-					player.print(messages[math.random(1,#messages)],{ r=0.75, g=0.0, b=0.0})
+					player.print(messages[math_random(1,#messages)],{ r=0.75, g=0.0, b=0.0})
 				end
 			end
 		end
 	end	
 end
 
-local function on_entity_damaged(event)	
+local function on_entity_damaged(event)
+	if not event.entity.valid then return end
 	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then
 		local rock_is_alive = true
 		if event.force.name == "enemy" then 
@@ -1263,19 +1282,19 @@ local function on_entity_damaged(event)
 		else
 			global.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] = nil
 			if event.force.name == "player" then	
-				if math.random(1,12) == 1 then								
-					for x = 1, math.random(6,10), 1 do
+				if math_random(1,12) == 1 then								
+					for x = 1, math_random(6,10), 1 do
 						table.insert(global.biter_spawn_schedule, {game.tick + 10*x, event.entity.position})		
 					end						
 				end
 			end
 			local p = {x = event.entity.position.x, y = event.entity.position.y}
-			local drop_amount = math.random(4, 8)
+			local drop_amount = math_random(4, 8)
 			event.entity.destroy()			
 			game.surfaces[1].spill_item_stack(p,{name = "stone", count = drop_amount},true)
 			
-			local drop_amount_ore = math.random(16, 32)
-			local ore = global.rock_mining_raffle_table[math.random(1, #global.rock_mining_raffle_table)]
+			local drop_amount_ore = math_random(16, 32)
+			local ore = global.rock_mining_raffle_table[math_random(1, #global.rock_mining_raffle_table)]
 			game.surfaces[1].spill_item_stack(p,{name = ore, count = drop_amount_ore},true)
 			
 			global.stats_rocks_broken = global.stats_rocks_broken + 1
@@ -1294,7 +1313,7 @@ local function on_player_respawned(event)
 end
 
 local function on_research_finished(event)
-	game.forces.player.manual_mining_speed_modifier = game.forces.player.mining_drill_productivity_bonus * 5
+	game.forces.player.manual_mining_speed_modifier = game.forces.player.mining_drill_productivity_bonus * 4
 	game.forces.player.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 500
 	refresh_gui()
 end
@@ -1340,7 +1359,8 @@ local bank_messages = {
 	"9 out of 10 felines only trust in Fishbank."
 	}
 	
-local function on_market_item_purchased(event)	
+local function on_market_item_purchased(event)
+	if not enable_fishbank_terminal then return end
 	local player = game.players[event.player_index]	
 	local market = event.market
 	local offer_index = event.offer_index
@@ -1356,7 +1376,7 @@ local function on_market_item_purchased(event)
 		if fish_removed == 0 then return end
 		global.fish_bank[player.name] = global.fish_bank[player.name] + fish_removed				
 		player.print(fish_removed .. " Fish deposited into your account. Your balance is " .. global.fish_bank[player.name] .. ".", {r=0.10, g=0.75, b=0.5})
-		player.print(bank_messages[math.random(1,#bank_messages)], { r=0.77, g=0.77, b=0.77})
+		player.print(bank_messages[math_random(1,#bank_messages)], { r=0.77, g=0.77, b=0.77})
 		player.surface.create_entity({name = "flying-text", position = player.position, text = tostring(fish_removed .. " Fish deposited"), color = {r=0.10, g=0.75, b=0.5}})
 	end
 	
@@ -1380,7 +1400,7 @@ local function on_market_item_purchased(event)
 		end								
 		global.fish_bank[player.name] = global.fish_bank[player.name] - (fish_withdrawn + fee)
 		player.print(fish_withdrawn .. " Fish withdrawn from your account. Your balance is " .. global.fish_bank[player.name] .. ".", { r=0.10, g=0.75, b=0.5})
-		player.print(bank_messages[math.random(1,#bank_messages)], { r=0.77, g=0.77, b=0.77})
+		player.print(bank_messages[math_random(1,#bank_messages)], { r=0.77, g=0.77, b=0.77})
 		player.surface.create_entity({name = "flying-text", position = player.position, text = tostring(fish_withdrawn .. " Fish withdrawn"), color = {r=0.10, g=0.75, b=0.5}})
 	end	
 	

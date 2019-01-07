@@ -1,7 +1,7 @@
 -- launch 10000 fish into space to win the game -- by mewmew
 
 local event = require 'utils.event'
-local fish_in_space_needed = 10000
+global.fish_in_space_needed = 10000
 
 local function fish_in_space_toggle_button(player)
 	if player.gui.top["fish_in_space_toggle"] then return end
@@ -22,7 +22,7 @@ local function fish_in_space_gui(player)
 	
 	if player.gui.left["fish_in_space"] then player.gui.left["fish_in_space"].destroy() end
 	
-	if global.fish_in_space >= fish_in_space_needed then
+	if global.fish_in_space >= global.fish_in_space_needed then
 		local frame = player.gui.left.add({type = "frame", name = "fish_in_space", direction = "vertical"})
 		local label = frame.add({type = "label", caption = "All the fish have been evacuated to cat planet!!"})
 		label.style.font = "default-listbox"
@@ -36,13 +36,16 @@ local function fish_in_space_gui(player)
 		local label = frame.add({type = "label", caption = "Good Job!! =^.^="})
 		label.style.font = "default-listbox"
 		label.style.font_color = { r=0.98, g=0.66, b=0.22}
+		local label = frame.add({type = "label", caption = '(do "/c game.player.surface.peaceful_mode = false" to continue the map)'})
+		label.style.font = "default"
+		label.style.font_color = { r=0.77, g=0.77, b=0.77}	
 	else
 		local frame = player.gui.left.add({type = "frame", name = "fish_in_space"})
 		local label = frame.add({type = "label", caption = "Fish rescued: "})
 		label.style.font_color = {r=0.11, g=0.8, b=0.44}	
 			
 		
-		local progress = global.fish_in_space / fish_in_space_needed
+		local progress = global.fish_in_space / global.fish_in_space_needed
 		if progress > 1 then progress = 1 end
 		local progressbar = frame.add({ type = "progressbar", value = progress})
 		progressbar.style.minimal_width = 100
@@ -80,7 +83,7 @@ local function on_rocket_launched(event)
 	if not global.fish_in_space then global.fish_in_space = 0 end
 	global.fish_in_space = global.fish_in_space + launched_fish_count
 	
-	if global.fish_in_space <= fish_in_space_needed then
+	if global.fish_in_space <= global.fish_in_space_needed then
 		game.print(launched_fish_count .. " fish have been saved.", {r=0.11, g=0.8, b=0.44})
 	end
 	
@@ -89,7 +92,7 @@ local function on_rocket_launched(event)
 	end
 	
 	if not global.fish_in_space_win_condition then
-		if global.fish_in_space >= fish_in_space_needed then
+		if global.fish_in_space >= global.fish_in_space_needed then
 			event.rocket_silo.surface.peaceful_mode = true
 			global.fish_in_space_win_condition = true
 			for _, player in pairs(game.connected_players) do

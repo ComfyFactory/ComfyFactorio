@@ -19,14 +19,14 @@ require "score"
 --require "maps.modules.launch_10000_fish_to_win"
 --require "maps.modules.dynamic_landfill"
 --require "maps.modules.restrictive_fluid_mining"
---require "maps.modules.fluids_are_explosive"
+require "maps.modules.fluids_are_explosive"
 --require "maps.modules.explosives_are_explosive"
 --require "maps.modules.railgun_enhancer"
 -----------------------------
 
 ---- enable maps here ----
 --require "maps.biter_battles"
---require "maps.cave_miner"
+require "maps.cave_miner"
 --require "maps.labyrinth"
 --require "maps.spooky_forest"
 --require "maps.nightfall"
@@ -35,11 +35,12 @@ require "score"
 --require "maps.spiral_troopers"
 --require "maps.fish_defender"
 --require "maps.crossing"
+--require "maps.anarchy"  --WIP
 --require "maps.spaghettorio"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"
 --require "maps.empty_map"
-require "maps.custom_start"
+--require "maps.custom_start"
 -----------------------------
 
 local Event = require 'utils.event'

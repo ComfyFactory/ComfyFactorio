@@ -4,6 +4,7 @@ local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
 require "maps.modules.rocket_launch_always_yields_science"
 require "maps.modules.launch_10000_fish_to_win"
+global.fish_in_space_needed = 100000
 
 require "maps.modules.biters_yield_coins"
 require "maps.modules.railgun_enhancer"
@@ -673,7 +674,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}},
 		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
 		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
-		{price = {{"coin", 20}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
+		{price = {{"coin", 35}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
 	}
 	
 	for _, item in pairs(market_items) do
