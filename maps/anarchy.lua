@@ -9,13 +9,6 @@ local table_insert = table.insert
 local math_random = math.random
 local map_functions = require "maps.tools.map_functions"
 
-local function set_unique_player_force(player)
-	if not game.forces[player.name] then
-		game.create_force(player.name)		
-	end
-	player.force = game.forces[player.name]	
-end
-
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
 	if not global.map_init_done then				
@@ -26,8 +19,7 @@ local function on_player_joined_game(event)
 		global.map_init_done = true
 	end	
 	
-	if player.online_time == 0 then
-		set_unique_player_force(player)
+	if player.online_time == 0 then		
 		player.insert{name = 'iron-axe', count = 1}
 		player.insert{name = 'iron-plate', count = 32}		
 	end	
@@ -37,7 +29,7 @@ local function on_built_entity(event)
 	local entity = event.created_entity
 	if not entity.valid then return end
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
-	if distance_to_center > 64 then return end
+	if distance_to_center > 96 then return end
 	local surface = entity.surface
 	surface.create_entity({name = "flying-text", position = entity.position, text = "Spawn is protected from building.", color = {r=0.88, g=0.1, b=0.1}})					 
 	local player = game.players[event.player_index]			

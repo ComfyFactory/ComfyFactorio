@@ -7,7 +7,7 @@ local info = [[
 	
 	Anything goes.
 	
-	Use to [Group] button to form alliances.
+	Use the [Group] button to form alliances.
 ]]
 
 local function create_map_intro(player)	
