@@ -20,6 +20,8 @@ end
 
 local function poll_show(player)
 	if player.gui.left["poll-panel"]	then player.gui.left["poll-panel"].destroy() end
+	if not global.poll_panel_creation_times then global.poll_panel_creation_times = {} end
+	global.poll_panel_creation_times[player.index] = {player_index = player.index, tick = 5940}
 	
 	local frame = player.gui.left.add { type = "frame", name = "poll-panel", direction = "vertical" }	
 
@@ -27,7 +29,7 @@ local function poll_show(player)
 	
 	local poll_panel_table = frame.poll_panel_table
 	
-	if not (global.poll_question == "") then
+	if global.poll_question ~= "" then
 		
 		local str = "Poll #" .. global.score_total_polls_created .. ":"
 		if global.score_total_polls_created > 1 then
@@ -52,29 +54,23 @@ local function poll_show(player)
 		poll_panel_table.add { type = "label" }
 	end
 	
-	local y = 1
-	while (y < 4) do
-		if not (global.poll_answers[y] == "") then				
-			local z = tostring(y)						
-			local l = poll_panel_table.add { type = "label", caption = global.poll_answers[y], name = "answer_label_" .. z }		
+	for i = 1, 3, 1 do	
+		if global.poll_answers[i] ~= "" then													
+			local l = poll_panel_table.add({type = "label", caption = global.poll_answers[i], name = "answer_label_" .. tostring(i)})
 			l.style.maximal_width = 208
 			l.style.minimal_width = 208
 			l.style.maximal_height = 165
 			l.style.font = "default"
 			l.style.single_line = false			
-			local answerbutton = poll_panel_table.add  { type = "button", caption = global.poll_button_votes[y], name = "answer_button_" .. z }	
+			local answerbutton = poll_panel_table.add({type = "button", caption = global.poll_button_votes[i], name = "answer_button_" .. tostring(i)})
 			answerbutton.style.font = "default-listbox"
 			answerbutton.style.minimal_width = 32
-		end
-		y = y + 1
+		end		
 	end
 	
 	frame.add { type = "table", name = "poll_panel_button_table", column_count = 3 }
 	local poll_panel_button_table = frame.poll_panel_button_table
 	poll_panel_button_table.add { type = "button", caption = "New Poll", name = "new_poll_assembler_button" }
-	
-	if not global.poll_panel_creation_times then global.poll_panel_creation_times = {} end
-	global.poll_panel_creation_times[player.index] = {player_index = player.index, tick = 5940}
 	
 	local str = "Hide (" .. poll_duration_in_seconds
 	str = str .. ")"
@@ -104,11 +100,9 @@ local function poll(player)
 	
 	global.score_total_polls_created = global.score_total_polls_created + 1
 	
-	local frame = player.gui.left["poll-assembler"]
-	frame.destroy()
-	
-	global.poll_voted = nil		
-	global.poll_voted  = {}
+	player.gui.left["poll-assembler"].destroy()	
+				
+	global.poll_voted = {}
 	global.poll_button_votes = {0,0,0}
 	
 	for _, player in pairs(game.players) do
@@ -163,9 +157,7 @@ function on_player_joined_game(event)
 	
 	local player = game.players[event.player_index]	
 			
-	if global.autoshow_polls_for_player[player.name] == nil then 
-		global.autoshow_polls_for_player[player.name] = true
-	end
+	if not global.autoshow_polls_for_player[player.name] then global.autoshow_polls_for_player[player.name] = true	end
 	
 	create_poll_gui(player)
 			
