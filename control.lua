@@ -35,7 +35,7 @@ require "score"
 --require "maps.spiral_troopers"
 --require "maps.fish_defender"
 --require "maps.crossing"
-require "maps.anarchy"  --WIP
+--require "maps.anarchy"
 --require "maps.spaghettorio"
 --require "maps.deep_jungle"
 --require "maps.lost_desert"

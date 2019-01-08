@@ -4,11 +4,11 @@
 -- empty groups will be deleted
 
 local event = require 'utils.event'
-local message_color = {r=0.8, g=0.3, b=0.45}
+local message_color = {r=0.98, g=0.66, b=0.22}
 
 local function anarchy_gui_button(player)
 	if not player.gui.top["anarchy_group_button"] then
-		local b = player.gui.top.add({type = "button", name = "anarchy_group_button", caption = global.player_group[player.name], tooltip = "Join / Create a group"})
+		local b = player.gui.top.add({type = "button", name = "anarchy_group_button", caption = "[Teams]", tooltip = "Join / Create a group"})
 		b.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 		b.style.font = "default-bold"
 		b.style.minimal_height = 38
@@ -159,6 +159,7 @@ end
 
 local function request_alliance(group, requesting_player)
 	if not global.alliance_groups[group] then return end
+	global.spam_protection[requesting_player.name] = game.tick + 1800
 	
 	destroy_request_guis(requesting_player)
 	
@@ -196,7 +197,7 @@ local function refresh_alliances()
 	
 	for _, player in pairs(game.players) do
 		if players_to_process[player.index] then
-			player.gui.top["anarchy_group_button"].caption = "[Group]"
+			player.gui.top["anarchy_group_button"].caption = "[Teams]"
 			player.tag = ""			
 			player.force = game.forces[player.name]
 			players_to_process[player.index] = nil
@@ -301,6 +302,10 @@ local function on_gui_click(event)
 	if p then
 		if p.name == "groups_table" then			
 			if event.element.type == "button" and event.element.caption == "Join" then
+				if global.spam_protection[player.name] > game.tick then
+					player.print("Please wait " .. math.ceil((global.spam_protection[player.name] - game.tick)/60) .. " seconds before sending another request.", message_color)
+					return 
+				end	
 				destroy_request_guis(player)			
 				player.print("A request to join the group has been sent.", message_color) 
 				request_alliance(event.element.parent.name, player)			

@@ -87,8 +87,8 @@ local function on_chunk_generated(event)
 	]]
 	
 	if not global.spawn_generated and left_top.x <= -96 then
-		map_functions.draw_noise_tile_circle({x = 0, y = 0}, "stone-path", surface, 33)
-		map_functions.draw_noise_tile_circle({x = 0, y = 0}, "concrete", surface, 11)		
+		map_functions.draw_noise_tile_circle({x = 0, y = 0}, "stone-path", surface, 21)
+		map_functions.draw_noise_tile_circle({x = 0, y = 0}, "concrete", surface, 7)		
 		global.spawn_generated = true
 	end
 end
@@ -103,7 +103,11 @@ end
 local function on_console_chat(event)
 	if not event.message then return end	
 	if not event.player_index then return end	
-	local player = game.players[event.player_index] 
+	local player = game.players[event.player_index]
+	
+	if player.tag then
+		if player.tag ~= "" then return end		 
+	end
 	
 	local color = {}
 	color = player.color
