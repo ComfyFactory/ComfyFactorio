@@ -2,12 +2,16 @@ local event = require 'utils.event'
 
 local main_caption = " --Anarchy-- "
 local sub_caption = " finally.. true freedum.. "
-local info = [[
-	No rules.
+local info = [[		
+	Use the [Group] button to form alliances.
+	
+	Join or create a group to play!
+	
+	Use /s yourmessage in chat for global chat.
 	
 	Anything goes.
 	
-	Use the [Group] button to form alliances.
+	No rules.		
 ]]
 
 local function create_map_intro(player)	

@@ -2,13 +2,14 @@
 -- all players have their own force
 -- create a tag group to form alliances
 -- empty groups will be deleted
+-- join or create a team to be able to play
 
 local event = require 'utils.event'
 local message_color = {r=0.98, g=0.66, b=0.22}
 
 local function anarchy_gui_button(player)
 	if not player.gui.top["anarchy_group_button"] then
-		local b = player.gui.top.add({type = "button", name = "anarchy_group_button", caption = "[Teams]", tooltip = "Join / Create a group"})
+		local b = player.gui.top.add({type = "button", name = "anarchy_group_button", caption = "[Group]", tooltip = "Join / Create a group"})
 		b.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 		b.style.font = "default-bold"
 		b.style.minimal_height = 38
@@ -187,20 +188,26 @@ local function refresh_alliances()
 			player.gui.top["anarchy_group_button"].caption = "[" .. group.name .. "]"
 			player.tag = "[" .. group.name .. "]"
 			player.force = game.forces[group.name]
+			local permission_group = game.permissions.get_group("Default")	
+			permission_group.add_player(player.name)
 			i = i + 1
 		end
 		if i == 0 then
 			game.print('Group "' .. group.name .. '" has been abandoned!!', {r=0.90, g=0.0, b=0.0})
-			global.alliance_groups[group.name] = nil			
+			global.alliance_groups[group.name] = nil
+			game.merge_forces(game.forces[group.name], game.forces.player)
 		end
 	end
 	
 	for _, player in pairs(game.players) do
 		if players_to_process[player.index] then
-			player.gui.top["anarchy_group_button"].caption = "[Teams]"
+			player.gui.top["anarchy_group_button"].caption = "[Group]"
 			player.tag = ""			
-			player.force = game.forces[player.name]
+			player.force = game.forces.player
+			local permission_group = game.permissions.get_group("spectator")	
+			permission_group.add_player(player.name)
 			players_to_process[player.index] = nil
+			player.print("Please join / create a group to play!", message_color)
 		end
 	end
 	refresh_gui()
@@ -210,6 +217,11 @@ local function new_group(frame, player)
 	local new_group_name = frame.frame2.group_table.new_group_name.text
 	local new_group_description = frame.frame2.group_table.new_group_description.text
 	if new_group_name ~= "" and new_group_name ~= "Name" and new_group_description ~= "Description" then
+		
+		if #game.forces > 60 then
+			player.print("There are too many existing groups.", {r=0.90, g=0.0, b=0.0})
+			return
+		end
 		
 		if player.tag ~= "" then
 			player.print("You are already in a group.", {r=0.90, g=0.0, b=0.0})
@@ -339,7 +351,27 @@ local function on_player_joined_game(event)
 	if not global.alliance_groups then global.alliance_groups = {} end
 	if not global.spam_protection then global.spam_protection = {} end	
 	if not global.spam_protection[player.name] then global.spam_protection[player.name] = game.tick end		
-	if not game.forces[player.name] then game.create_force(player.name) end
+	--if not game.forces[player.name] then game.create_force(player.name) end
+	
+	local permission_group = game.permissions.get_group("spectator")		
+	if not permission_group then
+		permission_group = game.permissions.create_group("spectator")
+		for action_name, _ in pairs(defines.input_action) do
+			permission_group.set_allows_action(defines.input_action[action_name], false)
+		end
+		permission_group.set_allows_action(defines.input_action.write_to_console, true)
+		permission_group.set_allows_action(defines.input_action.gui_checked_state_changed, true)
+		permission_group.set_allows_action(defines.input_action.gui_elem_changed, true)
+		permission_group.set_allows_action(defines.input_action.gui_text_changed, true)
+		permission_group.set_allows_action(defines.input_action.gui_value_changed, true)
+		permission_group.set_allows_action(defines.input_action.gui_click, true)
+		permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)		
+		permission_group.set_allows_action(defines.input_action.open_kills_gui, true)
+		permission_group.set_allows_action(defines.input_action.open_character_gui, true)
+		permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
+		permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
+		permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)				
+	end
 	
 	if player.gui.left["group_frame"] then player.gui.left["group_frame"].destroy() end
 	if player.gui.top["group_button"] then player.gui.top["group_button"].destroy() end	
