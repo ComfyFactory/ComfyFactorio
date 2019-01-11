@@ -2,10 +2,8 @@ local event = require 'utils.event'
 
 local main_caption = " --Anarchy-- "
 local sub_caption = " finally.. true freedum.. "
-local info = [[		
-	Use the [Group] button to form alliances.
-	
-	Join or create a group to play!
+local info = [[			
+	Use the [Group] button to Join / Create a group to play!
 	
 	Use /s yourmessage in chat for global chat.
 	
@@ -14,7 +12,8 @@ local info = [[
 	No rules.		
 ]]
 
-local function create_map_intro(player)	
+local function create_map_intro(player)
+	if player.gui.left["map_intro_frame"] then player.gui.left["map_intro_frame"].destroy() end
 	local frame = player.gui.left.add {type = "frame", name = "map_intro_frame", direction = "vertical"}
 	local t = frame.add {type = "table", column_count = 1}	
 	
@@ -55,7 +54,7 @@ local function on_gui_click(event)
 	if not event then return end
 	if not event.element then return end
 	if not event.element.valid then return end	
-	local player = game.players[event.element.player_index]
+	local player = game.players[event.player_index]
 	if event.element.name == "close_map_intro_frame" then player.gui.left["map_intro_frame"].destroy() end	
 end
 
