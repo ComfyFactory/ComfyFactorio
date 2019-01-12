@@ -1,9 +1,11 @@
 local event = require 'utils.event'
 
 local main_caption = " --Anarchy-- "
-local sub_caption = " finally.. true freedum.. "
-local info = [[			
-	Use the [Group] button to Join / Create a group to play!
+local sub_caption = " finally.. freedum.. "
+local info = [[	
+	Join / Create a group to play!!
+	
+	Use the [Group] button!
 	
 	Use /s yourmessage in chat for global chat.
 	

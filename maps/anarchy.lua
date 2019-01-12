@@ -2,6 +2,8 @@
 
 require "maps.anarchy_map_intro"
 require "maps.modules.anarchy_mode"
+require "maps.modules.dynamic_player_spawn"
+
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event' 
