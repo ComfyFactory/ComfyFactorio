@@ -101,33 +101,6 @@ local function on_player_respawned(event)
 	player.insert{name = 'iron-plate', count = 32}
 end
 
-----------share chat -------------------
-local function on_console_chat(event)
-	if not event.message then return end	
-	if not event.player_index then return end	
-	local player = game.players[event.player_index]
-	
-	if player.tag then
-		if player.tag ~= "" then return end		 
-	end
-	
-	local color = {}
-	color = player.color
-	color.r = color.r * 0.6 + 0.35
-	color.g = color.g * 0.6 + 0.35
-	color.b = color.b * 0.6 + 0.35
-	color.a = 1	
-	
-	for _, target_player in pairs(game.connected_players) do
-		if target_player.name ~= player.name then
-			if target_player.force ~= player.force then
-				target_player.print(player.name .. ": ".. event.message, color)
-			end
-		end
-	end
-end
-
-event.add(defines.events.on_console_chat, on_console_chat)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

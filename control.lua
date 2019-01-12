@@ -12,7 +12,7 @@ require "score"
 
 ---- enable modules here ----
 --require "maps.tools.map_pregen"
-require "maps.tools.cheat_mode"
+--require "maps.tools.cheat_mode"
 --require "maps.modules.hunger"
 --require "maps.modules.fish_respawner"
 --require "maps.modules.rocket_launch_always_yields_science"
