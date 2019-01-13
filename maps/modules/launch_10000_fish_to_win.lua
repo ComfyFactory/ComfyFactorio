@@ -15,7 +15,7 @@ local function fish_in_space_toggle_button(player)
 	button.style.bottom_padding = 2
 end
 
-local function fish_in_space_gui(player)
+function fish_in_space_gui(player)
 	if not global.fish_in_space then return end
 	
 	fish_in_space_toggle_button(player)
@@ -52,7 +52,7 @@ local function fish_in_space_gui(player)
 		progressbar.style.maximal_width = 100
 		progressbar.style.top_padding = 10
 		
-		local label = frame.add({type = "label", caption = global.fish_in_space .. "/10000"})
+		local label = frame.add({type = "label", caption = global.fish_in_space .. "/" .. tostring(global.fish_in_space_needed)})
 		label.style.font_color = {r=0.33, g=0.66, b=0.9}	
 	end			
 end

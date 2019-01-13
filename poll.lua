@@ -199,7 +199,7 @@ local function on_gui_click(event)
 	
 	if name == "poll_hide_button" then
 		player.gui.left["poll-panel"].destroy()
-		global.poll_panel_creation_times[player.index] = nil				
+		if global.poll_panel_creation_times then	global.poll_panel_creation_times[player.index] = nil end
 		if player.gui.left["poll-assembler"] then
 			player.gui.left["poll-assembler"].destroy()
 		end

@@ -1,5 +1,4 @@
--- Anarchy mode - by mewmew
--- all players have their own force
+-- "Anarchy" mode - by mewmew
 -- create a tag group to form alliances
 -- empty groups will be deleted
 -- join or create a team to be able to play
