@@ -3,7 +3,11 @@
 require "maps.modules.hunger"
 require "maps.modules.fish_respawner"
 global.fish_respawner_water_tiles_per_fish = 10
-global.fish_respawner_max_respawnrate_per_chunk = 1
+
+require "maps.modules.fluids_are_explosive"
+require "maps.modules.explosives_are_explosive"
+require "maps.modules.explosive_biters"
+require "maps.modules.dynamic_landfill"
 
 local shapes = require "maps.tools.shapes"
 local event = require 'utils.event'
@@ -142,7 +146,8 @@ local function get_noise(name, pos)
 	end
 	seed = seed + noise_seed_add
 	if name == "grass" then		
-		noise[1] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+		--noise[1] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+		noise[1] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
 		seed = seed + noise_seed_add
 		local noise = noise[1]
 		return noise
@@ -204,21 +209,19 @@ end
 local function get_noise_tile(position)
 	local noise = get_noise("grass", position)
 	local tile_name
-	--local decorative = false
+	
 	if noise > 0 then
 		tile_name = "grass-1"
-		--decorative = "green-pita"
+		if noise > 0.5 then
+			tile_name = "dirt-5"
+		end
 	else
-		tile_name = "grass-2"
-		--decorative = "green-hairy-grass"
-		--	table.insert(decoratives, {name = "green-croton", position = pos, amount = 3})
-		--table.insert(decoratives, {name = "green-asterisk", position = pos, amount = 2})		
+		tile_name = "grass-2"				
 	end
 	
 	local noise = get_noise("water", position)
 	if noise > 0.71 then
-		tile_name = "water"
-		--decorative = false
+		tile_name = "water"	
 		if noise > 0.78 then
 			tile_name = "deepwater"			
 		end			
@@ -226,35 +229,48 @@ local function get_noise_tile(position)
 	
 	if noise < -0.76 then
 		tile_name = "water-green"
-		--decorative = false
 	end
 	
 	return tile_name
 end
 
-local function create_decoratives_around_position(surface, position)
-	local decoratives = {}
-		
-	for _, position_modifier in pairs(shapes.circles[uncover_radius - 2]) do
-		local pos = {x = position.x + position_modifier.x, y = position.y + position_modifier.y}
-		local area = {{pos.x - 0.01, pos.y - 0.01},{pos.x + 0.01, pos.y + 0.01}}
-		surface.destroy_decoratives(area)		
-		insert(decoratives, {name = "green-pita", position = pos, amount = 1})	
+local function get_chunk_position(position)
+	local chunk_position = {}
+	position.x = math.floor(position.x, 0)
+	position.y = math.floor(position.y, 0)
+	for x = 0, 31, 1 do
+		if (position.x - x) % 32 == 0 then chunk_position.x = (position.x - x)  / 32 end
 	end
-		
-	if #decoratives > 0 then
-		surface.create_decoratives{check_collision=true, decoratives=decoratives}
+	for y = 0, 31, 1 do
+		if (position.y - y) % 32 == 0 then chunk_position.y = (position.y - y)  / 32 end
+	end	
+	return chunk_position
+end
+
+local function regenerate_decoratives_for_chunk(surface, position)
+	local chunk = get_chunk_position(position)
+	surface.destroy_decoratives({{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}})
+	local decorative_names = {}
+	for k,v in pairs(game.decorative_prototypes) do
+		if v.autoplace_specification then
+			decorative_names[#decorative_names+1] = k
+		end
 	end
+	surface.regenerate_decorative(decorative_names, {chunk})
+	surface.regenerate_decorative(decorative_names, {chunk})
+	surface.regenerate_decorative(decorative_names, {chunk})
 end
 
 local function uncover_map(surface, position, radius_min, radius_max)
 	local circles = shapes.circles			
 	local tiles = {}
 	local fishes = {}
+	local regenerate_decoratives = false
 	for r = radius_min, radius_max, 1 do
 		for _, position_modifier in pairs(circles[r]) do			
 			local pos = {x = position.x + position_modifier.x, y = position.y + position_modifier.y} 
 			if surface.get_tile(pos).name == "out-of-map" then
+				regenerate_decoratives = true
 				local tile_name = get_noise_tile(pos)
 				insert(tiles, {name = tile_name, position = pos})
 				if tile_name == "water" or tile_name == "deepwater" or tile_name == "water-green" then
@@ -288,6 +304,11 @@ local function uncover_map(surface, position, radius_min, radius_max)
 	for _, fish in pairs(fishes) do
 		surface.create_entity({name = "fish", position = fish}) 
 	end
+	if regenerate_decoratives then
+		if math_random(1,3) == 1 then
+			regenerate_decoratives_for_chunk(surface, position)
+		end
+	end
 end
 
 local function uncover_map_for_player(player)
@@ -297,11 +318,12 @@ local function uncover_map_for_player(player)
 	local tiles = {}
 	local fishes = {}
 	local uncover_map_schedule = {}
-	
+	local regenerate_decoratives = false
 	for r = uncover_radius - 1, uncover_radius, 1 do
 		for _, position_modifier in pairs(circles[r]) do
 			local pos = {x = position.x + position_modifier.x, y = position.y + position_modifier.y} 
 			if surface.get_tile(pos).name == "out-of-map" then
+				regenerate_decoratives = true
 				local tile_name = get_noise_tile(pos)
 				insert(tiles, {name = tile_name, position = pos})				
 				if tile_name == "water" or tile_name == "deepwater" or tile_name == "water-green" then
@@ -335,15 +357,19 @@ local function uncover_map_for_player(player)
 	
 	if #tiles > 0 then
 		surface.set_tiles(tiles, true)
-	end		
-	
-	--create_decoratives_around_position(surface, position)
+	end				
 	
 	for _, pos in pairs(uncover_map_schedule) do
 		uncover_map(surface, pos, 1, 16)	
 	end	
 	for _, fish in pairs(fishes) do
 		surface.create_entity({name = "fish", position = fish}) 
+	end
+	
+	if regenerate_decoratives then
+		if math_random(1,3) == 1 then
+			regenerate_decoratives_for_chunk(surface, position)
+		end
 	end
 end
 
@@ -433,7 +459,16 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.destroy_factor = 0.0016
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0
-							
+		
+		local turret_positions = {{6, 6}, {-5, -5}, {-5, 6}, {6, -5}}
+		for _, pos in pairs(turret_positions) do
+			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
+			turret.insert({name = "firearm-magazine", count = 32})
+		end
+		
+		local radius = 320
+		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+		
 		global.spooky_forest_init_done = true
 	end
 			
@@ -464,49 +499,66 @@ local function on_player_changed_position(event)
 	uncover_map_for_player(player)
 end
 
+local function generate_spawn_area(position_left_top)				
+	if position_left_top.x > 32 then return end
+	if position_left_top.y > 32 then return end
+	if position_left_top.x < -32 then return end
+	if position_left_top.y < -32 then return end
+	
+	local surface = game.surfaces["spooky_forest"]
+	local entities = {}
+	local tiles = {}	
+	
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local tile_to_insert = false
+			local pos = {x = position_left_top.x + x, y = position_left_top.y + y}
+			if pos.x > -9 and pos.x < 9 and pos.y > -9 and pos.y < 9 then
+				tile_to_insert = get_noise_tile(pos)				
+				if math_random(1, 4) == 1 then
+					tile_to_insert = "stone-path"
+				end				
+				if pos.x <= -7 or pos.x >= 7 or pos.y <= -7 or pos.y >= 7 then
+					if math_random(1, 3) ~= 1 then
+						table.insert(entities, {name = "stone-wall", position = {x = pos.x, y = pos.y}, force = "player"})
+					end
+				end
+			end			
+			if tile_to_insert == "water" or tile_to_insert == "water-green" or tile_to_insert == "deepwater" then
+				tile_to_insert = "grass-2"
+			end			
+			if tile_to_insert then
+				insert(tiles, {name = tile_to_insert, position = pos})
+			end
+		end
+	end
+	surface.set_tiles(tiles, true)
+	
+	for _, entity in pairs(entities) do
+		surface.create_entity(entity)
+	end
+end
+
 local function on_chunk_generated(event)
 	if not game.surfaces["spooky_forest"] then return end
 	local surface = game.surfaces["spooky_forest"]
 	if surface.name ~= event.surface.name then return end
 	
 	local position_left_top = event.area.left_top
-	
-	local entities = {}
-	local tiles = {}
-	
-	--if position_left_top.x > 128 then return end
-	--if position_left_top.y > 128 then return end
-	
+	generate_spawn_area(position_left_top)
+		
+	local tiles = {}	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local tile_to_insert = "out-of-map"
 			local pos = {x = position_left_top.x + x, y = position_left_top.y + y}
-			if pos.x > -9 and pos.x < 9 and pos.y > -9 and pos.y < 9 then
-				tile_to_insert = get_noise_tile(pos)
-				
-				if math_random(1, 4) == 1 then
-					tile_to_insert = "stone-path"
-				end
-				
-				if pos.x <= -7 or pos.x >= 7 or pos.y <= -7 or pos.y >= 7 then
-					if math_random(1, 3) ~= 1 then
-						table.insert(entities, {name = "stone-wall", position = {x = pos.x, y = pos.y}, force = "player"})
-					end
-				end
+			local tile_name = surface.get_tile(pos).name
+			if tile_name == "deepwater" or tile_name == "water" then
+				insert(tiles, {name = tile_to_insert, position = pos})
 			end
-			
-			if tile_to_insert == "water" or tile_to_insert == "water-green" or tile_to_insert == "deepwater" then
-				tile_to_insert = "grass-2"
-			end
-			
-			insert(tiles, {name = tile_to_insert, position = pos})			
 		end
 	end 
-	surface.set_tiles(tiles, true)
-	
-	for _, entity in pairs(entities) do
-		surface.create_entity(entity)
-	end		
+	surface.set_tiles(tiles, true)						
 end
 
 local function on_player_mined_entity(event)
@@ -543,6 +595,7 @@ end
 
 local function break_some_random_trees(surface)	
 	local trees = {}
+	local rocks = {}
 	local chunks = {}
 	
 	for chunk in surface.get_chunks() do
@@ -555,12 +608,25 @@ local function break_some_random_trees(surface)
 		trees = surface.find_entities_filtered({type = "tree", area = area})
 		if #trees > 1 then break end
 	end	
-	if #trees == 0 then return end	
-	trees = shuffle(trees)
-	for i = 1, math_random(4 + math.floor(game.forces.enemy.evolution_factor*8), 8 + math.floor(game.forces.enemy.evolution_factor*16)), 1 do
-		if not trees[i] then break end
-		trees[i].die("enemy")					
+	if #trees ~= 0 then 	
+		trees = shuffle(trees)
+		for i = 1, math_random(4 + math.floor(game.forces.enemy.evolution_factor*8), 8 + math.floor(game.forces.enemy.evolution_factor*16)), 1 do
+			if not trees[i] then break end
+			trees[i].die("enemy")					
+		end
 	end
+	
+	for _, chunk in pairs(chunks) do
+		local area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}	
+		rocks = surface.find_entities_filtered({type = "simple-entity", area = area})
+		if #rocks > 0 then break end
+	end	
+	if not rocks[1] then return end
+	local e = math.ceil(game.forces.enemy.evolution_factor*10)
+	if e < 1 then e = 1 end								
+	entity_name = worm_raffle_table[e][math_random(1, #worm_raffle_table[e])]
+	surface.create_entity({name = entity_name, position = rocks[1].position, force = "enemy"})
+	rocks[1].die("enemy")
 end
 
 local function on_tick()	

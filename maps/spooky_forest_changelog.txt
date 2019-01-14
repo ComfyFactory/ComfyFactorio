@@ -1,3 +1,8 @@
+0.09
+worms spawn out of rocks rarely
+decorative regeneration
+spawn now has 1 turret
+
 0.08
 spawn is now biter free
 

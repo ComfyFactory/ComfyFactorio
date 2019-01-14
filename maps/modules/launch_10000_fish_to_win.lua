@@ -15,7 +15,7 @@ local function fish_in_space_toggle_button(player)
 	button.style.bottom_padding = 2
 end
 
-function fish_in_space_gui(player)
+local function fish_in_space_gui(player)
 	if not global.fish_in_space then return end
 	
 	fish_in_space_toggle_button(player)

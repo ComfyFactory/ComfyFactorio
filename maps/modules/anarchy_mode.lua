@@ -87,7 +87,7 @@ local function anarchy_gui(player)
 		for _, member in pairs (group.members) do
 			local p = game.players[member]	
 			if p.connected then
-				local l = tt.add({ type = "label", caption = p.name})
+				local l = tt.add({ type = "label", caption = tostring(p.name)})
 				local color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}			
 				l.style.font_color = color
 				l.style.maximal_width = members_width * 2	
@@ -97,7 +97,7 @@ local function anarchy_gui(player)
 		for _, member in pairs (group.members) do
 			local p = game.players[member]	
 			if not p.connected then
-				local l = tt.add({ type = "label", caption = p.name})
+				local l = tt.add({ type = "label", caption = tostring(p.name)})
 				local color = {r = 0.59, g = 0.59, b = 0.59, a = 1}			
 				l.style.font_color = color			
 				l.style.maximal_width = members_width * 2
@@ -153,19 +153,19 @@ end
 
 local function destroy_request_guis(player)
 	for _, p in pairs(game.players) do
-		if p.gui.center["alliance_request_" .. player.name] then p.gui.center["alliance_request_" .. player.name].destroy() end
+		if p.gui.center["alliance_request_" .. tostring(player.name)] then p.gui.center["alliance_request_" .. tostring(player.name)].destroy() end
 	end
 end
 
 local function request_alliance(group, requesting_player)
 	if not global.alliance_groups[group] then return end
-	global.spam_protection[requesting_player.name] = game.tick + 900
+	global.spam_protection[tostring(requesting_player.name)] = game.tick + 900
 	
 	destroy_request_guis(requesting_player)
 	
 	for _, member in pairs(global.alliance_groups[group].members) do
 		local player = game.players[member]				
-		local frame = player.gui.center.add({type = "frame", caption = requesting_player.name .. ' wants to join your group "' .. group .. '"', name = "alliance_request_" .. requesting_player.name})
+		local frame = player.gui.center.add({type = "frame", caption = tostring(requesting_player.name) .. ' wants to join your group "' .. group .. '"', name = "alliance_request_" .. tostring(requesting_player.name)})
 		frame.add({type = "label", caption = "", name = group})
 		frame.add({type = "label", caption = "", name = requesting_player.index})
 		frame.add({type = "button", caption = "Accept"})
@@ -194,18 +194,21 @@ local function refresh_alliances()
 		if i == 0 then
 			game.print('Group "' .. group.name .. '" has been abandoned!!', {r=0.90, g=0.0, b=0.0})
 			global.alliance_groups[group.name] = nil
-			game.merge_forces(game.forces[group.name], game.forces.spectator)
+			--game.merge_forces(game.forces[group.name], game.forces.spectator)
+			game.merge_forces(game.forces[group.name], game.forces.player)
 		end
 	end
 	
 	for _, player in pairs(game.players) do
 		if players_to_process[player.index] then
-			player.gui.top["anarchy_group_button"].caption = "[Group]"
-			player.tag = ""			
-			player.force = game.forces.spectator
-			local permission_group = game.permissions.get_group("spectator")	
-			permission_group.add_player(player.name)
-			players_to_process[player.index] = nil
+			if player.force.name ~= "player" then
+				player.gui.top["anarchy_group_button"].caption = "[Group]"
+				player.tag = ""			
+				player.force = game.forces.spectator
+				local permission_group = game.permissions.get_group("spectator")	
+				permission_group.add_player(player.name)
+			end
+			players_to_process[player.index] = nil			
 			player.print("Please join / create a group to play!", message_color)
 		end
 	end
@@ -217,7 +220,9 @@ local function new_group(frame, player)
 	local new_group_description = frame.frame2.group_table.new_group_description.text
 	if new_group_name ~= "" and new_group_name ~= "Name" and new_group_description ~= "Description" then
 		
-		if new_group_name == "spectator" then
+		new_group_name = tostring(new_group_name)
+		
+		if new_group_name == "spectator" or new_group_name == "player" then
 			player.print("Invalid group name.", {r=0.90, g=0.0, b=0.0})
 			return
 		end	
@@ -250,9 +255,9 @@ local function new_group(frame, player)
 		local color = player.color
 		color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
 		
-		global.alliance_groups[new_group_name] = {name = new_group_name, color = color, description = new_group_description, members = {[player.name] = player.index}}
+		global.alliance_groups[new_group_name] = {name = new_group_name, color = color, description = new_group_description, members = {[tostring(player.name)] = player.index}}
 		local color = {r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1}
-		game.print(player.name .. " has founded a new group!", color)
+		game.print(tostring(player.name) .. " has founded a new group!", color)
 		game.print('>> ' .. new_group_name, { r=0.98, g=0.66, b=0.22})
 		game.print(new_group_description, { r=0.85, g=0.85, b=0.85})
 		
@@ -261,8 +266,11 @@ local function new_group(frame, player)
 		
 		if not game.forces[new_group_name] then game.create_force(new_group_name) end
 		game.forces[new_group_name].share_chart = true
-		game.forces[new_group_name].set_friend("spectator", true)
-		game.forces["spectator"].set_friend(new_group_name, true)
+		--game.forces[new_group_name].set_friend("spectator", true)
+		--game.forces["spectator"].set_friend(new_group_name, true)
+		
+		game.forces[new_group_name].set_friend("player", true)
+		game.forces["player"].set_friend(new_group_name, true)
 		
 		refresh_alliances()		
 		return
@@ -285,12 +293,12 @@ local function on_gui_click(event)
 		if requesting_player.tag then
 			if requesting_player.tag ~= "" then
 				local requesting_player_group = string.sub(requesting_player.tag, 2, string.len(requesting_player.tag) - 1)	
-				global.alliance_groups[requesting_player_group].members[requesting_player.name] = nil
+				global.alliance_groups[requesting_player_group].members[tostring(requesting_player.name)] = nil
 			end
 		end
 		
 		global.alliance_groups[group].members[requesting_player.name] = requesting_player.index		
-		game.print(requesting_player.name .. ' has been accepted into group "' .. group .. '"', message_color)
+		game.print(tostring(requesting_player.name) .. ' has been accepted into group "' .. group .. '"', message_color)
 				
 		refresh_alliances()	
 		
@@ -304,11 +312,11 @@ local function on_gui_click(event)
 		local group = frame.children[1].name
 		local requesting_player = game.players[tonumber(frame.children[2].name)]
 		
-		game.print(requesting_player.name .. ' has been rejected to join group "' .. group .. '"', message_color)
+		game.print(tostring(requesting_player.name) .. ' has been rejected to join group "' .. group .. '"', message_color)
 		
 		for _, member in pairs(global.alliance_groups[group].members) do
 			local p = game.players[member]
-			if p.gui.center["alliance_request_" .. requesting_player.name] then p.gui.center["alliance_request_" .. requesting_player.name].destroy() end
+			if p.gui.center["alliance_request_" .. tostring(requesting_player.name)] then p.gui.center["alliance_request_" .. tostring(requesting_player.name)].destroy() end
 		end								
 		return				
 	end
@@ -321,8 +329,8 @@ local function on_gui_click(event)
 	if p then
 		if p.name == "groups_table" then			
 			if event.element.type == "button" and event.element.caption == "Join" then
-				if global.spam_protection[player.name] > game.tick then
-					player.print("Please wait " .. math.ceil((global.spam_protection[player.name] - game.tick)/60) .. " seconds before sending another request.", message_color)
+				if global.spam_protection[tostring(player.name)] > game.tick then
+					player.print("Please wait " .. math.ceil((global.spam_protection[tostring(player.name)] - game.tick)/60) .. " seconds before sending another request.", message_color)
 					return 
 				end	
 				destroy_request_guis(player)			
@@ -332,8 +340,8 @@ local function on_gui_click(event)
 
 			if event.element.type == "button" and event.element.caption == "Leave" then
 				destroy_request_guis(player)
-				global.alliance_groups[event.element.parent.name].members[player.name] = nil
-				game.print(player.name .. ' has left group "' .. event.element.parent.name .. '"', message_color)
+				global.alliance_groups[event.element.parent.name].members[tostring(player.name)] = nil
+				game.print(tostring(player.name) .. ' has left group "' .. event.element.parent.name .. '"', message_color)
 				refresh_alliances()									
 				return
 			end			
@@ -357,7 +365,7 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.alliance_groups then global.alliance_groups = {} end
 	if not global.spam_protection then global.spam_protection = {} end	
-	if not global.spam_protection[player.name] then global.spam_protection[player.name] = game.tick end		
+	if not global.spam_protection[tostring(player.name)] then global.spam_protection[tostring(player.name)] = game.tick end		
 	if not game.forces["spectator"] then game.create_force("spectator") end
 	
 	local permission_group = game.permissions.get_group("spectator")		
@@ -385,7 +393,12 @@ local function on_player_joined_game(event)
 	
 	anarchy_gui_button(player)
 	
-	refresh_alliances()
+	if player.online_time == 0 then		
+		player.print("Join / Create a group to play!", message_color)
+		permission_group.add_player(player.name)
+	end
+	
+	--refresh_alliances()
 end
 
 ----------share chat -------------------
