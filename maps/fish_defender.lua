@@ -6,14 +6,16 @@ require "maps.modules.rocket_launch_always_yields_science"
 require "maps.modules.launch_10000_fish_to_win"
 global.fish_in_space_needed = 100000
 
+require "maps.modules.explosives_are_explosive"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
-
+require "maps.modules.teleporting_worms"
 
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
+local enable_start_grace_period = false
 local wave_interval = 3600		--interval between waves in ticks
 local biter_count_limit = 1600	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
@@ -57,8 +59,7 @@ local function create_wave_gui(player)
 		progressbar.style.minimal_width = 120
 		progressbar.style.maximal_width = 120
 		progressbar.style.top_padding = 10
-	else
-	
+	else		
 		local time_remaining = math.floor(((global.wave_grace_period - (game.tick % global.wave_grace_period)) / 60) / 60)		
 		if time_remaining <= 0 then
 			global.wave_grace_period = nil
@@ -70,7 +71,9 @@ local function create_wave_gui(player)
 		label.style.font = "default-listbox"
 		label.style.left_padding = 4
 		label.style.right_padding = 4
-		label.style.font_color = {r=0.33, g=0.66, b=0.9}				
+		label.style.font_color = {r=0.33, g=0.66, b=0.9}
+
+		if not enable_start_grace_period then global.wave_grace_period = nil return end
 	end
 end
 
@@ -801,9 +804,15 @@ end
 	
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then			
-
+		local surface = event.entity.surface
+		local worm_chance = 16
+		if global.endgame_modifier then worm_chance = 8 end
+		if global.wave_count >= 2000 then worm_chance = 4 end
 		if event.entity.name == "medium-biter" then
-			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})		
+			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
+			if math_random(1,worm_chance) == 1 then
+				surface.create_entity({name = "small-worm-turret", position = event.entity.position})
+			end
 			local damage = 25
 			if global.endgame_modifier then
 				damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0)				
@@ -817,6 +826,9 @@ local function on_entity_died(event)
 
 		if event.entity.name == "big-biter" then
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
+			if math_random(1,worm_chance) == 1 then
+				surface.create_entity({name = "medium-worm-turret", position = event.entity.position})
+			end
 			local damage = 35
 			if global.endgame_modifier then damage = 35 + math.ceil((global.endgame_modifier * 0.05), 0) end
 			if damage > 350 then damage = 350 end
@@ -829,7 +841,7 @@ local function on_entity_died(event)
 		if event.entity.name == "behemoth-biter" then
 			local surface = event.entity.surface
 			
-			if math_random(1, 32) ~= 1 then
+			if math_random(1, worm_chance) ~= 1 then
 				if math_random(1, 2) == 1 then
 					local p = surface.find_non_colliding_position("big-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "big-biter", position = p} end
@@ -838,21 +850,9 @@ local function on_entity_died(event)
 					local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "medium-biter", position = p} end
 				end
-			else
-				local spawn_entity = false
-				if global.endgame_modifier then																				
-					if global.endgame_modifier > 500 then
-						spawn_entity = "big-worm-turret"
-					else
-						spawn_entity = "medium-worm-turret"
-					end														
-				end							
-				if spawn_entity then					
-					if surface.count_entities_filtered({area = {{event.entity.position.x - 5, event.entity.position.y - 5},{event.entity.position.x + 5, event.entity.position.y + 5}}, name = spawn_entity}) == 0 then	
-						surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
-						surface.create_entity({name = spawn_entity, position = event.entity.position})
-					end
-				end
+			else																	
+				surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
+				surface.create_entity({name = "big-worm-turret", position = event.entity.position})							
 			end
 		end
 		
@@ -872,31 +872,34 @@ end
 
 local function on_entity_damaged(event)
 	if event.cause then
-		if event.cause.name == "big-spitter" then
-			local surface = event.cause.surface
-			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-			if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 3 then
-				local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 4, 0.5)
-				if pos then surface.create_entity({name = "small-biter", position = pos}) end
+		if event.cause.valid then
+			if event.cause.name == "big-spitter" then
+				local surface = event.cause.surface
+				local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
+				if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 3 then
+					local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 4, 0.5)
+					if pos then surface.create_entity({name = "small-biter", position = pos}) end
+				end
 			end
-		end
 
-		if event.cause.name == "behemoth-spitter" then
-			local surface = event.cause.surface
-			local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-			if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 3 then
-				local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 4, 0.5)
-				if pos then surface.create_entity({name = "medium-biter", position = pos}) end
+			if event.cause.name == "behemoth-spitter" then
+				local surface = event.cause.surface
+				local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
+				if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 3 then
+					local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 4, 0.5)
+					if pos then surface.create_entity({name = "medium-biter", position = pos}) end
+				end
 			end
-		end
 
-		if event.cause.force.name == "enemy" then
-			if global.endgame_modifier then
-				event.entity.health = event.entity.health - (event.final_damage_amount * global.endgame_modifier * 0.002)
-				if event.entity.health <= 0 then event.entity.die() end
+			if event.cause.force.name == "enemy" then
+				if global.endgame_modifier then
+					event.entity.health = event.entity.health - (event.final_damage_amount * global.endgame_modifier * 0.002)
+					if event.entity.health <= 0 then event.entity.die() end
+				end
 			end
 		end
 	end
+	
 	if event.entity.valid then
 		if event.entity.name == "market" then
 			if event.cause then

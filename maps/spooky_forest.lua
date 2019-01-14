@@ -8,6 +8,7 @@ require "maps.modules.fluids_are_explosive"
 require "maps.modules.explosives_are_explosive"
 require "maps.modules.explosive_biters"
 require "maps.modules.dynamic_landfill"
+require "maps.modules.teleporting_worms"
 
 local shapes = require "maps.tools.shapes"
 local event = require 'utils.event'
@@ -179,7 +180,7 @@ local function get_entity(position)
 			end
 			if noise > 0.6 then
 				entity_name = rock_raffle[math_random(1, #rock_raffle)]
-				if math_random(1, 32) == 1 then
+				if math_random(1, 24) == 1 then
 					if position.x > 32 or position.x < -32 or position.y > 32 or position.y < -32 then
 						local e = math.ceil(game.forces.enemy.evolution_factor*10)
 						if e < 1 then e = 1 end								
