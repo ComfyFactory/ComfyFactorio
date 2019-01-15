@@ -15,7 +15,7 @@ require "maps.modules.teleporting_worms"
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
-local enable_start_grace_period = false
+local enable_start_grace_period = true
 local wave_interval = 3600		--interval between waves in ticks
 local biter_count_limit = 1600	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
