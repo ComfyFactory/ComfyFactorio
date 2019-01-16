@@ -18,7 +18,7 @@ end
 
 local function poll_show(player)
 	if player.gui.left["poll-panel"]	then player.gui.left["poll-panel"].destroy() end
-	if not global.poll_panel_creation_times then global.poll_panel_creation_times = {} end
+	
 	global.poll_panel_creation_times[player.index] = {player_index = player.index, tick = 5940}
 	
 	local frame = player.gui.left.add { type = "frame", name = "poll-panel", direction = "vertical" }	
@@ -141,6 +141,7 @@ end
 
 function on_player_joined_game(event)
 	if not global.poll_init_done then
+		global.poll_panel_creation_times = {} 
 		global.poll_voted = {}
 		global.poll_question = ""
 		global.poll_answers = {"","",""}
@@ -171,6 +172,8 @@ local function on_gui_click(event)
 	local name = event.element.name
 	
 	if name == "poll" then
+		global.poll_panel_creation_times[player.index] = nil
+		
 		local frame = player.gui.left["poll-panel"]
 		if frame then
 			frame.destroy()
@@ -199,7 +202,7 @@ local function on_gui_click(event)
 	
 	if name == "poll_hide_button" then
 		player.gui.left["poll-panel"].destroy()
-		if global.poll_panel_creation_times then	global.poll_panel_creation_times[player.index] = nil end
+		global.poll_panel_creation_times[player.index] = nil
 		if player.gui.left["poll-assembler"] then
 			player.gui.left["poll-assembler"].destroy()
 		end
@@ -248,13 +251,7 @@ local function process_timeout(creation_time)
 end
 
 local function on_tick()	
-	if game.tick % 60 ~= 0 then return end
-	if not global.poll_panel_creation_times then return end
-	if #global.poll_panel_creation_times == 0 then
-		global.poll_panel_creation_times = nil
-		return
-	end
-	
+	if game.tick % 60 ~= 0 then return end		
 	for _, creation_time in pairs(global.poll_panel_creation_times) do
 		process_timeout(creation_time)						
 	end		
