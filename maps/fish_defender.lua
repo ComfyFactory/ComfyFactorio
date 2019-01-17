@@ -3,8 +3,7 @@
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
 require "maps.modules.rocket_launch_always_yields_science"
-require "maps.modules.launch_10000_fish_to_win"
-global.fish_in_space_needed = 100000
+require "maps.modules.launch_fish_to_win"
 
 require "maps.modules.explosives_are_explosive"
 require "maps.modules.biters_yield_coins"
