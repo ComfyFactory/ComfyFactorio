@@ -22,7 +22,7 @@ local function satellite_score_toggle_button(player)
 	button.style.bottom_padding = 2
 end
 
-function level_up_popup(player)
+local function level_up_popup(player)
 	local reward = global.satellite_score[get_rank()]
 	if player.gui.center["level_up_popup"] then player.gui.center["level_up_popup"].destroy() end
 	local frame = player.gui.center.add({type = "frame", name = "level_up_popup", direction = "vertical"})
@@ -35,7 +35,7 @@ function level_up_popup(player)
 	button.style.font_color = {r=0.77, g=0.77, b=0.77}
 end
 
-function satellites_in_space_gui(player)
+local function satellites_in_space_gui(player)
 	--if global.satellites_in_space == 0 then return end
 	local i = get_rank()
 	
@@ -92,7 +92,7 @@ local function init()
 	global.satellite_score = {
 		{goal = 0, rank = false, achieved = true},
 		{goal = 1, rank = "Copper", color = {r = 201, g = 133, b = 6}, msg = "The first satellite has been launched!", msg2 = "However, this is only the beginning.", achieved = false},
-		{goal = 2, rank = "Iron", color = {r = 219, g = 216, b = 206}, msg = "", msg2 = "", achieved = false},
+		{goal = 10, rank = "Iron", color = {r = 219, g = 216, b = 206}, msg = "", msg2 = "", achieved = false},
 		{goal = 100, rank = "Bronze", color = {r = 186, g = 115, b = 39}, msg = "", msg2 = "", achieved = false},
 		{goal = 500, rank = "Silver", color = {r = 186, g = 178, b = 171}, msg = "", msg2 = "", achieved = false},
 		{goal = 1000, rank = "Gold", color = {r = 255, g = 214, b = 33}, msg = "", msg2 = "", achieved = false},
