@@ -44,7 +44,7 @@ local function satellites_in_space_gui(player)
 	if player.gui.left["satellites_in_space"] then player.gui.left["satellites_in_space"].destroy() end
 		
 	local frame = player.gui.left.add({type = "frame", name = "satellites_in_space"})
-	local label = frame.add({type = "label", caption = "Satellites in Space: "})
+	local label = frame.add({type = "label", caption = "Satellites launched: "})
 	label.style.font_color = {r=0.11, g=0.8, b=0.44}	
 			
 	local progress = (global.satellites_in_space - global.satellite_score[i].goal) / (global.satellite_score[i+1].goal - global.satellite_score[i].goal)
@@ -102,10 +102,10 @@ local function init()
 		{goal = 20000, rank = "Anti-Matter", color = {r = 190, g = 255, b = 190}, msg = "", msg2 = "", achieved = false},	
 		{goal = 30000, rank = "Orange Dwarf", color = {r = 255, g = 150, b = 50}, msg = "", msg2 = "", achieved = false},		
 		{goal = 40000, rank = "Blue Supergiant", color = {r = 130, g = 130, b = 255}, msg = "", msg2 = "", achieved = false},
-		{goal = 50000, rank = "Red Hypergiant", color = {r = 255, g = 90, b = 90}, msg = "", msg2 = "", achieved = false},		
-		{goal = 75000, rank = "Black Hole", color = {r = 0, g = 0, b = 0}, msg = "", msg2 = "", achieved = false},				
-		{goal = 100000, rank = "Neutron Star", color = {r = 200, g = 200, b = 255}, msg = "", msg2 = "", achieved = false},
-		{goal = 150000, rank = "Supernova", color = {r = 200, g = 255, b = 200}, msg = "", msg2 = "", achieved = false},
+		{goal = 50000, rank = "Red Hypergiant", color = {r = 255, g = 90, b = 90}, msg = "", msg2 = "", achieved = false},								
+		{goal = 75000, rank = "Neutron Star", color = {r = 200, g = 200, b = 255}, msg = "", msg2 = "", achieved = false},
+		{goal = 100000, rank = "Supernova", color = {r = 200, g = 255, b = 200}, msg = "", msg2 = "", achieved = false},
+		{goal = 150000, rank = "Black Hole", color = {r = 0, g = 0, b = 0}, msg = "", msg2 = "", achieved = false},
 		{goal = 1000000, rank = "Blue Screen", color = {r = 100, g = 100, b = 245}, msg = "", msg2 = "", achieved = false},
 		{goal = 10000000, rank = "?????", color = {r = 0, g = 0, b = 0}, msg = "", msg2 = "", achieved = false},				
 		{goal = 1000000000, rank = "?!??!?", color = {r = 0, g = 0, b = 0}, msg = "", msg2 = "", achieved = false}

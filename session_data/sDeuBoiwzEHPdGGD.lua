@@ -1,0 +1,28 @@
+local playsession = {
+	{"Collider", {326886}},
+	{"Menander", {427673}},
+	{"EPO666", {417841}},
+	{"everLord", {175161}},
+	{"dmitrymk", {319688}},
+	{"masoudd", {104110}},
+	{"Lillbirro", {243810}},
+	{"keysersoyze", {264603}},
+	{"wolfspike", {3020}},
+	{"joe32", {199470}},
+	{"frettarenan", {203716}},
+	{"vad7ik", {69643}},
+	{"wekkka", {188620}},
+	{"Clevlore", {181694}},
+	{"Scuideie-Guy", {45861}},
+	{"seeyorise", {8813}},
+	{"rayijin", {1129}},
+	{"hasannuh", {127554}},
+	{"RainSolid", {117750}},
+	{"putinss", {75653}},
+	{"PicouzeMan", {6419}},
+	{"davidfc", {5218}},
+	{"beranabus", {12911}},
+	{"akrause", {24141}},
+	{"jackazzm", {12551}}
+}
+return playsession
