@@ -804,14 +804,13 @@ end
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then			
 		local surface = event.entity.surface
-		local worm_chance = 128
-		if global.endgame_modifier then worm_chance = 64 end
-		if global.wave_count >= 2000 then worm_chance = 32 end
+		--local worm_chance = 256
+		--if global.endgame_modifier then worm_chance = 96 end	
 		if event.entity.name == "medium-biter" then
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
-			if math_random(1,worm_chance) == 1 then
-				surface.create_entity({name = "small-worm-turret", position = event.entity.position})
-			end
+			--if math_random(1,worm_chance) == 1 then
+				--surface.create_entity({name = "small-worm-turret", position = event.entity.position})
+			--end
 			local damage = 25
 			if global.endgame_modifier then
 				damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0)				
@@ -825,9 +824,9 @@ local function on_entity_died(event)
 
 		if event.entity.name == "big-biter" then
 			event.entity.surface.create_entity({name = "uranium-cannon-shell-explosion", position = event.entity.position})
-			if math_random(1,worm_chance) == 1 then
-				surface.create_entity({name = "medium-worm-turret", position = event.entity.position})
-			end
+			--if math_random(1,worm_chance) == 1 then
+				--surface.create_entity({name = "medium-worm-turret", position = event.entity.position})
+			--end
 			local damage = 35
 			if global.endgame_modifier then damage = 35 + math.ceil((global.endgame_modifier * 0.05), 0) end
 			if damage > 350 then damage = 350 end
@@ -840,7 +839,7 @@ local function on_entity_died(event)
 		if event.entity.name == "behemoth-biter" then
 			local surface = event.entity.surface
 			
-			if math_random(1, worm_chance) ~= 1 then
+			--if math_random(1, worm_chance) ~= 1 then
 				if math_random(1, 2) == 1 then
 					local p = surface.find_non_colliding_position("big-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "big-biter", position = p} end
@@ -849,10 +848,10 @@ local function on_entity_died(event)
 					local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "medium-biter", position = p} end
 				end
-			else																	
-				surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
-				surface.create_entity({name = "big-worm-turret", position = event.entity.position})							
-			end
+			--else																	
+			--	surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
+			--	surface.create_entity({name = "big-worm-turret", position = event.entity.position})							
+			--end
 		end
 		
 		return
