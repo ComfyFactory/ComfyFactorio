@@ -1,3 +1,7 @@
+0.25
+evacuate infinite fish to win
+the west side now has far away nests, to prevent unnecessary exploration
+
 0.24
 evacuate 100000 fish to win the game
 

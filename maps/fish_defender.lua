@@ -9,7 +9,7 @@ require "maps.modules.explosives_are_explosive"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
-require "maps.modules.teleporting_worms"
+--require "maps.modules.teleporting_worms"
 
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
@@ -804,9 +804,9 @@ end
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then			
 		local surface = event.entity.surface
-		local worm_chance = 16
-		if global.endgame_modifier then worm_chance = 8 end
-		if global.wave_count >= 2000 then worm_chance = 4 end
+		local worm_chance = 128
+		if global.endgame_modifier then worm_chance = 64 end
+		if global.wave_count >= 2000 then worm_chance = 32 end
 		if event.entity.name == "medium-biter" then
 			event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
 			if math_random(1,worm_chance) == 1 then
@@ -924,7 +924,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
 			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
+			["enemy-base"] = {frequency = "high", size = "big", richness = "normal"},
 			["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
@@ -1024,11 +1024,13 @@ local function on_chunk_generated(event)
 		
 	local area = event.area
 	local left_top = area.left_top
-
-	local entities = surface.find_entities_filtered({area = area, force = "enemy"})
-	for _, entity in pairs(entities) do
-		entity.destroy()
-	end	
+	
+	if left_top.x > -2048 then
+		local entities = surface.find_entities_filtered({area = area, force = "enemy"})
+		for _, entity in pairs(entities) do
+			entity.destroy()
+		end
+	end
 	
 	if left_top.x <= -196 then
 		

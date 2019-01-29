@@ -6,7 +6,7 @@ local math_random = math.random
 local function on_entity_damaged(event)	
 	if not event.cause then return end
 	local cause = event.cause
-	if event.cause.type ~= "turret" then return end
+	if cause.type ~= "turret" then return end
 	if cause.health <= 0 then return end
 	local new_position = {
 		x = (cause.position.x + event.entity.position.x) * 0.5,
