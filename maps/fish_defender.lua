@@ -392,10 +392,22 @@ local function spawn_boss_units(surface)
 		})
 end
 
-local function wake_up_idle_biters(surface)
+local function wake_up_idle_biters(surface)	
+	for _, unit in pairs(surface.find_entities_filtered({type = "unit", area = {{128, -256},{360, 256}}})) do
+		local new_position = {x = unit.position.x - 8, y = unit.position.y}
+		if not surface.find_nearest_enemy{position=new_position, max_distance=16, force="enemy"} then
+			local p = surface.find_non_colliding_position(unit.name, new_position, 32, 2)
+			if p then
+				local biter = surface.create_entity {name = unit.name, position = p}
+				biter.health = unit.health
+			end
+			unit.destroy()
+		end				
+	end
+	
 	for y = -256, 256, 32 do	
 		local units = surface.find_entities_filtered({type = "unit", area = {{192, y},{360, y + 32}}})
-		local unit_group = surface.create_unit_group({position = {x = 224, y = math.floor(y / 2)}})
+		local unit_group = surface.create_unit_group({position = {x = 160, y = math.floor(y / 2)}})
 		for _, unit in pairs(units) do
 			unit_group.add_member(unit)						
 		end
@@ -445,7 +457,7 @@ local function wake_up_idle_biters(surface)
 			},
 		unit_count = 64,
 		force = "enemy",
-		unit_search_distance=96
+		unit_search_distance=48
 		})
 	
 	surface.set_multi_command({
