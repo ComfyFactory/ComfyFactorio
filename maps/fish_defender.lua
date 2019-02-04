@@ -405,9 +405,12 @@ local function wake_up_idle_biters(surface)
 		end				
 	end
 	
+	local nearest_player_unit = surface.find_nearest_enemy{position={256, 0}, max_distance=512, force="enemy"}
+	if not nearest_player_unit then return end
+		
 	for y = -256, 256, 32 do	
-		local units = surface.find_entities_filtered({type = "unit", area = {{192, y},{360, y + 32}}})
-		local unit_group = surface.create_unit_group({position = {x = 160, y = math.floor(y / 2)}})
+		local units = surface.find_entities_filtered({type = "unit", area = {{64, y},{360, y + 32}}})
+		local unit_group = surface.create_unit_group({position = {x = nearest_player_unit.position.x + 32, y = math.floor(y / 2)}})
 		for _, unit in pairs(units) do
 			unit_group.add_member(unit)						
 		end
@@ -478,7 +481,7 @@ local function biter_attack_wave()
 	local surface = game.surfaces["fish_defender"]
 	
 	clear_corpses(surface)
-	wake_up_idle_biters(surface)
+	--wake_up_idle_biters(surface)
 	
 	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
 		game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})
@@ -852,11 +855,11 @@ local function on_entity_died(event)
 			local surface = event.entity.surface
 			
 			--if math_random(1, worm_chance) ~= 1 then
-				if math_random(1, 2) == 1 then
+				if math_random(1, 16) == 1 then
 					local p = surface.find_non_colliding_position("big-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "big-biter", position = p} end
 				end
-				for i = 1, math_random(1, 3), 1 do
+				for i = 1, math_random(1, 2), 1 do
 					local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
 					if p then surface.create_entity {name = "medium-biter", position = p} end
 				end

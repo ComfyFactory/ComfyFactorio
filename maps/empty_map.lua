@@ -1,7 +1,6 @@
--- just an empty map
+-- just an empty map for testing thingies
 local event = require 'utils.event'
-
-
+local map_functions = require "maps.tools.map_functions"
 
 function dump_boom_layout()
 	local surface = game.surfaces["empty_map"]
@@ -58,6 +57,10 @@ local function on_chunk_generated(event)
 		end
 	end
 	surface.set_tiles(tiles,true)
+	
+	if chunk_pos_x % 96 ~= 0 then return end
+	if chunk_pos_y % 96 ~= 0 then return end
+	map_functions.draw_rainbow_patch({x = chunk_pos_x, y = chunk_pos_y}, surface, 28, 1000)
 end
 
 local function on_player_joined_game(event)
@@ -85,7 +88,8 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position({0,0},game.surfaces["empty_map"])
 		local surface = game.surfaces["empty_map"]
 		
-		--create_cluster("crude-oil", {x=0,y=0}, 5, surface, 10, math.random(300000,400000))
+		--local radius = 512
+		--game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})	
 		global.map_init_done = true						
 	end	
 	local surface = game.surfaces["empty_map"]

@@ -4,6 +4,36 @@ local f = {}
 local math_random = math.random
 local insert = table.insert
 
+f.draw_rainbow_patch = function(position, surface, radius, richness)
+	if not position then return end
+	if not surface then return end
+	if not radius then return end
+	if not richness then return end
+	local modifier_1 = math_random(3,7)
+	local modifier_2 = math_random(1,10) * 0.005
+	local modifier_3 = math_random(1,10) * 0.05
+	local modifier_4 = math_random(5,30) * 0.01	
+	local seed = game.surfaces[1].map_gen_settings.seed
+	local ores = {"stone", "coal", "iron-ore", "copper-ore"}
+	local richness_part = richness / (radius * 2)
+	for y = radius * -3, radius * 3, 1 do
+		for x = radius * -3, radius * 3, 1 do
+			local pos = {x = x + position.x, y = y + position.y}			
+			local noise = simplex_noise(pos.x * modifier_2, pos.y * modifier_2, seed) + simplex_noise(pos.x * modifier_3, pos.y * modifier_3, seed) * modifier_4
+			local distance_to_center = math.sqrt(x^2 + y^2)
+			local ore = ores[(math.ceil(noise * modifier_1) % 4) + 1]
+			local amount = richness - richness_part * distance_to_center		
+			if amount > 1 then
+				if surface.can_place_entity({name = ore, position = pos, amount = amount}) then
+					if distance_to_center + (noise * radius * 0.5) < radius then					
+						surface.create_entity{name = ore, position = pos, amount = amount}									
+					end	
+				end
+			end
+		end
+	end
+end
+
 f.draw_entity_circle = function(position, name, surface, radius, check_collision, amount)
 	if not position then return end
 	if not name then return end
@@ -38,9 +68,7 @@ f.draw_noise_tile_circle = function(position, name, surface, radius)
 	if not position then return end
 	if not name then return end
 	if not surface then return end
-	if not radius then return end
-	local math_random = math.random
-	local insert = table.insert	
+	if not radius then return end	
 	local noise_seed_add = 25000
 	local tiles = {}			
 	for y = radius * -2, radius * 2, 1 do
