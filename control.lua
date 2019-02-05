@@ -8,7 +8,7 @@ require "antigrief_admin_panel"
 require "group"
 require "player_list"
 require "poll"
-require "score"
+--require "score"
 
 ---- enable modules here ----
 --require "maps.tools.map_pregen"
@@ -18,13 +18,16 @@ require "score"
 --require "maps.modules.rocket_launch_always_yields_science"
 --require "maps.modules.launch_fish_to_win"
 --require "maps.modules.satellite_score"
---require "maps.modules.dynamic_landfill"
 --require "maps.modules.restrictive_fluid_mining"
 --require "maps.modules.fluids_are_explosive"
 --require "maps.modules.explosives_are_explosive"
 --require "maps.modules.explosive_biters"
---require "maps.modules.teleporting_worms"
 --require "maps.modules.railgun_enhancer"
+--require "maps.modules.dynamic_landfill"
+--require "maps.modules.custom_death_messages"
+require "maps.hunger_games_map_intro"
+require "maps.modules.hunger_games"
+require "maps.modules.dynamic_player_spawn"
 -----------------------------
 
 ---- enable maps here ----
@@ -41,9 +44,9 @@ require "score"
 --require "maps.anarchy"
 --require "maps.railworld"
 --require "maps.spaghettorio"
---require "maps.deep_jungle"
+require "maps.deep_jungle"
 --require "maps.lost_desert"
-require "maps.empty_map"
+--require "maps.empty_map"
 --require "maps.custom_start"
 -----------------------------
 
@@ -53,6 +56,20 @@ local function on_player_created(event)
 	local player = game.players[event.player_index]	
 	player.gui.top.style = 'slot_table_spacing_horizontal_flow'
 	player.gui.left.style = 'slot_table_spacing_vertical_flow'
+end
+
+function generate_map(radius)
+	local surface = game.players[1].surface
+	if surface.is_chunk_generated({radius, radius}) then
+		game.print("Map is generated.")
+		return
+	end
+	surface.request_to_generate_chunks({0,0}, radius)
+	surface.force_generate_chunk_requests()
+	for _, player in pairs(game.connected_players) do
+		player.play_sound{path="utility/new_objective", volume_modifier=1}
+	end
+	game.print("Map is generated.")
 end
 
 function spaghetti()

@@ -1,9 +1,9 @@
 local event = require 'utils.event'
 
-local main_caption = " --Anarchy-- "
-local sub_caption = " finally.. freedum.. "
+local main_caption = " --Hunger Games-- "
+local sub_caption = "Deep in the meadow, hidden far away."
 local info = [[	
-	Join / Create a group to play!!
+	Create / Join a group to play!!
 	
 	Use the [Group] button!
 	
@@ -22,13 +22,13 @@ local function create_map_intro(player)
 	local tt = t.add {type = "table", column_count = 3}
 	local l = tt.add {type = "label", caption = main_caption}
 	l.style.font = "default-frame"
-	l.style.font_color = {r=0.8, g=0.3, b=0.45}
+	l.style.font_color = {r=35, g=130, b=60}
 	l.style.top_padding = 6	
 	l.style.bottom_padding = 6
 	
 	local l = tt.add {type = "label", caption = sub_caption}
 	l.style.font = "default"
-	l.style.font_color = {r=0.9, g=0.9, b=0.2}
+	l.style.font_color = {r=0.75, g=0.75, b=0.2}
 	l.style.minimal_width = 280	
 	
 	local b = tt.add {type = "button", caption = "X", name = "close_map_intro_frame", align = "right"}	

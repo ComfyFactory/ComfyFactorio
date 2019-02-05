@@ -56,11 +56,20 @@ local function on_chunk_generated(event)
 			table.insert(tiles, {name = "grass-1", position = pos}) 
 		end
 	end
-	surface.set_tiles(tiles,true)
+	surface.set_tiles(tiles,true)		
+end
+
+local function on_chunk_charted(event)
+	if not global.chunks_charted then global.chunks_charted = {} end
+	local surface = game.surfaces[event.surface_index]
+	local position = event.position
+	if global.chunks_charted[tostring(position.x) .. tostring(position.y)] then return end
+	global.chunks_charted[tostring(position.x) .. tostring(position.y)] = true
+	local force = event.force
 	
-	if chunk_pos_x % 96 ~= 0 then return end
-	if chunk_pos_y % 96 ~= 0 then return end
-	map_functions.draw_rainbow_patch({x = chunk_pos_x, y = chunk_pos_y}, surface, 28, 1000)
+	if position.x % 4 ~= 0 then return end
+	if position.y % 4 ~= 0 then return end
+	map_functions.draw_rainbow_patch({x = position.x * 32, y = position.y * 32}, surface, 28, 1000)
 end
 
 local function on_player_joined_game(event)
@@ -108,4 +117,5 @@ local function on_player_joined_game(event)
 end
 
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

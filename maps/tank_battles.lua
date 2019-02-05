@@ -620,8 +620,7 @@ local function on_player_died(event)
 		if target_player.name ~= player.name then
 			player.print(player.name .. " was killed" .. str, { r=0.99, g=0.0, b=0.0})
 		end
-	end
-	
+	end	
 end
 
 ----------share chat with player and spectator force-------------------

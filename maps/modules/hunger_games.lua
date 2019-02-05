@@ -1,7 +1,10 @@
--- "Anarchy" mode - by mewmew
+-- "Hunger Games" or "Anarchy" mode - by mewmew
 -- create a tag group to form alliances
 -- empty groups will be deleted
 -- join or create a team to be able to play
+
+require "maps.modules.custom_death_messages"
+require "maps.modules.hunger_games_balance"
 
 local event = require 'utils.event'
 local message_color = {r=0.98, g=0.66, b=0.22}
@@ -265,7 +268,8 @@ local function new_group(frame, player)
 		frame.frame2.group_table.new_group_description.text = "Description"
 		
 		if not game.forces[new_group_name] then game.create_force(new_group_name) end
-		game.forces[new_group_name].share_chart = true
+		game.forces[new_group_name].share_chart = false
+		game.forces[new_group_name].technologies["landfill"].enabled = false
 		--game.forces[new_group_name].set_friend("spectator", true)
 		--game.forces["spectator"].set_friend(new_group_name, true)
 		
@@ -393,7 +397,8 @@ local function on_player_joined_game(event)
 	
 	anarchy_gui_button(player)
 	
-	if player.online_time == 0 then		
+	if player.online_time == 0 then
+		player.force = game.forces.spectator
 		player.print("Join / Create a group to play!", message_color)
 		permission_group.add_player(player.name)
 	end
@@ -403,7 +408,7 @@ end
 
 ----------share chat -------------------
 local function on_console_chat(event)
-	if not event.message then return end	
+	if not event.message then return end
 	if not event.player_index then return end	
 	local player = game.players[event.player_index]
 	
@@ -427,6 +432,34 @@ local function on_console_chat(event)
 	end
 end
 
+local function on_player_respawned(event)
+	local player = game.players[event.player_index]	
+	player.insert{name = 'iron-axe', count = 1}
+	player.insert{name = 'iron-plate', count = 32}
+end
+
+local function on_built_entity(event)
+	local entity = event.created_entity
+	if not entity.valid then return end
+	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
+	if distance_to_center > 48 then return end
+	local surface = entity.surface
+	surface.create_entity({name = "flying-text", position = entity.position, text = "Spawn is protected from building.", color = {r=0.88, g=0.1, b=0.1}})					 
+	local player = game.players[event.player_index]			
+	player.insert({name = entity.name, count = 1})
+	if global.score then
+		if global.score[player.force.name] then
+			if global.score[player.force.name].players[player.name] then
+				global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+			end
+		end
+	end		
+	entity.destroy()			
+end
+
+event.add(defines.events.on_player_died, on_player_died)
+event.add(defines.events.on_built_entity, on_built_entity)
+event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_console_chat, on_console_chat)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
