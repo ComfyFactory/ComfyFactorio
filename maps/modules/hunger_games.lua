@@ -4,7 +4,7 @@
 -- join or create a team to be able to play
 
 require "maps.modules.custom_death_messages"
-require "maps.modules.hunger_games_balance"
+--require "maps.modules.hunger_games_balance"
 
 local event = require 'utils.event'
 local message_color = {r=0.98, g=0.66, b=0.22}
@@ -268,6 +268,10 @@ local function new_group(frame, player)
 		frame.frame2.group_table.new_group_description.text = "Description"
 		
 		if not game.forces[new_group_name] then game.create_force(new_group_name) end
+		
+		--balancing module, force damage init
+		--init_player_weapon_damage(game.forces[new_group_name])
+		
 		game.forces[new_group_name].share_chart = false
 		game.forces[new_group_name].technologies["landfill"].enabled = false
 		--game.forces[new_group_name].set_friend("spectator", true)
@@ -435,14 +439,14 @@ end
 local function on_player_respawned(event)
 	local player = game.players[event.player_index]	
 	player.insert{name = 'iron-axe', count = 1}
-	player.insert{name = 'iron-plate', count = 32}
+	player.insert{name = 'iron-plate', count = 8}
 end
 
 local function on_built_entity(event)
 	local entity = event.created_entity
 	if not entity.valid then return end
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
-	if distance_to_center > 48 then return end
+	if distance_to_center > 32 then return end
 	local surface = entity.surface
 	surface.create_entity({name = "flying-text", position = entity.position, text = "Spawn is protected from building.", color = {r=0.88, g=0.1, b=0.1}})					 
 	local player = game.players[event.player_index]			

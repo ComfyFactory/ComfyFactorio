@@ -8,6 +8,7 @@ require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.rocks_yield_coins"
 require "maps.modules.explosive_player_respawn"
+require "maps.modules.flashlight_toggle_button"
 
 local map_functions = require "maps.tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
@@ -47,7 +48,7 @@ local function secret_shop(pos, surface)
     {price = {{"coin", math_random(25,50)}}, offer = {type = 'give-item', item = 'construction-robot'}},
    -- {price = {{"coin", math_random(10000,20000)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
    -- {price = {{"coin", math_random(5000,15000)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},    
-    {price = {{"coin", math_random(1000,2000)}}, offer = {type = 'give-item', item = 'railgun'}},
+    {price = {{"coin", math_random(800,1600)}}, offer = {type = 'give-item', item = 'railgun'}},
     {price = {{"coin", math_random(60,120)}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},
 	{price = {{"coin", math_random(100,300)}}, offer = {type = 'give-item', item = 'loader'}},
 	{price = {{"coin", math_random(200,400)}}, offer = {type = 'give-item', item = 'fast-loader'}},
@@ -55,6 +56,8 @@ local function secret_shop(pos, surface)
 	{price = {{"coin", math_random(150,300)}}, offer = {type = 'give-item', item = 'locomotive'}},
 	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},
 	{price = {{"coin", math_random(5,15)}}, offer = {type = 'give-item', item = 'grenade'}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'cliff-explosives'}},
+	 {price = {{"coin", math_random(10,20)}}, offer = {type = 'give-item', item = 'explosives', count = 50}},
 	{price = {{"coin", math_random(4,8)}}, offer = {type = 'give-item', item = 'rail', count = 4}},
 	{price = {{"coin", math_random(20,30)}}, offer = {type = 'give-item', item = 'train-stop'}},	
 	{price = {{"coin", math_random(4,12)}}, offer = {type = 'give-item', item = 'small-lamp'}},
@@ -89,38 +92,31 @@ local function treasure_chest(position)
 	if not game.surfaces["deep_jungle"].can_place_entity({name="steel-chest",position=position, force="player"}) then return end
 	treasure_chest_raffle_table = {}
 	treasure_chest_loot_weights = {}
-	table.insert(treasure_chest_loot_weights, {{name = 'landfill', count = math_random(16,32)},20})
-	table.insert(treasure_chest_loot_weights, {{name = 'iron-gear-wheel', count = math_random(16,48)},10})	
+	table.insert(treasure_chest_loot_weights, {{name = 'landfill', count = math_random(8,16)},16})
+	table.insert(treasure_chest_loot_weights, {{name = 'iron-gear-wheel', count = math_random(16,48)},8})	
 	table.insert(treasure_chest_loot_weights, {{name = 'coal', count = math_random(16,48)},2})
-	table.insert(treasure_chest_loot_weights, {{name = 'copper-cable', count = math_random(64,128)},10})
-	table.insert(treasure_chest_loot_weights, {{name = 'inserter', count = math_random(8,16)},4})		
+	table.insert(treasure_chest_loot_weights, {{name = 'copper-cable', count = math_random(64,128)},8})
+	table.insert(treasure_chest_loot_weights, {{name = 'inserter', count = math_random(4,8)},4})		
 	table.insert(treasure_chest_loot_weights, {{name = 'fast-inserter', count = math_random(4,8)},3})
-	table.insert(treasure_chest_loot_weights, {{name = 'stack-filter-inserter', count = math_random(2,4)},1})
-	table.insert(treasure_chest_loot_weights, {{name = 'stack-inserter', count = math_random(2,4)},1})
-	table.insert(treasure_chest_loot_weights, {{name = 'burner-inserter', count = math_random(16,32)},6})
-	table.insert(treasure_chest_loot_weights, {{name = 'electric-engine-unit', count = math_random(1,16)},3})
-	table.insert(treasure_chest_loot_weights, {{name = 'engine-unit', count = math_random(1,16)},3})	
+	table.insert(treasure_chest_loot_weights, {{name = 'burner-inserter', count = math_random(4,8)},6})
 	table.insert(treasure_chest_loot_weights, {{name = 'rocket-fuel', count = math_random(1,5)},3})
-	table.insert(treasure_chest_loot_weights, {{name = 'empty-barrel', count = math_random(1,10)},7})
-	table.insert(treasure_chest_loot_weights, {{name = 'lubricant-barrel', count = math_random(1,10)},3})
-	table.insert(treasure_chest_loot_weights, {{name = 'crude-oil-barrel', count = math_random(1,10)},3})
-	table.insert(treasure_chest_loot_weights, {{name = 'iron-stick', count = math_random(1,100)},8})
-	table.insert(treasure_chest_loot_weights, {{name = "small-electric-pole", count = math_random(8,32)},9})
+	table.insert(treasure_chest_loot_weights, {{name = "small-electric-pole", count = math_random(4,8)},7})
 	table.insert(treasure_chest_loot_weights, {{name = "firearm-magazine", count = math_random(16,48)},8})
-	table.insert(treasure_chest_loot_weights, {{name = 'grenade', count = math_random(8,16)},5})
+	table.insert(treasure_chest_loot_weights, {{name = "submachine-gun", count = 1},4})
+	table.insert(treasure_chest_loot_weights, {{name = 'grenade', count = math_random(6,12)},5})
 	table.insert(treasure_chest_loot_weights, {{name = 'land-mine', count = math_random(8,16)},5})
 	table.insert(treasure_chest_loot_weights, {{name = 'light-armor', count = 1},1})
 	table.insert(treasure_chest_loot_weights, {{name = 'heavy-armor', count = 1},2})		
 	table.insert(treasure_chest_loot_weights, {{name = 'pipe', count = math_random(10,100)},6})		
 	table.insert(treasure_chest_loot_weights, {{name = 'steel-axe', count = 1},3})
-	table.insert(treasure_chest_loot_weights, {{name = 'raw-wood', count = math_random(5,50)},2})
 	table.insert(treasure_chest_loot_weights, {{name = 'explosives', count = math_random(40,50)},6})
-	table.insert(treasure_chest_loot_weights, {{name = 'shotgun', count = 1},2})
+	table.insert(treasure_chest_loot_weights, {{name = 'shotgun', count = 1},3})
+	table.insert(treasure_chest_loot_weights, {{name = 'shotgun-shell', count = math_random(8,16)},3})
 	table.insert(treasure_chest_loot_weights, {{name = 'stone-brick', count = math_random(80,100)},4})
-	table.insert(treasure_chest_loot_weights, {{name = 'small-lamp', count = math_random(3,10)},4})
-	table.insert(treasure_chest_loot_weights, {{name = 'rail', count = math_random(32,100)},4})	
+	table.insert(treasure_chest_loot_weights, {{name = 'small-lamp', count = math_random(2,4)},2})
+	table.insert(treasure_chest_loot_weights, {{name = 'rail', count = math_random(16,48)},3})	
 	table.insert(treasure_chest_loot_weights, {{name = 'coin', count = math_random(32,320)},1})
-	table.insert(treasure_chest_loot_weights, {{name = 'assembling-machine-1', count = math_random(1,4)},2})
+	table.insert(treasure_chest_loot_weights, {{name = 'assembling-machine-1', count = math_random(1,3)},3})
 	table.insert(treasure_chest_loot_weights, {{name = 'assembling-machine-2', count = math_random(1,3)},2})
 	table.insert(treasure_chest_loot_weights, {{name = 'assembling-machine-3', count = math_random(1,2)},1})		
 	for _, t in pairs (treasure_chest_loot_weights) do
@@ -145,17 +141,15 @@ local function rare_treasure_chest(position)
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'combat-shotgun', count = 1},5})
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'piercing-shotgun-shell', count = math_random(8,16)},5})	
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'rocket-launcher', count = 1},5})		
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'rocket', count = math_random(8,16)},5})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'explosive-rocket', count = math_random(8,16)},5})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'modular-armor', count = 1},3})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'power-armor', count = 1},1})	
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'rocket', count = math_random(4,8)},5})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'explosive-rocket', count = math_random(4,8)},5})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'modular-armor', count = 1},3})	
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'piercing-rounds-magazine', count = math_random(32,64)},3})	
 	table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun', count = 1},4})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun-dart', count = math_random(4,8)},4})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'exoskeleton-equipment', count = 1},2})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'defender-capsule', count = math_random(6,12)},5})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'distractor-capsule', count = math_random(3,6)},4})
-	table.insert(rare_treasure_chest_loot_weights, {{name = 'destroyer-capsule', count = math_random(2,4)},3})	
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun-dart', count = math_random(4,8)},5})	
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'defender-capsule', count = math_random(4,8)},5})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'distractor-capsule', count = math_random(3,5)},4})
+	table.insert(rare_treasure_chest_loot_weights, {{name = 'destroyer-capsule', count = math_random(2,3)},3})	
 	for _, t in pairs (rare_treasure_chest_loot_weights) do
 		for x = 1, t[2], 1 do
 			table.insert(rare_treasure_chest_raffle_table, t[1])
@@ -268,8 +262,8 @@ local function on_chunk_generated(event)
 				if math_random(1,40) == 1 and tile_to_insert == "deepwater" then surface.create_entity({name = "fish", position = pos}) end
 			end
 			
-			if math_random(1,1250) == 1 then table.insert(treasure_chests, pos) end
-			if math_random(1,7500) == 1 then table.insert(rare_treasure_chests, pos) end
+			if math_random(1,1500) == 1 then table.insert(treasure_chests, pos) end
+			if math_random(1,16000) == 1 then table.insert(rare_treasure_chests, pos) end
 			if math_random(1,8000) == 1 then table.insert(secret_shops, pos) end			
 		end							
 	end
@@ -311,7 +305,7 @@ local function on_chunk_charted(event)
 	end
 	surface.regenerate_decorative(decorative_names, {position})	
 	
-	if math_random(1,10) ~= 1 then return end	
+	if math_random(1,14) ~= 1 then return end	
 	map_functions.draw_rainbow_patch({x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}, surface, math_random(14,26), 2000)
 end
 
@@ -320,6 +314,7 @@ local function on_player_joined_game(event)
 	if not global.map_init_done then			
 		local map_gen_settings = {}
 		map_gen_settings.water = "none"
+		map_gen_settings.starting_area = "small"
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}		
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = "none", size = "none", richness = "none"},
@@ -328,7 +323,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "very-high", size = "big", richness = "normal"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["enemy-base"] = {frequency = "high", size = "big", richness = "good"},
 			--["grass"] = {frequency = "none", size = "none", richness = "none"},
 			["sand"] = {frequency = "none", size = "none", richness = "none"},
 			["desert"] = {frequency = "none", size = "none", richness = "none"},

@@ -1,5 +1,5 @@
 require "utils.utils"
-require "utils.corpse_util"
+--require "utils.corpse_util"
 require "bot"
 require "chatbot"
 require "session_tracker"

@@ -47,10 +47,15 @@ local function on_player_died(event)
 		game.print(player.name .. " " .. player.tag .. " was killed by " .. event.cause.name .. ".", message_color)
 		return
 	end
-	if player.tag then
-		game.print(player.name .. " " .. player.tag .. " was killed.", message_color)
+	for _, p in pairs(game.connected_players) do
+		if player.force.name ~= p.force.name then
+			if player.tag ~= "" then
+				p.print(player.name .. " " .. player.tag .. " was killed.", message_color)
+				return
+			end
+			p.print(player.name .. " was killed.", message_color)
+		end
 	end
-	game.print(player.name .. " was killed.", message_color)
 end
 
 event.add(defines.events.on_player_died, on_player_died)

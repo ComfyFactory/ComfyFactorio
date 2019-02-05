@@ -13,8 +13,8 @@ end
 	
 local function on_player_respawned(event)
 	local player = game.players[event.player_index]	
-	player.surface.create_entity({name = "big-artillery-explosion", position = player.position})
-	damage_entities_in_radius(player.surface, player.position, 12)
+	player.surface.create_entity({name = "uranium-cannon-shell-explosion", position = player.position})
+	damage_entities_in_radius(player.surface, player.position, 11)
 end
 
 event.add(defines.events.on_player_respawned, on_player_respawned)
