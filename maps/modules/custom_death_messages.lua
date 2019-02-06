@@ -6,7 +6,7 @@ local message_color = {r=0.85, g=0.0, b=0.0}
 
 local messages = {
 	["small-biter"] = {" was nibbled to death.", " should not have played with the biters.", " is biter food."},
-	["medium-biter"] = {" lost their leg to hungry biter.", " is biter food.", " was a tasty biter treat."},
+	["medium-biter"] = {" lost their leg to a hungry biter.", " is biter food.", " was a tasty biter treat."},
 	["big-biter"] = {" had their head chomped off.", " is biter food.", " was a tasty biter treat."},
 	["behemoth-biter"] = {" was devoured by a behemoth biter.", " was crushed by a behemoth biter.", " is biter food."},
 	["small-spitter"] = {" melted away by acid spit!", " couldn't dodge the spit in time."},

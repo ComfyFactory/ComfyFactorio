@@ -28,7 +28,7 @@ end
 local function secret_shop(pos, surface)
 	local secret_market_items = {		
     {price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = 'combat-shotgun'}},
-    {price = {{"coin", math_random(400,600)}}, offer = {type = 'give-item', item = 'rocket-launcher'}},	 
+    {price = {{"coin", math_random(200,400)}}, offer = {type = 'give-item', item = 'rocket-launcher'}},	 
     {price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine'}},
     --{price = {{"coin", math_random(150,250)}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine'}},  
     {price = {{"coin", math_random(15,30)}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell'}},
@@ -314,7 +314,7 @@ local function on_player_joined_game(event)
 	if not global.map_init_done then			
 		local map_gen_settings = {}
 		map_gen_settings.water = "none"
-		map_gen_settings.starting_area = "small"
+		map_gen_settings.starting_area = "normal"
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}		
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = "none", size = "none", richness = "none"},

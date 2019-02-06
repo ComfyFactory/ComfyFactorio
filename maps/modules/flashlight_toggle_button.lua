@@ -25,6 +25,18 @@ local function on_gui_click(event)
 	end	
 end
 
+local function on_player_respawned(event)
+	local player = game.players[event.player_index]	
+	if global.flashlight_enabled[player.name] == false then
+		player.character.disable_flashlight()
+		return
+	end	
+	if global.flashlight_enabled[player.name] == true then
+		player.character.enable_flashlight()
+		return
+	end
+end
+
 local function on_player_joined_game(event)
 	if not global.flashlight_enabled then global.flashlight_enabled = {} end
 	local player = game.players[event.player_index]
@@ -40,4 +52,5 @@ local function on_player_joined_game(event)
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_gui_click, on_gui_click)
