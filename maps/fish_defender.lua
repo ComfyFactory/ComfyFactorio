@@ -396,14 +396,15 @@ local function send_biters(surface)
 	if not global.unit_groups then return end
 	if not global.market then return end
 			
-	--wake up unit groups with no target
+	-- send unit groups
 	for i = 1, #global.unit_groups, 1 do
 		if global.unit_groups[i] then
 			if global.unit_groups[i].group.valid then
 				if #global.unit_groups[i].group.members > 0 then
 					local target_y = global.unit_groups[i].target_y
-					local target_x = -32
-					local radius = 32
+					--local target_x = -32	
+					--local radius = 32
+					--[[					
 					global.unit_groups[i].group.set_command({
 						type = defines.command.compound,
 						structure_type = defines.compound_command.return_last,
@@ -448,6 +449,31 @@ local function send_biters(surface)
 								type=defines.command.attack_area,
 								destination=global.market.position,
 								radius=radius,
+								distraction=defines.distraction.by_anything
+							},
+							{
+								type=defines.command.attack,
+								target=global.market,
+								distraction=defines.distraction.by_enemy
+							}
+						}
+					})
+					]]
+					
+					global.unit_groups[i].group.set_command({
+						type = defines.command.compound,
+						structure_type = defines.compound_command.return_last,
+						commands = {
+							{
+								type=defines.command.attack_area,
+								destination={0, target_y},
+								radius=256,
+								distraction=defines.distraction.by_anything
+							},					
+							{
+								type=defines.command.attack_area,
+								destination=global.market.position,
+								radius=64,
 								distraction=defines.distraction.by_anything
 							},
 							{
