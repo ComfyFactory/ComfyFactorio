@@ -4,6 +4,7 @@ require "maps.modules.satellite_score"
 require "maps.modules.dynamic_landfill"
 require "maps.modules.dynamic_player_spawn"
 require "maps.modules.rocks_yield_ore"
+require "maps.modules.rocks_yield_ore_veins"
 require "maps.modules.fluids_are_explosive"
 require "maps.modules.explosives_are_explosive"
 require "maps.modules.explosive_biters"
@@ -69,14 +70,19 @@ local function on_player_joined_game(event)
 		local radius = 256
 		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 		
-		--game.map_settings.enemy_expansion.enabled = true
-		--game.map_settings.enemy_evolution.destroy_factor = 0
-		--game.map_settings.enemy_evolution.time_factor = 0
-		--game.map_settings.enemy_evolution.pollution_factor = 0					
-		--game.map_settings.pollution.enabled = true			
-		
+		game.map_settings.pollution.enabled = true
+		game.map_settings.enemy_expansion.enabled = true
+		game.map_settings.enemy_evolution.destroy_factor = 0.004
+		game.map_settings.enemy_evolution.time_factor = 0.00001
+		game.map_settings.enemy_evolution.pollution_factor = 0.00003					
+		game.map_settings.enemy_expansion.max_expansion_distance = 15
+		game.map_settings.enemy_expansion.settler_group_min_size = 15
+		game.map_settings.enemy_expansion.settler_group_max_size = 30
+		game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
+		game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+				
 		surface.ticks_per_day = surface.ticks_per_day * 2
-		game.forces.player.manual_mining_speed_modifier = 2
+		game.forces.player.manual_mining_speed_modifier = 1.75
 		
 		global.surface_init_done = true
 	end
@@ -122,7 +128,7 @@ local function generate_north_chunk(event, surface)
 		e.destroy()
 	end
 	
-	if left_top.y < -512 then
+	if left_top.y < -480 then
 		local tiles_to_set = {}
 		for x = 0, 31, 1 do
 			for y = 0, 31, 1 do	
@@ -152,8 +158,13 @@ local function generate_north_chunk(event, surface)
 		if rock_amount < 1 then break end
 	end	
 	
+	local waters = {"water-green", "deepwater-green"}
 	if math_random(1,7) == 1 then
-		map_functions.draw_noise_tile_circle(tile_positions[math_random(1, #tile_positions)], "deepwater-green", surface, math_random(2, 6))
+		local pos = tile_positions[math_random(1, #tile_positions)]
+		map_functions.draw_noise_tile_circle(pos, waters[math_random(1, #waters)], surface, math_random(2, 6))
+		for x = 1, math_random(2,7), 1 do
+			surface.create_entity({name = "fish", position = pos})
+		end
 	end
 	
 	if math_random(1,20) == 1 then
@@ -170,11 +181,25 @@ local function generate_north_chunk(event, surface)
 end
 
 local function generate_south_chunk(event, surface)	
-	for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-		e.destroy()
-	end
-
 	local left_top = event.area.left_top
+	
+	if left_top.y > 32 then
+		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
+			e.destroy()
+		end
+	end
+	
+	if left_top.y > 480 then
+		local tiles_to_set = {}
+		for x = 0, 31, 1 do
+			for y = 0, 31, 1 do	
+				insert(tiles_to_set, {name = "out-of-map", position = {x = left_top.x + x, y = left_top.y + y}})
+			end
+		end
+		surface.set_tiles(tiles_to_set, true)
+		return
+	end
+	
 	local current_depth = math.abs(left_top.y) - 32
 	
 	local i = math.ceil(current_depth / 32)
@@ -247,7 +272,7 @@ local function on_chunk_generated(event)
 	
 	replace_spawn_water(surface)		
 	
-	if left_top.y < -32 then
+	if left_top.y < 0 then
 		generate_north_chunk(event, surface)
 	end
 	if left_top.y > 0 then
@@ -255,6 +280,36 @@ local function on_chunk_generated(event)
 	end
 end
 
+local coords = {{x = 0, y = 0},{x = -1, y = -1},{x = 1, y = -1},{x = 0, y = -1},{x = -1, y = 0},{x = -1, y = 1},{x = 0, y = 1},{x = 1, y = 1},{x = 1, y = 0}}
+local function on_player_mined_entity(event)
+	local entity = event.entity
+	if entity.type == "simple-entity" then
+		local tiles = {}
+		for _, p in pairs(coords) do
+			local pos = {x = entity.position.x + p.x, y = entity.position.y + p.y}
+			local tile = entity.surface.get_tile(pos)
+			if not tile.collides_with("player-layer") then
+				insert(tiles, {name = "dirt-3", position = pos})
+			end			
+		end
+		if #tiles == 0 then return end
+		entity.surface.set_tiles(tiles, true)
+	end
+end
+
+local function on_entity_damaged(event)
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.type == "simple-entity" then
+		if event.force.name == "player" then 
+			event.entity.health = event.entity.health + (event.final_damage_amount * 0.5)
+			if event.entity.health <= event.final_damage_amount then				
+				event.entity.die("player")
+			end			
+		end
+	end
+end
+	
 local disabled_for_deconstruction = {
 		["fish"] = true,
 		["rock-huge"] = true,
@@ -268,6 +323,8 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

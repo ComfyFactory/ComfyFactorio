@@ -17,6 +17,7 @@ local biter_building_inhabitants = {
 }
 
 local function on_entity_died(event)	
+	if not event.entity.valid then return end
 	if event.entity.type ~= "unit-spawner" then return end
 	local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)		
 	for _, t in pairs (biter_building_inhabitants[e]) do		

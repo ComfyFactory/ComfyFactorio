@@ -3,9 +3,9 @@
 local event = require 'utils.event'
 
 local biter_values = {
-		["medium-biter"] = {"blood-explosion-big", 15, 1},
-		["big-biter"] = {"blood-explosion-huge", 30, 1.5},
-		["behemoth-biter"] = {"blood-explosion-huge", 45, 2}
+		["medium-biter"] = {"blood-explosion-big", 25, 1.5},
+		["big-biter"] = {"blood-explosion-huge", 50, 2},
+		["behemoth-biter"] = {"blood-explosion-huge", 75, 2.5}
 	}
 
 local function damage_entities_in_radius(surface, position, radius, damage)
@@ -25,7 +25,8 @@ local function damage_entities_in_radius(surface, position, radius, damage)
 	end
 end
 	
-local function on_entity_died(event)	
+local function on_entity_died(event)
+	if not event.entity.valid then return end
 	if biter_values[event.entity.name] then
 		local entity = event.entity
 		entity.surface.create_entity({name = biter_values[entity.name][1], position = entity.position})

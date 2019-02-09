@@ -9,6 +9,7 @@ local biter_fragmentation = {
 	}
 
 local function on_entity_died(event)	
+	if not event.entity.valid then return end
 	if biter_fragmentation[event.entity.name] then
 		local entity = event.entity
 		local amount = 1
