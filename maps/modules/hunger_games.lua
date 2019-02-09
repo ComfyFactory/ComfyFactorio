@@ -4,6 +4,8 @@
 -- join or create a team to be able to play
 
 require "maps.modules.custom_death_messages"
+require "maps.hunger_games_map_intro"
+require "maps.modules.dynamic_player_spawn"
 --require "maps.modules.hunger_games_balance"
 
 local event = require 'utils.event'
@@ -407,7 +409,7 @@ local function on_player_joined_game(event)
 		permission_group.add_player(player.name)
 	end
 	
-	--refresh_alliances()
+	game.forces["spectator"].clear_chart(player.surface)			
 end
 
 ----------share chat -------------------

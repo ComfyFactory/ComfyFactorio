@@ -1,3 +1,7 @@
+0.26
+the west side now has worms and rocks as obstacles instead of nests 
+biter wave fixes
+
 0.25
 evacuate infinite fish to win
 the west side now has far away nests, to prevent unnecessary exploration

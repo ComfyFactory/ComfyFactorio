@@ -392,88 +392,64 @@ local function spawn_boss_units(surface)
 		})
 end
 
-local function send_biters(surface)
-	if not global.unit_groups then return end
-	if not global.market then return end
-			
-	--wake up unit groups with no target
-	for i = 1, #global.unit_groups, 1 do
-		if global.unit_groups[i] then
-			if global.unit_groups[i].group.valid then
-				if #global.unit_groups[i].group.members > 0 then
-					local target_y = global.unit_groups[i].target_y
-					local target_x = -32
-					local radius = 32
-					global.unit_groups[i].group.set_command({
-						type = defines.command.compound,
-						structure_type = defines.compound_command.return_last,
-						commands = {
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 192, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 160, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 128, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 96, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 64, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 32, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},					
-							{
-								type=defines.command.attack_area,
-								destination=global.market.position,
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack,
-								target=global.market,
-								distraction=defines.distraction.by_enemy
-							}
-						}
-					})
-				else
-					global.unit_groups[i] = nil
-				end
-			else
-				global.unit_groups[i] = nil
+local function wake_up_idle_biters(surface)	
+	for _, unit in pairs(surface.find_entities_filtered({type = "unit", area = {{128, -256},{360, 256}}})) do
+		local new_position = {x = unit.position.x - 8, y = unit.position.y}
+		if not surface.find_nearest_enemy{position=new_position, max_distance=16, force="enemy"} then
+			local p = surface.find_non_colliding_position(unit.name, new_position, 32, 2)
+			if p then
+				local biter = surface.create_entity {name = unit.name, position = p}
+				biter.health = unit.health
 			end
-		end
+			unit.destroy()
+		end				
 	end
 	
-	--wake up random single biters	
-	for _, unit in pairs(surface.find_entities_filtered({type = "unit", area = {{64, -256},{360, 256}}})) do		
-		if not surface.find_nearest_enemy{position=unit.position, max_distance=20, force="enemy"} then
-			local area = {{unit.position.x - 3.5, unit.position.y - 3.5}, {unit.position.x + 3.5, unit.position.y + 3.5}}
-			if surface.count_entities_filtered{area = area, force="enemy", type = "unit"} == 1 then
-				unit.set_command({type=defines.command.attack_area, destination=global.market.position, radius=256, distraction=defines.distraction.by_anything})	
-			end
-		end				
+	local nearest_player_unit = surface.find_nearest_enemy{position={256, 0}, max_distance=512, force="enemy"}
+	if not nearest_player_unit then return end
+		
+	for y = -256, 256, 32 do	
+		local units = surface.find_entities_filtered({type = "unit", area = {{64, y},{360, y + 32}}})
+		local unit_group = surface.create_unit_group({position = {x = nearest_player_unit.position.x + 32, y = math.floor(y / 2)}})
+		for _, unit in pairs(units) do
+			unit_group.add_member(unit)						
+		end
+		
+		unit_group.set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+					{
+						type=defines.command.attack_area,
+						destination={x = 160, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},				
+					{
+						type=defines.command.attack_area,
+						destination={x = 96, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack_area,
+						destination={x = 32, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack_area,
+						destination={x = -32, y = unit_group.position.y},
+						radius=8,
+						distraction=defines.distraction.by_anything
+					},					
+					{
+						type=defines.command.attack,
+						target=global.market,
+						distraction=defines.distraction.by_enemy
+					}
+				}
+			})
 	end
 	
 	surface.set_multi_command({
@@ -493,7 +469,7 @@ local function send_biters(surface)
 			target=global.market,
 			distraction=defines.distraction.none
 			},
-		unit_count = 64,
+		unit_count = 96,
 		force = "enemy",
 		unit_search_distance=16
 		})
@@ -504,11 +480,11 @@ local function biter_attack_wave()
 	if global.wave_grace_period then return end
 	local surface = game.surfaces["fish_defender"]
 	
-	clear_corpses(surface)	
+	clear_corpses(surface)
+	--wake_up_idle_biters(surface)
 	
 	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
 		game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})
-		send_biters(surface)
 		return 
 	end
 	
@@ -552,9 +528,7 @@ local function biter_attack_wave()
 			end
 		end		
 	end
-	
-	if not global.unit_groups then global.unit_groups = {} end
-	
+		
 	local spawn_x = 242
 	local target_x = -32
 	local group_coords = {}
@@ -586,11 +560,61 @@ local function biter_attack_wave()
 		end
 	end
 	
-	for i = 1, #unit_groups, 1 do	
-		global.unit_groups[#global.unit_groups + 1] = {group = unit_groups[i], target_y = group_coords[i].target.y}		
+	for i = 1, #unit_groups, 1 do								
+		unit_groups[i].set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 192, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 160, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 128, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 96, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 64, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack_area,
+							destination={group_coords[i].target.x + 32, group_coords[i].target.y},
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},					
+						{
+							type=defines.command.attack_area,
+							destination=group_coords[i].target,
+							radius=8,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack,
+							target=global.market,
+							distraction=defines.distraction.by_enemy
+						}
+				}
+		})			
 	end
-	
-	send_biters(surface)
 end
 
 local function refresh_market_offers()
@@ -914,7 +938,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
 			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
+			["enemy-base"] = {frequency = "high", size = "big", richness = "normal"},
 			["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
@@ -930,7 +954,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.destroy_factor = 0
 		game.map_settings.enemy_evolution.time_factor = 0
 		game.map_settings.enemy_evolution.pollution_factor = 0					
-		game.map_settings.pollution.enabled = true
+		game.map_settings.pollution.enabled = false
 		
 		--game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
 		--game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
@@ -1004,57 +1028,6 @@ local function get_replacement_tile(surface)
 	return tilename	
 end
 
-local worm_raffle_table = {
-		[1] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret"},
-		[2] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret"},
-		[3] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret"},
-		[4] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret"},
-		[5] = {"small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
-		[6] = {"small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
-		[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[10] = {"medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-	}
-local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
-
-local function spawn_obstacles(left_top, surface)
-	if not global.obstacle_start_x then global.obstacle_start_x = math.abs(left_top.x) - 32 end
-	local current_depth = math.abs(left_top.x) - global.obstacle_start_x
-	local worm_amount = math.ceil(current_depth / 64)
-	local i = math.ceil(current_depth / 256)
-	if i > 10 then i = 10 end
-	if i < 1 then i = 1 end
-	local worm_raffle = worm_raffle_table[i]
-			
-	local rocks_amount = math.ceil(current_depth / 16)		
-	
-	local tile_positions = {}
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if not surface.get_tile(pos).collides_with("player-layer") then
-				tile_positions[#tile_positions + 1] = pos
-			end
-		end
-	end			
-	if #tile_positions == 0 then return end
-	
-	tile_positions = shuffle(tile_positions)			
-	for _, pos in pairs(tile_positions) do		
-		surface.create_entity({name = worm_raffle[math_random(1, #worm_raffle)], position = pos, force = "enemy"})
-		worm_amount = worm_amount - 1
-		if worm_amount < 1 then break end
-	end
-
-	tile_positions = shuffle(tile_positions)
-	for _, pos in pairs(tile_positions) do
-		surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
-		rocks_amount = rocks_amount - 1
-		if rocks_amount < 1 then break end
-	end	
-end
-
 local map_height = 96
 
 local function on_chunk_generated(event)
@@ -1064,7 +1037,14 @@ local function on_chunk_generated(event)
 	if surface.name ~= event.surface.name then return end
 		
 	local area = event.area
-	local left_top = area.left_top		
+	local left_top = area.left_top
+	
+	if left_top.x > -2048 then
+		local entities = surface.find_entities_filtered({area = area, force = "enemy"})
+		for _, entity in pairs(entities) do
+			entity.destroy()
+		end
+	end
 	
 	if left_top.x <= -196 then
 		
@@ -1186,9 +1166,6 @@ local function on_chunk_generated(event)
 		end
 	end
 	
-	if left_top.x < -1024 then
-		spawn_obstacles(left_top, surface)		
-	end
 	
 	if left_top.x < 160 then return end
 
@@ -1215,37 +1192,40 @@ local function on_chunk_generated(event)
 			local pos = {x = left_top.x + x, y = left_top.y + y}
 
 			local tile = surface.get_tile(pos)
-			if tile.name ~= "out-of-map" then							
+			if tile.name ~= "out-of-map" then
+				if pos.x > 312 then
+					insert(tiles, {name = "out-of-map", position = pos})
+				else
+					--insert(tiles, {name = "dirt-7", position = pos})
+				end
 				
-				if pos.x > 0 then
-					if pos.x > 312 then
-						insert(tiles, {name = "out-of-map", position = pos})			
-					end
-					
-					if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then				
-						if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
-							if math_random(1,4) == 1 then
-								local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})						
-								entity.active = false							
-							else						
-								local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})						
-								entity.active = false							
-							end
+				if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then				
+					if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
+						if math_random(1,4) == 1 then
+							local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})						
+							entity.active = false
+							--entity.destructible = false
+						else						
+							local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})						
+							entity.active = false
+							--entity.destructible = false
 						end
 					end
 				end
 			end		
 		end
 	end
-	surface.set_tiles(tiles, true)	
-	
+	surface.set_tiles(tiles, true)
+
 	local decorative_names = {}
 	for k,v in pairs(game.decorative_prototypes) do
 		if v.autoplace_specification then
 		  decorative_names[#decorative_names+1] = k
 		end
 	 end
-	surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})			
+	surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})
+		
+	
 end
 
 local function on_built_entity(event)
