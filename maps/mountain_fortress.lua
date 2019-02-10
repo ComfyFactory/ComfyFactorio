@@ -117,7 +117,7 @@ local function on_player_joined_game(event)
 		game.map_settings.pollution.enabled = true
 		game.map_settings.enemy_expansion.enabled = true
 		game.map_settings.enemy_evolution.destroy_factor = 0.004
-		game.map_settings.enemy_evolution.time_factor = 0.00001
+		game.map_settings.enemy_evolution.time_factor = 0.00002
 		game.map_settings.enemy_evolution.pollution_factor = 0.00003					
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
 		game.map_settings.enemy_expansion.settler_group_min_size = 15
@@ -142,10 +142,10 @@ local function on_player_joined_game(event)
 	
 	local surface = game.surfaces["mountain_fortress"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {-75, 4}, 50, 1), "mountain_fortress")
+		player.teleport(surface.find_non_colliding_position("player", {-48, 4}, 50, 1), "mountain_fortress")
 	else
 		if player.online_time < 2 then
-			player.teleport({-50, 0}, "mountain_fortress")
+			player.teleport({-48, 0}, "mountain_fortress")
 		end
 	end		
 end
@@ -219,7 +219,7 @@ local function generate_north_chunk(area, surface)
 		secret_shop(pos, surface)		
 	end
 	
-	if math_random(1,22) == 1 then
+	if math_random(1,26) == 1 then
 		map_functions.draw_noise_tile_circle(pos, "water", surface, 5)
 		map_functions.draw_noise_tile_circle(pos, "sand-3", surface, 6)
 		map_functions.draw_oil_circle(tile_positions[math_random(1, #tile_positions)], "crude-oil", surface, math_random(1, 4), math_random(100000, 500000))
@@ -241,6 +241,10 @@ local function generate_south_chunk(event, surface)
 		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
 			e.destroy()
 		end
+	--else
+	--	for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "cliff"})) do
+	--		e.destroy()
+	--	end
 	end
 	
 	if left_top.y > 480 then
@@ -348,12 +352,27 @@ local function on_chunk_generated(event)
 	replace_spawn_water(surface)		
 	
 	if left_top.y < 0 then		
-		generate_north_chunk(event.area, surface)		
+		generate_north_chunk(event.area, surface)
+		return
 	end
 	
 	if left_top.y > 0 then
 		generate_south_chunk(event, surface)
+		return
 	end
+	
+	for x = 0, 31, 1 do
+		for y = 0, 5, 1 do
+			local pos = {x = left_top.x + x, y = left_top.y + y}
+			if math_random(1,5) == 1 then
+				surface.create_entity({name = "tree-06", position = pos})
+			end
+		end
+	end
+	
+	--for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "cliff"})) do
+		--e.destroy()
+	--end
 end
 
 local function on_entity_damaged(event)

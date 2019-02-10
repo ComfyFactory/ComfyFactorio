@@ -41,7 +41,7 @@ local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if valid_entities[entity.name] then
-		if math_random(1,64) == 1 then
+		if math_random(1,128) == 1 then
 			local player = game.players[event.player_index]
 			local p = {x = entity.position.x, y = entity.position.y}
 			local tile_distance_to_center = p.x^2 + p.y^2			

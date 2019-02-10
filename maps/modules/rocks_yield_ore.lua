@@ -1,3 +1,5 @@
+--destroying and mining rocks yields ore -- load as last module
+
 local event = require 'utils.event'
 
 local rock_yield = {
