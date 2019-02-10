@@ -61,7 +61,7 @@ local function on_entity_died(event)
 		amount = math.ceil(amount * 0.2)
 		local ore = ore_raffle[math.random(1, #ore_raffle)]
 		local pos = {entity.position.x, entity.position.y}
-		entity.destroy()
+		--entity.destroy()
 		surface.spill_item_stack(pos,{name = ore, count = amount}, true)
 	end
 end

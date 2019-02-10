@@ -27,7 +27,7 @@ local entities_that_earn_coins = {
 	}
 
 local function on_entity_died(event)	
-	
+	if not event.entity.valid then return end
 	if event.entity.force.name ~= "enemy" then return end	
 	if not coin_yield[event.entity.name] then return end
 		
