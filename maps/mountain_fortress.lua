@@ -4,10 +4,9 @@ require "maps.modules.satellite_score"
 require "maps.modules.dynamic_landfill"
 require "maps.modules.dynamic_player_spawn"
 require "maps.modules.backpack_research"
-require "maps.modules.rocks_yield_ore"
+require "maps.modules.rocks_broken_paint_tiles"
 require "maps.modules.rocks_yield_ore_veins"
---require "maps.modules.fluids_are_explosive"
---require "maps.modules.explosives_are_explosive"
+require "maps.modules.rocks_yield_ore"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.explosive_biters"
 require "maps.modules.spawners_contain_biters"
@@ -357,28 +356,6 @@ local function on_chunk_generated(event)
 	end
 end
 
-local coords = {{x = 0, y = 0},{x = -1, y = -1},{x = 1, y = -1},{x = 0, y = -1},{x = -1, y = 0},{x = -1, y = 1},{x = 0, y = 1},{x = 1, y = 1},{x = 1, y = 0}}
-local function on_player_mined_entity(event)
-	local entity = event.entity
-	if entity.type == "simple-entity" then
-		local tiles = {}
-		for _, p in pairs(coords) do
-			local pos = {x = entity.position.x + p.x, y = entity.position.y + p.y}
-			local tile = entity.surface.get_tile(pos)
-			if not tile.collides_with("player-layer") then
-				insert(tiles, {name = "dirt-3", position = pos})
-			end			
-		end
-		if #tiles == 0 then return end
-		entity.surface.set_tiles(tiles, true)
-	end
-end
-
-local function on_entity_died(event)	
-	if not event.entity.valid then return end
-	on_player_mined_entity(event)
-end
-
 local function on_entity_damaged(event)
 	local entity = event.entity
 	if not entity.valid then return end
@@ -406,8 +383,6 @@ local function on_marked_for_deconstruction(event)
 end
 
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
