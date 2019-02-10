@@ -5,11 +5,11 @@ require "maps.fish_defender_map_intro"
 require "maps.modules.rocket_launch_always_yields_science"
 require "maps.modules.launch_fish_to_win"
 
-require "maps.modules.explosives_are_explosive"
+--require "maps.modules.explosives_are_explosive"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
---require "maps.modules.teleporting_worms"
+require "maps.modules.teleporting_worms"
 
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
@@ -392,115 +392,61 @@ local function spawn_boss_units(surface)
 		})
 end
 
-local function send_biters(surface)
-	if not global.unit_groups then return end
+local function wake_up_the_biters(surface)	
 	if not global.market then return end
-			
-	-- send unit groups
-	for i = 1, #global.unit_groups, 1 do
-		if global.unit_groups[i] then
-			if global.unit_groups[i].group.valid then
-				if #global.unit_groups[i].group.members > 0 then
-					local target_y = global.unit_groups[i].target_y
-					--local target_x = -32	
-					--local radius = 32
-					--[[					
-					global.unit_groups[i].group.set_command({
-						type = defines.command.compound,
-						structure_type = defines.compound_command.return_last,
-						commands = {
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 192, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 160, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 128, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 96, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 64, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack_area,
-								destination={target_x + 32, target_y},
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},					
-							{
-								type=defines.command.attack_area,
-								destination=global.market.position,
-								radius=radius,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack,
-								target=global.market,
-								distraction=defines.distraction.by_enemy
-							}
-						}
-					})
-					]]
-					
-					global.unit_groups[i].group.set_command({
-						type = defines.command.compound,
-						structure_type = defines.compound_command.return_last,
-						commands = {
-							{
-								type=defines.command.attack_area,
-								destination={0, target_y},
-								radius=256,
-								distraction=defines.distraction.by_anything
-							},					
-							{
-								type=defines.command.attack_area,
-								destination=global.market.position,
-								radius=64,
-								distraction=defines.distraction.by_anything
-							},
-							{
-								type=defines.command.attack,
-								target=global.market,
-								distraction=defines.distraction.by_enemy
-							}
-						}
-					})
-				else
-					global.unit_groups[i] = nil
-				end
-			else
-				global.unit_groups[i] = nil
-			end
-		end
+	
+	local nearest_player_unit = surface.find_nearest_enemy({position = {x = 256, y = 0}, max_distance=512, force="enemy"})
+	if not nearest_player_unit then return end
+	local target_positions = {}
+	for y = -80, 80, 4 do
+		insert(target_positions, {x = nearest_player_unit.position.x, y = y})
+	end						
+	target_positions = shuffle(target_positions)
+		
+	local units = surface.find_entities_filtered({type = "unit"})
+	units = shuffle(units)
+	local unit_groups = {}
+	for i = 1, 16, 1 do
+		if not units[i] then break end
+		if not units[i].valid then break end
+		unit_groups[i] = surface.create_unit_group({position = {x = units[i].position.x, y = units[i].position.y}})
+		local biters = surface.find_enemy_units(units[i].position, 16, "player")
+		for _, biter in pairs(biters) do
+			unit_groups[i].add_member(biter)
+		end						
 	end
 	
-	--wake up random single biters	
-	for _, unit in pairs(surface.find_entities_filtered({type = "unit", area = {{64, -256},{360, 256}}})) do		
-		if not surface.find_nearest_enemy{position=unit.position, max_distance=20, force="enemy"} then
-			local area = {{unit.position.x - 3.5, unit.position.y - 3.5}, {unit.position.x + 3.5, unit.position.y + 3.5}}
-			if surface.count_entities_filtered{area = area, force="enemy", type = "unit"} == 1 then
-				unit.set_command({type=defines.command.attack_area, destination=global.market.position, radius=256, distraction=defines.distraction.by_anything})	
+	for i = 1, #unit_groups, 1 do
+		if unit_groups[i].valid then
+			if #unit_groups[i].members > 0 then					
+				unit_groups[i].set_command({
+					type = defines.command.compound,
+					structure_type = defines.compound_command.return_last,
+					commands = {
+						{
+							type=defines.command.attack_area,
+							destination=target_positions[i],
+							radius=32,
+							distraction=defines.distraction.by_anything
+						},					
+						{
+							type=defines.command.attack_area,
+							destination=global.market.position,
+							radius=16,
+							distraction=defines.distraction.by_anything
+						},
+						{
+							type=defines.command.attack,
+							target=global.market,
+							distraction=defines.distraction.by_enemy
+						}
+					}
+				})	
+			else
+				unit_groups[i].destroy()
 			end
-		end				
-	end
+		end
+	end			
 	
 	surface.set_multi_command({
 		command={
@@ -508,9 +454,9 @@ local function send_biters(surface)
 			target=global.market,
 			distraction=defines.distraction.by_enemy
 			},
-		unit_count = 64,
+		unit_count = 16,
 		force = "enemy",
-		unit_search_distance=48
+		unit_search_distance=64
 		})
 	
 	surface.set_multi_command({
@@ -519,7 +465,7 @@ local function send_biters(surface)
 			target=global.market,
 			distraction=defines.distraction.none
 			},
-		unit_count = 64,
+		unit_count = 16,
 		force = "enemy",
 		unit_search_distance=16
 		})
@@ -530,7 +476,8 @@ local function biter_attack_wave()
 	if global.wave_grace_period then return end
 	local surface = game.surfaces["fish_defender"]
 	
-	clear_corpses(surface)	
+	clear_corpses(surface)
+	wake_up_the_biters(surface)
 	
 	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
 		game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})
@@ -577,9 +524,7 @@ local function biter_attack_wave()
 				unit.destroy()
 			end
 		end		
-	end
-	
-	if not global.unit_groups then global.unit_groups = {} end
+	end	
 	
 	local spawn_x = 242
 	local target_x = -32
@@ -613,10 +558,60 @@ local function biter_attack_wave()
 	end
 	
 	for i = 1, #unit_groups, 1 do	
-		global.unit_groups[#global.unit_groups + 1] = {group = unit_groups[i], target_y = group_coords[i].target.y}		
+		unit_groups[i].set_command({
+			type = defines.command.compound,
+			structure_type = defines.compound_command.return_last,
+			commands = {
+				{
+					type=defines.command.attack_area,
+					destination={group_coords[i].target.x + 192, group_coords[i].target.y},
+					radius=8,
+					distraction=defines.distraction.by_anything
+				},
+				{
+					type=defines.command.attack_area,
+					destination={group_coords[i].target.x + 160, group_coords[i].target.y},
+					radius=8,
+					distraction=defines.distraction.by_anything
+				},
+				{
+					type=defines.command.attack_area,
+					destination={group_coords[i].target.x + 128, group_coords[i].target.y},
+					radius=8,
+					distraction=defines.distraction.by_anything
+				},
+				{
+					type=defines.command.attack_area,
+					destination={group_coords[i].target.x + 96, group_coords[i].target.y},
+					radius=8,
+					distraction=defines.distraction.by_anything
+				},
+				{
+					type=defines.command.attack_area,
+					destination={group_coords[i].target.x + 64, group_coords[i].target.y},
+					radius=8,
+					distraction=defines.distraction.by_anything
+				},
+				{
+					type=defines.command.attack_area,
+					destination={group_coords[i].target.x + 32, group_coords[i].target.y},
+					radius=8,
+					distraction=defines.distraction.by_anything
+				},					
+				{
+					type=defines.command.attack_area,
+					destination=group_coords[i].target,
+					radius=8,
+					distraction=defines.distraction.by_anything
+				},
+				{
+					type=defines.command.attack,
+					target=global.market,
+					distraction=defines.distraction.by_enemy
+				}
+			}
+		})			
 	end
-	
-	send_biters(surface)
 end
 
 local function refresh_market_offers()
