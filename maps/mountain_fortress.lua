@@ -2,6 +2,7 @@
 
 require "maps.modules.satellite_score"
 require "maps.modules.dynamic_landfill"
+require "maps.modules.players_trample_paths"
 require "maps.modules.dynamic_player_spawn"
 require "maps.modules.backpack_research"
 require "maps.modules.rocks_broken_paint_tiles"

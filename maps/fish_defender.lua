@@ -10,6 +10,7 @@ require "maps.modules.biters_yield_coins"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
 require "maps.modules.teleporting_worms"
+require "maps.modules.custom_death_messages"
 
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
@@ -480,8 +481,7 @@ local function biter_attack_wave()
 	wake_up_the_biters(surface)
 	
 	if surface.count_entities_filtered({type = "unit", area = {{-128,-256},{360, 256}}}) > biter_count_limit then
-		game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})
-		send_biters(surface)
+		game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})		
 		return 
 	end
 	
@@ -683,7 +683,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 2250}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}},
 		{price = {{"coin", 100}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}},				
 		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'energy-shield-equipment', count = 1}},
-		{price = {{"coin", 750}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}},	
+		{price = {{"coin", 850}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}},	
 		{price = {{"coin", 175}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}},		
 		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}},
 		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
@@ -975,10 +975,10 @@ local function on_player_joined_game(event)
 		--game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {
-			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
-			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 350},
+			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 125},
+			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 375},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 35000},
+			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		

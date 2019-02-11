@@ -17,43 +17,49 @@ local messages = {
 	["medium-worm-turret"] = {" melted away by acid spit!", " couldn't dodge the spit in time.", " got blasted away by a medium worm turret."},
 	["big-worm-turret"] = {" melted away by acid spit!", " couldn't dodge the spit in time.", " got blasted away by a big worm turret."},
 	["gun-turret"] = {" was mowed down by a barrage from a gun turret."},
-	["laser-turret"] = {" was fatally enlightened by a laser beam."}
+	["laser-turret"] = {" was fatally enlightened by a laser beam."},
+	["cargo-wagon"] = {" was flattened.", " was crushed."},
+	["locomotive"] = {" was flattened.", " was crushed."}	
 }
 
 local function on_player_died(event)
 	local player = game.players[event.player_index]
-	if event.cause then		
-		if not event.cause.name then
-			game.print(player.name .. " " .. player.tag .. " was killed." .. str, message_color)
+	
+	local tag = ""
+	if player.tag then
+		if player.tag ~= "" then tag = " " .. player.tag end
+	end
+	
+	if event.cause then
+		local cause = event.cause	
+		if not cause.name then
+			game.print(player.name .. tag .. " was killed." .. str, message_color)
 			return
 		end
-		if messages[event.cause.name] then
-			game.print(player.name .. messages[event.cause.name][math.random(1, #messages[event.cause.name])], message_color)
+		if messages[cause.name] then
+			game.print(player.name .. messages[cause.name][math.random(1, #messages[cause.name])], message_color)
 			return
 		end
 					
-		if event.cause.name == "player" then			
-			game.print(player.name .. " " .. player.tag .. " was killed by " .. event.cause.player.name " " .. event.cause.player.tag .. ".", message_color)							
+		if cause.name == "player" then			
+			game.print(player.name .. tag .. " was killed by " .. cause.player.name " " .. cause.player.tag .. ".", message_color)							
 			return
 		end
 		
-		if event.cause.name == "tank" then
-			local driver = event.cause.get_driver()
-			if driver.player then 
-				game.print(player.name .. " " .. player.tag .. " was killed by " .. driver.player.name .. " " .. player.tag .. ".", message_color)			
+		if cause.name == "tank" then
+			local driver = cause.get_driver()
+			if driver.player then				
+				game.print(player.name .. tag .. " was killed by " .. driver.player.name .. " " .. player.tag .. ".", message_color)
+				return								
 			end
 		end
-		
-		game.print(player.name .. " " .. player.tag .. " was killed by " .. event.cause.name .. ".", message_color)
+				
+		game.print(player.name .. tag .. " was killed by " .. cause.name .. ".", message_color)				
 		return
 	end
 	for _, p in pairs(game.connected_players) do
-		if player.force.name ~= p.force.name then
-			if player.tag ~= "" then
-				p.print(player.name .. " " .. player.tag .. " was killed.", message_color)
-				return
-			end
-			p.print(player.name .. " was killed.", message_color)
+		if player.force.name ~= p.force.name then			
+			p.print(player.name .. tag .. " was killed.", message_color)						
 		end
 	end
 end

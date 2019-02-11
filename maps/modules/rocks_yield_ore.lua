@@ -60,7 +60,7 @@ local function on_entity_died(event)
 	if rock_yield[entity.name] then
 		local surface = entity.surface
 		local amount = get_amount(entity)
-		amount = math.ceil(amount * 0.2)
+		amount = math.ceil(amount * 0.1)
 		local ore = ore_raffle[math.random(1, #ore_raffle)]
 		local pos = {entity.position.x, entity.position.y}
 		entity.destroy()
