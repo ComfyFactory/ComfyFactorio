@@ -17,7 +17,7 @@ local function damage_entities_in_radius(surface, position, radius, damage)
 					entity.damage(damage, "enemy")
 				else
 					entity.health = entity.health - damage
-					entity.surface.create_entity({name = "blood-explosion-big", position = entity.position})
+					--entity.surface.create_entity({name = "blood-explosion-big", position = entity.position})
 					if entity.health <= 0 then entity.die("enemy") end
 				end
 			end

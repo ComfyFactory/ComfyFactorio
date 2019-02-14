@@ -33,7 +33,7 @@ end
 
 local function get_amount(entity)
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
-	local amount = 33 + (distance_to_center * 0.33)
+	local amount = 50 + (distance_to_center * 0.33)
 	if amount > 150 then amount = 150 end
 	amount = rock_yield[entity.name] * amount
 	amount = math.random(math.ceil(amount * 0.5), math.ceil(amount * 1.5))	
@@ -47,9 +47,19 @@ local function on_player_mined_entity(event)
 	if not entity.valid then return end
 	if rock_yield[entity.name] then
 		event.buffer.clear()
-		local amount = get_amount(entity)
+		
 		local ore = ore_raffle[math.random(1, #ore_raffle)]
-		entity.surface.spill_item_stack(entity.position,{name = ore, count = amount}, true)
+		
+		local amount = get_amount(entity)		
+		local amount_to_spill = math.ceil(amount * 0.5)
+		local amount_to_insert = math.floor(amount * 0.5)
+		
+		local player = game.players[event.player_index]
+		local inserted_count = player.insert({name = ore, count = amount_to_insert})
+		local amount_to_spill = amount_to_spill + (amount_to_insert - inserted_count)
+				
+		entity.surface.spill_item_stack(entity.position,{name = ore, count = amount_to_spill}, true)
+		
 		entity.surface.create_entity({name = "flying-text", position = entity.position, text = amount .. " " .. texts[ore][1], color = texts[ore][2]})	
 	end
 end

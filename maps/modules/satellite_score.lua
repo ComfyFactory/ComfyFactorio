@@ -37,9 +37,7 @@ end
 
 local function satellites_in_space_gui(player)
 	--if global.satellites_in_space == 0 then return end
-	local i = get_rank()
-	
-	satellite_score_toggle_button(player)
+	local i = get_rank()	
 	
 	if player.gui.left["satellites_in_space"] then player.gui.left["satellites_in_space"].destroy() end
 		
@@ -115,7 +113,7 @@ end
 local function on_player_joined_game(event)
 	if not global.satellites_in_space then init()	end
 	local player = game.players[event.player_index]	
-	satellites_in_space_gui(player)
+	satellite_score_toggle_button(player)
 end
 
 local function on_gui_click(event)	

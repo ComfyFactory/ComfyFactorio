@@ -2,7 +2,7 @@
 
 local event = require 'utils.event'
 local math_random = math.random
-local message_color = {r=0.85, g=0.0, b=0.0}
+local message_color = {r=0.9, g=0.9, b=0.9}
 
 local messages = {
 	["small-biter"] = {" was nibbled to death.", " should not have played with the biters.", " is biter food."},

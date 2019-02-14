@@ -103,8 +103,7 @@ local function on_player_joined_game(event)
 	if not global.surface_init_done then	
 		local map_gen_settings = {}
 		map_gen_settings.water = "small"
-		map_gen_settings.height = 960
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 4}		
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 6, cliff_elevation_0 = 6}		
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = "none", size = "none", richness = "none"},
 			["stone"] = {frequency = "none", size = "none", richness = "none"},
@@ -119,10 +118,10 @@ local function on_player_joined_game(event)
 			["desert"] = {frequency = "none", size = "none", richness = "none"},
 			["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
 		}		
-		game.create_surface("mountain_fortress", map_gen_settings)							
-		local surface = game.surfaces["mountain_fortress"]
+		game.create_surface("stoneblock", map_gen_settings)							
+		local surface = game.surfaces["stoneblock"]
 		
-		local radius = 160
+		local radius = 512
 		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 		
 		game.map_settings.pollution.enabled = true
@@ -146,17 +145,18 @@ local function on_player_joined_game(event)
 		player.insert({name = "pistol", count = 1})
 		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 3})
+		player.insert({name = "raw-wood", count = 16})
 		player.insert({name = "firearm-magazine", count = 16})
 		player.insert({name = "iron-plate", count = 32})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 	
-	local surface = game.surfaces["mountain_fortress"]
+	local surface = game.surfaces["stoneblock"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", spawn_point, 50, 1), "mountain_fortress")
+		player.teleport(surface.find_non_colliding_position("player", spawn_point, 50, 1), "stoneblock")
 	else
 		if player.online_time < 2 then
-			player.teleport(spawn_point, "mountain_fortress")
+			player.teleport(spawn_point, "stoneblock")
 		end
 	end		
 end
@@ -175,11 +175,7 @@ end
 
 local function generate_north_chunk(area, surface)
 	local left_top = area.left_top
-	local tile_positions = {}
-	
-	for _, e in pairs(surface.find_entities_filtered({area = area, type = "tree"})) do
-		e.destroy()
-	end		
+	local tile_positions = {}				
 	
 	local tiles_to_set = {}
 	for x = 0, 31, 1 do
@@ -209,7 +205,7 @@ local function generate_north_chunk(area, surface)
 		end		
 	end
 	
-	if math_random(1,50) == 1 then
+	if math_random(1,32) == 1 then
 		local pos = tile_positions[math_random(1, #tile_positions)]
 		local size = math_random(3, 8)
 		map_functions.draw_noise_tile_circle(pos, "water", surface, size - 1)
@@ -234,18 +230,12 @@ end
 
 local function generate_south_chunk(event, surface)	
 	local left_top = event.area.left_top
+		
+	for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "cliff"})) do
+		e.destroy()
+	end			
 	
-	if left_top.y > 32 then
-		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-			e.destroy()
-		end
-	else
-		for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "cliff"})) do
-			e.destroy()
-		end
-	end		
-	
-	local current_depth = math.abs(left_top.y) - 32
+	local current_depth = math.sqrt(left_top.x^2 + left_top.y^2) * 0.05
 	
 	local i = math.ceil(current_depth / 32)
 	if i > 10 then i = 10 end
@@ -298,122 +288,32 @@ local function on_chunk_charted(event)
 			left_top = {x = position.x * 32, y = position.y * 32},
 			right_bottom = {x = position.x * 32 + 31, y = position.y * 32 + 31}
 		}		
-		
-	if position.y * 32 < 96 then return end
+	
+	local left_top = {x = position.x * 32, y = position.y * 32}
+	local size = 320
+	if left_top.y < size and left_top.y >= size * -1 and left_top.x < size and left_top.x >= size * -1 then				
+		return	
+	end		
 	
 	if math_random(1,3) ~= 1 then return end	
-	map_functions.draw_rainbow_patch({x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}, surface, math_random(8, 16), 500 * position.y)
+	local distance_to_center = math.sqrt(left_top.x^2 + left_top.y^2)
+	map_functions.draw_rainbow_patch({x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}, surface, math_random(8, 16), distance_to_center * 3)
 	game.forces.player.chart(surface, area)
 end
 
-local function replace_spawn_water(surface)
-	if global.spawn_water_replaced then return end
-	if not surface.is_chunk_generated({5,5}) then return end
-	local tilename = "grass-1"
-	for x = -160, 160, 1 do
-		for y = -96, 90, 1 do
-			local tile = surface.get_tile(x, y)
-			if tile.name ~= "water" and tile.name ~= "deepwater" then
-				tilename = tile.name
-			end
-		end
-	end
-	local tiles = {}
-	for x = -128, 128, 1 do
-		for y = -128, 128, 1 do
-			local tile = surface.get_tile(x, y)
-			if tile.name == "water" or tile.name == "deepwater" then
-				insert(tiles, {name = tilename, position = {x = tile.position.x, y = tile.position.y}})
-			end
-		end
-	end
-	surface.set_tiles(tiles, true)
-	global.spawn_water_replaced = true
-end
-
 local function on_chunk_generated(event)
-	local surface = game.surfaces["mountain_fortress"]
+	local surface = game.surfaces["stoneblock"]
 	if event.surface.name ~= surface.name then return end
-	local left_top = event.area.left_top					
+	local left_top = event.area.left_top							
 	
-	replace_spawn_water(surface)		
-	
-	if left_top.y < 0 then		
+	local size = 320
+	if left_top.y < size and left_top.y >= size * -1 and left_top.x < size and left_top.x >= size * -1 then		
 		generate_north_chunk(event.area, surface)
 		return
-	end
-	
-	if left_top.y > 0 then
+	else
 		generate_south_chunk(event, surface)
 		return
-	end		
-	
-	for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "cliff"})) do
-		e.destroy()
-	end
-	
-	local trees = {"dead-grey-trunk", "dead-grey-trunk", "dry-tree"}
-	for x = 0, 31, 1 do
-		for y = 5, 31, 1 do
-			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if math_random(1, math.ceil(y + y) + 64) == 1 then
-				surface.create_entity({name = trees[math_random(1, #trees)], position = pos})			
-			end
-		end
-	end		
-	
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local pos = {x = left_top.x + x, y = left_top.y + y}
-
-			if math_random(1, y + 2) == 1 then
-				surface.create_decoratives{
-				check_collision=false,
-				decoratives={
-						{name = "rock-medium", position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
-					}
-				}
-			end
-			if math_random(1, y + 2) == 1 then
-				surface.create_decoratives{
-				check_collision=false,
-				decoratives={
-						{name = "rock-small", position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
-					}
-				}
-			end
-			if math_random(1, y + 2) == 1 then
-				surface.create_decoratives{
-				check_collision=false,
-				decoratives={
-						{name = "rock-tiny", position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
-					}
-				}
-			end						
-			
-			--[[
-			local noise = get_noise("rock_border", {x = pos.x, y = 0})	
-			if math.abs(noise * 6) > y then
-				if math_random(1, 3) ~= 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos}) end
-				surface.set_tiles({{name = "dirt-7", position = pos}}, true)
-			end]]
-			
-			if math_random(1, math.ceil(y + y) + 2) == 1 then
-				surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})			
-			end
-		end
-	end
-	
-	if left_top.y ~= 0 then return end
-	if left_top.x ~= 96 then return end
-	for _, e in pairs(surface.find_entities_filtered({area = {{spawn_point.x - 0.5, spawn_point.y - 0.5},{spawn_point.x + 0.5, spawn_point.y + 0.5}}})) do
-		if e.force.name ~= "player" then
-			e.destroy()
-		end
-	end
-	for _, e in pairs(surface.find_entities_filtered({area = {{spawn_point.x - 40, spawn_point.y - 40},{spawn_point.x + 40, spawn_point.y + 40}}, force = "enemy"})) do		
-		e.destroy()		
-	end
+	end							
 end
 
 local function on_entity_damaged(event)

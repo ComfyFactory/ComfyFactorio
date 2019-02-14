@@ -5,6 +5,9 @@ local math_random = math.random
 
 local blacklisted_tiles = {	
 		["concrete"] = true,
+		["deepwater"] = true,
+		["deepwater-green"] = true,
+		["dirt-1"] = true,
 		["hazard-concrete-left"] = true,
 		["hazard-concrete-right"] = true,
 		["lab-dark-1"] = true,
@@ -14,12 +17,10 @@ local blacklisted_tiles = {
 		["refined-concrete"] = true,
 		["refined-hazard-concrete-left"] = true,
 		["refined-hazard-concrete-right"] = true,
+		["stone-path"] = true,
 		["tutorial-grid"] = true,
 		["water"] = true,
-		["deepwater"] = true,
-		["water-green"] = true,
-		["deepwater-green"] = true,
-		["dirt-1"] = true
+		["water-green"] = true	
 }
 
 local replacement_tiles = {		
