@@ -10,7 +10,6 @@ require "group"
 require "player_list"
 require "poll"
 require "score"
-require "maps.modules.custom_death_messages"
 
 ---- enable modules here ----
 --require "maps.tools.map_pregen"
@@ -31,7 +30,7 @@ require "maps.modules.custom_death_messages"
 -----------------------------
 
 ---- enable maps here ----
---require "maps.biter_battles"
+require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"
 --require "maps.spooky_forest"
@@ -41,7 +40,7 @@ require "maps.modules.custom_death_messages"
 --require "maps.spiral_troopers"
 --require "maps.fish_defender"
 --require "maps.mountain_fortress"
-require "maps.stoneblock"
+--require "maps.stoneblock"
 --require "maps.deep_jungle"
 --require "maps.crossing"
 --require "maps.anarchy"

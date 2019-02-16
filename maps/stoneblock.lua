@@ -11,6 +11,7 @@ require "maps.modules.biters_yield_coins"
 require "maps.modules.explosive_biters"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.splice_double"
+require "maps.modules.spitters_spit_biters"
 require "maps.modules.biters_double_hp"
 require "maps.modules.biters_double_damage"
 

@@ -1,5 +1,13 @@
 -- Biter Battles -- mewmew made this --
 
+require "maps.modules.splice_double"
+require "maps.modules.spitters_spit_biters"
+require "maps.modules.biters_double_hp"
+require "maps.modules.biters_double_damage"
+require "maps.modules.explosive_biters"
+require "maps.modules.spawners_contain_biters"
+require "maps.modules.custom_death_messages"
+
 local biter_battles_terrain = require 'biter_battles_terrain'
 local event = require 'utils.event'
 local math_random = math.random
@@ -22,25 +30,6 @@ local food_values = {
 	["production-science-pack"] =0.00008000,
 	["high-tech-science-pack"] =	0.00021000,
 	["space-science-pack"] = 		0.00042000
-}
-
-local biter_fragmentation = {
-	["medium-biter"] = {"small-biter", 3, 5},
-	["big-biter"] = {"medium-biter", 2, 2},
-	["behemoth-biter"] = {"big-biter", 2, 2}
-}
-
-local biter_building_inhabitants = {
-	[1] = {{"small-biter",8,16}},
-	[2] = {{"small-biter",12,24}},
-	[3] = {{"small-biter",8,16},{"medium-biter",1,2}},
-	[4] = {{"small-biter",4,8},{"medium-biter",4,8}},
-	[5] = {{"small-biter",3,5},{"medium-biter",8,12}},
-	[6] = {{"small-biter",3,5},{"medium-biter",5,7},{"big-biter",1,2}},
-	[7] = {{"medium-biter",6,8},{"big-biter",3,5}},
-	[8] = {{"medium-biter",2,4},{"big-biter",6,8}},
-	[9] = {{"medium-biter",2,3},{"big-biter",7,9}},
-	[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
 }
 
 local function get_border_cords(f)
@@ -525,10 +514,10 @@ local function on_player_joined_game(event)
 			--game.forces[name].technologies["flamethrower-damage-1"].enabled = false	
 			--game.forces[name].technologies["flamethrower-damage-2"].enabled = false
 			--game.forces[name].technologies["flamethrower-damage-3"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-4"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-5"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-6"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-7"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-4"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-5"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-6"].enabled = false
+			game.forces[name].technologies["flamethrower-damage-7"].enabled = false
 			game.forces[name].technologies["atomic-bomb"].enabled = false
 
 			global.team_nerf[name] = 0
@@ -776,22 +765,6 @@ local function on_gui_click(event)
 	end
 end
 
-local function damage_entities_in_radius(position, radius, damage)
-	local entities_to_damage = game.surfaces["surface"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
-	for _, entity in pairs(entities_to_damage) do
-		if entity.health then
-			if entity.force.name ~= "enemy" then
-				if entity.name == "player" then
-					entity.damage(damage, "enemy")
-				else
-					entity.health = entity.health - damage
-					if entity.health <= 0 then entity.die("enemy") end
-				end
-			end
-		end
-	end
-end
-
 local function on_entity_died(event)
 	if not global.rocket_silo_destroyed then 
 		if event.entity == global.rocket_silo["south"] or event.entity == global.rocket_silo["north"] then 
@@ -809,32 +782,7 @@ local function on_entity_died(event)
 			end
 			refresh_gui()
 		end
-	end
-			
-	if biter_fragmentation[event.entity.name] then
-		for x = 1, math_random(biter_fragmentation[event.entity.name][2], biter_fragmentation[event.entity.name][3]), 1 do
-			local p = game.surfaces["surface"].find_non_colliding_position(biter_fragmentation[event.entity.name][1] , event.entity.position, 2, 1)				
-			if p then game.surfaces["surface"].create_entity {name = biter_fragmentation[event.entity.name][1], position = p} end							
-		end		
-	end	
-	
-	if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
-		local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)		
-		for _, t in pairs (biter_building_inhabitants[e]) do		
-			for x = 1, math_random(t[2],t[3]), 1 do
-				local p = game.surfaces["surface"].find_non_colliding_position(t[1] , event.entity.position, 6, 1)			
-				if p then game.surfaces["surface"].create_entity {name=t[1], position=p} end
-			end
-		end
-		return
-	end
-	
-	if event.entity.name == "medium-biter" then
-		event.entity.surface.create_entity({name = "explosion", position = event.entity.position})
-		local damage = 25		
-		damage_entities_in_radius(event.entity.position, 1, damage)
-	end
-
+	end							
 end
 
 local function get_valid_biters(requested_amount, y_modifier, pos_x, pos_y, radius_inc)
@@ -1436,26 +1384,13 @@ local function on_player_built_tile(event)
 	end		
 end
 
-local function on_player_died(event)
-	local player = game.players[event.player_index]
-	local str = " "
-	if event.cause.name ~= nil then str = " by " .. event.cause.name end
-	if player.force.name == "north" then		
-		game.forces.south.print(player.name .. "(north) was killed" .. str, { r=0.99, g=0.0, b=0.0})						
-	end
-	if player.force.name == "south" then		
-		game.forces.north.print(player.name .. "(south) was killed" .. str, { r=0.99, g=0.0, b=0.0})						
-	end
-end
-
 local function on_research_finished(event)	
-	game.forces.north.recipes["flamethrower-turret"].enabled = false
-	game.forces.south.recipes["flamethrower-turret"].enabled = false
+	--game.forces.north.recipes["flamethrower-turret"].enabled = false
+	--game.forces.south.recipes["flamethrower-turret"].enabled = false
 end
 
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_rocket_launched, on_rocket_launched)
