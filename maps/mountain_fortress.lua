@@ -66,12 +66,15 @@ local function secret_shop(pos, surface)
 	{price = {{"coin", math_random(300,500)}}, offer = {type = 'give-item', item = 'express-loader'}},
 	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'locomotive'}},
 	{price = {{"coin", math_random(75,150)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},	
-	{price = {{"coin", math_random(2,4)}}, offer = {type = 'give-item', item = 'rail'}},
-	{price = {{"coin", math_random(20,40)}}, offer = {type = 'give-item', item = 'train-stop'}},	
+	{price = {{"coin", math_random(2,3)}}, offer = {type = 'give-item', item = 'rail'}},
+	--{price = {{"coin", math_random(20,40)}}, offer = {type = 'give-item', item = 'train-stop'}},	
 	{price = {{"coin", math_random(4,12)}}, offer = {type = 'give-item', item = 'small-lamp'}},			
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'car'}},
 	{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = 'electric-furnace'}},
-	{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = "assembling-machine-3"}},
+	--{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = "assembling-machine-3"}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'effectivity-module'}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'productivity-module'}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'speed-module'}},
 	
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'raw-wood', count = 50}},
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
@@ -102,7 +105,7 @@ local function on_player_joined_game(event)
 
 	if not global.surface_init_done then	
 		local map_gen_settings = {}
-		map_gen_settings.water = "small"
+		map_gen_settings.water = "none"
 		map_gen_settings.height = 960
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 4}		
 		map_gen_settings.autoplace_controls = {

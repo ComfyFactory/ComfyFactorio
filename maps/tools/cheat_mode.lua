@@ -24,7 +24,7 @@ function cheat_mode()
 	--surface.daytime = 1
 	--surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()
-	game.forces["enemy"].evolution_factor = 0.5
+	game.forces["enemy"].evolution_factor = 0.9
 	local chart = 200	
 	game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})			
 end

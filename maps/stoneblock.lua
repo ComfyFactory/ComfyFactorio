@@ -1,16 +1,18 @@
--- mountain digger fortress -- by mewmew --
+-- digging thingie -- by mewmew --
 
 require "maps.modules.satellite_score"
 require "maps.modules.dynamic_landfill"
-require "maps.modules.dynamic_player_spawn"
 require "maps.modules.backpack_research"
 require "maps.modules.rocks_broken_paint_tiles"
+require "maps.modules.rocks_heal_over_time"
 require "maps.modules.rocks_yield_ore_veins"
 require "maps.modules.rocks_yield_ore"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.explosive_biters"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.splice_double"
+require "maps.modules.biters_double_hp"
+require "maps.modules.biters_double_damage"
 
 local event = require 'utils.event'
 local math_random = math.random
@@ -126,9 +128,9 @@ local function on_player_joined_game(event)
 		
 		game.map_settings.pollution.enabled = true
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_evolution.destroy_factor = 0.004
-		game.map_settings.enemy_evolution.time_factor = 0.00002
-		game.map_settings.enemy_evolution.pollution_factor = 0.00003					
+		game.map_settings.enemy_evolution.destroy_factor = 0.006
+		game.map_settings.enemy_evolution.time_factor = 0.00003
+		game.map_settings.enemy_evolution.pollution_factor = 0.00005					
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
 		game.map_settings.enemy_expansion.settler_group_min_size = 15
 		game.map_settings.enemy_expansion.settler_group_max_size = 30
@@ -176,6 +178,10 @@ end
 local function generate_north_chunk(area, surface)
 	local left_top = area.left_top
 	local tile_positions = {}				
+	
+	for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "tree"})) do
+		e.destroy()
+	end
 	
 	local tiles_to_set = {}
 	for x = 0, 31, 1 do
@@ -234,7 +240,7 @@ local function generate_south_chunk(event, surface)
 	for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "cliff"})) do
 		e.destroy()
 	end			
-	
+			
 	local current_depth = math.sqrt(left_top.x^2 + left_top.y^2) * 0.05
 	
 	local i = math.ceil(current_depth / 32)

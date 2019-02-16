@@ -7,11 +7,15 @@ local map_functions = require "maps.tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 local simplex_noise = simplex_noise.d2
 require "maps.nightfall_map_intro"
-require "maps.modules.splice"
+require "maps.modules.splice_double"
+require "maps.modules.spitters_spit_biters"
+require "maps.modules.biters_double_hp"
+require "maps.modules.biters_double_damage"
 require "maps.modules.explosive_biters"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
+require "maps.modules.satellite_score"
 
 local spawn_turret_amount = 8
 
@@ -213,7 +217,12 @@ local function clear_corpses(surface)
 end
 
 local function get_spawner(surface)
-	local spawners = surface.find_entities_filtered({type = "unit-spawner"})
+	local spawners = {}
+	for r = 512, 51200, 512 do		 
+		spawners = surface.find_entities_filtered({type = "unit-spawner", area = {{0 - r, 0 - r}, {0 + r, 0 + r}}})
+		if #spawners > 16 then break end
+	end
+	
 	if not spawners[1] then return false end
 	spawners = shuffle(spawners)
 	
@@ -246,7 +255,7 @@ local function send_attack_group(surface)
 	local spawner = get_spawner(surface)
 	if not spawner then return false end
 	
-	local biters = surface.find_enemy_units(spawner.position, 96, "player")	
+	local biters = surface.find_enemy_units(spawner.position, 128, "player")	
 	if not biters[1] then return end
 	
 	biters = shuffle(biters)
@@ -307,9 +316,9 @@ local function set_daytime_modifiers(surface)
 	if game.map_settings.enemy_expansion.enabled == false then return end
 	
 	game.map_settings.enemy_expansion.enabled = false
-	surface.peaceful_mode = true
+	--surface.peaceful_mode = true
 	
-	game.print(daytime_messages[math_random(1, #daytime_messages)], {r = 255, g = 255, b = 50})
+	--game.print(daytime_messages[math_random(1, #daytime_messages)], {r = 255, g = 255, b = 50})
 	
 	clear_corpses(surface)
 end
@@ -325,13 +334,13 @@ local function set_nighttime_modifiers(surface)
 	
 	if not global.night_count then
 		global.night_count = 1
-		global.splice_modifier = 1
+		--global.splice_modifier = 1
 	else
 		global.night_count = global.night_count + 1
-		if game.forces["enemy"].evolution_factor > 0.25 then
-			global.splice_modifier = global.splice_modifier + 0.05
-			if global.splice_modifier > 4 then global.splice_modifier = 4 end
-		end	
+		--if game.forces["enemy"].evolution_factor > 0.25 then
+			--global.splice_modifier = global.splice_modifier + 0.05
+			--if global.splice_modifier > 4 then global.splice_modifier = 4 end
+		--end	
 	end
 	
 	for _, player in pairs(game.connected_players) do
@@ -452,16 +461,42 @@ local function on_chunk_generated(event)
 		end					
 	end
 	
+	local out_of_map_start = 63
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
-			local pos = {x = left_top.x + x, y = left_top.y + y}		
-			if math_random(1, 2048) == 1 then
+			local pos = {x = left_top.x + x, y = left_top.y + y}
+			
+			local tile_to_insert = false
+			if global.out_of_map_position == 1 then
+				if pos.x > out_of_map_start then tile_to_insert = "out-of-map" end
+				if pos.y > out_of_map_start then tile_to_insert = "out-of-map" end
+			end
+			if global.out_of_map_position == 2 then
+				if pos.x < out_of_map_start * -1 then tile_to_insert = "out-of-map" end
+				if pos.y < out_of_map_start * -1 then tile_to_insert = "out-of-map" end
+			end
+			if global.out_of_map_position == 3 then
+				if pos.x > out_of_map_start then tile_to_insert = "out-of-map" end
+				if pos.y < out_of_map_start * -1 then tile_to_insert = "out-of-map" end
+			end
+			if global.out_of_map_position == 4 then
+				if pos.y > out_of_map_start then tile_to_insert = "out-of-map" end
+				if pos.x < out_of_map_start * -1 then tile_to_insert = "out-of-map" end
+			end						
+			
+			if tile_to_insert then insert(tiles, {name = "out-of-map", position = pos}) end			
+			
+			if math_random(1, 2500) == 1 and tile_to_insert == false then
 				--if surface.can_place_entity({name = "big-ship-wreck-1", position = pos}) then
 					spawn_shipwreck(surface, pos)
 				--end
 			end
 		end
 	end
+	
+	if #tiles == 0 then return end
+	surface.set_tiles(tiles, true)
 end
 
 local function on_entity_damaged(event)	
@@ -501,7 +536,7 @@ local function on_tick(event)
 			
 	if not global.game_restart_timer then
 		global.game_restart_timer = 7200
-		game.print("The Rocket Silo was destroyed!", {r=0.22, g=0.88, b=0.22})
+		game.print("The Rocket Silo has fallen!", {r=0.22, g=0.88, b=0.22})
 	else
 		if global.game_restart_timer < 0 then return end
 		global.game_restart_timer = global.game_restart_timer - 600
@@ -539,14 +574,18 @@ local function on_player_joined_game(event)
 		game.create_surface("nightfall", map_gen_settings)							
 		local surface = game.surfaces["nightfall"]
 		
+		global.out_of_map_position = math_random(1,4)
+		
 		surface.ticks_per_day = surface.ticks_per_day * 2
 		
 		local radius = 512
 		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})											
 		
-		game.map_settings.enemy_evolution.destroy_factor = 0.004
-		game.map_settings.enemy_evolution.time_factor = 0.000008
-		game.map_settings.enemy_evolution.pollution_factor = 0.00003
+		game.map_settings.pollution.enabled = true
+		game.map_settings.enemy_evolution.enabled = true
+		game.map_settings.enemy_evolution.destroy_factor = 0.006
+		game.map_settings.enemy_evolution.time_factor = 0.00001
+		game.map_settings.enemy_evolution.pollution_factor = 0.00004
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 1)		
 		

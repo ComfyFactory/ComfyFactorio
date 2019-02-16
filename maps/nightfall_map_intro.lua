@@ -1,15 +1,13 @@
 local event = require 'utils.event'
 
 local main_caption = " --Nightfall-- "
-local sub_caption = "*can you make it through the night*"
+local sub_caption = "*can you make it through*"
 local info = [[
-	They come out at night. 
-	Trying to nom your rocket silo.
-	Maybe they just like the taste of the alloys, who knows.
+	They come out at night, trying to nom your rocket silo.
 	
 	Fend them off as long as possible!
 		
-	There seem to be shipwrecks of misfortunate explorers all over this place.
+	There seem to be shipwrecks of unfortunate explorers all over this place.
 	It might be worth scavenging a few.
 	
 	Wreck loot quality increases with distance.

@@ -415,6 +415,7 @@ end
 ----------share chat -------------------
 local function on_console_chat(event)
 	if not event.message then return end
+	if event.message == "" then return end
 	if not event.player_index then return end	
 	local player = game.players[event.player_index]
 	
