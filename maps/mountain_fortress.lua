@@ -135,7 +135,7 @@ local function on_player_joined_game(event)
 		game.map_settings.pollution.enabled = true
 		game.map_settings.enemy_expansion.enabled = true
 		game.map_settings.enemy_evolution.destroy_factor = 0.005
-		game.map_settings.enemy_evolution.time_factor = 0.00002
+		game.map_settings.enemy_evolution.time_factor = 0.000015
 		game.map_settings.enemy_evolution.pollution_factor = 0.00004					
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
 		game.map_settings.enemy_expansion.settler_group_min_size = 8
@@ -306,10 +306,10 @@ local function on_chunk_charted(event)
 			right_bottom = {x = position.x * 32 + 31, y = position.y * 32 + 31}
 		}		
 		
-	if position.y * 32 < 96 then return end
+	if position.y * 32 < 64 then return end
 	
 	if math_random(1,3) ~= 1 then return end	
-	map_functions.draw_rainbow_patch({x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}, surface, math_random(8, 16), 500 * position.y)
+	map_functions.draw_rainbow_patch({x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}, surface, math_random(10, 18), 500 * position.y)
 	game.forces.player.chart(surface, area)
 end
 
@@ -447,9 +447,12 @@ local function on_tick(event)
 	if math_random(1,8) ~= 1 then return end
 	
 	local surface = game.surfaces["mountain_fortress"]
-	local target = surface.find_entities_filtered({force = "player"})
-	if not target[1] then return end
-	target = target[math_random(1, #target)]
+	
+	local spawners = surface.find_entities_filtered({force = "enemy", type = "unit-spawner"})
+	if not spawners[1] then return end
+	
+	local target = surface.find_nearest_enemy({position = spawners[math_random(1, #spawners)].position, max_distance=1500, force="enemy"})
+	if not target then return end
 	
 	surface.set_multi_command({
 		command={
@@ -458,10 +461,10 @@ local function on_tick(event)
 				radius=16,
 				distraction=defines.distraction.by_anything
 			},
-		unit_count = math_random(6,10),
+		unit_count = math_random(6,12),
 		force = "enemy",
 		unit_search_distance=1024
-	})
+	})	
 end
 
 event.add(defines.events.on_tick, on_tick)
