@@ -114,6 +114,10 @@ local function on_player_joined_game(event)
 	if not global.satellites_in_space then init()	end
 	local player = game.players[event.player_index]	
 	satellite_score_toggle_button(player)
+	
+	if player.gui.left["satellites_in_space"] then
+		satellites_in_space_gui(player)
+	end	
 end
 
 local function on_gui_click(event)	
