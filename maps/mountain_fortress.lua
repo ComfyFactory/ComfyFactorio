@@ -1,15 +1,19 @@
 -- mountain digger fortress -- by mewmew --
 
-require "maps.modules.satellite_score"
+require "maps.modules.backpack_research"
+require "maps.modules.biters_double_damage"
+require "maps.modules.biters_double_hp"
+require "maps.modules.biters_yield_coins"
 require "maps.modules.dynamic_landfill"
 require "maps.modules.dynamic_player_spawn"
-require "maps.modules.backpack_research"
+require "maps.modules.explosive_biters"
 require "maps.modules.rocks_broken_paint_tiles"
+require "maps.modules.rocks_heal_over_time"
 require "maps.modules.rocks_yield_ore_veins"
 require "maps.modules.rocks_yield_ore"
-require "maps.modules.biters_yield_coins"
-require "maps.modules.explosive_biters"
+require "maps.modules.satellite_score"
 require "maps.modules.spawners_contain_biters"
+require "maps.modules.spitters_spit_biters"
 require "maps.modules.splice_double"
 
 local event = require 'utils.event'
@@ -130,14 +134,14 @@ local function on_player_joined_game(event)
 		
 		game.map_settings.pollution.enabled = true
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_evolution.destroy_factor = 0.004
+		game.map_settings.enemy_evolution.destroy_factor = 0.005
 		game.map_settings.enemy_evolution.time_factor = 0.00002
-		game.map_settings.enemy_evolution.pollution_factor = 0.00003					
+		game.map_settings.enemy_evolution.pollution_factor = 0.00004					
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
-		game.map_settings.enemy_expansion.settler_group_min_size = 15
-		game.map_settings.enemy_expansion.settler_group_max_size = 30
-		game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
-		game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+		game.map_settings.enemy_expansion.settler_group_min_size = 8
+		game.map_settings.enemy_expansion.settler_group_max_size = 16
+		game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
+		game.map_settings.enemy_expansion.max_expansion_cooldown = 7200
 				
 		surface.ticks_per_day = surface.ticks_per_day * 2
 		game.forces.player.manual_mining_speed_modifier = 1.75
@@ -438,6 +442,29 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+local function on_tick(event)	
+	if game.tick % 3600 ~= 1 then return end
+	if math_random(1,8) ~= 1 then return end
+	
+	local surface = game.surfaces["mountain_fortress"]
+	local target = surface.find_entities_filtered({force = "player"})
+	if not target[1] then return end
+	target = target[math_random(1, #target)]
+	
+	surface.set_multi_command({
+		command={
+				type=defines.command.attack_area,
+				destination=target.position,
+				radius=16,
+				distraction=defines.distraction.by_anything
+			},
+		unit_count = math_random(6,10),
+		force = "enemy",
+		unit_search_distance=1024
+	})
+end
+
+event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)

@@ -51,7 +51,7 @@ local function on_player_mined_entity(event)
 			local pos = {x = entity.position.x + p.x, y = entity.position.y + p.y}
 			local tile = entity.surface.get_tile(pos)						
 			if not tile.collides_with("player-layer") then
-				if replacement_tiles[tile.name] and math_random(1,3) ~= 1 then
+				if replacement_tiles[tile.name] and math_random(1,3) == 1 then
 					insert(tiles, {name = replacement_tiles[tile.name], position = pos})
 				end
 			end			

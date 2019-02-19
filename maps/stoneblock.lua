@@ -14,6 +14,7 @@ require "maps.modules.splice_double"
 require "maps.modules.spitters_spit_biters"
 require "maps.modules.biters_double_hp"
 require "maps.modules.biters_double_damage"
+require "maps.modules.flashlight_toggle_button"
 
 local event = require 'utils.event'
 local math_random = math.random
@@ -69,12 +70,15 @@ local function secret_shop(pos, surface)
 	{price = {{"coin", math_random(300,500)}}, offer = {type = 'give-item', item = 'express-loader'}},
 	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'locomotive'}},
 	{price = {{"coin", math_random(75,150)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},	
-	{price = {{"coin", math_random(2,4)}}, offer = {type = 'give-item', item = 'rail'}},
-	{price = {{"coin", math_random(20,40)}}, offer = {type = 'give-item', item = 'train-stop'}},	
+	{price = {{"coin", math_random(2,3)}}, offer = {type = 'give-item', item = 'rail'}},
+	--{price = {{"coin", math_random(20,40)}}, offer = {type = 'give-item', item = 'train-stop'}},	
 	{price = {{"coin", math_random(4,12)}}, offer = {type = 'give-item', item = 'small-lamp'}},			
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'car'}},
 	{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = 'electric-furnace'}},
-	{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = "assembling-machine-3"}},
+	--{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = "assembling-machine-3"}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'effectivity-module'}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'productivity-module'}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'speed-module'}},
 	
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'raw-wood', count = 50}},
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
@@ -95,7 +99,7 @@ local function secret_shop(pos, surface)
 	local market = surface.create_entity {name = "market", position = pos}
 	market.destructible = false			
 	
-	for i = 1, math.random(6, 8), 1 do
+	for i = 1, math.random(8, 10), 1 do
 		market.add_market_item(secret_market_items[i])
 	end
 end
@@ -135,10 +139,13 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
 		game.map_settings.enemy_expansion.settler_group_min_size = 15
 		game.map_settings.enemy_expansion.settler_group_max_size = 30
-		game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
-		game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+		game.map_settings.enemy_expansion.min_expansion_cooldown = 7200
+		game.map_settings.enemy_expansion.max_expansion_cooldown = 10800
 				
 		surface.ticks_per_day = surface.ticks_per_day * 2
+		surface.daytime = 0.5
+		surface.freeze_daytime = 1
+		
 		game.forces.player.manual_mining_speed_modifier = 1.75
 		
 		global.surface_init_done = true

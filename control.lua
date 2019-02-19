@@ -30,7 +30,7 @@ require "score"
 -----------------------------
 
 ---- enable maps here ----
-require "maps.biter_battles"
+--require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"
 --require "maps.spooky_forest"
@@ -39,7 +39,7 @@ require "maps.biter_battles"
 --require "maps.tank_battles"
 --require "maps.spiral_troopers"
 --require "maps.fish_defender"
---require "maps.mountain_fortress"
+require "maps.mountain_fortress"
 --require "maps.stoneblock"
 --require "maps.deep_jungle"
 --require "maps.crossing"

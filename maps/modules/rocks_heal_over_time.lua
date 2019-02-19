@@ -10,7 +10,7 @@ local healing_amount = {
 	
 local function heal_rocks()
 	for key, rock in pairs(global.damaged_rocks) do
-		if rock.last_damage + 3600 < game.tick then
+		if rock.last_damage + 54000 < game.tick then
 			if rock.entity then
 				if rock.entity.valid then
 					rock.entity.health = rock.entity.health + healing_amount[rock.entity.name]

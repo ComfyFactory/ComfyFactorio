@@ -1,6 +1,5 @@
 -- fish defender -- by mewmew --
 
-local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
 require "maps.modules.rocket_launch_always_yields_science"
 require "maps.modules.launch_fish_to_win"
@@ -10,7 +9,11 @@ require "maps.modules.dynamic_landfill"
 require "maps.modules.teleporting_worms"
 require "maps.modules.custom_death_messages"
 require "maps.modules.splice_double"
+require "maps.modules.spitters_spit_biters"
+require "maps.modules.biters_double_hp"
+require "maps.modules.custom_death_messages"
 
+local event = require 'utils.event'
 local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
@@ -528,7 +531,14 @@ local function biter_attack_wave()
 	else
 		global.wave_count = global.wave_count + 1
 	end
-				
+	
+	local modifier = 0.003
+	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * modifier)
+	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * modifier)
+	game.forces.enemy.set_ammo_damage_modifier("artillery-shell", global.wave_count * modifier)
+	game.forces.enemy.set_ammo_damage_modifier("flamethrower", global.wave_count * modifier)
+	game.forces.enemy.set_ammo_damage_modifier("laser-turret", global.wave_count * modifier)
+	
 	if global.wave_count % 50 == 0 then				
 		global.attack_wave_threat = global.wave_count * 6
 		spawn_boss_units(surface)
@@ -545,7 +555,7 @@ local function biter_attack_wave()
 	if game.forces.enemy.evolution_factor == 1 then
 		if not global.endgame_modifier then
 			global.endgame_modifier = 1
-			game.print("Endgame enemy evolution reached. Biter damage is rising...", {r = 0.7, g = 0.1, b = 0.1})
+			game.print("Endgame enemy evolution reached.", {r = 0.7, g = 0.1, b = 0.1})
 		else
 			global.endgame_modifier = global.endgame_modifier + 1
 		end
@@ -901,36 +911,7 @@ local function on_entity_died(event)
 	end
 end
 
-local function on_entity_damaged(event)
-	if event.cause then
-		if event.cause.valid then
-			if event.cause.name == "big-spitter" then
-				local surface = event.cause.surface
-				local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-				if surface.count_entities_filtered({area = area, name = "small-biter", limit = 3}) < 3 then
-					local pos = surface.find_non_colliding_position("small-biter", event.entity.position, 4, 0.5)
-					if pos then surface.create_entity({name = "small-biter", position = pos}) end
-				end
-			end
-
-			if event.cause.name == "behemoth-spitter" then
-				local surface = event.cause.surface
-				local area = {{event.entity.position.x - 3, event.entity.position.y - 3}, {event.entity.position.x + 3, event.entity.position.y + 3}}
-				if surface.count_entities_filtered({area = area, name = "medium-biter", limit = 3}) < 3 then
-					local pos = surface.find_non_colliding_position("medium-biter", event.entity.position, 4, 0.5)
-					if pos then surface.create_entity({name = "medium-biter", position = pos}) end
-				end
-			end
-
-			if event.cause.force.name == "enemy" then
-				if global.endgame_modifier then
-					event.entity.health = event.entity.health - (event.final_damage_amount * global.endgame_modifier * 0.002)
-					if event.entity.health <= 0 then event.entity.die() end
-				end
-			end
-		end
-	end
-	
+local function on_entity_damaged(event)		
 	if event.entity.valid then
 		if event.entity.name == "market" then
 			if event.cause then

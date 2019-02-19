@@ -1107,6 +1107,30 @@ local function clear_corpses()
 	end
 end
 
+local function send_near_biter_to_silo()
+	game.surfaces["surface"].set_multi_command({
+		command={
+			type=defines.command.attack,
+			target=global.rocket_silo["north"],
+			distraction=defines.distraction.none
+			},
+		unit_count = 8,
+		force = "enemy",
+		unit_search_distance=64
+		})
+		
+	game.surfaces["surface"].set_multi_command({
+		command={
+			type=defines.command.attack,
+			target=global.rocket_silo["south"],
+			distraction=defines.distraction.none
+			},
+		unit_count = 8,
+		force = "enemy",
+		unit_search_distance=64
+		})
+end
+
 local function on_tick(event)
 	
 	if global.rocket_silo_destroyed then
@@ -1148,7 +1172,8 @@ local function on_tick(event)
 			local c = math.round(global.biter_rage["north"], 0)
 			if c > 999 then c = 999 end
 			biter_attack_silo("north", c)			
-		end
+		end				
+		send_near_biter_to_silo()	
 		refresh_gui()
 		return
 	end
@@ -1157,7 +1182,8 @@ local function on_tick(event)
 			local c = math.round(global.biter_rage["south"], 0)
 			if c > 999 then c = 999 end
 			biter_attack_silo("south", c)													
-		end
+		end		
+		send_near_biter_to_silo()				
 		refresh_gui()
 		return
 	end
