@@ -233,7 +233,8 @@ local function on_pre_player_mined_item(event)
 	local corpse_owner = game.players[event.entity.character_corpse_player_index]
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
-		game.print(player.name .. " has looted " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})	
+		game.print(player.name .. " has looted " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
+		server_commands.to_discord_bold(table.concat{player.name .. " has looted " .. corpse_owner.name .. "´s body."})
 	end
 end
 
