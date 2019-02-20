@@ -353,7 +353,7 @@ local function on_tick(event)
 	if game.tick % 3600 ~= 1 then return end
 	if math_random(1,8) ~= 1 then return end
 	
-	local surface = game.surfaces["mountain_fortress"]
+	local surface = game.surfaces["stoneblock"]
 	
 	local spawners = surface.find_entities_filtered({force = "enemy", type = "unit-spawner"})
 	if not spawners[1] then return end

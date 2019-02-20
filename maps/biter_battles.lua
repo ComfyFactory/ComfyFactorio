@@ -11,6 +11,7 @@ require "maps.modules.custom_death_messages"
 local biter_battles_terrain = require 'biter_battles_terrain'
 local event = require 'utils.event'
 local math_random = math.random
+local insert = table.insert
 
 local food_names = {
 	["science-pack-1"] = 				"red science",
@@ -138,6 +139,22 @@ local function show_mvps(player)
 		local l = t.add({type = "label", caption = mvp.deaths.name .. " died " .. mvp.deaths.score .. " times"})						
 		l.style.font = "default-bold"
 		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		
+		if not global.results_sent_north then
+			local result = {}
+			insert(result, 'NORTH: \\n')
+			insert(result, 'MVP Defender: \\n')
+			insert(result, mvp.killscore.name .. " with a score of " .. mvp.killscore.score .. "\\n" )
+			insert(result, '\\n')
+			insert(result, 'MVP Builder: \\n')
+			insert(result, mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things\\n" )
+			insert(result, '\\n')
+			insert(result, 'MVP Deaths: \\n')
+			insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
+			local message = table.concat(result)
+			server_commands.to_discord_embed(message)
+			global.results_sent_north = true
+		end
 	end
 	
 	local l = frame.add({type = "label", caption = "MVPs - South:"})
@@ -167,6 +184,22 @@ local function show_mvps(player)
 		local l = t.add({type = "label", caption = mvp.deaths.name .. " died " .. mvp.deaths.score .. " times"})						
 		l.style.font = "default-bold"
 		l.style.font_color = {r=0.33, g=0.66, b=0.9}
+		
+		if not global.results_sent_south then
+			local result = {}
+			insert(result, 'SOUTH: \\n')
+			insert(result, 'MVP Defender: \\n')
+			insert(result, mvp.killscore.name .. " with a score of " .. mvp.killscore.score .. "\\n" )
+			insert(result, '\\n')
+			insert(result, 'MVP Builder: \\n')
+			insert(result, mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things\\n" )
+			insert(result, '\\n')
+			insert(result, 'MVP Deaths: \\n')
+			insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
+			local message = table.concat(result)
+			server_commands.to_discord_embed(message)
+			global.results_sent_south = true
+		end
 	end
 end
 
@@ -1131,8 +1164,7 @@ local function send_near_biter_to_silo()
 		})
 end
 
-local function on_tick(event)
-	
+local function on_tick(event)	
 	if global.rocket_silo_destroyed then
 		if not global.game_restart_timeout then global.game_restart_timeout = 7200 end
 		if not global.game_restart_timer_completed then			
@@ -1145,27 +1177,32 @@ local function on_tick(event)
 			if global.game_restart_timeout < 0 then
 				global.game_restart_timer_completed = true
 				game.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
-				game.write_file("commandPipe", ":loadscenario --force", false, 0)
+				local message = 'Map is restarting! '
+				server_commands.to_discord_bold(table.concat{'*** ', message, ' ***'})
+				server_commands.start_scenario('Biter_Battles')
 			end
 		end
 	end
 	
-	if global.spy_fish_timeout["south"] then		
-		if (global.spy_fish_timeout["south"] - game.tick) % 300 == 0 then
-			reveal_team("north")						
+	if global.spy_fish_timeout then
+		if global.spy_fish_timeout["south"] then		
+			if (global.spy_fish_timeout["south"] - game.tick) % 300 == 0 then
+				reveal_team("north")						
+			end	
+			if game.tick - global.spy_fish_timeout["south"] > 0 then
+				global.spy_fish_timeout["south"] = nil
+			end
 		end	
-		if game.tick - global.spy_fish_timeout["south"] > 0 then
-			global.spy_fish_timeout["south"] = nil
-		end
-	end	
-	if global.spy_fish_timeout["north"] then		
-		if (global.spy_fish_timeout["north"] - game.tick) % 300 == 0 then
-			reveal_team("south")						
+		if global.spy_fish_timeout["north"] then		
+			if (global.spy_fish_timeout["north"] - game.tick) % 300 == 0 then
+				reveal_team("south")						
+			end	
+			if game.tick - global.spy_fish_timeout["north"] > 0 then
+				global.spy_fish_timeout["north"] = nil
+			end
 		end	
-		if game.tick - global.spy_fish_timeout["north"] > 0 then
-			global.spy_fish_timeout["north"] = nil
-		end
-	end	
+	end
+	
 	if game.tick % 12600 == 6300 then	
 		clear_corpses()
 		if global.biter_rage["north"] >= 1 then
