@@ -224,6 +224,7 @@ local function on_gui_opened(event)
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
 		game.print(player.name .. " is looting " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
+		server_commands.to_discord_bold(table.concat{player.name .. " is looting " .. corpse_owner.name .. "´s body."})
 	end
 end
 
