@@ -28,6 +28,7 @@ require "score"
 --require "maps.modules.dynamic_landfill"
 --require "maps.modules.players_trample_paths"
 --require "maps.modules.hunger_games"
+--require "maps.modules.burden"
 -----------------------------
 
 ---- enable maps here ----
