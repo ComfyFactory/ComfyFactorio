@@ -349,6 +349,32 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+local function on_tick(event)	
+	if game.tick % 3600 ~= 1 then return end
+	if math_random(1,8) ~= 1 then return end
+	
+	local surface = game.surfaces["mountain_fortress"]
+	
+	local spawners = surface.find_entities_filtered({force = "enemy", type = "unit-spawner"})
+	if not spawners[1] then return end
+	
+	local target = surface.find_nearest_enemy({position = spawners[math_random(1, #spawners)].position, max_distance=1500, force="enemy"})
+	if not target then return end
+	
+	surface.set_multi_command({
+		command={
+				type=defines.command.attack_area,
+				destination=target.position,
+				radius=16,
+				distraction=defines.distraction.by_anything
+			},
+		unit_count = math_random(6,12),
+		force = "enemy",
+		unit_search_distance=1024
+	})	
+end
+
+event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)

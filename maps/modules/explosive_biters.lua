@@ -3,9 +3,9 @@
 local event = require 'utils.event'
 
 local biter_values = {
-		["medium-biter"] = {"blood-explosion-big", 25, 1.5},
-		["big-biter"] = {"blood-explosion-huge", 50, 2},
-		["behemoth-biter"] = {"blood-explosion-huge", 75, 2.5}
+		["medium-biter"] = {"blood-explosion-big", 20, 1.5},
+		["big-biter"] = {"blood-explosion-huge", 40, 2},
+		["behemoth-biter"] = {"blood-explosion-huge", 60, 2.5}
 	}
 
 local function damage_entities_in_radius(surface, position, radius, damage)
@@ -16,8 +16,7 @@ local function damage_entities_in_radius(surface, position, radius, damage)
 				if entity.name == "player" then
 					entity.damage(damage, "enemy")
 				else
-					entity.health = entity.health - damage
-					--entity.surface.create_entity({name = "blood-explosion-big", position = entity.position})
+					entity.health = entity.health - damage					
 					if entity.health <= 0 then entity.die("enemy") end
 				end
 			end
@@ -30,7 +29,12 @@ local function on_entity_died(event)
 	if biter_values[event.entity.name] then
 		local entity = event.entity
 		entity.surface.create_entity({name = biter_values[entity.name][1], position = entity.position})
-		damage_entities_in_radius(entity.surface, entity.position, biter_values[entity.name][3], biter_values[entity.name][2])		
+		damage_entities_in_radius(
+			entity.surface,
+			entity.position,
+			biter_values[entity.name][3],
+			math.random(math.ceil(biter_values[entity.name][2] * 0.75), math.ceil(biter_values[entity.name][2] * 1.25))
+		)		
 	end
 end
 	

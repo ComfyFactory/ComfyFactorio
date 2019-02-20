@@ -812,6 +812,21 @@ local function is_game_lost()
 			local l = t.add({type = "label", caption = mvp.deaths.name .. " died " .. mvp.deaths.score .. " times"})						
 			l.style.font = "default-bold"
 			l.style.font_color = {r=0.33, g=0.66, b=0.9}
+			
+			if not global.results_sent then
+				local result = {}
+				insert(result, 'MVP Defender: \\n')
+				insert(result, mvp.killscore.name .. " with a score of " .. mvp.killscore.score .. "\\n" )
+				insert(result, '\\n')
+				insert(result, 'MVP Builder: \\n')
+				insert(result, mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things\\n" )
+				insert(result, '\\n')
+				insert(result, 'MVP Deaths: \\n')
+				insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
+				local message = table.concat(result)
+				server_commands.to_discord_embed(message)
+				global.results_sent = true
+			end
 		end
 		
 		for _, player in pairs(game.connected_players) do
@@ -1341,7 +1356,12 @@ local function on_tick()
 				if global.game_restart_timer > 0 then game.print("Map will restart in " .. global.game_restart_timer / 60 .. " seconds!", { r=0.22, g=0.88, b=0.22}) end
 				if global.game_restart_timer == 0 then
 					game.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
-					game.write_file("commandPipe", ":loadscenario --force", false, 0)
+					--game.write_file("commandPipe", ":loadscenario --force", false, 0)
+					
+					local message = 'Map is restarting! '
+					server_commands.to_discord_bold(table.concat{'*** ', message, ' ***'})
+					server_commands.start_scenario('Fish_Defender')
+					
 				end							
 			end
 		end
