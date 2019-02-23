@@ -3,7 +3,7 @@
 require "maps.modules.splice_double"
 require "maps.modules.spitters_spit_biters"
 require "maps.modules.biters_double_hp"
-require "maps.modules.biters_double_damage"
+--require "maps.modules.biters_double_damage"
 require "maps.modules.explosive_biters"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.custom_death_messages"
@@ -504,7 +504,8 @@ local function on_player_joined_game(event)
 	if not global.biter_battles_init_done then		
 		local map_gen_settings = {}
 		map_gen_settings.water = "none"
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 18, cliff_elevation_0 = 18}		
+		map_gen_settings.starting_area = "big"	
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 12}		
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["stone"] = {frequency = "normal", size = "normal", richness = "normal"},
@@ -520,7 +521,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.destroy_factor = 0.004
 		game.map_settings.enemy_evolution.pollution_factor = 0.000025
 		game.map_settings.enemy_expansion.enabled = true		
-		game.map_settings.enemy_expansion.min_expansion_cooldown = 14400
+		game.map_settings.enemy_expansion.min_expansion_cooldown = 18000
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 72000
 			
 		local surface = game.surfaces["surface"]		

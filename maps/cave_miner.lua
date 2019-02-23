@@ -1,17 +1,24 @@
---Factorio Cave Miner -- mewmew made this --
---You can use /c map_pregen() command to pre-generate the world before playing to avoid any possible microstutter while playing.--
+-- Cave Miner -- mewmew made this --
 --Use /c spaghetti() to play without bots.
 
-local enable_fishbank_terminal = false
-
+require "maps.modules.rocks_broken_paint_tiles"
 require "maps.cave_miner_kaboomsticks"
-require "maps.tools.map_pregen"
+require "maps.modules.satellite_score"
+--require "maps.modules.explosive_biters"
+require "maps.modules.spawners_contain_biters"
+require "maps.modules.teleporting_worms"
+--require "maps.modules.splice_double"
+--require "maps.modules.spitters_spit_biters"
+require "maps.modules.biters_double_hp"
+require "maps.modules.biters_double_damage"
+
+local enable_fishbank_terminal = false
 local simplex_noise = require 'utils.simplex_noise'
 local Event = require 'utils.event' 
 local market_items = require "maps.cave_miner_market_items"
 local math_random = math.random
 
-local spawn_dome_size = 10000
+local spawn_dome_size = 8000
 
 local darkness_messages = {
 		"Something is lurking in the dark...",
@@ -825,7 +832,7 @@ local function hunger_update(player, food_value)
 		end
 	end
 	
-	player.character.character_running_speed_modifier = player_hunger_buff[global.player_hunger[player.name]] * 0.5
+	player.character.character_running_speed_modifier = player_hunger_buff[global.player_hunger[player.name]] * 0.15
 	player.character.character_mining_speed_modifier  = player_hunger_buff[global.player_hunger[player.name]]
 end
 
@@ -1139,6 +1146,14 @@ local treasure_chest_messages = {
 		"We has found the precious!"		
 	}
 
+local ore_floaty_texts = {
+	["iron-ore"] = {"Iron ore", {r = 200, g = 200, b = 180}},
+	["copper-ore"] = {"Copper ore", {r = 221, g = 133, b = 6}},
+	["uranium-ore"] = {"Uranium ore", {r= 50, g= 250, b= 50}},
+	["coal"] = {"Coal", {r = 0, g = 0, b = 0}},
+	["stone"] = {"Stone", {r = 200, g = 160, b = 30}},
+}	
+	
 local function pre_player_mined_item(event)
 	local surface = game.surfaces[1]
 	local player = game.players[event.player_index]
@@ -1146,7 +1161,7 @@ local function pre_player_mined_item(event)
 	if math_random(1,12) == 1 then
 		if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then		
 			for x = 1, math_random(6, 10), 1 do
-				table.insert(global.biter_spawn_schedule, {game.tick + 15*x, event.entity.position})		
+				table.insert(global.biter_spawn_schedule, {game.tick + 30*x, event.entity.position})		
 			end			
 		end
 	end
@@ -1170,7 +1185,9 @@ local function pre_player_mined_item(event)
 		surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(3,4)},true)
 		local bonus_amount = math.ceil((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10, 0) 
 		if bonus_amount < 1 then bonus_amount = 0 end		
-		local amount = (math_random(45,55) + bonus_amount)*(1+game.forces.player.mining_drill_productivity_bonus)
+		local amount = math_random(45,55) + bonus_amount
+		if amount > 200 then amount = 200 end
+		amount = amount * (1+game.forces.player.mining_drill_productivity_bonus)		
 		
 		amount = math.round(amount, 0)
 		amount_of_stone = math.round(amount * 0.15,0)		
@@ -1178,6 +1195,9 @@ local function pre_player_mined_item(event)
 		global.stats_ores_found = global.stats_ores_found + amount + amount_of_stone
 		
 		local mined_loot = global.rock_mining_raffle_table[math_random(1,#global.rock_mining_raffle_table)]
+		
+		surface.create_entity({name = "flying-text", position = rock_position, text = amount .. " " .. ore_floaty_texts[mined_loot][1], color = ore_floaty_texts[mined_loot][2]})
+		
 		if amount > global.ore_spill_cap then
 			surface.spill_item_stack(rock_position,{name = mined_loot, count = global.ore_spill_cap},true)
 			amount = amount - global.ore_spill_cap
@@ -1284,7 +1304,7 @@ local function on_entity_damaged(event)
 			if event.force.name == "player" then	
 				if math_random(1,12) == 1 then								
 					for x = 1, math_random(6,10), 1 do
-						table.insert(global.biter_spawn_schedule, {game.tick + 10*x, event.entity.position})		
+						table.insert(global.biter_spawn_schedule, {game.tick + 20*x, event.entity.position})		
 					end						
 				end
 			end
@@ -1340,7 +1360,8 @@ end
 
 local function on_player_used_capsule(event)
 	if event.item.name == "raw-fish" then
-		local player = game.players[event.player_index]				
+		local player = game.players[event.player_index]
+		if player.character.health < 250 then return end
 		hunger_update(player, player_hunger_fish_food_value)		
 		player.play_sound{path="utility/armor_insert", volume_modifier=1}		
 		refresh_gui()

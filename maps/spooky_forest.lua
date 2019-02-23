@@ -2,13 +2,20 @@
 
 require "maps.modules.hunger"
 require "maps.modules.fish_respawner"
-global.fish_respawner_water_tiles_per_fish = 10
+global.fish_respawner_water_tiles_per_fish = 16
 
-require "maps.modules.fluids_are_explosive"
+require "maps.modules.satellite_score"
 require "maps.modules.explosives_are_explosive"
 require "maps.modules.explosive_biters"
 require "maps.modules.dynamic_landfill"
 require "maps.modules.teleporting_worms"
+require "maps.modules.splice_double"
+require "maps.modules.spitters_spit_biters"
+require "maps.modules.biters_double_hp"
+require "maps.modules.biters_double_damage"
+require "maps.modules.spawners_contain_biters"
+require "maps.modules.rocks_broken_paint_tiles"
+require "maps.modules.rocks_yield_ore"
 
 local shapes = require "maps.tools.shapes"
 local event = require 'utils.event'
@@ -374,18 +381,6 @@ local function uncover_map_for_player(player)
 	end
 end
 
-local biter_building_inhabitants = {}
-biter_building_inhabitants[1] = {{"small-biter",3,6}}
-biter_building_inhabitants[2] = {{"small-biter",6,12}}
-biter_building_inhabitants[3] = {{"small-biter",8,16},{"medium-biter",1,2}}
-biter_building_inhabitants[4] = {{"small-biter",4,8},{"medium-biter",4,8}}
-biter_building_inhabitants[5] = {{"small-biter",3,5},{"medium-biter",8,12}}
-biter_building_inhabitants[6] = {{"small-biter",3,5},{"medium-biter",5,7},{"big-biter",1,2}}
-biter_building_inhabitants[7] = {{"medium-biter",6,8},{"big-biter",3,5}}
-biter_building_inhabitants[8] = {{"medium-biter",2,4},{"big-biter",6,8}}
-biter_building_inhabitants[9] = {{"medium-biter",2,3},{"big-biter",7,9}}
-biter_building_inhabitants[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
-
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal"}
 local ore_spawn_raffle = {
 		"iron-ore","iron-ore","iron-ore","iron-ore", "iron-ore","iron-ore","iron-ore","iron-ore", "iron-ore","iron-ore",
@@ -399,15 +394,7 @@ local ore_spawn_raffle = {
 local function on_entity_died(event)
 	local surface = event.entity.surface
 	
-	if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
-		local e = math.ceil(game.forces.enemy.evolution_factor*10)
-		if e < 1 then e = 1 end
-		for _, t in pairs (biter_building_inhabitants[e]) do		
-			for x = 1, math.random(t[2],t[3]), 1 do
-				local p = surface.find_non_colliding_position(t[1] , event.entity.position, 6, 1)			
-				if p then surface.create_entity {name=t[1], position=p} end
-			end
-		end
+	if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then		
 		if math_random(1, 2) ~= 1 then
 			local name = ore_spawn_raffle[math.random(1,#ore_spawn_raffle)]
 			local pos = {x = event.entity.position.x, y = event.entity.position.y}						

@@ -21,8 +21,8 @@ function cheat_mode()
 	game.forces.player.manual_mining_speed_modifier = 3
 	game.forces.player.character_reach_distance_bonus = 1000
 	game.speed = 1.5
-	--surface.daytime = 1
-	--surface.freeze_daytime = 1
+	surface.daytime = 1
+	surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()
 	game.forces["enemy"].evolution_factor = 0.9
 	local chart = 200	

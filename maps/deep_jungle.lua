@@ -3,12 +3,16 @@ require "maps.modules.fluids_are_explosive"
 require "maps.modules.explosives_are_explosive"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
-require "maps.modules.splice"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.rocks_yield_coins"
 require "maps.modules.explosive_player_respawn"
 require "maps.modules.flashlight_toggle_button"
+require "maps.modules.splice_double"
+require "maps.modules.spitters_spit_biters"
+require "maps.modules.biters_double_hp"
+require "maps.modules.biters_double_damage"
+require "maps.modules.rocks_yield_ore"
 
 local map_functions = require "maps.tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
@@ -314,7 +318,7 @@ local function on_player_joined_game(event)
 	if not global.map_init_done then			
 		local map_gen_settings = {}
 		map_gen_settings.water = "none"
-		map_gen_settings.starting_area = "big"
+		map_gen_settings.starting_area = "normal"
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}		
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = "none", size = "none", richness = "none"},
