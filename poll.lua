@@ -307,7 +307,7 @@ end
 
 local function draw_main_frame(left, player)
     local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Polls', direction = 'vertical'}
-    frame.style.maximal_width = 320
+    frame.style.maximal_width = 360
 
     local poll_viewer_top_flow = frame.add {type = 'table', column_count = 5}
     poll_viewer_top_flow.style.horizontal_spacing = 0
@@ -559,7 +559,7 @@ local function draw_create_poll_frame(parent, player, previous_data)
 
     local frame =
         parent.add {type = 'frame', name = create_poll_frame_name, caption = title_text, direction = 'vertical'}
-    frame.style.maximal_width = 320
+    frame.style.maximal_width = 360
 
     local scroll_pane = frame.add {type = 'scroll-pane', vertical_scroll_policy = 'always'}
     scroll_pane.style.maximal_height = 250
