@@ -30,7 +30,7 @@ local function create_map_intro(player)
 	
 	local tt = t.add {type = "table", column_count = 3}
 	local l = tt.add {type = "label", caption = main_caption}
-	l.style.font = "default-frame"
+	l.style.font = "default-listbox"
 	l.style.font_color = {r=0.11, g=0.8, b=0.44}
 	l.style.top_padding = 6	
 	l.style.bottom_padding = 6

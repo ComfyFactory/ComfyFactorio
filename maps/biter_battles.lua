@@ -112,7 +112,7 @@ local function show_mvps(player)
 	if player.gui.left["mvps"] then return end
 	local frame = player.gui.left.add({type = "frame", name = "mvps", direction = "vertical"})
 	local l = frame.add({type = "label", caption = "MVPs - North:"})
-	l.style.font = "default-frame"
+	l.style.font = "default-listbox"
 	l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
 		
 	local t = frame.add({type = "table", column_count = 2})
@@ -158,7 +158,7 @@ local function show_mvps(player)
 	end
 	
 	local l = frame.add({type = "label", caption = "MVPs - South:"})
-	l.style.font = "default-frame"
+	l.style.font = "default-listbox"
 	l.style.font_color = {r = 0.99, g = 0.33, b = 0.33}
 	
 	local t = frame.add({type = "table", column_count = 2})
@@ -207,7 +207,7 @@ local function create_biter_battle_menu(player)
 	if global.rocket_silo_destroyed then 
 		local frame = player.gui.left.add { type = "frame", name = "victory_popup", direction = "vertical" }			
 		local l = frame.add { type = "label", caption = global.rocket_silo_destroyed , single_line = false, name = "victory_caption" }
-		l.style.font = "default-frame"
+		l.style.font = "default-listbox"
 		l.style.font_color = { r=0.98, g=0.66, b=0.22}
 		l.style.top_padding = 10
 		l.style.left_padding = 20
@@ -307,7 +307,7 @@ local function create_biter_battle_menu(player)
 			l.style.font_color = color
 		end		
 		local b = frame.add  { type = "button", name = "join_north_button", caption = c }
-		b.style.font = "default-frame"
+		b.style.font = "default-listbox"
 		b.style.font_color = font_color
 		b.style.minimal_width = 320	
 		frame.add  { type = "label", caption = "--------------------------------------------------"}
@@ -377,7 +377,7 @@ local function create_biter_battle_menu(player)
 			l.style.font_color = color
 		end		
 		local b = frame.add  { type = "button", name = "join_south_button", caption = c }
-		b.style.font = "default-frame"
+		b.style.font = "default-listbox"
 		b.style.font_color = font_color
 		b.style.minimal_width = 320			
 	end	
@@ -548,10 +548,10 @@ local function on_player_joined_game(event)
 			--game.forces[name].technologies["flamethrower-damage-1"].enabled = false	
 			--game.forces[name].technologies["flamethrower-damage-2"].enabled = false
 			--game.forces[name].technologies["flamethrower-damage-3"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-4"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-5"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-6"].enabled = false
-			game.forces[name].technologies["flamethrower-damage-7"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-4"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-5"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-6"].enabled = false
+			--game.forces[name].technologies["flamethrower-damage-7"].enabled = false
 			game.forces[name].technologies["atomic-bomb"].enabled = false
 
 			global.team_nerf[name] = 0

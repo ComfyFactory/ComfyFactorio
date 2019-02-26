@@ -675,7 +675,7 @@ local function refresh_market_offers()
 		{price = {}, offer = {type = 'nothing', effect_description = str4}},
 		{price = {}, offer = {type = 'nothing', effect_description = str5}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
-		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 8}},		
+		--{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 8}},		
 		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
 		{price = {{"coin", 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
@@ -952,10 +952,10 @@ local function on_player_joined_game(event)
 			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
-			["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+			--["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
+			--["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
+			--["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
+			--["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
 		}		
 		game.create_surface("fish_defender", map_gen_settings)							
 		local surface = game.surfaces["fish_defender"]
@@ -972,10 +972,10 @@ local function on_player_joined_game(event)
 		--game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
 		--game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
 		--game.forces["player"].technologies["flamethrower-damage-3"].enabled = false
-		game.forces["player"].technologies["flamethrower-damage-4"].enabled = false
-		game.forces["player"].technologies["flamethrower-damage-5"].enabled = false
-		game.forces["player"].technologies["flamethrower-damage-6"].enabled = false
-		game.forces["player"].technologies["flamethrower-damage-7"].enabled = false
+		--game.forces["player"].technologies["flamethrower-damage-4"].enabled = false
+		--game.forces["player"].technologies["flamethrower-damage-5"].enabled = false
+		--game.forces["player"].technologies["flamethrower-damage-6"].enabled = false
+		--game.forces["player"].technologies["flamethrower-damage-7"].enabled = false
 		--game.forces["player"].technologies["gun-turret-damage-1"].enabled = false	
 		--game.forces["player"].technologies["gun-turret-damage-2"].enabled = false
 		--game.forces["player"].technologies["gun-turret-damage-3"].enabled = false
@@ -1005,7 +1005,7 @@ local function on_player_joined_game(event)
 
 	if player.online_time < 1 then
 		player.insert({name = "pistol", count = 1})
-		player.insert({name = "iron-axe", count = 1})
+		--player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 3})
 		player.insert({name = "firearm-magazine", count = 16})
 		player.insert({name = "iron-plate", count = 32})

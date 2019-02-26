@@ -1,7 +1,7 @@
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
---require "utils.corpse_util"  --disable for hunger games
+require "utils.corpse_util"  --disable for hunger games
 require "chatbot"
 require "commands"
 require "session_tracker"
@@ -9,8 +9,8 @@ require "antigrief"
 require "antigrief_admin_panel"
 require "group"
 require "player_list"
-require "poll"
---require "score"
+require "poll_old"
+require "score"
 
 ---- enable modules here ----
 --require "maps.tools.cheat_mode"
@@ -32,7 +32,7 @@ require "poll"
 -----------------------------
 
 ---- enable maps here ----
---require "maps.biter_battles"
+require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"
 --require "maps.spooky_forest"

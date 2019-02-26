@@ -89,7 +89,7 @@ local function get_rank(player)
 	local m = (player.online_time + t)  / 3600
 	
 	local ranks = {
-	"item/iron-axe","item/burner-mining-drill","item/burner-inserter","item/stone-furnace","item/light-armor","item/steam-engine",	
+	"item/wood","item/burner-mining-drill","item/burner-inserter","item/stone-furnace","item/light-armor","item/steam-engine",	
 	"item/inserter", "item/transport-belt", "item/underground-belt", "item/splitter","item/assembling-machine-1","item/long-handed-inserter","item/electronic-circuit","item/electric-mining-drill",
 	"item/heavy-armor","item/steel-furnace","item/steel-axe","item/gun-turret","item/fast-transport-belt", "item/fast-underground-belt", "item/fast-splitter","item/assembling-machine-2","item/fast-inserter","item/radar","item/filter-inserter",
 	"item/defender-capsule","item/pumpjack","item/chemical-plant","item/solar-panel","item/advanced-circuit","item/modular-armor","item/accumulator", "item/construction-robot", 
@@ -244,12 +244,12 @@ local function player_list_show(player, sort_by)
 	label.style.maximal_width = 35
 		
 	local label = t.add { type = "label", name = "player_list_panel_header_1", caption = tostring(#game.connected_players) }
-	label.style.font = "default-frame"
+	label.style.font = "default-listbox"
 	label.style.font_color = { r=0.10, g=0.70, b=0.10}
 	label.style.bottom_padding = 3
 	label.style.minimal_width = 36
 	label.style.maximal_width = 36
-	label.style.align = "right"
+	--label.style.align = "right"
 	
 	local str = ""
 	if sort_by == "name_asc" then str = symbol_asc .. " " end
@@ -262,12 +262,12 @@ local function player_list_show(player, sort_by)
 	
 	local tt = t.add({ type = "table", column_count = 5 })
 	local label = tt.add { type = "label", name = "player_list_panel_header_2", caption =  str }
-	label.style.font = "default-listbox"
+	label.style.font = "default-bold"
 	label.style.font_color = { r=0.98, g=0.66, b=0.22}
 	
 	if #game.connected_players ~= #game.players then		
 		local label = tt.add { type = "label", caption = "/" }
-		label.style.font = "default-listbox"
+		label.style.font = "default-bold"
 		label.style.font_color = { r=0.98, g=0.66, b=0.22}				
 		local label = tt.add { type = "label", caption = tostring(#game.players - #game.connected_players) }
 		label.style.font = "default-bold"
