@@ -11,7 +11,6 @@ require "maps.modules.custom_death_messages"
 require "maps.modules.splice_double"
 require "maps.modules.spitters_spit_biters"
 require "maps.modules.biters_double_hp"
-require "maps.modules.custom_death_messages"
 
 local event = require 'utils.event'
 local map_functions = require "maps.tools.map_functions"

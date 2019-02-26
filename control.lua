@@ -1,7 +1,7 @@
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
-require "utils.corpse_util"
+--require "utils.corpse_util"  --disable for hunger games
 require "chatbot"
 require "commands"
 require "session_tracker"
@@ -10,7 +10,7 @@ require "antigrief_admin_panel"
 require "group"
 require "player_list"
 require "poll"
-require "score"
+--require "score"
 
 ---- enable modules here ----
 --require "maps.tools.cheat_mode"
@@ -27,6 +27,7 @@ require "score"
 --require "maps.modules.dynamic_landfill"
 --require "maps.modules.players_trample_paths"
 --require "maps.modules.hunger_games"
+--require "maps.modules.explosive_player_respawn"
 --require "maps.modules.burden"
 -----------------------------
 
@@ -42,7 +43,7 @@ require "score"
 --require "maps.fish_defender"
 --require "maps.mountain_fortress"
 --require "maps.stoneblock"
-require "maps.deep_jungle"
+--require "maps.deep_jungle"
 --require "maps.crossing"
 --require "maps.anarchy"
 --require "maps.railworld"

@@ -1,17 +1,14 @@
 --deep jungle-- mewmew made this --
-require "maps.modules.fluids_are_explosive"
-require "maps.modules.explosives_are_explosive"
 require "maps.modules.railgun_enhancer"
 require "maps.modules.dynamic_landfill"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.rocks_yield_coins"
-require "maps.modules.explosive_player_respawn"
 require "maps.modules.flashlight_toggle_button"
 require "maps.modules.splice_double"
 require "maps.modules.spitters_spit_biters"
 require "maps.modules.biters_double_hp"
-require "maps.modules.biters_double_damage"
+require "maps.modules.rocks_broken_paint_tiles"
 require "maps.modules.rocks_yield_ore"
 
 local map_functions = require "maps.tools.map_functions"

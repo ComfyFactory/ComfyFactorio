@@ -1,7 +1,10 @@
 --spiral troopers-- mewmew wrote this -- inspired from kyte
 
 local event = require 'utils.event'
-require "maps.tools.map_pregen"
+require "maps.modules.dynamic_landfill"
+require "maps.modules.spawners_contain_biters"
+require "maps.modules.satellite_score"
+
 local map_functions = require "maps.tools.map_functions"
 --require "rewards"
 
@@ -543,17 +546,6 @@ local function on_robot_built_entity(event)
 	on_built_entity(event)
 end
 
-local biter_building_inhabitants = {}
-biter_building_inhabitants[1] = {{"small-biter",8,16}}
-biter_building_inhabitants[2] = {{"small-biter",16,24}}
-biter_building_inhabitants[3] = {{"small-biter",8,16},{"medium-biter",4,8}}
-biter_building_inhabitants[4] = {{"small-biter",4,8},{"medium-biter",6,10}}
-biter_building_inhabitants[5] = {{"small-biter",5,6},{"medium-biter",8,12}}
-biter_building_inhabitants[6] = {{"small-biter",2,4},{"medium-biter",6,8},{"big-biter",2,4}}
-biter_building_inhabitants[7] = {{"medium-biter",6,8},{"big-biter",4,6}}
-biter_building_inhabitants[8] = {{"medium-biter",2,4},{"big-biter",6,8}}
-biter_building_inhabitants[9] = {{"medium-biter",2,3},{"big-biter",8,10},{"behemoth-biter",1,2}}
-biter_building_inhabitants[10] = {{"big-biter",4,8},{"behemoth-biter",3,4}}
 local entity_drop_amount = {
     ['small-biter'] = {low = 10, high = 20},
     ['small-spitter'] = {low = 10, high = 20},
@@ -566,15 +558,8 @@ local entity_drop_amount = {
 local ore_spill_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","iron-ore","coal","coal","coal","copper-ore","copper-ore","stone", "landfill"}
 
 local function on_entity_died(event)
-    if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then
-        local e = math.ceil(game.forces.enemy.evolution_factor*10, 0)
-        for _, t in pairs (biter_building_inhabitants[e]) do
-            for x = 1, math.random(t[2],t[3]), 1 do
-                local p = event.entity.surface.find_non_colliding_position(t[1] , event.entity.position, 6, 1)
-                if p then event.entity.surface.create_entity {name=t[1], position=p} end
-            end
-        end	 
-		if math.random(1, 75) == 1 then
+    if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then      	 
+		if math.random(1, 50) == 1 then
 			local amount = 100000 * (1 + (game.forces.enemy.evolution_factor * 20))
 			event.entity.surface.create_entity({name = "crude-oil", position = event.entity.position, amount = amount})
 		end
