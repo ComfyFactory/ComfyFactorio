@@ -10,7 +10,7 @@ require "maps.modules.teleporting_worms"
 require "maps.modules.custom_death_messages"
 require "maps.modules.splice_double"
 require "maps.modules.spitters_spit_biters"
-require "maps.modules.biters_double_hp"
+--require "maps.modules.biters_double_hp"
 
 local event = require 'utils.event'
 local map_functions = require "maps.tools.map_functions"
@@ -675,7 +675,7 @@ local function refresh_market_offers()
 		{price = {}, offer = {type = 'nothing', effect_description = str4}},
 		{price = {}, offer = {type = 'nothing', effect_description = str5}},
 		{price = {{"coin", 5}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
-		--{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = 8}},		
+		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'wood', count = 8}},		
 		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
 		{price = {{"coin", 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
 		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},

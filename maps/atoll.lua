@@ -1,6 +1,11 @@
 --atoll-- mewmew made this --
 
-require "maps.tools.map_pregen"
+require "maps.modules.dynamic_landfill"
+require "maps.modules.satellite_score"
+require "maps.modules.spawners_contain_biters"
+require "maps.modules.splice_double"
+require "maps.modules.biters_double_damage"
+
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event' 
@@ -35,7 +40,7 @@ local function on_player_joined_game(event)
 	end	
 	
 	if player.online_time == 0 then		
-		player.insert{name = 'iron-axe', count = 1}
+		--player.insert{name = 'iron-axe', count = 1}
 		player.insert{name = 'landfill', count = 200}
 		player.insert{name = 'iron-plate', count = 32}
 		player.insert{name = 'iron-gear-wheel', count = 16}

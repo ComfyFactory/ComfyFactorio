@@ -144,7 +144,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 7200
 				
 		surface.ticks_per_day = surface.ticks_per_day * 2
-		game.forces.player.manual_mining_speed_modifier = 1.75
+		game.forces.player.manual_mining_speed_modifier = 2
 		
 		global.surface_init_done = true
 	end
