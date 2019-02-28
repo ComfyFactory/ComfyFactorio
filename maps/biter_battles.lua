@@ -14,22 +14,22 @@ local math_random = math.random
 local insert = table.insert
 
 local food_names = {
-	["science-pack-1"] = 				"red science",
-	["science-pack-2"] = 				"green science",
+	["automation-science-pack"] = 	"automation science",
+	["logistic-science-pack"] = 	"logistic science",
 	["military-science-pack"] =		"military science",
-	["science-pack-3"] = 				"blue science",
-	["production-science-pack"] ="production science",
-	["high-tech-science-pack"] =	"high tech science",
+	["chemical-science-pack"] = 	"chemical science",
+	["production-science-pack"] =	"production science",
+	["utility-science-pack"] =		"utility science",
 	["space-science-pack"] = 		"space science"
 }
 	
 local food_values = {
-	["science-pack-1"] = 				0.00000100,
-	["science-pack-2"] = 				0.00000292,
+	["automation-science-pack"] = 	0.00000100,
+	["logistic-science-pack"] = 	0.00000292,
 	["military-science-pack"] =		0.00001950,
-	["science-pack-3"] = 				0.00003792,
-	["production-science-pack"] =0.00008000,
-	["high-tech-science-pack"] =	0.00021000,
+	["chemical-science-pack"] = 	0.00003792,
+	["production-science-pack"] =	0.00008000,
+	["utility-science-pack"] =		0.00021000,
 	["space-science-pack"] = 		0.00042000
 }
 
@@ -224,7 +224,7 @@ local function create_biter_battle_menu(player)
 	if player.force.name == "north" or player.force.name == "south" then			
 		frame.add { type = "table", name = "biter_battle_table", column_count = 4 }
 		local t = frame.biter_battle_table
-		local foods = {"science-pack-1","science-pack-2","military-science-pack","science-pack-3","production-science-pack","high-tech-science-pack","space-science-pack","raw-fish"}
+		local foods = {"automation-science-pack","logistic-science-pack","military-science-pack","chemical-science-pack","production-science-pack","utility-science-pack","space-science-pack","raw-fish"}
 		local food_tooltips = {"1 Calorie","3 Calories", "20 Calories", "38 Calories", "80 Calories", "210 Calories", "420 Calories", "Send spy"}
 		local x = 1
 		for _, f in pairs(foods) do
@@ -450,12 +450,9 @@ local function join_team(player, team)
 			else
 				game.print(player.name .. " has joined team " .. player.force.name .. "!", { r=0.98, g=0.66, b=0.22})
 				local i = player.get_inventory(defines.inventory.player_main)
-				i.clear()
-				local i = player.get_inventory(defines.inventory.player_quickbar)
-				i.clear()
 				player.insert {name = 'pistol', count = 1}
 				player.insert {name = 'raw-fish', count = 3}
-				player.insert {name = 'firearm-magazine', count = 16}			
+				player.insert {name = 'firearm-magazine', count = 16}		
 				player.insert {name = 'iron-gear-wheel', count = 4}
 				player.insert {name = 'iron-plate', count = 8}
 				global.team_chosen[player.name] = team
@@ -545,13 +542,13 @@ local function on_player_joined_game(event)
 			game.forces[name].technologies["artillery"].enabled = false
 			game.forces[name].technologies["artillery-shell-range-1"].enabled = false					
 			game.forces[name].technologies["artillery-shell-speed-1"].enabled = false	
-			--game.forces[name].technologies["flamethrower-damage-1"].enabled = false	
-			--game.forces[name].technologies["flamethrower-damage-2"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-3"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-4"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-5"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-6"].enabled = false
-			--game.forces[name].technologies["flamethrower-damage-7"].enabled = false
+			--game.forces[name].technologies["refined-flammables-1"].enabled = false	
+			--game.forces[name].technologies["refined-flammables-2"].enabled = false
+			--game.forces[name].technologies["refined-flammables-3"].enabled = false
+			game.forces[name].technologies["refined-flammables-4"].enabled = false
+			game.forces[name].technologies["refined-flammables-5"].enabled = false
+			game.forces[name].technologies["refined-flammables-6"].enabled = false
+			game.forces[name].technologies["refined-flammables-7"].enabled = false
 			game.forces[name].technologies["atomic-bomb"].enabled = false
 
 			global.team_nerf[name] = 0
@@ -611,15 +608,14 @@ local function on_player_left_game(event)
 end
 
 local function spy_fish(player)
-	local duration_per_unit = 1800
-	local i = player.get_inventory(defines.inventory.player_quickbar) 
+	local duration_per_unit = 1800 
 	local i2 = player.get_inventory(defines.inventory.player_main)
-	local owned_fishes = i.get_item_count("raw-fish")
+	local owned_fishes = i2.get_item_count("raw-fish")
 	owned_fishes = owned_fishes + i2.get_item_count("raw-fish")
 	if owned_fishes == 0 then 
 		player.print("You have no fish in your inventory.",{ r=0.98, g=0.66, b=0.22})
 	else
-		local x = i.remove({name="raw-fish", count=1})
+		local x = i2.remove({name="raw-fish", count=1})
 		if x == 0 then i2.remove({name="raw-fish", count=1}) end
 		local enemy_team = "south"
 		if player.force.name == "south" then enemy_team = "north" end													 
@@ -754,12 +750,12 @@ local function on_gui_click(event)
 			create_biter_battle_menu(player)
 		end
 	end
-	if (name == "science-pack-1") then feed_the_biters(name,player) end
-	if (name == "science-pack-2") then feed_the_biters(name,player) end	
+	if (name == "automation-science-pack") then feed_the_biters(name,player) end
+	if (name == "logistic-science-pack") then feed_the_biters(name,player) end	
 	if (name == "military-science-pack") then feed_the_biters(name,player) end
-	if (name == "science-pack-3") then feed_the_biters(name,player) end
+	if (name == "chemical-science-pack") then feed_the_biters(name,player) end
 	if (name == "production-science-pack") then feed_the_biters(name,player) end
-	if (name == "high-tech-science-pack") then feed_the_biters(name,player) end
+	if (name == "utility-science-pack") then feed_the_biters(name,player) end
 	if (name == "space-science-pack") then feed_the_biters(name,player) end
 	if (name == "raw-fish") then spy_fish(player) end
 	if (name == "biter_battle_spectate") then
@@ -805,10 +801,8 @@ local function on_entity_died(event)
 		
 			if event.entity == global.rocket_silo["south"] then
 				global.rocket_silo_destroyed = "North Team Won!"
-				print("team$north")
 			else
 				global.rocket_silo_destroyed = "South Team Won!"
-				print("team$south")
 			end		
 			
 			for _, player in pairs(game.connected_players) do
