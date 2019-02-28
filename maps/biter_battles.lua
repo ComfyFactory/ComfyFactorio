@@ -501,16 +501,16 @@ local function on_player_joined_game(event)
 	if not global.biter_battles_init_done then		
 		local map_gen_settings = {}
 		map_gen_settings.water = "none"
-		map_gen_settings.starting_area = "big"	
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 12}		
+		map_gen_settings.starting_area = "5"	
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["stone"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["copper-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
-			["iron-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
-			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "good"},
-			["trees"] = {frequency = "normal", size = "small", richness = "normal"},
-			["enemy-base"] = {frequency = "normal", size = "very-big", richness = "good"}			
+			["coal"] = {frequency = "0.8", size = "1", richness = "0.3"},
+			["stone"] = {frequency = "0.8", size = "1", richness = "0.3"},
+			["copper-ore"] = {frequency = "0.8", size = "2", richness = "0.3"},
+			["iron-ore"] = {frequency = "0.8", size = "2", richness = "0.3"},
+			["crude-oil"] = {frequency = "0.8", size = "2", richness = "0.4"},
+			["trees"] = {frequency = "0.8", size = "0.5", richness = "0.3"},
+			["enemy-base"] = {frequency = "0.8", size = "1", richness = "0.4"}			
 		}
 		game.create_surface("surface", map_gen_settings)
 		
