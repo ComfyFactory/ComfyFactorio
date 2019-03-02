@@ -220,8 +220,9 @@ local function create_admin_panel(player)
 	}
 	for _, button in pairs(buttons) do
 		button.style.font = "default-bold"
-		button.style.font_color = { r=0.99, g=0.11, b=0.11}
-		button.style.minimal_width = 96
+		--button.style.font_color = { r=0.99, g=0.11, b=0.11}
+		button.style.font_color = { r=0.99, g=0.99, b=0.99}
+		button.style.minimal_width = 106
 	end
 	
 	--local l = frame.add({type = "label", caption = "----------------------------------------------"})
