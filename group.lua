@@ -12,7 +12,7 @@ local function build_group_gui(player)
 	
 	if not player.gui.top["group_button"] then
 		local b = player.gui.top.add({type = "button", name = "group_button", caption = global.player_group[player.name], tooltip = "Join / Create a group"})
-		--b.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
+		b.style.font_color = {r = 0.1, g = 0.1, b = 0.1}
 		b.style.font = "default-bold"
 		b.style.minimal_height = 38
 		b.style.minimal_width = 38

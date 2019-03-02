@@ -13,9 +13,9 @@ require "poll"
 require "score"
 
 ---- enable modules here ----
-require "maps.tools.cheat_mode"
+--require "maps.tools.cheat_mode"
 --require "maps.modules.hunger"
-require "maps.modules.area_unlocked_on_rotated_entity"
+--require "maps.modules.area_unlocked_on_rotated_entity"
 --require "maps.modules.fish_respawner"
 --require "maps.modules.rocket_launch_always_yields_science"
 --require "maps.modules.launch_fish_to_win"
@@ -33,7 +33,7 @@ require "maps.modules.area_unlocked_on_rotated_entity"
 -----------------------------
 
 ---- enable maps here ----
---require "maps.biter_battles"
+require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"
 --require "maps.spooky_forest"

@@ -26,10 +26,10 @@ local food_names = {
 local food_values = {
 	["automation-science-pack"] = 	0.00000100,
 	["logistic-science-pack"] = 	0.00000292,
-	["military-science-pack"] =		0.00001950,
-	["chemical-science-pack"] = 	0.00003792,
+	["military-science-pack"] =		0.00001225,
+	["chemical-science-pack"] = 	0.00002392,
 	["production-science-pack"] =	0.00008000,
-	["utility-science-pack"] =		0.00021000,
+	["utility-science-pack"] =		0.00013875,
 	["space-science-pack"] = 		0.00042000
 }
 
@@ -225,7 +225,7 @@ local function create_biter_battle_menu(player)
 		frame.add { type = "table", name = "biter_battle_table", column_count = 4 }
 		local t = frame.biter_battle_table
 		local foods = {"automation-science-pack","logistic-science-pack","military-science-pack","chemical-science-pack","production-science-pack","utility-science-pack","space-science-pack","raw-fish"}
-		local food_tooltips = {"1 Calorie","3 Calories", "20 Calories", "38 Calories", "80 Calories", "210 Calories", "420 Calories", "Send spy"}
+		local food_tooltips = {"1 Calorie","3 Calories", "12 Calories", "24 Calories", "80 Calories", "138 Calories", "420 Calories", "Send spy"}
 		local x = 1
 		for _, f in pairs(foods) do
 			local s = t.add { type = "sprite-button", name = f, sprite = "item/" .. f }
@@ -240,10 +240,8 @@ local function create_biter_battle_menu(player)
 		local b = frame.add  { type = "label", caption = "Feed the enemy team´s biters to gain advantage!" }
 		b.style.font = "default-bold"
 		b.style.font_color = { r=0.98, g=0.66, b=0.22}
-		frame.add  { type = "label", caption = "--------------------------------------------------"}
-	end
-	
-	--frame.add  { type = "label", caption = "--------------------------"}
+		frame.add  { type = "label", caption = "-----------------------------------------------------------"}
+	end		
 	
 	local t = frame.add { type = "table", column_count = 3 }	
 	local l = t.add  { type = "label", caption = "Team North"}
@@ -306,11 +304,11 @@ local function create_biter_battle_menu(player)
 			local l = t.add  { type = "label", caption = p.name }
 			l.style.font_color = color
 		end		
-		local b = frame.add  { type = "button", name = "join_north_button", caption = c }
-		b.style.font = "default-listbox"
+		local b = frame.add  { type = "sprite-button", name = "join_north_button", caption = c }
+		b.style.font = "default-large-bold"
 		b.style.font_color = font_color
-		b.style.minimal_width = 320	
-		frame.add  { type = "label", caption = "--------------------------------------------------"}
+		b.style.minimal_width = 350	
+		frame.add  { type = "label", caption = "-----------------------------------------------------------"}
 	else 
 		frame.add  { type = "label", caption = "--------------------------"}
 	end		
@@ -376,48 +374,34 @@ local function create_biter_battle_menu(player)
 			local l = t.add  { type = "label", caption = p.name }
 			l.style.font_color = color
 		end		
-		local b = frame.add  { type = "button", name = "join_south_button", caption = c }
-		b.style.font = "default-listbox"
+		local b = frame.add  { type = "sprite-button", name = "join_south_button", caption = c }
+		b.style.font = "default-large-bold"
 		b.style.font_color = font_color
-		b.style.minimal_width = 320			
+		b.style.minimal_width = 350			
 	end	
 	
 	if global.team_chosen[player.name] then
 		local t = frame.add  { type = "table", column_count = 2 }
 		if player.force.name == "spectator" then
-			local b = t.add  { type = "button", name = "biter_battle_leave_spectate", caption = "Leave spectating" }
-			b.style.font = "default-bold"
-			b.style.font_color = { r=0.98, g=0.66, b=0.22}
-			b.style.top_padding = 1
-			b.style.left_padding = 1
-			b.style.right_padding = 1
-			b.style.bottom_padding = 1
+			local b = t.add  { type = "sprite-button", name = "biter_battle_leave_spectate", caption = "Join Team" }
 		else
-			local b = t.add  { type = "button", name = "biter_battle_spectate", caption = "Spectate" }
-			b.style.font = "default-bold"
-			b.style.font_color = { r=0.98, g=0.66, b=0.22}
-			b.style.top_padding = 1
-			b.style.left_padding = 1
-			b.style.right_padding = 1
-			b.style.bottom_padding = 1
+			local b = t.add  { type = "sprite-button", name = "biter_battle_spectate", caption = "Spectate" }
 		end
 		
 		if global.biter_battle_view_players[player.name] == true then
-			local b = t.add  { type = "button", name = "biter_battle_hide_players", caption = "Hide players" }
-			b.style.font = "default-bold"
-			b.style.font_color = { r=0.98, g=0.66, b=0.22}
-			b.style.top_padding = 1
-			b.style.left_padding = 1
-			b.style.right_padding = 1
-			b.style.bottom_padding = 1
+			local b = t.add  { type = "sprite-button", name = "biter_battle_hide_players", caption = "Playerlist" }
 		else
-			local b = t.add  { type = "button", name = "biter_battle_view_players", caption = "View players" }
+			local b = t.add  { type = "sprite-button", name = "biter_battle_view_players", caption = "Playerlist" }						
+		end		
+		for _, b in pairs(t.children) do
 			b.style.font = "default-bold"
 			b.style.font_color = { r=0.98, g=0.66, b=0.22}
 			b.style.top_padding = 1
 			b.style.left_padding = 1
 			b.style.right_padding = 1
 			b.style.bottom_padding = 1
+			b.style.maximal_height = 30
+			b.style.minimal_width = 86
 		end
 	end
 end
@@ -476,7 +460,7 @@ local function join_team(player, team)
 			permission_group.set_allows_action(defines.input_action.start_walking, true)
 			permission_group.set_allows_action(defines.input_action.open_kills_gui, true)
 			permission_group.set_allows_action(defines.input_action.open_character_gui, true)
-			permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
+			--permission_group.set_allows_action(defines.input_action.open_equipment_gui, true)
 			permission_group.set_allows_action(defines.input_action.edit_permission_group, true)	
 			permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)				
 		end
@@ -1136,6 +1120,7 @@ local function clear_corpses()
 end
 
 local function send_near_biter_to_silo()
+	if not global.rocket_silo then return end
 	game.surfaces["surface"].set_multi_command({
 		command={
 			type=defines.command.attack,
