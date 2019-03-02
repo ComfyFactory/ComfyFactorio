@@ -566,10 +566,10 @@ local function on_player_joined_game(event)
 			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
 			["enemy-base"] = {frequency = "very-high", size = "big", richness = "very-good"},
-			["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+			--["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
+			--["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
+			--["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
+			--["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
 		}		
 		game.create_surface("nightfall", map_gen_settings)							
 		local surface = game.surfaces["nightfall"]
