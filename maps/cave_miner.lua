@@ -1190,7 +1190,7 @@ local function pre_player_mined_item(event)
 		amount = amount * (1+game.forces.player.mining_drill_productivity_bonus)		
 		
 		amount = math.round(amount, 0)
-		amount_of_stone = math.round(amount * 0.15,0)		
+		local amount_of_stone = math.round(amount * 0.15,0)		
 		
 		global.stats_ores_found = global.stats_ores_found + amount + amount_of_stone
 		
