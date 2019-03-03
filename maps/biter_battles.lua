@@ -785,7 +785,7 @@ local function create_fireworks_rocket(surface, position)
 	local m = math_random(16, 36)
 	local m2 = m * 0.005
 				
-	for i = 1, 100, 1 do 
+	for i = 1, 80, 1 do 
 		surface.create_entity({
 			name = particle,
 			position = position,
@@ -815,10 +815,10 @@ local function on_entity_died(event)
 			end
 			
 			--fireworks
-			local radius = 128
+			local radius = 96
 			for t = 1, 18000, 1 do
 				if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end
-				for x = 1, 8, 1 do
+				for x = 1, 4, 1 do
 					global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 						func = create_fireworks_rocket,
 						args = {event.entity.surface, {x = radius - math_random(0, radius * 2),y = radius - math_random(0, radius * 2)}}
@@ -906,7 +906,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 			biters_selected_for_attack[x] = valid_biters[y]			
 		end
 
-		if math_random(1,3) == 1 then
+		if math_random(1,6) == 1 then
 			for _, biter in pairs(biters_selected_for_attack) do		
 				biter.set_command({type=defines.command.attack_area, destination=global.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_anything})	
 			end					
@@ -1119,7 +1119,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 		--alternate attack if there is water
 		local t = surface.count_tiles_filtered{area={{gathering_point_x - 8, gathering_point_y - 8}, {gathering_point_x + 8, gathering_point_y + 8}}, name={"deepwater","water", "water-green"}}
 		if t > 8 then 
-			if math_random(1,2) == 1 then
+			if math_random(1,6) ~= 1 then
 				for _, biter in pairs(biters_selected_for_attack) do		
 					biter.set_command({type=defines.command.attack_area, destination=global.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_enemy})	
 				end					
@@ -1136,7 +1136,7 @@ local function biter_attack_silo(team, requested_amount, mode)
 			for _, biter in pairs(biters_selected_for_attack) do		
 				biter_attack_group.add_member(biter)
 			end			
-			biter_attack_group.set_command({type=defines.command.attack_area, destination=global.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_anything})
+			biter_attack_group.set_command({type=defines.command.attack_area, destination=global.biter_attack_main_target[team], radius=12, distraction=defines.distraction.by_enemy})
 			if global.biter_battles_debug then
 				game.players[1].print(#valid_biters .. " valid biters found.")
 				game.players[1].print(#biters_selected_for_attack .. " gathering at (x: " .. gathering_point_x .. "  y: " .. gathering_point_y .. ")")					
