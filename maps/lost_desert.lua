@@ -176,7 +176,7 @@ local function on_chunk_generated(event)
 						if surface.can_place_entity {name = "market", position = pos} then
 							local market = surface.create_entity {name = "market", position = pos}
 							market.destructible = false
-							market.add_market_item({price = {{"raw-wood", math.random(2,10)}}, offer = {type = 'give-item', item = 'raw-fish'}})						
+							market.add_market_item({price = {{"wood", math.random(2,10)}}, offer = {type = 'give-item', item = 'raw-fish'}})						
 						end
 					end
 				end
@@ -295,11 +295,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
-			["grass"] = {frequency = "none", size = "none", richness = "none"},
-			["sand"] = {frequency = "none", size = "none", richness = "none"},
-			["desert"] = {frequency = "none", size = "none", richness = "none"},
-			["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 		}
 		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 		game.create_surface("lost_desert", map_gen_settings)		
@@ -319,7 +315,6 @@ local function on_player_joined_game(event)
 	end	
 	if player.online_time < 10 then				
 		player.insert {name = 'raw-fish', count = 3}
-		player.insert {name = 'iron-axe', count = 1}
 		player.insert {name = 'light-armor', count = 1}
 	end	
 end

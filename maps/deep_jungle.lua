@@ -72,7 +72,7 @@ local function secret_shop(pos, surface)
 	{price = {{"coin", math_random(5,15)}}, offer = {type = 'give-item', item = 'shotgun-shell', count = 1}},	
 	{price = {{"coin", math_random(8000,16000)}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},	
-	{price = {{"coin", math_random(4,8)}}, offer = {type = 'give-item', item = 'raw-wood', count = 50}},
+	{price = {{"coin", math_random(4,8)}}, offer = {type = 'give-item', item = 'wood', count = 50}},
 	{price = {{"coin", math_random(4,8)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
 	{price = {{"coin", math_random(4,8)}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
 	{price = {{"coin", math_random(4,8)}}, offer = {type = 'give-item', item = 'stone', count = 50}},
@@ -109,7 +109,6 @@ local function treasure_chest(position)
 	table.insert(treasure_chest_loot_weights, {{name = 'light-armor', count = 1},1})
 	table.insert(treasure_chest_loot_weights, {{name = 'heavy-armor', count = 1},2})		
 	table.insert(treasure_chest_loot_weights, {{name = 'pipe', count = math_random(10,100)},6})		
-	table.insert(treasure_chest_loot_weights, {{name = 'steel-axe', count = 1},3})
 	table.insert(treasure_chest_loot_weights, {{name = 'explosives', count = math_random(40,50)},6})
 	table.insert(treasure_chest_loot_weights, {{name = 'shotgun', count = 1},3})
 	table.insert(treasure_chest_loot_weights, {{name = 'shotgun-shell', count = math_random(8,16)},3})
@@ -324,12 +323,8 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "very-high", size = "big", richness = "normal"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "high", size = "big", richness = "good"},
-			--["grass"] = {frequency = "none", size = "none", richness = "none"},
-			["sand"] = {frequency = "none", size = "none", richness = "none"},
-			["desert"] = {frequency = "none", size = "none", richness = "none"},
-			["dirt"] = {frequency = "none", size = "none", richness = "none"}
-		}
+			["enemy-base"] = {frequency = "high", size = "big", richness = "good"}			
+		}		
 		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 		game.create_surface("deep_jungle", map_gen_settings)		
 		game.forces["player"].set_spawn_position({0,0},game.surfaces["deep_jungle"])								
@@ -343,8 +338,7 @@ local function on_player_joined_game(event)
 			player.teleport({0,0}, "deep_jungle")
 		end
 	end
-	if player.online_time < 2 then							
-		player.insert {name = 'iron-axe', count = 1}
+	if player.online_time < 2 then									
 		player.insert {name = 'iron-plate', count = 32}
 	end	
 end

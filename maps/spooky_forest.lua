@@ -10,7 +10,6 @@ require "maps.modules.explosive_biters"
 require "maps.modules.dynamic_landfill"
 require "maps.modules.teleporting_worms"
 require "maps.modules.splice_double"
-require "maps.modules.spitters_spit_biters"
 require "maps.modules.biters_double_hp"
 require "maps.modules.biters_double_damage"
 require "maps.modules.spawners_contain_biters"
@@ -113,7 +112,7 @@ local function secret_shop(pos, surface)
 	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'train-stop'}},	
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'small-lamp'}},
 	{price = {{"raw-fish", 2}}, offer = {type = 'give-item', item = 'firearm-magazine'}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'raw-wood', count = math_random(25,75)}},
+	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'wood', count = math_random(25,75)}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'iron-ore', count = math_random(25,75)}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'copper-ore', count = math_random(25,75)}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'stone', count = math_random(25,75)}},
@@ -431,11 +430,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
-			["grass"] = {frequency = "none", size = "none", richness = "none"},
-			["sand"] = {frequency = "none", size = "none", richness = "none"},
-			["desert"] = {frequency = "none", size = "none", richness = "none"},
-			["dirt"] = {frequency = "none", size = "none", richness = "none"}
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 		}		
 		game.create_surface("spooky_forest", map_gen_settings)							
 		local surface = game.surfaces["spooky_forest"]
@@ -461,8 +456,7 @@ local function on_player_joined_game(event)
 	end
 			
 	if player.online_time < 1 then
-		player.insert({name = "submachine-gun", count = 1})
-		player.insert({name = "iron-axe", count = 1})
+		player.insert({name = "submachine-gun", count = 1})		
 		player.insert({name = "iron-plate", count = 64})
 		player.insert({name = "grenade", count = 3})
 		player.insert({name = "raw-fish", count = 5})
@@ -503,9 +497,9 @@ local function generate_spawn_area(position_left_top)
 			local pos = {x = position_left_top.x + x, y = position_left_top.y + y}
 			if pos.x > -9 and pos.x < 9 and pos.y > -9 and pos.y < 9 then
 				tile_to_insert = get_noise_tile(pos)				
-				if math_random(1, 4) == 1 then
+				--if math_random(1, 4) == 1 then
 					tile_to_insert = "stone-path"
-				end				
+				--end				
 				if pos.x <= -7 or pos.x >= 7 or pos.y <= -7 or pos.y >= 7 then
 					if math_random(1, 3) ~= 1 then
 						table.insert(entities, {name = "stone-wall", position = {x = pos.x, y = pos.y}, force = "player"})
@@ -534,14 +528,14 @@ local function on_chunk_generated(event)
 	
 	local position_left_top = event.area.left_top
 	generate_spawn_area(position_left_top)
-		
+	
 	local tiles = {}	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local tile_to_insert = "out-of-map"
 			local pos = {x = position_left_top.x + x, y = position_left_top.y + y}
 			local tile_name = surface.get_tile(pos).name
-			if tile_name == "deepwater" or tile_name == "water" then
+			if tile_name ~= "stone-path" then
 				insert(tiles, {name = tile_to_insert, position = pos})
 			end
 		end

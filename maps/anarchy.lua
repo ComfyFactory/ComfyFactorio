@@ -22,7 +22,6 @@ local function on_player_joined_game(event)
 	end			
 	
 	if player.online_time == 0 then		
-		player.insert{name = 'iron-axe', count = 1}
 		player.insert{name = 'iron-plate', count = 32}		
 	end	
 end

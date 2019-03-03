@@ -40,10 +40,7 @@ local function on_player_joined_game(event)
 		if player.online_time < 5 then
 			player.teleport({0,0}, "spaghettorio")
 		end
-	end	
-	if player.online_time < 10 then				
-		player.insert {name = 'iron-axe', count = 1}
-	end
+	end		
 	disable_recipes()
 end
 

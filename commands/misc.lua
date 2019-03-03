@@ -38,3 +38,46 @@ function spaghetti()
 	game.forces["player"].technologies["worker-robots-speed-5"].enabled = false
 	game.forces["player"].technologies["worker-robots-speed-6"].enabled = false
 end
+
+function dump_layout()
+	local surface = game.surfaces["labyrinth"]
+	game.write_file("layout.lua", "" , false)
+	
+	local area = {
+			left_top = {x = 0, y = 0},
+			right_bottom = {x = 32, y = 32}
+			}
+			
+	local entities = surface.find_entities_filtered{area = area}
+	local tiles = surface.find_tiles_filtered{area = area}
+	
+	for _, e in pairs(entities) do
+		local str = "{position = {x = " ..  e.position.x
+		str = str .. ", y = "
+		str = str .. e.position.y
+		str = str .. '}, name = "'
+		str = str .. e.name
+		str = str .. '", direction = '
+		str = str .. tostring(e.direction)
+		str = str .. ', force = "'
+		str = str .. e.force.name
+		str = str .. '"},'
+		if e.name ~= "player" then
+			game.write_file("layout.lua", str .. '\n' , true)
+		end
+	end
+	
+	game.write_file("layout.lua",'\n' , true)
+	game.write_file("layout.lua",'\n' , true)
+	game.write_file("layout.lua",'Tiles: \n' , true)
+	
+	for _, t in pairs(tiles) do
+		local str = "{position = {x = " ..  t.position.x
+		str = str .. ", y = "
+		str = str .. t.position.y
+		str = str .. '}, name = "'
+		str = str .. t.name
+		str = str .. '"},'
+		game.write_file("layout.lua", str .. '\n' , true)
+	end		
+end

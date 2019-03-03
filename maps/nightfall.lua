@@ -46,8 +46,7 @@ end
 
 local function spawn_shipwreck(surface, position)
 	local raffle = {}
-	local loot = {			
-		{{name = "steel-axe", count = math_random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.2},
+	local loot = {					
 		{{name = "submachine-gun", count = math_random(1,3)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
 		{{name = "slowdown-capsule", count = math_random(16,32)}, weight = 1, evolution_min = 0.0, evolution_max = 1},
 		{{name = "poison-capsule", count = math_random(16,32)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
@@ -565,11 +564,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
 			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["enemy-base"] = {frequency = "very-high", size = "big", richness = "very-good"},
-			--["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
-			--["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
-			--["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
-			--["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+			["enemy-base"] = {frequency = "very-high", size = "big", richness = "very-good"}
 		}		
 		game.create_surface("nightfall", map_gen_settings)							
 		local surface = game.surfaces["nightfall"]
@@ -596,8 +591,7 @@ local function on_player_joined_game(event)
 	end
 
 	if player.online_time < 1 then
-		player.insert({name = "pistol", count = 1})
-		player.insert({name = "iron-axe", count = 1})
+		player.insert({name = "pistol", count = 1})		
 		player.insert({name = "raw-fish", count = 3})
 		player.insert({name = "firearm-magazine", count = 32})
 		player.insert({name = "iron-plate", count = 64})

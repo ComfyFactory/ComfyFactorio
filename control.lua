@@ -34,7 +34,7 @@ require "on_tick_schedule"
 -----------------------------
 
 ---- enable maps here ----
-require "maps.biter_battles"
+--require "maps.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"
 --require "maps.spooky_forest"
@@ -48,7 +48,6 @@ require "maps.biter_battles"
 --require "maps.deep_jungle"
 --require "maps.crossing"
 --require "maps.anarchy"
---require "maps.railworld"
 --require "maps.spaghettorio"
 --require "maps.lost_desert"
 --require "maps.empty_map"

@@ -206,10 +206,6 @@ local function on_player_main_inventory_changed(event)
 	check_inventory_for_key_item(event.player_index)
 end
 
-local function on_player_quickbar_inventory_changed(event)
-	check_inventory_for_key_item(event.player_index)
-end
-
 local function on_player_dropped_item(event)
 	check_inventory_for_key_item(event.player_index)
 end
@@ -245,5 +241,4 @@ end
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 event.add(defines.events.on_player_main_inventory_changed, on_player_main_inventory_changed)
-event.add(defines.events.on_player_quickbar_inventory_changed, on_player_quickbar_inventory_changed)
 event.add(defines.events.on_gui_click, on_gui_click)

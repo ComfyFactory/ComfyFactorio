@@ -80,14 +80,14 @@ local function secret_shop(pos, surface)
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'productivity-module'}},
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'speed-module'}},
 	
-	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'raw-wood', count = 50}},
+	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'wood', count = 50}},
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'stone', count = 50}},
 	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'coal', count = 50}},
 	{price = {{"coin", math_random(8,16)}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
 	
-	{price = {{'raw-wood', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
+	{price = {{'wood', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
 	{price = {{'iron-ore', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
 	{price = {{'copper-ore', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
 	{price = {{'stone', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
@@ -119,11 +119,7 @@ local function on_player_joined_game(event)
 			["uranium-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
-			["grass"] = {frequency = "none", size = "none", richness = "none"},
-			["sand"] = {frequency = "none", size = "none", richness = "none"},
-			["desert"] = {frequency = "none", size = "none", richness = "none"},
-			["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 		}		
 		game.create_surface("stoneblock", map_gen_settings)							
 		local surface = game.surfaces["stoneblock"]
@@ -152,10 +148,9 @@ local function on_player_joined_game(event)
 	end
 	
 	if player.online_time < 1 then
-		player.insert({name = "pistol", count = 1})
-		player.insert({name = "iron-axe", count = 1})
+		player.insert({name = "pistol", count = 1})		
 		player.insert({name = "raw-fish", count = 3})
-		player.insert({name = "raw-wood", count = 16})
+		player.insert({name = "wood", count = 16})
 		player.insert({name = "firearm-magazine", count = 16})
 		player.insert({name = "iron-plate", count = 32})
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end

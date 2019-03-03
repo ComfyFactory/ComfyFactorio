@@ -415,6 +415,18 @@ local function grow_cell(chunk_position, surface)
 		end		
 		surface.set_tiles(tiles, true)
 		
+		local decorative_names = {}
+		for k,v in pairs(game.decorative_prototypes) do
+			if v.autoplace_specification then
+				decorative_names[#decorative_names+1] = k
+			end
+		end		
+		for _, surface in pairs(game.surfaces) do	
+			for chunk in surface.get_chunks() do		
+				surface.regenerate_decorative(decorative_names, {chunk_position})
+			end
+		end
+		
 		if unique_room == "railway_roundabout" then
 			local e = surface.create_entity {name="big-ship-wreck-1", position={left_top_x + 16, left_top_y + 22}, force = "player"}
 			e.insert({name = 'locomotive', count = 1})
@@ -502,8 +514,7 @@ end
 local function treasure_chest(position, surface)
 	local math_random = math.random
 	local chest_raffle = {}
-	local chest_loot = {			
-		{{name = "steel-axe", count = math_random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.2},
+	local chest_loot = {					
 		{{name = "submachine-gun", count = math_random(1,3)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
 		{{name = "slowdown-capsule", count = math_random(16,32)}, weight = 1, evolution_min = 0.0, evolution_max = 1},
 		{{name = "poison-capsule", count = math_random(16,32)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
@@ -811,22 +822,12 @@ local function on_chunk_generated(event)
 	local chunk_position_y = event.area.left_top.y / 32
 	
 		
-	if not global.spawn_ores_generated then
-		if event.area.left_top.x > 96 then
-			map_functions.draw_entity_circle({x = 16, y = 16}, "coal", surface, 7, false, 750)
-			map_functions.draw_entity_circle({x = 16, y = 16}, "iron-ore", surface, 7, false, 750)
-			map_functions.draw_entity_circle({x = 16, y = 16}, "copper-ore", surface, 7, false, 750)
-			--map_functions.draw_entity_circle({x = 16, y = 16}, "tree-05", surface, 7, true)
-			--map_functions.draw_smoothed_out_ore_circle({x = 16, y = 8}, "coal", surface, 7, 750)
-			--map_functions.draw_smoothed_out_ore_circle({x = 16, y = 8}, "coal", surface, 7, 750)
-			--map_functions.draw_smoothed_out_ore_circle({x = 8, y = 24}, "iron-ore", surface, 7, 750)
-			--map_functions.draw_smoothed_out_ore_circle({x = 24, y = 24}, "copper-ore", surface, 7, 750)
-			--surface.create_entity({name = "tree-05", position = {16, 24}})
-			--surface.create_entity({name = "tree-05", position = {24, 12}})
-			--surface.create_entity({name = "tree-05", position = {8, 12}})
-			global.spawn_ores_generated = true
-		end
-	end
+	--if not global.spawn_ores_generated then
+	--	if event.area.left_top.x > 96 then
+	--		map_functions.draw_rainbow_patch({x = 16, y = 16}, surface, 9, 1000)				
+	--		global.spawn_ores_generated = true
+	--	end
+	--end
 	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
@@ -899,11 +900,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
-			["grass"] = {frequency = "none", size = "none", richness = "none"},
-			["sand"] = {frequency = "none", size = "none", richness = "none"},
-			["desert"] = {frequency = "none", size = "none", richness = "none"},
-			["dirt"] = {frequency = "none", size = "none", richness = "none"}
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}		
 		}
 		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 		game.create_surface("labyrinth", map_gen_settings)		
@@ -940,8 +937,7 @@ local function on_player_joined_game(event)
 		end
 	end	
 	if player.online_time < 10 then				
-		player.insert {name = 'raw-fish', count = 3}
-		player.insert {name = 'iron-axe', count = 1}		
+		player.insert {name = 'raw-fish', count = 3}				
 		player.insert {name = 'pistol', count = 1}
 		player.insert {name = 'firearm-magazine', count = 32}
 	end
@@ -1094,49 +1090,6 @@ local function on_tick(event)
 			game.print(attack_messages[math.random(1, #attack_messages)], {r=0.75, g=0, b=0})
 		end
 	end
-end
-
-function dump_layout()
-	local surface = game.surfaces["labyrinth"]
-	game.write_file("layout.lua", "" , false)
-	
-	local area = {
-			left_top = {x = 0, y = 0},
-			right_bottom = {x = 32, y = 32}
-			}
-			
-	local entities = surface.find_entities_filtered{area = area}
-	local tiles = surface.find_tiles_filtered{area = area}
-	
-	for _, e in pairs(entities) do
-		local str = "{position = {x = " ..  e.position.x
-		str = str .. ", y = "
-		str = str .. e.position.y
-		str = str .. '}, name = "'
-		str = str .. e.name
-		str = str .. '", direction = '
-		str = str .. tostring(e.direction)
-		str = str .. ', force = "'
-		str = str .. e.force.name
-		str = str .. '"},'
-		if e.name ~= "player" then
-			game.write_file("layout.lua", str .. '\n' , true)
-		end
-	end
-	
-	game.write_file("layout.lua",'\n' , true)
-	game.write_file("layout.lua",'\n' , true)
-	game.write_file("layout.lua",'Tiles: \n' , true)
-	
-	for _, t in pairs(tiles) do
-		local str = "{position = {x = " ..  t.position.x
-		str = str .. ", y = "
-		str = str .. t.position.y
-		str = str .. '}, name = "'
-		str = str .. t.name
-		str = str .. '"},'
-		game.write_file("layout.lua", str .. '\n' , true)
-	end		
 end
 
 event.add(defines.events.on_tick, on_tick)
