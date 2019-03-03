@@ -1295,7 +1295,8 @@ local function on_chunk_generated(event)
 		for _, e in pairs(entities) do
 			if e.type == "simple-entity" or e.type == "resource" or e.type == "tree" then e.destroy()	end
 		end			
-		surface.destroy_decoratives({{-10,-10},{10,10}})
+		surface.destroy_decoratives({area = {{-10,-10},{10,10}}})
+		
 		game.print("Spawn generation done!", { r=0.22, g=0.99, b=0.99})
 			
 		global.terrain_init_done = true

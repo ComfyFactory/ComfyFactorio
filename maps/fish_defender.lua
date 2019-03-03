@@ -9,7 +9,7 @@ require "maps.modules.dynamic_landfill"
 require "maps.modules.teleporting_worms"
 require "maps.modules.custom_death_messages"
 require "maps.modules.splice_double"
-require "maps.modules.spitters_spit_biters"
+--require "maps.modules.spitters_spit_biters"
 --require "maps.modules.biters_double_hp"
 
 local event = require 'utils.event'
@@ -18,7 +18,7 @@ local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
 local wave_interval = 1800		--interval between waves in ticks
-local biter_count_limit = 64	    --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
+local biter_count_limit = 256	    --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
 	[100] = {{name = "behemoth-biter", count = 1}},
