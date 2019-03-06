@@ -8,10 +8,10 @@ local mining_chance_weights = {
 	{name = "copper-plate", chance = 75},
 	{name = "copper-cable", chance = 50},	
 	{name = "electronic-circuit", chance = 30},
-	{name = "steel-plate", chance = 15},
+	{name = "steel-plate", chance = 20},
+	{name = "solid-fuel", chance = 15},
 	{name = "pipe", chance = 10},
-	{name = "iron-stick", chance = 10},
-	{name = "solid-fuel", chance = 10},
+	{name = "iron-stick", chance = 10},	
 	{name = "empty-barrel", chance = 10},	
 	{name = "battery", chance = 1},
 	{name = "land-mine", chance = 1}			

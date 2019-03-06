@@ -266,7 +266,7 @@ local function on_chunk_generated(event)
 					if math_random(1,3) ~= 1 then
 						surface.create_entity({name = "mineable-wreckage", position = pos})
 					else
-						if math_random(1,1024) == 1 then
+						if math_random(1,512) == 1 then
 							create_shipwreck(surface, pos)
 						else
 							if math_random(1,65536) == 1 then
@@ -286,6 +286,15 @@ local function on_chunk_generated(event)
 	for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
 		process_entity(e)		
 	end
+	
+	if global.spawn_generated then return end
+	if left_top.x < 96 then return end	 
+	map_functions.draw_rainbow_patch({x = 0, y = 0}, surface, 16, 2000)	
+	for _, wreck in pairs (surface.find_entities_filtered({area = {{-10, -10},{10, 10}}, name = "mineable-wreckage"})) do
+		local distance_to_center = math.sqrt(wreck.position.x^2 + wreck.position.y^2)
+		if distance_to_center < 8 then wreck.destroy() end
+	end
+	global.spawn_generated = true		
 end
 
 local function on_chunk_charted(event)
