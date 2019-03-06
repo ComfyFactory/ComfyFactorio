@@ -186,6 +186,55 @@ local function create_shipwreck(surface, position)
 	end	
 end
 
+local function secret_shop(pos, surface)
+	local secret_market_items = {
+	{price = {{"coin", math_random(8,16)}}, offer = {type = 'give-item', item = 'grenade'}},
+    {price = {{"coin", math_random(25,50)}}, offer = {type = 'give-item', item = 'cluster-grenade'}}, 
+	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'defender-capsule'}}, 
+	{price = {{"coin", math_random(25,50)}}, offer = {type = 'give-item', item = 'distractor-capsule'}}, 
+	{price = {{"coin", math_random(35,70)}}, offer = {type = 'give-item', item = 'destroyer-capsule'}}, 
+	--{price = {{"coin", math_random(60,120)}}, offer = {type = 'give-item', item = 'cliff-explosives'}},
+    {price = {{"coin", math_random(250,350)}}, offer = {type = 'give-item', item = 'belt-immunity-equipment'}},
+    {price = {{"coin", math_random(30,60)}}, offer = {type = 'give-item', item = 'construction-robot'}},  
+	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'loader'}},
+	{price = {{"coin", math_random(200,300)}}, offer = {type = 'give-item', item = 'fast-loader'}},
+	{price = {{"coin", math_random(300,500)}}, offer = {type = 'give-item', item = 'express-loader'}},
+	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'locomotive'}},
+	{price = {{"coin", math_random(75,150)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},	
+	{price = {{"coin", math_random(2,3)}}, offer = {type = 'give-item', item = 'rail'}},
+	--{price = {{"coin", math_random(20,40)}}, offer = {type = 'give-item', item = 'train-stop'}},	
+	{price = {{"coin", math_random(4,12)}}, offer = {type = 'give-item', item = 'small-lamp'}},			
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'car'}},
+	{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = 'electric-furnace'}},
+	--{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = "assembling-machine-3"}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'effectivity-module'}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'productivity-module'}},
+	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'speed-module'}},
+	
+	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'wood', count = 50}},
+	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
+	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
+	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'stone', count = 50}},
+	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'coal', count = 50}},
+	{price = {{"coin", math_random(8,16)}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
+	
+	{price = {{'wood', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
+	{price = {{'iron-ore', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
+	{price = {{'copper-ore', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
+	{price = {{'stone', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
+	{price = {{'coal', math_random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
+	{price = {{'uranium-ore', math_random(8,10)}}, offer = {type = 'give-item', item = "coin"}}
+	}
+	secret_market_items = shuffle(secret_market_items)
+										
+	local market = surface.create_entity {name = "market", position = pos}
+	market.destructible = false			
+	
+	for i = 1, math.random(6, 8), 1 do
+		market.add_market_item(secret_market_items[i])
+	end
+end
+
 local function process_entity(e)	
 	if entity_replacements[e.name] then
 		e.surface.create_entity({name = entity_replacements[e.name], position = e.position})
@@ -238,26 +287,50 @@ local function on_chunk_generated(event)
 			
 		end
 	end
-	surface.set_tiles(tiles, true)
-	
-	--for _, entity in pairs(entities) do
-		--if surface.can_place_entity(entity) then
-			--surface.create_entity(entity)
-		--end
-	--end
-	
-	--if not global.spawn_generated and left_top.x <= -64 then
-		--map_functions.draw_noise_tile_circle({x = 0, y = 0}, "concrete", surface, 5)
-		--map_functions.draw_smoothed_out_ore_circle({x = -32, y = -32}, "copper-ore", surface, 15, 2500)
-		--map_functions.draw_smoothed_out_ore_circle({x = -32, y = 32}, "iron-ore", surface, 15, 2500)
-		--map_functions.draw_smoothed_out_ore_circle({x = 32, y = 32}, "coal", surface, 15, 2500)
-		--map_functions.draw_smoothed_out_ore_circle({x = 32, y = -32}, "stone", surface, 15, 2500)							
-		--map_functions.draw_oil_circle({x = 0, y = 0}, "crude-oil", surface, 5, 200000)
-		--global.spawn_generated = true
-	--end
+	surface.set_tiles(tiles, true)		
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
+local function on_chunk_charted(event)
+	if not global.chunks_charted then global.chunks_charted = {} end
+	local surface = game.surfaces[event.surface_index]
+	local position = event.position
+	if global.chunks_charted[tostring(position.x) .. tostring(position.y)] then return end
+	global.chunks_charted[tostring(position.x) .. tostring(position.y)] = true
+	
+	local decorative_names = {}
+	for k,v in pairs(game.decorative_prototypes) do
+		if v.autoplace_specification then
+			decorative_names[#decorative_names+1] = k
+		end
+	end
+	surface.regenerate_decorative(decorative_names, {position})	
+	
+	if math_random(1, 10) ~= 1 then return end
+	local pos = {x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}
+	local noise = get_noise(1, pos)	
+	if noise > 0.4 or noise < -0.4 then return end
+	local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
+	local size = 5 + math.floor(distance_to_center * 0.0075)
+	if size > 20 then size = 20 end
+	local amount = 100 + distance_to_center
+	map_functions.draw_rainbow_patch(pos, surface, size, amount)
+end
+
+local disabled_for_deconstruction = {
+		["fish"] = true,
+		["rock-huge"] = true,
+		["rock-big"] = true,
+		["sand-rock-big"] = true,
+		["mineable-wreckage"] = true
+	}
+	
+local function on_marked_for_deconstruction(event)	
+	if disabled_for_deconstruction[event.entity.name] then
+		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+	end
+end
+
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_chunk_charted, on_chunk_charted)
