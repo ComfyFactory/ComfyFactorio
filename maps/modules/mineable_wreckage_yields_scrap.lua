@@ -12,7 +12,14 @@ local mining_chance_weights = {
 	{name = "solid-fuel", chance = 15},
 	{name = "pipe", chance = 10},
 	{name = "iron-stick", chance = 10},	
-	{name = "empty-barrel", chance = 10},	
+	{name = "empty-barrel", chance = 3},
+	{name = "crude-oil-barrel", chance = 3},
+	{name = "lubricant-barrel", chance = 3},
+	{name = "petroleum-gas-barrel", chance = 3},
+	{name = "sulfuric-acid-barrel", chance = 3},
+	{name = "heavy-oil-barrel", chance = 3},
+	{name = "light-oil-barrel", chance = 3},
+	{name = "water-barrel", chance = 3},
 	{name = "battery", chance = 1},
 	{name = "land-mine", chance = 1}			
 }
@@ -27,9 +34,16 @@ local scrap_yield_amounts = {
 	["steel-plate"] = 4,
 	["pipe"] = 8,
 	["solid-fuel"] = 4,
-	["empty-barrel"] = 2,
+	["empty-barrel"] = 3,
+	["crude-oil-barrel"] = 3,
+	["lubricant-barrel"] = 3,
+	["petroleum-gas-barrel"] = 3,
+	["sulfuric-acid-barrel"] = 3,
+	["heavy-oil-barrel"] = 3,
+	["light-oil-barrel"] = 3,
+	["water-barrel"] = 3,
 	["battery"] = 2,
-	["land-mine"] = 1,
+	["land-mine"] = 1
 }
 		
 local scrap_raffle = {}				

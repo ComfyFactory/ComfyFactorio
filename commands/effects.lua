@@ -7,7 +7,9 @@ local function spin(player)
 	player.character.direction = d
 end
 
-local function on_player_joined_game(event)
+local function on_player_joined_game(event)	
+	if global.effects_commands_added then return end
+	
 	commands.add_command("spin", "spins you", 
 		function(args)
 			local player = game.players[args.player_index]
@@ -38,6 +40,8 @@ local function on_player_joined_game(event)
 			end						
 		end
 	)	
+	
+	global.effects_commands_added = true
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

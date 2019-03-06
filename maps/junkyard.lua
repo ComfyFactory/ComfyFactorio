@@ -13,42 +13,13 @@ local table_insert = table.insert
 local math_random = math.random
 local map_functions = require "maps.tools.map_functions"
 
-local function shuffle(tbl)
-	local size = #tbl
-		for i = size, 1, -1 do
-			local rand = math_random(size)
-			tbl[i], tbl[rand] = tbl[rand], tbl[i]
-		end
-	return tbl
-end
-
-local function get_noise(name, pos)	
-	local seed = game.surfaces[1].map_gen_settings.seed
-	local noise_seed_add = 25000
-	seed = seed + noise_seed_add
-	if name == 1 then
-		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed)
-		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
-		seed = seed + noise_seed_add
-		noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
-		seed = seed + noise_seed_add
-		noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.3 + noise[3] * 0.2 + noise[4] * 0.1		
-		return noise
-	end	
-end
-
-local function on_player_joined_game(event)	
-	local player = game.players[event.player_index]
-	
-	if not global.map_init_done then
-		game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2		
-		game.surfaces["nauvis"].freeze_daytime = true
-		global.map_init_done = true						
-	end	
-end
+local disabled_for_deconstruction = {
+		["fish"] = true,
+		["rock-huge"] = true,
+		["rock-big"] = true,
+		["sand-rock-big"] = true,
+		["mineable-wreckage"] = true
+	}
 
 local tile_replacements = {
 	["grass-1"] = "dirt-7",
@@ -83,7 +54,35 @@ local entity_replacements = {
 	["stone"] = "mineable-wreckage"
 }
 
-local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
+local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}	
+	
+local function shuffle(tbl)
+	local size = #tbl
+		for i = size, 1, -1 do
+			local rand = math_random(size)
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	return tbl
+end
+
+local function get_noise(name, pos)	
+	local seed = game.surfaces[1].map_gen_settings.seed
+	local noise_seed_add = 25000
+	seed = seed + noise_seed_add
+	if name == 1 then
+		local noise = {}
+		noise[1] = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed)
+		seed = seed + noise_seed_add
+		noise[2] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
+		seed = seed + noise_seed_add
+		noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
+		seed = seed + noise_seed_add
+		noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+		local noise = noise[1] + noise[2] * 0.3 + noise[3] * 0.2 + noise[4] * 0.1		
+		return noise
+	end	
+end
+
 local function create_shipwreck(surface, position)
 	local raffle = {}
 	local loot = {						
@@ -92,42 +91,41 @@ local function create_shipwreck(surface, position)
 		{{name = "copper-cable", count = math_random(100,200)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.1, evolution_max = 0.5},
 		{{name = "electric-engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.4, evolution_max = 0.8},
-		{{name = "battery", count = math_random(100,200)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
-		{{name = "advanced-circuit", count = math_random(100,200)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
+		{{name = "battery", count = math_random(40,80)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "advanced-circuit", count = math_random(40,80)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
 		{{name = "electronic-circuit", count = math_random(100,200)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
-		{{name = "processing-unit", count = math_random(100,200)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
+		{{name = "processing-unit", count = math_random(30,60)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
 		{{name = "explosives", count = math_random(25,50)}, weight = 1, evolution_min = 0.2, evolution_max = 0.6},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evolution_min = 0.3, evolution_max = 0.5},
-		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},
-		{{name = "computer", count = 1}, weight = 1, evolution_min = 0.2, evolution_max = 1},
+		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},		
 		{{name = "steel-plate", count = math_random(50,100)}, weight = 2, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "nuclear-fuel", count = 1}, weight = 2, evolution_min = 0.7, evolution_max = 1},
 				
-		{{name = "burner-inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
-		{{name = "inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
-		{{name = "long-handed-inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},		
-		{{name = "fast-inserter", count = math_random(8,16)}, weight = 3, evolution_min = 0.1, evolution_max = 1},
-		{{name = "filter-inserter", count = math_random(8,16)}, weight = 1, evolution_min = 0.2, evolution_max = 1},		
-		{{name = "stack-filter-inserter", count = math_random(4,8)}, weight = 1, evolution_min = 0.4, evolution_max = 1},
-		{{name = "stack-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},				
-		{{name = "small-electric-pole", count = math_random(16,32)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
-		{{name = "medium-electric-pole", count = math_random(8,16)}, weight = 3, evolution_min = 0.2, evolution_max = 1},		
-		{{name = "wooden-chest", count = math_random(25,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "burner-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
+		{{name = "inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
+		{{name = "long-handed-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},		
+		{{name = "fast-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.1, evolution_max = 1},
+		{{name = "filter-inserter", count = math_random(4,8)}, weight = 1, evolution_min = 0.2, evolution_max = 1},		
+		{{name = "stack-filter-inserter", count = math_random(2,4)}, weight = 1, evolution_min = 0.4, evolution_max = 1},
+		{{name = "stack-inserter", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},				
+		{{name = "small-electric-pole", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "medium-electric-pole", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 1},		
+		{{name = "wooden-chest", count = math_random(16,24)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "iron-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.1, evolution_max = 0.4},
-		{{name = "steel-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
+		{{name = "steel-chest", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
 		{{name = "small-lamp", count = math_random(8,16)}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "rail", count = math_random(50,75)}, weight = 3, evolution_min = 0.1, evolution_max = 0.6},
 		{{name = "assembling-machine-1", count = math_random(1,2)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "assembling-machine-2", count = math_random(1,2)}, weight = 3, evolution_min = 0.2, evolution_max = 0.8},
 		{{name = "offshore-pump", count = 1}, weight = 2, evolution_min = 0.0, evolution_max = 0.1},
-		{{name = "beacon", count = 1}, weight = 3, evolution_min = 0.7, evolution_max = 1},
-		{{name = "boiler", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
-		{{name = "steam-engine", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.5},
-		{{name = "steam-turbine", count = math_random(1,2)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		--{{name = "beacon", count = 1}, weight = 3, evolution_min = 0.7, evolution_max = 1},
+		--{{name = "boiler", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		--{{name = "steam-engine", count = math_random(1,2)}, weight = 3, evolution_min = 0.0, evolution_max = 0.5},
+		--{{name = "steam-turbine", count = math_random(1,2)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
 		--{{name = "nuclear-reactor", count = 1}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-		{{name = "centrifuge", count = math_random(1,2)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		--{{name = "centrifuge", count = math_random(1,2)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
 		{{name = "heat-pipe", count = math_random(8,12)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
-		{{name = "heat-exchanger", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		--{{name = "heat-exchanger", count = math_random(2,4)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
 		{{name = "arithmetic-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
 		{{name = "constant-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
 		{{name = "decider-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
@@ -135,7 +133,7 @@ local function create_shipwreck(surface, position)
 		{{name = "programmable-speaker", count = math_random(2,4)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
 		{{name = "green-wire", count = math_random(50,100)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
 		{{name = "red-wire", count = math_random(50,100)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
-		{{name = "chemical-plant", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
+		--{{name = "chemical-plant", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
 		{{name = "burner-mining-drill", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "electric-mining-drill", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.6},		
 		{{name = "express-transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
@@ -149,21 +147,21 @@ local function create_shipwreck(surface, position)
 		{{name = "splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0, evolution_max = 0.3},		
 		{{name = "pipe", count = math_random(40,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
 		{{name = "pipe-to-ground", count = math_random(8,16)}, weight = 1, evolution_min = 0.2, evolution_max = 0.5},
-		{{name = "pumpjack", count = math_random(1,2)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
+		--{{name = "pumpjack", count = math_random(1,2)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
 		{{name = "pump", count = math_random(1,4)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},
-		{{name = "steel-furnace", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
-		{{name = "stone-furnace", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
-		{{name = "radar", count = math_random(1,2)}, weight = 1, evolution_min = 0.1, evolution_max = 0.3},
+		--{{name = "steel-furnace", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		--{{name = "stone-furnace", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
+		--{{name = "radar", count = math_random(1,2)}, weight = 1, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "rail-signal", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},
 		{{name = "rail-chain-signal", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},		
 		{{name = "stone-wall", count = math_random(25,75)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
 		{{name = "gate", count = math_random(4,8)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
-		{{name = "storage-tank", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
+		--{{name = "storage-tank", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 0.6},
 		{{name = "train-stop", count = math_random(1,2)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
 		{{name = "express-loader", count = math_random(1,2)}, weight = 1, evolution_min = 0.5, evolution_max = 1},
 		{{name = "fast-loader", count = math_random(1,2)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
-		{{name = "loader", count = math_random(1,2)}, weight = 1, evolution_min = 0.0, evolution_max = 0.5},
-		{{name = "lab", count = math_random(2,4)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1}	
+		{{name = "loader", count = math_random(1,2)}, weight = 1, evolution_min = 0.0, evolution_max = 0.5}
+		--{{name = "lab", count = math_random(2,4)}, weight = 2, evolution_min = 0.0, evolution_max = 0.1}	
 	}
 
 	local distance_to_center = math.sqrt(position.x^2 + position.y^2)
@@ -322,19 +320,21 @@ local function on_chunk_charted(event)
 	local amount = 100 + distance_to_center
 	map_functions.draw_rainbow_patch(pos, surface, size, amount)
 end
-
-local disabled_for_deconstruction = {
-		["fish"] = true,
-		["rock-huge"] = true,
-		["rock-big"] = true,
-		["sand-rock-big"] = true,
-		["mineable-wreckage"] = true
-	}
 	
 local function on_marked_for_deconstruction(event)	
 	if disabled_for_deconstruction[event.entity.name] then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 	end
+end
+
+local function on_player_joined_game(event)	
+	--local player = game.players[event.player_index]
+	
+	if not global.map_init_done then
+		game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2		
+		--game.surfaces["nauvis"].freeze_daytime = true
+		global.map_init_done = true						
+	end	
 end
 
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)

@@ -11,7 +11,7 @@ require "group"
 require "player_list"
 require "poll"
 require "score"
-require "on_tick_schedule"
+--require "on_tick_schedule"
 
 ---- enable modules here ----
 --require "maps.tools.cheat_mode"
