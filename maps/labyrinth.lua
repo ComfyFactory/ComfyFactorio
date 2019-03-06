@@ -1,7 +1,9 @@
 --labyrinth-- mewmew made this --
 require "maps.labyrinth_map_intro"
 require "maps.tools.teleporters"
-require "maps.tools.map_pregen"
+require "maps.modules.satellite_score"
+require "maps.modules.dynamic_landfill"
+
 local map_functions = require "maps.tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2

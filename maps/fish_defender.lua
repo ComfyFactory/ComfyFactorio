@@ -1223,7 +1223,7 @@ local function on_chunk_generated(event)
 		end
 	end
 	
-	if left_top.x < -1024 then
+	if left_top.x < -2048 then
 		spawn_obstacles(left_top, surface)		
 	end
 	
