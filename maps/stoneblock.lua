@@ -13,7 +13,7 @@ require "maps.modules.spawners_contain_biters"
 require "maps.modules.splice_double"
 require "maps.modules.spitters_spit_biters"
 require "maps.modules.biters_double_hp"
-require "maps.modules.biters_double_damage"
+require "maps.modules.biters_avoid_damage"
 require "maps.modules.flashlight_toggle_button"
 
 local event = require 'utils.event'

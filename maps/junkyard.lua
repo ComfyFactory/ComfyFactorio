@@ -2,10 +2,9 @@
 
 require "maps.modules.dynamic_landfill"
 require "maps.modules.satellite_score"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.splice_double"
-require "maps.modules.biter_player_count_difficulty"
 require "maps.modules.mineable_wreckage_yields_scrap"
+require "maps.modules.spawners_contain_biters"
+require "maps.modules.biters_yield_coins"
 
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
@@ -13,6 +12,15 @@ local event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
 local map_functions = require "maps.tools.map_functions"
+
+local function shuffle(tbl)
+	local size = #tbl
+		for i = size, 1, -1 do
+			local rand = math_random(size)
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	return tbl
+end
 
 local function get_noise(name, pos)	
 	local seed = game.surfaces[1].map_gen_settings.seed
@@ -27,8 +35,7 @@ local function get_noise(name, pos)
 		noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
 		seed = seed + noise_seed_add
 		noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.3 + noise[3] * 0.2 + noise[4] * 0.1
-		--noise = noise * 0.5
+		local noise = noise[1] + noise[2] * 0.3 + noise[3] * 0.2 + noise[4] * 0.1		
 		return noise
 	end	
 end
@@ -40,11 +47,6 @@ local function on_player_joined_game(event)
 		game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2		
 		game.surfaces["nauvis"].freeze_daytime = true
 		global.map_init_done = true						
-	end	
-	
-	if player.online_time == 0 then				
-		--player.insert{name = 'iron-plate', count = 32}
-		--player.insert{name = 'iron-gear-wheel', count = 16}
 	end	
 end
 
@@ -61,19 +63,19 @@ local tile_replacements = {
 }
 
 local entity_replacements = {
-	["tree-01"] = "dead-dry-hairy-tree",
-	["tree-02"] = "tree-06-brown",
+	["tree-01"] = "dead-grey-trunk",
+	["tree-02"] = "tree-08-brown",
 	["tree-03"] = "dead-grey-trunk",
 	["tree-04"] = "dry-hairy-tree",	
-	["tree-05"] = "dry-tree",	
+	["tree-05"] = "dead-grey-trunk",	
 	["tree-06"] = "tree-06-brown",	
-	["tree-07"] = "dry-tree",	
+	["tree-07"] = "dry-hairy-tree",	
 	["tree-08"] = "tree-08-brown",	
 	["tree-09"] = "tree-06-brown",
 	["tree-02-red"] = "dry-tree",	
 	--["tree-06-brown"] = "dirt",	
 	--["tree-08-brown"] = "dirt",	
-	["tree-09-brown"] = "tree-06-brown",	
+	["tree-09-brown"] = "tree-08-brown",	
 	["tree-09-red"] = "tree-06-brown",
 	["iron-ore"] = "mineable-wreckage",
 	["copper-ore"] = "mineable-wreckage",
@@ -187,14 +189,7 @@ local function create_shipwreck(surface, position)
 end
 
 local function secret_shop(pos, surface)
-	local secret_market_items = {
-	{price = {{"coin", math_random(8,16)}}, offer = {type = 'give-item', item = 'grenade'}},
-    {price = {{"coin", math_random(25,50)}}, offer = {type = 'give-item', item = 'cluster-grenade'}}, 
-	{price = {{"coin", math_random(5,10)}}, offer = {type = 'give-item', item = 'defender-capsule'}}, 
-	{price = {{"coin", math_random(25,50)}}, offer = {type = 'give-item', item = 'distractor-capsule'}}, 
-	{price = {{"coin", math_random(35,70)}}, offer = {type = 'give-item', item = 'destroyer-capsule'}}, 
-	--{price = {{"coin", math_random(60,120)}}, offer = {type = 'give-item', item = 'cliff-explosives'}},
-    {price = {{"coin", math_random(250,350)}}, offer = {type = 'give-item', item = 'belt-immunity-equipment'}},
+	local secret_market_items = {    
     {price = {{"coin", math_random(30,60)}}, offer = {type = 'give-item', item = 'construction-robot'}},  
 	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'loader'}},
 	{price = {{"coin", math_random(200,300)}}, offer = {type = 'give-item', item = 'fast-loader'}},
@@ -202,11 +197,9 @@ local function secret_shop(pos, surface)
 	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'locomotive'}},
 	{price = {{"coin", math_random(75,150)}}, offer = {type = 'give-item', item = 'cargo-wagon'}},	
 	{price = {{"coin", math_random(2,3)}}, offer = {type = 'give-item', item = 'rail'}},
-	--{price = {{"coin", math_random(20,40)}}, offer = {type = 'give-item', item = 'train-stop'}},	
 	{price = {{"coin", math_random(4,12)}}, offer = {type = 'give-item', item = 'small-lamp'}},			
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'car'}},
-	{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = 'electric-furnace'}},
-	--{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = "assembling-machine-3"}},
+	{price = {{"coin", math_random(300,600)}}, offer = {type = 'give-item', item = 'electric-furnace'}},	
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'effectivity-module'}},
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'productivity-module'}},
 	{price = {{"coin", math_random(80,160)}}, offer = {type = 'give-item', item = 'speed-module'}},
@@ -235,15 +228,18 @@ local function secret_shop(pos, surface)
 	end
 end
 
-local function process_entity(e)	
+local function process_entity(e)
+	if not e.valid then return end
 	if entity_replacements[e.name] then
 		e.surface.create_entity({name = entity_replacements[e.name], position = e.position})
 		e.destroy()
 		return
 	end
 	
-	if e.force.name == "enemy" then			
-		e.destroy()
+	if e.type == "unit-spawner" then			
+		for _, wreck in pairs (e.surface.find_entities_filtered({area = {{e.position.x - 4, e.position.y - 4},{e.position.x + 4, e.position.y + 4}}, name = "mineable-wreckage"})) do
+			if wreck.valid then wreck.destroy() end
+		end
 		return
 	end
 end
@@ -252,11 +248,7 @@ local function on_chunk_generated(event)
 	local surface = event.surface
 	local left_top = event.area.left_top
 	local tiles = {}
-	local entities = {}	
-	
-	for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-		process_entity(e)		
-	end
+	local entities = {}		
 	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
@@ -277,17 +269,23 @@ local function on_chunk_generated(event)
 						if math_random(1,1024) == 1 then
 							create_shipwreck(surface, pos)
 						else
-							if math_random(1,50000) == 1 then
+							if math_random(1,65536) == 1 then
 								local e = surface.create_entity({name = "nuclear-reactor", position = pos, force = "enemy"})								
 							end							
 						end
-					end							
+					end
+				else
+					if math_random(1, 65536) == 1 then secret_shop(pos, surface) end						
 				end	
 			end
 			
 		end
 	end
-	surface.set_tiles(tiles, true)		
+	surface.set_tiles(tiles, true)	
+
+	for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
+		process_entity(e)		
+	end
 end
 
 local function on_chunk_charted(event)

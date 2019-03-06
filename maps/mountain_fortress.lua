@@ -2,7 +2,7 @@
 
 require "maps.modules.backpack_research"
 require "maps.modules.biters_double_damage"
-require "maps.modules.biters_double_hp"
+require "maps.modules.biters_avoid_damage"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.dynamic_landfill"
 --require "maps.modules.dynamic_player_spawn"
