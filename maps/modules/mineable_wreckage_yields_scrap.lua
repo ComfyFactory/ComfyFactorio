@@ -11,7 +11,8 @@ local mining_chance_weights = {
 	{name = "steel-plate", chance = 200},
 	{name = "solid-fuel", chance = 150},
 	{name = "pipe", chance = 100},
-	{name = "iron-stick", chance = 50},	
+	{name = "iron-stick", chance = 50},
+	{name = "battery", chance = 20},
 	{name = "empty-barrel", chance = 10},
 	{name = "crude-oil-barrel", chance = 30},
 	{name = "lubricant-barrel", chance = 20},
@@ -19,15 +20,14 @@ local mining_chance_weights = {
 	{name = "sulfuric-acid-barrel", chance = 15},
 	{name = "heavy-oil-barrel", chance = 15},
 	{name = "light-oil-barrel", chance = 15},
-	{name = "water-barrel", chance = 10},		
-	{name = "battery", chance = 10},
+	{name = "water-barrel", chance = 10},
 	{name = "green-wire", chance = 10},
 	{name = "red-wire", chance = 10},
-	{name = "explosives", chance = 5},
+	{name = "explosives", chance = 8},
 	{name = "advanced-circuit", chance = 5},
 	{name = "nuclear-fuel", chance = 1},
-	{name = "pipe-to-ground", chance = 5},
-	{name = "plastic-bar", chance = 4},
+	{name = "pipe-to-ground", chance = 10},
+	{name = "plastic-bar", chance = 5},
 	{name = "processing-unit", chance = 2},
 	{name = "used-up-uranium-fuel-cell", chance = 1},
 	{name = "uranium-fuel-cell", chance = 1},
@@ -35,19 +35,19 @@ local mining_chance_weights = {
 	{name = "rocket-control-unit", chance = 1},	
 	{name = "low-density-structure", chance = 1},	
 	{name = "heat-pipe", chance = 1},
-	{name = "engine-unit", chance = 3},
+	{name = "engine-unit", chance = 4},
 	{name = "electric-engine-unit", chance = 2},
 	{name = "logistic-robot", chance = 1},
 	{name = "construction-robot", chance = 1},
 	
 	{name = "land-mine", chance = 10},	
 	{name = "grenade", chance = 10},
-	{name = "rocket", chance = 5},
-	{name = "explosive-rocket", chance = 5},
+	{name = "rocket", chance = 3},
+	{name = "explosive-rocket", chance = 3},
 	{name = "cannon-shell", chance = 2},
 	{name = "explosive-cannon-shell", chance = 2},
-	{name = "uranium-cannon-shell", chance = 2},
-	{name = "explosive-uranium-cannon-shell", chance = 2},
+	{name = "uranium-cannon-shell", chance = 1},
+	{name = "explosive-uranium-cannon-shell", chance = 1},
 	{name = "artillery-shell", chance = 1},
 	{name = "cluster-grenade", chance = 2},
 	{name = "defender-capsule", chance = 5},
@@ -123,8 +123,9 @@ local function on_player_mined_entity(event)
 	event.buffer.clear()
 	
 	local scrap = scrap_raffle[math.random(1, #scrap_raffle)]
+	local evolution_bonus = game.forces.enemy.evolution_factor
 	
-	local amount = math.random(math.ceil(scrap_yield_amounts[scrap] * 0.3), math.ceil(scrap_yield_amounts[scrap] * 1.7))
+	local amount = math.random(math.ceil(scrap_yield_amounts[scrap] * (0.3 + evolution_bonus)), math.ceil(scrap_yield_amounts[scrap] * (1.7 + evolution_bonus)))
 	
 	local player = game.players[event.player_index]	
 	local inserted_count = player.insert({name = scrap, count = amount})

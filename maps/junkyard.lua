@@ -290,7 +290,7 @@ local function on_chunk_generated(event)
 	
 	if global.spawn_generated then return end
 	if left_top.x < 96 then return end	 
-	map_functions.draw_rainbow_patch_v2({x = 0, y = 0}, surface, 14, 1500)	
+	map_functions.draw_rainbow_patch({x = 0, y = 0}, surface, 14, 1500)	
 	for _, wreck in pairs (surface.find_entities_filtered({area = {{-10, -10},{10, 10}}, name = "mineable-wreckage"})) do
 		local distance_to_center = math.sqrt(wreck.position.x^2 + wreck.position.y^2)
 		if distance_to_center < 8 then wreck.destroy() end
@@ -321,7 +321,7 @@ local function on_chunk_charted(event)
 	local size = 5 + math.floor(distance_to_center * 0.0075)
 	if size > 20 then size = 20 end
 	local amount = 100 + distance_to_center
-	map_functions.draw_rainbow_patch_v2(pos, surface, size, amount)
+	map_functions.draw_rainbow_patch(pos, surface, size, amount)
 end
 	
 local function on_marked_for_deconstruction(event)	
