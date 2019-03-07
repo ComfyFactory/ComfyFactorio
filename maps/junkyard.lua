@@ -38,18 +38,18 @@ local tile_replacements = {
 
 local entity_replacements = {
 	["tree-01"] = "dead-grey-trunk",
-	["tree-02"] = "tree-08-brown",
+	["tree-02"] = "tree-06-brown",
 	["tree-03"] = "dead-grey-trunk",
 	["tree-04"] = "dry-hairy-tree",	
 	["tree-05"] = "dead-grey-trunk",	
 	["tree-06"] = "tree-06-brown",	
 	["tree-07"] = "dry-hairy-tree",	
-	["tree-08"] = "tree-08-brown",	
+	["tree-08"] = "dead-grey-trunk",	
 	["tree-09"] = "tree-06-brown",
 	["tree-02-red"] = "dry-tree",	
 	--["tree-06-brown"] = "dirt",	
-	--["tree-08-brown"] = "dirt",	
-	["tree-09-brown"] = "tree-08-brown",	
+	["tree-08-brown"] = "tree-06-brown",	
+	["tree-09-brown"] = "tree-06-brown",	
 	["tree-09-red"] = "tree-06-brown",
 	["iron-ore"] = "mineable-wreckage",
 	["copper-ore"] = "mineable-wreckage",
@@ -290,7 +290,7 @@ local function on_chunk_generated(event)
 	
 	if global.spawn_generated then return end
 	if left_top.x < 96 then return end	 
-	map_functions.draw_rainbow_patch({x = 0, y = 0}, surface, 16, 2000)	
+	map_functions.draw_rainbow_patch_v2({x = 0, y = 0}, surface, 14, 1500)	
 	for _, wreck in pairs (surface.find_entities_filtered({area = {{-10, -10},{10, 10}}, name = "mineable-wreckage"})) do
 		local distance_to_center = math.sqrt(wreck.position.x^2 + wreck.position.y^2)
 		if distance_to_center < 8 then wreck.destroy() end

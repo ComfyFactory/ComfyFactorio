@@ -14,7 +14,7 @@ require "score"
 require "on_tick_schedule"
 
 ---- enable modules here ----
-require "maps.tools.cheat_mode"
+--require "maps.tools.cheat_mode"
 --require "maps.modules.hunger"
 --require "maps.modules.area_unlocked_on_rotated_entity"
 --require "maps.modules.fish_respawner"
