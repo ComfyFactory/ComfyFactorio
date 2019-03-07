@@ -318,7 +318,7 @@ local function on_chunk_charted(event)
 	local size = 5 + math.floor(distance_to_center * 0.0075)
 	if size > 20 then size = 20 end
 	local amount = 100 + distance_to_center
-	map_functions.draw_rainbow_patch(pos, surface, size, amount)
+	map_functions.draw_rainbow_patch_v2(pos, surface, size, amount)
 end
 	
 local function on_marked_for_deconstruction(event)	
