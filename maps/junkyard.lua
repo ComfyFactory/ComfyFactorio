@@ -328,9 +328,8 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_player_joined_game(event)	
-	--local player = game.players[event.player_index]
-	
-	if not global.map_init_done then
+	--local player = game.players[event.player_index]	
+	if not global.map_init_done then		
 		game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2		
 		--game.surfaces["nauvis"].freeze_daytime = true
 		global.map_init_done = true						
