@@ -5,6 +5,7 @@ require "maps.modules.satellite_score"
 require "maps.modules.mineable_wreckage_yields_scrap"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
+local unburrowing_worm = require "functions.unburrowing_worm"
 
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
@@ -336,7 +337,16 @@ local function on_player_joined_game(event)
 	end	
 end
 
+local function on_player_mined_entity(event)
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.name ~= "mineable-wreckage" then return end
+	if math_random(1,2) ~= 1 then return end
+	unburrowing_worm(entity.surface, entity.position)
+end
+
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
