@@ -1114,7 +1114,7 @@ local function on_chunk_generated(event)
 		
 			local spawn_position_x = -76
 								
-			surface.create_entity({name = "electric-beam", position = {160, -95}, source = {160, -95}, target = {160,96}})
+			surface.create_entity({name = "electric-beam", position = {160, -96}, source = {160, -96}, target = {160,96}})
 								
 			local tiles = {}
 			local replacement_tile = get_replacement_tile(surface)
