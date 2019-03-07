@@ -5,7 +5,9 @@ require "maps.modules.satellite_score"
 require "maps.modules.mineable_wreckage_yields_scrap"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
-local unburrowing_worm = require "functions.unburrowing_worm"
+local unearthing_worm = require "functions.unearthing_worm"
+local unearthing_biters = require "functions.unearthing_biters"
+
 
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
@@ -274,7 +276,7 @@ local function on_chunk_generated(event)
 						end
 					end
 				else
-					if math_random(1, 65536) == 1 then secret_shop(pos, surface) end						
+					if math_random(1, 98304) == 1 then secret_shop(pos, surface) end						
 				end	
 			end
 			
@@ -329,24 +331,38 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_player_joined_game(event)	
-	--local player = game.players[event.player_index]	
-	if not global.map_init_done then		
-		game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2		
-		--game.surfaces["nauvis"].freeze_daytime = true
-		global.map_init_done = true						
+	local player = game.players[event.player_index]	
+	if player.online_time == 0 then
+		player.insert({name = "pistol", count = 1})
+		player.insert({name = "firearm-magazine", count = 32})
 	end	
+	
+	if global.map_init_done then return end		
+	game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2				
+	global.map_init_done = true
 end
 
 local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if entity.name ~= "mineable-wreckage" then return end
-	if math_random(1,2) ~= 1 then return end
-	unburrowing_worm(entity.surface, entity.position)
+	
+	if math_random(1,32) == 1 then 
+		unearthing_biters(entity.surface, entity.position, math_random(4,12))	 
+	end
+		
+	if math_random(1,64) == 1 then 
+		unearthing_worm(entity.surface, entity.position)		 
+	end
+end
+
+local function on_entity_died(event)
+	on_player_mined_entity(event)
 end
 
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)

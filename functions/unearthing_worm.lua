@@ -37,7 +37,7 @@ local function spawn_worm(surface, position)
 	surface.create_entity({name = worm_name, position = position})
 end
 
-local function unburrowing_worm(surface, position)
+local function unearthing_worm(surface, position)
 	if not surface then return end
 	if not position then return end
 	if not position.x then return end
@@ -60,4 +60,4 @@ local function unburrowing_worm(surface, position)
 	end		
 end
 
-return unburrowing_worm
+return unearthing_worm
