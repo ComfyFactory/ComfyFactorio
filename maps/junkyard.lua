@@ -81,7 +81,7 @@ local function get_noise(name, pos)
 		noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
 		seed = seed + noise_seed_add
 		noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.3 + noise[3] * 0.2 + noise[4] * 0.1		
+		local noise = noise[1] + noise[2] * 0.35 + noise[3] * 0.23 + noise[4] * 0.11		
 		return noise
 	end	
 end
@@ -137,8 +137,8 @@ local function create_shipwreck(surface, position)
 		{{name = "green-wire", count = math_random(50,100)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
 		{{name = "red-wire", count = math_random(50,100)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
 		--{{name = "chemical-plant", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},
-		{{name = "burner-mining-drill", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
-		{{name = "electric-mining-drill", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.6},		
+		{{name = "burner-mining-drill", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "electric-mining-drill", count = math_random(2,4)}, weight = 3, evolution_min = 0.2, evolution_max = 0.6},		
 		{{name = "express-transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
 		{{name = "express-underground-belt", count = math_random(4,8)}, weight = 3, evolution_min = 0.5, evolution_max = 1},		
 		{{name = "express-splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
@@ -263,7 +263,7 @@ local function on_chunk_generated(event)
 			
 			if not tile.collides_with("player-layer") then
 				local noise = get_noise(1, pos)	
-				if noise > 0.5 or noise < -0.5 then				
+				if noise > 0.43 or noise < -0.43 then				
 					if math_random(1,3) ~= 1 then
 						surface.create_entity({name = "mineable-wreckage", position = pos})
 					else
@@ -334,7 +334,7 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]	
 	if player.online_time == 0 then
 		player.insert({name = "pistol", count = 1})
-		player.insert({name = "firearm-magazine", count = 32})
+		player.insert({name = "firearm-magazine", count = 16})
 	end	
 	
 	if global.map_init_done then return end		
@@ -351,7 +351,7 @@ local function on_player_mined_entity(event)
 		unearthing_biters(entity.surface, entity.position, math_random(4,12))	 
 	end
 		
-	if math_random(1,64) == 1 then 
+	if math_random(1,64) == 1 then
 		unearthing_worm(entity.surface, entity.position)		 
 	end
 end

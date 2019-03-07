@@ -5,6 +5,7 @@ local function trigger_function(schedule)
 	if not schedule.args[2] then schedule.func(schedule.args[1]) return end
 	if not schedule.args[3] then schedule.func(schedule.args[1], schedule.args[2]) return end
 	if not schedule.args[4] then schedule.func(schedule.args[1], schedule.args[2], schedule.args[3]) return end
+	if not schedule.args[5] then schedule.func(schedule.args[1], schedule.args[2], schedule.args[3], schedule.args[4]) return end
 	if schedule.args[5] then schedule.func(schedule.args[1], schedule.args[2], schedule.args[3], schedule.args[4], schedule.args[5]) return end		
 end
 

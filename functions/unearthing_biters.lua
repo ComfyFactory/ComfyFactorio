@@ -1,7 +1,22 @@
-local math_random = math.random
-local table_insert = table.insert
+local function create_particles(surface, position, amount)	
+	local math_random = math.random
+	for i = 1, amount, 1 do 
+		local m = math_random(6, 12)
+		local m2 = m * 0.005
+		
+		surface.create_entity({
+			name = "stone-particle",
+			position = position,
+			frame_speed = 0.1,
+			vertical_speed = 0.1,
+			height = 0.1,
+			movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
+		})
+	end	
+end
 
-local biter_table = {
+local function spawn_biter(surface, position, evolution_index)	
+	local biter_table = {
 		[1] = {"small-biter"},
 		[2] = {"small-biter","small-biter","small-biter","small-biter","small-biter","medium-biter"},
 		[3] = {"small-biter","small-biter","small-biter","small-biter","medium-biter","medium-biter"},
@@ -23,26 +38,7 @@ local biter_table = {
 		[19] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
 		[20] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter","behemoth-spitter"}
 	}
-
-local function create_particles(surface, position, amount)					
-	for i = 1, amount, 1 do 
-		local m = math_random(6, 12)
-		local m2 = m * 0.005
-		
-		surface.create_entity({
-			name = "stone-particle",
-			position = position,
-			frame_speed = 0.1,
-			vertical_speed = 0.1,
-			height = 0.1,
-			movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
-		})
-	end	
-end
-
-local function spawn_biter(surface, position)
-	local evolution = math.ceil(game.forces.enemy.evolution_factor * 20)
-	local raffle = biter_table[evolution]
+	local raffle = biter_table[evolution_index]
 	local biter_name = raffle[math.random(1,#raffle)]
 	local p = surface.find_non_colliding_position(biter_name, position, 8, 0.5)
 	if not p then p = {x = position.x, y = position.y} end
@@ -53,7 +49,10 @@ local function unearthing_biters(surface, position, amount)
 	if not surface then return end
 	if not position then return end
 	if not position.x then return end
-	if not position.y then return end
+	if not position.y then return end	
+	
+	local evolution_index = math.ceil(game.forces.enemy.evolution_factor * 20)
+	if evolution_index < 1 then evolution_index = 1 end
 	
 	local ticks = amount * 30
 	ticks = ticks + 120
@@ -62,14 +61,14 @@ local function unearthing_biters(surface, position, amount)
 				
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 			func = create_particles,
-			args = {surface, position, 5}
+			args = {surface, {x = position.x, y = position.y}, 5}
 		}										
 		
 		if t > 120 then
-			if t % 30 == 29 then
+			if t % 30 == 29 then			
 				global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 					func = spawn_biter,
-					args = {surface, position}
+					args = {surface, {x = position.x, y = position.y}, evolution_index}
 				}
 			end
 		end
