@@ -55,16 +55,16 @@ local function unearthing_biters(surface, position, amount)
 	if evolution_index < 1 then evolution_index = 1 end
 	
 	local ticks = amount * 30
-	ticks = ticks + 120
+	ticks = ticks + 90
 	for t = 1, ticks, 1 do
 		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end
 				
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 			func = create_particles,
-			args = {surface, {x = position.x, y = position.y}, 5}
+			args = {surface, {x = position.x, y = position.y}, 4}
 		}										
 		
-		if t > 120 then
+		if t > 90 then
 			if t % 30 == 29 then			
 				global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 					func = spawn_biter,

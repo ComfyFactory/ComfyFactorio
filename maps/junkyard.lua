@@ -7,6 +7,7 @@ require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.fluids_are_explosive"
 require "maps.modules.explosives_are_explosive"
+require "maps.modules.dangerous_nights"
 
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
@@ -406,7 +407,10 @@ local function on_player_joined_game(event)
 		player.insert({name = "firearm-magazine", count = 16})
 	end	
 	
-	if global.map_init_done then return end		
+	if global.map_init_done then return end
+	
+	game.forces["player"].technologies["optics"].researched = true
+	
 	game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2
 	
 	game.create_force("scrap")

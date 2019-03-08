@@ -47,7 +47,7 @@ local function unearthing_worm(surface, position)
 				
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 			func = create_particles,
-			args = {surface, {x = position.x, y = position.y}, math.ceil(t * 0.07)}
+			args = {surface, {x = position.x, y = position.y}, math.ceil(t * 0.05)}
 		}										
 		
 		if t == 330 then
