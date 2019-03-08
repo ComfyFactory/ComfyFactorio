@@ -7,7 +7,7 @@ require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
-
+local create_entity_chain = require "functions.create_entity_chain"
 
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
@@ -229,6 +229,43 @@ local function secret_shop(pos, surface)
 	end
 end
 
+local function place_random_scrap_entity(surface, position)
+	local r = math.random(1, 100)
+	if r < 8 then
+		local buildings = {"nuclear-reactor", "centrifuge", "chemical-plant", "beacon"}
+		local e = surface.create_entity({name = buildings[math.random(1, #buildings)], position = position, force = "player"})
+		e.operable = false
+		e.active = false
+		if e.name == "nuclear-reactor" then
+			create_entity_chain(surface, {name = "heat-pipe", position = position, force = "player"}, math_random(32,128), 25)
+		end
+		if e.name == "chemical-plant" then
+			create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(16,32), 25)
+		end
+		return
+	end
+	if r < 40 then
+		local e = surface.create_entity({name = "substation", position = position, force = "player"})
+		e.operable = false
+		e.active = false
+		return
+	end
+	if r < 60 then
+		local e = surface.create_entity({name = "gun-turret", position = position, force = "enemy"})
+		e.insert({name = "firearm-magazine", count = math.random(16, 128)})
+		return
+	end
+		
+	local e = surface.create_entity({name = "storage-tank", position = position, force = "player", direction = math.random(0, 3)})
+	e.operable = false
+	e.active = false
+	local fluids = {"crude-oil", "lubricant", "heavy-oil", "light-oil", "petroleum-gas", "sulfuric-acid", "water"}
+	e.fluidbox[1] = {name = fluids[math.random(1, #fluids)], amount = math.random(15000, 25000)}
+	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
+	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
+	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(40,70), 80)	
+end
+
 local function process_entity(e)
 	if not e.valid then return end
 	if entity_replacements[e.name] then
@@ -270,13 +307,21 @@ local function on_chunk_generated(event)
 						if math_random(1,512) == 1 then
 							create_shipwreck(surface, pos)
 						else
-							if math_random(1,65536) == 1 then
-								local e = surface.create_entity({name = "nuclear-reactor", position = pos, force = "enemy"})								
+							if math_random(1, 1024) == 1 then
+								place_random_scrap_entity(surface, pos)
 							end							
 						end
 					end
 				else
-					if math_random(1, 98304) == 1 then secret_shop(pos, surface) end						
+					if math_random(1, 98304) == 1 then secret_shop(pos, surface) end
+					if math_random(1, 51200) == 1 then
+						if noise < 0.2 or noise > -0.2 then
+							create_entity_chain(surface, {name = "laser-turret", position = pos, force = "enemy"}, 1, 25)
+							create_entity_chain(surface, {name = "accumulator", position = pos, force = "enemy"}, math_random(2, 6), 1)
+							create_entity_chain(surface, {name = "solar-panel", position = pos, force = "enemy"}, math_random(8, 16), 1)
+							create_entity_chain(surface, {name = "substation", position = pos, force = "enemy"}, math_random(4, 8), 1)
+						end
+					end						
 				end	
 			end
 			
@@ -345,14 +390,34 @@ end
 local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
-	if entity.name ~= "mineable-wreckage" then return end
 	
-	if math_random(1,32) == 1 then 
-		unearthing_biters(entity.surface, entity.position, math_random(4,12))	 
+	if entity.name == "mineable-wreckage" then 	
+		if math_random(1,32) == 1 then 
+			unearthing_biters(entity.surface, entity.position, math_random(4,12))	 
+		end			
+		if math_random(1,64) == 1 then
+			unearthing_worm(entity.surface, entity.position)		 
+		end
 	end
-		
-	if math_random(1,64) == 1 then
-		unearthing_worm(entity.surface, entity.position)		 
+	
+	if entity.active == true then return end
+	if entity.operable == true then return end
+	if entity.force.name ~= "player" then return end
+	local positions = {}
+	local r = math.ceil(entity.prototype.max_health / 30)
+	for x = r * -1, r, 1 do
+		for y = r * -1, r, 1 do
+			positions[#positions + 1] = {x = entity.position.x + x, y = entity.position.y + y}
+		end
+	end
+	positions = shuffle(positions)
+	for i = 1, math.ceil(entity.prototype.max_health / 20), 1 do
+		if not positions[i] then return end
+		if math_random(1,3) == 1 then
+			unearthing_biters(entity.surface, entity.position, math_random(4,8))
+		else
+			unearthing_worm(entity.surface, positions[i])
+		end			
 	end
 end
 
@@ -360,6 +425,11 @@ local function on_entity_died(event)
 	on_player_mined_entity(event)
 end
 
+local function on_research_finished(event)
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 200
+end
+	
+event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

@@ -81,17 +81,17 @@ local scrap_yield_amounts = {
 	["plastic-bar"] = 4,
 	["processing-unit"] = 1,
 	["used-up-uranium-fuel-cell"] = 1,
-	["uranium-fuel-cell"] = 0.1,
-	["rocket-fuel"] = 0.1,
-	["rocket-control-unit"] = 0.1,
-	["low-density-structure"] = 0.1,
+	["uranium-fuel-cell"] = 0.3,
+	["rocket-fuel"] = 0.3,
+	["rocket-control-unit"] = 0.3,
+	["low-density-structure"] = 0.3,
 	["heat-pipe"] = 1,
 	["green-wire"] = 8,
 	["red-wire"] = 8,
 	["engine-unit"] = 2,
 	["electric-engine-unit"] = 2,
-	["logistic-robot"] = 0.1,
-	["construction-robot"] = 0.1,
+	["logistic-robot"] = 0.3,
+	["construction-robot"] = 0.3,
 	
 	["land-mine"] = 1,
 	["grenade"] = 2,
@@ -101,11 +101,11 @@ local scrap_yield_amounts = {
 	["explosive-cannon-shell"] = 2,
 	["uranium-cannon-shell"] = 2,
 	["explosive-uranium-cannon-shell"] = 2,
-	["artillery-shell"] = 0.1,
-	["cluster-grenade"] = 0.1,
+	["artillery-shell"] = 0.3,
+	["cluster-grenade"] = 0.3,
 	["defender-capsule"] = 2,
-	["destroyer-capsule"] = 0.1,
-	["distractor-capsule"] = 0.1
+	["destroyer-capsule"] = 0.3,
+	["distractor-capsule"] = 0.3
 }
 		
 local scrap_raffle = {}				
@@ -123,9 +123,11 @@ local function on_player_mined_entity(event)
 	event.buffer.clear()
 	
 	local scrap = scrap_raffle[math.random(1, #scrap_raffle)]
-	local evolution_bonus = game.forces.enemy.evolution_factor
 	
-	local amount = math.random(math.ceil(scrap_yield_amounts[scrap] * (0.3 + evolution_bonus)), math.ceil(scrap_yield_amounts[scrap] * (1.7 + evolution_bonus)))
+	local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
+	local r1 = math.ceil(scrap_yield_amounts[scrap] * (0.3 + (amount_bonus * 0.3)))
+	local r2 = math.ceil(scrap_yield_amounts[scrap] * (1.7 + (amount_bonus * 1.7)))	
+	local amount = math.random(r1, r2)
 	
 	local player = game.players[event.player_index]	
 	local inserted_count = player.insert({name = scrap, count = amount})
