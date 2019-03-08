@@ -35,9 +35,9 @@ require "on_tick_schedule"
 
 ---- enable maps here ----
 --require "maps.biter_battles"
---require "maps.cave_miner"
+require "maps.cave_miner"
 --require "maps.labyrinth"
-require "maps.junkyard"
+--require "maps.junkyard"
 --require "maps.spooky_forest"
 --require "maps.nightfall"
 --require "maps.atoll"

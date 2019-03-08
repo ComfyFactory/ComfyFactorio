@@ -9,8 +9,7 @@ require "maps.modules.spawners_contain_biters"
 require "maps.modules.teleporting_worms"
 --require "maps.modules.splice_double"
 --require "maps.modules.spitters_spit_biters"
-require "maps.modules.biters_double_hp"
-require "maps.modules.biters_double_damage"
+--require "maps.modules.biters_double_damage"
 
 local enable_fishbank_terminal = false
 local simplex_noise = require 'utils.simplex_noise'
@@ -118,7 +117,7 @@ end
 		
 local function create_cave_miner_button(player)		
 	if player.gui.top["caver_miner_stats_toggle_button"] then player.gui.top["caver_miner_stats_toggle_button"].destroy() end	
-	local b = player.gui.top.add({ type = "sprite-button", name = "caver_miner_stats_toggle_button", sprite = "item/iron-axe" })
+	local b = player.gui.top.add({ type = "sprite-button", name = "caver_miner_stats_toggle_button", sprite = "item/dummy-steel-axe" })
 	b.style.minimal_height = 38
 	b.style.minimal_width = 38
 	b.style.top_padding = 2
@@ -133,7 +132,7 @@ local function create_cave_miner_info(player)
 	
 	local tt = t.add {type = "table", column_count = 3}
 	local l = tt.add {type = "label", caption = " --Cave Miner-- "}
-	l.style.font = "default-frame"
+	l.style.font = "default-game"
 	l.style.font_color = {r=0.6, g=0.3, b=0.99}
 	l.style.top_padding = 6	
 	l.style.bottom_padding = 6
@@ -249,7 +248,7 @@ local function treasure_chest(position, distance_to_center)
 	
 	local chest_raffle = {}
 	local chest_loot = {			
-		{{name = "steel-axe", count = math_random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.5},
+		--{{name = "steel-axe", count = math_random(1,3)}, weight = 2, evolution_min = 0.0, evolution_max = 0.5},
 		{{name = "submachine-gun", count = math_random(1,3)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},		
 		{{name = "slowdown-capsule", count = math_random(16,32)}, weight = 1, evolution_min = 0.3, evolution_max = 0.7},
 		{{name = "poison-capsule", count = math_random(16,32)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
@@ -923,7 +922,7 @@ Darkness is a hazard in the mines, stay near your lamps..
 		player.insert {name = 'pistol', count = 1}
 		--player.insert {name = 'raw-fish', count = 1}		
 		player.insert {name = 'firearm-magazine', count = 16}			
-		player.insert {name = 'iron-axe', count = 1}		
+		--player.insert {name = 'iron-axe', count = 1}		
 	end
 	create_cave_miner_button(player)
 	create_cave_miner_stats_gui(player)
