@@ -40,7 +40,7 @@ local function spawn_biter(surface, position, evolution_index)
 	}
 	local raffle = biter_table[evolution_index]
 	local biter_name = raffle[math.random(1,#raffle)]
-	local p = surface.find_non_colliding_position(biter_name, position, 8, 0.5)
+	local p = surface.find_non_colliding_position(biter_name, position, 10, 0.5)
 	if not p then p = {x = position.x, y = position.y} end
 	surface.create_entity({name = biter_name, position = p, force = "enemy"})
 end

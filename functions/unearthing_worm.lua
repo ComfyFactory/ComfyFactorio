@@ -42,7 +42,7 @@ local function unearthing_worm(surface, position)
 	local evolution_index = math.ceil(game.forces.enemy.evolution_factor * 10)
 	if evolution_index < 1 then evolution_index = 1 end
 	
-	for t = 1, 360, 1 do
+	for t = 1, 330, 1 do
 		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end
 				
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
@@ -50,7 +50,7 @@ local function unearthing_worm(surface, position)
 			args = {surface, {x = position.x, y = position.y}, math.ceil(t * 0.07)}
 		}										
 		
-		if t == 360 then
+		if t == 330 then
 			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 				func = spawn_worm,
 				args = {surface, {x = position.x, y = position.y}, evolution_index}
