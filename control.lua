@@ -62,14 +62,6 @@ require "maps.junkyard"
 
 local event = require 'utils.event'
 
-function set(data_set, key, value)
-    server_commands.set_data(data_set, key, value)
-end
-
-function get(data_set, key)
-    server_commands.try_get_data(data_set, key, callback_token)
-end
-
 if _DUMP_ENV then
     require 'utils.dump_env'
 end
