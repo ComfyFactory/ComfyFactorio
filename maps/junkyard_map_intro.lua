@@ -9,17 +9,19 @@ local info = [[
 	i have most likely already left this doomed place,	or... well..
 	
 	I am stranded on this foreign world since months and i have given up on fixing my ships transceiver.
-	Yes, things are not looking too good, i must admit.	
+	Things aren't looking too good, i must admit.	
 	The rust and devastation tells a story of an advanced civilization,
 	which seems to have evacuated their home long time ago.
 	
 	Any natural resources are rare and the ones worth while are too hard for me to reach.
 	Luckily, the wrecks yield all kinds of useful scraps, but also various dangers.
-	Almost lost half a leg just some days ago while digging out a crate.
+	Almost lost half a leg some days ago while digging out a crate.
 	
 	The wildlife is extremely aggressive, especially at the time of night.	
 	Most of these insect appearing like creatures seem to live underground.
-	Stay near your light sources!!
+	Stay near your light sources, if you want to have a chance of surviving here!!
+	
+	I must make a move now, hopefully will find those missing parts.
 	
 	###Log End###
 ]]

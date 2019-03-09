@@ -3,10 +3,11 @@
 require "maps.modules.dynamic_landfill"
 require "maps.modules.satellite_score"
 require "maps.modules.mineable_wreckage_yields_scrap"
+require "maps.modules.rocks_heal_over_time"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
 require "maps.modules.fluids_are_explosive"
-require "maps.modules.explosives_are_explosive"
+--require "maps.modules.explosives_are_explosive"
 require "maps.modules.dangerous_nights"
 
 require "maps.junkyard_map_intro"
@@ -67,7 +68,9 @@ local entity_replacements = {
 
 local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}	
 
-local scrap_buildings = {"nuclear-reactor", "centrifuge", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3", "beacon", "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine"}
+local scrap_buildings = {
+	"nuclear-reactor", "centrifuge", "beacon", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine"
+}
 	
 local function shuffle(tbl)
 	local size = #tbl
@@ -125,7 +128,7 @@ local function create_shipwreck(surface, position)
 		{{name = "medium-electric-pole", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 1},		
 		{{name = "wooden-chest", count = math_random(16,24)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
 		{{name = "iron-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.1, evolution_max = 0.4},
-		{{name = "steel-chest", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
+		{{name = "steel-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
 		{{name = "small-lamp", count = math_random(8,16)}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
 		{{name = "rail", count = math_random(50,75)}, weight = 3, evolution_min = 0.1, evolution_max = 0.6},
 		{{name = "assembling-machine-1", count = math_random(1,2)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
@@ -181,7 +184,7 @@ local function create_shipwreck(surface, position)
 	if distance_to_center < 1 then
 		distance_to_center = 0.1
 	else
-		distance_to_center = distance_to_center / 5000
+		distance_to_center = distance_to_center / 2500
 	end
 	if distance_to_center > 1 then distance_to_center = 1 end
 	
@@ -192,7 +195,7 @@ local function create_shipwreck(surface, position)
 			end
 		end			
 	end
-	local e = surface.create_entity{name = wrecks[math_random(1,#wrecks)], position = position, force = "player"}	
+	local e = surface.create_entity{name = wrecks[math_random(1,#wrecks)], position = position, force = "scrap"}	
 	for x = 1, math_random(2,3), 1 do
 		local loot = raffle[math_random(1,#raffle)]
 		e.insert(loot)
@@ -241,21 +244,25 @@ end
 
 local function place_random_scrap_entity(surface, position)
 	local r = math.random(1, 100)
-	if r < 10 then
+	if r < 15 then
 		local e = surface.create_entity({name = scrap_buildings[math.random(1, #scrap_buildings)], position = position, force = "scrap"})		
 		if e.name == "nuclear-reactor" then
-			create_entity_chain(surface, {name = "heat-pipe", position = position, force = "player"}, math_random(32,128), 25)
+			create_entity_chain(surface, {name = "heat-pipe", position = position, force = "player"}, math_random(32,64), 25)
 		end
-		if e.name == "chemical-plant" or e.name == "steam-engine" or e.name == "steam-engine" then
+		if e.name == "chemical-plant" or e.name == "steam-turbine" or e.name == "steam-engine" or e.name == "oil-refinery" then
 			create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(16,32), 25)
 		end
 		return
 	end
-	if r < 40 then
-		local e = surface.create_entity({name = "substation", position = position, force = "scrap"})		
+	if r < 25 then
+		surface.create_entity({name = "substation", position = position, force = "scrap"})		
 		return
 	end
-	if r < 80 then
+	if r < 70 then
+		surface.create_entity({name = "medium-electric-pole", position = position, force = "scrap"})		
+		return
+	end
+	if r < 90 then
 		local e = surface.create_entity({name = "gun-turret", position = position, force = "scrap_defense"})
 		e.insert({name = "firearm-magazine", count = math.random(8, 128)})
 		return
@@ -270,22 +277,17 @@ local function place_random_scrap_entity(surface, position)
 end
 
 local function create_inner_content(surface, pos, noise)
-	if math_random(1, 98304) == 1 then secret_shop(pos, surface) return end
-	if math_random(1, 51200) == 1 then
+	if math_random(1, 102400) == 1 then secret_shop(pos, surface) return end
+	if math_random(1, 102400) == 1 then
 		if noise < 0.2 or noise > -0.2 then
-			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 48), 50)
-			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 48), 50)
-			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 48), 50)
+			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
+			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
+			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
+			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
 			create_entity_chain(surface, {name = "laser-turret", position = pos, force = "scrap_defense"}, 1, 25)
 			create_entity_chain(surface, {name = "accumulator", position = pos, force = "scrap_defense"}, math_random(2, 4), 1)
 			create_entity_chain(surface, {name = "substation", position = pos, force = "scrap_defense"}, math_random(6, 8), 1)
 			create_entity_chain(surface, {name = "solar-panel", position = pos, force = "scrap_defense"}, math_random(16, 24), 1)							
-		end
-		return
-	end
-	if math_random(1, 102400) == 1 then		
-		if noise < 0.1 or noise > -0.1 then										
-			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(96, 160), 85)
 		end
 		return
 	end
@@ -295,7 +297,7 @@ local function process_entity(e)
 	if not e.valid then return end
 	if entity_replacements[e.name] then		
 		if e.type == "tree" then
-			if math_random(1,2) == 1 then
+			if math_random(1,3) == 1 then
 				e.surface.create_entity({name = entity_replacements[e.name], position = e.position})
 			end
 		else
@@ -358,7 +360,10 @@ local function on_chunk_generated(event)
 	
 	if global.spawn_generated then return end
 	if left_top.x < 96 then return end	 
-	map_functions.draw_rainbow_patch({x = 0, y = 0}, surface, 14, 1500)	
+	map_functions.draw_rainbow_patch({x = 0, y = 0}, surface, 12, 3000)
+	local p = surface.find_non_colliding_position("character-corpse", {2,-2}, 32, 2)
+	local e = surface.create_entity({name = "character-corpse", position = p})
+	e.minable = false
 	for _, e in pairs (surface.find_entities_filtered({area = {{-50, -50},{50, 50}}})) do
 		local distance_to_center = math.sqrt(e.position.x^2 + e.position.y^2)
 		if e.valid then
@@ -439,17 +444,17 @@ local function on_player_mined_entity(event)
 		
 	if entity.force.name ~= "scrap" then return end
 	local positions = {}
-	local r = math.ceil(entity.prototype.max_health / 40)
+	local r = math.ceil(entity.prototype.max_health / 32)
 	for x = r * -1, r, 1 do
 		for y = r * -1, r, 1 do
 			positions[#positions + 1] = {x = entity.position.x + x, y = entity.position.y + y}
 		end
 	end
 	positions = shuffle(positions)
-	for i = 1, math.ceil(entity.prototype.max_health / 40), 1 do
+	for i = 1, math.ceil(entity.prototype.max_health / 32), 1 do
 		if not positions[i] then return end
 		if math_random(1,3) == 1 then
-			unearthing_biters(entity.surface, entity.position, math_random(4,8))
+			unearthing_biters(entity.surface, positions[i], math_random(4,8))
 		else
 			unearthing_worm(entity.surface, positions[i])
 		end			

@@ -221,6 +221,7 @@ local function on_gui_opened(event)
 	if event.entity.name ~= "character-corpse" then return end
 	local player = game.players[event.player_index]
 	local corpse_owner = game.players[event.entity.character_corpse_player_index]
+	if not corpse_owner then return end
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
 		game.print(player.name .. " is looting " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
@@ -232,6 +233,7 @@ local function on_pre_player_mined_item(event)
 	if event.entity.name ~= "character-corpse" then return end
 	local player = game.players[event.player_index]
 	local corpse_owner = game.players[event.entity.character_corpse_player_index]
+	if not corpse_owner then return end
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
 		game.print(player.name .. " has looted " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})

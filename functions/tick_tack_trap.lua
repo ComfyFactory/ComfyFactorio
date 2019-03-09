@@ -1,14 +1,14 @@
 -- timer traps -- by mewmew
 
-local tick_tacks = {"*tick*", "*tick*", "*tak*", "*tack*", "*tik*"}
+local tick_tacks = {"*tick*", "*tick*", "*tack*", "*tak*", "*tik*", "*tok*"}
 
 local kaboom_weights = {
-	{name = "grenade", chance = 5},
+	{name = "grenade", chance = 6},
 	{name = "cluster-grenade", chance = 1},
-	{name = "destroyer-capsule", chance = 4},
-	{name = "defender-capsule", chance = 6},
-	{name = "distractor-capsule", chance = 5},
-	{name = "poison-capsule", chance = 5},
+	{name = "destroyer-capsule", chance = 3},
+	{name = "defender-capsule", chance = 5},
+	{name = "distractor-capsule", chance = 4},
+	{name = "poison-capsule", chance = 4},
 	{name = "explosive-uranium-cannon-projectile", chance = 1},
 	{name = "explosive-cannon-projectile", chance = 3},
 }
@@ -25,20 +25,31 @@ local function create_flying_text(surface, position, text)
 		name = "flying-text",
 		position = position,
 		text = text,
-		color = {r=0.8, g=0.8, b=0.8}
+		color = {r=0.75, g=0.75, b=0.75}
 	})
 	if text == "..." then return end
-	surface.play_sound({path="utility/armor_insert", position=position, volume_modifier=0.5})
+	surface.play_sound({path="utility/armor_insert", position=position, volume_modifier=0.75})
 end
 
 local function create_kaboom(surface, position, name)
+	local target = position
+	if name == "defender-capsule" or name == "destroyer-capsule" or name == "distractor-capsule" then 
+		surface.create_entity({	
+			name = "flying-text",
+			position = position,
+			text = "(((Sentries Engaging Target)))",
+			color = {r=0.8, g=0.0, b=0.0}
+		})		
+		local nearest_player_unit = surface.find_nearest_enemy({position = position, max_distance=128, force="enemy"})
+		if nearest_player_unit then target = nearest_player_unit.position end				
+	end		
 	surface.create_entity({	
 		name = name,
 		position = position,
-		force = enemy,
-		target = position,
-		speed = 0.5
-	})
+		force = "enemy",
+		target = target,
+		speed = 0.001
+	})			
 end
 
 local function tick_tack_trap(surface, position)
@@ -46,7 +57,7 @@ local function tick_tack_trap(surface, position)
 	if not position then return end
 	if not position.x then return end
 	if not position.y then return end
-	local tick_tack_count = math.random(4, 7)	
+	local tick_tack_count = math.random(5, 9)	
 	for t = 60, tick_tack_count * 60, 60 do
 		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end	
 		

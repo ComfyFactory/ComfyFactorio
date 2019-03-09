@@ -1,11 +1,12 @@
--- rocks heal over time -- by mewmew
+-- rocks and wreckage heal over time -- by mewmew
 
 local event = require 'utils.event'
 
 local healing_amount = {
 		["rock-big"] = 4,
 		["sand-rock-big"] = 4,
-		["rock-huge"] = 16
+		["rock-huge"] = 16,
+		["mineable-wreckage"] = 4
 	}
 	
 local function heal_rocks()
