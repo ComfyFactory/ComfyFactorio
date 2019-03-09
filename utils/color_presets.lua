@@ -150,7 +150,6 @@ return {
     auto_trusted = {r = 192, g = 192, b = 192},
     regular = {r = 0.155, g = 0.540, b = 0.898},
     admin = {r = 0.093, g = 0.768, b = 0.172},
-    donator = {r = 172.6, g = 70.2, b = 215.8},
     [-10] = {r = 255, g = 255, b = 255}, -- probation
     [0] = {r = 255, g = 255, b = 255}, -- guest
     [10] = {r = 192, g = 192, b = 192}, -- auto_trusted
