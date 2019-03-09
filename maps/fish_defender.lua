@@ -17,7 +17,7 @@ local map_functions = require "maps.tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
-local wave_interval = 1800		--interval between waves in ticks
+local wave_interval = 2700		--interval between waves in ticks
 local biter_count_limit = 256	    --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
@@ -539,10 +539,10 @@ local function biter_attack_wave()
 	game.forces.enemy.set_ammo_damage_modifier("laser-turret", global.wave_count * modifier)
 	
 	if global.wave_count % 50 == 0 then				
-		global.attack_wave_threat = global.wave_count * 6
+		global.attack_wave_threat = global.wave_count * 8
 		spawn_boss_units(surface)
 	else
-		global.attack_wave_threat = global.wave_count * 3
+		global.attack_wave_threat = global.wave_count * 4
 	end
 	
 	if global.attack_wave_threat > 20000 then global.attack_wave_threat = 20000 end
@@ -998,7 +998,7 @@ local function on_player_joined_game(event)
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
 		
-		global.wave_grace_period = wave_interval * 31
+		global.wave_grace_period = 54000
 		
 		global.fish_defense_init_done = true
 	end
