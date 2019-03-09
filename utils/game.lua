@@ -71,6 +71,20 @@ function Game.player_print(str)
     end
 end
 
+function Game.get_player(mixed)
+    if type(mixed) == "table" then
+        if mixed.__self then
+            return mixed and mixed.valid and mixed
+        elseif mixed.player_index then
+            local player = game.players[mixed.player_index]
+            return player and player.valid and player
+        end
+    elseif mixed then
+        local player = game.players[mixed]
+        return player and player.valid and player
+    end
+end
+
 --[[
     @param Position String to display at
     @param text String to display
