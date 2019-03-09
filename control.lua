@@ -1,3 +1,8 @@
+require 'utils.data_stages'
+_LIFECYCLE = _STAGE.control -- Control stage
+_DEBUG = false
+_DUMP_ENV = false
+
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
@@ -56,6 +61,21 @@ require "maps.junkyard"
 -----------------------------
 
 local event = require 'utils.event'
+
+function set(data_set, key, value)
+    server_commands.set_data(data_set, key, value)
+end
+
+function get(data_set, key)
+    server_commands.try_get_data(data_set, key, callback_token)
+end
+
+if _DUMP_ENV then
+    require 'utils.dump_env'
+end
+if _DEBUG then
+    require 'utils.debug.command'
+end
 
 local function on_player_created(event)	
 	local player = game.players[event.player_index]	
