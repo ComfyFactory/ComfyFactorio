@@ -396,7 +396,7 @@ local function on_chunk_charted(event)
 	local noise = get_noise(1, pos)	
 	if noise > 0.4 or noise < -0.4 then return end
 	local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
-	local size = 5 + math.floor(distance_to_center * 0.0075)
+	local size = 7 + math.floor(distance_to_center * 0.0075)
 	if size > 20 then size = 20 end
 	local amount = 100 + distance_to_center
 	map_functions.draw_rainbow_patch(pos, surface, size, amount)
@@ -437,9 +437,9 @@ local function on_player_mined_entity(event)
 	if not entity.valid then return end
 	
 	if entity.name == "mineable-wreckage" then 	
-		if math_random(1,32) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,12)) end			
-		if math_random(1,64) == 1 then unearthing_worm(entity.surface, entity.position) end			
-		if math_random(1,128) == 1 then tick_tack_trap(entity.surface, entity.position) end
+		if math_random(1,40) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,12)) end			
+		if math_random(1,80) == 1 then unearthing_worm(entity.surface, entity.position) end			
+		if math_random(1,160) == 1 then tick_tack_trap(entity.surface, entity.position) end
 	end
 		
 	if entity.force.name ~= "scrap" then return end

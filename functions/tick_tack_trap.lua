@@ -5,12 +5,12 @@ local tick_tacks = {"*tick*", "*tick*", "*tack*", "*tak*", "*tik*", "*tok*"}
 local kaboom_weights = {
 	{name = "grenade", chance = 6},
 	{name = "cluster-grenade", chance = 1},
-	{name = "destroyer-capsule", chance = 3},
-	{name = "defender-capsule", chance = 5},
-	{name = "distractor-capsule", chance = 4},
-	{name = "poison-capsule", chance = 4},
-	{name = "explosive-uranium-cannon-projectile", chance = 1},
-	{name = "explosive-cannon-projectile", chance = 3},
+	{name = "destroyer-capsule", chance = 1},
+	{name = "defender-capsule", chance = 4},
+	{name = "distractor-capsule", chance = 3},
+	{name = "poison-capsule", chance = 3},
+	{name = "explosive-uranium-cannon-projectile", chance = 2},
+	{name = "explosive-cannon-projectile", chance = 4},
 }
 
 local kabooms = {}				
