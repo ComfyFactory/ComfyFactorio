@@ -9,8 +9,11 @@ require "maps.modules.fluids_are_explosive"
 require "maps.modules.explosives_are_explosive"
 require "maps.modules.dangerous_nights"
 
+require "maps.junkyard_map_intro"
+
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
+local tick_tack_trap = require "functions.tick_tack_trap"
 local create_entity_chain = require "functions.create_entity_chain"
 local create_tile_chain = require "functions.create_tile_chain"
 
@@ -383,7 +386,7 @@ local function on_chunk_charted(event)
 	end
 	surface.regenerate_decorative(decorative_names, {position})	
 	
-	if math_random(1, 10) ~= 1 then return end
+	if math_random(1, 16) ~= 1 then return end
 	local pos = {x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}
 	local noise = get_noise(1, pos)	
 	if noise > 0.4 or noise < -0.4 then return end
@@ -429,12 +432,9 @@ local function on_player_mined_entity(event)
 	if not entity.valid then return end
 	
 	if entity.name == "mineable-wreckage" then 	
-		if math_random(1,32) == 1 then 
-			unearthing_biters(entity.surface, entity.position, math_random(4,12))	 
-		end			
-		if math_random(1,64) == 1 then
-			unearthing_worm(entity.surface, entity.position)		 
-		end
+		if math_random(1,32) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,12)) end			
+		if math_random(1,64) == 1 then unearthing_worm(entity.surface, entity.position) end			
+		if math_random(1,128) == 1 then tick_tack_trap(entity.surface, entity.position) end
 	end
 		
 	if entity.force.name ~= "scrap" then return end
