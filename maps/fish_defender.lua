@@ -1439,6 +1439,7 @@ local function on_market_item_purchased(event)
 						 
 			global.entity_limits[slot_upgrade_offers[x][1]].limit = global.entity_limits[slot_upgrade_offers[x][1]].limit + gain
 			game.print(player.name .. " has bought a " .. slot_upgrade_offers[x][2] .. " slot for " .. price .. " coins!", {r = 0.22, g = 0.77, b = 0.44})
+			server_commands.to_discord_bold(table.concat{player.name .. " has bought a " .. slot_upgrade_offers[x][2] .. " slot for " .. price .. " coins!"})
 			refresh_market_offers()
 		end
 	end
