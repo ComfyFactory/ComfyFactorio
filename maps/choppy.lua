@@ -156,6 +156,9 @@ local function on_marked_for_deconstruction(event)
 	if disabled_for_deconstruction[event.entity.name] then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 	end
+	if event.entity.type == "tree" then
+		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+	end
 end
 
 local function on_player_joined_game(event)	
@@ -237,7 +240,8 @@ end
 
 local function on_research_finished(event)
 	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 300
-	event.research.force.manual_mining_speed_modifier = game.forces.player.mining_drill_productivity_bonus * 3
+	if not event.research.force.technologies["steel-axe"].researched then return end
+	event.research.force.manual_mining_speed_modifier = 1 + game.forces.player.mining_drill_productivity_bonus * 3
 end
 
 local function on_entity_died(event)
