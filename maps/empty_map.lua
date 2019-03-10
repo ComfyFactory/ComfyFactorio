@@ -71,7 +71,8 @@ local function on_chunk_charted(event)
 	
 	if position.x % 4 ~= 0 then return end
 	if position.y % 4 ~= 0 then return end
-	map_functions.draw_rainbow_patch_v2({x = position.x * 32, y = position.y * 32}, surface, 28, 1000)
+	--map_functions.draw_rainbow_patch_v2({x = position.x * 32, y = position.y * 32}, surface, 28, 1000)	
+	map_functions.draw_derpy_tile_circle(surface, {x = position.x * 32, y = position.y * 32}, "concrete", 20, 26)
 end
 
 local function on_player_joined_game(event)

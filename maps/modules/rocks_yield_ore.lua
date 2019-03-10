@@ -40,8 +40,6 @@ local function get_amount(entity)
 	return amount
 end
 
-local coords = {{x = 0, y = 0},{x = -1, y = -1},{x = 1, y = -1},{x = 0, y = -1},{x = -1, y = 0},{x = -1, y = 1},{x = 0, y = 1},{x = 1, y = 1},{x = 1, y = 0}}
-
 local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
