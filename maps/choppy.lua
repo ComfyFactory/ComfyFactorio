@@ -197,9 +197,9 @@ local function get_amount(entity)
 end
 
 local function trap(entity)							
-	if math_random(1,512) == 1 then tick_tack_trap(entity.surface, entity.position) return end
+	if math_random(1,1024) == 1 then tick_tack_trap(entity.surface, entity.position) return end
 	if math_random(1,128) == 1 then unearthing_worm(entity.surface, entity.position) return end
-	if math_random(1,64) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,12)) return end	
+	if math_random(1,128) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,12)) return end	
 end
 
 local function on_player_mined_entity(event)

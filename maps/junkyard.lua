@@ -6,7 +6,7 @@ require "maps.modules.mineable_wreckage_yields_scrap"
 require "maps.modules.rocks_heal_over_time"
 require "maps.modules.spawners_contain_biters"
 require "maps.modules.biters_yield_coins"
-require "maps.modules.fluids_are_explosive"
+--require "maps.modules.fluids_are_explosive"
 --require "maps.modules.explosives_are_explosive"
 require "maps.modules.dangerous_nights"
 
@@ -247,19 +247,22 @@ local function place_random_scrap_entity(surface, position)
 	if r < 15 then
 		local e = surface.create_entity({name = scrap_buildings[math.random(1, #scrap_buildings)], position = position, force = "scrap"})		
 		if e.name == "nuclear-reactor" then
-			create_entity_chain(surface, {name = "heat-pipe", position = position, force = "player"}, math_random(32,64), 25)
+			create_entity_chain(surface, {name = "heat-pipe", position = position, force = "player"}, math_random(16,32), 25)
 		end
 		if e.name == "chemical-plant" or e.name == "steam-turbine" or e.name == "steam-engine" or e.name == "oil-refinery" then
 			create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(16,32), 25)
 		end
+		e.active = false
 		return
 	end
 	if r < 25 then
-		surface.create_entity({name = "substation", position = position, force = "scrap"})		
+		local e = surface.create_entity({name = "substation", position = position, force = "scrap"})
+		e.active = false
 		return
 	end
 	if r < 70 then
-		surface.create_entity({name = "medium-electric-pole", position = position, force = "scrap"})		
+		local e = surface.create_entity({name = "medium-electric-pole", position = position, force = "scrap"})
+		e.active = false
 		return
 	end
 	if r < 90 then
@@ -273,21 +276,27 @@ local function place_random_scrap_entity(surface, position)
 	e.fluidbox[1] = {name = fluids[math.random(1, #fluids)], amount = math.random(15000, 25000)}
 	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
 	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
-	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(40,70), 80)	
+	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(20,40), 80)	
 end
 
 local function create_inner_content(surface, pos, noise)
-	if math_random(1, 102400) == 1 then secret_shop(pos, surface) return end
+	if math_random(1, 90000) == 1 then secret_shop(pos, surface) return end
 	if math_random(1, 102400) == 1 then
-		if noise < 0.2 or noise > -0.2 then
-			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
-			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
-			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
-			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 48), 50)
-			create_entity_chain(surface, {name = "laser-turret", position = pos, force = "scrap_defense"}, 1, 25)
-			create_entity_chain(surface, {name = "accumulator", position = pos, force = "scrap_defense"}, math_random(2, 4), 1)
-			create_entity_chain(surface, {name = "substation", position = pos, force = "scrap_defense"}, math_random(6, 8), 1)
-			create_entity_chain(surface, {name = "solar-panel", position = pos, force = "scrap_defense"}, math_random(16, 24), 1)							
+		if noise < 0.3 or noise > -0.3 then
+			map_functions.draw_derpy_entity_ring(surface, pos, "laser-turret", "scrap_defense", 0, 2)
+			map_functions.draw_derpy_entity_ring(surface, pos, "accumulator", "scrap_defense", 2, 3)
+			map_functions.draw_derpy_entity_ring(surface, pos, "substation", "scrap_defense", 3, 4)
+			map_functions.draw_derpy_entity_ring(surface, pos, "solar-panel", "scrap_defense", 4, 6)
+			map_functions.draw_derpy_entity_ring(surface, pos, "stone-wall", "scrap_defense", 6, 7)
+			
+			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 32), 50)
+			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 32), 50)
+			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 32), 50)
+			create_tile_chain(surface, {name = "stone-path", position = pos}, math_random(16, 32), 50)
+			--create_entity_chain(surface, {name = "laser-turret", position = pos, force = "scrap_defense"}, 1, 25)
+			--create_entity_chain(surface, {name = "accumulator", position = pos, force = "scrap_defense"}, math_random(2, 4), 1)
+			--create_entity_chain(surface, {name = "substation", position = pos, force = "scrap_defense"}, math_random(6, 8), 1)
+		--	create_entity_chain(surface, {name = "solar-panel", position = pos, force = "scrap_defense"}, math_random(16, 24), 1)							
 		end
 		return
 	end
@@ -360,10 +369,9 @@ local function on_chunk_generated(event)
 	
 	if global.spawn_generated then return end
 	if left_top.x < 96 then return end	 
-	map_functions.draw_rainbow_patch({x = 0, y = 0}, surface, 12, 3000)
+	map_functions.draw_rainbow_patch_v2({x = 0, y = 0}, surface, 12, 2500)
 	local p = surface.find_non_colliding_position("character-corpse", {2,-2}, 32, 2)
-	local e = surface.create_entity({name = "character-corpse", position = p})
-	e.minable = false
+	local e = surface.create_entity({name = "character-corpse", position = p})	
 	for _, e in pairs (surface.find_entities_filtered({area = {{-50, -50},{50, 50}}})) do
 		local distance_to_center = math.sqrt(e.position.x^2 + e.position.y^2)
 		if e.valid then
@@ -399,7 +407,7 @@ local function on_chunk_charted(event)
 	local size = 7 + math.floor(distance_to_center * 0.0075)
 	if size > 20 then size = 20 end
 	local amount = 100 + distance_to_center
-	map_functions.draw_rainbow_patch(pos, surface, size, amount)
+	map_functions.draw_rainbow_patch_v2(pos, surface, size, amount)
 end
 	
 local function on_marked_for_deconstruction(event)	
@@ -453,8 +461,8 @@ local function on_player_mined_entity(event)
 	positions = shuffle(positions)
 	for i = 1, math.ceil(entity.prototype.max_health / 32), 1 do
 		if not positions[i] then return end
-		if math_random(1,3) == 1 then
-			unearthing_biters(entity.surface, positions[i], math_random(4,8))
+		if math_random(1,3) ~= 1 then
+			unearthing_biters(entity.surface, positions[i], math_random(5,10))
 		else
 			unearthing_worm(entity.surface, positions[i])
 		end			
@@ -466,7 +474,7 @@ local function on_entity_died(event)
 end
 
 local function on_research_finished(event)
-	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 200
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 300
 end
 	
 event.add(defines.events.on_research_finished, on_research_finished)

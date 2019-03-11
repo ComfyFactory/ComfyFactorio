@@ -13,7 +13,7 @@ local function shuffle(tbl)
 	return tbl
 end
 
-f.draw_derpy_tile_circle = function(surface, position, name, radius_min, radius_max)			
+f.draw_derpy_tile_ring = function(surface, position, name, radius_min, radius_max)			
 	local modifier_1 = math_random(2,5) * 0.01
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local tiles = {}
@@ -26,6 +26,26 @@ f.draw_derpy_tile_circle = function(surface, position, name, radius_min, radius_
 			
 			if distance_to_center + noise * radius_max * 0.25 < radius_max and distance_to_center + noise * radius_min * 0.25 > radius_min then
 				surface.set_tiles({{name = name, position = pos}}, true)																
+			end							
+		end
+	end		
+end
+
+f.draw_derpy_entity_ring = function(surface, position, name, force, radius_min, radius_max)			
+	local modifier_1 = 0.1
+	local seed = game.surfaces[1].map_gen_settings.seed
+	local tiles = {}
+	
+	for y = radius_max * -2, radius_max * 2, 1 do
+		for x = radius_max * -2, radius_max * 2, 1 do
+			local pos = {x = x + position.x, y = y + position.y}			
+			local noise = simplex_noise(pos.x * modifier_1, pos.y * modifier_1, seed)
+			local distance_to_center = math.sqrt(x^2 + y^2)
+			
+			if distance_to_center + noise * radius_max * 0.25 < radius_max and distance_to_center + noise * radius_min * 0.25 > radius_min then
+				if surface.can_place_entity({name = name, position = pos}) then
+					surface.create_entity({name = name, position = pos, force = force})
+				end
 			end							
 		end
 	end		

@@ -2,7 +2,7 @@
 require "maps.labyrinth_map_intro"
 require "maps.tools.teleporters"
 require "maps.modules.satellite_score"
-require "maps.modules.dynamic_landfill"
+require "maps.modules.landfill_reveals_nauvis"
 
 local map_functions = require "maps.tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
@@ -937,6 +937,7 @@ local function on_player_joined_game(event)
 		player.insert {name = 'raw-fish', count = 3}				
 		player.insert {name = 'pistol', count = 1}
 		player.insert {name = 'firearm-magazine', count = 32}
+		player.insert {name = 'landfill', count = 10240}
 	end
 	create_labyrinth_difficulty_gui(player)
 end

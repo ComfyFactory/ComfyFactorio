@@ -1,4 +1,4 @@
--- changes placed landfill tiles, adapting the new tile to adjecant tiles -- by mewmew
+-- placing landfill in another surface will reveal nauvis -- by mewmew
 
 local regenerate_decoratives = true
 
@@ -48,46 +48,42 @@ local function regenerate_decoratives(surface, position)
 	surface.regenerate_decorative(decorative_names, {chunk})
 end
 
-local function is_this_a_valid_source_tile(pos, tiles)
-	for _, tile in pairs(tiles) do
-		if tile.position.x == pos.x and tile.position.y == pos.y then
-			return false
-		end
-	end
-	return true
+local function place_entity(surface, e)
+	if e.type == "resource" then surface.create_entity({name = e.name, position = e.position, amount = e.amount}) return end	
+	if e.type == "cliff" then surface.create_entity({name = e.name, position = e.position, force = e.force, cliff_orientation = e.cliff_orientation}) return end	
+	if e.direction then surface.create_entity({name = e.name, position = e.position, force = e.force, direction = e.direction}) return end
+	surface.create_entity({name = e.name, position = e.position, force = e.force})
 end
 
-local function place_fitting_tile(position, surface, tiles_placed)
-	local tiles = {}	
-	for i = 1, 64, 0.5 do
-		local area = {{position.x - i, position.y - i}, {position.x + i, position.y + i}}	
-		for _, found_tile in pairs(surface.find_tiles_filtered({area = area, collision_mask = "ground-tile"})) do
-		
-			local valid_source_tile = is_this_a_valid_source_tile(found_tile.position, tiles_placed)			
-			if found_tile.name == "out-of-map" then valid_source_tile = false end
-			
-			if valid_source_tile then
-				if found_tile.hidden_tile then
-					table_insert(tiles, found_tile.hidden_tile)			
-				else
-					table_insert(tiles, found_tile.name)				
-				end			
-			end	
-		end
-		if #tiles > 0 then break end		
+local function generate_chunks(position)
+	local nauvis = game.surfaces.nauvis
+	local chunk = get_chunk_position(position)
+	if nauvis.is_chunk_generated(chunk) then return end
+	nauvis.request_to_generate_chunks(position, 1)
+	nauvis.force_generate_chunk_requests()
+end
+
+local function process_tile(surface, position, old_tile, player)	
+	local nauvis = game.surfaces.nauvis
+	generate_chunks(position)
+	local new_tile = nauvis.get_tile(position)	
+	surface.set_tiles({new_tile})
+	if new_tile.name == old_tile.name then
+		player.insert({name = "landfill", count = 1})
+		return
 	end
-	if #tiles == 0 then return false end
-	tiles = shuffle(tiles)
-	surface.set_tiles({{name = tiles[1], position = position}}, true)
-end	
+	for _, e in pairs(nauvis.find_entities_filtered({area = {{position.x - 0, position.y - 0}, {position.x + 0.999, position.y + 0.999}}})) do
+		place_entity(surface, e)				
+	end
+end
 	
 local function on_player_built_tile(event)
 	if event.item.name ~= "landfill" then return end
 	local surface = game.surfaces[event.surface_index]
-	
+	local player = game.players[event.player_index]
 	for _, placed_tile in pairs(event.tiles) do
 		if water_tile_whitelist[placed_tile.old_tile.name] then
-			place_fitting_tile(placed_tile.position, surface, event.tiles)
+			process_tile(surface, placed_tile.position, placed_tile.old_tile, player)			
 			if regenerate_decoratives then
 				if math_random(1, 4) == 1 then
 					regenerate_decoratives(surface, placed_tile.position)
