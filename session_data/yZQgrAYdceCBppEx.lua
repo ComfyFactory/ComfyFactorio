@@ -1,0 +1,28 @@
+local playsession = {
+	{"nakedzeldas", {32231}},
+	{"Olreich", {143490}},
+	{"stickbob101", {73368}},
+	{"Clevin", {142400}},
+	{"LtDerp", {142281}},
+	{"dingusdonkey", {141687}},
+	{"remarkablysilly", {141436}},
+	{"Chard", {140743}},
+	{"tyssa", {138080}},
+	{"ladyflyer88", {133757}},
+	{"darklight720", {125999}},
+	{"knot2006", {41778}},
+	{"qdbp", {5502}},
+	{"corbin9228", {110088}},
+	{"yamecha", {81083}},
+	{"matthew1206", {105023}},
+	{"DM_Craft", {96204}},
+	{"loadover", {4451}},
+	{"ronaldoklais", {14161}},
+	{"Plawerth", {24539}},
+	{"Zorin862", {18682}},
+	{"tickterd", {49583}},
+	{"Griffin904", {19939}},
+	{"kamaboko190", {15727}},
+	{"Thuro", {7476}}
+}
+return playsession
