@@ -422,12 +422,8 @@ local function grow_cell(chunk_position, surface)
 			if v.autoplace_specification then
 				decorative_names[#decorative_names+1] = k
 			end
-		end		
-		for _, surface in pairs(game.surfaces) do	
-			for chunk in surface.get_chunks() do		
-				surface.regenerate_decorative(decorative_names, {chunk_position})
-			end
-		end
+		end										
+		surface.regenerate_decorative(decorative_names, {chunk_position})
 		
 		if unique_room == "railway_roundabout" then
 			local e = surface.create_entity {name="big-ship-wreck-1", position={left_top_x + 16, left_top_y + 22}, force = "player"}
@@ -678,14 +674,13 @@ local function spawn_infinity_chest(pos, surface)
 		{"stone", math_random(3,5)},
 		{"stone", math_random(3,5)},
 		{"stone", math_random(3,5)},
-		{"stone", math_random(3,5)},
 		{"stone", math_random(3,5)},		
 		{"iron-ore", 1},		
 		{"copper-ore", 1},								
 	}
 	local x = math_random(1, #infinity_chests)
 	local e = surface.create_entity {name = "infinity-chest", position = pos, force = "player"}
-	e.set_infinity_filter(1, {name = infinity_chests[x][1], count = infinity_chests[x][2]})
+	e.set_infinity_container_filter(1, {name = infinity_chests[x][1], count = infinity_chests[x][2]})
 	e.minable = false
 	e.destructible = false
 	e.operable = false

@@ -1332,9 +1332,10 @@ local function on_player_respawned(event)
 end
 
 local function on_research_finished(event)
-	game.forces.player.manual_mining_speed_modifier = game.forces.player.mining_drill_productivity_bonus * 4
-	game.forces.player.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 500
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 500
 	refresh_gui()
+	if not event.research.force.technologies["steel-axe"].researched then return end
+	event.research.force.manual_mining_speed_modifier = 1 + game.forces.player.mining_drill_productivity_bonus * 4
 end
 
 local function on_gui_click(event)

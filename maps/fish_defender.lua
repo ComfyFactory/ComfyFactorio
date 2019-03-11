@@ -991,8 +991,8 @@ local function on_player_joined_game(event)
 		--game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {
-			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 100},
-			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 350},
+			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
+			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
 			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}

@@ -3,14 +3,14 @@
 local tick_tacks = {"*tick*", "*tick*", "*tack*", "*tak*", "*tik*", "*tok*"}
 
 local kaboom_weights = {
-	{name = "grenade", chance = 6},
+	{name = "grenade", chance = 7},
 	{name = "cluster-grenade", chance = 1},
 	{name = "destroyer-capsule", chance = 1},
 	{name = "defender-capsule", chance = 4},
 	{name = "distractor-capsule", chance = 3},
-	{name = "poison-capsule", chance = 3},
-	{name = "explosive-uranium-cannon-projectile", chance = 2},
-	{name = "explosive-cannon-projectile", chance = 4},
+	{name = "poison-capsule", chance = 2},
+	{name = "explosive-uranium-cannon-projectile", chance = 3},
+	{name = "explosive-cannon-projectile", chance = 5},
 }
 
 local kabooms = {}				
@@ -33,6 +33,7 @@ end
 
 local function create_kaboom(surface, position, name)
 	local target = position
+	local speed = 0.5
 	if name == "defender-capsule" or name == "destroyer-capsule" or name == "distractor-capsule" then 
 		surface.create_entity({	
 			name = "flying-text",
@@ -41,14 +42,15 @@ local function create_kaboom(surface, position, name)
 			color = {r=0.8, g=0.0, b=0.0}
 		})		
 		local nearest_player_unit = surface.find_nearest_enemy({position = position, max_distance=128, force="enemy"})
-		if nearest_player_unit then target = nearest_player_unit.position end				
+		if nearest_player_unit then target = nearest_player_unit.position end
+		speed = 0.001
 	end		
 	surface.create_entity({	
 		name = name,
 		position = position,
 		force = "enemy",
 		target = target,
-		speed = 0.001
+		speed = speed
 	})			
 end
 
