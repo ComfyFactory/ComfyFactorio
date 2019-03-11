@@ -213,7 +213,7 @@ local function on_player_mined_entity(event)
 		
 	if tree_yield[entity.name] then		
 		if event.buffer then event.buffer.clear() end			
-		
+		if not event.player_index then return end
 		local amount = get_amount(entity)
 		local second_item_amount = math_random(2,5)
 		local second_item = "wood"
@@ -230,7 +230,7 @@ local function on_player_mined_entity(event)
 			text = "+" .. amount .. " [item=" .. tree_yield[entity.name] .. "] +" .. second_item_amount .. " [item=" .. second_item .. "]",
 			color = {r=0.8,g=0.8,b=0.8}})	
 		
-		if not event.player_index then return end
+		
 		local player = game.players[event.player_index]
 		
 		local inserted_count = player.insert({name = tree_yield[entity.name], count = amount})				

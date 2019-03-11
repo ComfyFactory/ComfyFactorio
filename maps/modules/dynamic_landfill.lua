@@ -97,4 +97,21 @@ local function on_player_built_tile(event)
 	end		
 end
 
+local function on_robot_built_tile(event)
+	if event.item.name ~= "landfill" then return end
+	local surface = event.robot.surface
+	
+	for _, placed_tile in pairs(event.tiles) do
+		if water_tile_whitelist[placed_tile.old_tile.name] then
+			place_fitting_tile(placed_tile.position, surface, event.tiles)
+			if regenerate_decoratives then
+				if math_random(1, 4) == 1 then
+					regenerate_decoratives(surface, placed_tile.position)
+				end
+			end
+		end
+	end
+end
+
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
+event.add(defines.events.on_robot_built_tile, on_robot_built_tile)

@@ -5,7 +5,7 @@ local info = [[
 	
 	Different kinds of trees, yield different kinds of ore and wood. 	
 	Yes, they seem to draw minerals out of the ground and manifesting it as "fruit".
-	Their yield increases with distance and Mining Productivity Research will increase chopping speed and backpack size.
+	Their yield increases with distance. Mining Productivity Research will increase chopping speed and backpack size.
 	
 	Beware, sometimes there are some bugs hiding underneath the trees.
 	Even dangerous traps have been encountered before.
