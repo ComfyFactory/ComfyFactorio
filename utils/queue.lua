@@ -1,7 +1,7 @@
 local Queue = {}
 
 function Queue.new()
-    local queue = {_head = 0, _tail = 0}        
+    local queue = {_head = 0, _tail = 0}
     return queue
 end
 
@@ -25,8 +25,9 @@ function Queue.pop(queue)
     local element = queue[index]
     queue[index] = nil
 
-    queue._tail = index - 1
-
+    if element then
+        queue._tail = index - 1
+    end
     return element
 end
 
