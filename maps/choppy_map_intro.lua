@@ -1,35 +1,24 @@
 local event = require 'utils.event'
 
---local main_caption = " --Junkyard-- "
---local sub_caption = "Some may call this junk. Me, I call them treasures."
 local info = [[
-	Citizen Log #468-2A-3287, Freelancer Cole
+	You are a lumberjack with a passion to chop.	
 	
-	To whoever is reading this message,
-	i have most likely already left this doomed place,	or... well..
+	Different kinds of trees, yield different kinds of ore and wood. 	
+	Yes, they seem to draw minerals out of the ground and manifesting it as "fruit".
+	Their yield increases with distance and Mining Productivity Research will increase chopping speed and backpack size.
 	
-	I am stranded on this foreign world since months and i have given up on fixing my ships transceiver.
-	Things aren't looking too good, i must admit.	
-	The rust and devastation tells a story of an advanced civilization,
-	which seems to have evacuated their home long time ago.
+	Beware, sometimes there are some bugs hiding underneath the trees.
+	Even dangerous traps have been encountered before.
 	
-	Any natural resources are rare and the ones worth while are too hard for me to reach.
-	Luckily, the wrecks yield all kinds of useful scraps, but also various dangers.
-	Almost lost half a leg some days ago while digging out a crate.
+	Also, these mysterious ore trees don't burn very well, so do not worry if some of them catch on fire.
 	
-	The wildlife is extremely aggressive, especially at the time of night.	
-	Most of these insect appearing like creatures seem to live underground.
-	Stay near your light sources, if you want to have a chance of surviving here!!
-	
-	I must make a move now, hopefully will find those missing parts.
-	
-	###Log End###
+	Choppy Choppy Wood
 ]]
 
 local function create_map_intro_button(player)
 	if player.gui.top["map_intro_button"] then return end
 	local b = player.gui.top.add({type = "sprite-button", caption = "?", name = "map_intro_button", tooltip = "Map Info"})
-	b.style.font_color = {r = 0.8, g = 0.8, b = 0.8}
+	b.style.font_color = {r = 0.1, g = 0.8, b = 0.1}
 	b.style.font = "heading-1"
 	b.style.minimal_height = 38
 	b.style.minimal_width = 38

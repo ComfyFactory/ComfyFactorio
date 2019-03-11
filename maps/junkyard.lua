@@ -406,7 +406,7 @@ local function on_chunk_charted(event)
 	local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
 	local size = 7 + math.floor(distance_to_center * 0.0075)
 	if size > 20 then size = 20 end
-	local amount = 100 + distance_to_center
+	local amount = 200 + distance_to_center
 	map_functions.draw_rainbow_patch_v2(pos, surface, size, amount)
 end
 	

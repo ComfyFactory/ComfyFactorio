@@ -15,11 +15,11 @@ local function on_player_changed_position(event)
 	for _, lamp in pairs(player.surface.find_entities_filtered({area={{player.position.x - 18, player.position.y - 18},{player.position.x + 18, player.position.y + 18}}, name="small-lamp"})) do
 		local circuit = lamp.get_or_create_control_behavior()
 		if circuit then
-			if lamp.energy > 40 and circuit.disabled == false then								
+			if lamp.energy > 25 and circuit.disabled == false then								
 				return
 			end
 		else
-			if lamp.energy > 40 then								
+			if lamp.energy > 25 then								
 				return
 			end
 		end

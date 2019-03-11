@@ -3,6 +3,7 @@
 require "maps.modules.dynamic_landfill"
 require "maps.modules.satellite_score"
 require "maps.modules.spawners_contain_biters"
+require "maps.choppy_map_intro"
 
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
@@ -191,15 +192,15 @@ local tree_yield = {
 local function get_amount(entity)
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
 	local amount = 35 + (distance_to_center * 0.33)
-	if amount > 250 then amount = 250 end
+	if amount > 500 then amount = 500 end
 	amount = math.random(math.ceil(amount * 0.5), math.ceil(amount * 1.5))	
 	return amount
 end
 
 local function trap(entity)							
 	if math_random(1,1024) == 1 then tick_tack_trap(entity.surface, entity.position) return end
-	if math_random(1,128) == 1 then unearthing_worm(entity.surface, entity.position) return end
-	if math_random(1,128) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,12)) return end	
+	if math_random(1,256) == 1 then unearthing_worm(entity.surface, entity.position) end
+	if math_random(1,128) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end	
 end
 
 local function on_player_mined_entity(event)
@@ -210,18 +211,26 @@ local function on_player_mined_entity(event)
 		trap(entity)
 	end
 		
-	if tree_yield[entity.name] then
-		if not event.player_index then return end
+	if tree_yield[entity.name] then		
 		if event.buffer then event.buffer.clear() end			
-	
+		
 		local amount = get_amount(entity)
-		local wood_amount = math_random(2,5)
+		local second_item_amount = math_random(2,5)
+		local second_item = "wood"
+		
+		if entity.type == "simple-entity" then
+			amount = amount * 2
+			second_item_amount = math_random(8,16)
+			second_item = "stone"
+		end
+		
 		entity.surface.create_entity({
 			name = "flying-text",
 			position = entity.position,
-			text = "+" .. amount .. " [item=" .. tree_yield[entity.name] .. "] +" .. wood_amount .. " [item=wood]",
+			text = "+" .. amount .. " [item=" .. tree_yield[entity.name] .. "] +" .. second_item_amount .. " [item=" .. second_item .. "]",
 			color = {r=0.8,g=0.8,b=0.8}})	
-			
+		
+		if not event.player_index then return end
 		local player = game.players[event.player_index]
 		
 		local inserted_count = player.insert({name = tree_yield[entity.name], count = amount})				
@@ -229,11 +238,11 @@ local function on_player_mined_entity(event)
 		if amount > 0 then
 			entity.surface.spill_item_stack(entity.position,{name = tree_yield[entity.name], count = amount}, true)
 		end
-		
-		local inserted_count = player.insert({name = "wood", count = wood_amount})				
-		wood_amount = wood_amount - inserted_count
-		if wood_amount > 0 then
-			entity.surface.spill_item_stack(entity.position,{name = "wood", count = wood_amount}, true)
+				
+		local inserted_count = player.insert({name = second_item, count = second_item_amount})				
+		second_item_amount = second_item_amount - inserted_count
+		if second_item_amount > 0 then
+			entity.surface.spill_item_stack(entity.position,{name = second_item, count = second_item_amount}, true)
 		end
 	end					
 end

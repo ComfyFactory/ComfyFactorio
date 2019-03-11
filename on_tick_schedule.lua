@@ -19,9 +19,9 @@ local function on_tick()
 	global.on_tick_schedule[game.tick] = nil
 end
 
-local function on_player_joined_game(event)
+local function on_init(event)
 	if not global.on_tick_schedule then global.on_tick_schedule = {} end	
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.on_init(on_init)
 event.add(defines.events.on_tick, on_tick)
