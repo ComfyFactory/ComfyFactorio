@@ -250,7 +250,7 @@ local function place_random_scrap_entity(surface, position)
 			create_entity_chain(surface, {name = "heat-pipe", position = position, force = "player"}, math_random(16,32), 25)
 		end
 		if e.name == "chemical-plant" or e.name == "steam-turbine" or e.name == "steam-engine" or e.name == "oil-refinery" then
-			create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(16,32), 25)
+			create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(8,16), 25)
 		end
 		e.active = false
 		return
