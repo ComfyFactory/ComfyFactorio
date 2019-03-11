@@ -1,7 +1,8 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Task = require 'utils.Task'
-local Token = require 'utils.global_token'
+local Game = require 'utils.game'
+local Token = require 'utils.token'
 
 local player_corpses = {}
 
@@ -14,7 +15,7 @@ Global.register(
 
 local function player_died(event)
     local player_index = event.player_index
-    local player = game.players[player_index]
+    local player = Game.get_player_by_index(player_index)
 
     if not player or not player.valid then
         return
@@ -88,7 +89,9 @@ local corpse_util_mined_entity =
 local function mined_entity(event)
     local entity = event.entity
 
-    if entity and entity.valid and entity.name == 'character-corpse' then
+        if not entity or not entity.valid or entity.name ~= 'character-corpse' then
+        return
+    end
         -- The corpse may be mined but not removed (if player doesn't have inventory space)
         -- so we wait one tick to see if the corpse is gone.
         Task.set_timeout_in_ticks(
@@ -100,7 +103,6 @@ local function mined_entity(event)
                 tick = entity.character_corpse_tick_of_death
             }
         )
-    end
 end
 
 Event.add(defines.events.on_player_died, player_died)
