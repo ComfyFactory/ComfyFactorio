@@ -14,6 +14,8 @@ local worms = {
 		[7] = {"behemoth-worm-turret"}
 	}
 
+local spawners = {"biter-spawner", "biter-spawner", "spitter-spawner"}
+	
 local function get_noise(name, pos)	
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local noise_seed_add = 25000
@@ -21,9 +23,9 @@ local function get_noise(name, pos)
 		local noise = {}
 		noise[1] = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
+		noise[2] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
 		seed = seed + noise_seed_add
-		local noise = noise[1] + noise[2] * 0.25
+		local noise = noise[1] + noise[2] * 0.2
 		--noise = noise * 0.5
 		return noise
 	end	
@@ -39,8 +41,8 @@ end
 local function generate_biters(surface, pos, distance_to_center)
 	if distance_to_center < biter_territory_starting_radius then return end
 	
-	if distance_to_center < biter_territory_starting_radius + 64 then
-		if math_random(1,96) == 1 and surface.can_place_entity({name = "behemoth-worm-turret", position = pos}) then
+	if distance_to_center < biter_territory_starting_radius + 32 then
+		if math_random(1, 128) == 1 and surface.can_place_entity({name = "behemoth-worm-turret", position = pos}) then
 			surface.create_entity({name = get_worm(distance_to_center), position = pos})
 		end
 		return
@@ -48,20 +50,48 @@ local function generate_biters(surface, pos, distance_to_center)
 	
 	local noise = get_noise(1, pos)
 	
-	if noise > 0.3 or noise < -0.3 then		
-		if math_random(1,8) == 1 and surface.can_place_entity({name = "rocket-silo", position = pos}) then
-			surface.create_entity({name = "biter-spawner", position = pos})
+	if noise > 0.5 or noise < -0.5 then		
+		if math_random(1,12) == 1 and surface.can_place_entity({name = "rocket-silo", position = pos}) then
+			surface.create_entity({name = spawners[math_random(1,3)], position = pos})
 		end
 		return
 	end
 	
-	if noise < 0.1 or noise > -0.1 then
-		if math_random(1,64) == 1 then
+	if noise > 0.4 or noise < -0.4 then
+		if math_random(1,48) == 1 then
 			if surface.can_place_entity({name = "behemoth-worm-turret", position = pos}) then
 				surface.create_entity({name = get_worm(distance_to_center), position = pos})
 			end
 		end
 		return
+	end
+end
+
+local function generate_horizontal_river(surface, pos, distance_to_center)
+	if pos.y > 32 then return end
+	if pos.y < -32 then return end
+	
+	local noise = get_noise(1, pos)
+	surface.set_tiles({{name = "water", position = pos}})
+end
+
+local function generate_horizontal_river(surface, pos, distance_to_center)
+	--local pos = {x = math.floor(pos.x), y = math.floor(pos.y)}
+	if pos.y < -16 then return end
+	
+	--local noise = get_noise(1, pos)
+	surface.set_tiles({{name = "water", position = pos}})
+end
+
+local function generate_circle_spawn(surface, pos, distance_to_center)
+	--local pos = {x = math.floor(pos.x), y = math.floor(pos.y)}
+	if pos.y > 16 then return end
+	if pos.y < -16 then return end
+	if pos.x > 16 then return end
+	if pos.x < -16 then return end
+	
+	if distance_to_center < 10 then
+		surface.set_tiles({{name = "concrete", position = pos}})
 	end
 end
 
@@ -75,11 +105,13 @@ local function on_chunk_generated(event)
 	
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
-	for x = 0.5, 31.5, 1 do
-		for y = 0.5, 31.5, 1 do
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
-			generate_biters(surface, pos, distance_to_center)
+			generate_horizontal_river(surface, pos)
+			generate_circle_spawn(surface, pos, distance_to_center)
+			generate_biters(surface, pos, distance_to_center)			
 		end
 	end
 	

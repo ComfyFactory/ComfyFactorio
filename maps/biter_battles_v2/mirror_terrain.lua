@@ -49,7 +49,7 @@ local function get_chunk_position(position)
 end
 
 local function process_entity(surface, entity)
-	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
+	local new_pos = {x = entity.position.x * -1, y = (entity.position.y * -1) - 1}
 	if entity.type == "tree" then
 		local e = surface.create_entity({name = entity.name, position = new_pos, graphics_variation = entity.graphics_variation})
 		--e.graphics_variation = entity.graphics_variation
@@ -84,7 +84,7 @@ local function mirror_chunk(surface, chunk_area, chunk_position)
 		surface.force_generate_chunk_requests()
 	end
 	for _, tile in pairs(surface.find_tiles_filtered({area = chunk_area})) do
-		surface.set_tiles({{name = tile.name, position = {x = tile.position.x * -1, y = tile.position.y * -1}}}, true)
+		surface.set_tiles({{name = tile.name, position = {x = tile.position.x * -1, y = (tile.position.y * -1) - 1}}}, true)
 	end	
 	for _, entity in pairs(surface.find_entities_filtered({area = chunk_area})) do
 		process_entity(surface, entity)
@@ -92,7 +92,7 @@ local function mirror_chunk(surface, chunk_area, chunk_position)
 	for _, decorative in pairs(surface.find_decoratives_filtered{area=chunk_area}) do
 		surface.create_decoratives{
 			check_collision=false,
-			decoratives={{name = decorative.decorative.name, position = {x = decorative.position.x * -1, y = decorative.position.y * -1}, amount = decorative.amount}}
+			decoratives={{name = decorative.decorative.name, position = {x = decorative.position.x * -1, y = (decorative.position.y * -1) - 1}, amount = decorative.amount}}
 		}
 	end		
 end
@@ -103,12 +103,16 @@ local function on_chunk_generated(event)
 	
 	if event.area.left_top.y > 32 or event.area.left_top.x > 32 or event.area.left_top.x < -32 then 
 		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-			e.destroy()
+			if e.valid then
+				e.destroy()
+			end
 		end
 	else
 		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-			if e.name ~= "player" then
-				e.destroy()
+			if e.valid then
+				if e.name ~= "player" then
+					e.destroy()
+				end
 			end
 		end
 	end
@@ -123,7 +127,7 @@ local function on_chunk_generated(event)
 	global.on_tick_schedule[game.tick + 1][#global.on_tick_schedule[game.tick + 1] + 1] = {
 		func = mirror_chunk,
 		args = {surface, mirror_chunk_area, get_chunk_position({x = x, y = y})}
-	}										
+	}									
 end
 
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
