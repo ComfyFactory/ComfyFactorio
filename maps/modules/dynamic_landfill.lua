@@ -1,7 +1,6 @@
 -- changes placed landfill tiles, adapting the new tile to adjecant tiles -- by mewmew
 
 local regenerate_decoratives = true
-
 local event = require 'utils.event'
 local math_random = math.random
 local table_insert = table.insert
@@ -12,13 +11,20 @@ local water_tile_whitelist = {
 		["deepwater-green"] = true
 	}
 
-local function shuffle(tbl)
-	local size = #tbl
-		for i = size, 1, -1 do
-			local rand = math.random(size)
-			tbl[i], tbl[rand] = tbl[rand], tbl[i]
-		end
-	return tbl
+local spiral_coords = {}
+for r = 1, 128, 1 do
+	for x = r * -1, r - 1, 1 do
+		table_insert(spiral_coords, {x = x, y = r * -1})
+	end
+	for y = r * -1, r - 1, 1 do
+		table_insert(spiral_coords, {x = r, y = y})
+	end	
+	for x = r, r * -1 + 1, -1 do
+		table_insert(spiral_coords, {x = x, y = r})
+	end	
+	for y = r, r * -1 + 1, -1 do
+		table_insert(spiral_coords, {x = r * -1, y = y})
+	end	
 end
 
 local function get_chunk_position(position)
@@ -38,7 +44,6 @@ local function regenerate_decoratives(surface, position)
 	local chunk = get_chunk_position(position)
 	if not chunk then return end
 	surface.destroy_decoratives({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}})
-	--surface.destroy_decoratives({{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}})
 	local decorative_names = {}
 	for k,v in pairs(game.decorative_prototypes) do
 		if v.autoplace_specification then
@@ -57,28 +62,23 @@ local function is_this_a_valid_source_tile(pos, tiles)
 	return true
 end
 
-local function place_fitting_tile(position, surface, tiles_placed)
-	local tiles = {}	
-	for i = 1, 64, 0.5 do
-		local area = {{position.x - i, position.y - i}, {position.x + i, position.y + i}}	
-		for _, found_tile in pairs(surface.find_tiles_filtered({area = area, collision_mask = "ground-tile"})) do
-		
-			local valid_source_tile = is_this_a_valid_source_tile(found_tile.position, tiles_placed)			
-			if found_tile.name == "out-of-map" then valid_source_tile = false end
+local function place_fitting_tile(position, surface, tiles_placed)		
+	for _, coord in pairs(spiral_coords) do
+		local tile = surface.get_tile({position.x + coord.x, position.y + coord.x})
+		if not tile.collides_with("player-layer") then				
+			local valid_source_tile = is_this_a_valid_source_tile(tile.position, tiles_placed)			
+			if tile.name == "out-of-map" then valid_source_tile = false end
 			
 			if valid_source_tile then
-				if found_tile.hidden_tile then
-					table_insert(tiles, found_tile.hidden_tile)			
+				if tile.hidden_tile then
+					surface.set_tiles({{name = tile.hidden_tile, position = position}}, true)			
 				else
-					table_insert(tiles, found_tile.name)				
-				end			
+					surface.set_tiles({{name = tile.name, position = position}}, true)				
+				end
+				return
 			end	
-		end
-		if #tiles > 0 then break end		
-	end
-	if #tiles == 0 then return false end
-	tiles = shuffle(tiles)
-	surface.set_tiles({{name = tiles[1], position = position}}, true)
+		end				
+	end		
 end	
 	
 local function on_player_built_tile(event)
@@ -89,7 +89,7 @@ local function on_player_built_tile(event)
 		if water_tile_whitelist[placed_tile.old_tile.name] then
 			place_fitting_tile(placed_tile.position, surface, event.tiles)
 			if regenerate_decoratives then
-				if math_random(1, 4) == 1 then
+				if math_random(1, 5) == 1 then
 					regenerate_decoratives(surface, placed_tile.position)
 				end
 			end

@@ -19,7 +19,7 @@ require "score"
 require "on_tick_schedule"
 
 ---- enable modules here ----
-require "maps.tools.cheat_mode"
+--require "maps.tools.cheat_mode"
 --require "maps.modules.hunger"
 --require "maps.modules.area_unlocked_on_rotated_entity"
 --require "maps.modules.fish_respawner"
@@ -36,6 +36,7 @@ require "maps.tools.cheat_mode"
 --require "maps.modules.hunger_games"
 --require "maps.modules.explosive_player_respawn"
 --require "maps.modules.burden"
+require "maps.modules.team_teleport"
 -----------------------------
 
 ---- enable maps here ----
@@ -45,7 +46,7 @@ require "maps.tools.cheat_mode"
 --require "maps.junkyard"
 --require "maps.spooky_forest"
 --require "maps.nightfall"
-require "maps.atoll"
+--require "maps.atoll"
 --require "maps.choppy"
 --require "maps.tank_battles"
 --require "maps.spiral_troopers"

@@ -98,8 +98,8 @@ local function on_chunk_generated(event)
 		process_entity(e)		
 	end
 	
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
+	for x = 0.5, 31.5, 1 do
+		for y = 0.5, 31.5, 1 do
 			local tile_to_insert = false
 			local pos = {x = left_top.x + x, y = left_top.y + y}
 											
@@ -191,7 +191,7 @@ local tree_yield = {
 
 local function get_amount(entity)
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
-	local amount = 35 + (distance_to_center * 0.33)
+	local amount = 35 + (distance_to_center * 0.25)
 	if amount > 500 then amount = 500 end
 	amount = math.random(math.ceil(amount * 0.5), math.ceil(amount * 1.5))	
 	return amount
