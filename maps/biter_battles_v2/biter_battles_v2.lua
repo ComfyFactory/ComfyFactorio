@@ -1,5 +1,6 @@
 -- Biter Battles v2 -- by MewMew
 
+require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.mirror_terrain"
 
 local simplex_noise = require 'utils.simplex_noise'
@@ -29,6 +30,8 @@ end
 
 local function on_player_joined_game(event)
 	--init_surface(event)
+	local player = game.players[event.player_index]
+	player.character.destructible = false
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

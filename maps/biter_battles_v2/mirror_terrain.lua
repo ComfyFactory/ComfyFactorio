@@ -13,26 +13,26 @@ local direction_translation = {
 }
 
 local cliff_orientation_translation = {
-	["west-to-east"] =  "east-to-west",
-	["north-to-south"] =  "south-to-north",
-	["east-to-west"] =  "west-to-east",
-	["south-to-north"] =  "north-to-south",
-	["west-to-north"] =  "east-to-south",
-	["north-to-east"] =  "south-to-west",
-	["east-to-south"] =  "west-to-north",
-	["south-to-west"] =  "north-to-east",	
-	["west-to-south"] =  "east-to-north",
-	["north-to-west"] =  "south-to-east",
-	["east-to-north"] =  "west-to-south",
-	["south-to-east"] =  "north-to-west",
-	["west-to-none"] =  "east-to-none",
-	["none-to-east"] =  "none-to-west",
-	["north-to-none"] =  "south-to-none",
-	["none-to-south"] =  "none-to-north",
 	["east-to-none"] =  "west-to-none",
-	["none-to-west"] =  "none-to-east",
+	["east-to-north"] =  "west-to-south",
+	["east-to-south"] =  "west-to-north",
+	["east-to-west"] =  "west-to-east",	
+	["north-to-east"] =  "south-to-west",
+	["north-to-none"] =  "south-to-none",
+	["north-to-south"] =  "south-to-north",
+	["north-to-west"] =  "south-to-east",
+	["south-to-east"] =  "north-to-west",
 	["south-to-none"] =  "north-to-none",
-	["none-to-north"] =  "none-to-south"
+	["south-to-north"] =  "north-to-south",
+	["south-to-west"] =  "north-to-east",	
+	["west-to-east"] =  "east-to-west",
+	["west-to-none"] =  "east-to-none",
+	["west-to-north"] =  "east-to-south",
+	["west-to-south"] =  "east-to-north",
+	["none-to-east"] =  "none-to-west",
+	["none-to-north"] =  "none-to-south",
+	["none-to-south"] =  "none-to-north",
+	["none-to-west"] =  "none-to-east"
 }
 
 local function get_chunk_position(position)
@@ -51,8 +51,8 @@ end
 local function process_entity(surface, entity)
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then
-		local e = surface.create_entity({name = entity.name, position = new_pos})
-		e.graphics_variation = entity.graphics_variation
+		local e = surface.create_entity({name = entity.name, position = new_pos, graphics_variation = entity.graphics_variation})
+		--e.graphics_variation = entity.graphics_variation
 		--e.tree_color_index = entity.tree_color_index
 		return
 	end
