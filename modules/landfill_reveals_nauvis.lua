@@ -23,8 +23,8 @@ end
 
 local function get_chunk_position(position)
 	local chunk_position = {}
-	position.x = math.floor(position.x, 0)
-	position.y = math.floor(position.y, 0)
+	position.x = math.floor(position.x)
+	position.y = math.floor(position.y)
 	for x = 0, 31, 1 do
 		if (position.x - x) % 32 == 0 then chunk_position.x = (position.x - x)  / 32 end
 	end

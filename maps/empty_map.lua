@@ -1,6 +1,6 @@
 -- just an empty map for testing thingies
 local event = require 'utils.event'
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 
 function dump_boom_layout()
 	local surface = game.surfaces["empty_map"]

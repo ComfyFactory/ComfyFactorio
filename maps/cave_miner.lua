@@ -1,15 +1,14 @@
 -- Cave Miner -- mewmew made this --
 --Use /c spaghetti() to play without bots.
 
-require "maps.modules.rocks_broken_paint_tiles"
+require "modules.rocks_broken_paint_tiles"
 require "maps.cave_miner_kaboomsticks"
-require "maps.modules.satellite_score"
---require "maps.modules.explosive_biters"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.teleporting_worms"
---require "maps.modules.splice_double"
---require "maps.modules.spitters_spit_biters"
---require "maps.modules.biters_double_damage"
+require "modules.satellite_score"
+--require "modules.explosive_biters"
+require "modules.spawners_contain_biters"
+require "modules.teleporting_worms"
+--require "modules.splice_double"
+--require "modules.biters_double_damage"
 
 local enable_fishbank_terminal = false
 local simplex_noise = require 'utils.simplex_noise'

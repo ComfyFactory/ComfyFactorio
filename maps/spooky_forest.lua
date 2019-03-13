@@ -1,24 +1,24 @@
 -- spooky forest -- by mewmew --
 
-require "maps.modules.hunger"
-require "maps.modules.fish_respawner"
+require "modules.hunger"
+require "modules.fish_respawner"
 global.fish_respawner_water_tiles_per_fish = 16
 
-require "maps.modules.satellite_score"
-require "maps.modules.explosives_are_explosive"
-require "maps.modules.explosive_biters"
-require "maps.modules.dynamic_landfill"
-require "maps.modules.teleporting_worms"
-require "maps.modules.splice_double"
-require "maps.modules.biters_double_hp"
-require "maps.modules.biters_double_damage"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.rocks_broken_paint_tiles"
-require "maps.modules.rocks_yield_ore"
+require "modules.satellite_score"
+require "modules.explosives_are_explosive"
+require "modules.explosive_biters"
+require "modules.dynamic_landfill"
+require "modules.teleporting_worms"
+require "modules.splice_double"
+require "modules.biters_double_hp"
+require "modules.biters_double_damage"
+require "modules.spawners_contain_biters"
+require "modules.rocks_broken_paint_tiles"
+require "modules.rocks_yield_ore"
 
-local shapes = require "maps.tools.shapes"
+local shapes = require "tools.shapes"
 local event = require 'utils.event'
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 

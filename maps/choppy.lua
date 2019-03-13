@@ -1,8 +1,8 @@
 --choppy-- mewmew made this --
 
-require "maps.modules.dynamic_landfill"
-require "maps.modules.satellite_score"
-require "maps.modules.spawners_contain_biters"
+require "modules.dynamic_landfill"
+require "modules.satellite_score"
+require "modules.spawners_contain_biters"
 require "maps.choppy_map_intro"
 
 local unearthing_worm = require "functions.unearthing_worm"
@@ -16,7 +16,7 @@ simplex_noise = simplex_noise.d2
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 
 local disabled_for_deconstruction = {
 		["fish"] = true,

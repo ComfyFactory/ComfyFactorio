@@ -2,9 +2,8 @@
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local math_random = math.random
-require "maps.tools.map_pregen"
 
 local function shipwreck(position, surface)
 	local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}

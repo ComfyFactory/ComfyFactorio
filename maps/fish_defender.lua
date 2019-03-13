@@ -1,19 +1,19 @@
 -- fish defender -- by mewmew --
 
 require "maps.fish_defender_map_intro"
-require "maps.modules.rocket_launch_always_yields_science"
-require "maps.modules.launch_fish_to_win"
-require "maps.modules.biters_yield_coins"
-require "maps.modules.railgun_enhancer"
-require "maps.modules.dynamic_landfill"
-require "maps.modules.teleporting_worms"
-require "maps.modules.custom_death_messages"
-require "maps.modules.splice_double"
---require "maps.modules.spitters_spit_biters"
---require "maps.modules.biters_double_hp"
+require "modules.rocket_launch_always_yields_science"
+require "modules.launch_fish_to_win"
+require "modules.biters_yield_coins"
+require "modules.railgun_enhancer"
+require "modules.dynamic_landfill"
+require "modules.teleporting_worms"
+require "modules.custom_death_messages"
+require "modules.splice_double"
+--require "modules.spitters_spit_biters"
+--require "modules.biters_double_hp"
 
 local event = require 'utils.event'
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true

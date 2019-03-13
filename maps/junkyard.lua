@@ -1,14 +1,14 @@
 --junkyard-- mewmew made this --
 
-require "maps.modules.dynamic_landfill"
-require "maps.modules.satellite_score"
-require "maps.modules.mineable_wreckage_yields_scrap"
-require "maps.modules.rocks_heal_over_time"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.biters_yield_coins"
+require "modules.dynamic_landfill"
+require "modules.satellite_score"
+require "modules.mineable_wreckage_yields_scrap"
+require "modules.rocks_heal_over_time"
+require "modules.spawners_contain_biters"
+require "modules.biters_yield_coins"
 --require "maps.modules.fluids_are_explosive"
 --require "maps.modules.explosives_are_explosive"
-require "maps.modules.dangerous_nights"
+require "modules.dangerous_nights"
 
 require "maps.junkyard_map_intro"
 
@@ -23,7 +23,7 @@ simplex_noise = simplex_noise.d2
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 
 local disabled_for_deconstruction = {
 		["fish"] = true,

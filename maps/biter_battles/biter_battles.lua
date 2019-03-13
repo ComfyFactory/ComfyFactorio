@@ -1,12 +1,9 @@
 -- Biter Battles -- mewmew made this --
 
-require "maps.modules.splice_double"
-require "maps.modules.spitters_spit_biters"
-require "maps.modules.biters_double_hp"
---require "maps.modules.biters_double_damage"
-require "maps.modules.explosive_biters"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.custom_death_messages"
+require "modules.splice_double"
+require "modules.explosive_biters"
+require "modules.spawners_contain_biters"
+require "modules.custom_death_messages"
 
 local biter_battles_terrain = require 'biter_battles_terrain'
 local event = require 'utils.event'
@@ -565,7 +562,7 @@ local function on_player_joined_game(event)
 		global.biter_battles_init_done = true				
 	end		
 	if global.game_lobby_active then
-		if #game.connected_players > 1 then global.game_lobby_timeout = game.tick + 9000 end
+		if #game.connected_players > 1 then global.game_lobby_timeout = game.tick + 7200 end
 	end
 		
 	if player.online_time < 5 and game.surfaces["surface"].is_chunk_generated({0,0}) then 

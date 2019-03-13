@@ -2,16 +2,14 @@
 
 local event = require 'utils.event'
 require "maps.fish_defender_map_intro"
-require "maps.modules.rocket_launch_always_yields_science"
-require "maps.modules.launch_fish_to_win"
+require "modules.rocket_launch_always_yields_science"
+require "modules.launch_fish_to_win"
+require "modules.explosives_are_explosive"
+require "modules.biters_yield_coins"
+require "modules.railgun_enhancer"
+require "modules.dynamic_landfill"
 
-require "maps.modules.explosives_are_explosive"
-require "maps.modules.biters_yield_coins"
-require "maps.modules.railgun_enhancer"
-require "maps.modules.dynamic_landfill"
---require "maps.modules.teleporting_worms"
-
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true

@@ -3,7 +3,6 @@
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
-require "maps.tools.map_pregen"
 
 local function disable_recipes()
 	game.forces.player.recipes["splitter"].enabled = false

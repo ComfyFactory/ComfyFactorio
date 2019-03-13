@@ -1,11 +1,11 @@
 --spiral troopers-- mewmew wrote this -- inspired from kyte
 
 local event = require 'utils.event'
-require "maps.modules.dynamic_landfill"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.satellite_score"
+require "modules.dynamic_landfill"
+require "modules.spawners_contain_biters"
+require "modules.satellite_score"
 
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 --require "rewards"
 
 local function shuffle(tbl)

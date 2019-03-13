@@ -1,25 +1,25 @@
 -- mountain digger fortress -- by mewmew --
 
-require "maps.modules.backpack_research"
-require "maps.modules.biters_double_damage"
-require "maps.modules.biters_avoid_damage"
-require "maps.modules.biters_yield_coins"
-require "maps.modules.dynamic_landfill"
---require "maps.modules.dynamic_player_spawn"
-require "maps.modules.explosive_biters"
-require "maps.modules.rocks_broken_paint_tiles"
-require "maps.modules.rocks_heal_over_time"
-require "maps.modules.rocks_yield_ore_veins"
-require "maps.modules.rocks_yield_ore"
-require "maps.modules.satellite_score"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.spitters_spit_biters"
-require "maps.modules.splice_double"
+require "modules.backpack_research"
+require "modules.biters_double_damage"
+require "modules.biters_avoid_damage"
+require "modules.biters_yield_coins"
+require "modules.dynamic_landfill"
+--require "modules.dynamic_player_spawn"
+require "modules.explosive_biters"
+require "modules.rocks_broken_paint_tiles"
+require "modules.rocks_heal_over_time"
+require "modules.rocks_yield_ore_veins"
+require "modules.rocks_yield_ore"
+require "modules.satellite_score"
+require "modules.spawners_contain_biters"
+require "modules.spitters_spit_biters"
+require "modules.splice_double"
 
 local event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 local simplex_noise = simplex_noise.d2
 

@@ -3,19 +3,18 @@
 local event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 local simplex_noise = simplex_noise.d2
 require "maps.nightfall_map_intro"
-require "maps.modules.splice_double"
-require "maps.modules.spitters_spit_biters"
-require "maps.modules.biters_double_hp"
-require "maps.modules.biters_double_damage"
-require "maps.modules.explosive_biters"
-require "maps.modules.spawners_contain_biters"
-require "maps.modules.railgun_enhancer"
-require "maps.modules.dynamic_landfill"
-require "maps.modules.satellite_score"
+require "modules.splice_double"
+require "modules.spitters_spit_biters"
+require "modules.biters_double_damage"
+require "modules.explosive_biters"
+require "modules.spawners_contain_biters"
+require "modules.railgun_enhancer"
+require "modules.dynamic_landfill"
+require "modules.satellite_score"
 
 local spawn_turret_amount = 8
 

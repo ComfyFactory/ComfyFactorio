@@ -14,7 +14,7 @@ local function teleport_player(surface, source_player, position)
 	surface.create_entity({name = "character-corpse", position = source_player.position, force = source_player.force.name})	
 	source_player.teleport(position, surface)
 	if source_player.character.health < 25 then source_player.character.health = 250 end
-	global.team_teleport_delay[source_player.name] = game.tick + 1800
+	global.team_teleport_delay[source_player.name] = game.tick + 18000
 end
 
 local function fix_player_position(source_player, original_position)
@@ -28,7 +28,7 @@ local function teleport_effects(surface, position)
 	surface.create_entity({
 		name = "railgun-beam",
 		position = {x = position.x, y = position.y},
-		target = {x = x, y = position.y - math.random(7,14)}
+		target = {x = x, y = position.y - math.random(6,13)}
 	})
 	for y = 0, 1, 1 do		
 		surface.create_entity({
@@ -36,7 +36,7 @@ local function teleport_effects(surface, position)
 			position = {x = position.x, y = position.y + y},		
 		})		
 	end
-	if math.random(1,16) == 1 then surface.create_entity({name = "explosion", position = {x = position.x + (3 - (math.random(1,60) * 0.1)), y = position.y + (3 - (math.random(1,60) * 0.1))}}) end
+	if math.random(1,64) == 1 then surface.create_entity({name = "explosion", position = {x = position.x + (3 - (math.random(1,60) * 0.1)), y = position.y + (3 - (math.random(1,60) * 0.1))}}) end
 	if math.random(1,32) == 1 then surface.create_entity({name = "blood-explosion-huge", position = position}) end
 	if math.random(1,16) == 1 then surface.create_entity({name = "blood-explosion-big", position = position}) end
 	if math.random(1,8) == 1 then surface.create_entity({name = "blood-explosion-small", position = position}) end
@@ -57,7 +57,7 @@ end
 
 local function teleport(source_player, target_player)
 	source_player.teleport({x = math.floor(source_player.position.x), y = math.floor(source_player.position.y)})
-	local target_position = target_player.surface.find_non_colliding_position("player", target_player.position, 128, 2)
+	local target_position = target_player.surface.find_non_colliding_position("player", target_player.position, 128, 1)
 	if not target_position then target_position = {x = target_player.position.x, y = target_player.position.y} end
 	local materializing_character = target_player.surface.create_entity({name = "player", position = target_position, force = "neutral", direction = source_player.character.direction})
 	materializing_character.destructible = false
