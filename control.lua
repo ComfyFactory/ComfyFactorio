@@ -36,7 +36,7 @@ require "on_tick_schedule"
 --require "modules.hunger_games"
 --require "modules.explosive_player_respawn"
 --require "modules.burden"
-require "modules.team_teleport"
+--require "modules.team_teleport"
 -----------------------------
 
 ---- enable maps here ----

@@ -50,6 +50,17 @@ end
 
 local function process_entity(surface, entity)
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
+	if entity.type == "tree" then
+		local e = surface.create_entity({name = entity.name, position = new_pos})
+		e.graphics_variation = entity.graphics_variation
+		--e.tree_color_index = entity.tree_color_index
+		return
+	end
+	if entity.type == "simple-entity" then
+		local e = surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction]})
+		e.graphics_variation = entity.graphics_variation
+		return
+	end
 	if entity.type == "cliff" then	
 		surface.create_entity({name = entity.name, position = new_pos, cliff_orientation = cliff_orientation_translation[entity.cliff_orientation]})
 		return
@@ -77,7 +88,13 @@ local function mirror_chunk(surface, chunk_area, chunk_position)
 	end	
 	for _, entity in pairs(surface.find_entities_filtered({area = chunk_area})) do
 		process_entity(surface, entity)
-	end
+	end	
+	for _, decorative in pairs(surface.find_decoratives_filtered{area=chunk_area}) do
+		surface.create_decoratives{
+			check_collision=false,
+			decoratives={{name = decorative.decorative.name, position = {x = decorative.position.x * -1, y = decorative.position.y * -1}, amount = decorative.amount}}
+		}
+	end		
 end
 
 local function on_chunk_generated(event)
@@ -95,7 +112,9 @@ local function on_chunk_generated(event)
 			end
 		end
 	end
-		
+	
+	surface.destroy_decoratives{area=event.area}
+	
 	local x = ((event.area.left_top.x + 16) * -1) - 16
 	local y = ((event.area.left_top.y + 16) * -1) - 16	
 	local mirror_chunk_area = {left_top = {x = x, y = y}, right_bottom = {x = x + 32, y = y + 32}}
