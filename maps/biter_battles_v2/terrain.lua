@@ -25,7 +25,7 @@ local function get_noise(name, pos)
 		seed = seed + noise_seed_add
 		noise[2] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
 		seed = seed + noise_seed_add
-		local noise = noise[1] + noise[2] * 0.2
+		local noise = noise[1] + noise[2] * 0.1
 		--noise = noise * 0.5
 		return noise
 	end	
@@ -33,6 +33,7 @@ end
 
 local function get_worm(distance_to_center)	
 	local index = math.ceil((distance_to_center - biter_territory_starting_radius) * 0.01)
+	if index < 1 then index = 1 end
 	if index > 7 then index = 7 end
 	local worm = worms[index][math_random(1, #worms[index])]
 	return worm
@@ -68,30 +69,27 @@ local function generate_biters(surface, pos, distance_to_center)
 end
 
 local function generate_horizontal_river(surface, pos, distance_to_center)
-	if pos.y > 32 then return end
 	if pos.y < -32 then return end
-	
-	local noise = get_noise(1, pos)
-	surface.set_tiles({{name = "water", position = pos}})
-end
-
-local function generate_horizontal_river(surface, pos, distance_to_center)
-	--local pos = {x = math.floor(pos.x), y = math.floor(pos.y)}
-	if pos.y < -16 then return end
-	
-	--local noise = get_noise(1, pos)
-	surface.set_tiles({{name = "water", position = pos}})
+	if -14 > pos.y + (get_noise(1, pos) * 5) then return true end	
 end
 
 local function generate_circle_spawn(surface, pos, distance_to_center)
-	--local pos = {x = math.floor(pos.x), y = math.floor(pos.y)}
-	if pos.y > 16 then return end
-	if pos.y < -16 then return end
-	if pos.x > 16 then return end
-	if pos.x < -16 then return end
 	
-	if distance_to_center < 10 then
-		surface.set_tiles({{name = "concrete", position = pos}})
+	if pos.y < -64 then return end
+	if pos.x > 64 then return end
+	if pos.x < -64 then return end
+	
+	if distance_to_center < 8 then
+		surface.set_tiles({{name = "sand-1", position = pos}})
+		return
+	end
+	if distance_to_center < 12 then
+		surface.set_tiles({{name = "refined-concrete", position = pos}})
+		return
+	end
+	if distance_to_center < 32 then
+		surface.set_tiles({{name = "deepwater", position = pos}})
+		return
 	end
 end
 
@@ -109,7 +107,7 @@ local function on_chunk_generated(event)
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
-			generate_horizontal_river(surface, pos)
+			if generate_horizontal_river(surface, pos) then surface.set_tiles({{name = "deepwater", position = pos}}) end
 			generate_circle_spawn(surface, pos, distance_to_center)
 			generate_biters(surface, pos, distance_to_center)			
 		end

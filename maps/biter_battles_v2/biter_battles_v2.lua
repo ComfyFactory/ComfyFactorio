@@ -1,6 +1,6 @@
 -- Biter Battles v2 -- by MewMew
 
---require "maps.biter_battles_v2.terrain"
+require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.mirror_terrain"
 
 local simplex_noise = require 'utils.simplex_noise'
