@@ -13,26 +13,26 @@ local direction_translation = {
 }
 
 local cliff_orientation_translation = {
-	["west_to_east"] =  "east_to_west",
-	["north_to_south"] =  "south_to_north",
-	["east_to_west"] =  "west_to_east",
-	["south_to_north"] =  "north_to_south",
-	["west_to_north"] =  "east_to_south",
-	["north_to_east"] =  "south_to_west",
-	["east_to_south"] =  "west_to_north",
-	["south_to_west"] =  "north_to_east",	
-	["west_to_south"] =  "east_to_north",
-	["north_to_west"] =  "south_to_east",
-	["east_to_north"] =  "west_to_south",
-	["south_to_east"] =  "north_to_west",
-	["west_to_none"] =  "none_to_east",
-	["none_to_east"] =  "west_to_none",
-	["north_to_none"] =  "none_to_south",
-	["none_to_south"] =  "north_to_none",
-	["east_to_none"] =  "none_to_west",
-	["none_to_west"] =  "east_to_none",
-	["south_to_none"] =  "none_to_north",
-	["none_to_north"] =  "south_to_none"
+	["west-to-east"] =  "east-to-west",
+	["north-to-south"] =  "south-to-north",
+	["east-to-west"] =  "west-to-east",
+	["south-to-north"] =  "north-to-south",
+	["west-to-north"] =  "east-to-south",
+	["north-to-east"] =  "south-to-west",
+	["east-to-south"] =  "west-to-north",
+	["south-to-west"] =  "north-to-east",	
+	["west-to-south"] =  "east-to-north",
+	["north-to-west"] =  "south-to-east",
+	["east-to-north"] =  "west-to-south",
+	["south-to-east"] =  "north-to-west",
+	["west-to-none"] =  "east-to-none",
+	["none-to-east"] =  "none-to-west",
+	["north-to-none"] =  "south-to-none",
+	["none-to-south"] =  "none-to-north",
+	["east-to-none"] =  "west-to-none",
+	["none-to-west"] =  "none-to-east",
+	["south-to-none"] =  "north-to-none",
+	["none-to-north"] =  "none-to-south"
 }
 
 local function get_chunk_position(position)
@@ -50,7 +50,7 @@ end
 
 local function process_entity(surface, entity)
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
-	if entity.type == "cliff" then
+	if entity.type == "cliff" then	
 		surface.create_entity({name = entity.name, position = new_pos, cliff_orientation = cliff_orientation_translation[entity.cliff_orientation]})
 		return
 	end

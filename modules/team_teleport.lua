@@ -36,7 +36,7 @@ local function teleport_effects(surface, position)
 			position = {x = position.x, y = position.y + y},		
 		})		
 	end
-	if math.random(1,64) == 1 then surface.create_entity({name = "explosion", position = {x = position.x + (3 - (math.random(1,60) * 0.1)), y = position.y + (3 - (math.random(1,60) * 0.1))}}) end
+	if math.random(1,40) == 1 then surface.create_entity({name = "explosion", position = {x = position.x + (3 - (math.random(1,60) * 0.1)), y = position.y + (3 - (math.random(1,60) * 0.1))}}) end
 	if math.random(1,32) == 1 then surface.create_entity({name = "blood-explosion-huge", position = position}) end
 	if math.random(1,16) == 1 then surface.create_entity({name = "blood-explosion-big", position = position}) end
 	if math.random(1,8) == 1 then surface.create_entity({name = "blood-explosion-small", position = position}) end
@@ -189,7 +189,12 @@ local function on_gui_click(event)
 	if not game.players[name].character then return end
 	if player.character.driving then return end		
 	if game.tick - global.team_teleport_delay[player.name] < 0 then
-		player.print("You are not capable of handling another teleport yet.")
+		local recovery_time = math.ceil(math.abs(game.tick - global.team_teleport_delay[player.name]) / 3600)
+		if recovery_time == 1 then
+			player.print("You need one more minute to recover from the last teleport.")
+		else
+			player.print("You are not capable of handling another teleport yet, you need " .. tostring(recovery_time) .. " more minutes to recover.")
+		end
 		return
 	end	
 	global.team_teleport_delay[player.name] = game.tick + 900
