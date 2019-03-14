@@ -25,7 +25,8 @@ local function init_surface(event)
 		["trees"] = {frequency = "0.8", size = "0.5", richness = "0.3"},
 		["enemy-base"] = {frequency = "0.8", size = "1", richness = "0.4"}			
 	}
-	game.create_surface("biter_battles", map_gen_settings)
+	--game.create_surface("biter_battles", map_gen_settings)
+	
 end
 
 local function on_player_joined_game(event)

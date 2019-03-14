@@ -1460,11 +1460,24 @@ local function on_player_built_tile(event)
 	end		
 end
 
+local function on_robot_built_tile(event)
+	local surface = event.robot.surface
+	for _, t in pairs(event.tiles) do
+		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
+		if generate_horizontal_river(surface, t.position) or distance_to_center < spawn_circle_size then																			
+			surface.set_tiles({{name = t.old_tile, position = t.position}}, true)
+			local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+			inventory.insert({name = "landfill", count = 1})
+		end
+	end
+end
+
 local function on_research_finished(event)	
 	--game.forces.north.recipes["flamethrower-turret"].enabled = false
 	--game.forces.south.recipes["flamethrower-turret"].enabled = false
 end
 
+event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_built_entity, on_built_entity)
