@@ -33,7 +33,7 @@ local function on_player_joined_game(event)
 	--init_surface(event)
 	local player = game.players[event.player_index]
 	player.character.destructible = false
-	player.character.destroy()
+	--player.character.destroy()
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

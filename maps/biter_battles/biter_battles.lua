@@ -5,7 +5,7 @@ require "modules.explosive_biters"
 require "modules.spawners_contain_biters"
 require "modules.custom_death_messages"
 
-local biter_battles_terrain = require 'biter_battles_terrain'
+local biter_battles_terrain = require 'maps.biter_battles.biter_battles_terrain'
 local event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
@@ -1463,11 +1463,13 @@ end
 local function on_robot_built_tile(event)
 	local surface = event.robot.surface
 	for _, t in pairs(event.tiles) do
-		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
-		if generate_horizontal_river(surface, t.position) or distance_to_center < spawn_circle_size then																			
-			surface.set_tiles({{name = t.old_tile, position = t.position}}, true)
-			local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-			inventory.insert({name = "landfill", count = 1})
+		if t.old_tile.name == "deepwater" and t.position.y <= global.horizontal_border_width*2 and t.position.y >= global.horizontal_border_width*-1*2 then
+			local str = "Team " .. event.robot.force.name
+			str = str .. "´s landfill vanished into the depths of the marianna trench."
+			game.print(str,{ r=0.98, g=0.66, b=0.22})
+			local tiles = {}
+			table.insert(tiles, {name = "deepwater", position = t.position})														
+			surface.set_tiles(tiles,true)
 		end
 	end
 end

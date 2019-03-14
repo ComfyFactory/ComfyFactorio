@@ -71,6 +71,7 @@ end
 
 local function generate_horizontal_river(surface, pos)
 	if pos.y < -32 then return false end
+	if pos.y > -2 and pos.y < 2 and pos.x > -2 and pos.x < 2 then return false end
 	if -14 < pos.y + (get_noise(1, pos) * 5) then return true end
 	return false	
 end
@@ -82,8 +83,8 @@ local function generate_circle_spawn(surface)
 			local pos = {x = x, y = y}
 			local tile = false
 			if distance_to_center < spawn_circle_size then tile = "deepwater" end			
-			if distance_to_center < 10 then	tile = "refined-concrete"	end
-			if distance_to_center < 7 then tile = "sand-1" end					
+			if distance_to_center < 8 then	tile = "refined-concrete"	end
+			if distance_to_center < 6 then tile = "sand-1" end					
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 		end
 	end	
@@ -120,28 +121,23 @@ local function on_chunk_generated(event)
 end
 
 --Landfill Prevention
+local function restrict_landfill(surface, inventory, tiles)
+	for _, t in pairs(tiles) do
+		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
+		local check_position = t.position
+		if check_position.y > 0 then check_position = {x = check_position.x * -1, y = (check_position.y * -1) - 1} end
+		if generate_horizontal_river(surface, check_position) or distance_to_center < spawn_circle_size then																			
+			surface.set_tiles({{name = t.old_tile.name, position = t.position}}, true)
+			inventory.insert({name = "landfill", count = 1})
+		end				
+	end	
+end
 local function on_player_built_tile(event)
 	local player = game.players[event.player_index]
-	local surface = player.surface
-	for _, t in pairs(event.tiles) do
-		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
-		if generate_horizontal_river(surface, t.position) or distance_to_center < spawn_circle_size then																			
-			surface.set_tiles({{name = t.old_tile, position = t.position}}, true)
-			player.insert({name = "landfill", count = 1})
-		end				
-	end		
+	restrict_landfill(player.surface, player, event.tiles)
 end
-
 local function on_robot_built_tile(event)
-	local surface = event.robot.surface
-	for _, t in pairs(event.tiles) do
-		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
-		if generate_horizontal_river(surface, t.position) or distance_to_center < spawn_circle_size then																			
-			surface.set_tiles({{name = t.old_tile, position = t.position}}, true)
-			local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-			inventory.insert({name = "landfill", count = 1})
-		end
-	end
+	restrict_landfill(event.robot.surface, event.robot.get_inventory(defines.inventory.robot_cargo), event.tiles)	
 end
 
 event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
