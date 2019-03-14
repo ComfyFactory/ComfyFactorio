@@ -49,7 +49,8 @@ local function get_chunk_position(position)
 end
 
 local function process_entity(surface, entity)
-	local new_pos = {x = entity.position.x * -1, y = (entity.position.y * -1) - 1}
+	--local new_pos = {x = entity.position.x * -1, y = (entity.position.y * -1) - 1}
+	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then
 		local e = surface.create_entity({name = entity.name, position = new_pos, graphics_variation = entity.graphics_variation})
 		--e.graphics_variation = entity.graphics_variation

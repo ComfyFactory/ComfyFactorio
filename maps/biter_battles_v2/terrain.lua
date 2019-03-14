@@ -3,7 +3,7 @@ local event = require 'utils.event'
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 local biter_territory_starting_radius = 256
-local spawn_circle_size = 30
+local spawn_circle_size = 28
 
 local worms = {
 		[1] = {"small-worm-turret"},
@@ -71,26 +71,20 @@ end
 
 local function generate_horizontal_river(surface, pos)
 	if pos.y < -32 then return false end
-	if pos.y > -2 and pos.y < 2 and pos.x > -2 and pos.x < 2 then return false end
+	if pos.y > -3 and pos.x > -3 and pos.x < 3 then return false end
 	if -14 < pos.y + (get_noise(1, pos) * 5) then return true end
 	return false	
 end
 
-local function generate_circle_spawn(surface)
-	for x = -33, 33, 1 do
-		for y = -33, 33, 1 do
-			local distance_to_center = math.sqrt(x ^ 2 + y ^ 2)
-			local pos = {x = x, y = y}
-			local tile = false
-			if distance_to_center < spawn_circle_size then tile = "deepwater" end			
-			if distance_to_center < 8 then	tile = "refined-concrete"	end
-			if distance_to_center < 6 then tile = "sand-1" end					
-			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
-		end
-	end	
+local function generate_circle_spawn(surface, pos, distance_to_center)
+	if distance_to_center > spawn_circle_size then return end	
+	local tile = "deepwater"				
+	if distance_to_center < 9 then tile = "refined-concrete" end
+	if distance_to_center < 6 then tile = "sand-1" end					
+	surface.set_tiles({{name = tile, position = pos}}, true)	
 end
 
-local function generate_silos()
+local function generate_silos(surface)
 	
 end
 
@@ -109,18 +103,18 @@ local function on_chunk_generated(event)
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
 			if generate_horizontal_river(surface, pos) then surface.set_tiles({{name = "deepwater", position = pos}}) end			
-			generate_biters(surface, pos, distance_to_center)						
+			generate_biters(surface, pos, distance_to_center)
+			generate_circle_spawn(surface, pos, distance_to_center)
 		end
 	end
 	
-	if event.area.left_top.y == -256 and event.area.left_top.x == -256 then
-		generate_circle_spawn(surface)
+	if event.area.left_top.y == -256 and event.area.left_top.x == -256 then		
 		generate_silos(surface)
 		global.terrain_generation_complete = true
 	end
 end
 
---Landfill Prevention
+--Landfill Restriction
 local function restrict_landfill(surface, inventory, tiles)
 	for _, t in pairs(tiles) do
 		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
@@ -140,6 +134,24 @@ local function on_robot_built_tile(event)
 	restrict_landfill(event.robot.surface, event.robot.get_inventory(defines.inventory.robot_cargo), event.tiles)	
 end
 
+--Construction Robot Restriction
+local function on_robot_built_entity(event)
+	local deny_building = false
+	local force_name = event.robot.force.name
+	if force_name == "north" then
+		if event.created_entity.position.y >= -10 then deny_building = true end
+	end
+	if force_name == "player" then
+		if event.created_entity.position.y <= 10 then deny_building = true end
+	end	
+	if not deny_building then return end
+	local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+	inventory.insert({name = event.created_entity.name, count = 1})
+	event.robot.surface.create_entity({name = "explosion", position = event.created_entity.position})
+	event.created_entity.destroy()			
+end
+
+event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
