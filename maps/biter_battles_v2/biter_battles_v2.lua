@@ -7,17 +7,18 @@ local math_random = math.random
 local function init_surface()
 	if game.surfaces["biter_battles"] then return end
 	local map_gen_settings = {}
-	--map_gen_settings.water = "none"
-	--map_gen_settings.starting_area = "5"	
+	map_gen_settings.water = "0.5"
+	map_gen_settings.starting_area = "5"	
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "0.8", size = "1", richness = "0.3"},
-		["stone"] = {frequency = "0.8", size = "1", richness = "0.3"},
-		["copper-ore"] = {frequency = "0.8", size = "2", richness = "0.3"},
-		["iron-ore"] = {frequency = "0.8", size = "2", richness = "0.3"},
-		["crude-oil"] = {frequency = "0.8", size = "2", richness = "0.4"},
-		["trees"] = {frequency = "0.8", size = "0.5", richness = "0.3"},
-		["enemy-base"] = {frequency = "0.8", size = "1", richness = "0.4"}			
+		["coal"] = {frequency = "4", size = "1", richness = "1"},
+		["stone"] = {frequency = "4", size = "1", richness = "1"},
+		["copper-ore"] = {frequency = "4", size = "1", richness = "1"},
+		["iron-ore"] = {frequency = "4", size = "1", richness = "1"},
+		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
+		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
+		["trees"] = {frequency = "2", size = "1", richness = "1"},
+		["enemy-base"] = {frequency = "2", size = "4", richness = "1"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 			
@@ -77,7 +78,9 @@ local function init_forces(surface)
 		game.forces[force.name].technologies["artillery-shell-speed-1"].enabled = false	
 		game.forces[force.name].technologies["atomic-bomb"].enabled = false			
 		game.forces[force.name].set_ammo_damage_modifier("shotgun-shell", 1)
-	end		
+	end
+
+	global.game_lobby_active = true
 end
 
 local function on_player_joined_game(event)
@@ -85,18 +88,20 @@ local function on_player_joined_game(event)
 	local surface = game.surfaces["biter_battles"]
 	init_forces(surface)
 	
-	local player = game.players[event.player_index]		
-		
+	local player = game.players[event.player_index]	
+	
+	if player.gui.left["map_pregen"] then player.gui.left["map_pregen"].destroy() end
+	
 	if player.online_time == 0 then
 		if surface.is_chunk_generated({0,0}) then
 			player.teleport(surface.find_non_colliding_position("player", {0,0}, 3, 0.5), surface)
 		else
-			player.teleport({0,-32}, surface)
+			player.teleport({0,0}, surface)
 		end
 		player.character.destructible = false
 	end
 	
-	player.character.destroy()
+	--player.character.destroy()
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
@@ -106,3 +111,4 @@ require "maps.biter_battles_v2.mirror_terrain"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.game_won"
 require "maps.biter_battles_v2.on_tick"
+require "maps.biter_battles_v2.pregenerate_chunks"

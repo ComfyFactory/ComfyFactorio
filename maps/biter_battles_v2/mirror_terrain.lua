@@ -133,8 +133,8 @@ local function on_chunk_generated(event)
 	local y = ((event.area.left_top.y + 16) * -1) - 16	
 	local mirror_chunk_area = {left_top = {x = x, y = y}, right_bottom = {x = x + 32, y = y + 32}}
 		
-	if not global.on_tick_schedule[game.tick + 1] then global.on_tick_schedule[game.tick + 1] = {} end	
-	global.on_tick_schedule[game.tick + 1][#global.on_tick_schedule[game.tick + 1] + 1] = {
+	if not global.on_tick_schedule[game.tick + 5] then global.on_tick_schedule[game.tick + 5] = {} end	
+	global.on_tick_schedule[game.tick + 5][#global.on_tick_schedule[game.tick + 5] + 1] = {
 		func = mirror_chunk,
 		args = {surface, mirror_chunk_area, get_chunk_position({x = x, y = y})}
 	}									
