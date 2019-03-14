@@ -91,6 +91,7 @@ end
 local function on_chunk_generated(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
+	if surface.name ~= "biter_battles" then return end
 		 
 	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do
 		e.destroy()
