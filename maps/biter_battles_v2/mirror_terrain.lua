@@ -53,7 +53,7 @@ local function process_entity(surface, entity)
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then
 		local e = surface.create_entity({name = entity.name, position = new_pos, graphics_variation = entity.graphics_variation})
-		--e.graphics_variation = entity.graphics_variation
+		e.graphics_variation = entity.graphics_variation
 		--e.tree_color_index = entity.tree_color_index
 		return
 	end
@@ -68,6 +68,15 @@ local function process_entity(surface, entity)
 	end
 	if entity.type == "resource" then
 		surface.create_entity({name = entity.name, position = new_pos, amount = entity.amount})
+		return
+	end	
+	if entity.type == "unit-spawner" or entity.type == "unit" or entity.type == "turret" then
+		surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south_biters"})
+		return
+	end
+	if entity.name == "rocket-silo" then
+		global.rocket_silo["south"] = surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south"})
+		global.rocket_silo["south"].minable = false		
 		return
 	end
 	if entity.name == "player" then

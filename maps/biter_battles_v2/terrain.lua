@@ -2,6 +2,7 @@
 local event = require 'utils.event' 
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
+local create_tile_chain = require "functions.create_tile_chain"
 local biter_territory_starting_radius = 256
 local spawn_circle_size = 28
 
@@ -42,10 +43,11 @@ end
 
 local function generate_biters(surface, pos, distance_to_center)
 	if distance_to_center < biter_territory_starting_radius then return end
+	if pos.y > -16 then return end
 	
 	if distance_to_center < biter_territory_starting_radius + 32 then
 		if math_random(1, 128) == 1 and surface.can_place_entity({name = "behemoth-worm-turret", position = pos}) then
-			surface.create_entity({name = get_worm(distance_to_center), position = pos})
+			surface.create_entity({name = get_worm(distance_to_center), position = pos, force = "north_biters"})
 		end
 		return
 	end
@@ -54,7 +56,7 @@ local function generate_biters(surface, pos, distance_to_center)
 	
 	if noise > 0.5 or noise < -0.5 then		
 		if math_random(1,12) == 1 and surface.can_place_entity({name = "rocket-silo", position = pos}) then
-			surface.create_entity({name = spawners[math_random(1,3)], position = pos})
+			surface.create_entity({name = spawners[math_random(1,3)], position = pos, force = "north_biters"})
 		end
 		return
 	end
@@ -62,7 +64,7 @@ local function generate_biters(surface, pos, distance_to_center)
 	if noise > 0.4 or noise < -0.4 then
 		if math_random(1,48) == 1 then
 			if surface.can_place_entity({name = "behemoth-worm-turret", position = pos}) then
-				surface.create_entity({name = get_worm(distance_to_center), position = pos})
+				surface.create_entity({name = get_worm(distance_to_center), position = pos, force = "north_biters"})
 			end
 		end
 		return
@@ -76,16 +78,44 @@ local function generate_horizontal_river(surface, pos)
 	return false	
 end
 
-local function generate_circle_spawn(surface, pos, distance_to_center)
-	if distance_to_center > spawn_circle_size then return end	
-	local tile = "deepwater"				
-	if distance_to_center < 9 then tile = "refined-concrete" end
-	if distance_to_center < 6 then tile = "sand-1" end					
-	surface.set_tiles({{name = tile, position = pos}}, true)	
+local function generate_circle_spawn(event)
+	if event.area.left_top.y < -64 then return end
+	if event.area.left_top.x < -64 then return end
+	if event.area.left_top.x > 64 then return end	
+	local surface = event.surface		
+	local left_top_x = event.area.left_top.x
+	local left_top_y = event.area.left_top.y
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local pos = {x = left_top_x + x, y = left_top_y + y}
+			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
+			
+			local tile = false
+			if distance_to_center < spawn_circle_size then tile = "deepwater" end						
+			if distance_to_center < 9 then tile = "refined-concrete" end
+			if distance_to_center < 6 then tile = "sand-1" end					
+			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
+		end
+	end
 end
 
-local function generate_silos(surface)
+local function generate_silos(event)
+	if global.rocket_silo then return end
+	if event.area.left_top.y < -128 then return end
+	if event.area.left_top.x < -128 then return end
+	if event.area.left_top.x > 128 then return end
+	global.rocket_silo = {}	
+	local surface = event.surface
+	global.rocket_silo["north"] =surface.create_entity({
+		name = "rocket-silo",
+		position = surface.find_non_colliding_position("rocket-silo", {0,-64}, 128, 1),
+		force = "north"
+	})
+	global.rocket_silo["north"].minable = false
 	
+	for i = 1, 32, 1 do
+		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
+	end		
 end
 
 local function on_chunk_generated(event)
@@ -104,13 +134,14 @@ local function on_chunk_generated(event)
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
 			if generate_horizontal_river(surface, pos) then surface.set_tiles({{name = "deepwater", position = pos}}) end			
-			generate_biters(surface, pos, distance_to_center)
-			generate_circle_spawn(surface, pos, distance_to_center)
+			generate_biters(surface, pos, distance_to_center)			
 		end
 	end
 	
-	if event.area.left_top.y == -256 and event.area.left_top.x == -256 then		
-		generate_silos(surface)
+	generate_circle_spawn(event)
+	generate_silos(event)
+	
+	if event.area.left_top.y == -256 and event.area.left_top.x == -256 then				
 		global.terrain_generation_complete = true
 	end
 end
@@ -152,6 +183,16 @@ local function on_robot_built_entity(event)
 	event.created_entity.destroy()			
 end
 
+--Prevent Players from damaging the Rocket Silo
+local function on_entity_damaged(event)	
+	if event.cause then
+		if event.cause.type == "unit" then return end		 
+	end
+	if event.entity.name ~= "rocket-silo" then return end		
+	event.entity.health = event.entity.health + event.final_damage_amount
+end
+
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)

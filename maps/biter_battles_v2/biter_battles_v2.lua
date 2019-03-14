@@ -31,8 +31,10 @@ end
 local function init_forces(surface)
 	if game.forces.north then return end	
 		
-	game.create_force("north")		
-	game.create_force("south")		
+	game.create_force("north")
+	game.create_force("north_biters")
+	game.create_force("south")
+	game.create_force("south_biters")	
 	game.create_force("spectator")
 	
 	local f = game.forces["north"]
@@ -41,11 +43,23 @@ local function init_forces(surface)
 	f.set_friend("spectator", true)
 	f.share_chart = true
 	
+	local f = game.forces["north_biters"]
+	f.set_friend("south_biters", true)
+	f.set_cease_fire("player", true)
+	f.set_cease_fire("spectator", true)
+	f.set_cease_fire("south", true)
+	
 	local f = game.forces["south"]
 	f.set_spawn_position({0, 32}, surface)
 	f.set_cease_fire("player", true)
 	f.set_friend("spectator", true)
 	f.share_chart = true
+	
+	local f = game.forces["south_biters"]
+	f.set_friend("north_biters", true)
+	f.set_cease_fire("player", true)
+	f.set_cease_fire("spectator", true)
+	f.set_cease_fire("north", true)
 	
 	local f = game.forces["spectator"]
 	f.technologies["toolbelt"].researched=true
@@ -55,7 +69,7 @@ local function init_forces(surface)
 	f.set_friend("player", true)
 	
 	local f = game.forces["player"]
-	f.set_spawn_position({0,0},surface)			
+	f.set_spawn_position({0,0},surface)
 	
 	for _, force in pairs(game.forces) do
 		game.forces[force.name].technologies["artillery"].enabled = false
@@ -72,24 +86,23 @@ local function on_player_joined_game(event)
 	init_forces(surface)
 	
 	local player = game.players[event.player_index]		
-	--player.character.destroy()
-	
+		
 	if player.online_time == 0 then
 		if surface.is_chunk_generated({0,0}) then
 			player.teleport(surface.find_non_colliding_position("player", {0,0}, 3, 0.5), surface)
 		else
-			player.teleport({0,0}, surface)
+			player.teleport({0,-32}, surface)
 		end
 		player.character.destructible = false
 	end
 	
+	player.character.destroy()
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.mirror_terrain"
-require "maps.biter_battles_v2.gui"
 require "maps.biter_battles_v2.chat"
-require "maps.biter_battles_v2.ai"
 require "maps.biter_battles_v2.game_won"
+require "maps.biter_battles_v2.on_tick"

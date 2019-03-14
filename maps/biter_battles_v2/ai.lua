@@ -1,6 +1,7 @@
 local event = require 'utils.event' 
+local ai = {}
 
-local function send_near_biter_to_silo()
+ai.send_near_biter_to_silo = function()
 	if not global.rocket_silo then return end
 	game.surfaces["surface"].set_multi_command({
 		command={
@@ -25,8 +26,4 @@ local function send_near_biter_to_silo()
 		})
 end
 
-local function on_tick(event)
-	
-end
-
-event.add(defines.events.on_tick, on_tick)
+return ai
