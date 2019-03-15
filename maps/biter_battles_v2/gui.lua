@@ -1,6 +1,7 @@
 local event = require 'utils.event' 
 
 local spy_fish = require "maps.biter_battles_v2.spy_fish"
+local feed_the_biters = require "maps.biter_battles_v2.feeding"
 
 local food_names = {
 	["automation-science-pack"] = 	"automation science",
@@ -12,21 +13,11 @@ local food_names = {
 	["space-science-pack"] = 		"space science"
 }
 
-local food_values = {
-	["automation-science-pack"] =	100,
-	["logistic-science-pack"] =			292,
-	["military-science-pack"] =			1225,
-	["chemical-science-pack"] = 		2392,
-	["production-science-pack"] =	8000,
-	["utility-science-pack"] =			13875,
-	["space-science-pack"] = 			42000
-}
-
 local gui_values = {
-		[1] = {force = "north", c1 = "Team North", c2 = "JOIN NORTH",
+		[1] = {force = "north", c1 = "Team North", c2 = "JOIN NORTH", n1 = "join_north_button",
 		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99}},
-		[2] = {force = "south", c1 = "Team South", c2 = "JOIN SOUTH",
+		[2] = {force = "south", c1 = "Team South", c2 = "JOIN SOUTH", n1 = "join_south_button",
 		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
 	}	
@@ -47,17 +38,17 @@ local function create_first_join_gui(player)
 	if not global.game_lobby_timeout then global.game_lobby_timeout = 5999940 end
 	if global.game_lobby_timeout - game.tick < 0 then global.game_lobby_active = false end
 	local frame = player.gui.left.add { type = "frame", name = "bb_main_gui", direction = "vertical" }
-	local b = frame.add{ type = "label", caption = "Defend your team's rocket silo!" }
-	b.style.font = "default-bold"
+	local b = frame.add{ type = "label", caption = "Defend your Rocket Silo!" }
+	b.style.font = "heading-1"
 	b.style.font_color = {r=0.98, g=0.66, b=0.22}
 	local b = frame.add  { type = "label", caption = "Feed the enemy team's biters to gain advantage!" }
-	b.style.font = "default-bold"
+	b.style.font = "heading-2"
 	b.style.font_color = {r=0.98, g=0.66, b=0.22}
 		
 	for _, gui_value in pairs(gui_values) do
 		local t = frame.add { type = "table", column_count = 3 }	
 		local l = t.add  { type = "label", caption = gui_value.c1}
-		l.style.font = "default-bold"
+		l.style.font = "heading-2"
 		l.style.font_color = gui_value.color1
 		local l = t.add  { type = "label", caption = "  -  "}
 		local l = t.add  { type = "label", caption = #game.forces[gui_value.force].connected_players .. " Players "}
@@ -76,6 +67,7 @@ local function create_first_join_gui(player)
 		for _, p in pairs(game.forces.north.connected_players) do
 			local l = t.add({type = "label", caption = p.name})
 			l.style.font_color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
+			l.style.font = "heading-2"
 		end		
 		local b = frame.add  { type = "sprite-button", name = gui_value.n1, caption = c }
 		b.style.font = "default-large-bold"
@@ -102,10 +94,10 @@ local function create_main_gui(player)
 			s.tooltip = {"",food_tooltips[x]}
 			s.style.minimal_height = 42
 			s.style.minimal_width = 42
-			s.style.top_padding = 1
-			s.style.left_padding = 1
-			s.style.right_padding = 1
-			s.style.bottom_padding = 1
+			s.style.top_padding = 0
+			s.style.left_padding = 0
+			s.style.right_padding = 0
+			s.style.bottom_padding = 0
 			x = x + 1
 		end
 	end	
@@ -129,11 +121,11 @@ local function create_main_gui(player)
 		end
 
 		local t = frame.add { type = "table", column_count = 4 }			
-		local l = t.add  { type = "label", caption = "Evolution:"}
+		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
 		l.tooltip = gui_value.t1
-		local l = t.add  { type = "label", caption = "100%"}
-		l.style.minimal_width = 40
+		local l = t.add  { type = "label", caption = global.bb_evolution[gui_value.force]}
+		l.style.minimal_width = 38
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.tooltip = gui_value.t1
@@ -141,12 +133,12 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Threat: "}
 		l.style.minimal_width = 25
 		l.tooltip = gui_value.t2
-		local l = t.add  { type = "label", caption = "35326"}	
+		local l = t.add  { type = "label", caption = global.bb_threat[gui_value.force]}	
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
 		l.tooltip = gui_value.t2
-		frame.add  { type = "label", caption = "---------------------------------"}						
+		frame.add  { type = "label", caption = "-----------------------------"}						
 	end
 	
 	local t = frame.add  { type = "table", column_count = 2 }
@@ -176,7 +168,6 @@ end
 local function refresh_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["bb_main_gui"] then
-			player.gui.left["bb_main_gui"].destroy()
 			create_main_gui(player)					
 		end
 	end
@@ -204,6 +195,7 @@ local function join_team(player, force_name)
 		local p = surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 8, 0.5)
 		player.teleport(p, surface)	
 		player.force = game.forces[force_name]
+		refresh_gui()
 		local p = game.permissions.get_group("Default")
 		p.add_player(player.name)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r=0.98, g=0.66, b=0.22})
@@ -220,7 +212,8 @@ local function join_team(player, force_name)
 	player.insert {name = 'firearm-magazine', count = 16}		
 	player.insert {name = 'iron-gear-wheel', count = 4}
 	player.insert {name = 'iron-plate', count = 8}
-	global.chosen_team[player.name] = force_name													
+	global.chosen_team[player.name] = force_name
+	refresh_gui()
 end
 
 local function spectate(player)
@@ -270,7 +263,7 @@ local function on_gui_click(event)
 	if name == "raw-fish" then spy_fish(player) return end
 	
 	if food_names[name] then			
-		--feed_the_biters(player, name)				
+		feed_the_biters(player, name)				
 		return 
 	end
 	

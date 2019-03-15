@@ -124,9 +124,11 @@ local function on_chunk_generated(event)
 	generate_rainbow_ore(event)
 	
 	if event.area.left_top.y == -160 and event.area.left_top.x == -160 then
-		for _, e in pairs(surface.find_entities_filtered({area = {{-10,-10},{10,10}}})) do
+		local area = {{-10,-10},{10,10}}
+		for _, e in pairs(surface.find_entities_filtered({area = area})) do
 			if e.name ~= "player" then e.destroy() end
 		end
+		surface.destroy_decoratives({area = area})
 	end
 end
 

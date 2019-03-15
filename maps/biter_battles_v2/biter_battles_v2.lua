@@ -87,6 +87,11 @@ local function init_forces(surface)
 	global.spectator_rejoin_delay = {}
 	global.spy_fish_timeout = {}
 	global.force_area = {}
+	global.bb_total_food = {}
+	global.bb_evolution = {}
+	global.bb_evasion = {}
+	global.bb_threat_income = {}
+	global.bb_threat = {}
 	
 	for _, force in pairs(game.forces) do
 		game.forces[force.name].technologies["artillery"].enabled = false
@@ -96,6 +101,11 @@ local function init_forces(surface)
 		game.forces[force.name].set_ammo_damage_modifier("shotgun-shell", 1)
 		game.forces[force.name].research_queue_enabled = true
 		global.spy_fish_timeout[force.name] = 0
+		global.bb_total_food[force.name] = 0
+		global.bb_evolution[force.name] = 0
+		global.bb_evasion[force.name] = 0
+		global.bb_threat_income[force.name] = 0
+		global.bb_threat[force.name] = 0	
 	end
 
 	global.game_lobby_active = true
