@@ -114,83 +114,59 @@ local function create_main_gui(player)
 		end
 	end	
 	
-	local t = frame.add { type = "table", column_count = 3 }	
-	local l = t.add  { type = "label", caption = "Team North"}
-	l.style.font = "default-bold"
-	l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
-	local l = t.add  { type = "label", caption = "  -  "}
-	local l = t.add  { type = "label", caption = #game.forces["north"].connected_players .. " Players "}
-	l.style.font_color = { r=0.22, g=0.88, b=0.22}
+	local strings = {
+		[1] = {force = "north", c1 = "Team North",
+		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
+		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99}},
+		[2] = {force = "south", c1 = "Team South",
+		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
+		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
+	}
 	
-			
-	if global.bb_view_players[player.name] == true then
-		local t = frame.add  { type = "table", column_count = 4 }	
-		for _, p in pairs(game.forces.north.connected_players) do
-			local color = {}
-			color = p.color
-			color.r = color.r * 0.6 + 0.4
-			color.g = color.g * 0.6 + 0.4
-			color.b = color.b * 0.6 + 0.4
-			color.a = 1
-			local l = t.add  { type = "label", caption = p.name }
-			l.style.font_color = color
-		end
-	end
+	for _, str in pairs(strings) do			
+		local t = frame.add { type = "table", column_count = 3 }	
+		local l = t.add  { type = "label", caption = str.c1}
+		l.style.font = "default-bold"
+		l.style.font_color = str.color1
+		local l = t.add  { type = "label", caption = "  -  "}
+		local l = t.add  { type = "label", caption = #game.forces[str.force].connected_players .. " Players "}
+		l.style.font_color = { r=0.22, g=0.88, b=0.22}
 
-	local t = frame.add { type = "table", column_count = 4 }			
-	local l = t.add  { type = "label", caption = "Nerf: "}
-	l.style.minimal_width = 25
-	l.tooltip = "Damage nerf of the team."
-	local l = t.add  { type = "label", caption = "NERF "}
-	l.style.minimal_width = 40
-	l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
-	l.style.font = "default-bold"		
-	local l = t.add  { type = "label", caption = " Biter Rage: "}
-	l.style.minimal_width = 25
-	l.tooltip = "Increases damage and the amount of angry biters."
-	local l = t.add  { type = "label", caption = "RAGE"}	
-	l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
-	l.style.font = "default-bold"
-	l.style.minimal_width = 25	 
-	frame.add  { type = "label", caption = "--------------------------"}						
-	local t = frame.add { type = "table", column_count = 3 }	
-	local l = t.add  { type = "label", caption = "Team South"}
-	l.style.font = "default-bold"
-	l.style.font_color = {r = 0.99, g = 0.33, b = 0.33}
-	local l = t.add  { type = "label", caption = "  -  "}
-	local l = t.add  { type = "label", caption = #game.forces["south"].connected_players .. " Players "}
-	l.style.font_color = { r=0.22, g=0.88, b=0.22}
-	
-			
-	if global.bb_view_players[player.name] == true then
-		local t = frame.add  { type = "table", column_count = 4 }	
-		for _, p in pairs(game.forces.south.connected_players) do
-			local color = {}
-			color = p.color
-			color.r = color.r * 0.6 + 0.4
-			color.g = color.g * 0.6 + 0.4
-			color.b = color.b * 0.6 + 0.4
-			color.a = 1
-			local l = t.add  { type = "label", caption = p.name }
-			l.style.font_color = color
-		end		
+				
+		if global.bb_view_players[player.name] == true then
+			local t = frame.add  { type = "table", column_count = 4 }	
+			for _, p in pairs(game.forces[str.force].connected_players) do
+				local color = {}
+				color = p.color
+				color.r = color.r * 0.6 + 0.4
+				color.g = color.g * 0.6 + 0.4
+				color.b = color.b * 0.6 + 0.4
+				color.a = 1
+				local l = t.add  { type = "label", caption = p.name }
+				l.style.font_color = color
+			end
+		end
+
+		local t = frame.add { type = "table", column_count = 4 }			
+		local l = t.add  { type = "label", caption = "Evolution: "}
+		l.style.minimal_width = 25
+		l.tooltip = str.t1
+		local l = t.add  { type = "label", caption = "100%"}
+		l.style.minimal_width = 40
+		l.style.font_color = str.color2
+		l.style.font = "default-bold"
+		l.tooltip = str.t1
+		
+		local l = t.add  { type = "label", caption = "Threat: "}
+		l.style.minimal_width = 25
+		l.tooltip = str.t2
+		local l = t.add  { type = "label", caption = "35326"}	
+		l.style.font_color = str.color2
+		l.style.font = "default-bold"
+		l.style.minimal_width = 25
+		l.tooltip = str.t2
+		frame.add  { type = "label", caption = "--------------------------"}						
 	end
-	
-	local t = frame.add { type = "table", column_count = 4 }			
-	local l = t.add  { type = "label", caption = "Nerf: "}
-	l.tooltip = "Damage nerf of the team."
-	l.style.minimal_width = 25
-	local l = t.add  { type = "label", caption = "NERF"}
-	l.style.minimal_width = 40
-	l.style.font_color = {r = 0.99, g = 0.44, b = 0.44}
-	l.style.font = "default-bold"		
-	local l = t.add  { type = "label", caption = " Biter Rage: "}
-	l.style.minimal_width = 25
-	l.tooltip = "Increases damage and the amount of angry biters."
-	local l = t.add  { type = "label", caption = "RAGE"}	
-	l.style.font_color = {r = 0.99, g = 0.44, b = 0.44}
-	l.style.font = "default-bold"
-	l.style.minimal_width = 25
 	
 	local t = frame.add  { type = "table", column_count = 2 }
 	if player.force.name == "spectator" then

@@ -497,7 +497,7 @@ local function on_player_joined_game(event)
 		
 		game.map_settings.enemy_evolution.time_factor = 0.000004
 		game.map_settings.enemy_evolution.destroy_factor = 0.0035
-		game.map_settings.enemy_evolution.pollution_factor = 0.000005
+		game.map_settings.enemy_evolution.pollution_factor = 0.000035
 		game.map_settings.enemy_expansion.enabled = true		
 		game.map_settings.enemy_expansion.min_expansion_cooldown = 18000
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 72000
