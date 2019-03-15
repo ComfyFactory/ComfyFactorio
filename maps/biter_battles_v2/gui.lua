@@ -124,7 +124,7 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
 		l.tooltip = gui_value.t1
-		local l = t.add  { type = "label", caption = global.bb_evolution[gui_value.force]}
+		local l = t.add  {type = "label", caption = tostring(10 * math.ceil(10 * global.bb_evolution[gui_value.force])) .. "%"}
 		l.style.minimal_width = 38
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
@@ -133,7 +133,7 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Threat: "}
 		l.style.minimal_width = 25
 		l.tooltip = gui_value.t2
-		local l = t.add  { type = "label", caption = global.bb_threat[gui_value.force]}	
+		local l = t.add  { type = "label", caption = math.ceil(global.bb_threat[gui_value.force])}	
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
@@ -180,7 +180,7 @@ local function join_team(player, force_name)
 	if force_name == "south" then enemy_team = "north" end
 	
 	if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
-		player.print("Team " .. force_name .. " has too many players currently.", {r=0.98, g=0.66, b=0.22})
+		player.print("Team " .. force_name .. " has too many players currently.", {r = 0.98, g = 0.66, b = 0.22})
 		return
 	end
 	
@@ -188,7 +188,7 @@ local function join_team(player, force_name)
 		if game.tick - global.spectator_rejoin_delay[player.name] < 1800 then
 			player.print(
 				"Not ready to return to your team yet. Please wait " .. 30-(math.ceil((game.tick - global.spectator_rejoin_delay[player.name])/60)) .. " seconds.",
-				{r=0.98, g=0.66, b=0.22}
+				{r = 0.98, g = 0.66, b = 0.22}
 			)
 			return
 		end
@@ -198,13 +198,13 @@ local function join_team(player, force_name)
 		refresh_gui()
 		local p = game.permissions.get_group("Default")
 		p.add_player(player.name)
-		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r=0.98, g=0.66, b=0.22})
+		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
 		return
 	end
 				
 	player.teleport(surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1))
 	player.force = game.forces[force_name]					
-	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r=0.98, g=0.66, b=0.22})
+	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
 	local i = player.get_inventory(defines.inventory.player_main)
 	i.clear()
 	player.insert {name = 'pistol', count = 1}
@@ -212,6 +212,7 @@ local function join_team(player, force_name)
 	player.insert {name = 'firearm-magazine', count = 16}		
 	player.insert {name = 'iron-gear-wheel', count = 4}
 	player.insert {name = 'iron-plate', count = 8}
+	player.insert {name = 'utility-science-pack', count = 5000}
 	global.chosen_team[player.name] = force_name
 	refresh_gui()
 end
@@ -219,7 +220,7 @@ end
 local function spectate(player)
 	player.teleport(player.surface.find_non_colliding_position("player", {0,0}, 2, 1))	
 	player.force = game.forces.spectator
-	game.print(player.name .. " is spectating.", { r=0.98, g=0.66, b=0.22})		
+	game.print(player.name .. " is spectating.", {r = 0.98, g = 0.66, b = 0.22})		
 	local permission_group = game.permissions.get_group("spectator")
 	permission_group.add_player(player.name)
 	global.spectator_rejoin_delay[player.name] = game.tick

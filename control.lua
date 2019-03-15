@@ -19,7 +19,7 @@ require "score"
 require "on_tick_schedule"
 
 ---- enable modules here ----
---require "tools.cheat_mode"
+require "tools.cheat_mode"
 --require "modules.hunger"
 --require "modules.area_unlocked_on_rotated_entity"
 --require "modules.fish_respawner"

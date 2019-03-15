@@ -31,13 +31,54 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
-local function feed_biters(player, food)
-	game.print(food_values[food].name)
-	local enemy_team = enemy_team_of[player.force.name]
-	global.bb_threat[enemy_team] = global.bb_threat[enemy_team] + food_values[food].value
-	global.bb_total_food[enemy_team] = global.bb_total_food[enemy_team] + food_values[food].value
+local function set_evolution(team)
 	
-	global.bb_evolution[enemy_team] = math.ceil(global.bb_total_food[enemy_team] * 0.001)
+end
+
+local function feed_biters(player, food)	
+	local enemy_team = enemy_team_of[player.force.name]
+	
+	local i = player.get_main_inventory()
+	local flask_amount = i.get_item_count(food)
+	if flask_amount == 0 then
+		player.print("You have no " .. food_values[food].name .. " flask in your inventory.", {r = 0.98, g = 0.66, b = 0.22})
+		return
+	end
+	
+	i.remove({name = food, count = flask_amount})
+								
+	if flask_amount >= 20 then
+		game.print(player.name .. " fed " .. flask_amount .. " flasks of " .. food_values[food].name .. " juice to team " .. enemy_team .. "'s biters!", {r = 0.98, g = 0.66, b = 0.22})
+	else
+		if flask_amount > 1 then
+			player.print("You fed one flask of " .. food_values[food].name .. " juice to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+		else
+			player.print("You fed " .. flask_amount .. " flasks of " .. food_values[food].name .. " juice to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+		end				
+	end								
+	
+	--ADD TOTAL FOOD FED
+	global.bb_total_food[enemy_team] = global.bb_total_food[enemy_team] + (food_values[food].value * flask_amount)	
+	
+	---SET EVOLUTION
+	for a = 1, flask_amount, 1 do
+		local evo_modifier = (1 / ((((game.forces[enemy_team .. "_biters"].evolution_factor + 0.00001)^2.9)+8000)/500))	
+		global.bb_evolution[enemy_team] = global.bb_evolution[enemy_team] + (food_values[food].value * evo_modifier)
+	end
+	
+	if global.bb_evolution[enemy_team] < 1 then
+		game.forces[enemy_team .. "_biters"].evolution_factor = global.bb_evolution[enemy_team]
+	else
+		game.forces[enemy_team .. "_biters"].evolution_factor = 1
+	end
+	
+	--ADD INSTANT THREAT
+	local evo_modifier = (1 / ((((game.forces[enemy_team .. "_biters"].evolution_factor + 0.00001)^2.9)+8000)/500))
+	global.bb_threat[enemy_team] = global.bb_threat[enemy_team] + (food_values[food].value * evo_modifier * flask_amount)
+	
+	--SET THREAT INCOME
+	
+	
 	
 	--global.bb_total_food = {}
 	--global.bb_evolution = {}
