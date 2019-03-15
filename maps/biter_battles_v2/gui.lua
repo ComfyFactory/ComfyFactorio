@@ -22,6 +22,15 @@ local food_values = {
 	["space-science-pack"] = 			42000
 }
 
+local gui_values = {
+		[1] = {force = "north", c1 = "Team North", c2 = "JOIN NORTH",
+		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
+		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99}},
+		[2] = {force = "south", c1 = "Team South", c2 = "JOIN SOUTH",
+		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
+		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
+	}	
+	
 local function create_sprite_button(player)
 	if player.gui.top["bb_toggle_button"] then return end
 	local button = player.gui.top.add { name = "bb_toggle_button", type = "sprite-button", sprite = "entity/behemoth-spitter" }
@@ -38,60 +47,41 @@ local function create_first_join_gui(player)
 	if not global.game_lobby_timeout then global.game_lobby_timeout = 5999940 end
 	if global.game_lobby_timeout - game.tick < 0 then global.game_lobby_active = false end
 	local frame = player.gui.left.add { type = "frame", name = "bb_main_gui", direction = "vertical" }
-	local b = frame.add{ type = "label", caption = "Defend your team´s rocket silo!" }
+	local b = frame.add{ type = "label", caption = "Defend your team's rocket silo!" }
 	b.style.font = "default-bold"
-	b.style.font_color = { r=0.98, g=0.66, b=0.22}
-	local b = frame.add  { type = "label", caption = "Feed the enemy team´s biters to gain advantage!" }
+	b.style.font_color = {r=0.98, g=0.66, b=0.22}
+	local b = frame.add  { type = "label", caption = "Feed the enemy team's biters to gain advantage!" }
 	b.style.font = "default-bold"
-	b.style.font_color = { r=0.98, g=0.66, b=0.22}
-	frame.add  { type = "label", caption = "-----------------------------------------------------------"}
-	local c = "JOIN NORTH"		
-	local font_color =  {r = 0.55, g = 0.55, b = 0.99}
-	if global.game_lobby_active then
-		font_color = { r=0.7, g=0.7, b=0.7}
-		c = c .. " (waiting for players...  "
-		c = c .. math.ceil((global.game_lobby_timeout - game.tick)/60)
-		c = c .. ")"										
-	end		
-	local t = frame.add  { type = "table", column_count = 4 }	
-	for _, p in pairs(game.forces.north.connected_players) do			
-		local color = {}
-		color = p.color
-		color.r = color.r * 0.6 + 0.4
-		color.g = color.g * 0.6 + 0.4
-		color.b = color.b * 0.6 + 0.4
-		color.a = 1
-		local l = t.add  { type = "label", caption = p.name }
-		l.style.font_color = color
-	end		
-	local b = frame.add  { type = "sprite-button", name = "join_north_button", caption = c }
-	b.style.font = "default-large-bold"
-	b.style.font_color = font_color
-	b.style.minimal_width = 350	
-	frame.add  { type = "label", caption = "-----------------------------------------------------------"}
-	local c = "JOIN SOUTH"		
-	local font_color = {r = 0.99, g = 0.33, b = 0.33}
-	if global.game_lobby_active then
-		font_color = { r=0.7, g=0.7, b=0.7}
-		c = c .. " (waiting for players...  "
-		c = c .. math.ceil((global.game_lobby_timeout - game.tick)/60)
-		c = c .. ")"										
-	end		
-	local t = frame.add  { type = "table", column_count = 4 }	
-	for _, p in pairs(game.forces.south.connected_players) do
-		local color = {}
-		color = p.color
-		color.r = color.r * 0.6 + 0.4
-		color.g = color.g * 0.6 + 0.4
-		color.b = color.b * 0.6 + 0.4
-		color.a = 1
-		local l = t.add  { type = "label", caption = p.name }
-		l.style.font_color = color
-	end		
-	local b = frame.add  { type = "sprite-button", name = "join_south_button", caption = c }
-	b.style.font = "default-large-bold"
-	b.style.font_color = font_color
-	b.style.minimal_width = 350
+	b.style.font_color = {r=0.98, g=0.66, b=0.22}
+		
+	for _, gui_value in pairs(gui_values) do
+		local t = frame.add { type = "table", column_count = 3 }	
+		local l = t.add  { type = "label", caption = gui_value.c1}
+		l.style.font = "default-bold"
+		l.style.font_color = gui_value.color1
+		local l = t.add  { type = "label", caption = "  -  "}
+		local l = t.add  { type = "label", caption = #game.forces[gui_value.force].connected_players .. " Players "}
+		l.style.font_color = { r=0.22, g=0.88, b=0.22}
+		
+		frame.add  { type = "label", caption = "-----------------------------------------------------------"}
+		local c = gui_value.c2	
+		local font_color =  gui_value.color1
+		if global.game_lobby_active then
+			font_color = {r=0.7, g=0.7, b=0.7}
+			c = c .. " (waiting for players...  "
+			c = c .. math.ceil((global.game_lobby_timeout - game.tick)/60)
+			c = c .. ")"										
+		end		
+		local t = frame.add  { type = "table", column_count = 4 }	
+		for _, p in pairs(game.forces.north.connected_players) do
+			local l = t.add({type = "label", caption = p.name})
+			l.style.font_color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
+		end		
+		local b = frame.add  { type = "sprite-button", name = gui_value.n1, caption = c }
+		b.style.font = "default-large-bold"
+		b.style.font_color = font_color
+		b.style.minimal_width = 350
+	end	
 end
 
 local function create_main_gui(player)
@@ -110,62 +100,53 @@ local function create_main_gui(player)
 		for _, f in pairs(foods) do
 			local s = t.add { type = "sprite-button", name = f, sprite = "item/" .. f }
 			s.tooltip = {"",food_tooltips[x]}
+			s.style.minimal_height = 42
+			s.style.minimal_width = 42
+			s.style.top_padding = 1
+			s.style.left_padding = 1
+			s.style.right_padding = 1
+			s.style.bottom_padding = 1
 			x = x + 1
 		end
 	end	
 	
-	local strings = {
-		[1] = {force = "north", c1 = "Team North",
-		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
-		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99}},
-		[2] = {force = "south", c1 = "Team South",
-		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
-		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
-	}
-	
-	for _, str in pairs(strings) do			
+	for _, gui_value in pairs(gui_values) do			
 		local t = frame.add { type = "table", column_count = 3 }	
-		local l = t.add  { type = "label", caption = str.c1}
+		local l = t.add  { type = "label", caption = gui_value.c1}
 		l.style.font = "default-bold"
-		l.style.font_color = str.color1
+		l.style.font_color = gui_value.color1
 		local l = t.add  { type = "label", caption = "  -  "}
-		local l = t.add  { type = "label", caption = #game.forces[str.force].connected_players .. " Players "}
+		local l = t.add  { type = "label", caption = #game.forces[gui_value.force].connected_players .. " Players "}
 		l.style.font_color = { r=0.22, g=0.88, b=0.22}
 
 				
 		if global.bb_view_players[player.name] == true then
 			local t = frame.add  { type = "table", column_count = 4 }	
-			for _, p in pairs(game.forces[str.force].connected_players) do
-				local color = {}
-				color = p.color
-				color.r = color.r * 0.6 + 0.4
-				color.g = color.g * 0.6 + 0.4
-				color.b = color.b * 0.6 + 0.4
-				color.a = 1
+			for _, p in pairs(game.forces[gui_value.force].connected_players) do
 				local l = t.add  { type = "label", caption = p.name }
-				l.style.font_color = color
+				l.style.font_color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
 			end
 		end
 
 		local t = frame.add { type = "table", column_count = 4 }			
-		local l = t.add  { type = "label", caption = "Evolution: "}
-		l.style.minimal_width = 25
-		l.tooltip = str.t1
+		local l = t.add  { type = "label", caption = "Evolution:"}
+		--l.style.minimal_width = 25
+		l.tooltip = gui_value.t1
 		local l = t.add  { type = "label", caption = "100%"}
 		l.style.minimal_width = 40
-		l.style.font_color = str.color2
+		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
-		l.tooltip = str.t1
+		l.tooltip = gui_value.t1
 		
 		local l = t.add  { type = "label", caption = "Threat: "}
 		l.style.minimal_width = 25
-		l.tooltip = str.t2
+		l.tooltip = gui_value.t2
 		local l = t.add  { type = "label", caption = "35326"}	
-		l.style.font_color = str.color2
+		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
-		l.tooltip = str.t2
-		frame.add  { type = "label", caption = "--------------------------"}						
+		l.tooltip = gui_value.t2
+		frame.add  { type = "label", caption = "---------------------------------"}						
 	end
 	
 	local t = frame.add  { type = "table", column_count = 2 }
