@@ -1,4 +1,5 @@
 local event = require 'utils.event' 
+local math_random = math.random
 
 local particles = {"coal-particle", "copper-ore-particle", "iron-ore-particle", "stone-particle"}
 local function create_fireworks_rocket(surface, position)
@@ -178,9 +179,10 @@ local function on_entity_died(event)
 	if event.entity == global.rocket_silo.south or event.entity == global.rocket_silo.north then 					
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=1}
-		end
-		show_mvps(player)
-		fireworks(surface)
+			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
+			show_mvps(player)
+		end		
+		fireworks(event.entity.surface)
 	end		
 end
 

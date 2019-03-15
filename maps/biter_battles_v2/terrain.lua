@@ -4,6 +4,7 @@ local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
 local spawn_circle_size = 28
+local ores = {"copper-ore", "iron-ore", "stone", "coal"}	
 	
 local function get_noise(name, pos)	
 	local seed = game.surfaces[1].map_gen_settings.seed
@@ -81,6 +82,26 @@ local function generate_river(event)
 	end
 end
 
+local function generate_rainbow_ore(event)
+	local surface = event.surface
+	local left_top_x = event.area.left_top.x
+	local left_top_y = event.area.left_top.y
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local pos = {x = left_top_x + x, y = left_top_y + y}
+			if surface.can_place_entity({name = "iron-ore", position = pos}) then
+				local noise = get_noise(1, pos)
+				if noise > 0.83 then
+					local amount = math_random(1500, 2000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * noise * 4
+					local i = math.ceil(math.abs(noise * 25)) % 4
+					if i == 0 then i = 4 end
+					surface.create_entity({name = ores[i], position = pos, amount = amount}) 
+				end
+			end
+		end
+	end
+end
+
 local function on_chunk_generated(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
@@ -94,9 +115,10 @@ local function on_chunk_generated(event)
 	generate_river(event)
 	generate_circle_spawn(event)
 	generate_silos(event)
+	generate_rainbow_ore(event)
 	
 	if event.area.left_top.y == -160 and event.area.left_top.x == -160 then
-		for _, e in pairs(surface.find_entities_filtered({area = {{-8,-8},{8,8}}})) do
+		for _, e in pairs(surface.find_entities_filtered({area = {{-10,-10},{10,10}}})) do
 			if e.name ~= "player" then e.destroy() end
 		end
 	end

@@ -224,44 +224,61 @@ local function refresh_gui()
 end
 
 local function join_team(player, force_name)
-	if not global.chosen_team then global.chosen_team = {} end
 	local surface = player.surface
 	
-	if global.chosen_team[player.name] then
-		local p = surface.find_non_colliding_position("player", game.forces[global.chosen_team[player.name]].get_spawn_position(surface), 3, 1)
+	local enemy_team = "south"
+	if force_name == "south" then enemy_team = "north" end
+	
+	if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
+		player.print("Team " .. force_name .. " has too many players currently.", {r=0.98, g=0.66, b=0.22})
+		return
+	end
+	
+	if global.chosen_team[player.name] then		
+		if game.tick - global.spectator_rejoin_delay[player.name] < 1800 then
+			player.print(
+				"Not ready to return to your team yet. Please wait " .. 30-(math.ceil((game.tick - global.spectator_rejoin_delay[player.name])/60)) .. " seconds.",
+				{r=0.98, g=0.66, b=0.22}
+			)
+			return
+		end
+		local p = surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 8, 0.5)
 		player.teleport(p, surface)	
 		player.force = game.forces[force_name]
-		local p = game.permissions.get_group("Default")	
+		local p = game.permissions.get_group("Default")
 		p.add_player(player.name)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r=0.98, g=0.66, b=0.22})
 		return
 	end
-	
-	local enemy_team = "south"
-	if force_name == "south" then enemy_team = "north" end
-		
-	if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
-		player.print("Team " .. force_name .. " has too many players currently.", {r=0.98, g=0.66, b=0.22})
-	else
-		player.teleport(surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1))
-		player.force = game.forces[force_name]					
-		game.print(player.name .. " has joined team " .. player.force.name .. "!", {r=0.98, g=0.66, b=0.22})
-		local i = player.get_inventory(defines.inventory.player_main)
-		player.insert {name = 'pistol', count = 1}
-		player.insert {name = 'raw-fish', count = 3}
-		player.insert {name = 'firearm-magazine', count = 16}		
-		player.insert {name = 'iron-gear-wheel', count = 4}
-		player.insert {name = 'iron-plate', count = 8}
-		global.chosen_team[player.name] = force_name					
-	end							
+				
+	player.teleport(surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1))
+	player.force = game.forces[force_name]					
+	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r=0.98, g=0.66, b=0.22})
+	local i = player.get_inventory(defines.inventory.player_main)
+	i.clear()
+	player.insert {name = 'pistol', count = 1}
+	player.insert {name = 'raw-fish', count = 3}
+	player.insert {name = 'firearm-magazine', count = 16}		
+	player.insert {name = 'iron-gear-wheel', count = 4}
+	player.insert {name = 'iron-plate', count = 8}
+	global.chosen_team[player.name] = force_name													
+end
+
+local function spectate(player)
+	player.teleport(player.surface.find_non_colliding_position("player", {0,0}, 2, 1))	
+	player.force = game.forces.spectator
+	game.print(player.name .. " is spectating.", { r=0.98, g=0.66, b=0.22})		
+	local permission_group = game.permissions.get_group("spectator")
+	permission_group.add_player(player.name)
+	global.spectator_rejoin_delay[player.name] = game.tick
+	create_main_gui(player)
 end
 
 local function join_gui_click(name, player)
 	local team = {
 		["join_north_button"] = "north",
 		["join_south_button"] = "south"
-	}
-	
+	}	
 	if global.game_lobby_active then
 		if player.admin then
 			join_team(player, team[name])
@@ -293,19 +310,33 @@ local function on_gui_click(event)
 	
 	--if food_names[name] then feed_the_biters(player, name) return end
 	
+	if name == "bb_leave_spectate" then join_team(player, global.chosen_team[player.name])	end
+	
 	if name == "bb_spectate" then
-		if player.position.y < 100 and player.position.y > -100 and player.position.x < 100 and player.position.x > -100 then
-			--join_team(player, "spectator")
+		if player.position.y ^ 2 + player.position.x ^ 2 < 12000 then
+			spectate(player)
 		else
 			player.print("You are too far away from spawn to spectate.",{ r=0.98, g=0.66, b=0.22})
 		end
-	end		
+		return
+	end
+
+	if name == "bb_hide_players" then
+		global.bb_view_players[player.name] = false
+		create_main_gui(player)
+	end
+	if name == "bb_view_players" then
+		global.bb_view_players[player.name] = true 
+		create_main_gui(player)
+	end	
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	
 	if not global.bb_view_players then global.bb_view_players = {} end
+	if not global.chosen_team then global.chosen_team = {} end
+	
 	global.bb_view_players[player.name] = false
 	
 	create_sprite_button(player)

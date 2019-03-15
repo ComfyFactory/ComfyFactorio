@@ -495,9 +495,9 @@ local function on_player_joined_game(event)
 		}
 		game.create_surface("surface", map_gen_settings)
 		
-		game.map_settings.enemy_evolution.time_factor = 0.000005
-		game.map_settings.enemy_evolution.destroy_factor = 0.004
-		game.map_settings.enemy_evolution.pollution_factor = 0.000025
+		game.map_settings.enemy_evolution.time_factor = 0.000004
+		game.map_settings.enemy_evolution.destroy_factor = 0.0035
+		game.map_settings.enemy_evolution.pollution_factor = 0.000005
 		game.map_settings.enemy_expansion.enabled = true		
 		game.map_settings.enemy_expansion.min_expansion_cooldown = 18000
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 72000
@@ -538,6 +538,8 @@ local function on_player_joined_game(event)
 			game.forces[name].set_turret_attack_modifier("flamethrower-turret", -0.5)
 			--game.forces[name].set_ammo_damage_modifier("artillery-shell", -0.95)			
 			game.forces[name].set_ammo_damage_modifier("shotgun-shell", 0.5)
+			
+			game.forces[name].research_queue_enabled = true
 		end
 						
 		game.forces["spectator"].technologies["toolbelt"].researched=true
