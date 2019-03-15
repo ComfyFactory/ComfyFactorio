@@ -41,7 +41,10 @@ local function generate_circle_spawn(event)
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
 			
 			local tile = false
-			if distance_to_center < spawn_circle_size then tile = "deepwater" end						
+			if distance_to_center < spawn_circle_size then
+				tile = "deepwater"
+				if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
+			end						
 			if distance_to_center < 9 then tile = "refined-concrete" end
 			if distance_to_center < 6 then tile = "sand-1" end					
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
@@ -77,7 +80,10 @@ local function generate_river(event)
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
-			if generate_horizontal_river(surface, pos) then surface.set_tiles({{name = "deepwater", position = pos}}) end			
+			if generate_horizontal_river(surface, pos) then
+				surface.set_tiles({{name = "deepwater", position = pos}})
+				if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
+			end			
 		end
 	end
 end

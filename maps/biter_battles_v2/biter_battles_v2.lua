@@ -85,6 +85,8 @@ local function init_forces(surface)
 	p.set_allows_action(defines.input_action.edit_permission_group, true)	
 	p.set_allows_action(defines.input_action.toggle_show_entity_info, true)	
 	global.spectator_rejoin_delay = {}
+	global.spy_fish_timeout = {}
+	global.force_area = {}
 	
 	for _, force in pairs(game.forces) do
 		game.forces[force.name].technologies["artillery"].enabled = false
@@ -93,6 +95,7 @@ local function init_forces(surface)
 		game.forces[force.name].technologies["atomic-bomb"].enabled = false			
 		game.forces[force.name].set_ammo_damage_modifier("shotgun-shell", 1)
 		game.forces[force.name].research_queue_enabled = true
+		global.spy_fish_timeout[force.name] = 0
 	end
 
 	global.game_lobby_active = true
@@ -117,7 +120,7 @@ local function on_player_joined_game(event)
 		game.permissions.get_group("spectator").add_player(player.name)
 	end
 	
-	player.character.destroy()
+	--player.character.destroy()
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

@@ -1,5 +1,7 @@
 local event = require 'utils.event' 
 
+local spy_fish = require "maps.biter_battles_v2.spy_fish"
+
 local food_names = {
 	["automation-science-pack"] = 	"automation science",
 	["logistic-science-pack"] = 	"logistic science",
@@ -308,7 +310,12 @@ local function on_gui_click(event)
 	
 	if player.force.name == "player" then join_gui_click(name, player) return end
 	
-	--if food_names[name] then feed_the_biters(player, name) return end
+	if name == "raw-fish" then spy_fish(player) return end
+	
+	if food_names[name] then			
+		--feed_the_biters(player, name)				
+		return 
+	end
 	
 	if name == "bb_leave_spectate" then join_team(player, global.chosen_team[player.name])	end
 	
@@ -338,6 +345,12 @@ local function on_player_joined_game(event)
 	if not global.chosen_team then global.chosen_team = {} end
 	
 	global.bb_view_players[player.name] = false
+	
+	if #game.connected_players > 1 then
+		global.game_lobby_timeout = math.ceil(18000 / #game.connected_players)
+	else
+		global.game_lobby_timeout = 5999940
+	end
 	
 	create_sprite_button(player)
 	if player.online_time ~= 0 then return end

@@ -81,7 +81,7 @@ local function process_entity(e)
 		return
 	end
 	if e.type == "unit-spawner" then			
-		for _, entity in pairs (e.surface.find_entities_filtered({area = {{e.position.x - 4, e.position.y - 4},{e.position.x + 4, e.position.y + 4}}, force = "neutral"})) do
+		for _, entity in pairs (e.surface.find_entities_filtered({area = {{e.position.x - 6, e.position.y - 6},{e.position.x + 6, e.position.y + 6}}, force = "neutral"})) do
 			if entity.valid then entity.destroy() end
 		end
 		return
