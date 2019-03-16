@@ -19,9 +19,10 @@ local function reveal_team(f)
 end
 
 local function on_tick(event)
-	if game.tick % 60 ~= 0 then return end
+	if game.tick % 60 ~= 0 then return end		
+	global.bb_threat["north"] = global.bb_threat["north"] + global.bb_threat_income["north"]
+	global.bb_threat["south"] = global.bb_threat["south"] + global.bb_threat_income["south"]
 	gui()
-	
 	if game.tick % 300 ~= 0 then return end	
 	if global.spy_fish_timeout["south"] - game.tick > 0 then
 		reveal_team("north")

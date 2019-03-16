@@ -124,7 +124,7 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
 		l.tooltip = gui_value.t1
-		local l = t.add  {type = "label", caption = tostring(10 * math.ceil(10 * global.bb_evolution[gui_value.force])) .. "%"}
+		local l = t.add  {type = "label", caption = tostring(math.ceil(100 * global.bb_evolution[gui_value.force])) .. "%"}
 		l.style.minimal_width = 38
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
@@ -196,14 +196,14 @@ local function join_team(player, force_name)
 		player.teleport(p, surface)	
 		player.force = game.forces[force_name]
 		refresh_gui()
-		local p = game.permissions.get_group("Default")
-		p.add_player(player.name)
+		game.permissions.get_group("Default").add_player(player.name)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
 		return
 	end
 				
 	player.teleport(surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1))
-	player.force = game.forces[force_name]					
+	player.force = game.forces[force_name]
+	game.permissions.get_group("Default").add_player(player.name)
 	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
 	local i = player.get_inventory(defines.inventory.player_main)
 	i.clear()
@@ -213,6 +213,7 @@ local function join_team(player, force_name)
 	player.insert {name = 'iron-gear-wheel', count = 4}
 	player.insert {name = 'iron-plate', count = 8}
 	player.insert {name = 'utility-science-pack', count = 5000}
+	player.insert {name = 'automation-science-pack', count = 1000}
 	global.chosen_team[player.name] = force_name
 	refresh_gui()
 end
