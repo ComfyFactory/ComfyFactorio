@@ -213,11 +213,9 @@ local function join_team(player, force_name)
 	i.clear()
 	player.insert {name = 'pistol', count = 1}
 	player.insert {name = 'raw-fish', count = 3}
-	player.insert {name = 'firearm-magazine', count = 16}		
-	player.insert {name = 'iron-gear-wheel', count = 4}
-	player.insert {name = 'iron-plate', count = 8}
-	player.insert {name = 'utility-science-pack', count = 5000}
-	player.insert {name = 'automation-science-pack', count = 1000}
+	player.insert {name = 'firearm-magazine', count = 32}		
+	player.insert {name = 'iron-gear-wheel', count = 8}
+	player.insert {name = 'iron-plate', count = 16}
 	global.chosen_team[player.name] = force_name
 	refresh_gui()
 end

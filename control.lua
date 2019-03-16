@@ -19,7 +19,7 @@ require "score"
 require "on_tick_schedule"
 
 ---- enable modules here ----
-require "tools.cheat_mode"
+--require "tools.cheat_mode"
 --require "modules.hunger"
 --require "modules.area_unlocked_on_rotated_entity"
 --require "modules.fish_respawner"
@@ -40,7 +40,7 @@ require "tools.cheat_mode"
 -----------------------------
 
 ---- enable maps here ----
-require "maps.biter_battles_v2.biter_battles_v2"  --WIP
+require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.biter_battles.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"

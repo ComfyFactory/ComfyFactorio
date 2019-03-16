@@ -85,10 +85,10 @@ end
 
 local function fireworks(surface)
 	local radius = 52
+	local pos = global.rocket_silo[global.bb_game_won_by_team].position
 	for t = 1, 10800, 1 do
 		if t % 3 == 0 then
-			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
-			local pos = global.rocket_silo[global.bb_game_won_by_team].position
+			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end
 			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 				func = create_fireworks_rocket,
 				args = {
@@ -246,7 +246,7 @@ local function server_restart(g, server, concat)
 	g.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
 	local message = 'Map is restarting! '
 	server.to_discord_bold(concat{'*** ', message, ' ***'})
-	server.start_scenario('Biter_Battles')
+	server.start_scenario('Biter_Battles_v2')
 end
 
 local function server_restart_print(g, str)
