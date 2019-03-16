@@ -24,10 +24,33 @@ local gui_values = {
 	
 local function create_sprite_button(player)
 	if player.gui.top["bb_toggle_button"] then return end
-	local button = player.gui.top.add { name = "bb_toggle_button", type = "sprite-button", sprite = "entity/behemoth-spitter" }
+	local button = player.gui.top.add({type = "sprite-button", name = "bb_toggle_button", sprite = "entity/big-spitter"})
 	button.style.font = "default-bold"
 	button.style.minimal_height = 38
 	button.style.minimal_width = 38
+	button.style.top_padding = 2
+	button.style.left_padding = 4
+	button.style.right_padding = 4
+	button.style.bottom_padding = 2	
+end
+
+local function create_team_lock_gui(player)
+	if player.gui.top["bb_team_lock_button"] then player.gui.top["bb_team_lock_button"].destroy() end
+	
+	if player.admin == false and global.teams_are_locked ~= true then return end
+	
+	local caption = "Teams unlocked"
+	local color = {r = 0.33, g = 0.77, b = 0.33}
+	if global.teams_are_locked then
+		caption = "Teams locked"
+		color = {r = 0.77, g = 0.33, b = 0.33}
+	end
+	
+	local button = player.gui.top.add({type = "sprite-button", name = "bb_team_lock_button", caption = caption})
+	button.style.font = "heading-2"
+	button.style.font_color = color
+	button.style.minimal_height = 38
+	button.style.minimal_width = 120
 	button.style.top_padding = 2
 	button.style.left_padding = 4
 	button.style.right_padding = 4
@@ -64,7 +87,7 @@ local function create_first_join_gui(player)
 			c = c .. ")"										
 		end		
 		local t = frame.add  { type = "table", column_count = 4 }	
-		for _, p in pairs(game.forces.north.connected_players) do
+		for _, p in pairs(game.forces[gui_value.force].connected_players) do
 			local l = t.add({type = "label", caption = p.name})
 			l.style.font_color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
 			l.style.font = "heading-2"
@@ -175,6 +198,8 @@ local function refresh_gui()
 end
 
 local function join_team(player, force_name)
+	if global.teams_are_locked then player.print("The Teams are currently locked.", {r = 0.98, g = 0.66, b = 0.22}) return end
+	
 	if not force_name then return end
 	local surface = player.surface
 	
@@ -221,7 +246,7 @@ local function join_team(player, force_name)
 end
 
 local function spectate(player)
-	player.teleport(player.surface.find_non_colliding_position("player", {0,0}, 2, 1))	
+	player.teleport(player.surface.find_non_colliding_position("player", {0,0}, 4, 1))	
 	player.force = game.forces.spectator
 	player.character.destructible = false
 	game.print(player.name .. " is spectating.", {r = 0.98, g = 0.66, b = 0.22})		
@@ -231,11 +256,39 @@ local function spectate(player)
 	create_main_gui(player)
 end
 
+local function lock_teams(locking_player)
+	if locking_player.admin == false then return end
+	if global.teams_are_locked then
+		global.teams_are_locked = false
+		game.print(locking_player.name .. " has unlocked Teams.", {r = 0.98, g = 0.66, b = 0.22})
+		for _, player in pairs(game.players) do
+			if not global.chosen_team[player.name] then
+				player.force = game.forces.player
+				create_main_gui(player)
+			end
+			create_team_lock_gui(player)
+		end
+	else
+		global.teams_are_locked = true
+		game.print(locking_player.name .. " has locked Teams.", {r = 0.98, g = 0.66, b = 0.22})
+		for _, player in pairs(game.players) do
+			if not global.chosen_team[player.name] then
+				player.force = game.forces.spectator
+				create_main_gui(player)
+			end
+			create_team_lock_gui(player)
+		end
+	end		
+end
+
 local function join_gui_click(name, player)
 	local team = {
 		["join_north_button"] = "north",
 		["join_south_button"] = "south"
-	}	
+	}
+
+	if not team[name] then return end
+	
 	if global.game_lobby_active then
 		if player.admin then
 			join_team(player, team[name])
@@ -263,7 +316,7 @@ local function on_gui_click(event)
 		return
 	end
 	
-	if player.force.name == "player" then join_gui_click(name, player) return end
+	if player.force.name == "player" then join_gui_click(name, player) end
 	
 	if name == "raw-fish" then spy_fish(player) return end
 	
@@ -290,7 +343,9 @@ local function on_gui_click(event)
 	if name == "bb_view_players" then
 		global.bb_view_players[player.name] = true 
 		create_main_gui(player)
-	end	
+	end
+
+	if name == "bb_team_lock_button" then lock_teams(player) end
 end
 
 local function on_player_joined_game(event)
@@ -307,11 +362,29 @@ local function on_player_joined_game(event)
 		global.game_lobby_timeout = 5999940
 	end
 	
+	if not global.chosen_team[player.name] then
+		if global.teams_are_locked then
+			player.force = game.forces.spectator
+		else
+			player.force = game.forces.player
+		end
+	end
+	
 	create_sprite_button(player)
-	if player.online_time ~= 0 then return end
+	create_team_lock_gui(player)
 	create_main_gui(player)
 end
 
+local function on_player_promoted(event)
+	create_team_lock_gui(game.players[event.player_index])
+end
+
+local function on_player_demoted(event)
+	create_team_lock_gui(game.players[event.player_index])
+end
+
+event.add(defines.events.on_player_promoted, on_player_promoted)
+event.add(defines.events.on_player_demoted, on_player_demoted)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 

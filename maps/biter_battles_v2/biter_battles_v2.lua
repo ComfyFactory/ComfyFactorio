@@ -1,5 +1,9 @@
 -- Biter Battles v2 -- by MewMew
 
+require "modules.dynamic_landfill"
+require "modules.spawners_contain_biters"
+require "modules.custom_death_messages"
+
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
@@ -7,8 +11,8 @@ local math_random = math.random
 local function init_surface()
 	if game.surfaces["biter_battles"] then return end
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.6"
-	map_gen_settings.starting_area = "5"
+	map_gen_settings.water = "0.5"
+	map_gen_settings.starting_area = "4"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "3", size = "1", richness = "1"},
@@ -25,8 +29,13 @@ local function init_surface()
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
-	game.map_settings.enemy_expansion.enabled = false
 	game.map_settings.pollution.enabled = false
+	
+	game.map_settings.enemy_expansion.enabled = true
+	game.map_settings.enemy_expansion.settler_group_min_size = 8
+	game.map_settings.enemy_expansion.settler_group_max_size = 16
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 54000
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 108000
 end
 
 local function init_forces(surface)
@@ -40,8 +49,16 @@ local function init_forces(surface)
 	
 	local f = game.forces["north"]
 	f.set_spawn_position({0, -32}, surface)
-	f.set_cease_fire("player", true)
+	f.set_cease_fire('player', true)
 	f.set_friend("spectator", true)
+	f.set_friend("south_biters", true)
+	f.share_chart = true
+	
+	local f = game.forces["south"]
+	f.set_spawn_position({0, 32}, surface)
+	f.set_cease_fire('player', true)
+	f.set_friend("spectator", true)
+	f.set_friend("north_biters", true)
 	f.share_chart = true
 	
 	local f = game.forces["north_biters"]
@@ -49,18 +66,14 @@ local function init_forces(surface)
 	f.set_friend("south", true)
 	f.set_friend("player", true)
 	f.set_friend("spectator", true)
-	
-	local f = game.forces["south"]
-	f.set_spawn_position({0, 32}, surface)
-	f.set_cease_fire("player", true)
-	f.set_friend("spectator", true)
-	f.share_chart = true
-	
+	f.share_chart = false
+		
 	local f = game.forces["south_biters"]
 	f.set_friend("north_biters", true)
 	f.set_friend("north", true)
 	f.set_friend("player", true)
 	f.set_friend("spectator", true)
+	f.share_chart = false
 	
 	local f = game.forces["spectator"]
 	f.technologies["toolbelt"].researched=true
@@ -68,8 +81,17 @@ local function init_forces(surface)
 	f.set_friend("north", true)
 	f.set_friend("south", true)
 	f.set_friend("player", true)
+	f.share_chart = true
 	
 	local f = game.forces["player"]
+	f.set_cease_fire('spectator', true)
+	f.set_friend("north_biters", true)
+	f.set_friend("south_biters", true)
+	f.set_cease_fire('north', true)
+	f.set_cease_fire('south', true)
+	f.share_chart = false
+	
+	game.forces["north"].set_friend("player", true)
 	f.set_spawn_position({0,0},surface)
 	
 	local p = game.permissions.create_group("spectator")

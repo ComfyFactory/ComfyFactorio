@@ -246,7 +246,7 @@ local function server_restart(g, server, concat)
 	g.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
 	local message = 'Map is restarting! '
 	server.to_discord_bold(concat{'*** ', message, ' ***'})
-	server.start_scenario('Biter_Battles_v2')
+	server.start_scenario('Biter_Battles')
 end
 
 local function server_restart_print(g, str)
@@ -254,10 +254,10 @@ local function server_restart_print(g, str)
 end
 
 local function server_restart_timer()
-	for t = 0, 7200, 1800 do
+	for t = 1800, 9000, 1800 do
 		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end	
 		
-		if t == 7200 then
+		if t == 9000 then
 			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 				func = server_restart,
 				args = {game, server_commands, table.concat}
@@ -265,7 +265,7 @@ local function server_restart_timer()
 			return
 		end
 		
-		local str = "Map will restart in " .. (7200 - t) / 60
+		local str = "Map will restart in " .. (9000 - t) / 60
 		str = str .. " seconds!"		
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 			func = server_restart_print,

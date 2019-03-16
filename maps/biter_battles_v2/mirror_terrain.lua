@@ -136,7 +136,7 @@ local function on_chunk_generated(event)
 	if not global.on_tick_schedule[game.tick + 5] then global.on_tick_schedule[game.tick + 5] = {} end	
 	global.on_tick_schedule[game.tick + 5][#global.on_tick_schedule[game.tick + 5] + 1] = {
 		func = mirror_chunk,
-		args = {surface, mirror_chunk_area, get_chunk_position({x = x, y = y})}
+		args = {game.surfaces["biter_battles"], mirror_chunk_area, get_chunk_position({x = x, y = y})}
 	}									
 end
 

@@ -63,7 +63,7 @@ local function get_random_close_spawner(surface, biter_force_name)
 end
 
 local function select_units_around_spawner(spawner, force_name, biter_force_name)
-	local biters = spawner.surface.find_enemy_units(spawner.position, 128, force_name)
+	local biters = spawner.surface.find_enemy_units(spawner.position, 96, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
 	local threat = global.bb_threat[biter_force_name] * 0.5
