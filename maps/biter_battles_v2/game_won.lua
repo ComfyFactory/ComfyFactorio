@@ -242,6 +242,38 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
+local function server_restart(g, server, concat)
+	g.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
+	local message = 'Map is restarting! '
+	server.to_discord_bold(concat{'*** ', message, ' ***'})
+	server.start_scenario('Biter_Battles')
+end
+
+local function server_restart_print(g, str)
+	g.print(str,{r=0.22, g=0.88, b=0.22})
+end
+
+local function server_restart_timer()
+	for t = 0, 7200, 1800 do
+		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end	
+		
+		if t == 7200 then
+			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
+				func = server_restart,
+				args = {game, server_commands, table.concat}
+				}
+			return
+		end
+		
+		local str = "Map will restart in " .. (7200 - t) / 60
+		str = str .. " seconds!"		
+		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
+			func = server_restart_print,
+			args = {game, str}
+			}		
+	end	
+end
+
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	if event.entity.name ~= "rocket-silo" then return end	
@@ -251,11 +283,18 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_won", volume_modifier=1}
 			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
 			create_victory_gui(player)
-			show_mvps(player)			
-			if player.character then player.character.destructible = false end		
+			show_mvps(player)
 		end
+		
+		game.forces["north_biters"].set_friend("north", true)
+		game.forces["north"].set_friend("north_biters", true)
+		game.forces["south_biters"].set_friend("south", true)
+		game.forces["south"].set_friend("south_biters", true)
+		
 		fireworks(event.entity.surface)
 		annihilate_base(event.entity.position, event.entity.surface, event.entity.force.name)
+		
+		server_restart_timer()
 	end
 end
 

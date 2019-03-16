@@ -23,6 +23,7 @@ local function on_tick(event)
 	global.bb_threat["north_biters"] = global.bb_threat["north_biters"] + global.bb_threat_income["north_biters"]
 	global.bb_threat["south_biters"] = global.bb_threat["south_biters"] + global.bb_threat_income["south_biters"]
 	gui()
+	
 	if game.tick % 300 ~= 0 then return end	
 	if global.spy_fish_timeout["south"] - game.tick > 0 then
 		reveal_team("north")
@@ -36,13 +37,11 @@ local function on_tick(event)
 	end
 	
 	if game.tick % 3600 ~= 0 then return end
-	if global.bb_game_won_by_team then
-		for _, p in pairs(game.connected_players) do
-			if p.character then p.character.destructible = false end
-		end
-		return 		
-	end
+	if global.bb_game_won_by_team then return end	
 	ai.main_attack()
+	
+	if game.tick % 7200 ~= 0 then return end
+	ai.send_near_biters_to_silo()
 end
 
 event.add(defines.events.on_tick, on_tick)

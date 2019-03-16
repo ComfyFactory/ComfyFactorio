@@ -21,7 +21,6 @@ local enemy_team_of = {
 local function set_biter_endgame_damage(force_name, biter_force)
 	if biter_force.evolution_factor ~= 1 then return end
 	local m = (math.ceil(global.bb_evolution[force_name] * 100) / 100) - 1
-	m = m
 	biter_force.set_ammo_damage_modifier("melee", m)
 	biter_force.set_ammo_damage_modifier("biological", m)
 	biter_force.set_ammo_damage_modifier("artillery-shell", m)
@@ -30,8 +29,8 @@ local function set_biter_endgame_damage(force_name, biter_force)
 end
 
 local function feed_biters(player, food)	
-	local enemy_force_name = enemy_team_of[player.force.name]  ---------------
-	--enemy_force_name = player.force.name
+	--local enemy_force_name = enemy_team_of[player.force.name]  ---------------
+	enemy_force_name = player.force.name
 	
 	local biter_force_name = enemy_force_name .. "_biters"
 	

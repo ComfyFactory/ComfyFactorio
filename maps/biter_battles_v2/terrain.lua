@@ -178,6 +178,11 @@ local function on_entity_damaged(event)
 	event.entity.health = event.entity.health + event.final_damage_amount
 end
 
+local function on_marked_for_deconstruction(event)
+	if event.entity.name == "fish" then event.entity.cancel_deconstruction(game.players[event.player_index].force.name) end
+end
+
+event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_robot_built_tile, on_robot_built_tile)

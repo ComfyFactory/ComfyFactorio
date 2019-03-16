@@ -8,7 +8,7 @@ local function init_surface()
 	if game.surfaces["biter_battles"] then return end
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.6"
-	map_gen_settings.starting_area = "5"
+	map_gen_settings.starting_area = "1"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "3", size = "1", richness = "1"},
@@ -46,9 +46,9 @@ local function init_forces(surface)
 	
 	local f = game.forces["north_biters"]
 	f.set_friend("south_biters", true)
-	f.set_cease_fire("player", true)
-	f.set_cease_fire("spectator", true)
-	f.set_cease_fire("south", true)
+	f.set_friend("south", true)
+	f.set_friend("player", true)
+	f.set_friend("spectator", true)
 	
 	local f = game.forces["south"]
 	f.set_spawn_position({0, 32}, surface)
@@ -58,9 +58,9 @@ local function init_forces(surface)
 	
 	local f = game.forces["south_biters"]
 	f.set_friend("north_biters", true)
-	f.set_cease_fire("player", true)
-	f.set_cease_fire("spectator", true)
-	f.set_cease_fire("north", true)
+	f.set_friend("north", true)
+	f.set_friend("player", true)
+	f.set_friend("spectator", true)
 	
 	local f = game.forces["spectator"]
 	f.technologies["toolbelt"].researched=true

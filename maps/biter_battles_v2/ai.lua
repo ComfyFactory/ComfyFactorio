@@ -22,28 +22,31 @@ local function shuffle(tbl)
 	return tbl
 end
 
-ai.send_near_biter_to_silo = function()
-	if not global.rocket_silo then return end
-	game.surfaces["surface"].set_multi_command({
+ai.send_near_biters_to_silo = function()
+	if game.tick < 108000 then return end
+	if not global.rocket_silo["north"] then return end
+	if not global.rocket_silo["south"] then return end
+	
+	game.surfaces["biter_battles"].set_multi_command({
 		command={
 			type=defines.command.attack,
 			target=global.rocket_silo["north"],
 			distraction=defines.distraction.none
 			},
 		unit_count = 8,
-		force = "enemy",
-		unit_search_distance=64
+		force = "north_biters",
+		unit_search_distance=160
 		})
 		
-	game.surfaces["surface"].set_multi_command({
+	game.surfaces["biter_battles"].set_multi_command({
 		command={
 			type=defines.command.attack,
 			target=global.rocket_silo["south"],
 			distraction=defines.distraction.none
 			},
 		unit_count = 8,
-		force = "enemy",
-		unit_search_distance=64
+		force = "south_biters",
+		unit_search_distance=160
 		})
 end
 
@@ -67,8 +70,9 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	for _, biter in pairs(biters) do
 		valid_biters[#valid_biters + 1] = biter
 		threat = threat - threat_values[biter.name]
-		if threat < 0 then return valid_biters end
+		if threat < 0 then break end
 	end
+	return valid_biters
 end
 
 local function send_group(unit_group, force_name, nearest_player_unit)
@@ -99,7 +103,7 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	local nearest_player_unit = surface.find_nearest_enemy({position = spawner.position, max_distance = 2048, force = biter_force_name})
 	if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
 	local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
-	local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 96, 1)
+	local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 128, 1)
 	if pos then unit_group_position = pos end
 	local units = select_units_around_spawner(spawner, force_name, biter_force_name)
 	if not units then return false end
@@ -110,7 +114,6 @@ end
 
 ai.main_attack = function()	
 	local surface = game.surfaces["biter_battles"]
-	
 	for _, force_name in pairs({"north", "south"}) do
 		create_attack_group(surface, force_name, force_name .. "_biters")
 	end
