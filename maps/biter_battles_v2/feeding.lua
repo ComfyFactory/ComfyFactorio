@@ -34,7 +34,7 @@ local enemy_team_of = {
 local function set_biter_endgame_damage(force_name, biter_force)
 	if biter_force.evolution_factor ~= 1 then return end
 	local m = (math.ceil(global.bb_evolution[force_name] * 100) / 100) - 1
-	m = m * 2
+	m = m
 	biter_force.set_ammo_damage_modifier("melee", m)
 	biter_force.set_ammo_damage_modifier("biological", m)
 	biter_force.set_ammo_damage_modifier("artillery-shell", m)
@@ -43,7 +43,10 @@ local function set_biter_endgame_damage(force_name, biter_force)
 end
 
 local function feed_biters(player, food)	
-	local enemy_force_name = enemy_team_of[player.force.name]
+	--local enemy_force_name = enemy_team_of[player.force.name]  ---------------
+	
+	enemy_force_name = player.force.name
+	
 	local biter_force_name = enemy_force_name .. "_biters"
 	
 	local i = player.get_main_inventory()
@@ -72,7 +75,7 @@ local function feed_biters(player, food)
 		--SET THREAT INCOME
 		local e = (global.bb_evolution[enemy_force_name] * 100) + 1
 		local diminishing_modifier = 1 / (10 ^ (e * 0.03))
-		global.bb_threat_income[enemy_force_name] = global.bb_threat_income[enemy_force_name] + (food_values[food].value * diminishing_modifier * 15)
+		global.bb_threat_income[enemy_force_name] = global.bb_threat_income[enemy_force_name] + (food_values[food].value * diminishing_modifier * 10)
 		
 		---SET EVOLUTION
 		local e = (game.forces[biter_force_name].evolution_factor * 100) + 1
@@ -85,24 +88,21 @@ local function feed_biters(player, food)
 		end
 	end
 	
-	set_biter_endgame_damage(enemy_force_name, game.forces[biter_force_name])
-	
 	--ADD INSTANT THREAT
 	global.bb_threat[enemy_force_name] = global.bb_threat[enemy_force_name] + (food_values[food].value * 100 * flask_amount)
 	
-	--game.print(global.bb_threat_income[enemy_force_name])
-	--global.bb_total_food = {}
-	--global.bb_evolution = {}
-	--global.bb_evasion = {}
-	--global.bb_threat_income = {}
-	--global.bb_threat = {}
+	set_biter_endgame_damage(enemy_force_name, game.forces[biter_force_name])
+	
+	global.bb_evasion[biter_force_name] = (global.bb_evolution[enemy_force_name] - 1) * 333
+	if global.bb_evasion[biter_force_name] > 900 then global.bb_evasion[biter_force_name] = 900 end
 end
 
 --Biter Evasion
+local math_random = math.random
 local function on_entity_damaged(event)
 	if not event.entity.valid then return end
-	if math.random(1,2) == 1 then return end
-	if event.entity.type ~= "unit" then return end	
+	if event.entity.type ~= "unit" then return end
+	if global.bb_evasion[event.entity.force.name] < math_random(1,1000) then return end
 	event.entity.health = event.entity.health + event.final_damage_amount			
 end
 
