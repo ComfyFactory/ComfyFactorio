@@ -77,7 +77,7 @@ local function create_schedule(radius)
 end
 
 local function on_player_joined_game(event)
-	if not global.chunk_gen_coords then create_schedule(6) end
+	if not global.chunk_gen_coords then create_schedule(20) end
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

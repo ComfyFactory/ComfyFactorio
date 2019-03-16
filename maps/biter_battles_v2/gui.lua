@@ -14,10 +14,10 @@ local food_names = {
 }
 
 local gui_values = {
-		[1] = {force = "north", c1 = "Team North", c2 = "JOIN NORTH", n1 = "join_north_button",
+		["north"] = {force = "north", biter_force = "north_biters", c1 = "Team North", c2 = "JOIN NORTH", n1 = "join_north_button",
 		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99}},
-		[2] = {force = "south", c1 = "Team South", c2 = "JOIN SOUTH", n1 = "join_south_button",
+		["south"] = {force = "south", biter_force = "south_biters", c1 = "Team South", c2 = "JOIN SOUTH", n1 = "join_south_button",
 		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
 	}	
@@ -79,6 +79,7 @@ end
 local function create_main_gui(player)
 	if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
 	
+	if global.bb_game_won_by_team then return end
 	if player.force.name == "player" then create_first_join_gui(player) return end
 		
 	local frame = player.gui.left.add { type = "frame", name = "bb_main_gui", direction = "vertical" }
@@ -124,7 +125,7 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
 		l.tooltip = gui_value.t1
-		local l = t.add  {type = "label", caption = tostring(math.ceil(100 * global.bb_evolution[gui_value.force])) .. "%"}
+		local l = t.add  {type = "label", caption = tostring(math.ceil(100 * global.bb_evolution[gui_value.biter_force])) .. "%"}
 		l.style.minimal_width = 38
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
@@ -133,7 +134,7 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Threat: "}
 		l.style.minimal_width = 25
 		l.tooltip = gui_value.t2
-		local l = t.add  { type = "label", caption = math.ceil(global.bb_threat[gui_value.force])}	
+		local l = t.add  { type = "label", caption = math.ceil(global.bb_threat[gui_value.biter_force])}	
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25

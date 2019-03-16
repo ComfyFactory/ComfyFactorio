@@ -7,8 +7,8 @@ local math_random = math.random
 local function init_surface()
 	if game.surfaces["biter_battles"] then return end
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.5"
-	map_gen_settings.starting_area = "5"	
+	map_gen_settings.water = "0.6"
+	map_gen_settings.starting_area = "5"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "3", size = "1", richness = "1"},

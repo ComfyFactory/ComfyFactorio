@@ -1,13 +1,74 @@
 local event = require 'utils.event' 
 local math_random = math.random
 
-local particles = {"coal-particle", "copper-ore-particle", "iron-ore-particle", "stone-particle"}
+local gui_values = {
+		["north"] = {c1 = "Team North", color1 = {r = 0.55, g = 0.55, b = 0.99}},
+		["south"] = {c1 = "Team South", color1 = {r = 0.99, g = 0.33, b = 0.33}}
+	}
+
+local function shuffle(tbl)
+	local size = #tbl
+		for i = size, 1, -1 do
+			local rand = math_random(size)
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	return tbl
+end
+	
+local function create_victory_gui(player)	
+	local values = gui_values[global.bb_game_won_by_team]
+	local frame = player.gui.left.add {type = "frame", name = "bb_victory_gui", direction = "vertical", caption = values.c1 .. " team has won!" }
+	frame.style.font = "heading-1"
+	frame.style.font_color = values.color1
+end
+
+local function destroy_entity(e)
+	if not e.valid then return end
+	local names = {"big-artillery-explosion", "big-explosion", "big-explosion", "big-explosion", "fire-flame", "massive-explosion"}
+	e.surface.create_entity({name = names[math.random(1,#names)], position = e.position})
+	e.die()
+end
+
+local function annihilate_base(center_pos, surface, force_name)	
+	local entities = {}
+	for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
+		if e.name ~= "player" then
+			entities[#entities + 1] = e
+		end
+	end
+	if not entities[2] then return end
+	entities = shuffle(entities)
+	
+	for i1 = #entities, 1, -1 do
+		for i2 = #entities, 1, -1 do
+			local distance_to_center_1 = (entities[i1].position.x - center_pos.x)^2 + (entities[i1].position.y - center_pos.y)^2
+			local distance_to_center_2 = (entities[i2].position.x - center_pos.x)^2 + (entities[i2].position.y - center_pos.y)^2
+			if distance_to_center_1 > distance_to_center_2 then
+				local k = entities[i1]
+				entities[i1] = entities[i2]
+				entities[i2] = k
+			end
+		end
+	end
+		
+	for i = 1, #entities, 1 do
+		local t = i * 8
+		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
+		local pos = global.rocket_silo[global.bb_game_won_by_team].position
+		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
+			func = destroy_entity,
+			args = {entities[i]}
+		}		
+	end
+end
+
 local function create_fireworks_rocket(surface, position)
+	local particles = {"coal-particle", "copper-ore-particle", "iron-ore-particle", "stone-particle"}
 	local particle = particles[math_random(1, #particles)]
 	local m = math_random(16, 36)
 	local m2 = m * 0.005
 				
-	for i = 1, 80, 1 do 
+	for i = 1, 60, 1 do 
 		surface.create_entity({
 			name = particle,
 			position = position,
@@ -18,21 +79,24 @@ local function create_fireworks_rocket(surface, position)
 		})
 	end
 	
-	if math_random(1,16) ~= 1 then return end
+	if math_random(1,12) ~= 1 then return end
 	surface.create_entity({name = "explosion", position = position})
 end
 
 local function fireworks(surface)
-	local radius = 96
-	for t = 1, 18000, 1 do
-		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end
-		for x = 1, 3, 1 do
+	local radius = 52
+	for t = 1, 10800, 1 do
+		if t % 3 == 0 then
+			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
+			local pos = global.rocket_silo[global.bb_game_won_by_team].position
 			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 				func = create_fireworks_rocket,
-				args = {surface, {x = radius - math_random(0, radius * 2),y = radius - math_random(0, radius * 2)}}
-			}								
+				args = {
+					surface,
+					{x = (pos.x - radius) + math_random(0, radius * 2),y = (pos.y - radius) + math_random(0, radius * 2)}
+				}
+			}
 		end
-		t = t + 1
 	end
 end
 
@@ -112,15 +176,15 @@ local function show_mvps(player)
 		
 		if not global.results_sent_north then
 			local result = {}
-			insert(result, 'NORTH: \\n')
-			insert(result, 'MVP Defender: \\n')
-			insert(result, mvp.killscore.name .. " with a score of " .. mvp.killscore.score .. "\\n" )
-			insert(result, '\\n')
-			insert(result, 'MVP Builder: \\n')
-			insert(result, mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things\\n" )
-			insert(result, '\\n')
-			insert(result, 'MVP Deaths: \\n')
-			insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
+			table.insert(result, 'NORTH: \\n')
+			table.insert(result, 'MVP Defender: \\n')
+			table.insert(result, mvp.killscore.name .. " with a score of " .. mvp.killscore.score .. "\\n" )
+			table.insert(result, '\\n')
+			table.insert(result, 'MVP Builder: \\n')
+			table.insert(result, mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things\\n" )
+			table.insert(result, '\\n')
+			table.insert(result, 'MVP Deaths: \\n')
+			table.insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
 			local message = table.concat(result)
 			server_commands.to_discord_embed(message)
 			global.results_sent_north = true
@@ -157,15 +221,15 @@ local function show_mvps(player)
 		
 		if not global.results_sent_south then
 			local result = {}
-			insert(result, 'SOUTH: \\n')
-			insert(result, 'MVP Defender: \\n')
-			insert(result, mvp.killscore.name .. " with a score of " .. mvp.killscore.score .. "\\n" )
-			insert(result, '\\n')
-			insert(result, 'MVP Builder: \\n')
-			insert(result, mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things\\n" )
-			insert(result, '\\n')
-			insert(result, 'MVP Deaths: \\n')
-			insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
+			table.insert(result, 'SOUTH: \\n')
+			table.insert(result, 'MVP Defender: \\n')
+			table.insert(result, mvp.killscore.name .. " with a score of " .. mvp.killscore.score .. "\\n" )
+			table.insert(result, '\\n')
+			table.insert(result, 'MVP Builder: \\n')
+			table.insert(result, mvp.built_entities.name .. " built " .. mvp.built_entities.score .. " things\\n" )
+			table.insert(result, '\\n')
+			table.insert(result, 'MVP Deaths: \\n')
+			table.insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
 			local message = table.concat(result)
 			server_commands.to_discord_embed(message)
 			global.results_sent_south = true
@@ -173,17 +237,26 @@ local function show_mvps(player)
 	end
 end
 
+local enemy_team_of = {
+	["north"] = "south",
+	["south"] = "north"
+}
+
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	if event.entity.name ~= "rocket-silo" then return end	
-	if event.entity == global.rocket_silo.south or event.entity == global.rocket_silo.north then 					
+	if event.entity == global.rocket_silo.south or event.entity == global.rocket_silo.north then
+		global.bb_game_won_by_team = enemy_team_of[event.entity.force.name]
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=1}
 			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
-			show_mvps(player)
-		end		
+			create_victory_gui(player)
+			show_mvps(player)			
+			if player.character then player.character.destructible = false end		
+		end
 		fireworks(event.entity.surface)
-	end		
+		annihilate_base(event.entity.position, event.entity.surface, event.entity.force.name)
+	end
 end
 
 event.add(defines.events.on_entity_died, on_entity_died)

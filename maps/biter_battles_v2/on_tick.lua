@@ -20,8 +20,8 @@ end
 
 local function on_tick(event)
 	if game.tick % 60 ~= 0 then return end		
-	global.bb_threat["north"] = global.bb_threat["north"] + global.bb_threat_income["north"]
-	global.bb_threat["south"] = global.bb_threat["south"] + global.bb_threat_income["south"]
+	global.bb_threat["north_biters"] = global.bb_threat["north_biters"] + global.bb_threat_income["north_biters"]
+	global.bb_threat["south_biters"] = global.bb_threat["south_biters"] + global.bb_threat_income["south_biters"]
 	gui()
 	if game.tick % 300 ~= 0 then return end	
 	if global.spy_fish_timeout["south"] - game.tick > 0 then
@@ -33,7 +33,16 @@ local function on_tick(event)
 		reveal_team("south")
 	else
 		global.spy_fish_timeout["north"] = 0
-	end	
+	end
+	
+	if game.tick % 3600 ~= 0 then return end
+	if global.bb_game_won_by_team then
+		for _, p in pairs(game.connected_players) do
+			if p.character then p.character.destructible = false end
+		end
+		return 		
+	end
+	ai.main_attack()
 end
 
 event.add(defines.events.on_tick, on_tick)
