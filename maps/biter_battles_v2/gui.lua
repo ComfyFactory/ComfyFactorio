@@ -174,6 +174,7 @@ local function refresh_gui()
 end
 
 local function join_team(player, force_name)
+	if not force_name then return end
 	local surface = player.surface
 	
 	local enemy_team = "south"
@@ -195,6 +196,7 @@ local function join_team(player, force_name)
 		local p = surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 8, 0.5)
 		player.teleport(p, surface)	
 		player.force = game.forces[force_name]
+		player.character.destructible = true
 		refresh_gui()
 		game.permissions.get_group("Default").add_player(player.name)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
@@ -203,6 +205,7 @@ local function join_team(player, force_name)
 				
 	player.teleport(surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1))
 	player.force = game.forces[force_name]
+	player.character.destructible = true
 	game.permissions.get_group("Default").add_player(player.name)
 	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
 	local i = player.get_inventory(defines.inventory.player_main)
@@ -221,6 +224,7 @@ end
 local function spectate(player)
 	player.teleport(player.surface.find_non_colliding_position("player", {0,0}, 2, 1))	
 	player.force = game.forces.spectator
+	player.character.destructible = false
 	game.print(player.name .. " is spectating.", {r = 0.98, g = 0.66, b = 0.22})		
 	local permission_group = game.permissions.get_group("spectator")
 	permission_group.add_player(player.name)

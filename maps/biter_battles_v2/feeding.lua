@@ -31,6 +31,17 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
+local function set_biter_endgame_damage(force_name, biter_force)
+	if biter_force.evolution_factor ~= 1 then return end
+	local m = (math.ceil(global.bb_evolution[force_name] * 100) / 100) - 1
+	m = m * 2
+	biter_force.set_ammo_damage_modifier("melee", m)
+	biter_force.set_ammo_damage_modifier("biological", m)
+	biter_force.set_ammo_damage_modifier("artillery-shell", m)
+	biter_force.set_ammo_damage_modifier("flamethrower", m)
+	biter_force.set_ammo_damage_modifier("laser-turret", m)
+end
+
 local function feed_biters(player, food)	
 	local enemy_force_name = enemy_team_of[player.force.name]
 	local biter_force_name = enemy_force_name .. "_biters"
@@ -54,27 +65,30 @@ local function feed_biters(player, food)
 		end				
 	end								
 	
-	--ADD TOTAL FOOD FED
+	--ADD TOTAL FOOD FEED
 	--global.bb_total_food[enemy_force_name] = global.bb_total_food[enemy_force_name] + (food_values[food].value * flask_amount)	
 	
-	for a = 1, flask_amount, 1 do
-		local e = (game.forces[biter_force_name].evolution_factor * 100) + 1
+	for a = 1, flask_amount, 1 do				
+		--SET THREAT INCOME
+		local e = (global.bb_evolution[enemy_force_name] * 100) + 1
 		local diminishing_modifier = 1 / (10 ^ (e * 0.03))
+		global.bb_threat_income[enemy_force_name] = global.bb_threat_income[enemy_force_name] + (food_values[food].value * diminishing_modifier * 15)
 		
 		---SET EVOLUTION
+		local e = (game.forces[biter_force_name].evolution_factor * 100) + 1
+		local diminishing_modifier = 1 / (10 ^ (e * 0.03))
 		global.bb_evolution[enemy_force_name] = global.bb_evolution[enemy_force_name] + (food_values[food].value * diminishing_modifier)
 		if global.bb_evolution[enemy_force_name] < 1 then
 			game.forces[biter_force_name].evolution_factor = global.bb_evolution[enemy_force_name]
 		else
 			game.forces[biter_force_name].evolution_factor = 1
 		end
-		
-		--ADD INSTANT THREAT
-		--global.bb_threat[enemy_force_name] = global.bb_threat[enemy_force_name] + (food_values[food].value * diminishing_modifier * 2)
-		
-		--SET THREAT INCOME
-		--global.bb_threat_income[enemy_force_name] = global.bb_threat_income[enemy_force_name] + (food_values[food].value * diminishing_modifier * 0.005)
-	end	
+	end
+	
+	set_biter_endgame_damage(enemy_force_name, game.forces[biter_force_name])
+	
+	--ADD INSTANT THREAT
+	global.bb_threat[enemy_force_name] = global.bb_threat[enemy_force_name] + (food_values[food].value * 100 * flask_amount)
 	
 	--game.print(global.bb_threat_income[enemy_force_name])
 	--global.bb_total_food = {}
