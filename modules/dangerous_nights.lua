@@ -38,6 +38,8 @@ local function on_player_changed_position(event)
 		end
 	end
 	
+	if #positions == 0 then return end
+	
 	if math.random(1,3) == 1 then
 		unearthing_biters(player.surface, positions[math.random(1, #positions)], math.random(3,9))
 	else

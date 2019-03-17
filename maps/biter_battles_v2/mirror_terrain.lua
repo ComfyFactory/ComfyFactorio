@@ -79,9 +79,13 @@ local function process_entity(surface, entity)
 		global.rocket_silo["south"].minable = false		
 		return
 	end
-	if entity.name == "player" then
+	if entity.name == "gun-turret" or entity.name == "stone-wall" then
+		surface.create_entity({name = entity.name, position = new_pos, force = "south", direction = direction_translation[entity.direction]})
 		return
 	end
+	if entity.name == "player" then
+		return
+	end	
 	surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = entity.force.name})
 end
 

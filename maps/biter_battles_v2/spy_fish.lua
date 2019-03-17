@@ -33,7 +33,7 @@ local function spy_fish(player)
 			global.spy_fish_timeout[player.force.name] = global.spy_fish_timeout[player.force.name] + duration_per_unit
 			player.print(math.ceil((global.spy_fish_timeout[player.force.name] - game.tick) / 60) .. " seconds of enemy vision left.", { r=0.98, g=0.66, b=0.22})
 		else
-			get_border_cords(enemy_team)
+			--get_border_cords(enemy_team)
 			game.print(player.name .. " sent a fish to spy on " .. enemy_team .. " team!", {r=0.98, g=0.66, b=0.22})			
 			global.spy_fish_timeout[player.force.name] = game.tick + duration_per_unit							
 		end		

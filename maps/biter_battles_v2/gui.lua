@@ -20,7 +20,7 @@ local gui_values = {
 		["south"] = {force = "south", biter_force = "south_biters", c1 = "Team South", c2 = "JOIN SOUTH", n1 = "join_south_button",
 		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
-	}	
+	}		
 	
 local function create_sprite_button(player)
 	if player.gui.top["bb_toggle_button"] then return end
@@ -148,16 +148,17 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
 		l.tooltip = gui_value.t1
-		local l = t.add  {type = "label", caption = tostring(math.ceil(100 * global.bb_evolution[gui_value.biter_force])) .. "%"}
+		local evo = math.floor(1000 * global.bb_evolution[gui_value.biter_force]) * 0.1
+		local l = t.add  {type = "label", caption = evo .. "%"}
 		l.style.minimal_width = 38
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.tooltip = gui_value.t1
 		
-		local l = t.add  { type = "label", caption = "Threat: "}
+		local l = t.add  {type = "label", caption = "Threat: "}
 		l.style.minimal_width = 25
 		l.tooltip = gui_value.t2
-		local l = t.add  { type = "label", caption = math.ceil(global.bb_threat[gui_value.biter_force])}	
+		local l = t.add  {type = "label", caption = math.floor(global.bb_threat[gui_value.biter_force])}	
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
@@ -207,8 +208,10 @@ local function join_team(player, force_name)
 	if force_name == "south" then enemy_team = "north" end
 	
 	if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
-		player.print("Team " .. force_name .. " has too many players currently.", {r = 0.98, g = 0.66, b = 0.22})
-		return
+		if not global.chosen_team[player.name] then
+			player.print("Team " .. force_name .. " has too many players currently.", {r = 0.98, g = 0.66, b = 0.22})
+			return
+		end
 	end
 	
 	if global.chosen_team[player.name] then		

@@ -27,7 +27,17 @@ local function get_noise(name, pos)
 		local noise = noise[1] + noise[2] * 0.1
 		--noise = noise * 0.5
 		return noise
-	end	
+	end
+	if name == 2 then
+		local noise = {}
+		noise[1] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
+		seed = seed + noise_seed_add
+		noise[2] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+		seed = seed + noise_seed_add
+		local noise = noise[1] + noise[2] * 0.15
+		--noise = noise * 0.5
+		return noise
+	end
 end
 
 local function draw_smoothed_out_ore_circle(position, name, surface, radius, richness)
@@ -66,9 +76,9 @@ local function generate_horizontal_river(surface, pos)
 end
 
 local function generate_circle_spawn(event)
-	if event.area.left_top.y < -64 then return end
-	if event.area.left_top.x < -64 then return end
-	if event.area.left_top.x > 64 then return end	
+	if event.area.left_top.y < -160 then return end
+	if event.area.left_top.x < -160 then return end
+	if event.area.left_top.x > 160 then return end	
 	local surface = event.surface		
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
@@ -85,6 +95,22 @@ local function generate_circle_spawn(event)
 			if distance_to_center < 9.5 then tile = "refined-concrete" end
 			if distance_to_center < 7 then tile = "sand-1" end					
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
+			
+			if surface.can_place_entity({name = "stone-wall", position = pos}) then
+				local noise = get_noise(2, pos) * 12
+				local r = 110
+				if distance_to_center + noise < r and distance_to_center + noise > r - 1.5 then
+					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
+				end
+				if distance_to_center + noise < r - 4 and distance_to_center + noise > r - 6 then
+					if math_random(1,128) == 1 then
+						if surface.can_place_entity({name = "gun-turret", position = pos}) then
+							surface.create_entity({name = "gun-turret", position = pos, force = "north"})
+						end
+					end
+				end
+			end
+			
 		end
 	end
 end
