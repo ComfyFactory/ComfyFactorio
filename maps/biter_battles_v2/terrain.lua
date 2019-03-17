@@ -119,13 +119,13 @@ local function generate_river(event)
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
 			if generate_horizontal_river(surface, pos) then
 				surface.set_tiles({{name = "deepwater", position = pos}})
-				if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
+				if math_random(1, 64) == 1 then surface.create_entity({name = "fish", position = pos}) end
 			end			
 		end
 	end
 end
 
-local function generate_rainbow_ore(event)
+local function rainbow_ore_and_ponds(event)
 	local surface = event.surface
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
@@ -139,6 +139,14 @@ local function generate_rainbow_ore(event)
 					local i = math.ceil(math.abs(noise * 25)) % 4
 					if i == 0 then i = 4 end
 					surface.create_entity({name = ores[i], position = pos, amount = amount}) 
+				end
+				if noise < -0.83 then
+					if noise < -0.9 then 
+						surface.set_tiles({{name = "deepwater", position = pos}})
+					else
+						surface.set_tiles({{name = "water", position = pos}})
+					end					
+					if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
 				end
 			end
 		end
@@ -179,11 +187,11 @@ local function on_chunk_generated(event)
 		e.destroy()
 	end
 	
+	rainbow_ore_and_ponds(event)
 	generate_river(event)
-	generate_circle_spawn(event)
-	generate_silos(event)
-	generate_rainbow_ore(event)
+	generate_circle_spawn(event)		
 	generate_potential_spawn_ore(event)
+	generate_silos(event)
 	
 	if event.area.left_top.y == -160 and event.area.left_top.x == -160 then
 		local area = {{-10,-10},{10,10}}

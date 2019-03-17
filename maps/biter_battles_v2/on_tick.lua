@@ -2,6 +2,7 @@ local event = require 'utils.event'
 
 local gui = require "maps.biter_battles_v2.gui"
 local ai = require "maps.biter_battles_v2.ai"
+local chunk_pregen = require "maps.biter_battles_v2.pregenerate_chunks"
 
 local function reveal_team(f)
 	local m = 32
@@ -19,7 +20,11 @@ local function reveal_team(f)
 end
 
 local function on_tick(event)
-	if game.tick % 60 ~= 0 then return end		
+	if game.tick % 30 ~= 0 then return end
+	chunk_pregen()
+	
+	if game.tick % 60 ~= 0 then return end
+
 	global.bb_threat["north_biters"] = global.bb_threat["north_biters"] + global.bb_threat_income["north_biters"]
 	global.bb_threat["south_biters"] = global.bb_threat["south_biters"] + global.bb_threat_income["south_biters"]
 	gui()
@@ -39,9 +44,7 @@ local function on_tick(event)
 	if game.tick % 3600 ~= 0 then return end
 	if global.bb_game_won_by_team then return end	
 	ai.main_attack()
-	
-	if game.tick % 7200 ~= 0 then return end
-	ai.send_near_biters_to_silo()
+	ai.send_near_biters_to_silo()		
 end
 
 event.add(defines.events.on_tick, on_tick)

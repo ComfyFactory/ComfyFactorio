@@ -35,7 +35,7 @@ ai.send_near_biters_to_silo = function()
 			},
 		unit_count = 8,
 		force = "north_biters",
-		unit_search_distance=160
+		unit_search_distance=128
 		})
 		
 	game.surfaces["biter_battles"].set_multi_command({
@@ -46,7 +46,7 @@ ai.send_near_biters_to_silo = function()
 			},
 		unit_count = 8,
 		force = "south_biters",
-		unit_search_distance=160
+		unit_search_distance=128
 		})
 end
 
@@ -63,13 +63,15 @@ local function get_random_close_spawner(surface, biter_force_name)
 end
 
 local function select_units_around_spawner(spawner, force_name, biter_force_name)
-	local biters = spawner.surface.find_enemy_units(spawner.position, 96, force_name)
+	local biters = spawner.surface.find_enemy_units(spawner.position, 128, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
-	local threat = global.bb_threat[biter_force_name] * 0.5
+	local threat = global.bb_threat[biter_force_name] * 0.3
 	for _, biter in pairs(biters) do
-		valid_biters[#valid_biters + 1] = biter
-		threat = threat - threat_values[biter.name]
+		if biter.force.name == biter_force_name then
+			valid_biters[#valid_biters + 1] = biter 
+			threat = threat - threat_values[biter.name]
+		end
 		if threat < 0 then break end
 	end
 	return valid_biters
@@ -115,6 +117,7 @@ end
 ai.main_attack = function()	
 	local surface = game.surfaces["biter_battles"]
 	for _, force_name in pairs({"north", "south"}) do
+		create_attack_group(surface, force_name, force_name .. "_biters")
 		create_attack_group(surface, force_name, force_name .. "_biters")
 	end
 end

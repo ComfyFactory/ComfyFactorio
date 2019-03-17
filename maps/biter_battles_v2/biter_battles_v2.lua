@@ -2,27 +2,24 @@
 
 require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters"
-require "modules.custom_death_messages"
 
-local event = require 'utils.event' 
-local table_insert = table.insert
-local math_random = math.random
+local event = require 'utils.event'
 
 local function init_surface()
 	if game.surfaces["biter_battles"] then return end
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.5"
-	map_gen_settings.starting_area = "4"
+	map_gen_settings.water = "0.25"
+	map_gen_settings.starting_area = "4.5"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "3", size = "1", richness = "1"},
-		["stone"] = {frequency = "3", size = "1", richness = "1"},
-		["copper-ore"] = {frequency = "3", size = "1", richness = "1"},
-		["iron-ore"] = {frequency = "3", size = "1", richness = "1"},
+		["coal"] = {frequency = "2.5", size = "1", richness = "1"},
+		["stone"] = {frequency = "2.5", size = "1", richness = "1"},
+		["copper-ore"] = {frequency = "2.5", size = "1", richness = "1"},
+		["iron-ore"] = {frequency = "2.5", size = "1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
-		["trees"] = {frequency = "2", size = "1", richness = "1"},
-		["enemy-base"] = {frequency = "2", size = "4", richness = "1"}	
+		["trees"] = {frequency = "0.5", size = "1", richness = "1"},
+		["enemy-base"] = {frequency = "2", size = "3", richness = "1"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 			
@@ -134,10 +131,13 @@ local function init_forces(surface)
 end
 
 local function on_player_joined_game(event)
-	init_surface()
-	local surface = game.surfaces["biter_battles"]
-	init_forces(surface)
+	if not global.bb_first_init_done then
+		init_surface()
+		init_forces(game.surfaces["biter_battles"])
+		global.bb_first_init_done = true
+	end
 	
+	local surface = game.surfaces["biter_battles"]
 	local player = game.players[event.player_index]	
 	
 	if player.gui.left["map_pregen"] then player.gui.left["map_pregen"].destroy() end
@@ -151,8 +151,6 @@ local function on_player_joined_game(event)
 		player.character.destructible = false
 		game.permissions.get_group("spectator").add_player(player.name)
 	end
-	
-	--player.character.destroy()
 end
 
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
@@ -162,4 +160,3 @@ require "maps.biter_battles_v2.mirror_terrain"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.game_won"
 require "maps.biter_battles_v2.on_tick"
-require "maps.biter_battles_v2.pregenerate_chunks"

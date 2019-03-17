@@ -4,13 +4,13 @@ local spy_fish = require "maps.biter_battles_v2.spy_fish"
 local feed_the_biters = require "maps.biter_battles_v2.feeding"
 
 local food_names = {
-	["automation-science-pack"] = 	"automation science",
-	["logistic-science-pack"] = 	"logistic science",
-	["military-science-pack"] =		"military science",
-	["chemical-science-pack"] = 	"chemical science",
-	["production-science-pack"] =	"production science",
-	["utility-science-pack"] =		"utility science",
-	["space-science-pack"] = 		"space science"
+	["automation-science-pack"] = true,
+	["logistic-science-pack"] = true,
+	["military-science-pack"] = true,
+	["chemical-science-pack"] = true,
+	["production-science-pack"] = true,
+	["utility-science-pack"] = true,
+	["space-science-pack"] = true
 }
 
 local gui_values = {
@@ -357,7 +357,7 @@ local function on_player_joined_game(event)
 	global.bb_view_players[player.name] = false
 	
 	if #game.connected_players > 1 then
-		global.game_lobby_timeout = math.ceil(18000 / #game.connected_players)
+		global.game_lobby_timeout = math.ceil(36000 / #game.connected_players)
 	else
 		global.game_lobby_timeout = 5999940
 	end

@@ -1,5 +1,4 @@
 local event = require 'utils.event' 
-local math_random = math.random
 
 local gui_values = {
 		["north"] = {c1 = "Team North", color1 = {r = 0.55, g = 0.55, b = 0.99}},
@@ -9,7 +8,7 @@ local gui_values = {
 local function shuffle(tbl)
 	local size = #tbl
 		for i = size, 1, -1 do
-			local rand = math_random(size)
+			local rand = math.random(size)
 			tbl[i], tbl[rand] = tbl[rand], tbl[i]
 		end
 	return tbl
@@ -31,7 +30,7 @@ end
 
 local function annihilate_base(center_pos, surface, force_name)	
 	local entities = {}
-	for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
+	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 40, center_pos.y - 40},{center_pos.x + 40, center_pos.y + 40}}})) do
 		if e.name ~= "player" then
 			entities[#entities + 1] = e
 		end
@@ -52,7 +51,7 @@ local function annihilate_base(center_pos, surface, force_name)
 	end
 		
 	for i = 1, #entities, 1 do
-		local t = i * 8
+		local t = i * 6
 		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
 		local pos = global.rocket_silo[global.bb_game_won_by_team].position
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
@@ -64,8 +63,8 @@ end
 
 local function create_fireworks_rocket(surface, position)
 	local particles = {"coal-particle", "copper-ore-particle", "iron-ore-particle", "stone-particle"}
-	local particle = particles[math_random(1, #particles)]
-	local m = math_random(16, 36)
+	local particle = particles[math.random(1, #particles)]
+	local m = math.random(16, 36)
 	local m2 = m * 0.005
 				
 	for i = 1, 60, 1 do 
@@ -75,11 +74,11 @@ local function create_fireworks_rocket(surface, position)
 			frame_speed = 0.1,
 			vertical_speed = 0.1,
 			height = 0.1,
-			movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
+			movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
 		})
 	end
 	
-	if math_random(1,12) ~= 1 then return end
+	if math.random(1,12) ~= 1 then return end
 	surface.create_entity({name = "explosion", position = position})
 end
 
@@ -93,7 +92,7 @@ local function fireworks(surface)
 				func = create_fireworks_rocket,
 				args = {
 					surface,
-					{x = (pos.x - radius) + math_random(0, radius * 2),y = (pos.y - radius) + math_random(0, radius * 2)}
+					{x = (pos.x - radius) + math.random(0, radius * 2),y = (pos.y - radius) + math.random(0, radius * 2)}
 				}
 			}
 		end
