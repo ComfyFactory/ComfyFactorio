@@ -148,7 +148,7 @@ local function create_teleport_gui(player)
 	scroll_pane.style.maximal_height = 320
 	scroll_pane.style.minimal_height = 320
 	
-	local t = scroll_pane.add({type = "table", column_count = 3})
+	local t = scroll_pane.add({type = "table", column_count = 3, name = "team_teleport_table"})
 	local player_table = get_sorted_player_table(player)
 	
 	for _, k in pairs(player_table) do
@@ -185,6 +185,7 @@ local function on_gui_click(event)
 	end
 	
 	if not game.players[name] then return end
+	if event.element.parent.name ~= "team_teleport_table" then return end
 	if not player.character then return end
 	if not game.players[name].character then return end
 	if player.character.driving then return end		

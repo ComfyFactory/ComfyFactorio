@@ -16,7 +16,6 @@ require "group"
 require "player_list"
 require "poll"
 require "score"
-require "on_tick_schedule"
 
 ---- enable modules here ----
 --require "tools.cheat_mode"

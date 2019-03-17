@@ -44,9 +44,10 @@ local function draw_gui()
 	end
 end
 
-local function process_chunk(surface)
-	if not global.chunk_gen_coords then set_chunk_coords(30) end
+local function process_chunk(surface)	
 	if global.map_generation_complete then return end
+	if game.tick < 600 then return end
+	if not global.chunk_gen_coords then set_chunk_coords(32) end
 	if #global.chunk_gen_coords == 0 then
 		global.map_generation_complete = true
 		draw_gui()

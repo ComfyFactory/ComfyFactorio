@@ -1,5 +1,6 @@
 --junkyard-- mewmew made this --
 
+require "on_tick_schedule"
 require "modules.dynamic_landfill"
 require "modules.satellite_score"
 require "modules.mineable_wreckage_yields_scrap"

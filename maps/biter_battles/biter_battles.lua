@@ -1,5 +1,6 @@
 -- Biter Battles -- mewmew made this --
 
+require "on_tick_schedule"
 require "modules.splice_double"
 require "modules.explosive_biters"
 require "modules.spawners_contain_biters"

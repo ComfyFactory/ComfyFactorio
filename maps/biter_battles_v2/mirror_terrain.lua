@@ -85,14 +85,12 @@ local function process_entity(surface, entity)
 	surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = entity.force.name})
 end
 
-local function mirror_chunk(surface, chunk_area, chunk_position)
-	if not surface then return end
-	if not chunk_area then return end
-	if not chunk_position then return end
-	if not surface.is_chunk_generated(chunk_position) then
+local function mirror_chunk(surface, chunk)		
+	local chunk_area = {left_top = {x = chunk.x * 32, y = chunk.y * 32}, right_bottom = {x = chunk.x * 32 + 32, y = chunk.y * 32 + 32}}	
+	if not surface.is_chunk_generated(chunk) then
 		surface.request_to_generate_chunks({x = chunk_area.left_top.x - 16, y = chunk_area.left_top.y - 16}, 1)
 		surface.force_generate_chunk_requests()
-	end
+	end	
 	for _, tile in pairs(surface.find_tiles_filtered({area = chunk_area})) do
 		surface.set_tiles({{name = tile.name, position = {x = tile.position.x * -1, y = (tile.position.y * -1) - 1}}}, true)
 	end	
@@ -104,13 +102,10 @@ local function mirror_chunk(surface, chunk_area, chunk_position)
 			check_collision=false,
 			decoratives={{name = decorative.decorative.name, position = {x = decorative.position.x * -1, y = (decorative.position.y * -1) - 1}, amount = decorative.amount}}
 		}
-	end		
+	end
 end
 
-local function on_chunk_generated(event)
-	if event.area.left_top.y < 0 then return end
-	local surface = event.surface
-	
+local function clear_chunk(surface, event)
 	if event.area.left_top.y > 32 or event.area.left_top.x > 32 or event.area.left_top.x < -32 then 
 		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
 			if e.valid then
@@ -125,19 +120,44 @@ local function on_chunk_generated(event)
 				end
 			end
 		end
-	end
-	
+	end	
 	surface.destroy_decoratives{area=event.area}
+end
+
+local function on_chunk_generated(event)
+	if event.area.left_top.y < 0 then return end
+	if event.surface.name ~= "biter_battles" then return end
 	
+	clear_chunk(event.surface, event)
+		
 	local x = ((event.area.left_top.x + 16) * -1) - 16
 	local y = ((event.area.left_top.y + 16) * -1) - 16	
-	local mirror_chunk_area = {left_top = {x = x, y = y}, right_bottom = {x = x + 32, y = y + 32}}
-		
-	if not global.on_tick_schedule[game.tick + 5] then global.on_tick_schedule[game.tick + 5] = {} end	
-	global.on_tick_schedule[game.tick + 5][#global.on_tick_schedule[game.tick + 5] + 1] = {
-		func = mirror_chunk,
-		args = {game.surfaces["biter_battles"], mirror_chunk_area, get_chunk_position({x = x, y = y})}
-	}									
+	local chunk = get_chunk_position({x = x, y = y})
+
+	local delay = 30
+	if not global.chunks_to_mirror[game.tick + delay] then global.chunks_to_mirror[game.tick + delay] = {} end
+	global.chunks_to_mirror[game.tick + delay][#global.chunks_to_mirror[game.tick + delay] + 1] = {x = chunk.x, y = chunk.y}
+	
+	--mirror_chunk(game.surfaces["biter_battles"], chunk)
+	--local delay = 60
+	--if not global.on_tick_schedule[game.tick + delay] then global.on_tick_schedule[game.tick + delay] = {} end	
+	--global.on_tick_schedule[game.tick + delay][#global.on_tick_schedule[game.tick + delay] + 1] = {
+	--	func = mirror_chunk,
+	--	args = {surface, {x = chunk.x, y = chunk.y}}
+	--}									
+end
+
+local function mirror_map()
+	for i, c in pairs(global.chunks_to_mirror) do
+		if i < game.tick then
+			for _, chunk in pairs(global.chunks_to_mirror[i]) do
+				mirror_chunk(game.surfaces["biter_battles"], chunk)
+			end
+			global.chunks_to_mirror[i] = nil
+		end
+	end
 end
 
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+
+return mirror_map

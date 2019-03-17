@@ -82,8 +82,8 @@ local function generate_circle_spawn(event)
 				tile = "deepwater"
 				if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
 			end						
-			if distance_to_center < 9 then tile = "refined-concrete" end
-			if distance_to_center < 6 then tile = "sand-1" end					
+			if distance_to_center < 9.5 then tile = "refined-concrete" end
+			if distance_to_center < 7 then tile = "sand-1" end					
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 		end
 	end
@@ -134,9 +134,9 @@ local function rainbow_ore_and_ponds(event)
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = get_noise(1, pos)
-				if noise > 0.83 then
+				if noise > 0.81 then
 					local amount = math_random(1500, 2000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * noise * 4
-					local i = math.ceil(math.abs(noise * 25)) % 4
+					local i = math.ceil(math.abs(noise * 30)) % 4
 					if i == 0 then i = 4 end
 					surface.create_entity({name = ores[i], position = pos, amount = amount}) 
 				end

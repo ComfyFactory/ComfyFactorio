@@ -1,6 +1,7 @@
 -- just an empty map for testing thingies
 local event = require 'utils.event'
 local map_functions = require "tools.map_functions"
+require "maps.empty_map_test"
 
 function dump_boom_layout()
 	local surface = game.surfaces["empty_map"]
@@ -38,7 +39,6 @@ local function on_chunk_generated(event)
 			left_top = {x = chunk_pos_x, y = chunk_pos_y},
 			right_bottom = {x = chunk_pos_x + 31, y = chunk_pos_y + 31}
 			}							
-	
 	surface.destroy_decoratives({area = area})
 	local decoratives = {}	
 	

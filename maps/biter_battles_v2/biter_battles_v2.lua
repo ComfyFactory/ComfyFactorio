@@ -1,24 +1,24 @@
 -- Biter Battles v2 -- by MewMew
 
+require "on_tick_schedule"
 require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters"
 
 local event = require 'utils.event'
 
-local function init_surface()
-	if game.surfaces["biter_battles"] then return end
+local function init_surface()	
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.25"
 	map_gen_settings.starting_area = "4.5"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "2.5", size = "1", richness = "1"},
-		["stone"] = {frequency = "2.5", size = "1", richness = "1"},
-		["copper-ore"] = {frequency = "2.5", size = "1", richness = "1"},
-		["iron-ore"] = {frequency = "2.5", size = "1", richness = "1"},
+		["coal"] = {frequency = "2", size = "1", richness = "1"},
+		["stone"] = {frequency = "2", size = "1", richness = "1"},
+		["copper-ore"] = {frequency = "2", size = "1", richness = "1"},
+		["iron-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
-		["trees"] = {frequency = "0.5", size = "1", richness = "1"},
+		["trees"] = {frequency = "0.5", size = "0.7", richness = "0.7"},
 		["enemy-base"] = {frequency = "2", size = "3", richness = "1"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
@@ -35,9 +35,9 @@ local function init_surface()
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 108000
 end
 
-local function init_forces(surface)
-	if game.forces.north then return end	
-		
+local function init_forces()
+	local surface = game.surfaces["biter_battles"]
+				
 	game.create_force("north")
 	game.create_force("north_biters")
 	game.create_force("south")
@@ -111,6 +111,7 @@ local function init_forces(surface)
 	global.bb_evasion = {}
 	global.bb_threat_income = {}
 	global.bb_threat = {}
+	global.chunks_to_mirror = {}
 	
 	for _, force in pairs(game.forces) do
 		game.forces[force.name].technologies["artillery"].enabled = false
@@ -131,10 +132,8 @@ local function init_forces(surface)
 end
 
 local function on_player_joined_game(event)
-	if not global.bb_first_init_done then
-		init_surface()
-		init_forces(game.surfaces["biter_battles"])
-		global.bb_first_init_done = true
+	if not game.surfaces["biter_battles"] then 	
+		
 	end
 	
 	local surface = game.surfaces["biter_battles"]
@@ -153,10 +152,16 @@ local function on_player_joined_game(event)
 	end
 end
 
+local function on_init(surface)
+	if game.surfaces["biter_battles"] then return end
+	init_surface()
+	init_forces()
+end
+
+event.on_init(on_init)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
+require "maps.biter_battles_v2.on_tick"
 require "maps.biter_battles_v2.terrain"
-require "maps.biter_battles_v2.mirror_terrain"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.game_won"
-require "maps.biter_battles_v2.on_tick"
