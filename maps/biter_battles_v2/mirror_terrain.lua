@@ -52,11 +52,8 @@ local function process_entity(surface, entity)
 	--local new_pos = {x = entity.position.x * -1, y = (entity.position.y * -1) - 1}
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then
-		local new_e = {name = entity.name, position = new_pos, graphics_variation = entity.graphics_variation}
-		if not surface.can_place_entity(new_e) then return end
-		local e = surface.create_entity(new_e)
-		e.graphics_variation = entity.graphics_variation
-		--e.tree_color_index = entity.tree_color_index
+		if not surface.can_place_entity({name = entity.name, position = new_pos}) then return end
+		entity.clone({position=new_pos, surface=surface, force="neutral"})
 		return
 	end
 	if entity.type == "simple-entity" then
