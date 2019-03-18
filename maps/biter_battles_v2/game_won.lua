@@ -28,9 +28,9 @@ local function destroy_entity(e)
 	e.die()
 end
 
-local function annihilate_base(center_pos, surface, force_name)	
+local function annihilate_base_old(center_pos, surface, force_name)	
 	local entities = {}
-	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 40, center_pos.y - 40},{center_pos.x + 40, center_pos.y + 40}}})) do
+	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 32, center_pos.y - 32},{center_pos.x + 32, center_pos.y + 32}}})) do
 		if e.name ~= "player" then
 			entities[#entities + 1] = e
 		end
@@ -51,13 +51,40 @@ local function annihilate_base(center_pos, surface, force_name)
 	end
 		
 	for i = 1, #entities, 1 do
-		local t = i * 5
+		local t = i * 2
 		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
 		local pos = global.rocket_silo[global.bb_game_won_by_team].position
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 			func = destroy_entity,
 			args = {entities[i]}
 		}		
+	end
+end
+
+local function annihilate_base(center_pos, surface, force_name)	
+	local entities = {}
+	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 128, center_pos.y - 128},{center_pos.x + 128, center_pos.y + 128}}})) do
+		if e.name ~= "player" then
+			if e.valid then
+				local distance_to_center = math.ceil(math.sqrt((e.position.x - center_pos.x)^2 + (e.position.y - center_pos.y)^2))
+				if not entities[distance_to_center] then entities[distance_to_center] = {} end
+				entities[distance_to_center][#entities[distance_to_center] + 1] = e
+			end
+		end
+	end
+	
+	if #entities == 0 then return end
+	
+	local t = 1
+	for i1, entity_list in pairs(entities) do
+		for i2, e in pairs(entity_list) do
+			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
+			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
+				func = destroy_entity,
+				args = {e}
+			}
+			t = t + 3
+		end
 	end
 end
 

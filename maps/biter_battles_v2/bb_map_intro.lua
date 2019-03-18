@@ -3,28 +3,28 @@ local event = require 'utils.event'
 local info = [[
 	- - B I T E R    B A T T L E S - -
 	
-	Your goal is to defend your team's rocket silo and defeat the other team.	
-	Feeding science packs via the gui buttons,
-	increases the strength of the opposing team's biters.
-				
+	Your goal is to defend your team's rocket silo and defeat the other team.
+	Feed the opponent's biters with science packs to increase their strength.
+	High tier science juice will yield stronger results.
+	
 	There is no major direct pvp combat
 	The horizontal border river is landfill proof.
 	Construction robots can not build on the other teams's side.
 	
 	There is no biter evolution from pollution, time or destruction.
-	ONLY feeding them increases their power and will lead to your teams victory.	
+	ONLY feeding increases their power and will lead to your teams victory.	
 	The gui yields two different main stats for each team's biters.
 	
 	    - EVO -
 	    The evolution of the biters.
 	    It can go above 100% which unlocks endgame modifiers,
-	    granting biters increased damage and evasion.
+	    granting them increased damage and evasion.
 	
 	    - THREAT -
 	    Threat creates biter attacks.
 	    Feeding gives permanent "threat-income", as well as creating instant threat.
-	    A high threat value will cause more biters to attack.
-	    A threat of zero or below will cause no attacks.		
+	    A high threat value causes big attacks.
+	    Values of zero or below will cause no attacks.		
 ]]
 
 local function create_map_intro_button(player)

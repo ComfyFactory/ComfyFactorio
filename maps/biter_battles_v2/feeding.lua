@@ -61,7 +61,7 @@ local function feed_biters(player, food)
 		local e = (global.bb_evolution[biter_force_name] * 100) + 1
 		--local diminishing_modifier = 1 / (10 ^ (e * 0.03))
 		local diminishing_modifier = (1 / (10 ^ (e * 0.014))) / (e * 0.5)
-		global.bb_threat_income[biter_force_name] = global.bb_threat_income[biter_force_name] + (food_values[food].value * diminishing_modifier * 10)
+		global.bb_threat_income[biter_force_name] = global.bb_threat_income[biter_force_name] + (food_values[food].value * diminishing_modifier * 15)
 		
 		---SET EVOLUTION
 		local e = (game.forces[biter_force_name].evolution_factor * 100) + 1
@@ -75,12 +75,12 @@ local function feed_biters(player, food)
 	end
 	
 	--ADD INSTANT THREAT
-	global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 100 * flask_amount)
+	global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 200 * flask_amount)
 	
 	set_biter_endgame_damage(biter_force_name, game.forces[biter_force_name])
 	
 	global.bb_evasion[biter_force_name] = (global.bb_evolution[biter_force_name] - 1) * 333
-	if global.bb_evasion[biter_force_name] > 900 then global.bb_evasion[biter_force_name] = 900 end
+	if global.bb_evasion[biter_force_name] > 950 then global.bb_evasion[biter_force_name] = 950 end
 end
 
 return feed_biters

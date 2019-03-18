@@ -39,21 +39,25 @@ local function create_team_lock_gui(player)
 	
 	if player.admin == false and global.teams_are_locked ~= true then return end
 	
-	local caption = "Teams unlocked"
+	local caption = "Unlocked"
 	local color = {r = 0.33, g = 0.77, b = 0.33}
+	local width = 68
+	local tooltip = "Lock teams to disable joining"
 	if global.teams_are_locked then
-		caption = "Teams locked"
+		caption = "Teams Locked"
 		color = {r = 0.77, g = 0.33, b = 0.33}
+		width = 100
+		tooltip = "An admin has locked the teams, joining is currently disabled"
 	end
 	
-	local button = player.gui.top.add({type = "sprite-button", name = "bb_team_lock_button", caption = caption})
+	local button = player.gui.top.add({type = "sprite-button", name = "bb_team_lock_button", caption = caption, tooltip = tooltip})
 	button.style.font = "heading-2"
 	button.style.font_color = color
 	button.style.minimal_height = 38
-	button.style.minimal_width = 120
+	button.style.minimal_width = width
 	button.style.top_padding = 2
-	button.style.left_padding = 4
-	button.style.right_padding = 4
+	button.style.left_padding = 0
+	button.style.right_padding = 0
 	button.style.bottom_padding = 2	
 end
 
