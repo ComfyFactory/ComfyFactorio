@@ -59,12 +59,14 @@ local function feed_biters(player, food)
 	for a = 1, flask_amount, 1 do				
 		--SET THREAT INCOME
 		local e = (global.bb_evolution[biter_force_name] * 100) + 1
-		local diminishing_modifier = 1 / (10 ^ (e * 0.03))
+		--local diminishing_modifier = 1 / (10 ^ (e * 0.03))
+		local diminishing_modifier = (1 / (10 ^ (e * 0.014))) / (e * 0.5)
 		global.bb_threat_income[biter_force_name] = global.bb_threat_income[biter_force_name] + (food_values[food].value * diminishing_modifier * 10)
 		
 		---SET EVOLUTION
 		local e = (game.forces[biter_force_name].evolution_factor * 100) + 1
-		local diminishing_modifier = 1 / (10 ^ (e * 0.032))
+		--local diminishing_modifier = 1 / (10 ^ (e * 0.032))
+		local diminishing_modifier = (1 / (10 ^ (e * 0.014))) / (e * 0.5)
 		global.bb_evolution[biter_force_name] = global.bb_evolution[biter_force_name] + (food_values[food].value * diminishing_modifier)
 		if global.bb_evolution[biter_force_name] < 1 then
 			game.forces[biter_force_name].evolution_factor = global.bb_evolution[biter_force_name]

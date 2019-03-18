@@ -75,9 +75,11 @@ local function init_forces()
 	local f = game.forces["spectator"]
 	f.technologies["toolbelt"].researched=true
 	f.set_spawn_position({0,0},surface)
+	f.set_friend("north_biters", true)
+	f.set_friend("south_biters", true)
 	f.set_friend("north", true)
 	f.set_friend("south", true)
-	f.set_friend("player", true)
+	f.set_cease_fire("player", true)
 	f.share_chart = true
 	
 	local f = game.forces["player"]
@@ -174,4 +176,3 @@ event.add(defines.events.on_player_joined_game, on_player_joined_game)
 require "maps.biter_battles_v2.on_tick"
 require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.chat"
-require "maps.biter_battles_v2.game_won"

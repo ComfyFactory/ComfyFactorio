@@ -51,7 +51,7 @@ local function annihilate_base(center_pos, surface, force_name)
 	end
 		
 	for i = 1, #entities, 1 do
-		local t = i * 6
+		local t = i * 5
 		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
 		local pos = global.rocket_silo[global.bb_game_won_by_team].position
 		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
@@ -241,41 +241,27 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
-local function server_restart(g, server, concat)
-	g.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
-	local message = 'Map is restarting! '
-	server.to_discord_bold(concat{'*** ', message, ' ***'})
-	server.start_scenario('Biter_Battles')
-end
-
-local function server_restart_print(g, str)
-	g.print(str,{r=0.22, g=0.88, b=0.22})
-end
-
-local function server_restart_timer()
-	for t = 1800, 9000, 1800 do
-		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end	
-		
-		if t == 9000 then
-			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-				func = server_restart,
-				args = {game, server_commands, table.concat}
-				}
-			return
-		end
-		
-		local str = "Map will restart in " .. (9000 - t) / 60
-		str = str .. " seconds!"		
-		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-			func = server_restart_print,
-			args = {game, str}
-			}		
-	end	
+local function server_restart()
+	if not global.server_restart_timer then return end
+	global.server_restart_timer = global.server_restart_timer - 5
+	if global.server_restart_timer == 180 then return end
+	if global.server_restart_timer == 0 then
+		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
+		local message = 'Map is restarting! '
+		server_commands.to_discord_bold(table.concat{'*** ', message, ' ***'})
+		server_commands.start_scenario('Biter_Battles')
+		global.server_restart_timer = nil
+		return
+	end
+	if global.server_restart_timer % 30 == 0 then
+		game.print("Map will restart in " .. global.server_restart_timer .. " seconds!", {r=0.22, g=0.88, b=0.22})		
+	end
 end
 
 local function on_entity_died(event)
 	if not event.entity.valid then return end
-	if event.entity.name ~= "rocket-silo" then return end	
+	if event.entity.name ~= "rocket-silo" then return end
+	if global.bb_game_won_by_team then return end
 	if event.entity == global.rocket_silo.south or event.entity == global.rocket_silo.north then
 		global.bb_game_won_by_team = enemy_team_of[event.entity.force.name]
 		for _, player in pairs(game.connected_players) do
@@ -293,8 +279,10 @@ local function on_entity_died(event)
 		fireworks(event.entity.surface)
 		annihilate_base(event.entity.position, event.entity.surface, event.entity.force.name)
 		
-		server_restart_timer()
+		global.server_restart_timer = 180
 	end
 end
 
 event.add(defines.events.on_entity_died, on_entity_died)
+
+return server_restart

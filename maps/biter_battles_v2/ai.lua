@@ -66,7 +66,8 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	local biters = spawner.surface.find_enemy_units(spawner.position, 128, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
-	local threat = global.bb_threat[biter_force_name] * 0.3
+	local size = math_random(2, 6) * 0.1
+	local threat = global.bb_threat[biter_force_name] * size
 	for _, biter in pairs(biters) do
 		if biter.force.name == biter_force_name then
 			valid_biters[#valid_biters + 1] = biter 
@@ -117,7 +118,6 @@ end
 ai.main_attack = function()	
 	local surface = game.surfaces["biter_battles"]
 	for _, force_name in pairs({"north", "south"}) do
-		create_attack_group(surface, force_name, force_name .. "_biters")
 		create_attack_group(surface, force_name, force_name .. "_biters")
 	end
 end
