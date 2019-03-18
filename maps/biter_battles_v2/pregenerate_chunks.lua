@@ -27,7 +27,7 @@ local function draw_gui()
 		if global.map_generation_complete then
 			if player.gui.left["map_pregen"] then player.gui.left["map_pregen"].destroy() end
 		else
-			local caption = "Map is generating... " ..  #global.chunk_gen_coords .. " chunks left."
+			local caption = "Map is generating... " ..  #global.chunk_gen_coords .. " chunks left. Please get comfy."
 			if player.gui.left["map_pregen"] then
 				player.gui.left["map_pregen"].caption = caption
 			else
@@ -36,8 +36,8 @@ local function draw_gui()
 					caption = caption,
 					name = "map_pregen"
 				})
-				frame.style.font_color = {r = 100, g = 100, b = 250}
-				frame.style.font = "heading-2"
+				frame.style.font_color = {r = 150, g = 100, b = 255}
+				frame.style.font = "heading-1"
 				frame.style.maximal_height = 36
 			end
 		end
@@ -46,7 +46,7 @@ end
 
 local function process_chunk(surface)	
 	if global.map_generation_complete then return end
-	if game.tick < 600 then return end
+	if game.tick < 300 then return end
 	if not global.chunk_gen_coords then set_chunk_coords(32) end
 	if #global.chunk_gen_coords == 0 then
 		global.map_generation_complete = true

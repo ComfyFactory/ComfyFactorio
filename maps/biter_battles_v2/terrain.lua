@@ -97,8 +97,8 @@ local function generate_circle_spawn(event)
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 			
 			if surface.can_place_entity({name = "stone-wall", position = pos}) then
-				local noise = get_noise(2, pos) * 12
-				local r = 110
+				local noise = get_noise(2, pos) * 15
+				local r = 115
 				if distance_to_center + noise < r and distance_to_center + noise > r - 1.5 then
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 				end

@@ -275,11 +275,12 @@ local function on_entity_died(event)
 		game.forces["north"].set_friend("north_biters", true)
 		game.forces["south_biters"].set_friend("south", true)
 		game.forces["south"].set_friend("south_biters", true)
+		global.spy_fish_timeout["north"] = game.tick + 999999
+		global.spy_fish_timeout["south"] = game.tick + 999999
+		global.server_restart_timer = 180
 		
 		fireworks(event.entity.surface)
-		annihilate_base(event.entity.position, event.entity.surface, event.entity.force.name)
-		
-		global.server_restart_timer = 180
+		annihilate_base(event.entity.position, event.entity.surface, event.entity.force.name)			
 	end
 end
 

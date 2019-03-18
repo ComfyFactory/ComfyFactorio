@@ -18,7 +18,7 @@ local function init_surface()
 		["iron-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
-		["trees"] = {frequency = "0.5", size = "0.7", richness = "0.7"},
+		["trees"] = {frequency = "1", size = "0.5", richness = "0.7"},
 		["enemy-base"] = {frequency = "2", size = "3", richness = "1"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
@@ -73,8 +73,8 @@ local function init_forces()
 	f.share_chart = false
 	
 	local f = game.forces["spectator"]
-	f.technologies["toolbelt"].researched=true
 	f.set_spawn_position({0,0},surface)
+	f.technologies["toolbelt"].researched=true	
 	f.set_friend("north_biters", true)
 	f.set_friend("south_biters", true)
 	f.set_friend("north", true)
@@ -83,16 +83,14 @@ local function init_forces()
 	f.share_chart = true
 	
 	local f = game.forces["player"]
+	f.set_spawn_position({0,0},surface)
 	f.set_cease_fire('spectator', true)
 	f.set_friend("north_biters", true)
 	f.set_friend("south_biters", true)
 	f.set_cease_fire('north', true)
 	f.set_cease_fire('south', true)
 	f.share_chart = false
-	
-	game.forces["north"].set_friend("player", true)
-	f.set_spawn_position({0,0},surface)
-	
+		
 	local p = game.permissions.create_group("spectator")
 	for action_name, _ in pairs(defines.input_action) do
 		p.set_allows_action(defines.input_action[action_name], false)
@@ -110,7 +108,9 @@ local function init_forces()
 		defines.input_action.open_kills_gui,
 		defines.input_action.open_character_gui,
 		defines.input_action.edit_permission_group,
-		defines.input_action.toggle_show_entity_info
+		defines.input_action.toggle_show_entity_info,
+		defines.input_action.rotate_entity,
+		defines.input_action.start_research	
 	}
 	
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end

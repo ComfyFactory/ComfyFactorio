@@ -65,7 +65,6 @@ local function feed_biters(player, food)
 		
 		---SET EVOLUTION
 		local e = (game.forces[biter_force_name].evolution_factor * 100) + 1
-		--local diminishing_modifier = 1 / (10 ^ (e * 0.032))
 		local diminishing_modifier = (1 / (10 ^ (e * 0.014))) / (e * 0.5)
 		global.bb_evolution[biter_force_name] = global.bb_evolution[biter_force_name] + (food_values[food].value * diminishing_modifier)
 		if global.bb_evolution[biter_force_name] < 1 then
