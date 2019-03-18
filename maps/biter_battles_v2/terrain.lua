@@ -78,8 +78,8 @@ end
 local function generate_horizontal_river(surface, pos)
 	if pos.y < -32 then return false end
 	if pos.y > -3 and pos.x > -3 and pos.x < 3 then return false end
-	--if -14 < pos.y + (get_noise(1, pos) * 5) then return true end
-	if -12 < pos.y + (get_noise(3, pos) * 6) then return true end
+	if -13 < pos.y + (get_noise(1, pos) * 5) then return true end
+	--if -12 < pos.y + (get_noise(3, pos) * 6) then return true end
 	return false	
 end
 
@@ -130,9 +130,11 @@ local function generate_silos(event)
 	if event.area.left_top.x > 128 then return end
 	global.rocket_silo = {}
 	local surface = event.surface
-	global.rocket_silo["north"] =surface.create_entity({
+	local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
+	if not pos then pos = {x = 0, y = -64} end
+	global.rocket_silo["north"] = surface.create_entity({
 		name = "rocket-silo",
-		position = surface.find_non_colliding_position("rocket-silo", {0,-64}, 128, 1),
+		position = pos,
 		force = "north"
 	})
 	global.rocket_silo["north"].minable = false

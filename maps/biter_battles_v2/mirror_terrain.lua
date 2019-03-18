@@ -52,35 +52,46 @@ local function process_entity(surface, entity)
 	--local new_pos = {x = entity.position.x * -1, y = (entity.position.y * -1) - 1}
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then
-		local e = surface.create_entity({name = entity.name, position = new_pos, graphics_variation = entity.graphics_variation})
+		local new_e = {name = entity.name, position = new_pos, graphics_variation = entity.graphics_variation}
+		if not surface.can_place_entity(new_e) then return end
+		local e = surface.create_entity(new_e)
 		e.graphics_variation = entity.graphics_variation
 		--e.tree_color_index = entity.tree_color_index
 		return
 	end
 	if entity.type == "simple-entity" then
-		local e = surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction]})
+		local new_e = {name = entity.name, position = new_pos, direction = direction_translation[entity.direction]}
+		if not surface.can_place_entity(new_e) then return end
+		local e = surface.create_entity(new_e)
 		e.graphics_variation = entity.graphics_variation
 		return
 	end
-	if entity.type == "cliff" then	
-		surface.create_entity({name = entity.name, position = new_pos, cliff_orientation = cliff_orientation_translation[entity.cliff_orientation]})
+	if entity.type == "cliff" then
+		local new_e = {name = entity.name, position = new_pos, cliff_orientation = cliff_orientation_translation[entity.cliff_orientation]}
+		if not surface.can_place_entity(new_e) then return end
+		surface.create_entity(new_e)
 		return
 	end
 	if entity.type == "resource" then
 		surface.create_entity({name = entity.name, position = new_pos, amount = entity.amount})
 		return
-	end	
+	end
 	if entity.type == "unit-spawner" or entity.type == "unit" or entity.type == "turret" then
-		surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south_biters"})
+		local new_e = {name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south_biters"}
+		if not surface.can_place_entity(new_e) then return end
+		surface.create_entity(new_e)
 		return
 	end
 	if entity.name == "rocket-silo" then
+		if surface.count_entities_filtered({name = "rocket-silo", area = {{new_pos.x - 8, new_pos.y - 8},{new_pos.x + 8, new_pos.y + 8}}}) > 0 then return end
 		global.rocket_silo["south"] = surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south"})
 		global.rocket_silo["south"].minable = false		
 		return
 	end
 	if entity.name == "gun-turret" or entity.name == "stone-wall" then
-		surface.create_entity({name = entity.name, position = new_pos, force = "south", direction = direction_translation[entity.direction]})
+		local new_e = {name = entity.name, position = new_pos, force = "south", direction = direction_translation[entity.direction]}
+		if not surface.can_place_entity(new_e) then return end
+		surface.create_entity(new_e)
 		return
 	end
 	if entity.name == "player" then

@@ -22,7 +22,7 @@ local info = [[
 	    granting them increased damage and evasion.
 	
 	    - THREAT -
-		Causes biters to attack and reduces when biters are slain.
+        Causes biters to attack and reduces when biters are slain.
 	    Feeding gives permanent "threat-income", as well as creating instant threat.		
 	    A high threat value causes big attacks.
 	    Values of zero or below will cause no attacks.		

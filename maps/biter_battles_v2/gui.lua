@@ -203,6 +203,7 @@ local function refresh_gui()
 end
 
 local function join_team(player, force_name)
+	if not player.character then return end
 	if global.teams_are_locked then player.print("The Teams are currently locked.", {r = 0.98, g = 0.66, b = 0.22}) return end
 	
 	if not force_name then return end
@@ -253,6 +254,7 @@ local function join_team(player, force_name)
 end
 
 local function spectate(player)
+	if not player.character then return end
 	player.teleport(player.surface.find_non_colliding_position("player", {0,0}, 4, 1))	
 	player.force = game.forces.spectator
 	player.character.destructible = false
