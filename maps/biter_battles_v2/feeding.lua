@@ -61,7 +61,7 @@ local function feed_biters(player, food)
 		local e = (global.bb_evolution[biter_force_name] * 100) + 1
 		--local diminishing_modifier = 1 / (10 ^ (e * 0.03))
 		local diminishing_modifier = (1 / (10 ^ (e * 0.014))) / (e * 0.5)
-		global.bb_threat_income[biter_force_name] = global.bb_threat_income[biter_force_name] + (food_values[food].value * diminishing_modifier * 15)
+		global.bb_threat_income[biter_force_name] = global.bb_threat_income[biter_force_name] + (food_values[food].value * diminishing_modifier * 12)
 		
 		---SET EVOLUTION
 		local e = (game.forces[biter_force_name].evolution_factor * 100) + 1

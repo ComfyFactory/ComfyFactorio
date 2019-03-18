@@ -2,20 +2,20 @@
 
 require "on_tick_schedule"
 require "modules.dynamic_landfill"
-require "modules.spawners_contain_biters"
+require "modules.spawners_contain_biters" 
 
 local event = require 'utils.event'
 
 local function init_surface()	
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.35"
+	map_gen_settings.water = "0.3"
 	map_gen_settings.starting_area = "4.25"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "2", size = "1", richness = "1"},
-		["stone"] = {frequency = "2", size = "1", richness = "1"},
-		["copper-ore"] = {frequency = "2", size = "1", richness = "1"},
-		["iron-ore"] = {frequency = "2", size = "1", richness = "1"},
+		["coal"] = {frequency = "2.5", size = "1", richness = "1"},
+		["stone"] = {frequency = "2.5", size = "1", richness = "1"},
+		["copper-ore"] = {frequency = "2.5", size = "1", richness = "1"},
+		["iron-ore"] = {frequency = "2.5", size = "1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
 		["trees"] = {frequency = "1", size = "0.5", richness = "0.7"},
@@ -177,3 +177,4 @@ require "maps.biter_battles_v2.on_tick"
 require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.bb_map_intro"
+require "modules.custom_death_messages"

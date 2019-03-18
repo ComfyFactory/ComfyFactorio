@@ -31,9 +31,18 @@ local function get_noise(name, pos)
 		local noise = {}
 		noise[1] = simplex_noise(pos.x * 0.011, pos.y * 0.011, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.07, pos.y * 0.07, seed)
+		noise[2] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
 		seed = seed + noise_seed_add
 		local noise = noise[1] + noise[2] * 0.2
+		return noise
+	end
+	if name == 3 then
+		local noise = {}
+		noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
+		seed = seed + noise_seed_add
+		noise[2] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
+		seed = seed + noise_seed_add
+		local noise = noise[1] + noise[2] * 0.1
 		return noise
 	end
 end
@@ -69,7 +78,8 @@ end
 local function generate_horizontal_river(surface, pos)
 	if pos.y < -32 then return false end
 	if pos.y > -3 and pos.x > -3 and pos.x < 3 then return false end
-	if -14 < pos.y + (get_noise(1, pos) * 5) then return true end
+	--if -14 < pos.y + (get_noise(1, pos) * 5) then return true end
+	if -12 < pos.y + (get_noise(3, pos) * 6) then return true end
 	return false	
 end
 

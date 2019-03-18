@@ -7,22 +7,23 @@ local info = [[
 	Feed the opponent's biters with science packs to increase their strength.
 	High tier science juice will yield stronger results.
 	
-	There is no major direct pvp combat
+	There is no major direct pvp combat.
 	The horizontal border river is landfill proof.
 	Construction robots can not build on the other teams's side.
+	The random map layout is mirrored to provide a fair competition.
 	
 	There is no biter evolution from pollution, time or destruction.
 	ONLY feeding increases their power and will lead to your teams victory.	
 	The gui yields two different main stats for each team's biters.
 	
 	    - EVO -
-	    The evolution of the biters.
+	    The evolution of the biters, which increases when they get fed.
 	    It can go above 100% which unlocks endgame modifiers,
 	    granting them increased damage and evasion.
 	
 	    - THREAT -
-	    Threat creates biter attacks.
-	    Feeding gives permanent "threat-income", as well as creating instant threat.
+		Causes biters to attack and reduces when biters are slain.
+	    Feeding gives permanent "threat-income", as well as creating instant threat.		
 	    A high threat value causes big attacks.
 	    Values of zero or below will cause no attacks.		
 ]]
