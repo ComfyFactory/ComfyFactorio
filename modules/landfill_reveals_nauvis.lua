@@ -50,8 +50,8 @@ end
 
 local function place_entity(surface, e)
 	if e.type == "resource" then surface.create_entity({name = e.name, position = e.position, amount = e.amount}) return end
+	if e.type == "cliff" then surface.create_entity({name = e.name, position = e.position, force = e.force, cliff_orientation = e.cliff_orientation}) return end
 	if not surface.can_place_entity({name = e.name, position = e.position}) then return end
-	if e.type == "cliff" then surface.create_entity({name = e.name, position = e.position, force = e.force, cliff_orientation = e.cliff_orientation}) return end	
 	if e.direction then surface.create_entity({name = e.name, position = e.position, force = e.force, direction = e.direction}) return end
 	surface.create_entity({name = e.name, position = e.position, force = e.force})
 end

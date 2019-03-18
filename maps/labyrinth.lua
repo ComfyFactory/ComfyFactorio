@@ -832,14 +832,11 @@ local function on_chunk_generated(event)
 			local pos = {x = event.area.left_top.x + x, y = event.area.left_top.y + y}			 
 			if chunk_position_y >= 0 then
 				tile_to_insert = "water"
-				local noise = get_noise("ocean", pos)
-				local x = 1
-				for y = -1, 1, 0.1 do
-					if noise > y and noise < y + 0.1 and x % 2 == 1 then
-						tile_to_insert = "deepwater"
-					end
-					x = x + 1
-				end				
+				local noise = get_noise("ocean", pos)				
+				if math.floor(noise * 10) % 2 == 1 then
+					tile_to_insert = "deepwater"
+				end					
+								
 				if pos.y >= 196 + noise * 20 then	
 					local noise = get_noise("island", pos)
 					if noise > 0.85 then tile_to_insert = "grass-1" end
@@ -888,7 +885,7 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.map_init_done then			
 		local map_gen_settings = {}
-		map_gen_settings.water = "none"
+		map_gen_settings.water = "0.01"
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 50, cliff_elevation_0 = 50}		
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = "none", size = "none", richness = "none"},
@@ -936,8 +933,8 @@ local function on_player_joined_game(event)
 	if player.online_time < 10 then				
 		player.insert {name = 'raw-fish', count = 3}				
 		player.insert {name = 'pistol', count = 1}
-		player.insert {name = 'firearm-magazine', count = 32}
-		player.insert {name = 'landfill', count = 10240}
+		player.insert {name = 'firearm-magazine', count = 64}
+		--player.insert {name = 'landfill', count = 10240}
 	end
 	create_labyrinth_difficulty_gui(player)
 end

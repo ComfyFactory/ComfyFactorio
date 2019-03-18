@@ -46,7 +46,7 @@ local function gui_teleporter(player, visited_teleporter_index)
 	local t = frame.add({type = "table", column_count = 2, name = "teleporter_heading"})
 	local l = t.add({type = "label", caption = "<Teleporter> "})
 	l.style.font_color = {r = 0.35, g = 0.5, b = 1}
-	l.style.font = "default-frame"
+	l.style.font = "heading-1"
 	local l = t.add({type = "label", caption = global.teleporters[visited_teleporter_index].name, name = visited_teleporter_index})
 	l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 	l.style.font = "default-bold"
@@ -142,12 +142,8 @@ local function spawn_teleporter(player)
 				}
 	local c = surface.count_tiles_filtered{area = a, name = blacklisted_tiles, limit = 1}		
 	if c == 0 then
-		local i = player.get_quickbar()
-		local removed_item_count = i.remove({name = key_item, count = 1})
-		if removed_item_count ~= 1 then
-			local i = player.get_main_inventory()
-			removed_item_count = i.remove({name = key_item, count = 1})
-		end		
+		local i = player.get_main_inventory()
+		local removed_item_count = i.remove({name = key_item, count = 1})				
 		if removed_item_count ~= 1 then return end		
 		local str = teleporter_names[math.random(1, #teleporter_names)]
 		local str2 = str
