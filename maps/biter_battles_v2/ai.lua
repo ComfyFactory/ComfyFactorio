@@ -3,8 +3,8 @@ local math_random = math.random
 local ai = {}
 
 local threat_values = {
-	["small-spitter"] = 1.5,
-	["small-biter"] = 1.5,
+	["small-spitter"] = 1,
+	["small-biter"] = 1,
 	["medium-spitter"] = 4,
 	["medium-biter"] = 4,
 	["big-spitter"] = 8,

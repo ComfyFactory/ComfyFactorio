@@ -39,7 +39,7 @@ require "score"
 -----------------------------
 
 ---- enable maps here ----
---require "maps.biter_battles_v2.biter_battles_v2"
+require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.biter_battles.biter_battles"
 --require "maps.cave_miner"
 --require "maps.labyrinth"
@@ -49,7 +49,7 @@ require "score"
 --require "maps.atoll"
 --require "maps.choppy"
 --require "maps.tank_battles"
-require "maps.spiral_troopers"
+--require "maps.spiral_troopers"
 --require "maps.fish_defender"
 --require "maps.mountain_fortress"
 --require "maps.stoneblock"

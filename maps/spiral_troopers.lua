@@ -466,7 +466,7 @@ local function on_player_joined_game(event)
 			["uranium-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "very-good"},
+			["enemy-base"] = {frequency = "none", size = "none", richness = "very-good"}
 		}
 		game.create_surface("spiral_troopers", map_gen_settings)
 		
