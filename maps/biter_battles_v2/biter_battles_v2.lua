@@ -75,8 +75,8 @@ local function init_forces()
 	local f = game.forces["spectator"]
 	f.set_spawn_position({0,0},surface)
 	f.technologies["toolbelt"].researched=true	
-	f.set_friend("north_biters", true)
-	f.set_friend("south_biters", true)
+	f.set_cease_fire("north_biters", true)
+	f.set_cease_fire("south_biters", true)
 	f.set_friend("north", true)
 	f.set_friend("south", true)
 	f.set_cease_fire("player", true)
@@ -85,8 +85,8 @@ local function init_forces()
 	local f = game.forces["player"]
 	f.set_spawn_position({0,0},surface)
 	f.set_cease_fire('spectator', true)
-	f.set_friend("north_biters", true)
-	f.set_friend("south_biters", true)
+	f.set_cease_fire("north_biters", true)
+	f.set_cease_fire("south_biters", true)
 	f.set_cease_fire('north', true)
 	f.set_cease_fire('south', true)
 	f.share_chart = false

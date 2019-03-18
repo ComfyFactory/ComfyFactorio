@@ -383,6 +383,7 @@ local function on_chunk_generated(event)
 			map_functions.draw_smoothed_out_ore_circle({x = -16, y = 16}, "copper-ore", surface, 16, 450)
 			map_functions.draw_smoothed_out_ore_circle({x = 16, y = 16}, "coal", surface, 16, 450)
 			map_functions.draw_smoothed_out_ore_circle({x = 48, y = 16}, "iron-ore", surface, 16, 450)
+			map_functions.draw_noise_tile_circle({x = -20, y = -16}, "water", surface, 7)
 			local radius = 256
 			game.forces.player.chart(surface,{{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 			global.spiral_troopers_spawn_ores = true
@@ -466,10 +467,6 @@ local function on_player_joined_game(event)
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "very-good"},
-			["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["sand"] = {frequency = "none", size = "none", richness = "none"},
-			["desert"] = {frequency = "none", size = "none", richness = "none"},
-			["dirt"] = {frequency = "none", size = "none", richness = "none"}
 		}
 		game.create_surface("spiral_troopers", map_gen_settings)
 		
@@ -496,7 +493,6 @@ local function on_player_joined_game(event)
 	end	
 	if player.online_time < 10 then
 		if global.show_floating_killscore then global.show_floating_killscore[player.name] = true end		
-		player.insert {name = 'iron-axe', count = 1}
 		player.insert {name = 'iron-plate', count = 32}
 		player.insert {name = 'pistol', count = 1}
 		player.insert {name = 'firearm-magazine', count = 64}

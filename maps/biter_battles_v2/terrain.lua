@@ -30,11 +30,11 @@ local function get_noise(name, pos)
 	end
 	if name == 2 then
 		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
+		noise[1] = simplex_noise(pos.x * 0.011, pos.y * 0.011, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+		noise[2] = simplex_noise(pos.x * 0.07, pos.y * 0.07, seed)
 		seed = seed + noise_seed_add
-		local noise = noise[1] + noise[2] * 0.15
+		local noise = noise[1] + noise[2] * 0.2
 		--noise = noise * 0.5
 		return noise
 	end
