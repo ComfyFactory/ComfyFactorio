@@ -80,13 +80,16 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 end
 
 local function send_group(unit_group, force_name, nearest_player_unit)
+	local target = nearest_player_unit.position
+	if math_random(1,2) == 1 then target = global.rocket_silo[force_name].position end
+	
 	unit_group.set_command({
 		type = defines.command.compound,
 		structure_type = defines.compound_command.return_last,
 		commands = {
 			{
 				type = defines.command.attack_area,
-				destination = nearest_player_unit.position,
+				destination = target,
 				radius = 32,
 				distraction=defines.distraction.by_enemy
 			},									
