@@ -1,0 +1,28 @@
+local playsession = {
+	{"DKarma", {390059}},
+	{"rikkert", {619995}},
+	{"CawaEast", {682994}},
+	{"matam666", {470726}},
+	{"_Lightning", {571994}},
+	{"Gerkiz", {386398}},
+	{"alyptica", {111644}},
+	{"Hybz", {562421}},
+	{"InvertigoHD", {5930}},
+	{"jeast360", {39572}},
+	{"mewmew", {53665}},
+	{"Lucasuper32", {84394}},
+	{"dimvas787", {285}},
+	{"integer222", {60253}},
+	{"FLubdy", {1708}},
+	{"lejnel", {1366}},
+	{"Tayrus", {18637}},
+	{"zinoby", {2041}},
+	{"WorldofWarIII", {580955}},
+	{"Xlicity", {356746}},
+	{"MFH", {110160}},
+	{"dazonker", {353227}},
+	{"nakedzeldas", {821}},
+	{"waxman", {60961}},
+	{"wjx008", {62242}}
+}
+return playsession

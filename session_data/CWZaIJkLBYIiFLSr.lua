@@ -1,0 +1,26 @@
+local playsession = {
+	{"Nikkichu", {395787}},
+	{"CawaEast", {395297}},
+	{"dorpdorp", {394814}},
+	{"RAFEDAS", {3008}},
+	{"Serennie", {367626}},
+	{"turk127_ee", {358891}},
+	{"Grooohm", {19097}},
+	{"Zymoran", {331866}},
+	{"umbrax", {84638}},
+	{"Rednaskela", {2880}},
+	{"hipergo", {247187}},
+	{"jeast360", {203259}},
+	{"domii894", {236201}},
+	{"10514187", {4165}},
+	{"perrykain", {18208}},
+	{"Factorian12321", {15815}},
+	{"Kyte", {98509}},
+	{"rlidwka", {17526}},
+	{"Draykilas", {55562}},
+	{"DerFactorioNinja", {4047}},
+	{"unixfreak", {56937}},
+	{"FaultedGuitar9", {5699}},
+	{"nizzy", {28074}}
+}
+return playsession
