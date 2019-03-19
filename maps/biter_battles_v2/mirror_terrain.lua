@@ -35,19 +35,6 @@ local cliff_orientation_translation = {
 	["none-to-west"] =  "none-to-east"
 }
 
-local function get_chunk_position(position)
-	local chunk_position = {}
-	position.x = math.floor(position.x)
-	position.y = math.floor(position.y)
-	for x = 0, 31, 1 do
-		if (position.x - x) % 32 == 0 then chunk_position.x = (position.x - x)  / 32 end
-	end
-	for y = 0, 31, 1 do
-		if (position.y - y) % 32 == 0 then chunk_position.y = (position.y - y)  / 32 end
-	end	
-	return chunk_position
-end
-
 local function process_entity(surface, entity)
 	--local new_pos = {x = entity.position.x * -1, y = (entity.position.y * -1) - 1}
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
@@ -86,9 +73,8 @@ local function process_entity(surface, entity)
 		return
 	end
 	if entity.name == "gun-turret" or entity.name == "stone-wall" then
-		local new_e = {name = entity.name, position = new_pos, force = "south", direction = direction_translation[entity.direction]}
-		if not surface.can_place_entity(new_e) then return end
-		surface.create_entity(new_e)
+		if not surface.can_place_entity({name = entity.name, position = new_pos, force = "south"}) then return end
+		entity.clone({position=new_pos, surface=surface, force="south"})
 		return
 	end
 	if entity.name == "player" then
@@ -97,7 +83,30 @@ local function process_entity(surface, entity)
 	surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = entity.force.name})
 end
 
-local function mirror_chunk(surface, chunk)		
+local function clear_chunk(surface, area)
+	surface.destroy_decoratives{area=area}
+	if area.left_top.y > 32 or area.left_top.x > 32 or area.left_top.x < -32 then 
+		for _, e in pairs(surface.find_entities_filtered({area = area})) do
+			if e.valid then
+				e.destroy()
+			end
+		end
+	else
+		for _, e in pairs(surface.find_entities_filtered({area = area})) do
+			if e.valid then
+				if e.name ~= "player" then
+					e.destroy()
+				end
+			end
+		end
+	end
+end
+
+local function mirror_chunk(surface, chunk)
+	--local x = chunk.x * -32 + 32
+	--local y = chunk.y * -32 + 32
+	--clear_chunk(surface, {left_top = {x = x, y = y}, right_bottom = {x = x + 32, y = y + 32}})
+
 	local chunk_area = {left_top = {x = chunk.x * 32, y = chunk.y * 32}, right_bottom = {x = chunk.x * 32 + 32, y = chunk.y * 32 + 32}}	
 	if not surface.is_chunk_generated(chunk) then
 		surface.request_to_generate_chunks({x = chunk_area.left_top.x - 16, y = chunk_area.left_top.y - 16}, 1)
@@ -117,46 +126,18 @@ local function mirror_chunk(surface, chunk)
 	end
 end
 
-local function clear_chunk(surface, event)
-	if event.area.left_top.y > 32 or event.area.left_top.x > 32 or event.area.left_top.x < -32 then 
-		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-			if e.valid then
-				e.destroy()
-			end
-		end
-	else
-		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-			if e.valid then
-				if e.name ~= "player" then
-					e.destroy()
-				end
-			end
-		end
-	end	
-	surface.destroy_decoratives{area=event.area}
-end
-
 local function on_chunk_generated(event)
 	if event.area.left_top.y < 0 then return end
 	if event.surface.name ~= "biter_battles" then return end
 	
-	clear_chunk(event.surface, event)
-		
+	clear_chunk(event.surface, event.area)
+	
 	local x = ((event.area.left_top.x + 16) * -1) - 16
-	local y = ((event.area.left_top.y + 16) * -1) - 16	
-	local chunk = get_chunk_position({x = x, y = y})
+	local y = ((event.area.left_top.y + 16) * -1) - 16
 
 	local delay = 30
 	if not global.chunks_to_mirror[game.tick + delay] then global.chunks_to_mirror[game.tick + delay] = {} end
-	global.chunks_to_mirror[game.tick + delay][#global.chunks_to_mirror[game.tick + delay] + 1] = {x = chunk.x, y = chunk.y}
-	
-	--mirror_chunk(game.surfaces["biter_battles"], chunk)
-	--local delay = 60
-	--if not global.on_tick_schedule[game.tick + delay] then global.on_tick_schedule[game.tick + delay] = {} end	
-	--global.on_tick_schedule[game.tick + delay][#global.on_tick_schedule[game.tick + delay] + 1] = {
-	--	func = mirror_chunk,
-	--	args = {surface, {x = chunk.x, y = chunk.y}}
-	--}									
+	global.chunks_to_mirror[game.tick + delay][#global.chunks_to_mirror[game.tick + delay] + 1] = {x = x / 32, y = y / 32}										
 end
 
 local function mirror_map()

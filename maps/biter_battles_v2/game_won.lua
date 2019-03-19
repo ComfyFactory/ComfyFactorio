@@ -28,39 +28,6 @@ local function destroy_entity(e)
 	e.die()
 end
 
-local function annihilate_base_old(center_pos, surface, force_name)	
-	local entities = {}
-	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 32, center_pos.y - 32},{center_pos.x + 32, center_pos.y + 32}}})) do
-		if e.name ~= "player" then
-			entities[#entities + 1] = e
-		end
-	end
-	if not entities[2] then return end
-	entities = shuffle(entities)
-	
-	for i1 = #entities, 1, -1 do
-		for i2 = #entities, 1, -1 do
-			local distance_to_center_1 = (entities[i1].position.x - center_pos.x)^2 + (entities[i1].position.y - center_pos.y)^2
-			local distance_to_center_2 = (entities[i2].position.x - center_pos.x)^2 + (entities[i2].position.y - center_pos.y)^2
-			if distance_to_center_1 > distance_to_center_2 then
-				local k = entities[i1]
-				entities[i1] = entities[i2]
-				entities[i2] = k
-			end
-		end
-	end
-		
-	for i = 1, #entities, 1 do
-		local t = i * 2
-		if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
-		local pos = global.rocket_silo[global.bb_game_won_by_team].position
-		global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-			func = destroy_entity,
-			args = {entities[i]}
-		}		
-	end
-end
-
 local function annihilate_base(center_pos, surface, force_name)	
 	local entities = {}
 	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 128, center_pos.y - 128},{center_pos.x + 128, center_pos.y + 128}}})) do

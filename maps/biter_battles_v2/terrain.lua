@@ -77,7 +77,7 @@ end
 
 local function generate_horizontal_river(surface, pos)
 	if pos.y < -32 then return false end
-	if pos.y > -3 and pos.x > -3 and pos.x < 3 then return false end
+	if pos.y > -5 and pos.x > -5 and pos.x < 5 then return false end
 	if -13 < pos.y + (get_noise(1, pos) * 5) then return true end
 	--if -12 < pos.y + (get_noise(3, pos) * 6) then return true end
 	return false	
@@ -106,14 +106,15 @@ local function generate_circle_spawn(event)
 			
 			if surface.can_place_entity({name = "stone-wall", position = pos}) then
 				local noise = get_noise(2, pos) * 15
-				local r = 115
-				if distance_to_center + noise < r and distance_to_center + noise > r - 1.5 then
+				local r = 100
+				if distance_to_center + noise < r and distance_to_center + noise > r - 1.75 then
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 				end
 				if distance_to_center + noise < r - 4 and distance_to_center + noise > r - 6 then
-					if math_random(1,128) == 1 then
+					if math_random(1,150) == 1 then
 						if surface.can_place_entity({name = "gun-turret", position = pos}) then
-							surface.create_entity({name = "gun-turret", position = pos, force = "north"})
+							local t = surface.create_entity({name = "gun-turret", position = pos, force = "north"})
+							t.insert({name = "firearm-magazine", count = math_random(3,6)})
 						end
 					end
 				end
@@ -124,24 +125,21 @@ local function generate_circle_spawn(event)
 end
 
 local function generate_silos(event)
-	if global.rocket_silo then return end
-	if event.area.left_top.y < -128 then return end
-	if event.area.left_top.x < -128 then return end
-	if event.area.left_top.x > 128 then return end
-	global.rocket_silo = {}
-	local surface = event.surface
-	local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
-	if not pos then pos = {x = 0, y = -64} end
-	global.rocket_silo["north"] = surface.create_entity({
-		name = "rocket-silo",
-		position = pos,
-		force = "north"
-	})
-	global.rocket_silo["north"].minable = false
-	
-	for i = 1, 32, 1 do
-		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
-	end		
+	if event.area.left_top.y == -96 and event.area.left_top.x == -96 then
+		local surface = event.surface
+		local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
+		if not pos then pos = {x = 0, y = -64} end
+		global.rocket_silo["north"] = surface.create_entity({
+			name = "rocket-silo",
+			position = pos,
+			force = "north"
+		})
+		global.rocket_silo["north"].minable = false
+		
+		for i = 1, 32, 1 do
+			create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
+		end
+	end
 end
 
 local function generate_river(event)
@@ -226,7 +224,7 @@ local function on_chunk_generated(event)
 	rainbow_ore_and_ponds(event)
 	generate_river(event)
 	generate_circle_spawn(event)		
-	generate_potential_spawn_ore(event)
+	--generate_potential_spawn_ore(event)
 	generate_silos(event)
 	
 	if event.area.left_top.y == -160 and event.area.left_top.x == -160 then

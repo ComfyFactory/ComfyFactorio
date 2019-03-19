@@ -12,13 +12,13 @@ local function init_surface()
 	map_gen_settings.starting_area = "4.25"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "2.5", size = "1", richness = "1"},
-		["stone"] = {frequency = "2.5", size = "1", richness = "1"},
-		["copper-ore"] = {frequency = "2.5", size = "1", richness = "1"},
-		["iron-ore"] = {frequency = "2.5", size = "1", richness = "1"},
+		["coal"] = {frequency = "3", size = "1.2", richness = "1"},
+		["stone"] = {frequency = "3", size = "1.2", richness = "1"},
+		["copper-ore"] = {frequency = "3", size = "1.2", richness = "1"},
+		["iron-ore"] = {frequency = "3", size = "1.2", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
-		["trees"] = {frequency = "1", size = "0.5", richness = "0.7"},
+		["trees"] = {frequency = "1.1", size = "0.5", richness = "0.7"},
 		["enemy-base"] = {frequency = "4", size = "2", richness = "2"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
@@ -111,10 +111,10 @@ local function init_forces()
 		defines.input_action.toggle_show_entity_info,
 		defines.input_action.rotate_entity,
 		defines.input_action.start_research	
-	}
-	
+	}	
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end
-
+	
+	global.rocket_silo = {}
 	global.spectator_rejoin_delay = {}
 	global.spy_fish_timeout = {}
 	global.force_area = {}
