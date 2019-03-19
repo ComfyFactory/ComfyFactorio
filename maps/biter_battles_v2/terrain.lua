@@ -283,6 +283,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_marked_for_deconstruction(event)
+	if not event.entity.valid then return end
 	if event.entity.name == "fish" then event.entity.cancel_deconstruction(game.players[event.player_index].force.name) end
 end
 

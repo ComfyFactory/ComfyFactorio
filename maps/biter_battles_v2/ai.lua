@@ -52,18 +52,19 @@ end
 
 local function get_random_close_spawner(surface, biter_force_name)
 	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name})	
-	if not spawners[1] then return false end	
-	spawners = shuffle(spawners)
-	local spawner = spawners[1]	
-	for i = 2, 4, 1 do
-		if not spawners[i] then return spawner end
-		if spawners[i].position.x ^ 2 + spawners[i].position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawners[i] end
+	if not spawners[1] then return false end
+	
+	local spawner = spawners[math_random(1,#spawners)]
+	for i = 1, 4, 1 do
+		local spawner_2 = spawners[math_random(1,#spawners)]
+		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
 	end	
+	
 	return spawner
 end
 
 local function select_units_around_spawner(spawner, force_name, biter_force_name)
-	local biters = spawner.surface.find_enemy_units(spawner.position, 128, force_name)
+	local biters = spawner.surface.find_enemy_units(spawner.position, 160, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
 	local size = math_random(2, 6) * 0.1
