@@ -12,10 +12,10 @@ local function init_surface()
 	map_gen_settings.starting_area = "4.25"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "3", size = "1.2", richness = "1"},
-		["stone"] = {frequency = "3", size = "1.2", richness = "1"},
-		["copper-ore"] = {frequency = "3", size = "1.2", richness = "1"},
-		["iron-ore"] = {frequency = "3", size = "1.2", richness = "1"},
+		["coal"] = {frequency = "3.5", size = "1.2", richness = "1"},
+		["stone"] = {frequency = "3.5", size = "1.2", richness = "1"},
+		["copper-ore"] = {frequency = "3.5", size = "1.2", richness = "1"},
+		["iron-ore"] = {frequency = "3.5", size = "1.2", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
 		["trees"] = {frequency = "1.1", size = "0.5", richness = "0.7"},
@@ -124,6 +124,7 @@ local function init_forces()
 	global.bb_threat_income = {}
 	global.bb_threat = {}
 	global.chunks_to_mirror = {}
+	global.map_pregen_message_counter = {}
 	
 	for _, force in pairs(game.forces) do
 		game.forces[force.name].technologies["artillery"].enabled = false

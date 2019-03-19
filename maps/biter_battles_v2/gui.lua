@@ -21,6 +21,16 @@ local gui_values = {
 		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
 	}		
+
+local map_gen_messages = {
+	"Map is still generating, please get comfy.",
+	"Map is still generating, get comfy!!",
+	"Map is still generating, go and grab a drink.",
+	"Map is still generating, take a short healthy break.",
+	"Map is still generating, go and stretch your legs.",
+	"Map is still generating, please pet the cat.",
+	"Map is still generating, time to get a bowl of snacks :3"
+}
 	
 local function create_sprite_button(player)
 	if player.gui.top["bb_toggle_button"] then return end
@@ -204,7 +214,7 @@ end
 
 local function join_team(player, force_name)
 	if not player.character then return end
-	if global.teams_are_locked then player.print("The Teams are currently locked.", {r = 0.98, g = 0.66, b = 0.22}) return end
+	if global.teams_are_locked then player.print("The Teams are currently locked.", {r = 0.98, g = 0.66, b = 0.22}) return end		
 	
 	if not force_name then return end
 	local surface = player.surface
@@ -290,13 +300,22 @@ local function lock_teams(locking_player)
 	end		
 end
 
-local function join_gui_click(name, player)
+local function join_gui_click(name, player)	
 	local team = {
 		["join_north_button"] = "north",
 		["join_south_button"] = "south"
 	}
 
 	if not team[name] then return end
+	
+	-- JOIN PREVENTION IF MAP IS STILL GENERATING
+	if not global.map_generation_complete then
+		if not global.map_pregen_message_counter[player.name] then global.map_pregen_message_counter[player.name] = 1 end
+		player.print(map_gen_messages[global.map_pregen_message_counter[player.name]], {r = 0.98, g = 0.66, b = 0.22})
+		global.map_pregen_message_counter[player.name] = global.map_pregen_message_counter[player.name] + 1
+		if global.map_pregen_message_counter[player.name] > #map_gen_messages then global.map_pregen_message_counter[player.name] = 1 end
+		return 
+	end
 	
 	if global.game_lobby_active then
 		if player.admin then
