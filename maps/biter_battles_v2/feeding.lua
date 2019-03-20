@@ -55,18 +55,22 @@ local function feed_biters(player, food)
 	
 	--ADD TOTAL FOOD FEED
 	--global.bb_total_food[biter_force_name] = global.bb_total_food[biter_force_name] + (food_values[food].value * flask_amount)	
+	local decimals = 12
+	local math_round = math.round
 	
 	for a = 1, flask_amount, 1 do				
 		--SET THREAT INCOME
 		local e = (global.bb_evolution[biter_force_name] * 100) + 1
 		local diminishing_modifier = (1 / (10 ^ (e * 0.015))) / (e * 0.5)
 		global.bb_threat_income[biter_force_name] = global.bb_threat_income[biter_force_name] + (food_values[food].value * diminishing_modifier * 12)		
+		global.bb_threat_income[biter_force_name] = math_round(global.bb_threat_income[biter_force_name], decimals)
 		
 		---SET EVOLUTION
 		local e2 = (game.forces[biter_force_name].evolution_factor * 100) + 1
 		local diminishing_modifier = (1 / (10 ^ (e2 * 0.015))) / (e2 * 0.5)
 		local evo_gain = (food_values[food].value * diminishing_modifier)
 		global.bb_evolution[biter_force_name] = global.bb_evolution[biter_force_name] + evo_gain
+		global.bb_evolution[biter_force_name] = math_round(global.bb_evolution[biter_force_name], decimals)
 		if global.bb_evolution[biter_force_name] <= 1 then
 			game.forces[biter_force_name].evolution_factor = global.bb_evolution[biter_force_name]
 		else
@@ -76,12 +80,14 @@ local function feed_biters(player, food)
 			local e3 = global.bb_evasion[biter_force_name] + 1
 			local diminishing_modifier = 1 / (0.05 + (e3 * 0.0005))
 			global.bb_evasion[biter_force_name] = global.bb_evasion[biter_force_name] + 75 * evo_gain * diminishing_modifier
+			global.bb_evasion[biter_force_name] = math_round(global.bb_evasion[biter_force_name], decimals)
 			if global.bb_evasion[biter_force_name] > 950 then global.bb_evasion[biter_force_name] = 950 end
 		end
 						
 		--ADD INSTANT THREAT
 		local diminishing_modifier = 1 / (0.2 + (e2 * 0.018))
-		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 200 * diminishing_modifier)		
+		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 200 * diminishing_modifier)
+		global.bb_threat[biter_force_name] = math_round(global.bb_threat[biter_force_name], decimals)
 	end	
 	set_biter_endgame_damage(biter_force_name, game.forces[biter_force_name])
 end

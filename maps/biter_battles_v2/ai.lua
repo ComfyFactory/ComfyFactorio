@@ -9,8 +9,8 @@ local threat_values = {
 	["medium-biter"] = 4,
 	["big-spitter"] = 8,
 	["big-biter"] = 8,
-	["behemoth-spitter"] = 16,
-	["behemoth-biter"] = 16
+	["behemoth-spitter"] = 32,
+	["behemoth-biter"] = 32
 }
 
 local function shuffle(tbl)
@@ -157,7 +157,26 @@ local function on_entity_died(event)
 	end	
 end
 
+--Flamethrower Turret Nerf
+local function on_research_finished(event)
+	local research = event.research
+	local force_name = research.force.name
+	if research.name == "flamethrower" then
+		if not global.flamethrower_damage then global.flamethrower_damage = {} end
+		global.flamethrower_damage[force_name] = -0.5
+		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.flamethrower_damage[force_name])
+		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.flamethrower_damage[force_name])						
+	end
+	
+	if string.sub(research.name, 0, 18) == "refined-flammables" then
+		global.flamethrower_damage[force_name] = global.flamethrower_damage[force_name] + 0.1
+		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.flamethrower_damage[force_name])								
+		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.flamethrower_damage[force_name])
+	end	
+end
+
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
+event.add(defines.events.on_research_finished, on_research_finished)
 
 return ai

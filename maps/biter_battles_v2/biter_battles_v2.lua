@@ -9,7 +9,7 @@ local event = require 'utils.event'
 local function init_surface()	
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.3"
-	map_gen_settings.starting_area = "4.25"
+	map_gen_settings.starting_area = "4.75"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "3.5", size = "1.2", richness = "1"},
@@ -18,8 +18,8 @@ local function init_surface()
 		["iron-ore"] = {frequency = "3.5", size = "1.2", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1"},
-		["trees"] = {frequency = "1.1", size = "0.5", richness = "0.7"},
-		["enemy-base"] = {frequency = "4", size = "2", richness = "2"}	
+		["trees"] = {frequency = "1.1", size = "0.5", richness = "0.65"},
+		["enemy-base"] = {frequency = "5", size = "2", richness = "2"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 			
