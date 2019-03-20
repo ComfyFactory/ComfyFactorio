@@ -161,7 +161,7 @@ local function on_player_joined_game(event)
 			player.teleport({0,0}, surface)
 		end
 		player.character.destructible = false
-		game.permissions.get_group("spectator").add_player(player.name)
+		game.permissions.get_group("spectator").add_player(player)
 	end
 end
 

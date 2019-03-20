@@ -125,7 +125,7 @@ local function create_main_gui(player)
 		frame.add { type = "table", name = "biter_battle_table", column_count = 4 }
 		local t = frame.biter_battle_table
 		local foods = {"automation-science-pack","logistic-science-pack","military-science-pack","chemical-science-pack","production-science-pack","utility-science-pack","space-science-pack","raw-fish"}
-		local food_tooltips = {"1 Mutagen factor","3 Mutagen factor", "12 Mutagen factor", "24 Mutagen factor", "80 Mutagen factor", "138 Mutagen factor", "420 Mutagen factor", "Send spy"}
+		local food_tooltips = {"1 Mutagen strength","3 Mutagen strength", "12 Mutagen strength", "24 Mutagen strength", "80 Mutagen strength", "138 Mutagen strength", "420 Mutagen strength", "Send spy"}
 		local x = 1
 		for _, f in pairs(foods) do
 			local s = t.add { type = "sprite-button", name = f, sprite = "item/" .. f }
@@ -242,7 +242,7 @@ local function join_team(player, force_name)
 		player.force = game.forces[force_name]
 		player.character.destructible = true
 		refresh_gui()
-		game.permissions.get_group("Default").add_player(player.name)
+		game.permissions.get_group("Default").add_player(player)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
 		return
 	end
@@ -250,7 +250,7 @@ local function join_team(player, force_name)
 	player.teleport(surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1))
 	player.force = game.forces[force_name]
 	player.character.destructible = true
-	game.permissions.get_group("Default").add_player(player.name)
+	game.permissions.get_group("Default").add_player(player)
 	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
 	local i = player.get_inventory(defines.inventory.player_main)
 	i.clear()
@@ -269,8 +269,7 @@ local function spectate(player)
 	player.force = game.forces.spectator
 	player.character.destructible = false
 	game.print(player.name .. " is spectating.", {r = 0.98, g = 0.66, b = 0.22})		
-	local permission_group = game.permissions.get_group("spectator")
-	permission_group.add_player(player.name)
+	game.permissions.get_group("spectator").add_player(player)	
 	global.spectator_rejoin_delay[player.name] = game.tick
 	create_main_gui(player)
 end

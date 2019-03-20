@@ -6,14 +6,14 @@ require "modules.biters_avoid_damage"
 require "modules.biters_yield_coins"
 require "modules.dynamic_landfill"
 --require "modules.dynamic_player_spawn"
-require "modules.explosive_biters"
+--require "modules.explosive_biters"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.rocks_yield_ore"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
-require "modules.spitters_spit_biters"
+--require "modules.spitters_spit_biters"
 require "modules.splice_double"
 
 local event = require 'utils.event'
@@ -136,7 +136,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.enabled = true
 		game.map_settings.enemy_evolution.destroy_factor = 0.005
 		game.map_settings.enemy_evolution.time_factor = 0.000015
-		game.map_settings.enemy_evolution.pollution_factor = 0.00004					
+		game.map_settings.enemy_evolution.pollution_factor = 0.000001					
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
 		game.map_settings.enemy_expansion.settler_group_min_size = 8
 		game.map_settings.enemy_expansion.settler_group_max_size = 16

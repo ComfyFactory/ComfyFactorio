@@ -170,7 +170,7 @@ local function rainbow_ore_and_ponds(event)
 				local noise = get_noise(1, pos)
 				if noise > 0.83 then
 					local amount = math_random(1500, 2000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * noise * 4
-					local i = math.ceil(math.abs(noise * 60)) % 4
+					local i = math.ceil(math.abs(noise * 90)) % 4
 					if i == 0 then i = 4 end
 					surface.create_entity({name = ores[i], position = pos, amount = amount}) 
 				end
