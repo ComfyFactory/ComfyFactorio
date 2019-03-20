@@ -126,12 +126,26 @@ ai.main_attack = function()
 	end
 end
 
+--Prevent Players from damaging Rocket Silos
+local function protect_silo(event)	
+	if event.cause then
+		if event.cause.type == "unit" then return end		 
+	end
+	if event.entity.name ~= "rocket-silo" then return end		
+	event.entity.health = event.entity.health + event.final_damage_amount
+end
+
 --Biter Evasion
-local function on_entity_damaged(event)
+local function evade(event)
 	if not event.entity.valid then return end
 	if event.entity.type ~= "unit" then return end
 	if global.bb_evasion[event.entity.force.name] < math_random(1,1000) then return end
 	event.entity.health = event.entity.health + event.final_damage_amount	
+end
+
+local function on_entity_damaged(event)
+	evade(event)
+	protect_silo(event)
 end
 
 --Biter Threat Value Substraction

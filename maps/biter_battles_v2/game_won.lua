@@ -272,7 +272,14 @@ local function on_entity_died(event)
 		global.spy_fish_timeout["north"] = game.tick + 999999
 		global.spy_fish_timeout["south"] = game.tick + 999999
 		global.server_restart_timer = 180
-		
+				
+		event.entity.surface.create_entity({	
+			name = "atomic-rocket",
+			position = event.entity.position,
+			force = "enemy",
+			target = event.entity.position,
+			speed = 1
+		})
 		fireworks(event.entity.surface)
 		annihilate_base(event.entity.position, event.entity.surface, event.entity.force.name)			
 	end

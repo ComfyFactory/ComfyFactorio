@@ -273,15 +273,6 @@ local function on_robot_built_entity(event)
 	event.created_entity.destroy()			
 end
 
---Prevent Players from damaging the Rocket Silo
-local function on_entity_damaged(event)	
-	if event.cause then
-		if event.cause.type == "unit" then return end		 
-	end
-	if event.entity.name ~= "rocket-silo" then return end		
-	event.entity.health = event.entity.health + event.final_damage_amount
-end
-
 local function on_marked_for_deconstruction(event)
 	if not event.entity.valid then return end
 	if event.entity.name == "fish" then event.entity.cancel_deconstruction(game.players[event.player_index].force.name) end
