@@ -28,6 +28,42 @@ local function destroy_entity(e)
 	e.die()
 end
 
+local function create_kaboom(surface, pos)	
+	surface.create_entity({	
+		name = "explosive-cannon-projectile",
+		position = pos,
+		force = "enemy",
+		target = pos,
+		speed = 1
+	})	
+end
+
+local function annihilate_base_v2(center_pos, surface, force_name)		
+	local positions = {}
+	for x = -80, 80, 1 do
+		for y = -80, 80, 1 do
+			local pos = {x = center_pos.x + x, y = center_pos.y + y}
+			local distance_to_center = math.ceil(math.sqrt((pos.x - center_pos.x)^2 + (pos.y - center_pos.y)^2))
+			if distance_to_center < 52 and math.random(1,5) == 1 then
+				if not positions[distance_to_center] then positions[distance_to_center] = {} end
+				positions[distance_to_center][#positions[distance_to_center] + 1] = pos
+			end
+		end
+	end		
+	if #positions == 0 then return end	
+	local t = 1
+	for i1, pos_list in pairs(positions) do
+		for i2, pos in pairs(pos_list) do
+			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
+			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
+				func = create_kaboom,
+				args = {surface, pos}
+			}			
+		end
+		t = t + 4
+	end
+end
+
 local function annihilate_base(center_pos, surface, force_name)	
 	local entities = {}
 	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 64, center_pos.y - 64},{center_pos.x + 64, center_pos.y + 64}}})) do
@@ -274,7 +310,7 @@ local function on_entity_died(event)
 		global.server_restart_timer = 180
 						
 		fireworks(event.entity.surface)
-		annihilate_base(event.entity.position, event.entity.surface, event.entity.force.name)			
+		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)			
 	end
 end
 

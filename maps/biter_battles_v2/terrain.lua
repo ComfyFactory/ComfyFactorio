@@ -47,7 +47,7 @@ local function get_noise(name, pos)
 	end
 end
 
-local function draw_smoothed_out_ore_circle(position, name, surface, radius, richness)
+local function draw_noise_ore_patch(position, name, surface, radius, richness)
 	if not position then return end
 	if not name then return end
 	if not surface then return end
@@ -56,19 +56,22 @@ local function draw_smoothed_out_ore_circle(position, name, surface, radius, ric
 	local math_random = math.random	
 	local noise_seed_add = 25000	
 	local richness_part = richness / radius
-	for y = radius * -2, radius * 2, 1 do
-		for x = radius * -2, radius * 2, 1 do
+	for y = radius * -3, radius * 3, 1 do
+		for x = radius * -3, radius * 3, 1 do
 			local pos = {x = x + position.x, y = y + position.y}
 			local seed = game.surfaces[1].map_gen_settings.seed
-			local noise_1 = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
+			local noise_1 = simplex_noise(pos.x * 0.0125, pos.y * 0.0125, seed)
 			seed = seed + noise_seed_add
-			local noise_2 = simplex_noise(pos.x * 0.15, pos.y * 0.15, seed)
-			local noise = noise_1 + noise_2 * 0.2
+			local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+			local noise = noise_1 + noise_2 * 0.12
 			local distance_to_center = math.sqrt(x^2 + y^2)						
 			local a = richness - richness_part * distance_to_center
-			if distance_to_center + ((1 + noise) * 3) < radius and a > 1 then			
+			if distance_to_center < radius - math.abs(noise * radius * 0.85) and a > 1 then			
 				if surface.can_place_entity({name = name, position = pos, amount = a}) then
-					surface.create_entity{name = name, position = pos, amount = a}									
+					surface.create_entity{name = name, position = pos, amount = a}
+					
+					local mirror_pos = {x = pos.x * -1, y = pos.y * -1}
+					surface.create_entity{name = name, position = mirror_pos, amount = a}
 				end
 			end			
 		end
@@ -125,21 +128,25 @@ local function generate_circle_spawn(event)
 end
 
 local function generate_silos(event)
-	if event.area.left_top.y == -96 and event.area.left_top.x == -96 then
-		local surface = event.surface
-		local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
-		if not pos then pos = {x = 0, y = -64} end
-		global.rocket_silo["north"] = surface.create_entity({
-			name = "rocket-silo",
-			position = pos,
-			force = "north"
-		})
-		global.rocket_silo["north"].minable = false
-		
-		for i = 1, 32, 1 do
-			create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
-		end
+	if global.bb_game_won_by_team then return end
+	if global.rocket_silo["north"] then
+		if global.rocket_silo["north"].valid then return end
+	end	
+	
+	local surface = event.surface
+	local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
+	if not pos then pos = {x = 0, y = -64} end
+	global.rocket_silo["north"] = surface.create_entity({
+		name = "rocket-silo",
+		position = pos,
+		force = "north"
+	})
+	global.rocket_silo["north"].minable = false
+	
+	for i = 1, 32, 1 do
+		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
 	end
+	
 end
 
 local function generate_river(event)
@@ -188,25 +195,26 @@ local function rainbow_ore_and_ponds(event)
 end
 
 local function generate_potential_spawn_ore(event)
-	if event.area.left_top.y < -128 then return end
-	if event.area.left_top.x < -128 then return end
-	if event.area.left_top.x > 128 then return end
-	local pos = {x = event.area.left_top.x + 16, y = event.area.left_top.y + 16}
-	local area = {{pos.x - 64, pos.y - 64}, {pos.x + 64, pos.y + 64}}
+	if event.area.left_top.x ~= -320 then return end
+	if event.area.left_top.y ~= -320 then return end
 	local surface = event.surface
-	
-	local ores = {"iron-ore", "coal"}
-	ores = shuffle(ores)
-	
-	if event.area.left_top.y == -96 and event.area.left_top.x == -32 then		
-		if surface.count_entities_filtered({name = ores[1], area = area}) < 40 then
-			draw_smoothed_out_ore_circle(pos, ores[1], surface, 13, math_random(1500, 2500)) 
-		end
-	end
-	
-	if event.area.left_top.y == -96 and event.area.left_top.x == 0 then
-		if surface.count_entities_filtered({name = ores[2], area = area}) < 40 then
-			draw_smoothed_out_ore_circle(pos, ores[2], surface, 13, math_random(1500, 2500)) 
+	local r = 130
+	local area = {{r * -1, r * -1}, {r, 0}}
+	local ores = {}
+	ores["iron-ore"] = surface.count_entities_filtered({name = "iron-ore", area = area})
+	ores["copper-ore"] = surface.count_entities_filtered({name = "copper-ore", area = area})
+	ores["coal"] = surface.count_entities_filtered({name = "coal", area = area})
+	ores["stone"] = surface.count_entities_filtered({name = "stone", area = area})
+	for ore, ore_count in pairs(ores) do
+		if ore_count < 500 or ore_count == nil then
+			local pos = {}
+			for a = 1, 32, 1 do
+				pos = {x = -96 + math_random(0, 192), y = -20 - math_random(0, 96)}
+				if surface.can_place_entity({name = "coal", position = pos, amount = 1}) then
+					break					
+				end
+			end
+			draw_noise_ore_patch(pos, ore, surface, math_random(18, 28), math_random(2000, 3000))
 		end
 	end
 end
@@ -224,15 +232,23 @@ local function on_chunk_generated(event)
 	rainbow_ore_and_ponds(event)
 	generate_river(event)
 	generate_circle_spawn(event)		
-	--generate_potential_spawn_ore(event)
+	generate_potential_spawn_ore(event)
 	generate_silos(event)
 	
-	if event.area.left_top.y == -160 and event.area.left_top.x == -160 then
+	if event.area.left_top.y == -320 and event.area.left_top.x == -320 then
 		local area = {{-10,-10},{10,10}}
 		for _, e in pairs(surface.find_entities_filtered({area = area})) do
 			if e.name ~= "player" then e.destroy() end
 		end
 		surface.destroy_decoratives({area = area})
+		
+		for _, silo in pairs(global.rocket_silo) do
+			for _, entity in pairs(surface.find_entities({{silo.position.x - 4, silo.position.y - 4}, {silo.position.x + 4, silo.position.y + 4}})) do
+				if entity.type == "simple-entity" or entity.type == "tree" or entity.type == "resource" then
+					entity.destroy()					
+				end
+			end
+		end
 	end
 end
 

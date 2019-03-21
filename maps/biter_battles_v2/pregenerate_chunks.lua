@@ -51,6 +51,9 @@ local function process_chunk(surface)
 	if #global.chunk_gen_coords == 0 then
 		global.map_generation_complete = true
 		draw_gui()
+		for _, player in pairs(game.connected_players) do
+			player.play_sound{path="utility/new_objective", volume_modifier=0.75}
+		end
 		return
 	end
 	

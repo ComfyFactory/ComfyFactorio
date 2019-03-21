@@ -246,8 +246,9 @@ local function join_team(player, force_name)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
 		return
 	end
-				
-	player.teleport(surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1))
+	local pos = surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1)
+	if not pos then pos = game.forces[force_name].get_spawn_position(surface) end
+	player.teleport(pos)
 	player.force = game.forces[force_name]
 	player.character.destructible = true
 	game.permissions.get_group("Default").add_player(player)

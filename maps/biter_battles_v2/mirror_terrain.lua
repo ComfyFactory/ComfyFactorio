@@ -36,7 +36,6 @@ local cliff_orientation_translation = {
 }
 
 local function process_entity(surface, entity)
-	--local new_pos = {x = entity.position.x * -1, y = (entity.position.y * -1) - 1}
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then
 		if not surface.can_place_entity({name = entity.name, position = new_pos}) then return end

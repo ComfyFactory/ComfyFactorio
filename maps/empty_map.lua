@@ -1,7 +1,7 @@
 -- just an empty map for testing thingies
 local event = require 'utils.event'
 local map_functions = require "tools.map_functions"
-require "maps.empty_map_test"
+local simplex_noise = require 'utils.simplex_noise'.d2
 
 function dump_boom_layout()
 	local surface = game.surfaces["empty_map"]
@@ -61,6 +61,37 @@ local function on_chunk_generated(event)
 	surface.set_tiles(tiles,true)		
 end
 
+local function draw_smoothed_out_ore_circle(position, name, surface, radius, richness)
+	if not position then return end
+	if not name then return end
+	if not surface then return end
+	if not radius then return end
+	if not richness then return end
+	local math_random = math.random	
+	local noise_seed_add = 25000	
+	local richness_part = richness / radius
+	for y = radius * -3, radius * 3, 1 do
+		for x = radius * -3, radius * 3, 1 do
+			local pos = {x = x + position.x, y = y + position.y}
+			local seed = game.surfaces[1].map_gen_settings.seed
+			local noise_1 = simplex_noise(pos.x * 0.0125, pos.y * 0.0125, seed)
+			seed = seed + noise_seed_add
+			local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+			local noise = noise_1 + noise_2 * 0.12
+			local distance_to_center = math.sqrt(x^2 + y^2)						
+			local a = richness - richness_part * distance_to_center
+			if distance_to_center < radius - math.abs(noise * radius * 0.85) and a > 1 then			
+				if surface.can_place_entity({name = name, position = pos, amount = a}) then
+					surface.create_entity{name = name, position = pos, amount = a}
+					
+					local mirror_pos = {x = pos.x * -1, y = pos.y * -1}
+					surface.create_entity{name = name, position = mirror_pos, amount = a}
+				end
+			end			
+		end
+	end
+end
+
 local function on_chunk_charted(event)
 	if not global.chunks_charted then global.chunks_charted = {} end
 	local surface = game.surfaces[event.surface_index]
@@ -72,7 +103,8 @@ local function on_chunk_charted(event)
 	if position.x % 4 ~= 0 then return end
 	if position.y % 4 ~= 0 then return end
 	--map_functions.draw_rainbow_patch_v2({x = position.x * 32, y = position.y * 32}, surface, 28, 1000)	
-	map_functions.draw_derpy_tile_circle(surface, {x = position.x * 32, y = position.y * 32}, "concrete", 20, 26)
+	--map_functions.draw_derpy_tile_circle(surface, {x = position.x * 32, y = position.y * 32}, "concrete", 20, 26)
+	draw_smoothed_out_ore_circle({x = position.x * 32, y = position.y * 32}, "coal", surface, 25, 3000)
 end
 
 local function on_player_joined_game(event)
@@ -96,6 +128,8 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position({0,0},game.surfaces["empty_map"])
 		local surface = game.surfaces["empty_map"]
 		
+		surface.daytime = 1
+		surface.freeze_daytime = 1
 		--local radius = 512
 		--game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})	
 		global.map_init_done = true						
