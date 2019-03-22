@@ -301,6 +301,15 @@ local function create_inner_content(surface, pos, noise)
 		end
 		return
 	end
+	if math_random(1, 500) == 1 then
+		if surface.can_place_entity({name = "biter-spawner", position = pos}) then
+			local distance_to_center = pos.x ^ 2 + pos.y ^ 2
+			if distance_to_center > 20000 then
+				surface.create_entity({name = "biter-spawner", position = pos})
+			end
+		end
+		return 
+	end
 end
 
 local function process_entity(e)
@@ -407,7 +416,7 @@ local function on_chunk_charted(event)
 	local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
 	local size = 7 + math.floor(distance_to_center * 0.0075)
 	if size > 20 then size = 20 end
-	local amount = 200 + distance_to_center
+	local amount = 500 + distance_to_center * 2
 	map_functions.draw_rainbow_patch_v2(pos, surface, size, amount)
 end
 	

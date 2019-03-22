@@ -67,7 +67,7 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	local biters = spawner.surface.find_enemy_units(spawner.position, 160, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
-	local size = math_random(2, 5) * 0.1
+	local size = math_random(2, 4) * 0.1
 	local threat = global.bb_threat[biter_force_name] * size
 	for _, biter in pairs(biters) do
 		if biter.force.name == biter_force_name then
