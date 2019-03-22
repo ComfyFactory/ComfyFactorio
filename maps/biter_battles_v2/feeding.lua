@@ -21,6 +21,7 @@ local enemy_team_of = {
 local function set_biter_endgame_damage(force_name, biter_force)
 	if biter_force.evolution_factor ~= 1 then return end
 	local m = (math.ceil(global.bb_evolution[force_name] * 100) / 100) - 1
+	m = m * 3
 	biter_force.set_ammo_damage_modifier("melee", m)
 	biter_force.set_ammo_damage_modifier("biological", m)
 	biter_force.set_ammo_damage_modifier("artillery-shell", m)
@@ -61,13 +62,13 @@ local function feed_biters(player, food)
 	for a = 1, flask_amount, 1 do				
 		--SET THREAT INCOME
 		local e = (global.bb_evolution[biter_force_name] * 100) + 1
-		local diminishing_modifier = (1 / (10 ^ (e * 0.016))) / (e * 0.5)
+		local diminishing_modifier = (1 / (10 ^ (e * 0.014))) / (e * 0.5)
 		global.bb_threat_income[biter_force_name] = global.bb_threat_income[biter_force_name] + (food_values[food].value * diminishing_modifier * 12)		
 		global.bb_threat_income[biter_force_name] = math_round(global.bb_threat_income[biter_force_name], decimals)
 		
 		---SET EVOLUTION
 		local e2 = (game.forces[biter_force_name].evolution_factor * 100) + 1
-		local diminishing_modifier = (1 / (10 ^ (e2 * 0.016))) / (e2 * 0.5)
+		local diminishing_modifier = (1 / (10 ^ (e2 * 0.0155))) / (e2 * 0.5)
 		local evo_gain = (food_values[food].value * diminishing_modifier)
 		global.bb_evolution[biter_force_name] = global.bb_evolution[biter_force_name] + evo_gain
 		global.bb_evolution[biter_force_name] = math_round(global.bb_evolution[biter_force_name], decimals)
@@ -79,7 +80,7 @@ local function feed_biters(player, food)
 			--SET EVASION
 			local e3 = global.bb_evasion[biter_force_name] + 1
 			local diminishing_modifier = 1 / (0.05 + (e3 * 0.0005))
-			global.bb_evasion[biter_force_name] = global.bb_evasion[biter_force_name] + 75 * evo_gain * diminishing_modifier
+			global.bb_evasion[biter_force_name] = global.bb_evasion[biter_force_name] + 125 * evo_gain * diminishing_modifier
 			global.bb_evasion[biter_force_name] = math_round(global.bb_evasion[biter_force_name], decimals)
 			if global.bb_evasion[biter_force_name] > 950 then global.bb_evasion[biter_force_name] = 950 end
 		end

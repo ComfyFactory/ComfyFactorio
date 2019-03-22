@@ -206,7 +206,7 @@ local function generate_potential_spawn_ore(event)
 	ores["coal"] = surface.count_entities_filtered({name = "coal", area = area})
 	ores["stone"] = surface.count_entities_filtered({name = "stone", area = area})
 	for ore, ore_count in pairs(ores) do
-		if ore_count < 500 or ore_count == nil then
+		if ore_count < 750 or ore_count == nil then
 			local pos = {}
 			for a = 1, 32, 1 do
 				pos = {x = -96 + math_random(0, 192), y = -20 - math_random(0, 96)}
