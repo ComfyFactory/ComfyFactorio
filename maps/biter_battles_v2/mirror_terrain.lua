@@ -78,8 +78,13 @@ local function process_entity(surface, entity)
 	end
 	if entity.name == "player" then
 		return
-	end	
-	surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = entity.force.name})
+	end
+	if entity.name == "fish" then
+		local new_e = {name = entity.name, position = new_pos, direction = direction_translation[entity.direction]}
+		if not surface.can_place_entity(new_e) then return end
+		local e = surface.create_entity(new_e)
+		return
+	end
 end
 
 local function clear_chunk(surface, area)
