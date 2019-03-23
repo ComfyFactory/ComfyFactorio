@@ -19,6 +19,9 @@ local function create_victory_gui(player)
 	local frame = player.gui.left.add {type = "frame", name = "bb_victory_gui", direction = "vertical", caption = values.c1 .. " team has won!" }
 	frame.style.font = "heading-1"
 	frame.style.font_color = values.color1
+	if not global.results_to_discord then
+		server_commands.to_discord_embed(values.c1 .. " team has won!")
+	global.results_to_discord = true end
 end
 
 local function destroy_entity(e)
