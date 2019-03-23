@@ -51,6 +51,7 @@ local function on_marked_for_deconstruction(event)
 	if playtime < 2592000 then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
 		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
+		server_commands.to_discord_bold(table.concat{'[Decon] ' .. player.name .. ' tried to deconstruct something!'})
 	end
 end
 
@@ -70,6 +71,7 @@ local function on_player_ammo_inventory_changed(event)
 		if nukes > 0 then
 			player.surface.spill_item_stack(player.position, {name = "atomic-bomb", count = nukes}, false)
 			player.print("You have not grown accustomed to this technology yet.", {r=0.22, g=0.99, b=0.99})
+			server_commands.to_discord_bold(table.concat{'[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.'})
 		end
 	end
 end
@@ -225,7 +227,7 @@ local function on_gui_opened(event)
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
 		game.print(player.name .. " is looting " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
-		server_commands.to_discord_bold(table.concat{player.name .. " is looting " .. corpse_owner.name .. "´s body."})
+		server_commands.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " is looting " .. corpse_owner.name .. "´s body."})
 	end
 end
 
@@ -237,7 +239,7 @@ local function on_pre_player_mined_item(event)
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
 		game.print(player.name .. " has looted " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
-		server_commands.to_discord_bold(table.concat{player.name .. " has looted " .. corpse_owner.name .. "´s body."})
+		server_commands.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " has looted " .. corpse_owner.name .. "´s body."})
 	end
 end
 
