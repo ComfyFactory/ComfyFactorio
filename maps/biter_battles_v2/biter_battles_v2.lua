@@ -176,6 +176,7 @@ event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 require "maps.biter_battles_v2.on_tick"
 require "maps.biter_battles_v2.terrain"
+require "maps.biter_battles_v2.no_turret_creep"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.bb_map_intro"
 require "modules.custom_death_messages"
