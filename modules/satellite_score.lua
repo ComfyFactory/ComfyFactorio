@@ -93,7 +93,7 @@ local function init()
 	global.satellites_in_space = 0
 	global.satellite_score = {
 		{goal = 0, rank = false, achieved = true},
-		{goal = 1, rank = "Copper", color = {r = 201, g = 133, b = 6}, msg = "The first satellite has been launched!", msg2 = "However, this is only the beginning.", achieved = false},
+		{goal = 1, rank = "Copper", color = {r = 201, g = 133, b = 6}, msg = "", msg2 = "", achieved = false},
 		{goal = 10, rank = "Iron", color = {r = 219, g = 216, b = 206}, msg = "", msg2 = "", achieved = false},
 		{goal = 100, rank = "Bronze", color = {r = 186, g = 115, b = 39}, msg = "", msg2 = "", achieved = false},
 		{goal = 500, rank = "Silver", color = {r = 186, g = 178, b = 171}, msg = "", msg2 = "", achieved = false},
@@ -119,9 +119,9 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]	
 	satellite_score_toggle_button(player)
 	
-	if player.gui.left["satellites_in_space"] then
+	if player.gui.left["satellites_in_space"] or global.satellites_in_space > 0 then
 		satellites_in_space_gui(player)
-	end	
+	end
 end
 
 local function on_gui_click(event)	

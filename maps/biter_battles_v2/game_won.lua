@@ -18,10 +18,11 @@ local function create_victory_gui(player)
 	local values = gui_values[global.bb_game_won_by_team]
 	local frame = player.gui.left.add {type = "frame", name = "bb_victory_gui", direction = "vertical", caption = values.c1 .. " team has won!" }
 	frame.style.font = "heading-1"
-	frame.style.font_color = values.color1
-	if not global.results_to_discord then
-		server_commands.to_discord_embed(values.c1 .. " team has won!")
-	global.results_to_discord = true end
+	frame.style.font_color = values.color1	
+	
+	local l = frame.add {type = "label", caption = global.victory_time}
+	l.style.font = "heading-2"
+	l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 end
 
 local function destroy_entity(e)
@@ -111,7 +112,7 @@ local function create_fireworks_rocket(surface, position)
 		})
 	end
 	
-	if math.random(1,12) ~= 1 then return end
+	if math.random(1,10) ~= 1 then return end
 	surface.create_entity({name = "explosion", position = position})
 end
 
@@ -291,12 +292,26 @@ local function server_restart()
 	end
 end
 
+local function set_victory_time()
+	local minutes = game.tick % 216000
+	local hours = game.tick - minutes
+	minutes = math.floor(minutes / 3600)
+	hours = math.floor(hours / 216000)
+	if hours > 0 then hours = hours .. " hours and " else hours = "" end
+	global.victory_time = "Time - " .. hours
+	global.victory_time = global.victory_time .. minutes
+	global.victory_time = global.victory_time .. " minutes"
+end
+
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	if event.entity.name ~= "rocket-silo" then return end
 	if global.bb_game_won_by_team then return end
 	if event.entity == global.rocket_silo.south or event.entity == global.rocket_silo.north then
 		global.bb_game_won_by_team = enemy_team_of[event.entity.force.name]
+		
+		set_victory_time()
+		
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=1}
 			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
@@ -310,8 +325,11 @@ local function on_entity_died(event)
 		game.forces["south"].set_friend("south_biters", true)
 		global.spy_fish_timeout["north"] = game.tick + 999999
 		global.spy_fish_timeout["south"] = game.tick + 999999
-		global.server_restart_timer = 180
-						
+		global.server_restart_timer = 180			
+		
+		server_commands.to_discord_embed(gui_values[global.bb_game_won_by_team].c1 .. " team has won!")
+		server_commands.to_discord_embed(global.victory_time)
+		
 		fireworks(event.entity.surface)
 		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)			
 	end

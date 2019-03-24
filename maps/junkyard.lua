@@ -301,7 +301,7 @@ local function create_inner_content(surface, pos, noise)
 		end
 		return
 	end
-	if math_random(1, 750) == 1 then
+	if math_random(1, 650) == 1 then
 		if surface.can_place_entity({name = "biter-spawner", position = pos}) then
 			local distance_to_center = pos.x ^ 2 + pos.y ^ 2
 			if distance_to_center > 35000 then

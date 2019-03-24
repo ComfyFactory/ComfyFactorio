@@ -6,15 +6,14 @@ local function on_player_joined_game(event)
 	
 	if not global.new_player_equipped[player.name] then
 		player.insert({name = "raw-fish", count = 3})
-		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "iron-plate", count = 128})
 		player.insert({name = "iron-gear-wheel", count = 64})
 		player.insert({name = "copper-plate", count = 128})
 		player.insert({name = "copper-cable", count = 64})
 		player.insert({name = "pistol", count = 1})
-		player.insert({name = "firearm-magazine", count = 128})
+		player.insert({name = "firearm-magazine", count = 64})
 		player.insert({name = "shotgun", count = 1})
-		player.insert({name = "shotgun-shell", count = 32})
+		player.insert({name = "shotgun-shell", count = 16})
 		player.insert({name = "light-armor", count = 1})
 		global.new_player_equipped[player.name] = true
 		

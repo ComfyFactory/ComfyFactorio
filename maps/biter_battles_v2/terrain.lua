@@ -15,7 +15,7 @@ local function shuffle(tbl)
 	return tbl
 end	
 	
-local function get_noise(name, pos)	
+local function get_noise(name, pos)
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local noise_seed_add = 25000
 	if name == 1 then
@@ -24,7 +24,8 @@ local function get_noise(name, pos)
 		seed = seed + noise_seed_add
 		noise[2] = simplex_noise(pos.x * 0.031, pos.y * 0.031, seed)
 		seed = seed + noise_seed_add
-		local noise = noise[1] + noise[2] * 0.08
+		noise[3] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+		local noise = noise[1] + noise[2] * 0.08 + noise[3] * 0.035
 		return noise
 	end
 	if name == 2 then
@@ -32,7 +33,6 @@ local function get_noise(name, pos)
 		noise[1] = simplex_noise(pos.x * 0.011, pos.y * 0.011, seed)
 		seed = seed + noise_seed_add
 		noise[2] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
-		seed = seed + noise_seed_add
 		local noise = noise[1] + noise[2] * 0.2
 		return noise
 	end
@@ -41,7 +41,6 @@ local function get_noise(name, pos)
 		noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
 		seed = seed + noise_seed_add
 		noise[2] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
-		seed = seed + noise_seed_add
 		local noise = noise[1] + noise[2] * 0.1
 		return noise
 	end
@@ -176,10 +175,12 @@ local function rainbow_ore_and_ponds(event)
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = get_noise(1, pos)
 				if noise > 0.83 then
-					local amount = math_random(1500, 2000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * noise * 4
-					local i = math.ceil(math.abs(noise * 90)) % 4
+					local amount = math_random(500, 1000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 4
+					local m = (noise - 0.82) * 50
+					amount = amount * m
+					local i = math.ceil(math.abs(noise * 50)) % 4
 					if i == 0 then i = 4 end
-					surface.create_entity({name = ores[i], position = pos, amount = amount}) 
+					surface.create_entity({name = ores[i], position = pos, amount = amount})					
 				end
 				if noise < -0.86 then
 					if noise < -0.92 then 
