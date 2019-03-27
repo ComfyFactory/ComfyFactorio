@@ -117,16 +117,30 @@ local function create_fireworks_rocket(surface, position)
 end
 
 local function fireworks(surface)
-	local radius = 52
-	local pos = global.rocket_silo[global.bb_game_won_by_team].position
-	for t = 1, 10800, 1 do
-		if t % 3 == 0 then
+	local radius = 48
+	local center_pos = global.rocket_silo[global.bb_game_won_by_team].position
+	
+	local positions = {}
+	for x = -80, 80, 1 do
+		for y = -80, 80, 1 do
+			local pos = {x = center_pos.x + x, y = center_pos.y + y}
+			local distance_to_center = math.sqrt((pos.x - center_pos.x)^2 + (pos.y - center_pos.y)^2)
+			if distance_to_center <= radius then
+				positions[#positions + 1] = pos
+			end
+		end
+	end		
+	if #positions == 0 then return end
+		
+	for t = 1, 7200, 1 do
+		if t % 2 == 0 then
 			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end
+			local pos = positions[math.random(1, #positions)]
 			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 				func = create_fireworks_rocket,
 				args = {
 					surface,
-					{x = (pos.x - radius) + math.random(0, radius * 2),y = (pos.y - radius) + math.random(0, radius * 2)}
+					{x = pos.x, y = pos.y}
 				}
 			}
 		end

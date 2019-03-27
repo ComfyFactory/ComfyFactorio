@@ -90,7 +90,11 @@ local function init_forces()
 	f.set_cease_fire('north', true)
 	f.set_cease_fire('south', true)
 	f.share_chart = false
-		
+	
+	--DISABLE IMPORTING FROM BLUEPRINT LIBRARY
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
+	--
+	
 	local p = game.permissions.create_group("spectator")
 	for action_name, _ in pairs(defines.input_action) do
 		p.set_allows_action(defines.input_action[action_name], false)
@@ -110,7 +114,7 @@ local function init_forces()
 		defines.input_action.edit_permission_group,
 		defines.input_action.toggle_show_entity_info,
 		defines.input_action.rotate_entity,
-		defines.input_action.start_research	
+		defines.input_action.start_research
 	}	
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end
 	
@@ -144,11 +148,7 @@ local function init_forces()
 	global.game_lobby_active = true
 end
 
-local function on_player_joined_game(event)
-	if not game.surfaces["biter_battles"] then 	
-		
-	end
-	
+local function on_player_joined_game(event)	
 	local surface = game.surfaces["biter_battles"]
 	local player = game.players[event.player_index]	
 	

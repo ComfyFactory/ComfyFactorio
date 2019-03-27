@@ -23,9 +23,9 @@ local function get_noise(name, pos)
 		noise[1] = simplex_noise(pos.x * 0.0042, pos.y * 0.0042, seed)
 		seed = seed + noise_seed_add
 		noise[2] = simplex_noise(pos.x * 0.031, pos.y * 0.031, seed)
-		seed = seed + noise_seed_add
-		noise[3] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.08 + noise[3] * 0.035
+		--seed = seed + noise_seed_add
+		--noise[3] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+		local noise = noise[1] + noise[2] * 0.08-- + noise[3] * 0.015
 		return noise
 	end
 	if name == 2 then
@@ -175,8 +175,8 @@ local function rainbow_ore_and_ponds(event)
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = get_noise(1, pos)
 				if noise > 0.83 then
-					local amount = math_random(500, 1000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 4
-					local m = (noise - 0.82) * 50
+					local amount = math_random(1000, 2000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 2
+					local m = (noise - 0.82) * 40
 					amount = amount * m
 					local i = math.ceil(math.abs(noise * 50)) % 4
 					if i == 0 then i = 4 end

@@ -36,7 +36,7 @@ local function on_built_entity(event)
 	surface.create_entity({
 		name = "flying-text",
 		position = entity.position,
-		text = "Turret is too close to spawner!",
+		text = "Turret too close to spawner!",
 		color = {r=0.98, g=0.66, b=0.22}
 	})
 	

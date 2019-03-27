@@ -3,7 +3,7 @@ local event = require 'utils.event'
 local info = [[
 	- - B I T E R    B A T T L E S - -
 	
-	Your goal is to defend your team's rocket silo and defeat the other team.
+	Your objective is to defend your team's rocket silo and defeat the other team.
 	Feed the opponent's biters with science packs to increase their strength.
 	High tier science juice will yield stronger results.
 	
