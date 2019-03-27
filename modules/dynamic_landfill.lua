@@ -12,7 +12,7 @@ local water_tile_whitelist = {
 	}
 
 local spiral_coords = {}
-for r = 1, 128, 1 do
+for r = 1, 96, 1 do
 	for x = r * -1, r - 1, 1 do
 		table_insert(spiral_coords, {x = x, y = r * -1})
 	end
@@ -64,8 +64,8 @@ end
 
 local function place_fitting_tile(position, surface, tiles_placed)		
 	for _, coord in pairs(spiral_coords) do
-		local tile = surface.get_tile({position.x + coord.x, position.y + coord.x})
-		if not tile.collides_with("player-layer") then				
+		local tile = surface.get_tile({position.x + coord.x, position.y + coord.y})
+		if not tile.collides_with("player-layer") then
 			local valid_source_tile = is_this_a_valid_source_tile(tile.position, tiles_placed)			
 			if tile.name == "out-of-map" then valid_source_tile = false end
 			
