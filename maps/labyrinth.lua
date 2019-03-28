@@ -5,8 +5,7 @@ require "modules.satellite_score"
 require "modules.landfill_reveals_nauvis"
 
 local map_functions = require "tools.map_functions"
-local simplex_noise = require 'utils.simplex_noise'
-simplex_noise = simplex_noise.d2
+local simplex_noise = require 'utils.simplex_noise'.d2
 local event = require 'utils.event'
 local unique_rooms = require "maps.labyrinth_unique_rooms"
 
