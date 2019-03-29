@@ -51,7 +51,6 @@ local function on_marked_for_deconstruction(event)
 	if playtime < 2592000 then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
 		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
-		server_commands.to_discord_bold(table.concat{'[Decon] ' .. player.name .. ' tried to deconstruct something!'})
 	end
 end
 
