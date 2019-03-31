@@ -92,7 +92,7 @@ local function init_forces()
 	f.share_chart = false
 	
 	--DISABLE IMPORTING FROM BLUEPRINT LIBRARY
-	game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
+	--game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
 	--
 	
 	local p = game.permissions.create_group("spectator")

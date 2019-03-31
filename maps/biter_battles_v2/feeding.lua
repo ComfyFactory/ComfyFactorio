@@ -68,7 +68,7 @@ local function feed_biters(player, food)
 		
 		---SET EVOLUTION
 		local e2 = (game.forces[biter_force_name].evolution_factor * 100) + 1
-		local diminishing_modifier = (1 / (10 ^ (e2 * 0.0155))) / (e2 * 0.5)
+		local diminishing_modifier = (1 / (10 ^ (e2 * 0.016))) / (e2 * 0.5)
 		local evo_gain = (food_values[food].value * diminishing_modifier)
 		global.bb_evolution[biter_force_name] = global.bb_evolution[biter_force_name] + evo_gain
 		global.bb_evolution[biter_force_name] = math_round(global.bb_evolution[biter_force_name], decimals)
@@ -87,7 +87,7 @@ local function feed_biters(player, food)
 						
 		--ADD INSTANT THREAT
 		local diminishing_modifier = 1 / (0.2 + (e2 * 0.018))
-		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 250 * diminishing_modifier)
+		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 200 * diminishing_modifier)
 		global.bb_threat[biter_force_name] = math_round(global.bb_threat[biter_force_name], decimals)
 	end	
 	set_biter_endgame_damage(biter_force_name, game.forces[biter_force_name])
