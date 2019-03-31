@@ -4,7 +4,6 @@ require "modules.satellite_score"
 require "modules.spawners_contain_biters"
 require "modules.dynamic_landfill"
 require "modules.rocks_yield_ore"
-require "modules.teleporting_worms"
 
 local event = require 'utils.event' 
 local table_insert = table.insert
@@ -169,6 +168,7 @@ local function init_map()
 	surface.request_to_generate_chunks({0,0}, 3)
 	surface.force_generate_chunk_requests()
 	
+	game.forces.player.research_queue_enabled = true
 	
 	map_functions.draw_smoothed_out_ore_circle({x = -3, y = -3}, "iron-ore", surface, 8, 5000)
 	map_functions.draw_smoothed_out_ore_circle({x = 3, y = 3}, "copper-ore", surface, 8, 5000)
@@ -181,6 +181,8 @@ local function on_player_joined_game(event)
 	
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
+		player.insert({name = "iron-plate", count = 32})
+		player.insert({name = "iron-gear-wheel", count = 16})
 		player.teleport(game.surfaces["rivers"].find_non_colliding_position("player", {0, 2}, 50, 0.5), "rivers")
 	end		
 end
