@@ -140,7 +140,7 @@ local function on_chunk_generated(event)
 			decorative_names[#decorative_names+1] = k
 		end
 	end
-	surface.regenerate_decorative(decorative_names, {position})
+	surface.regenerate_decorative(decorative_names, {{left_top.x / 32, left_top.y / 32}})
 	
 	if global.spawn_generated then return end
 	if left_top.x < 96 then return end	 
