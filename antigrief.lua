@@ -23,6 +23,16 @@ local function on_player_joined_game(event)
 	if player.admin == true then
 		create_admin_button(player)
 	end
+	
+	local playtime = player.online_time
+	if global.player_totals then
+		if global.player_totals[player.name] then
+			playtime = player.online_time + global.player_totals[player.name][1]
+		end
+	end 
+	if playtime > 2592000 then
+		global.trusted_players[player.name] = true
+	end
 end
 
 local function on_player_promoted(event)
