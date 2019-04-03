@@ -5,6 +5,16 @@ local event = require 'utils.event'
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
 
+local immune_tiles = {
+	["concrete"] = true,
+	["hazard-concrete-left"] = true,
+	["hazard-concrete-right"] = true,
+	["refined-concrete"] = true,
+	["refined-hazard-concrete-left"] = true,
+	["refined-hazard-concrete-right"] = true,
+	["stone-path"] = true
+}
+
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if player.character.driving == true then return end
@@ -29,10 +39,12 @@ local function on_player_changed_position(event)
 	local r = 8
 	for x = r * -1, r, 1 do
 		for y = r * -1, r, 1 do
-			local distance_to_center = math.sqrt(x^2 + x^2)
-			if distance_to_center > 2 and distance_to_center < 7 then
+			local distance = x^2 + y^2
+			if distance > 4 and distance < 49 then
 				if player.surface.can_place_entity({name = "stone-furnace", position = {x = player.position.x + x, y = player.position.y + y}}) then
-					positions[#positions + 1] = {x = player.position.x + x, y = player.position.y + y}
+					if not immune_tiles[player.surface.get_tile({x = player.position.x + x, y = player.position.y + y}).name] then
+						positions[#positions + 1] = {x = player.position.x + x, y = player.position.y + y}
+					end
 				end
 			end
 		end
