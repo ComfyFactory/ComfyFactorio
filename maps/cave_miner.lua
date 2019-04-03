@@ -1,12 +1,11 @@
 -- Cave Miner -- mewmew made this --
---Use /c spaghetti() to play without bots.
 
 require "modules.rocks_broken_paint_tiles"
 require "maps.cave_miner_kaboomsticks"
 require "modules.satellite_score"
 --require "modules.explosive_biters"
 require "modules.spawners_contain_biters"
-require "modules.teleporting_worms"
+--require "modules.teleporting_worms"
 --require "modules.splice_double"
 --require "modules.biters_double_damage"
 
@@ -911,7 +910,9 @@ Darkness is a hazard in the mines, stay near your lamps..
 
 		global.darkness_threat_level = {}							
 		
-		global.cave_miner_init_done = true						
+		game.forces.player.chart(surface, {{-160, -160}, {160, 160}})
+		
+		global.cave_miner_init_done = true
 	end
 	if player.online_time < 10 then
 		create_cave_miner_info(player)
@@ -1194,7 +1195,13 @@ local function pre_player_mined_item(event)
 		
 		local mined_loot = global.rock_mining_raffle_table[math_random(1,#global.rock_mining_raffle_table)]
 		
-		surface.create_entity({name = "flying-text", position = rock_position, text = amount .. " " .. ore_floaty_texts[mined_loot][1], color = ore_floaty_texts[mined_loot][2]})
+		surface.create_entity({
+			name = "flying-text",
+			position = rock_position,
+			text = "+" .. amount .. " [img=item/" .. mined_loot .. "]",
+			color = {r=0.98, g=0.66, b=0.22}
+		})
+		--surface.create_entity({name = "flying-text", position = rock_position, text = amount .. " " .. ore_floaty_texts[mined_loot][1], color = ore_floaty_texts[mined_loot][2]})
 		
 		if amount > global.ore_spill_cap then
 			surface.spill_item_stack(rock_position,{name = mined_loot, count = global.ore_spill_cap},true)
