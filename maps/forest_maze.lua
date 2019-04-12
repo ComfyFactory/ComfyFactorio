@@ -4,8 +4,7 @@ local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'.d2
 local math_random = math.random
 
-local labyrinth_cell_size = 8 --valid values are 1, 2, 4, 8, 16, 32
-local labyrinth_cell_chance = 85
+local labyrinth_cell_size = 16 --valid values are 1, 2, 4, 8, 16, 32
 
 local modifiers = {
 		{x = 0, y = -1},{x = -1, y = 0},{x = 1, y = 0},{x = 0, y = 1}
@@ -17,6 +16,15 @@ local modifiers_diagonal = {
 		{diagonal = {x = 1, y = 1}, connection_1 = {x = 1, y = 0}, connection_2 = {x = 0, y = 1}},
 		{diagonal = {x = -1, y = -1}, connection_1 = {x = -1, y = 0}, connection_2 = {x = 0, y = -1}}
 	}	
+
+local function shuffle(tbl)
+	local size = #tbl
+		for i = size, 1, -1 do
+			local rand = math_random(size)
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	return tbl
+end
 	
 local function labyrinth_wall(surface, cell_pos)
 	for x = 0.5, labyrinth_cell_size + 0.5, 1 do
@@ -37,10 +45,6 @@ local function process_labyrinth_cell(pos)
 	
 	global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = false
 	
-	if math_random(0, 100) > labyrinth_cell_chance then
-		return false
-	end
-	
 	for _, modifier in pairs(modifiers_diagonal) do
 		if global.labyrinth_cells[tostring(cell_position.x + modifier.diagonal.x) .. "_" .. tostring(cell_position.y + modifier.diagonal.y)] then			
 			local connection_1 = global.labyrinth_cells[tostring(cell_position.x + modifier.connection_1.x) .. "_" .. tostring(cell_position.y + modifier.connection_1.y)]
@@ -50,36 +54,46 @@ local function process_labyrinth_cell(pos)
 			end												
 		end
 	end
-	
-	local walls = 0
-	for _, modifier in pairs(modifiers) do
-		if not global.labyrinth_cells[tostring(cell_position.x + modifier.x) .. "_" .. tostring(cell_position.y + modifier.y)] then
-			walls = walls + 1
+		
+	for _, m1 in pairs(modifiers) do
+		local connections = 0
+		local r = math_random(2, 3)
+		for _, m2 in pairs(modifiers) do
+			if global.labyrinth_cells[tostring(cell_position.x + m1.x + m2.x) .. "_" .. tostring(cell_position.y + m1.y + m2.y)] then
+				connections = connections + 1
+			end
+			if connections >= r then return false end
 		end
 	end
 	
-	if walls < 3 then
-		return false
-	end
+	local connections = 0
+	for _, m in pairs(modifiers) do
+		if global.labyrinth_cells[tostring(cell_position.x + m.x) .. "_" .. tostring(cell_position.y + m.y)] then
+			connections = connections + 1
+		end
+	end		
+	if connections > math_random(2, 3) then return false end
 	
 	global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = true
 	return true
 end
 
-local function labyrinth(event)	
+local function labyrinth(event)
+	local positions = {}
 	for x = 0, 32 - labyrinth_cell_size, labyrinth_cell_size do
-		for y = 0, 32 - labyrinth_cell_size, labyrinth_cell_size do			
-			local pos = {x = event.area.left_top.x + x, y = event.area.left_top.y + y}
-			
-			local path = process_labyrinth_cell(pos)	
-			
-			if path then
-				labyrinth_path(event.surface, pos)
-			else
-				labyrinth_wall(event.surface, pos)
-			end
+		for y = 0, 32 - labyrinth_cell_size, labyrinth_cell_size do
+			positions[#positions + 1] = {x = event.area.left_top.x + x, y = event.area.left_top.y + y}					
 		end
 	end
+	positions = shuffle(positions)
+	
+	for _, pos in pairs(positions) do				
+		if process_labyrinth_cell(pos) then
+			labyrinth_path(event.surface, pos)
+		else
+			labyrinth_wall(event.surface, pos)
+		end
+	end	
 end
 
 local function on_chunk_generated(event)
