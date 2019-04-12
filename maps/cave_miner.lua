@@ -195,7 +195,7 @@ local function create_cave_miner_stats_gui(player)
 	separators[2] = t.add { type = "label", caption = "|"}
 	
 	captions[3] = t.add { type = "label", caption = "Efficiency" }
-	local x = math.ceil(game.forces.player.manual_mining_speed_modifier * 100 + player_hunger_buff[global.player_hunger[player.name]] * 100, 0)
+	local x = math.floor(game.forces.player.manual_mining_speed_modifier * 100 + player_hunger_buff[global.player_hunger[player.name]] * 100)
 	local str = ""
 	if x > 0 then str = str .. "+" end
 	str = str .. tostring(x)
@@ -796,6 +796,8 @@ end
 
 local function hunger_update(player, food_value)
 	
+	if not player.character then return end
+	
 	if food_value == -1 and player.character.driving == true then return end
 	
 	local past_hunger = global.player_hunger[player.name]	
@@ -891,7 +893,7 @@ Darkness is a hazard in the mines, stay near your lamps..
 		
 		global.biter_spawn_schedule = {}										
 		
-		global.ore_spill_cap = 35
+		global.ore_spill_cap = 60
 		global.stats_rocks_broken = 0
 		global.stats_ores_found = 0
 		global.total_ores_mined = 0
@@ -1182,7 +1184,7 @@ local function pre_player_mined_item(event)
 		if math_random(1,3) == 1 then hunger_update(player, -1) end
 		
 		surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(3,4)},true)
-		local bonus_amount = math.ceil((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10, 0) 
+		local bonus_amount = math.floor((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10, 0) 
 		if bonus_amount < 1 then bonus_amount = 0 end		
 		local amount = math_random(45,55) + bonus_amount
 		if amount > 200 then amount = 200 end

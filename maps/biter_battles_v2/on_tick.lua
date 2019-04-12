@@ -21,22 +21,13 @@ local function spy_fish()
 	end		
 end
 
---[[
-local function reveal_team(f)
-	local m = 32
-	if f == "north" then
-		game.forces["south"].chart(
-			game.surfaces["biter_battles"],
-			{{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}}
-		)
-	else
-		game.forces["north"].chart(
-			game.surfaces["biter_battles"],
-			{{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}}
-		)
-	end	
+local function clear_corpses()
+	for _, e in pairs(game.surfaces["biter_battles"].find_entities_filtered({type = "corpse"})) do		
+		if math.random(1, 3) == 1 then
+			e.destroy()
+		end
+	end
 end
-]]
 
 local function on_tick(event)
 	if game.tick % 30 ~= 0 then return end
@@ -56,7 +47,10 @@ local function on_tick(event)
 	if game.tick % 1800 ~= 0 then return end
 		
 	ai.main_attack()
-	ai.send_near_biters_to_silo()		
+	ai.send_near_biters_to_silo()
+	
+	if game.tick % 3600 ~= 0 then return end
+	clear_corpses()
 end
 
 event.add(defines.events.on_tick, on_tick)

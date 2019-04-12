@@ -67,7 +67,7 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	local biters = spawner.surface.find_enemy_units(spawner.position, 160, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
-	local size = math_random(2, 4) * 0.1
+	local size = math_random(2, 3) * 0.1
 	local threat = global.bb_threat[biter_force_name] * size
 	for _, biter in pairs(biters) do
 		if biter.force.name == biter_force_name then
@@ -135,6 +135,25 @@ local function protect_silo(event)
 	event.entity.health = event.entity.health + event.final_damage_amount
 end
 
+--Prevent Players from doing direct pvp combat
+local function ignore_pvp(event)	
+	if not event.cause then return end
+	if event.cause.force.name == "north" then
+		if event.entity.force.name == "south" then
+			if not event.entity.valid then return end
+			event.entity.health = event.entity.health + event.final_damage_amount
+			return
+		end
+	end
+	if event.cause.force.name == "south" then
+		if event.entity.force.name == "north" then
+			if not event.entity.valid then return end
+			event.entity.health = event.entity.health + event.final_damage_amount
+			return
+		end
+	end
+end
+
 --Biter Evasion
 local function evade(event)
 	if not event.entity.valid then return end
@@ -146,6 +165,7 @@ end
 local function on_entity_damaged(event)
 	evade(event)
 	protect_silo(event)
+	--ignore_pvp(event)
 end
 
 --Biter Threat Value Substraction

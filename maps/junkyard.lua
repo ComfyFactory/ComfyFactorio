@@ -268,7 +268,7 @@ local function place_random_scrap_entity(surface, position)
 	end
 	if r < 90 then
 		local e = surface.create_entity({name = "gun-turret", position = position, force = "scrap_defense"})
-		e.insert({name = "firearm-magazine", count = math.random(8, 128)})
+		e.insert({name = "piercing-rounds-magazine", count = math.random(8, 128)})
 		return
 	end
 		
@@ -277,7 +277,7 @@ local function place_random_scrap_entity(surface, position)
 	e.fluidbox[1] = {name = fluids[math.random(1, #fluids)], amount = math.random(15000, 25000)}
 	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
 	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
-	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(20,40), 80)	
+	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(15,30), 80)	
 end
 
 local function create_inner_content(surface, pos, noise)

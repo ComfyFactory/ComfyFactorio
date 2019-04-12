@@ -100,7 +100,7 @@ local function get_rank(player)
 	
 	--52 ranks
 	
-	local time_needed = 120 -- in minutes between rank upgrades
+	local time_needed = 240 -- in minutes between rank upgrades
 	m = m / time_needed
 	m = math.floor(m)
 	m = m + 1

@@ -86,7 +86,7 @@ f.draw_rainbow_patch_v2 = function(position, surface, radius, richness)
 	if not surface then return end
 	if not radius then return end
 	if not richness then return end
-	local modifier_1 = math_random(2,10)
+	local modifier_1 = math_random(2,7)
 	local modifier_2 = math_random(100,200) * 0.0002
 	local modifier_3 = math_random(100,200) * 0.0015
 	local modifier_4 = math_random(15,30) * 0.01	
