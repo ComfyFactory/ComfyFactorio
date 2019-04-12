@@ -5,6 +5,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local math_random = math.random
 
 local labyrinth_cell_size = 16 --valid values are 2, 4, 8, 16, 32
+local lake_noise_value = -0.55
 
 local modifiers = {
 		{x = 0, y = -1},{x = -1, y = 0},{x = 1, y = 0},{x = 0, y = 1}
@@ -17,6 +18,8 @@ local modifiers_diagonal = {
 		{diagonal = {x = -1, y = -1}, connection_1 = {x = -1, y = 0}, connection_2 = {x = 0, y = -1}}
 	}	
 
+local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}	
+	
 local function shuffle(tbl)
 	local size = #tbl
 		for i = size, 1, -1 do
@@ -40,10 +43,24 @@ end
 	
 local function labyrinth_wall(surface, cell_pos)
 	local noise = get_noise(1, cell_pos)
+	
+	if noise < lake_noise_value then return end
+	
+	if noise > 0.6 then
+		for x = 0.5, labyrinth_cell_size, 1 do
+			for y = 0.5, labyrinth_cell_size, 1 do
+				local pos = {x = cell_pos.x + x, y = cell_pos.y + y}
+				if math_random(1,3) ~= 1 then
+					surface.create_entity({name = "dead-tree-desert", position = pos})
+				else
+					surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
+				end
+			end
+		end
+		return
+	end
+	
 	local tree = "tree-04"
-	if noise > 0 then tree = "tree-01" end
-	if noise < -0.75 then tree = "tree-02" end
-	if noise > 0.75 then tree = "tree-07" end
 	
 	for x = 0.5, labyrinth_cell_size, 1 do
 		for y = 0.5, labyrinth_cell_size, 1 do
@@ -55,7 +72,31 @@ local function labyrinth_wall(surface, cell_pos)
 	end
 end
 	
-local function labyrinth_path(surface, pos)
+local function labyrinth_path(surface, cell_pos)
+end
+
+local function draw_base_tile_floor(surface, cell_pos)
+	local noise = get_noise(1, cell_pos)
+	local tile_name = "grass-1"
+	if noise > 0.6 then tile_name = "dirt-7" end
+	if noise < lake_noise_value then tile_name = "deepwater" end
+	
+	for x = 0.5, labyrinth_cell_size, 1 do
+		for y = 0.5, labyrinth_cell_size, 1 do
+			local pos = {x = cell_pos.x + x, y = cell_pos.y + y}
+			surface.set_tiles({{name = tile_name, position = pos}}, true)			
+		end
+	end
+	
+	if tile_name == "deepwater" then
+		for x = 0.5, labyrinth_cell_size, 1 do
+			for y = 0.5, labyrinth_cell_size, 1 do
+				local pos = {x = cell_pos.x + x, y = cell_pos.y + y}
+				if math_random(1, 256) == 1 then surface.create_entity({name = "fish", position = pos}) end
+				
+			end
+		end
+	end		
 end
 
 local function get_path_connections_count(cell_pos)
@@ -102,12 +143,13 @@ local function labyrinth(event)
 	end
 	positions = shuffle(positions)
 	
-	for _, pos in pairs(positions) do				
+	for _, pos in pairs(positions) do	
+		draw_base_tile_floor(event.surface, pos)
 		if process_labyrinth_cell(pos) then
 			labyrinth_path(event.surface, pos)
 		else
 			labyrinth_wall(event.surface, pos)
-		end
+		end		
 	end	
 end
 
@@ -129,15 +171,6 @@ local function on_chunk_generated(event)
 			end
 		end
 	end
-		
-	local tiles = {}
-	for x = 0.5, 31.5, 1 do
-		for y = 0.5, 31.5, 1 do			
-			local pos = {x = left_top.x + x, y = left_top.y + y}				
-			table.insert(tiles, {name = "grass-1", position = pos}) 
-		end
-	end
-	surface.set_tiles(tiles,true)
 	
 	labyrinth(event)
 	
@@ -148,6 +181,113 @@ local function on_chunk_generated(event)
 		end
 	end										
 	surface.regenerate_decorative(decorative_names, {{x = left_top.x / 32, y = left_top.y / 32}})
+end
+
+local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
+local function create_shipwreck(surface, position)
+	local raffle = {}
+	local loot = {								
+		{{name = "iron-gear-wheel", count = math_random(80,100)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "copper-cable", count = math_random(100,200)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.1, evolution_max = 0.5},
+		{{name = "electric-engine-unit", count = math_random(16,32)}, weight = 2, evolution_min = 0.4, evolution_max = 0.8},
+		{{name = "battery", count = math_random(40,80)}, weight = 2, evolution_min = 0.3, evolution_max = 0.8},
+		{{name = "advanced-circuit", count = math_random(40,80)}, weight = 3, evolution_min = 0.4, evolution_max = 1},
+		{{name = "electronic-circuit", count = math_random(100,200)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
+		{{name = "processing-unit", count = math_random(30,60)}, weight = 3, evolution_min = 0.7, evolution_max = 1},
+		{{name = "explosives", count = math_random(25,50)}, weight = 1, evolution_min = 0.2, evolution_max = 0.6},
+		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evolution_min = 0.3, evolution_max = 0.5},
+		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},		
+		{{name = "steel-plate", count = math_random(50,100)}, weight = 2, evolution_min = 0.1, evolution_max = 0.3},
+		{{name = "nuclear-fuel", count = 1}, weight = 2, evolution_min = 0.7, evolution_max = 1},				
+		{{name = "burner-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
+		{{name = "inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},
+		{{name = "long-handed-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.0, evolution_max = 0.4},		
+		{{name = "fast-inserter", count = math_random(4,8)}, weight = 3, evolution_min = 0.1, evolution_max = 1},
+		{{name = "filter-inserter", count = math_random(4,8)}, weight = 1, evolution_min = 0.2, evolution_max = 1},		
+		{{name = "stack-filter-inserter", count = math_random(2,4)}, weight = 1, evolution_min = 0.4, evolution_max = 1},
+		{{name = "stack-inserter", count = math_random(2,4)}, weight = 3, evolution_min = 0.3, evolution_max = 1},				
+		{{name = "small-electric-pole", count = math_random(8,16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "medium-electric-pole", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 1},		
+		{{name = "wooden-chest", count = math_random(16,24)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "iron-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.1, evolution_max = 0.4},
+		{{name = "steel-chest", count = math_random(4,8)}, weight = 3, evolution_min = 0.3, evolution_max = 1},		
+		{{name = "small-lamp", count = math_random(8,16)}, weight = 3, evolution_min = 0.1, evolution_max = 0.3},
+		{{name = "rail", count = math_random(50,75)}, weight = 3, evolution_min = 0.1, evolution_max = 0.6},
+		{{name = "assembling-machine-1", count = math_random(1,2)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "assembling-machine-2", count = math_random(1,2)}, weight = 3, evolution_min = 0.2, evolution_max = 0.8},
+		{{name = "offshore-pump", count = 1}, weight = 2, evolution_min = 0.0, evolution_max = 0.1},		
+		{{name = "heat-pipe", count = math_random(8,12)}, weight = 2, evolution_min = 0.5, evolution_max = 1},
+		{{name = "arithmetic-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "constant-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "decider-combinator", count = math_random(8,16)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "power-switch", count = math_random(2,4)}, weight = 1, evolution_min = 0.1, evolution_max = 1},		
+		{{name = "programmable-speaker", count = math_random(2,4)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "green-wire", count = math_random(50,100)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "red-wire", count = math_random(50,100)}, weight = 1, evolution_min = 0.1, evolution_max = 1},
+		{{name = "burner-mining-drill", count = math_random(2,4)}, weight = 3, evolution_min = 0.0, evolution_max = 0.2},
+		{{name = "electric-mining-drill", count = math_random(2,4)}, weight = 3, evolution_min = 0.2, evolution_max = 0.6},		
+		{{name = "express-transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "express-underground-belt", count = math_random(4,8)}, weight = 3, evolution_min = 0.5, evolution_max = 1},		
+		{{name = "express-splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0.5, evolution_max = 1},
+		{{name = "fast-transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "fast-underground-belt", count = math_random(4,8)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "fast-splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0.2, evolution_max = 0.3},
+		{{name = "transport-belt", count = math_random(25,75)}, weight = 3, evolution_min = 0, evolution_max = 0.3},
+		{{name = "underground-belt", count = math_random(4,8)}, weight = 3, evolution_min = 0, evolution_max = 0.3},
+		{{name = "splitter", count = math_random(2,4)}, weight = 3, evolution_min = 0, evolution_max = 0.3},		
+		{{name = "pipe", count = math_random(40,50)}, weight = 3, evolution_min = 0.0, evolution_max = 0.3},
+		{{name = "pipe-to-ground", count = math_random(8,16)}, weight = 1, evolution_min = 0.2, evolution_max = 0.5},
+		{{name = "pump", count = math_random(1,4)}, weight = 1, evolution_min = 0.3, evolution_max = 0.8},	
+		{{name = "rail-signal", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},
+		{{name = "rail-chain-signal", count = math_random(8,16)}, weight = 2, evolution_min = 0.2, evolution_max = 0.8},		
+		{{name = "stone-wall", count = math_random(25,75)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
+		{{name = "gate", count = math_random(4,8)}, weight = 1, evolution_min = 0.1, evolution_max = 0.5},
+		{{name = "train-stop", count = math_random(1,2)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "express-loader", count = math_random(1,2)}, weight = 1, evolution_min = 0.5, evolution_max = 1},
+		{{name = "fast-loader", count = math_random(1,2)}, weight = 1, evolution_min = 0.2, evolution_max = 0.7},
+		{{name = "loader", count = math_random(1,2)}, weight = 1, evolution_min = 0.0, evolution_max = 0.5}
+	}
+
+	local distance_to_center = math.sqrt(position.x^2 + position.y^2)
+	if distance_to_center < 1 then
+		distance_to_center = 0.1
+	else
+		distance_to_center = distance_to_center / 2500
+	end
+	if distance_to_center > 1 then distance_to_center = 1 end
+	
+	for _, t in pairs (loot) do
+		for x = 1, t.weight, 1 do
+			if t.evolution_min <= distance_to_center and t.evolution_max >= distance_to_center then
+				table.insert(raffle, t[1])
+			end
+		end			
+	end
+	local e = surface.create_entity{name = wrecks[math_random(1,#wrecks)], position = position, force = "player"}	
+	for x = 1, math_random(2,3), 1 do
+		local loot = raffle[math_random(1,#raffle)]
+		e.insert(loot)
+	end	
+end
+
+local function draw_secret_area(surface, position)
+	local positions = {}
+	for x = 0, labyrinth_cell_size - 1, 1 do
+		for y = 0, labyrinth_cell_size - 1, 1 do
+			positions[#positions + 1] = {x = position.x + x, y = position.y + y}					
+		end
+	end
+	positions = shuffle(positions)
+	
+	local wrecks_to_place = math_random(1, math.ceil(labyrinth_cell_size * 0.33))
+	for i = 1, #positions, 1 do
+		if surface.can_place_entity({name = "big-ship-wreck-1", position = positions[i]}) then			
+			create_shipwreck(surface, positions[i])
+			wrecks_to_place = wrecks_to_place - 1
+			if wrecks_to_place <= 0 then break end
+		end
+	end
 end
 
 local ore_chance_weights = {
@@ -182,6 +322,9 @@ end
 
 local function draw_water(surface, position)
 	map_functions.draw_noise_tile_circle({x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.5}, "water", surface, math.floor(labyrinth_cell_size * 0.3))
+	for _, tile in pairs(surface.find_tiles_filtered({name = "water", area = {{position.x, position.y},{position.x + labyrinth_cell_size, position.y + labyrinth_cell_size}}})) do
+		if math_random(1, 12) == 1 then surface.create_entity({name = "fish", position = tile.position}) end
+	end
 end
 
 local enemy_chances = {
@@ -219,8 +362,16 @@ end
 local function process_chunk_charted_cell(surface, pos)
 	local cell_position = {x = pos.x / labyrinth_cell_size, y = pos.y / labyrinth_cell_size}
 	if not global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] then return end
-			
+	
+	local noise = get_noise(1, pos)
+	if noise < lake_noise_value then return end --RETURN IF IT IS WATER LAKE
+	
 	local connection_count = get_path_connections_count(cell_position)
+	
+	if connection_count == 0 then
+		draw_secret_area(surface, pos)
+	end
+	
 	if connection_count == 1 then
 		if math_random(1, 2) == 1 then
 			draw_ores(surface, pos)
@@ -230,12 +381,16 @@ local function process_chunk_charted_cell(surface, pos)
 				if math_random(1, 4) == 1 then
 					draw_water(surface, pos)
 				else
-					--draw_enemies(surface, pos)
+					draw_enemies(surface, pos)
 				end
 			else
 				if math_random(1, 3) == 1 then draw_water(surface, pos) end
 			end					
 		end
+	end
+	
+	if connection_count == 3 then
+		if math_random(1, 2) == 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = pos.x + labyrinth_cell_size * 0.5, y = pos.y + labyrinth_cell_size * 0.5}}) end
 	end
 end
 
@@ -298,18 +453,29 @@ local function on_player_joined_game(event)
 		end
 	end	
 	if player.online_time < 10 then				
-		player.insert {name = 'raw-fish', count = 3}
-		player.insert {name = 'light-armor', count = 1}
+		player.insert {name = 'iron-gear-wheel', count = 8}
+		player.insert {name = 'iron-plate', count = 16}
+		--player.insert {name = 'grenade', count = 160}
 	end	
 end
 
-
+local disabled_for_deconstruction = {
+		["fish"] = true,
+		["simple-entity"] = true,
+		["tree"] = true
+	}	
+local function on_marked_for_deconstruction(event)	
+	if disabled_for_deconstruction[event.entity.type] then
+		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+	end
+end
 
 local function on_init()
 	global.labyrinth_cells = {}
 end
 
 event.on_init(on_init)
+event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
