@@ -28,7 +28,7 @@ local projectile_types = {
 	["explosive-rocket"] = {name = "explosive-rocket", count = 1, max_range = 48, tick_speed = 1},
 	["rocket"] = {name = "rocket", count = 1, max_range = 48, tick_speed = 1},
 	
-	["flamethrower-ammo"] = {name = "flamethrower-fire-stream", count = 2, max_range = 24, tick_speed = 1},
+	["flamethrower-ammo"] = {name = "flamethrower-fire-stream", count = 3, max_range = 40, tick_speed = 1},
 	["crude-oil-barrel"] = {name = "flamethrower-fire-stream", count = 2, max_range = 24, tick_speed = 1},
 	["petroleum-gas-barrel"] = {name = "flamethrower-fire-stream", count = 3, max_range = 24, tick_speed = 1},
 	["light-oil-barrel"] = {name = "flamethrower-fire-stream", count = 3, max_range = 24, tick_speed = 1},
@@ -46,7 +46,7 @@ local projectile_types = {
 	["piercing-rounds-magazine"] = {name = "piercing-shotgun-pellet", count = 3, max_range = 40, tick_speed = 1},
 	["uranium-rounds-magazine"] = {name = "piercing-shotgun-pellet", count = 3, max_range = 40, tick_speed = 1},
 	
-	["cliff-explosives"] = {name = "cliff-explosives", count = 1, max_range = 32, tick_speed = 2},
+	["cliff-explosives"] = {name = "cliff-explosives", count = 1, max_range = 48, tick_speed = 2},
 }
 
 local function create_projectile(surface, name, position, force, target, max_range)

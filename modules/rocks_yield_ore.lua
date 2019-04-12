@@ -58,7 +58,8 @@ local function on_player_mined_entity(event)
 				
 		entity.surface.spill_item_stack(entity.position,{name = ore, count = amount_to_spill}, true)
 		
-		entity.surface.create_entity({name = "flying-text", position = entity.position, text = amount .. " " .. texts[ore][1], color = texts[ore][2]})	
+		--entity.surface.create_entity({name = "flying-text", position = entity.position, text = amount .. " " .. texts[ore][1], color = texts[ore][2]})
+		entity.surface.create_entity({name = "flying-text", position = entity.position, text = "+" .. amount .. " [img=item/" .. ore .. "]", color = {r = 200, g = 160, b = 30}})
 	end
 end
 
