@@ -310,7 +310,7 @@ local function draw_ores(surface, position)
 	for x = 0, labyrinth_cell_size - 1, 1 do
 		for y = 0, labyrinth_cell_size - 1, 1 do
 			local pos = {x = position.x + x, y = position.y + y}
-			local amount = 500 + math.sqrt(pos.x^2 + pos.x^2) * 2
+			local amount = 500 + math.sqrt(pos.x^2 + pos.y^2) * 2
 			if ore == "crude-oil" then
 				if math_random(1, 32) == 1 and surface.can_place_entity({name = ore, position = pos, amount = amount * 100}) then surface.create_entity({name = ore, position = pos, amount = amount * 100}) end
 			else
@@ -376,8 +376,8 @@ local function process_chunk_charted_cell(surface, pos)
 		if math_random(1, 2) == 1 then
 			draw_ores(surface, pos)
 		else
-			local distance_to_center = math.sqrt(pos.x^2 + pos.x^2)
-			if distance_to_center > 160 then
+			local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
+			if distance_to_center > 128 then
 				if math_random(1, 4) == 1 then
 					draw_water(surface, pos)
 				else
@@ -470,11 +470,22 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+--TREE BURNING NERF
+local function on_entity_died(event)	
+	if not event.entity.valid then return end
+	if event.entity.type == "tree" then 
+		for _, entity in pairs (event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 4, event.entity.position.y - 4},{event.entity.position.x + 4, event.entity.position.y + 4}}, name = "fire-flame-on-tree"})) do
+			if entity.valid then entity.destroy() end
+		end
+	end		
+end
+
 local function on_init()
 	global.labyrinth_cells = {}
 end
 
 event.on_init(on_init)
+event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
