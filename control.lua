@@ -15,7 +15,7 @@ require "antigrief_admin_panel"
 require "group"
 require "player_list"
 require "poll"
-require "score"
+--require "score"
 
 ---- enable modules here ----
 --require "tools.cheat_mode"
@@ -36,6 +36,9 @@ require "score"
 --require "modules.explosive_player_respawn"
 --require "modules.burden"
 --require "modules.team_teleport"
+--require "modules.surface_holes_and_elevators"
+--require "modules.dangerous_goods"
+require "modules.biters_avoid_damage"
 -----------------------------
 
 ---- enable maps here ----
@@ -47,7 +50,8 @@ require "score"
 --require "maps.spooky_forest"
 --require "maps.nightfall"
 --require "maps.lost"
-require "maps.rivers"
+require "maps.hedge_maze"
+--require "maps.rivers"
 --require "maps.atoll"
 --require "maps.choppy"
 --require "maps.tank_battles"
@@ -79,4 +83,9 @@ local function on_player_created(event)
 	player.gui.left.style = 'slot_table_spacing_vertical_flow'
 end
 
+local function on_init()
+	game.forces.player.research_queue_enabled = true
+end
+
+event.on_init(on_init)
 event.add(defines.events.on_player_created, on_player_created)
