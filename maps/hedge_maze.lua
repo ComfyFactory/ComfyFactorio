@@ -1,4 +1,7 @@
 -- forest maze from mewmew
+
+require "modules.satellite_score"
+
 local event = require 'utils.event'
 local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -27,160 +30,6 @@ local function shuffle(tbl)
 			tbl[i], tbl[rand] = tbl[rand], tbl[i]
 		end
 	return tbl
-end
-
-local function get_noise(name, pos)
-	local seed = game.surfaces[1].map_gen_settings.seed
-	local noise_seed_add = 25000
-	seed = seed + noise_seed_add
-	if name == 1 then
-		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.001, pos.y * 0.001, seed)
-		local noise = noise[1]
-		return noise
-	end	
-end
-	
-local function labyrinth_wall(surface, cell_pos)
-	local noise = get_noise(1, cell_pos)
-	
-	if noise < lake_noise_value then return end
-	
-	if noise > 0.6 then
-		for x = 0.5, labyrinth_cell_size, 1 do
-			for y = 0.5, labyrinth_cell_size, 1 do
-				local pos = {x = cell_pos.x + x, y = cell_pos.y + y}
-				if math_random(1,3) ~= 1 then
-					surface.create_entity({name = "dead-tree-desert", position = pos})
-				else
-					surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
-				end
-			end
-		end
-		return
-	end
-	
-	local tree = "tree-04"
-	
-	for x = 0.5, labyrinth_cell_size, 1 do
-		for y = 0.5, labyrinth_cell_size, 1 do
-			local pos = {x = cell_pos.x + x, y = cell_pos.y + y}
-			if math_random(1,2) == 1 then
-				surface.create_entity({name = tree, position = pos})
-			end
-		end
-	end
-end
-	
-local function labyrinth_path(surface, cell_pos)
-end
-
-local function draw_base_tile_floor(surface, cell_pos)
-	local noise = get_noise(1, cell_pos)
-	local tile_name = "grass-1"
-	if noise > 0.6 then tile_name = "dirt-7" end
-	if noise < lake_noise_value then tile_name = "deepwater" end
-	
-	for x = 0.5, labyrinth_cell_size, 1 do
-		for y = 0.5, labyrinth_cell_size, 1 do
-			local pos = {x = cell_pos.x + x, y = cell_pos.y + y}
-			surface.set_tiles({{name = tile_name, position = pos}}, true)			
-		end
-	end
-	
-	if tile_name == "deepwater" then
-		for x = 0.5, labyrinth_cell_size, 1 do
-			for y = 0.5, labyrinth_cell_size, 1 do
-				local pos = {x = cell_pos.x + x, y = cell_pos.y + y}
-				if math_random(1, 256) == 1 then surface.create_entity({name = "fish", position = pos}) end
-				
-			end
-		end
-	end		
-end
-
-local function get_path_connections_count(cell_pos)
-	local connections = 0
-	for _, m in pairs(modifiers) do
-		if global.labyrinth_cells[tostring(cell_pos.x + m.x) .. "_" .. tostring(cell_pos.y + m.y)] then
-			connections = connections + 1
-		end
-	end
-	return connections
-end
-
-local function process_labyrinth_cell(pos)
-	local cell_position = {x = pos.x / labyrinth_cell_size, y = pos.y / labyrinth_cell_size}
-	
-	global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = false
-	
-	for _, modifier in pairs(modifiers_diagonal) do
-		if global.labyrinth_cells[tostring(cell_position.x + modifier.diagonal.x) .. "_" .. tostring(cell_position.y + modifier.diagonal.y)] then			
-			local connection_1 = global.labyrinth_cells[tostring(cell_position.x + modifier.connection_1.x) .. "_" .. tostring(cell_position.y + modifier.connection_1.y)]
-			local connection_2 = global.labyrinth_cells[tostring(cell_position.x + modifier.connection_2.x) .. "_" .. tostring(cell_position.y + modifier.connection_2.y)]
-			if not connection_1 and not connection_2 then
-				return false
-			end												
-		end
-	end
-		
-	for _, m in pairs(modifiers) do
-		if get_path_connections_count({x = cell_position.x + m.x, y = cell_position.y + m.y}) >= math_random(2, 3) then return false end
-	end
-		
-	if get_path_connections_count(cell_position) >= math_random(2, 3) then return false end
-	
-	global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = true
-	return true
-end
-
-local function labyrinth(event)
-	local positions = {}
-	for x = 0, 32 - labyrinth_cell_size, labyrinth_cell_size do
-		for y = 0, 32 - labyrinth_cell_size, labyrinth_cell_size do
-			positions[#positions + 1] = {x = event.area.left_top.x + x, y = event.area.left_top.y + y}					
-		end
-	end
-	positions = shuffle(positions)
-	
-	for _, pos in pairs(positions) do	
-		draw_base_tile_floor(event.surface, pos)
-		if process_labyrinth_cell(pos) then
-			labyrinth_path(event.surface, pos)
-		else
-			labyrinth_wall(event.surface, pos)
-		end		
-	end	
-end
-
-local function on_chunk_generated(event)
-	local surface = game.surfaces["forest_maze"]
-	if event.surface.name ~= surface.name then return end	 
-	local left_top = event.area.left_top
-	local area = {
-			left_top = {x = left_top.x, y = left_top.y},
-			right_bottom = {x = left_top.x + 31, y = left_top.y + 31}
-			}							
-	surface.destroy_decoratives({area = area})
-	
-	local entities = surface.find_entities(area)
-	for _, e in pairs(entities) do
-		if e.valid then
-			if e.name ~= "player" then
-				e.destroy()				
-			end
-		end
-	end
-	
-	labyrinth(event)
-	
-	local decorative_names = {}
-	for k,v in pairs(game.decorative_prototypes) do
-		if v.autoplace_specification then
-			decorative_names[#decorative_names+1] = k
-		end
-	end										
-	surface.regenerate_decorative(decorative_names, {{x = left_top.x / 32, y = left_top.y / 32}})
 end
 
 local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
@@ -253,7 +102,7 @@ local function create_shipwreck(surface, position)
 	if distance_to_center < 1 then
 		distance_to_center = 0.1
 	else
-		distance_to_center = distance_to_center / 2500
+		distance_to_center = distance_to_center / 4000
 	end
 	if distance_to_center > 1 then distance_to_center = 1 end
 	
@@ -269,6 +118,163 @@ local function create_shipwreck(surface, position)
 		local loot = raffle[math_random(1,#raffle)]
 		e.insert(loot)
 	end	
+end
+
+local function get_noise(name, pos)
+	local seed = game.surfaces[1].map_gen_settings.seed
+	local noise_seed_add = 25000
+	seed = seed + noise_seed_add
+	if name == 1 then
+		local noise = {}
+		noise[1] = simplex_noise(pos.x * 0.001, pos.y * 0.001, seed)
+		local noise = noise[1]
+		return noise
+	end	
+end
+
+local function set_cell_tiles(surface, cell_left_top, tile_name)
+	for x = 0.5, labyrinth_cell_size, 1 do
+		for y = 0.5, labyrinth_cell_size, 1 do
+			local pos = {x = cell_left_top.x + x, y = cell_left_top.y + y}
+			surface.set_tiles({{name = tile_name, position = pos}}, true)			
+		end
+	end
+end
+	
+local function labyrinth_wall(surface, cell_left_top)
+	local noise = get_noise(1, cell_left_top)	
+	if noise < lake_noise_value then return end
+	local tile_name = "grass-2"					
+	if noise > 0.6 then
+		tile_name = "dirt-6"
+		set_cell_tiles(surface, cell_left_top, tile_name)
+		for x = 0.5, labyrinth_cell_size, 1 do
+			for y = 0.5, labyrinth_cell_size, 1 do
+				local pos = {x = cell_left_top.x + x, y = cell_left_top.y + y}
+				if math_random(1,3) ~= 1 then
+					surface.create_entity({name = "dead-tree-desert", position = pos})
+				else
+					surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
+				end
+			end
+		end
+		return
+	end	
+	
+	set_cell_tiles(surface, cell_left_top, tile_name)
+	for x = 0.5, labyrinth_cell_size, 1 do
+		for y = 0.5, labyrinth_cell_size, 1 do
+			local pos = {x = cell_left_top.x + x, y = cell_left_top.y + y}
+			if math_random(1,3) ~= 1 then
+				surface.create_entity({name = "tree-04", position = pos})
+			else
+				if math_random(1,3) == 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos}) end
+			end			
+		end
+	end
+end
+	
+local function labyrinth_path(surface, cell_left_top)
+	local noise = get_noise(1, cell_left_top)
+	if noise < lake_noise_value then return end
+	local tile_name = "grass-1"
+	if noise > 0.6 then tile_name = "dirt-7" end		
+	set_cell_tiles(surface, cell_left_top, tile_name)
+end
+
+local function draw_oceans(surface, cell_left_top)	
+	if get_noise(1, cell_left_top) >= lake_noise_value then return end	
+	set_cell_tiles(surface, cell_left_top, "deepwater")	
+	for x = 0.5, labyrinth_cell_size, 1 do
+		for y = 0.5, labyrinth_cell_size, 1 do
+			local pos = {x = cell_left_top.x + x, y = cell_left_top.y + y}
+			if math_random(1, 256) == 1 then surface.create_entity({name = "fish", position = pos}) end
+		end
+	end			
+end
+
+local function get_path_connections_count(cell_pos)
+	local connections = 0
+	for _, m in pairs(modifiers) do
+		if global.labyrinth_cells[tostring(cell_pos.x + m.x) .. "_" .. tostring(cell_pos.y + m.y)] then
+			connections = connections + 1
+		end
+	end
+	return connections
+end
+
+local function process_labyrinth_cell(pos)
+	local cell_position = {x = pos.x / labyrinth_cell_size, y = pos.y / labyrinth_cell_size}
+	
+	global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = false
+	
+	for _, modifier in pairs(modifiers_diagonal) do
+		if global.labyrinth_cells[tostring(cell_position.x + modifier.diagonal.x) .. "_" .. tostring(cell_position.y + modifier.diagonal.y)] then			
+			local connection_1 = global.labyrinth_cells[tostring(cell_position.x + modifier.connection_1.x) .. "_" .. tostring(cell_position.y + modifier.connection_1.y)]
+			local connection_2 = global.labyrinth_cells[tostring(cell_position.x + modifier.connection_2.x) .. "_" .. tostring(cell_position.y + modifier.connection_2.y)]
+			if not connection_1 and not connection_2 then
+				return false
+			end												
+		end
+	end
+	
+	for _, m in pairs(modifiers) do
+		if get_path_connections_count({x = cell_position.x + m.x, y = cell_position.y + m.y}) >= math_random(2, 3) then return false end
+	end
+		
+	if get_path_connections_count(cell_position) >= math_random(2, 3) then return false end
+	
+	global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = true
+	return true
+end
+
+local function labyrinth(event)
+	local positions = {}
+	for x = 0, 32 - labyrinth_cell_size, labyrinth_cell_size do
+		for y = 0, 32 - labyrinth_cell_size, labyrinth_cell_size do
+			positions[#positions + 1] = {x = event.area.left_top.x + x, y = event.area.left_top.y + y}					
+		end
+	end
+	positions = shuffle(positions)
+	
+	for _, pos in pairs(positions) do	
+		draw_oceans(event.surface, pos)
+		if process_labyrinth_cell(pos) then
+			labyrinth_path(event.surface, pos)
+		else
+			labyrinth_wall(event.surface, pos)
+		end		
+	end	
+end
+
+local function on_chunk_generated(event)
+	local surface = game.surfaces["forest_maze"]
+	if event.surface.name ~= surface.name then return end	 
+	local left_top = event.area.left_top
+	local area = {
+			left_top = {x = left_top.x, y = left_top.y},
+			right_bottom = {x = left_top.x + 31, y = left_top.y + 31}
+			}							
+	surface.destroy_decoratives({area = area})
+	
+	local entities = surface.find_entities(area)
+	for _, e in pairs(entities) do
+		if e.valid then
+			if e.name ~= "player" then
+				e.destroy()				
+			end
+		end
+	end
+	
+	labyrinth(event)
+	
+	local decorative_names = {}
+	for k,v in pairs(game.decorative_prototypes) do
+		if v.autoplace_specification then
+			decorative_names[#decorative_names+1] = k
+		end
+	end										
+	surface.regenerate_decorative(decorative_names, {{x = left_top.x / 32, y = left_top.y / 32}})
 end
 
 local function draw_secret_area(surface, position)
@@ -310,7 +316,7 @@ local function draw_ores(surface, position)
 	for x = 0, labyrinth_cell_size - 1, 1 do
 		for y = 0, labyrinth_cell_size - 1, 1 do
 			local pos = {x = position.x + x, y = position.y + y}
-			local amount = 500 + math.sqrt(pos.x^2 + pos.y^2) * 2
+			local amount = 500 + math.sqrt(pos.x^2 + pos.y^2)
 			if ore == "crude-oil" then
 				if math_random(1, 32) == 1 and surface.can_place_entity({name = ore, position = pos, amount = amount * 100}) then surface.create_entity({name = ore, position = pos, amount = amount * 100}) end
 			else
@@ -359,6 +365,20 @@ local function draw_enemies(surface, position)
 	end
 end
 
+local function draw_rocks(surface, position)
+	local r = math_random(0,100)
+	if r < 50 then
+		surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.5}})
+		return
+	end
+	if r <= 100 then
+		surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.5, y = position.y + labyrinth_cell_size * 0.25}})
+		surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.75, y = position.y + labyrinth_cell_size * 0.75}})
+		surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = position.x + labyrinth_cell_size * 0.25, y = position.y + labyrinth_cell_size * 0.75}})
+		return
+	end
+end
+
 local function process_chunk_charted_cell(surface, pos)
 	local cell_position = {x = pos.x / labyrinth_cell_size, y = pos.y / labyrinth_cell_size}
 	if not global.labyrinth_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] then return end
@@ -377,7 +397,7 @@ local function process_chunk_charted_cell(surface, pos)
 			draw_ores(surface, pos)
 		else
 			local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
-			if distance_to_center > 128 then
+			if distance_to_center > 196 then
 				if math_random(1, 4) == 1 then
 					draw_water(surface, pos)
 				else
@@ -389,8 +409,8 @@ local function process_chunk_charted_cell(surface, pos)
 		end
 	end
 	
-	if connection_count == 3 then
-		if math_random(1, 2) == 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = {x = pos.x + labyrinth_cell_size * 0.5, y = pos.y + labyrinth_cell_size * 0.5}}) end
+	if connection_count == 3 then		
+		if math_random(1, 2) == 1 then draw_rocks(surface, pos) end
 	end
 end
 
@@ -433,6 +453,8 @@ local function on_player_joined_game(event)
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 		}
+		
+		game.map_settings.pollution.ageing = 0
 		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 		game.create_surface("forest_maze", map_gen_settings)		
 		game.forces["player"].set_spawn_position({0,0},game.surfaces["forest_maze"])
