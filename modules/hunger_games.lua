@@ -3,9 +3,9 @@
 -- empty groups will be deleted
 -- join or create a team to be able to play
 
-require "maps.modules.custom_death_messages"
+require "modules.custom_death_messages"
 require "maps.hunger_games_map_intro"
-require "maps.modules.dynamic_player_spawn"
+require "modules.dynamic_player_spawn"
 --require "maps.modules.hunger_games_balance"
 
 local event = require 'utils.event'
@@ -440,7 +440,6 @@ end
 
 local function on_player_respawned(event)
 	local player = game.players[event.player_index]	
-	player.insert{name = 'iron-axe', count = 1}
 	player.insert{name = 'iron-plate', count = 8}
 end
 
@@ -463,8 +462,8 @@ local function on_built_entity(event)
 	entity.destroy()			
 end
 
+--event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_player_died, on_player_died)
-event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_console_chat, on_console_chat)
 event.add(defines.events.on_gui_click, on_gui_click)
