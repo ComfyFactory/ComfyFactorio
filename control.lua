@@ -38,7 +38,7 @@ require "poll"
 --require "modules.team_teleport"
 --require "modules.surface_holes_and_elevators"
 --require "modules.dangerous_goods"
-require "modules.biters_avoid_damage"
+--require "modules.biters_avoid_damage"
 -----------------------------
 
 ---- enable maps here ----
