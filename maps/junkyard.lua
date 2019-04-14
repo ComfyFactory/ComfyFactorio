@@ -284,11 +284,11 @@ local function create_inner_content(surface, pos, noise)
 	if math_random(1, 90000) == 1 then secret_shop(pos, surface) return end
 	if math_random(1, 102400) == 1 then
 		if noise < 0.3 or noise > -0.3 then
-			map_functions.draw_derpy_entity_ring(surface, pos, "laser-turret", "scrap_defense", 0, 2)
-			map_functions.draw_derpy_entity_ring(surface, pos, "accumulator", "scrap_defense", 2, 3)
-			map_functions.draw_derpy_entity_ring(surface, pos, "substation", "scrap_defense", 3, 4)
-			map_functions.draw_derpy_entity_ring(surface, pos, "solar-panel", "scrap_defense", 4, 6)
-			map_functions.draw_derpy_entity_ring(surface, pos, "stone-wall", "scrap_defense", 6, 7)
+			map_functions.draw_noise_entity_ring(surface, pos, "laser-turret", "scrap_defense", 0, 2)
+			map_functions.draw_noise_entity_ring(surface, pos, "accumulator", "scrap_defense", 2, 3)
+			map_functions.draw_noise_entity_ring(surface, pos, "substation", "scrap_defense", 3, 4)
+			map_functions.draw_noise_entity_ring(surface, pos, "solar-panel", "scrap_defense", 4, 6)
+			map_functions.draw_noise_entity_ring(surface, pos, "stone-wall", "scrap_defense", 6, 7)
 			
 			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 32), 50)
 			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 32), 50)

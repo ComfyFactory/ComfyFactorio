@@ -13,7 +13,7 @@ local function shuffle(tbl)
 	return tbl
 end
 
-f.draw_derpy_tile_ring = function(surface, position, name, radius_min, radius_max)			
+f.draw_noise_tile_ring = function(surface, position, name, radius_min, radius_max)			
 	local modifier_1 = math_random(2,5) * 0.01
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local tiles = {}
@@ -31,7 +31,7 @@ f.draw_derpy_tile_ring = function(surface, position, name, radius_min, radius_ma
 	end		
 end
 
-f.draw_derpy_entity_ring = function(surface, position, name, force, radius_min, radius_max)			
+f.draw_noise_entity_ring = function(surface, position, name, force, radius_min, radius_max)			
 	local modifier_1 = 0.1
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local tiles = {}
