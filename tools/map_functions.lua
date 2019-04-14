@@ -32,14 +32,15 @@ f.draw_noise_tile_ring = function(surface, position, name, radius_min, radius_ma
 end
 
 f.draw_noise_entity_ring = function(surface, position, name, force, radius_min, radius_max)			
-	local modifier_1 = 0.1
+	local modifier_1 = 1 / (radius_max * 2)
+	local modifier_2 = 1 / (radius_max * 0.5)
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local tiles = {}
 	
 	for y = radius_max * -2, radius_max * 2, 1 do
 		for x = radius_max * -2, radius_max * 2, 1 do
 			local pos = {x = x + position.x, y = y + position.y}			
-			local noise = simplex_noise(pos.x * modifier_1, pos.y * modifier_1, seed)
+			local noise = simplex_noise(pos.x * modifier_1, pos.y * modifier_1, seed) + simplex_noise(pos.x * modifier_2, pos.y * modifier_2, seed) * 0.2
 			local distance_to_center = math.sqrt(x^2 + y^2)
 			
 			if distance_to_center + noise * radius_max * 0.25 < radius_max and distance_to_center + noise * radius_min * 0.25 > radius_min then

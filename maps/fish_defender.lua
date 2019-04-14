@@ -6,11 +6,9 @@ require "modules.launch_fish_to_win"
 require "modules.biters_yield_coins"
 require "modules.railgun_enhancer"
 require "modules.dynamic_landfill"
-require "modules.teleporting_worms"
+require "modules.dangerous_goods"
 require "modules.custom_death_messages"
-require "modules.splice_double"
---require "modules.spitters_spit_biters"
---require "modules.biters_double_hp"
+require "modules.biter_evasion_hp_increaser"
 
 local event = require 'utils.event'
 local map_functions = require "tools.map_functions"
@@ -531,21 +529,22 @@ local function biter_attack_wave()
 		global.wave_count = global.wave_count + 1
 	end
 	
-	local modifier = 0.003
+	local modifier = 0.0025
 	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * modifier)
 	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * modifier)
 	game.forces.enemy.set_ammo_damage_modifier("artillery-shell", global.wave_count * modifier)
 	game.forces.enemy.set_ammo_damage_modifier("flamethrower", global.wave_count * modifier)
 	game.forces.enemy.set_ammo_damage_modifier("laser-turret", global.wave_count * modifier)
+	global.biter_evasion_health_increase_factor = 1 + (global.wave_count * modifier)
 	
 	if global.wave_count % 50 == 0 then				
 		global.attack_wave_threat = global.wave_count * 8
 		spawn_boss_units(surface)
 	else
-		global.attack_wave_threat = global.wave_count * 4
-	end
+		global.attack_wave_threat = global.wave_count * 3
+	end		
 	
-	if global.attack_wave_threat > 20000 then global.attack_wave_threat = 20000 end
+	if global.attack_wave_threat > 8000 then global.attack_wave_threat = 8000 end
 	
 	local evolution = global.wave_count * 0.00125
 	if evolution > 1 then evolution = 1 end
@@ -841,8 +840,8 @@ local function is_game_lost()
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 600
 end
 
-local function damage_entities_in_radius(position, radius, damage)
-	local entities_to_damage = game.surfaces["fish_defender"].find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
+local function damage_entities_in_radius(surface, position, radius, damage)
+	local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health and entity.name ~= "land-mine" then
 			if entity.force.name ~= "enemy" then
@@ -850,67 +849,44 @@ local function damage_entities_in_radius(position, radius, damage)
 					entity.damage(damage, "enemy")
 				else
 					entity.health = entity.health - damage
-					--entity.surface.create_entity({name = "blood-explosion-big", position = entity.position})
 					if entity.health <= 0 then entity.die("enemy") end
 				end
 			end
 		end
 	end
 end
-	
+
+local biter_splash_damage = {
+	["medium-biter"] = {visuals = {"blood-explosion-big", "big-explosion"}, radius = 1.5, damage_min = 50, damage_max = 100, chance = 8},
+	["big-biter"] = {visuals = {"blood-explosion-huge", "uranium-cannon-shell-explosion"}, radius = 2, damage_min = 75, damage_max = 150, chance = 16},
+	["behemoth-biter"] = {visuals = {"blood-explosion-huge", "big-artillery-explosion"}, radius = 2.5, damage_min = 100, damage_max = 200, chance = 32}
+}
+
 local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then			
 		local surface = event.entity.surface
-		--local worm_chance = 256
-		--if global.endgame_modifier then worm_chance = 96 end	
-		if event.entity.name == "medium-biter" then
-			event.entity.surface.create_entity({name = "blood-explosion-big", position = event.entity.position})
-			--if math_random(1,worm_chance) == 1 then
-				--surface.create_entity({name = "small-worm-turret", position = event.entity.position})
-			--end
-			local damage = 25
-			if global.endgame_modifier then
-				damage = 25 + math.ceil((global.endgame_modifier * 0.025), 0)				
-			end
-			if damage > 250 then damage = 250 end			
-			local radius = 1
-			if global.wave_count > 1500 then radius = 2 end			
-			damage_entities_in_radius(event.entity.position, radius, damage)
-			--damage_entities_in_radius(event.entity.position, 1 + math.floor(global.wave_count * 0.001), damage)
-		end
-
-		if event.entity.name == "big-biter" then
-			event.entity.surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
-			--if math_random(1,worm_chance) == 1 then
-				--surface.create_entity({name = "medium-worm-turret", position = event.entity.position})
-			--end
-			local damage = 35
-			if global.endgame_modifier then damage = 35 + math.ceil((global.endgame_modifier * 0.05), 0) end
-			if damage > 350 then damage = 350 end
-			local radius = 2
-			if global.wave_count > 1500 then radius = 3 end
-			damage_entities_in_radius(event.entity.position, radius, damage)
-			--damage_entities_in_radius(event.entity.position, 2 + math.floor(global.wave_count * 0.001), damage)
-		end
-
-		if event.entity.name == "behemoth-biter" then
-			local surface = event.entity.surface
-			
-			--if math_random(1, worm_chance) ~= 1 then
-				if math_random(1, 16) == 1 then
-					local p = surface.find_non_colliding_position("big-biter", event.entity.position, 3, 0.5)
-					if p then surface.create_entity {name = "big-biter", position = p} end
-				end
-				for i = 1, math_random(1, 2), 1 do
-					local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
-					if p then surface.create_entity {name = "medium-biter", position = p} end
-				end
-			--else																	
-			--	surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
-			--	surface.create_entity({name = "big-worm-turret", position = event.entity.position})							
-			--end
-		end
 		
+		local splash = biter_splash_damage[event.entity.name]		
+		if splash then			
+			if math_random(1, splash.chance) == 1 then			
+				for _, visual in pairs(splash.visuals) do
+					surface.create_entity({name = visual, position = event.entity.position})
+				end
+				damage_entities_in_radius(surface, event.entity.position, splash.radius, math_random(splash.damage_min, splash.damage_max))
+				return
+			end
+		end
+
+		if event.entity.name == "behemoth-biter" then			
+			if math_random(1, 16) == 1 then
+				local p = surface.find_non_colliding_position("big-biter", event.entity.position, 3, 0.5)
+				if p then surface.create_entity {name = "big-biter", position = p} end
+			end
+			for i = 1, math_random(1, 2), 1 do
+				local p = surface.find_non_colliding_position("medium-biter", event.entity.position, 3, 0.5)
+				if p then surface.create_entity {name = "medium-biter", position = p} end
+			end
+		end
 		return
 	end
 	
@@ -951,11 +927,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
 			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
 			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
-			--["grass"] = {frequency = "normal", size = "normal", richness = "normal"},
-			--["sand"] = {frequency = "normal", size = "normal", richness = "normal"},
-			--["desert"] = {frequency = "normal", size = "normal", richness = "normal"},
-			--["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}		
 		}		
 		game.create_surface("fish_defender", map_gen_settings)							
 		local surface = game.surfaces["fish_defender"]
@@ -969,26 +941,9 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.pollution_factor = 0					
 		game.map_settings.pollution.enabled = false
 		
-		--game.forces["player"].technologies["flamethrower-damage-1"].enabled = false	
-		--game.forces["player"].technologies["flamethrower-damage-2"].enabled = false
-		--game.forces["player"].technologies["flamethrower-damage-3"].enabled = false
-		--game.forces["player"].technologies["flamethrower-damage-4"].enabled = false
-		--game.forces["player"].technologies["flamethrower-damage-5"].enabled = false
-		--game.forces["player"].technologies["flamethrower-damage-6"].enabled = false
-		--game.forces["player"].technologies["flamethrower-damage-7"].enabled = false
-		--game.forces["player"].technologies["gun-turret-damage-1"].enabled = false	
-		--game.forces["player"].technologies["gun-turret-damage-2"].enabled = false
-		--game.forces["player"].technologies["gun-turret-damage-3"].enabled = false
-		--game.forces["player"].technologies["gun-turret-damage-4"].enabled = false
-		--game.forces["player"].technologies["gun-turret-damage-5"].enabled = false
-		--game.forces["player"].technologies["gun-turret-damage-6"].enabled = false
-		--game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
-		--game.forces["player"].technologies["laser-turret-speed-6"].enabled = false
-		--game.forces["player"].technologies["laser-turret-speed-7"].enabled = false
 		game.forces["player"].technologies["atomic-bomb"].enabled = false
 		
 		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 1)				
-		--game.forces.player.set_turret_attack_modifier("flamethrower-turret", -0.5)
 		
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
@@ -999,6 +954,11 @@ local function on_player_joined_game(event)
 		}
 		
 		global.wave_grace_period = 54000
+		
+		game.create_force("decoratives")
+		game.forces["decoratives"].set_cease_fire("enemy", true)
+		game.forces["enemy"].set_cease_fire("decoratives", true)
+		game.forces["player"].set_cease_fire("decoratives", true)
 		
 		global.fish_defense_init_done = true
 	end
@@ -1259,14 +1219,15 @@ local function on_chunk_generated(event)
 					end
 					
 					if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then				
-						if surface.can_place_entity({name = "biter-spawner", force = "enemy", position = pos}) then
+						if surface.can_place_entity({name = "biter-spawner", force = "decoratives", position = pos}) then
+							local entity
 							if math_random(1,4) == 1 then
-								local entity = surface.create_entity({name = "spitter-spawner", force = "enemy", position = pos})						
-								entity.active = false							
+								entity = surface.create_entity({name = "spitter-spawner", force = "decoratives", position = pos})						
 							else						
-								local entity = surface.create_entity({name = "biter-spawner", force = "enemy", position = pos})						
-								entity.active = false							
+								entity = surface.create_entity({name = "biter-spawner", force = "decoratives", position = pos})						
 							end
+							entity.active = false
+							entity.destructible = false
 						end
 					end
 				end

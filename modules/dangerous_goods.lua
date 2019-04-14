@@ -17,12 +17,12 @@ local projectile_types = {
 	["grenade"] = {name = "grenade", count = 1, max_range = 40, tick_speed = 1},
 	["cluster-grenade"] = {name = "cluster-grenade", count = 1, max_range = 40, tick_speed = 3},
 	
-	["artillery-shell"] = {name = "artillery-projectile", count = 1, max_range = 64, tick_speed = 3},
+	["artillery-shell"] = {name = "artillery-projectile", count = 1, max_range = 60, tick_speed = 3},
 	
-	["cannon-shell"] = {name = "cannon-projectile", count = 1, max_range = 64, tick_speed = 1},	
-	["explosive-cannon-shell"] = {name = "explosive-cannon-projectile", count = 1, max_range = 64, tick_speed = 1},
-	["explosive-uranium-cannon-shell"] = {name = "explosive-uranium-cannon-projectile", count = 1, max_range = 64, tick_speed = 1},
-	["uranium-cannon-shell"] = {name = "uranium-cannon-projectile", count = 1, max_range = 64, tick_speed = 1},
+	["cannon-shell"] = {name = "cannon-projectile", count = 1, max_range = 60, tick_speed = 1},	
+	["explosive-cannon-shell"] = {name = "explosive-cannon-projectile", count = 1, max_range = 60, tick_speed = 1},
+	["explosive-uranium-cannon-shell"] = {name = "explosive-uranium-cannon-projectile", count = 1, max_range = 60, tick_speed = 1},
+	["uranium-cannon-shell"] = {name = "uranium-cannon-projectile", count = 1, max_range = 60, tick_speed = 1},
 	
 	["atomic-bomb"] = {name = "atomic-rocket", count = 1, max_range = 80, tick_speed = 20},
 	["explosive-rocket"] = {name = "explosive-rocket", count = 1, max_range = 48, tick_speed = 1},
@@ -39,12 +39,12 @@ local projectile_types = {
 	
 	["railgun-dart"] = {name = "railgun-beam", count = 5, max_range = 40, tick_speed = 5},
 	
-	["shotgun-shell"] = {name = "shotgun-pellet", count = 5, max_range = 40, tick_speed = 1},
-	["piercing-shotgun-shell"] = {name = "piercing-shotgun-pellet", count = 5, max_range = 40, tick_speed = 1},
+	["shotgun-shell"] = {name = "shotgun-pellet", count = 16, max_range = 24, tick_speed = 1},
+	["piercing-shotgun-shell"] = {name = "piercing-shotgun-pellet", count = 16, max_range = 24, tick_speed = 1},
 	
-	["firearm-magazine"] = {name = "shotgun-pellet", count = 3, max_range = 40, tick_speed = 1},
-	["piercing-rounds-magazine"] = {name = "piercing-shotgun-pellet", count = 3, max_range = 40, tick_speed = 1},
-	["uranium-rounds-magazine"] = {name = "piercing-shotgun-pellet", count = 3, max_range = 40, tick_speed = 1},
+	["firearm-magazine"] = {name = "shotgun-pellet", count = 16, max_range = 24, tick_speed = 1},
+	["piercing-rounds-magazine"] = {name = "piercing-shotgun-pellet", count = 16, max_range = 24, tick_speed = 1},
+	["uranium-rounds-magazine"] = {name = "piercing-shotgun-pellet", count = 32, max_range = 24, tick_speed = 1},
 	
 	["cliff-explosives"] = {name = "cliff-explosives", count = 1, max_range = 48, tick_speed = 2},
 }
