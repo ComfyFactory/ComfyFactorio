@@ -23,7 +23,7 @@ local links = {
 
 local function on_player_created(event)
 	local player = game.players[event.player_index]
-	player.print("Join the comfy discord >> comfyplay.net/discord", message_color)
+	player.print("Join the comfy discord >> getcomfy.eu/discord", message_color)
 end
 
 local function process_custom_commands(event)	
