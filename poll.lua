@@ -235,9 +235,16 @@ local function redraw_poll_viewer_content(data)
     end
 
     local question_label = question_flow.add {type = 'label', caption = poll.question}
-    question_label.style.height = 32
+    question_label.style.minimal_height = 32
+	question_label.style.single_line = false
     --question_label.style.font_color = focus_color
-    question_label.style.font = 'default-listbox'
+    --question_label.style.font = 'default-listbox'
+	question_label.style.font = 'heading-2'
+	question_label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+	question_label.style.top_padding = 4
+	question_label.style.left_padding = 4
+	question_label.style.right_padding = 4
+	question_label.style.bottom_padding = 4
 
     local grid = poll_viewer_content.add {type = 'table', column_count = 2}
 
@@ -276,7 +283,14 @@ local function redraw_poll_viewer_content(data)
         vote_buttons[i] = vote_button
 
         local label = grid.add {type = 'label', caption = a.text}
-        label.style.height = 24
+		label.style.single_line = false
+        label.style.minimal_height = 24
+		label.style.font = 'heading-3'
+		label.style.font_color = {r = 0.95, g = 0.95, b = 0.95}
+		--label.style.top_padding = 2
+		label.style.left_padding = 4
+		label.style.right_padding = 4
+		label.style.bottom_padding = 4
     end
 
     data.vote_buttons = vote_buttons
@@ -310,7 +324,7 @@ end
 
 local function draw_main_frame(left, player)
     local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Polls', direction = 'vertical'}
-    frame.style.maximal_width = 320
+    --frame.style.maximal_width = 640
 
     local poll_viewer_top_flow = frame.add {type = 'table', column_count = 5}
     poll_viewer_top_flow.style.horizontal_spacing = 0
@@ -330,8 +344,10 @@ local function draw_main_frame(left, player)
     local remaining_time_label = poll_viewer_top_flow.add {type = 'label'}
 
     local poll_viewer_content = frame.add {type = 'scroll-pane'}
-    poll_viewer_content.style.maximal_height = 250
-    poll_viewer_content.style.width = 300
+    poll_viewer_content.style.maximal_height = 480
+    poll_viewer_content.style.width = 360
+	--poll_viewer_content.style.minimal_height = 480
+    --poll_viewer_content.style.minimal_width = 480
 
     local poll_index = player_poll_index[player.index] or #polls
 
@@ -476,7 +492,7 @@ local function redraw_create_poll_content(data)
 
     local question_textfield =
         grid.add({type = 'flow'}).add {type = 'textfield', name = create_poll_question_name, text = data.question}
-    question_textfield.style.width = 175
+    question_textfield.style.width = 180
 
     Gui.set_data(question_label, question_textfield)
     Gui.set_data(question_textfield, data)
@@ -512,7 +528,7 @@ local function redraw_create_poll_content(data)
         local textfield_flow = grid.add {type = 'flow'}
 
         local textfield = textfield_flow.add {type = 'textfield', name = create_poll_answer_name, text = answer.text}
-        textfield.style.width = 175
+        textfield.style.width = 180
         Gui.set_data(textfield, {answers = answers, count = count})
 
         if delete_button then
