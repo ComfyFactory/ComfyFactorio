@@ -1,6 +1,6 @@
 -- fish defender -- by mewmew --
 
-require "maps.fish_defender_map_intro"
+require "maps.fish_defender.map_intro"
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"
 require "modules.biters_yield_coins"
@@ -16,7 +16,7 @@ local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
 local wave_interval = 2700		--interval between waves in ticks
-local biter_count_limit = 256	    --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
+local biter_count_limit = 384	    --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
 	[100] = {{name = "behemoth-biter", count = 1}},
@@ -852,6 +852,32 @@ local function damage_entities_in_radius(surface, position, radius, damage)
 	end
 end
 
+local function market_kill_visuals()
+	local m = 32
+	local m2 = m * 0.005
+	for i = 1, 1024, 1 do 
+		global.market.surface.create_entity({
+			name = "branch-particle",
+			position = global.market.position,
+			frame_speed = 0.1,
+			vertical_speed = 0.1,
+			height = 0.1,
+			movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+		})
+	end
+	for x = -5, 5, 0.5 do
+		for y = -5, 5, 0.5 do													
+			if math_random(1, 2) == 1 then
+				global.market.surface.create_trivial_smoke({name="smoke-fast", position={global.market.position.x + (x * 0.35), global.market.position.y + (y * 0.35)}})						
+			end
+			if math_random(1, 3) == 1 then
+				global.market.surface.create_trivial_smoke({name="train-smoke", position={global.market.position.x + (x * 0.35), global.market.position.y + (y * 0.35)}})						
+			end
+		end
+	end
+	global.market.surface.spill_item_stack(global.market.position,{name = "raw-fish", count = 1024}, true)
+end
+
 local biter_splash_damage = {
 	["medium-biter"] = {visuals = {"blood-explosion-big", "big-explosion"}, radius = 1.5, damage_min = 50, damage_max = 100, chance = 8},
 	["big-biter"] = {visuals = {"blood-explosion-huge", "uranium-cannon-shell-explosion"}, radius = 2, damage_min = 75, damage_max = 150, chance = 16},
@@ -887,6 +913,7 @@ local function on_entity_died(event)
 	end
 	
 	if event.entity == global.market then
+		market_kill_visuals()
 		global.market = nil
 		global.market_age = game.tick
 		is_game_lost()
@@ -955,6 +982,11 @@ local function on_player_joined_game(event)
 		game.forces["decoratives"].set_cease_fire("enemy", true)
 		game.forces["enemy"].set_cease_fire("decoratives", true)
 		game.forces["player"].set_cease_fire("decoratives", true)
+		
+		global.comfylatron_habitat = {
+			left_top = {x = -1250, y = -1250},
+			right_bottom = {x = -60, y = 1250}
+		}
 		
 		global.fish_defense_init_done = true
 	end
