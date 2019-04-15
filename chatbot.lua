@@ -2,7 +2,7 @@ local event = require 'utils.event'
 local message_color = {r = 0.5, g = 0.3, b = 1}
 
 local brain = {
-	[1] = {"Our Discord server is at https://comfyplay.net/discord"},
+	[1] = {"Our Discord server is at https://getcomfy.eu/discord"},
 	[2] = {"Need an admin? Type @Mods in game chat to notify moderators,", "or put a message in the discord help channel."}
 }
 
