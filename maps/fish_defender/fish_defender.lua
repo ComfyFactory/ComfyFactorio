@@ -1,6 +1,8 @@
 -- fish defender -- by mewmew --
 
 require "maps.fish_defender.map_intro"
+require "maps.fish_defender.shotgun_buff"
+
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"
 require "modules.biters_yield_coins"
@@ -506,6 +508,19 @@ local function wake_up_the_biters(surface)
 		})
 end
 
+local function damage_entity_outside_of_fence(e)
+	if not e.health then return end
+	if e.force.name == "neutral" then return end
+	if e.type == "unit" or e.type == "unit-spawner" then return end
+	
+	e.surface.create_entity({name = "water-splash", position = e.position})
+	
+	if e.type == "entity-ghost" then	e.destroy() return end
+	
+	e.health = e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
+	if e.health <= 0 then e.die("enemy") end
+end
+
 local function biter_attack_wave()
 	if not global.market then return end		
 	if global.wave_grace_period then return end
@@ -555,17 +570,8 @@ local function biter_attack_wave()
 		end
 	end			
 	
-	local units = surface.find_entities_filtered({force = "player", area = {{160, -256},{360, 256}}})
-	for _, unit in pairs(units) do
-		if unit.health then
-			unit.health = unit.health - math_random(75, 125)
-			surface.create_entity({name = "water-splash", position = unit.position})
-			if unit.health <= 0 then unit.die("enemy") end
-		else
-			if unit.type == "entity-ghost" then
-				unit.destroy()
-			end
-		end		
+	for _, e in pairs(surface.find_entities_filtered({area = {{160, -256},{360, 256}}})) do
+		damage_entity_outside_of_fence(e)		
 	end	
 	
 	local spawn_x = 242
@@ -964,9 +970,7 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_evolution.pollution_factor = 0					
 		game.map_settings.pollution.enabled = false
 		
-		game.forces["player"].technologies["atomic-bomb"].enabled = false
-		
-		game.forces.player.set_ammo_damage_modifier("shotgun-shell", 1)				
+		game.forces["player"].technologies["atomic-bomb"].enabled = false		
 		
 		global.entity_limits = {
 			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
@@ -984,8 +988,8 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_cease_fire("decoratives", true)
 		
 		global.comfylatron_habitat = {
-			left_top = {x = -1250, y = -1250},
-			right_bottom = {x = -60, y = 1250}
+			left_top = {x = -1500, y = -1500},
+			right_bottom = {x = -80, y = 1500}
 		}
 		
 		global.fish_defense_init_done = true
