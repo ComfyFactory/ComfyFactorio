@@ -1,5 +1,5 @@
 local event = require 'utils.event'
-local gain_multiplier = 3
+local gain_multiplier = 4
 
 local function on_research_finished(event)
 	local research = event.research

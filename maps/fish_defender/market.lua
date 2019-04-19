@@ -4,7 +4,6 @@ require 'maps.fish_defender.ultra_mines'
 require 'maps.fish_defender.crumbly_walls'
 require 'maps.fish_defender.vehicle_nanobots'
 require 'maps.fish_defender.laser_pointer'
-require 'maps.fish_defender.multi_rockets'
 
 local event = require 'utils.event'
 

@@ -13,18 +13,14 @@ local info = [[
 	Don't worry, you will still get space science.
 	
 	The Market will gladly take any coin you might find.
-	
 	Additional turret slots can be bought at the market.
-	
-	Any container bearing dangerous goods, like ammo, grenades or barrels,
-	can cause very heavy explosions when it breaks.
-	Maybe we can use this to our advantage somehow.
-	
-	The railgun has been enhanced greatly.
-	Researching Laser Turret Damage will improve it even further.
-	The shotgun has also recieved a damage buff.
+	Several unique upgrades are available too.
 	
 	Researching tanks will unlock the artillery technology early.
+	
+	Any container bearing dangerous goods, like ammo, grenades or barrels,
+	causes heavy explosions when it breaks.
+	Maybe this can be used to our advantage.
 ]]
 
 local function create_map_intro_button(player)
