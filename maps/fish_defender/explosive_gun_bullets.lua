@@ -8,8 +8,8 @@ local function splash_damage(surface, position, final_damage_amount)
 			if distance_from_center <= radius then
 				local damage_distance_modifier = 1 - distance_from_center / radius
 				if damage > 0 then
-					e.damage(damage * damage_distance_modifier, "player", "explosion")
 					if math.random(1, 3) == 1 then surface.create_entity({name = "explosion", position = e.position}) end
+					e.damage(damage * damage_distance_modifier, "player", "explosion")
 				end
 			end
 		end

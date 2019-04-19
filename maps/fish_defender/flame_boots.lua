@@ -9,14 +9,16 @@ local function on_player_changed_position(event)
 	
 	if not global.flame_boots[player.index] then global.flame_boots[player.index] = {} end
 	
-	if not global.flame_boots[player.index].timeout then return end
+	if not global.flame_boots[player.index].fuel then return end	
 	
-	if global.flame_boots[player.index].timeout - game.tick < 0 then
+	if global.flame_boots[player.index].fuel < 0 then
 		player.print("Your flame boots have worn out.", {r = 0.22, g = 0.77, b = 0.44})
 		global.flame_boots[player.index] = {}
 		return 
 	end
-
+	
+	if global.flame_boots[player.index].fuel % 500 == 0 then player.print("Fuel remaining: " .. global.flame_boots[player.index].fuel, {r = 0.22, g = 0.77, b = 0.44}) end
+	
 	if not global.flame_boots[player.index].step_history then global.flame_boots[player.index].step_history = {} end
 	
 	local elements = #global.flame_boots[player.index].step_history
@@ -25,7 +27,9 @@ local function on_player_changed_position(event)
 	
 	if elements < 50 then return end
 	
-	player.surface.create_entity({name = "fire-flame", position = global.flame_boots[player.index].step_history[elements - 2]})	
+	player.surface.create_entity({name = "fire-flame", position = global.flame_boots[player.index].step_history[elements - 2]})
+	
+	global.flame_boots[player.index].fuel = global.flame_boots[player.index].fuel - 1
 end
 
 local function on_init()

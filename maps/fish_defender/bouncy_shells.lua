@@ -43,7 +43,7 @@ local function bounce(surface, position, ammo)
 	
 	valid_entities = shuffle(valid_entities)
 	
-	for c = 1, math.random(1,3), 1 do
+	for c = 1, math.random(2,4), 1 do
 		if not valid_entities[c] then return end
 		create_projectile(surface, position, valid_entities[c].position, ammo)
 	end

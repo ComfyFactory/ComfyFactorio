@@ -1,6 +1,8 @@
 require 'maps.fish_defender.flame_boots'
 require 'maps.fish_defender.trapped_capsules'
 require 'maps.fish_defender.ultra_mines'
+require 'maps.fish_defender.crumbly_walls'
+require 'maps.fish_defender.vehicle_nanobots'
 
 local event = require 'utils.event'
 
@@ -13,11 +15,14 @@ local slot_upgrade_offers = {
 	}
 
 local special_descriptions = {
-	["flame-boots"] = "Flame Boots - Get yourself some hot boots for a few minutes.",
+	["flame-boots"] = "Flame Boots - Get yourself some hot boots.",
 	["explosive-bullets"] = "Unlock Explosive Bullets - Submachine-Gun and Pistol gains a chance to deal splash damage.",
 	["bouncy-shells"] = "Unlock Bouncy Shells - Shotgun projectiles may bounce to multiple targets.",
 	["trapped-capsules"] = "Unlock Trapped Capsules - Combat robots will send a last deadly projectile to a nearby enemy when killed.",
-	["ultra-mines"] = "Unlock Ultra Mines - Careful with these..."
+	["ultra-mines"] = "Unlock Ultra Mines - Careful with these...",
+	["railgun-enhancer"] = "Unlock Railgun Enhancer - Turns the railgun into a powerful forking gun.",
+	["crumbly-walls"] = "Unlock Crumbly Walls - Fortifications which crumble, may turn into rocks.",
+	["vehicle-nanobots"] = "Unlock Vehicle Nanobots - Your vehicles repair rapidly while driving.",
 }
 
 local function refresh_market_offers()
@@ -103,16 +108,25 @@ local function refresh_market_offers()
 	end
 	
 	if not global.explosive_bullets_unlocked then 
-		global.market.add_market_item({price = {{"coin", 2500}}, offer = {type = 'nothing', effect_description = special_descriptions["explosive-bullets"]}})
+		global.market.add_market_item({price = {{"coin", 5000}}, offer = {type = 'nothing', effect_description = special_descriptions["explosive-bullets"]}})
 	end
 	if not global.bouncy_shells_unlocked then 
-		global.market.add_market_item({price = {{"coin", 5000}}, offer = {type = 'nothing', effect_description = special_descriptions["bouncy-shells"]}})
+		global.market.add_market_item({price = {{"coin", 7500}}, offer = {type = 'nothing', effect_description = special_descriptions["bouncy-shells"]}})
 	end
 	if not global.trapped_capsules_unlocked then 
 		global.market.add_market_item({price = {{"coin", 2500}}, offer = {type = 'nothing', effect_description = special_descriptions["trapped-capsules"]}})
 	end
-	if not global.trapped_capsules_unlocked then 
-		global.market.add_market_item({price = {{"coin", 7500}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
+	if not global.ultra_mines_unlocked then 
+		global.market.add_market_item({price = {{"coin", 10000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
+	end
+	if not global.railgun_enhancer_unlocked then 
+		global.market.add_market_item({price = {{"coin", 1500}}, offer = {type = 'nothing', effect_description = special_descriptions["railgun-enhancer"]}})
+	end
+	if not global.crumbly_walls_unlocked then 
+		global.market.add_market_item({price = {{"coin", 25000}}, offer = {type = 'nothing', effect_description = special_descriptions["crumbly-walls"]}})
+	end
+	if not global.vehicle_nanobots_unlocked then 
+		global.market.add_market_item({price = {{"coin", 12500}}, offer = {type = 'nothing', effect_description = special_descriptions["vehicle-nanobots"]}})
 	end
 end
 
@@ -158,6 +172,19 @@ local function on_market_item_purchased(event)
 		
 	if offer_index < 50 then return end
 	
+	if bought_offer.effect_description == special_descriptions["flame-boots"] then
+		game.print(player.name .. " has bought themselves some flame boots.", {r = 0.22, g = 0.77, b = 0.44})
+		if not global.flame_boots[player.index].fuel then
+			global.flame_boots[player.index].fuel = math.random(1500, 3000)
+		else
+			global.flame_boots[player.index].fuel = global.flame_boots[player.index].fuel + math.random(1500, 3000)
+		end
+		
+		player.print("Fuel remaining: " .. global.flame_boots[player.index].fuel, {r = 0.22, g = 0.77, b = 0.44})
+		refresh_market_offers()
+		return
+	end
+	
 	if bought_offer.effect_description == special_descriptions["explosive-bullets"] then
 		game.print(player.name .. " has unlocked explosive bullets.", {r = 0.22, g = 0.77, b = 0.44})
 		global.explosive_bullets_unlocked = true
@@ -171,24 +198,38 @@ local function on_market_item_purchased(event)
 		refresh_market_offers()
 		return
 	end
-	
-	if bought_offer.effect_description == special_descriptions["flame-boots"] then
-		game.print(player.name .. " has bought themselves some flame boots.", {r = 0.22, g = 0.77, b = 0.44})
-		global.flame_boots[player.index].timeout = game.tick + math.random(7200, 10800)
-		refresh_market_offers()
-		return
-	end
-	
+			
 	if bought_offer.effect_description == special_descriptions["trapped-capsules"] then
-		game.print(player.name .. " has unlocked trapped capsules.", {r = 0.22, g = 0.77, b = 0.44})
+		game.print(player.name .. " has unlocked trapped capsules!", {r = 0.22, g = 0.77, b = 0.44})
 		global.trapped_capsules_unlocked = true
 		refresh_market_offers()
 		return
 	end
 	
 	if bought_offer.effect_description == special_descriptions["ultra-mines"] then
-		game.print(player.name .. " has unlocked ultra mines. Handle with care.", {r = 0.22, g = 0.77, b = 0.44})
+		game.print(player.name .. " has unlocked ultra mines!", {r = 0.22, g = 0.77, b = 0.44})
 		global.ultra_mines_unlocked = true
+		refresh_market_offers()
+		return
+	end
+	
+	if bought_offer.effect_description == special_descriptions["railgun-enhancer"] then
+		game.print(player.name .. " has unlocked the enhanced railgun!", {r = 0.22, g = 0.77, b = 0.44})
+		global.railgun_enhancer_unlocked = true
+		refresh_market_offers()
+		return
+	end
+	
+	if bought_offer.effect_description == special_descriptions["crumbly-walls"] then
+		game.print(player.name .. " has unlocked crumbly walls!", {r = 0.22, g = 0.77, b = 0.44})
+		global.crumbly_walls_unlocked = true
+		refresh_market_offers()
+		return
+	end
+	
+	if bought_offer.effect_description == special_descriptions["vehicle-nanobots"] then
+		game.print(player.name .. " has unlocked vehicle nanobots!", {r = 0.22, g = 0.77, b = 0.44})
+		global.vehicle_nanobots_unlocked = true
 		refresh_market_offers()
 		return
 	end
