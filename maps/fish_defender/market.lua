@@ -3,6 +3,8 @@ require 'maps.fish_defender.trapped_capsules'
 require 'maps.fish_defender.ultra_mines'
 require 'maps.fish_defender.crumbly_walls'
 require 'maps.fish_defender.vehicle_nanobots'
+require 'maps.fish_defender.laser_pointer'
+require 'maps.fish_defender.multi_rockets'
 
 local event = require 'utils.event'
 
@@ -22,7 +24,8 @@ local special_descriptions = {
 	["ultra-mines"] = "Unlock Ultra Mines - Careful with these...",
 	["railgun-enhancer"] = "Unlock Railgun Enhancer - Turns the railgun into a powerful forking gun.",
 	["crumbly-walls"] = "Unlock Crumbly Walls - Fortifications which crumble, may turn into rocks.",
-	["vehicle-nanobots"] = "Unlock Vehicle Nanobots - Your vehicles repair rapidly while driving.",
+	["vehicle-nanobots"] = "Unlock Vehicle Nanobots - Vehicles repair rapidly while driving.",
+	["laser-pointer"] = "Unlock Laser Pointer - The biters are on a quest to slay the red (artillery) dot."
 }
 
 local function refresh_market_offers()
@@ -100,6 +103,7 @@ local function refresh_market_offers()
 		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
 		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
 		{price = {{"coin", 35}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}},
+		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'cliff-explosives', count = 1}},
 		{price = {{"coin", 80}}, offer = {type = 'nothing', effect_description = special_descriptions["flame-boots"]}}
 	}
 	
@@ -107,26 +111,29 @@ local function refresh_market_offers()
 		global.market.add_market_item(item)
 	end
 	
+	if not global.railgun_enhancer_unlocked then 
+		global.market.add_market_item({price = {{"coin", 1500}}, offer = {type = 'nothing', effect_description = special_descriptions["railgun-enhancer"]}})
+	end		
+	if not global.trapped_capsules_unlocked then 
+		global.market.add_market_item({price = {{"coin", 3500}}, offer = {type = 'nothing', effect_description = special_descriptions["trapped-capsules"]}})
+	end	
 	if not global.explosive_bullets_unlocked then 
 		global.market.add_market_item({price = {{"coin", 5000}}, offer = {type = 'nothing', effect_description = special_descriptions["explosive-bullets"]}})
 	end
 	if not global.bouncy_shells_unlocked then 
-		global.market.add_market_item({price = {{"coin", 7500}}, offer = {type = 'nothing', effect_description = special_descriptions["bouncy-shells"]}})
-	end
-	if not global.trapped_capsules_unlocked then 
-		global.market.add_market_item({price = {{"coin", 2500}}, offer = {type = 'nothing', effect_description = special_descriptions["trapped-capsules"]}})
-	end
-	if not global.ultra_mines_unlocked then 
-		global.market.add_market_item({price = {{"coin", 10000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
-	end
-	if not global.railgun_enhancer_unlocked then 
-		global.market.add_market_item({price = {{"coin", 1500}}, offer = {type = 'nothing', effect_description = special_descriptions["railgun-enhancer"]}})
+		global.market.add_market_item({price = {{"coin", 10000}}, offer = {type = 'nothing', effect_description = special_descriptions["bouncy-shells"]}})
+	end	
+	if not global.vehicle_nanobots_unlocked then 
+		global.market.add_market_item({price = {{"coin", 15000}}, offer = {type = 'nothing', effect_description = special_descriptions["vehicle-nanobots"]}})
 	end
 	if not global.crumbly_walls_unlocked then 
 		global.market.add_market_item({price = {{"coin", 25000}}, offer = {type = 'nothing', effect_description = special_descriptions["crumbly-walls"]}})
 	end
-	if not global.vehicle_nanobots_unlocked then 
-		global.market.add_market_item({price = {{"coin", 12500}}, offer = {type = 'nothing', effect_description = special_descriptions["vehicle-nanobots"]}})
+	if not global.ultra_mines_unlocked then 
+		global.market.add_market_item({price = {{"coin", 45000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
+	end
+	if not global.laser_pointer_unlocked then 
+		global.market.add_market_item({price = {{"coin", 65000}}, offer = {type = 'nothing', effect_description = special_descriptions["laser-pointer"]}})
 	end
 end
 
@@ -209,6 +216,13 @@ local function on_market_item_purchased(event)
 	if bought_offer.effect_description == special_descriptions["ultra-mines"] then
 		game.print(player.name .. " has unlocked ultra mines!", {r = 0.22, g = 0.77, b = 0.44})
 		global.ultra_mines_unlocked = true
+		refresh_market_offers()
+		return
+	end
+	
+	if bought_offer.effect_description == special_descriptions["laser-pointer"] then
+		game.print(player.name .. " has unleashed the quest to slay the red dot!", {r = 0.22, g = 0.77, b = 0.44})
+		global.laser_pointer_unlocked = true
 		refresh_market_offers()
 		return
 	end

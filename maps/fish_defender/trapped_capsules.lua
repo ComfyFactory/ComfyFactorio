@@ -3,9 +3,9 @@ local event = require 'utils.event'
 local radius = 20
 
 local whitelist = {
-	["defender"] = true,
-	["distractor"] = true,
-	["destroyer"] = true
+	["defender"] = "explosive-cannon-projectile",
+	["distractor"] = "explosive-uranium-cannon-projectile",
+	["destroyer"] = "explosive-uranium-cannon-projectile"
 }
 
 local function on_entity_died(event)
@@ -29,7 +29,7 @@ local function on_entity_died(event)
 	if not valid_targets[1] then return end
 	
 	event.entity.surface.create_entity({	
-		name = "explosive-cannon-projectile",
+		name = whitelist[event.entity.name],
 		position = position,
 		force = "player",
 		source = position,
