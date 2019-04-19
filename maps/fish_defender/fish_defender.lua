@@ -1,7 +1,9 @@
 -- fish defender -- by mewmew --
 
 require "maps.fish_defender.map_intro"
+require "maps.fish_defender.market"
 require "maps.fish_defender.shotgun_buff"
+require "maps.fish_defender.on_entity_damaged"
 
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"
@@ -17,7 +19,7 @@ local map_functions = require "tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
-local wave_interval = 2700		--interval between waves in ticks
+local wave_interval = 3600		--interval between waves in ticks
 local biter_count_limit = 384	    --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
@@ -645,88 +647,6 @@ local function biter_attack_wave()
 	end
 end
 
-local function refresh_market_offers()
-	if not global.market then return end
-	for i = 1, 100, 1 do
-		local a = global.market.remove_market_item(1)
-		if a == false then break end
-	end
-	
-	local str1 = "Gun Turret Slot for " .. tostring(global.entity_limits["gun-turret"].limit * global.entity_limits["gun-turret"].slot_price)
-	str1 = str1 .. " Coins."
-	
-	local str2 = "Laser Turret Slot for " .. tostring(global.entity_limits["laser-turret"].limit * global.entity_limits["laser-turret"].slot_price)
-	str2 = str2 .. " Coins."
-	
-	local str3 = "Artillery Slot for " .. tostring(global.entity_limits["artillery-turret"].limit * global.entity_limits["artillery-turret"].slot_price)
-	str3 = str3 .. " Coins."
-	
-	local current_limit = 1
-	if global.entity_limits["flamethrower-turret"].limit ~= 0 then current_limit = current_limit + global.entity_limits["flamethrower-turret"].limit end
-	local str4 = "Flamethrower Turret Slot for " .. tostring(current_limit * global.entity_limits["flamethrower-turret"].slot_price)
-	str4 = str4 .. " Coins."
-	
-	local str5 = "Landmine Slot for " .. tostring(math.ceil((global.entity_limits["land-mine"].limit / 3) * global.entity_limits["land-mine"].slot_price))
-	str5 = str5 .. " Coins."
-	
-	local market_items = {
-		{price = {}, offer = {type = 'nothing', effect_description = str1}},
-		{price = {}, offer = {type = 'nothing', effect_description = str2}},
-		{price = {}, offer = {type = 'nothing', effect_description = str3}},
-		{price = {}, offer = {type = 'nothing', effect_description = str4}},
-		{price = {}, offer = {type = 'nothing', effect_description = str5}},
-		{price = {{"coin", 5}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
-		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'wood', count = 8}},		
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
-		{price = {{"coin", 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
-		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
-		{price = {{"coin", 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
-		{price = {{"coin", 1200}}, offer = {type = 'give-item', item = 'tank', count = 1}},
-		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
-		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
-		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
-		{price = {{"coin", 300}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
-		{price = {{"coin", 450}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}},
-		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'artillery-shell', count = 1}},
-		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
-		{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 1}},
-		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 1}},				
-		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'shotgun-shell', count = 1}},	
-		{price = {{"coin", 6}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 1}},
-		{price = {{"coin", 30}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}},
-		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},	
-		{price = {{"coin", 450}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},	
-		{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 1}},	
-		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
-		{price = {{"coin", 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},	
-		{price = {{"coin", 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
-		{price = {{"coin", 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},		
-		{price = {{"coin", 325}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},	
-		{price = {{"coin", 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
-		{price = {{"coin", 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},	
-		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},		
-		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},	
-		{price = {{"coin", 350}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},	
-		{price = {{"coin", 1500}}, offer = {type = 'give-item', item = 'power-armor', count = 1}},
-		{price = {{"coin", 12000}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}},
-		{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}},
-		{price = {{"coin", 2250}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}},
-		{price = {{"coin", 100}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}},				
-		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'energy-shield-equipment', count = 1}},
-		{price = {{"coin", 850}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}},	
-		{price = {{"coin", 175}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}},		
-		{price = {{"coin", 125}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}},
-		{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},	
-		{price = {{"coin", 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
-		{price = {{"coin", 35}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}}
-	}
-	
-	for _, item in pairs(market_items) do
-		global.market.add_market_item(item)
-	end
-end
-
 local function get_sorted_list(column_name, score_list)		
 	for x = 1, #score_list, 1 do
 		for y = 1, #score_list, 1 do			
@@ -886,7 +806,7 @@ end
 
 local biter_splash_damage = {
 	["medium-biter"] = {visuals = {"blood-explosion-big", "big-explosion"}, radius = 1.5, damage_min = 50, damage_max = 100, chance = 8},
-	["big-biter"] = {visuals = {"blood-explosion-huge", "uranium-cannon-shell-explosion"}, radius = 2, damage_min = 75, damage_max = 150, chance = 16},
+	["big-biter"] = {visuals = {"blood-explosion-huge", "ground-explosion"}, radius = 2, damage_min = 75, damage_max = 150, chance = 16},
 	["behemoth-biter"] = {visuals = {"blood-explosion-huge", "big-artillery-explosion"}, radius = 2.5, damage_min = 100, damage_max = 200, chance = 32}
 }
 
@@ -930,32 +850,20 @@ local function on_entity_died(event)
 	end
 end
 
-local function on_entity_damaged(event)		
-	if event.entity.valid then
-		if event.entity.name == "market" then
-			if event.cause then
-				if event.cause.force.name == "enemy" then return end
-			end
-			event.entity.health = event.entity.health + event.final_damage_amount
-		end
-	end
-end
-
-
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 
 	if not global.fish_defense_init_done then	
 		local map_gen_settings = {}
-		map_gen_settings.water = "small"
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 22, cliff_elevation_0 = 22}		
+		map_gen_settings.water = "0.5"
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 32}		
 		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "high", size = "very-big", richness = "normal"},
-			["stone"] = {frequency = "high", size = "very-big", richness = "normal"},
-			["copper-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
-			["iron-ore"] = {frequency = "high", size = "very-big", richness = "normal"},
-			["crude-oil"] = {frequency = "very-high", size = "very-big", richness = "normal"},
-			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["coal"] = {frequency = "3", size = "2", richness = "1"},
+			["stone"] = {frequency = "3", size = "2", richness = "1"},
+			["copper-ore"] = {frequency = "3", size = "2", richness = "1"},
+			["iron-ore"] = {frequency = "3", size = "2", richness = "1"},
+			["crude-oil"] = {frequency = "4", size = "1", richness = "1"},
+			["trees"] = {frequency = "1.5", size = "1.5", richness = "1"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}		
 		}		
 		game.create_surface("fish_defender", map_gen_settings)							
@@ -1146,7 +1054,6 @@ local function on_chunk_generated(event)
 			local pos = surface.find_non_colliding_position("market",{spawn_position_x, 0}, 50, 1)										
 			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
 			global.market.minable = false
-			refresh_market_offers()
 			
 			local pos = surface.find_non_colliding_position("gun-turret",{spawn_position_x + 5, 1}, 50, 1)
 			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
@@ -1392,52 +1299,6 @@ local function on_robot_mined_entity(event)
 	end
 end
 
-local function on_market_item_purchased(event)
-	local player = game.players[event.player_index]	
-	local market = event.market
-	local offer_index = event.offer_index	
-	local offers = market.get_market_items()	
-	local bought_offer = offers[offer_index].offer	
-	if bought_offer.type ~= "nothing" then return end
-	local slot_upgrade_offers = {
-		[1] = {"gun-turret", "gun turret"},
-		[2] = {"laser-turret", "laser turret"},
-		[3] = {"artillery-turret", "artillery turret"},
-		[4] = {"flamethrower-turret", "flamethrower turret"},
-		[5] = {"land-mine", "land mine"}
-	}
-	for x = 1, 5, 1 do
-		if offer_index == x then
-						
-			local price = global.entity_limits[slot_upgrade_offers[x][1]].limit * global.entity_limits[slot_upgrade_offers[x][1]].slot_price
-			
-			local gain = 1
-			if offer_index == 5 then
-				price = math.ceil((global.entity_limits[slot_upgrade_offers[x][1]].limit  / 3) * global.entity_limits[slot_upgrade_offers[x][1]].slot_price)
-				gain = 3
-			end
-			
-			if slot_upgrade_offers[x][1] == "flamethrower-turret" then
-				price = (global.entity_limits[slot_upgrade_offers[x][1]].limit + 1) * global.entity_limits[slot_upgrade_offers[x][1]].slot_price
-			end			
-			
-			local coins_removed = player.remove_item({name = "coin", count = price})		
-			if coins_removed ~= price then
-				if coins_removed > 0 then
-					player.insert({name = "coin", count = coins_removed})
-				end
-				player.print("Not enough coins.", {r = 0.22, g = 0.77, b = 0.44})
-				return
-			end
-						 
-			global.entity_limits[slot_upgrade_offers[x][1]].limit = global.entity_limits[slot_upgrade_offers[x][1]].limit + gain
-			game.print(player.name .. " has bought a " .. slot_upgrade_offers[x][2] .. " slot for " .. price .. " coins!", {r = 0.22, g = 0.77, b = 0.44})
-			server_commands.to_discord_bold(table.concat{player.name .. " has bought a " .. slot_upgrade_offers[x][2] .. " slot for " .. price .. " coins!"})
-			refresh_market_offers()
-		end
-	end
-end	
-
 local function on_research_finished(event)
 	local research = event.research.name
 	if research ~= "tanks" then return end
@@ -1454,9 +1315,7 @@ end
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

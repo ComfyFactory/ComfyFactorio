@@ -11,7 +11,7 @@ local valid_container_types = {
 }
 
 local projectile_types = {
-	["explosives"] = {name = "grenade", count = 0.2, max_range = 32, tick_speed = 1},
+	["explosives"] = {name = "grenade", count = 0.5, max_range = 32, tick_speed = 1},
 	["land-mine"] = {name = "grenade", count = 1, max_range = 32, tick_speed = 1},
 	
 	["grenade"] = {name = "grenade", count = 1, max_range = 40, tick_speed = 1},
@@ -28,11 +28,11 @@ local projectile_types = {
 	["explosive-rocket"] = {name = "explosive-rocket", count = 1, max_range = 48, tick_speed = 1},
 	["rocket"] = {name = "rocket", count = 1, max_range = 48, tick_speed = 1},
 	
-	["flamethrower-ammo"] = {name = "flamethrower-fire-stream", count = 3, max_range = 40, tick_speed = 1},
-	["crude-oil-barrel"] = {name = "flamethrower-fire-stream", count = 2, max_range = 24, tick_speed = 1},
-	["petroleum-gas-barrel"] = {name = "flamethrower-fire-stream", count = 3, max_range = 24, tick_speed = 1},
-	["light-oil-barrel"] = {name = "flamethrower-fire-stream", count = 3, max_range = 24, tick_speed = 1},
-	["heavy-oil-barrel"] = {name = "flamethrower-fire-stream", count = 3, max_range = 24, tick_speed = 1},
+	["flamethrower-ammo"] = {name = "flamethrower-fire-stream", count = 4, max_range = 32, tick_speed = 1},
+	["crude-oil-barrel"] = {name = "flamethrower-fire-stream", count = 3, max_range = 24, tick_speed = 1},
+	["petroleum-gas-barrel"] = {name = "flamethrower-fire-stream", count = 4, max_range = 24, tick_speed = 1},
+	["light-oil-barrel"] = {name = "flamethrower-fire-stream", count = 4, max_range = 24, tick_speed = 1},
+	["heavy-oil-barrel"] = {name = "flamethrower-fire-stream", count = 4, max_range = 24, tick_speed = 1},
 	
 	["sulfuric-acid-barrel"] = {name = "acid-stream-spitter-big", count = 3, max_range = 16, tick_speed = 1, force = "enemy"},
 	["lubricant-barrel"] = {name = "acid-stream-spitter-big", count = 3, max_range = 16, tick_speed = 1},
