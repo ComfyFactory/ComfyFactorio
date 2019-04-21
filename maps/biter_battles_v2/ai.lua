@@ -155,11 +155,18 @@ local function ignore_pvp(event)
 end
 
 --Biter Evasion
+local random_max = 10000
+
+local function get_evade_chance(force_name)	
+	return random_max - (random_max / global.bb_evasion[force_name])
+end
+
 local function evade(event)
 	if not event.entity.valid then return end
-	if event.entity.type ~= "unit" then return end
-	if global.bb_evasion[event.entity.force.name] < math_random(1,1000) then return end
-	event.entity.health = event.entity.health + event.final_damage_amount	
+	if not global.bb_evasion[event.entity.force.name] then return end	
+	if event.final_damage_amount > event.entity.prototype.max_health * global.bb_evasion[event.entity.force.name] then return end
+	if math_random(1, random_max) > get_evade_chance(event.entity.force.name) then return end
+	event.entity.health = event.entity.health + event.final_damage_amount
 end
 
 local function on_entity_damaged(event)
