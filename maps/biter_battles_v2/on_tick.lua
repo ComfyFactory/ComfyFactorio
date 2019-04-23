@@ -29,6 +29,15 @@ local function clear_corpses()
 	end
 end
 
+local function restart_idle_map()
+	if game.tick < 216000 then return end
+	if #game.connected_players ~= 0 then global.restart_idle_map_countdown = 2 return end
+	if not global.restart_idle_map_countdown then global.restart_idle_map_countdown = 2 end
+	global.restart_idle_map_countdown = global.restart_idle_map_countdown - 1
+	if global.restart_idle_map_countdown ~= 0 then return end
+	server_commands.start_scenario('Biter_Battles')
+end
+
 local function on_tick(event)
 	if game.tick % 30 ~= 0 then return end
 	chunk_pregen()
@@ -51,6 +60,7 @@ local function on_tick(event)
 	
 	if game.tick % 3600 ~= 0 then return end
 	clear_corpses()
+	restart_idle_map()
 end
 
 event.add(defines.events.on_tick, on_tick)

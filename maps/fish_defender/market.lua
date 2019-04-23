@@ -126,7 +126,7 @@ local function refresh_market_offers()
 		global.market.add_market_item({price = {{"coin", 15000}}, offer = {type = 'nothing', effect_description = special_descriptions["vehicle-nanobots"]}})
 	end
 	if not global.crumbly_walls_unlocked then 
-		global.market.add_market_item({price = {{"coin", 25000}}, offer = {type = 'nothing', effect_description = special_descriptions["crumbly-walls"]}})
+		global.market.add_market_item({price = {{"coin", 35000}}, offer = {type = 'nothing', effect_description = special_descriptions["crumbly-walls"]}})
 	end
 	if not global.ultra_mines_unlocked then 
 		global.market.add_market_item({price = {{"coin", 45000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})

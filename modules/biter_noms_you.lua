@@ -9,7 +9,6 @@ local strings = {
 	"chomp", "chomp",
 	"chow", "chow",
 	"nibble", "nibble",
-	"munch",
 	"nom", "nom",  "nom",  "nom",  "nom",  "nom",  "nom",  "nom",  "nom",  "nom",  "nom", "nom", "nom", "nom", "nom", "nom", "nom", "nom", "nom", "nom", "nom", "nom"
 }
 

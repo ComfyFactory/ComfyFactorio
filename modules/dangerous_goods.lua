@@ -28,7 +28,7 @@ local projectile_types = {
 	["explosive-rocket"] = {name = "explosive-rocket", count = 1, max_range = 48, tick_speed = 1},
 	["rocket"] = {name = "rocket", count = 1, max_range = 48, tick_speed = 1},
 	
-	["flamethrower-ammo"] = {name = "flamethrower-fire-stream", count = 4, max_range = 32, tick_speed = 1},
+	["flamethrower-ammo"] = {name = "flamethrower-fire-stream", count = 4, max_range = 28, tick_speed = 1},
 	["crude-oil-barrel"] = {name = "flamethrower-fire-stream", count = 3, max_range = 24, tick_speed = 1},
 	["petroleum-gas-barrel"] = {name = "flamethrower-fire-stream", count = 4, max_range = 24, tick_speed = 1},
 	["light-oil-barrel"] = {name = "flamethrower-fire-stream", count = 4, max_range = 24, tick_speed = 1},

@@ -142,7 +142,6 @@ local function init_forces()
 		global.bb_threat_income[force.name] = 0
 		global.bb_threat[force.name] = 0	
 	end
-
 	global.game_lobby_active = true
 end
 

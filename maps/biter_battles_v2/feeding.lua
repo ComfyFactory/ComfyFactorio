@@ -1,11 +1,11 @@
 local food_values = {
 	["automation-science-pack"] =	{value = 0.001, name = "automation science"},
-	["logistic-science-pack"] =			{value = 0.00292, name = "logistic science"},
-	["military-science-pack"] =			{value = 0.01225, name = "military science"},
-	["chemical-science-pack"] = 		{value = 0.02392, name = "chemical science"},
-	["production-science-pack"] =	{value = 0.080, name = "production science"},
-	["utility-science-pack"] =			{value = 0.13875, name = "utility science"},
-	["space-science-pack"] = 			{value = 0.420, name = "space science"},
+	["logistic-science-pack"] =			{value = 0.0025, name = "logistic science"},
+	["military-science-pack"] =			{value = 0.0096, name = "military science"},
+	["chemical-science-pack"] = 		{value = 0.0264, name = "chemical science"},
+	["production-science-pack"] =	{value = 0.08874, name = "production science"},
+	["utility-science-pack"] =			{value = 0.09943, name = "utility science"},
+	["space-science-pack"] = 			{value = 0.28957, name = "space science"},
 }
 
 local force_translation = {
@@ -81,7 +81,7 @@ local function feed_biters(player, food)
 						
 		--ADD INSTANT THREAT
 		local diminishing_modifier = 1 / (0.2 + (e2 * 0.018))
-		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 175 * diminishing_modifier)
+		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 200 * diminishing_modifier)
 		global.bb_threat[biter_force_name] = math_round(global.bb_threat[biter_force_name], decimals)
 	end
 	
