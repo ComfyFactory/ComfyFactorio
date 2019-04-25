@@ -1,0 +1,27 @@
+local playsession = {
+	{"firstandlast", {359845}},
+	{"wotwotvodka", {112564}},
+	{"Stryker159", {139885}},
+	{"CmonMate497", {331838}},
+	{"kendoctor", {359114}},
+	{"Maggnz", {358536}},
+	{"cahesar", {358132}},
+	{"Chesmu", {354733}},
+	{"tyssa", {280929}},
+	{"yulingqixiao", {302173}},
+	{"BallisticGamer04", {345643}},
+	{"Zorky", {56769}},
+	{"The_Carrot_Lord", {10513}},
+	{"JinNJuice", {1259}},
+	{"facere", {272636}},
+	{"0icke0", {235791}},
+	{"onzin", {235491}},
+	{"STANWORLD", {12961}},
+	{"loutanifi", {1342}},
+	{"Kiumajus", {14971}},
+	{"seeyorise", {117720}},
+	{"sobitome", {114927}},
+	{"tusse", {4562}},
+	{"asd100477", {82191}}
+}
+return playsession

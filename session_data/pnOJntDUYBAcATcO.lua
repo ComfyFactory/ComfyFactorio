@@ -1,0 +1,25 @@
+local playsession = {
+	{"supra90", {465621}},
+	{"bigfoote", {1878}},
+	{"untouchablez", {644735}},
+	{"iansuarus", {159316}},
+	{"Ogg_Ogg_Ogg", {602780}},
+	{"McSafety", {207573}},
+	{"jangelo2", {61624}},
+	{"Styx13", {119939}},
+	{"625dennis", {513288}},
+	{"grootie", {524204}},
+	{"Spocks", {478690}},
+	{"ACabbage", {64781}},
+	{"LeeFactor", {2491}},
+	{"Snowpig7u", {19097}},
+	{"FabseMcFunk", {10731}},
+	{"zJosua", {9240}},
+	{"zJochen", {7789}},
+	{"Ed9210", {218329}},
+	{"Mordalfus", {70060}},
+	{"Gerkiz", {63865}},
+	{"remarkablysilly", {31857}},
+	{"120148", {9056}}
+}
+return playsession

@@ -19,7 +19,7 @@ local playsession = {
 	{"Zake579", {167075}},
 	{"FudgeZombie", {64544}},
 	{"jrz126", {22611}},
-	{"Waffledragon122", {3148379}},
+	{"Waffledragon122", {3199794}},
 	{"ladyflyer88", {217705}},
 	{"perfectwill", {425271}},
 	{"Framfab", {125067}},
@@ -62,7 +62,7 @@ local playsession = {
 	{"Looke", {25712}},
 	{"Serule", {6951}},
 	{"Dior_cz", {2857}},
-	{"Alyssix", {2387}},
+	{"Alyssix", {6007}},
 	{"Tetrahedron", {1818}},
 	{"joooo", {23024}},
 	{"kingslandingjun", {1369}},
@@ -70,6 +70,14 @@ local playsession = {
 	{"littleminion007", {15344}},
 	{"Preums", {21747}},
 	{"Kamyk", {70610}},
-	{"Kirdiaga", {13872}}
+	{"Kirdiaga", {13872}},
+	{"Tayrus", {72294}},
+	{"flooxy", {3791}},
+	{"Synessus", {11289}},
+	{"Steve130709", {10214}},
+	{"Fatpony", {1093}},
+	{"Spaceman-Spiff", {4548}},
+	{"Aluron", {18421}},
+	{"truekabal", {155123}}
 }
 return playsession
