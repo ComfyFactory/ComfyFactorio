@@ -18,6 +18,7 @@ function write_player_totals_file()
 end
 
 function write_session_file()
+	if #game.connected_players == 0 then return end
 	if global.file_name_found then
 		game.remove_path(global.file_name)
 		game.write_file(global.file_name, "local playsession = {\n" , true)
