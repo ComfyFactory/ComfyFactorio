@@ -80,8 +80,8 @@ end
 local function generate_horizontal_river(surface, pos)
 	if pos.y < -32 then return false end
 	if pos.y > -5 and pos.x > -5 and pos.x < 5 then return false end
-	if -11 < pos.y + (get_noise(1, pos) * 5) then return true end
-	--if -13 < pos.y + (get_noise(1, pos) * 5) then return true end
+	--if -11 < pos.y + (get_noise(1, pos) * 5) then return true end
+	if -14 < pos.y + (get_noise(1, pos) * 5) then return true end
 	return false	
 end
 

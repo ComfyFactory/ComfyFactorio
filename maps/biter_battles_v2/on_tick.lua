@@ -30,7 +30,7 @@ local function clear_corpses()
 end
 
 local function restart_idle_map()
-	if game.tick < 216000 then return end
+	if game.tick < 432000 then return end
 	if #game.connected_players ~= 0 then global.restart_idle_map_countdown = 2 return end
 	if not global.restart_idle_map_countdown then global.restart_idle_map_countdown = 2 end
 	global.restart_idle_map_countdown = global.restart_idle_map_countdown - 1

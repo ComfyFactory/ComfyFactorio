@@ -18,6 +18,17 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
+function get_instant_threat_player_count_modifier()
+	local current_player_count = #game.forces.north.connected_players + #game.forces.south.connected_players
+	local minimum_modifier = 50
+	local maximum_modifier = 250
+	local player_amount_for_maximum_threat_gain = 20
+	local gain_per_player = (maximum_modifier - minimum_modifier) / player_amount_for_maximum_threat_gain
+	local m = minimum_modifier + gain_per_player * current_player_count
+	if m > maximum_modifier then m = maximum_modifier end
+	return m
+end
+
 local function set_biter_endgame_modifiers(force)
 	if force.evolution_factor ~= 1 then return end
 	local damage_mod = (global.bb_evolution[force.name] - 1) * 2
@@ -60,6 +71,8 @@ local function feed_biters(player, food)
 	local decimals = 12
 	local math_round = math.round
 	
+	local instant_threat_player_count_modifier = get_instant_threat_player_count_modifier()
+	
 	for a = 1, flask_amount, 1 do				
 		--SET THREAT INCOME
 		local e = (global.bb_evolution[biter_force_name] * 100) + 1
@@ -81,7 +94,7 @@ local function feed_biters(player, food)
 						
 		--ADD INSTANT THREAT
 		local diminishing_modifier = 1 / (0.2 + (e2 * 0.018))
-		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 200 * diminishing_modifier)
+		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * instant_threat_player_count_modifier * diminishing_modifier)
 		global.bb_threat[biter_force_name] = math_round(global.bb_threat[biter_force_name], decimals)
 	end
 	
