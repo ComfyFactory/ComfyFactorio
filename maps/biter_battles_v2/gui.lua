@@ -1,5 +1,5 @@
 local event = require 'utils.event' 
-
+local config = require "maps.biter_battles_v2.config"
 local spy_fish = require "maps.biter_battles_v2.spy_fish"
 local feed_the_biters = require "maps.biter_battles_v2.feeding"
 
@@ -14,10 +14,10 @@ local food_names = {
 }
 
 local gui_values = {
-		["north"] = {force = "north", biter_force = "north_biters", c1 = "Team North", c2 = "JOIN NORTH", n1 = "join_north_button",
+		["north"] = {force = "north", biter_force = "north_biters", c1 = "Team " .. config.north_side_team_name, c2 = "JOIN " .. string.upper(config.north_side_team_name), n1 = "join_north_button",
 		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99}},
-		["south"] = {force = "south", biter_force = "south_biters", c1 = "Team South", c2 = "JOIN SOUTH", n1 = "join_south_button",
+		["south"] = {force = "south", biter_force = "south_biters", c1 = "Team " .. config.south_side_team_name, c2 = "JOIN " .. string.upper(config.south_side_team_name), n1 = "join_south_button",
 		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
 	}		
@@ -222,10 +222,12 @@ local function join_team(player, force_name)
 	local enemy_team = "south"
 	if force_name == "south" then enemy_team = "north" end
 	
-	if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
-		if not global.chosen_team[player.name] then
-			player.print("Team " .. force_name .. " has too many players currently.", {r = 0.98, g = 0.66, b = 0.22})
-			return
+	if config.team_balancing then
+		if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
+			if not global.chosen_team[player.name] then
+				player.print("Team " .. force_name .. " has too many players currently.", {r = 0.98, g = 0.66, b = 0.22})
+				return
+			end
 		end
 	end
 	

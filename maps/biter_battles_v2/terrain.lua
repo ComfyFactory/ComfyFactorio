@@ -1,5 +1,5 @@
--- Terrain for Biter Battles -- by MewMew
-local event = require 'utils.event' 
+local event = require 'utils.event'
+local config = require "maps.biter_battles_v2.config"
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
@@ -77,11 +77,9 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
 	end
 end
 
-local function generate_horizontal_river(surface, pos)
-	if pos.y < -32 then return false end
+local function is_horizontal_border_river(surface, pos)
 	if pos.y > -5 and pos.x > -5 and pos.x < 5 then return false end
-	--if -11 < pos.y + (get_noise(1, pos) * 5) then return true end
-	if -14 < pos.y + (get_noise(1, pos) * 5) then return true end
+	if math.floor(config.border_river_width * -0.5) < pos.y + (get_noise(1, pos) * 5) then return true end
 	return false	
 end
 
@@ -149,7 +147,7 @@ local function generate_silos(event)
 end
 
 local function generate_river(event)
-	if event.area.left_top.y < -32 then return end
+	if event.area.left_top.y < -64 then return end
 	local surface = event.surface
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
@@ -157,7 +155,7 @@ local function generate_river(event)
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
-			if generate_horizontal_river(surface, pos) then
+			if is_horizontal_border_river(surface, pos) then
 				surface.set_tiles({{name = "deepwater", position = pos}})
 				if math_random(1, 64) == 1 then surface.create_entity({name = "fish", position = pos}) end
 			end			
@@ -259,7 +257,7 @@ local function restrict_landfill(surface, inventory, tiles)
 		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
 		local check_position = t.position
 		if check_position.y > 0 then check_position = {x = check_position.x * -1, y = (check_position.y * -1) - 1} end
-		if generate_horizontal_river(surface, check_position) or distance_to_center < spawn_circle_size then																			
+		if is_horizontal_border_river(surface, check_position) or distance_to_center < spawn_circle_size then																			
 			surface.set_tiles({{name = t.old_tile.name, position = t.position}}, true)
 			inventory.insert({name = "landfill", count = 1})
 		end				

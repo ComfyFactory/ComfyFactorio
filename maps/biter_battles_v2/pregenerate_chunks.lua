@@ -1,4 +1,5 @@
 local event = require 'utils.event' 
+local config = require "maps.biter_battles_v2.config"
 
 local function set_chunk_coords(radius)
 	global.chunk_gen_coords = {}
@@ -47,7 +48,7 @@ end
 local function process_chunk(surface)	
 	if global.map_generation_complete then return end
 	if game.tick < 300 then return end
-	if not global.chunk_gen_coords then set_chunk_coords(32) end
+	if not global.chunk_gen_coords then set_chunk_coords(config.map_pregeneration_radius) end
 	if #global.chunk_gen_coords == 0 then
 		global.map_generation_complete = true
 		draw_gui()
@@ -61,6 +62,9 @@ local function process_chunk(surface)
 	local surface = game.surfaces["biter_battles"]
 	if not surface then return end
 	
+	local force_chunk_requests = 1
+	if config.fast_pregen then force_chunk_requests = 16 end
+	
 	for i = #global.chunk_gen_coords, 1, -1 do
 		if surface.is_chunk_generated(global.chunk_gen_coords[i]) then
 			global.chunk_gen_coords[i] = nil
@@ -68,7 +72,10 @@ local function process_chunk(surface)
 			surface.request_to_generate_chunks({x = (global.chunk_gen_coords[i].x * 32) - 16, y = (global.chunk_gen_coords[i].y * 32) - 16}, 1)
 			surface.force_generate_chunk_requests()
 			global.chunk_gen_coords[i] = nil
-			break
+			force_chunk_requests = force_chunk_requests - 1
+			if force_chunk_requests <= 0 then
+				break
+			end
 		end		
 	end
 	draw_gui()

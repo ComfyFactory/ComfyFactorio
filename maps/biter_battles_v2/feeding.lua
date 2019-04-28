@@ -18,11 +18,12 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
+local minimum_modifier = 50
+local maximum_modifier = 250
+local player_amount_for_maximum_threat_gain = 20
+
 function get_instant_threat_player_count_modifier()
 	local current_player_count = #game.forces.north.connected_players + #game.forces.south.connected_players
-	local minimum_modifier = 50
-	local maximum_modifier = 250
-	local player_amount_for_maximum_threat_gain = 20
 	local gain_per_player = (maximum_modifier - minimum_modifier) / player_amount_for_maximum_threat_gain
 	local m = minimum_modifier + gain_per_player * current_player_count
 	if m > maximum_modifier then m = maximum_modifier end
