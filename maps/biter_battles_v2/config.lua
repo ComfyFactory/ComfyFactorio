@@ -3,7 +3,7 @@
 local config = {
 	--MAP PREGENERATION
 	["map_pregeneration_radius"] = 32,	 		--Radius in chunks to pregenerate at the start of the map.
-	["fast_pregen"] = true,	 							--Force fast pregeneration.
+	["fast_pregen"] = false,	 							--Force fast pregeneration.
 	
 	--TEAM SETTINGS
 	["north_side_team_name"] = "North",		--Name in the GUI of Team North.
