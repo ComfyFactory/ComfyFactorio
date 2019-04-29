@@ -39,6 +39,8 @@ require "score"
 --require "modules.surface_holes_and_elevators"
 --require "modules.dangerous_goods"
 --require "modules.biters_avoid_damage"
+--require "modules.show_health"
+--require "modules.autodecon_when_depleted"
 require "modules.comfylatron"
 -----------------------------
 
