@@ -1152,8 +1152,16 @@ local function on_chunk_generated(event)
 			if tile.name ~= "out-of-map" then							
 				
 				if pos.x > 0 then
-					if pos.x > 312 then
-						insert(tiles, {name = "out-of-map", position = pos})			
+					if pos.x > 320 then
+						insert(tiles, {name = "out-of-map", position = pos})
+					else
+						local a = 0 + (pos.x - 160) * 0.01
+						local b = (pos.x - 160) * 0.035
+						local r = (pos.x - 160) * 0.015
+						if a > 0.75 then a = 0.75 end
+						if b > 1 then b = 1 end
+						if r > 0.6 then r = 0.6 end
+						rendering.draw_sprite({sprite = "tile/lab-dark-2", target = {pos.x + 0.5, pos.y + 0.5}, surface = surface, tint = {r = r, g = 0, b = b, a = a}, render_layer = "ground"})
 					end
 					
 					if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then				
