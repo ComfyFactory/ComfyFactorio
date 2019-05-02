@@ -839,7 +839,7 @@ local function on_player_joined_game(event)
 	local surface = game.surfaces[1]	
 	local player = game.players[event.player_index]
 	if not global.cave_miner_init_done then		 
-		local p = surface.find_non_colliding_position("player", {0,-40}, 10, 1)
+		local p = surface.find_non_colliding_position("character", {0,-40}, 10, 1)
 		game.forces["player"].set_spawn_position(p,surface)
 		player.teleport(p)
 		surface.daytime = 0.5

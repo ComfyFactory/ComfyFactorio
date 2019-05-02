@@ -17,7 +17,7 @@ function dump_boom_layout()
 	
 	local str = "{"
 	for i = 1, #entities, 1 do
-		if entities[i].name ~= "player" then
+		if entities[i].name ~= "character" then
 			str = str .. "{x = " ..  math.floor(entities[i].position.x, 0)
 			str = str .. ", y = "
 			str = str .. math.floor(entities[i].position.y, 0)
@@ -45,7 +45,7 @@ local function on_chunk_generated(event)
 	local entities = surface.find_entities(area)
 	for _, e in pairs(entities) do
 		if e.valid then
-			if e.name ~= "player" then
+			if e.name ~= "character" then
 				e.destroy()				
 			end
 		end
@@ -136,7 +136,7 @@ local function on_player_joined_game(event)
 	end	
 	local surface = game.surfaces["empty_map"]
 	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {0,0}, 2, 1), "empty_map")
+		player.teleport(surface.find_non_colliding_position("character", {0,0}, 2, 1), "empty_map")
 	else
 		if player.online_time < 5 then
 			player.teleport({0,0}, "empty_map")

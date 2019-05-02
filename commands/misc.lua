@@ -62,7 +62,7 @@ function dump_layout()
 		str = str .. ', force = "'
 		str = str .. e.force.name
 		str = str .. '"},'
-		if e.name ~= "player" then
+		if e.name ~= "character" then
 			game.write_file("layout.lua", str .. '\n' , true)
 		end
 	end

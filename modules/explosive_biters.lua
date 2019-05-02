@@ -13,7 +13,7 @@ local function damage_entities_in_radius(surface, position, radius, damage)
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health and entity.name ~= "land-mine" then
 			if entity.force.name ~= "enemy" then
-				if entity.name == "player" then
+				if entity.name == "character" then
 					entity.damage(damage, "enemy")
 				else
 					entity.health = entity.health - damage					

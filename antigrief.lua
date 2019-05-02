@@ -189,7 +189,7 @@ local blacklisted_types = {
 --Friendly Fire History
 local function on_entity_died(event)
 	if not event.cause then return end
-	if event.cause.name ~= "player" then return end	
+	if event.cause.name ~= "character" then return end	
 	if event.cause.force.name ~= event.entity.force.name then return end
 	if blacklisted_types[event.entity.type] then return end
 	local player = event.cause.player		

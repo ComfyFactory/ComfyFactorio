@@ -351,7 +351,7 @@ local function on_entity_died(event)
 	if event.entity.type == "unit" or  event.entity.type == "unit-spawner" then
 		if event.cause then
 		
-			if event.cause.name == "player" then player = event.cause.player end
+			if event.cause.name == "character" then player = event.cause.player end
 		
 			--Check for passengers
 			if event.cause.type == "car" then

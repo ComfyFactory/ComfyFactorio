@@ -468,7 +468,7 @@ local function on_player_joined_game(event)
 	
 	local surface = game.surfaces["spooky_forest"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {0, 0}, 50, 1), "spooky_forest")
+		player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 1), "spooky_forest")
 	else
 		if player.online_time < 2 then
 			player.teleport({0, 0}, "spooky_forest")

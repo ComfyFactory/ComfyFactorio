@@ -64,7 +64,7 @@ local function place_entity(surface, entity)
 		surface.create_entity(new_e)
 		return
 	end
-	if entity.name == "player" then
+	if entity.name == "character" then
 		return
 	end
 	if entity.name == "fish" then

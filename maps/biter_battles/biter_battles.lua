@@ -249,7 +249,7 @@ local function create_biter_battle_menu(player)
 	local l = t.add  { type = "label", caption = #game.forces["north"].connected_players .. " Players "}
 	l.style.font_color = { r=0.22, g=0.88, b=0.22}
 	
-	if player.force.name ~= "player" then	
+	if player.force.name ~= "character" then	
 		
 		if global.biter_battle_view_players[player.name] == true then
 			local t = frame.add  { type = "table", column_count = 4 }	
@@ -319,7 +319,7 @@ local function create_biter_battle_menu(player)
 	local l = t.add  { type = "label", caption = #game.forces["south"].connected_players .. " Players "}
 	l.style.font_color = { r=0.22, g=0.88, b=0.22}
 	
-	if player.force.name ~= "player" then
+	if player.force.name ~= "character" then
 		
 		if global.biter_battle_view_players[player.name] == true then
 			local t = frame.add  { type = "table", column_count = 4 }	
@@ -423,7 +423,7 @@ local function join_team(player, team)
 		if #game.forces[team].connected_players > #game.forces[enemy_team].connected_players and global.team_chosen[player.name] == nil then
 			player.print("Team " .. team .. " has too many players currently.", { r=0.98, g=0.66, b=0.22})
 		else						 
-			player.teleport(surface.find_non_colliding_position("player", game.forces[team].get_spawn_position(surface), 3, 1))	
+			player.teleport(surface.find_non_colliding_position("character", game.forces[team].get_spawn_position(surface), 3, 1))	
 			player.force=game.forces[team]			
 			if global.team_chosen[player.name] then
 				local p = game.permissions.get_group("Default")	
@@ -431,7 +431,7 @@ local function join_team(player, team)
 				game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", { r=0.98, g=0.66, b=0.22})
 			else
 				game.print(player.name .. " has joined team " .. player.force.name .. "!", { r=0.98, g=0.66, b=0.22})
-				local i = player.get_inventory(defines.inventory.player_main)
+				local i = player.get_inventory(defines.inventory.character_main)
 				player.insert {name = 'pistol', count = 1}
 				player.insert {name = 'raw-fish', count = 3}
 				player.insert {name = 'firearm-magazine', count = 16}		
@@ -443,7 +443,7 @@ local function join_team(player, team)
 	end		
 			
 	if team == "spectator" then
-		player.teleport(surface.find_non_colliding_position("player", {0,0}, 2, 1))	
+		player.teleport(surface.find_non_colliding_position("character", {0,0}, 2, 1))	
 		player.force=game.forces[team]
 		game.print(player.name .. " is spectating.", { r=0.98, g=0.66, b=0.22})		
 		local permission_group = game.permissions.get_group("spectator")		
@@ -569,7 +569,7 @@ local function on_player_joined_game(event)
 	end
 		
 	if player.online_time < 5 and game.surfaces["surface"].is_chunk_generated({0,0}) then 
-		player.teleport(game.surfaces["surface"].find_non_colliding_position("player", {0,0}, 2, 1), "surface")
+		player.teleport(game.surfaces["surface"].find_non_colliding_position("character", {0,0}, 2, 1), "surface")
 	else
 		if not global.team_chosen[player.name] then player.teleport({0,0}, "surface") end
 	end
@@ -593,7 +593,7 @@ end
 
 local function spy_fish(player)
 	local duration_per_unit = 1800 
-	local i2 = player.get_inventory(defines.inventory.player_main)
+	local i2 = player.get_inventory(defines.inventory.character_main)
 	local owned_fishes = i2.get_item_count("raw-fish")
 	owned_fishes = owned_fishes + i2.get_item_count("raw-fish")
 	if owned_fishes == 0 then 

@@ -15,7 +15,7 @@ local function on_player_joined_game(event)
 		player.insert({name = "firearm-magazine", count = 16})
 		player.insert({name = "iron-plate", count = 32})
 		
-		pos = player.character.surface.find_non_colliding_position("player",{0, -40}, 50, 1)
+		pos = player.character.surface.find_non_colliding_position("character",{0, -40}, 50, 1)
 		game.forces.player.set_spawn_position(pos, player.character.surface)
 		player.teleport(pos, player.character.surface)
 		

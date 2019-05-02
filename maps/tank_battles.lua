@@ -396,7 +396,7 @@ local function render_arena_chunk(event)
 	
 	for _, entity in pairs(surface.find_entities_filtered({area = event.area})) do
 		if entity.valid then
-			if entity.name ~= "player" then
+			if entity.name ~= "character" then
 				entity.destroy()
 			end
 		end
@@ -610,7 +610,7 @@ local function on_player_died(event)
 	local str = " "
 	if event.cause then
 		if event.cause.name ~= nil then str = " by " .. event.cause.name end	
-		if event.cause.name == "player" then str = " by " .. event.cause.player.name end
+		if event.cause.name == "character" then str = " by " .. event.cause.player.name end
 		if event.cause.name == "tank" then
 			local driver = event.cause.get_driver()
 			if driver.player then 

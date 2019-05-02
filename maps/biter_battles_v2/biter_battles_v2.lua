@@ -153,7 +153,7 @@ local function on_player_joined_game(event)
 	
 	if player.online_time == 0 then
 		if surface.is_chunk_generated({0,0}) then
-			player.teleport(surface.find_non_colliding_position("player", {0,0}, 3, 0.5), surface)
+			player.teleport(surface.find_non_colliding_position("character", {0,0}, 3, 0.5), surface)
 		else
 			player.teleport({0,0}, surface)
 		end

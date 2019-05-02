@@ -4,7 +4,7 @@ local radius = 8
 local function damage_entities_around_target(entity, damage)
 	for _, e in pairs(entity.surface.find_entities_filtered({area = {{entity.position.x - radius, entity.position.y - radius},{entity.position.x + radius, entity.position.y + radius}}})) do		
 		if e.health then
-			if e.force.name ~= "player" then
+			if e.force.name ~= "character" then
 				local distance_from_center = math.sqrt((e.position.x - entity.position.x) ^ 2 + (e.position.y - entity.position.y) ^ 2)
 				if distance_from_center <= radius then
 					e.damage(damage, "player", "explosion")

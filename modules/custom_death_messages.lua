@@ -41,7 +41,7 @@ local function on_player_died(event)
 			return
 		end
 					
-		if cause.name == "player" then
+		if cause.name == "character" then
 			if not player.name then return end
 			if not cause.player.name then return end
 			game.print(player.name .. tag .. " was killed by " .. cause.player.name " " .. cause.player.tag .. ".", message_color)							

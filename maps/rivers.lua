@@ -183,7 +183,7 @@ local function on_player_joined_game(event)
 	if player.online_time == 0 then
 		player.insert({name = "iron-plate", count = 32})
 		player.insert({name = "iron-gear-wheel", count = 16})
-		player.teleport(game.surfaces["rivers"].find_non_colliding_position("player", {0, 2}, 50, 0.5), "rivers")
+		player.teleport(game.surfaces["rivers"].find_non_colliding_position("character", {0, 2}, 50, 0.5), "rivers")
 	end		
 end
 

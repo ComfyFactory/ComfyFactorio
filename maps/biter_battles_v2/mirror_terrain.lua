@@ -76,7 +76,7 @@ local function process_entity(surface, entity)
 		entity.clone({position=new_pos, surface=surface, force="south"})
 		return
 	end
-	if entity.name == "player" then
+	if entity.name == "character" then
 		return
 	end
 	if entity.name == "fish" then
@@ -98,7 +98,7 @@ local function clear_chunk(surface, area)
 	else
 		for _, e in pairs(surface.find_entities_filtered({area = area})) do
 			if e.valid then
-				if e.name ~= "player" then
+				if e.name ~= "character" then
 					e.destroy()
 				end
 			end
