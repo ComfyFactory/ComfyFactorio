@@ -155,6 +155,16 @@ local function on_init()
 	end
 end
 
+local function on_entity_died(event)	
+	if not event.entity.valid then return end
+	if event.entity.type == "tree" then 
+		for _, entity in pairs (event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 4, event.entity.position.y - 4},{event.entity.position.x + 4, event.entity.position.y + 4}}, name = "fire-flame-on-tree"})) do
+			if entity.valid then entity.destroy() end
+		end
+	end		
+end
+
 event.on_init(on_init)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

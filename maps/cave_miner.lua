@@ -921,10 +921,8 @@ Darkness is a hazard in the mines, stay near your lamps..
 		global.player_hunger[player.name] = player_hunger_spawn_value
 		hunger_update(player, 0)
 		global.darkness_threat_level[player.name] = 0
-		player.insert {name = 'pistol', count = 1}
-		--player.insert {name = 'raw-fish', count = 1}		
-		player.insert {name = 'firearm-magazine', count = 16}			
-		--player.insert {name = 'iron-axe', count = 1}		
+		player.insert {name = 'pistol', count = 1}	
+		player.insert {name = 'firearm-magazine', count = 16}
 	end
 	create_cave_miner_button(player)
 	create_cave_miner_stats_gui(player)

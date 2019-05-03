@@ -2,7 +2,7 @@
 require "maps.labyrinth_map_intro"
 require "modules.teleporters"
 require "modules.satellite_score"
-require "modules.landfill_reveals_nauvis"
+--require "modules.landfill_reveals_nauvis"
 
 local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'.d2
