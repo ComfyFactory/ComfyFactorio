@@ -206,7 +206,7 @@ local function refresh_alliances()
 	
 	for _, player in pairs(game.players) do
 		if players_to_process[player.index] then
-			if player.force.name ~= "character" then
+			if player.force.name ~= "player" then
 				player.gui.top["anarchy_group_button"].caption = "[Group]"
 				player.tag = ""			
 				player.force = game.forces.spectator

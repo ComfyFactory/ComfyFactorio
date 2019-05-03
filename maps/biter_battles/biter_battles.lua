@@ -249,7 +249,7 @@ local function create_biter_battle_menu(player)
 	local l = t.add  { type = "label", caption = #game.forces["north"].connected_players .. " Players "}
 	l.style.font_color = { r=0.22, g=0.88, b=0.22}
 	
-	if player.force.name ~= "character" then	
+	if player.force.name ~= "player" then	
 		
 		if global.biter_battle_view_players[player.name] == true then
 			local t = frame.add  { type = "table", column_count = 4 }	
@@ -319,7 +319,7 @@ local function create_biter_battle_menu(player)
 	local l = t.add  { type = "label", caption = #game.forces["south"].connected_players .. " Players "}
 	l.style.font_color = { r=0.22, g=0.88, b=0.22}
 	
-	if player.force.name ~= "character" then
+	if player.force.name ~= "player" then
 		
 		if global.biter_battle_view_players[player.name] == true then
 			local t = frame.add  { type = "table", column_count = 4 }	
