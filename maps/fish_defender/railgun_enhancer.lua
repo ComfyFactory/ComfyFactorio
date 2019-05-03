@@ -80,7 +80,7 @@ local function enhance(event)
 	
 	local player = event.cause
 	if player.shooting_state.state == defines.shooting.not_shooting then return end
-	local selected_weapon = player.get_inventory(defines.inventory.player_guns)[player.selected_gun_index]
+	local selected_weapon = player.get_inventory(defines.inventory.character_guns)[player.selected_gun_index]
 	if selected_weapon.name ~= "railgun" then return end
 	
 	create_visuals(event.cause, event.entity)

@@ -1,7 +1,7 @@
 local event = require 'utils.event' 
 local game = require 'utils.game'
 event.add(defines.events.on_entity_damaged, function(event)
-	if event.entity.name ~= 'player' then return end
+	if event.entity.name ~= 'character' then return end
   	local player = game.get_player(event.entity.player)
 	if player.character then
 		if player.character.health == nil then return end

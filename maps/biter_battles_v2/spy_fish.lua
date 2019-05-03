@@ -20,7 +20,7 @@ end
 local function spy_fish(player)
 	if not player.character then return end
 	local duration_per_unit = 1800 
-	local i2 = player.get_inventory(defines.inventory.player_main)
+	local i2 = player.get_inventory(defines.inventory.character_main)
 	if not i2 then return end
 	local owned_fishes = i2.get_item_count("raw-fish")
 	owned_fishes = owned_fishes + i2.get_item_count("raw-fish")

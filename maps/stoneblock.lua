@@ -156,7 +156,7 @@ local function on_player_joined_game(event)
 	
 	local surface = game.surfaces["stoneblock"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", spawn_point, 50, 1), "stoneblock")
+		player.teleport(surface.find_non_colliding_position("character", spawn_point, 50, 1), "stoneblock")
 	else
 		if player.online_time < 2 then
 			player.teleport(spawn_point, "stoneblock")

@@ -43,10 +43,10 @@ local function bouncy_shells(event)
 	if event.damage_type.name ~= "physical" then return false end
 	local player = event.cause
 	if player.shooting_state.state == defines.shooting.not_shooting then return false end
-	local selected_weapon = player.get_inventory(defines.inventory.player_guns)[player.selected_gun_index]
+	local selected_weapon = player.get_inventory(defines.inventory.character_guns)[player.selected_gun_index]
 	if selected_weapon.name ~= "combat-shotgun" and selected_weapon.name ~= "shotgun" then return false end
 	
-	local selected_ammo = player.get_inventory(defines.inventory.player_ammo)[player.selected_gun_index]
+	local selected_ammo = player.get_inventory(defines.inventory.character_ammo)[player.selected_gun_index]
 	if not selected_ammo then return end
 	if not ammo_to_projectile_translation[selected_ammo.name] then return end
 	

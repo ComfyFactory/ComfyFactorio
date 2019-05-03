@@ -62,7 +62,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 					explosion_animation = "big-explosion"
 					if entity.health > 500 then explosion_animation = "big-artillery-explosion" end
 					global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
-					if entity.name ~= "player" then
+					if entity.name ~= "character" then
 						entity.damage(2097152, "player", "explosion")
 					else
 						entity.die("player")

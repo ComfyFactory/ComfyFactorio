@@ -71,7 +71,7 @@ end
 local function annihilate_base(center_pos, surface, force_name)	
 	local entities = {}
 	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 64, center_pos.y - 64},{center_pos.x + 64, center_pos.y + 64}}})) do
-		if e.name ~= "player" then
+		if e.name ~= "character" then
 			if e.valid then
 				local distance_to_center = math.ceil(math.sqrt((e.position.x - center_pos.x)^2 + (e.position.y - center_pos.y)^2))
 				if not entities[distance_to_center] then entities[distance_to_center] = {} end

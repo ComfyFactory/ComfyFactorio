@@ -225,7 +225,7 @@ local function on_gui_click(event)
 		end
 		surface.create_entity({name = "water-splash", position = player.position})
 		surface.create_entity({name = "blood-explosion-big", position = player.position})		
-		local p = surface.find_non_colliding_position("player",global.teleporters[index].position, 2,0.5)
+		local p = surface.find_non_colliding_position("character",global.teleporters[index].position, 2,0.5)
 		if p then
 			player.teleport(p, global.teleporters[index].surface)
 		else

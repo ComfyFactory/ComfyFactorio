@@ -1,6 +1,6 @@
 local event = require 'utils.event'
 local function compute_fullness(player)
-    local inv = player.get_inventory(defines.inventory.player_main)
+    local inv = player.get_inventory(defines.inventory.character_main)
     local max_stacks = #inv
     local num_stacks = 0
 

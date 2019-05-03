@@ -239,7 +239,7 @@ local function join_team(player, force_name)
 			)
 			return
 		end
-		local p = surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 8, 0.5)
+		local p = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 8, 0.5)
 		player.teleport(p, surface)	
 		player.force = game.forces[force_name]
 		player.character.destructible = true
@@ -248,14 +248,14 @@ local function join_team(player, force_name)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
 		return
 	end
-	local pos = surface.find_non_colliding_position("player", game.forces[force_name].get_spawn_position(surface), 3, 1)
+	local pos = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 3, 1)
 	if not pos then pos = game.forces[force_name].get_spawn_position(surface) end
 	player.teleport(pos)
 	player.force = game.forces[force_name]
 	player.character.destructible = true
 	game.permissions.get_group("Default").add_player(player)
 	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
-	local i = player.get_inventory(defines.inventory.player_main)
+	local i = player.get_inventory(defines.inventory.character_main)
 	i.clear()
 	player.insert {name = 'pistol', count = 1}
 	player.insert {name = 'raw-fish', count = 3}
@@ -268,7 +268,7 @@ end
 
 local function spectate(player)
 	if not player.character then return end
-	player.teleport(player.surface.find_non_colliding_position("player", {0,0}, 4, 1))	
+	player.teleport(player.surface.find_non_colliding_position("character", {0,0}, 4, 1))	
 	player.force = game.forces.spectator
 	player.character.destructible = false
 	game.print(player.name .. " is spectating.", {r = 0.98, g = 0.66, b = 0.22})		

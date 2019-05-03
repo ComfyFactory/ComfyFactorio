@@ -21,7 +21,7 @@ local function explosive_bullets(event)
 	if event.damage_type.name ~= "physical" then return false end
 	local player = event.cause
 	if player.shooting_state.state == defines.shooting.not_shooting then return false end
-	local selected_weapon = player.get_inventory(defines.inventory.player_guns)[player.selected_gun_index]
+	local selected_weapon = player.get_inventory(defines.inventory.character_guns)[player.selected_gun_index]
 	if selected_weapon.name ~= "submachine-gun" and selected_weapon.name ~= "pistol" then return false end
 	
 	player.surface.create_entity({name = "explosion", position = event.entity.position})

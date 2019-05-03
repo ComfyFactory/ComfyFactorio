@@ -766,7 +766,7 @@ local function damage_entities_in_radius(surface, position, radius, damage)
 	for _, entity in pairs(entities_to_damage) do
 		if entity.health and entity.name ~= "land-mine" then
 			if entity.force.name ~= "enemy" then
-				if entity.name == "player" then
+				if entity.name == "character" then
 					entity.damage(damage, "enemy")
 				else
 					entity.health = entity.health - damage
@@ -913,7 +913,7 @@ local function on_player_joined_game(event)
 	
 	local surface = game.surfaces["fish_defender"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {-75, 4}, 50, 1), "fish_defender")
+		player.teleport(surface.find_non_colliding_position("character", {-75, 4}, 50, 1), "fish_defender")
 	else
 		if player.online_time < 2 then
 			player.teleport({-50, 0}, "fish_defender")
@@ -1077,10 +1077,10 @@ local function on_chunk_generated(event)
 				end
 			end
 			
-			local pos = surface.find_non_colliding_position("player",{spawn_position_x + 1, 4}, 50, 1)
+			local pos = surface.find_non_colliding_position("character",{spawn_position_x + 1, 4}, 50, 1)
 			game.forces["player"].set_spawn_position(pos, surface)
 			for _, player in pairs(game.connected_players) do
-				local pos = surface.find_non_colliding_position("player",{spawn_position_x + 1, 4}, 50, 1)
+				local pos = surface.find_non_colliding_position("character",{spawn_position_x + 1, 4}, 50, 1)
 				player.teleport(pos, surface)
 			end
 					

@@ -237,7 +237,7 @@ local function on_chunk_generated(event)
 	if event.area.left_top.y == -320 and event.area.left_top.x == -320 then
 		local area = {{-10,-10},{10,10}}
 		for _, e in pairs(surface.find_entities_filtered({area = area})) do
-			if e.name ~= "player" then e.destroy() end
+			if e.name ~= "character" then e.destroy() end
 		end
 		surface.destroy_decoratives({area = area})
 		

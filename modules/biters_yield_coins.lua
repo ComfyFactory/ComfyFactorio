@@ -36,7 +36,7 @@ local function on_entity_died(event)
 	
 	if event.cause then
 		if event.cause.valid then
-			if event.cause.name == "player" then
+			if event.cause.name == "character" then
 				insert(players_to_reward, event.cause)
 				reward_has_been_given = true
 			end			

@@ -260,7 +260,7 @@ local function on_chunk_generated(event)
 	local entities = surface.find_entities(area)
 	for _, e in pairs(entities) do
 		if e.valid then
-			if e.name ~= "player" then
+			if e.name ~= "character" then
 				e.destroy()				
 			end
 		end
@@ -468,7 +468,7 @@ local function on_player_joined_game(event)
 	end	
 	local surface = game.surfaces["forest_maze"]
 	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {0,0}, 2, 1), "forest_maze")
+		player.teleport(surface.find_non_colliding_position("character", {0,0}, 2, 1), "forest_maze")
 	else
 		if player.online_time < 5 then
 			player.teleport({0,0}, "forest_maze")

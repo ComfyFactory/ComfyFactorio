@@ -51,7 +51,7 @@ local function bring_player(player, source_player)
 		source_player.print("Target player is in a vehicle, teleport not available.", { r=0.88, g=0.88, b=0.88})
 		return
 	end
-	local pos = source_player.surface.find_non_colliding_position("player", source_player.position, 50, 1)
+	local pos = source_player.surface.find_non_colliding_position("character", source_player.position, 50, 1)
 	if pos then
 		player.teleport(pos, source_player.surface)
 		game.print(player.name .. " has been teleported to " .. source_player.name .. ". " .. bring_player_messages[math.random(1, #bring_player_messages)], { r=0.98, g=0.66, b=0.22})
@@ -63,7 +63,7 @@ local go_to_player_messages = {
 	"What are you up to?"
 }
 local function go_to_player(player, source_player)
-	local pos = player.surface.find_non_colliding_position("player", player.position, 50, 1)
+	local pos = player.surface.find_non_colliding_position("character", player.position, 50, 1)
 	if pos then
 		source_player.teleport(pos, player.surface)
 		game.print(source_player.name .. " is visiting " .. player.name .. ". " .. go_to_player_messages[math.random(1, #go_to_player_messages)], { r=0.98, g=0.66, b=0.22})

@@ -90,7 +90,7 @@ local function on_chunk_generated(event)
 	local entities = {}		
 	
 	for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
-		if e.name ~= "player" then
+		if e.name ~= "character" then
 			e.destroy()
 		end		
 	end
@@ -133,7 +133,7 @@ local function on_player_joined_game(event)
 	
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
-		player.teleport(game.surfaces["lost"].find_non_colliding_position("player", {0, 2}, 50, 0.5), "lost")
+		player.teleport(game.surfaces["lost"].find_non_colliding_position("character", {0, 2}, 50, 0.5), "lost")
 	end		
 end
 

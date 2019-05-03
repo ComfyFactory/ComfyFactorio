@@ -390,7 +390,7 @@ local function generate_spawn_area(surface)
 				end
 				
 				for _, entity in pairs(surface.find_entities_filtered({area = {{pos.x, pos.y}, {pos.x + 0.99, pos.y + 0.99}}})) do
-					if entity.name ~= "player" then
+					if entity.name ~= "character" then
 						entity.destroy()
 					end
 				end
@@ -600,7 +600,7 @@ local function on_player_joined_game(event)
 	
 	local surface = game.surfaces["nightfall"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {0, 16}, 50, 1), "nightfall")
+		player.teleport(surface.find_non_colliding_position("character", {0, 16}, 50, 1), "nightfall")
 	else
 		if player.online_time < 2 then
 			player.teleport({0, 16}, "nightfall")

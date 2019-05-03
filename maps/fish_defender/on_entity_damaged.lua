@@ -20,7 +20,7 @@ local function on_entity_damaged(event)
 	if protect_market(event) then return end
 	
 	if not event.cause then return end
-	if event.cause.name ~= "player" then return end
+	if event.cause.name ~= "character" then return end
 	
 	if enhance_railgun(event) then return end
 	if global.explosive_bullets_unlocked then

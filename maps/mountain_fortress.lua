@@ -160,7 +160,7 @@ local function on_player_joined_game(event)
 	
 	local surface = game.surfaces["mountain_fortress"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", spawn_point, 50, 1), "mountain_fortress")
+		player.teleport(surface.find_non_colliding_position("character", spawn_point, 50, 1), "mountain_fortress")
 	else
 		if player.online_time < 2 then
 			player.teleport(spawn_point, "mountain_fortress")
