@@ -414,7 +414,7 @@ local function on_chunk_generated(event)
 	if left_top.y ~= 0 then return end
 	if left_top.x ~= 96 then return end
 	for _, e in pairs(surface.find_entities_filtered({area = {{spawn_point.x - 0.5, spawn_point.y - 0.5},{spawn_point.x + 0.5, spawn_point.y + 0.5}}})) do
-		if e.force.name ~= "character" then
+		if e.force.name ~= "player" then
 			e.destroy()
 		end
 	end
