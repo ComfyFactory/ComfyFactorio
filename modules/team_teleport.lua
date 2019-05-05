@@ -2,7 +2,7 @@ local event = require 'utils.event'
 
 local function teleport_player(surface, source_player, position)		
 	local materializing_characters = source_player.surface.find_entities_filtered({
-		name = "player",
+		name = "character",
 		area = {{position.x - 1, position.y - 1},{position.x + 1, position.y + 1}},
 		force = "neutral"
 	})	
