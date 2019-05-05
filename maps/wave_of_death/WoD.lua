@@ -4,19 +4,34 @@
 -- code for reading coordinates ingame: /silent-command game.players[1].print(game.player.selected.position)
 
 require "maps.wave_of_death.intro"
+require "modules.biter_evasion_hp_increaser"
 local event = require 'utils.event'
 local init = require "maps.wave_of_death.init"
 local on_chunk_generated = require "maps.wave_of_death.terrain"
 local ai = require "maps.wave_of_death.ai"
 
+local function autojoin_lane(player)
+	local lowest_player_count = 256
+	local lane_number = 1
+	for i = 1, 4, 1 do
+		if #game.forces[i].connected_players < lowest_player_count then
+			lowest_player_count = #game.forces[i].connected_players
+			lane_number = i
+		end
+	end
+	player.force = game.forces[lane_number]
+	player.teleport(game.forces[player.force.name].get_spawn_position(game.surfaces["wave_of_death"]), game.surfaces["wave_of_death"])
+	player.insert({name = "pistol", count = 1})
+	player.insert({name = "firearm-magazine", count = 16})
+	player.insert({name = "submachine-gun", count = 1})
+	player.insert({name = "uranium-rounds-magazine", count = 128})
+end
+
 local function on_player_joined_game(event)
-	local player = game.players[event.player_index]
-	player.teleport({x = -32, y = 0}, player.surface)
-	--local radius = 256
-	--game.forces.player.chart(player.surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
-	
-	
 	init()
+	
+	local player = game.players[event.player_index]
+	autojoin_lane(player)	
 end
 
 local function on_entity_died(event)
@@ -29,9 +44,11 @@ local function on_player_rotated_entity(event)
 end
 
 local function on_tick(event)
-	--if game.tick % 15 ~= 0 then return end
+	if game.tick % 300 ~= 0 then return end
 	
-	--ai.send_wave_command()
+	for i = 1, 4, 1 do
+		game.forces[i].chart(game.surfaces["wave_of_death"], {{-320, -384}, {320, 96}})
+	end
 end
 
 event.add(defines.events.on_tick, on_tick)
