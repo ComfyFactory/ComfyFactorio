@@ -114,13 +114,13 @@ local function init()
 		{goal = 100, rank = "Copper", color = {r = 201, g = 133, b = 6}, msg = "You have saved the first container of fish!", msg2 = "However, this is only the beginning.", achieved = false},
 		{goal = 1000, rank = "Bronze", color = {r = 186, g = 115, b = 39}, msg = "Thankful for the fish, they sent back a toy mouse made of solid bronze!", msg2 = "They are demanding more.", achieved = false},
 		{goal = 10000, rank = "Silver", color = {r = 186, g = 178, b = 171}, msg = "In gratitude for the fish, they left you a silver furball!", msg2 = "They are still longing for more.", achieved = false},
-		{goal = 100000, rank = "Gold", color = {r = 255, g = 214, b = 33}, msg = "Pleased about the delivery, they sent back a golden audiotape with cat purrs.", msg2 = "They still demand more.", achieved = false},
-		{goal = 1000000, rank = "Platinum", color = {r = 224, g = 223, b = 215}, msg = "To express their infinite love, they sent back a yarnball made of shiny material.", msg2 = "Defying all logic, they still demand more fish.", achieved = false},	
-		{goal = 10000000, rank = "Diamond", color = {r = 237, g = 236, b = 232}, msg = "A box arrives with a mewing kitten, it a has a diamond collar.", msg2 = "More fish? Why? What..", achieved = false},	
-		{goal = 100000000, rank = "Anti-matter", color = {r = 100, g = 100, b = 245}, msg = "The obese cat colapses and forms a black hole!", msg2 = ":obese:", achieved = false},
-		{goal = 1000000000, rank = "Black Hole", color = {r = 100, g = 100, b = 245}, msg = "A letter arrives, it reads: Go to bed hooman!", msg2 = "Not yet...", achieved = false},
-		{goal = 10000000000, rank = "Blue Screen", color = {r = 100, g = 100, b = 245}, msg = "Cat error #4721", msg2 = "....", achieved = false},
-		{goal = 100000000000, rank = "Blue Screen", color = {r = 100, g = 100, b = 245}, msg = "....", msg2 = "....", achieved = false}
+		{goal = 25000, rank = "Gold", color = {r = 255, g = 214, b = 33}, msg = "Pleased about the delivery, they sent back a golden audiotape with cat purrs.", msg2 = "They still demand more.", achieved = false},
+		{goal = 50000, rank = "Platinum", color = {r = 224, g = 223, b = 215}, msg = "To express their infinite love, they sent back a yarnball made of shiny material.", msg2 = "Defying all logic, they still demand more fish.", achieved = false},	
+		{goal = 100000, rank = "Diamond", color = {r = 237, g = 236, b = 232}, msg = "A box arrives with a mewing kitten, it a has a diamond collar.", msg2 = "More fish? Why? What..", achieved = false},	
+		{goal = 250000, rank = "Anti-matter", color = {r = 100, g = 100, b = 245}, msg = "The obese cat colapses and forms a black hole!", msg2 = ":obese:", achieved = false},
+		{goal = 500000, rank = "Black Hole", color = {r = 100, g = 100, b = 245}, msg = "A letter arrives, it reads: Go to bed hooman!", msg2 = "Not yet...", achieved = false},
+		{goal = 1000000, rank = "Blue Screen", color = {r = 100, g = 100, b = 245}, msg = "Cat error #4721", msg2 = "....", achieved = false},
+		{goal = 10000000, rank = "Blue Screen", color = {r = 100, g = 100, b = 245}, msg = "....", msg2 = "....", achieved = false}
 	}
 end
 
