@@ -541,8 +541,8 @@ local function biter_attack_wave()
 		global.wave_count = global.wave_count + 1
 	end
 	
-	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * 0.002)
-	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * 0.002)
+	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * 0.0015)
+	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * 0.0015)
 	global.biter_evasion_health_increase_factor = 1 + (global.wave_count * 0.0025)
 	
 	if global.wave_count % 50 == 0 then				
