@@ -109,7 +109,7 @@ end
 
 local function get_nearby_players()
 	local players = global.comfylatron.surface.find_entities_filtered({
-		name = "player",
+		name = "character",
 		area = {{global.comfylatron.position.x - 9, global.comfylatron.position.y - 9}, {global.comfylatron.position.x + 9, global.comfylatron.position.y + 9}}
 	})
 	if not players[1] then return false end
@@ -225,6 +225,7 @@ local analyze_blacklist = {
 	["compilatron"] = true,
 	["compi-speech-bubble"] = true,
 	["entity-ghost"] = true,
+	["character"] = true,
 	["item-on-ground"] = true
 }
 
