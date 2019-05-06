@@ -34,6 +34,10 @@ local function on_player_joined_game(event)
 	autojoin_lane(player)	
 end
 
+local function on_entity_damaged(event)
+	ai.prevent_friendly_fire(event)
+end
+
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	ai.spawn_spread_wave(event)
@@ -53,6 +57,7 @@ end
 
 event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)

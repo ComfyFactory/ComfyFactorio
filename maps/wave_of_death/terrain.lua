@@ -28,17 +28,34 @@ local function init(surface, left_top)
 	
 	global.loaders = {}
 	for i = 1, 4, 1 do
-		global.loaders[i] = surface.create_entity({name = "loader", position = {x = -208 + 160*(i - 1), y = 0}, force = i})
+		local position = {x = -208 + 160*(i - 1), y = 0}
+		
+		for x = -12, 12, 1 do
+			for y = -12, 12, 1 do
+				if math.sqrt(x ^ 2 + y ^ 2) < 8 then
+					local pos = {x = position.x + x, y = position.y + y}
+					if surface.get_tile(pos).name == "water" then
+						surface.set_tiles({{name = "grass-2", position = pos}})
+					end
+				end
+			end
+		end
+		
+		global.loaders[i] = surface.create_entity({name = "loader", position = position, force = i})
 		global.loaders[i].minable = false
-		game.forces[i].set_spawn_position({x = global.loaders[i].position.x, y = global.loaders[i].position.y + 8}, surface)
-		rendering.draw_sprite({sprite = "file/maps/wave_of_death/WoD.png", target = {x = -140 + 160*(i - 1), y = 0}, surface = surface, orientation = 0, x_scale = 2, y_scale = 2, render_layer = "ground-tile"})		
+		
+		game.forces[i].set_spawn_position({x = position.x, y = position.y + 8}, surface)
+		
+		rendering.draw_sprite({sprite = "file/maps/wave_of_death/WoD.png", target = {x = -140 + 160*(i - 1), y = 0}, surface = surface, orientation = 0, x_scale = 2, y_scale = 2, render_layer = "ground-tile"})
 	end	
 end
 
 local function place_entities(surface, position, noise_position, seed)
-	if get_noise("ponds", noise_position, seed + 50000) > 0.82 then
+	local noise = get_noise("ponds", noise_position, seed + 50000)
+	local noise_2 = get_noise("decoratives", noise_position, seed + 60000)
+	if noise > -0.1 and noise < 0.1 and noise_2 > 0.3 then
 		surface.set_tiles({{name = "water", position = position}})
-		if get_noise("random_things", noise_position, seed) > 0.8 then surface.create_entity({name = "fish", position = position}) end
+		if get_noise("random_things", noise_position, seed) > 0.82 then surface.create_entity({name = "fish", position = position}) end
 		return
 	end
 	local noise = get_noise("ore", noise_position, seed + 5000)
@@ -46,9 +63,9 @@ local function place_entities(surface, position, noise_position, seed)
 	local noise = get_noise("ore", noise_position, seed + 10000)
 	if noise > 0.75 then surface.create_entity({name = "copper-ore", position = position, amount = 1000 + math.abs(noise * 1000)}) return end
 	local noise = get_noise("ore", noise_position, seed + 15000)
-	if noise > 0.8 then surface.create_entity({name = "coal", position = position, amount = 1000 + math.abs(noise * 1000)}) return end
+	if noise > 0.82 then surface.create_entity({name = "coal", position = position, amount = 1000 + math.abs(noise * 1000)}) return end
 	local noise = get_noise("ore", noise_position, seed + 20000)
-	if noise > 0.8 then surface.create_entity({name = "stone", position = position, amount = 1000 + math.abs(noise * 1000)}) return end
+	if noise > 0.82 then surface.create_entity({name = "stone", position = position, amount = 1000 + math.abs(noise * 1000)}) return end
 	local noise = get_noise("ore", noise_position, seed + 25000)
 	if noise > 0.93 then surface.create_entity({name = "uranium-ore", position = position, amount = 1000 + math.abs(noise * 1000)}) return end
 	if noise < -0.93 then

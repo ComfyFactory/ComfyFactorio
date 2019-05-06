@@ -88,4 +88,12 @@ ai.trigger_new_wave = function(event)
 	game.print("Lane " .. entity.force.name .. " has summoned wave #" .. global.wod_lane[lane_number].current_wave - 1)	
 end
 
+ai.prevent_friendly_fire = function(event)	
+	if event.cause then
+		if event.cause.type == "unit" then return end		 
+	end
+	if event.entity.name ~= "loader" then return end		
+	event.entity.health = event.entity.health + event.final_damage_amount
+end
+
 return ai
