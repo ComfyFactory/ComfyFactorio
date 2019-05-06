@@ -1,5 +1,13 @@
 local game_status = {}
 
+local function create_victory_gui(winning_lane)
+	for _, player in pairs(game.connected_players) do
+		local frame = player.gui.left.add {type = "frame", name = "victory_gui", direction = "vertical", caption = "Lane " .. winning_lane .. " has won the game!! ^_^" }
+		frame.style.font = "heading-1"
+		frame.style.font_color = {r = 0, g = 220, b = 220}
+	end	
+end
+
 game_status.restart_server = function()
 	if not global.server_restart_timer then return end
 	global.server_restart_timer = global.server_restart_timer - 5
@@ -38,7 +46,7 @@ game_status.has_lane_lost = function(event)
 			player.character.die()
 		end
 	end
-	game.print(">> Lane " .. lane_number .. " has been defeated!", {r = 100, g = 50, b = 0})
+	game.print(">> Lane " .. lane_number .. " has been defeated!", {r = 120, g = 60, b = 0})
 	
 	--determine winner and restart the server
 	local lanes_alive = 0
@@ -50,7 +58,7 @@ game_status.has_lane_lost = function(event)
 	if lanes_alive ~= 1 then return end
 	for i = 1, 4, 1 do
 		if global.wod_lane[i].game_lost == true then
-			game.print(">> Lane " .. i .. " has won!!!", {r = 0, g = 150, b = 150})
+			game.print(">> Lane " .. i .. " has won the game!!", {r = 0, g = 220, b = 220})
 			global.server_restart_timer = 120
 		end
 	end	 
