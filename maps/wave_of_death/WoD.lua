@@ -28,8 +28,8 @@ local function autojoin_lane(player)
 	soft_teleport(player, game.forces[player.force.name].get_spawn_position(game.surfaces["wave_of_death"]))
 	player.insert({name = "pistol", count = 1})
 	player.insert({name = "firearm-magazine", count = 16})
-	player.insert({name = "submachine-gun", count = 1})
-	player.insert({name = "uranium-rounds-magazine", count = 128})
+	player.insert({name = "iron-plate", count = 128})
+	player.insert({name = "iron-gear-wheel", count = 32})
 end
 
 local function on_player_joined_game(event)

@@ -31,14 +31,23 @@ local function init(surface, left_top)
 		local position = {x = -208 + 160*(i - 1), y = 0}
 		
 		for x = -12, 12, 1 do
-			for y = -12, 12, 1 do
-				if math.sqrt(x ^ 2 + y ^ 2) < 8 then
-					local pos = {x = position.x + x, y = position.y + y}
-					if surface.get_tile(pos).name == "water" then
-						surface.set_tiles({{name = "grass-2", position = pos}})
+			for y = -12, 12, 1 do	
+				local pos = {x = position.x + x, y = position.y + y}
+				local distance_to_center = math.sqrt(x ^ 2 + y ^ 2)
+				if distance_to_center < 3.5 then
+					surface.set_tiles({{name = "stone-path", position = pos}})
+				else
+					if distance_to_center < 9 then		
+						if surface.get_tile(pos).name == "water" then
+							surface.set_tiles({{name = "grass-2", position = pos}})
+						end
 					end
 				end
 			end
+		end
+		
+		for _, e in pairs(surface.find_entities_filtered({area = {{position.x - 2, position.y - 2},{position.x + 3, position.y + 3}}, force = "neutral"})) do
+			e.destroy()
 		end
 		
 		global.loaders[i] = surface.create_entity({name = "loader", position = position, force = i})

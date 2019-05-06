@@ -2,9 +2,10 @@ local game_status = {}
 
 local function create_victory_gui(winning_lane)
 	for _, player in pairs(game.connected_players) do
+		player.play_sound{path="utility/game_won", volume_modifier=0.75}
 		local frame = player.gui.left.add {type = "frame", name = "victory_gui", direction = "vertical", caption = "Lane " .. winning_lane .. " has won the game!! ^_^" }
 		frame.style.font = "heading-1"
-		frame.style.font_color = {r = 0, g = 220, b = 220}
+		frame.style.font_color = {r = 220, g = 220, b = 0}
 	end	
 end
 
@@ -56,9 +57,11 @@ game_status.has_lane_lost = function(event)
 		end
 	end
 	if lanes_alive ~= 1 then return end
+	
 	for i = 1, 4, 1 do
-		if global.wod_lane[i].game_lost == true then
-			game.print(">> Lane " .. i .. " has won the game!!", {r = 0, g = 220, b = 220})
+		if global.wod_lane[i].game_lost == false then
+			game.print(">> Lane " .. i .. " has won the game!!", {r = 220, g = 220, b = 0})
+			create_victory_gui(i)
 			global.server_restart_timer = 120
 		end
 	end	 

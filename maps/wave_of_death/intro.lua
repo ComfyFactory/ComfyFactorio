@@ -8,13 +8,12 @@ on this map you battle with your team against up to 3 other teams.
 Each team can call its own wave of biters and spitters at any time and they get stronger with each wave.
 Each wave, when defeated, sends a percentage of their enemys to all other teams.
 
-To call a wave, you have to rotate the loader under the marketplace.
+To call a wave, you have to rotate the loader.
 But remember that you must also be able to defeat the enemy.
 
-Each team has a main building, the marketplace, which is the main target of the biters.
-Your task is to defend the main building. If the main building is destroyed, you have lost!
+Your task is to defend your loader. If it is destroyed, you have lost!
 
-A round is over when only one team has its main building left.
+A round is over when only one team has it's loader left.
 
 Credits:
 Map made by MewMew and Kyte
@@ -51,8 +50,8 @@ local function create_map_intro(player)
 	local frame = t.add {type = "frame"}
 	local l = frame.add {type = "label", caption = info}
 	l.style.single_line = false
-	l.style.font = "heading-3"
-	l.style.font_color = {r=0.95, g=0.95, b=0.95}
+	l.style.font = "heading-2"
+	l.style.font_color = {r=0.60, g=0.8, b=0.60}
 end
 
 local function on_player_joined_game(event)
