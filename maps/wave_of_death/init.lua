@@ -56,7 +56,8 @@ local function init_globals()
 	for i = 1, 4, 1 do
 		global.wod_lane[i] = {}
 		global.wod_lane[i].current_wave = 1
-		global.wod_lane[i].alive_biters = 0				
+		global.wod_lane[i].alive_biters = 0
+		global.wod_lane[i].game_lost = false
 	end
 end
 

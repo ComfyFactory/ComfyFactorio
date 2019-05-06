@@ -46,8 +46,18 @@ local function init(surface, left_top)
 		
 		game.forces[i].set_spawn_position({x = position.x, y = position.y + 8}, surface)
 		
-		rendering.draw_sprite({sprite = "file/maps/wave_of_death/WoD.png", target = {x = -140 + 160*(i - 1), y = 0}, surface = surface, orientation = 0, x_scale = 2, y_scale = 2, render_layer = "ground-tile"})
-	end	
+		--rendering.draw_sprite({sprite = "file/maps/wave_of_death/WoD.png", target = {x = -140 + 160*(i - 1), y = 0}, surface = surface, orientation = 0, x_scale = 2, y_scale = 2, render_layer = "ground-tile"})
+	end
+	
+	local center_position = {x = 32, y = 0}
+	for x = -6, 6, 1 do
+		for y = -6, 6, 1 do
+			if math.sqrt(x ^ 2 + y ^ 2) < 6 then
+				local pos = {x = center_position.x + x, y = center_position.y + y}
+				surface.set_tiles({{name = "water-shallow", position = pos}})
+			end
+		end
+	end
 end
 
 local function place_entities(surface, position, noise_position, seed)

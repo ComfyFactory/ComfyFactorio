@@ -60,21 +60,24 @@ ai.spawn_spread_wave = function(event)
 
 	for lane_number = 1, 4, 1 do
 		if lane_number ~= trigger_lane_number then
-			ai.spawn_wave(entity.surface, lane_number, global.wod_lane[trigger_lane_number].current_wave - 1, global.spread_amount_modifier)	
+			if #game.forces[lane_number].players > 0 and global.wod_lane[lane_number].game_lost == false then
+				ai.spawn_wave(entity.surface, lane_number, global.wod_lane[trigger_lane_number].current_wave - 1, global.spread_amount_modifier)
+			end
 		end
 	end
 
-	game.print("Lane #" .. trigger_lane_number .. " has defeated their wave.")
+	--game.print("Lane #" .. trigger_lane_number .. " has defeated their wave.")
 end
 
 --on_entity_rotated event
 ai.trigger_new_wave = function(event)
 	local entity = event.entity
 	if entity.name ~= "loader" then return end
+	if game.tick < 600 then return end
 	local lane_number = tonumber(entity.force.name)
 	if not global.wod_lane[lane_number] then return end
 	if global.wod_lane[lane_number].alive_biters > 0 then
-		entity.force.print("There are " .. global.wod_lane[lane_number].alive_biters .. " spawned biters left.", {r = 180, g = 0, b = 0})
+		entity.force.print(">> There are " .. global.wod_lane[lane_number].alive_biters .. " spawned biters left.", {r = 180, g = 0, b = 0})
 		return 
 	end
 
@@ -83,9 +86,9 @@ ai.trigger_new_wave = function(event)
     ai.spawn_wave(entity.surface, lane_number, wave_number, 1)
 	
 	for _, player in pairs(game.connected_players) do
-		player.play_sound{path="utility/new_objective", volume_modifier=0.3} --dont know if a sound would be annoying in a game with 10 lanes playing ^^ maybe a short sound
+		player.play_sound{path="utility/new_objective", volume_modifier=0.3}
 	end
-	game.print("Lane " .. entity.force.name .. " has summoned wave #" .. global.wod_lane[lane_number].current_wave - 1)	
+	game.print(">> Lane " .. entity.force.name .. " summoned wave #" .. global.wod_lane[lane_number].current_wave - 1 .. "", {r = 0, g = 100, b = 0})	
 end
 
 ai.prevent_friendly_fire = function(event)	
