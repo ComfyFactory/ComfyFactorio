@@ -32,6 +32,7 @@ local function init_forces(surface)
 	
 	for _, force in pairs(game.forces) do
 		if force.name ~= "enemy" then
+			force.technologies["optics"].researched = true
 			force.technologies["artillery"].enabled = false
 			force.technologies["artillery-shell-range-1"].enabled = false					
 			force.technologies["artillery-shell-speed-1"].enabled = false	

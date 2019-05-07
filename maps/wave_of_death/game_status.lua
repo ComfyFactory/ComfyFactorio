@@ -30,9 +30,10 @@ game_status.has_lane_lost = function(event)
 	if event.entity.name ~= "loader" then return end
 	local lane_number = tonumber(event.entity.force.name)
 	global.wod_lane[lane_number].game_lost = true
-	game.forces[lane_number].set_spawn_position({x = 32, y = 0}, event.entity.surface)
+	local surface = event.entity.surface
+	game.forces[lane_number].set_spawn_position({x = 32, y = 0}, surface)
 	
-	event.entity.surface.create_entity({
+	surface.create_entity({
 		name = "atomic-rocket",	
 		position = event.entity.position,
 		force = "enemy",
@@ -64,7 +65,13 @@ game_status.has_lane_lost = function(event)
 			create_victory_gui(i)
 			global.server_restart_timer = 120
 		end
-	end	 
+	end
+	
+	for _, unit in pairs(surface.find_entities_filtered({type = "unit"})) do
+		if unit.valid then
+			unit.die()
+		end
+	end
 end
 
 return game_status

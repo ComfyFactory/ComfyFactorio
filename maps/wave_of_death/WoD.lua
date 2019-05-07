@@ -65,7 +65,7 @@ local function on_tick(event)
 	if game.tick % 300 ~= 0 then return end
 	
 	for i = 1, 4, 1 do
-		game.forces[i].chart(game.surfaces["wave_of_death"], {{-288, -420}, {352, 32}})
+		game.forces[i].chart(game.surfaces["wave_of_death"], {{-288, -420}, {352, 64}})
 	end
 	
 	game_status.restart_server()

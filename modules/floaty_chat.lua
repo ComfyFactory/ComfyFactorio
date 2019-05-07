@@ -15,7 +15,7 @@ local function on_console_chat(event)
 		text = event.message,
 		surface = player.surface,
 		target = player.character,
-		target_offset = {-0.1, -3},
+		target_offset = {-0.05, -4},
 		color = {
 			r = player.color.r * 0.6 + 0.25,
 			g = player.color.g * 0.6 + 0.25,
@@ -23,10 +23,10 @@ local function on_console_chat(event)
 			a = 1
 		},
 		time_to_live = 600,
-		scale = 0.9,
+		scale = 1.50,
 		font = "default-game",
 		alignment = "center",
-		scale_with_zoom = true
+		scale_with_zoom = false
 	}
 end
 

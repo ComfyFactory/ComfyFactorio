@@ -7,7 +7,9 @@ ai.spawn_wave = function(surface, lane_number, wave_number, amount_modifier)
 	
 	if not global.loaders[lane_number].valid then return end
 	
-	local spawn_position = {x = global.loaders[lane_number].position.x, y = global.loaders[lane_number].position.y - 288}
+	local x_modifier = 32 - math.random(0, 64)
+	
+	local spawn_position = {x = global.loaders[lane_number].position.x + x_modifier, y = global.loaders[lane_number].position.y - 288}
 	
 	local unit_group = surface.create_unit_group({position = spawn_position, force = "enemy"})
 	
@@ -81,15 +83,23 @@ ai.trigger_new_wave = function(event)
 		entity.force.print(">> There are " .. global.wod_lane[lane_number].alive_biters .. " spawned biters left.", {r = 180, g = 0, b = 0})
 		return 
 	end
-
+	
 	local wave_number = global.wod_lane[lane_number].current_wave
 	if not biter_waves[wave_number] then wave_number = #biter_waves end
     ai.spawn_wave(entity.surface, lane_number, wave_number, 1)
 	
+	local player = game.players[event.player_index]
+	for _, force in pairs(game.forces) do
+		if force.name == entity.force.name then
+			force.print(">> " .. player.name .. " has summoned wave #" .. global.wod_lane[lane_number].current_wave - 1 .. "", {r = 0, g = 100, b = 0})
+		else
+			force.print(">> Lane " .. entity.force.name .. " summoned wave #" .. global.wod_lane[lane_number].current_wave - 1 .. "", {r = 0, g = 100, b = 0})
+		end
+	end
+	
 	for _, player in pairs(game.connected_players) do
 		player.play_sound{path="utility/new_objective", volume_modifier=0.3}
-	end
-	game.print(">> Lane " .. entity.force.name .. " summoned wave #" .. global.wod_lane[lane_number].current_wave - 1 .. "", {r = 0, g = 100, b = 0})	
+	end		
 end
 
 ai.prevent_friendly_fire = function(event)	
