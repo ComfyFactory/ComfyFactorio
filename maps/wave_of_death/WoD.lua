@@ -2,6 +2,10 @@
 
 require "maps.wave_of_death.intro"
 require "modules.biter_evasion_hp_increaser"
+require "modules.custom_death_messages"
+require "modules.dangerous_goods"
+require "modules.floaty_chat"
+
 local event = require 'utils.event'
 local init = require "maps.wave_of_death.init"
 local on_chunk_generated = require "maps.wave_of_death.terrain"

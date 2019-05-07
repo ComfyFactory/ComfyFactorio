@@ -41,7 +41,7 @@ local function init_forces(surface)
 			force.share_chart = true
 			for _, force_2 in pairs(game.forces) do
 				if force_2.name ~= "enemy" then
-					force.set_friend(force_2.name, true)
+					force.set_cease_fire(force_2.name, true)
 				end
 			end
 		end

@@ -73,7 +73,7 @@ end
 ai.trigger_new_wave = function(event)
 	local entity = event.entity
 	if entity.name ~= "loader" then return end
-	if game.tick < 18000 then entity.force.print(">> It is too early to spawn waves yet.", {r = 180, g = 0, b = 0}) return end
+	if game.tick < 18000 then entity.force.print(">> It is too early to call waves yet.", {r = 180, g = 0, b = 0}) return end
 	if #game.players < 4 then entity.force.print(">> More players are required to spawn waves.", {r = 180, g = 0, b = 0}) return end
 	local lane_number = tonumber(entity.force.name)
 	if not global.wod_lane[lane_number] then return end
