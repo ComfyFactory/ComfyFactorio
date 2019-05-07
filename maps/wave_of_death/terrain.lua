@@ -1,5 +1,6 @@
-local simplex_noise = require 'utils.simplex_noise'.d2
+local simplex_noise = require "utils.simplex_noise".d2
 local math_random = math.random
+local wod_logo_tiles = require "maps.wave_of_death.logo"
 local noises = {
 	["biter_territory_decoratives"] = {{modifier = 0.03, weight = 1}, {modifier = 0.05, weight = 0.3}, {modifier = 0.1, weight = 0.05}},
 	["biter_territory_beach"] = {{modifier = 0.07, weight = 1}, {modifier = 0.03, weight = 0.3}, {modifier = 0.1, weight = 0.1}},
@@ -20,6 +21,14 @@ local function get_noise(name, pos, seed)
 		seed = seed + 10000
 	end
 	return noise
+end
+
+local function wod_logo(surface, left_top)
+	if left_top.y ~= -320 then return end
+	if left_top.x ~= -256 then return end
+	for _, tile in pairs(wod_logo_tiles.data) do
+		surface.set_tiles({{name = wod_logo_tiles.index[tile[2]], position = {tile[1][1] - 50, tile[1][2] - 436}}})
+	end
 end
 
 local function init(surface, left_top)
@@ -182,6 +191,7 @@ local function on_chunk_generated(event)
 		draw_lanes(surface, left_top)
 	end	
 	init(surface, left_top)
+	wod_logo(surface, left_top)
 end
 
 return on_chunk_generated
