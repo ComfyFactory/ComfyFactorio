@@ -20,6 +20,7 @@ local function init_surface()
 	game.map_settings.enemy_evolution.pollution_factor = 0
 	game.map_settings.pollution.enabled = false	
 	game.map_settings.enemy_expansion.enabled = false
+	game.difficulty_settings.technology_price_multiplier = 0.8
 	
 	return surface
 end
@@ -47,6 +48,34 @@ local function init_forces(surface)
 			end
 		end
 	end
+	
+	for i = 1, 4, 1 do
+		game.forces[i].set_friend("player", true)
+		game.forces["player"].set_friend(game.forces[i].name, true)
+	end
+	game.forces["player"].set_spawn_position({x = 32, y = 0}, surface)
+	
+	local p = game.permissions.create_group("spectator")
+	for action_name, _ in pairs(defines.input_action) do
+		p.set_allows_action(defines.input_action[action_name], false)
+	end	
+	local defs = {
+		defines.input_action.write_to_console,
+		defines.input_action.gui_click,
+		defines.input_action.gui_selection_state_changed,
+		defines.input_action.gui_checked_state_changed	,
+		defines.input_action.gui_elem_changed,
+		defines.input_action.gui_text_changed,
+		defines.input_action.gui_value_changed,
+		defines.input_action.start_walking,
+		defines.input_action.open_kills_gui,
+		defines.input_action.open_character_gui,
+		defines.input_action.edit_permission_group,
+		defines.input_action.toggle_show_entity_info,
+		defines.input_action.rotate_entity,
+		defines.input_action.start_research
+	}	
+	for _, d in pairs(defs) do p.set_allows_action(d, true) end
 end
 
 local function init_globals()
