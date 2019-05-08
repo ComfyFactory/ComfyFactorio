@@ -7,6 +7,7 @@ require "modules.dangerous_goods"
 require "modules.floaty_chat"
 
 local event = require 'utils.event'
+require 'utils.table'
 local init = require "maps.wave_of_death.init"
 local on_chunk_generated = require "maps.wave_of_death.terrain"
 local ai = require "maps.wave_of_death.ai"
@@ -43,13 +44,17 @@ end
 
 local function autojoin_lane(player)
 	local lowest_player_count = 256
-	local lane_number = 1
-	for i = 1, 4, 1 do
-		if #game.forces[i].connected_players < lowest_player_count and global.wod_lane[i].game_lost == false then
-			lowest_player_count = #game.forces[i].connected_players
-			lane_number = i
+	local lane_number
+	local lane_numbers = {1,2,3,4}
+	table.shuffle_table(lane_numbers)
+		
+	for _, number in pairs(lane_numbers) do
+		if #game.forces[number].connected_players < lowest_player_count and global.wod_lane[number].game_lost == false then
+			lowest_player_count = #game.forces[number].connected_players
+			lane_number = number
 		end
 	end
+	
 	player.force = game.forces[lane_number]
 	soft_teleport(player, game.forces[player.force.name].get_spawn_position(game.surfaces["wave_of_death"]))
 	player.insert({name = "pistol", count = 1})
@@ -103,6 +108,7 @@ local function on_gui_click(event)
 	if event.element.name == "confirm_spectate" then
 		player.gui.center["spectate_confirmation_frame"].destroy()
 		game.permissions.get_group("spectator").add_player(player)
+		if player.force.name == "player" then return end
 		player.force = game.forces.player
 		if player.character then player.character.die() end
 		return 

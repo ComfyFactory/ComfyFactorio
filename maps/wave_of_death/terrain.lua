@@ -37,7 +37,7 @@ local function init(surface, left_top)
 	
 	global.loaders = {}
 	for i = 1, 4, 1 do
-		local position = {x = -208 + 160*(i - 1), y = 0}
+		local position = {x = -208 + 160*(i - 1), y = 32}
 		
 		for x = -12, 12, 1 do
 			for y = -12, 12, 1 do	

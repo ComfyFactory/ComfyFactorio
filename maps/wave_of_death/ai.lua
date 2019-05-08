@@ -31,7 +31,7 @@ ai.spawn_wave = function(surface, lane_number, wave_number, amount_modifier)
 		commands = {
 			{
 				type = defines.command.attack_area,
-				destination = global.loaders[lane_number].position,
+				destination = {x = global.loaders[lane_number].position.x + x_modifier, y = global.loaders[lane_number].position.y},
 				radius = 32,
 				distraction=defines.distraction.by_enemy
 			},									
