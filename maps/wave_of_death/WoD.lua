@@ -42,6 +42,34 @@ local function create_spectate_confirmation(player)
 	frame.add({type = "button", name = "cancel_spectate", caption = "Cancel"})
 end
 
+local button_colors = {
+	[1] = {r = 0.0, g = 0.0, b = 0.38},
+	[2] = {r = 0.38, g = 0.0, b = 0.0},
+	[3] = {r = 0.0, g = 0.38, b = 0.0},
+	[4] = {r = 0.25, g = 0.0, b = 0.35}
+}
+
+function create_lane_buttons(player)
+	for i = 1, 4, 1 do
+		if player.gui.top["button_lane_" .. i] then player.gui.top["button_lane_" .. i].destroy() end
+		local caption = "Wave #" .. global.wod_lane[i].current_wave - 1
+		if global.wod_lane[i].game_lost == true then caption = "Out" end
+		local button = player.gui.top.add({type = "button", name = "button_lane_" .. i, caption = caption, tooltip = "Lane " .. i .. " stats"})
+		button.style.font = "default-bold"
+		button.style.font_color = button_colors[i]
+		button.style.minimal_height = 38
+		button.style.minimal_width = 70
+		button.style.top_padding = 2
+		button.style.left_padding = 4
+		button.style.right_padding = 4
+		button.style.bottom_padding = 2
+	end
+end
+
+local function create_lane_info_frame(player, lane_number)
+	
+end
+
 local function autojoin_lane(player)
 	local lowest_player_count = 256
 	local lane_number
@@ -68,6 +96,8 @@ local function on_player_joined_game(event)
 		
 	local player = game.players[event.player_index]
 	spectate_button(player)
+	create_lane_buttons(player)
+	
 	if player.online_time == 0 then autojoin_lane(player) return end
 	
 	if global.wod_lane[tonumber(player.force.name)].game_lost == true then
@@ -123,6 +153,25 @@ local function on_gui_click(event)
 	end
 end
 
+--Flamethrower Turret Nerf
+local function on_research_finished(event)
+	local research = event.research
+	local force_name = research.force.name
+	if research.name == "flamethrower" then
+		if not global.flamethrower_damage then global.flamethrower_damage = {} end
+		global.flamethrower_damage[force_name] = -0.25
+		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.flamethrower_damage[force_name])
+		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.flamethrower_damage[force_name])						
+	end
+	
+	if string.sub(research.name, 0, 18) == "refined-flammables" then
+		global.flamethrower_damage[force_name] = global.flamethrower_damage[force_name] + 0.05
+		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.flamethrower_damage[force_name])								
+		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.flamethrower_damage[force_name])
+	end	
+end
+
+event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

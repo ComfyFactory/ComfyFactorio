@@ -49,7 +49,7 @@ game_status.has_lane_lost = function(event)
 		end
 	end
 	game.print(">> Lane " .. lane_number .. " has been defeated!", {r = 120, g = 60, b = 0})
-	
+			
 	--determine winner and restart the server
 	local lanes_alive = 0
 	for i = 1, 4, 1 do
@@ -57,7 +57,13 @@ game_status.has_lane_lost = function(event)
 			lanes_alive = lanes_alive + 1
 		end
 	end
-	if lanes_alive ~= 1 then return end
+	if lanes_alive ~= 1 then
+		for _, player in pairs(game.connected_players) do
+			create_lane_buttons(player)
+			player.play_sound{path="utility/game_lost", volume_modifier=0.5}
+		end
+		return
+	end
 	
 	for i = 1, 4, 1 do
 		if global.wod_lane[i].game_lost == false then

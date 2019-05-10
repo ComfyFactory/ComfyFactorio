@@ -45,7 +45,16 @@ ai.spawn_wave = function(surface, lane_number, wave_number, amount_modifier)
 	
 	if is_spread_wave then return end
 	global.wod_lane[lane_number].current_wave = global.wod_lane[lane_number].current_wave + 1
-	global.biter_evasion_health_increase_factor = global.biter_evasion_health_increase_factor + 0.005
+	
+	local m = 0.005
+	if global.wod_lane[lane_number].current_wave > #biter_waves then
+		m = 0.25
+	end
+	global.biter_evasion_health_increase_factor = global.biter_evasion_health_increase_factor + m
+	
+	for _, player in pairs(game.connected_players) do
+		create_lane_buttons(player)
+	end
 end
 
 --on_entity_died event
