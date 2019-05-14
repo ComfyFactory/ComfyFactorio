@@ -1,4 +1,4 @@
-local radius = 16
+local radius = 12
 local math_random = math.random
 local math_sqrt = math.sqrt
 
@@ -24,10 +24,10 @@ local function bounce(surface, position, ammo)
 	for _, e in pairs(surface.find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})) do		
 		if e.health then
 			if e.force.name ~= "player" then
-				local distance_from_center = math_sqrt((e.position.x - position.x) ^ 2 + (e.position.y - position.y) ^ 2)
-				if distance_from_center <= radius then
+				--local distance_from_center = math_sqrt((e.position.x - position.x) ^ 2 + (e.position.y - position.y) ^ 2)
+				--if distance_from_center <= radius then
 					valid_entities[#valid_entities + 1] = e
-				end
+				--end
 			end
 		end
 	end

@@ -13,7 +13,7 @@ local function init_surface()
 
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.3"
-	map_gen_settings.starting_area = "2"
+	map_gen_settings.starting_area = "2.2"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 40, cliff_elevation_0 = 40}		
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "7", size = "0.5", richness = "0.5"},
@@ -32,6 +32,7 @@ local function init_surface()
 	local surface = game.create_surface("mixed_railworld", map_gen_settings)				
 	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
 	surface.force_generate_chunk_requests()
+	surface.daytime = 0.7
 	
 	game.forces["player"].set_spawn_position({0,0},game.surfaces["mixed_railworld"])
 	
@@ -39,10 +40,9 @@ local function init_surface()
 end
 
 local function on_player_joined_game(event)	
-	local surface = init_surface()
-	
+	local surface = init_surface()	
 	local player = game.players[event.player_index]
-	local surface = game.surfaces["mixed_railworld"]
+	
 	if player.online_time == 0 then 
 		player.teleport(surface.find_non_colliding_position("character", {0,0}, 2, 1), "mixed_railworld")
 		player.insert({name = 'car', count = 1})

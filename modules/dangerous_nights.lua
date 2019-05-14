@@ -17,6 +17,7 @@ local immune_tiles = {
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
+	if not player.character then return end
 	if player.character.driving == true then return end
 	if player.surface.daytime < 0.33 then return end
 	if player.surface.daytime > 0.66 then return end
