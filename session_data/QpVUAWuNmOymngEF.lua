@@ -1,0 +1,26 @@
+local playsession = {
+	{"unixfreak", {107165}},
+	{"rlidwka", {178918}},
+	{"mewmew", {169724}},
+	{"hwdev", {179474}},
+	{"kalenmonster", {132540}},
+	{"wellczech", {158743}},
+	{"nizzy", {133464}},
+	{"Pucio", {2680}},
+	{"ktreubig", {119365}},
+	{"GuidoCram", {78730}},
+	{"recklesssninja", {2613}},
+	{"Shilzt", {4383}},
+	{"XaLpHa1989", {49901}},
+	{"raskl", {4418}},
+	{"ManuelG", {13182}},
+	{"evileddy60", {31101}},
+	{"Warwar1989", {11149}},
+	{"Stinson_5", {28611}},
+	{"KoTuK", {26911}},
+	{"InvertigoHD", {25955}},
+	{"KKnD", {12242}},
+	{"die_ott", {10958}},
+	{"tykak", {737}}
+}
+return playsession

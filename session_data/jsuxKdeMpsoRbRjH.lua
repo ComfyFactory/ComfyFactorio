@@ -1,0 +1,25 @@
+local playsession = {
+	{"ktreubig", {34055}},
+	{"snoetje", {35183}},
+	{"jackazzm", {35146}},
+	{"han234", {34829}},
+	{"EPO666", {34229}},
+	{"rlidwka", {34168}},
+	{"SuddenDeathMP", {33938}},
+	{"neuro666", {33283}},
+	{"KKnD", {3945}},
+	{"CawaEast", {19422}},
+	{"dog80", {18201}},
+	{"McSafety", {28699}},
+	{"remarkablysilly", {27710}},
+	{"julianbrall", {27269}},
+	{"Dionysusnu", {25645}},
+	{"Zorky", {26297}},
+	{"DaoKoks", {3543}},
+	{"flachen", {23139}},
+	{"Knugn", {15948}},
+	{"Kamyk", {12853}},
+	{"Arusu", {10375}},
+	{"MKIch", {8516}}
+}
+return playsession
