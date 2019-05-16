@@ -1,9 +1,44 @@
 --lost desert-- mewmew made this --
-local simplex_noise = require 'utils.simplex_noise'
-simplex_noise = simplex_noise.d2
+
+require "modules.rocks_broken_paint_tiles"
+require "modules.rocks_heal_over_time"
+require "modules.rocks_yield_ore_veins"
+require "modules.rocks_yield_ore"
+require "modules.spawners_contain_biters"
+require "modules.spawners_contain_acid"
+require "modules.satellite_score"
+require "modules.flashlight_toggle_button"
+
+local simplex_noise = require 'utils.simplex_noise'.d2
 local event = require 'utils.event'
 local map_functions = require "tools.map_functions"
 local math_random = math.random
+require 'utils.table'
+
+local noises = {	
+	[1] = {{modifier = 0.001, weight = 1}, {modifier = 0.01, weight = 0.05}, {modifier = 0.05, weight = 0.02}, {modifier = 0.1, weight = 0.001}}
+}
+
+local sand_tiles = {"sand-1", "sand-2", "sand-3"}
+
+local decorative_whitelist = {"brown-asterisk", "brown-carpet-grass", "brown-fluff", "brown-fluff-dry", "brown-hairy-grass", "garballo", "garballo-mini-dry", "green-pita", "green-pita-mini"}
+
+local disabled_for_deconstruction = {
+		["fish"] = true,
+		["rock-huge"] = true,
+		["rock-big"] = true,
+		["sand-rock-big"] = true,
+		["mineable-wreckage"] = true
+	}
+
+local function get_noise(name, pos, seed)
+	local noise = 0
+	for _, n in pairs(noises[name]) do
+		noise = noise + simplex_noise(pos.x * n.modifier, pos.y * n.modifier, seed) * n.weight
+		seed = seed + 10000
+	end
+	return noise
+end
 
 local function shipwreck(position, surface)
 	local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
@@ -50,68 +85,6 @@ local function shipwreck(position, surface)
 	end		
 end
 
-local function shuffle(tbl)
-	local size = #tbl
-		for i = size, 1, -1 do
-			local rand = math.random(size)
-			tbl[i], tbl[rand] = tbl[rand], tbl[i]
-		end
-	return tbl
-end
-
-local function get_noise(name, pos)	
-	local seed = game.surfaces[1].map_gen_settings.seed
-	local noise = {}
-	local noise_seed_add = 25000
-	seed = seed + noise_seed_add
-	if name == 1 then
-		local m = 2
-		noise[1] = simplex_noise(pos.x * 0.001 * m, pos.y * 0.001 * m, seed)
-		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.01 * m, pos.y * 0.01 * m, seed)
-		seed = seed + noise_seed_add
-		noise[3] = simplex_noise(pos.x * 0.05 * m, pos.y * 0.05 * m, seed)
-		seed = seed + noise_seed_add
-		noise[4] = simplex_noise(pos.x * 0.1 * m, pos.y * 0.1 * m, seed)
-		local noise = noise[1] + noise[2] * 0.05 + noise[3] * 0.02 + noise[4] * 0.001
-		return noise
-	end
-	seed = seed + noise_seed_add
-	seed = seed + noise_seed_add
-	seed = seed + noise_seed_add
-	seed = seed + noise_seed_add
-	if name == "rocks_1" then
-		noise[1] = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed)
-		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
-		seed = seed + noise_seed_add
-		noise[3] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.005 + noise[3] * 0.0002
-		return noise
-	end
-	seed = seed + noise_seed_add
-	seed = seed + noise_seed_add
-	seed = seed + noise_seed_add
-	if name == "deco_1" then
-		noise[1] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)				
-		local noise = noise[1]
-		return noise
-	end
-	seed = seed + noise_seed_add
-	if name == "deco_2" then
-		noise[1] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)				
-		local noise = noise[1]
-		return noise
-	end
-	seed = seed + noise_seed_add
-	if name == "dead_trees" then
-		noise[1] = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed)				
-		local noise = noise[1]
-		return noise
-	end
-	seed = seed + noise_seed_add
-end
-
 local worm_raffle = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"}
 local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","stone","stone","uranium-ore","crude-oil"}
@@ -119,189 +92,96 @@ local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","copper-ore","copper-
 local function on_chunk_generated(event)
 	local surface = game.surfaces["lost_desert"]
 	if event.surface.name ~= surface.name then return end	 
-	local chunk_pos_x = event.area.left_top.x
-	local chunk_pos_y = event.area.left_top.y
-	local area = {
-			left_top = {x = chunk_pos_x, y = chunk_pos_y},
-			right_bottom = {x = chunk_pos_x + 31, y = chunk_pos_y + 31}
-			}							
-	local tiles = {}
-	local entities_to_place = {
-		rocks = {},
-		worms = {},
-		enemy_buildings = {},
-		trees = {},
-		fish = {},		
-		shipwrecks = {}		
-	}	
+	local left_top_x = event.area.left_top.x
+	local left_top_y = event.area.left_top.y
 	
-	surface.destroy_decoratives(area)
-	local decoratives = {}	
-	
-	local entities = surface.find_entities(area)
-	for _, e in pairs(entities) do
-		if e.type == "tree" or e.force.name == "enemy" then
-			e.destroy()				
+	surface.destroy_decoratives{area = event.area, name = decorative_whitelist, invert = true}
+
+	for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "tree"})) do
+		if e.type == "tree" then
+			if math_random(1,3) ~= 1 then e.destroy() end
 		end
 	end
 	
-	local sands = {"sand-1", "sand-2", "sand-3"}
+	local seed = game.surfaces[1].map_gen_settings.seed
+	
 	local tile_to_insert = false	
 	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do			
-			local pos_x = chunk_pos_x + x
-			local pos_y = chunk_pos_y + y
-			local pos = {x = pos_x, y = pos_y}
-			local tile_distance_to_center = pos_x^2 + pos_y^2
-			tile_to_insert = false							
-			local noise_1 = get_noise(1, pos)									
-			if tile_distance_to_center > 10000 then
-				if noise_1 <= -0.80 then
-					if math_random(1,250) == 1 then table.insert(entities_to_place.shipwrecks, pos) end
-				end
-				if noise_1 <= -0.75 then
-					if math_random(1,16) == 1 then table.insert(entities_to_place.worms, pos) end
-					if math_random(1,16) == 1 then table.insert(entities_to_place.enemy_buildings, pos) end
-				end
-			end
-			if noise_1 <= -0.4 then tile_to_insert = "sand-2" end
-			if noise_1 > -0.4 then tile_to_insert = "sand-1" end
-			if noise_1 > 0.4 then tile_to_insert = "sand-3" end
-			if noise_1 > 0.72 and noise_1 < 0.8 then if math_random(1,3) == 1 then table.insert(decoratives, {name = "garballo", position = pos, amount = math_random(1,3)}) end end
-			if noise_1 > 0.75 then
-				if math_random(1,5) == 1 then table.insert(entities_to_place.trees, {"tree-05", pos}) end
-				if math_random(1,400) == 1 then 
-					if surface.count_entities_filtered({name = "market", area = {{pos.x - 50, pos.y - 50}, {pos.x + 50, pos.y + 50}}, limit = 1}) < 1 then
-						if surface.can_place_entity {name = "market", position = pos} then
-							local market = surface.create_entity {name = "market", position = pos}
-							market.destructible = false
-							market.add_market_item({price = {{"wood", math.random(2,10)}}, offer = {type = 'give-item', item = 'raw-fish'}})						
-						end
+		for y = 0, 31, 1 do
+			local pos = {x = left_top_x + x, y = left_top_y + y}
+			local noise = get_noise(1, pos, seed)
+			if noise < -0.45 then
+				if noise < -0.5 then
+					surface.set_tiles({{name = "water", position = pos}}, true)
+					if math_random(1,256) == 1 then surface.create_entity({name = "fish", position = pos}) end
+				else
+					surface.set_tiles({{name = "dirt-2", position = pos}}, true)
+					if math_random(1,64) == 1 then surface.create_entity({name = "tree-08", position = pos}) end
+					if math_random(1,4096) == 1 then
+						local market = surface.create_entity({name = "market", position = pos})
+						market.add_market_item({price = {{"wood", math.random(4,5)}}, offer = {type = 'give-item', item = 'raw-fish'}})
 					end
 				end
-			end			
-			if noise_1 > 0.8 then
-				tile_to_insert = "water"
-				if math_random(1,32) == 1 then table.insert(entities_to_place.fish, pos) end
-			end			
-			if noise_1 > 0.9 then tile_to_insert = "deepwater" end
-
-			if tile_to_insert ~= "deepwater" and tile_to_insert ~= "water" and noise_1 < 0.7 then	
-				if math_random(1, 15000) == 1 and noise_1 < 0.65 then
-					local ore = ore_spawn_raffle[math_random(1,#ore_spawn_raffle)]
-					if ore == "crude-oil" then
-						amount = 100000 + math_random(tile_distance_to_center,tile_distance_to_center*2)
-						map_functions.draw_oil_circle(pos, ore, surface, math_random(4,12), amount)
-					else
-						map_functions.draw_crazy_smoothed_out_ore_circle(pos, ore, surface, math_random(10,70), math_random(300,400) + math.sqrt(tile_distance_to_center))
-					end										
-				end
-				local noise_dead_trees = get_noise("dead_trees", pos)			
-				local noise_rocks_1 = get_noise("rocks_1", pos)
-				local noise_deco_1 = get_noise("deco_1", pos)
-				local noise_deco_2 = get_noise("deco_2", pos)				
-				while true do
-					if noise_dead_trees > 0.5 then
-						if math_random(1,55) == 1 then table.insert(entities_to_place.trees, {"tree-06", pos}) end
-						break
-					end
-					if noise_rocks_1 > 0.5 and noise_dead_trees < -0.4 then
-						if noise_rocks_1 > 0.55 then
-							if math_random(1,6) == 1 then table.insert(entities_to_place.rocks, pos) end					
-						end
-						--tile_to_insert = "dirt-1"
-					end
-					if noise_deco_1 > 0.75 then
-						if math_random(1,7) == 1 then table.insert(decoratives, {name = "brown-fluff-dry", position = pos, amount = math_random(1,3)}) end
-						break
-					end
-					if noise_deco_1 < -0.75 then
-						if math_random(1,7) == 1 then table.insert(decoratives, {name = "red-desert-bush", position = pos, amount = math_random(1,3)}) end
-						break
-					end
-					if noise_deco_2 > 0.75 then
-						if math_random(1,7) == 1 then table.insert(decoratives, {name = "white-desert-bush", position = pos, amount = math_random(1,3)}) end
-						break
-					end
-					if noise_deco_2 < -0.75 then 
-						if math_random(1,7) == 1 then table.insert(decoratives, {name = "brown-asterisk", position = pos, amount = math_random(1,3)}) end
-						break
-					end
-					if tile_to_insert == "sand-1" then
-						if math_random(1,50) == 1 then table.insert(decoratives, {name = "sand-dune-decal", position = pos, amount = 1}) end						
-					end					
-					break
-				end
-			end
-			if tile_to_insert == false then
-				--table.insert(tiles, {name = "sand-4", position = {pos_x,pos_y}})   tree-06
 			else
-				table.insert(tiles, {name = tile_to_insert, position = pos}) 
-			end					
+				local i = (math.floor(noise * 20) % 3) + 1
+				surface.set_tiles({{name = sand_tiles[i], position = pos}}, true)
+				if noise > 0.5 then
+					if math_random(1,3) ~= 1 then	
+						if math_random(1,2) == 1 then
+							surface.create_entity({name = "rock-big", position = pos})
+						else
+							surface.create_entity({name = "rock-huge", position = pos})
+						end
+					else
+						if math_random(1,2048) == 1 then
+							surface.create_entity({name = "small-worm-turret", position = pos})
+						end
+					end
+				else
+					if noise < 0.25 and noise > -0.25 then
+						local distance_to_center = pos.x^2 + pos.y^2
+						if distance_to_center > 265000 then
+							if math_random(1,64) == 1 and surface.can_place_entity({name = "biter-spawner", position = pos}) then
+								if math_random(1,64) == 1 then
+									shipwreck(pos, surface)									
+								else
+									if math_random(1,2) == 1 then
+										surface.create_entity({name = "biter-spawner", position = pos})
+									else
+										surface.create_entity({name = "spitter-spawner", position = pos})
+									end
+								end			
+							end
+						end
+					end
+				end
+			end				
 		end							
 	end		
-	surface.set_tiles(tiles,true)
-	
-	surface.create_decoratives{check_collision=false, decoratives=decoratives}	
-	
-	for _, p in pairs(entities_to_place.shipwrecks) do			 
-		shipwreck(p, surface)		
-	end
-	for _, p in pairs(entities_to_place.enemy_buildings) do						
-		if math_random(1,3) == 1 then
-			if surface.can_place_entity({name="spitter-spawner", position=p}) then surface.create_entity {name="spitter-spawner", position=p} end	
-		else
-			if surface.can_place_entity({name="biter-spawner", position=p}) then surface.create_entity {name="biter-spawner", position=p} end	
-		end							
-	end
-	for _, p in pairs(entities_to_place.worms) do				
-		local e = worm_raffle[math.random(1,#worm_raffle)]
-		if surface.can_place_entity({name=e, position=p}) then surface.create_entity {name=e, position=p} end					
-	end	
-	for _, p in pairs(entities_to_place.rocks) do			
-		local e = rock_raffle[math.random(1,#rock_raffle)]
-		surface.create_entity {name=e, position=p} 				
-	end
-	for _, p in pairs(entities_to_place.trees) do			 
-		if surface.can_place_entity({name=p[1], position=p[2]}) then surface.create_entity {name=p[1], position=p[2]} end				
-	end									
-	for _, p in pairs(entities_to_place.fish) do					
-		surface.create_entity {name="fish",position=p}				
-	end
-	
-	if not global.lost_desert_spawn_ores then
-		if chunk_pos_x > 96 then
-			map_functions.draw_smoothed_out_ore_circle({x=0, y=20}, "stone", surface , 14, 500)
-			map_functions.draw_smoothed_out_ore_circle({x=0, y=-20}, "coal", surface , 14, 500)
-			map_functions.draw_smoothed_out_ore_circle({x=-20, y=0}, "iron-ore", surface , 14, 500)
-			map_functions.draw_smoothed_out_ore_circle({x=20, y=0}, "copper-ore", surface , 14, 500)			
-			global.lost_desert_spawn_ores = true
-		end
-	end	
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.map_init_done then			
 		local map_gen_settings = {}
-		map_gen_settings.water = "none"
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 20, cliff_elevation_0 = 20}		
+		map_gen_settings.water = "0.1"
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}		
 		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "none", size = "none", richness = "none"},
-			["stone"] = {frequency = "none", size = "none", richness = "none"},
-			["copper-ore"] = {frequency = "none", size = "none", richness = "none"},
-			["uranium-ore"] = {frequency = "none", size = "none", richness = "none"},
-			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
-			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
-			["trees"] = {frequency = "none", size = "none", richness = "none"},
+			["coal"] = {frequency = "0.5", size = "0.75", richness = "0.5"},
+			["stone"] = {frequency = "0.5", size = "0.75", richness = "0.5"},
+			["copper-ore"] = {frequency = "0.5", size = "0.75", richness = "0.5"},
+			["uranium-ore"] = {frequency = "0.5", size = "0.75", richness = "0.5"},
+			["iron-ore"] = {frequency = "0.5", size = "0.75", richness = "0.5"},
+			["crude-oil"] = {frequency = "1", size = "0.75", richness = "0.5"},
+			["trees"] = {frequency = "1", size = "1", richness = "0.1"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 		}
-		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
+
 		game.create_surface("lost_desert", map_gen_settings)		
 		game.forces["player"].set_spawn_position({0,0},game.surfaces["lost_desert"])
 		local surface = game.surfaces["lost_desert"]
-		
-		--create_cluster("crude-oil", {x=0,y=0}, 5, surface, 10, math.random(300000,400000))
+		surface.ticks_per_day = surface.ticks_per_day * 4
+		surface.min_brightness = 0.06
 		global.map_init_done = true						
 	end	
 	local surface = game.surfaces["lost_desert"]
@@ -318,6 +198,12 @@ local function on_player_joined_game(event)
 	end	
 end
 
+local function on_marked_for_deconstruction(event)	
+	if disabled_for_deconstruction[event.entity.name] then
+		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+	end
+end
+
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
---event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
