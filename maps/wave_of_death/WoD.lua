@@ -4,7 +4,6 @@ require "maps.wave_of_death.intro"
 require "modules.biter_evasion_hp_increaser"
 require "modules.custom_death_messages"
 require "modules.dangerous_goods"
-require "modules.floaty_chat"
 
 local event = require 'utils.event'
 require 'utils.table'

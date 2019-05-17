@@ -3,8 +3,6 @@
 require "modules.dynamic_landfill"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
-require "modules.splice_double"
-require "modules.biters_double_damage"
 
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2

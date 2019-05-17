@@ -2,18 +2,15 @@
 
 require "modules.backpack_research"
 require "modules.biters_double_damage"
-require "modules.biters_avoid_damage"
+require "modules.biter_evasion_hp_increaser"
 require "modules.biters_yield_coins"
 require "modules.dynamic_landfill"
---require "modules.dynamic_player_spawn"
---require "modules.explosive_biters"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.rocks_yield_ore"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
---require "modules.spitters_spit_biters"
 require "modules.splice_double"
 
 local event = require 'utils.event'
@@ -144,7 +141,9 @@ local function on_player_joined_game(event)
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 7200
 				
 		surface.ticks_per_day = surface.ticks_per_day * 2
-		game.forces.player.manual_mining_speed_modifier = 2
+		game.forces.player.manual_mining_speed_modifier = 2		
+		
+		global.biter_evasion_health_increase_factor = 2
 		
 		global.surface_init_done = true
 	end
@@ -444,6 +443,10 @@ end
 
 local function on_tick(event)	
 	if game.tick % 3600 ~= 1 then return end
+	
+	global.biter_evasion_health_increase_factor = global.biter_evasion_health_increase_factor + 0.0125
+	if global.biter_evasion_health_increase_factor > 5 then global.biter_evasion_health_increase_factor = 5 end
+	
 	if math_random(1,8) ~= 1 then return end
 	
 	local surface = game.surfaces["mountain_fortress"]

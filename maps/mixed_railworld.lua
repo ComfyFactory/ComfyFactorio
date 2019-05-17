@@ -6,23 +6,24 @@ require "modules.satellite_score"
 require "modules.dangerous_nights"
 require "on_tick_schedule"
 require "modules.splice_double"
+require "modules.biters_avoid_damage"
 require "modules.mineable_wreckage_yields_scrap"
 
 local function init_surface()
 	if game.surfaces["mixed_railworld"] then return game.surfaces["mixed_railworld"] end
 
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.3"
+	map_gen_settings.water = "0.5"
 	map_gen_settings.starting_area = "2.2"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 40, cliff_elevation_0 = 40}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "7", size = "0.5", richness = "0.5"},
+		["coal"] = {frequency = "10", size = "7", richness = "1"},
 		["stone"] = {frequency = "0.3", size = "2.0", richness = "0.5"},
 		["iron-ore"] = {frequency = "0.3", size = "2.0", richness = "0.5"},
 		["copper-ore"] = {frequency = "0.3", size = "2.0", richness = "0.5"},
 		["uranium-ore"] = {frequency = "0.5", size = "1", richness = "0.5"},		
 		["crude-oil"] = {frequency = "0.5", size = "1", richness = "1"},
-		["trees"] = {frequency = "0.5", size = "0.75", richness = "0.75"},
+		["trees"] = {frequency = "0.5", size = "0.75", richness = "1"},
 		["enemy-base"] = {frequency = "1", size = "1", richness = "1"}
 	}
 	
@@ -33,6 +34,8 @@ local function init_surface()
 	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
 	surface.force_generate_chunk_requests()
 	surface.daytime = 0.7
+	surface.ticks_per_day = surface.ticks_per_day * 3
+	surface.min_brightness = 0.07
 	
 	game.forces["player"].set_spawn_position({0,0},game.surfaces["mixed_railworld"])
 	
@@ -53,7 +56,8 @@ end
 local function on_chunk_generated(event)	
 	for _, coal in pairs(event.surface.find_entities_filtered({area = event.area, name = {"coal"}})) do
 		local pos = coal.position
-		if math.random(1,2) ~= 1 then
+		--event.surface.set_tiles({{name = "dirt-7", position = pos}}, true)
+		if math.random(1,2) ~= 1 then		
 			event.surface.create_entity({name = "mineable-wreckage", position = coal.position, force = "neutral"})
 		end
 		coal.destroy()
