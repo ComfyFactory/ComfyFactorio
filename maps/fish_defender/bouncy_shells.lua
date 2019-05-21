@@ -1,4 +1,4 @@
-local radius = 12
+local radius = 8
 local math_random = math.random
 local math_sqrt = math.sqrt
 

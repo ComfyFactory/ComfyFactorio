@@ -3,6 +3,7 @@ local event = require 'utils.event'
 local enhance_railgun = require 'maps.fish_defender.railgun_enhancer'
 local explosive_bullets = require 'maps.fish_defender.explosive_gun_bullets'
 local bouncy_shells = require 'maps.fish_defender.bouncy_shells'
+local boss_biter = require "maps.fish_defender.boss_biters"
 
 local function protect_market(event)
 	if event.entity.name ~= "market" then return false end
@@ -20,6 +21,13 @@ local function on_entity_damaged(event)
 	if protect_market(event) then return end
 	
 	if not event.cause then return end
+	
+	if event.cause.unit_number then
+		if global.boss_biters[event.cause.unit_number] then
+			boss_biter.damaged_entity(event) 
+		end
+	end
+	
 	if event.cause.name ~= "character" then return end
 	
 	if enhance_railgun(event) then return end

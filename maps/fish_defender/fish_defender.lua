@@ -14,6 +14,7 @@ require "modules.custom_death_messages"
 require "modules.biter_evasion_hp_increaser"
 
 local event = require 'utils.event'
+local boss_biter = require "maps.fish_defender.boss_biters"
 local map_functions = require "tools.map_functions"
 local math_random = math.random
 local insert = table.insert
@@ -338,6 +339,7 @@ local function spawn_boss_units(surface)
 			local pos = surface.find_non_colliding_position(entry.name, position, 64, 3)
 			if pos then
 				local biter = surface.create_entity({name = entry.name, position = pos})
+				global.boss_biters[biter.unit_number] = biter
 				biter_group.add_member(biter)
 			end
 		end
@@ -543,7 +545,7 @@ local function biter_attack_wave()
 	
 	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * 0.0015)
 	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * 0.0015)
-	global.biter_evasion_health_increase_factor = 1 + (global.wave_count * 0.0025)
+	global.biter_evasion_health_increase_factor = 1 + (global.wave_count * 0.003)
 	
 	if global.wave_count % 50 == 0 then				
 		global.attack_wave_threat = global.wave_count * 8
@@ -809,6 +811,8 @@ local function on_entity_died(event)
 	if event.entity.force.name == "enemy" then			
 		local surface = event.entity.surface
 		
+		if global.boss_biters[event.entity.unit_number] then boss_biter.died(event)	end
+		
 		local splash = biter_splash_damage[event.entity.name]		
 		if splash then			
 			if math_random(1, splash.chance) == 1 then			
@@ -884,6 +888,8 @@ local function on_player_joined_game(event)
 		}
 		
 		global.wave_grace_period = 54000
+		global.boss_biters = {}
+		global.acid_lines_delay = {}
 		
 		game.create_force("decoratives")
 		game.forces["decoratives"].set_cease_fire("enemy", true)
