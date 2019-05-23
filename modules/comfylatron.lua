@@ -333,6 +333,7 @@ end
 
 local function spawn_comfylatron()
 	if global.comfylatron_disabled then return false end
+	if math_random(1,2) == 1 then return false end
 	if global.comfylatron then
 		if global.comfylatron.valid then
 			global.comfylatron.die("enemy")

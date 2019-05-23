@@ -89,8 +89,8 @@ local function process_tile(surface, position, old_tile, inventory)
 	local new_tile = nauvis.get_tile(position)	
 	surface.set_tiles({new_tile})
 	if new_tile.name == old_tile.name then
-		surface.set_tiles({{name = "out-of-map", position = new_tile.position}}, true)
-		if inventory.valid then inventory.insert({name = "landfill", count = 1}) end
+		surface.set_tiles({{name = "grass-1", position = new_tile.position}}, true)
+		--if inventory.valid then inventory.insert({name = "landfill", count = 1}) end
 		return
 	end
 	local area = {{position.x - 0, position.y - 0}, {position.x + 0.999, position.y + 0.999}}
