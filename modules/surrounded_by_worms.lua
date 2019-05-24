@@ -31,8 +31,9 @@ local function on_chunk_generated(event)
 		local coord_modifier = tile_coords[math_random(1, #tile_coords)]
 		local pos = {left_top.x + coord_modifier[1], left_top.y + coord_modifier[2]}
 		local name = turrets[math_random(1, highest_worm_tier)]
-		if surface.can_place_entity({name = name, position = pos}) then
-			surface.create_entity({name = name, position = pos, force = "enemy"})
+		local position = surface.find_non_colliding_position("big-worm-turret", pos, 8, 1)
+		if position then
+			surface.create_entity({name = name, position = position, force = "enemy"})
 		end
 	end
 end
