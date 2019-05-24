@@ -1,12 +1,11 @@
 local event = require 'utils.event'
 
 require "modules.spawners_contain_acid"
+require "modules.spawners_contain_biters"
 require "modules.dynamic_landfill"
+require "modules.dangerous_goods"
 require "modules.satellite_score"
-require "modules.dangerous_nights"
-require "on_tick_schedule"
 require "modules.splice_double"
-require "modules.biters_avoid_damage"
 require "modules.mineable_wreckage_yields_scrap"
 
 local function init_surface()
@@ -14,7 +13,7 @@ local function init_surface()
 
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.5"
-	map_gen_settings.starting_area = "2.2"
+	map_gen_settings.starting_area = "2.5"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 40, cliff_elevation_0 = 40}		
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "10", size = "7", richness = "1"},
@@ -34,8 +33,8 @@ local function init_surface()
 	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
 	surface.force_generate_chunk_requests()
 	surface.daytime = 0.7
-	surface.ticks_per_day = surface.ticks_per_day * 3
-	surface.min_brightness = 0.07
+	surface.ticks_per_day = surface.ticks_per_day * 2.5
+	surface.min_brightness = 0.1
 	
 	game.forces["player"].set_spawn_position({0,0},game.surfaces["mixed_railworld"])
 	
@@ -56,12 +55,11 @@ end
 local function on_chunk_generated(event)	
 	for _, coal in pairs(event.surface.find_entities_filtered({area = event.area, name = {"coal"}})) do
 		local pos = coal.position
-		--event.surface.set_tiles({{name = "dirt-7", position = pos}}, true)
 		if math.random(1,2) ~= 1 then		
 			event.surface.create_entity({name = "mineable-wreckage", position = coal.position, force = "neutral"})
 		end
 		coal.destroy()
-	end	
+	end
 end
 
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

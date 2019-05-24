@@ -10,7 +10,6 @@ require "modules.spawners_contain_biters"
 require "modules.splice_double"
 
 local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","coal","stone","uranium-ore","crude-oil"}
-local stars = {"☆", "☆", "☆", "★", "★"}
 
 local function get_noise(name, pos)
 	local seed = game.surfaces[1].map_gen_settings.seed

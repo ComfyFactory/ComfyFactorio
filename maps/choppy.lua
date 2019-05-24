@@ -81,12 +81,6 @@ local function process_entity(e)
 		e.destroy()
 		return
 	end
-	if e.type == "unit-spawner" then			
-		for _, entity in pairs (e.surface.find_entities_filtered({area = {{e.position.x - 6, e.position.y - 6},{e.position.x + 6, e.position.y + 6}}, force = "neutral"})) do
-			if entity.valid then entity.destroy() end
-		end
-		return
-	end
 end
 
 local function on_chunk_generated(event)
@@ -128,11 +122,16 @@ local function on_chunk_generated(event)
 						end									
 					end
 				end
-			end
-			
+			end			
 		end
 	end
-	surface.set_tiles(tiles, true)	
+	surface.set_tiles(tiles, true)
+	
+	for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "unit-spawner"})) do
+		for _, entity in pairs (e.surface.find_entities_filtered({area = {{e.position.x - 7, e.position.y - 7},{e.position.x + 7, e.position.y + 7}}, force = "neutral"})) do
+			if entity.valid then entity.destroy() end
+		end
+	end
 	
 	local decorative_names = {}
 	for k,v in pairs(game.decorative_prototypes) do
@@ -192,13 +191,13 @@ local tree_yield = {
 
 local function get_amount(entity)
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
-	local amount = 35 + (distance_to_center * 0.25)
-	if amount > 500 then amount = 500 end
+	local amount = 25 + (distance_to_center * 0.1)
+	if amount > 1000 then amount = 1000 end
 	amount = math.random(math.ceil(amount * 0.5), math.ceil(amount * 1.5))	
 	return amount
 end
 
-local function trap(entity)							
+local function trap(entity)
 	if math_random(1,1024) == 1 then tick_tack_trap(entity.surface, entity.position) return end
 	if math_random(1,256) == 1 then unearthing_worm(entity.surface, entity.position) end
 	if math_random(1,128) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end	

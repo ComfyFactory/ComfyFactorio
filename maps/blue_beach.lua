@@ -246,7 +246,7 @@ end
 local function draw_evolution_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.evolution_gui then player.gui.top.evolution_gui.destroy() end
-		local element = player.gui.top.add({type = "sprite-button", name = "evolution_gui", caption = "Evolution: " .. global.evolution_factor .. "%", tooltip = "Can go above 100%"})
+		local element = player.gui.top.add({type = "sprite-button", name = "evolution_gui", caption = "Evolution: " .. global.evolution_factor * 100 .. "%", tooltip = "Can go above 100%"})
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38

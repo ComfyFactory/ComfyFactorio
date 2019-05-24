@@ -10,6 +10,7 @@ require "modules.biters_yield_coins"
 --require "maps.modules.fluids_are_explosive"
 --require "maps.modules.explosives_are_explosive"
 require "modules.dangerous_nights"
+require "modules.dangerous_goods"
 
 require "maps.junkyard_map_intro"
 
@@ -256,17 +257,17 @@ local function place_random_scrap_entity(surface, position)
 		e.active = false
 		return
 	end
-	if r < 25 then
-		local e = surface.create_entity({name = "substation", position = position, force = "scrap"})
-		e.active = false
-		return
-	end
-	if r < 70 then
-		local e = surface.create_entity({name = "medium-electric-pole", position = position, force = "scrap"})
-		e.active = false
-		return
-	end
-	if r < 90 then
+	--if r < 25 then
+	--	local e = surface.create_entity({name = "substation", position = position, force = "scrap"})
+	--	e.active = false
+	--	return
+	--end
+	--if r < 70 then
+	--	local e = surface.create_entity({name = "medium-electric-pole", position = position, force = "scrap"})
+	--	e.active = false
+	--	return
+	--end
+	if r < 100 then
 		local e = surface.create_entity({name = "gun-turret", position = position, force = "scrap_defense"})
 		e.insert({name = "piercing-rounds-magazine", count = math.random(8, 128)})
 		return
@@ -438,6 +439,8 @@ local function on_player_joined_game(event)
 	game.forces["player"].technologies["optics"].researched = true
 	
 	game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2
+	game.surfaces["nauvis"].min_brightness = 0.08
+	game.surfaces["nauvis"].daytime = 0.7
 	
 	game.create_force("scrap")
 	game.create_force("scrap_defense")
