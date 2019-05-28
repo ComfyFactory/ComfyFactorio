@@ -1,4 +1,4 @@
--- players trample paths
+-- players trample paths, tiles change as players walk around
 
 local event = require 'utils.event'
 local math_random = math.random

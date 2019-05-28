@@ -1,4 +1,4 @@
-local radius = 8
+local radius = 9
 local math_random = math.random
 local math_sqrt = math.sqrt
 
@@ -20,6 +20,7 @@ local function create_projectile(surface, position, target, name)
 end
 
 local function bounce(surface, position, ammo)
+	if math_random(1,3) ~= 1 then return end
 	local valid_entities = {}
 	for _, e in pairs(surface.find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})) do		
 		if e.health then

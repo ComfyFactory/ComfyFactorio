@@ -46,15 +46,17 @@ local function acid_line(surface, name, source, target)
 	local position = {source.x, source.y}
 		
 	for i = 1, distance * 1.5, 1 do
-		surface.create_entity({	
-			name = name,
-			position = source,
-			force = "enemy",
-			source = source,
-			target = position,
-			max_range = 32, 
-			speed = 1
-		})		
+		if math_random(1,2) ~= 1 then
+			surface.create_entity({	
+				name = name,
+				position = source,
+				force = "enemy",
+				source = source,
+				target = position,
+				max_range = 25, 
+				speed = 1
+			})
+		end
 		position = {position[1] + modifier[1], position[2] + modifier[2]}
 	end
 end

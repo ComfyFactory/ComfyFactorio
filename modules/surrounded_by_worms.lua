@@ -1,3 +1,7 @@
+-- this spawns additional worms around the center of the map_gen_settings
+-- global.average_worm_amount_per_chunk sets the average amount of worms
+-- (default = 1)
+
 local event = require 'utils.event'
 local math_random = math.random
 local turrets = {
