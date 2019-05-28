@@ -97,6 +97,20 @@ local function on_player_joined_game(event)
 	spectate_button(player)
 	create_lane_buttons(player)
 	
+	if global.lobby_active and #game.connected_players < 4 then
+		if game.tick ~= 0 then soft_teleport(player, game.forces.player.get_spawn_position(game.surfaces["wave_of_death"])) end
+		game.print("Waiting for " .. 4 - #game.connected_players .. " more players to join.", {r = 0, g = 170, b = 0}) 
+		return
+	end
+	
+	if global.lobby_active then		
+		for _, p in pairs(game.connected_players) do
+			autojoin_lane(p)
+		end
+		global.lobby_active = false
+		return
+	end
+	
 	if player.online_time == 0 then autojoin_lane(player) return end
 	
 	if global.wod_lane[tonumber(player.force.name)].game_lost == true then
@@ -126,6 +140,12 @@ local function on_tick(event)
 	end
 	
 	game_status.restart_server()
+	
+	if game.tick == 300 then
+		for _, p in pairs(game.connected_players) do
+			soft_teleport(p, game.forces.player.get_spawn_position(game.surfaces["wave_of_death"]))
+		end
+	end
 end
 
 local function on_gui_click(event)

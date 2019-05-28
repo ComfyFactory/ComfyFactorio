@@ -82,6 +82,7 @@ local function init_globals()
 	global.spread_amount_modifier = 0.75 --percentage of a cleared wave to spawn at all other teams
 	global.wod_lane = {}
 	global.wod_biters = {}
+	global.lobby_active = true
 	
 	for i = 1, 4, 1 do
 		global.wod_lane[i] = {}
