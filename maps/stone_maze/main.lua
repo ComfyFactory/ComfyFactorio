@@ -7,6 +7,7 @@ require "modules.dangerous_goods"
 require "modules.biters_yield_coins"
 require "modules.rocks_yield_ore"
 require "modules.mineable_wreckage_yields_scrap"
+require "modules.biter_evasion_hp_increaser"
 require 'utils.table'
 
 local event = require 'utils.event' 
@@ -29,6 +30,25 @@ local visited_tile_translation = {
 	["grass-2"] = "grass-1"
 }
 
+global.biters = {
+	{"small-biter", chance = 100 - math.floor(global.maze_depth * 0.2)},
+	{"medium-biter", chance = 1 + math.floor(global.maze_depth * 0.2)},
+	{"big-biter", chance = 0},
+	{"behemoth-biter", chance = 0},
+}
+
+function get_biter()		
+end
+
+function get_spitter()
+end
+
+function get_worm()
+end
+
+function get_ammo()
+end
+
 local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.evolution_gui then player.gui.top.evolution_gui.destroy() end
@@ -44,6 +64,12 @@ local function draw_depth_gui()
 		style.font_color = {r = 125, g = 75, b = 25}
 		style.font = "default-large-bold"
 	end
+end
+
+local function increase_depth()
+	global.maze_depth = global.maze_depth + 1
+	global.biter_evasion_health_increase_factor = 1 + (global.maze_depth * 0.001)
+	draw_depth_gui()
 end
 
 local function on_player_joined_game(event)	
@@ -174,8 +200,7 @@ local function set_cell(surface, cell_position, direction)
 					init_cell(p)
 					global.maze_cells[coord_to_string(p)].occupied = true
 					
-					global.maze_depth = global.maze_depth + 1
-					draw_depth_gui()
+					increase_depth()
 				end
 			end							
 			
@@ -195,8 +220,7 @@ local function set_cell(surface, cell_position, direction)
 		init_cell(cell_position)
 		global.maze_cells[coord_to_string(cell_position)].occupied = true
 		
-		global.maze_depth = global.maze_depth + 1
-		draw_depth_gui()
+		increase_depth()
 	end	
 end
 

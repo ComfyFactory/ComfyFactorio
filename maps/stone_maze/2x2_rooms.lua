@@ -14,6 +14,19 @@ room.stone_block = function(surface, cell_left_top, direction)
 	end
 end
 
+room.scrapyard = function(surface, cell_left_top, direction)
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}	
+	for x = 2.5, grid_size * 2 - 2.5, 1 do
+		for y = 2.5, grid_size * 2 - 2.5, 1 do
+			local pos = {left_top.x + x, left_top.y + y}			
+			if math.random(1,4) ~= 1 then surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"}) end
+		end
+	end
+	local e = surface.create_entity({name = "storage-tank", position = {left_top.x + grid_size, left_top.y + grid_size}, force = "neutral", direction = math.random(0, 3)})
+	local fluids = {"crude-oil", "lubricant", "heavy-oil", "light-oil", "petroleum-gas", "sulfuric-acid", "water"}
+	e.fluidbox[1] = {name = fluids[math.random(1, #fluids)], amount = math.random(20000, 25000)}
+end
+
 room.circle_pond_with_trees = function(surface, cell_left_top, direction)
 	local tree = tree_raffle[math.random(1, #tree_raffle)]
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
@@ -41,9 +54,9 @@ room.checkerboard_ore = function(surface, cell_left_top, direction)
 		for y = 2, grid_size * 2 - 3, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
 			if x % 2 == y % 2 then
-				surface.create_entity({name = ores[1], position = pos, force = "neutral", amount = 64 + global.maze_depth * 2})
+				surface.create_entity({name = ores[1], position = pos, force = "neutral", amount = 256 + global.maze_depth * 4})
 			else
-				surface.create_entity({name = ores[2], position = pos, force = "neutral", amount = 64 + global.maze_depth * 2})
+				surface.create_entity({name = ores[2], position = pos, force = "neutral", amount = 256 + global.maze_depth * 4})
 			end
 			surface.set_tiles({{name = "grass-2", position = pos}}, true)
 		end
@@ -81,6 +94,7 @@ end
 local room_weights = {
 	{func = room.circle_pond_with_trees, weight = 25},
 	
+	{func = room.scrapyard, weight = 125},
 	{func = room.stone_block, weight = 25},
 	{func = room.minefield_chest, weight = 5},
 	{func = room.checkerboard_ore, weight = 10},

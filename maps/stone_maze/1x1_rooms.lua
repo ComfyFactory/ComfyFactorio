@@ -13,9 +13,9 @@ room.checkerboard_ore = function(surface, cell_left_top, direction)
 		for y = 1, grid_size - 2, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
 			if x % 2 == y % 2 then
-				surface.create_entity({name = ores[1], position = pos, force = "neutral", amount = 64 + global.maze_depth * 2})
+				surface.create_entity({name = ores[1], position = pos, force = "neutral", amount = 256 + global.maze_depth * 4})
 			else
-				surface.create_entity({name = ores[2], position = pos, force = "neutral", amount = 64 + global.maze_depth * 2})
+				surface.create_entity({name = ores[2], position = pos, force = "neutral", amount = 256 + global.maze_depth * 4})
 			end
 			surface.set_tiles({{name = "grass-2", position = pos}}, true)
 		end
@@ -127,17 +127,17 @@ end
 
 local room_weights = {	
 
-	{func = room.tons_of_trees, weight = 25},	
-	{func = room.lots_of_rocks, weight = 50},
-	{func = room.tons_of_rocks, weight = 25},	
+	--{func = room.tons_of_trees, weight = 25},	
+	--{func = room.lots_of_rocks, weight = 50},
+	--{func = room.tons_of_rocks, weight = 25},	
 	{func = room.quad_rocks, weight = 5},
-	{func = room.three_rocks, weight = 5},
+	--{func = room.three_rocks, weight = 5},
 	{func = room.single_rock, weight = 10},
 	
 	{func = room.checkerboard_ore, weight = 5},
-	{func = room.some_scrap, weight = 10},
-	{func = room.lots_of_scrap, weight = 4},
-	{func = room.tons_of_scrap, weight = 2},
+	--{func = room.some_scrap, weight = 10},
+	{func = room.lots_of_scrap, weight = 5},
+	--{func = room.tons_of_scrap, weight = 2},
 	{func = room.empty, weight = 15},
 	
 	{func = room.pond, weight = 10}
