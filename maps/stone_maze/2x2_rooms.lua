@@ -92,9 +92,8 @@ room.minefield_chest = function(surface, cell_left_top, direction)
 end
 
 local room_weights = {
-	{func = room.circle_pond_with_trees, weight = 25},
-	
-	{func = room.scrapyard, weight = 125},
+	{func = room.circle_pond_with_trees, weight = 25},	
+	{func = room.scrapyard, weight = 10},
 	{func = room.stone_block, weight = 25},
 	{func = room.minefield_chest, weight = 5},
 	{func = room.checkerboard_ore, weight = 10},

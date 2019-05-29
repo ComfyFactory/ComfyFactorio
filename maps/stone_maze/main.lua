@@ -2,6 +2,7 @@
 require "modules.satellite_score"
 require "modules.dynamic_landfill"
 require "modules.dangerous_goods"
+require "modules.spawners_contain_biters"
 
 --essentials
 require "modules.biters_yield_coins"
@@ -10,6 +11,8 @@ require "modules.mineable_wreckage_yields_scrap"
 require "modules.biter_evasion_hp_increaser"
 require 'utils.table'
 
+require 'maps.stone_maze.global_functions' 
+
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
@@ -17,6 +20,7 @@ local math_random = math.random
 local rooms_1x1 = require 'maps.stone_maze.1x1_rooms' 
 local multirooms = {}
 multirooms["2x2"] = require 'maps.stone_maze.2x2_rooms'
+multirooms["3x3"] = require 'maps.stone_maze.3x3_rooms'
 
 map_functions = require "tools.map_functions"
 grid_size = 8
@@ -29,25 +33,6 @@ local visited_tile_translation = {
 	["dirt-5"] = "dirt-7",
 	["grass-2"] = "grass-1"
 }
-
-global.biters = {
-	{"small-biter", chance = 100 - math.floor(global.maze_depth * 0.2)},
-	{"medium-biter", chance = 1 + math.floor(global.maze_depth * 0.2)},
-	{"big-biter", chance = 0},
-	{"behemoth-biter", chance = 0},
-}
-
-function get_biter()		
-end
-
-function get_spitter()
-end
-
-function get_worm()
-end
-
-function get_ammo()
-end
 
 local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
@@ -68,17 +53,16 @@ end
 
 local function increase_depth()
 	global.maze_depth = global.maze_depth + 1
-	global.biter_evasion_health_increase_factor = 1 + (global.maze_depth * 0.001)
+	global.biter_evasion_health_increase_factor = 1 + (global.maze_depth * 0.0025)
 	draw_depth_gui()
-end
-
-local function on_player_joined_game(event)	
-	local player = game.players[event.player_index]	
-	if player.online_time == 0 then
-		player.insert{name = 'landfill', count = 200}
-		player.insert{name = 'iron-plate', count = 32}
-		player.insert{name = 'iron-gear-wheel', count = 16}
-	end	
+	
+	global.enemy_appearances[2].chance = global.enemy_appearances[2].chance + 0.2
+	if global.maze_depth > 250 then global.enemy_appearances[3].chance = global.enemy_appearances[3].chance + 0.5 end	
+	if global.maze_depth > 500 then global.enemy_appearances[4].chance = global.enemy_appearances[4].chance + 1 end
+	
+	local evo = global.maze_depth * 0.001
+	if evo > 1 then evo = 1 end
+	game.forces.enemy.evolution_factor = evo
 end
 
 local function coord_to_string(pos)
@@ -96,7 +80,15 @@ local cells = {
 		["0_-1"] = {{-1, -1}, {0, -1}},
 		["0_1"] = {{0, 0}, {-1, 0}},
 		["-1_0"] = {{-1, -1}, {-1, 0}},
-		["1_0"] = {{0, 0}, {0, -1}},
+		["1_0"] = {{0, 0}, {0, -1}}
+	},
+	["3x3"] = {
+		size_x = 3,
+		size_y = 3,
+		["0_-1"] = {{-2, -2}, {-1, -2}, {0, -2}},
+		["0_1"] = {{0, 0}, {-1, 0}, {-2, 0}},
+		["-1_0"] = {{-2, -2}, {-2, -1}, {-2, 0}},
+		["1_0"] = {{0, 0}, {0, -1}, {0, -2}}
 	}
 }
 
@@ -130,6 +122,12 @@ end
 
 local function set_visted_cell_tiles(surface, cell_position)
 	local left_top = {x = cell_position.x * grid_size, y = cell_position.y * grid_size}
+	
+	local remnants = {}
+	for _, e in pairs(surface.find_entities_filtered({type = "corpse", area = {{left_top.x, left_top.y},{left_top.x + grid_size, left_top.y + grid_size}}})) do
+		remnants[#remnants] = {name = e.name, position = e.position, direction = e.direction}
+	end
+	
 	for x = 0, grid_size - 1, 1 do
 		for y = 0, grid_size - 1, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
@@ -138,6 +136,10 @@ local function set_visted_cell_tiles(surface, cell_position)
 				surface.set_tiles({{name = visited_tile_translation[tile_name], position = pos}}, true)
 			end
 		end
+	end
+	
+	for _, e in pairs(remnants) do
+		surface.create_entity({name = e.name, position = e.position, direction = e.direction})
 	end
 end
 
@@ -179,12 +181,12 @@ local function can_1x1_expand(cell_position, direction)
 end
 
 local multi_cell_chances = {
-	{"2x2"},
+	"3x3", "2x2", "2x2", "2x2"
 }
 
 local function set_cell(surface, cell_position, direction)
 	
-	local multi_cell_type = "2x2"
+	local multi_cell_type = multi_cell_chances[math_random(1, #multi_cell_chances)]
 	
 	if math_random(1,3) == 1 then
 		local cell_left_top = can_multicell_expand(cell_position, direction, multi_cell_type)	
@@ -271,9 +273,13 @@ local function on_chunk_generated(event)
 				local tile_name = "out-of-map"
 				if x < grid_size and y < grid_size then tile_name = "dirt-7" end
 				local p = {x = left_top.x + x, y = left_top.y + y}
-				surface.set_tiles({{name = tile_name, position = p}}, true)	
+				surface.set_tiles({{name = tile_name, position = p}}, true)				
 			end
 		end
+		for _, e in pairs(surface.find_entities_filtered({force = "neutral"})) do
+			e.destroy()
+		end
+		ore_market(surface, {x = grid_size * 0.4, y = grid_size * 0.4})
 		init_cell({0,0})
 		global.maze_cells[coord_to_string({0,0})].occupied = true
 		return
@@ -287,10 +293,28 @@ local function on_chunk_generated(event)
 	end
 end
 
+local function on_player_joined_game(event)	
+	local player = game.players[event.player_index]	
+	if player.online_time == 0 then
+		player.insert{name = 'iron-plate', count = 32}
+		player.insert{name = 'iron-gear-wheel', count = 16}
+		player.insert{name = 'submachine-gun', count = 1}
+		player.insert{name = 'uranium-rounds-magazine', count = 128}
+		player.insert{name = 'firearm-magazine', count = 64}	
+	end	
+end
+
 local function on_init(event)
 	global.maze_cells = {}
 	global.maze_depth = 0
-	game.forces["player"].set_spawn_position({x = grid_size * 0.5, y = grid_size * 0.5}, game.surfaces.nauvis)
+	global.enemy_appearances = {
+		{biter = "small-biter", spitter = "small-spitter", worm = "small-worm-turret", ammo = "firearm-magazine", chance = 100},
+		{biter = "medium-biter", spitter = "medium-spitter", worm = "medium-worm-turret", ammo = "piercing-rounds-magazine", chance = 0},
+		{biter = "big-biter", spitter = "big-spitter", worm = "big-worm-turret", ammo = "uranium-rounds-magazine", chance = 0},
+		{biter = "behemoth-biter", spitter = "behemoth-spitter", worm = "behemoth-worm-turret", ammo = "uranium-rounds-magazine", chance = 0}
+	}
+	
+	game.forces["player"].set_spawn_position({x = grid_size * 0.5, y = grid_size * 0.75}, game.surfaces.nauvis)
 end
 
 event.on_init(on_init)
