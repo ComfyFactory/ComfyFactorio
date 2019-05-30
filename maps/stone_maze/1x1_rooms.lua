@@ -19,7 +19,7 @@ room.single_nest = function(surface, cell_left_top, direction)
 end
 
 room.biters = function(surface, cell_left_top, direction)
-	local amount = math.random(1, math.floor(1 + (global.maze_depth * 0.25)))
+	local amount = math.random(1, math.floor(1 + (global.maze_depth * 0.3)))
 	local tile_positions = {}
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	for x = 0.5, grid_size - 0.5, 1 do
@@ -39,7 +39,7 @@ room.biters = function(surface, cell_left_top, direction)
 end
 
 room.spitters = function(surface, cell_left_top, direction)
-	local amount = math.random(1, math.floor(1 + (global.maze_depth * 0.25)))
+	local amount = math.random(1, math.floor(1 + (global.maze_depth * 0.3)))
 	local tile_positions = {}
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	for x = 0.5, grid_size - 0.5, 1 do
@@ -180,15 +180,15 @@ room.pond = function(surface, cell_left_top, direction)
 end
 
 local room_weights = {		
-	--{func = room.biters, weight = 25},
-	--{func = room.spitters, weight = 15},
-	--{func = room.single_worm, weight = 15},
-	--{func = room.single_nest, weight = 8},
+	{func = room.biters, weight = 25},
+	{func = room.spitters, weight = 15},
+	{func = room.single_worm, weight = 15},
+	{func = room.single_nest, weight = 8},
 	
-	--{func = room.tons_of_trees, weight = 15},	
+	{func = room.tons_of_trees, weight = 15},	
 	
-	--{func = room.lots_of_rocks, weight = 25},
-	--{func = room.tons_of_rocks, weight = 15},	
+	{func = room.lots_of_rocks, weight = 25},
+	{func = room.tons_of_rocks, weight = 15},	
 	{func = room.quad_rocks, weight = 10},
 	{func = room.three_rocks, weight = 3},
 	{func = room.single_rock, weight = 10},

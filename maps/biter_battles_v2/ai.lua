@@ -13,15 +13,6 @@ local threat_values = {
 	["behemoth-biter"] = 24
 }
 
-local function shuffle(tbl)
-	local size = #tbl
-		for i = size, 1, -1 do
-			local rand = math_random(size)
-			tbl[i], tbl[rand] = tbl[rand], tbl[i]
-		end
-	return tbl
-end
-
 ai.send_near_biters_to_silo = function()
 	if game.tick < 108000 then return end
 	if not global.rocket_silo["north"] then return end

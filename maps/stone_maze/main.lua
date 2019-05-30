@@ -23,7 +23,7 @@ multirooms["2x2"] = require 'maps.stone_maze.2x2_rooms'
 multirooms["3x3"] = require 'maps.stone_maze.3x3_rooms'
 
 map_functions = require "tools.map_functions"
-grid_size = 8
+grid_size = 24
 rock_raffle = {"rock-huge", "rock-big", "rock-big", "rock-big"}
 tree_raffle = {"tree-01", "tree-02", "tree-03", "tree-04", "tree-05", "tree-06", "tree-07", "tree-08", "tree-09", "tree-02-red", "tree-06-brown", "tree-08-brown", "tree-08-red","tree-09-brown","tree-09-red","dead-dry-hairy-tree","dry-hairy-tree","dry-tree","dead-tree-desert","dead-grey-trunk"}
 

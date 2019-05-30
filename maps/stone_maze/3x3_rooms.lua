@@ -6,10 +6,10 @@ end
 
 room.stone_block = function(surface, cell_left_top, direction)	
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	for x = 2.5, grid_size * 3 - 2.5, 1 do
-		for y = 2.5, grid_size * 3 - 2.5, 1 do
+	for x = 3.5, grid_size * 3 - 3.5, 1 do
+		for y = 3.5, grid_size * 3 - 3.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}			
-			if math.random(1,6) ~= 1 then surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"}) end
+			if math.random(1,5) ~= 1 then surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"}) end
 		end
 	end
 end

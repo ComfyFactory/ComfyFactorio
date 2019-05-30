@@ -3,6 +3,7 @@
 local event = require 'utils.event'
 
 local function get_random_close_spawner(surface)
+	if not game.connected_players[1] then return false end
 	local surface = game.connected_players[1].surface
 	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = "enemy"})	
 	if not spawners[1] then return false end
