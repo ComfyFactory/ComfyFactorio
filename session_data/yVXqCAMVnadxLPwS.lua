@@ -1,0 +1,28 @@
+local playsession = {
+	{"mewmew", {168542}},
+	{"RashiNerha", {125704}},
+	{"Hurrock", {179379}},
+	{"Kalkune", {179183}},
+	{"Krono", {113954}},
+	{"thislsamerica", {177936}},
+	{"Hanakocz", {177022}},
+	{"jimbo6805", {172476}},
+	{"Droth_", {45848}},
+	{"robertkruijt", {155038}},
+	{"inesoa", {116013}},
+	{"bugmum", {107802}},
+	{"Ochsebein", {148541}},
+	{"fuchsnj", {135142}},
+	{"hostejj", {42382}},
+	{"PerutzUK", {118136}},
+	{"Ulgar", {6296}},
+	{"dredonkey", {80629}},
+	{"SpincsGaming", {68479}},
+	{"NekoBaron", {78993}},
+	{"Juankha", {26726}},
+	{"itkh", {51563}},
+	{"DoubleDough", {73892}},
+	{"GuidoCram", {73530}},
+	{"Chesmu", {52374}}
+}
+return playsession

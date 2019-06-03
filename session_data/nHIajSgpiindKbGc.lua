@@ -1,0 +1,25 @@
+local playsession = {
+	{"Zymoran", {467872}},
+	{"joe32", {445963}},
+	{"p0p3", {466514}},
+	{"SoCoolZ", {31743}},
+	{"xmarisanx", {184261}},
+	{"ManuelG", {200808}},
+	{"pwoland", {245339}},
+	{"bhenoa", {3660}},
+	{"kuumottaja", {427895}},
+	{"Malorie_sXy", {413778}},
+	{"MKIch", {6270}},
+	{"Grooohm", {3022}},
+	{"Miteone", {247011}},
+	{"NapalmBanana", {291638}},
+	{"yulingqixiao", {14670}},
+	{"Freakneek", {2432}},
+	{"120148", {7361}},
+	{"tyssa", {194548}},
+	{"MovingMike", {166825}},
+	{"TovaMire", {145054}},
+	{"dog80", {116479}},
+	{"Cloner", {116177}}
+}
+return playsession
