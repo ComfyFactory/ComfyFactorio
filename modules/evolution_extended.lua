@@ -73,7 +73,7 @@ local function on_init(event)
 	global.evolution_factor = 0
 	global.color_counter = 0
 	
-	local hours_to_max_evo = 15
+	local hours_to_max_evo = 24
 	local ticks_to_max_evo = 12 * 60 * 60 * 60
 	global.tick_gain = math.round((1 / ticks_to_max_evo) * gui_refreshrate, 8)
 end

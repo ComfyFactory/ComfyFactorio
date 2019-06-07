@@ -59,7 +59,7 @@ local function teleport(source_player, target_player)
 	source_player.teleport({x = math.floor(source_player.position.x), y = math.floor(source_player.position.y)})
 	local target_position = target_player.surface.find_non_colliding_position("character", target_player.position, 128, 1)
 	if not target_position then target_position = {x = target_player.position.x, y = target_player.position.y} end
-	local materializing_character = target_player.surface.create_entity({name = "player", position = target_position, force = "neutral", direction = source_player.character.direction})
+	local materializing_character = target_player.surface.create_entity({name = "character", position = target_position, force = "neutral", direction = source_player.character.direction})
 	materializing_character.destructible = false
 	materializing_character.color = source_player.color
 	materializing_character.damage(1, "player")

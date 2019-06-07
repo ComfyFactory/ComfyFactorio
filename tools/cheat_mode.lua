@@ -17,10 +17,11 @@ function cheat_mode()
 	game.players[1].insert({name="submachine-gun", count=1})
 	game.players[1].insert({name="uranium-rounds-magazine", count=200})
 	game.players[1].insert({name="steel-chest", count=200})
-	game.players[1].insert({name="explosives", count=1000})
+	game.players[1].insert({name="electric-energy-interface", count=2})
 	game.forces.player.manual_mining_speed_modifier = 3
 	game.forces.player.character_reach_distance_bonus = 1000
-	game.speed = 1.5
+	game.forces.player.character_health_bonus = 1000
+	game.speed = 2
 	surface.daytime = 1
 	--surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()

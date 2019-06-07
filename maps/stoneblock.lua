@@ -9,10 +9,12 @@ require "modules.rocks_yield_ore_veins"
 require "modules.rocks_yield_ore"
 require "modules.biters_yield_coins"
 require "modules.spawners_contain_biters"
-require "modules.splice_double"
-require "modules.spitters_spit_biters"
-require "modules.biters_avoid_damage"
+--require "modules.splice_double"
+--require "modules.spitters_spit_biters"
+--require "modules.biters_avoid_damage"
 require "modules.flashlight_toggle_button"
+require "modules.more_attacks"
+require "modules.evolution_extended"
 
 local event = require 'utils.event'
 local math_random = math.random
@@ -342,6 +344,7 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+--[[
 local function on_tick(event)	
 	if game.tick % 3600 ~= 1 then return end
 	if math_random(1,8) ~= 1 then return end
@@ -368,6 +371,7 @@ local function on_tick(event)
 end
 
 event.add(defines.events.on_tick, on_tick)
+]]--
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
