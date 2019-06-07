@@ -244,9 +244,8 @@ local function player_list_show(player, sort_by)
 	label.style.maximal_width = 35
 		
 	local label = t.add { type = "label", name = "player_list_panel_header_1", caption = tostring(#game.connected_players) }
-	label.style.font = "default-listbox"
+	label.style.font = "default-bold"
 	label.style.font_color = { r=0.10, g=0.70, b=0.10}
-	label.style.bottom_padding = 3
 	label.style.minimal_width = 36
 	label.style.maximal_width = 36
 	label.style.horizontal_align = "right"
@@ -282,23 +281,23 @@ local function player_list_show(player, sort_by)
 	if sort_by == "total_time_played_asc" then str = symbol_asc .. " " end
 	if sort_by == "total_time_played_desc" then str = symbol_desc .. " " end
 	local label = t.add { type = "label", name = "player_list_panel_header_5", caption = str .. "Total Time" }
-	label.style.font = "default-listbox"
+	label.style.font = "default-bold"
 	label.style.font_color = { r=0.98, g=0.66, b=0.22}
 	
 	str = ""
 	if sort_by == "time_played_asc" then str = symbol_asc .. " " end
 	if sort_by == "time_played_desc" then str = symbol_desc .. " " end
 	local label = t.add { type = "label", name = "player_list_panel_header_3", caption = str .. "Current Time" }
-	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}	
-	
+	label.style.font = "default-bold"
+	label.style.font_color = { r=0.98, g=0.66, b=0.22}
+
 	str = ""
 	if sort_by == "pokes_asc" then str = symbol_asc .. " " end
 	if sort_by == "pokes_desc" then str = symbol_desc .. " " end
 	local label = t.add { type = "label", name = "player_list_panel_header_4", caption = str .. "Poke" }
-	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}		
-	
+	label.style.font = "default-bold"
+	label.style.font_color = { r=0.98, g=0.66, b=0.22}
+
 	local player_list_panel_table = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
 	player_list_panel_table.style.maximal_height = 530
 	
