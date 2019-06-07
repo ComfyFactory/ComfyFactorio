@@ -151,6 +151,9 @@ local function on_gui_click(event)
 	end
 end
 
+local function on_market_item_purchased(event)
+	update_fd_stats()
+end
 
 local threat_values = {
 	["small_biter"] = 1,
@@ -1400,6 +1403,7 @@ local function on_player_respawned(event)
 end
 
 event.add(defines.events.on_gui_click, on_gui_click)
+event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
