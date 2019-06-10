@@ -139,6 +139,9 @@ local function add_fd_stats_button(player)
 end
 
 local function on_gui_click(event)
+	if not event.element.valid then
+		return
+	end
 	if event.element.name ~= "fd-stats-button" then
 		return
 	end
