@@ -1,5 +1,5 @@
 --[[
-Hello there! 
+Hello there!
 
 This will add a player list with "ranks" to your server.
 Oh.. and you can also "poke" a player.
@@ -26,21 +26,21 @@ local function get_formatted_playtime(x)
 		local y = x / 216000
 		y = tostring(y)
 		local h = ""
-		for i=1,10,1 do 		
-			local z = string.sub(y, i, i)	
-		
+		for i=1,10,1 do
+			local z = string.sub(y, i, i)
+
 			if z == "." then
 				break
-			else			
-				h = h .. z			
-			end		
+			else
+				h = h .. z
+			end
 		end
-		
+
 		local m = x % 216000
 		m = m / 3600
 		m = math.floor(m)
 		m = tostring(m)
-		
+
 		if h == "0" then
 			local str = m .. " minutes"
 			return str
@@ -54,21 +54,21 @@ local function get_formatted_playtime(x)
 		local y = x / 5184000
 		y = tostring(y)
 		local h = ""
-		for i=1,10,1 do 		
-			local z = string.sub(y, i, i)	
-		
+		for i=1,10,1 do
+			local z = string.sub(y, i, i)
+
 			if z == "." then
 				break
-			else			
-				h = h .. z			
-			end		
+			else
+				h = h .. z
+			end
 		end
-		
+
 		local m = x % 5184000
 		m = m / 216000
 		m = math.floor(m)
 		m = tostring(m)
-		
+
 		if h == "0" then
 			local str = m .. " days"
 			return str
@@ -87,27 +87,42 @@ local function get_rank(player)
 		if global.player_totals[player.name] then t = global.player_totals[player.name][1] end
 	end
 	local m = (player.online_time + t)  / 3600
-	
+
 	local ranks = {
-	"item/burner-mining-drill","item/burner-inserter","item/stone-furnace","item/light-armor","item/steam-engine",	
+	"item/burner-mining-drill","item/burner-inserter","item/stone-furnace","item/light-armor","item/steam-engine",
 	"item/inserter", "item/transport-belt", "item/underground-belt", "item/splitter","item/assembling-machine-1","item/long-handed-inserter","item/electronic-circuit","item/electric-mining-drill","item/dummy-steel-axe",
 	"item/heavy-armor","item/steel-furnace","item/gun-turret","item/fast-transport-belt", "item/fast-underground-belt", "item/fast-splitter","item/assembling-machine-2","item/fast-inserter","item/radar","item/filter-inserter",
-	"item/defender-capsule","item/pumpjack","item/chemical-plant","item/solar-panel","item/advanced-circuit","item/modular-armor","item/accumulator", "item/construction-robot", 
+	"item/defender-capsule","item/pumpjack","item/chemical-plant","item/solar-panel","item/advanced-circuit","item/modular-armor","item/accumulator", "item/construction-robot",
 	"item/distractor-capsule","item/stack-inserter","item/electric-furnace","item/express-transport-belt","item/express-underground-belt", "item/express-splitter","item/assembling-machine-3","item/processing-unit","item/power-armor","item/logistic-robot","item/laser-turret",
 	"item/stack-filter-inserter","item/destroyer-capsule","item/power-armor-mk2","item/flamethrower-turret","item/beacon",
 	"item/steam-turbine","item/centrifuge","item/nuclear-reactor"
 	}
-	
+
 	--52 ranks
-	
+
 	local time_needed = 240 -- in minutes between rank upgrades
 	m = m / time_needed
 	m = math.floor(m)
 	m = m + 1
-	
+
 	if m > #ranks then m = #ranks end
 
 	return ranks[m]
+end
+
+local comparators = {
+	["pokes_asc"]  = function (a, b) return a.pokes > b.pokes end,
+	["pokes_desc"] = function (a, b) return a.pokes < b.pokes end,
+	["total_time_played_asc"]  = function (a,b) return a.total_played_ticks < b.total_played_ticks end,
+	["total_time_played_desc"] = function (a,b) return a.total_played_ticks > b.total_played_ticks end,
+	["time_played_asc"]  = function (a,b) return a.played_ticks < b.played_ticks end,
+	["time_played_desc"] = function (a,b) return a.played_ticks > b.played_ticks end,
+	["name_asc"]  = function (a,b) return a.name:lower() < b.name:lower() end,
+	["name_desc"] = function (a,b) return a.name:lower() > b.name:lower() end
+}
+
+local function get_comparator(sort_by)
+	return comparators[sort_by]
 end
 
 local function get_sorted_list(sort_by)
@@ -116,203 +131,109 @@ local function get_sorted_list(sort_by)
 		player_list[i] = {}
 		player_list[i].rank = get_rank(player)
 		player_list[i].name = player.name
-		if global.player_totals then
-			local t = 0
-			if global.player_totals[player.name] then t = global.player_totals[player.name][1] end
-			player_list[i].total_played_time = get_formatted_playtime(t + player.online_time)
-			player_list[i].total_played_ticks = t + player.online_time
-		else
-			player_list[i].total_played_time = get_formatted_playtime(player.online_time)
-			player_list[i].total_played_ticks = player.online_time
+
+		local t = 0
+		if global.player_totals and global.player_totals[player.name] then
+			t = global.player_totals[player.name][1]
 		end
+		player_list[i].total_played_time = get_formatted_playtime(t + player.online_time)
+		player_list[i].total_played_ticks = t + player.online_time
+
 		player_list[i].played_time = get_formatted_playtime(player.online_time)
 		player_list[i].played_ticks = player.online_time
 		if not global.player_list_pokes_counter[player.index] then global.player_list_pokes_counter[player.index] = 0 end
 		player_list[i].pokes = global.player_list_pokes_counter[player.index]
 		player_list[i].player_index = player.index
-	end	
-	
-	for i = #player_list, 1, -1 do
-		for i2 = #player_list, 1, -1 do
-			if sort_by == "pokes_asc" then 
-				if player_list[i].pokes > player_list[i2].pokes then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-			if sort_by == "pokes_desc" then 
-				if player_list[i].pokes < player_list[i2].pokes then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-			if sort_by == "total_time_played_asc" then 
-				if player_list[i].total_played_ticks > player_list[i2].total_played_ticks then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-			if sort_by == "total_time_played_desc" then 
-				if player_list[i].total_played_ticks < player_list[i2].total_played_ticks then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-			if sort_by == "time_played_asc" then 
-				if player_list[i].played_ticks > player_list[i2].played_ticks then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-			if sort_by == "time_played_desc" then 
-				if player_list[i].played_ticks < player_list[i2].played_ticks then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-			if sort_by == "name_asc" then
-				local str_byte_1 = string.byte(player_list[i].name, 1)
-				local str_byte_2 = string.byte(player_list[i2].name, 1)
-				if str_byte_1 < 97 then str_byte_1 = str_byte_1 + 32 end
-				if str_byte_2 < 97 then str_byte_2 = str_byte_2 + 32 end
-				if str_byte_1 > str_byte_2 then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-			if sort_by == "name_desc" then
-				local str_byte_1 = string.byte(player_list[i].name, 1)
-				local str_byte_2 = string.byte(player_list[i2].name, 1)
-				if str_byte_1 < 97 then str_byte_1 = str_byte_1 + 32 end
-				if str_byte_2 < 97 then str_byte_2 = str_byte_2 + 32 end
-				if str_byte_1 < str_byte_2 then
-					local a = player_list[i]
-					local b = player_list[i2]
-					player_list[i] = b
-					player_list[i2] = a				
-				end				
-			end
-		end
-	end 
+	end
+
+	local comparator = get_comparator(sort_by)
+	table.sort(player_list, comparator)
+
 	return player_list
 end
 
 local function player_list_show(player, sort_by)
-	
+	-- Frame management
 	local frame = player.gui.left["player-list-panel"]
 	if frame then frame.destroy() end
-	
-	--player.gui.left.direction = "horizontal"	
+
+	--player.gui.left.direction = "horizontal"
 	local frame = player.gui.left.add { type = "frame", name = "player-list-panel", direction = "vertical" }
-	
+
 	frame.style.minimal_width = 408
 	frame.style.top_padding = 8
 	frame.style.left_padding = 8
 	frame.style.right_padding = 8
 	frame.style.bottom_padding = 8
-	
-	
-	local t = frame.add { type = "table", name = "player_list_panel_header_table", column_count = 5 }	
-	local label = t.add { type = "label", caption = "" }
-	label.style.minimal_width = 36
-	label.style.maximal_width = 36
-	local label = t.add { type = "label", caption = "" }
-	label.style.minimal_width = 200
-	label.style.maximal_width = 200
-	local label = t.add { type = "label", caption = "" }
-	label.style.minimal_width = 160
-	label.style.maximal_width = 160
-	local label = t.add { type = "label", caption = "" }
-	label.style.minimal_width = 130
-	label.style.maximal_width = 130
-	local label = t.add { type = "label", caption = "" }
-	label.style.minimal_width = 35
-	label.style.maximal_width = 35
-		
-	local label = t.add { type = "label", name = "player_list_panel_header_1", caption = tostring(#game.connected_players) }
-	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.10, g=0.70, b=0.10}
-	label.style.bottom_padding = 3
+
+
+	-- Header management
+	local t = frame.add { type = "table", name = "player_list_panel_header_table", column_count = 5 }
+	for _, w in ipairs({36, 200, 160, 130, 35}) do
+		local label = t.add { type = "label", caption = "" }
+		label.style.minimal_width = w
+		label.style.maximal_width = w
+	end
+
+	local headers = {
+		[1] = "[color=0.1,0.7,0.1]" -- green
+				.. tostring(#game.connected_players)
+				.. "[/color]",
+		[2] = "Online"
+				.. " / "
+				.. "[color=0.7,0.1,0.1]" -- red
+				.. tostring(#game.players - #game.connected_players)
+				.. "[/color]"
+				.. " Offline",
+		[3] = "Total Time",
+		[4] = "Current Time",
+		[5] = "Poke"
+	}
+	local header_modifier = {
+		["name_asc"]  = function (h) h[2] = symbol_asc  .. h[2] end,
+		["name_desc"] = function (h) h[2] = symbol_desc .. h[2] end,
+		["total_time_played_asc"]  = function (h) h[3] = symbol_asc  .. h[3] end,
+		["total_time_played_desc"] = function (h) h[3] = symbol_desc .. h[3] end,
+		["time_played_asc"]  = function (h) h[4] = symbol_asc  .. h[4] end,
+		["time_played_desc"] = function (h) h[4] = symbol_desc .. h[4] end,
+		["pokes_asc"]  = function (h) h[5] = symbol_asc  .. h[5] end,
+		["pokes_desc"] = function (h) h[5] = symbol_desc .. h[5] end
+	}
+	header_modifier[sort_by](headers)
+
+	for k, v in ipairs(headers) do
+		local label = t.add {
+			type = "label",
+			name = "player_list_panel_header_" .. k,
+			caption = v
+		}
+		label.style.font = "default-bold"
+		label.style.font_color = { r=0.98, g=0.66, b=0.22 }
+	end
+
+	-- special style on first header
+	local label = t["player_list_panel_header_1"]
 	label.style.minimal_width = 36
 	label.style.maximal_width = 36
 	label.style.horizontal_align = "right"
-	
-	local str = ""
-	if sort_by == "name_asc" then str = symbol_asc .. " " end
-	if sort_by == "name_desc" then str = symbol_desc .. " " end		
-	if #game.connected_players > 1 then
-		str = str .. "Players online"
-	else
-		str = str .. "Player online"
-	end
-	
-	local tt = t.add({ type = "table", column_count = 5 })
-	local label = tt.add { type = "label", name = "player_list_panel_header_2", caption =  str }
-	label.style.font = "default-bold"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}
-	
-	if #game.connected_players ~= #game.players then		
-		local label = tt.add { type = "label", caption = "/" }
-		label.style.font = "default-bold"
-		label.style.font_color = { r=0.98, g=0.66, b=0.22}				
-		local label = tt.add { type = "label", caption = tostring(#game.players - #game.connected_players) }
-		label.style.font = "default-bold"
-		label.style.font_color = { r=0.70, g=0.10, b=0.10}
-		label.style.minimal_width = 9		
-		local label = tt.add { type = "label", caption = " Offline" }
-		label.style.font = "default-bold"
-		label.style.font_color = { r=0.98, g=0.66, b=0.22}		
-	end	
-	
-	str = ""
-	if sort_by == "total_time_played_asc" then str = symbol_asc .. " " end
-	if sort_by == "total_time_played_desc" then str = symbol_desc .. " " end
-	local label = t.add { type = "label", name = "player_list_panel_header_5", caption = str .. "Total Time" }
-	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}
-	
-	str = ""
-	if sort_by == "time_played_asc" then str = symbol_asc .. " " end
-	if sort_by == "time_played_desc" then str = symbol_desc .. " " end
-	local label = t.add { type = "label", name = "player_list_panel_header_3", caption = str .. "Current Time" }
-	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}	
-	
-	str = ""
-	if sort_by == "pokes_asc" then str = symbol_asc .. " " end
-	if sort_by == "pokes_desc" then str = symbol_desc .. " " end
-	local label = t.add { type = "label", name = "player_list_panel_header_4", caption = str .. "Poke" }
-	label.style.font = "default-listbox"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22}		
-	
+
+
+	-- List management
 	local player_list_panel_table = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
 	player_list_panel_table.style.maximal_height = 530
-	
+
 	player_list_panel_table = player_list_panel_table.add { type = "table", name = "player_list_panel_table", column_count = 5 }
-		
-	local player_list = get_sorted_list(sort_by)	
-	
-	for i = 1, #player_list, 1 do	
-		
+
+	local player_list = get_sorted_list(sort_by)
+
+	for i = 1, #player_list, 1 do
+		-- Icon
 		local sprite = player_list_panel_table.add { type = "sprite", name = "player_rank_sprite_" .. i, sprite = player_list[i].rank }
 		sprite.style.minimal_width = 36
-		
-		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_names_" .. i, caption = player_list[i].name }		
-		label.style.font = "default"				
+
+		-- Name
+		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_names_" .. i, caption = player_list[i].name }
+		label.style.font = "default"
 		label.style.font_color = {
 			r = .4 + game.players[player_list[i].player_index].color.r * 0.6,
 			g = .4 + game.players[player_list[i].player_index].color.g * 0.6,
@@ -320,18 +241,21 @@ local function player_list_show(player, sort_by)
 		}
 		label.style.minimal_width = 200
 		label.style.maximal_width = 200
-				
-		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_total_time_played_" .. i, caption = player_list[i].total_played_time }		
+
+		-- Total time
+		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_total_time_played_" .. i, caption = player_list[i].total_played_time }
 		label.style.minimal_width = 160
 		label.style.maximal_width = 160
-		
-		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_time_played_" .. i, caption = player_list[i].played_time }		
+
+		-- Current time
+		local label = player_list_panel_table.add { type = "label", name = "player_list_panel_player_time_played_" .. i, caption = player_list[i].played_time }
 		label.style.minimal_width = 130
 		label.style.maximal_width = 130
-		
+
+		-- Poke
 		local flow = player_list_panel_table.add { type = "flow", name = "button_flow_" .. i, direction = "horizontal" }
 		flow.add { type = "label", name = "button_spacer_" .. i, caption = "" }
-		local button = flow.add { type = "button", name = "poke_player_" .. player_list[i].name, caption = player_list[i].pokes }		
+		local button = flow.add { type = "button", name = "poke_player_" .. player_list[i].name, caption = player_list[i].pokes }
 		button.style.font = "default"
 		label.style.font_color = { r=0.83, g=0.83, b=0.83}
 		button.style.minimal_height = 30
@@ -341,84 +265,93 @@ local function player_list_show(player, sort_by)
 		button.style.top_padding = 0
 		button.style.left_padding = 0
 		button.style.right_padding = 0
-		button.style.bottom_padding = 0								
-	end				
+		button.style.bottom_padding = 0
+	end
 end
 
 local function on_gui_click(event)
 	if not event then return end
-	if not event.element then return end	
+	if not event.element then return end
 	if not event.element.valid then return end
 	if not event.element.name then return end
-	
+
 	local player = game.players[event.element.player_index]
 	local name = event.element.name
-	
-	if (name == "player_list_button") then			
-		if player.gui.left["player-list-panel"] then
-			player.gui.left["player-list-panel"].destroy()		
-		else
-			player_list_show(player,"total_time_played_desc")
-		end			
-	end
-	
-	if (name == "player_list_panel_header_2") then	
-		if string.find(event.element.caption, symbol_desc) then
-			player_list_show(player,"name_asc")
-		else
-			player_list_show(player,"name_desc")
-		end						
-	end
-	if (name == "player_list_panel_header_3") then
-		if string.find(event.element.caption, symbol_desc) then
-			player_list_show(player,"time_played_asc")
-		else
-			player_list_show(player,"time_played_desc")
+	local actions = {
+		["player_list_button"] = function ()
+			if player.gui.left["player-list-panel"] then
+				player.gui.left["player-list-panel"].destroy()
+			else
+				player_list_show(player,"total_time_played_desc")
+			end
+		end,
+
+		["player_list_panel_header_2"] = function ()
+			if string.find(event.element.caption, symbol_desc) then
+				player_list_show(player,"name_asc")
+			else
+				player_list_show(player,"name_desc")
+			end
+		end,
+
+		["player_list_panel_header_3"] = function ()
+			if string.find(event.element.caption, symbol_desc) then
+				player_list_show(player,"total_time_played_asc")
+			else
+				player_list_show(player,"total_time_played_desc")
+			end
+		end,
+
+		["player_list_panel_header_4"] = function ()
+			if string.find(event.element.caption, symbol_desc) then
+				player_list_show(player,"time_played_asc")
+			else
+				player_list_show(player,"time_played_desc")
+			end
+		end,
+
+		["player_list_panel_header_5"] = function ()
+			if string.find(event.element.caption, symbol_desc) then
+				player_list_show(player,"pokes_asc")
+			else
+				player_list_show(player,"pokes_desc")
+			end
 		end
-	end		
-	if (name == "player_list_panel_header_4") then						
-		if string.find(event.element.caption, symbol_desc) then
-			player_list_show(player,"pokes_asc")
-		else
-			player_list_show(player,"pokes_desc")
-		end			
-	end	
-	if (name == "player_list_panel_header_5") then
-		if string.find(event.element.caption, symbol_desc) then
-			player_list_show(player,"total_time_played_asc")
-		else
-			player_list_show(player,"total_time_played_desc")
-		end
+	}
+
+	if actions[name] then
+		actions[name]()
+		return
 	end
-	
+
 	if not event.element.valid then return end
 	--Poke other players
 	if string.sub(event.element.name, 1, 11) == "poke_player" then
 		local poked_player = string.sub(event.element.name, 13, string.len(event.element.name))
 		if player.name == poked_player then return end
-		if global.poke_spam_protection[event.element.player_index] + 420 < game.tick then				
+		if global.poke_spam_protection[event.element.player_index] + 420 < game.tick then
 			local str = ">> "
-			str = str .. player.name 
+			str = str .. player.name
 			str = str .. " has poked "
-			str = str .. poked_player					
+			str = str .. poked_player
 			str = str .. " with "
 			local z = math.random(1,#pokemessages)
 			str = str .. pokemessages[z]
 			str = str .. " <<"
-			game.print(str)										
+			game.print(str)
 			global.poke_spam_protection[event.element.player_index] = game.tick
 			local p = game.players[poked_player]
 			global.player_list_pokes_counter[p.index] = global.player_list_pokes_counter[p.index] + 1
-		end			
-	end						
+		end
+	end
 end
 
-local function on_player_joined_game(event)	
+local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.poke_spam_protection then global.poke_spam_protection = {} end
 	global.poke_spam_protection[event.player_index] = game.tick
-	if not global.player_list_pokes_counter then global.player_list_pokes_counter = {} end	
-	
+	if not global.player_list_pokes_counter then global.player_list_pokes_counter = {} end
+
 	if player.gui.top.player_list_button == nil then
 		local button = player.gui.top.add({ type = "sprite-button", name = "player_list_button", sprite = "item/heavy-armor", tooltip = "Player List" })
 		button.style.minimal_height = 38
@@ -428,7 +361,7 @@ local function on_player_joined_game(event)
 		button.style.right_padding = 4
 		button.style.bottom_padding = 2
 	end
-		
+
 	if player.gui.left["player-list-panel"] then
 		player.gui.left["player-list-panel"].destroy()
 		player_list_show(player,"total_time_played_desc")
