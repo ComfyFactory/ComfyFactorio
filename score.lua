@@ -303,7 +303,7 @@ local function on_rocket_launched(event)
 	end
 
 	local force_score = global.score[force_name]
-	force_score = 1 + (force_score.rocket_launches or 0)
+	force_score.rocket_launches = 1 + (force_score.rocket_launches or 0)
 	--game.print ("A rocket has been launched!", {r=0.98, g=0.66, b=0.22})
 	refresh_score_full()
 end
