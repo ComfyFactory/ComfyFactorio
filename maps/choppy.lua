@@ -12,8 +12,7 @@ local tick_tack_trap = require "functions.tick_tack_trap"
 local create_entity_chain = require "functions.create_entity_chain"
 local create_tile_chain = require "functions.create_tile_chain"
 
-local simplex_noise = require 'utils.simplex_noise'
-simplex_noise = simplex_noise.d2
+local simplex_noise = require 'utils.simplex_noise'.d2
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
@@ -31,7 +30,8 @@ local tile_replacements = {
 	["dirt-1"] = "grass-1",
 	["dirt-2"] = "grass-2",
 	["dirt-3"] = "grass-3",
-	["dirt-4"] = "grass-4",	
+	["dirt-4"] = "grass-4",
+	["dirt-5"] = "grass-1",
 	["sand-1"] = "grass-1",
 	["sand-2"] = "grass-2",
 	["sand-3"] = "grass-3",
@@ -41,7 +41,24 @@ local tile_replacements = {
 	["red-desert-2"] = "grass-3",
 	["red-desert-3"] = "grass-4",
 }
-	
+
+local rocks = {"rock-big", "rock-big", "rock-huge"}
+local decos = {"green-hairy-grass", "green-hairy-grass", "green-hairy-grass", "green-hairy-grass", "green-hairy-grass", "green-hairy-grass", "green-carpet-grass", "green-carpet-grass","green-pita"}
+local decos_inside_forest = {"brown-asterisk","brown-asterisk", "brown-carpet-grass","brown-hairy-grass"}
+
+local noises = {
+	["forest_location"] = {{modifier = 0.006, weight = 1}, {modifier = 0.01, weight = 0.25}, {modifier = 0.05, weight = 0.15}, {modifier = 0.1, weight = 0.05}},
+	["forest_density"] = {{modifier = 0.01, weight = 1}, {modifier = 0.05, weight = 0.5}, {modifier = 0.1, weight = 0.025}}
+}
+local function get_noise(name, pos, seed)
+	local noise = 0
+	for _, n in pairs(noises[name]) do
+		noise = noise + simplex_noise(pos.x * n.modifier, pos.y * n.modifier, seed) * n.weight
+		seed = seed + 10000
+	end
+	return noise
+end
+
 local function shuffle(tbl)
 	local size = #tbl
 		for i = size, 1, -1 do
@@ -51,23 +68,6 @@ local function shuffle(tbl)
 	return tbl
 end
 
-local function get_noise(name, pos)	
-	local seed = game.surfaces[1].map_gen_settings.seed
-	local noise_seed_add = 25000
-	seed = seed + noise_seed_add
-	if name == 1 then
-		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.006, pos.y * 0.006, seed)
-		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
-		seed = seed + noise_seed_add
-		noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
-		seed = seed + noise_seed_add
-		noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.25 + noise[3] * 0.15 + noise[4] * 0.05		
-		return noise
-	end	
-end
 
 local function process_entity(e)
 	if not e.valid then return end
@@ -77,10 +77,49 @@ local function process_entity(e)
 		return
 	end
 	if e.type == "resource" then
-		e.surface.create_entity({name = "rock-big", position = e.position})
+		if math_random(1,100) > 33 then e.surface.create_entity({name = rocks[math_random(1, #rocks)], position = e.position}) end
 		e.destroy()
 		return
 	end
+end
+
+local function process_tile(surface, pos, tile, seed)
+	if tile.collides_with("player-layer") then return end	
+	if not surface.can_place_entity({name = "tree-01", position = pos}) then return end
+	
+	if math_random(1, 42000) == 1 then
+		local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
+		local e = surface.create_entity{name = wrecks[math_random(1,#wrecks)], position = pos, force = "neutral"}
+		e.insert({name = "raw-fish", count = math_random(3, 25)})
+		if math_random(1, 3) == 1 then e.insert({name = "wood", count = math_random(11, 44)}) end
+	end
+	
+	local noise_forest_location = get_noise("forest_location", pos, seed)
+	--local r = math.ceil(math.abs(get_noise("forest_density", pos, seed + 4096)) * 10)
+	--local r = 5 - math.ceil(math.abs(noise_forest_location) * 3)
+	--r = 2			
+	
+	if noise_forest_location > 0.095 then
+		if noise_forest_location > 0.6 then
+			if math_random(1,100) > 42 then surface.create_entity({name = "tree-08-brown", position = pos}) end
+		else
+			if math_random(1,100) > 42 then surface.create_entity({name = "tree-01", position = pos}) end
+		end
+		surface.create_decoratives({check_collision=false, decoratives={{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}})
+		return
+	end
+	
+	if noise_forest_location < -0.095 then
+		if noise_forest_location < -0.6 then
+			if math_random(1,100) > 42 then surface.create_entity({name = "tree-04", position = pos}) end
+		else
+			if math_random(1,100) > 42 then surface.create_entity({name = "tree-02-red", position = pos}) end
+		end
+		surface.create_decoratives({check_collision=false, decoratives={{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}})
+		return
+	end
+		
+	surface.create_decoratives({check_collision=false, decoratives={{name = decos[math_random(1, #decos)], position = pos, amount = math_random(1, 2)}}})
 end
 
 local function on_chunk_generated(event)
@@ -88,6 +127,9 @@ local function on_chunk_generated(event)
 	local left_top = event.area.left_top
 	local tiles = {}
 	local entities = {}		
+	local seed = game.surfaces[1].map_gen_settings.seed
+	
+	--surface.destroy_decoratives({area = event.area})
 	
 	for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
 		process_entity(e)		
@@ -103,26 +145,7 @@ local function on_chunk_generated(event)
 				table_insert(tiles, {name = tile_replacements[tile.name], position = pos})
 			end
 			
-			if not tile.collides_with("player-layer") then
-				if surface.can_place_entity({name = "tree-01", position = pos}) then
-					local noise = get_noise(1, pos)
-					if noise > 0.08 then
-						if noise > 0.6 then
-							if math_random(1,3) ~= 1 then surface.create_entity({name = "tree-08-brown", position = pos}) end
-						else
-							if math_random(1,3) ~= 1 then surface.create_entity({name = "tree-01", position = pos}) end
-						end
-					end
-					
-					if noise < -0.08 then				
-						if noise < -0.6 then
-							if math_random(1,3) ~= 1 then surface.create_entity({name = "tree-04", position = pos}) end
-						else
-							if math_random(1,3) ~= 1 then surface.create_entity({name = "tree-02-red", position = pos}) end
-						end									
-					end
-				end
-			end			
+			process_tile(surface, pos, tile, seed)
 		end
 	end
 	surface.set_tiles(tiles, true)
@@ -132,14 +155,6 @@ local function on_chunk_generated(event)
 			if entity.valid then entity.destroy() end
 		end
 	end
-	
-	local decorative_names = {}
-	for k,v in pairs(game.decorative_prototypes) do
-		if v.autoplace_specification then
-			decorative_names[#decorative_names+1] = k
-		end
-	end
-	surface.regenerate_decorative(decorative_names, {{left_top.x / 32, left_top.y / 32}})
 	
 	if global.spawn_generated then return end
 	if left_top.x < 96 then return end	 
@@ -186,7 +201,8 @@ local tree_yield = {
 	["tree-02-red"] = "copper-ore",
 	["tree-04"] = "coal",
 	["tree-08-brown"] = "stone",
-	["rock-big"] = "uranium-ore"
+	["rock-big"] = "uranium-ore",
+	["rock-huge"] = "uranium-ore"
 }
 
 local function get_amount(entity)
