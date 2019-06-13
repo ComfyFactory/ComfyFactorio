@@ -132,7 +132,7 @@ local function show_score(player)
 	local score_list = get_score_list(player.force.name)
 
 	if #game.connected_players > 1 then
-		score_list = get_sorted_list(score_pref.method, score_pref.column, score_list)
+		score_list = get_sorted_list(sorting_pref.method, sorting_pref.column, score_list)
 	end
 
 	-- New pane for scores (while keeping headers at same position)
