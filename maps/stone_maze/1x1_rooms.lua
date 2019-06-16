@@ -4,22 +4,56 @@ room.empty = function(surface, cell_left_top, direction)
 	
 end
 
-room.single_worm = function(surface, cell_left_top, direction)	
+room.worms = function(surface, cell_left_top, direction)	
+	local amount = math.ceil(get_biter_amount() * 0.1)
+	local tile_positions = {}
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	surface.create_entity({name = get_worm(), position = {x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, force = "enemy"})
+	for x = 0.5, grid_size - 0.5, 1 do
+		for y = 0.5, grid_size - 0.5, 1 do
+			local pos = {left_top.x + x, left_top.y + y}
+			tile_positions[#tile_positions + 1] = pos
+		end
+	end
+	
+	table.shuffle_table(tile_positions)
+	
+	for _, pos in pairs(tile_positions) do
+		local worm = get_worm()
+		if surface.can_place_entity({name = worm, position = pos}) and math.random(1,4) == 1 then
+			surface.create_entity({name = worm, position = pos, force = "enemy"})
+			amount = amount - 1
+		end	
+		if amount < 1 then break end
+	end
 end
 
-room.single_nest = function(surface, cell_left_top, direction)	
+room.nests = function(surface, cell_left_top, direction)	
+	local amount = math.ceil(get_biter_amount() * 0.1)
+	local tile_positions = {}
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	if math.random(1,4) == 1 then
-		surface.create_entity({name = "spitter-spawner", position = {x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, force = "enemy"})
-	else
-		surface.create_entity({name = "biter-spawner", position = {x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, force = "enemy"})
+	for x = 0.5, grid_size - 0.5, 1 do
+		for y = 0.5, grid_size - 0.5, 1 do
+			local pos = {left_top.x + x, left_top.y + y}
+			tile_positions[#tile_positions + 1] = pos
+		end
+	end
+	
+	table.shuffle_table(tile_positions)
+	
+	for _, pos in pairs(tile_positions) do
+		if surface.can_place_entity({name = "spitter-spawner", position = pos}) and math.random(1,4) == 1 then
+			surface.create_entity({name = "spitter-spawner", position = pos, force = "enemy"})
+			amount = amount - 1
+		else
+			surface.create_entity({name = "biter-spawner", position = pos, force = "enemy"})
+			amount = amount - 1
+		end		
+		if amount < 1 then break end
 	end
 end
 
 room.biters = function(surface, cell_left_top, direction)
-	local amount = math.random(1, math.floor(1 + (global.maze_depth * 0.3)))
+	local amount = get_biter_amount()
 	local tile_positions = {}
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	for x = 0.5, grid_size - 0.5, 1 do
@@ -39,7 +73,7 @@ room.biters = function(surface, cell_left_top, direction)
 end
 
 room.spitters = function(surface, cell_left_top, direction)
-	local amount = math.random(1, math.floor(1 + (global.maze_depth * 0.3)))
+	local amount = get_biter_amount()
 	local tile_positions = {}
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	for x = 0.5, grid_size - 0.5, 1 do
@@ -54,6 +88,30 @@ room.spitters = function(surface, cell_left_top, direction)
 	for _, pos in pairs(tile_positions) do
 		surface.create_entity({name = get_spitter(), position = pos, force = "enemy"})
 		amount = amount - 1
+		if amount < 1 then break end
+	end		
+end
+
+room.spitters_and_biters = function(surface, cell_left_top, direction)
+	local amount = get_biter_amount()
+	local tile_positions = {}
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	for x = 0.5, grid_size - 0.5, 1 do
+		for y = 0.5, grid_size - 0.5, 1 do
+			local pos = {left_top.x + x, left_top.y + y}
+			tile_positions[#tile_positions + 1] = pos
+		end
+	end
+	
+	table.shuffle_table(tile_positions)
+	
+	for _, pos in pairs(tile_positions) do
+		local enemy = get_biter()
+		if math.random(1,3) == 1 then enemy = get_spitter() end
+		if surface.can_place_entity({name = enemy, position = pos, force = "enemy"}) then
+			surface.create_entity({name = enemy, position = pos, force = "enemy"})
+			amount = amount - 1
+		end	
 		if amount < 1 then break end
 	end		
 end
@@ -76,22 +134,46 @@ room.checkerboard_ore = function(surface, cell_left_top, direction)
 	end
 end
 
+room.single_oil = function(surface, cell_left_top, direction)
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	surface.create_entity({name = "crude-oil", position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, amount = 100000 + global.maze_depth * 1000})
+	room.spitters(surface, cell_left_top, direction)
+	room.biters(surface, cell_left_top, direction)
+end
+
+room.tree_ring = function(surface, cell_left_top, direction)
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	local tree = tree_raffle[math.random(1, #tree_raffle)]
+	map_functions.draw_noise_entity_ring(surface, {x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, tree, "neutral", grid_size * 0.25, grid_size * 0.33)
+	surface.spill_item_stack({x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, get_loot_item_stack(), true, nil, true)
+	room.spitters(surface, cell_left_top, direction)
+end
+
 room.tons_of_trees = function(surface, cell_left_top, direction)
 	local tree = tree_raffle[math.random(1, #tree_raffle)]
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	for x = 0.5, grid_size - 0.5, 1 do
 		for y = 0.5, grid_size - 0.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
-			if math.random(1,2) ~= 1 then
+			if math.random(1,3) == 1 then
 				surface.create_entity({name = tree, position = pos, force = "neutral"})
 			end
 		end
 	end
 end
 
+room.loot_crate = function(surface, cell_left_top, direction)
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	local chest = surface.create_entity({name = "wooden-chest", position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, force = "neutral"})
+	chest.destructible = false
+	chest.insert(get_loot_item_stack())
+	if math.random(1,2) == 1 then chest.insert(get_loot_item_stack()) end
+	room.spitters_and_biters(surface, cell_left_top, direction)
+end
+
 room.single_rock = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, force = "neutral"})	
+	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, force = "neutral"})
 end
 
 room.three_rocks = function(surface, cell_left_top, direction)
@@ -99,6 +181,7 @@ room.three_rocks = function(surface, cell_left_top, direction)
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.2, left_top.y + grid_size * 0.8}, force = "neutral"})
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.8, left_top.y + grid_size * 0.8}, force = "neutral"})
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.2}, force = "neutral"})
+	room.biters(surface, cell_left_top, direction)
 end
 
 room.quad_rocks = function(surface, cell_left_top, direction)
@@ -107,6 +190,7 @@ room.quad_rocks = function(surface, cell_left_top, direction)
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.15, left_top.y + grid_size * 0.85}, force = "neutral"})
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.85, left_top.y + grid_size * 0.15}, force = "neutral"})
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.85, left_top.y + grid_size * 0.85}, force = "neutral"})
+	room.spitters_and_biters(surface, cell_left_top, direction)
 end
 
 room.tons_of_rocks = function(surface, cell_left_top, direction)
@@ -143,6 +227,7 @@ room.some_scrap = function(surface, cell_left_top, direction)
 			end
 		end
 	end
+	room.worms(surface, cell_left_top, direction)	
 end
 
 room.lots_of_scrap = function(surface, cell_left_top, direction)
@@ -171,19 +256,22 @@ end
 
 room.pond = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	for x = math.floor(grid_size * 0.25), math.floor(grid_size * 0.75) - 1, 1 do
-		for y = math.floor(grid_size * 0.25), math.floor(grid_size * 0.75) - 1, 1 do
+	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, "water", surface, grid_size * 0.3)
+	for x = 0.5, grid_size - 0.5, 1 do
+		for y = 0.5, grid_size - 0.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
-			surface.set_tiles({{name = "water", position = pos}}, true)
+			if math.random(1,16) == 1 then
+				if surface.can_place_entity({name = "fish", position = pos, force = "neutral"}) then
+					surface.create_entity({name = "fish", position = pos, force = "neutral"})
+				end
+			end
 		end
 	end
 end
 
 local room_weights = {		
-	{func = room.biters, weight = 25},
-	{func = room.spitters, weight = 15},
-	{func = room.single_worm, weight = 15},
-	{func = room.single_nest, weight = 8},
+	{func = room.worms, weight = 15},
+	{func = room.nests, weight = 8},
 	
 	{func = room.tons_of_trees, weight = 15},	
 	
@@ -194,12 +282,17 @@ local room_weights = {
 	{func = room.single_rock, weight = 10},
 	
 	{func = room.checkerboard_ore, weight = 5},
+	{func = room.single_oil, weight = 5},
 	--{func = room.some_scrap, weight = 10},
 	{func = room.lots_of_scrap, weight = 5},
 	--{func = room.tons_of_scrap, weight = 2},
 	{func = room.empty, weight = 1},
 	
-	{func = room.pond, weight = 10}
+	{func = room.pond, weight = 10},
+	
+	{func = room.loot_crate, weight = 10},
+	{func = room.tree_ring, weight = 10}
+	
 }
 
 local room_shuffle = {}
@@ -208,6 +301,5 @@ for _, r in pairs(room_weights) do
 		room_shuffle[#room_shuffle + 1] = r.func
 	end
 end
-
 
 return room_shuffle

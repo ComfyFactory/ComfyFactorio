@@ -12,6 +12,17 @@ room.stone_block = function(surface, cell_left_top, direction)
 			if math.random(1,6) ~= 1 then surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"}) end
 		end
 	end
+	
+	for a = 1, math.random(1, 2), 1 do
+		local chest = surface.create_entity({
+			name = "steel-chest",
+			position = {left_top.x + math.random(math.floor(grid_size * 0.5), math.floor(grid_size * 1.5)), left_top.y + math.random(math.floor(grid_size * 0.5), math.floor(grid_size * 1.5))},
+			force = "neutral",
+		})
+		for a = 1, math.random(1, 3), 1 do
+			chest.insert(get_loot_item_stack())
+		end
+	end
 end
 
 room.scrapyard = function(surface, cell_left_top, direction)
@@ -19,7 +30,7 @@ room.scrapyard = function(surface, cell_left_top, direction)
 	for x = 2.5, grid_size * 2 - 2.5, 1 do
 		for y = 2.5, grid_size * 2 - 2.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}			
-			if math.random(1,4) ~= 1 then surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"}) end
+			if math.random(1,3) == 1 then surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"}) end
 		end
 	end
 	local e = surface.create_entity({name = "storage-tank", position = {left_top.x + grid_size, left_top.y + grid_size}, force = "neutral", direction = math.random(0, 3)})
@@ -41,6 +52,11 @@ room.circle_pond_with_trees = function(surface, cell_left_top, direction)
 			if math.random(1,5) == 1 and distance_to_center < grid_size * 0.85 then
 				if surface.can_place_entity({name = tree, position = pos, force = "neutral"}) then surface.create_entity({name = tree, position = pos, force = "neutral"}) end
 			end
+			if math.random(1,16) == 1 then
+				if surface.can_place_entity({name = "fish", position = pos, force = "neutral"}) then
+					surface.create_entity({name = "fish", position = pos, force = "neutral"})
+				end
+			end
 		end
 	end
 end
@@ -50,15 +66,24 @@ room.checkerboard_ore = function(surface, cell_left_top, direction)
 	table.shuffle_table(ores)
 	
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	for x = 2, grid_size * 2 - 3, 1 do
-		for y = 2, grid_size * 2 - 3, 1 do
+	for x = 4, grid_size * 2 - 5, 1 do
+		for y = 4, grid_size * 2 - 5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
 			if x % 2 == y % 2 then
-				surface.create_entity({name = ores[1], position = pos, force = "neutral", amount = 256 + global.maze_depth * 4})
+				surface.create_entity({name = ores[1], position = pos, force = "neutral", amount = get_ore_amount()})
 			else
-				surface.create_entity({name = ores[2], position = pos, force = "neutral", amount = 256 + global.maze_depth * 4})
+				surface.create_entity({name = ores[2], position = pos, force = "neutral", amount = get_ore_amount()})
 			end
 			surface.set_tiles({{name = "grass-2", position = pos}}, true)
+		end
+	end
+	
+	for x = 1, grid_size * 2 - 2, 1 do
+		for y = 1, grid_size * 2 - 2, 1 do
+			local pos = {left_top.x + x, left_top.y + y}
+			if x <= 3 or x >= grid_size * 2 - 3 or y <= 3 or y >= grid_size * 2 - 3 then
+				if math.random(1,2) == 1 then surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"}) end
+			end
 		end
 	end
 end
@@ -71,7 +96,13 @@ room.minefield_chest = function(surface, cell_left_top, direction)
 		position = {left_top.x + grid_size + (direction[1] * grid_size * 0.5), left_top.y + grid_size + (direction[2] * grid_size * 0.5)},
 		force = "neutral",
 	})
-	chest.insert({name = "grenade", count = "1"})
+	
+	chest.insert(get_loot_item_stack())
+	chest.insert(get_loot_item_stack())
+	chest.insert(get_loot_item_stack())
+	chest.insert(get_loot_item_stack())
+	chest.insert(get_loot_item_stack())
+	chest.insert(get_loot_item_stack())
 	
 	for x = 0, grid_size * 2 - 1, 1 do
 		for y = 0, grid_size * 2 - 1, 1 do
@@ -96,8 +127,7 @@ local room_weights = {
 	{func = room.scrapyard, weight = 10},
 	{func = room.stone_block, weight = 25},
 	{func = room.minefield_chest, weight = 5},
-	{func = room.checkerboard_ore, weight = 10},
-	{func = room.empty, weight = 1},
+	{func = room.checkerboard_ore, weight = 10}
 }
 
 local room_shuffle = {}

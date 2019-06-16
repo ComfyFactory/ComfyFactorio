@@ -23,12 +23,15 @@ multirooms["2x2"] = require 'maps.stone_maze.2x2_rooms'
 multirooms["3x3"] = require 'maps.stone_maze.3x3_rooms'
 
 map_functions = require "tools.map_functions"
-grid_size = 24
+grid_size = 16
+manual_mining_speed_modifier = 2
+main_ground_tile = "dirt-3"
 rock_raffle = {"rock-huge", "rock-big", "rock-big", "rock-big"}
 tree_raffle = {"tree-01", "tree-02", "tree-03", "tree-04", "tree-05", "tree-06", "tree-07", "tree-08", "tree-09", "tree-02-red", "tree-06-brown", "tree-08-brown", "tree-08-red","tree-09-brown","tree-09-red","dead-dry-hairy-tree","dry-hairy-tree","dry-tree","dead-tree-desert","dead-grey-trunk"}
 
 
 local visited_tile_translation = {
+	--["dirt-7"] = "grass-2",
 	["dirt-3"] = "dirt-7",
 	["dirt-5"] = "dirt-7",
 	["grass-2"] = "grass-1"
@@ -110,6 +113,32 @@ local function init_cell(cell_position)
 	global.maze_cells[coord_to_string(cell_position)].occupied = false
 end
 
+local function get_chunk_position(position)
+	local chunk_position = {}
+	position.x = math.floor(position.x, 0)
+	position.y = math.floor(position.y, 0)
+	for x = 0, 31, 1 do
+		if (position.x - x) % 32 == 0 then chunk_position.x = (position.x - x)  / 32 end
+	end
+	for y = 0, 31, 1 do
+		if (position.y - y) % 32 == 0 then chunk_position.y = (position.y - y)  / 32 end
+	end	
+	return chunk_position
+end
+
+local function regenerate_decoratives(surface, position)
+	local chunk = get_chunk_position(position)
+	if not chunk then return end
+	surface.destroy_decoratives({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}})
+	local decorative_names = {}
+	for k,v in pairs(game.decorative_prototypes) do
+		if v.autoplace_specification then
+			decorative_names[#decorative_names+1] = k
+		end
+	end
+	surface.regenerate_decorative(decorative_names, {chunk})
+end
+
 local function set_cell_tiles(surface, cell_position, tile_name)
 	local left_top = {x = cell_position.x * grid_size, y = cell_position.y * grid_size}
 	for x = 0, grid_size - 1, 1 do
@@ -118,6 +147,7 @@ local function set_cell_tiles(surface, cell_position, tile_name)
 			surface.set_tiles({{name = tile_name, position = pos}}, true)
 		end
 	end
+	regenerate_decoratives(surface, left_top)
 end
 
 local function set_visted_cell_tiles(surface, cell_position)
@@ -125,7 +155,7 @@ local function set_visted_cell_tiles(surface, cell_position)
 	
 	local remnants = {}
 	for _, e in pairs(surface.find_entities_filtered({type = "corpse", area = {{left_top.x, left_top.y},{left_top.x + grid_size, left_top.y + grid_size}}})) do
-		remnants[#remnants] = {name = e.name, position = e.position, direction = e.direction}
+		remnants[#remnants + 1] = {name = e.name, position = e.position, direction = e.direction}
 	end
 	
 	for x = 0, grid_size - 1, 1 do
@@ -141,6 +171,8 @@ local function set_visted_cell_tiles(surface, cell_position)
 	for _, e in pairs(remnants) do
 		surface.create_entity({name = e.name, position = e.position, direction = e.direction})
 	end
+	
+	regenerate_decoratives(surface, left_top)
 end
 
 local function can_multicell_expand(cell_position, direction, cell_type)	
@@ -197,7 +229,7 @@ local function set_cell(surface, cell_position, direction)
 			for x = 0, cells[multi_cell_type].size_x - 1, 1 do
 				for y = 0, cells[multi_cell_type].size_y - 1, 1 do
 					local p = {x = cell_left_top.x + x, y = cell_left_top.y + y}
-					set_cell_tiles(surface, p, "dirt-3")
+					set_cell_tiles(surface, p, main_ground_tile)
 					
 					init_cell(p)
 					global.maze_cells[coord_to_string(p)].occupied = true
@@ -216,7 +248,7 @@ local function set_cell(surface, cell_position, direction)
 		if cells_to_open == 0 then return end
 		cells_to_open = cells_to_open - 1		
 		
-		set_cell_tiles(surface, cell_position, "dirt-3")
+		set_cell_tiles(surface, cell_position, main_ground_tile)
 		rooms_1x1[math_random(1,#rooms_1x1)](surface, cell_position, direction)
 		
 		init_cell(cell_position)
@@ -271,7 +303,7 @@ local function on_chunk_generated(event)
 		for x = 0, 31, 1 do
 			for y = 0, 31, 1 do
 				local tile_name = "out-of-map"
-				if x < grid_size and y < grid_size then tile_name = "dirt-7" end
+				if x < grid_size and y < grid_size then tile_name = "stone-path" end
 				local p = {x = left_top.x + x, y = left_top.y + y}
 				surface.set_tiles({{name = tile_name, position = p}}, true)				
 			end
@@ -279,7 +311,7 @@ local function on_chunk_generated(event)
 		for _, e in pairs(surface.find_entities_filtered({force = "neutral"})) do
 			e.destroy()
 		end
-		ore_market(surface, {x = grid_size * 0.4, y = grid_size * 0.4})
+		spawn_market(surface, {x = math.random(4, grid_size - 4), y = math.random(4, grid_size - 4)})
 		init_cell({0,0})
 		global.maze_cells[coord_to_string({0,0})].occupied = true
 		return
@@ -304,6 +336,11 @@ local function on_player_joined_game(event)
 	end	
 end
 
+local function on_research_finished(event)
+	if not event.research.force.technologies["steel-axe"].researched then return end
+	event.research.force.manual_mining_speed_modifier = manual_mining_speed_modifier + 2
+end
+
 local function on_init(event)
 	global.maze_cells = {}
 	global.maze_depth = 0
@@ -314,10 +351,16 @@ local function on_init(event)
 		{biter = "behemoth-biter", spitter = "behemoth-spitter", worm = "behemoth-worm-turret", ammo = "uranium-rounds-magazine", chance = 0}
 	}
 	
-	game.forces["player"].set_spawn_position({x = grid_size * 0.5, y = grid_size * 0.75}, game.surfaces.nauvis)
+	game.forces["player"].set_spawn_position({x = 2, y = 2}, game.surfaces.nauvis)
+	game.forces["player"].manual_mining_speed_modifier = manual_mining_speed_modifier
+	
+	game.map_settings.enemy_evolution.time_factor = 0
+	game.map_settings.enemy_evolution.destroy_factor = 0
+	game.map_settings.enemy_evolution.pollution_factor = 0
 end
 
 event.on_init(on_init)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_research_finished, on_research_finished)
