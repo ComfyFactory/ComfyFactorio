@@ -34,7 +34,8 @@ local visited_tile_translation = {
 	--["dirt-7"] = "grass-2",
 	["dirt-3"] = "dirt-7",
 	["dirt-5"] = "dirt-7",
-	["grass-2"] = "grass-1"
+	["stone-path"] = "concrete",
+	--["grass-2"] = "grass-1"
 }
 
 local function draw_depth_gui()
@@ -328,10 +329,7 @@ end
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]	
 	if player.online_time == 0 then
-		player.insert{name = 'iron-plate', count = 32}
-		player.insert{name = 'iron-gear-wheel', count = 16}
-		player.insert{name = 'submachine-gun', count = 1}
-		player.insert{name = 'uranium-rounds-magazine', count = 128}
+		player.insert{name = 'pistol', count = 1}
 		player.insert{name = 'firearm-magazine', count = 64}	
 	end	
 end

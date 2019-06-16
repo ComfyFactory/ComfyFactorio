@@ -43,6 +43,7 @@ room.circle_pond_with_trees = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	local center_pos = {x = left_top.x + grid_size, y = left_top.y + grid_size}
 	
+	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size, y = left_top.y + grid_size}, "grass-2", surface, grid_size * 0.75)
 	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size, y = left_top.y + grid_size}, "water", surface, grid_size * 0.5)
 		
 	for x = math.floor(grid_size * 2 * 0.1), math.floor(grid_size * 2 * 0.9), 1 do
@@ -78,11 +79,11 @@ room.checkerboard_ore = function(surface, cell_left_top, direction)
 		end
 	end
 	
-	for x = 1, grid_size * 2 - 2, 1 do
-		for y = 1, grid_size * 2 - 2, 1 do
+	for x = 1, grid_size * 2 - 1, 1 do
+		for y = 1, grid_size * 2 - 1, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
 			if x <= 3 or x >= grid_size * 2 - 3 or y <= 3 or y >= grid_size * 2 - 3 then
-				if math.random(1,2) == 1 then surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"}) end
+				if math.random(1,3) ~= 1 then surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"}) end
 			end
 		end
 	end

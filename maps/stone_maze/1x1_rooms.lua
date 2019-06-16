@@ -144,6 +144,7 @@ end
 room.tree_ring = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	local tree = tree_raffle[math.random(1, #tree_raffle)]
+	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, "grass-2", surface, grid_size * 0.35)
 	map_functions.draw_noise_entity_ring(surface, {x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, tree, "neutral", grid_size * 0.25, grid_size * 0.33)
 	surface.spill_item_stack({x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, get_loot_item_stack(), true, nil, true)
 	room.spitters(surface, cell_left_top, direction)
@@ -164,6 +165,7 @@ end
 
 room.loot_crate = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, "stone-path", surface, grid_size * 0.2)
 	local chest = surface.create_entity({name = "wooden-chest", position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, force = "neutral"})
 	chest.destructible = false
 	chest.insert(get_loot_item_stack())
