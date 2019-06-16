@@ -69,14 +69,51 @@ local function shuffle(tbl)
 end
 
 
+local entities_to_convert = {
+	["coal"] = true,
+	["copper-ore"] = true,
+	["iron-ore"] = true,
+	["uranium-ore"] = true,
+	["stone"] = true,
+	["angels-ore1"] = true,
+	["angels-ore2"] = true,
+	["angels-ore3"] = true,
+	["angels-ore4"] = true,
+	["angels-ore5"] = true,
+	["angels-ore6"] = true,
+	["thorium-ore"] = true
+}
+
+local trees_to_remove = {
+	["dead-dry-hairy-tree"] = true,
+	["dead-grey-trunk"] = true,
+	["dead-tree-desert"] = true,
+	["dry-hairy-tree"] = true,
+	["dry-tree"] = true,
+	["tree-01"] = true,
+	["tree-02"] = true,
+	["tree-02-red"] = true,
+	["tree-03"] = true,
+	["tree-04"] = true,
+	["tree-05"] = true,
+	["tree-06"] = true,
+	["tree-06-brown"] = true,
+	["tree-07"] = true,
+	["tree-08"] = true,
+	["tree-08-brown"] = true,
+	["tree-08-red"] = true,
+	["tree-09"] = true,
+	["tree-09-brown"] = true,
+	["tree-09-red"] = true
+}
+
 local function process_entity(e)
 	if not e.valid then return end
-	if e.name == "crude-oil" then return end
-	if e.type == "tree" then
+	if trees_to_remove[e.name] then
 		e.destroy()
 		return
 	end
-	if e.type == "resource" then
+	if entities_to_convert[e.name] then
 		if math_random(1,100) > 33 then e.surface.create_entity({name = rocks[math_random(1, #rocks)], position = e.position}) end
 		e.destroy()
 		return
@@ -87,7 +124,7 @@ local function process_tile(surface, pos, tile, seed)
 	if tile.collides_with("player-layer") then return end	
 	if not surface.can_place_entity({name = "tree-01", position = pos}) then return end
 	
-	if math_random(1, 42000) == 1 then
+	if math_random(1, 100000) == 1 then
 		local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
 		local e = surface.create_entity{name = wrecks[math_random(1,#wrecks)], position = pos, force = "neutral"}
 		e.insert({name = "raw-fish", count = math_random(3, 25)})
@@ -186,24 +223,37 @@ local function on_player_joined_game(event)
 	
 	if global.map_init_done then return end
 	
-	game.map_settings.pollution.ageing = 0
 	--game.map_settings.pollution.min_pollution_to_damage_trees = 1000000
 	--game.map_settings.pollution.pollution_per_tree_damage = 0
 	--game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 
 	game.surfaces["nauvis"].ticks_per_day = game.surfaces["nauvis"].ticks_per_day * 2
 	
+	global.entity_yield = {
+		["tree-01"] = {"iron-ore"},
+		["tree-02-red"] = {"copper-ore"},
+		["tree-04"] = {"coal"},
+		["tree-08-brown"] = {"stone"},
+		["rock-big"] = {"uranium-ore"},
+		["rock-huge"] = {"uranium-ore"}
+	}
+	
+	if game.item_prototypes["angels-ore1"] then
+		global.entity_yield["tree-01"] = {"angels-ore1", "angels-ore2"}
+		global.entity_yield["tree-02-red"] = {"angels-ore5", "angels-ore6"}
+		global.entity_yield["tree-04"] = {"coal"}
+		global.entity_yield["tree-08-brown"] = {"angels-ore3", "angels-ore4"}
+	else
+		game.map_settings.pollution.ageing = 0
+	end
+	
+	if game.item_prototypes["thorium-ore"] then
+		global.entity_yield["rock-big"] = {"uranium-ore", "thorium-ore"}
+		global.entity_yield["rock-huge"] = {"uranium-ore", "thorium-ore"}
+	end
+		
 	global.map_init_done = true
-end
-
-local tree_yield = {
-	["tree-01"] = "iron-ore",
-	["tree-02-red"] = "copper-ore",
-	["tree-04"] = "coal",
-	["tree-08-brown"] = "stone",
-	["rock-big"] = "uranium-ore",
-	["rock-huge"] = "uranium-ore"
-}
+end	
 
 local function get_amount(entity)
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
@@ -227,7 +277,7 @@ local function on_player_mined_entity(event)
 		trap(entity)
 	end
 		
-	if tree_yield[entity.name] then		
+	if global.entity_yield[entity.name] then		
 		if event.buffer then event.buffer.clear() end			
 		if not event.player_index then return end
 		local amount = get_amount(entity)
@@ -240,19 +290,21 @@ local function on_player_mined_entity(event)
 			second_item = "stone"
 		end
 		
+		local main_item = global.entity_yield[entity.name][math_random(1,#global.entity_yield[entity.name])]
+		
 		entity.surface.create_entity({
 			name = "flying-text",
 			position = entity.position,
-			text = "+" .. amount .. " [item=" .. tree_yield[entity.name] .. "] +" .. second_item_amount .. " [item=" .. second_item .. "]",
+			text = "+" .. amount .. " [item=" .. main_item .. "] +" .. second_item_amount .. " [item=" .. second_item .. "]",
 			color = {r=0.8,g=0.8,b=0.8}})	
 		
 		
 		local player = game.players[event.player_index]
 		
-		local inserted_count = player.insert({name = tree_yield[entity.name], count = amount})				
+		local inserted_count = player.insert({name = main_item, count = amount})				
 		amount = amount - inserted_count
 		if amount > 0 then
-			entity.surface.spill_item_stack(entity.position,{name = tree_yield[entity.name], count = amount}, true)
+			entity.surface.spill_item_stack(entity.position,{name = main_item, count = amount}, true)
 		end
 				
 		local inserted_count = player.insert({name = second_item, count = second_item_amount})				
