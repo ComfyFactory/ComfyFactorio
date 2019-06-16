@@ -403,11 +403,11 @@ local function on_entity_died(event)
 		local points = score_table[event.entity.name]
 		for _, p in pairs(rewarded_players) do
 			-- Handles floating text
-			if global.show_floating_killscore[player.name] == true then
+			if global.show_floating_killscore[p.name] == true then
 				show_floating_text = true
 			end
 			-- Add
-			local score = global.score[event.force.name].players[player.name]
+			local score = global.score[event.force.name].players[p.name]
 			score.killscore = points + (score.killscore or 0)
 		end
 
