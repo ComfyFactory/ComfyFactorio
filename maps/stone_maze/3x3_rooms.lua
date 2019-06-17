@@ -142,8 +142,8 @@ end
 
 local room_weights = {
 	{func = room.uranium_wasteland, weight = 1},
-	{func = room.stone_block, weight = 2},
-	{func = room.tree_square_nests, weight = 2}	
+	{func = room.stone_block, weight = 3},
+	{func = room.tree_square_nests, weight = 3}	
 }
 
 local room_shuffle = {}

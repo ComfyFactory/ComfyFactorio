@@ -628,10 +628,10 @@ local function biter_attack_wave()
 	if global.wave_count % 50 == 0 then
 		global.attack_wave_threat = global.wave_count * 8
 		spawn_boss_units(surface)
-		if global.attack_wave_threat > 10000 then global.attack_wave_threat = 10000 end
+		if global.attack_wave_threat > 12000 then global.attack_wave_threat = 12000 end
 	else
 		global.attack_wave_threat = global.wave_count * 4
-		if global.attack_wave_threat > 5000 then global.attack_wave_threat = 5000 end
+		if global.attack_wave_threat > 8000 then global.attack_wave_threat = 8000 end
 	end
 
 	local evolution = global.wave_count * 0.00125
