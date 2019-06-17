@@ -1,0 +1,27 @@
+local playsession = {
+	{"Wizard7187", {248811}},
+	{"JordyXander", {123893}},
+	{"Buczo997", {93810}},
+	{"CawaEast", {250352}},
+	{"Nick1593", {250234}},
+	{"Redbotzio", {14267}},
+	{"Pentbot", {75353}},
+	{"tomboy", {248762}},
+	{"Frexich", {240324}},
+	{"promobugzy", {229982}},
+	{"TXL_PLAYZ", {231129}},
+	{"yulingqixiao", {7933}},
+	{"sergma33", {27281}},
+	{"redlabel", {205749}},
+	{"jannopl", {134408}},
+	{"sobitome", {48573}},
+	{"hubertgame", {149839}},
+	{"Cloudtv", {116303}},
+	{"Ghor77", {8839}},
+	{"Vuldunobetro", {63747}},
+	{"Serennie", {56836}},
+	{"JailsonBR", {4449}},
+	{"AroN57", {37472}},
+	{"caiqing045", {10003}}
+}
+return playsession

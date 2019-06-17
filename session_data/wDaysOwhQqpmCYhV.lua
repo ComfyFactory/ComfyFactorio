@@ -29,7 +29,7 @@ local playsession = {
 	{"marcipwn", {12736}},
 	{"AlexeyQ", {8728}},
 	{"untouchablez", {555447}},
-	{"tokastar", {629802}},
+	{"tokastar", {643195}},
 	{"LeoRuivao", {403995}},
 	{"jackgolf", {532752}},
 	{"GuidoCram", {415597}},
@@ -43,7 +43,7 @@ local playsession = {
 	{"jackazzm", {221908}},
 	{"greenfiregray", {159733}},
 	{"Finguh3232", {5538}},
-	{"Nikolaa", {13588}},
+	{"Nikolaa", {15057}},
 	{"elMoskvin", {279737}},
 	{"StandaardStefan", {523216}},
 	{"Kiumajus", {4478}},
@@ -61,7 +61,9 @@ local playsession = {
 	{"Yannickool2", {16685}},
 	{"tickterd", {89020}},
 	{"TovaMire", {17374}},
-	{"blyck", {666161}},
-	{"Miteone", {438969}}
+	{"blyck", {678603}},
+	{"Miteone", {438969}},
+	{"ETK03", {4646}},
+	{"barton1906", {859}}
 }
 return playsession

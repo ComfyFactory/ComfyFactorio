@@ -1,0 +1,28 @@
+local playsession = {
+	{"Ugaki", {346657}},
+	{"tokastar", {3378}},
+	{"enesmoon", {355565}},
+	{"Krono", {323624}},
+	{"Xhandhul", {339532}},
+	{"joe32", {116715}},
+	{"Serennie", {8295}},
+	{"colocri", {301909}},
+	{"pwoland", {294314}},
+	{"yulingqixiao", {205034}},
+	{"Spaceman-Spiff", {1653}},
+	{"OmegaLunch", {259802}},
+	{"porelos", {113492}},
+	{"tiramissu2", {19387}},
+	{"tykak", {57042}},
+	{"15944831778", {178660}},
+	{"BrendanPawpad", {15083}},
+	{"Jhumekes", {103917}},
+	{"__init__", {1950}},
+	{"SiddCon", {6523}},
+	{"ALFi", {14681}},
+	{"CawaEast", {78757}},
+	{"maate", {70392}},
+	{"tyrwulf", {14709}},
+	{"floxys", {5889}}
+}
+return playsession

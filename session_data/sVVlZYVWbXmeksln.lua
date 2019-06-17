@@ -1,0 +1,28 @@
+local playsession = {
+	{"Eagle34", {600867}},
+	{"macros4200", {275681}},
+	{"SlideQ", {609522}},
+	{"belbo", {609240}},
+	{"Scuideie-Guy", {608231}},
+	{"Fantomlord5", {607513}},
+	{"maskenary", {132458}},
+	{"Tamika", {601318}},
+	{"Nikkichu", {542149}},
+	{"Ace67aod", {150450}},
+	{"akeinhell", {6689}},
+	{"Cloudtv", {228444}},
+	{"OmegaLunch", {134534}},
+	{"mundsundu", {264167}},
+	{"porelos", {39841}},
+	{"jackazzm", {375206}},
+	{"yulingqixiao", {55756}},
+	{"happyjumper5", {288637}},
+	{"2387354150", {1395}},
+	{"Daveyboy80", {257608}},
+	{"Gmo785", {233048}},
+	{"art333", {4858}},
+	{"RonnDlear", {3502}},
+	{"TheNetworkDoctor", {53084}},
+	{"Thoren", {18202}}
+}
+return playsession
