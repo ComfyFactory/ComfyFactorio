@@ -23,7 +23,7 @@ multirooms["2x2"] = require 'maps.stone_maze.2x2_rooms'
 multirooms["3x3"] = require 'maps.stone_maze.3x3_rooms'
 
 map_functions = require "tools.map_functions"
-grid_size = 16
+grid_size = 24
 manual_mining_speed_modifier = 2
 main_ground_tile = "dirt-3"
 rock_raffle = {"rock-huge", "rock-big", "rock-big", "rock-big"}

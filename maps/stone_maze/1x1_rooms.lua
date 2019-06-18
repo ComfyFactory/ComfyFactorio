@@ -41,11 +41,12 @@ room.nests = function(surface, cell_left_top, direction)
 	table.shuffle_table(tile_positions)
 	
 	for _, pos in pairs(tile_positions) do
-		if surface.can_place_entity({name = "spitter-spawner", position = pos}) and math.random(1,4) == 1 then
-			surface.create_entity({name = "spitter-spawner", position = pos, force = "enemy"})
-			amount = amount - 1
-		else
-			surface.create_entity({name = "biter-spawner", position = pos, force = "enemy"})
+		if surface.can_place_entity({name = "spitter-spawner", position = pos}) then
+			if math.random(1,4) == 1 then
+				surface.create_entity({name = "spitter-spawner", position = pos, force = "enemy"})
+			else
+				surface.create_entity({name = "biter-spawner", position = pos, force = "enemy"})			
+			end
 			amount = amount - 1
 		end		
 		if amount < 1 then break end
