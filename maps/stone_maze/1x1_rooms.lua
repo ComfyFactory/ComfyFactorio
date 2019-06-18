@@ -67,8 +67,11 @@ room.biters = function(surface, cell_left_top, direction)
 	table.shuffle_table(tile_positions)
 	
 	for _, pos in pairs(tile_positions) do
-		surface.create_entity({name = get_biter(), position = pos, force = "enemy"})
-		amount = amount - 1
+		local enemy = get_biter()
+		if surface.can_place_entity({name = enemy, position = pos}) then
+			surface.create_entity({name = enemy, position = pos, force = "enemy"})
+			amount = amount - 1
+		end
 		if amount < 1 then break end
 	end		
 end
@@ -87,8 +90,11 @@ room.spitters = function(surface, cell_left_top, direction)
 	table.shuffle_table(tile_positions)
 	
 	for _, pos in pairs(tile_positions) do
-		surface.create_entity({name = get_spitter(), position = pos, force = "enemy"})
-		amount = amount - 1
+		local enemy = get_spitter()
+		if surface.can_place_entity({name = enemy, position = pos}) then
+			surface.create_entity({name = enemy, position = pos, force = "enemy"})
+			amount = amount - 1
+		end
 		if amount < 1 then break end
 	end		
 end
@@ -157,7 +163,7 @@ room.tons_of_trees = function(surface, cell_left_top, direction)
 	for x = 0.5, grid_size - 0.5, 1 do
 		for y = 0.5, grid_size - 0.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
-			if math.random(1,3) == 1 then
+			if math.random(1,4) == 1 then
 				surface.create_entity({name = tree, position = pos, force = "neutral"})
 			end
 		end
@@ -177,6 +183,7 @@ end
 room.single_rock = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, force = "neutral"})
+	room.biters(surface, cell_left_top, direction)
 end
 
 room.three_rocks = function(surface, cell_left_top, direction)
@@ -258,6 +265,7 @@ room.tons_of_scrap = function(surface, cell_left_top, direction)
 end
 
 room.pond = function(surface, cell_left_top, direction)
+	local tree = tree_raffle[math.random(1, #tree_raffle)]
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, "water", surface, grid_size * 0.3)
 	for x = 0.5, grid_size - 0.5, 1 do
@@ -266,6 +274,11 @@ room.pond = function(surface, cell_left_top, direction)
 			if math.random(1,16) == 1 then
 				if surface.can_place_entity({name = "fish", position = pos, force = "neutral"}) then
 					surface.create_entity({name = "fish", position = pos, force = "neutral"})
+				end
+			end
+			if math.random(1,40) == 1 then
+				if surface.can_place_entity({name = tree, position = pos, force = "neutral"}) then
+					surface.create_entity({name = tree, position = pos, force = "neutral"})
 				end
 			end
 		end
@@ -278,18 +291,18 @@ local room_weights = {
 	
 	{func = room.tons_of_trees, weight = 15},	
 	
-	{func = room.lots_of_rocks, weight = 25},
+	{func = room.lots_of_rocks, weight = 15},
 	{func = room.tons_of_rocks, weight = 15},	
 	{func = room.quad_rocks, weight = 10},
 	{func = room.three_rocks, weight = 3},
 	{func = room.single_rock, weight = 10},
 	
-	{func = room.checkerboard_ore, weight = 5},
+	{func = room.checkerboard_ore, weight = 7},
 	{func = room.single_oil, weight = 5},
 	--{func = room.some_scrap, weight = 10},
 	{func = room.lots_of_scrap, weight = 5},
 	--{func = room.tons_of_scrap, weight = 2},
-	{func = room.empty, weight = 1},
+	--{func = room.empty, weight = 1},
 	
 	{func = room.pond, weight = 10},
 	

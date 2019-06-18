@@ -123,6 +123,23 @@ room.spitters_and_biters = function(surface, cell_left_top, direction)
 	end		
 end
 
+
+room.random_enemies = function(surface, cell_left_top, direction)
+	local tree = tree_raffle[math.random(1, #tree_raffle)]
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	if math.random(1,2) == 1 then room.nests(surface, cell_left_top, direction) end
+	for x = 0.5, grid_size * 2 - 0.5, 1 do
+		for y = 0.5, grid_size * 2 - 0.5, 1 do
+			local pos = {left_top.x + x, left_top.y + y}			
+			if math.random(1, math.random(32, 64)) == 1 then surface.create_entity({name = tree, position = pos, force = "neutral"}) end
+		end
+	end
+	if math.random(1,4) == 1 then room.worms(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.biters(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.spitters(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.spitters_and_biters(surface, cell_left_top, direction) end
+end
+
 room.stone_block = function(surface, cell_left_top, direction)	
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
 	for x = 4.5, grid_size * 2 - 4.5, 1 do
@@ -179,6 +196,10 @@ room.circle_pond_with_trees = function(surface, cell_left_top, direction)
 			end
 		end
 	end
+	if math.random(1,4) == 1 then room.worms(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.biters(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.spitters(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.spitters_and_biters(surface, cell_left_top, direction) end
 end
 
 room.checkerboard_ore = function(surface, cell_left_top, direction)
@@ -206,6 +227,10 @@ room.checkerboard_ore = function(surface, cell_left_top, direction)
 			end
 		end
 	end
+	if math.random(1,4) == 1 then room.worms(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.biters(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.spitters(surface, cell_left_top, direction) end
+	if math.random(1,2) == 1 then room.spitters_and_biters(surface, cell_left_top, direction) end
 end
 
 room.minefield_chest = function(surface, cell_left_top, direction)
@@ -249,10 +274,7 @@ local room_weights = {
 	{func = room.minefield_chest, weight = 5},
 	{func = room.checkerboard_ore, weight = 3},
 	
-	{func = room.biters, weight = 3},
-	{func = room.spitters, weight = 3},
-	{func = room.spitters_and_biters, weight = 3},
-	{func = room.nests, weight = 8}
+	{func = room.random_enemies, weight = 20}
 }
 
 local room_shuffle = {}
