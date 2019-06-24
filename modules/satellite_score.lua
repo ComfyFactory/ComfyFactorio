@@ -83,9 +83,11 @@ local function on_rocket_launched(event)
 		end						
 		global.satellite_score[i].achieved = true
 	end		
-        local message = 'A satellite has been launched! Total count: ' .. global.satellites_in_space
+	if (global.satellites_in_space < 10) or ((global.satellites_in_space < 50) and ((global.satellites_in_space % 5) == 0)) or ((global.satellites_in_space % 25) == 0) then
+		local message = 'A satellite has been launched! Total count: ' .. global.satellites_in_space
         game.print(message)
         server_commands.to_discord_embed(message)
+	end    
 end
 
 local function init()
