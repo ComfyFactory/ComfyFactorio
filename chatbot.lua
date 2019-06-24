@@ -26,34 +26,57 @@ local function on_player_created(event)
 	player.print("Join the comfy discord >> getcomfy.eu/discord", message_color)
 end
 
-local function process_custom_commands(event)	
-	local player = game.players[event.player_index]
-	if player.admin == false then return end 
-	for word in string.gmatch(string.lower(event.message), "%g+") do
-		if word == "trust" or word == "regular" then
-			for word in string.gmatch(event.message, "%g+") do
-				if game.players[word] then
-					if game.players[word].name == word then
-						global.trusted_players[word] = true
-						game.print(word .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99})
-					end
-				end
-			end
-			return
-		end
-		if word == "untrust" then
-			for word in string.gmatch(event.message, "%g+") do
-				if game.players[word] then
-					if game.players[word].name == word then
-						global.trusted_players[word] = false
-						game.print(word .. " is no longer a trusted player.", {r=0.22, g=0.99, b=0.99})
-					end
-				end
-			end
-			return
-		end
-	end
-end
+commands.add_command(
+    'trust',
+    'Promotes a player to the global.trusted_players',
+    function(cmd)
+        local player = game.player
+        local p
+
+        if player then
+            p = player.print
+            if not player.admin then
+                p("You're not admin!", {r=0.22, g=0.99, b=0.99})
+                return
+            end
+        else
+            p = log
+        end
+
+        if cmd.parameter == nil then return end
+        if cmd.parameter == player.name then
+        if global.trusted_players[player.name] == true then game.print(player.name .. " is already trusted!") return end
+        	global.trusted_players[player.name] = true
+         	game.print(player.name .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99})
+        end
+    end
+)
+
+commands.add_command(
+    'untrust',
+    'Demotes a player to the global.trusted_players',
+    function(cmd)
+        local player = game.player
+        local p
+
+        if player then
+            p = player.print
+            if not player.admin then
+                p("You're not admin!", {r=0.22, g=0.99, b=0.99})
+                return
+            end
+        else
+            p = log
+        end
+
+        if cmd.parameter == nil then return end
+        if cmd.parameter == player.name then
+        if global.trusted_players[player.name] == false then game.print(player.name .. " is already untrusted!") return end
+        	global.trusted_players[player.name] = false
+         	game.print(player.name .. " is now untrusted.", {r=0.22, g=0.99, b=0.99})
+        end
+    end
+)
 
 local function process_bot_answers(event)
 	local player = game.players[event.player_index]
@@ -73,7 +96,6 @@ end
 
 local function on_console_chat(event)
 	if not event.player_index then return end
-	process_custom_commands(event)
 	process_bot_answers(event)	
 end
 
