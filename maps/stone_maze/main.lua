@@ -17,6 +17,14 @@ local event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
 
+local disabled_for_deconstruction = {
+		["fish"] = true,
+		["rock-huge"] = true,
+		["rock-big"] = true,
+		["sand-rock-big"] = true,
+		["mineable-wreckage"] = true
+	}
+
 local rooms_1x1 = require 'maps.stone_maze.1x1_rooms' 
 local multirooms = {}
 multirooms["2x2"] = require 'maps.stone_maze.2x2_rooms'
@@ -340,6 +348,15 @@ local function on_research_finished(event)
 	event.research.force.manual_mining_speed_modifier = manual_mining_speed_modifier + 2
 end
 
+local function on_marked_for_deconstruction(event)	
+	if disabled_for_deconstruction[event.entity.name] then
+		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+	end
+	if event.entity.type == "tree" then
+		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+	end
+end
+
 local function on_init(event)
 	global.maze_cells = {}
 	global.maze_depth = 0
@@ -359,6 +376,7 @@ local function on_init(event)
 end
 
 event.on_init(on_init)
+event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

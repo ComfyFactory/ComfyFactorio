@@ -143,7 +143,7 @@ end
 
 room.single_oil = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	surface.create_entity({name = "crude-oil", position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, amount = 100000 + global.maze_depth * 1000})
+	surface.create_entity({name = "crude-oil", position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, amount = 100000 + global.maze_depth * 4000})
 	room.spitters(surface, cell_left_top, direction)
 	room.biters(surface, cell_left_top, direction)
 end
@@ -304,7 +304,7 @@ local room_weights = {
 	--{func = room.tons_of_scrap, weight = 2},
 	--{func = room.empty, weight = 1},
 	
-	{func = room.pond, weight = 10},
+	{func = room.pond, weight = 8},
 	
 	{func = room.loot_crate, weight = 10},
 	{func = room.tree_ring, weight = 10}
