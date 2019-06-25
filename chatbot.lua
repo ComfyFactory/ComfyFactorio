@@ -49,8 +49,8 @@ commands.add_command(
             global.trusted_players[target_player.name] = true
             game.print(target_player.name .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99})
             for _, a in pairs(game.connected_players) do
-                if a.admin == true then
-                    a.print("[ADMIN]: " .. a.name .. " trusted " .. target_player.name, {r = 1, g = 0.5, b = 0.1})
+                if a.admin == true and a.name ~= player.name then
+                    a.print("[ADMIN]: " .. player.name .. " trusted " .. target_player.name, {r = 1, g = 0.5, b = 0.1})
                 end
             end
         end
@@ -80,8 +80,8 @@ commands.add_command(
             global.trusted_players[target_player.name] = false
             game.print(target_player.name .. " is now untrusted.", {r=0.22, g=0.99, b=0.99})
             for _, a in pairs(game.connected_players) do
-                if a.admin == true then
-                    a.print("[ADMIN]: " .. a.name .. " untrusted " .. target_player.name, {r = 1, g = 0.5, b = 0.1})
+                if a.admin == true and a.name ~= player.name then
+                    a.print("[ADMIN]: " .. player.name .. " untrusted " .. target_player.name, {r = 1, g = 0.5, b = 0.1})
                 end
             end
         end
