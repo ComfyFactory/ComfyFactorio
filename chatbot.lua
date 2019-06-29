@@ -28,10 +28,9 @@ end
 
 commands.add_command(
     'trust',
-    'Promotes a player to the global.trusted_players',
+    'Promotes a player to trusted!',
     function(cmd)
         local player = game.player
-        local target_player = game.players[cmd.parameter]
         local p
 
         if player then
@@ -44,7 +43,9 @@ commands.add_command(
             p = log
         end
 
-        if target_player ~= nil then 
+        if cmd.parameter == nil then return end
+        local target_player = game.players[cmd.parameter]
+        if target_player then 
             if global.trusted_players[target_player.name] == true then game.print(target_player.name .. " is already trusted!") return end
             global.trusted_players[target_player.name] = true
             game.print(target_player.name .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99})
@@ -59,10 +60,9 @@ commands.add_command(
 
 commands.add_command(
     'untrust',
-    'Demotes a player to the global.trusted_players',
+    'Demotes a player from trusted!',
     function(cmd)
         local player = game.player
-        local target_player = game.players[cmd.parameter]
         local p
 
         if player then
@@ -75,7 +75,9 @@ commands.add_command(
             p = log
         end
 
-        if target_player ~= nil then 
+        if cmd.parameter == nil then return end
+        local target_player = game.players[cmd.parameter]
+        if target_player then 
             if global.trusted_players[target_player.name] == false then game.print(target_player.name .. " is already untrusted!") return end
             global.trusted_players[target_player.name] = false
             game.print(target_player.name .. " is now untrusted.", {r=0.22, g=0.99, b=0.99})
