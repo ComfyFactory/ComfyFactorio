@@ -1,4 +1,5 @@
 local Token = require 'utils.token'
+local Task = require 'utils.task'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Game = require 'utils.game'
@@ -18,9 +19,13 @@ local Public = {}
 local server_time = {secs = nil, tick = 0}
 
 Global.register(
-    server_time,
+    {
+        server_time = server_time,
+        requests = requests
+    },
     function(tbl)
-        server_time = tbl
+        server_time = tbl.server_time
+        requests = tbl.requests
     end
 )
 
@@ -61,7 +66,8 @@ local data_set_handlers = {}
 -- function()
 --      Server.try_get_all_data('regulars', callback)
 -- end)
-Public.events = {on_server_started = script.generate_event_name()}
+Public.events = {on_server_started = Event.generate_event_name()}
+--Public.events = {on_server_started = script.generate_event_name()}
 
 --- Sends a message to the linked discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.
@@ -212,6 +218,50 @@ function Public.set_data(data_set, key, value)
     raw_print(message)
 end
 
+local function validate_arguments(data_set, key, callback_token)
+    if type(data_set) ~= 'string' then
+        error('data_set must be a string', 3)
+    end
+    if type(key) ~= 'string' then
+        error('key must be a string', 3)
+    end
+    if type(callback_token) ~= 'number' then
+        error('callback_token must be a number', 3)
+    end
+end
+
+local function send_try_get_data(data_set, key, callback_token)
+    data_set = double_escape(data_set)
+    key = double_escape(key)
+
+    local message = concat {data_get_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '"}'}
+    raw_print(message)
+end
+
+local cancelable_callback_token =
+    Token.register(
+    function(data)
+        local data_set = data.data_set
+        local keys = requests[data_set]
+        if not keys then
+            return
+        end
+
+        local key = data.key
+        local callbacks = keys[key]
+        if not callbacks then
+            return
+        end
+
+        keys[key] = nil
+
+        for c, _ in next, callbacks do
+            local func = Token.get(c)
+            func(data)
+        end
+    end
+)
+
 --- Gets data from the web server's persistent data storage.
 -- The callback is passed a table {data_set: string, key: string, value: any}.
 -- If the value is nil, it means there is no stored data for that data_set key pair.
@@ -235,21 +285,136 @@ end
 --
 -- Server.try_get_data('my data set', 'key 1', callback)
 function Public.try_get_data(data_set, key, callback_token)
-    if type(data_set) ~= 'string' then
-        error('data_set must be a string', 2)
-    end
-    if type(key) ~= 'string' then
-        error('key must be a string', 2)
-    end
-    if type(callback_token) ~= 'number' then
-        error('callback_token must be a number', 2)
+    validate_arguments(data_set, key, callback_token)
+
+    send_try_get_data(data_set, key, callback_token)
+end
+
+local function try_get_data_cancelable(data_set, key, callback_token)
+    local keys = requests[data_set]
+    if not keys then
+        keys = {}
+        requests[data_set] = keys
     end
 
-    data_set = double_escape(data_set)
-    key = double_escape(key)
+    local callbacks = keys[key]
+    if not callbacks then
+        callbacks = {}
+        keys[key] = callbacks
+    end
 
-    local message = concat {data_get_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '"}'}
-    raw_print(message)
+    if callbacks[callback_token] then
+        return
+    end
+
+    if next(callbacks) then
+        callbacks[callback_token] = true
+    else
+        callbacks[callback_token] = true
+        send_try_get_data(data_set, key, cancelable_callback_token)
+    end
+end
+
+--- Same Server.try_get_data but the request can be cancelled by calling
+-- Server.cancel_try_get_data(data_set, key, callback_token)
+-- If the request is cancelled before it is complete the callback will be called with data.cancelled = true.
+-- It is safe to cancel a non-existent or completed request, in either case the callback will not be called.
+-- There can only be one request per data_set, key, callback_token combo. If there is already an ongoing request
+-- an attempt to make a new one will be ignored.
+-- @param  data_set<string>
+-- @param  key<string>
+-- @param  callback_token<token>
+function Public.try_get_data_cancelable(data_set, key, callback_token)
+    validate_arguments(data_set, key, callback_token)
+
+    try_get_data_cancelable(data_set, key, callback_token)
+end
+
+local function cancel_try_get_data(data_set, key, callback_token)
+    local keys = requests[data_set]
+    if not keys then
+        return false
+    end
+
+    local callbacks = keys[key]
+    if not callbacks then
+        return false
+    end
+
+    if callbacks[callback_token] then
+        callbacks[callback_token] = nil
+
+        local func = Token.get(callback_token)
+        local data = {data_set = data_set, key = key, cancelled = true}
+        func(data)
+
+        return true
+    else
+        return false
+    end
+end
+
+--- Cancels the request. Returns false if the request could not be cnacled, either because there is no request
+-- to cancel or it has been completed or cancled already. Otherwise returns true.
+-- If the request is cancelled before it is complete the callback will be called with data.cancelled = true.
+-- It is safe to cancel a non-existent or completed request, in either case the callback will not be called.
+-- @param  data_set<string>
+-- @param  key<string>
+-- @param  callback_token<token>
+function Public.cancel_try_get_data(data_set, key, callback_token)
+    validate_arguments(data_set, key, callback_token)
+
+    return cancel_try_get_data(data_set, key, callback_token)
+end
+
+local timeout_token =
+    Token.register(
+    function(data)
+        cancel_try_get_data(data.data_set, data.key, data.callback_token)
+    end
+)
+
+--- Same as Server.try_get_data but the request is cancelled if the timeout expires before the request is complete.
+-- If the request is cancelled before it is complete the callback will be called with data.cancelled = true.
+-- There can only be one request per data_set, key, callback_token combo. If there is already an ongoing request
+-- an attempt to make a new one will be ignored.
+-- @param  data_set<string>
+-- @param  key<string>
+-- @param  callback_token<token>
+-- @usage
+-- local Server = require 'utils.server'
+-- local Token = require 'utils.token'
+--
+-- local callback =
+--     Token.register(
+--     function(data)
+--         local data_set = data.data_set
+--         local key = data.key
+--
+--          game.print('data_set: ' .. data_set .. ', key: ' .. key)
+--
+--         if data.cancelled then
+--             game.print('Timed out')
+--             return
+--         end
+--
+--         local value = data.value -- will be nil if no data
+--
+--         game.print('value: ' .. tostring(value))
+--     end
+-- )
+--
+-- Server.try_get_data_timeout('my data set', 'key 1', callback, 60)
+function Public.try_get_data_timeout(data_set, key, callback_token, timeout_ticks)
+    validate_arguments(data_set, key, callback_token)
+
+    try_get_data_cancelable(data_set, key, callback_token)
+
+    Task.set_timeout_in_ticks(
+        timeout_ticks,
+        timeout_token,
+        {data_set = data_set, key = key, callback_token = callback_token}
+    )
 end
 
 --- Gets all the data for the data_set from the web server's persistent data storage.
@@ -533,6 +698,37 @@ Event.add(
         end
 
         raw_print(player_leave_tag .. player.name)
+    end
+)
+
+Event.add(
+    defines.events.on_player_died,
+    function(event)
+        local player = game.get_player(event.player_index)
+
+        if not player or not player.valid then
+            return
+        end
+
+        local cause = event.cause
+
+        local message = {discord_bold_tag, player.name}
+        if cause and cause.valid then
+            message[#message + 1] = ' was killed by '
+
+            local name = cause.name
+            if name == 'character' then
+                name = cause.player.name
+            end
+
+            message[#message + 1] = name
+            message[#message + 1] = '.'
+        else
+            message[#message + 1] = ' has died.'
+        end
+
+        message = concat(message)
+        raw_print(message)
     end
 )
 
