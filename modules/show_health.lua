@@ -3,6 +3,7 @@ local game = require 'utils.game'
 event.add(defines.events.on_entity_damaged, function(event)
 	if event.entity.name ~= 'character' then return end
   	local player = game.get_player(event.entity.player)
+	if not player.character then return end
 	if player.character then
 		if player.character.health == nil then return end
 		local index = player.index
