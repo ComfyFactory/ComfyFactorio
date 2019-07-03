@@ -1,6 +1,8 @@
 local event = require 'utils.event' 
 local game = require 'utils.game'
 event.add(defines.events.on_entity_damaged, function(event)
+	local entity = event.entity
+	if not entity.valid then return end
 	if event.entity.name ~= 'character' then return end
   	local player = game.get_player(event.entity.player)
 	if not player.character then return end
