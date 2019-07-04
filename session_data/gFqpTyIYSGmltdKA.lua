@@ -1,0 +1,26 @@
+local playsession = {
+	{"Eagle34", {195133}},
+	{"Bulisek", {238040}},
+	{"Gorlos", {287437}},
+	{"dog80", {286918}},
+	{"cogito123", {282601}},
+	{"Taishan", {280307}},
+	{"belbo", {277770}},
+	{"wladekb", {167189}},
+	{"Tamika", {273756}},
+	{"JordyXander", {48138}},
+	{"dazonker", {57869}},
+	{"TXL_PLAYZ", {3419}},
+	{"MovingMike", {172543}},
+	{"he-duun", {1752}},
+	{"xmarisanx", {74395}},
+	{"Gladoo", {59455}},
+	{"TheKoopa", {59323}},
+	{"Subsup", {7812}},
+	{"T-Bear", {19737}},
+	{"seacjs", {50282}},
+	{"Tyvix", {37079}},
+	{"Fraserbaser", {8536}},
+	{"TheRealSlimChewy", {25756}}
+}
+return playsession

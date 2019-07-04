@@ -1,0 +1,26 @@
+local playsession = {
+	{"Naturlih", {431880}},
+	{"Headscrew", {112591}},
+	{"Serennie", {394628}},
+	{"xyuTa", {188130}},
+	{"thislsamerica", {254710}},
+	{"andrekoul", {327737}},
+	{"Eagle34", {6543}},
+	{"jangelo2", {318317}},
+	{"stety", {244830}},
+	{"derwahnsinn", {64930}},
+	{"porelos", {19192}},
+	{"Fraserbaser", {191630}},
+	{"yulingqixiao", {43749}},
+	{"b4x", {71225}},
+	{"KIRkomMAX", {34060}},
+	{"Slayerfear", {180335}},
+	{"anghelnicky", {4324}},
+	{"Marenti", {45007}},
+	{"lexu", {30690}},
+	{"guoguomiao", {5099}},
+	{"Nemek", {47355}},
+	{"Taishan", {3810}},
+	{"Czarny", {520}}
+}
+return playsession

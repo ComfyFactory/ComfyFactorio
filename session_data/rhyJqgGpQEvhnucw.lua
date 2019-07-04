@@ -1,0 +1,26 @@
+local playsession = {
+	{"Ardordo", {122769}},
+	{"MrDBooks", {467488}},
+	{"Guitoune", {467162}},
+	{"cogito123", {454159}},
+	{"kungfuwarrior", {57525}},
+	{"jackazzm", {460432}},
+	{"kubek", {298305}},
+	{"mojosa", {413128}},
+	{"crusher_sut", {240720}},
+	{"Kirdiaga", {153}},
+	{"guyg22", {337856}},
+	{"andrekoul", {6150}},
+	{"zimny11", {300338}},
+	{"VovKgr", {33874}},
+	{"Nemek", {266332}},
+	{"Eagle34", {17505}},
+	{"Vadatajs", {244321}},
+	{"DRKMSTR", {124857}},
+	{"rikkert", {15389}},
+	{"rlidwka", {112476}},
+	{"mundsundu", {7492}},
+	{"SgtDancExplosion", {28238}},
+	{"Tribbiani", {16371}}
+}
+return playsession

@@ -1,0 +1,26 @@
+local playsession = {
+	{"thesandbox", {586574}},
+	{"Wextr", {806470}},
+	{"RaccoonBandit", {522305}},
+	{"GuidoCram", {107583}},
+	{"RonnDlear", {342898}},
+	{"dog80", {134007}},
+	{"Fraserbaser", {270812}},
+	{"TXL_PLAYZ", {663529}},
+	{"yulingqixiao", {245827}},
+	{"Flamongo", {183523}},
+	{"OmegaLunch", {120119}},
+	{"joe32", {57874}},
+	{"My_Name_Is_Pin", {30357}},
+	{"Immo", {321388}},
+	{"tokastar", {6207}},
+	{"Vadatajs", {101642}},
+	{"Somine", {251120}},
+	{"xyuTa", {345019}},
+	{"derpimess", {90050}},
+	{"maoul", {69561}},
+	{"urbanos", {66554}},
+	{"Legallity", {29080}},
+	{"sid123", {833}}
+}
+return playsession

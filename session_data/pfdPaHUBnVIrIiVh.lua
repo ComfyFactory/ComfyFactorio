@@ -1,0 +1,25 @@
+local playsession = {
+	{"marius86000", {683723}},
+	{"siriushoward", {211387}},
+	{"remarkablysilly", {678525}},
+	{"nix0n", {362855}},
+	{"yulingqixiao", {211530}},
+	{"Vuldunobetro", {13150}},
+	{"derwahnsinn", {560227}},
+	{"ibadaboom", {221396}},
+	{"ACabbage", {16396}},
+	{"CmonMate497", {356019}},
+	{"pwoland", {61362}},
+	{"SgtDancExplosion", {2206}},
+	{"lior.HaTehnai", {6983}},
+	{"exabyte", {15313}},
+	{"facere", {150104}},
+	{"Factorian12321", {11843}},
+	{"hommedelaroche", {36521}},
+	{"raute", {102035}},
+	{"AlexTheYes", {94959}},
+	{"Nikolaa", {6816}},
+	{"Gunter.", {15553}},
+	{"Dany737", {3907}}
+}
+return playsession
