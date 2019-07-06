@@ -44,7 +44,11 @@ local callback =
         local name = player.name
         local change = player.online_time
         local value = data.value
-        set_data(session_data_set, name, {value[1] + change})
+        if value then
+            set_data(session_data_set, name, {value[1] + change})
+        else
+            set_data(session_data_set, name, {change})
+        end
     end
 )
 
