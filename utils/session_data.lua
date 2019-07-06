@@ -11,7 +11,6 @@ local raw_print = Print.raw_print
 
 local session_data_set = 'sessions'
 local playsession = {}
-local done_fetching = nil
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
