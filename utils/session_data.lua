@@ -9,7 +9,7 @@ local table = require 'utils.table'
 local Print = require('utils.print_override')
 local raw_print = Print.raw_print
 
-local session_data_set = 'player_session'
+local session_data_set = 'sessions'
 local playsession = {}
 local done_fetching = nil
 local set_data = Server.set_data
@@ -36,7 +36,7 @@ printinfo =
 end
 
 --- Sends back data to data.key with data.value
-local callback =
+local store =
     Token.register(
     function(data)
         local p_name = data.key
@@ -45,46 +45,44 @@ local callback =
         local change = player.online_time
         local value = data.value
         if value then
-            set_data(session_data_set, name, {value[1] + change})
+            set_data(session_data_set, name, value + change)
         else
-            set_data(session_data_set, name, {change})
+            set_data(session_data_set, name, change)
         end
     end
 )
 
---- Writes the data called back from the server into the session table
-local sync_session_callback =
+
+local retrieve =
     Token.register(
     function(data)
-        for k, v in pairs(data.entries) do
-            playsession[k] = v
+        local p_name = data.key
+        local player = game.get_player(p_name)
+        local name = player.name
+        local change = player.online_time
+        local value = data.value
+        if value then
+            playsession[name] = value
+        else
+            playsession[name] = change
         end
-        raw_print("[DATA-TRACKED] Done fetching all data.")
-        done_fetching = true
     end
 )
 
 local function tick()
     for _, p in pairs(game.connected_players) do
-        local session = playsession[p.name]
-
-        if session then
-            Public.update(p.name)
-        else
-            Public.set(p.name, {p.online_time})
-        end
+        Public.update(p.name)
     end
 end
 
 --- Tries to get data from the webpanel and updates the dataset with values.
 function Public.update(key)
-    try_get_data(session_data_set, key, callback)
+    try_get_data(session_data_set, key, store)
 end
 
---- Stores data in the webpanel
--- @param set(key, value)
-function Public.set(key, value)
-    set_data(session_data_set, key, value)
+--- Tries to get data from the webpanel and updates the local table with values.
+function Public.fetch(key)
+    try_get_data(session_data_set, key, retrieve)
 end
 
 --- Checks if a player exists within the table
@@ -92,11 +90,6 @@ end
 -- @return <boolean>
 function Public.exists(player_name)
     return playsession[player_name] ~= nil
-end
-
---- Signals the server to retrieve the session data-set
-function Public.sync_session()
-    Server.try_get_all_data(session_data_set, sync_session_callback)
 end
 
 --- Prints a list of all players in the player_session table.
@@ -118,23 +111,19 @@ function Public.get_session_table()
 end
 
 Event.add(
-    Server.events.on_server_started,
-    function()
-        Public.sync_session()
-    end
-)
-Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.get_player(event.player_index)
         if not player then
             return
         end
-
-        local session = playsession[player.name]
-
-        if not session then
-        playsession[player.name] = {player.online_time} return end
+        if game.is_multiplayer() then
+            if not playsession[player.name] then
+            Public.fetch(player.name)
+            end
+        else
+            playsession[player.name] = player.online_time
+        end
     end
 )
 
@@ -145,17 +134,9 @@ Event.add(
         if not player then
             return
         end
-
-        local session = playsession[player.name]
-
-        if done_fetching then
-            if session then
-                Public.update(player.name)
-            else
-                Public.set(player.name, {player.online_time})
-            end
+        if game.is_multiplayer() then
+        Public.update(player.name)
         end
-
     end
 )
 
