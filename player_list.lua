@@ -9,9 +9,12 @@ To install, add: require "player_list"
 to your scenario control.lua.
 
 ---MewMew---
+
+Minor changes by ~~~Gerkiz~~~
 --]]
 
 local event = require 'utils.event'
+local play_time = require 'utils.session_data'
 
 local symbol_asc = "▲"
 local symbol_desc = "▼"
@@ -82,10 +85,11 @@ local function get_formatted_playtime(x)
 end
 
 local function get_rank(player)
-	local t = 0
-	if global.player_totals then
-		if global.player_totals[player.name] then t = global.player_totals[player.name][1] end
-	end
+	local play_table = play_time.get_session_table()
+
+	local t = play_table[player.name][1]
+
+
 	local m = (player.online_time + t)  / 3600
 
 	local ranks = {
@@ -126,16 +130,16 @@ local function get_comparator(sort_by)
 end
 
 local function get_sorted_list(sort_by)
+	local play_table = play_time.get_session_table()
 	local player_list = {}
 	for i, player in pairs(game.connected_players) do
 		player_list[i] = {}
 		player_list[i].rank = get_rank(player)
 		player_list[i].name = player.name
 
-		local t = 0
-		if global.player_totals and global.player_totals[player.name] then
-			t = global.player_totals[player.name][1]
-		end
+
+		t = play_table[player.name][1]
+
 		player_list[i].total_played_time = get_formatted_playtime(t + player.online_time)
 		player_list[i].total_played_ticks = t + player.online_time
 

@@ -1,3 +1,4 @@
+-- luacheck: globals script
 --- This Module allows for registering multiple handlers to the same event, overcoming the limitation of script.register.
 --
 -- ** Event.add(event_name, handler) **
@@ -419,13 +420,12 @@ end
 function Event.generate_event_name(name)
     local event_id = generate_event_name()
 
-    defines.events[name] = event_id -- luacheck: ignore 122
+    -- If we're in debug, add the event ID into defines.events for the debuggertron's event module
+    if _DEBUG then
+        defines.events[name] = event_id -- luacheck: ignore 122
+    end
 
     return event_id
-end
--- If we're not in debug, we just turn the above function into an alias of script.generate_event_name
-if not _DEBUG then
-    Event.generate_event_name = generate_event_name
 end
 
 local function add_handlers()

@@ -15,6 +15,6 @@ commands.add_command(
         else
             p = player.print
         end
-		DebugView.open_dubug(player)
+        DebugView.open_dubug(player)
     end
 )
