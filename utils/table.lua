@@ -1,4 +1,4 @@
---luacheck:ignore global table
+--luacheck: globals table
 local random = math.random
 local floor = math.floor
 local remove = table.remove
@@ -104,6 +104,20 @@ function table.set(t, index, element)
         i = i + 1
     end
     error('Index out of bounds', 2)
+end
+
+--- Returns an array of keys for a table.
+--@param tbl <table>
+function table.keys(tbl)
+    local n = 1
+    local keys = {}
+
+    for k in pairs(tbl) do
+        keys[n] = k
+        n = n + 1
+    end
+
+    return keys
 end
 
 --- Chooses a random entry from a table
