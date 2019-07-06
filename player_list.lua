@@ -87,7 +87,7 @@ end
 local function get_rank(player)
 	local play_table = play_time.get_session_table()
 
-	local t = play_table[player.name][1]
+	local t = play_table[player.name]
 
 
 	local m = (player.online_time + t)  / 3600
@@ -138,7 +138,7 @@ local function get_sorted_list(sort_by)
 		player_list[i].name = player.name
 
 
-		t = play_table[player.name][1]
+		t = play_table[player.name]
 
 		player_list[i].total_played_time = get_formatted_playtime(t + player.online_time)
 		player_list[i].total_played_ticks = t + player.online_time
