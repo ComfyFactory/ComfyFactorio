@@ -2,6 +2,7 @@ local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Game = require 'utils.game'
+local Session = require 'utils.session_data'
 
 local insert = table.insert
 
@@ -151,6 +152,7 @@ local function send_poll_result_to_discord(poll)
 end
 
 local function redraw_poll_viewer_content(data)
+    local trusted = session.get_trusted_table()
     local poll_viewer_content = data.poll_viewer_content
     local remaining_time_label = data.remaining_time_label
     local poll_index = data.poll_index
@@ -220,7 +222,7 @@ local function redraw_poll_viewer_content(data)
 
     local question_flow = poll_viewer_content.add {type = 'table', column_count = 2}
 
-    if global.trusted_players[player.name] or player.admin then
+    if trusted[player.name] or player.admin then
         local edit_button =
             question_flow.add {
             type = 'sprite-button',
@@ -323,6 +325,7 @@ local function update_poll_viewer(data)
 end
 
 local function draw_main_frame(left, player)
+    local trusted = session.get_trusted_table()
     local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Polls', direction = 'vertical'}
     --frame.style.maximal_width = 640
 
@@ -386,7 +389,7 @@ local function draw_main_frame(left, player)
     local right_flow = bottom_flow.add {type = 'flow'}
     right_flow.style.horizontal_align = 'right'
 
-    if global.trusted_players[player.name] or player.admin then
+    if trusted[player.name] or player.admin then
         local create_poll_button =
             right_flow.add {type = 'button', name = create_poll_button_name, caption = 'Create Poll'}
         apply_button_style(create_poll_button)
