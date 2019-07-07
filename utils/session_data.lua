@@ -10,16 +10,19 @@ local Print = require('utils.print_override')
 local raw_print = Print.raw_print
 
 local session_data_set = 'sessions'
-local playsession = {}
+local session = {}
+local online_track = {}
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
 local nth_tick = 54001 -- nearest prime to 15 minutes in ticks
 
-Global.register(
-    playsession,
+Global.register({
+    session=session,
+    online_track=online_track},
     function(tbl)
-        playsession = tbl
+        session = tbl.session
+        online_track = tbl.online_track
     end
 )
 
@@ -34,68 +37,57 @@ printinfo =
 )
 end
 
---- Sends back data to data.key with data.value
-local store =
+local fetch =
     Token.register(
     function(data)
-        local p_name = data.key
-        local player = game.get_player(p_name)
-        local name = player.name
-        local change = player.online_time
+        local key = data.key
         local value = data.value
         if value then
-            set_data(session_data_set, name, value + change)
+            session[key] = value
         else
-            set_data(session_data_set, name, change)
-        end
-    end
-)
-
-
-local retrieve =
-    Token.register(
-    function(data)
-        local p_name = data.key
-        local player = game.get_player(p_name)
-        local name = player.name
-        local change = player.online_time
-        local value = data.value
-        if value then
-            playsession[name] = value
-        else
-            playsession[name] = change
+            session[key] = 0
         end
     end
 )
 
 local function tick()
     for _, p in pairs(game.connected_players) do
-        Public.update(p.name)
+        Public.send(p, p.name)
     end
 end
 
 --- Tries to get data from the webpanel and updates the dataset with values.
-function Public.update(key)
-    try_get_data(session_data_set, key, store)
+-- @param player name
+function Public.send(player, name)
+    if not online_track[name] then
+        online_track[name] = 0
+    end
+    if session[name] then
+        local old_time = session[name]
+        local new_time = old_time + player.online_time - online_track[name]
+        set_data(session_data_set, name, new_time)
+        online_track[name] = player.online_time
+    end
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
+-- @param data_set player token
 function Public.fetch(key)
-    try_get_data(session_data_set, key, retrieve)
+    try_get_data(session_data_set, key, fetch)
 end
 
 --- Checks if a player exists within the table
 -- @param player_name <string>
 -- @return <boolean>
 function Public.exists(player_name)
-    return playsession[player_name] ~= nil
+    return session[player_name] ~= nil
 end
 
 --- Prints a list of all players in the player_session table.
 function Public.print_sessions()
     local result = {}
 
-    for k, _ in pairs(playsession) do
+    for k, _ in pairs(session) do
         result[#result + 1] = k
     end
 
@@ -103,10 +95,16 @@ function Public.print_sessions()
     Game.player_print(result)
 end
 
---- Returns the table of player_session
+--- Returns the table of session
 -- @return <table>
 function Public.get_session_table()
-    return playsession
+    return session
+end
+
+--- Returns the table of online_track
+-- @return <table>
+function Public.get_tracker_table()
+    return online_track
 end
 
 Event.add(
@@ -117,11 +115,10 @@ Event.add(
             return
         end
         if game.is_multiplayer() then
-            if not playsession[player.name] then
-            Public.fetch(player.name)
-            end
+            Public.fetch(player.name)   
+            Public.send(player, player.name)
         else
-            playsession[player.name] = player.online_time
+            session[player.name] = player.online_time
         end
     end
 )
@@ -134,7 +131,7 @@ Event.add(
             return
         end
         if game.is_multiplayer() then
-        Public.update(player.name)
+        Public.send(player, player.name)
         end
     end
 )
@@ -144,7 +141,7 @@ Event.on_nth_tick(nth_tick, tick)
 Server.on_data_set_changed(
     session_data_set,
     function(data)
-        playsession[data.key] = data.value
+        session[data.key] = data.value
     end
 )
 
