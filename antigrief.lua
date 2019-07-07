@@ -1,7 +1,12 @@
+-- luacheck: ignore
 --antigrief things made by mewmew
---as an admin, write trust/untrust and the players name in the chat to grant/revoke immunity from protection
+--modified by gerkiz--
+--as an admin, write either /trust or /untrust and the players name in the chat to grant/revoke immunity from protection
 
 local event = require 'utils.event'
+local session = require 'utils.session_data'
+local tracker = session.get_session_table()
+local trusted = session.get_trusted_table()
 
 local function create_admin_button(player)
 	if player.gui.top["admin_button"] then return end
@@ -16,48 +21,34 @@ local function create_admin_button(player)
 	b.style.bottom_padding = 2
 end
 
-local function on_player_joined_game(event)		
+local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if not global.trusted_players then global.trusted_players = {} end
-	if not global.trusted_players[player.name] then global.trusted_players[player.name] = false end	
 	if player.admin == true then
 		create_admin_button(player)
-	end
-	
-	local playtime = player.online_time
-	if global.player_totals then
-		if global.player_totals[player.name] then
-			playtime = player.online_time + global.player_totals[player.name][1]
-		end
-	end 
-	if playtime > 2592000 then
-		global.trusted_players[player.name] = true
 	end
 end
 
 local function on_player_promoted(event)
-	local player = game.players[event.player_index]	
+	local player = game.players[event.player_index]
 	create_admin_button(player)
 end
 
 local function on_player_demoted(event)
-	local player = game.players[event.player_index]	
+	local player = game.players[event.player_index]
 	if player.gui.top["admin_button"] then player.gui.top["admin_button"].destroy() end
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 end
 
 local function on_marked_for_deconstruction(event)
 	if not event.player_index then return end
-	local player = game.players[event.player_index]	
+	local player = game.players[event.player_index]
 	if player.admin == true then return end
-	if global.trusted_players[player.name] == true then return end
-	
+	if trusted[player.name] == true then return end
+
 	local playtime = player.online_time
-	if global.player_totals then
-		if global.player_totals[player.name] then
-			playtime = player.online_time + global.player_totals[player.name][1]
+		if tracker[player.name] then
+			playtime = player.online_time + tracker[player.name]
 		end
-	end 
 	if playtime < 2592000 then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
 		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
@@ -67,14 +58,12 @@ end
 local function on_player_ammo_inventory_changed(event)
 	local player = game.players[event.player_index]
 	if player.admin == true then return end
-	if global.trusted_players[player.name] == true then return end
-	
+	if trusted[player.name] == true then return end
+
 	local playtime = player.online_time
-	if global.player_totals then
-		if global.player_totals[player.name] then
-			playtime = player.online_time + global.player_totals[player.name][1]
-		end
-	end	      
+	if tracker[player.name] then
+		playtime = player.online_time + tracker[player.name]
+	end
 	if playtime < 1296000 then
 		local nukes = player.remove_item({name="atomic-bomb", count=1000})
 		if nukes > 0 then
@@ -89,27 +78,25 @@ local function on_player_built_tile(event)
 	local placed_tiles = event.tiles
 	if placed_tiles[1].old_tile.name ~= "deepwater" and placed_tiles[1].old_tile.name ~= "water" and placed_tiles[1].old_tile.name ~= "water-green" then return end
 	local player = game.players[event.player_index]
-	
-	--[[		
-	if not player.admin and not global.trusted_players[player.name] then
+
+	--[[
+	if not player.admin and not trusted[player.name] then
 		local playtime = player.online_time
-		if global.player_totals then
-			if global.player_totals[player.name] then
-				playtime = player.online_time + global.player_totals[player.name][1]
-			end
-		end 
+		if tracker[player.name] then
+			playtime = player.online_time + tracker[player.name][1]
+		end
 		if playtime < 648000 then
 			local tiles = {}
-			for _, t in pairs(placed_tiles) do										
-				table.insert(tiles, {name = t.old_tile.name, position = t.position})																
-			end	
+			for _, t in pairs(placed_tiles) do
+				table.insert(tiles, {name = t.old_tile.name, position = t.position})
+			end
 			player.insert({name = "landfill", count = #placed_tiles})
-			player.surface.set_tiles(tiles, true)			
+			player.surface.set_tiles(tiles, true)
 			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
 		end
 	end]]
-	
-	--landfill history--		
+
+	--landfill history--
 	if not global.landfill_history then global.landfill_history = {} end
 	if #global.landfill_history > 999 then global.landfill_history = {} end
 	local str = player.name .. " at X:"
@@ -126,13 +113,11 @@ local function on_built_entity(event)
 		local player = game.players[event.player_index]
 		
 		if player.admin == true then return end
-		if global.trusted_players[player.name] == true then return end
+		if trusted[player.name] == true then return end
 		
 		local playtime = player.online_time
-		if global.player_totals then
-			if global.player_totals[player.name] then
-				playtime = player.online_time + global.player_totals[player.name][1]
-			end
+		if tracker[player.name] then
+			playtime = player.online_time + tracker[player.name]
 		end
 		
 		if playtime < 432000 then
@@ -150,12 +135,10 @@ local function on_player_used_capsule(event)
 	if used_item.name ~= "artillery-targeting-remote" then return end	
 	
 	local playtime = player.online_time
-	if global.player_totals then
-		if global.player_totals[player.name] then
-			playtime = player.online_time + global.player_totals[player.name][1]
-		end
-	end 
-	if playtime < 1296000 and player.admin == false and global.trusted_players[player.name] == false then	
+	if tracker[player.name] then
+		playtime = player.online_time + tracker[player.name]
+	end
+	if playtime < 1296000 and player.admin == false and trusted[player.name] == false then	
 		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
 		local area = {{position.x - 1, position.y - 1},{position.x + 1, position.y + 1}}
 		local entities = player.surface.find_entities_filtered({area = area, name = "artillery-flare"})
