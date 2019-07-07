@@ -5,8 +5,6 @@
 
 local event = require 'utils.event'
 local session = require 'utils.session_data'
-local tracker = session.get_session_table()
-local trusted = session.get_trusted_table()
 
 local function create_admin_button(player)
 	if player.gui.top["admin_button"] then return end
@@ -40,6 +38,8 @@ local function on_player_demoted(event)
 end
 
 local function on_marked_for_deconstruction(event)
+	local tracker = session.get_session_table()
+	local trusted = session.get_trusted_table()
 	if not event.player_index then return end
 	local player = game.players[event.player_index]
 	if player.admin == true then return end
@@ -56,6 +56,8 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_player_ammo_inventory_changed(event)
+	local tracker = session.get_session_table()
+	local trusted = session.get_trusted_table()
 	local player = game.players[event.player_index]
 	if player.admin == true then return end
 	if trusted[player.name] == true then return end
@@ -70,11 +72,14 @@ local function on_player_ammo_inventory_changed(event)
 			player.surface.spill_item_stack(player.position, {name = "atomic-bomb", count = nukes}, false)
 			player.print("You have not grown accustomed to this technology yet.", {r=0.22, g=0.99, b=0.99})
 			server_commands.to_discord_bold(table.concat{'[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.'})
+			player.character.health = 0
 		end
 	end
 end
 
 local function on_player_built_tile(event)
+	local tracker = session.get_session_table()
+	local trusted = session.get_trusted_table()
 	local placed_tiles = event.tiles
 	if placed_tiles[1].old_tile.name ~= "deepwater" and placed_tiles[1].old_tile.name ~= "water" and placed_tiles[1].old_tile.name ~= "water-green" then return end
 	local player = game.players[event.player_index]
@@ -107,6 +112,8 @@ local function on_player_built_tile(event)
 end
 
 local function on_built_entity(event)
+	local tracker = session.get_session_table()
+	local trusted = session.get_trusted_table()
 	if game.tick < 1296000 then return end
 	
 	if event.created_entity.type == "entity-ghost" then
@@ -129,6 +136,8 @@ end
 
 --Artillery History and Antigrief
 local function on_player_used_capsule(event)
+	local tracker = session.get_session_table()
+	local trusted = session.get_trusted_table()
 	local player = game.players[event.player_index]
 	local position = event.position
 	local used_item = event.item			
