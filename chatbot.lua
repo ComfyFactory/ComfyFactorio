@@ -1,4 +1,5 @@
 local event = require 'utils.event'
+local session = require 'utils.session_data'
 local message_color = {r = 0.5, g = 0.3, b = 1}
 
 local brain = {
@@ -30,6 +31,7 @@ commands.add_command(
     'trust',
     'Promotes a player to trusted!',
     function(cmd)
+        local trusted = session.get_trusted_table()
         local server = 'server'
         local player = game.player
         local p
@@ -48,8 +50,8 @@ commands.add_command(
             if cmd.parameter == nil then return end
             local target_player = game.players[cmd.parameter]
             if target_player then
-                if global.trusted_players[target_player.name] == true then game.print(target_player.name .. " is already trusted!") return end
-                global.trusted_players[target_player.name] = true
+                if trusted[target_player.name] == true then game.print(target_player.name .. " is already trusted!") return end
+                trusted[target_player.name] = true
                 game.print(target_player.name .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99})
                 for _, a in pairs(game.connected_players) do
                     if a.admin == true and a.name ~= player.name then
@@ -61,8 +63,8 @@ commands.add_command(
             if cmd.parameter == nil then return end
             local target_player = game.players[cmd.parameter]
             if target_player then
-                if global.trusted_players[target_player.name] == true then game.print(target_player.name .. " is already trusted!") return end
-                global.trusted_players[target_player.name] = true
+                if trusted[target_player.name] == true then game.print(target_player.name .. " is already trusted!") return end
+                trusted[target_player.name] = true
                 game.print(target_player.name .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99})
             end
         end
@@ -73,6 +75,7 @@ commands.add_command(
     'untrust',
     'Demotes a player from trusted!',
     function(cmd)
+        local trusted = session.get_trusted_table()
         local server = 'server'
         local player = game.player
         local p
@@ -91,8 +94,8 @@ commands.add_command(
             if cmd.parameter == nil then return end
             local target_player = game.players[cmd.parameter]
             if target_player then 
-                if global.trusted_players[target_player.name] == false then game.print(target_player.name .. " is already untrusted!") return end
-                global.trusted_players[target_player.name] = false
+                if trusted[target_player.name] == false then game.print(target_player.name .. " is already untrusted!") return end
+                trusted[target_player.name] = false
                 game.print(target_player.name .. " is now untrusted.", {r=0.22, g=0.99, b=0.99})
                 for _, a in pairs(game.connected_players) do
                     if a.admin == true and a.name ~= player.name then
@@ -104,8 +107,8 @@ commands.add_command(
             if cmd.parameter == nil then return end
             local target_player = game.players[cmd.parameter]
             if target_player then 
-                if global.trusted_players[target_player.name] == false then game.print(target_player.name .. " is already untrusted!") return end
-                global.trusted_players[target_player.name] = false
+                if trusted[target_player.name] == false then game.print(target_player.name .. " is already untrusted!") return end
+                trusted[target_player.name] = false
                 game.print(target_player.name .. " is now untrusted.", {r=0.22, g=0.99, b=0.99})
             end
         end
