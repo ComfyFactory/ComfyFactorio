@@ -12,17 +12,22 @@ local raw_print = Print.raw_print
 local session_data_set = 'sessions'
 local session = {}
 local online_track = {}
+local trusted = {}
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
 local nth_tick = 54001 -- nearest prime to 15 minutes in ticks
 
-Global.register({
+Global.register(
+    {
     session=session,
-    online_track=online_track},
+    online_track=online_track,
+    trusted=trusted
+    },
     function(tbl)
         session = tbl.session
         online_track = tbl.online_track
+        trusted = tbl.trusted
     end
 )
 
@@ -44,29 +49,33 @@ local fetch =
         local value = data.value
         if value then
             session[key] = value
+            if value > 2592000 then
+                trusted[key] = true
+            end
         else
             session[key] = 0
+            trusted[key] = false
         end
     end
 )
 
 local function tick()
     for _, p in pairs(game.connected_players) do
-        Public.send(p, p.name)
+        Public.send(p)
     end
 end
 
 --- Tries to get data from the webpanel and updates the dataset with values.
--- @param player name
-function Public.send(player, name)
-    if not online_track[name] then
-        online_track[name] = 0
+-- @param player
+function Public.send(player)
+    if not online_track[player.name] then
+        online_track[player.name] = 0
     end
-    if session[name] then
-        local old_time = session[name]
-        local new_time = old_time + player.online_time - online_track[name]
-        set_data(session_data_set, name, new_time)
-        online_track[name] = player.online_time
+    if session[player.name] then
+        local old_time = session[player.name]
+        local new_time = old_time + player.online_time - online_track[player.name]
+        set_data(session_data_set, player.name, new_time)
+        online_track[player.name] = player.online_time
     end
 end
 
@@ -107,6 +116,12 @@ function Public.get_tracker_table()
     return online_track
 end
 
+--- Returns the table of trusted
+-- @return <table>
+function Public.get_trusted_table()
+    return trusted
+end
+
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
@@ -116,7 +131,7 @@ Event.add(
         end
         if game.is_multiplayer() then
             Public.fetch(player.name)   
-            Public.send(player, player.name)
+            Public.send(player)
         else
             session[player.name] = player.online_time
         end
@@ -131,7 +146,7 @@ Event.add(
             return
         end
         if game.is_multiplayer() then
-        Public.send(player, player.name)
+        Public.send(player)
         end
     end
 )
