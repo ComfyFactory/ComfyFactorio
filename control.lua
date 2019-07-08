@@ -49,6 +49,7 @@ require "modules.floaty_chat"
 -----------------------------
 
 ---- enable maps here ----
+--require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"
 --require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.biter_battles.biter_battles"
