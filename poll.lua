@@ -2,7 +2,7 @@ local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Game = require 'utils.game'
-local Session = require 'utils.session_data'
+local session = require 'utils.session_data'
 
 local insert = table.insert
 
