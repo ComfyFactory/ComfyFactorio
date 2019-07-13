@@ -227,10 +227,8 @@ local function on_chunk_generated(event)
 	local surface = event.surface
 	if surface.name ~= "biter_battles" then return end		 	
 	
-	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do
-		--if e.type == "unit-spawner" then
-			surface.create_entity({name = e.name, position = e.position, force = "north_biters", direction = e.direction})
-		--end
+	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do		
+		surface.create_entity({name = e.name, position = e.position, force = "north_biters", direction = e.direction})
 		e.destroy()
 	end
 	
@@ -246,6 +244,17 @@ local function on_chunk_generated(event)
 				e.destroy()
 			end
 		end
+	end
+	
+	if bb_config.random_scrap then
+		local distance_to_center = math.sqrt(event.area.left_top.x ^ 2 + event.area.left_top.y ^ 2)
+		local scrap_amount = math.ceil(distance_to_center / 32) - 8
+		for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "tree"})) do
+			scrap_amount = scrap_amount - 1
+			if scrap_amount < 0 then break end
+			e.surface.create_entity({name = "mineable-wreckage", position = e.position, force = "neutral"})
+			e.destroy()	
+		end		
 	end
 	
 	if event.area.left_top.y == -320 and event.area.left_top.x == -320 then

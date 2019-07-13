@@ -10,7 +10,13 @@ local threat_values = {
 	["big-spitter"] = 8,
 	["big-biter"] = 8,
 	["behemoth-spitter"] = 24,
-	["behemoth-biter"] = 24
+	["behemoth-biter"] = 24,
+	["small-worm-turret"] = 8,
+	["medium-worm-turret"] = 12,
+	["big-worm-turret"] = 16,
+	["behemoth-worm-turret"] = 16,
+	["biter-spawner"] = 16,
+	["spitter-spawner"] = 16
 }
 
 local function get_active_biter_count(biter_force_name)
@@ -199,9 +205,11 @@ end
 --Biter Threat Value Substraction
 local function on_entity_died(event)
 	if not event.entity.valid then return end
-	if event.entity.type ~= "unit" then return end
+	if not threat_values[event.entity.name] then return end
+	if event.entity.type == "unit" then
+		global.active_biters[event.entity.force.name][event.entity.unit_number] = nil
+	end
 	global.bb_threat[event.entity.force.name] = global.bb_threat[event.entity.force.name] - threat_values[event.entity.name]		
-	global.active_biters[event.entity.force.name][event.entity.unit_number] = nil
 end
 
 --Flamethrower Turret Nerf

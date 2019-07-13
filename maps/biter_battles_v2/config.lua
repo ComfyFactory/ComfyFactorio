@@ -6,7 +6,7 @@ bb_config = {
 	["blueprint_string_importing"] = false,		--Allow the importing of blueprints via blueprint strings?
 
 	--MAP PREGENERATION
-	["map_pregeneration_radius"] = 33,	 		--Radius in chunks to pregenerate at the start of the map.
+	["map_pregeneration_radius"] = 32,	 		--Radius in chunks to pregenerate at the start of the map.
 	["fast_pregen"] = false,	 						--Force fast pregeneration.
 	
 	--TEAM SETTINGS
@@ -17,6 +17,7 @@ bb_config = {
 	--TERRAIN OPTIONS
 	["border_river_width"] = 32,						--Approximate width of the horizontal impassable river seperating the teams. (values up to 100)
 	["builders_area"] = true,							--Grant each side a peaceful direction with no nests and biters?
+	["random_scrap"] = true,							--Generate harvestable scrap around worms randomly?
 	
 	--BITER SETTINGS
 	["max_active_biters"] = 1250,					--Maximum total amount of attacking units per side.

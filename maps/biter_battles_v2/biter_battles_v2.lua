@@ -4,6 +4,7 @@ require "on_tick_schedule"
 require "maps.biter_battles_v2.config"
 require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters" 
+require "modules.mineable_wreckage_yields_scrap"
 
 require "modules.surrounded_by_worms"
 global.average_worm_amount_per_chunk = 1
@@ -23,8 +24,8 @@ local function init_surface()
 		["iron-ore"] = {frequency = "3", size = "1.2", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1.2", richness = "1.5"},
-		["trees"] = {frequency = "1.25", size = "0.5", richness = "0.65"},
-		["enemy-base"] = {frequency = "6", size = "1.5", richness = "1.5"}	
+		["trees"] = {frequency = "1.25", size = "0.6", richness = "0.5"},
+		["enemy-base"] = {frequency = "5.5", size = "1.5", richness = "1.5"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 			
