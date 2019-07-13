@@ -5,12 +5,15 @@ require "maps.biter_battles_v2.config"
 require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters" 
 
+require "modules.surrounded_by_worms"
+global.average_worm_amount_per_chunk = 1
+
 local event = require 'utils.event'
 
 local function init_surface()	
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.25"
-	map_gen_settings.starting_area = "5"
+	map_gen_settings.starting_area = "3.5"
 	--map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 48, cliff_elevation_0 = 48}	
 	map_gen_settings.autoplace_controls = {
@@ -21,7 +24,7 @@ local function init_surface()
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1.2", richness = "1.5"},
 		["trees"] = {frequency = "1.25", size = "0.5", richness = "0.65"},
-		["enemy-base"] = {frequency = "5.5", size = "2", richness = "2"}	
+		["enemy-base"] = {frequency = "5", size = "1.5", richness = "1.5"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 			

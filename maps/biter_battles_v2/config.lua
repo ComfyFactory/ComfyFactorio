@@ -16,6 +16,7 @@ bb_config = {
 	
 	--TERRAIN OPTIONS
 	["border_river_width"] = 32,						--Approximate width of the horizontal impassable river seperating the teams. (values up to 100)
+	["builders_area"] = true,							--Grant each side a peaceful direction with no nests and biters?
 	
 	--BITER SETTINGS
 	["max_active_biters"] = 1250,					--Maximum total amount of attacking units per side.

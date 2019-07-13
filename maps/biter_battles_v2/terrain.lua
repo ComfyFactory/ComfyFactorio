@@ -86,6 +86,11 @@ local function generate_circle_spawn(event)
 	if event.area.left_top.y < -160 then return end
 	if event.area.left_top.x < -160 then return end
 	if event.area.left_top.x > 160 then return end	
+	
+	if bb_config.builders_area then
+		if event.area.left_top.x > 16 then return end	
+	end
+	
 	local surface = event.surface		
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
@@ -223,7 +228,9 @@ local function on_chunk_generated(event)
 	if surface.name ~= "biter_battles" then return end		 	
 	
 	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do
-		surface.create_entity({name = e.name, position = e.position, force = "north_biters", direction = e.direction})
+		--if e.type == "unit-spawner" then
+			surface.create_entity({name = e.name, position = e.position, force = "north_biters", direction = e.direction})
+		--end
 		e.destroy()
 	end
 	
@@ -232,6 +239,14 @@ local function on_chunk_generated(event)
 	generate_circle_spawn(event)		
 	generate_potential_spawn_ore(event)
 	generate_silos(event)
+	
+	if bb_config.builders_area then
+		if event.area.left_top.x > 256 then
+			for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "north_biters", type = "unit-spawner"})) do
+				e.destroy()
+			end
+		end
+	end
 	
 	if event.area.left_top.y == -320 and event.area.left_top.x == -320 then
 		local area = {{-10,-10},{10,10}}
