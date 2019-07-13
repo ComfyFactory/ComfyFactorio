@@ -1,6 +1,7 @@
 -- Biter Battles v2 -- by MewMew
 
 require "on_tick_schedule"
+require "maps.biter_battles_v2.config"
 require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters" 
 
@@ -8,9 +9,10 @@ local event = require 'utils.event'
 
 local function init_surface()	
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.35"
+	map_gen_settings.water = "0.25"
 	map_gen_settings.starting_area = "5"
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}		
+	--map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = 48, cliff_elevation_0 = 48}	
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "3", size = "1.2", richness = "1"},
 		["stone"] = {frequency = "3", size = "1.2", richness = "1"},
@@ -122,6 +124,7 @@ local function init_forces()
 	global.spectator_rejoin_delay = {}
 	global.spy_fish_timeout = {}
 	global.force_area = {}
+	global.active_biters = {}
 	global.bb_evolution = {}
 	global.bb_evasion = {}
 	global.bb_threat_income = {}
@@ -137,6 +140,7 @@ local function init_forces()
 		game.forces[force.name].set_ammo_damage_modifier("shotgun-shell", 1)
 		game.forces[force.name].research_queue_enabled = true
 		global.spy_fish_timeout[force.name] = 0
+		global.active_biters[force.name] = {}
 		global.bb_evolution[force.name] = 0
 		global.bb_evasion[force.name] = false
 		global.bb_threat_income[force.name] = 0

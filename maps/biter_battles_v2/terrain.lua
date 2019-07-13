@@ -1,5 +1,4 @@
 local event = require 'utils.event'
-local config = require "maps.biter_battles_v2.config"
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
@@ -79,7 +78,7 @@ end
 
 local function is_horizontal_border_river(surface, pos)
 	if pos.y > -5 and pos.x > -5 and pos.x < 5 then return false end
-	if math.floor(config.border_river_width * -0.5) < pos.y + (get_noise(1, pos) * 5) then return true end
+	if math.floor(bb_config.border_river_width * -0.5) < pos.y + (get_noise(1, pos) * 5) then return true end
 	return false	
 end
 

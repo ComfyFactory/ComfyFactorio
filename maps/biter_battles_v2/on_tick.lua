@@ -54,7 +54,8 @@ local function on_tick(event)
 	if global.bb_game_won_by_team then server_restart() return end
 	
 	if game.tick % 1800 ~= 0 then return end
-		
+	
+	ai.destroy_inactive_biters()
 	ai.main_attack()
 	ai.send_near_biters_to_silo()
 	

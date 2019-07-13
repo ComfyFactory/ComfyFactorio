@@ -13,6 +13,26 @@ local threat_values = {
 	["behemoth-biter"] = 24
 }
 
+local function get_active_biter_count(biter_force_name)
+	local count = 0
+	for _, biter in pairs(global.active_biters[biter_force_name]) do
+		count = count + 1
+	end
+	return count
+end
+
+ai.destroy_inactive_biters = function()	
+	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
+		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
+			if game.tick - biter.active_since > bb_config.biter_timeout then
+				--game.print(biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since)			
+				biter.entity.destroy()
+				global.active_biters[biter_force_name][unit_number] = nil
+			end
+		end
+	end
+end
+
 ai.send_near_biters_to_silo = function()
 	if game.tick < 108000 then return end
 	if not global.rocket_silo["north"] then return end
@@ -58,15 +78,23 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	local biters = spawner.surface.find_enemy_units(spawner.position, 160, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
-	local size = math_random(2, 3) * 0.1
+	local size = math_random(3, 6) * 0.1
 	local threat = global.bb_threat[biter_force_name] * size
+	local active_biter_count = get_active_biter_count(biter_force_name)
+		
 	for _, biter in pairs(biters) do
+		if active_biter_count >= bb_config.max_active_biters then break end
 		if biter.force.name == biter_force_name then
-			valid_biters[#valid_biters + 1] = biter 
+			valid_biters[#valid_biters + 1] = biter
+			global.active_biters[biter.force.name][biter.unit_number] = {entity = biter, active_since = game.tick}
+			active_biter_count = active_biter_count + 1
 			threat = threat - threat_values[biter.name]
-		end
+		end	
 		if threat < 0 then break end
 	end
+	
+	--game.print(active_biter_count .. " active units for " .. biter_force_name)
+	
 	return valid_biters
 end
 
@@ -110,10 +138,12 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	send_group(unit_group, force_name, nearest_player_unit)
 end
 
-ai.main_attack = function()	
+ai.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
-	for _, force_name in pairs({"north", "south"}) do
-		create_attack_group(surface, force_name, force_name .. "_biters")
+	for c = 1, math_random(1, 2), 1 do
+		for _, force_name in pairs({"north", "south"}) do
+			create_attack_group(surface, force_name, force_name .. "_biters")
+		end
 	end
 end
 
@@ -169,10 +199,9 @@ end
 --Biter Threat Value Substraction
 local function on_entity_died(event)
 	if not event.entity.valid then return end
-	if threat_values[event.entity.name] then
-		global.bb_threat[event.entity.force.name] = global.bb_threat[event.entity.force.name] - threat_values[event.entity.name]
-		return
-	end	
+	if event.entity.type ~= "unit" then return end
+	global.bb_threat[event.entity.force.name] = global.bb_threat[event.entity.force.name] - threat_values[event.entity.name]		
+	global.active_biters[event.entity.force.name][event.entity.unit_number] = nil
 end
 
 --Flamethrower Turret Nerf
