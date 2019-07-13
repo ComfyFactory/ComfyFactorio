@@ -36,9 +36,9 @@ local function draw_gui()
 					caption = caption,
 					name = "map_pregen"
 				})
-				frame.style.font_color = {r = 150, g = 100, b = 255}
+				frame.style.font_color = {r = 150, g = 0, b = 255}
 				frame.style.font = "heading-1"
-				frame.style.maximal_height = 36
+				frame.style.maximal_height = 42
 			end
 		end
 	end

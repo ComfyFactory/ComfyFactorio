@@ -24,7 +24,7 @@ local function init_surface()
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1.2", richness = "1.5"},
 		["trees"] = {frequency = "1.25", size = "0.5", richness = "0.65"},
-		["enemy-base"] = {frequency = "5", size = "1.5", richness = "1.5"}	
+		["enemy-base"] = {frequency = "6", size = "1.5", richness = "1.5"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 			

@@ -286,20 +286,23 @@ local function on_robot_built_tile(event)
 end
 
 --Construction Robot Restriction
-local function on_robot_built_entity(event)
-	local deny_building = false
-	local force_name = event.robot.force.name
-	if force_name == "north" then
-		if event.created_entity.position.y >= -10 then deny_building = true end
+local robot_build_restriction = {
+	["north"] = function(y)
+		if y >= -10 then return true end
+	end,
+	["south"] = function(y)
+		if y <= 10 then return true end
 	end
-	if force_name == "player" then
-		if event.created_entity.position.y <= 10 then deny_building = true end
-	end	
-	if not deny_building then return end
+}
+
+local function on_robot_built_entity(event)	
+	if not robot_build_restriction[event.robot.force.name] then return end	
+	if not robot_build_restriction[event.robot.force.name](event.created_entity.position.y) then return end
 	local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
 	inventory.insert({name = event.created_entity.name, count = 1})
 	event.robot.surface.create_entity({name = "explosion", position = event.created_entity.position})
-	event.created_entity.destroy()			
+	game.print("Team " .. event.robot.force.name .. "'s construction drone had an accident.", {r = 200, g = 50, b = 100})
+	event.created_entity.destroy()
 end
 
 local function on_marked_for_deconstruction(event)
