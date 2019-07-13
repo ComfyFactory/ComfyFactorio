@@ -1,8 +1,12 @@
 --BITER BATTLES CONFIG FILE--
 
 bb_config = {
+	--GENERAL SETTINGS
+	["blueprint_library_importing"] = false,		--Allow the importing of blueprints from the blueprint library?
+	["blueprint_string_importing"] = false,		--Allow the importing of blueprints via blueprint strings?
+
 	--MAP PREGENERATION
-	["map_pregeneration_radius"] = 32,	 		--Radius in chunks to pregenerate at the start of the map.
+	["map_pregeneration_radius"] = 33,	 		--Radius in chunks to pregenerate at the start of the map.
 	["fast_pregen"] = false,	 						--Force fast pregeneration.
 	
 	--TEAM SETTINGS

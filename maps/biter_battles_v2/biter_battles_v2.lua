@@ -93,9 +93,13 @@ local function init_forces()
 	f.set_cease_fire('south', true)
 	f.share_chart = false
 	
-	--DISABLE IMPORTING FROM BLUEPRINT LIBRARY
-	--game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
-	--
+	if not bb_config.blueprint_library_importing then	
+		game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
+	end
+	if not bb_config.blueprint_string_importing then	
+		game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
+		game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, false)	
+	end
 	
 	local p = game.permissions.create_group("spectator")
 	for action_name, _ in pairs(defines.input_action) do
