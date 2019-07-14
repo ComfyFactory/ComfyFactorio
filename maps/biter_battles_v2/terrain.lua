@@ -1,3 +1,4 @@
+require 'utils.table'
 local event = require 'utils.event'
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -222,6 +223,35 @@ local function generate_potential_spawn_ore(event)
 	end
 end
 
+local scrap_vectors = {}
+for x = -5, 5, 1 do
+	for y = -5, 5, 1 do
+		if math.sqrt(x^2 + y^2) <= 5 then
+			scrap_vectors[#scrap_vectors + 1] = {x, y}
+		end
+	end
+end
+
+local function generate_scrap(event)
+	local distance_to_center = math.sqrt(event.area.left_top.x ^ 2 + event.area.left_top.y ^ 2)
+	
+	local worms = event.surface.find_entities_filtered({area = event.area, type = "turret"})
+	if #worms == 0 then return end
+	
+	for _, e in pairs(worms) do
+		if math_random(1,2) == 1 then
+			for c = 1, math_random(1,8), 1 do
+				local vector = scrap_vectors[math_random(1, #scrap_vectors)]
+				local position = {e.position.x + vector[1], e.position.y + vector[2]}
+				if e.surface.can_place_entity({name = "mineable-wreckage", position = position, force = "neutral"}) then
+					e.surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})
+				end
+			end
+		end
+			
+	end
+end
+
 local function on_chunk_generated(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
@@ -239,7 +269,7 @@ local function on_chunk_generated(event)
 	generate_silos(event)
 	
 	if bb_config.builders_area then
-		if event.area.left_top.x > 256 then
+		if event.area.left_top.x + event.area.left_top.y > -320 then
 			for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "north_biters", type = "unit-spawner"})) do
 				e.destroy()
 			end
@@ -247,14 +277,7 @@ local function on_chunk_generated(event)
 	end
 	
 	if bb_config.random_scrap then
-		local distance_to_center = math.sqrt(event.area.left_top.x ^ 2 + event.area.left_top.y ^ 2)
-		local scrap_amount = math.ceil(distance_to_center / 32) - 8
-		for _, e in pairs(surface.find_entities_filtered({area = event.area, type = "tree"})) do
-			scrap_amount = scrap_amount - 1
-			if scrap_amount < 0 then break end
-			e.surface.create_entity({name = "mineable-wreckage", position = e.position, force = "neutral"})
-			e.destroy()	
-		end		
+		generate_scrap(event)
 	end
 	
 	if event.area.left_top.y == -320 and event.area.left_top.x == -320 then

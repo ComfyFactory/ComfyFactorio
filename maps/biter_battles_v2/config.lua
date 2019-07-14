@@ -6,7 +6,7 @@ bb_config = {
 	["blueprint_string_importing"] = false,		--Allow the importing of blueprints via blueprint strings?
 
 	--MAP PREGENERATION
-	["map_pregeneration_radius"] = 32,	 		--Radius in chunks to pregenerate at the start of the map.
+	["map_pregeneration_radius"] = 1,	 		--Radius in chunks to pregenerate at the start of the map.
 	["fast_pregen"] = false,	 						--Force fast pregeneration.
 	
 	--TEAM SETTINGS
@@ -20,6 +20,6 @@ bb_config = {
 	["random_scrap"] = true,							--Generate harvestable scrap around worms randomly?
 	
 	--BITER SETTINGS
-	["max_active_biters"] = 1250,					--Maximum total amount of attacking units per side.
+	["max_active_biters"] = 1500,					--Maximum total amount of attacking units per side.
 	["biter_timeout"] = 54000						--Time it takes in ticks for an attacking unit to be deleted. This prevents perma stuck units.	
 }
