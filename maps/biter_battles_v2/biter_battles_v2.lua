@@ -6,24 +6,21 @@ require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters" 
 require "modules.mineable_wreckage_yields_scrap"
 
-require "modules.surrounded_by_worms"
-global.average_worm_amount_per_chunk = 1
-
 local event = require 'utils.event'
 
 local function init_surface()	
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.25"
+	map_gen_settings.water = "0.2"
 	map_gen_settings.starting_area = "3.5"
 	--map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 64, cliff_elevation_0 = 64}	
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "3", size = "1.2", richness = "1"},
-		["stone"] = {frequency = "3", size = "1.2", richness = "1"},
-		["copper-ore"] = {frequency = "3", size = "1.2", richness = "1"},
-		["iron-ore"] = {frequency = "3", size = "1.2", richness = "1"},
+		["coal"] = {frequency = "2", size = "1", richness = "1"},
+		["stone"] = {frequency = "2", size = "1", richness = "1"},
+		["copper-ore"] = {frequency = "2", size = "1", richness = "1"},
+		["iron-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
-		["crude-oil"] = {frequency = "3", size = "1.2", richness = "1.5"},
+		["crude-oil"] = {frequency = "2.5", size = "1", richness = "1.5"},
 		["trees"] = {frequency = "1.25", size = "0.6", richness = "0.5"},
 		["enemy-base"] = {frequency = "5", size = "2", richness = "2"}	
 	}
@@ -68,6 +65,7 @@ local function init_forces()
 	f.set_friend("south_biters", true)
 	f.set_friend("south", true)
 	f.set_friend("player", true)
+	--f.set_friend("enemy", true)
 	f.set_friend("spectator", true)
 	f.share_chart = false
 		
@@ -75,8 +73,15 @@ local function init_forces()
 	f.set_friend("north_biters", true)
 	f.set_friend("north", true)
 	f.set_friend("player", true)
+	--f.set_friend("enemy", true)
 	f.set_friend("spectator", true)
 	f.share_chart = false
+	
+	--local f = game.forces["enemy"]
+	--f.set_friend("spectator", true)
+	--f.set_friend("player", true)
+	--f.set_friend("north_biters", true)
+	--f.set_friend("south_biters", true)
 	
 	local f = game.forces["spectator"]
 	f.set_spawn_position({0,0},surface)

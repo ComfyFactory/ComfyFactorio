@@ -5,7 +5,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
 local spawn_circle_size = 28
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}	
-	
+
 local function shuffle(tbl)
 	local size = #tbl
 		for i = size, 1, -1 do
@@ -116,10 +116,10 @@ local function generate_circle_spawn(event)
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 				end
 				if distance_to_center + noise < r - 4 and distance_to_center + noise > r - 6 then
-					if math_random(1,150) == 1 then
+					if math_random(1,64) == 1 then
 						if surface.can_place_entity({name = "gun-turret", position = pos}) then
 							local t = surface.create_entity({name = "gun-turret", position = pos, force = "north"})
-							t.insert({name = "firearm-magazine", count = math_random(3,6)})
+							t.insert({name = "firearm-magazine", count = math_random(6,12)})
 						end
 					end
 				end
@@ -223,6 +223,44 @@ local function generate_potential_spawn_ore(event)
 	end
 end
 
+local worm_turrets = {
+	[1] = "small-worm-turret",
+	[2] = "medium-worm-turret",
+	[3] = "big-worm-turret",
+	[4] = "behemoth-worm-turret"
+}
+
+local worm_tile_coords = {}
+for x = 0, 31, 1 do
+	for y = 0, 31, 1 do
+		worm_tile_coords[#worm_tile_coords + 1] = {x, y}
+	end
+end
+
+local function generate_extra_worm_turrets(event)
+	local surface = event.surface
+	local starting_distance = 350
+	local left_top = event.area.left_top
+	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
+	if starting_distance > chunk_distance_to_center then return end
+	
+	local highest_worm_tier = math.floor((chunk_distance_to_center - starting_distance) * 0.002) + 1
+	if highest_worm_tier > 4 then highest_worm_tier = 4 end
+	
+	local average_worm_amount_per_chunk = 1
+	local worm_amount = math_random(math.floor(average_worm_amount_per_chunk * 0.5), math.ceil(average_worm_amount_per_chunk * 1.5))
+	
+	for a = 1, worm_amount, 1 do
+		local coord_modifier = worm_tile_coords[math_random(1, #worm_tile_coords)]
+		local pos = {left_top.x + coord_modifier[1], left_top.y + coord_modifier[2]}
+		local name = worm_turrets[math_random(1, highest_worm_tier)]
+		local position = surface.find_non_colliding_position("big-worm-turret", pos, 8, 1)
+		if position then
+			surface.create_entity({name = name, position = position, force = "north_biters"})
+		end
+	end
+end
+
 local scrap_vectors = {}
 for x = -5, 5, 1 do
 	for y = -5, 5, 1 do
@@ -240,7 +278,7 @@ local function generate_scrap(event)
 	
 	for _, e in pairs(worms) do
 		if math_random(1,2) == 1 then
-			for c = 1, math_random(1,8), 1 do
+			for c = 1, math_random(2,12), 1 do
 				local vector = scrap_vectors[math_random(1, #scrap_vectors)]
 				local position = {e.position.x + vector[1], e.position.y + vector[2]}
 				if e.surface.can_place_entity({name = "mineable-wreckage", position = position, force = "neutral"}) then
@@ -268,13 +306,15 @@ local function on_chunk_generated(event)
 	generate_potential_spawn_ore(event)
 	generate_silos(event)
 	
-	if bb_config.builders_area then
-		if event.area.left_top.x + event.area.left_top.y > -320 then
-			for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "north_biters", type = "unit-spawner"})) do
+	if bb_config.builders_area then	
+		for _, e in pairs(surface.find_entities_filtered({area = event.area, type = {"turret", "unit", "unit-spawner"}})) do
+			if e.position.x + e.position.y > -320 then
 				e.destroy()
 			end
 		end
 	end
+	
+	generate_extra_worm_turrets(event)
 	
 	if bb_config.random_scrap then
 		generate_scrap(event)
