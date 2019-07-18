@@ -21,6 +21,13 @@ local function spy_fish()
 	end		
 end
 
+local function reveal_map()
+	for _, f in pairs({"north", "south", "player", "spectator"}) do			
+		local r = 768		
+		game.forces[f].chart(game.surfaces["biter_battles"], {{r * -1, r * -1}, {r, r}})		
+	end		
+end
+
 local function clear_corpses()
 	for _, e in pairs(game.surfaces["biter_battles"].find_entities_filtered({type = "corpse"})) do		
 		if math.random(1, 3) == 1 then
@@ -51,15 +58,20 @@ local function on_tick(event)
 	
 	if game.tick % 300 ~= 0 then return end
 	spy_fish()
-	if global.bb_game_won_by_team then server_restart() return end
+	if global.bb_game_won_by_team then
+		reveal_map()
+		server_restart() 
+		return 
+	end
 	
-	if game.tick % 1800 ~= 0 then return end
+	--if game.tick % 1800 ~= 0 then return end	
+	
+	if game.tick % 3600 ~= 0 then return end
 	
 	ai.destroy_inactive_biters()
 	ai.main_attack()
 	ai.send_near_biters_to_silo()
 	
-	if game.tick % 3600 ~= 0 then return end
 	clear_corpses()
 	restart_idle_map()
 end
