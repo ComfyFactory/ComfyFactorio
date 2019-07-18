@@ -30,10 +30,14 @@ end
 ai.destroy_inactive_biters = function()	
 	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
 		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
-			if game.tick - biter.active_since > bb_config.biter_timeout then
-				--game.print(biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since)			
-				biter.entity.destroy()
-				global.active_biters[biter_force_name][unit_number] = nil
+			if game.tick - biter.active_since > bb_config.biter_timeout then											
+				if biter.entity.surface.count_entities_filtered({area = {{biter.entity.position.x - 16, biter.entity.position.y - 16},{biter.entity.position.x + 16, biter.entity.position.y + 16}}, force = {"north", "south"}}) == 0 then
+				
+					if global.bb_debug then game.print(biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since) end
+					
+					biter.entity.destroy()
+					global.active_biters[biter_force_name][unit_number] = nil
+				end									
 			end
 		end
 	end
@@ -50,7 +54,7 @@ ai.send_near_biters_to_silo = function()
 			target=global.rocket_silo["north"],
 			distraction=defines.distraction.none
 			},
-		unit_count = 8,
+		unit_count = 16,
 		force = "north_biters",
 		unit_search_distance=128
 		})
@@ -61,7 +65,7 @@ ai.send_near_biters_to_silo = function()
 			target=global.rocket_silo["south"],
 			distraction=defines.distraction.none
 			},
-		unit_count = 8,
+		unit_count = 16,
 		force = "south_biters",
 		unit_search_distance=128
 		})
@@ -72,7 +76,7 @@ local function get_random_close_spawner(surface, biter_force_name)
 	if not spawners[1] then return false end
 	
 	local spawner = spawners[math_random(1,#spawners)]
-	for i = 1, 3, 1 do
+	for i = 1, 7, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
 		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
 	end	
@@ -81,25 +85,28 @@ local function get_random_close_spawner(surface, biter_force_name)
 end
 
 local function select_units_around_spawner(spawner, force_name, biter_force_name)
-	local biters = spawner.surface.find_enemy_units(spawner.position, 320, force_name)
+	local biters = spawner.surface.find_enemy_units(spawner.position, 256, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
-	local size = math_random(3, 4) * 0.1
-	local threat = global.bb_threat[biter_force_name] * size
-	local active_biter_count = get_active_biter_count(biter_force_name)
-		
+	
+	local threat = global.bb_threat[biter_force_name] * math_random(10,20) * 0.01
+	
+	local unit_count = 0
+	local max_unit_count = math.ceil(global.bb_threat[biter_force_name] * 0.25) + math_random(6,12)
+	if max_unit_count > bb_config.max_group_size then max_unit_count = bb_config.max_group_size end
+	
 	for _, biter in pairs(biters) do
-		if active_biter_count >= bb_config.max_active_biters then break end
+		if unit_count >= max_unit_count then break end
 		if biter.force.name == biter_force_name and global.active_biters[biter.force.name][biter.unit_number] == nil then
 			valid_biters[#valid_biters + 1] = biter
 			global.active_biters[biter.force.name][biter.unit_number] = {entity = biter, active_since = game.tick}
-			active_biter_count = active_biter_count + 1
+			unit_count = unit_count + 1
 			threat = threat - threat_values[biter.name]
 		end	
 		if threat < 0 then break end
 	end
 	
-	--game.print(active_biter_count .. " active units for " .. biter_force_name)
+	if global.bb_debug then game.print(get_active_biter_count(biter_force_name) .. " active units for " .. biter_force_name) end
 	
 	return valid_biters
 end
@@ -130,14 +137,30 @@ end
 
 local function create_attack_group(surface, force_name, biter_force_name)
 	if global.bb_threat[biter_force_name] <= 0 then return false end
+	
+	if bb_config.max_active_biters - get_active_biter_count(biter_force_name) < bb_config.max_group_size then
+		if global.bb_debug then game.print("Not enough slots for biters for team " .. force_name .. ". Available slots: " .. bb_config.max_active_biters - get_active_biter_count(biter_force_name)) end
+		return false 
+	end	
+	
 	local spawner = get_random_close_spawner(surface, biter_force_name)
-	if not spawner then return false end
+	if not spawner then
+		if global.bb_debug then game.print("No spawner found for team " .. force_name) end
+		return false 
+	end
+	
 	local nearest_player_unit = surface.find_nearest_enemy({position = spawner.position, max_distance = 2048, force = biter_force_name})
 	if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
-	--local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
-	--local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 128, 2)
-	local unit_group_position = surface.find_non_colliding_position("rocket-silo", spawner.position, 160, 1)
-	--if pos then unit_group_position = pos end
+	local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
+	local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 128, 1)
+	--local unit_group_position = surface.find_non_colliding_position("rocket-silo", spawner.position, 160, 1)
+	if pos then unit_group_position = pos end
+	
+	if not unit_group_position then
+		if global.bb_debug then game.print("No unit_group_position found for team " .. force_name) end
+		return false 
+	end
+	
 	local units = select_units_around_spawner(spawner, force_name, biter_force_name)
 	if not units then return false end
 	local unit_group = surface.create_unit_group({position = unit_group_position, force = biter_force_name})
@@ -147,7 +170,7 @@ end
 
 ai.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
-	for c = 1, math_random(1, 2), 1 do
+	for c = 1, math_random(3,6), 1 do
 		for _, force_name in pairs({"north", "south"}) do
 			create_attack_group(surface, force_name, force_name .. "_biters")
 		end

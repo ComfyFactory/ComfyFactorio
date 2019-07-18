@@ -11,7 +11,7 @@ local event = require 'utils.event'
 local function init_surface()	
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.2"
-	map_gen_settings.starting_area = "3.5"
+	map_gen_settings.starting_area = "3"
 	--map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 64, cliff_elevation_0 = 64}	
 	map_gen_settings.autoplace_controls = {
@@ -183,6 +183,8 @@ local function on_init(surface)
 	if game.surfaces["biter_battles"] then return end
 	init_surface()
 	init_forces()
+	
+	global.bb_debug = false
 end
 
 event.on_init(on_init)

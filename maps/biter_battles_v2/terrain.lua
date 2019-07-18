@@ -239,7 +239,7 @@ end
 
 local function generate_extra_worm_turrets(event)
 	local surface = event.surface
-	local starting_distance = 350
+	local starting_distance = 300
 	local left_top = event.area.left_top
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
 	if starting_distance > chunk_distance_to_center then return end
@@ -247,7 +247,7 @@ local function generate_extra_worm_turrets(event)
 	local highest_worm_tier = math.floor((chunk_distance_to_center - starting_distance) * 0.002) + 1
 	if highest_worm_tier > 4 then highest_worm_tier = 4 end
 	
-	local average_worm_amount_per_chunk = 1
+	local average_worm_amount_per_chunk = 0.75
 	local worm_amount = math_random(math.floor(average_worm_amount_per_chunk * 0.5), math.ceil(average_worm_amount_per_chunk * 1.5))
 	
 	for a = 1, worm_amount, 1 do

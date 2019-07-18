@@ -18,7 +18,7 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
-local minimum_modifier = 50
+local minimum_modifier = 125
 local maximum_modifier = 250
 local player_amount_for_maximum_threat_gain = 20
 
