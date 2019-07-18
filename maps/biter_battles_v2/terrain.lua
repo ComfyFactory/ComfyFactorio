@@ -178,7 +178,7 @@ local function rainbow_ore_and_ponds(event)
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = get_noise(1, pos)
 				if noise > 0.83 then
-					local amount = math_random(1000, 2000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 2
+					local amount = math_random(750, 1500) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 1.1
 					local m = (noise - 0.82) * 40
 					amount = amount * m
 					local i = math.ceil(math.abs(noise * 50)) % 4
@@ -290,7 +290,7 @@ local function generate_scrap(event)
 end
 
 local function builders_area_process_entity(e)
-	if e.position.x + e.position.y > -320 + (get_noise(3, e.position) * 16) then
+	if e.position.x + e.position.y > -352 + (get_noise(3, e.position) * 16) then
 		if e.type == "turret" or e.type == "unit-spawner" then
 			e.destroy()
 			return
@@ -318,10 +318,20 @@ end
 
 local function builders_area_process_tile(t, surface)
 	if is_horizontal_border_river(surface, t.position) then return end
-	if t.position.x + t.position.y > -320 + (get_noise(3, t.position) * 16) then return end
+	if t.position.x + t.position.y > -352 + (get_noise(3, t.position) * 16) then return end
 	local noise_index = math.floor(math.abs(get_noise(3, t.position)) * 7) + 1
 	if noise_index > 7 then noise_index = 7 end
 	surface.set_tiles({{name = "dirt-" .. noise_index, position = t.position}})
+	if math_random(1, 128) == 1 then
+		local spawner_position = surface.find_non_colliding_position("biter-spawner", t.position, 8, 1)		
+		if spawner_position then
+			if math_random(1, 4) == 1 then
+				surface.create_entity({name = "spitter-spawner", position = spawner_position, force = "north_biters"})
+			else
+				surface.create_entity({name = "biter-spawner", position = spawner_position, force = "north_biters"})
+			end
+		end	
+	end
 end
 
 local function on_chunk_generated(event)
