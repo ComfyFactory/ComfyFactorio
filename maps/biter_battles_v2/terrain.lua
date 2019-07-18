@@ -89,7 +89,7 @@ local function generate_circle_spawn(event)
 	if event.area.left_top.x > 160 then return end	
 	
 	if bb_config.builders_area then
-		if event.area.left_top.x > 16 then return end	
+		if event.area.left_top.x > 32 then return end	
 	end
 	
 	local surface = event.surface		
@@ -111,7 +111,7 @@ local function generate_circle_spawn(event)
 			
 			if surface.can_place_entity({name = "stone-wall", position = pos}) then
 				local noise = get_noise(2, pos) * 15
-				local r = 100
+				local r = 128
 				if distance_to_center + noise < r and distance_to_center + noise > r - 1.75 then
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 				end
@@ -239,7 +239,7 @@ end
 
 local function generate_extra_worm_turrets(event)
 	local surface = event.surface
-	local starting_distance = 300
+	local starting_distance = 360
 	local left_top = event.area.left_top
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
 	if starting_distance > chunk_distance_to_center then return end
@@ -247,7 +247,7 @@ local function generate_extra_worm_turrets(event)
 	local highest_worm_tier = math.floor((chunk_distance_to_center - starting_distance) * 0.002) + 1
 	if highest_worm_tier > 4 then highest_worm_tier = 4 end
 	
-	local average_worm_amount_per_chunk = 0.75
+	local average_worm_amount_per_chunk = 0.70
 	local worm_amount = math_random(math.floor(average_worm_amount_per_chunk * 0.5), math.ceil(average_worm_amount_per_chunk * 1.5))
 	
 	for a = 1, worm_amount, 1 do
@@ -285,9 +285,43 @@ local function generate_scrap(event)
 					e.surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})
 				end
 			end
-		end
-			
+		end		
 	end
+end
+
+local function builders_area_process_entity(e)
+	if e.position.x + e.position.y > -320 + (get_noise(3, e.position) * 16) then
+		if e.type == "turret" or e.type == "unit-spawner" then
+			e.destroy()
+			return
+		end
+	else
+		if e.type == "resource" then
+			e.destroy()
+			return
+		end
+		if e.type == "turret" then
+			e.destroy()
+			return
+		end
+		if e.type == "cliff" then
+			e.destroy()
+			return
+		end
+		if e.type == "tree" then
+			if math_random(1, 12) == 1 then e.surface.create_entity({name = "rock-big", position = e.position, force = "neutral"}) end
+			e.destroy()
+			return
+		end
+	end
+end
+
+local function builders_area_process_tile(t, surface)
+	if is_horizontal_border_river(surface, t.position) then return end
+	if t.position.x + t.position.y > -320 + (get_noise(3, t.position) * 16) then return end
+	local noise_index = math.floor(math.abs(get_noise(3, t.position)) * 7) + 1
+	if noise_index > 7 then noise_index = 7 end
+	surface.set_tiles({{name = "dirt-" .. noise_index, position = t.position}})
 end
 
 local function on_chunk_generated(event)
@@ -306,12 +340,13 @@ local function on_chunk_generated(event)
 	generate_potential_spawn_ore(event)
 	generate_silos(event)
 	
-	if bb_config.builders_area then	
-		for _, e in pairs(surface.find_entities_filtered({area = event.area, type = {"turret", "unit", "unit-spawner"}})) do
-			if e.position.x + e.position.y > -320 then
-				e.destroy()
-			end
+	if bb_config.builders_area then
+		for _, t in pairs(surface.find_tiles_filtered({area = event.area, name = {"water", "deepwater"}})) do
+			builders_area_process_tile(t, surface)
 		end
+		for _, e in pairs(surface.find_entities_filtered({area = event.area})) do
+			builders_area_process_entity(e)
+		end		
 	end
 	
 	generate_extra_worm_turrets(event)
