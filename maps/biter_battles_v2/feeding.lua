@@ -1,11 +1,11 @@
 local food_values = {
-	["automation-science-pack"] =	{value = 0.001, name = "automation science"},
-	["logistic-science-pack"] =			{value = 0.0025, name = "logistic science"},
-	["military-science-pack"] =			{value = 0.0096, name = "military science"},
-	["chemical-science-pack"] = 		{value = 0.0264, name = "chemical science"},
-	["production-science-pack"] =	{value = 0.08874, name = "production science"},
-	["utility-science-pack"] =			{value = 0.09943, name = "utility science"},
-	["space-science-pack"] = 			{value = 0.28957, name = "space science"},
+	["automation-science-pack"] =	{value = 0.001, name = "automation science", color = "255, 50, 50"},
+	["logistic-science-pack"] =			{value = 0.0025, name = "logistic science", color = "50, 255, 50"},
+	["military-science-pack"] =			{value = 0.0096, name = "military science", color = "105, 105, 105"},
+	["chemical-science-pack"] = 		{value = 0.0264, name = "chemical science", color = "100, 200, 255"},
+	["production-science-pack"] =	{value = 0.08874, name = "production science", color = "150, 25, 255"},
+	["utility-science-pack"] =			{value = 0.09943, name = "utility science", color = "210, 210, 60"},
+	["space-science-pack"] = 			{value = 0.28957, name = "space science", color = "255, 255, 255"},
 }
 
 local force_translation = {
@@ -16,6 +16,11 @@ local force_translation = {
 local enemy_team_of = {
 	["north"] = "south",
 	["south"] = "north"
+}
+
+local team_strings = {
+	["north"] = table.concat({"[color=120, 120, 255]", bb_config.north_side_team_name, "'s[/color]"}),
+	["south"] = table.concat({"[color=255, 65, 65]", bb_config.south_side_team_name, "'s[/color]"})
 }
 
 local minimum_modifier = 125
@@ -58,14 +63,18 @@ local function feed_biters(player, food)
 	end
 	
 	i.remove({name = food, count = flask_amount})
-								
+	
+	local colored_player_name = table.concat({"[color=", player.color.r * 0.6 + 0.35, ",", player.color.g * 0.6 + 0.35, ",", player.color.b * 0.6 + 0.35, "]", player.name, "[/color]"})
+	local formatted_food = table.concat({"[color=", food_values[food].color, "]", food_values[food].name, " juice[/color]", "[img=item/", food, "]"})
+	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})
+	
 	if flask_amount >= 20 then
-		game.print(player.name .. " fed " .. flask_amount .. " flasks of " .. food_values[food].name .. " juice to team " .. enemy_force_name .. "'s biters!", {r = 0.98, g = 0.66, b = 0.22})
+		game.print(colored_player_name .. " fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to team " .. team_strings[enemy_force_name] .. " biters!", {r = 0.9, g = 0.9, b = 0.9})
 	else
 		if flask_amount == 1 then
-			player.print("You fed one flask of " .. food_values[food].name .. " juice to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+			player.print("You fed one flask of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
 		else
-			player.print("You fed " .. flask_amount .. " flasks of " .. food_values[food].name .. " juice to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+			player.print("You fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
 		end				
 	end								
 	
