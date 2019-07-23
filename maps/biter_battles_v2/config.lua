@@ -15,12 +15,13 @@ bb_config = {
 	["team_balancing"] = true,						--Should players only be able to join a team that has less or equal members than the opposing team?
 	
 	--TERRAIN OPTIONS
-	["border_river_width"] = 32,						--Approximate width of the horizontal impassable river seperating the teams. (values up to 100)
+	["border_river_width"] = 26,						--Approximate width of the horizontal impassable river seperating the teams. (values up to 100)
 	["builders_area"] = true,							--Grant each side a peaceful direction with no nests and biters?
 	["random_scrap"] = true,							--Generate harvestable scrap around worms randomly?
 	
 	--BITER SETTINGS
 	["max_active_biters"] = 2000,					--Maximum total amount of attacking units per side.
-	["max_group_size"] = 200,						--Maximum total amount of attacking units per side.
-	["biter_timeout"] = 36000						--Time it takes in ticks for an attacking unit to be deleted. This prevents perma stuck units.	
+	["max_group_size"] = 256,						--Maximum total amount of attacking units per side.
+	["biter_timeout"] = 54000,						--Time it takes in ticks for an attacking unit to be deleted. This prevents perma stuck units.	
+	["bitera_area_distance"] = 416,				--Distance to the biter area.
 }

@@ -27,17 +27,23 @@ local function get_active_biter_count(biter_force_name)
 	return count
 end
 
+local function is_biter_inactive(biter, unit_number, biter_force_name)
+	if not biter.entity.valid then return true end	
+	if game.tick - biter.active_since < bb_config.biter_timeout then return false end	
+	if biter.entity.surface.count_entities_filtered({area = {{biter.entity.position.x - 16, biter.entity.position.y - 16},{biter.entity.position.x + 16, biter.entity.position.y + 16}}, force = {"north", "south"}}) ~= 0 then
+		global.active_biters[biter_force_name][unit_number].active_since = game.tick
+		return false 
+	end		
+	if global.bb_debug then game.print(biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since) end	
+	biter.entity.destroy()
+	return true
+end
+
 ai.destroy_inactive_biters = function()	
 	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
 		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
-			if game.tick - biter.active_since > bb_config.biter_timeout then											
-				if biter.entity.surface.count_entities_filtered({area = {{biter.entity.position.x - 16, biter.entity.position.y - 16},{biter.entity.position.x + 16, biter.entity.position.y + 16}}, force = {"north", "south"}}) == 0 then
-				
-					if global.bb_debug then game.print(biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since) end
-					
-					biter.entity.destroy()
-					global.active_biters[biter_force_name][unit_number] = nil
-				end									
+			if is_biter_inactive(biter, unit_number, biter_force_name) then
+				global.active_biters[biter_force_name][unit_number] = nil
 			end
 		end
 	end
