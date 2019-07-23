@@ -18,7 +18,7 @@ function spaghetti()
 	game.forces["player"].technologies["logistic-robotics"].enabled = false
 	game.forces["player"].technologies["robotics"].enabled = false
 	game.forces["player"].technologies["personal-roboport-equipment"].enabled = false
-	game.forces["player"].technologies["personal-roboport-equipment-2"].enabled = false
+	game.forces["player"].technologies["personal-roboport-mk2-equipment"].enabled = false
 	game.forces["player"].technologies["character-logistic-trash-slots-1"].enabled = false
 	game.forces["player"].technologies["character-logistic-trash-slots-2"].enabled = false
 	game.forces["player"].technologies["auto-character-logistic-trash-slots"].enabled = false
