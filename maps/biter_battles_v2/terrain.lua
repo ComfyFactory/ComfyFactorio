@@ -133,7 +133,7 @@ local function generate_circle_spawn(event)
 				end
 				
 				if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 20 then
-					if math_random(1,128) == 1 then
+					if math_random(1, 256) == 1 then
 						if surface.can_place_entity({name = "mineable-wreckage", position = pos}) then
 							surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"})
 						end
@@ -200,8 +200,8 @@ local function rainbow_ore_and_ponds(event)
 					if i == 0 then i = 4 end
 					surface.create_entity({name = ores[i], position = pos, amount = amount})					
 				end
-				if noise < -0.86 then
-					if noise < -0.92 then 
+				if noise < -0.79 then
+					if noise < -0.85 then 
 						surface.set_tiles({{name = "deepwater", position = pos}})
 					else
 						surface.set_tiles({{name = "water", position = pos}})

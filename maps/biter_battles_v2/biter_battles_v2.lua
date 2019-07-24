@@ -10,7 +10,7 @@ local event = require 'utils.event'
 
 local function init_surface()	
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.2"
+	map_gen_settings.water = "0.15"
 	map_gen_settings.starting_area = "2.5"
 	--map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 38, cliff_elevation_0 = 38}	
