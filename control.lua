@@ -6,16 +6,16 @@ _DUMP_ENV = false
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
-require "utils.corpse_util"  --disable for hunger games
+-- require "utils.corpse_util"  --disable for hunger games
 require "utils.session_data"
 require "chatbot"
 require "commands"
-require "antigrief"
-require "antigrief_admin_panel"
-require "group"
-require "player_list"
-require "poll"
-require "score"
+-- require "antigrief"
+-- require "antigrief_admin_panel"
+-- require "group"
+-- require "player_list"
+-- require "poll"
+-- require "score"
 require "modules.floaty_chat"
 --require "on_tick_schedule"
 
@@ -49,6 +49,7 @@ require "modules.floaty_chat"
 -----------------------------
 
 ---- enable maps here ----
+require "maps.tank_conquest.tank_conquest"
 --require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"
 --require "maps.biter_battles_v2.biter_battles_v2"
@@ -93,8 +94,8 @@ if _DEBUG then
     require 'utils.debug.command'
 end
 
-local function on_player_created(event)	
-	local player = game.players[event.player_index]	
+local function on_player_created(event)
+	local player = game.players[event.player_index]
 	player.gui.top.style = 'slot_table_spacing_horizontal_flow'
 	player.gui.left.style = 'slot_table_spacing_vertical_flow'
 end
