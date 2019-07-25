@@ -50,6 +50,7 @@ require "modules.floaty_chat"
 -----------------------------
 
 ---- enable maps here ----
+require "maps.tank_conquest.tank_conquest"
 --require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"
 require "maps.biter_battles_v2.biter_battles_v2"
@@ -94,8 +95,8 @@ if _DEBUG then
     require 'utils.debug.command'
 end
 
-local function on_player_created(event)	
-	local player = game.players[event.player_index]	
+local function on_player_created(event)
+	local player = game.players[event.player_index]
 	player.gui.top.style = 'slot_table_spacing_horizontal_flow'
 	player.gui.left.style = 'slot_table_spacing_vertical_flow'
 end
