@@ -21,7 +21,7 @@
 
     global.table_of_properties.wait_in_seconds = 10
 
-    global.table_of_properties.size_of_the_battlefield = 1000
+    global.table_of_properties.size_of_the_battlefield = 2000
 
     global.table_of_properties.amount_of_tickets = 800
 
@@ -601,7 +601,7 @@
 
         if #table_of_tanks < #player.force.connected_players then
 
-            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 8 )
+            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 0.5 )
 
             if not position then position = { 0, 0 } end
 
@@ -917,8 +917,6 @@
 
         game.permissions.get_group( 'Default' ).add_player( player.name )
 
-        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 2.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
-
     end
 
     function event_on_click_lobby( player )
@@ -1003,7 +1001,19 @@
 
                 if global.table_of_properties.countdown_in_seconds < 0 or global.table_of_properties[ 'force_player_one' ].available_tickets < 0 or global.table_of_properties[ 'force_player_two' ].available_tickets < 0 then
 
-                    game.print( 'The battle is over.' )
+                    if global.table_of_properties[ 'force_player_one' ].available_tickets == global.table_of_properties[ 'force_player_two' ].available_tickets then
+
+                        game.print( 'The battle is over. The round ended in a draw.' )
+
+                    elseif global.table_of_properties[ 'force_player_one' ].available_tickets > global.table_of_properties[ 'force_player_two' ].available_tickets then
+
+                        game.print( 'The battle is over. Force ' .. global.table_of_properties[ 'force_player_one' ].icon .. ' has won the round.' )
+
+                    else
+
+                        game.print( 'The battle is over. Force ' .. global.table_of_properties[ 'force_player_two' ].icon .. ' has won the round.' )
+
+                    end
 
                     global.table_of_flags = {}
 
@@ -1013,7 +1023,7 @@
 
                     global.table_of_properties.countdown_in_seconds = 2701
 
-                    global.table_of_properties.wait_in_seconds = 60
+                    global.table_of_properties.wait_in_seconds = 30
 
                     global.table_of_properties.game_stage = 'lobby'
 
@@ -1059,9 +1069,9 @@
 
                 -- create_a_point_of_interest( blueprint_poi_laser_json, { x = 0, y = -150 } )
 
-                create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = -150 } )
+                create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = -350 } )
 
-                create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = 250 } )
+                create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = 450 } )
 
                 local table_of_blueprints = { blueprint_poi_flag_one_json, blueprint_poi_flag_two_json, blueprint_poi_flag_three_json }
 
@@ -1069,7 +1079,7 @@
 
                 local length_of_names = math.random( 3, #table_of_names )
 
-                local position, radius, angle, sides = { x = 0, y = 50 }, math.random( 50, 100 ), math.random( 45, 180 ), length_of_names
+                local position, radius, angle, sides = { x = 0, y = 50 }, math.random( 200, 300 ), math.random( 45, 180 ), length_of_names
 
                 local table_of_positions = draw_a_polygon( position, radius, angle, sides )
 
@@ -1089,6 +1099,8 @@
 
                     game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
 
+                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+
                     create_a_tank( player )
 
                 end
@@ -1099,9 +1111,9 @@
 
             if global.table_of_properties.game_stage == 'preparing_spawn_positions' then
 
-                local position_one = { x = -200, y = 50 }
+                local position_one = { x = -500, y = 50 }
 
-                local position_two = { x = 200, y = 50 }
+                local position_two = { x = 500, y = 50 }
 
                 game.forces[ 'force_player_one' ].set_spawn_position( position_one, game.surfaces[ 'tank_conquest' ] )
 
@@ -1131,7 +1143,9 @@
 
                 initialize_surface()
 
-                event_on_click_join( game.connected_players[ 1 ] )
+                game.connected_players[ 1 ].teleport( { 0, 0 }, game.surfaces[ 'tank_conquest' ] )
+
+                game.connected_players[ 1 ].force.chart_all( game.surfaces[ 'tank_conquest' ] )
 
                 game.print( 'A new battlefield was created.' )
 
@@ -1191,6 +1205,8 @@
 
         if player.surface.name == 'nauvis' then return end
 
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+
         create_a_tank( player )
 
     end
@@ -1201,29 +1217,29 @@
 
         local player = game.players[ event.player_index ]
 
-        local message = ''
+        -- local message = ''
 
-        if event.cause then
+        -- if event.cause then
 
-            if event.cause.name ~= nil then message = 'by ' .. event.cause.name end
+        --     if event.cause.name ~= nil then message = 'by ' .. event.cause.name end
 
-            if event.cause.name == 'character' then message = 'by ' .. event.cause.player.name end
+        --     if event.cause.name == 'character' then message = 'by ' .. event.cause.player.name end
 
-            if event.cause.name == 'tank' then
+        --     if event.cause.name == 'tank' then
 
-                local driver = event.cause.get_driver()
+        --         local driver = event.cause.get_driver()
 
-                if driver.player then message = 'by ' .. driver.player.name end
+        --         if driver.player then message = 'by ' .. driver.player.name end
 
-            end
+        --     end
 
-        end
+        -- end
 
-        for _, target_player in pairs( game.connected_players ) do
+        -- for _, target_player in pairs( game.connected_players ) do
 
-            if target_player.name ~= player.name then player.print( player.name .. ' was killed ' .. message, { r = 0.99, g = 0.0, b = 0.0 } ) end
+        --     if target_player.name ~= player.name then player.print( player.name .. ' was killed ' .. message, { r = 0.99, g = 0.0, b = 0.0 } ) end
 
-        end
+        -- end
 
         local table_of_entities = player.surface.find_entities_filtered( { name = 'character-corpse' } )
 
@@ -1341,6 +1357,10 @@
 
             game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
 
+            player.print( 'Info: The goal is to take the flags, to make sure that the opponent tickets withdraw.' )
+
+            -- You have to take good care of your tank. You get a tank for every life.
+
         end
 
         if global.table_of_properties.game_stage == 'ongoing_game' then
@@ -1348,6 +1368,8 @@
             event_on_click_join( player )
 
             game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
+
+            rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
             create_a_tank( player )
 
