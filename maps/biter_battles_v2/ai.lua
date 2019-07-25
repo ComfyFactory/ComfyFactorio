@@ -27,6 +27,18 @@ local function get_active_biter_count(biter_force_name)
 	return count
 end
 
+local function get_threat_ratio(biter_force_name)
+	if global.bb_threat[biter_force_name] <= 0 then return 0 end
+	local t1 = global.bb_threat["north_biters"]
+	local t2 = global.bb_threat["south_biters"]
+	if t1 == 0 and t2 == 0 then return 0.5 end
+	if t1 < 0 then t1 = 0 end
+	if t2 < 0 then t2 = 0 end
+	local total_threat = t1 + t2
+	local ratio = global.bb_threat[biter_force_name] / total_threat
+	return ratio
+end
+
 local function is_biter_inactive(biter, unit_number, biter_force_name)
 	if not biter.entity.valid then return true end	
 	if game.tick - biter.active_since < bb_config.biter_timeout then return false end	
@@ -176,11 +188,16 @@ end
 
 ai.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
-	for c = 1, math_random(3,6), 1 do
-		for _, force_name in pairs({"north", "south"}) do
-			create_attack_group(surface, force_name, force_name .. "_biters")
-		end
+			
+	for c = 1, math.ceil(get_threat_ratio("north_biters") * 7), 1 do		
+		create_attack_group(surface, "north", "north_biters")
 	end
+	if global.bb_debug then game.print(math.ceil(get_threat_ratio("north_biters") * 7) .. " unit groups designated for north biters.") end
+	
+	for c = 1, math.ceil(get_threat_ratio("south_biters") * 7), 1 do		
+		create_attack_group(surface, "south", "south_biters")
+	end
+	if global.bb_debug then game.print(math.ceil(get_threat_ratio("south_biters") * 7) .. " unit groups designated for south biters.") end
 end
 
 --Prevent Players from damaging Rocket Silos

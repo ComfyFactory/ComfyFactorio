@@ -109,7 +109,7 @@ local function generate_circle_spawn(event)
 			if distance_to_center < 7 then tile = "sand-1" end					
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 			
-			if surface.can_place_entity({name = "stone-wall", position = pos}) then
+			if surface.can_place_entity({name = "coal", position = pos}) then
 				local noise = get_noise(2, pos) * 15
 				local r = 101
 				
@@ -149,6 +149,7 @@ local function generate_silos(event)
 	if global.rocket_silo["north"] then
 		if global.rocket_silo["north"].valid then return end
 	end	
+	if event.area.left_top.y > -128 then return end
 	
 	local surface = event.surface
 	local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
