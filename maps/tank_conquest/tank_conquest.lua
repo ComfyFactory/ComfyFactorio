@@ -1099,7 +1099,7 @@
 
                     game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
 
-                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 2.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
                     create_a_tank( player )
 
@@ -1204,6 +1204,8 @@
         local player = game.players[ event.player_index ]
 
         if player.surface.name == 'nauvis' then return end
+
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
         create_a_tank( player )
 
@@ -1367,7 +1369,7 @@
 
             game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
 
-            rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 2.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+            rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
             create_a_tank( player )
 
