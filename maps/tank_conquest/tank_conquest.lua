@@ -15,11 +15,11 @@
 
     global.table_of_properties = {}
 
-    global.table_of_properties.required_number_of_players = 1
+    global.table_of_properties.required_number_of_players = 2
 
     global.table_of_properties.countdown_in_seconds = 2701
 
-    global.table_of_properties.wait_in_seconds = 5
+    global.table_of_properties.wait_in_seconds = 10
 
     global.table_of_properties.size_of_the_battlefield = 1000
 
