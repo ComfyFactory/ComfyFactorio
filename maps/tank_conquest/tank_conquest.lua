@@ -31,6 +31,8 @@
 
     global.table_of_properties.game_stage = 'lobby'
 
+    global.table_of_tanks = {}
+
     global.table_of_scores = {}
 
     global.table_of_flags = {}
@@ -601,21 +603,23 @@
 
         if #table_of_tanks < #player.force.connected_players then
 
-            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 0.5 )
+            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 4 )
 
             if not position then position = { 0, 0 } end
 
-            local property = player.surface.create_entity( { name = 'tank', position = player.position, force = player.force.name } )
+            local entity = player.surface.create_entity( { name = 'tank', position = position, force = player.force.name } )
 
-            if not property then return end
+            if not entity then return end
 
-            property.minable = false
+            entity.minable = false
 
-            property.insert( { name = 'wood', count = 50 } )
+            entity.insert( { name = 'wood', count = 50 } )
 
-            property.insert( { name = 'cannon-shell', count = 50 } )
+            entity.insert( { name = 'cannon-shell', count = 50 } )
 
-            property.set_driver( player )
+            entity.set_driver( player )
+
+            global.table_of_tanks[ player.index ] = entity
 
         end
 
@@ -1067,9 +1071,7 @@
 
                 create_a_base( 'force_player_two', game.forces[ 'force_player_two' ].get_spawn_position( game.surfaces[ 'tank_conquest' ] ) )
 
-                -- create_a_point_of_interest( blueprint_poi_laser_json, { x = 0, y = -150 } )
-
-                create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = -350 } )
+                create_a_point_of_interest( blueprint_poi_laser_json, { x = 0, y = -350 } )
 
                 create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = 450 } )
 
@@ -1079,7 +1081,7 @@
 
                 local length_of_names = math.random( 3, #table_of_names )
 
-                local position, radius, angle, sides = { x = 0, y = 50 }, math.random( 200, 300 ), math.random( 45, 180 ), length_of_names
+                local position, radius, angle, sides = { x = 0, y = 50 }, math.random( 150, 250 ), math.random( 45, 180 ), length_of_names
 
                 local table_of_positions = draw_a_polygon( position, radius, angle, sides )
 
@@ -1099,7 +1101,7 @@
 
                     game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
 
-                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 3.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
                     create_a_tank( player )
 
@@ -1205,7 +1207,7 @@
 
         if player.surface.name == 'nauvis' then return end
 
-        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 3.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
         create_a_tank( player )
 
@@ -1217,29 +1219,15 @@
 
         local player = game.players[ event.player_index ]
 
-        -- local message = ''
+        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
 
-        -- if event.cause then
+            global.table_of_tanks[ player.index ].clear_items_inside()
 
-        --     if event.cause.name ~= nil then message = 'by ' .. event.cause.name end
+            global.table_of_tanks[ player.index ].destroy()
 
-        --     if event.cause.name == 'character' then message = 'by ' .. event.cause.player.name end
+        end
 
-        --     if event.cause.name == 'tank' then
-
-        --         local driver = event.cause.get_driver()
-
-        --         if driver.player then message = 'by ' .. driver.player.name end
-
-        --     end
-
-        -- end
-
-        -- for _, target_player in pairs( game.connected_players ) do
-
-        --     if target_player.name ~= player.name then player.print( player.name .. ' was killed ' .. message, { r = 0.99, g = 0.0, b = 0.0 } ) end
-
-        -- end
+        global.table_of_tanks[ player.index ] = nil
 
         local table_of_entities = player.surface.find_entities_filtered( { name = 'character-corpse' } )
 
@@ -1357,9 +1345,7 @@
 
             game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
 
-            player.print( 'Info: The goal is to take the flags, to make sure that the opponent tickets withdraw.' )
-
-            -- You have to take good care of your tank. You get a tank for every life.
+            player.print( 'Info: Each force has a number of tickets. Per conquered point, 0.1 tickets are deducted per second. If a player loses his life, 1 ticket is deducted from his own force.' )
 
         end
 
@@ -1369,7 +1355,7 @@
 
             game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
 
-            rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+            rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 3.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
             create_a_tank( player )
 
@@ -1378,3 +1364,21 @@
     end
 
     event.add( defines.events.on_player_joined_game, on_player_joined_game )
+
+    local function on_player_left_game( event )
+
+        local player = game.players[ event.player_index ]
+
+        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
+
+            global.table_of_tanks[ player.index ].clear_items_inside()
+
+            global.table_of_tanks[ player.index ].destroy()
+
+        end
+
+        global.table_of_tanks[ player.index ] = nil
+
+    end
+
+    event.add( defines.events.on_player_left_game, on_player_left_game )
