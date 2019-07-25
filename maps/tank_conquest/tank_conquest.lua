@@ -601,7 +601,7 @@
 
         if #table_of_tanks < #player.force.connected_players then
 
-            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 8 )
+            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 0.5 )
 
             if not position then position = { 0, 0 } end
 
@@ -1356,6 +1356,8 @@
             game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
 
             player.print( 'Info: The goal is to take the flags, to make sure that the opponent tickets withdraw.' )
+
+            -- You have to take good care of your tank. You get a tank for every life.
 
         end
 
