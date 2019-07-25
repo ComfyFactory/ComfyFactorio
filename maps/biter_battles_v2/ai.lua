@@ -153,6 +153,44 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 	return true
 end
 
+local function is_chunk_empty(surface, area)
+	if surface.count_entities_filtered({type = {"unit-spawner", "unit"}, area = area}) ~= 0 then return false end
+	if surface.count_entities_filtered({force = {"north", "south"}, area = area}) ~= 0 then return false end
+	if surface.count_tiles_filtered({name = {"water", "deepwater"}, area = area}) ~= 0 then return false end
+	return true
+end
+
+local function get_unit_group_position(surface, nearest_player_unit, spawner)
+	
+	local spawner_chunk_position = {x = math.floor(spawner.position.x / 32), y = math.floor(spawner.position.y / 32)}
+	local valid_chunks = {}
+	for x = -2, 2, 1 do
+		for y = -2, 2, 1 do
+			local chunk = {x = spawner_chunk_position.x + x, y = spawner_chunk_position.y + y}
+			local area = {{chunk.x * 32, chunk.y * 32},{chunk.x * 32 + 32, chunk.y * 32 + 32}}
+			if is_chunk_empty(surface, area) then
+				valid_chunks[#valid_chunks + 1] = chunk
+			end
+		end
+	end
+	
+	if #valid_chunks > 0 then
+		local chunk = valid_chunks[math_random(1, #valid_chunks)]
+		return {x = chunk.x * 32 + 16, y = chunk.y * 32 + 16}
+	end
+	
+	local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
+	local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 256, 1)
+	if pos then unit_group_position = pos end
+	
+	if not unit_group_position then
+		if global.bb_debug then game.print("No unit_group_position found for team " .. force_name) end
+		return false 
+	end
+	
+	return unit_group_position
+end
+
 local function create_attack_group(surface, force_name, biter_force_name)
 	if global.bb_threat[biter_force_name] <= 0 then return false end
 	
@@ -169,15 +207,8 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	
 	local nearest_player_unit = surface.find_nearest_enemy({position = spawner.position, max_distance = 2048, force = biter_force_name})
 	if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
-	local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
-	local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 128, 1)
-	--local unit_group_position = surface.find_non_colliding_position("rocket-silo", spawner.position, 160, 1)
-	if pos then unit_group_position = pos end
 	
-	if not unit_group_position then
-		if global.bb_debug then game.print("No unit_group_position found for team " .. force_name) end
-		return false 
-	end
+	local unit_group_position = get_unit_group_position(surface, nearest_player_unit, spawner)
 	
 	local units = select_units_around_spawner(spawner, force_name, biter_force_name)
 	if not units then return false end
