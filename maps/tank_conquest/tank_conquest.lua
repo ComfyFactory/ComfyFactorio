@@ -917,6 +917,8 @@
 
         game.permissions.get_group( 'Default' ).add_player( player.name )
 
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 2.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+
     end
 
     function event_on_click_lobby( player )
@@ -1118,8 +1120,6 @@
                     end
 
                     player.create_character()
-
-                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 2.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
                 end
 
