@@ -15,11 +15,11 @@
 
     global.table_of_properties = {}
 
-    global.table_of_properties.required_number_of_players = 1
+    global.table_of_properties.required_number_of_players = 2
 
     global.table_of_properties.countdown_in_seconds = 2701
 
-    global.table_of_properties.wait_in_seconds = 5
+    global.table_of_properties.wait_in_seconds = 10
 
     global.table_of_properties.size_of_the_battlefield = 1000
 
@@ -359,6 +359,10 @@
 
         element_frame.style.height = 38
 
+        element_frame.style.margin = 0
+
+        element_frame.style.padding = 0
+
         element_frame.style.vertical_align = 'top'
 
         element_frame.style.horizontal_align = 'center'
@@ -370,6 +374,10 @@
             element_label.style.width = 38
 
             element_label.style.height = 38
+
+            element_label.style.margin = 0
+
+            element_label.style.padding = 0
 
             element_label.style.vertical_align = 'top'
 
@@ -593,7 +601,7 @@
 
         if #table_of_tanks < #player.force.connected_players then
 
-            local position = player.surface.find_non_colliding_position( 'tank', player.position, 32, 4 )
+            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 8 )
 
             if not position then position = { 0, 0 } end
 
@@ -908,6 +916,8 @@
         player.character.destructible = true
 
         game.permissions.get_group( 'Default' ).add_player( player.name )
+
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 2.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
     end
 
