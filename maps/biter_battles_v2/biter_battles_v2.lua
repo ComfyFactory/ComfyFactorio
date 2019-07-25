@@ -138,6 +138,8 @@ local function init_forces()
 	global.spy_fish_timeout = {}
 	global.force_area = {}
 	global.active_biters = {}
+	global.next_attack = "north"
+	if math.random(1,2) == 1 then global.next_attack = "south" end
 	global.bb_evolution = {}
 	global.bb_evasion = {}
 	global.bb_threat_income = {}

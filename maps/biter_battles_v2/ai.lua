@@ -107,7 +107,7 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	if not biters[1] then return false end
 	local valid_biters = {}
 	
-	local threat = global.bb_threat[biter_force_name] * math_random(10,20) * 0.01
+	local threat = global.bb_threat[biter_force_name] * math_random(11,22) * 0.01
 	
 	local unit_count = 0
 	local max_unit_count = math.ceil(global.bb_threat[biter_force_name] * 0.25) + math_random(6,12)
@@ -189,15 +189,16 @@ end
 ai.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
 			
-	for c = 1, math.ceil(get_threat_ratio("north_biters") * 7), 1 do		
-		create_attack_group(surface, "north", "north_biters")
+	for c = 1, math.ceil(get_threat_ratio(global.next_attack .. "_biters") * 7), 1 do		
+		create_attack_group(surface, global.next_attack, global.next_attack .. "_biters")
 	end
-	if global.bb_debug then game.print(math.ceil(get_threat_ratio("north_biters") * 7) .. " unit groups designated for north biters.") end
+	if global.bb_debug then game.print(math.ceil(get_threat_ratio(global.next_attack .. "_biters") * 7) .. " unit groups designated for " .. global.next_attack .. " biters.") end
 	
-	for c = 1, math.ceil(get_threat_ratio("south_biters") * 7), 1 do		
-		create_attack_group(surface, "south", "south_biters")
-	end
-	if global.bb_debug then game.print(math.ceil(get_threat_ratio("south_biters") * 7) .. " unit groups designated for south biters.") end
+	if global.next_attack == "north" then
+		global.next_attack = "south"
+	else
+		global.next_attack = "north"
+	end	
 end
 
 --Prevent Players from damaging Rocket Silos
