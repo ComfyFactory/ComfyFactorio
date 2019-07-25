@@ -15,9 +15,11 @@
 
     global.table_of_properties = {}
 
-    global.table_of_properties.countdown_in_seconds = 2700
+    global.table_of_properties.required_number_of_players = 1
 
-    global.table_of_properties.wait_in_seconds = 10
+    global.table_of_properties.countdown_in_seconds = 2701
+
+    global.table_of_properties.wait_in_seconds = 5
 
     global.table_of_properties.size_of_the_battlefield = 1000
 
@@ -27,11 +29,7 @@
 
     global.table_of_properties.acceleration_value = 0.1
 
-    global.table_of_properties.balance_battle = true
-
     global.table_of_properties.game_stage = 'lobby'
-
-    global.table_of_properties.spectator_rejoin_delay = {}
 
     global.table_of_scores = {}
 
@@ -139,7 +137,7 @@
 
         force.share_chart = false
 
-        local spectator = game.permissions.create_group( 'force_spectator' )
+        local spectator = game.permissions.create_group( 'permission_spectator' )
 
         for action_name, _ in pairs( defines.input_action ) do spectator.set_allows_action( defines.input_action[ action_name ], false ) end
 
@@ -283,7 +281,7 @@
 
         local element_frame = player.gui.top.add{ type = 'frame', name = 'draw_gui_status', direction = 'horizontal' }
 
-        element_frame.style.minimal_height = 50
+        element_frame.style.minimal_height = 38
 
         element_frame.style.margin = 0
 
@@ -357,11 +355,11 @@
 
         local element_frame = player.gui.top.add{ type = 'frame', name = 'draw_gui_flags', direction = 'horizontal' }
 
-        element_frame.style.minimal_width = 50
+        element_frame.style.minimal_width = 38
 
-        element_frame.style.minimal_height = 50
+        element_frame.style.height = 38
 
-        element_frame.style.vertical_align = 'center'
+        element_frame.style.vertical_align = 'top'
 
         element_frame.style.horizontal_align = 'center'
 
@@ -369,9 +367,11 @@
 
             local element_label = element_frame.add{ type = 'label', caption = flag.properties.name }
 
-            element_label.style.minimal_width = 50
+            element_label.style.width = 38
 
-            element_label.style.vertical_align = 'center'
+            element_label.style.height = 38
+
+            element_label.style.vertical_align = 'top'
 
             element_label.style.horizontal_align = 'center'
 
@@ -413,7 +413,7 @@
 
         if player.force.name == 'force_spectator' then element_table.add{ type = 'sprite-button', name = 'event_on_click_join', caption = 'JOIN' } end
 
-        if player.force.name ~= 'force_spectator' then element_table.add{ type = 'sprite-button', name = 'event_on_click_spectate', caption = 'SPECTATE' } end
+        if player.force.name ~= 'force_spectator' then element_table.add{ type = 'sprite-button', name = 'event_on_click_lobby', caption = 'LOBBY' } end
 
         for _, element_item in pairs( element_table.children ) do
 
@@ -911,7 +911,7 @@
 
     end
 
-    function event_on_click_spectate( player )
+    function event_on_click_lobby( player )
 
         local surface = game.surfaces[ 'nauvis' ]
 
@@ -925,19 +925,19 @@
 
         player.character.destructible = false
 
-        game.permissions.get_group( 'force_spectator' ).add_player( player.name )
+        game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
 
     end
 
     local function on_init( surface )
 
+        game.surfaces[ 'nauvis' ].clear()
+
+        game.surfaces[ 'nauvis' ].map_gen_settings = { width = 1, height = 1 }
+
         initialize_forces()
 
-        game.surfaces[ 'nauvis' ].peaceful_mode = true
-
-        generate_circle_spawn( game.surfaces[ 'nauvis' ], 28, { x = 0, y = 0 } )
-
-        -- global.table_of_properties.game_stage = 'test'
+        -- global.table_of_properties.game_stage = 'do_nothing'
 
     end
 
@@ -945,11 +945,11 @@
 
     local function on_tick( event )
 
-        if game.tick % 30 == 0 and table_of_cause_damages ~= nil then
+        if game.tick % 30 == 0 and global.table_of_damages ~= nil then
 
-            for _, item in pairs( table_of_cause_damages ) do item.surface.create_entity( { name = 'flying-text', position = item.position, text = math.ceil( item.damage ), color = table_of_colors.damage } ) end
+            for _, item in pairs( global.table_of_damages ) do item.surface.create_entity( { name = 'flying-text', position = item.position, text = math.ceil( item.damage ), color = table_of_colors.damage } ) end
 
-            table_of_cause_damages = nil
+            global.table_of_damages = nil
 
         end
 
@@ -1001,7 +1001,7 @@
 
                     global.table_of_properties[ 'force_player_two' ].available_tickets = global.table_of_properties.amount_of_tickets
 
-                    global.table_of_properties.countdown_in_seconds = 2700
+                    global.table_of_properties.countdown_in_seconds = 2701
 
                     global.table_of_properties.wait_in_seconds = 60
 
@@ -1023,7 +1023,7 @@
 
                         -- draw_gui_score( player )
 
-                        event_on_click_spectate( player )
+                        event_on_click_lobby( player )
 
                     end
 
@@ -1131,7 +1131,7 @@
 
             if global.table_of_properties.game_stage == 'lobby' then
 
-                if #game.connected_players > 1 and global.table_of_properties.wait_in_seconds > 0 then
+                if #game.connected_players >= global.table_of_properties.required_number_of_players and global.table_of_properties.wait_in_seconds > 0 then
 
                     if global.table_of_properties.wait_in_seconds % 5 == 0 then game.print( 'The round starts in ' .. global.table_of_properties.wait_in_seconds .. ' seconds.' ) end
 
@@ -1142,6 +1142,14 @@
                 if global.table_of_properties.wait_in_seconds == 0 then global.table_of_properties.game_stage = 'regenerate_battlefield' end
 
             end
+
+        end
+
+        if game.tick == 60 then
+
+            generate_circle_spawn( game.surfaces[ 'nauvis' ], 28, { x = 0, y = 0 } )
+
+            for _, player in pairs( game.connected_players ) do if player.character == nil then player.create_character() end end
 
         end
 
@@ -1157,11 +1165,11 @@
 
         if event.final_damage_amount < 1 then return end
 
-        if table_of_cause_damages == nil then table_of_cause_damages = {} end
+        if global.table_of_damages == nil then global.table_of_damages = {} end
 
-        if table_of_cause_damages[ event.entity.unit_number ] == nil then table_of_cause_damages[ event.entity.unit_number ] = { surface = event.entity.surface, position = event.entity.position, damage = 0 } end
+        if global.table_of_damages[ event.entity.unit_number ] == nil then global.table_of_damages[ event.entity.unit_number ] = { surface = event.entity.surface, position = event.entity.position, damage = 0 } end
 
-        table_of_cause_damages[ event.entity.unit_number ].damage = table_of_cause_damages[ event.entity.unit_number ].damage + event.final_damage_amount
+        global.table_of_damages[ event.entity.unit_number ].damage = global.table_of_damages[ event.entity.unit_number ].damage + event.final_damage_amount
 
     end
 
@@ -1293,9 +1301,9 @@
 
         end
 
-        if event.element.name == 'event_on_click_spectate' then
+        if event.element.name == 'event_on_click_lobby' then
 
-            event_on_click_spectate( player )
+            event_on_click_lobby( player )
 
             if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() end
 
@@ -1321,7 +1329,7 @@
 
             player.character.destructible = false
 
-            game.permissions.get_group( 'force_spectator' ).add_player( player.name )
+            game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
 
         end
 

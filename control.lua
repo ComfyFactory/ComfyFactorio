@@ -6,16 +6,16 @@ _DUMP_ENV = false
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
--- require "utils.corpse_util"  --disable for hunger games
+require "utils.corpse_util"  --disable for hunger games
 require "utils.session_data"
 require "chatbot"
 require "commands"
--- require "antigrief"
--- require "antigrief_admin_panel"
--- require "group"
--- require "player_list"
--- require "poll"
--- require "score"
+require "antigrief"
+require "antigrief_admin_panel"
+require "group"
+require "player_list"
+require "poll"
+require "score"
 require "modules.floaty_chat"
 --require "on_tick_schedule"
 
