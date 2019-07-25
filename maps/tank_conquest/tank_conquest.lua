@@ -359,6 +359,10 @@
 
         element_frame.style.height = 38
 
+        element_frame.style.margin = 0
+
+        element_frame.style.padding = 0
+
         element_frame.style.vertical_align = 'top'
 
         element_frame.style.horizontal_align = 'center'
@@ -370,6 +374,10 @@
             element_label.style.width = 38
 
             element_label.style.height = 38
+
+            element_label.style.margin = 0
+
+            element_label.style.padding = 0
 
             element_label.style.vertical_align = 'top'
 
@@ -593,7 +601,7 @@
 
         if #table_of_tanks < #player.force.connected_players then
 
-            local position = player.surface.find_non_colliding_position( 'tank', player.position, 32, 4 )
+            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 8 )
 
             if not position then position = { 0, 0 } end
 
@@ -1110,6 +1118,8 @@
                     end
 
                     player.create_character()
+
+                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 2.5 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
 
                 end
 
