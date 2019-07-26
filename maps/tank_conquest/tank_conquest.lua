@@ -3,11 +3,11 @@
 
     local blueprint_poi_base_json = require 'maps.tank_conquest.blueprint_poi_base_json'
 
-    local blueprint_poi_flag_one_json = require 'maps.tank_conquest.blueprint_poi_flag_one_json'
+    local blueprint_poi_spot_one_json = require 'maps.tank_conquest.blueprint_poi_spot_one_json'
 
-    local blueprint_poi_flag_two_json = require 'maps.tank_conquest.blueprint_poi_flag_two_json'
+    local blueprint_poi_spot_two_json = require 'maps.tank_conquest.blueprint_poi_spot_two_json'
 
-    local blueprint_poi_flag_three_json = require 'maps.tank_conquest.blueprint_poi_flag_three_json'
+    local blueprint_poi_spot_three_json = require 'maps.tank_conquest.blueprint_poi_spot_three_json'
 
     local blueprint_poi_fire_json = require 'maps.tank_conquest.blueprint_poi_fire_json'
 
@@ -17,9 +17,9 @@
 
     global.table_of_properties.required_number_of_players = 2
 
-    global.table_of_properties.countdown_in_seconds = 2701
+    global.table_of_properties.countdown_in_seconds = 28800
 
-    global.table_of_properties.wait_in_seconds = 10
+    global.table_of_properties.wait_in_seconds = 5
 
     global.table_of_properties.size_of_the_battlefield = 2000
 
@@ -31,9 +31,11 @@
 
     global.table_of_properties.game_stage = 'lobby'
 
+    global.table_of_tanks = {}
+
     global.table_of_scores = {}
 
-    global.table_of_flags = {}
+    global.table_of_spots = {}
 
     global.table_of_squads = {}
 
@@ -195,8 +197,6 @@
 
         local map_gen_settings = {}
 
-        -- map_gen_settings.default_enable_all_autoplace_controls = false
-
         map_gen_settings.width = global.table_of_properties.size_of_the_battlefield
 
         map_gen_settings.height = global.table_of_properties.size_of_the_battlefield
@@ -209,9 +209,11 @@
 
         map_gen_settings.cliff_settings = { name = 'cliff', cliff_elevation_0 = 0, cliff_elevation_interval = 0 }
 
-        map_gen_settings.autoplace_controls = { [ 'trees' ] = { frequency = 'normal', size = 'normal', richness = 'normal' }, [ 'coal' ] = { frequency = 'none', size = 'none', richness = 'none' }, [ 'stone' ] = { frequency = 'none', size = 'none', richness = 'none' }, [ 'copper-ore' ] = { frequency = 'none', size = 'none', richness = 'none' }, [ 'uranium-ore' ] = { frequency = 'none', size = 'none', richness = 'none' }, [ 'iron-ore' ] = { frequency = 'none', size = 'none', richness = 'none' }, [ 'crude-oil' ] = { frequency = 'none', size = 'none', richness = 'none' }, [ 'enemy-base' ] = { frequency = 'none', size = 'none', richness = 'none' } }
+        map_gen_settings.autoplace_controls = { [ 'trees' ] = { frequency = 'normal', size = 'normal', richness = 'normal' }, [ 'coal' ] = { frequency = 'very-high', size = 'very-low', richness = 'normal' }, [ 'stone' ] = { frequency = 'very-high', size = 'very-low', richness = 'normal' }, [ 'copper-ore' ] = { frequency = 'very-high', size = 'very-low', richness = 'normal' }, [ 'uranium-ore' ] = { frequency = 'very-high', size = 'very-low', richness = 'normal' }, [ 'iron-ore' ] = { frequency = 'very-high', size = 'very-low', richness = 'normal' }, [ 'crude-oil' ] = { frequency = 'very-high', size = 'very-low', richness = 'normal' }, [ 'enemy-base' ] = { frequency = 'normal', size = 'normal', richness = 'normal' } }
 
         -- map_gen_settings.autoplace_settings = { entity = { treat_missing_as_default = false, settings = { frequency = 'none', size = 'none', richness = 'none' } }, decorative = { treat_missing_as_default = true, settings = { frequency = 'none', size = 'none', richness = 'none' } } }
+
+        -- map_gen_settings.default_enable_all_autoplace_controls = false
 
         if game.surfaces[ 'tank_conquest' ] == nil then
 
@@ -233,43 +235,13 @@
 
         if player.gui.top[ 'draw_gui_button' ] then player.gui.top[ 'draw_gui_button' ].destroy() end
 
-        local element_frame = player.gui.top.add{ type = 'frame', name = 'draw_gui_button', direction = 'vertical' }
+        player.gui.top.add{ type = 'sprite-button', name = 'draw_gui_button', sprite = 'item/tank', tooltip = 'MENU' }
 
-        element_frame.style.minimal_width = 100
+        -- player.gui.top.add{ type = 'sprite-button', name = 'draw_gui_button', sprite = 'item/heavy-armor', tooltip = 'SCORE' }
 
-        element_frame.style.padding = 0
+        -- player.gui.top.add{ type = 'sprite-button', name = 'draw_gui_button', sprite = 'item/personal-roboport-equipment', tooltip = 'SQUAD' }
 
-        element_frame.style.margin = 0
-
-        element_frame.style.vertical_align = 'center'
-
-        element_frame.style.horizontal_align  = 'center'
-
-        local element_table = element_frame.add{ type = 'table', column_count = 1 }
-
-        local element_button = element_table.add{ type = 'sprite-button', name = 'event_on_click_menu', caption = 'MENU' }
-
-        -- local element_button = element_table.add{ type = 'sprite-button', name = 'event_on_click_score', caption = 'SCORE' }
-
-        -- local element_button = element_table.add{ type = 'sprite-button', name = 'event_on_click_squad', caption = 'SQUAD' }
-
-        for _, element_item in pairs( element_table.children ) do
-
-            element_item.style.minimal_width = 80
-
-            element_item.style.minimal_height = 30
-
-            element_item.style.padding = 0
-
-            element_item.style.margin = 0
-
-            element_item.style.font = 'heading-1'
-
-            element_item.style.font_color = table_of_colors.white
-
-        end
-
-    end
+      end
 
     function draw_gui_status( player )
 
@@ -277,7 +249,7 @@
 
         if player.surface.name == 'nauvis' then return end
 
-        if #global.table_of_flags == 0 then return end
+        if #global.table_of_spots == 0 then return end
 
         local element_frame = player.gui.top.add{ type = 'frame', name = 'draw_gui_status', direction = 'horizontal' }
 
@@ -295,7 +267,7 @@
 
         local element_progressbar = element_frame.add{ type = 'progressbar', value = 100 }
 
-        element_progressbar.style.width = 150
+        element_progressbar.style.width = 125
 
         element_progressbar.style.right_padding = 20
 
@@ -333,7 +305,7 @@
 
         local element_progressbar = element_frame.add{ type = 'progressbar', value = 100 }
 
-        element_progressbar.style.width = 150
+        element_progressbar.style.width = 125
 
         element_progressbar.style.left_padding = 20
 
@@ -345,15 +317,15 @@
 
     end
 
-    function draw_gui_flags( player )
+    function draw_gui_spots( player )
 
-        if player.gui.top[ 'draw_gui_flags' ] then player.gui.top[ 'draw_gui_flags' ].destroy() end
+        if player.gui.top[ 'draw_gui_spots' ] then player.gui.top[ 'draw_gui_spots' ].destroy() end
 
         if player.surface.name == 'nauvis' then return end
 
-        if #global.table_of_flags == 0 then return end
+        if #global.table_of_spots == 0 then return end
 
-        local element_frame = player.gui.top.add{ type = 'frame', name = 'draw_gui_flags', direction = 'horizontal' }
+        local element_frame = player.gui.top.add{ type = 'frame', name = 'draw_gui_spots', direction = 'horizontal' }
 
         element_frame.style.minimal_width = 38
 
@@ -367,9 +339,9 @@
 
         element_frame.style.horizontal_align = 'center'
 
-        for _, flag in pairs( global.table_of_flags ) do
+        for _, spot in pairs( global.table_of_spots ) do
 
-            local element_label = element_frame.add{ type = 'label', caption = flag.properties.name }
+            local element_label = element_frame.add{ type = 'label', caption = spot.properties.name }
 
             element_label.style.width = 38
 
@@ -391,9 +363,9 @@
 
                 color = table_of_colors.neutral
 
-                if flag.properties.force.name == global.table_of_properties[ player.force.name ].name and flag.properties.value == 100 then color = table_of_colors.team end
+                if spot.properties.force.name == global.table_of_properties[ player.force.name ].name and spot.properties.value == 100 then color = table_of_colors.team end
 
-                if flag.properties.force.name == global.table_of_properties[ player.force.name ].enemy and flag.properties.value == 100 then color = table_of_colors.enemy end
+                if spot.properties.force.name == global.table_of_properties[ player.force.name ].enemy and spot.properties.value == 100 then color = table_of_colors.enemy end
 
             end
 
@@ -413,7 +385,7 @@
 
         element_frame.style.margin = 0
 
-        local element_table = element_frame.add{ type = 'table', column_count = 6 }
+        local element_table = element_frame.add{ type = 'table', column_count = 2 }
 
         element_table.style.padding = 0
 
@@ -597,25 +569,27 @@
 
         player.insert( { name = 'raw-fish', count = 3 } )
 
-        local table_of_tanks = player.surface.find_entities_filtered( { name = 'tank', force = player.force.name } )
+        local table_of_entities = player.surface.find_entities_filtered( { name = 'tank', force = player.force.name } )
 
-        if #table_of_tanks < #player.force.connected_players then
+        if #table_of_entities < #player.force.connected_players then
 
-            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 0.5 )
+            local position = player.surface.find_non_colliding_position( 'tank', player.position, 64, 4 )
 
             if not position then position = { 0, 0 } end
 
-            local property = player.surface.create_entity( { name = 'tank', position = player.position, force = player.force.name } )
+            local entity = player.surface.create_entity( { name = 'tank', position = position, force = player.force.name } )
 
-            if not property then return end
+            if not entity then return end
 
-            property.minable = false
+            entity.minable = false
 
-            property.insert( { name = 'wood', count = 50 } )
+            entity.insert( { name = 'wood', count = 50 } )
 
-            property.insert( { name = 'cannon-shell', count = 50 } )
+            entity.insert( { name = 'cannon-shell', count = 50 } )
 
-            property.set_driver( player )
+            entity.set_driver( player )
+
+            global.table_of_tanks[ player.index ] = entity
 
         end
 
@@ -631,113 +605,117 @@
 
         surface.set_tiles( table_of_items.blueprint.tiles, true )
 
-        for _, entity in pairs( table_of_items.blueprint.entities ) do
+        for _, object in pairs( table_of_items.blueprint.entities ) do
 
-            entity.force = game.forces[ force_name ]
+            object.force = game.forces[ force_name ]
 
-            entity.position = { x = entity.position.x + base_position.x, y = entity.position.y + base_position.y + 10 }
+            object.position = { x = object.position.x + base_position.x, y = object.position.y + base_position.y + 10 }
 
-            local property = surface.create_entity( entity )
+            local entity = surface.create_entity( object )
 
-            if not property then return end
+            if not entity then return end
 
-            if entity.name == 'infinity-chest' or entity.name == 'substation' or entity.name == 'big-electric-pole' or entity.name == 'medium-electric-pole' or entity.name == 'inserter' or entity.name == 'accumulator' or entity.name == 'solar-panel' or entity.name == 'gun-turret' then
+            if object.name == 'infinity-chest' or object.name == 'substation' or object.name == 'big-electric-pole' or object.name == 'medium-electric-pole' or object.name == 'inserter' or object.name == 'accumulator' or object.name == 'solar-panel' or object.name == 'gun-turret' then
 
-                property.destructible = false
+                entity.destructible = false
 
-                property.minable = false
+                entity.minable = false
 
-                property.rotatable = false
+                entity.rotatable = false
 
-                property.operable = false
-
-            end
-
-            if entity.name == 'wooden-chest' then
-
-                property.destructible = false
-
-                property.minable = false
-
-                property.rotatable = false
+                entity.operable = false
 
             end
 
-            if entity.name == 'stone-wall' or entity.name == 'gate' or entity.name == 'land-mine' then property.minable = false end
+            if object.name == 'wooden-chest' then
+
+                entity.destructible = false
+
+                entity.minable = false
+
+                entity.rotatable = false
+
+            end
+
+            if object.name == 'stone-wall' or object.name == 'gate' or object.name == 'land-mine' then entity.minable = false end
 
         end
 
     end
 
-    function create_a_flag( flag_name, flag_position, flag_blueprint )
+    function create_a_spot( spot_name, spot_position, spot_blueprint )
 
         local surface = game.surfaces[ 'tank_conquest' ]
 
-        local flag = { name = flag_name, position = flag_position, force = { name = 'neutral' }, value = 0, color = table_of_colors.white }
+        local spot = { name = spot_name, position = spot_position, force = { name = 'neutral' }, value = 0, color = table_of_colors.white }
 
         local table_of_positions = {}
 
-        for x = 1, 18 do for y = 1, 18 do table.insert( table_of_positions, { x = math.floor( flag.position.x + x - 9 ), y = math.floor( flag.position.y + y - 9 ) } ) end end
+        for x = 1, 18 do for y = 1, 18 do table.insert( table_of_positions, { x = math.floor( spot.position.x + x - 9 ), y = math.floor( spot.position.y + y - 9 ) } ) end end
 
         local table_of_players = {}
 
-        local draw_flag_border = rendering.draw_rectangle{ surface = surface, target = flag.position, color = flag.color, left_top = { flag.position.x - 9, flag.position.y - 9 }, right_bottom = { flag.position.x + 9, flag.position.y + 9 }, width = 5, filled = false, draw_on_ground = true }
+        local draw_spot_border = rendering.draw_rectangle{ surface = surface, target = spot.position, color = spot.color, left_top = { spot.position.x - 9, spot.position.y - 9 }, right_bottom = { spot.position.x + 9, spot.position.y + 9 }, width = 5, filled = false, draw_on_ground = true }
 
-        local draw_flag_force = rendering.draw_text{ text = flag.force.name, surface = surface, target = { flag.position.x, flag.position.y + 0.5 }, color = flag.color, scale = 5, alignment = 'center' }
+        local draw_spot_force = rendering.draw_text{ text = spot.force.name, surface = surface, target = { spot.position.x, spot.position.y + 0.5 }, color = spot.color, scale = 5, alignment = 'center' }
 
-        local draw_flag_value = rendering.draw_text{ text = flag.value, surface = surface, target = { flag.position.x, flag.position.y - 4 }, color = flag.color, scale = 5, alignment = 'center' }
+        local draw_spot_value = rendering.draw_text{ text = spot.value, surface = surface, target = { spot.position.x, spot.position.y - 4 }, color = spot.color, scale = 5, alignment = 'center' }
 
-        local draw_flag_name = rendering.draw_text{ text = flag.name, surface = surface, target = { flag.position.x, flag.position.y - 2 }, color = flag.color, scale = 5, alignment = 'center' }
+        local draw_spot_name = rendering.draw_text{ text = spot.name, surface = surface, target = { spot.position.x, spot.position.y - 2 }, color = spot.color, scale = 5, alignment = 'center' }
 
-        local table_of_drawings = { name = draw_flag_name, value = draw_flag_value, force = draw_flag_force, border = draw_flag_border }
+        local table_of_drawings = { name = draw_spot_name, value = draw_spot_value, force = draw_spot_force, border = draw_spot_border }
 
-        local table_of_properties = { name = flag.name, value = flag.value, force = flag.force, color = flag.color }
+        local table_of_properties = { name = spot.name, position = spot.position, value = spot.value, force = spot.force, color = spot.color }
 
-        table.insert( global.table_of_flags, { properties = table_of_properties, drawings = table_of_drawings, players = table_of_players, positions = table_of_positions } )
+        local table_of_entities = {}
 
-        local table_of_items = game.json_to_table( flag_blueprint )
+        local table_of_items = game.json_to_table( spot_blueprint )
 
-        for _, tile in pairs( table_of_items.blueprint.tiles ) do tile.position = { x = tile.position.x + flag.position.x - 1, y = tile.position.y + flag.position.y - 1 } end
+        for _, tile in pairs( table_of_items.blueprint.tiles ) do tile.position = { x = tile.position.x + spot.position.x - 1, y = tile.position.y + spot.position.y - 1 } end
 
         surface.set_tiles( table_of_items.blueprint.tiles, true )
 
-        for _, entity in pairs( table_of_items.blueprint.entities ) do
+        for _, object in pairs( table_of_items.blueprint.entities ) do
 
-            entity.force = 'enemy'
+            object.force = 'enemy'
 
-            entity.position = { x = entity.position.x + flag.position.x - 1, y = entity.position.y + flag.position.y - 1 }
+            object.position = { x = object.position.x + spot.position.x - 1, y = object.position.y + spot.position.y - 1 }
 
-            local property = surface.create_entity( entity )
+            local entity = surface.create_entity( object )
 
-            if not property then return end
+            if not entity then return end
 
-            if entity.name == 'infinity-chest' or entity.name == 'substation' or entity.name == 'inserter' or entity.name == 'accumulator' or entity.name == 'solar-panel' then
+            if object.name == 'infinity-chest' or object.name == 'substation' or object.name == 'inserter' or object.name == 'accumulator' or object.name == 'solar-panel' then
 
-                property.destructible = false
+                entity.destructible = false
 
-                property.minable = false
+                entity.minable = false
 
-                property.rotatable = false
+                entity.rotatable = false
 
-                property.operable = false
-
-            end
-
-            if entity.name == 'wooden-chest' then
-
-                property.force = 'neutral'
-
-                property.destructible = false
-
-                property.minable = false
-
-                property.rotatable = false
+                entity.operable = false
 
             end
 
-            if entity.name == 'stone-wall' or entity.name == 'gate' or entity.name == 'land-mine' then property.minable = false end
+            if object.name == 'wooden-chest' then
+
+                entity.force = 'neutral'
+
+                entity.destructible = false
+
+                entity.minable = false
+
+                entity.rotatable = false
+
+            end
+
+            if object.name == 'stone-wall' or object.name == 'gate' or object.name == 'land-mine' then entity.minable = false end
+
+            table.insert( table_of_entities, entity )
 
         end
+
+        table.insert( global.table_of_spots, { properties = table_of_properties, drawings = table_of_drawings, players = table_of_players, positions = table_of_positions, entities = table_of_entities } )
 
     end
 
@@ -751,41 +729,41 @@
 
         surface.set_tiles( table_of_items.blueprint.tiles, true )
 
-        for _, entity in pairs( table_of_items.blueprint.entities ) do
+        for _, object in pairs( table_of_items.blueprint.entities ) do
 
-            entity.force = 'enemy'
+            object.force = 'enemy'
 
-            entity.position = { x = entity.position.x + poi_position.x, y = entity.position.y + poi_position.y }
+            object.position = { x = object.position.x + poi_position.x, y = object.position.y + poi_position.y }
 
-            local property = surface.create_entity( entity )
+            local entity = surface.create_entity( object )
 
-            if not property then return end
+            if not entity then return end
 
-            if entity.name == 'infinity-chest' or entity.name == 'substation' or entity.name == 'inserter' or entity.name == 'accumulator' or entity.name == 'solar-panel' then
+            if object.name == 'infinity-chest' or object.name == 'substation' or object.name == 'inserter' or object.name == 'accumulator' or object.name == 'solar-panel' then
 
-                property.destructible = false
+                entity.destructible = false
 
-                property.minable = false
+                entity.minable = false
 
-                property.rotatable = false
+                entity.rotatable = false
 
-                property.operable = false
-
-            end
-
-            if entity.name == 'wooden-chest' then
-
-                property.force = 'neutral'
-
-                property.destructible = false
-
-                property.minable = false
-
-                property.rotatable = false
+                entity.operable = false
 
             end
 
-            if entity.name == 'stone-wall' or entity.name == 'gate' or entity.name == 'land-mine' then property.minable = false end
+            if object.name == 'wooden-chest' then
+
+                entity.force = 'neutral'
+
+                entity.destructible = false
+
+                entity.minable = false
+
+                entity.rotatable = false
+
+            end
+
+            if object.name == 'stone-wall' or object.name == 'gate' or object.name == 'land-mine' then entity.minable = false end
 
         end
 
@@ -893,6 +871,8 @@
 
         if not player.character then return end
 
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
+
         if #game.forces.force_player_one.connected_players == #game.forces.force_player_two.connected_players then
 
             local table_of_forces = { 'force_player_one', 'force_player_two' }
@@ -916,6 +896,14 @@
         player.character.destructible = true
 
         game.permissions.get_group( 'Default' ).add_player( player.name )
+
+        game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
+
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 3.7 }, surface = player.surface, color = table_of_colors.white, scale = 2, alignment = 'center' }
+
+        create_a_tank( player )
+
+        for _, spot in pairs( global.table_of_spots ) do player.force.chart( game.surfaces[ 'tank_conquest' ], { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end
 
     end
 
@@ -965,33 +953,49 @@
 
             if global.table_of_properties.game_stage == 'ongoing_game' then
 
-                for _, flag in pairs( global.table_of_flags ) do
+                for _, spot in pairs( global.table_of_spots ) do
 
-                    if flag.properties.value == 100 then
+                    if spot.properties.value == 100 then
 
-                        local enemy = global.table_of_properties[ flag.properties.force.name ].enemy
+                        local enemy = global.table_of_properties[ spot.properties.force.name ].enemy
 
                         if global.table_of_properties[ enemy ].available_tickets >= 0 then global.table_of_properties[ enemy ].available_tickets = global.table_of_properties[ enemy ].available_tickets - global.table_of_properties.acceleration_value end
 
                     end
 
-                    for _, player in pairs( flag.players ) do
+                    for _, player in pairs( spot.players ) do
 
-                        if flag.properties.force.name == 'neutral' and flag.properties.value == 0 then flag.properties.force.name = player.force.name end
+                        if spot.properties.force.name == 'neutral' and spot.properties.value == 0 then
 
-                        if flag.properties.force.name == 'neutral' or flag.properties.force.name == player.force.name and flag.properties.value < 100 then flag.properties.value = flag.properties.value + 1 * global.table_of_properties.conquest_speed end
+                            spot.properties.force.name = player.force.name
 
-                        if flag.properties.force.name ~= player.force.name and flag.properties.value > 0 then flag.properties.value = flag.properties.value - 1 * global.table_of_properties.conquest_speed end
+                            for _, entity in pairs( spot.entities ) do
 
-                        if flag.properties.value == 0 then flag.properties.force.name = 'neutral' end
+                                if entity.valid then
 
-                        local force_label = flag.properties.force.name
+                                    entity.force = player.force.name
+
+                                    if entity.name == 'stone-wall' or entity.name == 'gate' or entity.name == 'land-mine' then entity.minable = true end
+
+                                end
+
+                            end
+
+                        end
+
+                        if spot.properties.force.name == 'neutral' or spot.properties.force.name == player.force.name and spot.properties.value < 100 then spot.properties.value = spot.properties.value + 1 * global.table_of_properties.conquest_speed end
+
+                        if spot.properties.force.name ~= player.force.name and spot.properties.value > 0 then spot.properties.value = spot.properties.value - 1 * global.table_of_properties.conquest_speed end
+
+                        if spot.properties.value == 0 then spot.properties.force.name = 'neutral' end
+
+                        local force_label = spot.properties.force.name
 
                         if force_label ~= 'neutral' then force_label = global.table_of_properties[ force_label ].icon end
 
-                        rendering.set_text( flag.drawings.force, force_label )
+                        rendering.set_text( spot.drawings.force, force_label )
 
-                        rendering.set_text( flag.drawings.value, flag.properties.value )
+                        rendering.set_text( spot.drawings.value, spot.properties.value )
 
                     end
 
@@ -1015,13 +1019,13 @@
 
                     end
 
-                    global.table_of_flags = {}
+                    global.table_of_spots = {}
 
                     global.table_of_properties[ 'force_player_one' ].available_tickets = global.table_of_properties.amount_of_tickets
 
                     global.table_of_properties[ 'force_player_two' ].available_tickets = global.table_of_properties.amount_of_tickets
 
-                    global.table_of_properties.countdown_in_seconds = 2701
+                    global.table_of_properties.countdown_in_seconds = 28800
 
                     global.table_of_properties.wait_in_seconds = 30
 
@@ -1031,11 +1035,11 @@
 
                     for _, player in pairs( game.connected_players ) do
 
-                        -- if player.gui.top[ 'draw_gui_button' ] then player.gui.top[ 'draw_gui_button' ].destroy() end
+                        if player.gui.top[ 'draw_gui_button' ] then player.gui.top[ 'draw_gui_button' ].destroy() end
 
                         if player.gui.top[ 'draw_gui_status' ] then player.gui.top[ 'draw_gui_status' ].destroy() end
 
-                        if player.gui.top[ 'draw_gui_flags' ] then player.gui.top[ 'draw_gui_flags' ].destroy() end
+                        if player.gui.top[ 'draw_gui_spots' ] then player.gui.top[ 'draw_gui_spots' ].destroy() end
 
                         -- if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() end
 
@@ -1053,7 +1057,7 @@
 
                     draw_gui_status( player )
 
-                    draw_gui_flags( player )
+                    draw_gui_spots( player )
 
                 end
 
@@ -1061,47 +1065,45 @@
 
             if global.table_of_properties.game_stage == 'regenerate_facilities' then
 
-                replace_tiles_of_water()
+                local position = game.forces[ 'force_player_one' ].get_spawn_position( game.surfaces[ 'tank_conquest' ] )
 
-                create_a_base( 'force_player_one', game.forces[ 'force_player_one' ].get_spawn_position( game.surfaces[ 'tank_conquest' ] ) )
+                create_a_base( 'force_player_one', position )
 
-                create_a_base( 'force_player_two', game.forces[ 'force_player_two' ].get_spawn_position( game.surfaces[ 'tank_conquest' ] ) )
+                local position = game.forces[ 'force_player_two' ].get_spawn_position( game.surfaces[ 'tank_conquest' ] )
 
-                -- create_a_point_of_interest( blueprint_poi_laser_json, { x = 0, y = -150 } )
+                create_a_base( 'force_player_two', position )
 
-                create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = -350 } )
+                local position = { x = 0, y = -350 }
 
-                create_a_point_of_interest( blueprint_poi_fire_json, { x = 0, y = 450 } )
+                create_a_point_of_interest( blueprint_poi_laser_json, position )
 
-                local table_of_blueprints = { blueprint_poi_flag_one_json, blueprint_poi_flag_two_json, blueprint_poi_flag_three_json }
+                local position = { x = 0, y = 450 }
+
+                create_a_point_of_interest( blueprint_poi_fire_json, position )
+
+                local table_of_blueprints = { blueprint_poi_spot_one_json, blueprint_poi_spot_two_json, blueprint_poi_spot_three_json }
 
                 local table_of_names = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' }
 
                 local length_of_names = math.random( 3, #table_of_names )
 
-                local position, radius, angle, sides = { x = 0, y = 50 }, math.random( 200, 300 ), math.random( 45, 180 ), length_of_names
+                local position, radius, angle, sides = { x = 0, y = 50 }, math.random( 150, 250 ), math.random( 45, 180 ), length_of_names
 
                 local table_of_positions = draw_a_polygon( position, radius, angle, sides )
 
-                for index = 1, length_of_names do create_a_flag( table_of_names[ index ], table_of_positions[ index ], table_of_blueprints[ math.random( 1, #table_of_blueprints ) ] ) end
+                for index = 1, length_of_names do create_a_spot( table_of_names[ index ], table_of_positions[ index ], table_of_blueprints[ math.random( 1, #table_of_blueprints ) ] ) end
 
                 for _, player in pairs( game.connected_players ) do
 
                     -- if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() end
 
-                    -- if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() end
-
                     -- if player.gui.center[ 'draw_gui_score' ] then player.gui.center[ 'draw_gui_score' ].destroy() end
 
-                    -- draw_gui_button( player )
+                    if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() end
+
+                    draw_gui_button( player )
 
                     event_on_click_join( player )
-
-                    game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
-
-                    rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
-
-                    create_a_tank( player )
 
                 end
 
@@ -1111,13 +1113,13 @@
 
             if global.table_of_properties.game_stage == 'preparing_spawn_positions' then
 
-                local position_one = { x = -500, y = 50 }
+                local position = { x = -500, y = 50 }
 
-                local position_two = { x = 500, y = 50 }
+                game.forces[ 'force_player_one' ].set_spawn_position( position, game.surfaces[ 'tank_conquest' ] )
 
-                game.forces[ 'force_player_one' ].set_spawn_position( position_one, game.surfaces[ 'tank_conquest' ] )
+                local position = { x = 500, y = 50 }
 
-                game.forces[ 'force_player_two' ].set_spawn_position( position_two, game.surfaces[ 'tank_conquest' ] )
+                game.forces[ 'force_player_two' ].set_spawn_position( position, game.surfaces[ 'tank_conquest' ] )
 
                 global.table_of_scores = {}
 
@@ -1143,9 +1145,9 @@
 
                 initialize_surface()
 
-                game.connected_players[ 1 ].teleport( { 0, 0 }, game.surfaces[ 'tank_conquest' ] )
+                game.surfaces[ 'tank_conquest' ].force_generate_chunk_requests()
 
-                game.connected_players[ 1 ].force.chart_all( game.surfaces[ 'tank_conquest' ] )
+                game.surfaces[ 'tank_conquest' ].request_to_generate_chunks( { 0, 0 }, 15 )
 
                 game.print( 'A new battlefield was created.' )
 
@@ -1157,13 +1159,37 @@
 
                 if #game.connected_players >= global.table_of_properties.required_number_of_players and global.table_of_properties.wait_in_seconds > 0 then
 
-                    if global.table_of_properties.wait_in_seconds % 5 == 0 then game.print( 'The round starts in ' .. global.table_of_properties.wait_in_seconds .. ' seconds.' ) end
+                    if global.table_of_properties.wait_in_seconds % 10 == 0 then game.print( 'The round starts in ' .. global.table_of_properties.wait_in_seconds .. ' seconds.' ) end
 
                     global.table_of_properties.wait_in_seconds = global.table_of_properties.wait_in_seconds - 1
 
                 end
 
                 if global.table_of_properties.wait_in_seconds == 0 then global.table_of_properties.game_stage = 'regenerate_battlefield' end
+
+            end
+
+        end
+
+        if game.tick % 1800 == 0 then
+
+            if game.surfaces[ 'tank_conquest' ] ~= nil and #game.connected_players and #global.table_of_spots then
+
+                for _, player in pairs( game.connected_players ) do
+
+                    for _, spot in pairs( global.table_of_spots ) do
+
+                        if player.force.is_chunk_charted( game.surfaces[ 'tank_conquest' ], { x = math.floor( spot.properties.position.x / 32 ), y = math.floor( spot.properties.position.y / 32 ) } ) then
+
+                            local chart_tags = player.force.find_chart_tags( game.surfaces[ 'tank_conquest' ], { { spot.properties.position.x - 1,spot.properties.position.y - 1 }, { spot.properties.position.x + 1, spot.properties.position.y + 1 } } )
+
+                            if #chart_tags == 0 then player.force.add_chart_tag( game.surfaces[ 'tank_conquest' ], { icon = { type = 'virtual', name = 'signal-' .. spot.properties.name }, position = spot.properties.position } ) end
+
+                        end
+
+                    end
+
+                end
 
             end
 
@@ -1205,7 +1231,7 @@
 
         if player.surface.name == 'nauvis' then return end
 
-        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 3.7 }, surface = player.surface, color = table_of_colors.white, scale = 2, alignment = 'center' }
 
         create_a_tank( player )
 
@@ -1217,29 +1243,15 @@
 
         local player = game.players[ event.player_index ]
 
-        -- local message = ''
+        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
 
-        -- if event.cause then
+            global.table_of_tanks[ player.index ].clear_items_inside()
 
-        --     if event.cause.name ~= nil then message = 'by ' .. event.cause.name end
+            global.table_of_tanks[ player.index ].destroy()
 
-        --     if event.cause.name == 'character' then message = 'by ' .. event.cause.player.name end
+        end
 
-        --     if event.cause.name == 'tank' then
-
-        --         local driver = event.cause.get_driver()
-
-        --         if driver.player then message = 'by ' .. driver.player.name end
-
-        --     end
-
-        -- end
-
-        -- for _, target_player in pairs( game.connected_players ) do
-
-        --     if target_player.name ~= player.name then player.print( player.name .. ' was killed ' .. message, { r = 0.99, g = 0.0, b = 0.0 } ) end
-
-        -- end
+        global.table_of_tanks[ player.index ] = nil
 
         local table_of_entities = player.surface.find_entities_filtered( { name = 'character-corpse' } )
 
@@ -1255,7 +1267,7 @@
 
         if force ~= nil and force.available_tickets > 0 then force.available_tickets = force.available_tickets - 1 end
 
-        for _, flag in pairs( global.table_of_flags ) do if flag.players[ event.player_index ] ~= nil then flag.players[ event.player_index ] = nil end end
+        for _, spot in pairs( global.table_of_spots ) do if spot.players[ event.player_index ] ~= nil then spot.players[ event.player_index ] = nil end end
 
     end
 
@@ -1267,17 +1279,17 @@
 
         local player = game.players[ event.player_index ]
 
-        for flag_index, flag_item in pairs( global.table_of_flags ) do
+        for spot_index, spot_item in pairs( global.table_of_spots ) do
 
-            if global.table_of_flags[ flag_index ].players[ event.player_index ] ~= nil then global.table_of_flags[ flag_index ].players[ event.player_index ] = nil end
+            if global.table_of_spots[ spot_index ].players[ event.player_index ] ~= nil then global.table_of_spots[ spot_index ].players[ event.player_index ] = nil end
 
-            for _, position in pairs( flag_item.positions ) do
+            for _, position in pairs( spot_item.positions ) do
 
                 if math.floor( player.position.x ) == position.x and math.floor( player.position.y ) == position.y or math.ceil( player.position.x ) == position.x and math.ceil( player.position.y ) == position.y then
 
-                    if global.table_of_flags[ flag_index ].players[ event.player_index ] == nil then
+                    if global.table_of_spots[ spot_index ].players[ event.player_index ] == nil then
 
-                        global.table_of_flags[ flag_index ].players[ event.player_index ] = player
+                        global.table_of_spots[ spot_index ].players[ event.player_index ] = player
 
                         break
 
@@ -1287,7 +1299,7 @@
 
             end
 
-            if global.table_of_flags[ flag_index ].players[ event.player_index ] ~= nil then break end
+            if global.table_of_spots[ spot_index ].players[ event.player_index ] ~= nil then break end
 
         end
 
@@ -1299,9 +1311,11 @@
 
         if not event.element then return end
 
+        if not event.element.valid then return end
+
         local player = game.players[ event.player_index ]
 
-        if event.element.name == 'event_on_click_menu' then
+        if event.element.name == 'draw_gui_button' then
 
             if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() else draw_gui_menu( player ) end
 
@@ -1357,24 +1371,36 @@
 
             game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
 
-            player.print( 'Info: The goal is to take the flags, to make sure that the opponent tickets withdraw.' )
-
-            -- You have to take good care of your tank. You get a tank for every life.
+            player.print( 'Info: Each force has a number of tickets. Per conquered spot, 0.1 tickets are deducted per second. If a player loses his life, 1 ticket is deducted from his own force.' )
 
         end
 
-        if global.table_of_properties.game_stage == 'ongoing_game' then
+        if global.table_of_properties.game_stage ~= 'lobby' then
 
-            event_on_click_join( player )
+            draw_gui_button( player )
 
-            game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
-
-            rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 4 }, surface = player.surface, color = table_of_colors.white, scale = 1.5, alignment = 'center' }
-
-            create_a_tank( player )
+            draw_gui_menu( player )
 
         end
 
     end
 
     event.add( defines.events.on_player_joined_game, on_player_joined_game )
+
+    local function on_player_left_game( event )
+
+        local player = game.players[ event.player_index ]
+
+        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
+
+            global.table_of_tanks[ player.index ].clear_items_inside()
+
+            global.table_of_tanks[ player.index ].destroy()
+
+        end
+
+        global.table_of_tanks[ player.index ] = nil
+
+    end
+
+    event.add( defines.events.on_player_left_game, on_player_left_game )
