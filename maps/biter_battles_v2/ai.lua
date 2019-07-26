@@ -94,7 +94,7 @@ local function get_random_close_spawner(surface, biter_force_name)
 	if not spawners[1] then return false end
 	
 	local spawner = spawners[math_random(1,#spawners)]
-	for i = 1, 7, 1 do
+	for i = 1, 4, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
 		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
 	end	
@@ -162,21 +162,23 @@ end
 
 local function get_unit_group_position(surface, nearest_player_unit, spawner)
 	
-	local spawner_chunk_position = {x = math.floor(spawner.position.x / 32), y = math.floor(spawner.position.y / 32)}
-	local valid_chunks = {}
-	for x = -2, 2, 1 do
-		for y = -2, 2, 1 do
-			local chunk = {x = spawner_chunk_position.x + x, y = spawner_chunk_position.y + y}
-			local area = {{chunk.x * 32, chunk.y * 32},{chunk.x * 32 + 32, chunk.y * 32 + 32}}
-			if is_chunk_empty(surface, area) then
-				valid_chunks[#valid_chunks + 1] = chunk
+	if math_random(1,3) ~= 1 then
+		local spawner_chunk_position = {x = math.floor(spawner.position.x / 32), y = math.floor(spawner.position.y / 32)}
+		local valid_chunks = {}
+		for x = -2, 2, 1 do
+			for y = -2, 2, 1 do
+				local chunk = {x = spawner_chunk_position.x + x, y = spawner_chunk_position.y + y}
+				local area = {{chunk.x * 32, chunk.y * 32},{chunk.x * 32 + 32, chunk.y * 32 + 32}}
+				if is_chunk_empty(surface, area) then
+					valid_chunks[#valid_chunks + 1] = chunk
+				end
 			end
 		end
-	end
-	
-	if #valid_chunks > 0 then
-		local chunk = valid_chunks[math_random(1, #valid_chunks)]
-		return {x = chunk.x * 32 + 16, y = chunk.y * 32 + 16}
+		
+		if #valid_chunks > 0 then
+			local chunk = valid_chunks[math_random(1, #valid_chunks)]
+			return {x = chunk.x * 32 + 16, y = chunk.y * 32 + 16}
+		end
 	end
 	
 	local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
