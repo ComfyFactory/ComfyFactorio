@@ -27,6 +27,18 @@ local function get_active_biter_count(biter_force_name)
 	return count
 end
 
+local function get_threat_ratio(biter_force_name)
+	if global.bb_threat[biter_force_name] <= 0 then return 0 end
+	local t1 = global.bb_threat["north_biters"]
+	local t2 = global.bb_threat["south_biters"]
+	if t1 == 0 and t2 == 0 then return 0.5 end
+	if t1 < 0 then t1 = 0 end
+	if t2 < 0 then t2 = 0 end
+	local total_threat = t1 + t2
+	local ratio = global.bb_threat[biter_force_name] / total_threat
+	return ratio
+end
+
 local function is_biter_inactive(biter, unit_number, biter_force_name)
 	if not biter.entity.valid then return true end	
 	if game.tick - biter.active_since < bb_config.biter_timeout then return false end	
@@ -82,7 +94,7 @@ local function get_random_close_spawner(surface, biter_force_name)
 	if not spawners[1] then return false end
 	
 	local spawner = spawners[math_random(1,#spawners)]
-	for i = 1, 7, 1 do
+	for i = 1, 4, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
 		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
 	end	
@@ -95,7 +107,7 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	if not biters[1] then return false end
 	local valid_biters = {}
 	
-	local threat = global.bb_threat[biter_force_name] * math_random(10,20) * 0.01
+	local threat = global.bb_threat[biter_force_name] * math_random(11,22) * 0.01
 	
 	local unit_count = 0
 	local max_unit_count = math.ceil(global.bb_threat[biter_force_name] * 0.25) + math_random(6,12)
@@ -141,6 +153,46 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 	return true
 end
 
+local function is_chunk_empty(surface, area)
+	if surface.count_entities_filtered({type = {"unit-spawner", "unit"}, area = area}) ~= 0 then return false end
+	if surface.count_entities_filtered({force = {"north", "south"}, area = area}) ~= 0 then return false end
+	if surface.count_tiles_filtered({name = {"water", "deepwater"}, area = area}) ~= 0 then return false end
+	return true
+end
+
+local function get_unit_group_position(surface, nearest_player_unit, spawner)
+	
+	if math_random(1,3) ~= 1 then
+		local spawner_chunk_position = {x = math.floor(spawner.position.x / 32), y = math.floor(spawner.position.y / 32)}
+		local valid_chunks = {}
+		for x = -2, 2, 1 do
+			for y = -2, 2, 1 do
+				local chunk = {x = spawner_chunk_position.x + x, y = spawner_chunk_position.y + y}
+				local area = {{chunk.x * 32, chunk.y * 32},{chunk.x * 32 + 32, chunk.y * 32 + 32}}
+				if is_chunk_empty(surface, area) then
+					valid_chunks[#valid_chunks + 1] = chunk
+				end
+			end
+		end
+		
+		if #valid_chunks > 0 then
+			local chunk = valid_chunks[math_random(1, #valid_chunks)]
+			return {x = chunk.x * 32 + 16, y = chunk.y * 32 + 16}
+		end
+	end
+	
+	local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
+	local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 256, 1)
+	if pos then unit_group_position = pos end
+	
+	if not unit_group_position then
+		if global.bb_debug then game.print("No unit_group_position found for team " .. force_name) end
+		return false 
+	end
+	
+	return unit_group_position
+end
+
 local function create_attack_group(surface, force_name, biter_force_name)
 	if global.bb_threat[biter_force_name] <= 0 then return false end
 	
@@ -157,15 +209,8 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	
 	local nearest_player_unit = surface.find_nearest_enemy({position = spawner.position, max_distance = 2048, force = biter_force_name})
 	if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
-	local unit_group_position = {x = (spawner.position.x + nearest_player_unit.position.x) * 0.5, y = (spawner.position.y + nearest_player_unit.position.y) * 0.5}
-	local pos = surface.find_non_colliding_position("rocket-silo", unit_group_position, 128, 1)
-	--local unit_group_position = surface.find_non_colliding_position("rocket-silo", spawner.position, 160, 1)
-	if pos then unit_group_position = pos end
 	
-	if not unit_group_position then
-		if global.bb_debug then game.print("No unit_group_position found for team " .. force_name) end
-		return false 
-	end
+	local unit_group_position = get_unit_group_position(surface, nearest_player_unit, spawner)
 	
 	local units = select_units_around_spawner(spawner, force_name, biter_force_name)
 	if not units then return false end
@@ -176,11 +221,17 @@ end
 
 ai.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
-	for c = 1, math_random(3,6), 1 do
-		for _, force_name in pairs({"north", "south"}) do
-			create_attack_group(surface, force_name, force_name .. "_biters")
-		end
+			
+	for c = 1, math.ceil(get_threat_ratio(global.next_attack .. "_biters") * 7), 1 do		
+		create_attack_group(surface, global.next_attack, global.next_attack .. "_biters")
 	end
+	if global.bb_debug then game.print(math.ceil(get_threat_ratio(global.next_attack .. "_biters") * 7) .. " unit groups designated for " .. global.next_attack .. " biters.") end
+	
+	if global.next_attack == "north" then
+		global.next_attack = "south"
+	else
+		global.next_attack = "north"
+	end	
 end
 
 --Prevent Players from damaging Rocket Silos

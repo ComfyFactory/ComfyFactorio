@@ -91,6 +91,7 @@ local function generate_circle_spawn(event)
 	--if bb_config.builders_area then
 	--	if event.area.left_top.x > 32 then return end	
 	--end
+	local r = 101
 	
 	local surface = event.surface		
 	local left_top_x = event.area.left_top.x
@@ -99,6 +100,7 @@ local function generate_circle_spawn(event)
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
+			local noise = get_noise(2, pos) * 15
 			
 			local tile = false
 			if distance_to_center < spawn_circle_size then
@@ -106,12 +108,24 @@ local function generate_circle_spawn(event)
 				if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
 			end						
 			if distance_to_center < 9.5 then tile = "refined-concrete" end
-			if distance_to_center < 7 then tile = "sand-1" end					
+			if distance_to_center < 7 then tile = "sand-1" end
+			if distance_to_center + noise < r - 24 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(surface, pos) then
+				local tile_name = surface.get_tile(pos).name
+				if tile_name == "water" or tile_name == "deepwater" then
+					surface.set_tiles({{name = "grass-2", position = pos}}, true)
+					surface.set_tiles({{name = "stone-path", position = pos}}, true)
+					--if math_random(1,256) == 1 then 
+					--	local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
+					--	surface.create_entity({name = wrecks[math_random(1, #wrecks)], position = pos, force = "north"})
+					--end
+					if bb_config.random_scrap and math_random(1,64) == 1 then
+						surface.create_entity({name = "mineable-wreckage", position = pos})
+					end
+				end
+			end
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 			
-			if surface.can_place_entity({name = "stone-wall", position = pos}) then
-				local noise = get_noise(2, pos) * 15
-				local r = 101
+			if surface.can_place_entity({name = "coal", position = pos}) then			
 				
 				if distance_to_center + noise < r and distance_to_center + noise > r - 1.75 then
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
@@ -133,7 +147,7 @@ local function generate_circle_spawn(event)
 				end
 				
 				if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 20 then
-					if math_random(1,128) == 1 then
+					if math_random(1, 256) == 1 then
 						if surface.can_place_entity({name = "mineable-wreckage", position = pos}) then
 							surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"})
 						end
@@ -149,8 +163,9 @@ local function generate_silos(event)
 	if global.rocket_silo["north"] then
 		if global.rocket_silo["north"].valid then return end
 	end	
+	if event.area.left_top.y > -128 then return end
 	
-	local surface = event.surface
+	local surface = event.surface	
 	local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
 	if not pos then pos = {x = 0, y = -64} end
 	global.rocket_silo["north"] = surface.create_entity({
@@ -200,8 +215,8 @@ local function rainbow_ore_and_ponds(event)
 					if i == 0 then i = 4 end
 					surface.create_entity({name = ores[i], position = pos, amount = amount})					
 				end
-				if noise < -0.86 then
-					if noise < -0.92 then 
+				if noise < -0.79 then
+					if noise < -0.85 then 
 						surface.set_tiles({{name = "deepwater", position = pos}})
 					else
 						surface.set_tiles({{name = "water", position = pos}})

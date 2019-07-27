@@ -27,6 +27,7 @@ require "modules.floaty_chat"
 --require "modules.biters_double_damage"
 --require "modules.burden"
 --require "modules.comfylatron"
+--require "modules.spaghett_challenge"
 --require "modules.dangerous_goods"
 --require "modules.dynamic_landfill"
 --require "modules.explosive_biters"
@@ -52,7 +53,7 @@ require "modules.floaty_chat"
 require "maps.tank_conquest.tank_conquest"
 --require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"
---require "maps.biter_battles_v2.biter_battles_v2"
+require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.biter_battles.biter_battles"
 --require "maps.fish_defender.fish_defender"
 --require "maps.wave_of_death.WoD"
@@ -102,6 +103,11 @@ end
 
 local function on_init()
 	game.forces.player.research_queue_enabled = true
+end
+
+local loaded = _G.package.loaded
+function require(path)
+    return loaded[path] or error('Can only require files at runtime that have been required in the control stage.', 2)
 end
 
 event.on_init(on_init)

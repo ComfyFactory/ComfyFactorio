@@ -10,7 +10,7 @@ local event = require 'utils.event'
 
 local function init_surface()	
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.2"
+	map_gen_settings.water = "0.15"
 	map_gen_settings.starting_area = "2.5"
 	--map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 38, cliff_elevation_0 = 38}	
@@ -138,6 +138,8 @@ local function init_forces()
 	global.spy_fish_timeout = {}
 	global.force_area = {}
 	global.active_biters = {}
+	global.next_attack = "north"
+	if math.random(1,2) == 1 then global.next_attack = "south" end
 	global.bb_evolution = {}
 	global.bb_evasion = {}
 	global.bb_threat_income = {}
