@@ -306,6 +306,8 @@
 
         if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
+        if player.force.name == 'force_spectator' then return end
+
         if #global.table_of_spots == 0 then return end
 
         local element_frame = player.gui.top.add{ type = 'frame', name = 'draw_gui_status', direction = 'horizontal' }
@@ -379,6 +381,8 @@
         if player.gui.top[ 'draw_gui_spots' ] then player.gui.top[ 'draw_gui_spots' ].destroy() end
 
         if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
+
+        if player.force.name == 'force_spectator' then return end
 
         if #global.table_of_spots == 0 then return end
 
