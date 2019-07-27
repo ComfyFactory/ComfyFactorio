@@ -304,7 +304,7 @@
 
         if player.gui.top[ 'draw_gui_status' ] then player.gui.top[ 'draw_gui_status' ].destroy() end
 
-        if player.surface.name == 'nauvis' then return end
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         if #global.table_of_spots == 0 then return end
 
@@ -378,7 +378,7 @@
 
         if player.gui.top[ 'draw_gui_spots' ] then player.gui.top[ 'draw_gui_spots' ].destroy() end
 
-        if player.surface.name == 'nauvis' then return end
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         if #global.table_of_spots == 0 then return end
 
@@ -466,8 +466,6 @@
 
     function draw_gui_score( player )
 
-        if player.force.name == 'force_spectator' then return end
-
         if player.gui.center[ 'draw_gui_score' ] then player.gui.center[ 'draw_gui_score' ].destroy() end
 
         local element_frame = player.gui.center.add{ type = 'frame', name = 'draw_gui_score', direction = 'vertical' }
@@ -545,6 +543,8 @@
     end
 
     function draw_gui_squad( player )
+
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() end
 
