@@ -544,9 +544,9 @@
 
     function draw_gui_squad( player )
 
-        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
-
         if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() end
+
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         local element_frame = player.gui.left.add{ type = 'frame', name = 'draw_gui_squad', direction = 'vertical' }
 
