@@ -105,5 +105,10 @@ local function on_init()
 	game.forces.player.research_queue_enabled = true
 end
 
+local loaded = _G.package.loaded
+function require(path)
+    return loaded[path] or error('Can only require files at runtime that have been required in the control stage.', 2)
+end
+
 event.on_init(on_init)
 event.add(defines.events.on_player_created, on_player_created)
