@@ -1512,17 +1512,17 @@
 
         if player.force.name == 'force_player_one' then
 
-            game.forces.force_player_two.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+            game.forces.force_player_two.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
 
-            game.forces.force_spectator.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+            game.forces.force_spectator.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
 
         end
 
         if player.force.name == 'force_player_two' then
 
-            game.forces.force_player_one.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+            game.forces.force_player_one.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
 
-            game.forces.force_spectator.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+            game.forces.force_spectator.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
 
         end
 
