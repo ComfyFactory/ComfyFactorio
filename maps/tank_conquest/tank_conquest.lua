@@ -200,7 +200,7 @@
 
         for action_name, _ in pairs( defines.input_action ) do spectator.set_allows_action( defines.input_action[ action_name ], false ) end
 
-        local table_of_definitions = { defines.input_action.write_to_console, defines.input_action.gui_click, defines.input_action.gui_selection_state_changed, defines.input_action.gui_checked_state_changed, defines.input_action.gui_elem_changed, defines.input_action.gui_text_changed, defines.input_action.gui_value_changed, defines.input_action.start_walking, defines.input_action.open_kills_gui, defines.input_action.open_character_gui, defines.input_action.edit_permission_group, defines.input_action.toggle_show_entity_info, defines.input_action.rotate_entity, defines.input_action.start_research }
+        local table_of_definitions = { defines.input_action.write_to_console, defines.input_action.gui_click, defines.input_action.gui_selection_state_changed, defines.input_action.gui_checked_state_changed, defines.input_action.gui_elem_changed, defines.input_action.gui_text_changed, defines.input_action.gui_value_changed, defines.input_action.start_walking, defines.input_action.open_kills_gui, defines.input_action.toggle_show_entity_info }
 
         for _, define in pairs( table_of_definitions ) do spectator.set_allows_action( define, true ) end
 
@@ -1342,6 +1342,24 @@
 
         local player = game.players[ event.player_index ]
 
+        local message = ''
+
+        if event.cause then
+
+            if event.cause.name ~= nil then message = ' by ' .. event.cause.name end
+
+            if event.cause.name == 'character' then message = ' by ' .. event.cause.player.name end
+
+            if event.cause.name == 'tank' then local driver = event.cause.get_driver() if driver.player then message = ' by ' .. driver.player.name end end
+
+        end
+
+        for _, target_player in pairs( game.connected_players ) do
+
+            if target_player.force.name ~= player.force.name then target_player.print( player.name .. ' was killed' .. message, table_of_colors.damage ) end
+
+        end
+
         if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
 
             global.table_of_tanks[ player.index ].clear_items_inside()
@@ -1481,3 +1499,41 @@
     end
 
     event.add( defines.events.on_gui_click, on_gui_click )
+
+    local function on_console_chat( event )
+
+        if not event.message then return end
+
+        if not event.player_index then return end
+
+        local player = game.players[ event.player_index ]
+
+        local color = { r = player.color.r * 0.6 + 0.35, g = player.color.g * 0.6 + 0.35, b = player.color.b * 0.6 + 0.35, a = 1 }
+
+        if player.force.name == 'force_player_one' then
+
+            game.forces.force_player_two.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+            game.forces.force_spectator.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+        end
+
+        if player.force.name == 'force_player_two' then
+
+            game.forces.force_player_one.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+            game.forces.force_spectator.print( table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+        end
+
+        if player.force.name == 'force_spectator' then
+
+            game.forces.force_player_one.print( '(Spectator) ' .. player.name .. ': '.. event.message, color )
+
+            game.forces.force_player_two.print( '(Spectator) ' .. player.name .. ': '.. event.message, color )
+
+        end
+
+    end
+
+    event.add( defines.events.on_console_chat, on_console_chat )
