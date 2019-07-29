@@ -27,7 +27,7 @@
 
     global.table_of_properties.conquest_speed = 5
 
-    global.table_of_properties.acceleration_value = 0.1
+    global.table_of_properties.acceleration_value = 0.05
 
     global.table_of_properties.game_stage = 'lobby'
 
@@ -44,6 +44,63 @@
     local table_of_colors = { squad = { r = 75, g = 155, b = 45 }, team = { r = 65, g = 120, b = 200 }, enemy = { r = 190, g = 55, b = 50 }, neutral = { r = 77, g = 77, b = 77 }, damage = { r = 255, g = 0, b = 255 }, white = { r = 255, g = 255, b = 255 } }
 
     local event = require 'utils.event'
+
+    local map_intro = [[
+
+                                                         - - - T A N K    C O N Q U E S T - - -
+
+    Your objective is to defend your team's tickets and withdraw the tickets from the
+    other team as quickly as possible.
+
+    PvP battles and the conquest of the spots are the deciding factor to win the round.
+
+    Each force has a number of tickets. Per conquered spot, 0.05 tickets are deducted
+    per second. If a player loses his life, 1 ticket is deducted from his own force.
+
+    There is no biter evolution from pollution, time or destruction.
+    ]]
+
+    local function draw_gui_map_intro_button( player )
+
+        if player.gui.top[ 'map_intro_button' ] then return end
+
+        local element_button = player.gui.top.add( { type = 'sprite-button', caption = '?', name = 'map_intro_button', tooltip = 'Map Intro' } )
+
+        element_button.style.font_color = { r = 0.5, g = 0.3, b = 0.99 }
+
+        element_button.style.font = 'heading-1'
+
+        element_button.style.minimal_height = 38
+
+        element_button.style.minimal_width = 38
+
+        element_button.style.top_padding = 1
+
+        element_button.style.left_padding = 1
+
+        element_button.style.right_padding = 1
+
+        element_button.style.bottom_padding = 1
+
+    end
+
+    local function draw_gui_map_intro( player )
+
+        if player.gui.center[ 'map_intro_frame' ] then player.gui.center[ 'map_intro_frame' ].destroy() end
+
+        local element_frame = player.gui.center.add { type = 'frame', name = 'map_intro_frame', direction = 'vertical' }
+
+        local element_frame = element_frame.add { type = 'frame' }
+
+        local element_label = element_frame.add { type = 'label', caption = map_intro, name = 'map_intro_text' }
+
+        element_label.style.single_line = false
+
+        element_label.style.font = 'heading-2'
+
+        element_label.style.font_color = { r = 0.7, g = 0.6, b = 0.99 }
+
+    end
 
     local function initialize_forces()
 
@@ -143,7 +200,7 @@
 
         for action_name, _ in pairs( defines.input_action ) do spectator.set_allows_action( defines.input_action[ action_name ], false ) end
 
-        local table_of_definitions = { defines.input_action.write_to_console, defines.input_action.gui_click, defines.input_action.gui_selection_state_changed, defines.input_action.gui_checked_state_changed, defines.input_action.gui_elem_changed, defines.input_action.gui_text_changed, defines.input_action.gui_value_changed, defines.input_action.start_walking, defines.input_action.open_kills_gui, defines.input_action.open_character_gui, defines.input_action.edit_permission_group, defines.input_action.toggle_show_entity_info, defines.input_action.rotate_entity, defines.input_action.start_research }
+        local table_of_definitions = { defines.input_action.write_to_console, defines.input_action.gui_click, defines.input_action.gui_selection_state_changed, defines.input_action.gui_checked_state_changed, defines.input_action.gui_elem_changed, defines.input_action.gui_text_changed, defines.input_action.gui_value_changed, defines.input_action.start_walking, defines.input_action.open_kills_gui, defines.input_action.toggle_show_entity_info }
 
         for _, define in pairs( table_of_definitions ) do spectator.set_allows_action( define, true ) end
 
@@ -247,7 +304,9 @@
 
         if player.gui.top[ 'draw_gui_status' ] then player.gui.top[ 'draw_gui_status' ].destroy() end
 
-        if player.surface.name == 'nauvis' then return end
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
+
+        if player.force.name == 'force_spectator' then return end
 
         if #global.table_of_spots == 0 then return end
 
@@ -321,7 +380,9 @@
 
         if player.gui.top[ 'draw_gui_spots' ] then player.gui.top[ 'draw_gui_spots' ].destroy() end
 
-        if player.surface.name == 'nauvis' then return end
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
+
+        if player.force.name == 'force_spectator' then return end
 
         if #global.table_of_spots == 0 then return end
 
@@ -385,17 +446,11 @@
 
         element_frame.style.margin = 0
 
-        local element_table = element_frame.add{ type = 'table', column_count = 2 }
+        if player.force.name ~= 'force_spectator' then element_frame.add{ type = 'sprite-button', name = 'event_on_click_lobby', caption = 'LOBBY' } end
 
-        element_table.style.padding = 0
+        if player.force.name == 'force_spectator' then element_frame.add{ type = 'sprite-button', name = 'event_on_click_join', caption = 'JOIN' } end
 
-        element_table.style.margin = 0
-
-        if player.force.name == 'force_spectator' then element_table.add{ type = 'sprite-button', name = 'event_on_click_join', caption = 'JOIN' } end
-
-        if player.force.name ~= 'force_spectator' then element_table.add{ type = 'sprite-button', name = 'event_on_click_lobby', caption = 'LOBBY' } end
-
-        for _, element_item in pairs( element_table.children ) do
+        for _, element_item in pairs( element_frame.children ) do
 
             element_item.style.padding = 0
 
@@ -414,8 +469,6 @@
     end
 
     function draw_gui_score( player )
-
-        if player.force.name == 'force_spectator' then return end
 
         if player.gui.center[ 'draw_gui_score' ] then player.gui.center[ 'draw_gui_score' ].destroy() end
 
@@ -496,6 +549,8 @@
     function draw_gui_squad( player )
 
         if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() end
+
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         local element_frame = player.gui.left.add{ type = 'frame', name = 'draw_gui_squad', direction = 'vertical' }
 
@@ -582,6 +637,8 @@
             if not entity then return end
 
             entity.minable = false
+
+            entity.last_user = player.name
 
             entity.insert( { name = 'wood', count = 50 } )
 
@@ -863,15 +920,15 @@
 
     end
 
-    local function event_on_click_join( player )
+    function event_on_click_join( player )
+
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         local surface = game.surfaces[ 'tank_conquest' ]
 
         if not surface then return end
 
         if not player.character then return end
-
-        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         if #game.forces.force_player_one.connected_players == #game.forces.force_player_two.connected_players then
 
@@ -893,8 +950,6 @@
 
         if surface.is_chunk_generated( position ) then player.teleport( surface.find_non_colliding_position( 'character', position, 3, 0.5 ), surface ) else player.teleport( position, surface ) end
 
-        player.character.destructible = true
-
         game.permissions.get_group( 'Default' ).add_player( player.name )
 
         game.print( player.name .. ' joined ' .. global.table_of_properties[ player.force.name ].icon )
@@ -904,6 +959,8 @@
         create_a_tank( player )
 
         for _, spot in pairs( global.table_of_spots ) do player.force.chart( game.surfaces[ 'tank_conquest' ], { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end
+
+        player.character.destructible = true
 
     end
 
@@ -919,9 +976,11 @@
 
         if surface.is_chunk_generated( position ) then player.teleport( surface.find_non_colliding_position( 'character', position, 3, 0.5 ), surface ) else player.teleport( position, surface ) end
 
+        game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
+
         player.character.destructible = false
 
-        game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
+        player.character.clear_items_inside()
 
     end
 
@@ -963,6 +1022,8 @@
 
                     end
 
+                    for _, player in pairs( game.connected_players ) do if player.force.name == spot.properties.force.name and spot.properties.value == 100 then player.force.chart( game.surfaces[ 'tank_conquest' ], { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end end
+
                     for _, player in pairs( spot.players ) do
 
                         if spot.properties.force.name == 'neutral' and spot.properties.value == 0 then
@@ -1000,6 +1061,8 @@
                     end
 
                 end
+
+                if global.table_of_properties.countdown_in_seconds == 60 then game.print( 'The round is in the hot phase, there are still 60 seconds left.' ) end
 
                 if global.table_of_properties.countdown_in_seconds >= 0 then global.table_of_properties.countdown_in_seconds = global.table_of_properties.countdown_in_seconds - 1 end
 
@@ -1073,7 +1136,7 @@
 
                 create_a_base( 'force_player_two', position )
 
-                local position = { x = 0, y = -350 }
+                local position = { x = 0, y = - 350 }
 
                 create_a_point_of_interest( blueprint_poi_laser_json, position )
 
@@ -1093,6 +1156,10 @@
 
                 for index = 1, length_of_names do create_a_spot( table_of_names[ index ], table_of_positions[ index ], table_of_blueprints[ math.random( 1, #table_of_blueprints ) ] ) end
 
+                game.print( 'A new battlefield was created. Make yourself comfortable, but be vigilant.' )
+
+                global.table_of_properties.game_stage = 'ongoing_game'
+
                 for _, player in pairs( game.connected_players ) do
 
                     -- if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() end
@@ -1107,13 +1174,11 @@
 
                 end
 
-                global.table_of_properties.game_stage = 'ongoing_game'
-
             end
 
             if global.table_of_properties.game_stage == 'preparing_spawn_positions' then
 
-                local position = { x = -500, y = 50 }
+                local position = { x = - 500, y = 50 }
 
                 game.forces[ 'force_player_one' ].set_spawn_position( position, game.surfaces[ 'tank_conquest' ] )
 
@@ -1149,8 +1214,6 @@
 
                 game.surfaces[ 'tank_conquest' ].request_to_generate_chunks( { 0, 0 }, 15 )
 
-                game.print( 'A new battlefield was created.' )
-
                 global.table_of_properties.game_stage = 'preparing_spawn_positions'
 
             end
@@ -1181,7 +1244,7 @@
 
                         if player.force.is_chunk_charted( game.surfaces[ 'tank_conquest' ], { x = math.floor( spot.properties.position.x / 32 ), y = math.floor( spot.properties.position.y / 32 ) } ) then
 
-                            local chart_tags = player.force.find_chart_tags( game.surfaces[ 'tank_conquest' ], { { spot.properties.position.x - 1,spot.properties.position.y - 1 }, { spot.properties.position.x + 1, spot.properties.position.y + 1 } } )
+                            local chart_tags = player.force.find_chart_tags( game.surfaces[ 'tank_conquest' ], { { spot.properties.position.x - 1, spot.properties.position.y - 1 }, { spot.properties.position.x + 1, spot.properties.position.y + 1 } } )
 
                             if #chart_tags == 0 then player.force.add_chart_tag( game.surfaces[ 'tank_conquest' ], { icon = { type = 'virtual', name = 'signal-' .. spot.properties.name }, position = spot.properties.position } ) end
 
@@ -1209,7 +1272,7 @@
 
     local function on_entity_damaged( event )
 
-        if global.table_of_properties.game_stage == 'lobby' then return end
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         if not event.entity.unit_number then return end
 
@@ -1225,57 +1288,9 @@
 
     event.add( defines.events.on_entity_damaged, on_entity_damaged )
 
-    local function on_player_respawned( event )
-
-        local player = game.players[ event.player_index ]
-
-        if player.surface.name == 'nauvis' then return end
-
-        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 3.7 }, surface = player.surface, color = table_of_colors.white, scale = 2, alignment = 'center' }
-
-        create_a_tank( player )
-
-    end
-
-    event.add( defines.events.on_player_respawned, on_player_respawned )
-
-    local function on_player_died( event )
-
-        local player = game.players[ event.player_index ]
-
-        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
-
-            global.table_of_tanks[ player.index ].clear_items_inside()
-
-            global.table_of_tanks[ player.index ].destroy()
-
-        end
-
-        global.table_of_tanks[ player.index ] = nil
-
-        local table_of_entities = player.surface.find_entities_filtered( { name = 'character-corpse' } )
-
-        for _, entity in pairs( table_of_entities ) do
-
-            entity.clear_items_inside()
-
-            entity.destroy()
-
-        end
-
-        local force = global.table_of_properties[ player.force.name ]
-
-        if force ~= nil and force.available_tickets > 0 then force.available_tickets = force.available_tickets - 1 end
-
-        for _, spot in pairs( global.table_of_spots ) do if spot.players[ event.player_index ] ~= nil then spot.players[ event.player_index ] = nil end end
-
-    end
-
-    event.add( defines.events.on_player_died, on_player_died )
-
     local function on_player_changed_position( event )
 
-        if global.table_of_properties.game_stage == 'lobby' then return end
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         local player = game.players[ event.player_index ]
 
@@ -1307,51 +1322,95 @@
 
     event.add( defines.events.on_player_changed_position, on_player_changed_position )
 
-    local function on_gui_click( event )
+    local function on_player_respawned( event )
 
-        if not event.element then return end
-
-        if not event.element.valid then return end
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
         local player = game.players[ event.player_index ]
 
-        if event.element.name == 'draw_gui_button' then
+        rendering.draw_text{ text = global.table_of_properties[ player.force.name ].icon, target = player.character, target_offset = { 0, - 3.7 }, surface = player.surface, color = table_of_colors.white, scale = 2, alignment = 'center' }
 
-            if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() else draw_gui_menu( player ) end
-
-        end
-
-        if event.element.name == 'event_on_click_score' then
-
-            if player.gui.center[ 'draw_gui_score' ] then player.gui.center[ 'draw_gui_score' ].destroy() else draw_gui_score( player ) end
-
-        end
-
-        if event.element.name == 'event_on_click_squad' then
-
-            if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() else draw_gui_squad( player ) end
-
-        end
-
-        if event.element.name == 'event_on_click_join' then
-
-            event_on_click_join( player )
-
-            if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() end
-
-        end
-
-        if event.element.name == 'event_on_click_lobby' then
-
-            event_on_click_lobby( player )
-
-            if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() end
-
-        end
+        create_a_tank( player )
 
     end
 
-    event.add( defines.events.on_gui_click, on_gui_click )
+    event.add( defines.events.on_player_respawned, on_player_respawned )
+
+    local function on_player_died( event )
+
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
+
+        local player = game.players[ event.player_index ]
+
+        local message = ''
+
+        if event.cause then
+
+            if event.cause.name ~= nil then message = ' by ' .. event.cause.name end
+
+            if event.cause.name == 'character' then message = ' by ' .. event.cause.player.name end
+
+            if event.cause.name == 'tank' then local driver = event.cause.get_driver() if driver.player then message = ' by ' .. driver.player.name end end
+
+        end
+
+        for _, target_player in pairs( game.connected_players ) do
+
+            if target_player.force.name ~= player.force.name then target_player.print( player.name .. ' was killed' .. message, table_of_colors.damage ) end
+
+        end
+
+        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
+
+            global.table_of_tanks[ player.index ].clear_items_inside()
+
+            global.table_of_tanks[ player.index ].destroy()
+
+        end
+
+        global.table_of_tanks[ player.index ] = nil
+
+        local table_of_entities = player.surface.find_entities_filtered( { name = 'character-corpse' } )
+
+        for _, entity in pairs( table_of_entities ) do
+
+            entity.clear_items_inside()
+
+            entity.destroy()
+
+        end
+
+        local force = global.table_of_properties[ player.force.name ]
+
+        if force ~= nil and force.available_tickets > 0 then force.available_tickets = force.available_tickets - 1 end
+
+        for _, spot in pairs( global.table_of_spots ) do if spot.players[ event.player_index ] ~= nil then spot.players[ event.player_index ] = nil end end
+
+    end
+
+    event.add( defines.events.on_player_died, on_player_died )
+
+    local function on_player_left_game( event )
+
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
+
+        local player = game.players[ event.player_index ]
+
+        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
+
+            global.table_of_tanks[ player.index ].clear_items_inside()
+
+            global.table_of_tanks[ player.index ].destroy()
+
+        end
+
+        global.table_of_tanks[ player.index ] = nil
+
+        for _, spot in pairs( global.table_of_spots ) do if spot.players[ event.player_index ] ~= nil then spot.players[ event.player_index ] = nil end end
+
+    end
+
+    event.add( defines.events.on_player_left_game, on_player_left_game )
 
     local function on_player_joined_game( event )
 
@@ -1361,7 +1420,11 @@
 
         player.force = game.forces.force_spectator
 
+        draw_gui_map_intro_button( player )
+
         if player.online_time == 0 then
+
+            draw_gui_map_intro( player )
 
             local position = player.force.get_spawn_position( surface )
 
@@ -1370,8 +1433,6 @@
             player.character.destructible = false
 
             game.permissions.get_group( 'permission_spectator' ).add_player( player.name )
-
-            player.print( 'Info: Each force has a number of tickets. Per conquered spot, 0.1 tickets are deducted per second. If a player loses his life, 1 ticket is deducted from his own force.' )
 
         end
 
@@ -1387,20 +1448,92 @@
 
     event.add( defines.events.on_player_joined_game, on_player_joined_game )
 
-    local function on_player_left_game( event )
+    local function on_gui_click( event )
 
         local player = game.players[ event.player_index ]
 
-        if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
+        if event.element.valid and event.element.name == 'close_map_intro_frame' then player.gui.center[ 'map_intro_frame' ].destroy() return end
 
-            global.table_of_tanks[ player.index ].clear_items_inside()
+        if event.element.valid and event.element.name == 'map_intro_text' then player.gui.center[ 'map_intro_frame' ].destroy() return end
 
-            global.table_of_tanks[ player.index ].destroy()
+        if event.element.valid and event.element.name == 'map_intro_button' then
+
+            if player.gui.center[ 'map_intro_frame' ] then player.gui.center[ 'map_intro_frame' ].destroy() else draw_gui_map_intro( player ) end
 
         end
 
-        global.table_of_tanks[ player.index ] = nil
+        if event.element.valid and event.element.name == 'draw_gui_button' then
+
+            if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() else draw_gui_menu( player ) end
+
+        end
+
+        if event.element.valid and event.element.name == 'event_on_click_score' then
+
+            if player.gui.center[ 'draw_gui_score' ] then player.gui.center[ 'draw_gui_score' ].destroy() else draw_gui_score( player ) end
+
+        end
+
+        if event.element.valid and event.element.name == 'event_on_click_squad' then
+
+            if player.gui.left[ 'draw_gui_squad' ] then player.gui.left[ 'draw_gui_squad' ].destroy() else draw_gui_squad( player ) end
+
+        end
+
+        if event.element.valid and event.element.name == 'event_on_click_lobby' then
+
+            event_on_click_lobby( player )
+
+            if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() end
+
+        end
+
+        if event.element.valid and event.element.name == 'event_on_click_join' then
+
+            event_on_click_join( player )
+
+            if player.gui.center[ 'draw_gui_menu' ] then player.gui.center[ 'draw_gui_menu' ].destroy() end
+
+        end
 
     end
 
-    event.add( defines.events.on_player_left_game, on_player_left_game )
+    event.add( defines.events.on_gui_click, on_gui_click )
+
+    local function on_console_chat( event )
+
+        if not event.message then return end
+
+        if not event.player_index then return end
+
+        local player = game.players[ event.player_index ]
+
+        local color = { r = player.color.r * 0.6 + 0.35, g = player.color.g * 0.6 + 0.35, b = player.color.b * 0.6 + 0.35, a = 1 }
+
+        if player.force.name == 'force_player_one' then
+
+            game.forces.force_player_two.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+            game.forces.force_spectator.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+        end
+
+        if player.force.name == 'force_player_two' then
+
+            game.forces.force_player_one.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+            game.forces.force_spectator.print( global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ': '.. event.message, color )
+
+        end
+
+        if player.force.name == 'force_spectator' then
+
+            game.forces.force_player_one.print( '(Spectator) ' .. player.name .. ': '.. event.message, color )
+
+            game.forces.force_player_two.print( '(Spectator) ' .. player.name .. ': '.. event.message, color )
+
+        end
+
+    end
+
+    event.add( defines.events.on_console_chat, on_console_chat )
