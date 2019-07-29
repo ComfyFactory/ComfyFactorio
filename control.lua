@@ -7,6 +7,7 @@ server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
 -- require "utils.corpse_util"  --disable for hunger games
+require "utils.color_data"
 require "utils.session_data"
 require "chatbot"
 require "commands"
@@ -103,6 +104,11 @@ end
 
 local function on_init()
 	game.forces.player.research_queue_enabled = true
+end
+
+local loaded = _G.package.loaded
+function require(path)
+    return loaded[path] or error('Can only require files at runtime that have been required in the control stage.', 2)
 end
 
 event.on_init(on_init)
