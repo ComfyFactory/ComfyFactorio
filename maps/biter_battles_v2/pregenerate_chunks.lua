@@ -47,7 +47,10 @@ end
 local function process_chunk(surface)	
 	if global.map_generation_complete then return end
 	if game.tick < 300 then return end
-	if not global.chunk_gen_coords then set_chunk_coords(bb_config.map_pregeneration_radius) end
+	if not global.chunk_gen_coords then
+		set_chunk_coords(bb_config.map_pregeneration_radius)
+		--table.shuffle_table(global.chunk_gen_coords)
+	end
 	if #global.chunk_gen_coords == 0 then
 		global.map_generation_complete = true
 		draw_gui()
@@ -66,9 +69,11 @@ local function process_chunk(surface)
 	
 	for i = #global.chunk_gen_coords, 1, -1 do
 		if surface.is_chunk_generated(global.chunk_gen_coords[i]) then
+			--game.forces.player.chart(surface, {{(global.chunk_gen_coords[i].x * 32), (global.chunk_gen_coords[i].y * 32)}, {(global.chunk_gen_coords[i].x * 32) + 32, (global.chunk_gen_coords[i].y * 32) + 32}})
 			global.chunk_gen_coords[i] = nil
 		else
-			surface.request_to_generate_chunks({x = (global.chunk_gen_coords[i].x * 32) - 16, y = (global.chunk_gen_coords[i].y * 32) - 16}, 1)
+			--game.forces.player.chart(surface, {{(global.chunk_gen_coords[i].x * 32), (global.chunk_gen_coords[i].y * 32)}, {(global.chunk_gen_coords[i].x * 32) + 32, (global.chunk_gen_coords[i].y * 32) + 32}})
+			surface.request_to_generate_chunks({x = (global.chunk_gen_coords[i].x * 32), y = (global.chunk_gen_coords[i].y * 32)}, 1)
 			surface.force_generate_chunk_requests()
 			global.chunk_gen_coords[i] = nil
 			force_chunk_requests = force_chunk_requests - 1

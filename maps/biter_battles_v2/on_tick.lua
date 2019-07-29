@@ -72,6 +72,7 @@ local function on_tick(event)
 	ai.destroy_inactive_biters()
 	ai.main_attack()
 	ai.send_near_biters_to_silo()
+	ai.destroy_old_age_biters()
 	
 	clear_corpses()
 	restart_idle_map()

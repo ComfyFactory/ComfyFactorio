@@ -1,4 +1,3 @@
-require 'utils.table'
 local event = require 'utils.event'
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -358,7 +357,7 @@ local function builders_area_process_tile(t, surface)
 	if noise_index > 7 then noise_index = 7 end
 	surface.set_tiles({{name = "dirt-" .. noise_index, position = t.position}})
 	
-	if math_random(1, 128) == 1 then
+	if math_random(1, 160) == 1 then
 		if t.position.x ^ 2 + t.position.y ^ 2 < 129600 then return end
 		local spawner_position = surface.find_non_colliding_position("biter-spawner", t.position, 8, 1)		
 		if spawner_position then
