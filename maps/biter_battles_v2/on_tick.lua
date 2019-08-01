@@ -29,7 +29,9 @@ local function reveal_map()
 end
 
 local function clear_corpses()
-	for _, e in pairs(game.surfaces["biter_battles"].find_entities_filtered({type = "corpse"})) do		
+	local corpses = game.surfaces["biter_battles"].find_entities_filtered({type = "corpse"})
+	if #corpses < 1024 then return end
+	for _, e in pairs(corpses) do		
 		if math.random(1, 3) == 1 then
 			e.destroy()
 		end

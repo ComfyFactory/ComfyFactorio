@@ -19,7 +19,7 @@ local function init_surface()
 		["coal"] = {frequency = "2", size = "1", richness = "1"},
 		["stone"] = {frequency = "2", size = "1", richness = "1"},
 		["copper-ore"] = {frequency = "2", size = "1", richness = "1"},
-		["iron-ore"] = {frequency = "2", size = "1", richness = "1"},
+		["iron-ore"] = {frequency = "2.5", size = "1.1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "2.5", size = "1", richness = "1.5"},
 		["trees"] = {frequency = "1.25", size = "0.6", richness = "0.5"},

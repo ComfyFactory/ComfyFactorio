@@ -28,9 +28,9 @@ local function get_active_biter_count(biter_force_name)
 end
 
 function set_biter_raffle_table(surface, biter_force_name)
-	
 	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name})
-	if not biters[1] then return end	
+	if not biters[1] then return end
+	global.biter_raffle[biter_force_name] = {}
 	for _, e in pairs(biters) do
 		if math_random(1,3) == 1 then
 			global.biter_raffle[biter_force_name][#global.biter_raffle[biter_force_name] + 1] = e.name
