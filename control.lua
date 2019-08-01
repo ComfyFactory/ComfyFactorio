@@ -22,6 +22,7 @@ require "modules.floaty_chat"
 
 ---- enable modules here ----
 --require "tools.cheat_mode"
+require "modules.the_floor_is_lava"
 --require "modules.autodecon_when_depleted"
 --require "modules.biter_noms_you"
 --require "modules.biters_avoid_damage"
@@ -51,10 +52,10 @@ require "modules.floaty_chat"
 -----------------------------
 
 ---- enable maps here ----
-require "maps.tank_conquest.tank_conquest"
+--require "maps.tank_conquest.tank_conquest"
 --require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"
-require "maps.biter_battles_v2.biter_battles_v2"
+--require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.biter_battles.biter_battles"
 --require "maps.fish_defender.fish_defender"
 --require "maps.wave_of_death.WoD"
