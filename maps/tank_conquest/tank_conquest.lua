@@ -15,7 +15,7 @@
 
     global.table_of_properties = {}
 
-    global.table_of_properties.required_number_of_players = 2
+    global.table_of_properties.required_number_of_players = 1
 
     global.table_of_properties.countdown_in_seconds = 28800
 
@@ -123,7 +123,7 @@
 
         game.create_force( 'force_spectator' )
 
-        local force = game.forces[ 'force_player_one' ]
+        local force = game.forces.force_player_one
 
         if global.table_of_properties[ force.name ] == nil then global.table_of_properties[ force.name ] = { name = force.name, enemy = 'force_player_two', icon = '☠', available_tickets = global.table_of_properties.amount_of_tickets } end
 
@@ -137,7 +137,7 @@
 
         force.share_chart = true
 
-        local force = game.forces[ 'force_player_two' ]
+        local force = game.forces.force_player_two
 
         if global.table_of_properties[ force.name ] == nil then global.table_of_properties[ force.name ] = { name = force.name, enemy = 'force_player_one', icon = '☣', available_tickets = global.table_of_properties.amount_of_tickets } end
 
@@ -175,9 +175,9 @@
 
         force.share_chart = false
 
-        local force = game.forces[ 'force_spectator' ]
+        local force = game.forces.force_spectator
 
-        force.set_spawn_position( { 0, 0 }, game.surfaces[ 'nauvis' ] )
+        force.set_spawn_position( { x = 0, y = 0 }, game.surfaces.nauvis )
 
         force.technologies[ 'toolbelt' ].researched = true
 
@@ -247,6 +247,8 @@
 
         game.forces[ 'enemy' ].evolution_factor = 0.4
 
+        data.raw.projectile[ 'slowdown-capsule' ].action.force = 'all'
+
     end
 
     function initialize_surface()
@@ -289,7 +291,7 @@
 
         -- map_gen_settings.default_enable_all_autoplace_controls = false
 
-        if game.surfaces[ 'tank_conquest' ] == nil then
+        if game.surfaces.tank_conquest == nil then
 
             game.create_surface( 'tank_conquest', map_gen_settings )
 
@@ -297,9 +299,9 @@
 
             rendering.clear()
 
-            game.surfaces[ 'tank_conquest' ].clear()
+            game.surfaces.tank_conquest.clear()
 
-            game.surfaces[ 'tank_conquest' ].map_gen_settings = map_gen_settings
+            game.surfaces.tank_conquest.map_gen_settings = map_gen_settings
 
          end
 
@@ -671,7 +673,7 @@
 
     function create_a_base( force_name, base_position )
 
-        local surface = game.surfaces[ 'tank_conquest' ]
+        local surface = game.surfaces.tank_conquest
 
         local table_of_items = game.json_to_table( blueprint_poi_base_json )
 
@@ -725,7 +727,7 @@
 
     function create_a_spot( spot_name, spot_position, spot_blueprint )
 
-        local surface = game.surfaces[ 'tank_conquest' ]
+        local surface = game.surfaces.tank_conquest
 
         local spot = { name = spot_name, position = spot_position, force = { name = 'neutral' }, value = 0, color = table_of_colors.white }
 
@@ -801,7 +803,7 @@
 
     function create_a_point_of_interest( poi_blueprint, poi_position )
 
-        local surface = game.surfaces[ 'tank_conquest' ]
+        local surface = game.surfaces.tank_conquest
 
         local table_of_items = game.json_to_table( poi_blueprint )
 
@@ -931,7 +933,7 @@
 
         if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
 
-        local surface = game.surfaces[ 'tank_conquest' ]
+        local surface = game.surfaces.tank_conquest
 
         if not surface then return end
 
@@ -965,7 +967,7 @@
 
         create_a_tank( player )
 
-        for _, spot in pairs( global.table_of_spots ) do player.force.chart( game.surfaces[ 'tank_conquest' ], { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end
+        for _, spot in pairs( global.table_of_spots ) do player.force.chart( game.surfaces.tank_conquest, { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end
 
         player.character.destructible = true
 
@@ -973,7 +975,9 @@
 
     function event_on_click_lobby( player )
 
-        local surface = game.surfaces[ 'nauvis' ]
+        local surface = game.surfaces.nauvis
+
+        if global.table_of_properties.game_stage == 'ongoing_game' then surface = game.surfaces.tank_conquest end
 
         if not player.character then return end
 
@@ -1019,9 +1023,9 @@
 
     local function on_init( surface )
 
-        game.surfaces[ 'nauvis' ].clear()
+        game.surfaces.nauvis.clear()
 
-        game.surfaces[ 'nauvis' ].map_gen_settings = { width = 1, height = 1 }
+        game.surfaces.nauvis.map_gen_settings = { width = 1, height = 1 }
 
         game.create_surface( 'tank_conquest', { width = 1, height = 1 } )
 
@@ -1057,7 +1061,7 @@
 
                     end
 
-                    for _, player in pairs( game.connected_players ) do if player.force.name == spot.properties.force.name and spot.properties.value == 100 then player.force.chart( game.surfaces[ 'tank_conquest' ], { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end end
+                    for _, player in pairs( game.connected_players ) do if player.force.name == spot.properties.force.name and spot.properties.value == 100 then player.force.chart( game.surfaces.tank_conquest, { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end end
 
                     for _, player in pairs( spot.players ) do
 
@@ -1101,27 +1105,29 @@
 
                 if global.table_of_properties.countdown_in_seconds >= 0 then global.table_of_properties.countdown_in_seconds = global.table_of_properties.countdown_in_seconds - 1 end
 
-                if global.table_of_properties.countdown_in_seconds < 0 or global.table_of_properties[ 'force_player_one' ].available_tickets < 0 or global.table_of_properties[ 'force_player_two' ].available_tickets < 0 then
+                if global.table_of_properties.countdown_in_seconds < 0 or global.table_of_properties.force_player_one.available_tickets < 0 or global.table_of_properties.force_player_two.available_tickets < 0 then
 
-                    if global.table_of_properties[ 'force_player_one' ].available_tickets == global.table_of_properties[ 'force_player_two' ].available_tickets then
+                    if global.table_of_properties.force_player_one.available_tickets == global.table_of_properties.force_player_two.available_tickets then
 
                         game.print( 'The battle is over. The round ended in a draw.' )
 
-                    elseif global.table_of_properties[ 'force_player_one' ].available_tickets > global.table_of_properties[ 'force_player_two' ].available_tickets then
+                    elseif global.table_of_properties.force_player_one.available_tickets > global.table_of_properties.force_player_two.available_tickets then
 
-                        game.print( 'The battle is over. Force ' .. global.table_of_properties[ 'force_player_one' ].icon .. ' has won the round.' )
+                        game.print( 'The battle is over. Force ' .. global.table_of_properties.force_player_one.icon .. ' has won the round.' )
 
                     else
 
-                        game.print( 'The battle is over. Force ' .. global.table_of_properties[ 'force_player_two' ].icon .. ' has won the round.' )
+                        game.print( 'The battle is over. Force ' .. global.table_of_properties.force_player_two.icon .. ' has won the round.' )
 
                     end
 
+                    game.forces.force_spectator.set_spawn_position( { x = 0, y = 0 }, game.surfaces.nauvis )
+
                     global.table_of_spots = {}
 
-                    global.table_of_properties[ 'force_player_one' ].available_tickets = global.table_of_properties.amount_of_tickets
+                    global.table_of_properties.force_player_one.available_tickets = global.table_of_properties.amount_of_tickets
 
-                    global.table_of_properties[ 'force_player_two' ].available_tickets = global.table_of_properties.amount_of_tickets
+                    global.table_of_properties.force_player_two.available_tickets = global.table_of_properties.amount_of_tickets
 
                     global.table_of_properties.countdown_in_seconds = 28800
 
@@ -1165,27 +1171,31 @@
 
                 table_of_ores = shuffle( table_of_ores )
 
-                local position = game.forces[ 'force_player_one' ].get_spawn_position( game.surfaces[ 'tank_conquest' ] )
+                local position = game.forces.force_spectator.get_spawn_position( game.surfaces.tank_conquest )
 
-                map_functions.draw_noise_tile_circle( { x = position.x - 50, y = 60 }, 'water', game.surfaces[ 'tank_conquest' ], math.random( 8, 10 ) )
+                draw_circle_lobby( game.surfaces.tank_conquest, 28, position )
+
+                local position = game.forces.force_player_one.get_spawn_position( game.surfaces.tank_conquest )
+
+                map_functions.draw_noise_tile_circle( { x = position.x - 50, y = 60 }, 'water', game.surfaces.tank_conquest, math.random( 8, 10 ) )
 
                 local radius, angle, sides = 10, 1, #table_of_ores
 
                 local table_of_positions = draw_a_polygon( { x = position.x - 50, y = 60 }, radius, angle, sides )
 
-                for index = 1, #table_of_positions do map_functions.draw_smoothed_out_ore_circle( table_of_positions[ index + 1 ], table_of_ores[ index ], game.surfaces[ 'tank_conquest' ], 15, 3000 ) end
+                for index = 1, #table_of_positions do map_functions.draw_smoothed_out_ore_circle( table_of_positions[ index + 1 ], table_of_ores[ index ], game.surfaces.tank_conquest, 15, 3000 ) end
 
                 create_a_base( 'force_player_one', position )
 
-                local position = game.forces[ 'force_player_two' ].get_spawn_position( game.surfaces[ 'tank_conquest' ] )
+                local position = game.forces.force_player_two.get_spawn_position( game.surfaces.tank_conquest )
 
-                map_functions.draw_noise_tile_circle( { x = position.x + 50, y = 60 }, 'water', game.surfaces[ 'tank_conquest' ], math.random( 8, 10 ) )
+                map_functions.draw_noise_tile_circle( { x = position.x + 50, y = 60 }, 'water', game.surfaces.tank_conquest, math.random( 8, 10 ) )
 
                 local radius, angle, sides = 10, 1, #table_of_ores
 
                 local table_of_positions = draw_a_polygon( { x = position.x + 50, y = 60 }, radius, angle, sides )
 
-                for index = 1, #table_of_positions do map_functions.draw_smoothed_out_ore_circle( table_of_positions[ index + 1 ], table_of_ores[ index ], game.surfaces[ 'tank_conquest' ], 15, 3000 ) end
+                for index = 1, #table_of_positions do map_functions.draw_smoothed_out_ore_circle( table_of_positions[ index + 1 ], table_of_ores[ index ], game.surfaces.tank_conquest, 15, 3000 ) end
 
                 create_a_base( 'force_player_two', position )
 
@@ -1209,8 +1219,6 @@
 
                 for index = 1, length_of_names do create_a_spot( table_of_names[ index ], table_of_positions[ index + 1 ], table_of_blueprints[ math.random( 1, #table_of_blueprints ) ] ) end
 
-
-
                 game.print( 'A new battlefield was created. Make yourself comfortable, but be vigilant.' )
 
                 global.table_of_properties.game_stage = 'ongoing_game'
@@ -1233,13 +1241,11 @@
 
             if global.table_of_properties.game_stage == 'preparing_spawn_positions' then
 
-                local position = { x = - 500, y = 50 }
+                game.forces.force_player_one.set_spawn_position( { x = - 500, y = 50 }, game.surfaces.tank_conquest )
 
-                game.forces[ 'force_player_one' ].set_spawn_position( position, game.surfaces[ 'tank_conquest' ] )
+                game.forces.force_player_two.set_spawn_position( { x = 500, y = 50 }, game.surfaces.tank_conquest )
 
-                local position = { x = 500, y = 50 }
-
-                game.forces[ 'force_player_two' ].set_spawn_position( position, game.surfaces[ 'tank_conquest' ] )
+                game.forces.force_spectator.set_spawn_position( { x = 0, y = 0 }, game.surfaces.tank_conquest )
 
                 global.table_of_scores = {}
 
@@ -1263,21 +1269,21 @@
 
             if global.table_of_properties.game_stage == 'check_the_process_of_creating_the_map' then
 
-                if game.surfaces[ 'tank_conquest' ].is_chunk_generated( { x = 0, y = 0 } ) then
+                if game.surfaces.tank_conquest.is_chunk_generated( { x = 0, y = 0 } ) then
 
                     global.table_of_properties.game_stage = 'preparing_spawn_positions'
 
                 else
 
-                    game.surfaces[ 'tank_conquest' ].request_to_generate_chunks( { x = 0, y = 0 }, 1 )
+                    game.surfaces.tank_conquest.request_to_generate_chunks( { x = 0, y = 0 }, 1 )
 
-                    game.surfaces[ 'tank_conquest' ].request_to_generate_chunks( { - 500, 50 }, 1 )
+                    game.surfaces.tank_conquest.request_to_generate_chunks( { - 500, 50 }, 1 )
 
-                    game.surfaces[ 'tank_conquest' ].request_to_generate_chunks( { 500, 50 }, 1 )
+                    game.surfaces.tank_conquest.request_to_generate_chunks( { 500, 50 }, 1 )
 
-                    game.surfaces[ 'tank_conquest' ].request_to_generate_chunks( { 0, - 350 }, 1 )
+                    game.surfaces.tank_conquest.request_to_generate_chunks( { 0, - 350 }, 1 )
 
-                    game.surfaces[ 'tank_conquest' ].request_to_generate_chunks( { 0, 450 }, 1 )
+                    game.surfaces.tank_conquest.request_to_generate_chunks( { 0, 450 }, 1 )
 
                 end
 
@@ -1287,7 +1293,7 @@
 
                 initialize_surface()
 
-                game.surfaces[ 'tank_conquest' ].force_generate_chunk_requests()
+                game.surfaces.tank_conquest.force_generate_chunk_requests()
 
                 global.table_of_properties.game_stage = 'check_the_process_of_creating_the_map'
 
@@ -1311,17 +1317,17 @@
 
         if game.tick % 1800 == 0 then
 
-            if game.surfaces[ 'tank_conquest' ] ~= nil and #game.connected_players and #global.table_of_spots then
+            if game.surfaces.tank_conquest ~= nil and #game.connected_players and #global.table_of_spots then
 
                 for _, player in pairs( game.connected_players ) do
 
                     for _, spot in pairs( global.table_of_spots ) do
 
-                        if player.force.is_chunk_charted( game.surfaces[ 'tank_conquest' ], { x = math.floor( spot.properties.position.x / 32 ), y = math.floor( spot.properties.position.y / 32 ) } ) then
+                        if player.force.is_chunk_charted( game.surfaces.tank_conquest, { x = math.floor( spot.properties.position.x / 32 ), y = math.floor( spot.properties.position.y / 32 ) } ) then
 
-                            local chart_tags = player.force.find_chart_tags( game.surfaces[ 'tank_conquest' ], { { spot.properties.position.x - 1, spot.properties.position.y - 1 }, { spot.properties.position.x + 1, spot.properties.position.y + 1 } } )
+                            local chart_tags = player.force.find_chart_tags( game.surfaces.tank_conquest, { { spot.properties.position.x - 1, spot.properties.position.y - 1 }, { spot.properties.position.x + 1, spot.properties.position.y + 1 } } )
 
-                            if #chart_tags == 0 then player.force.add_chart_tag( game.surfaces[ 'tank_conquest' ], { icon = { type = 'virtual', name = 'signal-' .. spot.properties.name }, position = spot.properties.position } ) end
+                            if #chart_tags == 0 then player.force.add_chart_tag( game.surfaces.tank_conquest, { icon = { type = 'virtual', name = 'signal-' .. spot.properties.name }, position = spot.properties.position } ) end
 
                         end
 
@@ -1335,7 +1341,7 @@
 
         if game.tick == 60 then
 
-            draw_circle_lobby( game.surfaces[ 'nauvis' ], 28, { x = 0, y = 0 } )
+            draw_circle_lobby( game.surfaces.nauvis, 28, { x = 0, y = 0 } )
 
             for _, player in pairs( game.connected_players ) do if player.character == nil then player.create_character() end end
 
@@ -1639,7 +1645,7 @@
 
     local function on_player_joined_game( event )
 
-        local surface = game.surfaces[ 'nauvis' ]
+        local surface = game.surfaces.nauvis
 
         local player = game.players[ event.player_index ]
 
@@ -1678,3 +1684,57 @@
     end
 
     event.add( defines.events.on_player_joined_game, on_player_joined_game )
+
+    -- /silent-command circle_add( game.players[ 1 ] )
+
+    -- /silent-command circle_change( game.players[ 1 ] )
+
+    -- /silent-command circle_remove( game.players[ 1 ] )
+
+    function circle_add( player )
+
+        player.force = game.forces.force_player_one
+
+        if global.table_of_circles == nil then global.table_of_circles = {} end
+
+        if global.table_of_circles[ player.index ] == nil then
+
+            -- local one = rendering.draw_circle( { target = player.character, target_offset = { x = 0, y = - 2.5 }, force = game.forces.force_player_one, surface = player.surface, color = table_of_colors.team, radius = 0.2, filled = true, only_in_alt_mode = false } )
+
+            -- local two = rendering.draw_circle( { target = player.character, target_offset = { x = 1, y = - 2.5 }, force = game.forces.force_player_two, surface = player.surface, color = table_of_colors.enemy, radius = 0.2, filled = true, only_in_alt_mode = false } )
+
+            local one = rendering.draw_circle( { target = player.position, force = game.forces.force_player_one, surface = player.surface, color = table_of_colors.team, radius = 3, filled = true, only_in_alt_mode = false } )
+
+            local two = rendering.draw_circle( { target = { x = player.position.x + 200, y = player.position.y }, force = game.forces.force_player_two, surface = player.surface, color = table_of_colors.enemy, radius = 3, filled = true, only_in_alt_mode = false } )
+
+            global.table_of_circles[ player.index ] = { one = one, two = two }
+
+        end
+
+    end
+
+    function circle_change( player )
+
+        if global.table_of_circles[ player.index ] ~= nil then
+
+            local one = global.table_of_circles[ player.index ].one
+
+            local two = global.table_of_circles[ player.index ].two
+
+        end
+
+    end
+
+    function circle_remove( player )
+
+        if global.table_of_circles[ player.index ] ~= nil then
+
+            rendering.destroy( global.table_of_circles[ player.index ].one )
+
+            rendering.destroy( global.table_of_circles[ player.index ].two )
+
+            global.table_of_circles[ player.index ] = nil
+
+        end
+
+    end
