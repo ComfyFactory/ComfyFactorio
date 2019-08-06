@@ -3,6 +3,7 @@ require "modules.satellite_score"
 require "modules.dynamic_landfill"
 require "modules.dangerous_goods"
 require "modules.spawners_contain_biters"
+require "modules.manual_mining_booster"
 
 --essentials
 require "modules.biters_yield_coins"
@@ -32,7 +33,7 @@ multirooms["3x3"] = require 'maps.stone_maze.3x3_rooms'
 
 map_functions = require "tools.map_functions"
 grid_size = 24
-manual_mining_speed_modifier = 2
+--manual_mining_speed_modifier = 1
 main_ground_tile = "dirt-3"
 rock_raffle = {"rock-huge", "rock-big", "rock-big", "rock-big"}
 tree_raffle = {"tree-01", "tree-02", "tree-03", "tree-04", "tree-05", "tree-06", "tree-07", "tree-08", "tree-09", "tree-02-red", "tree-06-brown", "tree-08-brown", "tree-08-red","tree-09-brown","tree-09-red","dead-dry-hairy-tree","dry-hairy-tree","dry-tree","dead-tree-desert","dead-grey-trunk"}
@@ -343,10 +344,10 @@ local function on_player_joined_game(event)
 	draw_depth_gui()
 end
 
-local function on_research_finished(event)
-	if not event.research.force.technologies["steel-axe"].researched then return end
-	event.research.force.manual_mining_speed_modifier = manual_mining_speed_modifier + 2
-end
+--local function on_research_finished(event)
+	--if not event.research.force.technologies["steel-axe"].researched then return end
+	--event.research.force.manual_mining_speed_modifier = manual_mining_speed_modifier + 2
+--end
 
 local function on_marked_for_deconstruction(event)	
 	if disabled_for_deconstruction[event.entity.name] then
@@ -368,7 +369,7 @@ local function on_init(event)
 	}
 	
 	game.forces["player"].set_spawn_position({x = 2, y = 2}, game.surfaces.nauvis)
-	game.forces["player"].manual_mining_speed_modifier = manual_mining_speed_modifier
+	--game.forces["player"].manual_mining_speed_modifier = manual_mining_speed_modifier
 	
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_evolution.destroy_factor = 0
@@ -380,4 +381,4 @@ event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruct
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_research_finished, on_research_finished)
+--event.add(defines.events.on_research_finished, on_research_finished)

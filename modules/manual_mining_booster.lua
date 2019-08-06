@@ -4,7 +4,8 @@ local event = require 'utils.event'
 
 local function mining_speed_cooldown(p)
 	if not global.manual_mining_booster[p.index] then return end
-	if game.tick - global.manual_mining_booster[p.index] < 180 then return end	
+	if game.tick - global.manual_mining_booster[p.index] < 180 then return end
+	if not p.character then p.character.character_mining_speed_modifier = 0 return end
 	p.character.character_mining_speed_modifier = p.character.character_mining_speed_modifier - 1
 	if p.character.character_mining_speed_modifier <= 0 then p.character.character_mining_speed_modifier = 0 end
 end
@@ -12,7 +13,7 @@ end
 local function on_player_mined_entity(event)
 	local player = game.players[event.player_index]
 	player.character.character_mining_speed_modifier = player.character.character_mining_speed_modifier + (math.random(25, 50) * 0.01)
-	if player.character.character_mining_speed_modifier > 12 then player.character.character_mining_speed_modifier = 12 end
+	if player.character.character_mining_speed_modifier > 10 then player.character.character_mining_speed_modifier = 10 end
 	global.manual_mining_booster[event.player_index] = game.tick	
 end
 
