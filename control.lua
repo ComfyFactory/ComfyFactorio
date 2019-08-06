@@ -6,7 +6,7 @@ _DUMP_ENV = false
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
--- require "utils.corpse_util"  --disable for hunger games
+require "utils.corpse_util"  --disable for hunger games
 require "utils.color_data"
 require "utils.session_data"
 require "chatbot"
@@ -22,7 +22,7 @@ require "modules.floaty_chat"
 
 ---- enable modules here ----
 --require "tools.cheat_mode"
-require "modules.the_floor_is_lava"
+--require "modules.the_floor_is_lava"
 --require "modules.autodecon_when_depleted"
 --require "modules.biter_noms_you"
 --require "modules.biters_avoid_damage"
@@ -61,6 +61,7 @@ require "modules.the_floor_is_lava"
 --require "maps.wave_of_death.WoD"
 --require "maps.stone_maze.main"
 --require "maps.cave_miner"
+require "maps.rocky_waste"
 --require "maps.labyrinth"
 --require "maps.junkyard"
 --require "maps.spooky_forest"

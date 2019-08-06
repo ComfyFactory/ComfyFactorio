@@ -9,8 +9,6 @@ require "modules.biters_double_damage"
 require "modules.spawners_contain_biters"
 require "modules.splice_double"
 
-local ore_spawn_raffle = {"iron-ore","iron-ore","iron-ore","iron-ore","copper-ore","copper-ore","copper-ore","coal","coal","coal","stone","uranium-ore","crude-oil"}
-
 local function get_noise(name, pos)
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local noise_seed_add = 25000
