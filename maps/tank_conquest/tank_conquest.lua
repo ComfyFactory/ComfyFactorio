@@ -45,7 +45,9 @@
 
     local table_of_colors = { squad = { r = 75, g = 155, b = 45 }, team = { r = 65, g = 120, b = 200 }, enemy = { r = 190, g = 55, b = 50 }, neutral = { r = 77, g = 77, b = 77 }, damage = { r = 255, g = 0, b = 255 }, white = { r = 255, g = 255, b = 255 } }
 
-    local table_of_loots = { { name = 'iron-ore', count = 50 }, { name = 'copper-ore', count = 50 }, { name = 'stone', count = 50 }, { name = 'coal', count = 50 }, { name = 'land-mine', count = 20 }, { name = 'gun-turret', count = 5 }, { name = 'piercing-rounds-magazine', count = 50 }, { name = 'uranium-rounds-magazine', count = 10 }, { name = 'combat-shotgun', count = 1 }, { name = 'shotgun-shell', count = 20 }, { name = 'piercing-shotgun-shell', count = 20 }, { name = 'flamethrower', count = 1 }, { name = 'flamethrower-ammo', count = 20 }, { name = 'rocket-launcher', count = 1 }, { name = 'rocket', count = 20 }, { name = 'explosive-rocket', count = 10 }, { name = 'atomic-bomb', count = 1 }, { name = 'grenade', count = 20 }, { name = 'cluster-grenade', count = 10 }, { name = 'cannon-shell', count = 20 }, { name = 'explosive-cannon-shell', count = 10 }, { name = 'uranium-cannon-shell', count = 5 }, { name = 'explosive-uranium-cannon-shell', count = 5 }, { name = 'modular-armor', count = 1 }, { name = 'power-armor', count = 1 }, { name = 'power-armor-mk2', count = 1 }, { name = 'exoskeleton-equipment', count = 1 }, { name = 'battery-mk2-equipment', count = 1 }, { name = 'energy-shield-equipment', count = 1 }, { name = 'fusion-reactor-equipment', count = 1 }, { name = 'solid-fuel', count = 20 }, { name = 'rocket-fuel', count = 10 }, { name = 'nuclear-fuel', count = 1 }, { name = 'gate', count = 10 }, { name = 'stone-wall', count = 20 } }
+    local table_of_loots = { { name = 'iron-ore', count = 50 }, { name = 'copper-ore', count = 50 }, { name = 'stone', count = 50 }, { name = 'coal', count = 50 }, { name = 'defender-capsule', count = 10 }, { name = 'land-mine', count = 20 }, { name = 'gun-turret', count = 5 }, { name = 'piercing-rounds-magazine', count = 50 }, { name = 'uranium-rounds-magazine', count = 10 }, { name = 'combat-shotgun', count = 1 }, { name = 'shotgun-shell', count = 20 }, { name = 'piercing-shotgun-shell', count = 20 }, { name = 'flamethrower', count = 1 }, { name = 'flamethrower-ammo', count = 20 }, { name = 'rocket-launcher', count = 1 }, { name = 'rocket', count = 20 }, { name = 'explosive-rocket', count = 10 }, { name = 'atomic-bomb', count = 1 }, { name = 'grenade', count = 20 }, { name = 'cluster-grenade', count = 10 }, { name = 'cannon-shell', count = 20 }, { name = 'explosive-cannon-shell', count = 10 }, { name = 'uranium-cannon-shell', count = 5 }, { name = 'explosive-uranium-cannon-shell', count = 5 }, { name = 'modular-armor', count = 1 }, { name = 'power-armor', count = 1 }, { name = 'power-armor-mk2', count = 1 }, { name = 'exoskeleton-equipment', count = 1 }, { name = 'battery-mk2-equipment', count = 1 }, { name = 'energy-shield-equipment', count = 1 }, { name = 'fusion-reactor-equipment', count = 1 }, { name = 'solid-fuel', count = 20 }, { name = 'rocket-fuel', count = 10 }, { name = 'nuclear-fuel', count = 1 }, { name = 'gate', count = 10 }, { name = 'stone-wall', count = 20 } }
+
+    local table_of_slots = { 'stone-wall', 'gun-turret', 'wood', 'repair-pack', 'raw-fish', 'defender-capsule', 'rocket', 'explosive-rocket', 'atomic-bomb', 'flamethrower-ammo', 'land-mine', 'firearm-magazine', 'piercing-rounds-magazine', 'uranium-rounds-magazine', 'grenade', 'cluster-grenade', 'cannon-shell', 'explosive-cannon-shell', 'uranium-cannon-shell', 'explosive-uranium-cannon-shell' }
 
     local table_of_ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
 
@@ -1538,15 +1540,15 @@
 
         for spot_index, spot_item in pairs( global.table_of_spots ) do
 
-            if global.table_of_spots[ spot_index ].players[ event.player_index ] ~= nil then global.table_of_spots[ spot_index ].players[ event.player_index ] = nil end
+            if global.table_of_spots[ spot_index ].players[ player.index ] ~= nil then global.table_of_spots[ spot_index ].players[ player.index ] = nil end
 
             for _, position in pairs( spot_item.positions ) do
 
                 if math.floor( player.position.x ) == position.x and math.floor( player.position.y ) == position.y or math.ceil( player.position.x ) == position.x and math.ceil( player.position.y ) == position.y then
 
-                    if global.table_of_spots[ spot_index ].players[ event.player_index ] == nil then
+                    if global.table_of_spots[ spot_index ].players[ player.index ] == nil then
 
-                        global.table_of_spots[ spot_index ].players[ event.player_index ] = player
+                        global.table_of_spots[ spot_index ].players[ player.index ] = player
 
                         break
 
@@ -1556,7 +1558,7 @@
 
             end
 
-            if global.table_of_spots[ spot_index ].players[ event.player_index ] ~= nil then break end
+            if global.table_of_spots[ spot_index ].players[ player.index ] ~= nil then break end
 
         end
 
@@ -1610,7 +1612,7 @@
 
         if force ~= nil and force.available_tickets > 0 then force.available_tickets = force.available_tickets - 1 end
 
-        for _, spot in pairs( global.table_of_spots ) do if spot.players[ event.player_index ] ~= nil then spot.players[ event.player_index ] = nil end end
+        for _, spot in pairs( global.table_of_spots ) do if spot.players[ player.index ] ~= nil then spot.players[ player.index ] = nil end end
 
         local player_death_message = global.table_of_properties[ player.force.name ].icon .. ' ' .. player.name .. ' was killed.'
 
@@ -1662,8 +1664,6 @@
 
         local player = game.players[ event.player_index ]
 
-        player.character.clear_items_inside()
-
         player_icon_remove( player )
 
         if global.table_of_tanks[ player.index ] ~= nil and global.table_of_tanks[ player.index ].valid then
@@ -1676,7 +1676,7 @@
 
         global.table_of_tanks[ player.index ] = nil
 
-        for _, spot in pairs( global.table_of_spots ) do if spot.players[ event.player_index ] ~= nil then spot.players[ event.player_index ] = nil end end
+        for _, spot in pairs( global.table_of_spots ) do if spot.players[ player.index ] ~= nil then spot.players[ player.index ] = nil end end
 
     end
 
@@ -1706,6 +1706,8 @@
 
         elseif player.surface.name == 'tank_conquest' then
 
+            player.character.clear_items_inside()
+
             draw_gui_button( player )
 
             event_on_click_join( player )
@@ -1717,6 +1719,12 @@
             draw_gui_button( player )
 
             draw_gui_menu( player )
+
+        end
+
+        for index, slot in pairs( table_of_slots ) do
+
+            player.set_quick_bar_slot( index, slot )
 
         end
 
