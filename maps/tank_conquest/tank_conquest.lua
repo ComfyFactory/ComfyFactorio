@@ -208,6 +208,8 @@
 
             game.forces[ force.name ].technologies[ 'artillery-shell-speed-1' ].enabled = false
 
+            game.forces[ force.name ].technologies[ 'follower-robot-count-1' ].researched = true
+
             game.forces[ force.name ].technologies[ 'atomic-bomb' ].enabled = false
 
             game.forces[ force.name ].set_turret_attack_modifier( 'flamethrower-turret', 4 )
@@ -619,6 +621,56 @@
             element_item.style.font  = 'heading-2'
 
             element_item.style.font_color = table_of_colors.white
+
+        end
+
+    end
+
+    function draw_gui_spawn( player )
+
+        if player.gui.center[ 'draw_gui_spawn' ] then player.gui.center[ 'draw_gui_spawn' ].destroy() end
+
+        if global.table_of_properties.game_stage ~= 'ongoing_game' then return end
+
+        local element_frame = player.gui.center.add( { type = 'frame', name = 'draw_gui_spawn', direction = 'horizontal' } )
+
+        element_frame.style.top_margin = 100
+
+        for _, spot in pairs( global.table_of_spots ) do
+
+            local element_button = element_frame.add( { type = 'sprite-button', name = 'draw_gui_spawn_' .. spot.properties.name, caption = spot.properties.name } )
+
+            element_button.enabled = false
+
+            local color = table_of_colors.white
+
+            if player.force.name ~= 'force_spectator' then
+
+                color = table_of_colors.neutral
+
+                if spot.properties.force.name == global.table_of_properties[ player.force.name ].name and spot.properties.value >= 50 then element_button.enabled = true end
+
+                if spot.properties.force.name == global.table_of_properties[ player.force.name ].name and spot.properties.value > 0 then color = table_of_colors.team end
+
+                if spot.properties.force.name == global.table_of_properties[ player.force.name ].enemy and spot.properties.value > 0 then color = table_of_colors.enemy end
+
+            end
+
+            element_button.style.font_color = color
+
+        end
+
+        for _, element_item in pairs( element_frame.children ) do
+
+            element_item.style.padding = 0
+
+            element_item.style.margin = 0
+
+            element_item.style.vertical_align = 'center'
+
+            element_item.style.horizontal_align  = 'center'
+
+            element_item.style.font  = 'heading-2'
 
         end
 
@@ -1060,7 +1112,7 @@
 
                     end
 
-                    for _, player in pairs( game.connected_players ) do if player.force.name == spot.properties.force.name and spot.properties.value == 100 then player.force.chart( game.surfaces.tank_conquest, { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end end
+                    for _, player in pairs( game.connected_players ) do if player.force.name == spot.properties.force.name and spot.properties.value > 0 then player.force.chart( game.surfaces.tank_conquest, { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end end
 
                     for _, player in pairs( spot.players ) do
 
@@ -1176,13 +1228,9 @@
 
                 local position = game.forces.force_player_one.get_spawn_position( game.surfaces.tank_conquest )
 
-                -- map_functions.draw_noise_tile_circle( { x = position.x - 50, y = 60 }, 'water', game.surfaces.tank_conquest, math.random( 8, 10 ) )
-
                 map_functions.draw_noise_tile_circle( { x = position.x - 50, y = 10 }, 'water', game.surfaces.tank_conquest, math.random( 8, 10 ) )
 
                 local radius, angle, sides = 10, 1, #table_of_ores
-
-                -- local table_of_positions = draw_a_polygon( { x = position.x - 50, y = 60 }, radius, angle, sides )
 
                 local table_of_positions = draw_a_polygon( { x = position.x - 50, y = 10 }, radius, angle, sides )
 
@@ -1192,13 +1240,9 @@
 
                 local position = game.forces.force_player_two.get_spawn_position( game.surfaces.tank_conquest )
 
-                -- map_functions.draw_noise_tile_circle( { x = position.x + 50, y = 60 }, 'water', game.surfaces.tank_conquest, math.random( 8, 10 ) )
-
                 map_functions.draw_noise_tile_circle( { x = position.x + 50, y = 10 }, 'water', game.surfaces.tank_conquest, math.random( 8, 10 ) )
 
                 local radius, angle, sides = 10, 1, #table_of_ores
-
-                -- local table_of_positions = draw_a_polygon( { x = position.x + 50, y = 60 }, radius, angle, sides )
 
                 local table_of_positions = draw_a_polygon( { x = position.x + 50, y = 10 }, radius, angle, sides )
 
@@ -1206,13 +1250,9 @@
 
                 create_a_base( 'force_player_two', position )
 
-                -- local position = { x = 0, y = - 350 }
-
                 local position = { x = 0, y = - 500 }
 
                 create_a_point_of_interest( blueprint_poi_laser_json, position )
-
-                -- local position = { x = 0, y = 450 }
 
                 local position = { x = 0, y = 500 }
 
@@ -1223,8 +1263,6 @@
                 local table_of_names = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' }
 
                 local length_of_names = math.random( 3, #table_of_names )
-
-                -- local position, radius, angle, sides = { x = 0, y = 50 }, math.random( 150, 250 ), math.random( 0.1, 6.3 ), length_of_names
 
                 local position, radius, angle, sides = { x = 0, y = 0 }, math.random( 150, 250 ), math.random( 0.1, 6.3 ), length_of_names
 
@@ -1253,10 +1291,6 @@
             end
 
             if global.table_of_properties.game_stage == 'preparing_spawn_positions' then
-
-                -- game.forces.force_player_one.set_spawn_position( { x = - 500, y = 50 }, game.surfaces.tank_conquest )
-
-                -- game.forces.force_player_two.set_spawn_position( { x = 500, y = 50 }, game.surfaces.tank_conquest )
 
                 game.forces.force_player_one.set_spawn_position( { x = - 500, y = 0 }, game.surfaces.tank_conquest )
 
@@ -1293,14 +1327,6 @@
                 else
 
                     game.surfaces.tank_conquest.request_to_generate_chunks( { 0, 0 }, 1 )
-
-                    -- game.surfaces.tank_conquest.request_to_generate_chunks( { - 500, 50 }, 1 )
-
-                    -- game.surfaces.tank_conquest.request_to_generate_chunks( { 500, 50 }, 1 )
-
-                    -- game.surfaces.tank_conquest.request_to_generate_chunks( { 0, - 350 }, 1 )
-
-                    -- game.surfaces.tank_conquest.request_to_generate_chunks( { 0, 450 }, 1 )
 
                     game.surfaces.tank_conquest.request_to_generate_chunks( { - 500, 0 }, 1 )
 
@@ -1572,6 +1598,8 @@
 
         local player = game.players[ event.player_index ]
 
+        if player.gui.center[ 'draw_gui_spawn' ] then player.gui.center[ 'draw_gui_spawn' ].destroy() end
+
         player_icon_add( player )
 
         create_a_tank( player )
@@ -1595,6 +1623,8 @@
             entity.destroy()
 
         end
+
+        draw_gui_spawn( player )
 
         player_icon_remove( player )
 
