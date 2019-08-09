@@ -28,7 +28,7 @@ local function draw_cell(surface, cell, cell_size, wall_entity_name, force_name)
 		end
 	end
 	for _, e in pairs(entities) do
-		surface.create_entity(e)
+		if surface.can_place_entity(e) then surface.create_entity(e) end
 	end
 end
 

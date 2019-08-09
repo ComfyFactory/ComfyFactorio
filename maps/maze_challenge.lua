@@ -31,11 +31,15 @@ local function init_surface()
 	
 	game.forces["player"].set_spawn_position({0,0},game.surfaces["maze_challenge"])
 	
+	global.highscores = {}
+	
 	global.maze_size = 3
 	global.grid_size = 3
 	
 	return surface
 end
+
+local tiles = {"sand-1", "sand-2", "sand-3", "grass-1", "grass-2", "grass-3", "grass-4", "dirt-1", "dirt-2", "dirt-3"}
 
 local function maze(event)
 	--local position = event.area.left_top
@@ -47,15 +51,16 @@ local function maze(event)
 	--local surface = event.surface
 	local surface = game.surfaces[event.surface_index]
 
-	local r = global.maze_size * global.grid_size * 0.8
+	local r = global.maze_size * (global.grid_size - 1) + 8
 	if surface.count_entities_filtered({force = "enemy", area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}}) ~= 0 then return end
 	
-	surface.request_to_generate_chunks(position, math.ceil(global.maze_size / global.grid_size))
+	surface.request_to_generate_chunks(position, math.ceil((global.maze_size * global.grid_size * 2) / 32))
 	surface.force_generate_chunk_requests()
 	
-	for x = global.maze_size * - 1 * (global.grid_size - 1), global.maze_size * (global.grid_size - 1), 1 do
-		for y = global.maze_size * - 1 * (global.grid_size - 1), global.maze_size * (global.grid_size - 1), 1 do
-			surface.set_tiles({{name = "sand-1", position = {position.x + x, position.y + y}}}, true)
+	local tile_name = tiles[math.random(1, #tiles)]
+	for x = global.maze_size * - 1 * (global.grid_size - 1) - 1, global.maze_size * (global.grid_size - 1) + 1, 1 do
+		for y = global.maze_size * - 1 * (global.grid_size - 1) - 1, global.maze_size * (global.grid_size - 1) + 1, 1 do
+			surface.set_tiles({{name = tile_name, position = {position.x + x, position.y + y}}}, true)
 		end
 	end
 	
@@ -63,19 +68,31 @@ local function maze(event)
 	global.maze_size = global.maze_size + 1
 	
 	for _, e in pairs(surface.find_entities_filtered({force = "player", name = "character", area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}})) do
-		e.player.teleport(surface.find_non_colliding_position("rocket-silo", position, 1024, 1), "maze_challenge")
+		e.player.teleport(surface.find_non_colliding_position("stone-furnace", e.position, 2048, 1), "maze_challenge")
 	end
 end
 
-local function on_player_joined_game(event)	
+local function on_player_joined_game(event)
 	local surface = init_surface()	
 	local player = game.players[event.player_index]
 	
+	if not global.highscores[player.index] then global.highscores[player.index] = player.position.x end
+	
 	if player.online_time == 0 then 
 		player.teleport({0,0}, "maze_challenge")
-		player.insert({name = 'car', count = 1})
-		player.insert({name = 'small-lamp', count = 1})
 	end	
+end
+
+local function on_player_respawned(event)	
+	local player = game.players[event.player_index]
+	local surface = player.surface
+	
+	for _, e in pairs(surface.find_entities_filtered({name = "character-corpse"})) do
+		if e.character_corpse_player_index == player.index then
+			player.teleport(surface.find_non_colliding_position("character", e.position, 1024, 1), "maze_challenge")
+			return
+		end
+	end
 end
 
 local function on_chunk_generated(event)
@@ -84,7 +101,7 @@ local function on_chunk_generated(event)
 	end
 
 	for _, t in pairs(event.surface.find_tiles_filtered({area = event.area})) do
-		if t.position.y < -3 or t.position.y > 3 then
+		if t.position.y < -3 or t.position.y > 3 or t.position.x < -3 then
 			event.surface.set_tiles({{name = "out-of-map", position = t.position}}, true)
 		else
 			if t.name == "water" or t.name == "deepwater" then
@@ -102,6 +119,53 @@ local function on_chunk_charted(event)
 	maze(event)
 end
 
+local function on_player_changed_position(event)
+	local player = game.players[event.player_index]
+	if not player.character then return end
+	if player.character.driving == true then return end
+	
+	if player.position.x > global.highscores[player.index] then
+		global.highscores[player.index] = math.floor(player.position.x)
+	end
+end
+
+local function tick()		
+	local scores = {}
+	for _, player in pairs(game.players) do		
+		scores[#scores + 1] = {name = player.name, score = global.highscores[player.index]}		
+	end
+	
+	for x = 1, #scores, 1 do
+		for y = 1, #scores, 1 do			
+			if not scores[y + 1] then break end
+			if scores[y]["score"] < scores[y + 1]["score"] then
+				local key = scores[y]
+				scores[y] = scores[y + 1]
+				scores[y + 1] = key
+			end
+		end		
+	end
+	
+	for _, p in pairs(game.connected_players) do
+		if p.gui.left.maze_score then p.gui.left.maze_score.destroy() end
+		local frame = p.gui.left.add({type = "frame", caption = "Score", name = "maze_score"})
+		local t = frame.add({type = "table", column_count = 2})
+		for i = 1, 16, 1 do
+			if scores[i] then
+				local l = t.add({type = "label", caption = scores[i].name})
+				local color = game.players[scores[i].name].color
+				color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
+				l.style.font_color = color
+				l.style.font = "default-bold"
+				t.add({type = "label", caption = scores[i].score})			
+			end
+		end
+	end
+end
+
+event.on_nth_tick(120, tick)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_respawned, on_player_respawned)
+event.add(defines.events.on_player_changed_position, on_player_changed_position)
