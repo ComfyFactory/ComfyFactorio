@@ -4,33 +4,37 @@ local function coord_string(x, y)
 	return str
 end
 
-local function draw_cell(surface, cell, cell_size, wall_entity_name)
+local function draw_cell(surface, cell, cell_size, wall_entity_name, force_name)
 	local r = math.floor(cell_size * 0.5)
+	local entities = {}
 	if cell.north then
 		for x = r * -1, r, 1 do
-			surface.create_entity({position = {cell.position.x + x, cell.position.y - r}, name = wall_entity_name})
+			entities[#entities + 1] = {position = {cell.position.x + x, cell.position.y - r}, name = wall_entity_name, force = force_name}
 		end
 	end
 	if cell.south then
 		for x = r * -1, r, 1 do
-			surface.create_entity({position = {cell.position.x + x, cell.position.y + r}, name = wall_entity_name})
+			entities[#entities + 1] = {position = {cell.position.x + x, cell.position.y + r}, name = wall_entity_name, force = force_name}
 		end
 	end
 	if cell.east then
 		for y = r * -1, r, 1 do
-			surface.create_entity({position = {cell.position.x + r, cell.position.y + y}, name = wall_entity_name})
+			entities[#entities + 1] = {position = {cell.position.x + r, cell.position.y + y}, name = wall_entity_name, force = force_name}
 		end
 	end
 	if cell.west then
 		for y = r * -1, r, 1 do
-			surface.create_entity({position = {cell.position.x - r, cell.position.y - y}, name = wall_entity_name})
+			entities[#entities + 1] = {position = {cell.position.x - r, cell.position.y - y}, name = wall_entity_name, force = force_name}
 		end
+	end
+	for _, e in pairs(entities) do
+		surface.create_entity(e)
 	end
 end
 
-local function draw_maze(surface, position, size, cell_size, wall_entity_name)
+local function draw_maze(surface, position, size, cell_size, wall_entity_name, force_name)
 	for _, cell in pairs(maze_cells) do
-		draw_cell(surface, cell, cell_size, wall_entity_name)
+		draw_cell(surface, cell, cell_size, wall_entity_name, force_name)
 	end
 end
 
@@ -106,7 +110,7 @@ local function expand(size)
 	end
 end
 
-function create_maze(surface, position, size, cell_size, wall_entity_name)
+function create_maze(surface, position, size, cell_size, wall_entity_name, force_name)
 	if not surface then game.print("No surface given.") return end
 	if not position then game.print("No position given.") return end
 	if not size then game.print("No size given.") return end
@@ -130,11 +134,11 @@ function create_maze(surface, position, size, cell_size, wall_entity_name)
 		end
 	end
 	
-	maze_cells[coord_string(size, size)].occupied = true
-	maze_cells[coord_string(size, size)].south = false
-	maze_cells[coord_string(size * -1, size * -1)].north = false
+	maze_cells[coord_string(size * -1, 0)].occupied = true
+	maze_cells[coord_string(size * -1, 0)].west = false
+	maze_cells[coord_string(size, 0)].east = false
 	
 	expand(size)
 	
-	draw_maze(surface, position, size, cell_size, wall_entity_name)
+	draw_maze(surface, position, size, cell_size, wall_entity_name, force_name)
 end

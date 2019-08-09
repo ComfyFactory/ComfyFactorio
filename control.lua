@@ -6,6 +6,7 @@ _DUMP_ENV = false
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
+require "utils.table"
 require "utils.corpse_util"  --disable for hunger games
 require "utils.color_data"
 require "utils.session_data"
@@ -60,8 +61,9 @@ require "modules.floaty_chat"
 --require "maps.fish_defender.fish_defender"
 --require "maps.wave_of_death.WoD"
 --require "maps.stone_maze.main"
+require "maps.maze_challenge"
 --require "maps.cave_miner"
-require "maps.rocky_waste"
+--require "maps.rocky_waste"
 --require "maps.labyrinth"
 --require "maps.junkyard"
 --require "maps.spooky_forest"
