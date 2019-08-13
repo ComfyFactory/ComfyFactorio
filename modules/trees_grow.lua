@@ -57,8 +57,8 @@ local function shrink_table()
 end
 
 local function get_random_tree(surface)
-	if #global.trees_grow.raffle == 0 then return false end
 	for a = 1, 32, 1 do
+		if #global.trees_grow.raffle == 0 then return false end
 		local r = math_random(1, #global.trees_grow.raffle)
 		local tree_coord = global.trees_grow.raffle[r]
 		if tree_coord then
