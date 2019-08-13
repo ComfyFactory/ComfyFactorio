@@ -35,6 +35,19 @@ local function create_particles(surface, name, position, amount)
 		name = "fire-flame",
 		position = {x = position.x, y = position.y}
 	})
+	
+	if math_random(1, 8) == 1 then
+		surface.create_entity({	
+			name = "explosive-cannon-projectile",
+			position = position,
+			force = "enemy",
+			source = position,
+			target = position,
+			max_range = 1, 
+			speed = 1
+		})	
+	
+	end
 end
 
 local r = 128
@@ -55,7 +68,7 @@ local function kill_random_tree(surface)
 end
 
 local function tick(event)
-	if math_random(1, 12) ~= 1 then return end
+	if math_random(1, 15) ~= 1 then return end
 	local surface = game.players[1].surface	
 	for a = 1, 8, 1 do
 		if kill_random_tree(surface) then return end

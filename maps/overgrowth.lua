@@ -8,7 +8,7 @@ require "modules.no_deconstruction_of_neutral_entities"
 require "modules.biters_yield_coins"
 require "modules.rocks_yield_ore"
 require "modules.ores_are_mixed"
-require "modules.more_attacks"
+require "modules.biters_attack_moving_players"
 
 require "modules.trees_grow"
 require "modules.trees_randomly_die"
@@ -59,16 +59,11 @@ local function spawn_market(surface, position)
 	market.add_market_item({price = {{"coin", 3}}, offer = {type = 'give-item', item = 'coal', count = 50}})
 	market.add_market_item({price = {{"coin", 5}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}})
 	
-	market.add_market_item({price = {{'coin', 4}}, offer = {type = 'give-item', item = "raw-fish", count = 1}})
+	market.add_market_item({price = {{'coin', 2}}, offer = {type = 'give-item', item = "raw-fish", count = 1}})
 	market.add_market_item({price = {{'coin', 8}}, offer = {type = 'give-item', item = "grenade", count = 1}})
 	market.add_market_item({price = {{'coin', 1}}, offer = {type = 'give-item', item = "firearm-magazine", count = 1}})
 	market.add_market_item({price = {{'coin', 16}}, offer = {type = 'give-item', item = "submachine-gun", count = 1}})
 	market.add_market_item({price = {{'coin', 32}}, offer = {type = 'give-item', item = "car", count = 1}})
-end
-
-local function on_chunk_generated(event)
-	local surface = event.surface
-	local left_top = event.area.left_top
 end
 
 local function on_player_joined_game(event)	
@@ -80,7 +75,7 @@ local function on_player_joined_game(event)
 	
 	if not global.market then
 		spawn_market(player.surface, {x = 0, y = -8})
-		game.map_settings.enemy_evolution.time_factor = 0.0001
+		game.map_settings.enemy_evolution.time_factor = 0.00003
 		global.market = true
 	end
 end	
@@ -111,4 +106,3 @@ end
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)

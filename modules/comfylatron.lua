@@ -20,19 +20,14 @@ local texts = {
 		"comfylatron seeking target",
 		"gotta go fast",
 		"gas gas gas",
-		"comfylatron coming through",
-		"Game's over, losers! I have all the money.",
-		"Do the comfylatron! Do the comfylatron!"
+		"comfylatron coming through"
 	},
 	["greetings"] = {
 		"=^_^=",
 		"=^.^= Hi",
 		"^.^ Finally i found you",
 		"I have an important message for you",
-		"Hello engineer",
-		"Bite my 8-bit metal ass",
-		"I like your attitude! Let's party",
-		"Put it there, pal!... I meant your wallet"
+		"Hello engineer"
 	},
 	["neutral_findings"] = {
 		"a",
@@ -74,11 +69,7 @@ local texts = {
 		"I dreamt of electric sheep ^_^",
 		"I need a minute to defrag.",
 		"I have a secret plan.",
-		"Good news! I’ve taught the inserter to feel love!",
-		"Now Wireless Joe Jackson - there was a blern-hitting machine!",
-		"Have you ever tried just turning off the TV, sitting down with your children, and hitting them?",
-		"I'm bored. Let's drink!",
-		"Supposing we're not stupid what kind of stupid mission is this?"
+		"Good news! I’ve taught the inserter to feel love!"
 	},
 	["alone"] = {
 		"comfy ^.^",
@@ -95,13 +86,9 @@ local texts = {
 		"00010111",
 		"10010010",
 		"*_*",
-		"This is the worst kind of discrimination: the kind against me!",
-		"My life, and by extension everyone else's, is meaningless.",
 		"I came here with a simple dream...a dream of killing all humans. And this is how it must end?",
-		"O’ cruel fate, to be thusly boned! Ask not for whom the bone bones—it bones for thee.",
 		"Bot-on-bot violence? Where will it end?",
 		"Thanks to you, I went on a soul-searching journey. I hate those!",
-		"Stupid anti-pimping laws!",
 		"From now on, you guys'll do all the work while I sit on the couch and do nothing."
 	}
 }

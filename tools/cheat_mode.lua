@@ -21,7 +21,7 @@ function cheat_mode()
 	game.forces.player.manual_mining_speed_modifier = 3
 	game.forces.player.character_reach_distance_bonus = 1000
 	game.forces.player.character_health_bonus = 1000
-	game.speed = 2
+	game.speed = 1
 	surface.daytime = 1
 	--surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()
