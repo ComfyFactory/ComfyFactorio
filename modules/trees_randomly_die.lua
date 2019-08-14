@@ -3,6 +3,16 @@
 local event = require 'utils.event'
 local math_random = math.random
 
+local difficulties_votes = {
+	[1] = 128,
+	[2] = 64,
+	[3] = 32,
+	[4] = 16,
+	[5] = 8,
+	[6] = 4,
+	[7] = 2
+}
+
 local function create_particles(surface, name, position, amount)
 	local math_random = math.random
 	
@@ -36,7 +46,10 @@ local function create_particles(surface, name, position, amount)
 		position = {x = position.x, y = position.y}
 	})
 	
-	if math_random(1, 8) == 1 then
+	local r = 8
+	if global.difficulty_vote_index then r = difficulties_votes[global.difficulty_vote_index] end
+	
+	if math_random(1, r) == 1 then
 		surface.create_entity({	
 			name = "explosive-cannon-projectile",
 			position = position,
@@ -68,7 +81,9 @@ local function kill_random_tree(surface)
 end
 
 local function tick(event)
-	if math_random(1, 15) ~= 1 then return end
+	local r = 16
+	if global.difficulty_vote_index then r = difficulties_votes[global.difficulty_vote_index] end
+	if math_random(1, r) ~= 1 then return end
 	local surface = game.players[1].surface	
 	for a = 1, 8, 1 do
 		if kill_random_tree(surface) then return end

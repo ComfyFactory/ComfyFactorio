@@ -17,10 +17,22 @@ require "modules.trees_randomly_die"
 
 require "maps.overgrowth_map_info"
 
+require "modules.difficulty_vote"
+
 local unearthing_biters = require "functions.unearthing_biters"
 
 local event = require 'utils.event' 
 local math_random = math.random
+
+local difficulties_votes = {
+	[1] = 11,
+	[2] = 10,
+	[3] = 9,
+	[4] = 8,
+	[5] = 7,
+	[6] = 6,
+	[7] = 5
+}
 
 local function create_particles(surface, name, position, amount, cause_position)
 	local math_random = math.random
@@ -98,7 +110,9 @@ local function on_player_joined_game(event)
 end	
 
 local function trap(entity)
-	if math_random(1,8) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end	
+	local r = 8
+	if global.difficulty_vote_index then r = difficulties_votes[global.difficulty_vote_index] end
+	if math_random(1,r) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end	
 end
 
 local function on_player_mined_entity(event)

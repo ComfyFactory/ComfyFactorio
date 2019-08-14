@@ -46,7 +46,11 @@ local function get_trees(surface)
 	local p = get_chunk(surface)
 	if not p then return false end
 	local trees = surface.find_entities_filtered({type = "tree", area = {{p.x * 32, p.y * 32}, {p.x * 32 + 32, p.y * 32 + 32}}})
-	global.trees_grow_chunk_next_visit[str] = game.tick + 420 + #trees * 4
+	
+	local a = 750
+	if global.difficulty_vote_value then a = a / global.difficulty_vote_value end
+	global.trees_grow_chunk_next_visit[coord_string(p.x, p.y)] = math.floor(game.tick + math.floor(a + (#trees * 5)))
+	
 	if not trees[1] then return false end
 	return trees
 end
@@ -54,8 +58,9 @@ end
 local function grow_trees(surface)
 	local trees = get_trees(surface)
 	if not trees then return false end
-	
-	for a = 1, math_random(3, 6), 1 do
+	local m = 2
+	if global.difficulty_vote_index then m = global.difficulty_vote_index end
+	for a = 1, math_random(m, math.ceil(m * 1.5)), 1 do
 		local tree = trees[math_random(1, #trees)]
 		if not blacklist[tree.name] then
 			local vector = vectors[math_random(1, #vectors)]
@@ -102,7 +107,7 @@ local function on_init(event)
 	global.trees_grow_chunk_next_visit = {}
 	global.trees_grow_chunk_raffle = {}
 	global.trees_grow_chunk_position = {}
-	
+
 	global.trees_grow_chunks_charted = {}
 	global.trees_grow_chunks_charted_counter = 0
 	global.trees_grow_factor = 40

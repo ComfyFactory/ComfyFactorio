@@ -7,7 +7,7 @@ local info = [[
 	
 	Brick and other solid tiles are resistant to the wild growth.
 	Concrete has double the durability of bricks.
-	Refined Concrete has three times the resistance of concrete.
+	Refined Concrete has four times the resistance of concrete.
 	
 	For your effort to colonize this overgrown planet,
 	we pay you a coin for each tree you defeat.
