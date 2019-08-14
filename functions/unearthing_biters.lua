@@ -21,8 +21,8 @@ local function spawn_biter(surface, position, evolution)
 	local biter_chances = {
 		{name = "small-biter", chance = math.floor(1000 - (evo * 1.6))},
 		{name = "small-spitter", chance = math.floor(500 - evo * 0.8)},
-		{name = "medium-biter", chance = evo},
-		{name = "medium-spitter", chance = math.floor(evo * 0.5)},
+		{name = "medium-biter", chance = -150 + evo},
+		{name = "medium-spitter", chance = -75 + math.floor(evo * 0.5)},
 		{name = "big-biter", chance = math.floor((evo - 500) * 3)},
 		{name = "big-spitter", chance = math.floor((evo - 500) * 2)},
 		{name = "behemoth-biter", chance = math.floor((evo - 800) * 6)},

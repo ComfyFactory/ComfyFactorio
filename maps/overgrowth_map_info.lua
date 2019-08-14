@@ -5,7 +5,9 @@ local info = [[
 	
 	Stop the trees before it is too late.
 	
-	Concrete and other solid tiles are resistant to the wild growth, but can break after a while.
+	Brick and other solid tiles are resistant to the wild growth.
+	Concrete has double the durability of bricks.
+	Refined Concrete has three times the resistance of concrete.
 	
 	For your effort to colonize this overgrown planet,
 	we pay you a coin for each tree you defeat.
