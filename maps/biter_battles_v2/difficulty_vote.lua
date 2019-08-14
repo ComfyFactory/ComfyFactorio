@@ -1,40 +1,43 @@
 local event = require 'utils.event' 
 
 local difficulties = {
-	[1] = {name = "Peaceful", value = 0.25, color = {r=0.00, g=0.45, b=0.00}, print_color = {r=0.00, g=0.8, b=0.00}},
-	[2] = {name = "Easy", value = 0.5, color = {r=0.00, g=0.35, b=0.00}, print_color = {r=0.00, g=0.6, b=0.00}},
-	[3] = {name = "Piece of cake", value = 0.75, color = {r=0.00, g=0.25, b=0.00}, print_color = {r=0.00, g=0.4, b=0.00}},
-	[4] = {name = "Normal", value = 1, color = {r=0.00, g=0.00, b=0.25}, print_color = {r=0.0, g=0.0, b=0.5}},
-	[5] = {name = "Hard", value = 1.5, color = {r=0.25, g=0.00, b=0.00}, print_color = {r=0.4, g=0.0, b=0.00}},
-	[6] = {name = "Nightmare", value = 3, color = {r=0.35, g=0.00, b=0.00}, print_color = {r=0.6, g=0.0, b=0.00}},
-	[7] = {name = "Impossible", value = 5, color = {r=0.45, g=0.00, b=0.00}, print_color = {r=0.8, g=0.0, b=0.00}}
+	[1] = {name = "Peaceful", str = "25%", value = 0.25, color = {r=0.00, g=0.45, b=0.00}, print_color = {r=0.00, g=0.9, b=0.00}},
+	[2] = {name = "Easy", str = "50%", value = 0.5, color = {r=0.00, g=0.35, b=0.00}, print_color = {r=0.00, g=0.7, b=0.00}},
+	[3] = {name = "Piece of cake", str = "75%", value = 0.75, color = {r=0.00, g=0.25, b=0.00}, print_color = {r=0.00, g=0.5, b=0.00}},
+	[4] = {name = "Normal", str = "100%", value = 1, color = {r=0.00, g=0.00, b=0.25}, print_color = {r=0.0, g=0.0, b=0.7}},
+	[5] = {name = "Hard", str = "150%", value = 1.5, color = {r=0.25, g=0.00, b=0.00}, print_color = {r=0.5, g=0.0, b=0.00}},
+	[6] = {name = "Nightmare", str = "200%", value = 2, color = {r=0.35, g=0.00, b=0.00}, print_color = {r=0.7, g=0.0, b=0.00}},
+	[7] = {name = "Insane", str = "300%", value = 3, color = {r=0.45, g=0.00, b=0.00}, print_color = {r=0.9, g=0.0, b=0.00}}
 }
-
-local poll_closing_timeout = 108000
 
 local function difficulty_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top["difficulty_gui"] then player.gui.top["difficulty_gui"].destroy() end
-		local b = player.gui.top.add { type = "button", caption = difficulties[global.difficulty_vote_index].name, tooltip = "Current difficulty of the map is " .. difficulties[global.difficulty_vote_index].name .. ".", name = "difficulty_gui" }
+		local str = table.concat({"Global map difficulty is ", difficulties[global.difficulty_vote_index].name, ". Mutagen has ", difficulties[global.difficulty_vote_index].str, " effectiveness."})
+		local b = player.gui.top.add { type = "sprite-button", caption = difficulties[global.difficulty_vote_index].name, tooltip = str, name = "difficulty_gui" }
 		b.style.font = "heading-2"
 		b.style.font_color = difficulties[global.difficulty_vote_index].print_color
 		b.style.minimal_height = 38
+		b.style.minimal_width = 96
 	end
 end
 
 local function poll_difficulty(player)
 	if player.gui.center["difficulty_poll"] then player.gui.center["difficulty_poll"].destroy() return end
-	if game.tick > poll_closing_timeout then return end
+	if game.tick > 54000 then
+		local frame = player.gui.center.add { type = "frame", caption = "Voting is over.", name = "difficulty_poll", direction = "vertical" }
+		return 
+	end
 	
-	local frame = player.gui.center.add { type = "frame", caption = "Vote difficulty:", name = "difficulty_poll", direction = "vertical" }
+	local frame = player.gui.center.add { type = "frame", caption = "Vote global difficulty:", name = "difficulty_poll", direction = "vertical" }
 	for i = 1, 7, 1 do
-		local b = frame.add({type = "button", name = tostring(i), caption = difficulties[i].name})
+		local b = frame.add({type = "button", name = tostring(i), caption = difficulties[i].name .. " (" .. difficulties[i].str .. ")"})
 		b.style.font_color = difficulties[i].color
 		b.style.font = "heading-2"
-		b.style.minimal_width = 160
+		b.style.minimal_width = 180
 	end
-	local b = frame.add({type = "label", caption = "- - - - - - - - - - - - - - - - - -"})
-	local b = frame.add({type = "button", name = "skip", caption = "Close (" .. math.floor((poll_closing_timeout - game.tick) / 3600) .. " minutes left)"})
+	local b = frame.add({type = "label", caption = "- - - - - - - - - - - - - - - - - - - -"})
+	local b = frame.add({type = "button", name = "skip", caption = "Close (" .. math.floor((54000 - game.tick) / 3600) .. " minutes left)"})
 	b.style.font_color = {r=0.66, g=0.0, b=0.66}
 	b.style.font = "heading-3"
 	b.style.minimal_width = 96
@@ -59,7 +62,11 @@ end
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
-		poll_difficulty(player)
+		if bb_config.only_admins_vote then
+			if player.admin then poll_difficulty(player) end
+		else
+			poll_difficulty(player)
+		end
 	end
 	if not global.difficulty_vote_value then global.difficulty_vote_value = 1 end
 	if not global.difficulty_vote_index then global.difficulty_vote_index = 4 end
@@ -77,7 +84,7 @@ local function on_gui_click(event)
 		return
 	end
 	if event.element.parent.name ~= "difficulty_poll" then return end
-	if event.element.name == "skip" then event.element.parent.destroy() end	
+	if event.element.name == "skip" then event.element.parent.destroy() end		
 	local i = tonumber(event.element.name)
 	game.print(player.name .. " has voted for " .. difficulties[i].name .. " difficulty!", difficulties[i].print_color)
 	global.difficulty_player_votes[player.name] = i

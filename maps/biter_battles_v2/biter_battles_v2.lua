@@ -140,6 +140,7 @@ local function init_forces()
 	global.force_area = {}
 	global.active_biters = {}
 	global.biter_raffle = {}
+	global.evo_raise_counter = 1
 	global.next_attack = "north"
 	if math.random(1,2) == 1 then global.next_attack = "south" end
 	global.bb_evolution = {}
@@ -200,4 +201,5 @@ require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.no_turret_creep"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.bb_map_intro"
+require "maps.biter_battles_v2.difficulty_vote"
 require "modules.custom_death_messages"
