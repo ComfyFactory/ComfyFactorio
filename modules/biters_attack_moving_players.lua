@@ -8,7 +8,8 @@ local function on_player_changed_position(event)
 	if game.tick - global.biters_attack_moving_players_last_action_tick < 7200 then return end
 	local player = game.players[event.player_index]
 	if not player.character then return end
-	
+	local amount = math.floor(game.tick * 0.0005) + 1
+	if amount > 32 then amount = 32 end
 	player.surface.set_multi_command({
 		command={
 			type = defines.command.attack_area,
@@ -16,7 +17,7 @@ local function on_player_changed_position(event)
 			radius = 16,
 			distraction=defines.distraction.by_anything
 			},
-		unit_count = math.floor(game.tick * 0.0005) + 1,
+		unit_count = amount,
 		force = "enemy",
 		unit_search_distance=256
 	})

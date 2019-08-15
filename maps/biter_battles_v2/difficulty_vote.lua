@@ -10,6 +10,8 @@ local difficulties = {
 	[7] = {name = "Insane", str = "300%", value = 3, color = {r=0.45, g=0.00, b=0.00}, print_color = {r=0.9, g=0.0, b=0.00}}
 }
 
+local timeout = 54000
+
 local function difficulty_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top["difficulty_gui"] then player.gui.top["difficulty_gui"].destroy() end
@@ -24,8 +26,15 @@ end
 
 local function poll_difficulty(player)
 	if player.gui.center["difficulty_poll"] then player.gui.center["difficulty_poll"].destroy() return end
-	if game.tick > 54000 then
-		local frame = player.gui.center.add { type = "frame", caption = "Voting is over.", name = "difficulty_poll", direction = "vertical" }
+	if game.tick > timeout then
+		if player.online_time ~= 0 then
+			local t = math.abs(math.floor((timeout - game.tick) / 3600))
+			local str = "Votes have closed " .. t
+			str = str .. " minute"
+			if t > 1 then str = str .. "s" end
+			str = str .. " ago."
+			player.print(str)
+		end
 		return 
 	end
 	
@@ -37,7 +46,7 @@ local function poll_difficulty(player)
 		b.style.minimal_width = 180
 	end
 	local b = frame.add({type = "label", caption = "- - - - - - - - - - - - - - - - - - - -"})
-	local b = frame.add({type = "button", name = "skip", caption = "Close (" .. math.floor((54000 - game.tick) / 3600) .. " minutes left)"})
+	local b = frame.add({type = "button", name = "close", caption = "Close (" .. math.floor((timeout - game.tick) / 3600) .. " minutes left)"})
 	b.style.font_color = {r=0.66, g=0.0, b=0.66}
 	b.style.font = "heading-3"
 	b.style.minimal_width = 96
@@ -83,8 +92,9 @@ local function on_gui_click(event)
 		poll_difficulty(player)
 		return
 	end
+	if event.element.type ~= "button" then return end
 	if event.element.parent.name ~= "difficulty_poll" then return end
-	if event.element.name == "skip" then event.element.parent.destroy() end		
+	if event.element.name == "close" then event.element.parent.destroy() return end		
 	local i = tonumber(event.element.name)
 	game.print(player.name .. " has voted for " .. difficulties[i].name .. " difficulty!", difficulties[i].print_color)
 	global.difficulty_player_votes[player.name] = i

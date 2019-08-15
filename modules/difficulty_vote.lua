@@ -8,9 +8,7 @@ local difficulties = {
 	[5] = {name = "Hard", value = 1.5, color = {r=0.25, g=0.00, b=0.00}, print_color = {r=0.4, g=0.0, b=0.00}},
 	[6] = {name = "Nightmare", value = 3, color = {r=0.35, g=0.00, b=0.00}, print_color = {r=0.6, g=0.0, b=0.00}},
 	[7] = {name = "Impossible", value = 5, color = {r=0.45, g=0.00, b=0.00}, print_color = {r=0.8, g=0.0, b=0.00}}
-}
-
-local poll_closing_timeout = 108000
+} 
 
 local function difficulty_gui()
 	for _, player in pairs(game.connected_players) do
@@ -24,7 +22,18 @@ end
 
 local function poll_difficulty(player)
 	if player.gui.center["difficulty_poll"] then player.gui.center["difficulty_poll"].destroy() return end
-	if game.tick > poll_closing_timeout then return end
+	if not global.difficulty_poll_closing_timeout then global.difficulty_poll_closing_timeout = 54000 end
+	if game.tick > global.difficulty_poll_closing_timeout then
+		if player.online_time ~= 0 then
+			local t = math.abs(math.floor((global.difficulty_poll_closing_timeout - game.tick) / 3600))
+			local str = "Votes have closed " .. t
+			str = str .. " minute"
+			if t > 1 then str = str .. "s" end
+			str = str .. " ago."
+			player.print(str)
+		end
+		return 
+	end
 	
 	local frame = player.gui.center.add { type = "frame", caption = "Vote difficulty:", name = "difficulty_poll", direction = "vertical" }
 	for i = 1, 7, 1 do
@@ -34,7 +43,7 @@ local function poll_difficulty(player)
 		b.style.minimal_width = 160
 	end
 	local b = frame.add({type = "label", caption = "- - - - - - - - - - - - - - - - - -"})
-	local b = frame.add({type = "button", name = "skip", caption = "Close (" .. math.floor((poll_closing_timeout - game.tick) / 3600) .. " minutes left)"})
+	local b = frame.add({type = "button", name = "close", caption = "Close (" .. math.floor((global.difficulty_poll_closing_timeout - game.tick) / 3600) .. " minutes left)"})
 	b.style.font_color = {r=0.66, g=0.0, b=0.66}
 	b.style.font = "heading-3"
 	b.style.minimal_width = 96
@@ -76,8 +85,9 @@ local function on_gui_click(event)
 		poll_difficulty(player)
 		return
 	end
+	if event.element.type ~= "button" then return end
 	if event.element.parent.name ~= "difficulty_poll" then return end
-	if event.element.name == "skip" then event.element.parent.destroy() end	
+	if event.element.name == "close" then event.element.parent.destroy() return end	
 	local i = tonumber(event.element.name)
 	game.print(player.name .. " has voted for " .. difficulties[i].name .. " difficulty!", difficulties[i].print_color)
 	global.difficulty_player_votes[player.name] = i

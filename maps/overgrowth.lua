@@ -34,6 +34,16 @@ local difficulties_votes = {
 	[7] = 5
 }
 
+local difficulties_votes_evo = {
+	[1] = 0.000016,
+	[2] = 0.000024,
+	[3] = 0.000032,
+	[4] = 0.000040,
+	[5] = 0.000048,
+	[6] = 0.000056,
+	[7] = 0.000064
+}
+
 local function create_particles(surface, name, position, amount, cause_position)
 	local math_random = math.random
 	
@@ -101,7 +111,7 @@ local function on_player_joined_game(event)
 	
 	if not global.market then
 		spawn_market(player.surface, {x = 0, y = -8})
-		game.map_settings.enemy_evolution.time_factor = 0.000035
+		game.map_settings.enemy_evolution.time_factor = 0.00003
 		global.trees_defeated = 0
 		global.market = true
 	end
@@ -111,7 +121,10 @@ end
 
 local function trap(entity)
 	local r = 8
-	if global.difficulty_vote_index then r = difficulties_votes[global.difficulty_vote_index] end
+	if global.difficulty_vote_index then
+		r = difficulties_votes[global.difficulty_vote_index] 
+		game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[global.difficulty_vote_index] 
+	end
 	if math_random(1,r) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end	
 end
 
@@ -131,14 +144,16 @@ local function on_player_mined_entity(event)
 		return
 	end
 	
-	entity.surface.spill_item_stack(entity.position,{name = "coin", count = 1}, true)
 	create_particles(entity.surface, "wooden-particle", entity.position, 128)
+	
+	if event.cause then
+		if event.cause.force.name == "enemy" then return end
+	end	
+	
+	entity.surface.spill_item_stack(entity.position,{name = "coin", count = 1}, true)	
 end
 
 local function on_entity_died(event)
-	if event.cause then
-		if event.cause.force.name == "enemy" then return end
-	end
 	on_player_mined_entity(event)
 end
 	
