@@ -10,6 +10,7 @@ local Print = require('utils.print_override')
 local raw_print = Print.raw_print
 
 local session_data_set = 'sessions'
+local error_offfline = '[ERROR] Webpanel is offline.'
 local session = {}
 local online_track = {}
 local trusted = {}
@@ -42,7 +43,7 @@ printinfo =
 )
 end
 
-local fetch =
+local try_download_data =
     Token.register(
     function(data)
         local key = data.key
@@ -55,34 +56,62 @@ local fetch =
         else
             session[key] = 0
             trusted[key] = false
+            set_data(session_data_set, key, session[key])
+        end
+    end
+)
+
+local try_upload_data =
+    Token.register(
+    function(data)
+        local key = data.key
+        local player = game.get_player(key)
+        local value = data.value
+        if value then
+            local old_time = session[key]
+            if not online_track[player.name] then
+                online_track[player.name] = 0
+            end
+            local new_time = old_time + player.online_time - online_track[player.name]
+            set_data(session_data_set, key, new_time)
+            online_track[player.name] = player.online_time
+            session[key] = value
         end
     end
 )
 
 local function tick()
     for _, p in pairs(game.connected_players) do
-        Public.send(p)
-    end
-end
-
---- Tries to get data from the webpanel and updates the dataset with values.
--- @param player
-function Public.send(player)
-    if not online_track[player.name] then
-        online_track[player.name] = 0
-    end
-    if session[player.name] then
-        local old_time = session[player.name]
-        local new_time = old_time + player.online_time - online_track[player.name]
-        set_data(session_data_set, player.name, new_time)
-        online_track[player.name] = player.online_time
+        Public.try_ul_data(p.name)
     end
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
 -- @param data_set player token
-function Public.fetch(key)
-    try_get_data(session_data_set, key, fetch)
+function Public.try_dl_data(key)
+    local key = tostring(key)
+    local secs = Server.get_current_time()
+    if secs == nil then
+        raw_print(error_offline)
+        return
+    else
+        try_get_data(session_data_set, key, try_download_data)
+        secs = nil
+    end 
+end
+
+--- Tries to get data from the webpanel and updates the local table with values.
+-- @param data_set player token
+function Public.try_ul_data(key)
+    local key = tostring(key)
+    local secs = Server.get_current_time()
+    if secs == nil then
+        raw_print(error_offline)
+        return
+    else
+        try_get_data(session_data_set, key, try_upload_data)
+        secs = nil
+    end 
 end
 
 --- Checks if a player exists within the table
@@ -130,8 +159,7 @@ Event.add(
             return
         end
         if game.is_multiplayer() then
-            Public.fetch(player.name)   
-            Public.send(player)
+            Public.try_dl_data(player.name)   
         else
             session[player.name] = player.online_time
         end
@@ -146,7 +174,7 @@ Event.add(
             return
         end
         if game.is_multiplayer() then
-        Public.send(player)
+        Public.try_ul_data(player.name)
         end
     end
 )
