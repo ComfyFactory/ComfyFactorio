@@ -10,7 +10,7 @@ local Print = require('utils.print_override')
 local raw_print = Print.raw_print
 
 local session_data_set = 'sessions'
-local error_offfline = '[ERROR] Webpanel is offline.'
+local error_offline = '[ERROR] Webpanel is offline.'
 local session = {}
 local online_track = {}
 local trusted = {}
