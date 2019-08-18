@@ -15,7 +15,7 @@
 
     global.table_of_properties = {}
 
-    global.table_of_properties.required_number_of_players = 1
+    global.table_of_properties.required_number_of_players = 2
 
     global.table_of_properties.countdown_in_seconds = 28800
 
@@ -36,6 +36,8 @@
     global.table_of_scores = {}
 
     global.table_of_spots = {}
+
+    global.table_of_spawns = {}
 
     global.table_of_squads = {}
 
@@ -78,7 +80,7 @@
 
         if player.gui.top[ 'draw_gui_intro_button' ] then return end
 
-        local element_button = player.gui.top.add( { type = 'sprite-button', caption = '?', name = 'draw_gui_intro_button', tooltip = 'Map Intro' } )
+        local element_button = player.gui.top.add( { type = 'sprite-button', name = 'draw_gui_intro_button', caption = '?', tooltip = 'Map Intro' } )
 
         element_button.style.width = 38
 
@@ -634,33 +636,35 @@
 
         local element_frame = player.gui.center.add( { type = 'frame', name = 'draw_gui_spawn', direction = 'horizontal' } )
 
-        element_frame.style.top_margin = 100
+        local element_button = element_frame.add( { type = 'button', name = 'event_on_click_spawn_base', caption = 'BASE' } )
 
-        for _, spot in pairs( global.table_of_spots ) do
+        -- element_button.style.color = table_of_colors.damage
 
-            local element_button = element_frame.add( { type = 'sprite-button', name = 'draw_gui_spawn_' .. spot.properties.name, caption = spot.properties.name } )
+        element_button.style.font_color = table_of_colors.white
 
-            element_button.enabled = false
+        for index, spot in pairs( global.table_of_spots ) do
 
-            local color = table_of_colors.white
+            local element_button = element_frame.add( { type = 'button', name = 'event_on_click_spawn_' .. index, caption = spot.properties.name } )
 
-            if player.force.name ~= 'force_spectator' then
+            -- element_button.enabled = false
 
-                color = table_of_colors.neutral
+            local color = table_of_colors.neutral
 
-                if spot.properties.force.name == global.table_of_properties[ player.force.name ].name and spot.properties.value >= 50 then element_button.enabled = true end
+            -- if spot.properties.force.name == global.table_of_properties[ player.force.name ].name and spot.properties.value >= 50 then element_button.enabled = true end
 
-                if spot.properties.force.name == global.table_of_properties[ player.force.name ].name and spot.properties.value > 0 then color = table_of_colors.team end
+            if spot.properties.force.name == global.table_of_properties[ player.force.name ].name and spot.properties.value > 0 then color = table_of_colors.team end
 
-                if spot.properties.force.name == global.table_of_properties[ player.force.name ].enemy and spot.properties.value > 0 then color = table_of_colors.enemy end
-
-            end
+            if spot.properties.force.name == global.table_of_properties[ player.force.name ].enemy and spot.properties.value > 0 then color = table_of_colors.enemy end
 
             element_button.style.font_color = color
 
         end
 
         for _, element_item in pairs( element_frame.children ) do
+
+            element_item.style.width = 100
+
+            element_item.style.height = 100
 
             element_item.style.padding = 0
 
@@ -677,6 +681,16 @@
     end
 
     function create_a_tank( player )
+
+        player.insert( { name = 'light-armor', count = 1 } )
+
+        player.insert( { name = 'submachine-gun', count = 1 } )
+
+        player.insert( { name = 'firearm-magazine', count = 50 } )
+
+        player.insert( { name = 'raw-fish', count = 10 } )
+
+        player.insert( { name = 'explosive-cannon-shell', count = 5 } )
 
         local table_of_entities = player.surface.find_entities_filtered( { name = 'tank', force = player.force.name } )
 
@@ -998,23 +1012,17 @@
 
         local position = player.force.get_spawn_position( surface )
 
+        global.table_of_spawns[ player.index ] = position
+
         if surface.is_chunk_generated( position ) then player.teleport( surface.find_non_colliding_position( 'character', position, 3, 0.5 ), surface ) else player.teleport( position, surface ) end
 
         player.character.destructible = true
 
         player_icon_add( player )
 
-        player.insert( { name = 'light-armor', count = 1 } )
-
-        player.insert( { name = 'submachine-gun', count = 1 } )
-
-        player.insert( { name = 'firearm-magazine', count = 50 } )
-
-        player.insert( { name = 'raw-fish', count = 10 } )
-
-        player.insert( { name = 'explosive-cannon-shell', count = 5 } )
-
         create_a_tank( player )
+
+        -- draw_gui_spawn( player ) -- only for tests
 
         for _, spot in pairs( global.table_of_spots ) do player.force.chart( game.surfaces.tank_conquest, { { x = spot.properties.position.x - 10, y = spot.properties.position.y - 10 }, { x = spot.properties.position.x + 10, y = spot.properties.position.y + 10 } } ) end
 
@@ -1046,6 +1054,8 @@
 
         local position = { x = 0, y = 0 }
 
+        global.table_of_spawns[ player.index ] = position
+
         if surface.is_chunk_generated( position ) then player.teleport( surface.find_non_colliding_position( 'character', position, 3, 0.5 ), surface ) else player.teleport( position, surface ) end
 
         player.character.destructible = false
@@ -1053,6 +1063,12 @@
         player_icon_remove( player )
 
         player.character.clear_items_inside()
+
+    end
+
+    function event_on_click_spawn( player )
+
+        game.print( 'A' )
 
     end
 
@@ -1462,6 +1478,12 @@
 
         end
 
+        if event.element.valid and event.element.name == 'event_on_click_spawn_1' then
+
+            event_on_click_spawn( player )
+
+        end
+
     end
 
     event.add( defines.events.on_gui_click, on_gui_click )
@@ -1598,7 +1620,13 @@
 
         local player = game.players[ event.player_index ]
 
+        local surface = player.surface
+
         if player.gui.center[ 'draw_gui_spawn' ] then player.gui.center[ 'draw_gui_spawn' ].destroy() end
+
+        local position = global.table_of_spawns[ player.index ]
+
+        if surface.is_chunk_generated( position ) then player.teleport( surface.find_non_colliding_position( 'character', position, 3, 0.5 ), surface ) else player.teleport( position, surface ) end
 
         player_icon_add( player )
 
@@ -1614,6 +1642,8 @@
 
         local player = game.players[ event.player_index ]
 
+        global.table_of_spawns[ player.index ] = player.force.get_spawn_position( player.surface )
+
         local table_of_entities = player.surface.find_entities_filtered( { name = 'character-corpse' } )
 
         for _, entity in pairs( table_of_entities ) do
@@ -1624,7 +1654,7 @@
 
         end
 
-        draw_gui_spawn( player )
+        -- draw_gui_spawn( player )
 
         player_icon_remove( player )
 
@@ -1705,6 +1735,8 @@
         end
 
         global.table_of_tanks[ player.index ] = nil
+
+        global.table_of_spawns[ player.index ] = nil
 
         for _, spot in pairs( global.table_of_spots ) do if spot.players[ player.index ] ~= nil then spot.players[ player.index ] = nil end end
 
