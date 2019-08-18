@@ -55,7 +55,7 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	create_map_intro_button(player)
 	if player.online_time == 0 then
-		create_map_intro(player)
+		--create_map_intro(player)
 	end
 end
 

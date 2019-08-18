@@ -1,5 +1,6 @@
 -- Biter Battles v2 -- by MewMew
 
+require 'utils.table'
 require "on_tick_schedule"
 require "maps.biter_battles_v2.config"
 require "modules.dynamic_landfill"
@@ -18,11 +19,11 @@ local function init_surface()
 		["coal"] = {frequency = "2", size = "1", richness = "1"},
 		["stone"] = {frequency = "2", size = "1", richness = "1"},
 		["copper-ore"] = {frequency = "2", size = "1", richness = "1"},
-		["iron-ore"] = {frequency = "2", size = "1", richness = "1"},
+		["iron-ore"] = {frequency = "2.5", size = "1.1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "2.5", size = "1", richness = "1.5"},
 		["trees"] = {frequency = "1.25", size = "0.6", richness = "0.5"},
-		["enemy-base"] = {frequency = "128", size = "1", richness = "1"}	
+		["enemy-base"] = {frequency = "256", size = "0.61", richness = "1"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 			
@@ -138,6 +139,8 @@ local function init_forces()
 	global.spy_fish_timeout = {}
 	global.force_area = {}
 	global.active_biters = {}
+	global.biter_raffle = {}
+	global.evo_raise_counter = 1
 	global.next_attack = "north"
 	if math.random(1,2) == 1 then global.next_attack = "south" end
 	global.bb_evolution = {}
@@ -156,6 +159,7 @@ local function init_forces()
 		game.forces[force.name].research_queue_enabled = true
 		global.spy_fish_timeout[force.name] = 0
 		global.active_biters[force.name] = {}
+		global.biter_raffle[force.name] = {}
 		global.bb_evolution[force.name] = 0
 		global.bb_evasion[force.name] = false
 		global.bb_threat_income[force.name] = 0
@@ -197,4 +201,5 @@ require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.no_turret_creep"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.bb_map_intro"
+require "maps.biter_battles_v2.difficulty_vote"
 require "modules.custom_death_messages"

@@ -27,6 +27,17 @@ local function get_active_biter_count(biter_force_name)
 	return count
 end
 
+function set_biter_raffle_table(surface, biter_force_name)
+	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name})
+	if not biters[1] then return end
+	global.biter_raffle[biter_force_name] = {}
+	for _, e in pairs(biters) do
+		if math_random(1,3) == 1 then
+			global.biter_raffle[biter_force_name][#global.biter_raffle[biter_force_name] + 1] = e.name
+		end
+	end				
+end
+
 local function get_threat_ratio(biter_force_name)
 	if global.bb_threat[biter_force_name] <= 0 then return 0 end
 	local t1 = global.bb_threat["north_biters"]
@@ -49,6 +60,15 @@ local function is_biter_inactive(biter, unit_number, biter_force_name)
 	if global.bb_debug then game.print(biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since) end	
 	biter.entity.destroy()
 	return true
+end
+
+ai.destroy_old_age_biters = function()
+	local surface = game.surfaces["biter_battles"]
+	for _, e in pairs(surface.find_entities_filtered({type = "unit"})) do
+		if not e.unit_group then
+			if math_random(1,8) == 1 then e.destroy() end
+		end
+	end
 end
 
 ai.destroy_inactive_biters = function()	
@@ -94,7 +114,7 @@ local function get_random_close_spawner(surface, biter_force_name)
 	if not spawners[1] then return false end
 	
 	local spawner = spawners[math_random(1,#spawners)]
-	for i = 1, 4, 1 do
+	for i = 1, 5, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
 		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
 	end	
@@ -103,7 +123,7 @@ local function get_random_close_spawner(surface, biter_force_name)
 end
 
 local function select_units_around_spawner(spawner, force_name, biter_force_name)
-	local biters = spawner.surface.find_enemy_units(spawner.position, 256, force_name)
+	local biters = spawner.surface.find_enemy_units(spawner.position, 160, force_name)
 	if not biters[1] then return false end
 	local valid_biters = {}
 	
@@ -122,6 +142,20 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 			threat = threat - threat_values[biter.name]
 		end	
 		if threat < 0 then break end
+	end
+	
+	--Manual spawning of additional units
+	for c = 1, max_unit_count - unit_count, 1 do
+		if threat < 0 then break end
+		local biter_name = global.biter_raffle[biter_force_name][math_random(1, #global.biter_raffle[biter_force_name])]
+		local position = spawner.surface.find_non_colliding_position(biter_name, spawner.position, 128, 2)
+		if not position then break end
+		
+		local biter = spawner.surface.create_entity({name = biter_name, force = biter_force_name, position = position})
+		threat = threat - threat_values[biter.name]
+		
+		valid_biters[#valid_biters + 1] = biter
+		global.active_biters[biter.force.name][biter.unit_number] = {entity = biter, active_since = game.tick}
 	end
 	
 	if global.bb_debug then game.print(get_active_biter_count(biter_force_name) .. " active units for " .. biter_force_name) end
@@ -221,17 +255,31 @@ end
 
 ai.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
-			
-	for c = 1, math.ceil(get_threat_ratio(global.next_attack .. "_biters") * 7), 1 do		
-		create_attack_group(surface, global.next_attack, global.next_attack .. "_biters")
+	local force_name = global.next_attack
+	local biter_force_name = force_name .. "_biters"
+	local wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
+	
+	set_biter_raffle_table(surface, biter_force_name)
+	
+	for c = 1, wave_amount, 1 do		
+		create_attack_group(surface, force_name, biter_force_name)
 	end
-	if global.bb_debug then game.print(math.ceil(get_threat_ratio(global.next_attack .. "_biters") * 7) .. " unit groups designated for " .. global.next_attack .. " biters.") end
+	if global.bb_debug then game.print(wave_amount .. " unit groups designated for " .. force_name .. " biters.") end
 	
 	if global.next_attack == "north" then
 		global.next_attack = "south"
 	else
 		global.next_attack = "north"
 	end	
+end
+
+ai.raise_evo = function()
+	if #game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0 then return end
+	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
+	for _, f in pairs({"north_biters", "south_biters"}) do	
+		set_evo_and_threat(amount, "logistic-science-pack", f)
+	end
+	global.evo_raise_counter = global.evo_raise_counter + 1
 end
 
 --Prevent Players from damaging Rocket Silos

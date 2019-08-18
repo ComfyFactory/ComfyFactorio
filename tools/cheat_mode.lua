@@ -21,11 +21,11 @@ function cheat_mode()
 	game.forces.player.manual_mining_speed_modifier = 3
 	game.forces.player.character_reach_distance_bonus = 1000
 	game.forces.player.character_health_bonus = 1000
-	game.speed = 2
+	game.speed = 1
 	surface.daytime = 1
 	--surface.freeze_daytime = 1
 	game.player.force.research_all_technologies()
 	game.forces["enemy"].evolution_factor = 0.1
-	local chart = 200	
+	local chart = 128	
 	game.forces["player"].chart(surface, {lefttop = {x = chart*-1, y = chart*-1}, rightbottom = {x = chart, y = chart}})			
 end

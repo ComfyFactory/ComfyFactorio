@@ -19,7 +19,7 @@ local function recruit_biters()
 	local spawner = get_random_close_spawner(surface)
 	if not spawner then return end
 	
-	local biters = spawner.surface.find_enemy_units(spawner.position, 128, "player")
+	local biters = spawner.surface.find_enemy_units(spawner.position, 256, "player")
 	if not biters[1] then return false end
 	
 	local amount = math.floor(game.tick * 0.001) + 1

@@ -15,34 +15,37 @@ local function create_particles(surface, position, amount)
 	end	
 end
 
-local function spawn_biter(surface, position, evolution_index)	
-	local biter_table = {
-		[1] = {"small-biter"},
-		[2] = {"small-biter","small-biter","small-biter","small-biter","small-spitter","small-biter"},
-		[3] = {"small-biter","small-biter","small-biter","small-biter","medium-biter","small-spitter"},
-		[4] = {"small-biter","small-biter","small-biter","medium-biter","medium-biter","small-spitter"},
-		[5] = {"small-biter","small-biter","small-biter","medium-biter","medium-biter","medium-spitter"},
-		[6] = {"small-biter","small-biter","medium-biter","medium-biter","medium-biter","medium-spitter"},
-		[7] = {"small-biter","medium-biter","medium-biter","medium-biter","medium-biter","medium-spitter"},
-		[8] = {"medium-biter","medium-biter","medium-biter","medium-biter","big-biter","medium-spitter"},
-		[9] = {"medium-biter","medium-biter","medium-biter","big-biter","big-biter","medium-spitter"},
-		[10] = {"medium-biter","medium-biter","medium-biter","big-biter","big-biter","big-spitter"},
-		[11] = {"medium-biter","medium-biter","big-biter","big-biter","big-biter","big-spitter"},
-		[12] = {"medium-biter","big-biter","big-biter","big-biter","big-biter","big-spitter"},
-		[13] = {"big-biter","big-biter","big-biter","big-biter","big-biter","big-spitter"},
-		[14] = {"big-biter","big-biter","big-biter","big-biter","behemoth-biter","big-spitter"},
-		[15] = {"big-biter","big-biter","big-biter","behemoth-biter","behemoth-biter","big-spitter"},
-		[16] = {"big-biter","big-biter","big-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
-		[17] = {"big-biter","big-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
-		[18] = {"big-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
-		[19] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter"},
-		[20] = {"behemoth-biter","behemoth-biter","behemoth-biter","behemoth-biter","behemoth-spitter","behemoth-spitter"}
+local function spawn_biter(surface, position, evolution)	
+	local evo = math.floor(evolution * 1000)
+	
+	local biter_chances = {
+		{name = "small-biter", chance = math.floor(1000 - (evo * 1.6))},
+		{name = "small-spitter", chance = math.floor(500 - evo * 0.8)},
+		{name = "medium-biter", chance = -150 + evo},
+		{name = "medium-spitter", chance = -75 + math.floor(evo * 0.5)},
+		{name = "big-biter", chance = math.floor((evo - 500) * 3)},
+		{name = "big-spitter", chance = math.floor((evo - 500) * 2)},
+		{name = "behemoth-biter", chance = math.floor((evo - 800) * 6)},
+		{name = "behemoth-spitter", chance = math.floor((evo - 800) * 4)}
 	}
-	local raffle = biter_table[evolution_index]
-	local biter_name = raffle[math.random(1,#raffle)]
-	local p = surface.find_non_colliding_position(biter_name, position, 10, 0.5)
-	if not p then return end
-	surface.create_entity({name = biter_name, position = p, force = "enemy"})
+	
+	local max_chance = 0	
+	for i = 1, 8, 1 do
+		if biter_chances[i].chance < 0 then biter_chances[i].chance = 0 end
+		max_chance = max_chance + biter_chances[i].chance
+	end
+	local r = math.random(1, max_chance)	
+	local current_chance = 0
+	for i = 1, 8, 1 do
+		current_chance = current_chance + biter_chances[i].chance
+		if r <= current_chance then
+			local biter_name = biter_chances[i].name
+			local p = surface.find_non_colliding_position(biter_name, position, 10, 1)
+			if not p then return end
+			surface.create_entity({name = biter_name, position = p, force = "enemy"})
+			return
+		end
+	end
 end
 
 local function unearthing_biters(surface, position, amount)
@@ -51,8 +54,7 @@ local function unearthing_biters(surface, position, amount)
 	if not position.x then return end
 	if not position.y then return end	
 	
-	local evolution_index = math.ceil(game.forces.enemy.evolution_factor * 20)
-	if evolution_index < 1 then evolution_index = 1 end
+	local evolution = game.forces.enemy.evolution_factor
 	
 	local ticks = amount * 30
 	ticks = ticks + 90
@@ -68,7 +70,7 @@ local function unearthing_biters(surface, position, amount)
 			if t % 30 == 29 then			
 				global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
 					func = spawn_biter,
-					args = {surface, {x = position.x, y = position.y}, evolution_index}
+					args = {surface, {x = position.x, y = position.y}, evolution}
 				}
 			end
 		end

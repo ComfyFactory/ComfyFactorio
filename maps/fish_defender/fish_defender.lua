@@ -19,8 +19,8 @@ local map_functions = require "tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
-local wave_interval = 3600		--interval between waves in ticks
-local biter_count_limit = 384	    --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
+
+local biter_count_limit = 1024	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
 	[50] = {{name = "big-biter", count = 3}},
 	[100] = {{name = "behemoth-biter", count = 1}},
@@ -28,6 +28,16 @@ local boss_waves = {
 	[200] = {{name = "behemoth-biter", count = 4}, {name = "behemoth-spitter", count = 2}, {name = "big-biter", count = 32}},
 	[250] = {{name = "behemoth-biter", count = 8}, {name = "behemoth-spitter", count = 4}, {name = "big-spitter", count = 32}},
 	[300] = {{name = "behemoth-biter", count = 16}, {name = "behemoth-spitter", count = 8}}
+}
+
+local difficulties_votes = {
+	[1] = {wave_interval = 5100, amount_modifier = 0.55, strength_modifier = 0.40},
+	[2] = {wave_interval = 4500, amount_modifier = 0.75, strength_modifier = 0.65},
+	[3] = {wave_interval = 4000, amount_modifier = 0.90, strength_modifier = 0.85},
+	[4] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00},
+	[5] = {wave_interval = 3200, amount_modifier = 1.10, strength_modifier = 1.25},
+	[6] = {wave_interval = 2700, amount_modifier = 1.25, strength_modifier = 1.75},
+	[7] = {wave_interval = 2100, amount_modifier = 1.50, strength_modifier = 2.50}
 }
 
 local function shuffle(tbl)
@@ -56,7 +66,7 @@ local function create_wave_gui(player)
 		label.style.minimal_width = 68
 		label.style.font_color = {r=0.33, g=0.66, b=0.9}
 
-		local next_level_progress = game.tick % wave_interval / wave_interval
+		local next_level_progress = game.tick % global.wave_interval / global.wave_interval
 
 		local progressbar = frame.add({ type = "progressbar", value = next_level_progress})
 		progressbar.style.minimal_width = 120
@@ -620,20 +630,29 @@ local function biter_attack_wave()
 	else
 		global.wave_count = global.wave_count + 1
 	end
-
-	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * 0.0015)
-	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * 0.0015)
-	global.biter_evasion_health_increase_factor = 1 + (global.wave_count * 0.003)
-
+	
+	local m = 0.0015
+	if global.difficulty_vote_index then
+		m = m * difficulties_votes[global.difficulty_vote_index].strength_modifier
+	end
+	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * m)
+	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * m)
+	global.biter_evasion_health_increase_factor = 1 + (global.wave_count * (m * 2))
+	
+	local m = 4
+	if global.difficulty_vote_index then
+		m = m * difficulties_votes[global.difficulty_vote_index].amount_modifier		
+	end
+	
 	if global.wave_count % 50 == 0 then
-		global.attack_wave_threat = global.wave_count * 8
+		global.attack_wave_threat = math.floor(global.wave_count * (m * 2))
 		spawn_boss_units(surface)
 		if global.attack_wave_threat > 12000 then global.attack_wave_threat = 12000 end
 	else
-		global.attack_wave_threat = global.wave_count * 4
+		global.attack_wave_threat = math.floor(global.wave_count * m)	
 		if global.attack_wave_threat > 8000 then global.attack_wave_threat = 8000 end
 	end
-
+	
 	local evolution = global.wave_count * 0.00125
 	if evolution > 1 then evolution = 1 end
 	game.forces.enemy.evolution_factor = evolution
@@ -965,10 +984,6 @@ local function on_player_joined_game(event)
 			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
 			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
 		}
-
-		global.wave_grace_period = 54000
-		global.boss_biters = {}
-		global.acid_lines_delay = {}
 
 		game.create_force("decoratives")
 		game.forces["decoratives"].set_cease_fire("enemy", true)
@@ -1332,12 +1347,15 @@ local function on_tick()
 		if game.tick % 180 == 0 then
 			if game.surfaces["fish_defender"] then
 				game.forces.player.chart(game.surfaces["fish_defender"], {{x = -64, y = -256}, {x = 288, y = 256}})
+				if global.difficulty_vote_index then
+					global.wave_interval = difficulties_votes[global.difficulty_vote_index].wave_interval
+				end
 			end
 		end
 
 		if global.market_age then
 			if not global.game_restart_timer then
-				global.game_restart_timer = 18000
+				global.game_restart_timer = 10800
 			else
 				if global.game_restart_timer < 0 then return end
 				global.game_restart_timer = global.game_restart_timer - 30
@@ -1357,7 +1375,7 @@ local function on_tick()
 		end
 	end
 
-	if game.tick % wave_interval == wave_interval - 1 then
+	if game.tick % global.wave_interval == global.wave_interval - 1 then
 		if game.surfaces["fish_defender"].peaceful_mode == true then return end
 		biter_attack_wave()
 	end
@@ -1405,6 +1423,14 @@ local function on_player_respawned(event)
 	player.character.destructible = false
 end
 
+local function on_init(event)
+	global.wave_interval = 3600					--interval between waves in ticks
+	global.wave_grace_period = 54000
+	global.difficulty_poll_closing_timeout = 54000
+	global.boss_biters = {}
+	global.acid_lines_delay = {}
+end
+
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_respawned, on_player_respawned)
@@ -1418,3 +1444,6 @@ event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 event.add(defines.events.on_tick, on_tick)
+event.on_init(on_init)
+
+require "modules.difficulty_vote"

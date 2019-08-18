@@ -44,7 +44,7 @@ function Token.set_global(token_id, var)
     global.tokens[token_id] = var
 end
 
-local uid_counter = 0
+local uid_counter = 100
 
 function Token.uid()
     uid_counter = uid_counter + 1

@@ -8,7 +8,7 @@ local gui_refreshrate = 900
 
 local evo_gains = {
 	["unit-spawner"] = 0.0025,
-	["unit"] = 0.00005,
+	["unit"] = 0.000025,
 	["turret"] = 0.001
 }
 
@@ -47,7 +47,7 @@ end
 local function add_evolution(amount)	
 	global.evolution_factor = global.evolution_factor + amount
 	local evo = global.evolution_factor
-	if evo > 1 then	evo = 1	end
+	if evo > 1 then	evo = 1 end
 	game.forces.enemy.evolution_factor = evo		
 end
 

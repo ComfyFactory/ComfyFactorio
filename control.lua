@@ -6,7 +6,9 @@ _DUMP_ENV = false
 server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
--- require "utils.corpse_util"  --disable for hunger games
+require "utils.table"
+require "utils.corpse_util"  --disable for hunger games
+require "utils.color_data"
 require "utils.session_data"
 require "chatbot"
 require "commands"
@@ -17,10 +19,12 @@ require "player_list"
 require "poll"
 require "score"
 require "modules.floaty_chat"
+require "modules.autohotbar"
 --require "on_tick_schedule"
 
 ---- enable modules here ----
 --require "tools.cheat_mode"
+--require "modules.the_floor_is_lava"
 --require "modules.autodecon_when_depleted"
 --require "modules.biter_noms_you"
 --require "modules.biters_avoid_damage"
@@ -50,15 +54,18 @@ require "modules.floaty_chat"
 -----------------------------
 
 ---- enable maps here ----
-require "maps.tank_conquest.tank_conquest"
+--require "maps.tank_conquest.tank_conquest"
 --require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"
-require "maps.biter_battles_v2.biter_battles_v2"
+--require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.biter_battles.biter_battles"
 --require "maps.fish_defender.fish_defender"
 --require "maps.wave_of_death.WoD"
 --require "maps.stone_maze.main"
+--require "maps.overgrowth"
+--require "maps.maze_challenge"
 --require "maps.cave_miner"
+--require "maps.rocky_waste"
 --require "maps.labyrinth"
 --require "maps.junkyard"
 --require "maps.spooky_forest"
@@ -85,6 +92,11 @@ require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.empty_map"
 --require "maps.custom_start"
 -----------------------------
+
+---- more modules here ----
+--require "modules.trees_grow"
+--require "modules.trees_randomly_die"
+------
 
 local event = require 'utils.event'
 

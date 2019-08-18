@@ -1,3 +1,5 @@
+local get_noise = require 'maps.stone_maze.noise' 
+
 local room = {}
 
 room.empty = function(surface, cell_left_top, direction)
@@ -160,11 +162,15 @@ end
 room.tons_of_trees = function(surface, cell_left_top, direction)
 	local tree = tree_raffle[math.random(1, #tree_raffle)]
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	local seed = math.random(1000, 1000000)
 	for x = 0.5, grid_size - 0.5, 1 do
 		for y = 0.5, grid_size - 0.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
-			if math.random(1,4) == 1 then
-				surface.create_entity({name = tree, position = pos, force = "neutral"})
+			local noise = get_noise("trees_01", pos, seed)
+			if math.random(1,3) == 1 then
+				if noise > 0.25 or noise < -0.25 then
+					surface.create_entity({name = tree, position = pos, force = "neutral"})
+				end
 			end
 		end
 	end
@@ -205,24 +211,20 @@ end
 
 room.tons_of_rocks = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	
+	local seed = game.surfaces[1].map_gen_settings.seed
 	for x = 0.5, grid_size - 0.5, 1 do
 		for y = 0.5, grid_size - 0.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
-			if math.random(1,4) ~= 1 then
-				surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"})
-			end
-		end
-	end
-end
-
-room.lots_of_rocks = function(surface, cell_left_top, direction)
-	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	for x = 0.5, grid_size - 0.5, 1 do
-		for y = 0.5, grid_size - 0.5, 1 do
-			local pos = {left_top.x + x, left_top.y + y}
-			if math.random(1,2) ~= 1 then
-				surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"})
-			end
+			local noise = get_noise("trees_01", pos, seed)
+			if math.random(1,3) ~= 1 then
+				if noise > 0.2 or noise < -0.2 then
+					surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = pos, force = "neutral"})
+					if math.random(1, 512) == 1 then
+						surface.create_entity({name = get_worm(), position = pos, force = "enemy"})
+					end
+				end			
+			end		
 		end
 	end
 end
@@ -240,24 +242,14 @@ room.some_scrap = function(surface, cell_left_top, direction)
 	room.worms(surface, cell_left_top, direction)	
 end
 
-room.lots_of_scrap = function(surface, cell_left_top, direction)
-	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
-	for x = 0.5, grid_size - 0.5, 1 do
-		for y = 0.5, grid_size - 0.5, 1 do
-			local pos = {left_top.x + x, left_top.y + y}
-			if math.random(1,8) == 1 then
-				surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"})
-			end
-		end
-	end
-end
-
 room.tons_of_scrap = function(surface, cell_left_top, direction)
 	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}
+	local seed = game.surfaces[1].map_gen_settings.seed + 10000
 	for x = 0.5, grid_size - 0.5, 1 do
 		for y = 0.5, grid_size - 0.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
-			if math.random(1,2) == 1 then
+			local noise = get_noise("scrap_01", pos, seed)
+			if math.random(1,2) == 1 and noise > 0 then
 				surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"})
 			end
 		end
@@ -286,28 +278,26 @@ room.pond = function(surface, cell_left_top, direction)
 end
 
 local room_weights = {		
-	{func = room.worms, weight = 15},
+	{func = room.worms, weight = 12},
 	{func = room.nests, weight = 8},
 	
 	{func = room.tons_of_trees, weight = 15},	
 	
-	{func = room.lots_of_rocks, weight = 15},
-	{func = room.tons_of_rocks, weight = 15},	
-	{func = room.quad_rocks, weight = 10},
+	{func = room.tons_of_rocks, weight = 35},	
+	{func = room.quad_rocks, weight = 8},
 	{func = room.three_rocks, weight = 3},
-	{func = room.single_rock, weight = 10},
+	{func = room.single_rock, weight = 8},
 	
 	{func = room.checkerboard_ore, weight = 7},
 	{func = room.single_oil, weight = 5},
 	--{func = room.some_scrap, weight = 10},
-	{func = room.lots_of_scrap, weight = 5},
-	--{func = room.tons_of_scrap, weight = 2},
+	{func = room.tons_of_scrap, weight = 15},
 	--{func = room.empty, weight = 1},
 	
 	{func = room.pond, weight = 8},
 	
-	{func = room.loot_crate, weight = 10},
-	{func = room.tree_ring, weight = 10}
+	{func = room.loot_crate, weight = 9},
+	{func = room.tree_ring, weight = 9}
 	
 }
 
