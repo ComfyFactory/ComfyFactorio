@@ -2,8 +2,8 @@ local event = require 'utils.event'
 
 local difficulties = {
 	[1] = {name = "Peaceful", value = 0.25, color = {r=0.00, g=0.45, b=0.00}, print_color = {r=0.00, g=0.8, b=0.00}},
-	[2] = {name = "Easy", value = 0.5, color = {r=0.00, g=0.35, b=0.00}, print_color = {r=0.00, g=0.6, b=0.00}},
-	[3] = {name = "Piece of cake", value = 0.75, color = {r=0.00, g=0.25, b=0.00}, print_color = {r=0.00, g=0.4, b=0.00}},
+	[2] = {name = "Piece of cake", value = 0.5, color = {r=0.00, g=0.35, b=0.00}, print_color = {r=0.00, g=0.6, b=0.00}},
+	[3] = {name = "Easy", value = 0.75, color = {r=0.00, g=0.25, b=0.00}, print_color = {r=0.00, g=0.4, b=0.00}},
 	[4] = {name = "Normal", value = 1, color = {r=0.00, g=0.00, b=0.25}, print_color = {r=0.0, g=0.0, b=0.5}},
 	[5] = {name = "Hard", value = 1.5, color = {r=0.25, g=0.00, b=0.00}, print_color = {r=0.4, g=0.0, b=0.00}},
 	[6] = {name = "Nightmare", value = 3, color = {r=0.35, g=0.00, b=0.00}, print_color = {r=0.6, g=0.0, b=0.00}},
@@ -63,6 +63,18 @@ local function set_difficulty()
 	end
 	 global.difficulty_vote_index = new_index
 	 global.difficulty_vote_value = difficulties[new_index].value
+end
+
+function reset_difficulty_poll()
+	global.difficulty_vote_value = 1
+	global.difficulty_vote_index = 4
+	global.difficulty_player_votes = {}
+	global.difficulty_poll_closing_timeout = game.tick + 54000
+	for _, p in pairs(game.connected_players) do
+		if p.gui.center["difficulty_poll"] then p.gui.center["difficulty_poll"].destroy() end
+		poll_difficulty(p)
+	end
+	difficulty_gui()
 end
 
 local function on_player_joined_game(event)

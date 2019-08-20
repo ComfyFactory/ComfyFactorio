@@ -17,9 +17,9 @@ local resistant_tiles = {
 	["concrete"] = 8,
 	["hazard-concrete-left"] = 8,
 	["hazard-concrete-right"] = 8,
-	["refined-concrete"] = 32,
-	["refined-hazard-concrete-left"] = 32,
-	["refined-hazard-concrete-right"] = 32,
+	["refined-concrete"] = 24,
+	["refined-hazard-concrete-left"] = 24,
+	["refined-hazard-concrete-right"] = 24,
 	["stone-path"] = 4
 }
 
@@ -110,8 +110,6 @@ local function on_init(event)
 
 	global.trees_grow_chunks_charted = {}
 	global.trees_grow_chunks_charted_counter = 0
-	global.trees_grow_factor = 40
-	global.trees_grow_max_count = 16
 end
 
 event.on_init(on_init)

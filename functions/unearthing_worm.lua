@@ -1,4 +1,5 @@
 local function create_particles(surface, position, amount)	
+	if not surface.valid then return end
 	local math_random = math.random
 	for i = 1, amount, 1 do 
 		local m = math_random(8, 24)
@@ -16,6 +17,7 @@ local function create_particles(surface, position, amount)
 end
 
 local function spawn_worm(surface, position, evolution_index)
+	if not surface.valid then return end
 	local worm_raffle_table = {
 		[1] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret"},
 		[2] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret"},

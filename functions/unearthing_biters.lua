@@ -1,4 +1,5 @@
-local function create_particles(surface, position, amount)	
+local function create_particles(surface, position, amount)
+	if not surface.valid then return end
 	local math_random = math.random
 	for i = 1, amount, 1 do 
 		local m = math_random(6, 12)
@@ -15,7 +16,8 @@ local function create_particles(surface, position, amount)
 	end	
 end
 
-local function spawn_biter(surface, position, evolution)	
+local function spawn_biter(surface, position, evolution)
+	if not surface.valid then return end
 	local evo = math.floor(evolution * 1000)
 	
 	local biter_chances = {
