@@ -59,7 +59,9 @@ local function set_difficulty()
 	a = a / vote_count
 	local new_index = math.round(a, 0)
 	if global.difficulty_vote_index ~= new_index then
-		game.print(">>> Map difficulty has changed to " .. difficulties[new_index].name .. " difficulty!", difficulties[new_index].print_color)
+		local message = table.concat({">> Map difficulty has changed to ", difficulties[new_index].name, " difficulty!"})
+		game.print(message, difficulties[new_index].print_color)
+		server_commands.to_discord_embed(message)	
 	end
 	 global.difficulty_vote_index = new_index
 	 global.difficulty_vote_value = difficulties[new_index].value

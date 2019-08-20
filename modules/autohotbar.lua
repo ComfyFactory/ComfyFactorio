@@ -20,6 +20,7 @@ end
 
 local function set_hotbar(player, item)
 	if not game.entity_prototypes[item] then return end
+	if not game.recipe_prototypes[item] then return end
 	local slot_index = get_empty_hotbar_slot(player)
 	if not slot_index then return end
 	if is_item_already_present_in_hotbar(player, item) then return end
@@ -41,6 +42,11 @@ local function on_picked_up_item(event)
 	set_hotbar(game.players[event.player_index], event.item_stack.name)		
 end
 
+local function on_player_mined_entity(event)
+	set_hotbar(game.players[event.player_index], event.entity.name)		
+end
+
 event.add(defines.events.on_player_fast_transferred, on_player_fast_transferred)
 event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
 event.add(defines.events.on_picked_up_item, on_picked_up_item)
+event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

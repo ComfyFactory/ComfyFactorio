@@ -114,9 +114,9 @@ end
 local function get_surface_settings()
 	local map_gen_settings = {}
 	map_gen_settings.seed = math_random(1, 1000000)
-	map_gen_settings.water = "2"
-	map_gen_settings.starting_area = "2.5"
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = 38, cliff_elevation_0 = 38}	
+	map_gen_settings.water = math_random(15, 30) * 0.1
+	map_gen_settings.starting_area = 1
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = math_random(4, 48), cliff_elevation_0 = math_random(4, 48)}	
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "2", size = "1", richness = "1"},
 		["stone"] = {frequency = "2", size = "1", richness = "1"},
@@ -124,8 +124,8 @@ local function get_surface_settings()
 		["iron-ore"] = {frequency = "2.5", size = "1.1", richness = "1"},
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1.5"},
-		["trees"] = {frequency = "1", size = "1", richness = "0.5"},
-		["enemy-base"] = {frequency = "256", size = "0.61", richness = "1"}	
+		["trees"] = {frequency = "2", size = "1", richness = "0.75"},
+		["enemy-base"] = {frequency = "4", size = "1.25", richness = "1"}	
 	}
 	return map_gen_settings
 end
@@ -137,15 +137,16 @@ function reset_map()
 	global.trees_grow_chunks_charted = {}
 	global.trees_grow_chunks_charted_counter = 0
 
-	local surface = game.connected_players[1].surface
-	local surface = soft_reset_map(surface, get_surface_settings(), starting_items)
+	global.current_surface = soft_reset_map(global.current_surface, get_surface_settings(), starting_items)
 	
 	reset_difficulty_poll()
 	
 	global.trees_defeated = 0
 	tree_gui()
 	
-	global.market = spawn_market(surface, {x = 0, y = -8})
+	global.market = spawn_market(global.current_surface, {x = 0, y = -8})
+	
+	game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[4]
 end
 
 local function on_player_joined_game(event)
@@ -153,13 +154,20 @@ local function on_player_joined_game(event)
 	if player.online_time == 0 then
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
+		end	
+	end	
+	
+	if global.current_surface then
+		if player.surface.name ~= global.current_surface.name then
+			local pos = global.current_surface.find_non_colliding_position("character", {x = 0, y = 0}, 1, 0.5)
+			player.teleport(pos, global.current_surface)
 		end
 	end
 	
-	if not global.market then
-		local surface = game.create_surface("overgrowth", get_surface_settings())
-		game.forces["player"].set_spawn_position({x = 0, y = 0}, surface)
-		player.teleport({0,0}, surface)
+	if not global.market and game.tick == 0 then
+		global.current_surface = game.create_surface("overgrowth", get_surface_settings())
+		game.forces["player"].set_spawn_position({x = 0, y = 0}, global.current_surface)
+		player.teleport({0,0}, global.current_surface)
 		reset_map()
 	end
 	
@@ -214,7 +222,7 @@ local function attack_market()
 		c = global.difficulty_vote_index * 2
 		game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[global.difficulty_vote_index] 
 	end	
-	game.connected_players[1].surface.set_multi_command({
+	global.current_surface.set_multi_command({
 		command={
 			type=defines.command.attack,
 			target=global.market,
@@ -224,7 +232,7 @@ local function attack_market()
 		force = "enemy",
 		unit_search_distance=1024
 	})
-	game.connected_players[1].surface.set_multi_command({
+	global.current_surface.set_multi_command({
 		command={
 			type=defines.command.attack,
 			target=global.market,
