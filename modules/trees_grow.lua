@@ -95,7 +95,8 @@ local function on_chunk_charted(event)
 end
 
 local function tick(event)
-	local surface = game.players[1].surface
+	if not game.connected_players[1] then return end
+	local surface = game.connected_players[1].surface
 
 	for a = 1, 32, 1 do
 		if grow_trees(surface) then break end

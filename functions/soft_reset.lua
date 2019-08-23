@@ -1,6 +1,7 @@
 local function reset_forces()
 	for _, f in pairs(game.forces) do
 		f.reset()
+		f.reset_evolution()
 	end
 end
 
@@ -51,11 +52,12 @@ function soft_reset_map(old_surface, map_gen_settings, player_starting_items)
 	
 	game.delete_surface(old_surface)
 	
+	local message = table.concat({">> Welcome to ", global.original_surface_name, "!"})
 	if global.soft_reset_counter > 1 then
-		game.print(">> The world has been reshaped, welcome to " .. global.original_surface_name .. " number " .. tostring(global.soft_reset_counter) .. "!", {r=0.98, g=0.66, b=0.22})
-	else
-		game.print(">> Welcome to " .. global.original_surface_name .. "!", {r=0.98, g=0.66, b=0.22})
+		message = table.concat({">> The world has been reshaped, welcome to ", global.original_surface_name, " number ", tostring(global.soft_reset_counter), "!"})
 	end
+	game.print(message, {r=0.98, g=0.66, b=0.22})
+	server_commands.to_discord_embed(message)
 	
 	return new_surface
 end
