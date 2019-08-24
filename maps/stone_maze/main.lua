@@ -6,6 +6,7 @@ require "modules.spawners_contain_biters"
 require "modules.manual_mining_booster"
 
 --essentials
+require "functions.maze"
 require "modules.biters_yield_coins"
 require "modules.rocks_yield_ore"
 require "modules.mineable_wreckage_yields_scrap"

@@ -190,7 +190,7 @@ room.scrapyard = function(surface, cell_left_top, direction)
 		for y = 2.5, grid_size * 2 - 2.5, 1 do
 			local pos = {left_top.x + x, left_top.y + y}
 			local noise = get_noise("scrap_01", pos, seed)			
-			if math.random(1,3) == 1 and noise > 0 then surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"}) end
+			if math.random(1,3) == 1 and noise > 0 then surface.create_entity({name = get_scrap(), position = pos, force = "neutral"}) end
 		end
 	end
 	local e = surface.create_entity({name = "storage-tank", position = {left_top.x + grid_size, left_top.y + grid_size}, force = "neutral", direction = math.random(0, 3)})
@@ -291,14 +291,28 @@ room.minefield_chest = function(surface, cell_left_top, direction)
 	end
 end
 
+room.maze = function(surface, cell_left_top, direction)
+	local tree = tree_raffle[math.random(1, #tree_raffle)]
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}		
+	create_maze(
+		surface,
+		{x = left_top.x + grid_size, y = left_top.y + grid_size},
+		math.floor(grid_size * 0.5),
+		3,
+		"stone-wall",
+		"enemy",
+		true
+	)
+end
+
 local room_weights = {
 	{func = room.circle_pond_with_trees, weight = 10},	
 	{func = room.scrapyard, weight = 9},
 	{func = room.stone_block, weight = 12},
 	{func = room.tons_of_rocks, weight = 12},
 	{func = room.minefield_chest, weight = 5},
-	{func = room.checkerboard_ore, weight = 3},
-	
+	{func = room.checkerboard_ore, weight = 4},
+	{func = room.maze, weight = 4},
 	{func = room.random_enemies, weight = 20}
 }
 

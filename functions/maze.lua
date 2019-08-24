@@ -110,7 +110,16 @@ local function expand(size)
 	end
 end
 
-function create_maze(surface, position, size, cell_size, wall_entity_name, force_name)
+local function disable_borders(size)
+	for s = size * -1, size, 1 do
+		maze_cells[coord_string(s, size * -1)].north = false
+		maze_cells[coord_string(s, size)].south = false
+		maze_cells[coord_string(size, s)].east = false
+		maze_cells[coord_string(size * -1, s)].west = false
+	end
+end
+
+function create_maze(surface, position, size, cell_size, wall_entity_name, force_name, borderless)
 	if not surface then game.print("No surface given.") return end
 	if not position then game.print("No position given.") return end
 	if not size then game.print("No size given.") return end
@@ -137,6 +146,8 @@ function create_maze(surface, position, size, cell_size, wall_entity_name, force
 	maze_cells[coord_string(size * -1, 0)].occupied = true
 	maze_cells[coord_string(size * -1, 0)].west = false
 	maze_cells[coord_string(size, 0)].east = false
+	
+	if borderless then disable_borders(size) end
 	
 	expand(size)
 	
