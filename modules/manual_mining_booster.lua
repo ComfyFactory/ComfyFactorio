@@ -11,9 +11,13 @@ local valid_entities = {
 local function mining_speed_cooldown(p)
 	if not global.manual_mining_booster[p.index] then return end
 	if game.tick - global.manual_mining_booster[p.index] < 180 then return end
-	if not p.character then p.character.character_mining_speed_modifier = 0 return end
+	--if not p.character then p.character.character_mining_speed_modifier = 0 return end
+	if not p.character then return end
 	p.character.character_mining_speed_modifier = p.character.character_mining_speed_modifier - 1
-	if p.character.character_mining_speed_modifier <= 0 then p.character.character_mining_speed_modifier = 0 end
+	if p.character.character_mining_speed_modifier <= 0 then
+		p.character.character_mining_speed_modifier = 0
+		global.manual_mining_booster[p.index] = nil
+	end
 end
 
 local function on_player_mined_entity(event)
