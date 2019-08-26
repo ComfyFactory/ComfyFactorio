@@ -1,9 +1,14 @@
---18x10
+--tetris by mewmew
+
+--18x10 gb
 
 local event = require 'utils.event' 
-local playfield_left_top = {x = -5, y = -24}
-local playfield_width = 10
-local playfield_height = 18
+local bricks = require "maps.tetris.bricks"
+local connect_belts = require "functions.connect_belts"
+
+local playfield_left_top = {x = -17, y = -18}
+local playfield_width = 12
+local playfield_height = 24
 
 local playfield_area = {
 	["left_top"] = {x = playfield_left_top.x, y = playfield_left_top.y},
@@ -11,72 +16,6 @@ local playfield_area = {
 }
 local playfield_width = math.abs(playfield_area.left_top.x - playfield_area.right_bottom.x)
 local playfield_height = math.abs(playfield_area.left_top.y - playfield_area.right_bottom.y)
-
-local bricks = {
-	[1] = {
-		entity_name = "stone-wall",
-		vectors = {
-			[1] = {{0, 1},{0, 0},{0, -1},{0, -2}},	--oooo
-			[2] = {{1, 0},{0, 0},{-1, 0},{-2, 0}},			
-			[3] = {{0, -1},{0, 0},{0, 1},{0, 2}},
-			[4] = {{-1, 0},{0, 0},{1, 0},{2, 0}},
-		 }
-	},
-	[2] = {
-		entity_name = "iron-chest",
-		vectors = {
-			[1] = {{1, 0},{0, 0},{0, -1},{1, -1}},	--oo
-			[2] = {{1, 0},{0, 0},{0, -1},{1, -1}},	--oo
-			[3] = {{1, 0},{0, 0},{0, -1},{1, -1}},
-			[4] = {{1, 0},{0, 0},{0, -1},{1, -1}},
-		 }
-	},
-	[3] = {
-		entity_name = "pipe",
-		vectors = {
-			[1] = {{0, -1},{0, 0},{1, -1},{-1, 0}},	--  oo
-			[2] = {{1, 0},{0, 0},{1, 1},{0, -1}},		--oo
-			[3] = {{0, -1},{0, 0},{1, -1},{-1, 0}},
-			[4] = {{1, 0},{0, 0},{1, 1},{0, -1}},
-		 }
-	},
-	[4] = {
-		entity_name = "pipe",
-		vectors = {
-			[1] = {{0, -1},{0, 0},{-1, -1},{1, 0}},	--oo
-			[2] = {{0, 1},{0, 0},{1, 0},{1, -1}},		--  oo
-			[3] = {{0, -1},{0, 0},{-1, -1},{1, 0}},
-			[4] = {{0, 1},{0, 0},{1, 0},{1, -1}},
-		 }
-	},
-	[5] = {
-		entity_name = "wooden-chest",
-		vectors = {
-			[1] = {{-1, 0},{0, 0},{-1, 1},{1, 0}},	--ooo
-			[2] = {{0, 1},{0, 0},{0, -1},{-1, -1}},		--o  
-			[3] = {{-1, 0},{0, 0},{1, 0},{1, -1}},
-			[4] = {{0, -1},{0, 0},{1, 1},{0, 1}},
-		 }
-	},
-	[6] = {
-		entity_name = "wooden-chest",
-		vectors = {
-			[1] = {{-1, 0},{0, 0},{1, 1},{1, 0}},		--ooo
-			[2] = {{0, 1},{0, 0},{0, -1},{-1, 1}},	--o  
-			[3] = {{-1, 0},{0, 0},{1, 0},{-1, -1}},
-			[4] = {{0, -1},{0, 0},{1, -1},{0, 1}},
-		 }
-	},
-	[7] = {
-		entity_name = "steel-chest",
-		vectors = {
-			[1] = {{-1, 0},{0, 0},{1, 0},{0, 1}},		--ooo
-			[2] = {{-1, 0},{0, 0},{0, -1},{0, 1}},	--  o  
-			[3] = {{-1, 0},{0, 0},{1, 0},{0, -1}},
-			[4] = {{1, 0},{0, 0},{0, -1},{0, 1}},
-		 }
-	},
-}
 
 local move_translations = {
 	["iron-plate"] = {-1, 0},
@@ -89,14 +28,6 @@ local function coord_string(x, y)
 	return str
 end
 
-local function is_position_inside_playfield(position)
-	if position.x > playfield_area.right_bottom.x then return false end
-	if position.y > playfield_area.right_bottom.y then return false end
-	if position.x <= playfield_area.left_top.x then return false end
-	if position.y < playfield_area.left_top.y then return false end
-	return true
-end
-
 local function draw_active_bricks(surface)
 	if not global.active_brick then return end
 	if not global.active_brick.entities then global.active_brick.entities = {} end
@@ -105,11 +36,17 @@ local function draw_active_bricks(surface)
 		global.active_brick.entities[k] = nil
 		e.destroy()
 	end
+	
 	for _, p in pairs(global.active_brick.positions) do
 		local e = surface.create_entity({name = global.active_brick.entity_name, position = p, create_build_effect_smoke = false})
+		--if bricks[global.active_brick.type].fluid then
+		--	e.fluidbox[1] = {name = bricks[global.active_brick.type].fluid, amount = 100}
+		--end
 		global.tetris_active_grid[coord_string(math.floor(e.position.x), math.floor(e.position.y))] = true
 		global.active_brick.entities[#global.active_brick.entities + 1] = e
 	end
+	
+	if global.active_brick.entity_type == "transport-belt" then connect_belts(global.active_brick.entities) end
 end
 
 local function set_collision_grid(surface)
@@ -119,8 +56,6 @@ local function set_collision_grid(surface)
 			global.tetris_grid[coord_string(math.floor(position.x), math.floor(position.y))] = true
 		end
 	end
-	
-	--local entities = surface.find_entities_filtered({area = {{playfield_area.left_top.x, playfield_area.left_top.y},{playfield_area.right_bottom.x, playfield_area.right_bottom.y}}, force = "enemy"})
 	local entities = surface.find_entities_filtered({area = playfield_area, force = "enemy"})
 	for _, e in pairs(entities) do
 		if not global.tetris_active_grid[coord_string(math.floor(e.position.x), math.floor(e.position.y))] then
@@ -133,7 +68,7 @@ end
 
 local function rotate_brick(surface)
 	if not global.active_brick then return end	
-	local center_pos = global.active_brick.positions[2]
+	local center_pos = global.active_brick.positions[1]
 	local vectors = bricks[global.active_brick.type].vectors
 	local new_direction = global.active_brick.direction + 1
 	if new_direction > 4 then new_direction = 1 end
@@ -144,20 +79,21 @@ local function rotate_brick(surface)
 	for k, p in pairs(global.active_brick.positions) do
 		global.active_brick.positions[k] = {x = center_pos.x + new_vectors[k][1], y = center_pos.y + new_vectors[k][2]}
 	end
-	global.active_brick.direction = new_direction
+	global.active_brick.direction = new_direction	
 end
 
 local function set_hotbar()
 	for _, player in pairs(game.connected_players) do
 		player.set_quick_bar_slot(1, "iron-plate")
-		player.set_quick_bar_slot(2, "copper-plate")
+		player.set_quick_bar_slot(2, "copper-plate")		
 		player.set_quick_bar_slot(8, "iron-gear-wheel")
+		player.set_quick_bar_slot(9, "processing-unit")
 	end
 end
 
 local function set_inventory()
 	for _, player in pairs(game.connected_players) do		
-		for _, item in pairs({"iron-plate", "copper-plate", "iron-gear-wheel"}) do			
+		for _, item in pairs({"iron-plate", "copper-plate", "iron-gear-wheel", "processing-unit"}) do			
 			if player.get_main_inventory().get_item_count(item) == 0 then
 				player.insert({name = item, count = 1})
 			end
@@ -165,22 +101,13 @@ local function set_inventory()
 	end
 end
 
-local function move(surface, item)
-	if not global.active_brick then return end
-	if item == "iron-gear-wheel" then
-		rotate_brick(surface)
-		return
-	end
-	if not move_translations[item] then return end
-	for k, p in pairs(global.active_brick.positions) do
-		if not global.tetris_grid[coord_string(math.floor(global.active_brick.positions[k].x + move_translations[item][1]), math.floor(global.active_brick.positions[k].y + move_translations[item][2]))] then return end
-	end
-	for k, p in pairs(global.active_brick.positions) do
-		global.active_brick.positions[k] = {x = global.active_brick.positions[k].x + move_translations[item][1], y = global.active_brick.positions[k].y + move_translations[item][2]}
-	end
-end
-
 local function draw_playfield(surface)
+	for x = -1, playfield_width, 1 do
+		for y = -1, playfield_height, 1 do
+			local position = {x = playfield_area.left_top.x + x, y = playfield_area.left_top.y + y}
+			--surface.set_tiles({{name = "deepwater", position = position}})
+		end
+	end
 	for x = 0, playfield_width - 1, 1 do
 		for y = 0, playfield_height - 1, 1 do
 			local position = {x = playfield_area.left_top.x + x, y = playfield_area.left_top.y + y}
@@ -192,11 +119,22 @@ end
 
 local function draw_score(surface)
 	local score = "Score: " .. global.score
+	local high_score = "Highscore: " .. global.high_score
 	local level = "Level: " .. global.level
 	local cleared_lines = "Lines: " .. global.cleared_lines
 	
 	if not global.tetris_score_rendering then
 		global.tetris_score_rendering = {}
+		rendering.draw_text{
+			text = "#######################",
+			surface = surface,
+			target = {playfield_area.right_bottom.x + 1, playfield_area.left_top.y + 0.5},
+			color = {r=0.2, g=0.0, b=0.5},
+			scale = 1,
+			font = "heading-1",
+			--alignment = "center",
+			scale_with_zoom = false
+		}
 		global.tetris_score_rendering.score = rendering.draw_text{
 			text = score,
 			surface = surface,
@@ -206,31 +144,57 @@ local function draw_score(surface)
 			font = "heading-1",
 			--alignment = "center",
 			scale_with_zoom = false
-		}		
+		}
+		rendering.draw_text{
+			text = "#######################",
+			surface = surface,
+			target = {playfield_area.right_bottom.x + 1, playfield_area.left_top.y + 2.5},
+			color = {r=0.2, g=0.0, b=0.5},
+			scale = 1,
+			font = "heading-1",
+			--alignment = "center",
+			scale_with_zoom = false
+		}
+		global.tetris_score_rendering.high_score = rendering.draw_text{
+			text = high_score,
+			surface = surface,
+			target = {playfield_area.right_bottom.x + 1, playfield_area.left_top.y + 3.3},
+			color = {r=0.98, g=0.66, b=0.22},
+			scale = 1.15,
+			font = "heading-1",
+			--alignment = "center",
+			scale_with_zoom = false
+		}
 		global.tetris_score_rendering.level = rendering.draw_text{
 			text = level,
 			surface = surface,
-			target = {playfield_area.right_bottom.x + 1, playfield_area.left_top.y + 2.5},
+			target = {playfield_area.right_bottom.x + 1, playfield_area.left_top.y + 4.3},
 			color = {r=0.98, g=0.66, b=0.22},
-			scale = 2,
-			font = "heading-2",
+			scale = 1.15,
+			font = "heading-1",
 			--alignment = "center",
 			scale_with_zoom = false
 		}
 		global.tetris_score_rendering.cleared_lines = rendering.draw_text{
 			text = cleared_lines,
 			surface = surface,
-			target = {playfield_area.right_bottom.x + 1, playfield_area.left_top.y + 4},
+			target = {playfield_area.right_bottom.x + 1, playfield_area.left_top.y + 5.3},
 			color = {r=0.98, g=0.66, b=0.22},
-			scale = 2,
-			font = "heading-2",
+			scale = 1.15,
+			font = "heading-1",
 			--alignment = "center",
 			scale_with_zoom = false
 		}
-	end	
+	end
 	rendering.set_text(global.tetris_score_rendering.score, score)
+	rendering.set_text(global.tetris_score_rendering.high_score, high_score)
 	rendering.set_text(global.tetris_score_rendering.level, level)
 	rendering.set_text(global.tetris_score_rendering.cleared_lines, cleared_lines)
+end
+
+local function add_score_points(amount)
+	global.score = global.score + amount
+	if global.score > global.high_score then global.high_score = global.score end
 end
 
 local function move_lines_down(surface, y)
@@ -254,12 +218,14 @@ local function tetris(surface)
 		end
 	end
 	if c < 1 then return end
-	--game.print(c .. " lines cleared!")
+	
 	global.cleared_lines = global.cleared_lines + c
 	
 	local name = "explosion"
-	if c > 2 then name = "ground-explosion" end
-	if c >= 4 then name = "big-artillery-explosion" end
+	if c > 2 then name = "uranium-cannon-shell-explosion" end
+	if c >= 4 then name = "ground-explosion" end
+	
+	local score_y = false
 	
 	for _, line in pairs(entity_lines_to_kill) do		
 		for _, entity in pairs(line.entities) do
@@ -267,10 +233,24 @@ local function tetris(surface)
 			entity.destroy()
 		end
 		move_lines_down(surface, line.y)
+		if not score_y then score_y = line.y end
 	end
 	set_collision_grid(surface)
 	
-	global.score = global.score + (c * 100 * c)
+	local score_gain = (c * 100 * c)
+	add_score_points(score_gain)
+	
+	rendering.draw_text{
+		text = "+" .. score_gain,
+		surface = surface,
+		target = {playfield_area.left_top.x + playfield_width * 0.5, playfield_area.left_top.y + score_y},
+		color = {r=0.22, g=0.77, b=0.22},
+		scale = c,
+		font = "heading-1",
+		time_to_live = 180,
+		alignment = "center",
+		scale_with_zoom = false
+	}		
 end
 
 local function reset_score()
@@ -282,7 +262,7 @@ end
 local function reset_play_area(surface)
 	local entities = surface.find_entities_filtered({area = playfield_area, force = "enemy"})
 	for _, e in pairs(entities) do
-		if math.random(1,3) == 1 then e.surface.create_entity({name = "uranium-cannon-shell-explosion", position = e.position, force = "neutral"}) end
+		if math.random(1,6) == 1 then e.surface.create_entity({name = "big-artillery-explosion", position = e.position, force = "neutral"}) end
 		e.destroy()
 	end
 	set_collision_grid(surface)
@@ -294,14 +274,20 @@ local function set_difficulty()
 	local level = math.floor(global.cleared_lines * 0.25) + 1
 	if global.level == level then return end
 	global.level = level
-	game.print("Level " .. global.level)
 end
 
 local function new_brick(surface)
 
 	if global.active_brick then return end	
 	
-	local spawn_position = {x = playfield_area.left_top.x + playfield_width * 0.5, y = playfield_area.left_top.y + 2}
+	local r = math.random(1, 7)
+	if math.random(1,16) == 1 then
+		r = math.random(8, #bricks)
+	end
+	--local r = 3
+	local brick = bricks[r]
+	
+	local spawn_position = {x = playfield_area.left_top.x + playfield_width * 0.5, y = playfield_area.left_top.y + brick.spawn_y_modifier - 1}
 	
 	if not global.tetris_grid[coord_string(math.floor(spawn_position.x), math.floor(spawn_position.y))] then
 		reset_play_area(surface)
@@ -311,18 +297,26 @@ local function new_brick(surface)
 	end
 	
 	if game.tick < global.last_reset then
-		game.print("Round begins in.. " .. math.abs(math.floor((game.tick - global.last_reset) / 60)))
+			rendering.draw_text{
+			text = "Round begins in.. " .. math.abs(math.floor((game.tick - global.last_reset) / 60)),
+			surface = surface,
+			target = {playfield_area.left_top.x + playfield_width * 0.5, playfield_area.left_top.y + playfield_height * 0.5},
+			color = {r=0.98, g=0.66, b=0.22},
+			scale = 3,
+			font = "heading-1",
+			time_to_live = 60,
+			alignment = "center",
+			scale_with_zoom = false
+		}
 		return 
-	end
-	
-	local r = math.random(1, #bricks)
-	--local r = 6
-	local brick = bricks[r]
+	end	
+		
 	global.active_brick = {}
 	global.active_brick.direction = 1
 	global.active_brick.type = r
 	global.active_brick.positions = {}
 	global.active_brick.entity_name = brick.entity_name
+	global.active_brick.entity_type = brick.entity_type
 	
 	for k, v in pairs(brick.vectors[1]) do
 		global.active_brick.positions[k] = {x = spawn_position.x + v[1], y = spawn_position.y + v[2]}
@@ -340,9 +334,9 @@ local function move_down(surface)
 			end
 			global.active_brick = nil
 			tetris(surface)
-			new_brick(surface)
-			global.score = global.score + 5
+			add_score_points(5)
 			draw_score(surface)
+			new_brick(surface)
 			return 
 		end
 	end	
@@ -350,6 +344,30 @@ local function move_down(surface)
 		global.active_brick.positions[k] = {x = global.active_brick.positions[k].x, y = global.active_brick.positions[k].y + 1}
 	end
 	set_difficulty()
+	return true
+end
+
+local function move(surface, item)
+	if not global.active_brick then return end
+	if item == "iron-gear-wheel" then
+		rotate_brick(surface)
+		return
+	end
+	if item == "processing-unit" then
+		for c = 1, 4, 1 do
+			global.move_down_delay = 0
+			local b = move_down(surface)
+			draw_active_bricks(surface)
+			if not b then return end
+		end
+	end
+	if not move_translations[item] then return end
+	for k, p in pairs(global.active_brick.positions) do
+		if not global.tetris_grid[coord_string(math.floor(global.active_brick.positions[k].x + move_translations[item][1]), math.floor(global.active_brick.positions[k].y + move_translations[item][2]))] then return end
+	end
+	for k, p in pairs(global.active_brick.positions) do
+		global.active_brick.positions[k] = {x = global.active_brick.positions[k].x + move_translations[item][1], y = global.active_brick.positions[k].y + move_translations[item][2]}
+	end
 end
 
 local function on_player_cursor_stack_changed(event)
@@ -363,6 +381,19 @@ local function on_player_cursor_stack_changed(event)
 	move(player.surface, item)
 	player.cursor_stack.clear()
 	player.surface.spill_item_stack(player.position,{name = item, count = 1}, true)
+	
+	if item == "iron-plate" then
+		player.surface.create_entity({name = "flying-text", position = player.position, text = "<", color = player.color})
+	end
+	if item == "copper-plate" then
+		player.surface.create_entity({name = "flying-text", position = player.position, text = ">", color = player.color})
+	end
+	if item == "processing-unit" then
+		player.surface.create_entity({name = "flying-text", position = player.position, text = "▼", color = player.color})
+	end
+	if item == "iron-gear-wheel" then
+		player.surface.create_entity({name = "flying-text", position = player.position, text = "8", color = player.color})
+	end
 end
 
 local function on_player_joined_game(event)
@@ -380,7 +411,7 @@ local function on_chunk_generated(event)
 	end
 	for _, t in pairs(surface.find_tiles_filtered({area = event.area})) do
 		--surface.set_tiles({{name = "tutorial-grid", position = t.position}})
-		if t.position.y < 4 and t.position.y > -4 then
+		if t.position.y < 4 and t.position.y > -4 and t.position.x < 4 and t.position.x > -4 then
 			surface.set_tiles({{name = "sand-1", position = t.position}})
 		else
 			surface.set_tiles({{name = "out-of-map", position = t.position}})
@@ -395,6 +426,7 @@ end
 local function on_init(event)
 	global.tetris_grid = {}
 	global.tetris_active_grid = {}
+	global.high_score = 0
 	global.last_reset = 120
 	global.cleared_lines = 0
 	global.level = 0
