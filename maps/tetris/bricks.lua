@@ -11,7 +11,7 @@ local bricks = {
 		 }
 	},
 	[2] = {
-		entity_name = "iron-chest",
+		entity_name = "wooden-chest",
 		spawn_y_modifier = 1,
 		vectors = {
 			[1] = {{0, 0},{1, 0},{0, 1},{1, 1}},		--oo
@@ -43,7 +43,7 @@ local bricks = {
 		 }
 	},
 	[5] = {
-		entity_name = "wooden-chest",
+		entity_name = "pipe",
 		spawn_y_modifier = 2,
 		vectors = {
 			[1] = {{0, 0},{-1, 0},{-1, 1},{1, 0}},	--ooo
@@ -53,7 +53,7 @@ local bricks = {
 		 }
 	},
 	[6] = {
-		entity_name = "wooden-chest",
+		entity_name = "pipe",
 		spawn_y_modifier = 2,
 		vectors = {
 			[1] = {{0, 0},{-1, 0},{1, 1},{1, 0}},		--ooo
@@ -63,7 +63,7 @@ local bricks = {
 		 }
 	},
 	[7] = {
-		entity_name = "steel-chest",
+		entity_name = "iron-chest",
 		spawn_y_modifier = 2,
 		vectors = {
 			[1] = {{0, 0},{-1, 0},{1, 0},{0, 1}},		--ooo
@@ -83,6 +83,16 @@ local bricks = {
 		 }
 	},
 	[9] = {
+		entity_name = "logistic-chest-active-provider",
+		spawn_y_modifier = 2,
+		vectors = {
+			[1] = {{0, 0},{-1, 0},{1, 0},{-1, -1},{1, 1},{-1, 1},{1, -1}},		--o  o
+			[2] = {{0, 0},{0, -1},{0, 1},{-1, -1},{1, 1},{-1, 1},{1, -1}},		--ooo
+			[3] = {{0, 0},{-1, 0},{1, 0},{-1, -1},{1, 1},{-1, 1},{1, -1}},		--o  o
+			[4] = {{0, 0},{0, -1},{0, 1},{-1, -1},{1, 1},{-1, 1},{1, -1}},
+		 }
+	},
+	[10] = {
 		entity_name = "logistic-chest-requester",
 		spawn_y_modifier = 3,
 		vectors = {
@@ -92,7 +102,7 @@ local bricks = {
 			[4] = {{0, 0},{-1, 0},{1, 0},{0, 1},{0, -1},{-2, 0},{2, 0},{0, -2},{0, 2},{-1, -1},{1, 1},{-1, 1},{1, -1}},			--    ooo
 		 }																																													--      o
 	},
-	[10] = {
+	[11] = {
 		entity_name = "logistic-chest-buffer",
 		spawn_y_modifier = 1,
 		vectors = {
@@ -100,6 +110,26 @@ local bricks = {
 			[2] = {{0, 0}},
 			[3] = {{0, 0}},
 			[4] = {{0, 0}},
+		 }
+	},
+	[12] = {
+		entity_name = "logistic-chest-passive-provider",
+		spawn_y_modifier = 1,
+		vectors = {
+			[1] = {{0, 0}, {1, 0}},	--  oo
+			[2] = {{0, 0}, {0, 1}},
+			[3] = {{0, 0}, {-1, 0}},
+			[4] = {{0, 0}, {0, -1}},
+		 }
+	},
+	[13] = {
+		entity_name = "logistic-chest-storage",
+		spawn_y_modifier = 1,
+		vectors = {
+			[1] = {{0, 0}, {1, 0}, {0, 1}},	--  oo
+			[2] = {{0, 0}, {-1, 0}, {0, 1}},	--  o
+			[3] = {{0, 0}, {-1, 0}, {0, -1}},
+			[4] = {{0, 0}, {1, 0}, {0, -1}},
 		 }
 	},
 }

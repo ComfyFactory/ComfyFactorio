@@ -86,8 +86,8 @@ local function set_hotbar()
 	for _, player in pairs(game.connected_players) do
 		player.set_quick_bar_slot(1, "iron-plate")
 		player.set_quick_bar_slot(2, "copper-plate")		
-		player.set_quick_bar_slot(8, "iron-gear-wheel")
-		player.set_quick_bar_slot(9, "processing-unit")
+		player.set_quick_bar_slot(9, "iron-gear-wheel")
+		player.set_quick_bar_slot(10, "processing-unit")
 	end
 end
 
@@ -270,8 +270,8 @@ local function reset_play_area(surface)
 end
 
 local function set_difficulty()
-	global.move_down_delay = game.tick + 32 - global.level * 2
-	local level = math.floor(global.cleared_lines * 0.25) + 1
+	global.move_down_delay = game.tick + (64 - (global.level * 2))
+	local level = math.floor(global.cleared_lines * 0.15) + 1
 	if global.level == level then return end
 	global.level = level
 end
@@ -284,10 +284,11 @@ local function new_brick(surface)
 	if math.random(1,16) == 1 then
 		r = math.random(8, #bricks)
 	end
-	--local r = 3
+	--local r = 12
 	local brick = bricks[r]
 	
-	local spawn_position = {x = playfield_area.left_top.x + playfield_width * 0.5, y = playfield_area.left_top.y + brick.spawn_y_modifier - 1}
+	local x_modifier = -1 + math.random(0, 2)	
+	local spawn_position = {x = playfield_area.left_top.x + playfield_width * 0.5 + x_modifier, y = playfield_area.left_top.y + brick.spawn_y_modifier - 1}
 	
 	if not global.tetris_grid[coord_string(math.floor(spawn_position.x), math.floor(spawn_position.y))] then
 		reset_play_area(surface)
@@ -402,6 +403,7 @@ local function on_player_joined_game(event)
 	set_inventory()
 	player.surface.daytime = 0.22
 	player.surface.freeze_daytime = 1
+	player.print("Welcome to tetris! Use the hotbar to control the bricks.", {r=0.98, g=0.66, b=0.22})
 end
 
 local function on_chunk_generated(event)
