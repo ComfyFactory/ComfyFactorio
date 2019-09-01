@@ -10,6 +10,53 @@ local function get_player_array(force_name)
 	return a
 end
 
+local function freeze_players()
+	if not global.freeze_players then return end
+	local p = game.permissions.get_group("Default")
+	for action_name, _ in pairs(defines.input_action) do
+		p.set_allows_action(defines.input_action[action_name], false)
+	end	
+	local defs = {
+		defines.input_action.write_to_console,
+		defines.input_action.gui_click,
+		defines.input_action.gui_selection_state_changed,
+		defines.input_action.gui_checked_state_changed	,
+		defines.input_action.gui_elem_changed,
+		defines.input_action.gui_text_changed,
+		defines.input_action.gui_value_changed,
+		defines.input_action.edit_permission_group,
+	}	
+	for _, d in pairs(defs) do p.set_allows_action(d, true) end
+end
+
+local function unfreeze_players()
+	local p = game.permissions.get_group("Default")
+	for action_name, _ in pairs(defines.input_action) do
+		p.set_allows_action(defines.input_action[action_name], true)
+	end
+end
+
+local function toggle_ghost_spectate(player)
+	if player.character then
+		player.character.destroy() 
+		player.character = nil
+		player.set_controller({type=defines.controllers.spectator})
+		game.print(player.name .. " has turned into a spectator ghost.")
+	else
+		local spawn = player.force.get_spawn_position(player.surface)
+		player.character = nil
+		player.set_controller({type=defines.controllers.god})
+		local pos = player.surface.find_non_colliding_position("character", spawn, 3, 0.5)
+		if pos then
+			player.teleport(pos, player.surface)
+		else
+			player.teleport(spawn, player.surface)
+		end
+		player.create_character()
+		game.print(player.name .. " has stopped being a spectator ghost.")
+	end	
+end
+
 local function leave_corpse(player)
 	if not player.character then return end
 	
@@ -115,7 +162,7 @@ local function draw_manager_gui(player)
 	
 	frame.add({type = "label", caption = ""})
 	
-	local t = frame.add({type = "table", name = "team_manager_bottom_buttons", column_count = 3})	
+	local t = frame.add({type = "table", name = "team_manager_bottom_buttons", column_count = 4})	
 	local button = t.add({
 			type = "button",
 			name = "team_manager_close",
@@ -142,6 +189,34 @@ local function draw_manager_gui(player)
 		button.style.font_color = {r = 55, g = 55, b = 55}
 	end
 	button.style.font = "heading-2"
+	
+	if global.freeze_players then
+		button = t.add({
+			type = "button",
+			name = "team_manager_freeze_players",
+			caption = "Unfreeze Players",
+			tooltip = "Releases all players."
+		})
+		button.style.font_color = {r = 222, g = 22, b = 22}
+	else
+		button = t.add({
+			type = "button",
+			name = "team_manager_freeze_players",
+			caption = "Freeze Players",
+			tooltip = "Freezes all players, unable to perform actions, until released."
+		})
+		button.style.font_color = {r = 55, g = 55, b = 222}
+	end
+	button.style.font = "heading-2"
+	
+	button = t.add({
+		type = "button",
+		name = "team_manager_turn_ghost",
+		caption = "Ghost-Spectate",
+		tooltip = "Turn yourself into a spooky spectator ghost."
+	})
+	button.style.font_color = {r = 88, g = 88, b = 88}
+	button.style.font = "heading-2"
 end
 
 local function on_gui_click(event)	
@@ -164,16 +239,39 @@ local function on_gui_click(event)
 	end
 	
 	if name == "team_manager_activate_tournament" then
-		if not player.admin then player.print("Only admins can manage teams.", {r = 175, g = 0, b = 0}) return end
+		if not player.admin then player.print("Only admins can switch tournament mode.", {r = 175, g = 0, b = 0}) return end
 		if global.tournament_mode then
 			global.tournament_mode = false
 			draw_manager_gui(player)
-			game.print("Tournament Mode has been disabled.", {r = 22, g = 22, b = 22})
+			game.print(">>> Tournament Mode has been disabled.", {r = 111, g = 111, b = 111})
 			return
 		end
 		global.tournament_mode = true
 		draw_manager_gui(player)
-		game.print("Tournament Mode has been enabled!", {r = 225, g = 0, b = 0})
+		game.print(">>> Tournament Mode has been enabled!", {r = 225, g = 0, b = 0})
+		return
+	end
+	
+	if name == "team_manager_freeze_players" then
+		if global.freeze_players then
+			if not player.admin then player.print("Only admins can unfreeze players.", {r = 175, g = 0, b = 0}) return end
+			global.freeze_players = false
+			draw_manager_gui(player)
+			game.print(">>> Players have been unfrozen!", {r = 255, g = 77, b = 77})
+			unfreeze_players()
+			return
+		end
+		if not player.admin then player.print("Only admins can freeze players.", {r = 175, g = 0, b = 0}) return end
+		global.freeze_players = true
+		draw_manager_gui(player)
+		game.print(">>> Players have been frozen!", {r = 111, g = 111, b = 255})
+		freeze_players()
+		return
+	end
+	
+	if name == "team_manager_turn_ghost" then
+		if not player.admin then player.print("Only admins can become spooky spectator ghosts.", {r = 175, g = 0, b = 0}) return end
+		toggle_ghost_spectate(player)
 		return
 	end
 	

@@ -274,10 +274,11 @@ ai.main_attack = function()
 end
 
 ai.raise_evo = function()
+	if global.freeze_players then return end
 	if #game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0 then return end
 	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
 	for _, f in pairs({"north_biters", "south_biters"}) do	
-		set_evo_and_threat(amount, "logistic-science-pack", f)
+		set_evo_and_threat(amount, "automation-science-pack", f)
 	end
 	global.evo_raise_counter = global.evo_raise_counter + 1
 end
