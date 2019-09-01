@@ -12,8 +12,10 @@ end
 
 local function freeze_players()
 	if not global.freeze_players then return end
-	local p = game.permissions.get_group("Default")
+	global.team_manager_default_permissions = {}
+	local p = game.permissions.get_group("Default")	
 	for action_name, _ in pairs(defines.input_action) do
+		global.team_manager_default_permissions[action_name] = p.allows_action(defines.input_action[action_name])
 		p.set_allows_action(defines.input_action[action_name], false)
 	end	
 	local defs = {
@@ -30,9 +32,11 @@ local function freeze_players()
 end
 
 local function unfreeze_players()
-	local p = game.permissions.get_group("Default")
+	local p = game.permissions.get_group("Default") 
 	for action_name, _ in pairs(defines.input_action) do
-		p.set_allows_action(defines.input_action[action_name], true)
+		if global.team_manager_default_permissions[action_name] then
+			p.set_allows_action(defines.input_action[action_name], true)
+		end
 	end
 end
 
