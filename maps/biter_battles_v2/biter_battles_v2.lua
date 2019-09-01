@@ -175,6 +175,7 @@ local function on_player_joined_game(event)
 	if player.gui.left["map_pregen"] then player.gui.left["map_pregen"].destroy() end
 	
 	if player.online_time == 0 then
+		player.force = game.forces.spectator
 		if surface.is_chunk_generated({0,0}) then
 			player.teleport(surface.find_non_colliding_position("character", {0,0}, 3, 0.5), surface)
 		else
@@ -182,7 +183,7 @@ local function on_player_joined_game(event)
 		end
 		player.character.destructible = false
 		game.permissions.get_group("spectator").add_player(player)
-	end
+	end	
 end
 
 local function on_init(surface)
@@ -202,4 +203,5 @@ require "maps.biter_battles_v2.no_turret_creep"
 require "maps.biter_battles_v2.chat"
 require "maps.biter_battles_v2.bb_map_intro"
 require "maps.biter_battles_v2.difficulty_vote"
+require "maps.biter_battles_v2.team_manager"
 require "modules.custom_death_messages"

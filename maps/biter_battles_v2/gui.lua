@@ -43,33 +43,6 @@ local function create_sprite_button(player)
 	button.style.bottom_padding = 2	
 end
 
-local function create_team_lock_gui(player)
-	if player.gui.top["bb_team_lock_button"] then player.gui.top["bb_team_lock_button"].destroy() end
-	
-	if player.admin == false and global.teams_are_locked ~= true then return end
-	
-	local caption = "Unlocked"
-	local color = {r = 0.33, g = 0.77, b = 0.33}
-	local width = 68
-	local tooltip = "Lock teams to disable joining"
-	if global.teams_are_locked then
-		caption = "Teams Locked"
-		color = {r = 0.77, g = 0.33, b = 0.33}
-		width = 100
-		tooltip = "An admin has locked the teams, joining is currently disabled"
-	end
-	
-	local button = player.gui.top.add({type = "sprite-button", name = "bb_team_lock_button", caption = caption, tooltip = tooltip})
-	button.style.font = "heading-2"
-	button.style.font_color = color
-	button.style.minimal_height = 38
-	button.style.minimal_width = width
-	button.style.top_padding = 2
-	button.style.left_padding = 0
-	button.style.right_padding = 0
-	button.style.bottom_padding = 2	
-end
-
 local function create_first_join_gui(player)
 	if not global.game_lobby_timeout then global.game_lobby_timeout = 5999940 end
 	if global.game_lobby_timeout - game.tick < 0 then global.game_lobby_active = false end
@@ -116,7 +89,12 @@ local function create_main_gui(player)
 	if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
 	
 	if global.bb_game_won_by_team then return end
-	if player.force.name == "player" then create_first_join_gui(player) return end
+	if not global.chosen_team[player.name] then
+		if not global.tournament_mode then
+			create_first_join_gui(player) 
+			return
+		end
+	end
 		
 	local frame = player.gui.left.add { type = "frame", name = "bb_main_gui", direction = "vertical" }
 
@@ -211,10 +189,11 @@ local function refresh_gui()
 	end
 end
 
-local function join_team(player, force_name)
+function join_team(player, force_name, forced_join)
 	if not player.character then return end
-	if global.teams_are_locked then player.print("The Teams are currently locked.", {r = 0.98, g = 0.66, b = 0.22}) return end		
-	
+	if not forced_join then
+		if global.tournament_mode then player.print("The game is set to tournament mode. Teams can only be changed via team manager.", {r = 0.98, g = 0.66, b = 0.22}) return end		
+	end
 	if not force_name then return end
 	local surface = player.surface
 	
@@ -222,21 +201,25 @@ local function join_team(player, force_name)
 	if force_name == "south" then enemy_team = "north" end
 	
 	if bb_config.team_balancing then
-		if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
-			if not global.chosen_team[player.name] then
-				player.print("Team " .. force_name .. " has too many players currently.", {r = 0.98, g = 0.66, b = 0.22})
-				return
+		if not forced_join then
+			if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
+				if not global.chosen_team[player.name] then
+					player.print("Team " .. force_name .. " has too many players currently.", {r = 0.98, g = 0.66, b = 0.22})
+					return
+				end
 			end
 		end
 	end
 	
-	if global.chosen_team[player.name] then		
-		if game.tick - global.spectator_rejoin_delay[player.name] < 3600 then
-			player.print(
-				"Not ready to return to your team yet. Please wait " .. 60-(math.floor((game.tick - global.spectator_rejoin_delay[player.name])/60)) .. " seconds.",
-				{r = 0.98, g = 0.66, b = 0.22}
-			)
-			return
+	if global.chosen_team[player.name] then
+		if not forced_join then
+			if game.tick - global.spectator_rejoin_delay[player.name] < 3600 then
+				player.print(
+					"Not ready to return to your team yet. Please wait " .. 60-(math.floor((game.tick - global.spectator_rejoin_delay[player.name])/60)) .. " seconds.",
+					{r = 0.98, g = 0.66, b = 0.22}
+				)
+				return
+			end
 		end
 		local p = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 8, 0.5)
 		player.teleport(p, surface)	
@@ -253,7 +236,9 @@ local function join_team(player, force_name)
 	player.force = game.forces[force_name]
 	player.character.destructible = true
 	game.permissions.get_group("Default").add_player(player)
-	game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
+	if not forced_join then
+		game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
+	end
 	local i = player.get_inventory(defines.inventory.character_main)
 	i.clear()
 	player.insert {name = 'pistol', count = 1}
@@ -265,40 +250,20 @@ local function join_team(player, force_name)
 	refresh_gui()
 end
 
-local function spectate(player)
+function spectate(player, forced_join)
 	if not player.character then return end
+	if not forced_join then
+		if global.tournament_mode then player.print("The game is set to tournament mode. Teams can only be changed via team manager.", {r = 0.98, g = 0.66, b = 0.22}) return end		
+	end
 	player.teleport(player.surface.find_non_colliding_position("character", {0,0}, 4, 1))	
 	player.force = game.forces.spectator
 	player.character.destructible = false
-	game.print(player.name .. " is spectating.", {r = 0.98, g = 0.66, b = 0.22})		
+	if not forced_join then
+		game.print(player.name .. " is spectating.", {r = 0.98, g = 0.66, b = 0.22})
+	end		
 	game.permissions.get_group("spectator").add_player(player)	
 	global.spectator_rejoin_delay[player.name] = game.tick
 	create_main_gui(player)
-end
-
-local function lock_teams(locking_player)
-	if locking_player.admin == false then return end
-	if global.teams_are_locked then
-		global.teams_are_locked = false
-		game.print(locking_player.name .. " has unlocked Teams.", {r = 0.98, g = 0.66, b = 0.22})
-		for _, player in pairs(game.players) do
-			if not global.chosen_team[player.name] then
-				player.force = game.forces.player
-				create_main_gui(player)
-			end
-			create_team_lock_gui(player)
-		end
-	else
-		global.teams_are_locked = true
-		game.print(locking_player.name .. " has locked Teams.", {r = 0.98, g = 0.66, b = 0.22})
-		for _, player in pairs(game.players) do
-			if not global.chosen_team[player.name] then
-				player.force = game.forces.spectator
-				create_main_gui(player)
-			end
-			create_team_lock_gui(player)
-		end
-	end		
 end
 
 local function join_gui_click(name, player)	
@@ -345,14 +310,12 @@ local function on_gui_click(event)
 		return
 	end
 	
-	if player.force.name == "player" then join_gui_click(name, player) end
+	if name == "join_north_button" then join_gui_click(name, player) return end
+	if name == "join_south_button" then join_gui_click(name, player) return end
 	
 	if name == "raw-fish" then spy_fish(player) return end
 	
-	if food_names[name] then			
-		feed_the_biters(player, name)				
-		return 
-	end
+	if food_names[name] then feed_the_biters(player, name) return end
 	
 	if name == "bb_leave_spectate" then join_team(player, global.chosen_team[player.name])	end
 	
@@ -373,8 +336,6 @@ local function on_gui_click(event)
 		global.bb_view_players[player.name] = true 
 		create_main_gui(player)
 	end
-
-	if name == "bb_team_lock_button" then lock_teams(player) end
 end
 
 local function on_player_joined_game(event)
@@ -391,29 +352,18 @@ local function on_player_joined_game(event)
 		global.game_lobby_timeout = 5999940
 	end
 	
-	if not global.chosen_team[player.name] then
-		if global.teams_are_locked then
-			player.force = game.forces.spectator
-		else
-			player.force = game.forces.player
-		end
-	end
+	--if not global.chosen_team[player.name] then
+	--	if global.tournament_mode then
+	--		player.force = game.forces.spectator
+	--	else
+	--		player.force = game.forces.player
+	--	end
+	--end
 	
 	create_sprite_button(player)
-	create_team_lock_gui(player)
 	create_main_gui(player)
 end
 
-local function on_player_promoted(event)
-	create_team_lock_gui(game.players[event.player_index])
-end
-
-local function on_player_demoted(event)
-	create_team_lock_gui(game.players[event.player_index])
-end
-
-event.add(defines.events.on_player_promoted, on_player_promoted)
-event.add(defines.events.on_player_demoted, on_player_demoted)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
