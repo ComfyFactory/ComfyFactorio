@@ -35,7 +35,22 @@ local cliff_orientation_translation = {
 	["none-to-west"] =  "none-to-east"
 }
 
+local valid_types = {
+	["tree"] = true,
+	["simple-entity"] = true,
+	["cliff"] = true,
+	["resource"] = true,
+	["unit-spawner"] = true,
+	["turret"] = true,
+	["rocket-silo"] = true,
+	["character"] = true,
+	["ammo-turret"] = true,
+	["wall"] = true,
+	["fish"] = true,
+}
+
 local function process_entity(surface, entity)
+	if not valid_types[entity.type] then return end
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then
 		if not surface.can_place_entity({name = entity.name, position = new_pos}) then return end
@@ -59,7 +74,8 @@ local function process_entity(surface, entity)
 		surface.create_entity({name = entity.name, position = new_pos, amount = entity.amount})
 		return
 	end
-	if entity.type == "unit-spawner" or entity.type == "unit" or entity.type == "turret" then
+	--if entity.type == "unit-spawner" or entity.type == "unit" or entity.type == "turret" then
+	if entity.type == "unit-spawner" or entity.type == "turret" then
 		local new_e = {name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south_biters"}
 		if not surface.can_place_entity(new_e) then return end
 		surface.create_entity(new_e)

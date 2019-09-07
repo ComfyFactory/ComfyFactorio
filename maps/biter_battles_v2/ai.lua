@@ -27,7 +27,7 @@ local function get_active_biter_count(biter_force_name)
 	return count
 end
 
-function set_biter_raffle_table(surface, biter_force_name)
+local function set_biter_raffle_table(surface, biter_force_name)
 	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name})
 	if not biters[1] then return end
 	global.biter_raffle[biter_force_name] = {}
@@ -175,7 +175,7 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 				type = defines.command.attack_area,
 				destination = target,
 				radius = 32,
-				distraction=defines.distraction.by_enemy
+				distraction = defines.distraction.by_enemy
 			},									
 			{
 				type = defines.command.attack,
@@ -280,7 +280,7 @@ ai.raise_evo = function()
 	for _, f in pairs({"north_biters", "south_biters"}) do	
 		set_evo_and_threat(amount, "automation-science-pack", f)
 	end
-	global.evo_raise_counter = global.evo_raise_counter + 1
+	global.evo_raise_counter = global.evo_raise_counter + (1 * 0.50)
 end
 
 --Prevent Players from damaging Rocket Silos
