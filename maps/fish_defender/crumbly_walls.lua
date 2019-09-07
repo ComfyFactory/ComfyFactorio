@@ -8,7 +8,7 @@ local function on_entity_died(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if entity.name ~= "stone-wall" then return end
-	if math_random(1,3) == 1 then return end
+	if math_random(1,4) == 1 then return end
 	entity.surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = entity.position, force = "player"})
 end
 

@@ -859,13 +859,15 @@ end
 local function damage_entities_in_radius(surface, position, radius, damage)
 	local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius},{position.x + radius, position.y + radius}}})
 	for _, entity in pairs(entities_to_damage) do
-		if entity.health and entity.name ~= "land-mine" then
-			if entity.force.name ~= "enemy" then
-				if entity.name == "character" then
-					entity.damage(damage, "enemy")
-				else
-					entity.health = entity.health - damage
-					if entity.health <= 0 then entity.die("enemy") end
+		if entity.valid then
+			if entity.health and entity.name ~= "land-mine" then
+				if entity.force.name ~= "enemy" then
+					if entity.name == "character" then
+						entity.damage(damage, "enemy")
+					else
+						entity.health = entity.health - damage
+						if entity.health <= 0 then entity.die("enemy") end
+					end
 				end
 			end
 		end
@@ -959,6 +961,7 @@ local function on_player_joined_game(event)
 			["stone"] = {frequency = "3", size = "2", richness = "1"},
 			["copper-ore"] = {frequency = "3", size = "2", richness = "1"},
 			["iron-ore"] = {frequency = "3", size = "2", richness = "1"},
+			["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 			["crude-oil"] = {frequency = "4", size = "1", richness = "1"},
 			["trees"] = {frequency = "1.5", size = "1.5", richness = "1"},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
@@ -1148,9 +1151,8 @@ local function on_chunk_generated(event)
 			map_functions.draw_oil_circle(ore_positions[5], "crude-oil", surface, 8, 200000)
 
 			local pos = surface.find_non_colliding_position("market",{spawn_position_x, 0}, 50, 1)
-			global.market = surface.create_entity({name = "market", position = pos, force = "player"})
-			global.market.minable = false
-
+			global.market = place_fish_market(surface, pos)
+			
 			local pos = surface.find_non_colliding_position("gun-turret",{spawn_position_x + 5, 1}, 50, 1)
 			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
 			turret.insert({name = "firearm-magazine", count = 32})
@@ -1335,6 +1337,18 @@ local function on_robot_built_entity(event)
 	end
 end
 
+local function market_light()
+	if not global.market_light then return end
+	local color = rendering.get_color(global.market_light)
+	for k, c in pairs(color) do
+		color[k] = color[k] + ((-1 + math_random(0, 2)) * 0.01)
+		if color[k] < 0 then color[k] = 0 end
+		if color[k] > 1 then color[k] = 1 end
+	end
+	color.a = 1
+	rendering.set_color(global.market_light, color)
+end
+
 local function on_tick()
 	if game.tick % 30 == 0 then
 		if global.market then
@@ -1373,6 +1387,8 @@ local function on_tick()
 				end
 			end
 		end
+		
+		market_light()
 	end
 
 	if game.tick % global.wave_interval == global.wave_interval - 1 then

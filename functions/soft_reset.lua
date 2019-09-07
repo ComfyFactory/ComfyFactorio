@@ -19,7 +19,7 @@ local function teleport_players(surface)
 			surface.request_to_generate_chunks(spawn, 2)
 			surface.force_generate_chunk_requests()
 		end		
-		local pos = surface.find_non_colliding_position("character", spawn, 1, 0.5)
+		local pos = surface.find_non_colliding_position("character", spawn, 3, 0.5)
 		player.teleport(pos, surface)
 	end
 end

@@ -16,7 +16,7 @@ local function init_surface()
 	map_gen_settings.starting_area = "2.5"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 40, cliff_elevation_0 = 40}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "10", size = "7", richness = "1"},
+		["coal"] = {frequency = "8", size = "4", richness = "1"},
 		["stone"] = {frequency = "0.3", size = "2.0", richness = "0.5"},
 		["iron-ore"] = {frequency = "0.3", size = "2.0", richness = "0.5"},
 		["copper-ore"] = {frequency = "0.3", size = "2.0", richness = "0.5"},

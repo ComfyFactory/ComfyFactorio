@@ -56,6 +56,7 @@ local function set_difficulty()
 		a = a + d
 		vote_count = vote_count + 1
 	end
+	if vote_count == 0 then return end
 	a = a / vote_count
 	local new_index = math.round(a, 0)
 	if global.difficulty_vote_index ~= new_index then
@@ -81,13 +82,23 @@ end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if player.online_time == 0 then
-		poll_difficulty(player)
-	end
 	if not global.difficulty_vote_value then global.difficulty_vote_value = 1 end
 	if not global.difficulty_vote_index then global.difficulty_vote_index = 4 end
 	if not global.difficulty_player_votes then global.difficulty_player_votes = {} end
+	if game.tick < global.difficulty_poll_closing_timeout then
+		if not global.difficulty_player_votes[player.name] then
+			poll_difficulty(player)
+		end
+	end
 	difficulty_gui()
+end
+
+local function on_player_left_game(event)
+	if game.tick > global.difficulty_poll_closing_timeout then return end
+	local player = game.players[event.player_index]
+	if not global.difficulty_player_votes[player.name] then return end
+	global.difficulty_player_votes[player.name] = nil
+	set_difficulty()
 end
 
 local function on_gui_click(event)
@@ -110,5 +121,6 @@ local function on_gui_click(event)
 	event.element.parent.destroy()
 end
 	
-event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_left_game, on_player_left_game)
+event.add(defines.events.on_gui_click, on_gui_click)
