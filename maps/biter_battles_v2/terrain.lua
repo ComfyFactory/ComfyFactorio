@@ -2,7 +2,7 @@ local event = require 'utils.event'
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
-local spawn_circle_size = 28
+local spawn_circle_size = bb_config.border_river_width
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}	
 
 local function shuffle(tbl)
@@ -76,7 +76,14 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
 	end
 end
 
-local function is_horizontal_border_river(surface, pos)
+function is_within_spawn_circle(pos)
+	if math.abs(pos.x) > spawn_circle_size then return false end
+	if math.abs(pos.y) > spawn_circle_size then return false end
+	if math.sqrt(pos.x ^ 2 + pos.y ^ 2) > spawn_circle_size then return false end
+	return true	
+end
+
+function is_horizontal_border_river(pos)
 	if pos.y > -5 and pos.x > -5 and pos.x < 5 then return false end
 	if math.floor(bb_config.border_river_width * -0.5) < pos.y + (get_noise(1, pos) * 5) then return true end
 	return false	
@@ -108,7 +115,7 @@ local function generate_circle_spawn(event)
 			end						
 			if distance_to_center < 9.5 then tile = "refined-concrete" end
 			if distance_to_center < 7 then tile = "sand-1" end
-			if distance_to_center + noise < r - 24 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(surface, pos) then
+			if distance_to_center + noise < r - 24 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(pos) then
 				local tile_name = surface.get_tile(pos).name
 				if tile_name == "water" or tile_name == "deepwater" then
 					surface.set_tiles({{name = "grass-2", position = pos}}, true)
@@ -189,7 +196,7 @@ local function generate_river(event)
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
-			if is_horizontal_border_river(surface, pos) then
+			if is_horizontal_border_river(pos) then
 				surface.set_tiles({{name = "deepwater", position = pos}})
 				if math_random(1, 64) == 1 then surface.create_entity({name = "fish", position = pos}) end
 			end			
@@ -351,7 +358,7 @@ local function builders_area_process_entity(e)
 end
 
 local function builders_area_process_tile(t, surface)
-	if is_horizontal_border_river(surface, t.position) then return end
+	if is_horizontal_border_river(t.position) then return end
 	if not is_biter_area(t.position) then return end
 	local noise_index = math.floor(math.abs(get_noise(3, t.position)) * 7) + 1
 	if noise_index > 7 then noise_index = 7 end
@@ -424,7 +431,7 @@ local function restrict_landfill(surface, inventory, tiles)
 		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
 		local check_position = t.position
 		if check_position.y > 0 then check_position = {x = check_position.x * -1, y = (check_position.y * -1) - 1} end
-		if is_horizontal_border_river(surface, check_position) or distance_to_center < spawn_circle_size then																			
+		if is_horizontal_border_river(check_position) or distance_to_center < spawn_circle_size then																			
 			surface.set_tiles({{name = t.old_tile.name, position = t.position}}, true)
 			inventory.insert({name = "landfill", count = 1})
 		end				
