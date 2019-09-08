@@ -66,7 +66,7 @@ boss_biter.damaged_entity = function(event)
 		if not global.acid_lines_delay[event.cause.unit_number] then global.acid_lines_delay[event.cause.unit_number] = 0 end
 		if global.acid_lines_delay[event.cause.unit_number] < game.tick then
 			acid_line(event.cause.surface, acid_lines[event.cause.name], event.cause.position, event.entity.position)
-			global.acid_lines_delay[event.cause.unit_number] = game.tick + 120
+			global.acid_lines_delay[event.cause.unit_number] = game.tick + 180
 		end
 	end
 end

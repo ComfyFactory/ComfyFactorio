@@ -15,6 +15,7 @@ require "modules.biter_evasion_hp_increaser"
 
 local event = require 'utils.event'
 local boss_biter = require "maps.fish_defender.boss_biters"
+require "functions.boss_unit"
 local map_functions = require "tools.map_functions"
 local math_random = math.random
 local insert = table.insert
@@ -428,6 +429,7 @@ local function spawn_boss_units(surface)
 			if pos then
 				local biter = surface.create_entity({name = entry.name, position = pos})
 				global.boss_biters[biter.unit_number] = biter
+				add_boss_unit(biter, global.biter_evasion_health_increase_factor * 8 * difficulties_votes[global.difficulty_vote_index].strength_modifier, 0.70)
 				biter_group.add_member(biter)
 			end
 		end
@@ -645,12 +647,12 @@ local function biter_attack_wave()
 	end
 	
 	if global.wave_count % 50 == 0 then
-		global.attack_wave_threat = math.floor(global.wave_count * (m * 2))
+		global.attack_wave_threat = math.floor(global.wave_count * m)
 		spawn_boss_units(surface)
-		if global.attack_wave_threat > 12000 then global.attack_wave_threat = 12000 end
+		if global.attack_wave_threat > 10000 then global.attack_wave_threat = 10000 end
 	else
 		global.attack_wave_threat = math.floor(global.wave_count * m)	
-		if global.attack_wave_threat > 8000 then global.attack_wave_threat = 8000 end
+		if global.attack_wave_threat > 10000 then global.attack_wave_threat = 10000 end
 	end
 	
 	local evolution = global.wave_count * 0.00125
@@ -1337,18 +1339,6 @@ local function on_robot_built_entity(event)
 	end
 end
 
-local function market_light()
-	if not global.market_light then return end
-	local color = rendering.get_color(global.market_light)
-	for k, c in pairs(color) do
-		color[k] = color[k] + ((-1 + math_random(0, 2)) * 0.01)
-		if color[k] < 0 then color[k] = 0 end
-		if color[k] > 1 then color[k] = 1 end
-	end
-	color.a = 1
-	rendering.set_color(global.market_light, color)
-end
-
 local function on_tick()
 	if game.tick % 30 == 0 then
 		if global.market then
@@ -1387,8 +1377,6 @@ local function on_tick()
 				end
 			end
 		end
-		
-		market_light()
 	end
 
 	if game.tick % global.wave_interval == global.wave_interval - 1 then
