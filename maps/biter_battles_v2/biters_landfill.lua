@@ -1,8 +1,15 @@
 -- biters will landfill a tile on death within a certain radius
 
-local r = 5
+local r = 6
 local vectors = {{0,0}, {1,0}, {0,1}, {-1,0}, {0,-1}}
 local math_random = math.random
+
+local whitelist = {
+	["big-spitter"] = true,
+	["big-biter"] = true,
+	["behemoth-biter"] = true,
+	["behemoth-spitter"] = true,
+}
 
 local function create_particles(surface, position)
 	local m = math_random(8, 12)
@@ -54,7 +61,8 @@ end
 local function on_entity_died(event)
 	local entity = event.entity
 	if not entity.valid then return end	
-	if entity.type ~= "unit" then return end	
+	if entity.type ~= "unit" then return end
+	if not whitelist[entity.name] then return end
 	landfill(entity.surface, entity)
 end
 

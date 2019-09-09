@@ -11,18 +11,26 @@ local event = require 'utils.event'
 
 local function init_surface()	
 	local map_gen_settings = {}
-	map_gen_settings.water = "0.15"
+	map_gen_settings.water = math.random(40, 60) * 0.01
 	map_gen_settings.starting_area = "2.5"
 	--map_gen_settings.cliff_settings = {cliff_elevation_interval = 12, cliff_elevation_0 = 32}
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = 38, cliff_elevation_0 = 38}	
+	--map_gen_settings.property_expression_names = {
+	--	["moisture"] = math.random(1, 100) * 0.01,
+	--	["aux"] = math.random(1, 100) * 0.01,
+	--	["temperature"] = math.random(1, 100) * 0.01,
+	--}
+	map_gen_settings.terrain_segmentation = math.random(50, 100) * 0.1
+	--map_gen_settings.terrain_segmentation = 10
+	
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = math.random(8, 48), cliff_elevation_0 = math.random(8, 48)}	
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "2", size = "1", richness = "1"},
-		["stone"] = {frequency = "2", size = "1", richness = "1"},
-		["copper-ore"] = {frequency = "2", size = "1", richness = "1"},
-		["iron-ore"] = {frequency = "2.5", size = "1.1", richness = "1"},
-		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
-		["crude-oil"] = {frequency = "2.5", size = "1", richness = "1.5"},
-		["trees"] = {frequency = "1.25", size = "0.6", richness = "0.5"},
+		["coal"] = {frequency = math.random(10, 30) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
+		["stone"] = {frequency = math.random(10, 30) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
+		["copper-ore"] = {frequency = math.random(10, 30) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
+		["iron-ore"] = {frequency = math.random(10, 30) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
+		["uranium-ore"] = {frequency = math.random(10, 20) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
+		["crude-oil"] = {frequency = math.random(15, 30) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(10, 20) * 0.1},
+		["trees"] = {frequency = math.random(5, 25) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(3, 10) * 0.1},
 		["enemy-base"] = {frequency = "256", size = "0.61", richness = "1"}	
 	}
 	game.create_surface("biter_battles", map_gen_settings)

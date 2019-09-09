@@ -115,7 +115,9 @@ local function generate_circle_spawn(event)
 			end						
 			if distance_to_center < 9.5 then tile = "refined-concrete" end
 			if distance_to_center < 7 then tile = "sand-1" end
-			if distance_to_center + noise < r - 24 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(pos) then
+			
+			
+			if distance_to_center + noise < r - r * 0.5 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(pos) then
 				local tile_name = surface.get_tile(pos).name
 				if tile_name == "water" or tile_name == "deepwater" then
 					surface.set_tiles({{name = "grass-2", position = pos}}, true)
@@ -129,6 +131,7 @@ local function generate_circle_spawn(event)
 					end
 				end
 			end
+			
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 			
 			if surface.can_place_entity({name = "coal", position = pos}) then			
@@ -185,6 +188,10 @@ local function generate_silos(event)
 		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
 	end
 	
+	for i = 1, 4, 1 do
+		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 48, 50)
+	end
+	
 end
 
 local function generate_river(event)
@@ -221,14 +228,14 @@ local function rainbow_ore_and_ponds(event)
 					if i == 0 then i = 4 end
 					surface.create_entity({name = ores[i], position = pos, amount = amount})					
 				end
-				if noise < -0.79 then
-					if noise < -0.85 then 
-						surface.set_tiles({{name = "deepwater", position = pos}})
-					else
-						surface.set_tiles({{name = "water", position = pos}})
-					end					
-					if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
-				end
+				--if noise < -0.79 then
+				--	if noise < -0.85 then 
+				--		surface.set_tiles({{name = "deepwater", position = pos}})
+				--	else
+				--		surface.set_tiles({{name = "water", position = pos}})
+				--	end					
+				--	if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
+				--end
 			end
 		end
 	end

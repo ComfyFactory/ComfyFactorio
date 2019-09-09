@@ -13,10 +13,10 @@ local food_names = {
 }
 
 local gui_values = {
-		["north"] = {force = "north", biter_force = "north_biters", c1 = "Team " .. bb_config.north_side_team_name, c2 = "JOIN " .. string.upper(bb_config.north_side_team_name), n1 = "join_north_button",
+		["north"] = {force = "north", biter_force = "north_biters", c1 = bb_config.north_side_team_name, c2 = "JOIN ", n1 = "join_north_button",
 		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99}},
-		["south"] = {force = "south", biter_force = "south_biters", c1 = "Team " .. bb_config.south_side_team_name, c2 = "JOIN " .. string.upper(bb_config.south_side_team_name), n1 = "join_south_button",
+		["south"] = {force = "south", biter_force = "south_biters", c1 = bb_config.south_side_team_name, c2 = "JOIN ", n1 = "join_south_button",
 		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
 	}		
@@ -53,17 +53,20 @@ local function create_first_join_gui(player)
 	local b = frame.add  { type = "label", caption = "Feed the enemy team's biters to gain advantage!" }
 	b.style.font = "heading-2"
 	b.style.font_color = {r=0.98, g=0.66, b=0.22}
-		
+	
+	frame.add  { type = "label", caption = "-----------------------------------------------------------"}
+	
 	for _, gui_value in pairs(gui_values) do
 		local t = frame.add { type = "table", column_count = 3 }	
 		local l = t.add  { type = "label", caption = gui_value.c1}
 		l.style.font = "heading-2"
 		l.style.font_color = gui_value.color1
+		l.style.single_line = false
+		l.style.maximal_width = 290
 		local l = t.add  { type = "label", caption = "  -  "}
 		local l = t.add  { type = "label", caption = #game.forces[gui_value.force].connected_players .. " Players "}
 		l.style.font_color = { r=0.22, g=0.88, b=0.22}
 		
-		frame.add  { type = "label", caption = "-----------------------------------------------------------"}
 		local c = gui_value.c2	
 		local font_color =  gui_value.color1
 		if global.game_lobby_active then
@@ -82,6 +85,7 @@ local function create_first_join_gui(player)
 		b.style.font = "default-large-bold"
 		b.style.font_color = font_color
 		b.style.minimal_width = 350
+		frame.add  { type = "label", caption = "-----------------------------------------------------------"}
 	end	
 end
 
@@ -107,8 +111,8 @@ local function create_main_gui(player)
 		for _, f in pairs(foods) do
 			local s = t.add { type = "sprite-button", name = f, sprite = "item/" .. f }
 			s.tooltip = {"",food_tooltips[x]}
-			s.style.minimal_height = 42
-			s.style.minimal_width = 42
+			s.style.minimal_height = 41
+			s.style.minimal_width = 41
 			s.style.top_padding = 0
 			s.style.left_padding = 0
 			s.style.right_padding = 0
@@ -118,16 +122,22 @@ local function create_main_gui(player)
 	end	
 	
 	for _, gui_value in pairs(gui_values) do			
-		local t = frame.add { type = "table", column_count = 3 }	
+		local t = frame.add { type = "table", column_count = 3 }
 		local l = t.add  { type = "label", caption = gui_value.c1}
 		l.style.font = "default-bold"
 		l.style.font_color = gui_value.color1
-		local l = t.add  { type = "label", caption = "  -  "}
-		local l = t.add  { type = "label", caption = #game.forces[gui_value.force].connected_players .. " Players "}
-		l.style.font_color = { r=0.22, g=0.88, b=0.22}
-
+		l.style.single_line = false
+		--l.style.minimal_width = 100
+		l.style.maximal_width = 102
+		
+		local l = t.add  { type = "label", caption = " - "}
+		local c = #game.forces[gui_value.force].connected_players .. " Player"
+		if #game.forces[gui_value.force].connected_players ~= 1 then c = c .. "s" end
+		local l = t.add  { type = "label", caption = c}
+		l.style.font = "default"
+		l.style.font_color = { r=0.22, g=0.88, b=0.22}		
 				
-		if global.bb_view_players[player.name] == true then
+		if global.bb_view_players[player.name] == true then		
 			local t = frame.add  { type = "table", column_count = 4 }	
 			for _, p in pairs(game.forces[gui_value.force].connected_players) do
 				local l = t.add  { type = "label", caption = p.name }
@@ -154,7 +164,8 @@ local function create_main_gui(player)
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
 		l.tooltip = gui_value.t2
-		frame.add  { type = "label", caption = "-----------------------------"}						
+		
+		frame.add  { type = "label", caption = string.rep("-", 29)}						
 	end
 	
 	local t = frame.add  { type = "table", column_count = 2 }
@@ -349,7 +360,7 @@ local function on_player_joined_game(event)
 	if #game.connected_players > 1 then
 		global.game_lobby_timeout = math.ceil(36000 / #game.connected_players)
 	else
-		global.game_lobby_timeout = 5999940
+		global.game_lobby_timeout = 599940
 	end
 	
 	--if not global.chosen_team[player.name] then
