@@ -959,17 +959,17 @@ local function on_player_joined_game(event)
 
 	if not global.fish_defense_init_done then
 		local map_gen_settings = {}
-		map_gen_settings.water = 0.4
-		map_gen_settings.terrain_segmentation = 6
+		map_gen_settings.water = 0.1
+		map_gen_settings.terrain_segmentation = 8
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
 		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "3", size = "2", richness = "1"},
-			["stone"] = {frequency = "3", size = "2", richness = "1"},
-			["copper-ore"] = {frequency = "3", size = "2", richness = "1"},
-			["iron-ore"] = {frequency = "3", size = "2", richness = "1"},
-			["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
-			["crude-oil"] = {frequency = "4", size = "1", richness = "1"},
-			["trees"] = {frequency = "1.5", size = "1.5", richness = "1"},
+			["coal"] = {frequency = 3, size = 2, richness = 1},
+			["stone"] = {frequency = 3, size = 2, richness = 1},
+			["copper-ore"] = {frequency = 3, size = 2, richness = 1},
+			["iron-ore"] = {frequency = 3, size = 2, richness = 1},
+			["uranium-ore"] = {frequency = 0, size = 0, richness = 0},
+			["crude-oil"] = {frequency = 4, size = 1, richness = 1},
+			["trees"] = {frequency = 2, size = 1, richness = 1},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 		}
 		game.create_surface("fish_defender", map_gen_settings)

@@ -79,47 +79,41 @@ local function is_enemy_territory(p)
 	return true
 end
 
-local function is_body(p)
-	local center = 512
-	if p.y <= map_height and p.y >= map_height * -1 and p.x <= 160 and p.x > center * -1 then return true end
+local body_radius = 3072
+local body_square_radius = body_radius ^ 2
+local body_center_position = {x = -1500, y = 0}
+local body_spacing = math.floor(body_radius * 0.82)
+local body_circle_center_1 = {x = body_center_position.x, y = body_center_position.y - body_spacing}
+local body_circle_center_2 = {x = body_center_position.x, y = body_center_position.y + body_spacing}
+
+local fin_radius = 800
+local square_fin_radius = fin_radius ^ 2
+local fin_circle_center_1 = {x = -480, y = 0}
+local fin_circle_center_2 = {x = -480 - 360, y = 0}
+
+local function is_body(p)	
+	if p.y <= map_height and p.y >= map_height * -1 and p.x <= 160 and p.x > body_center_position.x then return true end
 	
-	local radius = 3072
-	local spacing = math.floor(radius * 0.82)
-	local center_position = {x = -1500, y = 0}
-	local circle_center_1 = {x = center_position.x, y = center_position.y - spacing}
-	local circle_center_2 = {x = center_position.x, y = center_position.y + spacing}		
-	local distance_to_center_1 = math.sqrt((p.x - circle_center_1.x)^2 + (p.y - circle_center_1.y)^2)
-	local distance_to_center_2 = math.sqrt((p.x - circle_center_2.x)^2 + (p.y - circle_center_2.y)^2)	
-	if distance_to_center_1 < radius and distance_to_center_2 < radius then return true end
+	--Main Fish Body			
+	local distance_to_center_1 = ((p.x - body_circle_center_1.x)^2 + (p.y - body_circle_center_1.y)^2)
+	local distance_to_center_2 = ((p.x - body_circle_center_2.x)^2 + (p.y - body_circle_center_2.y)^2)	
+	if distance_to_center_1 < body_square_radius and distance_to_center_2 < body_square_radius then return true end
 	
-	--[[
-	local offset = -256
-	local x = 0
-	local square_gain = 0
-	local gain = 0.09
-	
-	if p.x <= center * -1 then
-		x = p.x + offset + (math.abs(center + p.x) * 3)
-		square_gain = 2 - x * 0.00001
-	else
-		x = p.x + offset
-		square_gain = 2 - x * 0.0001
+	--Fish Fins
+	local distance_to_center_1 = ((p.x - fin_circle_center_1.x)^2 + (p.y - fin_circle_center_1.y)^2)
+	if distance_to_center_1 + math.abs(simplex_noise(0, p.y * 0.075, game.surfaces[1].map_gen_settings.seed) * 32000) > square_fin_radius then
+		local distance_to_center_2 = ((p.x - fin_circle_center_2.x)^2 + (p.y - fin_circle_center_2.y)^2)
+		if distance_to_center_2 < square_fin_radius then
+			return true
+		end
 	end
 	
-	local y = (((math.abs(p.y) * gain)) ^ square_gain) * -1
-	if x <= y then return true end
-	
-	--if p.x - 128 < ((math.abs(p.y) * 0.11) ^ math.abs(p.x * 0.02)) * -1 then return true end
-	--if p.x - 128 < (math.abs(p.y) * -1) * (1 - math.sin(p.x * 0.005)) then return true end
-	]]
 	return false
 end
 
 local function is_out_of_map_tile(surface, p)
 	if is_enemy_territory(p) then return false end
 	if is_body(p) then return false end
-	--if is_wings(p) then return false end
-
 	return true
 end
 
@@ -132,12 +126,12 @@ local function generate_spawn_area(surface, left_top)
 
 	surface.create_entity({name = "electric-beam", position = {160, -96}, source = {160, -96}, target = {160,96}})
 
-	for _, tile in pairs(surface.find_tiles_filtered({name = {"water", "deepwater"}, area = {{-160, -96},{160, 96}}})) do
+	for _, tile in pairs(surface.find_tiles_filtered({name = {"water", "deepwater"}, area = {{-160, -160},{160, 160}}})) do
 		local noise = math.abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
 		if tile.position.x > -160 + noise then	surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true) end
 	end
 	
-	local entities = surface.find_entities_filtered({type = {"resource", "cliff"}, area = {{-160, -96},{160, 96}}})
+	local entities = surface.find_entities_filtered({type = {"resource", "cliff"}, area = {{-160, -160},{160, 160}}})
 	for _, entity in pairs(entities) do
 		entity.destroy()
 	end	
@@ -263,17 +257,32 @@ local function enemy_territory(surface, left_top, area)
 	end
 end
 
-local function cave_territory(surface, position)	
-	--if position.x > simplex_noise(0, position.y * 0.01, game.surfaces[1].map_gen_settings.seed) * 256 then return end	
+local function fish_mouth(surface, pos)
+	if pos.y > 64 then return end
+	if pos.y < -64 then return end
+	if pos.x > -2300 then return end
+	if pos.x < -3260 then return end
+	local noise = simplex_noise(pos.x * 0.006, 0, game.surfaces[1].map_gen_settings.seed) * 20
+	if pos.y > 12 + noise then return end
+	if pos.y < -12 + noise then return end
+	surface.set_tiles({{name = "water", position = pos}})
+end
+
+local function plankton_territory(surface, position)	
 	local noise = simplex_noise(position.x * 0.01, position.y * 0.01, game.surfaces[1].map_gen_settings.seed)
 	local d = 256
-	if position.x + position.y > (d * -1) - (math.abs(noise) * d)  and position.x > position.y - (d + (math.abs(noise) * d)) then return false end
+	if position.x + position.y > (d * -1) - (math.abs(noise) * d) and position.x > position.y - (d + (math.abs(noise) * d)) then return false end
+	
+	if noise > 0.8 then surface.set_tiles({{name = "deepwater-green", position = position}}, true) return true end
+	if noise > 0.7 then surface.set_tiles({{name = "grass-2", position = position}}, true) return true end	
+	if noise < -0.7 then
+		surface.set_tiles({{name = "grass-2", position = position}}, true)
+		if noise < -0.78 then surface.create_entity({name = "uranium-ore", position = position, amount = 1000 * math.abs(noise * 2)}) end
+		return true 
+	end
 
 	local noise_2 = simplex_noise(position.x * 0.01, position.y * 0.01, game.surfaces[1].map_gen_settings.seed + 10000)
-	if noise_2 > 0.8 then surface.set_tiles({{name = "deepwater-green", position = position}}, true) return true end
-	if noise_2 > 0.7 then surface.set_tiles({{name = "grass-2", position = position}}, true) return true end
-
-	if noise < 0.10 and noise > -0.10 then
+	if noise_2 < 0.10 and noise_2 > -0.10 then
 		surface.set_tiles({{name = "dirt-7", position = position}}, true)
 		if math_random(1, 3) ~= 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position}) end
 		return true
@@ -297,9 +306,10 @@ local function on_chunk_generated(event)
 		for y = 0, 31, 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}
 			if is_out_of_map_tile(surface, pos) then	
-				if not cave_territory(surface, pos) then surface.set_tiles({{name = "out-of-map", position = pos}}, true) end
+				if not plankton_territory(surface, pos) then surface.set_tiles({{name = "out-of-map", position = pos}}, true) end
 			else
 				enemy_territory_entities_and_tiles(surface, pos)
+				fish_mouth(surface, pos)
 			end
 		end
 	end
