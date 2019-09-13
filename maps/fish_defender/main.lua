@@ -5,6 +5,7 @@ require "maps.fish_defender.map_intro"
 require "maps.fish_defender.market"
 require "maps.fish_defender.shotgun_buff"
 require "maps.fish_defender.on_entity_damaged"
+local generate_chunks = require "maps.fish_defender.pregenerate_chunks"
 
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"
@@ -959,8 +960,8 @@ local function on_player_joined_game(event)
 
 	if not global.fish_defense_init_done then
 		local map_gen_settings = {}
-		map_gen_settings.water = 0.1
-		map_gen_settings.terrain_segmentation = 8
+		map_gen_settings.water = 0.2
+		map_gen_settings.terrain_segmentation = 3
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = 3, size = 2, richness = 1},
@@ -975,8 +976,8 @@ local function on_player_joined_game(event)
 		game.create_surface("fish_defender", map_gen_settings)
 		local surface = game.surfaces["fish_defender"]
 
-		local radius = 256
-		game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
+		--local radius = 256
+		--game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
 
 		game.map_settings.enemy_expansion.enabled = false
 		game.map_settings.enemy_evolution.destroy_factor = 0
@@ -995,7 +996,9 @@ local function on_player_joined_game(event)
 			left_top = {x = -1500, y = -1500},
 			right_bottom = {x = -80, y = 1500}
 		}
-
+		
+		fish_eye(surface, {x = -2150, y = -300})
+		
 		global.fish_defense_init_done = true
 	end
 
@@ -1072,8 +1075,17 @@ local function on_robot_built_entity(event)
 	end
 end
 
+local function chart_map()
+	if not global.map_generation_complete then
+		global.wave_grace_period = global.wave_grace_period + 180
+		return 
+	end
+	game.forces.player.chart(game.surfaces["fish_defender"], {{-512, -512},{768, 512}})
+end
+
 local function on_tick()
 	if game.tick % 30 == 0 then
+		generate_chunks()
 		if global.market then
 			for _, player in pairs(game.connected_players) do
 				if game.surfaces["fish_defender"].peaceful_mode == false then
@@ -1083,7 +1095,7 @@ local function on_tick()
 		end
 		if game.tick % 180 == 0 then
 			if game.surfaces["fish_defender"] then
-				--game.forces.player.chart(game.surfaces["fish_defender"], {{x = -64, y = -256}, {x = 512, y = 256}})
+				chart_map()
 				if global.difficulty_vote_index then
 					global.wave_interval = difficulties_votes[global.difficulty_vote_index].wave_interval
 				end
@@ -1183,7 +1195,7 @@ event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
---event.add(defines.events.on_player_changed_position, on_player_changed_position)
+event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
