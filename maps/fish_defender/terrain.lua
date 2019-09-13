@@ -122,7 +122,7 @@ local function generate_spawn_area(surface, left_top)
 	if left_top.x ~= -256 then return end
 	if left_top.y ~= -256 then return end
 	
-	local spawn_position_x = -76
+	local spawn_position_x = -96
 
 	surface.create_entity({name = "electric-beam", position = {160, -96}, source = {160, -96}, target = {160,96}})
 
@@ -149,13 +149,13 @@ local function generate_spawn_area(surface, left_top)
 	end
 	
 	local y = 80
-	local ore_positions = {{x = -128, y = y},{x = -128, y = y * 0.5},{x = -128, y = 0},{x = -128, y = y * -0.5},{x = -128, y = y * -1}}
+	local ore_positions = {{x = spawn_position_x - 52, y = y},{x = spawn_position_x - 52, y = y * 0.5},{x = spawn_position_x - 52, y = 0},{x = spawn_position_x - 52, y = y * -0.5},{x = spawn_position_x - 52, y = y * -1}}
 	table.shuffle_table(ore_positions)
 	map_functions.draw_smoothed_out_ore_circle(ore_positions[1], "copper-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle(ore_positions[2], "iron-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle(ore_positions[3], "coal", surface, 15, 1500)
 	map_functions.draw_smoothed_out_ore_circle(ore_positions[4], "stone", surface, 15, 1500)
-	map_functions.draw_noise_tile_circle({x = -96, y = 0}, "water", surface, 16)
+	map_functions.draw_noise_tile_circle({x = spawn_position_x - 20, y = 0}, "water", surface, 16)
 	map_functions.draw_oil_circle(ore_positions[5], "crude-oil", surface, 8, 200000)
 
 	local pos = surface.find_non_colliding_position("market",{spawn_position_x, 0}, 50, 1)

@@ -433,7 +433,7 @@ local function spawn_boss_units(surface)
 			if pos then
 				local biter = surface.create_entity({name = entry.name, position = pos})
 				global.boss_biters[biter.unit_number] = biter
-				add_boss_unit(biter, global.biter_evasion_health_increase_factor * 4 * difficulties_votes[global.difficulty_vote_index].amount_modifier, 0.55)
+				add_boss_unit(biter, global.biter_evasion_health_increase_factor * 5 * difficulties_votes[global.difficulty_vote_index].amount_modifier, 0.55)
 				biter_group.add_member(biter)
 			end
 		end
@@ -960,8 +960,8 @@ local function on_player_joined_game(event)
 
 	if not global.fish_defense_init_done then
 		local map_gen_settings = {}
-		map_gen_settings.water = 0.2
-		map_gen_settings.terrain_segmentation = 3
+		map_gen_settings.water = 0.15
+		map_gen_settings.terrain_segmentation = 2.5
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = 3, size = 2, richness = 1},
@@ -1078,6 +1078,7 @@ end
 local function chart_map()
 	if not global.map_generation_complete then
 		global.wave_grace_period = global.wave_grace_period + 180
+		global.difficulty_poll_closing_timeout = global.difficulty_poll_closing_timeout + 180
 		return 
 	end
 	game.forces.player.chart(game.surfaces["fish_defender"], {{-512, -512},{768, 512}})
