@@ -1,5 +1,6 @@
 -- fish defender -- by mewmew --
 
+require "maps.fish_defender.terrain"
 require "maps.fish_defender.map_intro"
 require "maps.fish_defender.market"
 require "maps.fish_defender.shotgun_buff"
@@ -12,14 +13,16 @@ require "modules.dynamic_landfill"
 require "modules.dangerous_goods"
 require "modules.custom_death_messages"
 require "modules.biter_evasion_hp_increaser"
+require "modules.rocks_yield_ore"
+require "modules.rocks_broken_paint_tiles"
 
 local event = require 'utils.event'
 local boss_biter = require "maps.fish_defender.boss_biters"
 require "functions.boss_unit"
-local map_functions = require "tools.map_functions"
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
+map_height = 96
 
 local biter_count_limit = 1024	--maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 local boss_waves = {
@@ -418,7 +421,7 @@ local function spawn_boss_units(surface)
 	end
 
 	if not boss_waves[global.wave_count] then
-		boss_waves[global.wave_count] = {{name = "behemoth-biter", count = math.floor(global.wave_count / 16)}, {name = "behemoth-spitter", count = math.floor(global.wave_count / 32)}}
+		boss_waves[global.wave_count] = {{name = "behemoth-biter", count = math.floor(global.wave_count / 20)}, {name = "behemoth-spitter", count = math.floor(global.wave_count / 40)}}
 	end
 
 	local position = {x = 216, y = 0}
@@ -429,7 +432,7 @@ local function spawn_boss_units(surface)
 			if pos then
 				local biter = surface.create_entity({name = entry.name, position = pos})
 				global.boss_biters[biter.unit_number] = biter
-				add_boss_unit(biter, global.biter_evasion_health_increase_factor * 8 * difficulties_votes[global.difficulty_vote_index].strength_modifier, 0.70)
+				add_boss_unit(biter, global.biter_evasion_health_increase_factor * 4 * difficulties_votes[global.difficulty_vote_index].amount_modifier, 0.55)
 				biter_group.add_member(biter)
 			end
 		end
@@ -647,7 +650,7 @@ local function biter_attack_wave()
 	end
 	
 	if global.wave_count % 50 == 0 then
-		global.attack_wave_threat = math.floor(global.wave_count * m)
+		global.attack_wave_threat = math.floor(global.wave_count * (m*1.5))
 		spawn_boss_units(surface)
 		if global.attack_wave_threat > 10000 then global.attack_wave_threat = 10000 end
 	else
@@ -956,8 +959,9 @@ local function on_player_joined_game(event)
 
 	if not global.fish_defense_init_done then
 		local map_gen_settings = {}
-		map_gen_settings.water = "0.5"
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 32}
+		map_gen_settings.water = 0.4
+		map_gen_settings.terrain_segmentation = 6
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
 		map_gen_settings.autoplace_controls = {
 			["coal"] = {frequency = "3", size = "2", richness = "1"},
 			["stone"] = {frequency = "3", size = "2", richness = "1"},
@@ -981,14 +985,6 @@ local function on_player_joined_game(event)
 		game.map_settings.pollution.enabled = false
 
 		game.forces["player"].technologies["atomic-bomb"].enabled = false
-
-		global.entity_limits = {
-			["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
-			["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
-			["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
-			["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
-			["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1}
-		}
 
 		game.create_force("decoratives")
 		game.forces["decoratives"].set_cease_fire("enemy", true)
@@ -1027,269 +1023,6 @@ local function on_player_joined_game(event)
 	if game.tick > 900 then
 		is_game_lost()
 	end
-end
-
-local function get_replacement_tile(surface)
-	local tilename = "grass-1"
-	for x = -160, 160, 1 do
-		for y = -96, 90, 1 do
-			local tile = surface.get_tile(x, y)
-			if tile.name ~= "water" and tile.name ~= "deepwater" then
-				tilename = tile.name
-			end
-		end
-	end
-	return tilename
-end
-
-local worm_raffle_table = {
-		[1] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret"},
-		[2] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret"},
-		[3] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret"},
-		[4] = {"small-worm-turret", "small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret"},
-		[5] = {"small-worm-turret", "small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
-		[6] = {"small-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret"},
-		[7] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[8] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[9] = {"medium-worm-turret", "medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"},
-		[10] = {"medium-worm-turret", "medium-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret", "big-worm-turret"}
-	}
-local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
-
-local function spawn_obstacles(left_top, surface)
-	if not global.obstacle_start_x then global.obstacle_start_x = math.abs(left_top.x) - 32 end
-	local current_depth = math.abs(left_top.x) - global.obstacle_start_x
-	local worm_amount = math.ceil(current_depth / 64)
-	local i = math.ceil(current_depth / 256)
-	if i > 10 then i = 10 end
-	if i < 1 then i = 1 end
-	local worm_raffle = worm_raffle_table[i]
-
-	local rocks_amount = math.ceil(current_depth / 16)
-
-	local tile_positions = {}
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if not surface.get_tile(pos).collides_with("player-layer") then
-				tile_positions[#tile_positions + 1] = pos
-			end
-		end
-	end
-	if #tile_positions == 0 then return end
-
-	tile_positions = shuffle(tile_positions)
-	for _, pos in pairs(tile_positions) do
-		surface.create_entity({name = worm_raffle[math_random(1, #worm_raffle)], position = pos, force = "enemy"})
-		worm_amount = worm_amount - 1
-		if worm_amount < 1 then break end
-	end
-
-	tile_positions = shuffle(tile_positions)
-	for _, pos in pairs(tile_positions) do
-		surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
-		rocks_amount = rocks_amount - 1
-		if rocks_amount < 1 then break end
-	end
-end
-
-local map_height = 96
-
-local function on_chunk_generated(event)
-	local surface = game.surfaces["fish_defender"]
-
-	if not surface then return end
-	if surface.name ~= event.surface.name then return end
-
-	local area = event.area
-	local left_top = area.left_top
-
-	if left_top.x <= -196 then
-
-		local search_area = {{left_top.x - 32, left_top.y - 32}, {left_top.x + 32, left_top.y + 32}}
-		if surface.count_tiles_filtered({name = "water", area = search_area}) == 0 and math_random(1, 64) == 1 then
-			map_functions.draw_noise_tile_circle({x = left_top.x + math_random(1,30), y = left_top.y + math_random(1,30)}, "water", surface, math_random(6, 12))
-		end
-
-		if not global.spawn_ores_generated then
-
-			local spawn_position_x = -76
-
-			surface.create_entity({name = "electric-beam", position = {160, -96}, source = {160, -96}, target = {160,96}})
-
-			local tiles = {}
-			local replacement_tile = get_replacement_tile(surface)
-			local water_tiles = surface.find_tiles_filtered({name = {"water", "deepwater"}})
-
-			for _, tile in pairs(water_tiles) do
-				insert(tiles, {name = replacement_tile, position = {tile.position.x, tile.position.y}})
-			end
-			surface.set_tiles(tiles, true)
-
-			local entities = surface.find_entities_filtered({type = "resource", area = {{-160, -96},{160, 96}}})
-			for _, entity in pairs(entities) do
-				entity.destroy()
-			end
-
-			local decorative_names = {}
-			for k,v in pairs(game.decorative_prototypes) do
-				if v.autoplace_specification then
-				  decorative_names[#decorative_names+1] = k
-				end
-			 end
-			for x = -4, 4, 1 do
-				for y = -3, 3, 1 do
-					surface.regenerate_decorative(decorative_names, {{x,y}})
-				end
-			end
-
-			local ore_positions = {{x = -128, y = -64},{x = -128, y = -32},{x = -128, y = 32},{x = -128, y = 64},{x = -128, y = 0}}
-			ore_positions = shuffle(ore_positions)
-			map_functions.draw_smoothed_out_ore_circle(ore_positions[1], "copper-ore", surface, 15, 2500)
-			map_functions.draw_smoothed_out_ore_circle(ore_positions[2], "iron-ore", surface, 15, 2500)
-			map_functions.draw_smoothed_out_ore_circle(ore_positions[3], "coal", surface, 15, 1500)
-			map_functions.draw_smoothed_out_ore_circle(ore_positions[4], "stone", surface, 15, 1500)
-			map_functions.draw_noise_tile_circle({x = -96, y = 0}, "water", surface, 16)
-			map_functions.draw_oil_circle(ore_positions[5], "crude-oil", surface, 8, 200000)
-
-			local pos = surface.find_non_colliding_position("market",{spawn_position_x, 0}, 50, 1)
-			global.market = place_fish_market(surface, pos)
-			
-			local pos = surface.find_non_colliding_position("gun-turret",{spawn_position_x + 5, 1}, 50, 1)
-			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
-			turret.insert({name = "firearm-magazine", count = 32})
-
-			for x = -20, 20, 1 do
-				for y = -20, 20, 1 do
-					local pos = {x = global.market.position.x + x, y = global.market.position.y + y}
-					local distance_to_center = math.sqrt(x^2 + y^2)
-					if distance_to_center > 8 and distance_to_center < 15 then
-						if math_random(1,3) == 1 and surface.can_place_entity({name = "wooden-chest", position = pos, force = "player"}) then
-							local chest = surface.create_entity({name = "wooden-chest", position = pos, force = "player"})
-						end
-					end
-				end
-			end
-
-			local area = {{x = -160, y = -96}, {x = 160, y = 96}}
-			for _, tile in pairs(surface.find_tiles_filtered({name = "water", area = area})) do
-				if math_random(1, 32) == 1 then
-					surface.create_entity({name = "fish", position = tile.position})
-				end
-			end
-
-			local pos = surface.find_non_colliding_position("character",{spawn_position_x + 1, 4}, 50, 1)
-			game.forces["player"].set_spawn_position(pos, surface)
-			for _, player in pairs(game.connected_players) do
-				local pos = surface.find_non_colliding_position("character",{spawn_position_x + 1, 4}, 50, 1)
-				player.teleport(pos, surface)
-			end
-
-			global.spawn_ores_generated = true
-		end
-	end
-
-	local tiles = {}
-	local hourglass_center_piece_length = 64
-
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local pos = {x = left_top.x + x, y = left_top.y + y}
-			if pos.y >= map_height then
-				if pos.y > pos.x - hourglass_center_piece_length and pos.x > 0 then
-					insert(tiles, {name = "out-of-map", position = pos})
-				end
-				if pos.y > (pos.x + hourglass_center_piece_length) * -1 and pos.x <= 0 then
-					insert(tiles, {name = "out-of-map", position = pos})
-				end
-			end
-			if pos.y < map_height * -1 then
-				if pos.y < (pos.x - hourglass_center_piece_length) * -1 and pos.x > 0 then
-					insert(tiles, {name = "out-of-map", position = pos})
-				end
-				if pos.y < pos.x + hourglass_center_piece_length and pos.x <= 0 then
-					insert(tiles, {name = "out-of-map", position = pos})
-				end
-			end
-		end
-	end
-
-	surface.set_tiles(tiles, false)
-
-	for _, tile in pairs(surface.find_tiles_filtered({name = "water", area = event.area})) do
-		if math_random(1, 32) == 1 then
-			surface.create_entity({name = "fish", position = tile.position})
-		end
-	end
-
-	if left_top.x < -2048 then
-		spawn_obstacles(left_top, surface)
-	end
-
-	if left_top.x < 0 then return end
-
-	for _, entity in pairs(surface.find_entities_filtered({area = area, type = "cliff"})) do
-		entity.destroy()
-	end
-
-	if left_top.x < 160 then return end
-
-	for _, entity in pairs(surface.find_entities_filtered({area = area, type = "tree"})) do
-		entity.destroy()
-	end
-
-	for _, entity in pairs(surface.find_entities_filtered({area = area, type = "resource"})) do
-		surface.create_entity({name = "uranium-ore", position = entity.position, amount = math_random(200, 8000)})
-		entity.destroy()
-	end
-
-	local tiles = {}
-
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local pos = {x = left_top.x + x, y = left_top.y + y}
-
-			local tile = surface.get_tile(pos)
-			if tile.name ~= "out-of-map" then
-
-				if pos.x > 0 then
-					if pos.x > 320 then
-						insert(tiles, {name = "out-of-map", position = pos})
-					else
-						local a = 0 + (pos.x - 160) * 0.01
-						local b = (pos.x - 160) * 0.035
-						local r = (pos.x - 160) * 0.015
-						if a > 0.75 then a = 0.75 end
-						if b > 1 then b = 1 end
-						if r > 0.6 then r = 0.6 end
-						rendering.draw_sprite({sprite = "tile/lab-dark-2", target = {pos.x + 0.5, pos.y + 0.5}, surface = surface, tint = {r = r, g = 0, b = b, a = a}, render_layer = "ground"})
-					end
-
-					if pos.x > 296 and pos.x < 312 and math_random(1, 128) == 1 then
-						if surface.can_place_entity({name = "biter-spawner", force = "decoratives", position = pos}) then
-							local entity
-							if math_random(1,4) == 1 then
-								entity = surface.create_entity({name = "spitter-spawner", force = "decoratives", position = pos})
-							else
-								entity = surface.create_entity({name = "biter-spawner", force = "decoratives", position = pos})
-							end
-							entity.active = false
-							entity.destructible = false
-						end
-					end
-				end
-			end
-		end
-	end
-	surface.set_tiles(tiles, true)
-
-	local decorative_names = {}
-	for k,v in pairs(game.decorative_prototypes) do
-		if v.autoplace_specification then
-		  decorative_names[#decorative_names+1] = k
-		end
-	 end
-	surface.regenerate_decorative(decorative_names, {{x=math.floor(event.area.left_top.x/32),y=math.floor(event.area.left_top.y/32)}})
 end
 
 local function on_built_entity(event)
@@ -1350,7 +1083,7 @@ local function on_tick()
 		end
 		if game.tick % 180 == 0 then
 			if game.surfaces["fish_defender"] then
-				game.forces.player.chart(game.surfaces["fish_defender"], {{x = -64, y = -256}, {x = 288, y = 256}})
+				--game.forces.player.chart(game.surfaces["fish_defender"], {{x = -64, y = -256}, {x = 512, y = 256}})
 				if global.difficulty_vote_index then
 					global.wave_interval = difficulties_votes[global.difficulty_vote_index].wave_interval
 				end
@@ -1387,6 +1120,8 @@ end
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
+	if player.position.x + player.position.y < 0 then return end
+	if player.position.x < player.position.y then return end
 	if player.position.x >= 160 then
 		player.teleport({player.position.x - 1, player.position.y}, game.surfaces["fish_defender"])
 		if player.position.y > map_height or player.position.y < map_height * -1 then
@@ -1433,15 +1168,22 @@ local function on_init(event)
 	global.difficulty_poll_closing_timeout = 54000
 	global.boss_biters = {}
 	global.acid_lines_delay = {}
+	
+	global.entity_limits = {
+		["gun-turret"] = {placed = 1, limit = 1, str = "gun turret", slot_price = 75},
+		["laser-turret"] = {placed = 0, limit = 1, str = "laser turret", slot_price = 300},
+		["artillery-turret"] = {placed = 0, limit = 1, str = "artillery turret", slot_price = 500},
+		["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
+		["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1},
+	}
 end
 
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
+--event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)

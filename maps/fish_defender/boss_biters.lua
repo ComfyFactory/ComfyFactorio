@@ -41,12 +41,15 @@ end
 
 local function acid_line(surface, name, source, target)
 	local distance = math.sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
+	
+	if distance > 16 then return end
+	
 	local modifier = {(target.x - source.x) / distance, (target.y - source.y) / distance}
 	
 	local position = {source.x, source.y}
 		
-	for i = 1, distance * 1.5, 1 do
-		if math_random(1,2) ~= 1 then
+	for i = 1, distance + 2, 1 do
+		if math_random(1,3) ~= 1 then
 			surface.create_entity({	
 				name = name,
 				position = source,
@@ -59,14 +62,15 @@ local function acid_line(surface, name, source, target)
 		end
 		position = {position[1] + modifier[1], position[2] + modifier[2]}
 	end
+	
+	global.acid_lines_delay[event.cause.unit_number] = game.tick + 180
 end
 
 boss_biter.damaged_entity = function(event)
 	if acid_lines[event.cause.name] then
 		if not global.acid_lines_delay[event.cause.unit_number] then global.acid_lines_delay[event.cause.unit_number] = 0 end
 		if global.acid_lines_delay[event.cause.unit_number] < game.tick then
-			acid_line(event.cause.surface, acid_lines[event.cause.name], event.cause.position, event.entity.position)
-			global.acid_lines_delay[event.cause.unit_number] = game.tick + 180
+			acid_line(event.cause.surface, acid_lines[event.cause.name], event.cause.position, event.entity.position)		
 		end
 	end
 end

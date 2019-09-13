@@ -89,6 +89,8 @@ local function on_player_joined_game(event)
 		if not global.difficulty_player_votes[player.name] then
 			poll_difficulty(player)
 		end
+	else
+		if player.gui.center["difficulty_poll"] then player.gui.center["difficulty_poll"].destroy() end
 	end
 	difficulty_gui()
 end
