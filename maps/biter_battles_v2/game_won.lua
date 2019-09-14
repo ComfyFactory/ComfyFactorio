@@ -48,7 +48,7 @@ local function annihilate_base_v2(center_pos, surface, force_name)
 		for y = -80, 80, 1 do
 			local pos = {x = center_pos.x + x, y = center_pos.y + y}
 			local distance_to_center = math.ceil(math.sqrt((pos.x - center_pos.x)^2 + (pos.y - center_pos.y)^2))
-			if distance_to_center < 42 and math.random(1,7) == 1 then
+			if distance_to_center < 35 and math.random(1,7) == 1 then
 				if not positions[distance_to_center] then positions[distance_to_center] = {} end
 				positions[distance_to_center][#positions[distance_to_center] + 1] = pos
 			end

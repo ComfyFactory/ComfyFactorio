@@ -45,6 +45,48 @@ local function get_noise(name, pos)
 	end
 end
 
+local function get_replacement_tile(surface, position)
+	for i = 1, 128, 1 do
+		local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
+		table.shuffle_table(vectors)
+		for k, v in pairs(vectors) do
+			local tile = surface.get_tile(position.x + v[1], position.y + v[2])
+			if not tile.collides_with("resource-layer") then
+				if tile.name ~= "stone-path" then
+					return tile.name
+				end
+			end
+		end
+	end
+	return "grass-1"
+end
+
+local function get_chunk_position(position)
+	local chunk_position = {}
+	position.x = math.floor(position.x, 0)
+	position.y = math.floor(position.y, 0)
+	for x = 0, 31, 1 do
+		if (position.x - x) % 32 == 0 then chunk_position.x = (position.x - x)  / 32 end
+	end
+	for y = 0, 31, 1 do
+		if (position.y - y) % 32 == 0 then chunk_position.y = (position.y - y)  / 32 end
+	end	
+	return chunk_position
+end
+
+local function regenerate_decoratives(surface, position)
+	local chunk = get_chunk_position(position)
+	if not chunk then return end
+	surface.destroy_decoratives({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}})
+	local decorative_names = {}
+	for k,v in pairs(game.decorative_prototypes) do
+		if v.autoplace_specification then
+			decorative_names[#decorative_names+1] = k
+		end
+	end
+	surface.regenerate_decorative(decorative_names, {chunk})
+end
+
 local function draw_noise_ore_patch(position, name, surface, radius, richness)
 	if not position then return end
 	if not name then return end
@@ -90,18 +132,13 @@ function is_horizontal_border_river(pos)
 end
 
 local function generate_circle_spawn(event)
-	if event.area.left_top.y < -160 then return end
-	if event.area.left_top.x < -160 then return end
-	if event.area.left_top.x > 160 then return end	
+	if global.bb_circle_spawn_generated then return end
 	
-	--if bb_config.builders_area then
-	--	if event.area.left_top.x > 32 then return end	
-	--end
-	local r = 101
-	
-	local surface = event.surface		
+	local surface = event.surface	
+	if surface.is_chunk_generated({6, 6}) then global.bb_circle_spawn_generated = true end	
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
+	local r = 101
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
@@ -115,20 +152,19 @@ local function generate_circle_spawn(event)
 			end						
 			if distance_to_center < 9.5 then tile = "refined-concrete" end
 			if distance_to_center < 7 then tile = "sand-1" end
-			
-			
-			if distance_to_center + noise < r - r * 0.5 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(pos) then
+						
+			if distance_to_center + noise < r - 10 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(pos) then
 				local tile_name = surface.get_tile(pos).name
 				if tile_name == "water" or tile_name == "deepwater" then
-					surface.set_tiles({{name = "grass-2", position = pos}}, true)
-					surface.set_tiles({{name = "stone-path", position = pos}}, true)
+					surface.set_tiles({{name = get_replacement_tile(surface, pos), position = pos}}, true)
+					--surface.set_tiles({{name = "stone-path", position = pos}}, true)
 					--if math_random(1,256) == 1 then 
 					--	local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
 					--	surface.create_entity({name = wrecks[math_random(1, #wrecks)], position = pos, force = "north"})
 					--end
-					if bb_config.random_scrap and math_random(1,64) == 1 then
-						surface.create_entity({name = "mineable-wreckage", position = pos})
-					end
+					--if bb_config.random_scrap and math_random(1,64) == 1 then
+					--	surface.create_entity({name = "mineable-wreckage", position = pos})
+					--end
 				end
 			end
 			
@@ -141,7 +177,7 @@ local function generate_circle_spawn(event)
 				end
 				
 				if distance_to_center + noise < r - 4 and distance_to_center + noise > r - 6 then
-					if math_random(1,50) == 1 then
+					if math_random(1,56) == 1 then
 						if surface.can_place_entity({name = "gun-turret", position = pos}) then
 							local t = surface.create_entity({name = "gun-turret", position = pos, force = "north"})
 							t.insert({name = "firearm-magazine", count = math_random(6,12)})
@@ -149,34 +185,35 @@ local function generate_circle_spawn(event)
 					end
 				end
 				
-				if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 7 then
-					if math_random(1,3) ~= 1 then
-						surface.set_tiles({{name = "stone-path", position = pos}}, true)
-					end				
-				end
+				--if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 7 then
+					--if math_random(1,3) ~= 1 then
+						--surface.set_tiles({{name = "stone-path", position = pos}}, true)
+					--end				
+				--end
 				
-				if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 20 then
-					if math_random(1, 256) == 1 then
-						if surface.can_place_entity({name = "mineable-wreckage", position = pos}) then
-							surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"})
-						end
-					end
-				end
+				--if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 20 then
+					--if math_random(1, 256) == 1 then
+						--if surface.can_place_entity({name = "mineable-wreckage", position = pos}) then
+							--surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"})
+						--end
+					--end
+				--end
 			end			
 		end
 	end
+	
+	regenerate_decoratives(surface, event.area.left_top)
 end
 
 local function generate_silos(event)
-	if global.bb_game_won_by_team then return end
-	if global.rocket_silo["north"] then
-		if global.rocket_silo["north"].valid then return end
-	end	
-	if event.area.left_top.y > -128 then return end
+	if global.bb_silos_generated then return end
+	if event.area.left_top.x ~= -128 then return end
+	if event.area.left_top.y ~= -128 then return end
+	global.bb_silos_generated = true
 	
-	local surface = event.surface	
-	local pos = surface.find_non_colliding_position("rocket-silo", {0,-64}, 32, 1)
-	if not pos then pos = {x = 0, y = -64} end
+	local surface = event.surface
+	local pos = surface.find_non_colliding_position("rocket-silo", {x = -16 + math.random(0, 24), y = -64 + math.random(0, 16)}, 20, 1)
+	if not pos then pos = {0,-64} end
 	global.rocket_silo["north"] = surface.create_entity({
 		name = "rocket-silo",
 		position = pos,
@@ -187,15 +224,10 @@ local function generate_silos(event)
 	for i = 1, 32, 1 do
 		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
 	end
-	
-	for i = 1, 4, 1 do
-		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 48, 50)
-	end
-	
 end
 
 local function generate_river(event)
-	if event.area.left_top.y < -64 then return end
+	if event.area.left_top.y < -32 then return end
 	local surface = event.surface
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
@@ -241,10 +273,7 @@ local function rainbow_ore_and_ponds(event)
 	end
 end
 
-local function generate_potential_spawn_ore(event)
-	if event.area.left_top.x ~= -320 then return end
-	if event.area.left_top.y ~= -320 then return end
-	local surface = event.surface
+local function generate_potential_spawn_ore(surface)
 	local r = 130
 	local area = {{r * -1, r * -1}, {r, 0}}
 	local ores = {}
@@ -261,7 +290,7 @@ local function generate_potential_spawn_ore(event)
 					break					
 				end
 			end
-			draw_noise_ore_patch(pos, ore, surface, math_random(18, 28), math_random(1500, 2500))
+			draw_noise_ore_patch(pos, ore, surface, math_random(18, 28), math_random(1000, 2000))
 		end
 	end
 end
@@ -397,7 +426,6 @@ local function on_chunk_generated(event)
 	rainbow_ore_and_ponds(event)
 	generate_river(event)
 	generate_circle_spawn(event)		
-	generate_potential_spawn_ore(event)
 	generate_silos(event)
 	
 	if bb_config.builders_area then
@@ -416,6 +444,8 @@ local function on_chunk_generated(event)
 	end
 	
 	if event.area.left_top.y == -320 and event.area.left_top.x == -320 then
+		generate_potential_spawn_ore(surface)
+	
 		local area = {{-10,-10},{10,10}}
 		for _, e in pairs(surface.find_entities_filtered({area = area})) do
 			if e.name ~= "character" then e.destroy() end
