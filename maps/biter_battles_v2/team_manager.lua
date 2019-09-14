@@ -134,7 +134,9 @@ local function draw_manager_gui(player)
 	local i2 = 1
 	for i = 1, #forces * 2 - 1, 1 do
 		if i % 2 == 1 then
-			local l = t.add({type = "label", caption = string.upper(forces[i2].name)})
+			local l = t.add({type = "sprite-button", caption = string.upper(forces[i2].name), name = forces[i2].name})
+			l.style.minimal_width = 160
+			l.style.maximal_width = 160
 			l.style.font_color = forces[i2].color
 			l.style.font = "heading-1"
 			i2 = i2 + 1
@@ -223,19 +225,46 @@ local function draw_manager_gui(player)
 	button.style.font = "heading-2"
 end
 
-local function on_gui_click(event)	
-	if not event.element then return end
-	if not event.element.valid then return end
+local function set_custom_team_name(force_name, team_name)
+	if team_name == "" then global.tm_custom_name[force_name] = nil return end
+	if not team_name then global.tm_custom_name[force_name] = nil return end
+	global.tm_custom_name[force_name] = tostring(team_name)
+end
+
+local function custom_team_name_gui(player, force_name)
+	if player.gui.center["custom_team_name_gui"] then player.gui.center["custom_team_name_gui"].destroy() return end	
+	local frame = player.gui.center.add({type = "frame", name = "custom_team_name_gui", caption = "Set custom team name:", direction = "vertical"})
+	local text = force_name
+	if global.tm_custom_name[force_name] then text = global.tm_custom_name[force_name] end
+	
+	local textfield = frame.add({ type = "textfield", name = force_name, text = text })	
+	local t = frame.add({type = "table", column_count = 2})	
+	local button = t.add({
+			type = "button",
+			name = "custom_team_name_gui_set",
+			caption = "Set",
+			tooltip = "Set custom team name."
+		})
+	button.style.font = "heading-2"
+	
+	local button = t.add({
+			type = "button",
+			name = "custom_team_name_gui_close",
+			caption = "Close",
+			tooltip = "Close this window."
+		})
+	button.style.font = "heading-2"
+end
+
+local function team_manager_gui_click(event)
 	local player = game.players[event.player_index]
 	local name = event.element.name
 	
-	if name == "team_manager_toggle_button" then
-		if player.gui.center["team_manager_gui"] then player.gui.center["team_manager_gui"].destroy() return end
-		draw_manager_gui(player)
+	if game.forces[name] then
+		custom_team_name_gui(player, name)
+		player.gui.center["team_manager_gui"].destroy()
 		return
 	end
-	
-	if not player.gui.center["team_manager_gui"] then return end
 	
 	if name == "team_manager_close" then
 		player.gui.center["team_manager_gui"].destroy()	
@@ -300,10 +329,45 @@ local function on_gui_click(event)
 	draw_manager_gui(player)
 end
 
+local function on_gui_click(event)	
+	if not event.element then return end
+	if not event.element.valid then return end
+	local player = game.players[event.player_index]
+	local name = event.element.name
+	
+	if name == "team_manager_toggle_button" then
+		if player.gui.center["team_manager_gui"] then player.gui.center["team_manager_gui"].destroy() return end
+		draw_manager_gui(player)
+		return
+	end
+	
+	if player.gui.center["team_manager_gui"] then team_manager_gui_click(event) end
+	
+	if player.gui.center["custom_team_name_gui"] then
+		if name == "custom_team_name_gui_set" then
+			local custom_name = player.gui.center["custom_team_name_gui"].children[1].text
+			local force_name = player.gui.center["custom_team_name_gui"].children[1].name
+			set_custom_team_name(force_name, custom_name)
+			player.gui.center["custom_team_name_gui"].destroy()
+			draw_manager_gui(player)
+		end
+		if name == "custom_team_name_gui_close" then
+			player.gui.center["custom_team_name_gui"].destroy()
+			draw_manager_gui(player)
+			return
+		end
+	end	
+end
+
 local function on_player_joined_game(event)
 	draw_manager_button(game.players[event.player_index])
 end
 
+local function on_init(surface)
+	global.tm_custom_name = {}
+end
+
 local event = require 'utils.event'
+event.on_init(on_init)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_gui_click, on_gui_click)

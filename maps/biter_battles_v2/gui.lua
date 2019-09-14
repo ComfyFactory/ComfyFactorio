@@ -57,8 +57,10 @@ local function create_first_join_gui(player)
 	frame.add  { type = "label", caption = "-----------------------------------------------------------"}
 	
 	for _, gui_value in pairs(gui_values) do
-		local t = frame.add { type = "table", column_count = 3 }	
-		local l = t.add  { type = "label", caption = gui_value.c1}
+		local t = frame.add { type = "table", column_count = 3 }
+		local c = gui_value.c1
+		if global.tm_custom_name[gui_value.force] then c = global.tm_custom_name[gui_value.force] end
+		local l = t.add  { type = "label", caption = c}
 		l.style.font = "heading-2"
 		l.style.font_color = gui_value.color1
 		l.style.single_line = false
@@ -123,7 +125,9 @@ local function create_main_gui(player)
 	
 	for _, gui_value in pairs(gui_values) do			
 		local t = frame.add { type = "table", column_count = 3 }
-		local l = t.add  { type = "label", caption = gui_value.c1}
+		local c = gui_value.c1
+		if global.tm_custom_name[gui_value.force] then c = global.tm_custom_name[gui_value.force] end
+		local l = t.add  { type = "label", caption = c}
 		l.style.font = "default-bold"
 		l.style.font_color = gui_value.color1
 		l.style.single_line = false

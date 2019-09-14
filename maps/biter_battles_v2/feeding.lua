@@ -18,10 +18,7 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
-local team_strings = {
-	["north"] = table.concat({"[color=120, 120, 255]", bb_config.north_side_team_name, "'s[/color]"}),
-	["south"] = table.concat({"[color=255, 65, 65]", bb_config.south_side_team_name, "'s[/color]"})
-}
+
 
 local minimum_modifier = 125
 local maximum_modifier = 250
@@ -47,6 +44,33 @@ local function set_biter_endgame_modifiers(force)
 	force.set_ammo_damage_modifier("laser-turret", damage_mod)
 	
 	global.bb_evasion[force.name] = evasion_mod
+end
+
+local function print_feeding_msg(player, food, flask_amount)
+	if not enemy_team_of[player.force.name] then return end
+	
+	local n = bb_config.north_side_team_name
+	local s = bb_config.south_side_team_name
+	if global.tm_custom_name["north"] then n = global.tm_custom_name["north"] end
+	if global.tm_custom_name["south"] then s = global.tm_custom_name["south"] end	
+	local team_strings = {
+		["north"] = table.concat({"[color=120, 120, 255]", n, "'s[/color]"}),
+		["south"] = table.concat({"[color=255, 65, 65]", s, "'s[/color]"})
+	}
+	
+	local colored_player_name = table.concat({"[color=", player.color.r * 0.6 + 0.35, ",", player.color.g * 0.6 + 0.35, ",", player.color.b * 0.6 + 0.35, "]", player.name, "[/color]"})
+	local formatted_food = table.concat({"[color=", food_values[food].color, "]", food_values[food].name, " juice[/color]", "[img=item/", food, "]"})
+	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})
+	
+	if flask_amount >= 20 then
+		game.print(colored_player_name .. " fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to team " .. team_strings[enemy_team_of[player.force.name]] .. " biters!", {r = 0.9, g = 0.9, b = 0.9})
+	else
+		if flask_amount == 1 then
+			player.print("You fed one flask of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+		else
+			player.print("You fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+		end				
+	end	
 end
 
 function set_evo_and_threat(flask_amount, food, biter_force_name)
@@ -100,19 +124,7 @@ local function feed_biters(player, food)
 	
 	i.remove({name = food, count = flask_amount})
 	
-	local colored_player_name = table.concat({"[color=", player.color.r * 0.6 + 0.35, ",", player.color.g * 0.6 + 0.35, ",", player.color.b * 0.6 + 0.35, "]", player.name, "[/color]"})
-	local formatted_food = table.concat({"[color=", food_values[food].color, "]", food_values[food].name, " juice[/color]", "[img=item/", food, "]"})
-	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})
-	
-	if flask_amount >= 20 then
-		game.print(colored_player_name .. " fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to team " .. team_strings[enemy_force_name] .. " biters!", {r = 0.9, g = 0.9, b = 0.9})
-	else
-		if flask_amount == 1 then
-			player.print("You fed one flask of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
-		else
-			player.print("You fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
-		end				
-	end								
+	print_feeding_msg(player, food, flask_amount)							
 	
 	set_evo_and_threat(flask_amount, food, biter_force_name)
 end
