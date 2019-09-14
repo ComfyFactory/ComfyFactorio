@@ -64,7 +64,7 @@ local function process_chunk(surface)
 	local surface = game.surfaces["biter_battles"]
 	if not surface then return end
 	
-	local force_chunk_requests = 3
+	local force_chunk_requests = 2
 	if bb_config.fast_pregen then force_chunk_requests = 16 end
 	
 	for i = #global.chunk_gen_coords, 1, -1 do

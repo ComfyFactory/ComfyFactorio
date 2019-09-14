@@ -261,6 +261,7 @@ local function team_manager_gui_click(event)
 	local name = event.element.name
 	
 	if game.forces[name] then
+		if not player.admin then player.print("Only admins can change team names.", {r = 175, g = 0, b = 0}) return end
 		custom_team_name_gui(player, name)
 		player.gui.center["team_manager_gui"].destroy()
 		return
@@ -350,6 +351,7 @@ local function on_gui_click(event)
 			set_custom_team_name(force_name, custom_name)
 			player.gui.center["custom_team_name_gui"].destroy()
 			draw_manager_gui(player)
+			return
 		end
 		if name == "custom_team_name_gui_close" then
 			player.gui.center["custom_team_name_gui"].destroy()
