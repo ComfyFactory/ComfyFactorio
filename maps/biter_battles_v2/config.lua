@@ -14,7 +14,7 @@ bb_config = {
 	["blueprint_string_importing"] = false,		--Allow the importing of blueprints via blueprint strings?
 
 	--MAP PREGENERATION--
-	["map_pregeneration_radius"] = 32,	 		--Radius in chunks to pregenerate at the start of the map.
+	["map_pregeneration_radius"] = 38,	 		--Radius in chunks to pregenerate at the start of the map.
 	["fast_pregen"] = false,	 						--Force fast pregeneration.
 	
 	--TERRAIN OPTIONS--

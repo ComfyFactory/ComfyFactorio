@@ -135,7 +135,7 @@ local function generate_circle_spawn(event)
 	if global.bb_circle_spawn_generated then return end
 	
 	local surface = event.surface	
-	if surface.is_chunk_generated({6, 6}) then global.bb_circle_spawn_generated = true end	
+	if surface.is_chunk_generated({-8, -8}) then global.bb_circle_spawn_generated = true end	
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
 	local r = 101
@@ -212,8 +212,13 @@ local function generate_silos(event)
 	global.bb_silos_generated = true
 	
 	local surface = event.surface
-	local pos = surface.find_non_colliding_position("rocket-silo", {x = -16 + math.random(0, 24), y = -64 + math.random(0, 16)}, 20, 1)
-	if not pos then pos = {0,-64} end
+	
+	local pos = {x = -12 + math.random(0, 24), y = -64 + math.random(0, 16)}
+	
+	for _, t in pairs(surface.find_tiles_filtered({area = {{pos.x - 6, pos.y - 6},{pos.x + 6, pos.y + 6}}, name = {"water", "deepwater"}})) do
+		surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}})
+	end
+	
 	global.rocket_silo["north"] = surface.create_entity({
 		name = "rocket-silo",
 		position = pos,

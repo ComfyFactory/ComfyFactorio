@@ -252,7 +252,9 @@ function join_team(player, force_name, forced_join)
 	player.character.destructible = true
 	game.permissions.get_group("Default").add_player(player)
 	if not forced_join then
-		game.print(player.name .. " has joined team " .. player.force.name .. "!", {r = 0.98, g = 0.66, b = 0.22})
+		local c = player.force.name
+		if global.tm_custom_name[player.force.name] then c = global.tm_custom_name[player.force.name] end
+		game.print(player.name .. " has joined team " .. c .. "!", {r = 0.98, g = 0.66, b = 0.22})
 	end
 	local i = player.get_inventory(defines.inventory.character_main)
 	i.clear()

@@ -16,7 +16,9 @@ end
 	
 local function create_victory_gui(player)	
 	local values = gui_values[global.bb_game_won_by_team]
-	local frame = player.gui.left.add {type = "frame", name = "bb_victory_gui", direction = "vertical", caption = values.c1 .. " team has won!" }
+	local c = values.c1
+	if global.tm_custom_name[global.bb_game_won_by_team] then c = global.tm_custom_name[global.bb_game_won_by_team] end
+	local frame = player.gui.left.add {type = "frame", name = "bb_victory_gui", direction = "vertical", caption = c .. " team has won!" }
 	frame.style.font = "heading-1"
 	frame.style.font_color = values.color1	
 	
@@ -341,7 +343,10 @@ local function on_entity_died(event)
 		global.spy_fish_timeout["south"] = game.tick + 999999
 		global.server_restart_timer = 180			
 		
-		server_commands.to_discord_embed(gui_values[global.bb_game_won_by_team].c1 .. " team has won!")
+		local c = gui_values[global.bb_game_won_by_team].c1
+		if global.tm_custom_name[global.bb_game_won_by_team] then c = global.tm_custom_name[global.bb_game_won_by_team] end
+		
+		server_commands.to_discord_embed(c .. " has won!")
 		server_commands.to_discord_embed(global.victory_time)
 		
 		fireworks(event.entity.surface)
