@@ -119,10 +119,10 @@ end
 
 local function generate_spawn_area(surface, left_top)
 	if global.spawn_ores_generated then return end
-	if left_top.x ~= -256 then return end
-	if left_top.y ~= -256 then return end
+	if left_top.x ~= -320 then return end
+	if left_top.y ~= -320 then return end
 	
-	local spawn_position_x = -96
+	local spawn_position_x = -128
 
 	surface.create_entity({name = "electric-beam", position = {160, -96}, source = {160, -96}, target = {160,96}})
 
@@ -130,10 +130,13 @@ local function generate_spawn_area(surface, left_top)
 		local noise = math.abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
 		if tile.position.x > -160 + noise then	surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true) end
 	end
-	
-	local entities = surface.find_entities_filtered({type = {"resource", "cliff"}, area = {{-160, -160},{160, 160}}})
-	for _, entity in pairs(entities) do
-		entity.destroy()
+
+	for _, entity in pairs(surface.find_entities_filtered({type = {"resource", "cliff"}, area = {{spawn_position_x - 32, -256},{160, 256}}})) do
+		if is_body(entity.position) then
+			if entity.position.x > spawn_position_x - 32 + math.abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16) then
+				entity.destroy() 
+			end
+		end
 	end	
 
 	local decorative_names = {}
@@ -161,7 +164,7 @@ local function generate_spawn_area(surface, left_top)
 	local pos = surface.find_non_colliding_position("market",{spawn_position_x, 0}, 50, 1)
 	global.market = place_fish_market(surface, pos)
 	
-	local r = 96
+	local r = 16
 	for _, entity in pairs(surface.find_entities_filtered({area = {{global.market.position.x - r, global.market.position.y - r}, {global.market.position.x + r, global.market.position.y + r}}, type = "tree"})) do
 		local distance_to_center = math.sqrt((entity.position.x - global.market.position.x)^2 + (entity.position.y - global.market.position.y)^2)
 		if distance_to_center < r then
@@ -202,20 +205,18 @@ local function generate_spawn_area(surface, left_top)
 	global.spawn_ores_generated = true
 end
 
-local function enemy_territory(surface)
-	if global.enemy_territory_set then return end
-	if not global.map_generation_complete then return end	
+function enemy_territory(surface)
 	local area = {{160, -512},{750, 512}}	
 	--for _, tile in pairs(surface.find_tiles_filtered({area = area})) do
 	--	if is_enemy_territory(tile.position) then
 	--		surface.set_tiles({{name = "water-mud", position = {tile.position.x, tile.position.y}}}, true)
 	--	end
 	--end	
-	for x = 288, area[2][1], 4 do
+	for x = 280, area[2][1], 4 do
 		for y = area[1][2], area[2][2], 4 do
 			local pos = {x = x, y = y}
 			if is_enemy_territory(pos) then
-				if math_random(1, 128) == 1 then
+				if math_random(1, 64) == 1 then
 					if surface.can_place_entity({name = "biter-spawner", force = "decoratives", position = pos}) then
 						local entity
 						if math_random(1,4) == 1 then
@@ -253,7 +254,7 @@ local function enemy_territory(surface)
 			surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true)
 		end
 	end	
-	global.enemy_territory_set = true
+	
 end
 
 local function fish_mouth(surface, pos)
@@ -284,6 +285,8 @@ function fish_eye(surface, position)
 	end
 end
 
+local ores = {"coal", "iron-ore", "copper-ore", "stone"}
+
 local function plankton_territory(surface, position)	
 	local noise = simplex_noise(position.x * 0.009, position.y * 0.009, game.surfaces[1].map_gen_settings.seed)
 	local d = 196
@@ -291,14 +294,20 @@ local function plankton_territory(surface, position)
 	
 	local noise_2 = simplex_noise(position.x * 0.0075, position.y * 0.0075, game.surfaces[1].map_gen_settings.seed + 10000)
 	if noise_2 > 0.85 then surface.set_tiles({{name = "deepwater-green", position = position}}, true) return true end
-	if noise_2 > 0.75 then surface.set_tiles({{name = "grass-2", position = position}}, true) return true end	
-	if noise_2 < -0.75 then
+	if noise_2 > 0.75 then
 		surface.set_tiles({{name = "grass-2", position = position}}, true)
-		if noise_2 < -0.82 then surface.create_entity({name = "uranium-ore", position = position, amount = 1000 * math.abs(noise_2 * 2)}) end
+		local i = math.floor(noise * 10) % 4 + 1
+		surface.create_entity({name = ores[i], position = position, amount = 1 + 2500 * math.abs(noise_2 * 3)})	
+		return true 
+	end	
+	if noise_2 < -0.76 then
+		surface.set_tiles({{name = "grass-2", position = position}}, true)
+		if noise_2 < -0.85 then surface.create_entity({name = "uranium-ore", position = position, amount = 1 + 1000 * math.abs(noise_2 * 2)}) return true end
+		if math_random(1, 3) ~= 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position}) end
 		return true 
 	end
 	
-	if noise < 0.10 and noise > -0.10 then
+	if noise < 0.12 and noise > -0.12 then
 		surface.set_tiles({{name = "dirt-7", position = position}}, true)
 		if math_random(1, 3) ~= 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position}) end
 		return true
@@ -315,7 +324,7 @@ local function on_chunk_generated(event)
 	local left_top = event.area.left_top
 
 	generate_spawn_area(surface, left_top)
-	enemy_territory(surface)
+	--enemy_territory(surface)
 	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do

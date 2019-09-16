@@ -48,7 +48,7 @@ local function process_chunk(surface)
 	if global.map_generation_complete then return end
 	if game.tick < 300 then return end
 	if not global.chunk_gen_coords then
-		set_chunk_coords(24)
+		set_chunk_coords(25)
 		--table.shuffle_table(global.chunk_gen_coords)
 	end
 	if #global.chunk_gen_coords == 0 then

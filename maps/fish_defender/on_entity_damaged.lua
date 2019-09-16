@@ -22,11 +22,11 @@ local function on_entity_damaged(event)
 	
 	if not event.cause then return end
 	
-	if event.cause.unit_number then
-		if global.boss_biters[event.cause.unit_number] then
-			boss_biter.damaged_entity(event) 
-		end
-	end
+	--if event.cause.unit_number then
+	--	if global.boss_biters[event.cause.unit_number] then
+	--		boss_biter.damaged_entity(event) 
+	--	end
+	--end
 	
 	if event.cause.name ~= "character" then return end
 	

@@ -5,7 +5,7 @@ require "maps.fish_defender.map_intro"
 require "maps.fish_defender.market"
 require "maps.fish_defender.shotgun_buff"
 require "maps.fish_defender.on_entity_damaged"
-local generate_chunks = require "maps.fish_defender.pregenerate_chunks"
+--local generate_chunks = require "maps.fish_defender.pregenerate_chunks"
 
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"
@@ -335,7 +335,18 @@ local function spawn_biter(pos, biter_pool)
 	global.attack_wave_threat = global.attack_wave_threat - biter_pool[1].threat
 	local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 2)
 	local biter = surface.create_entity({name = biter_pool[1].name, position = valid_pos})
+	biter.ai_settings.allow_destroy_when_commands_fail = false
+	biter.ai_settings.allow_try_return_to_spawner = false
 	return biter
+end
+
+local function get_y_coord_raffle_table()
+	local t = {}
+	for y = -96, 96, 8 do
+		t[#t + 1] = y
+	end
+	table.shuffle_table(t)
+	return t
 end
 
 local attack_group_count_thresholds = {
@@ -414,6 +425,38 @@ local boss_wave_names = {
 	[2000] = "Bluescreen Factor"
 }
 
+local function send_unit_group(unit_group)
+	local commands = {}
+	for x = unit_group.position.x, global.market.position.x, -48 do	
+		local destination = unit_group.surface.find_non_colliding_position("stone-wall", {x = x, y = unit_group.position.y}, 32, 4)
+		if destination then		
+			commands[#commands + 1] = {
+				type=defines.command.attack_area,
+				destination=destination,
+				radius=16,
+				distraction=defines.distraction.by_enemy
+			}
+		end
+	end
+	commands[#commands + 1] = {
+		type=defines.command.attack_area,
+		destination={x = global.market.position.x, y = unit_group.position.y},
+		radius=16,
+		distraction=defines.distraction.by_enemy
+	}	
+	commands[#commands + 1] = {
+			type=defines.command.attack,
+			target=global.market,
+			distraction=defines.distraction.by_enemy
+	}
+	
+	unit_group.set_command({
+		type = defines.command.compound,
+		structure_type = defines.compound_command.logical_and,
+		commands = commands			
+	})
+end
+
 local function spawn_boss_units(surface)
 	if boss_wave_names[global.wave_count] then
 		game.print("Boss Wave " .. global.wave_count .. " - - " .. boss_wave_names[global.wave_count], {r = 0.8, g = 0.1, b = 0.1})
@@ -422,9 +465,14 @@ local function spawn_boss_units(surface)
 	end
 
 	if not boss_waves[global.wave_count] then
-		boss_waves[global.wave_count] = {{name = "behemoth-biter", count = math.floor(global.wave_count / 20)}, {name = "behemoth-spitter", count = math.floor(global.wave_count / 40)}}
+		local amount = global.wave_count
+		if amount > 1000 then amount = 1000 end
+		boss_waves[global.wave_count] = {{name = "behemoth-biter", count = math.floor(amount / 20)}, {name = "behemoth-spitter", count = math.floor(amount / 40)}}
 	end
-
+	
+	local health_factor = global.difficulty_vote_index * 1.25
+	if global.wave_count == 100 then health_factor = global.difficulty_vote_index * 2.5 end
+	
 	local position = {x = 216, y = 0}
 	local biter_group = surface.create_unit_group({position = position})
 	for _, entry in pairs(boss_waves[global.wave_count]) do
@@ -432,116 +480,34 @@ local function spawn_boss_units(surface)
 			local pos = surface.find_non_colliding_position(entry.name, position, 64, 3)
 			if pos then
 				local biter = surface.create_entity({name = entry.name, position = pos})
+				biter.ai_settings.allow_destroy_when_commands_fail = false
+				biter.ai_settings.allow_try_return_to_spawner = false
 				global.boss_biters[biter.unit_number] = biter
-				add_boss_unit(biter, global.biter_evasion_health_increase_factor * 5 * difficulties_votes[global.difficulty_vote_index].amount_modifier, 0.55)
+				add_boss_unit(biter, global.biter_evasion_health_increase_factor * health_factor, 0.55)
 				biter_group.add_member(biter)
 			end
 		end
 	end
-	biter_group.set_command({
-		type = defines.command.compound,
-		structure_type = defines.compound_command.logical_and,
-		commands = {
-					{
-						type=defines.command.attack_area,
-						destination={x = 160, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_enemy
-					},
-					{
-						type=defines.command.attack_area,
-						destination={x = 128, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_enemy
-					},
-					{
-						type=defines.command.attack_area,
-						destination={x = 96, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_enemy
-					},
-					{
-						type=defines.command.attack_area,
-						destination={x = 64, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_enemy
-					},
-					{
-						type=defines.command.attack_area,
-						destination={x = 32, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_enemy
-					},
-					{
-						type=defines.command.attack_area,
-						destination={x = -32, y = 0},
-						radius=16,
-						distraction=defines.distraction.by_enemy
-					},
-					{
-						type=defines.command.attack,
-						target=global.market,
-						distraction=defines.distraction.by_enemy
-					}
-			}
-		})
-	biter_group.start_moving()
+	
+	send_unit_group(biter_group)
 end
 
 local function wake_up_the_biters(surface)
 	if not global.market then return end
 
-	--if not global.wake_up_counter then global.wake_up_counter = 0 end
-	--global.wake_up_counter = global.wake_up_counter + 1
-	--if global.wake_up_counter % 2 == 1 then return end
-
-	--[[
-	unit_group = game.player.surface.create_unit_group({position = game.player.selected.position})
-	for _, biter in pairs(game.player.surface.find_enemy_units(game.player.selected.position, 96, "player")) do
-		unit_group.add_member(biter)
-	end
-	unit_group.set_command({
-					type = defines.command.compound,
-					structure_type = defines.compound_command.logical_and,
-					commands = {
-						{
-							type=defines.command.attack_area,
-							destination=global.market.position,
-							radius=512,
-							distraction=defines.distraction.by_anything
-						}
-					}
-				})
-	unit_group.start_moving()
-
-	game.player.surface.set_multi_command({
-		command={
-			type=defines.command.attack,
-			target=global.market,
-			distraction=defines.distraction.none
-			},
-		unit_count = 128,
-		force = "enemy",
-		unit_search_distance=128
-		})
-
-	]]
-
-	local nearest_player_unit = surface.find_nearest_enemy({position = {x = 256, y = 0}, max_distance=512, force="enemy"})
-	if not nearest_player_unit then return end
-	local target_positions = {}
-	for y = -80, 80, 4 do
-		insert(target_positions, {x = nearest_player_unit.position.x, y = y})
-	end
-	target_positions = shuffle(target_positions)
-
 	local units = surface.find_entities_filtered({type = "unit"})
 	units = shuffle(units)
 	local unit_groups = {}
+	local y_raffle = get_y_coord_raffle_table()
 	for i = 1, 2, 1 do
 		if not units[i] then break end
 		if not units[i].valid then break end
-		unit_groups[i] = surface.create_unit_group({position = {x = units[i].position.x, y = units[i].position.y}})
+		local x = units[i].position.x
+		if x > 256 then x = 256 end
+		local y = units[i].position.y
+		if y > 96 or y < -96 then y = y_raffle[i] end
+		
+		unit_groups[i] = surface.create_unit_group({position = {x = x, y = y}})
 		local biters = surface.find_enemy_units(units[i].position, 24, "player")
 		for _, biter in pairs(biters) do
 			unit_groups[i].add_member(biter)
@@ -551,47 +517,12 @@ local function wake_up_the_biters(surface)
 	for i = 1, #unit_groups, 1 do
 		if unit_groups[i].valid then
 			if #unit_groups[i].members > 0 then
-				unit_groups[i].set_command({
-					type = defines.command.compound,
-					structure_type = defines.compound_command.logical_and,
-					commands = {
-						{
-							type=defines.command.attack_area,
-							destination={target_positions[i].x, target_positions[i].y},
-							radius=32,
-							distraction=defines.distraction.by_anything
-						},
-						{
-							type=defines.command.attack_area,
-							destination=global.market.position,
-							radius=32,
-							distraction=defines.distraction.by_anything
-						},
-						{
-							type=defines.command.attack,
-							target=global.market,
-							distraction=defines.distraction.by_enemy
-						}
-					}
-				})
-				unit_groups[i].start_moving()
+				send_unit_group(unit_groups[i])
 			else
 				unit_groups[i].destroy()
 			end
 		end
 	end
-
-	--[[
-	surface.set_multi_command({
-		command={
-			type=defines.command.attack,
-			target=global.market,
-			distraction=defines.distraction.by_enemy
-			},
-		unit_count = 16,
-		force = "enemy",
-		unit_search_distance=64
-		})]]
 
 	surface.set_multi_command({
 		command={
@@ -663,41 +594,45 @@ local function biter_attack_wave()
 	if evolution > 1 then evolution = 1 end
 	game.forces.enemy.evolution_factor = evolution
 
-	if game.forces.enemy.evolution_factor == 1 then
-		if not global.endgame_modifier then
-			global.endgame_modifier = 1
-			game.print("Endgame enemy evolution reached.", {r = 0.7, g = 0.1, b = 0.1})
-		else
-			global.endgame_modifier = global.endgame_modifier + 1
-		end
-	end
+	--if game.forces.enemy.evolution_factor == 1 then
+	--	if not global.endgame_modifier then
+	--		global.endgame_modifier = 1
+	--		game.print("Endgame enemy evolution reached.", {r = 0.7, g = 0.1, b = 0.1})
+	--	else
+	--		global.endgame_modifier = global.endgame_modifier + 1
+	--	end
+	--end
 
 	for _, e in pairs(surface.find_entities_filtered({area = {{160, -256},{360, 256}}})) do
 		damage_entity_outside_of_fence(e)
 	end
 
-	local spawn_x = 242
-	local target_x = -32
-	local group_coords = {}
-	for a = -80, 80, 16 do
-		insert(group_coords, {spawn = {x = spawn_x, y = a * 2}, target = {x = target_x, y = a}})
-	end
-	group_coords = shuffle(group_coords)
+	local y_raffle = get_y_coord_raffle_table()
 
 	local unit_groups = {}
-	if global.wave_count > 100 and math_random(1, 8) == 1 then
-		for i = 1, #group_coords, 1 do
-			unit_groups[i] = surface.create_unit_group({position = group_coords[i].spawn})
+	if global.wave_count > 50 and math_random(1, 8) == 1 then
+		for i = 1, 10, 1 do
+			unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
 		end
 	else
 		for i = 1, get_number_of_attack_groups(), 1 do
-			unit_groups[i] = surface.create_unit_group({position = group_coords[i].spawn})
+			unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
 		end
 	end
-
+	
 	local biter_pool = get_biter_pool()
+	--local spawners = surface.find_entities_filtered({type = "unit-spawner", area = {{160, -196},{512, 196}}})
+	--table.shuffle_table(spawners)
+	
 	while global.attack_wave_threat > 0 do
 		for i = 1, #unit_groups, 1 do
+			--local biter
+			--if spawners[i] then
+				--biter = spawn_biter(spawners[i].position, biter_pool)
+			--else
+				--biter = spawn_biter(unit_groups[i].position, biter_pool)
+			--end
+			
 			local biter = spawn_biter(unit_groups[i].position, biter_pool)
 			if biter then
 				unit_groups[i].add_member(biter)
@@ -708,42 +643,7 @@ local function biter_attack_wave()
 	end
 
 	for i = 1, #unit_groups, 1 do
-		unit_groups[i].set_command({
-			type = defines.command.compound,
-			structure_type = defines.compound_command.logical_and,
-			commands = {
-				{
-					type=defines.command.attack_area,
-					destination={group_coords[i].target.x + 192, group_coords[i].target.y},
-					radius=32,
-					distraction=defines.distraction.by_anything
-				},
-				{
-					type=defines.command.attack_area,
-					destination={group_coords[i].target.x + 128, group_coords[i].target.y},
-					radius=32,
-					distraction=defines.distraction.by_anything
-				},
-				{
-					type=defines.command.attack_area,
-					destination={group_coords[i].target.x + 64, group_coords[i].target.y},
-					radius=32,
-					distraction=defines.distraction.by_anything
-				},
-				{
-					type=defines.command.attack_area,
-					destination={group_coords[i].target.x, group_coords[i].target.y},
-					radius=32,
-					distraction=defines.distraction.by_enemy
-				},
-				{
-					type=defines.command.attack,
-					target=global.market,
-					distraction=defines.distraction.by_enemy
-				}
-			}
-		})
-		unit_groups[i].start_moving()
+		send_unit_group(unit_groups[i])
 	end
 end
 
@@ -907,16 +807,18 @@ local function market_kill_visuals()
 end
 
 local biter_splash_damage = {
-	["medium-biter"] = {visuals = {"blood-explosion-big", "big-explosion"}, radius = 1.5, damage_min = 50, damage_max = 100, chance = 8},
-	["big-biter"] = {visuals = {"blood-explosion-huge", "ground-explosion"}, radius = 2, damage_min = 75, damage_max = 150, chance = 16},
-	["behemoth-biter"] = {visuals = {"blood-explosion-huge", "big-artillery-explosion"}, radius = 2.5, damage_min = 100, damage_max = 200, chance = 32}
+	["medium-biter"] = {visuals = {"blood-explosion-big", "big-explosion"}, radius = 1.5, damage_min = 50, damage_max = 100, chance = 32},
+	["big-biter"] = {visuals = {"blood-explosion-huge", "ground-explosion"}, radius = 2, damage_min = 75, damage_max = 150, chance = 48},
+	["behemoth-biter"] = {visuals = {"blood-explosion-huge", "big-artillery-explosion"}, radius = 2.5, damage_min = 100, damage_max = 200, chance = 64}
 }
 
 local function on_entity_died(event)
+	if not event.entity.valid then	return end
+	
 	if event.entity.force.name == "enemy" then
 		local surface = event.entity.surface
 
-		if global.boss_biters[event.entity.unit_number] then boss_biter.died(event)	end
+		if global.boss_biters[event.entity.unit_number] then boss_biter.died(event) end
 
 		local splash = biter_splash_damage[event.entity.name]
 		if splash then
@@ -941,7 +843,7 @@ local function on_entity_died(event)
 		end
 		return
 	end
-
+	
 	if event.entity == global.market then
 		market_kill_visuals()
 		global.market = nil
@@ -957,52 +859,8 @@ end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-
-	if not global.fish_defense_init_done then
-		local map_gen_settings = {}
-		map_gen_settings.water = 0.15
-		map_gen_settings.terrain_segmentation = 2.5
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
-		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = 3, size = 2, richness = 1},
-			["stone"] = {frequency = 3, size = 2, richness = 1},
-			["copper-ore"] = {frequency = 3, size = 2, richness = 1},
-			["iron-ore"] = {frequency = 3, size = 2, richness = 1},
-			["uranium-ore"] = {frequency = 0, size = 0, richness = 0},
-			["crude-oil"] = {frequency = 4, size = 1, richness = 1},
-			["trees"] = {frequency = 2, size = 1, richness = 1},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
-		}
-		game.create_surface("fish_defender", map_gen_settings)
-		local surface = game.surfaces["fish_defender"]
-
-		--local radius = 256
-		--game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})
-
-		game.map_settings.enemy_expansion.enabled = false
-		game.map_settings.enemy_evolution.destroy_factor = 0
-		game.map_settings.enemy_evolution.time_factor = 0
-		game.map_settings.enemy_evolution.pollution_factor = 0
-		game.map_settings.pollution.enabled = false
-
-		game.forces["player"].technologies["atomic-bomb"].enabled = false
-
-		game.create_force("decoratives")
-		game.forces["decoratives"].set_cease_fire("enemy", true)
-		game.forces["enemy"].set_cease_fire("decoratives", true)
-		game.forces["player"].set_cease_fire("decoratives", true)
-
-		global.comfylatron_habitat = {
-			left_top = {x = -1500, y = -1500},
-			right_bottom = {x = -80, y = 1500}
-		}
-		
-		fish_eye(surface, {x = -2150, y = -300})
-		
-		global.fish_defense_init_done = true
-	end
-
-	if player.online_time < 1 then
+	
+	if player.online_time == 0 then
 		player.insert({name = "pistol", count = 1})
 		--player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 3})
@@ -1013,10 +871,10 @@ local function on_player_joined_game(event)
 
 	local surface = game.surfaces["fish_defender"]
 	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then
-		player.teleport(surface.find_non_colliding_position("character", {-75, 4}, 50, 1), "fish_defender")
+		player.teleport(surface.find_non_colliding_position("character", game.forces["player"].get_spawn_position(surface), 50, 1), "fish_defender")
 	else
 		if player.online_time < 2 then
-			player.teleport({-50, 0}, "fish_defender")
+			player.teleport(game.forces["player"].get_spawn_position(surface), "fish_defender")
 		end
 	end
 
@@ -1075,18 +933,18 @@ local function on_robot_built_entity(event)
 	end
 end
 
-local function chart_map()
-	if not global.map_generation_complete then
-		global.wave_grace_period = global.wave_grace_period + 180
-		global.difficulty_poll_closing_timeout = global.difficulty_poll_closing_timeout + 180
-		return 
-	end
-	game.forces.player.chart(game.surfaces["fish_defender"], {{-512, -512},{768, 512}})
-end
+--local function chart_map()
+	--if not global.map_generation_complete then
+	--	if global.wave_grace_period then global.wave_grace_period = global.wave_grace_period + 180 end
+	--	if global.difficulty_poll_closing_timeout then global.difficulty_poll_closing_timeout = global.difficulty_poll_closing_timeout + 180 end
+	--	return 
+	--end
+	
+--end
 
 local function on_tick()
 	if game.tick % 30 == 0 then
-		generate_chunks()
+		--generate_chunks()
 		if global.market then
 			for _, player in pairs(game.connected_players) do
 				if game.surfaces["fish_defender"].peaceful_mode == false then
@@ -1096,7 +954,7 @@ local function on_tick()
 		end
 		if game.tick % 180 == 0 then
 			if game.surfaces["fish_defender"] then
-				chart_map()
+				game.forces.player.chart(game.surfaces["fish_defender"], {{-256, -512},{768, 512}})
 				if global.difficulty_vote_index then
 					global.wave_interval = difficulties_votes[global.difficulty_vote_index].wave_interval
 				end
@@ -1177,8 +1035,8 @@ end
 
 local function on_init(event)
 	global.wave_interval = 3600					--interval between waves in ticks
-	global.wave_grace_period = 54000
-	global.difficulty_poll_closing_timeout = 54000
+	global.wave_grace_period = 3600 * 20
+	global.difficulty_poll_closing_timeout = global.wave_grace_period
 	global.boss_biters = {}
 	global.acid_lines_delay = {}
 	
@@ -1189,6 +1047,61 @@ local function on_init(event)
 		["flamethrower-turret"] =  {placed = 0, limit = 0, str = "flamethrower turret", slot_price = 50000},
 		["land-mine"] =  {placed = 0, limit = 1, str = "mine", slot_price = 1},
 	}
+		
+	local map_gen_settings = {}
+	map_gen_settings.water = 0.15
+	map_gen_settings.terrain_segmentation = 2.5
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = 24, cliff_elevation_0 = 24}
+	map_gen_settings.autoplace_controls = {
+		["coal"] = {frequency = 3, size = 1.5, richness = 1},
+		["stone"] = {frequency = 3, size = 1.5, richness = 1},
+		["copper-ore"] = {frequency = 3, size = 1.5, richness = 1},
+		["iron-ore"] = {frequency = 3, size = 1.5, richness = 1},
+		["uranium-ore"] = {frequency = 0, size = 0, richness = 0},
+		["crude-oil"] = {frequency = 5, size = 1.25, richness = 2},
+		["trees"] = {frequency = 2, size = 1, richness = 1},
+		["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
+	}
+	game.create_surface("fish_defender", map_gen_settings)
+	local surface = game.surfaces["fish_defender"]
+
+	game.map_settings.enemy_expansion.enabled = false
+	game.map_settings.enemy_evolution.destroy_factor = 0
+	game.map_settings.enemy_evolution.time_factor = 0
+	game.map_settings.enemy_evolution.pollution_factor = 0
+	game.map_settings.pollution.enabled = false
+
+	game.forces["player"].technologies["atomic-bomb"].enabled = false
+	--game.forces["player"].technologies["landfill"].enabled = false
+	
+	game.create_force("decoratives")
+	game.forces["decoratives"].set_cease_fire("enemy", true)
+	game.forces["enemy"].set_cease_fire("decoratives", true)
+	game.forces["player"].set_cease_fire("decoratives", true)
+
+	global.comfylatron_habitat = {
+		left_top = {x = -1500, y = -1500},
+		right_bottom = {x = -80, y = 1500}
+	}
+	
+	fish_eye(surface, {x = -2150, y = -300})	
+	
+	server_commands.to_discord_embed("Generating chunks, this could take a while...")
+	print("Generating chunks, this could take a while...")
+	
+	local m = 512
+	for x = 0, -5, -1 do
+		surface.request_to_generate_chunks({x = x * m, y = 0}, 32)
+		surface.force_generate_chunk_requests()
+		--local str = "Generating chunks... x:" .. x * m
+		--server_commands.to_discord_embed(str)
+		--print(str)
+	end
+	
+	enemy_territory(surface)
+	
+	--server_commands.to_discord_embed("Chunk generation complete!")
+	--print("Chunk generation complete!")
 end
 
 event.add(defines.events.on_gui_click, on_gui_click)
