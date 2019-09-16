@@ -21,6 +21,9 @@ local function on_console_chat(event)
 		game.forces.spectator.print(player.name .. " (south): ".. event.message, color)
 		game.forces.player.print(player.name .. " (south): ".. event.message, color)
 	end
+	
+	if global.tournament_mode then return end
+	
 	if player.force.name == "player" then
 		game.forces.north.print(player.name .. " (spawn): ".. event.message, color)
 		game.forces.south.print(player.name .. " (spawn): ".. event.message, color)

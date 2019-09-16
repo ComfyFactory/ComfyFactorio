@@ -1,6 +1,6 @@
 -- biters will landfill a tile on death within a certain radius
 
-local r = 6
+local r = 3
 local vectors = {{0,0}, {1,0}, {0,1}, {-1,0}, {0,-1}}
 local math_random = math.random
 

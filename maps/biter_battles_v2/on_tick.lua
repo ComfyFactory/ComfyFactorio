@@ -66,10 +66,7 @@ local function on_tick(event)
 		return 
 	end
 	
-	--if game.tick % 1800 ~= 0 then return end	
-	
 	if game.tick % 3600 ~= 0 then return end
-	--if game.tick % 7200 ~= 0 then return end
 	ai.raise_evo()
 	ai.destroy_inactive_biters()
 	ai.main_attack()

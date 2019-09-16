@@ -125,19 +125,28 @@ function is_within_spawn_circle(pos)
 	return true	
 end
 
+local river_y_1 = bb_config.border_river_width * -1.5
+local river_y_2 = bb_config.border_river_width * 1.5
 function is_horizontal_border_river(pos)
+	if pos.y < river_y_1 then return false end
+	if pos.y > river_y_2 then return false end
 	if pos.y > -5 and pos.x > -5 and pos.x < 5 then return false end
 	if math.floor(bb_config.border_river_width * -0.5) < pos.y + (get_noise(1, pos) * 5) then return true end
 	return false	
 end
 
 local function generate_circle_spawn(event)
-	if global.bb_circle_spawn_generated then return end
+	if global.bb_spawn_generated then return end
 	
 	local surface = event.surface	
-	if surface.is_chunk_generated({-8, -8}) then global.bb_circle_spawn_generated = true end	
+
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
+	
+	if left_top_x < -320 then return end
+	if left_top_x > 320 then return end
+	if left_top_y < -320 then return end
+	
 	local r = 101
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
@@ -205,14 +214,7 @@ local function generate_circle_spawn(event)
 	regenerate_decoratives(surface, event.area.left_top)
 end
 
-local function generate_silos(event)
-	if global.bb_silos_generated then return end
-	if event.area.left_top.x ~= -128 then return end
-	if event.area.left_top.y ~= -128 then return end
-	global.bb_silos_generated = true
-	
-	local surface = event.surface
-	
+local function generate_north_silo(surface)
 	local pos = {x = -12 + math.random(0, 24), y = -64 + math.random(0, 16)}
 	
 	for _, t in pairs(surface.find_tiles_filtered({area = {{pos.x - 6, pos.y - 6},{pos.x + 6, pos.y + 6}}, name = {"water", "deepwater"}})) do
@@ -244,36 +246,6 @@ local function generate_river(event)
 				surface.set_tiles({{name = "deepwater", position = pos}})
 				if math_random(1, 64) == 1 then surface.create_entity({name = "fish", position = pos}) end
 			end			
-		end
-	end
-end
-
-local function rainbow_ore_and_ponds(event)
-	local surface = event.surface
-	local left_top_x = event.area.left_top.x
-	local left_top_y = event.area.left_top.y
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local pos = {x = left_top_x + x, y = left_top_y + y}
-			if surface.can_place_entity({name = "iron-ore", position = pos}) then
-				local noise = get_noise(1, pos)
-				if noise > 0.85 then
-					local amount = math_random(750, 1500) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 1.1
-					local m = (noise - 0.82) * 40
-					amount = amount * m
-					local i = math.ceil(math.abs(noise * 75)) % 4
-					if i == 0 then i = 4 end
-					surface.create_entity({name = ores[i], position = pos, amount = amount})					
-				end
-				--if noise < -0.79 then
-				--	if noise < -0.85 then 
-				--		surface.set_tiles({{name = "deepwater", position = pos}})
-				--	else
-				--		surface.set_tiles({{name = "water", position = pos}})
-				--	end					
-				--	if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
-				--end
-			end
 		end
 	end
 end
@@ -418,6 +390,28 @@ local function builders_area_process_tile(t, surface)
 	end
 end
 
+local function mixed_ore(event)
+	local surface = event.surface
+	local left_top_x = event.area.left_top.x
+	local left_top_y = event.area.left_top.y
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local pos = {x = left_top_x + x, y = left_top_y + y}
+			if surface.can_place_entity({name = "iron-ore", position = pos}) then
+				local noise = get_noise(1, pos)
+				if noise > 0.85 then
+					local amount = math_random(750, 1500) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 1.1
+					local m = (noise - 0.82) * 40
+					amount = amount * m
+					local i = math.ceil(math.abs(noise * 75)) % 4
+					if i == 0 then i = 4 end
+					surface.create_entity({name = ores[i], position = pos, amount = amount})					
+				end
+			end
+		end
+	end
+end
+
 local function on_chunk_generated(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
@@ -428,10 +422,9 @@ local function on_chunk_generated(event)
 		e.destroy()
 	end
 	
-	rainbow_ore_and_ponds(event)
+	mixed_ore(event)
 	generate_river(event)
-	generate_circle_spawn(event)		
-	generate_silos(event)
+	generate_circle_spawn(event)			
 	
 	if bb_config.builders_area then
 		for _, t in pairs(surface.find_tiles_filtered({area = event.area, name = {"water", "deepwater"}})) do
@@ -448,7 +441,8 @@ local function on_chunk_generated(event)
 		generate_scrap(event)
 	end
 	
-	if event.area.left_top.y == -320 and event.area.left_top.x == -320 then
+	if global.bb_spawn_generated then return end
+	if game.tick > 0 then
 		generate_potential_spawn_ore(surface)
 	
 		local area = {{-10,-10},{10,10}}
@@ -464,6 +458,8 @@ local function on_chunk_generated(event)
 				end
 			end
 		end
+		
+		global.bb_spawn_generated = true
 	end
 end
 
@@ -511,6 +507,21 @@ local function on_marked_for_deconstruction(event)
 	if not event.entity.valid then return end
 	if event.entity.name == "fish" then event.entity.cancel_deconstruction(game.players[event.player_index].force.name) end
 end
+
+local function on_init(surface)
+	server_commands.to_discord_embed("Generating chunks...")
+	print("Generating chunks...")
+	
+	local surface = game.surfaces["biter_battles"]
+	surface.request_to_generate_chunks({x = 0, y = -512}, 16)
+	surface.request_to_generate_chunks({x = 1024, y = -512}, 16)
+	surface.request_to_generate_chunks({x = -1024, y = -512}, 16)
+	surface.force_generate_chunk_requests()
+	
+	generate_north_silo(surface)
+end
+
+event.on_init(on_init)
 
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)

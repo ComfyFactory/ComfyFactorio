@@ -1,6 +1,6 @@
 local event = require 'utils.event' 
 
-local function set_chunk_coords(radius)
+local function set_chunk_coords_old(radius)
 	global.chunk_gen_coords = {}
 	for r = radius, 1, -1 do
 		for x = r * -1, r - 1, 1 do
@@ -20,6 +20,37 @@ local function set_chunk_coords(radius)
 			if math.sqrt(pos.x ^ 2 + pos.y ^ 2) <= radius then table.insert(global.chunk_gen_coords, pos) end
 		end	
 	end
+end
+
+local function shrink_table()
+	local t = {}
+	for k, chunk in pairs(global.chunk_gen_coords) do
+		t[chunk.x .. "_" .. chunk.y] = {key = k, chunk = {x = chunk.x, y = chunk.y}}
+	end
+	global.chunk_gen_coords = {}
+	for k, chunk in pairs(t) do
+		global.chunk_gen_coords[#global.chunk_gen_coords + 1] = {x = chunk.x, y = chunk.y}
+	end
+	game.print(global.chunk_gen_coords[#global.chunk_gen_coords])
+end
+
+local vectors = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}
+function set_chunk_coords(position, radius)
+	if not global.chunk_gen_coords then global.chunk_gen_coords = {} end
+	position.x = position.x - radius
+	position.y = position.y - radius
+	for r = radius, 1, -1 do		
+		for _, v in pairs(vectors) do
+			for a = 1, r * 2 - 1, 1 do
+				position.x = position.x + v[1]
+				position.y = position.y + v[2]
+				global.chunk_gen_coords[#global.chunk_gen_coords + 1] = {x = position.x, y = position.y}
+			end
+		end
+		position.x = position.x + 1
+		position.y = position.y + 1
+	end
+	global.chunk_gen_coords[#global.chunk_gen_coords + 1] = {x = position.x, y = position.y}
 end
 
 local function draw_gui()
@@ -48,7 +79,11 @@ local function process_chunk(surface)
 	if global.map_generation_complete then return end
 	if game.tick < 300 then return end
 	if not global.chunk_gen_coords then
-		set_chunk_coords(bb_config.map_pregeneration_radius)
+		set_chunk_coords({x = bb_config.map_pregeneration_radius * 2, y = 0}, bb_config.map_pregeneration_radius)
+		set_chunk_coords({x = bb_config.map_pregeneration_radius * -2, y = 0}, bb_config.map_pregeneration_radius)
+		set_chunk_coords({x = 0, y = 0}, bb_config.map_pregeneration_radius)
+		--shrink_table()
+		--set_chunk_coords()
 		--table.shuffle_table(global.chunk_gen_coords)
 	end
 	if #global.chunk_gen_coords == 0 then
@@ -64,7 +99,7 @@ local function process_chunk(surface)
 	local surface = game.surfaces["biter_battles"]
 	if not surface then return end
 	
-	local force_chunk_requests = 2
+	local force_chunk_requests = 3
 	if bb_config.fast_pregen then force_chunk_requests = 16 end
 	
 	for i = #global.chunk_gen_coords, 1, -1 do

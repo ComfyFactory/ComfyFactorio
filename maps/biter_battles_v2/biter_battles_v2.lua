@@ -187,10 +187,9 @@ local function on_player_joined_game(event)
 end
 
 local function on_init(surface)
-	if game.surfaces["biter_battles"] then return end
 	init_surface()
 	init_forces()
-	
+	global.gui_refresh_delay = 0
 	global.bb_debug = false
 end
 

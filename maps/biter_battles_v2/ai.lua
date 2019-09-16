@@ -339,7 +339,8 @@ local function on_entity_died(event)
 	if event.entity.type == "unit" then
 		global.active_biters[event.entity.force.name][event.entity.unit_number] = nil
 	end
-	global.bb_threat[event.entity.force.name] = global.bb_threat[event.entity.force.name] - threat_values[event.entity.name]		
+	global.bb_threat[event.entity.force.name] = global.bb_threat[event.entity.force.name] - threat_values[event.entity.name]
+	refresh_gui_threat()	
 end
 
 --Flamethrower Turret Nerf

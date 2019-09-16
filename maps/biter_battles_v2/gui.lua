@@ -149,7 +149,7 @@ local function create_main_gui(player)
 			end
 		end
 
-		local t = frame.add { type = "table", column_count = 4 }			
+		local t = frame.add { type = "table", name = "stats_" .. gui_value.force, column_count = 4 }			
 		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
 		l.tooltip = gui_value.t1
@@ -163,7 +163,7 @@ local function create_main_gui(player)
 		local l = t.add  {type = "label", caption = "Threat: "}
 		l.style.minimal_width = 25
 		l.tooltip = gui_value.t2
-		local l = t.add  {type = "label", caption = math.floor(global.bb_threat[gui_value.biter_force])}	
+		local l = t.add  {type = "label", name = "threat_" .. gui_value.force, caption = math.floor(global.bb_threat[gui_value.biter_force])}	
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
 		l.style.minimal_width = 25
@@ -202,6 +202,20 @@ local function refresh_gui()
 			create_main_gui(player)					
 		end
 	end
+	global.gui_refresh_delay = game.tick + 5
+end
+
+function refresh_gui_threat()
+	if global.gui_refresh_delay > game.tick then return end
+	for _, player in pairs(game.connected_players) do
+		if player.gui.left["bb_main_gui"] then
+			if player.gui.left["bb_main_gui"].stats_north then
+				player.gui.left["bb_main_gui"].stats_north.threat_north.caption = math.floor(global.bb_threat["north_biters"])
+				player.gui.left["bb_main_gui"].stats_south.threat_south.caption = math.floor(global.bb_threat["south_biters"])
+			end
+		end
+	end
+	global.gui_refresh_delay = game.tick + 5
 end
 
 function join_team(player, force_name, forced_join)
