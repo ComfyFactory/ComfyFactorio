@@ -5,7 +5,6 @@ require "maps.fish_defender.map_intro"
 require "maps.fish_defender.market"
 require "maps.fish_defender.shotgun_buff"
 require "maps.fish_defender.on_entity_damaged"
---local generate_chunks = require "maps.fish_defender.pregenerate_chunks"
 
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"
@@ -15,7 +14,6 @@ require "modules.dangerous_goods"
 require "modules.custom_death_messages"
 require "modules.biter_evasion_hp_increaser"
 require "modules.rocks_yield_ore"
-require "modules.rocks_broken_paint_tiles"
 
 local event = require 'utils.event'
 local boss_biter = require "maps.fish_defender.boss_biters"
@@ -36,13 +34,13 @@ local boss_waves = {
 }
 
 local difficulties_votes = {
-	[1] = {wave_interval = 5100, amount_modifier = 0.55, strength_modifier = 0.40},
-	[2] = {wave_interval = 4500, amount_modifier = 0.75, strength_modifier = 0.65},
-	[3] = {wave_interval = 4000, amount_modifier = 0.90, strength_modifier = 0.85},
-	[4] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00},
-	[5] = {wave_interval = 3200, amount_modifier = 1.10, strength_modifier = 1.25},
-	[6] = {wave_interval = 2700, amount_modifier = 1.25, strength_modifier = 1.75},
-	[7] = {wave_interval = 2100, amount_modifier = 1.50, strength_modifier = 2.50}
+    [1] = {wave_interval = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},
+    [2] = {wave_interval = 4100, amount_modifier = 0.76, strength_modifier = 0.65, boss_modifier = 4.0},
+    [3] = {wave_interval = 3800, amount_modifier = 0.92, strength_modifier = 0.85, boss_modifier = 5.0},
+    [4] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0},
+    [5] = {wave_interval = 3400, amount_modifier = 1.08, strength_modifier = 1.25, boss_modifier = 7.0},
+    [6] = {wave_interval = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0},
+    [7] = {wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
 }
 
 local function shuffle(tbl)
@@ -470,8 +468,8 @@ local function spawn_boss_units(surface)
 		boss_waves[global.wave_count] = {{name = "behemoth-biter", count = math.floor(amount / 20)}, {name = "behemoth-spitter", count = math.floor(amount / 40)}}
 	end
 	
-	local health_factor = global.difficulty_vote_index * 1.25
-	if global.wave_count == 100 then health_factor = global.difficulty_vote_index * 2.5 end
+	local health_factor = difficulties_votes[global.difficulty_vote_index].boss_modifier
+	if global.wave_count == 100 then health_factor = health_factor * 2 end
 	
 	local position = {x = 216, y = 0}
 	local biter_group = surface.create_unit_group({position = position})
@@ -933,18 +931,8 @@ local function on_robot_built_entity(event)
 	end
 end
 
---local function chart_map()
-	--if not global.map_generation_complete then
-	--	if global.wave_grace_period then global.wave_grace_period = global.wave_grace_period + 180 end
-	--	if global.difficulty_poll_closing_timeout then global.difficulty_poll_closing_timeout = global.difficulty_poll_closing_timeout + 180 end
-	--	return 
-	--end
-	
---end
-
 local function on_tick()
 	if game.tick % 30 == 0 then
-		--generate_chunks()
 		if global.market then
 			for _, player in pairs(game.connected_players) do
 				if game.surfaces["fish_defender"].peaceful_mode == false then
@@ -1049,8 +1037,9 @@ local function on_init(event)
 	}
 		
 	local map_gen_settings = {}
-	map_gen_settings.water = 0.15
-	map_gen_settings.terrain_segmentation = 2.5
+	map_gen_settings.height = 2048
+	map_gen_settings.water = 0.10	
+	map_gen_settings.terrain_segmentation = 3
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 24, cliff_elevation_0 = 24}
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 3, size = 1.5, richness = 1},
@@ -1084,24 +1073,18 @@ local function on_init(event)
 		right_bottom = {x = -80, y = 1500}
 	}
 	
+	generate_spawn_area(surface)
+	fish_mouth(surface)
 	fish_eye(surface, {x = -2150, y = -300})	
 	
 	server_commands.to_discord_embed("Generating chunks, this could take a while...")
-	print("Generating chunks, this could take a while...")
-	
+	print("Generating chunks, this could take a while...")	
 	local m = 512
 	for x = 0, -5, -1 do
 		surface.request_to_generate_chunks({x = x * m, y = 0}, 32)
 		surface.force_generate_chunk_requests()
-		--local str = "Generating chunks... x:" .. x * m
-		--server_commands.to_discord_embed(str)
-		--print(str)
-	end
-	
+	end	
 	enemy_territory(surface)
-	
-	--server_commands.to_discord_embed("Chunk generation complete!")
-	--print("Chunk generation complete!")
 end
 
 event.add(defines.events.on_gui_click, on_gui_click)
