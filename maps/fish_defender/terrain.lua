@@ -281,11 +281,9 @@ local function plankton_territory(surface, position, seed)
 		return true
 	end
 		
-	--if math.floor(noise_2 * 0.5) % 2 == 1 then
-		surface.set_tiles({{name = "water", position = position}}, true)
-	--else
-		--surface.set_tiles({{name = "deepwater", position = position}}, true)
-	--end
+	surface.set_tiles({{name = "water", position = position}}, true)
+	if math_random(1, 128) == 1 then surface.create_entity({name = "fish", position = position}) end
+	
 	return true	
 end
 
