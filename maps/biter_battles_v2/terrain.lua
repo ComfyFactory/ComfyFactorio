@@ -286,24 +286,20 @@ for x = 0, 31, 1 do
 	end
 end
 
-local function generate_extra_worm_turrets(event)
-	local surface = event.surface
-	local left_top = event.area.left_top
+local worm_chance = 15
+local function generate_extra_worm_turrets(surface, left_top)
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
 	if bb_config.bitera_area_distance > chunk_distance_to_center then return end
-	
-	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance) * 0.002) + 1
-	if highest_worm_tier > 4 then highest_worm_tier = 4 end
-	
-	local average_worm_amount_per_chunk = 0.65
-	local worm_amount = math_random(math.floor(average_worm_amount_per_chunk * 0.5), math.ceil(average_worm_amount_per_chunk * 1.5))
-	
-	for a = 1, worm_amount, 1 do
+
+	for a = 1, 256, 1 do
+		if math_random(1, 100) > worm_chance then break end	
 		local coord_modifier = worm_tile_coords[math_random(1, #worm_tile_coords)]
-		local pos = {left_top.x + coord_modifier[1], left_top.y + coord_modifier[2]}
-		local name = worm_turrets[math_random(1, highest_worm_tier)]
+		local pos = {left_top.x + coord_modifier[1], left_top.y + coord_modifier[2]}		
 		local position = surface.find_non_colliding_position("big-worm-turret", pos, 8, 1)
-		if position then
+		if position then		
+			local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance) * 0.002) + 1
+			if highest_worm_tier > 4 then highest_worm_tier = 4 end
+			local name = worm_turrets[math_random(1, highest_worm_tier)]
 			surface.create_entity({name = name, position = position, force = "north_biters"})
 		end
 	end
@@ -394,6 +390,14 @@ local function mixed_ore(event)
 	local surface = event.surface
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
+	
+	--Draw noise text values to determine which chunks are valid for mixed ore.
+	--rendering.draw_text{text = get_noise(1, {x = left_top_x + 16, y = left_top_y + 16}), surface = surface, target = {x = left_top_x + 16, y = left_top_y + 16}, color = {255, 255, 255}, time_to_live = 3600, scale = 2, font = "default-game"}
+	
+	--Skip chunks that are too far off the ore noise value.
+	if get_noise(1, {x = left_top_x + 16, y = left_top_y + 16}) < 0.52 then return end
+	
+	--Draw the mixed ore patches.
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
@@ -415,6 +419,7 @@ end
 local function on_chunk_generated(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
+	local left_top = event.area.left_top
 	if surface.name ~= "biter_battles" then return end		 	
 	
 	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do		
@@ -435,7 +440,7 @@ local function on_chunk_generated(event)
 		end		
 	end
 	
-	generate_extra_worm_turrets(event)
+	generate_extra_worm_turrets(surface, left_top)
 	
 	if bb_config.random_scrap then
 		generate_scrap(event)
@@ -509,15 +514,18 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_init(surface)
-	server_commands.to_discord_embed("Generating chunks...")
-	print("Generating chunks...")
-	
 	local surface = game.surfaces["biter_battles"]
-	surface.request_to_generate_chunks({x = 0, y = -512}, 16)
-	surface.request_to_generate_chunks({x = 1024, y = -512}, 16)
-	surface.request_to_generate_chunks({x = -1024, y = -512}, 16)
-	surface.force_generate_chunk_requests()
-	
+	if bb_config.on_init_pregen then
+		server_commands.to_discord_embed("Generating chunks...")
+		print("Generating chunks...")		
+		surface.request_to_generate_chunks({x = 0, y = -512}, 16)
+		surface.request_to_generate_chunks({x = 1024, y = -512}, 16)
+		surface.request_to_generate_chunks({x = -1024, y = -512}, 16)
+		surface.force_generate_chunk_requests()
+	else
+		surface.request_to_generate_chunks({x = 0, y = -256}, 8)
+		surface.force_generate_chunk_requests()
+	end
 	generate_north_silo(surface)
 end
 
