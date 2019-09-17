@@ -2,6 +2,18 @@
 
 local simplex_noise = require "utils.simplex_noise".d2
 
+local function get_brush(size)
+	local vectors = {}
+	for x = size * -1, size, 1 do
+		for y = size * -1, size, 1 do
+			if math.sqrt(y ^ 2 + x ^ 2) <= size then
+				vectors[#vectors + 1] = {x, y}
+			end
+		end
+	end
+	return vectors
+end
+
 function noise_vector_entity_path(surface, entity_name, position, base_vector, length, collision)
 	local seed_1 = math.random(1, 10000000)
 	local seed_2 = math.random(1, 10000000)
@@ -40,14 +52,20 @@ function noise_vector_entity_path(surface, entity_name, position, base_vector, l
 	return entities
 end
 
-function noise_vector_tile_path(surface, tile_name, position, base_vector, length)
+function noise_vector_tile_path(surface, tile_name, position, base_vector, length, brush_size)
 	local seed_1 = math.random(1, 10000000)
 	local seed_2 = math.random(1, 10000000)
 	local vector = {}
-	local minimal_movement = 0.5
+	local tiles = {}
+	local minimal_movement = 0.75
+	local brush_vectors = get_brush(brush_size)
 	
 	for a = 1, length, 1 do
-		surface.set_tiles({{name = tile_name, position = position}}, true)
+		tiles[#tiles + 1] = {name = tile_name, position = position}
+		for _, v in pairs(brush_vectors) do
+			surface.set_tiles({{name = tile_name, position = {position.x + v[1], position.y + v[2]}}}, true)
+		end
+		
 		local noise = simplex_noise(position.x * 0.1, position.y * 0.1, seed_1)
 		local noise_2 = simplex_noise(position.x * 0.1, position.y * 0.1, seed_2)
 
@@ -65,6 +83,8 @@ function noise_vector_tile_path(surface, tile_name, position, base_vector, lengt
 		
 		position = {x = position.x + vector[1], y = position.y + vector[2]}
 	end
+	
+	return tiles
 end
 
 --/c noise_vector_path(game.player.surface, "tree-04", game.player.position, {0,0})
