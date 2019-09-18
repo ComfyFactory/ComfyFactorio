@@ -52,18 +52,26 @@ function noise_vector_entity_path(surface, entity_name, position, base_vector, l
 	return entities
 end
 
-function noise_vector_tile_path(surface, tile_name, position, base_vector, length, brush_size)
+function noise_vector_tile_path(surface, tile_name, position, base_vector, length, brush_size, whitelist)
 	local seed_1 = math.random(1, 10000000)
 	local seed_2 = math.random(1, 10000000)
 	local vector = {}
 	local tiles = {}
-	local minimal_movement = 0.75
+	local minimal_movement = 0.65
 	local brush_vectors = get_brush(brush_size)
 	
 	for a = 1, length, 1 do
-		tiles[#tiles + 1] = {name = tile_name, position = position}
 		for _, v in pairs(brush_vectors) do
-			surface.set_tiles({{name = tile_name, position = {position.x + v[1], position.y + v[2]}}}, true)
+			local p = {x = position.x + v[1], y = position.y + v[2]}
+			if whitelist then
+				if whitelist[surface.get_tile(p).name] then
+					surface.set_tiles({{name = tile_name, position = p}}, true)
+					tiles[#tiles + 1] = {name = tile_name, position = p}
+				end
+			else
+				surface.set_tiles({{name = tile_name, position = p}}, true)
+				tiles[#tiles + 1] = {name = tile_name, position = p}
+			end
 		end
 		
 		local noise = simplex_noise(position.x * 0.1, position.y * 0.1, seed_1)
