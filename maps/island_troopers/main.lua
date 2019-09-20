@@ -1,6 +1,7 @@
 require "functions.noise_vector_path"
 require "functions.boss_unit"
 require "maps.island_troopers.terrain"
+require "modules.shopping_chests"
 
 local function set_next_level()	
 	global.alive_enemies = 0

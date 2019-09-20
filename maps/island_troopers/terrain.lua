@@ -4,7 +4,16 @@ local math_random = math.random
 local function get_vector()
 	if global.current_stage == 1 then return {0, -1} end
 	if global.current_stage == #global.stages then return {0, 1} end
-	return {1, 0}
+	local position = global.path_tiles[#global.path_tiles].position
+	local island_size = global.stages[global.current_stage].size
+	local y_modifier = 0
+	if math.abs(position.y) < 32 + island_size * 3 then
+		y_modifier = math.random(50, 100) * -0.01
+	else
+		y_modifier = math.random(50, 100) * 0.01
+	end
+	game.print(y_modifier)
+	return {1, y_modifier}
 end
 
 local function add_enemies(surface, position)
@@ -54,6 +63,12 @@ function draw_path_to_next_stage()
 	--game.print(get_vector()[1] .. " " .. get_vector()[2])
 	global.path_tiles = noise_vector_tile_path(surface, "grass-1", position, get_vector(), global.stages[global.current_stage].path_length, math.random(2, 5), draw_path_tile_whitelist)
 	
+	if global.current_stage ~= #global.stages and global.current_stage > 1 then
+		if math_random(1, 3) == 1 then
+			noise_vector_tile_path(surface, "grass-1", position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 5), draw_path_tile_whitelist)
+		end
+	end
+	
 	--for _, t in pairs(global.path_tiles) do
 	--	global.level_tiles[#global.level_tiles + 1] = t
 	--end
@@ -89,7 +104,7 @@ local function create_particles(surface, position)
 	local particle = particles[math_random(1, #particles)]
 	local m = math_random(10, 30)
 	local m2 = m * 0.005
-	for i = 1, 25, 1 do 
+	for i = 1, 8, 1 do 
 		surface.create_entity({
 			name = particle,
 			position = position,
@@ -105,7 +120,7 @@ function kill_the_level()
 	local surface = game.surfaces[1]
 	if not global.level_tiles then get_level_tiles(surface) end
 	
-	local amount = global.current_level
+	local amount = global.current_level * 2
 	for i = #global.level_tiles, 1, -1 do
 		if global.level_tiles[i] then
 			for k, tile in pairs(global.level_tiles[i]) do
