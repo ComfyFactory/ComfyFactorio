@@ -66,16 +66,21 @@ end
 local function gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.credits_button then player.gui.top.credits_button.destroy() end
-		local element = player.gui.top.add({type = "frame", name = "credits_button", caption = global.credits .. " ø", tooltip = "Credits of the factory."})
+		local frame = player.gui.top.add({type = "frame", name = "credits_button"})
+		frame.style.maximal_height = 38
+		frame.style.top_padding = 0
+		frame.style.left_padding = 0
+		local element = frame.add({type = "label", name = "credits", caption = global.credits .. " ø", tooltip = "Credits of the factory."})
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38
-		style.minimal_width = 140
+		style.minimal_width = 100
+		style.horizontal_align = "right"
 		style.top_padding = 2
-		style.left_padding = 4
-		style.right_padding = 4
+		style.left_padding = 2
+		style.right_padding = 2
 		style.bottom_padding = 2
-		style.font_color = {r = 155, g = 85, b = 25}
+		style.font_color = {r = 255, g = 215, b = 0}
 		style.font = "default-large-bold"
 	end
 end
@@ -88,7 +93,6 @@ local function tick()
 		process_dump_chest(k, chest)
 	end
 	gui()
-	global.credits = global.credits + math.random(1,5)
 end
 
 local function on_init()

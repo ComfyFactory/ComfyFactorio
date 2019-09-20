@@ -1,5 +1,46 @@
-local map_functions = require "tools.map_functions"
 local math_random = math.random
+local simplex_noise = require 'utils.simplex_noise'.d2
+
+local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+
+local function island_noise(p, seed_1, seed_2, seed_3)
+	local noise_1 = simplex_noise(p.x * 0.01, p.y * 0.01, seed_1)
+	local noise_2 = simplex_noise(p.x * 0.04, p.y * 0.04, seed_2)
+	local noise_3 = simplex_noise(p.x * 0.1, p.y * 0.1, seed_3)
+	return math.abs(noise_1 + noise_2 * 0.5 + noise_3 * 0.2)
+end
+
+local function process_island_position(position, radius, noise, distance)
+	if distance + noise * radius * 1.5 <= radius then
+		return {name = "grass-1", position = position}
+	end
+	if distance + noise * radius * 1 <= radius then
+		return {name = "sand-1", position = position}
+	end
+	if distance + noise * radius * 0.7 <= radius  then
+		return {name = "water", position = position}
+	end
+end
+
+local function draw_island_tiles(surface, position, radius)
+	local seed_1 = math.random(1, 9999999)
+	local seed_2 = math.random(1, 9999999)
+	local seed_3 = math.random(1, 9999999)
+	local tiles = {}
+	for y = radius * -2, radius * 2, 1 do
+		for x = radius * -2, radius * 2, 1 do
+			local p = {x = x + position.x, y = y + position.y}
+			if surface.get_tile(p).name == "deepwater" then
+				local noise = island_noise(p, seed_1, seed_2, seed_3)
+				local distance = math.sqrt(x^2 + y^2)
+				local tile = process_island_position(p, radius, noise, distance)
+				if tile then tiles[#tiles + 1] = tile end
+			end
+		end
+	end
+	surface.set_tiles(tiles, true)
+	return tiles
+end
 
 local function get_vector()
 	if global.current_stage == 1 then return {0, -1} end
@@ -12,40 +53,74 @@ local function get_vector()
 	else
 		y_modifier = math.random(50, 100) * 0.01
 	end
-	game.print(y_modifier)
 	return {1, y_modifier}
 end
 
-local function add_enemies(surface, position)
-	local radius = global.stages[global.current_stage].size
-	local amount = math.ceil(((global.current_level * 10) / #global.stages) * global.current_stage)
-	for a = 1, amount, 1 do
-		local p = {x = position.x + (radius - math.random(0, radius * 2)), y = position.y + (radius - math.random(0, radius * 2))}
-		if surface.can_place_entity({name = "small-biter", position = p, force = enemy}) then
-			surface.create_entity({name = "small-biter", position = p, force = enemy})
-			global.alive_enemies = global.alive_enemies + 1
+local function is_boss_stage()
+	if global.current_stage == 1 then return false end
+	if global.current_stage % 5 == 0 then return true end
+	if global.current_stage == #global.stages - 1 then return true end
+end
+
+local function add_enemies(surface, tiles)
+	table.shuffle_table(tiles)
+		
+	if is_boss_stage() then
+		set_biter_chances(global.current_level + 100)
+		local boss_biters = math.random(1, global.current_level)
+		for k, tile in pairs(tiles) do
+			if surface.can_place_entity({name = "small-biter", position = tile.position, force = "enemy"}) then
+				local unit = surface.create_entity({name = get_biter(), position = tile.position, force = "enemy"})
+				unit.ai_settings.allow_destroy_when_commands_fail = false
+				unit.ai_settings.allow_try_return_to_spawner = false
+				add_boss_unit(unit, global.current_level * 2, 0.55)
+				global.alive_boss_enemy_count = global.alive_boss_enemy_count + 1
+				global.alive_boss_enemy_entities[unit.unit_number] = unit
+				global.alive_enemies = global.alive_enemies + 1
+				boss_biters = boss_biters - 1
+				if boss_biters == 0 then break end
+			end
 		end
 	end
 	
-	if global.current_stage == #global.stages - 1 then	
-		local unit = surface.create_entity({name = "medium-spitter", position = position, force = enemy})
-		add_boss_unit(unit, global.current_level * 2, 0.55)
-		global.alive_enemies = global.alive_enemies + 1
-	end
+	set_biter_chances(global.current_level)
+	local amount = math.ceil(((global.current_level * 25) / #global.stages) * global.current_stage)
+	for k, tile in pairs(tiles) do
+		if surface.can_place_entity({name = "small-biter", position = tile.position, force = "enemy"}) then			
+			local unit = surface.create_entity({name = get_biter(), position = tile.position, force = "enemy"})
+			unit.ai_settings.allow_destroy_when_commands_fail = false
+			unit.ai_settings.allow_try_return_to_spawner = false
+			global.alive_enemies = global.alive_enemies + 1
+			amount = amount - 1
+		end
+		if amount == 0 then break end
+	end			
 end
 
 function draw_the_island()
 	if not global.stages[global.current_stage].size then global.gamestate = 4 return end
 	local surface = game.surfaces[1]
 	local position = global.path_tiles[#global.path_tiles].position	
-	map_functions.draw_noise_tile_circle(position, "grass-2", surface, global.stages[global.current_stage].size)
-	add_enemies(surface, position)
+	
+	local tiles = draw_island_tiles(surface, position, global.stages[global.current_stage].size)
+	local tree = "tree-0" .. math_random(1,9)
+	for _, t in pairs(tiles) do		
+		if math.random(1,128) == 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = t.position}) end
+		if surface.can_place_entity({name = "wooden-chest", position = t.position}) then
+			if math.random(1,64) == 1 then surface.create_entity({name = tree, position = t.position}) end
+		end
+	end
+	
+	add_enemies(surface, tiles)
 	global.gamestate = 4
 end
 
 local draw_path_tile_whitelist = {
 	["water"] = true,
+	["deepwater"] = true,
 }
+
+local path_tile_names = {"grass-1", "grass-2", "grass-3", "grass-4", "water-shallow"}
 
 function draw_path_to_next_stage()
 	local surface = game.surfaces[1]
@@ -61,22 +136,18 @@ function draw_path_to_next_stage()
 	local position = {x = 0, y = 0}
 	if global.path_tiles then position = global.path_tiles[#global.path_tiles].position end
 	--game.print(get_vector()[1] .. " " .. get_vector()[2])
-	global.path_tiles = noise_vector_tile_path(surface, "grass-1", position, get_vector(), global.stages[global.current_stage].path_length, math.random(2, 5), draw_path_tile_whitelist)
+	global.path_tiles = noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names)], position, get_vector(), global.stages[global.current_stage].path_length, math.random(2, 3), draw_path_tile_whitelist)
 	
-	if global.current_stage ~= #global.stages and global.current_stage > 1 then
+	if global.current_stage ~= #global.stages and global.current_stage > 2 then
 		if math_random(1, 3) == 1 then
-			noise_vector_tile_path(surface, "grass-1", position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 5), draw_path_tile_whitelist)
+			noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names)], position, {0, 1}, global.stages[#global.stages].path_length * 10, math.random(2, 3), draw_path_tile_whitelist)
 		end
 	end
-	
-	--for _, t in pairs(global.path_tiles) do
-	--	global.level_tiles[#global.level_tiles + 1] = t
-	--end
 	
 	global.gamestate = 3
 end
 
-local tile_whitelist = {"grass-1", "grass-2", "grass-3", "grass-4"}
+local tile_whitelist = {"grass-1", "grass-2", "grass-3", "grass-4", "water-mud", "water-shallow", "sand-1", "water"}
 local function get_level_tiles(surface)
 	global.level_tiles = {}
 	for chunk in surface.get_chunks() do
@@ -104,7 +175,7 @@ local function create_particles(surface, position)
 	local particle = particles[math_random(1, #particles)]
 	local m = math_random(10, 30)
 	local m2 = m * 0.005
-	for i = 1, 8, 1 do 
+	for i = 1, 4, 1 do 
 		surface.create_entity({
 			name = particle,
 			position = position,
@@ -120,11 +191,11 @@ function kill_the_level()
 	local surface = game.surfaces[1]
 	if not global.level_tiles then get_level_tiles(surface) end
 	
-	local amount = global.current_level * 2
+	local amount = 2 + global.current_level
 	for i = #global.level_tiles, 1, -1 do
 		if global.level_tiles[i] then
 			for k, tile in pairs(global.level_tiles[i]) do
-				surface.set_tiles({{name = "water", position = tile.position}}, true)
+				surface.set_tiles({{name = "deepwater", position = tile.position}}, true)
 				create_particles(surface, tile.position)
 				global.level_tiles[i][k] = nil
 				amount = amount - 1
@@ -142,14 +213,25 @@ function kill_the_level()
 end
 
 local function process_tile(surface, position)
-	if position.y < 0 then surface.set_tiles({{name = "water", position = position}}, true) return end
-	if position.y > 4 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
+	if position.x < -64 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
+	if position.y < 0 then surface.set_tiles({{name = "deepwater", position = position}}, true) return end
+	if position.y > 8 then surface.set_tiles({{name = "water-green", position = position}}, true) return end	
 	surface.set_tiles({{name = "sand-1", position = position}}, true)
+	
+	if position.y == 7 then
+		if position.x % 64 == 32 then create_shopping_chest(surface, position, false) end
+		if position.x % 128 == 0 then create_dump_chest(surface, position, false) end
+	end
 end
 
 local function on_chunk_generated(event)
 	local left_top = event.area.left_top
 	local surface = event.surface
+	
+	for k, e in pairs(surface.find_entities_filtered({area = event.area})) do
+		if e.force.name ~= "player" then e.destroy() end
+	end
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local position = {x = left_top.x + x, y = left_top.y + y}
