@@ -1,5 +1,7 @@
 require "functions.noise_vector_path"
 require "modules.shopping_chests"
+require "modules.no_turrets"
+require "modules.dangerous_goods"
 require "maps.island_troopers.enemies"
 require "maps.island_troopers.terrain"
 
@@ -29,11 +31,28 @@ local function update_gui()
 	end
 end
 
+local function bring_players()
+	local surface = game.surfaces[1]
+	for _, player in pairs(game.connected_players) do
+		if player.position.y < -1 then
+			if player.character then
+				if player.character.valid then
+					local p = surface.find_non_colliding_position("character", {0, 2}, 8, 0.5)
+					if not p then player.teleport({0, 2}, surface) end
+					player.teleport(p, surface)
+				end
+			end
+		end
+	end
+end
+
 local function set_next_level()	
 	global.alive_enemies = 0
 	global.alive_boss_enemy_count = 0
 	global.current_stage = 1
 	global.current_level = global.current_level + 1
+	
+	if global.current_level > 1 then bring_players() end
 	
 	global.path_tiles = nil
 	
@@ -55,7 +74,7 @@ local function set_next_level()
 		}
 	end
 	global.stages[#global.stages + 1] = {
-		path_length = 128 + global.current_level * 5,
+		path_length = 64 + island_size * 5,
 		size = false,
 	}
 	
@@ -66,7 +85,7 @@ local function set_next_level()
 end
 
 local function earn_credits(amount)
-	game.print(amount .. " credits have been transfered to the factory!", {r = 255, g = 215, b = 0})
+	game.print(amount .. " credits recieved!", {r = 255, g = 215, b = 0})
 	global.credits = global.credits + amount
 end
 
@@ -102,7 +121,6 @@ local function on_player_joined_game(event)
 	create_stage_gui(player)
 	if player.gui.left["slowmo_cam"] then player.gui.left["slowmo_cam"].destroy() end
 	player.insert({name = "pistol", count = 1})
-	player.insert({name = "uranium-rounds-magazine", count = 128})
 	player.insert({name = "firearm-magazine", count = 32})
 end
 
@@ -111,7 +129,6 @@ local function on_init()
 	surface.request_to_generate_chunks({x = 0, y = 0}, 8)
 	surface.force_generate_chunk_requests()
 	
-	--global.level_tiles = {}
 	global.level_vectors = {}
 	global.alive_boss_enemy_entities = {}
 	global.current_level = 0	

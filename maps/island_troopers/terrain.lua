@@ -11,13 +11,13 @@ local function island_noise(p, seed_1, seed_2, seed_3)
 end
 
 local function process_island_position(position, radius, noise, distance)
-	if distance + noise * radius * 1.5 <= radius then
+	if distance + noise * radius * 1.7 <= radius then
 		return {name = "grass-1", position = position}
 	end
-	if distance + noise * radius * 1 <= radius then
+	if distance + noise * radius * 0.8 <= radius then
 		return {name = "sand-1", position = position}
 	end
-	if distance + noise * radius * 0.7 <= radius  then
+	if distance + noise * radius * 0.6 <= radius  then
 		return {name = "water", position = position}
 	end
 end
@@ -120,8 +120,7 @@ local draw_path_tile_whitelist = {
 	["deepwater"] = true,
 }
 
-local path_tile_names = {"grass-1", "grass-2", "grass-3", "grass-4", "water-shallow"}
-
+local path_tile_names = {"grass-2", "grass-3", "grass-4", "water-shallow"}
 function draw_path_to_next_stage()
 	local surface = game.surfaces[1]
 	
@@ -140,7 +139,7 @@ function draw_path_to_next_stage()
 	
 	if global.current_stage ~= #global.stages and global.current_stage > 2 then
 		if math_random(1, 3) == 1 then
-			noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names)], position, {0, 1}, global.stages[#global.stages].path_length * 10, math.random(2, 3), draw_path_tile_whitelist)
+			noise_vector_tile_path(surface, path_tile_names[math_random(1, 3)], position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 3), draw_path_tile_whitelist)
 		end
 	end
 	
@@ -190,8 +189,9 @@ end
 function kill_the_level()
 	local surface = game.surfaces[1]
 	if not global.level_tiles then get_level_tiles(surface) end
-	
-	local amount = 2 + global.current_level
+	if not global.kill_the_level_speed then global.kill_the_level_speed = 0 end
+	global.kill_the_level_speed = global.kill_the_level_speed + 0.0025
+	local amount = global.kill_the_level_speed 
 	for i = #global.level_tiles, 1, -1 do
 		if global.level_tiles[i] then
 			for k, tile in pairs(global.level_tiles[i]) do
@@ -207,6 +207,7 @@ function kill_the_level()
 	
 	if #global.level_tiles == 0 then
 		wipe_vision(surface)
+		global.kill_the_level_speed = nil
 		global.level_tiles = nil
 		global.gamestate = 1 
 	end
@@ -215,10 +216,13 @@ end
 local function process_tile(surface, position)
 	if position.x < -64 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
 	if position.y < 0 then surface.set_tiles({{name = "deepwater", position = position}}, true) return end
-	if position.y > 8 then surface.set_tiles({{name = "water-green", position = position}}, true) return end	
+	if position.y > 32 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
+	
+	if position.y > 12 + simplex_noise(position.x * 0.010, 0, game.surfaces[1].map_gen_settings.seed) * 6 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
+	
 	surface.set_tiles({{name = "sand-1", position = position}}, true)
 	
-	if position.y == 7 then
+	if position.y == 6 + math.floor(simplex_noise(position.x * 0.010, 0, game.surfaces[1].map_gen_settings.seed) * 4) then
 		if position.x % 64 == 32 then create_shopping_chest(surface, position, false) end
 		if position.x % 128 == 0 then create_dump_chest(surface, position, false) end
 	end
