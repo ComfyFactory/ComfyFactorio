@@ -164,6 +164,11 @@ local function ocg (event)
 	if event.surface.name ~= "biter_battles" then return end
 
 	event.surface.destroy_decoratives{ area = event.area }
+	-- Destroy biters here before they get active and attack other biters;
+	-- prevents threat decrease
+	for _, e in pairs(event.surface.find_entities_filtered{ area = event.area, force = "enemy" }) do
+		if e.valid then e.destroy() end
+	end
 
 	local x = ((event.area.left_top.x + 16) * -1) - 16
 	local y = ((event.area.left_top.y + 16) * -1) - 16
