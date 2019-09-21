@@ -14,6 +14,14 @@ local info = [[
 	These can already be found on the coast.
 
 	Be careful! Over time, residents will send stronger bugs to the surface!
+	
+	Turrets unfortunately malfunction in this world.
+	
+	Any container bearing dangerous goods, like ammo, grenades or barrels,
+	causes heavy explosions when it breaks.
+	Maybe this can be used to our advantage.
+	
+	--Good Luck Troopers--
 ]]
 
 local function create_map_intro_button(player)

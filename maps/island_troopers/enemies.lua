@@ -45,13 +45,13 @@ function set_biter_chances(level)
 		["behemoth-biter"] = 0,
 		["behemoth-spitter"] = 0,
 	}
-	if level > 100 then
-		global.biter_chances["big-biter"] = (level - 100) * 25
-		global.biter_chances["big-spitter"] = (level - 100) * 25
+	if level > 75 then
+		global.biter_chances["big-biter"] = (level - 75) * 25
+		global.biter_chances["big-spitter"] = (level - 75) * 25
 	end
-	if level > 200 then
-		global.biter_chances["behemoth-biter"] = (level - 200) * 50
-		global.biter_chances["behemoth-spitter"] = (level - 200) * 50
+	if level > 150 then
+		global.biter_chances["behemoth-biter"] = (level - 150) * 50
+		global.biter_chances["behemoth-spitter"] = (level - 150) * 50
 	end
 	for k, v in pairs(global.biter_chances) do
 		if global.biter_chances[k] < 0 then global.biter_chances[k] = 0 end
@@ -65,13 +65,13 @@ function set_worm_chances(level)
 		["big-worm-turret"] = 0,
 		["behemoth-worm-turret"] = 0,
 	}
-	if level > 100 then
-		global.worm_chances["big-worm-turret"] = (level - 100) * 25
-		global.worm_chances["big-worm-turret"] = (level - 100) * 25
+	if level > 75 then
+		global.worm_chances["big-worm-turret"] = (level - 75) * 25
+		global.worm_chances["big-worm-turret"] = (level - 75) * 25
 	end
-	if level > 200 then
-		global.worm_chances["behemoth-worm-turret"] = (level - 200) * 50
-		global.worm_chances["behemoth-worm-turret"] = (level - 200) * 50
+	if level > 150 then
+		global.worm_chances["behemoth-worm-turret"] = (level - 150) * 50
+		global.worm_chances["behemoth-worm-turret"] = (level - 150) * 50
 	end
 	for k, v in pairs(global.worm_chances) do
 		if global.worm_chances[k] < 0 then global.worm_chances[k] = 0 end
@@ -79,17 +79,18 @@ function set_worm_chances(level)
 end
 
 
-local function is_boss_stage()
+local function is_boss_stage()	
 	if global.current_stage == 1 then return false end
-	if global.current_stage % 5 == 0 then return true end
 	if global.current_stage == #global.stages - 1 then return true end
+	if #global.stages < 8 then return false end
+	if global.current_stage == math.floor(#global.stages * 0.5) then return true end
 end
 
 function add_enemies(surface, tiles)
 	table.shuffle_table(tiles)
 	
 	if is_boss_stage() then
-		set_biter_chances(global.current_level + 100)
+		set_biter_chances(math.floor((global.current_level * difficulties_votes[global.difficulty_vote_index].strength_modifier) + 65))
 		local boss_count = math.random(1, math.floor(global.current_level * 0.5) + 1)
 		if boss_count > 16 then boss_count = 16 end
 		for k, tile in pairs(tiles) do
@@ -97,7 +98,7 @@ function add_enemies(surface, tiles)
 				local unit = surface.create_entity({name = get_biter(), position = tile.position, force = "enemy"})
 				unit.ai_settings.allow_destroy_when_commands_fail = false
 				unit.ai_settings.allow_try_return_to_spawner = false
-				add_boss_unit(unit, global.current_level * difficulties_votes[global.difficulty_vote_index].boss_modifier, 0.55)
+				add_boss_unit(unit, (1.5 + global.current_level * 0.1) * difficulties_votes[global.difficulty_vote_index].boss_modifier, 0.55)
 				global.alive_boss_enemy_count = global.alive_boss_enemy_count + 1
 				global.alive_boss_enemy_entities[unit.unit_number] = unit
 				global.alive_enemies = global.alive_enemies + 1
@@ -121,7 +122,7 @@ function add_enemies(surface, tiles)
 		end
 	end
 		
-	set_biter_chances(global.current_level * difficulties_votes[global.difficulty_vote_index].strength_modifier)
+	set_biter_chances(math.floor(global.current_level * difficulties_votes[global.difficulty_vote_index].strength_modifier) + 1)
 	local amount = ((global.current_level * 25) / #global.stages) * global.current_stage
 	amount = amount * difficulties_votes[global.difficulty_vote_index].amount_modifier
 	for k, tile in pairs(tiles) do

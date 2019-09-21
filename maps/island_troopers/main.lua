@@ -1,3 +1,5 @@
+--map by mewmew and kyte
+
 require "maps.island_troopers.map_intro"
 require "functions.noise_vector_path"
 require "modules.shopping_chests"
@@ -25,7 +27,11 @@ end
 function update_stage_gui()
 	local caption = "Level: " .. global.current_level
 	caption = caption .. "  |  Stage: "
-	caption = caption .. global.current_stage
+	local stage = global.current_stage
+	if stage > #global.stages - 1 then stage = #global.stages - 1 end
+	caption = caption .. stage
+	caption = caption .. "/"
+	caption = caption .. #global.stages - 1
 	caption = caption .. "  |  Bugs remaining: "
 	caption = caption .. global.alive_enemies
 	
@@ -51,6 +57,18 @@ local function bring_players()
 	end
 end
 
+local function drift_corpses_toward_beach()
+	local surface = game.surfaces[1]
+	for _, corpse in pairs(surface.find_entities_filtered({name = "character-corpse"})) do
+		if corpse.position.y < 0 then			
+			if surface.get_tile(corpse.position).collides_with("resource-layer") then
+				corpse.clone{position={corpse.position.x, corpse.position.y + 1}, surface=surface, force=corpse.force.name}
+				corpse.destroy()
+			end 
+		end
+	end
+end
+
 local function set_next_level()	
 	global.alive_enemies = 0
 	global.alive_boss_enemy_count = 0
@@ -61,12 +79,12 @@ local function set_next_level()
 	
 	global.path_tiles = nil
 	
-	local island_size = 16 + math.random(global.current_level, global.current_level * 2)
+	local island_size = math.random(global.current_level, global.current_level * 2) + 7
 	if island_size > 128 then island_size = 128 end
 	
 	global.stages = {}
 	global.stages[1] = {
-			path_length = 16 + island_size * 2,
+			path_length = 24 + island_size * 2,
 			size = island_size,
 		}
 		
@@ -91,14 +109,14 @@ end
 
 local function earn_credits(amount)
 	for _, player in pairs(game.connected_players) do
-		player.play_sound{path="utility/new_objective", volume_modifier=0.5}
+		player.play_sound{path="utility/new_objective", volume_modifier=0.4}
 	end
 	game.print(amount .. " credits have been transfered to the factory.", {r = 255, g = 215, b = 0})
 	global.credits = global.credits + amount
 end
 
 local function slowmo()
-	if not global.slowmo then global.slowmo = 0.10 end
+	if not global.slowmo then global.slowmo = 0.15 end
 	game.speed = global.slowmo
 	global.slowmo = global.slowmo + 0.01		
 	if game.speed < 1 then return end
@@ -111,17 +129,27 @@ end
 
 local function wait_until_stage_is_beaten()
 	if global.alive_enemies > 0 then return end
+	local reward_amount = false
+	local gamestate = 2
+	
 	if global.stages[global.current_stage].size then
-		earn_credits(global.current_stage * global.current_level * 50)
-		global.current_stage = global.current_stage + 1
-		global.gamestate = 2
+		if global.current_stage < #global.stages -1 then
+			reward_amount = global.current_stage * global.current_level * 75
+		else
+			reward_amount = global.current_stage * global.current_level * 150
+		end
+	else
+		game.print("Final Stage complete!")
+		game.print("Level is collapsing !!", {r = 255, g = 0, b = 0})
+		gamestate = 5
+	end		
+	
+	if reward_amount then
+		earn_credits(reward_amount) 
 		update_stage_gui()
-		return 
 	end
-	earn_credits(global.current_stage * global.current_level * 100)
-	--game.print("Level " .. global.current_level .. " complete!!")
-	global.gamestate = 5
-	update_stage_gui()
+	global.current_stage = global.current_stage + 1
+	global.gamestate = gamestate
 end
 
 local function on_player_joined_game(event)
@@ -137,6 +165,13 @@ local function on_init()
 	surface.request_to_generate_chunks({x = 0, y = 0}, 16)
 	surface.force_generate_chunk_requests()
 	
+	tree_raffle = {}
+	for _, e in pairs(game.entity_prototypes) do
+		if e.type == "tree" then
+			table.insert(tree_raffle, e.name)
+		end			
+	end
+	
 	global.difficulty_poll_closing_timeout = 3600 * 5
 	global.level_vectors = {}
 	global.alive_boss_enemy_entities = {}
@@ -150,6 +185,7 @@ local msg = {
 	"We got the brainbug!",
 	"Good job troopers!",
 	"This will pay off well!",
+	"I'm doing my part!",
 }
 
 local function on_entity_died(event)
@@ -186,7 +222,8 @@ local gamestate_functions = {
 }
 
 local function on_tick()	
-	gamestate_functions[global.gamestate]()	
+	gamestate_functions[global.gamestate]()
+	if game.tick % 300 == 0 then drift_corpses_toward_beach() end
 end
 
 local event = require 'utils.event'

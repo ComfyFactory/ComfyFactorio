@@ -1,14 +1,14 @@
 local shop_list = {
-	["iron-ore"] = 1,
-	["copper-ore"] = 1,
-	["uranium-ore"] = 3,
 	["coal"] = 1,
-	["stone"] = 1,
-	["wood"] = 0.75,
+	["copper-ore"] = 1,
 	["crude-oil-barrel"] = 6,
 	["empty-barrel"] = 5,
+	["iron-ore"] = 1,
 	["landfill"] = 2.5,
 	["raw-fish"] = 4,
+	["stone"] = 1,
+	["uranium-ore"] = 3,
+	["wood"] = 0.75,
 }
 
 function create_shopping_chest(surface, position, destructible)

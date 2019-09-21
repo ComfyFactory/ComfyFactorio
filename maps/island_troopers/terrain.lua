@@ -62,7 +62,9 @@ function draw_the_island()
 	local position = global.path_tiles[#global.path_tiles].position	
 	
 	local tiles = draw_island_tiles(surface, position, global.stages[global.current_stage].size)
-	local tree = "tree-0" .. math_random(1,9)
+	
+	--local tree = "tree-0" .. math_random(1,9)
+	local tree = tree_raffle[math.random(1, #tree_raffle)]
 	local seed = math.random(1, 1000000)
 	
 	for _, t in pairs(tiles) do
@@ -186,6 +188,7 @@ end
 
 local function process_tile(surface, position)
 	if position.x < -96 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
+	if position.x > 8192 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
 	if position.y < 0 then surface.set_tiles({{name = "deepwater", position = position}}, true) return end
 	if position.y > 32 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
 	
@@ -194,8 +197,10 @@ local function process_tile(surface, position)
 	surface.set_tiles({{name = "sand-1", position = position}}, true)
 	
 	if position.y == 6 then
-		if position.x % 64 == 32 then create_shopping_chest(surface, position, false) end
-		if position.x % 128 == 0 then create_dump_chest(surface, position, false) end
+		if position.x % 60 == 30 then
+			create_dump_chest(surface, {x = position.x, y = position.y - 1}, false)
+			create_shopping_chest(surface, position, false) 
+		end
 	end
 end
 
