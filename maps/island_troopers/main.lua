@@ -1,7 +1,9 @@
+require "maps.island_troopers.map_intro"
 require "functions.noise_vector_path"
 require "modules.shopping_chests"
 require "modules.no_turrets"
 require "modules.dangerous_goods"
+require "modules.difficulty_vote"
 require "maps.island_troopers.enemies"
 require "maps.island_troopers.terrain"
 
@@ -20,10 +22,13 @@ local function create_stage_gui(player)
 	style.font = "default-large-bold"	
 end
 
-local function update_gui()
+function update_stage_gui()
 	local caption = "Level: " .. global.current_level
-	caption = caption .. " | Stage: "
+	caption = caption .. "  |  Stage: "
 	caption = caption .. global.current_stage
+	caption = caption .. "  |  Bugs remaining: "
+	caption = caption .. global.alive_enemies
+	
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.stage_gui then
 			player.gui.top.stage_gui.caption = caption
@@ -56,8 +61,8 @@ local function set_next_level()
 	
 	global.path_tiles = nil
 	
-	local island_size = 16 + math.random(global.current_level * 2, global.current_level * 5)
-	if island_size > 256 then island_size = 256 end
+	local island_size = 16 + math.random(global.current_level, global.current_level * 2)
+	if island_size > 128 then island_size = 128 end
 	
 	global.stages = {}
 	global.stages[1] = {
@@ -65,7 +70,7 @@ local function set_next_level()
 			size = island_size,
 		}
 		
-	local stages_amount = global.current_level + 1
+	local stages_amount = (global.current_level * 0.5) + 1
 	if stages_amount > 16 then stages_amount = 16 end
 	for i = 1, stages_amount, 1 do
 		global.stages[#global.stages + 1] = {
@@ -78,14 +83,17 @@ local function set_next_level()
 		size = false,
 	}
 	
-	game.print("Level " .. global.current_level)
-	update_gui()
+	--game.print("Level " .. global.current_level)
+	update_stage_gui()
 	
 	global.gamestate = 2
 end
 
 local function earn_credits(amount)
-	game.print(amount .. " credits recieved!", {r = 255, g = 215, b = 0})
+	for _, player in pairs(game.connected_players) do
+		player.play_sound{path="utility/new_objective", volume_modifier=0.5}
+	end
+	game.print(amount .. " credits have been transfered to the factory.", {r = 255, g = 215, b = 0})
 	global.credits = global.credits + amount
 end
 
@@ -104,16 +112,16 @@ end
 local function wait_until_stage_is_beaten()
 	if global.alive_enemies > 0 then return end
 	if global.stages[global.current_stage].size then
-		earn_credits(global.current_stage * global.current_level * 100)
+		earn_credits(global.current_stage * global.current_level * 50)
 		global.current_stage = global.current_stage + 1
 		global.gamestate = 2
-		update_gui()
+		update_stage_gui()
 		return 
 	end
-	earn_credits(global.current_stage * global.current_level * 100 * 2)
-	game.print("Level " .. global.current_level .. " complete!!")
+	earn_credits(global.current_stage * global.current_level * 100)
+	--game.print("Level " .. global.current_level .. " complete!!")
 	global.gamestate = 5
-	update_gui()
+	update_stage_gui()
 end
 
 local function on_player_joined_game(event)
@@ -126,12 +134,13 @@ end
 
 local function on_init()
 	local surface = game.surfaces[1]
-	surface.request_to_generate_chunks({x = 0, y = 0}, 8)
+	surface.request_to_generate_chunks({x = 0, y = 0}, 16)
 	surface.force_generate_chunk_requests()
 	
+	global.difficulty_poll_closing_timeout = 3600 * 5
 	global.level_vectors = {}
 	global.alive_boss_enemy_entities = {}
-	global.current_level = 0	
+	global.current_level = 0
 	global.gamestate = 1
 	
 	game.forces.player.set_spawn_position({0, 2}, surface)
@@ -149,6 +158,7 @@ local function on_entity_died(event)
 	
 	if entity.force.name ~= "enemy" then return end
 	global.alive_enemies = global.alive_enemies - 1
+	update_stage_gui()
 	
 	if entity.type ~= "unit" then return end
 	if not global.alive_boss_enemy_entities[entity.unit_number] then return end

@@ -11,12 +11,20 @@ local difficulties = {
 } 
 
 local function difficulty_gui()
+	local tooltip = "Current difficulty of the map is " .. difficulties[global.difficulty_vote_index].name
+	tooltip = tooltip .. "."
+		
 	for _, player in pairs(game.connected_players) do
-		if player.gui.top["difficulty_gui"] then player.gui.top["difficulty_gui"].destroy() end
-		local b = player.gui.top.add { type = "button", caption = difficulties[global.difficulty_vote_index].name, tooltip = "Current difficulty of the map is " .. difficulties[global.difficulty_vote_index].name .. ".", name = "difficulty_gui" }
-		b.style.font = "heading-2"
-		b.style.font_color = difficulties[global.difficulty_vote_index].print_color
-		b.style.minimal_height = 38
+		if player.gui.top["difficulty_gui"] then
+			player.gui.top["difficulty_gui"].caption = difficulties[global.difficulty_vote_index].name
+			player.gui.top["difficulty_gui"].tooltip = tooltip
+			player.gui.top["difficulty_gui"].style.font_color = difficulties[global.difficulty_vote_index].print_color
+		else
+			local b = player.gui.top.add { type = "button", caption = difficulties[global.difficulty_vote_index].name, tooltip = tooltip, name = "difficulty_gui" }
+			b.style.font = "heading-2"
+			b.style.font_color = difficulties[global.difficulty_vote_index].print_color
+			b.style.minimal_height = 38
+		end
 	end
 end
 
@@ -85,6 +93,7 @@ local function on_player_joined_game(event)
 	if not global.difficulty_vote_value then global.difficulty_vote_value = 1 end
 	if not global.difficulty_vote_index then global.difficulty_vote_index = 4 end
 	if not global.difficulty_player_votes then global.difficulty_player_votes = {} end
+	if not global.difficulty_poll_closing_timeout then global.difficulty_poll_closing_timeout = 54000 end
 	if game.tick < global.difficulty_poll_closing_timeout then
 		if not global.difficulty_player_votes[player.name] then
 			poll_difficulty(player)

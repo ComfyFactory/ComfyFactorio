@@ -8,6 +8,7 @@ local shop_list = {
 	["crude-oil-barrel"] = 6,
 	["empty-barrel"] = 5,
 	["landfill"] = 2.5,
+	["raw-fish"] = 4,
 }
 
 function create_shopping_chest(surface, position, destructible)
@@ -59,18 +60,31 @@ local function process_dump_chest(k, chest)
 	if inventory.is_empty() then return end
 	for k, price in pairs(shop_list) do
 		local removed = inventory.remove(k)
-		global.credits = global.credits + (removed * shop_list[k])
+		if removed > 0 then
+			local gain = removed * shop_list[k]
+			global.credits = global.credits + gain
+			chest.surface.create_entity({name = "flying-text", position = chest.position, text = "+" .. gain .. " ø", color = {r = 200, g = 160, b = 30}})
+			return
+		end
 	end
 end
 
 local function gui()
+	local tooltip = "Trade goods: "
+	for k, v in pairs(shop_list) do
+		tooltip = tooltip .. k
+		tooltip = tooltip .. " "
+		tooltip = tooltip .. v
+		tooltip = tooltip .. " | "
+	end
+	
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.credits_button then player.gui.top.credits_button.destroy() end
 		local frame = player.gui.top.add({type = "frame", name = "credits_button"})
 		frame.style.maximal_height = 38
 		frame.style.top_padding = 0
 		frame.style.left_padding = 0
-		local element = frame.add({type = "label", name = "credits", caption = global.credits .. " ø", tooltip = "Credits of the factory."})
+		local element = frame.add({type = "label", name = "credits", caption = global.credits .. " ø", tooltip = tooltip})
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38
