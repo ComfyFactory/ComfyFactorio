@@ -88,8 +88,8 @@ local function set_next_level()
 			size = island_size,
 		}
 		
-	local stages_amount = (global.current_level * 0.5) + 1
-	if stages_amount > 16 then stages_amount = 16 end
+	local stages_amount = (global.current_level * 0.33) + 1
+	if stages_amount > 9 then stages_amount = 9 end
 	for i = 1, stages_amount, 1 do
 		global.stages[#global.stages + 1] = {
 			path_length = 16 + island_size * 2,
@@ -97,7 +97,7 @@ local function set_next_level()
 		}
 	end
 	global.stages[#global.stages + 1] = {
-		path_length = 64 + island_size * 5,
+		path_length = 64 + island_size * 8,
 		size = false,
 	}
 	
@@ -109,7 +109,7 @@ end
 
 local function earn_credits(amount)
 	for _, player in pairs(game.connected_players) do
-		player.play_sound{path="utility/new_objective", volume_modifier=0.4}
+		player.play_sound{path="utility/armor_insert", volume_modifier=0.85}
 	end
 	game.print(amount .. " credits have been transfered to the factory.", {r = 255, g = 215, b = 0})
 	global.credits = global.credits + amount
@@ -134,7 +134,7 @@ local function wait_until_stage_is_beaten()
 	
 	if global.stages[global.current_stage].size then
 		if global.current_stage < #global.stages -1 then
-			reward_amount = global.current_stage * global.current_level * 75
+			reward_amount = global.current_stage * global.current_level * 50
 		else
 			reward_amount = global.current_stage * global.current_level * 150
 		end
@@ -160,19 +160,20 @@ local function on_player_joined_game(event)
 	player.insert({name = "firearm-magazine", count = 32})
 end
 
+
 local function on_init()
 	local surface = game.surfaces[1]
 	surface.request_to_generate_chunks({x = 0, y = 0}, 16)
 	surface.force_generate_chunk_requests()
 	
-	tree_raffle = {}
+	global.tree_raffle = {}
 	for _, e in pairs(game.entity_prototypes) do
 		if e.type == "tree" then
-			table.insert(tree_raffle, e.name)
+			table.insert(global.tree_raffle, e.name)
 		end			
 	end
 	
-	global.difficulty_poll_closing_timeout = 3600 * 5
+	global.difficulty_poll_closing_timeout = 3600 * 10
 	global.level_vectors = {}
 	global.alive_boss_enemy_entities = {}
 	global.current_level = 0
@@ -223,7 +224,7 @@ local gamestate_functions = {
 
 local function on_tick()	
 	gamestate_functions[global.gamestate]()
-	if game.tick % 300 == 0 then drift_corpses_toward_beach() end
+	if game.tick % 180 == 0 then drift_corpses_toward_beach() end
 end
 
 local event = require 'utils.event'

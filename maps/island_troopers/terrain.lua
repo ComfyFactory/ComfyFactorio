@@ -64,7 +64,7 @@ function draw_the_island()
 	local tiles = draw_island_tiles(surface, position, global.stages[global.current_stage].size)
 	
 	--local tree = "tree-0" .. math_random(1,9)
-	local tree = tree_raffle[math.random(1, #tree_raffle)]
+	local tree = global.tree_raffle[math.random(1, #global.tree_raffle)]
 	local seed = math.random(1, 1000000)
 	
 	for _, t in pairs(tiles) do
@@ -108,11 +108,11 @@ function draw_path_to_next_stage()
 	local position = {x = 0, y = 0}
 	if global.path_tiles then position = global.path_tiles[#global.path_tiles].position end
 	--game.print(get_vector()[1] .. " " .. get_vector()[2])
-	global.path_tiles = noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names)], position, get_vector(), global.stages[global.current_stage].path_length, math.random(2, 3), draw_path_tile_whitelist)
+	global.path_tiles = noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names)], position, get_vector(), global.stages[global.current_stage].path_length, math.random(2, 4), draw_path_tile_whitelist)
 	
 	if global.current_stage ~= #global.stages and global.current_stage > 2 then
 		if math_random(1, 3) == 1 then
-			noise_vector_tile_path(surface, path_tile_names[math_random(1, 3)], position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 3), draw_path_tile_whitelist)
+			noise_vector_tile_path(surface, path_tile_names[math_random(1, 3)], position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 4), draw_path_tile_whitelist)
 		end
 	end
 	

@@ -875,13 +875,15 @@ local function on_player_joined_game(event)
 			player.teleport(game.forces["player"].get_spawn_position(surface), "fish_defender")
 		end
 	end
-
+	
 	create_wave_gui(player)
 	add_fd_stats_button(player)
 
 	if game.tick > 900 then
 		is_game_lost()
 	end
+	
+	if game.tick < 5 then game.forces.player.chart(game.surfaces["fish_defender"], {{-256, -512},{768, 512}}) end
 end
 
 local function on_built_entity(event)
@@ -942,7 +944,7 @@ local function on_tick()
 		end
 		if game.tick % 180 == 0 then
 			if game.surfaces["fish_defender"] then
-				game.forces.player.chart(game.surfaces["fish_defender"], {{-256, -512},{768, 512}})
+				game.forces.player.chart(game.surfaces["fish_defender"], {{-160, -96},{160, 64}})
 				if global.difficulty_vote_index then
 					global.wave_interval = difficulties_votes[global.difficulty_vote_index].wave_interval
 				end
@@ -1040,7 +1042,7 @@ local function on_init(event)
 	map_gen_settings.height = 2048
 	map_gen_settings.water = 0.10	
 	map_gen_settings.terrain_segmentation = 3
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = 24, cliff_elevation_0 = 24}
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 3, size = 1.5, richness = 1},
 		["stone"] = {frequency = 3, size = 1.5, richness = 1},
@@ -1077,14 +1079,18 @@ local function on_init(event)
 	fish_mouth(surface)
 	fish_eye(surface, {x = -2150, y = -300})	
 	
+	--[[
 	server_commands.to_discord_embed("Generating chunks, this could take a while...")
 	print("Generating chunks, this could take a while...")	
 	local m = 512
 	for x = 0, -5, -1 do
 		surface.request_to_generate_chunks({x = x * m, y = 0}, 32)
 		surface.force_generate_chunk_requests()
-	end	
+	end
+	]]
 	enemy_territory(surface)
+	
+	global.chunk_queue = {}
 end
 
 event.add(defines.events.on_gui_click, on_gui_click)

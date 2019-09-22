@@ -303,6 +303,8 @@ room.maze = function(surface, cell_left_top, direction)
 		"enemy",
 		true
 	)
+	
+	surface.spill_item_stack({x = left_top.x + grid_size, y = left_top.y + grid_size}, get_loot_item_stack(), true, nil, true)
 end
 
 local room_weights = {

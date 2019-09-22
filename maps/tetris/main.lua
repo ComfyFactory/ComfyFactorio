@@ -61,7 +61,7 @@ local function set_collision_grid(surface)
 		if not global.tetris_active_grid[coord_string(math.floor(e.position.x), math.floor(e.position.y))] then
 			global.tetris_grid[coord_string(math.floor(e.position.x), math.floor(e.position.y))] = false
 		else
-			game.print(e.position)
+			--game.print(e.position)
 		end
 	end
 end
@@ -403,7 +403,7 @@ local function on_player_joined_game(event)
 	set_inventory()
 	player.surface.daytime = 0.22
 	player.surface.freeze_daytime = 1
-	player.print("Welcome to tetris! Use the hotbar to control the bricks.", {r=0.98, g=0.66, b=0.22})
+	player.print("Use 1,2, 9, 0 on your keyboard to control the bricks.", {r=0.98, g=0.66, b=0.22})
 end
 
 local function on_chunk_generated(event)
@@ -445,7 +445,7 @@ local function tick()
 	end
 end
 
-event.on_nth_tick(2, tick)
+event.on_nth_tick(4, tick)
 event.on_init(on_init)
 event.add(defines.events.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

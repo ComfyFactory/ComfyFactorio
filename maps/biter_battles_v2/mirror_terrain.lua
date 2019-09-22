@@ -161,10 +161,14 @@ local function on_chunk_generated(event)
 end
 
 local function mirror_map()
+	--local limit = 32
 	for i, c in pairs(global.chunks_to_mirror) do
 		if i < game.tick then
-			for _, chunk in pairs(global.chunks_to_mirror[i]) do
+			for k, chunk in pairs(global.chunks_to_mirror[i]) do
 				mirror_chunk(game.surfaces["biter_battles"], chunk)
+				--global.chunks_to_mirror[i][k] = nil
+				--limit = limit - 1
+				--if limit == 0 then return end
 			end
 			global.chunks_to_mirror[i] = nil
 		end
