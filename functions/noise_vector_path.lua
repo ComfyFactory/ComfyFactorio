@@ -64,9 +64,12 @@ function noise_vector_tile_path(surface, tile_name, position, base_vector, lengt
 		for _, v in pairs(brush_vectors) do
 			local p = {x = position.x + v[1], y = position.y + v[2]}
 			if whitelist then
-				if whitelist[surface.get_tile(p).name] then
-					surface.set_tiles({{name = tile_name, position = p}}, true)
-					tiles[#tiles + 1] = {name = tile_name, position = p}
+				local tile = surface.get_tile(p)
+				if tile.valid then
+					if whitelist[tile.name] then
+						surface.set_tiles({{name = tile_name, position = p}}, true)
+						tiles[#tiles + 1] = {name = tile_name, position = p}
+					end
 				end
 			else
 				surface.set_tiles({{name = tile_name, position = p}}, true)

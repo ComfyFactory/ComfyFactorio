@@ -85,7 +85,7 @@ local function is_out_of_map_tile(p)
 end
 
 function generate_spawn_area(surface)
-	surface.request_to_generate_chunks({x = 0, y = 0}, 12)
+	surface.request_to_generate_chunks({x = 0, y = 0}, 8)
 	surface.force_generate_chunk_requests()
 
 	local spawn_position_x = -128
@@ -170,6 +170,9 @@ function generate_spawn_area(surface)
 end
 
 function enemy_territory(surface)
+	surface.request_to_generate_chunks({x = 256, y = 0}, 16)
+	surface.force_generate_chunk_requests()
+	
 	local area = {{160, -512},{750, 512}}	
 	--for _, tile in pairs(surface.find_tiles_filtered({area = area})) do
 	--	if is_enemy_territory(tile.position) then
@@ -287,12 +290,8 @@ local function plankton_territory(surface, position, seed)
 	return true	
 end
 
-local function on_chunk_generated(event)
+local function process_chunk(left_top)
 	local surface = game.surfaces["fish_defender"]
-	if not surface then return end
-	if surface.name ~= event.surface.name then return end
-
-	local left_top = event.area.left_top
 	local seed = game.surfaces[1].map_gen_settings.seed
 	
 	for x = 0, 31, 1 do
@@ -305,5 +304,25 @@ local function on_chunk_generated(event)
 	end
 end
 
+local function process_chunk_queue()
+	for k, left_top in pairs(global.chunk_queue) do
+		process_chunk(left_top)
+		global.chunk_queue[k] = nil
+		return
+	end
+end
+
+local function on_chunk_generated(event)
+	if game.surfaces["fish_defender"].index ~= event.surface.index then return end
+	local left_top = event.area.left_top
+	
+	if game.tick == 0 then
+		process_chunk(left_top)
+	else
+		global.chunk_queue[#global.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
+	end
+end
+
 local event = require 'utils.event'
+event.on_nth_tick(16, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

@@ -21,7 +21,7 @@ bb_config = {
 	--TERRAIN OPTIONS--
 	["border_river_width"] = 29,						--Approximate width of the horizontal impassable river seperating the teams. (values up to 100)
 	["builders_area"] = true,							--Grant each side a peaceful direction with no nests and biters?
-	["random_scrap"] = false,							--Generate harvestable scrap around worms randomly?
+	["random_scrap"] = true,							--Generate harvestable scrap around worms randomly?
 
 	--BITER SETTINGS--
 	["max_active_biters"] = 2500,					--Maximum total amount of attacking units per side.
