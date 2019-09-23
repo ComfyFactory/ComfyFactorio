@@ -98,7 +98,7 @@ function add_enemies(surface, tiles)
 				local unit = surface.create_entity({name = get_biter(), position = tile.position, force = "enemy"})
 				unit.ai_settings.allow_destroy_when_commands_fail = false
 				unit.ai_settings.allow_try_return_to_spawner = false
-				add_boss_unit(unit, (2.5 + global.current_level * 0.1) * difficulties_votes[global.difficulty_vote_index].boss_modifier, 0.55)
+				add_boss_unit(unit, (3 + global.current_level * 0.2) * difficulties_votes[global.difficulty_vote_index].boss_modifier, 0.55)
 				global.alive_boss_enemy_count = global.alive_boss_enemy_count + 1
 				global.alive_boss_enemy_entities[unit.unit_number] = unit
 				global.alive_enemies = global.alive_enemies + 1
@@ -110,7 +110,7 @@ function add_enemies(surface, tiles)
 	
 	if math.random(1, 4) == 1 or is_boss_stage() then
 		set_worm_chances(global.current_level)
-		local worm_count = math.random(1, global.current_level)
+		local worm_count = math.random(1, math.ceil(global.current_level * 0.5))
 		if worm_count > 32 then worm_count = 32 end
 		for k, tile in pairs(tiles) do
 			if surface.can_place_entity({name = "big-worm-turret", position = tile.position, force = "enemy"}) then

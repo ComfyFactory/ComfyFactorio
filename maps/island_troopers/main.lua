@@ -9,6 +9,8 @@ require "modules.difficulty_vote"
 require "maps.island_troopers.enemies"
 require "maps.island_troopers.terrain"
 
+max_island_radius = 128
+
 local function create_stage_gui(player)
 	if player.gui.top.stage_gui then return end
 	local element = player.gui.top.add({type = "frame", name = "stage_gui", caption = " "})
@@ -62,42 +64,51 @@ local function drift_corpses_toward_beach()
 	for _, corpse in pairs(surface.find_entities_filtered({name = "character-corpse"})) do
 		if corpse.position.y < 0 then			
 			if surface.get_tile(corpse.position).collides_with("resource-layer") then
-				corpse.clone{position={corpse.position.x, corpse.position.y + 1}, surface=surface, force=corpse.force.name}
+				corpse.clone{position={corpse.position.x, corpse.position.y + (math.random(50, 250) * 0.01)}, surface=surface, force=corpse.force.name}
 				corpse.destroy()
 			end 
 		end
 	end
 end
 
+local function get_island_size()
+	local r_min = global.current_level + 16
+	if r_min > math.floor(max_island_radius * 0.5) then r_min = math.floor(max_island_radius * 0.5) end
+	local r_max = global.current_level * 2 + 32
+	if r_max > max_island_radius then r_max = math.floor(max_island_radius * 0.5) end
+	return math.random(r_min, r_max)
+end
+
 local function set_next_level()	
 	global.alive_enemies = 0
 	global.alive_boss_enemy_count = 0
-	global.current_stage = 1
-	global.current_level = global.current_level + 1
 	
+	global.current_level = global.current_level + 1
 	if global.current_level > 1 then bring_players() end
+	
+	global.current_stage = 1
+	global.stage_amount = math.floor(global.current_level * 0.33) + 3
+	if global.stage_amount > 9 then global.stage_amount = 9 end
 	
 	global.path_tiles = nil
 	
-	local island_size = math.random(global.current_level, global.current_level * 2) + 7
-	if island_size > 128 then island_size = 128 end
+	local island_size = get_island_size()
 	
 	global.stages = {}
 	global.stages[1] = {
 			path_length = 24 + island_size * 2,
 			size = island_size,
 		}
-		
-	local stages_amount = (global.current_level * 0.33) + 1
-	if stages_amount > 9 then stages_amount = 9 end
-	for i = 1, stages_amount, 1 do
+	
+	for i = 1, global.stage_amount - 1, 1 do
+		island_size = get_island_size()
 		global.stages[#global.stages + 1] = {
 			path_length = 16 + island_size * 2,
 			size = island_size,
 		}
 	end
 	global.stages[#global.stages + 1] = {
-		path_length = 64 + island_size * 8,
+		path_length = max_island_radius * 7,
 		size = false,
 	}
 	
@@ -131,12 +142,13 @@ local function wait_until_stage_is_beaten()
 	if global.alive_enemies > 0 then return end
 	local reward_amount = false
 	local gamestate = 2
+	local base_reward = 250 * global.current_level
 	
 	if global.stages[global.current_stage].size then
 		if global.current_stage < #global.stages -1 then
-			reward_amount = global.current_stage * global.current_level * 50
+			reward_amount = base_reward + global.current_stage * global.current_level * 50
 		else
-			reward_amount = global.current_stage * global.current_level * 150
+			reward_amount = base_reward + global.current_stage * global.current_level * 150
 		end
 	else
 		game.print("Final Stage complete!")
@@ -156,6 +168,8 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	create_stage_gui(player)
 	if player.gui.left["slowmo_cam"] then player.gui.left["slowmo_cam"].destroy() end
+	
+	if player.online_time > 0 then return end
 	player.insert({name = "pistol", count = 1})
 	player.insert({name = "firearm-magazine", count = 32})
 end
@@ -166,11 +180,28 @@ local function on_init()
 	surface.request_to_generate_chunks({x = 0, y = 0}, 16)
 	surface.force_generate_chunk_requests()
 	
-	global.tree_raffle = {}
-	for _, e in pairs(game.entity_prototypes) do
-		if e.type == "tree" then
-			table.insert(global.tree_raffle, e.name)
-		end			
+	--global.tree_raffle = {}
+	--for _, e in pairs(game.entity_prototypes) do
+	--	if e.type == "tree" then
+	--		table.insert(global.tree_raffle, e.name)
+	--	end			
+	--end
+	
+	local blacklist = {
+		["dark-mud-decal"] = true,
+		["sand-dune-decal"] = true,
+		["light-mud-decal"] = true,
+		["puberty-decal"] = true,
+		["sand-decal"] = true,
+		["red-desert-decal"] = true,
+	}
+	global.decorative_names = {}
+	for k,v in pairs(game.decorative_prototypes) do
+		if not blacklist[k] then
+			if v.autoplace_specification then
+				global.decorative_names[#global.decorative_names+1] = k
+			end
+		end
 	end
 	
 	global.difficulty_poll_closing_timeout = 3600 * 10
@@ -185,7 +216,6 @@ end
 local msg = {
 	"We got the brainbug!",
 	"Good job troopers!",
-	"This will pay off well!",
 	"I'm doing my part!",
 }
 

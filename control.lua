@@ -7,7 +7,7 @@ server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
 require "utils.table"
-require "utils.corpse_util"  --disable for hunger games
+--require "utils.corpse_util"  --disable for hunger games
 require "utils.color_data"
 require "utils.session_data"
 require "chatbot"
@@ -58,7 +58,7 @@ require "modules.floaty_chat"
 ---- enable maps here ----
 --require "maps.fish_defender.main"
 --require "maps.biter_battles_v2.biter_battles_v2"
---require "maps.island_troopers.main"
+require "maps.island_troopers.main"
 --require "maps.tank_conquest.tank_conquest"
 --require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"

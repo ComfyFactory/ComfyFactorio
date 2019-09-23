@@ -4,36 +4,37 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 
 local function island_noise(p, seed_1, seed_2, seed_3)
-	local noise_1 = simplex_noise(p.x * 0.01, p.y * 0.01, seed_1)
-	local noise_2 = simplex_noise(p.x * 0.04, p.y * 0.04, seed_2)
-	local noise_3 = simplex_noise(p.x * 0.1, p.y * 0.1, seed_3)
-	return math.abs(noise_1 + noise_2 * 0.5 + noise_3 * 0.2)
+	local noise_1 = simplex_noise(p.x * seed_m1, p.y * seed_m1, seed_1)
+	local noise_2 = simplex_noise(p.x * seed_m2, p.y * seed_m2, seed_2)
+	local noise_3 = simplex_noise(p.x * seed_m3, p.y * seed_m3, seed_3)
+	local noise = math.abs(noise_1 + noise_2 * 0.5 + noise_3 * 0.2)
+	noise = noise / 1.7
+	return noise
 end
 
-local function process_island_position(position, radius, noise, distance)
-	if distance + noise * radius * 1.7 <= radius then
-		return {name = "grass-1", position = position}
-	end
-	if distance + noise * radius * 0.4 <= radius then
-		return {name = "sand-1", position = position}
-	end
-	if distance + noise * radius * 0.2 <= radius  then
-		return {name = "water", position = position}
-	end
+local function island_noise_radius(position)
+	local noise = island_noise(position, seed_1, seed_2, seed_3)
+	local radius = global.stages[global.current_stage].size
+	return radius * 0.5 + noise * radius * 0.5
 end
 
 local function draw_island_tiles(surface, position, radius)
-	local seed_1 = math.random(1, 9999999)
-	local seed_2 = math.random(1, 9999999)
-	local seed_3 = math.random(1, 9999999)
 	local tiles = {}
-	for y = radius * -2, radius * 2, 1 do
-		for x = radius * -2, radius * 2, 1 do
+	for y = radius * -1, radius, 1 do
+		for x = radius * -1, radius, 1 do
 			local p = {x = x + position.x, y = y + position.y}
-			if surface.get_tile(p).name == "deepwater" then
-				local noise = island_noise(p, seed_1, seed_2, seed_3)
+			if surface.get_tile(p).name == "deepwater" then				
 				local distance = math.sqrt(x^2 + y^2)
-				local tile = process_island_position(p, radius, noise, distance)
+				local tile = false
+				local noise_radius = island_noise_radius(p)
+				if distance < noise_radius - radius * 0.15 then
+					tile = {name = game.surfaces["island_tiles"].get_tile(x, y).name, position = p}
+				else
+					if distance < noise_radius then
+						tile = {name = "water", position = p}
+					end
+				end
+
 				if tile then tiles[#tiles + 1] = tile end
 			end
 		end
@@ -49,22 +50,79 @@ local function get_vector()
 	local island_size = global.stages[global.current_stage].size
 	local y_modifier = 0
 	if math.abs(position.y) < 32 + island_size * 3 then
-		y_modifier = math.random(50, 100) * -0.01
+		y_modifier = math.random(25, 100) * -0.01
 	else
-		y_modifier = math.random(50, 100) * 0.01
+		y_modifier = math.random(25, 100) * 0.01
 	end
 	return {1, y_modifier}
 end
 
+local function set_island_surface()	
+	local map_gen_settings = {}
+	map_gen_settings.height = global.stages[global.current_stage].size * 2
+	map_gen_settings.width = global.stages[global.current_stage].size * 2
+	map_gen_settings.water = 0
+	map_gen_settings.terrain_segmentation = 1
+	map_gen_settings.seed = math.random(1, 999999999)
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = math.random(2, 16), cliff_elevation_0 = math.random(2, 16)}
+	map_gen_settings.autoplace_controls = {
+		["coal"] = {frequency = 0, size = 0, richness = 0},
+		["stone"] = {frequency = 0, size = 0, richness = 0},
+		["copper-ore"] = {frequency = 0, size = 0, richness = 0},
+		["iron-ore"] = {frequency = 0, size = 0, richness = 0},
+		["uranium-ore"] = {frequency = 0, size = 0, richness = 0},
+		["crude-oil"] = {frequency = 0, size = 0, richness = 0},
+		["trees"] = {frequency = 100, size = 0.1, richness = math.random(0,10) * 0.1},
+		["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
+	}
+	game.create_surface("island_tiles", map_gen_settings)
+	local surface = game.surfaces["island_tiles"]
+	surface.request_to_generate_chunks({0, 0}, math.ceil(max_island_radius / 32))
+	surface.force_generate_chunk_requests()
+end
+
 function draw_the_island()
-	if not global.stages[global.current_stage].size then global.gamestate = 4 return end
+	if not global.stages[global.current_stage].size then global.gamestate = 4 return end	
+	if game.surfaces["island_tiles"] then game.delete_surface(game.surfaces["island_tiles"]) return end
+	
 	local surface = game.surfaces[1]
 	local position = global.path_tiles[#global.path_tiles].position	
-	
+	seed_1 = math.random(1, 9999999)
+	seed_2 = math.random(1, 9999999)
+	seed_3 = math.random(1, 9999999)
+	seed_m1 = (math.random(2, 10) * 0.1) / global.stages[global.current_stage].size
+	seed_m2 = (math.random(10, 20) * 0.1) / global.stages[global.current_stage].size
+	seed_m3 = (math.random(50, 100) * 0.1) / global.stages[global.current_stage].size
+
+	set_island_surface()
 	local tiles = draw_island_tiles(surface, position, global.stages[global.current_stage].size)
 	
-	--local tree = "tree-0" .. math_random(1,9)
-	local tree = global.tree_raffle[math.random(1, #global.tree_raffle)]
+	for _, decorative in pairs(game.surfaces["island_tiles"].find_decoratives_filtered({})) do
+		local distance = math.sqrt(decorative.position.x ^ 2 + decorative.position.y ^ 2)
+		if distance <= global.stages[global.current_stage].size then
+			surface.create_decoratives{
+				check_collision=true,
+				decoratives={{name = decorative.decorative.name, position = {position.x + decorative.position.x, position.y + decorative.position.y}, amount = decorative.amount}}
+			}
+		end
+	end
+	
+	for _, e in pairs(game.surfaces["island_tiles"].find_entities_filtered({})) do
+		local distance = math.sqrt(e.position.x ^ 2 + e.position.y ^ 2)
+		local p = {x = position.x + e.position.x, y = position.y + e.position.y}
+		if distance <= island_noise_radius(p) then			
+			if e.type == "simple-entity" then
+				e.clone({position = p, surface = surface, force = "neutral"})
+			else
+				if surface.can_place_entity({name = "tree-01", position = p}) then
+					e.clone({position = p, surface = surface, force = "neutral"})
+				end		
+			end		
+		end
+	end
+			
+
+	--local tree = global.tree_raffle[math.random(1, #global.tree_raffle)]
 	local seed = math.random(1, 1000000)
 	
 	for _, t in pairs(tiles) do
@@ -75,17 +133,27 @@ function draw_the_island()
 			end
 		end
 		
-		if surface.can_place_entity({name = "wooden-chest", position = t.position}) then
-			if math.random(1, 64) == 1 then
-				if simplex_noise(t.position.x * 0.02, t.position.y * 0.02, seed) > 0.25 then
-					surface.create_entity({name = tree, position = t.position}) 
-				end
-			end
-		end
+		--if surface.can_place_entity({name = "wooden-chest", position = t.position}) then
+		--	if math.random(1, 64) == 1 then
+		--		if simplex_noise(t.position.x * 0.02, t.position.y * 0.02, seed) > 0.25 then
+		--			surface.create_entity({name = tree, position = t.position}) 
+		--		end
+		--	end
+		--end
 	end
-	
+
 	add_enemies(surface, tiles)
 	global.gamestate = 4
+end
+
+local function add_path_decoratives(surface, tiles)
+	local d = global.decorative_names[math.random(1, #global.decorative_names)]
+	for _, t in pairs(tiles) do
+		local noise = simplex_noise(t.position.x * 0.075, t.position.y * 0.075, game.surfaces[1].map_gen_settings.seed)
+		if math.random(1,3) == 1 and noise > 0 then
+			surface.create_decoratives{check_collision=false, decoratives={{name = d, position = t.position, amount = math.floor(math.abs(noise * 3)) + 1}}}
+		end
+	end
 end
 
 local draw_path_tile_whitelist = {
@@ -93,7 +161,7 @@ local draw_path_tile_whitelist = {
 	["deepwater"] = true,
 }
 
-local path_tile_names = {"grass-2", "grass-3", "grass-4", "water-shallow"}
+local path_tile_names = {"grass-2", "grass-3", "grass-4", "dirt-1", "dirt-2", "dirt-3", "dirt-4", "dirt-5", "dirt-6", "dirt-7", "water-shallow"}
 function draw_path_to_next_stage()
 	local surface = game.surfaces[1]
 	
@@ -109,25 +177,35 @@ function draw_path_to_next_stage()
 	if global.path_tiles then position = global.path_tiles[#global.path_tiles].position end
 	--game.print(get_vector()[1] .. " " .. get_vector()[2])
 	global.path_tiles = noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names)], position, get_vector(), global.stages[global.current_stage].path_length, math.random(2, 4), draw_path_tile_whitelist)
+	add_path_decoratives(surface, global.path_tiles)
 	
 	if global.current_stage ~= #global.stages and global.current_stage > 2 then
 		if math_random(1, 3) == 1 then
-			noise_vector_tile_path(surface, path_tile_names[math_random(1, 3)], position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 4), draw_path_tile_whitelist)
+			add_path_decoratives(surface, noise_vector_tile_path(surface, path_tile_names[math_random(1, #path_tile_names - 1)], position, {0, 1}, global.stages[#global.stages].path_length, math.random(2, 4), draw_path_tile_whitelist))
 		end
 	end
 	
 	global.gamestate = 3
 end
 
-local tile_whitelist = {"grass-1", "grass-2", "grass-3", "grass-4", "water-mud", "water-shallow", "sand-1", "water", "landfill"}
+local tile_reset_blacklist = {
+	["deepwater"] = true,
+	["out-of-map"] = true,
+}
+
 local function get_level_tiles(surface)
 	global.level_tiles = {}
 	for chunk in surface.get_chunks() do
 		if chunk.y < 0 and game.forces.player.is_chunk_charted(surface, chunk) then
-			for _, tile in pairs(surface.find_tiles_filtered({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}, name = tile_whitelist})) do
-				local index = math.abs(tile.position.y)
-				if not global.level_tiles[index] then global.level_tiles[index] = {} end
-				global.level_tiles[index][#global.level_tiles[index] + 1] = tile
+			for x = 0, 31, 1 do
+				for y = 0, 31, 1 do
+					local tile = surface.get_tile({chunk.x * 32 + x, chunk.y * 32 + y})
+					if not tile_reset_blacklist[tile.name] then
+						local index = math.abs(tile.position.y)
+						if not global.level_tiles[index] then global.level_tiles[index] = {} end
+						global.level_tiles[index][#global.level_tiles[index] + 1] = tile
+					end
+				end
 			end
 		end
 	end
@@ -187,14 +265,15 @@ function kill_the_level()
 end
 
 local function process_tile(surface, position)
-	if position.x < -96 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
+	if position.x < -128 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
 	if position.x > 8192 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
 	if position.y < 0 then surface.set_tiles({{name = "deepwater", position = position}}, true) return end
 	if position.y > 32 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
 	
 	if position.y > 10 + simplex_noise(position.x * 0.010, 0, game.surfaces[1].map_gen_settings.seed) * 4 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
 	
-	surface.set_tiles({{name = "sand-1", position = position}}, true)
+	local index = math.floor((simplex_noise(position.x * 0.01, position.y * 0.01, game.surfaces[1].map_gen_settings.seed) * 10) % 3) + 1
+	surface.set_tiles({{name = "sand-" .. index, position = position}}, true)
 	
 	if position.y == 6 then
 		if position.x % 60 == 30 then
@@ -202,11 +281,15 @@ local function process_tile(surface, position)
 			create_shopping_chest(surface, position, false) 
 		end
 	end
+	
+	return true
 end
 
 local function on_chunk_generated(event)
+	if event.surface.index ~= 1 then return end
 	local left_top = event.area.left_top
 	local surface = event.surface
+	local decoratives = {}
 	
 	for k, e in pairs(surface.find_entities_filtered({area = event.area})) do
 		if e.force.name ~= "player" then e.destroy() end
@@ -215,11 +298,22 @@ local function on_chunk_generated(event)
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local position = {x = left_top.x + x, y = left_top.y + y}
-			process_tile(surface, position)
+			if process_tile(surface, position) then
+				local noise = simplex_noise(position.x * 0.050, position.y * 0.050, game.surfaces[1].map_gen_settings.seed)
+				if math.random(1, 2) == 1 and noise < -0.75 then
+					decoratives[#decoratives + 1] = {name = "green-pita", position = position, amount = math.random(1,3)}				
+				end
+				if math.random(1, 4) == 1 and noise > 0.50 then
+					decoratives[#decoratives + 1] = {name = "garballo", position = position, amount = math.random(1,3)}				
+				end
+				if math.random(1, 32) == 1 then
+					decoratives[#decoratives + 1] = {name = "sand-dune-decal", position = position, amount = math.random(1,3)}				
+				end
+			end
 		end
-	end
-	
-	surface.destroy_decoratives(event.area)
+	end	
+	surface.destroy_decoratives({area = event.area})
+	surface.create_decoratives{check_collision=true, decoratives=decoratives}
 end
 
 local event = require 'utils.event'
