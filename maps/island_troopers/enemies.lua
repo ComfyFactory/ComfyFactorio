@@ -108,6 +108,24 @@ function add_enemies(surface, tiles)
 		end
 	end
 	
+	if global.current_level > 2 then
+		if math.random(1, 5) == 1 or is_boss_stage() then
+			local evolution = (global.current_level * 2 * difficulties_votes[global.difficulty_vote_index].strength_modifier) * 0.01
+			if evolution > 1 then evolution = 1 end
+			game.forces.enemy.evolution_factor = evolution
+			local count = math.random(1, math.ceil(global.current_level * 0.05))
+			if count > 3 then count = 3 end
+			for k, tile in pairs(tiles) do
+				if surface.can_place_entity({name = "biter-spawner", position = tile.position, force = "enemy"}) then
+					surface.create_entity({name = "biter-spawner", position = tile.position, force = "enemy"})
+					global.alive_enemies = global.alive_enemies + 1
+					count = count - 1
+					if count == 0 then break end
+				end
+			end
+		end
+	end
+	
 	if math.random(1, 4) == 1 or is_boss_stage() then
 		set_worm_chances(global.current_level)
 		local worm_count = math.random(1, math.ceil(global.current_level * 0.5))

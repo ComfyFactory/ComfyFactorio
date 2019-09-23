@@ -224,11 +224,16 @@ local function on_entity_died(event)
 	if not entity.valid then return end
 	
 	if entity.force.name ~= "enemy" then return end
+	if entity.type == "unit" then
+		if entity.spawner then return end
+	end	
+	
 	global.alive_enemies = global.alive_enemies - 1
 	update_stage_gui()
 	
 	if entity.type ~= "unit" then return end
 	if not global.alive_boss_enemy_entities[entity.unit_number] then return end
+	
 	global.alive_boss_enemy_entities[entity.unit_number] = nil
 	global.alive_boss_enemy_count = global.alive_boss_enemy_count - 1
 	if global.alive_boss_enemy_count == 0 then
@@ -254,7 +259,7 @@ local gamestate_functions = {
 
 local function on_tick()	
 	gamestate_functions[global.gamestate]()
-	if game.tick % 180 == 0 then drift_corpses_toward_beach() end
+	if game.tick % 120 == 0 then drift_corpses_toward_beach() end
 end
 
 local event = require 'utils.event'

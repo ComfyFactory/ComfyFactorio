@@ -268,17 +268,30 @@ local function process_tile(surface, position)
 	if position.x < -128 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
 	if position.x > 8192 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
 	if position.y < 0 then surface.set_tiles({{name = "deepwater", position = position}}, true) return end
-	if position.y > 32 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
+	if position.y > 32 then surface.set_tiles({{name = "water-green", position = position}}, true)
+		if math.random(1, 4096) == 1 then
+			if math.random(1, 4) == 1 then
+				create_dump_chest(surface, position, false)
+			else
+				create_shopping_chest(surface, position, false) 
+			end
+		end
+		return
+	end
 	
 	if position.y > 10 + simplex_noise(position.x * 0.010, 0, game.surfaces[1].map_gen_settings.seed) * 4 then surface.set_tiles({{name = "water-green", position = position}}, true) return end
 	
 	local index = math.floor((simplex_noise(position.x * 0.01, position.y * 0.01, game.surfaces[1].map_gen_settings.seed) * 10) % 3) + 1
 	surface.set_tiles({{name = "sand-" .. index, position = position}}, true)
 	
+	if position.x > 32 then return true end
+	
 	if position.y == 6 then
-		if position.x % 60 == 30 then
-			create_dump_chest(surface, {x = position.x, y = position.y - 1}, false)
+		if position.x == -16 then
 			create_shopping_chest(surface, position, false) 
+		end
+		if position.x == 16 then
+			create_dump_chest(surface, position, false)
 		end
 	end
 	

@@ -12,15 +12,15 @@ local shop_list = {
 }
 
 function create_shopping_chest(surface, position, destructible)
-	global.shopping_chests[#global.shopping_chests + 1] = surface.create_entity({name = "logistic-chest-requester", position = position, force = "shopping_chests"})
-	global.shopping_chests[#global.shopping_chests].minable = false
-	if not destructible then	global.shopping_chests[#global.shopping_chests].destructible = false end	
+	local entity = surface.create_entity({name = "logistic-chest-requester", position = position, force = "shopping_chests"})
+	entity.minable = false
+	if not destructible then	entity.destructible = false end	
 end
 
 function create_dump_chest(surface, position, destructible)
-	global.dump_chests[#global.dump_chests + 1] = surface.create_entity({name = "logistic-chest-passive-provider", position = position, force = "shopping_chests"})
-	global.dump_chests[#global.dump_chests].minable = false
-	if not destructible then	global.dump_chests[#global.dump_chests].destructible = false end	
+	local entity = surface.create_entity({name = "logistic-chest-passive-provider", position = position, force = "shopping_chests"})
+	entity.minable = false
+	if not destructible then	entity.destructible = false end	
 end
 
 local function get_affordable_item_count(name, count)
@@ -99,6 +99,28 @@ local function gui()
 	end
 end
 
+local function on_gui_opened(event)
+	if not event.entity then return end
+	if event.entity.force.name ~= "shopping_chests" then return end
+	
+	local index = event.entity.position.x .. "_"
+	index = index .. event.entity.position.y
+	if global.registerd_shopping_chests[index] then return end
+	
+	if event.entity.name == "logistic-chest-passive-provider" then
+		global.dump_chests[#global.dump_chests + 1] = event.entity
+		global.registerd_shopping_chests[index] = true
+		event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = "Chest registered, shop active!", color = {r = 200, g = 160, b = 30}})
+		return
+	end
+	if event.entity.name == "logistic-chest-requester" then
+		global.shopping_chests[#global.shopping_chests + 1] = event.entity
+		global.registerd_shopping_chests[index] = true
+		event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = "Chest registered, shop active!", color = {r = 200, g = 160, b = 30}})
+		return
+	end
+end
+
 local function tick()
 	for k, chest in pairs(global.shopping_chests) do
 		process_shopping_chest(k, chest)
@@ -112,6 +134,7 @@ end
 local function on_init()
 	global.shopping_chests = {}
 	global.dump_chests = {}
+	global.registerd_shopping_chests = {}
 	global.credits = 0
 	game.create_force("shopping_chests")	
 	game.forces.player.set_friend("shopping_chests", true)
@@ -119,5 +142,6 @@ local function on_init()
 end
 
 local event = require 'utils.event'
+event.add(defines.events.on_gui_opened, on_gui_opened)
 event.on_nth_tick(120, tick)
 event.on_init(on_init)
