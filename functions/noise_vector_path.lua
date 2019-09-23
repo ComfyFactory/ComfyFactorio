@@ -55,6 +55,7 @@ end
 function noise_vector_tile_path(surface, tile_name, position, base_vector, length, brush_size, whitelist)
 	local seed_1 = math.random(1, 10000000)
 	local seed_2 = math.random(1, 10000000)
+	local m = math.random(1, 100) * 0.001
 	local vector = {}
 	local tiles = {}
 	local minimal_movement = 0.65
@@ -77,8 +78,8 @@ function noise_vector_tile_path(surface, tile_name, position, base_vector, lengt
 			end
 		end
 		
-		local noise = simplex_noise(position.x * 0.1, position.y * 0.1, seed_1)
-		local noise_2 = simplex_noise(position.x * 0.1, position.y * 0.1, seed_2)
+		local noise = simplex_noise(position.x * m, position.y * m, seed_1)
+		local noise_2 = simplex_noise(position.x * m, position.y * m, seed_2)
 
 		vector[1] = base_vector[1] + noise
 		vector[2] = base_vector[2] + noise_2
