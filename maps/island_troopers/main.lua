@@ -75,7 +75,7 @@ local function get_island_size()
 	local r_min = global.current_level + 16
 	if r_min > math.floor(max_island_radius * 0.5) then r_min = math.floor(max_island_radius * 0.5) end
 	local r_max = global.current_level * 2 + 32
-	if r_max > max_island_radius then r_max = math.floor(max_island_radius * 0.5) end
+	if r_max > max_island_radius then r_max = max_island_radius end
 	return math.random(r_min, r_max)
 end
 
@@ -96,14 +96,14 @@ local function set_next_level()
 	
 	global.stages = {}
 	global.stages[1] = {
-			path_length = 24 + island_size * 2,
+			path_length = 16 + island_size * 1.5,
 			size = island_size,
 		}
 	
 	for i = 1, global.stage_amount - 1, 1 do
 		island_size = get_island_size()
 		global.stages[#global.stages + 1] = {
-			path_length = 16 + island_size * 2,
+			path_length = 16 + island_size * 1.5,
 			size = island_size,
 		}
 	end

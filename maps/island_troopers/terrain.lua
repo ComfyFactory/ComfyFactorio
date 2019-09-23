@@ -72,7 +72,7 @@ local function set_island_surface()
 		["iron-ore"] = {frequency = 0, size = 0, richness = 0},
 		["uranium-ore"] = {frequency = 0, size = 0, richness = 0},
 		["crude-oil"] = {frequency = 0, size = 0, richness = 0},
-		["trees"] = {frequency = 100, size = 0.1, richness = math.random(0,10) * 0.1},
+		["trees"] = {frequency = 50, size = 0.1, richness = math.random(0,10) * 0.1},
 		["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 	}
 	game.create_surface("island_tiles", map_gen_settings)
@@ -90,8 +90,8 @@ function draw_the_island()
 	seed_1 = math.random(1, 9999999)
 	seed_2 = math.random(1, 9999999)
 	seed_3 = math.random(1, 9999999)
-	seed_m1 = (math.random(2, 10) * 0.1) / global.stages[global.current_stage].size
-	seed_m2 = (math.random(10, 20) * 0.1) / global.stages[global.current_stage].size
+	seed_m1 = (math.random(8, 16) * 0.1) / global.stages[global.current_stage].size
+	seed_m2 = (math.random(12, 24) * 0.1) / global.stages[global.current_stage].size
 	seed_m3 = (math.random(50, 100) * 0.1) / global.stages[global.current_stage].size
 
 	set_island_surface()
