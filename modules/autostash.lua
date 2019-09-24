@@ -68,17 +68,17 @@ local function get_nearby_chests(player)
 	local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
 	for _, e in pairs(player.surface.find_entities_filtered({type = "container", area = area})) do
 		if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-			if chest_is_valid(e) then chests[#chests + 1] = e end
+			chests[#chests + 1] = e
 		end
 	end
 	for _, e in pairs(player.surface.find_entities_filtered({name = "logistic-chest-storage", area = area})) do
 		if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-			if chest_is_valid(e) then chests[#chests + 1] = e end
+			chests[#chests + 1] = e
 		end
 	end
 	for _, e in pairs(player.surface.find_entities_filtered({name = "logistic-chest-passive-provider", area = area})) do
 		if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-			if chest_is_valid(e) then chests[#chests + 1] = e end
+			chests[#chests + 1] = e
 		end
 	end
 	return chests
@@ -91,8 +91,8 @@ local function does_inventory_contain_item_type(inventory, item_subgroup)
 	return false
 end
 
-local function insert_item_into_chest(player_inventory, chests, name, count)
-	--Attempt to store in chests that already have the kind of item and add more of it's kind.
+local function insert_item_into_chest(player_inventory, chests, filtered_chests, name, count)
+	--Attempt to store in chests that already have the same item.
 	for _, chest in pairs(chests) do
 		local chest_inventory = chest.get_inventory(defines.inventory.chest)
 		if chest_inventory.can_insert({name = name, count = count}) then
@@ -104,10 +104,10 @@ local function insert_item_into_chest(player_inventory, chests, name, count)
 				if count <= 0 then return end
 			end
 		end
-	end
+	end	
 	
 	--Attempt to store in empty chests.
-	for _, chest in pairs(chests) do
+	for _, chest in pairs(filtered_chests) do
 		local chest_inventory = chest.get_inventory(defines.inventory.chest)
 		if chest_inventory.can_insert({name = name, count = count}) then
 			if chest_inventory.is_empty() then
@@ -123,7 +123,7 @@ local function insert_item_into_chest(player_inventory, chests, name, count)
 	--Attempt to store in chests with same item subgroup.
 	local item_subgroup = game.item_prototypes[name].subgroup.name
 	if item_subgroup then
-		for _, chest in pairs(chests) do
+		for _, chest in pairs(filtered_chests) do
 			local chest_inventory = chest.get_inventory(defines.inventory.chest)
 			if chest_inventory.can_insert({name = name, count = count}) then
 				if does_inventory_contain_item_type(chest_inventory, item_subgroup) then
@@ -138,7 +138,7 @@ local function insert_item_into_chest(player_inventory, chests, name, count)
 	end
 	
 	--Attempt to store in mixed chests.
-	for _, chest in pairs(chests) do
+	for _, chest in pairs(filtered_chests) do
 		local chest_inventory = chest.get_inventory(defines.inventory.chest)
 		if chest_inventory.can_insert({name = name, count = count}) then			
 			local inserted_count = chest_inventory.insert({name = name, count = count})
@@ -158,10 +158,15 @@ local function auto_stash(player)
 	local chests = get_nearby_chests(player)
 	if not chests[1] then player.print("No valid nearby containers found.", print_color) return end
 	
+	local filtered_chests = {}
+	for _, e in pairs(chests) do
+		if chest_is_valid(e) then filtered_chests[#filtered_chests + 1] = e end
+	end
+	
 	chest_floating_text_y_offsets = {}
 	
 	for name, count in pairs(inventory.get_contents()) do
-		insert_item_into_chest(inventory, chests, name, count)
+		insert_item_into_chest(inventory, chests, filtered_chests, name, count)
 	end
 end
 
