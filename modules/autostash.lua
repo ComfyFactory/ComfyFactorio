@@ -18,17 +18,46 @@ end
 
 local function chest_is_valid(chest)
 	for _, e in pairs(chest.surface.find_entities_filtered({type = {"inserter", "loader"}, area = {{chest.position.x - 1, chest.position.y - 1},{chest.position.x + 1, chest.position.y + 1}}})) do
-		if e.position.x == chest.position.x then
-			if e.direction == 0 or e.direction == 4 then
-				return false
+		if e.name ~= "long-handed-inserter" then
+			if e.position.x == chest.position.x then
+				if e.direction == 0 or e.direction == 4 then
+					return false
+				end
 			end
-		end
-		if e.position.y == chest.position.y then
-			if e.direction == 2 or e.direction == 6 then
-				return false
+			if e.position.y == chest.position.y then
+				if e.direction == 2 or e.direction == 6 then
+					return false
+				end
 			end
 		end
 	end
+	
+	local inserter = chest.surface.find_entity("long-handed-inserter", {chest.position.x - 2, chest.position.y})
+	if inserter then
+		if inserter.direction == 2 or inserter.direction == 6 then
+			return false
+		end
+	end
+	local inserter = chest.surface.find_entity("long-handed-inserter", {chest.position.x + 2, chest.position.y})
+	if inserter then
+		if inserter.direction == 2 or inserter.direction == 6 then
+			return false
+		end
+	end
+	
+	local inserter = chest.surface.find_entity("long-handed-inserter", {chest.position.x, chest.position.y - 2})
+	if inserter then
+		if inserter.direction == 0 or inserter.direction == 4 then
+			return false
+		end
+	end
+	local inserter = chest.surface.find_entity("long-handed-inserter", {chest.position.x, chest.position.y + 2})
+	if inserter then
+		if inserter.direction == 0 or inserter.direction == 4 then
+			return false
+		end
+	end
+	
 	return true
 end
 
@@ -138,7 +167,7 @@ end
 
 local function create_gui_button(player)
 	if player.gui.top.auto_stash then return end
-	local b = player.gui.top.add({type = "sprite-button", sprite = "item/wooden-chest", name = "auto_stash", tooltip = "Stash your inventory into nearby chests."})
+	local b = player.gui.top.add({type = "sprite-button", sprite = "item/wooden-chest", name = "auto_stash", tooltip = "Sort your inventory into nearby chests."})
 	b.style.font_color = {r=0.11, g=0.8, b=0.44}
 	b.style.font = "heading-1"
 	b.style.minimal_height = 38
