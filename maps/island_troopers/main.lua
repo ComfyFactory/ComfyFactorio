@@ -176,6 +176,10 @@ end
 
 
 local function on_init()
+	game.create_force("enemy_spawners")	
+	game.forces.enemy_spawners.set_friend("enemy", true)
+	game.forces.enemy.set_friend("enemy_spawners", true)
+	
 	local surface = game.surfaces[1]
 	surface.request_to_generate_chunks({x = 0, y = 0}, 16)
 	surface.force_generate_chunk_requests()
@@ -223,11 +227,14 @@ local function on_entity_died(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	
-	if entity.force.name ~= "enemy" then return end
-	if entity.type == "unit" then
-		if entity.spawner then return end
+	if entity.force.name == "enemy_spawners" then
+		if entity.type == "unit" then return end
+		global.alive_enemies = global.alive_enemies - 1
+		return
 	end	
 	
+	if entity.force.name ~= "enemy" then return end
+
 	global.alive_enemies = global.alive_enemies - 1
 	update_stage_gui()
 	
@@ -259,7 +266,7 @@ local gamestate_functions = {
 
 local function on_tick()	
 	gamestate_functions[global.gamestate]()
-	if game.tick % 120 == 0 then drift_corpses_toward_beach() end
+	if game.tick % 150 == 0 then drift_corpses_toward_beach() end
 end
 
 local event = require 'utils.event'

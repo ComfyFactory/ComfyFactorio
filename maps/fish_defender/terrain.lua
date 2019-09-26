@@ -302,6 +302,11 @@ local function process_chunk(left_top)
 			end
 		end
 	end
+	
+	if game.tick == 0 then return end
+	if game.forces.player.is_chunk_charted(surface, {left_top.x / 32, left_top.y / 32}) then
+		game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
+	end
 end
 
 local function process_chunk_queue()
@@ -324,5 +329,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(16, process_chunk_queue)
+event.on_nth_tick(30, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
