@@ -110,6 +110,7 @@ local function on_player_left_game(event)
 	if not global.difficulty_player_votes[player.name] then return end
 	global.difficulty_player_votes[player.name] = nil
 	set_difficulty()
+	difficulty_gui()
 end
 
 local function on_gui_click(event)
