@@ -7,7 +7,6 @@ server_commands = require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
 require "utils.table"
---require "utils.corpse_util"  --disable for hunger games
 require "utils.color_data"
 require "utils.session_data"
 require "chatbot"
