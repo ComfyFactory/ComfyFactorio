@@ -883,9 +883,9 @@ local function on_player_joined_game(event)
 		is_game_lost()
 	end
 	
-	if global.charting_done then return end
-	game.forces.player.chart(game.surfaces["fish_defender"], {{-256, -512},{768, 512}})
-	global.charting_done = true
+	--if global.charting_done then return end
+	--game.forces.player.chart(game.surfaces["fish_defender"], {{-256, -512},{768, 512}})
+	--global.charting_done = true
 end
 
 local function on_built_entity(event)
@@ -946,7 +946,7 @@ local function on_tick()
 		end
 		if game.tick % 180 == 0 then
 			if game.surfaces["fish_defender"] then
-				game.forces.player.chart(game.surfaces["fish_defender"], {{-160, -96},{160, 64}})
+				game.forces.player.chart(game.surfaces["fish_defender"], {{-160, -128},{192, 128}})
 				if global.difficulty_vote_index then
 					global.wave_interval = difficulties_votes[global.difficulty_vote_index].wave_interval
 				end
@@ -1077,20 +1077,7 @@ local function on_init(event)
 		right_bottom = {x = -80, y = 1500}
 	}
 	
-	generate_spawn_area(surface)
-	fish_mouth(surface)
 	fish_eye(surface, {x = -2150, y = -300})	
-	
-	--[[
-	server_commands.to_discord_embed("Generating chunks, this could take a while...")
-	print("Generating chunks, this could take a while...")	
-	local m = 512
-	for x = 0, -5, -1 do
-		surface.request_to_generate_chunks({x = x * m, y = 0}, 32)
-		surface.force_generate_chunk_requests()
-	end
-	]]
-	enemy_territory(surface)
 	
 	global.chunk_queue = {}
 end

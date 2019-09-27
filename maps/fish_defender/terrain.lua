@@ -84,9 +84,14 @@ local function is_out_of_map_tile(p)
 	return true
 end
 
-function generate_spawn_area(surface)
-	surface.request_to_generate_chunks({x = 0, y = 0}, 8)
-	surface.force_generate_chunk_requests()
+local function generate_spawn_area(surface)
+	surface.request_to_generate_chunks({x = 0, y = 0}, 7)
+	surface.request_to_generate_chunks({x = 160, y = 0}, 5)
+	--surface.force_generate_chunk_requests()
+	if global.spawn_area_generated then return end
+	if not surface.is_chunk_generated({-7, 0}) then return end
+	if not surface.is_chunk_generated({5, 0}) then return end
+	global.spawn_area_generated = true
 
 	local spawn_position_x = -128
 
@@ -169,41 +174,50 @@ function generate_spawn_area(surface)
 	end
 end
 
-function enemy_territory(surface)
-	surface.request_to_generate_chunks({x = 256, y = 0}, 16)
-	surface.force_generate_chunk_requests()
+local function enemy_territory(surface, left_top)
+	--surface.request_to_generate_chunks({x = 256, y = 0}, 16)
+	--surface.force_generate_chunk_requests()
 	
-	local area = {{160, -512},{750, 512}}	
+	if left_top.x < 160 then return end
+	if left_top.x > 750 then return end
+	if left_top.y > 512 then return end
+	if left_top.y < -512 then return end
+	
+	local area = {{left_top.x, left_top.y},{left_top.x + 32, left_top.y + 32}}
+	
+	--local area = {{160, -512},{750, 512}}
 	--for _, tile in pairs(surface.find_tiles_filtered({area = area})) do
 	--	if is_enemy_territory(tile.position) then
 	--		surface.set_tiles({{name = "water-mud", position = {tile.position.x, tile.position.y}}}, true)
 	--	end
-	--end	
-	for x = 280, area[2][1], 4 do
-		for y = area[1][2], area[2][2], 4 do
-			local pos = {x = x, y = y}
-			if is_enemy_territory(pos) then
-				if math_random(1, 64) == 1 then
-					if surface.can_place_entity({name = "biter-spawner", force = "decoratives", position = pos}) then
-						local entity
-						if math_random(1,4) == 1 then
-							entity = surface.create_entity({name = "spitter-spawner", force = "decoratives", position = pos})
-						else
-							entity = surface.create_entity({name = "biter-spawner", force = "decoratives", position = pos})
+	--end
+	if left_top.x > 256 then
+		for x = 0, 31, 1 do
+			for y = 0, 31, 1 do
+				local pos = {x = left_top.x + x, y = left_top.y + y}
+				if is_enemy_territory(pos) then
+					if math_random(1, 512) == 1 then
+						if surface.can_place_entity({name = "biter-spawner", force = "decoratives", position = pos}) then
+							local entity
+							if math_random(1,4) == 1 then
+								entity = surface.create_entity({name = "spitter-spawner", force = "decoratives", position = pos})
+							else
+								entity = surface.create_entity({name = "biter-spawner", force = "decoratives", position = pos})
+							end
+							entity.active = false
+							entity.destructible = false
 						end
-						entity.active = false
-						entity.destructible = false
 					end
+					--if pos.x % 32 == 0 and pos.y % 32 == 0 then
+					--	local decorative_names = {}
+					--	for k,v in pairs(game.decorative_prototypes) do
+					--		if v.autoplace_specification then
+					--		  decorative_names[#decorative_names+1] = k
+					--		end
+					--	 end
+					--	surface.regenerate_decorative(decorative_names, {{x=math.floor(pos.x/32),y=math.floor(pos.y/32)}})
+					--end
 				end
-				--if pos.x % 32 == 0 and pos.y % 32 == 0 then
-				--	local decorative_names = {}
-				--	for k,v in pairs(game.decorative_prototypes) do
-				--		if v.autoplace_specification then
-				--		  decorative_names[#decorative_names+1] = k
-				--		end
-				--	 end
-				--	surface.regenerate_decorative(decorative_names, {{x=math.floor(pos.x/32),y=math.floor(pos.y/32)}})
-				--end
 			end
 		end
 	end
@@ -223,14 +237,15 @@ function enemy_territory(surface)
 	end	
 end
 
-function fish_mouth(surface)
-	for x = -3260, -2200, 32 do
-		surface.request_to_generate_chunks({x = x, y = 0}, 1)
-		surface.force_generate_chunk_requests()
-	end
-	for x = -3260, -2300, 1 do
-		for y = -64, 64, 1 do
-			local pos = {x = x, y = y}
+local function fish_mouth(surface, left_top)
+	if left_top.x > -2300 then return end
+	if left_top.y > 64 then return end
+	if left_top.y < -64 then return end
+	if left_top.x < -3260 then return end
+
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local pos = {x = left_top.x + x, y = left_top.y + y}
 			local noise = simplex_noise(pos.x * 0.006, 0, game.surfaces[1].map_gen_settings.seed) * 20		
 			if pos.y <= 12 + noise and pos.y >= -12 + noise then surface.set_tiles({{name = "water", position = pos}}) end
 		end
@@ -294,6 +309,10 @@ local function process_chunk(left_top)
 	local surface = game.surfaces["fish_defender"]
 	local seed = game.surfaces[1].map_gen_settings.seed
 	
+	generate_spawn_area(surface)
+	enemy_territory(surface, left_top)
+	fish_mouth(surface, left_top)
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}
@@ -303,10 +322,10 @@ local function process_chunk(left_top)
 		end
 	end
 	
-	if game.tick == 0 then return end
-	if game.forces.player.is_chunk_charted(surface, {left_top.x / 32, left_top.y / 32}) then
+	--if game.tick == 0 then return end
+	--if game.forces.player.is_chunk_charted(surface, {left_top.x / 32, left_top.y / 32}) then
 		game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
-	end
+	--end
 end
 
 local function process_chunk_queue()
