@@ -99,6 +99,49 @@ local function spawn_area(event)
 	end
 end
 
+local function get_quarter_name(position)
+	if position.x < 0 then
+		if position.y < 0 then
+			return "NW"
+		else
+			return "SW"
+		end
+	else
+		if position.y < 0 then
+			return "NE"
+		else
+			return "SE"
+		end	
+	end
+end
+
+local function send_peace_quarter_biters()
+	local surface = game.surfaces[1]
+	local target = surface.find_nearest_enemy({position = {0, 0}, max_distance = 99999, force = "enemy"})
+	if target then
+		target = target.position
+	else
+		target = {x = 0, y = 0}
+	end
+	local units_nw = {}
+	local units_se = {}
+	for _, unit in pairs(surface.find_entities_filtered({type = "unit"})) do
+		local quarter = get_quarter_name(unit.position)
+		if quarter == "NW" then units_nw[#units_nw + 1] = unit end
+		if quarter == "SE" then units_se[#units_se + 1] = unit end
+	end
+	if #units_nw > 2 then table.shuffle_table(units_nw) end
+	if #units_se > 2 then table.shuffle_table(units_se) end
+	for i = 1, 512, 1 do
+		if units_nw[i] then	
+			units_nw[i].set_command({type=defines.command.attack_area, destination=target, radius=8, distraction=defines.distraction.by_anything})
+		end
+		if units_se[i] then
+			units_se[i].set_command({type=defines.command.attack_area, destination=target, radius=8, distraction=defines.distraction.by_anything})
+		end
+	end
+end
+
 local function draw_borders(surface, left_top, area)	
 	if left_top.x == 0 or left_top.x == -32 then
 		for x = 0, 31, 1 do
@@ -164,7 +207,14 @@ local function tick(event)
 	game.map_settings.enemy_evolution.destroy_factor = global.enemy_evolution_destroy_factor * difficulties_votes[global.difficulty_vote_index].strength_modifier
 	game.map_settings.enemy_evolution.time_factor = global.enemy_evolution_time_factor * difficulties_votes[global.difficulty_vote_index].strength_modifier
 	game.map_settings.enemy_evolution.pollution_factor = global.enemy_evolution_pollution_factor * difficulties_votes[global.difficulty_vote_index].strength_modifier
+
+	if game.tick % 240 == 0 then
+		game.forces.player.chart(game.surfaces[1], {{-192, -192},{160, 160}})
+	end
 	
+	if game.tick % 18000 == 0 then
+		send_peace_quarter_biters()
+	end
 	--game.map_settings.enemy_expansion.min_expansion_cooldown = difficulties_votes[global.difficulty_vote_index].tick_increase
 	--game.map_settings.enemy_expansion.max_expansion_cooldown = difficulties_votes[global.difficulty_vote_index].tick_increase
 	
@@ -197,7 +247,7 @@ local function on_init()
 		local map_gen_settings = {}
 		map_gen_settings.seed = math.random(1, 999999999)
 		map_gen_settings.water = math.random(25, 50) * 0.01
-		map_gen_settings.starting_area = 1.2
+		map_gen_settings.starting_area = 1.5
 		map_gen_settings.terrain_segmentation = math.random(25, 50) * 0.1	
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
 		map_gen_settings.autoplace_controls = {
@@ -226,16 +276,18 @@ local function on_init()
 			map_gen_settings.autoplace_controls["trees"].size = 0.4
 			map_gen_settings.autoplace_controls["trees"].richness = 0.05
 			map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
-		end
-		
+			map_gen_settings.water = math.random(15, 30) * 0.01
+			map_gen_settings.terrain_segmentation = math.random(100, 200) * 0.1	
+			
+		end	
 		game.create_surface(quarter, map_gen_settings)
 	end
 	
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.settler_group_min_size = 8
 	game.map_settings.enemy_expansion.settler_group_max_size = 16
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 2700
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 2700
 	
 	game.map_settings.pollution.enabled = true
 	game.map_settings.enemy_evolution.enabled = true
@@ -249,7 +301,7 @@ local function on_init()
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(120, tick)
+event.on_nth_tick(60, tick)
 event.on_init(on_init)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_entity_died, on_entity_died)
