@@ -241,7 +241,7 @@ local function fish_mouth(surface, left_top)
 	if left_top.x > -2300 then return end
 	if left_top.y > 64 then return end
 	if left_top.y < -64 then return end
-	if left_top.x < -3260 then return end
+	if left_top.x < -3292 then return end
 
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
