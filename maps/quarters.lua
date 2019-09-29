@@ -1,4 +1,5 @@
 require "modules.mineable_wreckage_yields_scrap"
+require "modules.biters_attack_moving_players"
 
 local difficulties_votes = {
     [1] = {tick_increase = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},
@@ -12,6 +13,7 @@ local difficulties_votes = {
 
 local simplex_noise = require 'utils.simplex_noise'.d2
 local spawn_size = 96
+local wall_thickness = 3
 
 local function clone_chunk(event, source_surface_name)
 	local source_surface = game.surfaces[source_surface_name]
@@ -35,10 +37,10 @@ end
 local function is_spawn_wall(p)
 	if p.y < -32 and p.x < -32 then return false end
 	if p.y > 32 and p.x > 32 then return false end
-	if p.x >= spawn_size - 2 then return true end
-	if p.x < spawn_size * -1 + 2 then return true end
-	if p.y >= spawn_size - 2 then return true end
-	if p.y < spawn_size * -1 + 2 then return true end
+	if p.x >= spawn_size - wall_thickness then return true end
+	if p.x < spawn_size * -1 + wall_thickness then return true end
+	if p.y >= spawn_size - wall_thickness then return true end
+	if p.y < spawn_size * -1 + wall_thickness then return true end
 	return false
 end
 
@@ -144,6 +146,9 @@ local function on_chunk_generated(event)
 	end
 	
 	draw_borders(surface, left_top, event.area)
+	
+	if left_top.x ^ 2 + left_top.y ^ 2 > 360000 then return end
+	game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
 end
 
 local function on_player_joined_game(event)
@@ -154,9 +159,18 @@ local function tick(event)
 	local size = math.floor((8 + game.tick / difficulties_votes[global.difficulty_vote_index].tick_increase) * difficulties_votes[global.difficulty_vote_index].amount_modifier)
 	if size > 80 then size = 80 end
 	game.map_settings.enemy_expansion.settler_group_min_size = size
-	game.map_settings.enemy_expansion.settler_group_max_size = size * 2	
-	game.map_settings.enemy_expansion.min_expansion_cooldown = difficulties_votes[global.difficulty_vote_index].tick_increase
-	game.map_settings.enemy_expansion.max_expansion_cooldown = difficulties_votes[global.difficulty_vote_index].tick_increase
+	game.map_settings.enemy_expansion.settler_group_max_size = size * 2
+	
+	game.map_settings.enemy_evolution.destroy_factor = global.enemy_evolution_destroy_factor * difficulties_votes[global.difficulty_vote_index].strength_modifier
+	game.map_settings.enemy_evolution.time_factor = global.enemy_evolution_time_factor * difficulties_votes[global.difficulty_vote_index].strength_modifier
+	game.map_settings.enemy_evolution.pollution_factor = global.enemy_evolution_pollution_factor * difficulties_votes[global.difficulty_vote_index].strength_modifier
+	
+	--game.map_settings.enemy_expansion.min_expansion_cooldown = difficulties_votes[global.difficulty_vote_index].tick_increase
+	--game.map_settings.enemy_expansion.max_expansion_cooldown = difficulties_votes[global.difficulty_vote_index].tick_increase
+	
+	--local amount = 1 + game.tick / 120
+	--if amount > 32 then amount = 32 end
+	--game.surfaces[1].pollute({-1 + math.random(0, 2), -1 + math.random(0, 2)}, amount)
 end
 
 --Flamethrower Turret Nerf
@@ -183,7 +197,7 @@ local function on_init()
 		local map_gen_settings = {}
 		map_gen_settings.seed = math.random(1, 999999999)
 		map_gen_settings.water = math.random(25, 50) * 0.01
-		map_gen_settings.starting_area = 1.5
+		map_gen_settings.starting_area = 1.2
 		map_gen_settings.terrain_segmentation = math.random(25, 50) * 0.1	
 		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
 		map_gen_settings.autoplace_controls = {
@@ -194,7 +208,7 @@ local function on_init()
 			["uranium-ore"] = {frequency = 0, size = 0.75, richness = 0.5},
 			["crude-oil"] = {frequency = 0, size = 1, richness = 1},
 			["trees"] = {frequency = 3, size = 1.5, richness = 1},
-			["enemy-base"] = {frequency = 0, size = 0.65, richness = 1}	
+			["enemy-base"] = {frequency = 0, size = 1.5, richness = 1}	
 		}		
 		if quarter == "coal" then
 			map_gen_settings.autoplace_controls["coal"].frequency = 16
@@ -220,8 +234,18 @@ local function on_init()
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.settler_group_min_size = 8
 	game.map_settings.enemy_expansion.settler_group_max_size = 16
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
+	
+	game.map_settings.pollution.enabled = true
+	game.map_settings.enemy_evolution.enabled = true
+	
+	local modifier_factor = 2
+	
+	--default game setting values
+	global.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor * modifier_factor
+	global.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor * modifier_factor
+	global.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor * modifier_factor
 end
 
 local event = require 'utils.event'
