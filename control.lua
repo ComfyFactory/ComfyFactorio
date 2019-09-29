@@ -54,6 +54,7 @@ require "modules.floaty_chat"
 --require "modules.more_attacks"
 --require "modules.evolution_extended"
 --require "modules.shopping_chests"
+--require "modules.fog_of_war"
 -----------------------------
 
 ---- enable maps here ----
@@ -68,6 +69,7 @@ require "modules.floaty_chat"
 --require "maps.wave_of_death.WoD"
 --require "maps.stone_maze.main"
 --require "maps.overgrowth"
+require "maps.quarters"
 --require "maps.tetris.main"
 --require "maps.maze_challenge"
 --require "maps.cave_miner"
