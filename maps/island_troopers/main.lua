@@ -169,6 +169,8 @@ local function on_player_joined_game(event)
 	create_stage_gui(player)
 	if player.gui.left["slowmo_cam"] then player.gui.left["slowmo_cam"].destroy() end
 	
+	update_stage_gui()
+	
 	if player.online_time > 0 then return end
 	player.insert({name = "pistol", count = 1})
 	player.insert({name = "firearm-magazine", count = 32})
