@@ -277,8 +277,7 @@ local function on_init()
 			map_gen_settings.autoplace_controls["trees"].richness = 0.05
 			map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
 			map_gen_settings.water = math.random(15, 30) * 0.01
-			map_gen_settings.terrain_segmentation = math.random(100, 200) * 0.1	
-			
+			map_gen_settings.terrain_segmentation = math.random(50, 100) * 0.1
 		end	
 		game.create_surface(quarter, map_gen_settings)
 	end
