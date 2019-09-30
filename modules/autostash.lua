@@ -166,7 +166,9 @@ local function auto_stash(player)
 	chest_floating_text_y_offsets = {}
 	
 	for name, count in pairs(inventory.get_contents()) do
-		insert_item_into_chest(inventory, chests, filtered_chests, name, count)
+		if not inventory.find_item_stack(name).grid then
+			insert_item_into_chest(inventory, chests, filtered_chests, name, count)	
+		end
 	end
 end
 
