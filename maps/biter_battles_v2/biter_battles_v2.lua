@@ -175,6 +175,7 @@ local function on_player_joined_game(event)
 	if player.gui.left["map_pregen"] then player.gui.left["map_pregen"].destroy() end
 	
 	if player.online_time == 0 then
+		player.spectator = true
 		player.force = game.forces.spectator
 		if surface.is_chunk_generated({0,0}) then
 			player.teleport(surface.find_non_colliding_position("character", {0,0}, 3, 0.5), surface)

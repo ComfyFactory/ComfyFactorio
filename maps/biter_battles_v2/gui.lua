@@ -257,6 +257,7 @@ function join_team(player, force_name, forced_join)
 		refresh_gui()
 		game.permissions.get_group("Default").add_player(player)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
+		player.spectator = false
 		return
 	end
 	local pos = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 3, 1)
@@ -278,6 +279,7 @@ function join_team(player, force_name, forced_join)
 	player.insert {name = 'iron-gear-wheel', count = 8}
 	player.insert {name = 'iron-plate', count = 16}
 	global.chosen_team[player.name] = force_name
+	player.spectator = false
 	refresh_gui()
 end
 
@@ -295,6 +297,7 @@ function spectate(player, forced_join)
 	game.permissions.get_group("spectator").add_player(player)	
 	global.spectator_rejoin_delay[player.name] = game.tick
 	create_main_gui(player)
+	player.spectator = true
 end
 
 local function join_gui_click(name, player)	
