@@ -8,7 +8,7 @@ MAGIC >	character_build_distance_bonus, character_item_drop_distance_bonus, char
 
 DEXTERITY > character_running_speed_modifier, character_crafting_speed_modifier
 
-VITALITY > character_health_bonus + damage resistance
+VITALITY > character_health_bonus 
 ]]
 
 local visuals_delay = 60
@@ -21,28 +21,35 @@ end
 local classes = {
 	["engineer"] = "ENGINEER",
 	["strength"] = "MINER",
-	["magic"] = "WIZZARD",
+	["magic"] = "SORCERER",
 	["dexterity"] = "ROGUE",
 	["vitality"] = "TANK",
 }
 
-local function create_gui_char_button(player)
+local function draw_gui_char_button(player)
 	if player.gui.top.rpg then return end
 	local b = player.gui.top.add({type = "sprite-button", name = "rpg", caption = "CHAR"})
-	b.style.font_color = {180,180,180}
+	b.style.font_color = {165,165,165}
 	b.style.font = "heading-1"
 	b.style.minimal_height = 38
 	b.style.minimal_width = 60
-	b.style.top_padding = 2
-	b.style.left_padding = 4
-	b.style.right_padding = 4
-	b.style.bottom_padding = 2
+	b.style.padding = 0
+	b.style.margin = 0
+end
+
+local function update_char_button(player)
+	if not player.gui.top.rpg then draw_gui_char_button(player) end
+	if global.rpg[player.index].points_to_distribute > 0 then
+		player.gui.top.rpg.style.font_color = {255, 50, 50}
+	else
+		player.gui.top.rpg.style.font_color = {175,175,175}
+	end
 end
 
 local function update_player_stats(player)
 	local strength = global.rpg[player.index].strength - 10
-	player.character_inventory_slots_bonus = strength * 0.2
-	player.character_mining_speed_modifier = strength * 0.01
+	player.character_inventory_slots_bonus = strength * 0.1
+	player.character_mining_speed_modifier = strength * 0.005
 	
 	local magic = global.rpg[player.index].magic - 10
 	local v = magic * 0.2
@@ -54,7 +61,7 @@ local function update_player_stats(player)
 	player.character_loot_pickup_distance_bonus = v
 	
 	local dexterity = global.rpg[player.index].dexterity - 10
-	player.character_running_speed_modifier = dexterity * 0.005
+	player.character_running_speed_modifier = dexterity * 0.002
 	player.character_crafting_speed_modifier = dexterity * 0.01
 	
 	player.character_health_bonus = (global.rpg[player.index].vitality - 10) * 8
@@ -79,6 +86,8 @@ local function add_gui_description(element, value, width)
 	e.style.single_line = false
 	e.style.maximal_width = width
 	e.style.minimal_width = width
+	e.style.maximal_height = 42
+	e.style.minimal_height = 42
 	e.style.font = "default-bold"
 	e.style.font_color = {175, 175, 200}
 	e.style.horizontal_align = "right"
@@ -87,11 +96,11 @@ local function add_gui_description(element, value, width)
 end
 
 local function add_gui_stat(element, value, width)
-	local e = element.add({type = "sprite-button", caption = value})
+	local e = element.add({type = "textfield", text = value, read_only = true})
 	e.style.maximal_width = width
 	e.style.minimal_width = width
-	e.style.maximal_height = 40
-	e.style.minimal_height = 40
+	e.style.maximal_height = 42
+	e.style.minimal_height = 42
 	e.style.font = "default-bold"
 	e.style.font_color = {222, 222, 222}
 	e.style.horizontal_align = "center"
@@ -102,16 +111,12 @@ end
 local function add_gui_increase_stat(element, name, player, width)
 	local sprite = "virtual-signal/signal-red"
 	local symbol = "✚"
-	if global.rpg[player.index].points_to_distribute <= 0 then
-		--symbol = " "
-		sprite = "virtual-signal/signal-black" 
-	end
-	
+	if global.rpg[player.index].points_to_distribute <= 0 then sprite = "virtual-signal/signal-black" end
 	local e = element.add({type = "sprite-button", name = name, caption = symbol, sprite = sprite})
-	e.style.maximal_height = 40
-	e.style.minimal_height = 40
-	e.style.maximal_width = width
-	e.style.minimal_width = width
+	e.style.maximal_height = 42
+	e.style.minimal_height = 42
+	e.style.maximal_width = 42
+	e.style.minimal_width = 42
 	e.style.font = "default-large-semibold"
 	e.style.font_color = {0,0,0}
 	e.style.horizontal_align = "center"	
@@ -165,28 +170,36 @@ local function draw_gui(player)
 	local t = frame.add({type = "table", column_count = 2})
 	local tt = t.add({type = "table", column_count = 3})
 	tt.style.cell_padding = 1
-	local w1 = 115
-	local w2 = 40
+	local w1 = 85
+	local w2 = 63
 	
+	local tip = "Increases inventory slots and mining speed."
 	local e = add_gui_description(tt, "STRENGTH", w1)
-	e.tooltip = "Increases inventory slots and mining speed."
-	add_gui_stat(tt, global.rpg[player.index].strength, w2)
-	add_gui_increase_stat(tt, "strength", player, w2)
+	e.tooltip = tip
+	local e = add_gui_stat(tt, global.rpg[player.index].strength, w2)
+	e.tooltip = tip
+	add_gui_increase_stat(tt, "strength", player)
 	
+	local tip = "Increases reach distance."
 	local e = add_gui_description(tt, "MAGIC", w1)
-	e.tooltip = "Increases reach distance."
-	add_gui_stat(tt, global.rpg[player.index].magic, w2)
-	add_gui_increase_stat(tt, "magic", player, w2)
+	e.tooltip = tip
+	local e = add_gui_stat(tt, global.rpg[player.index].magic, w2)
+	e.tooltip = tip
+	add_gui_increase_stat(tt, "magic", player)
 	
+	local tip = "Increases running and crafting speed."
 	local e = add_gui_description(tt, "DEXTERITY", w1)
-	e.tooltip = "Increases running and crafting speed."
-	add_gui_stat(tt, global.rpg[player.index].dexterity, w2)
-	add_gui_increase_stat(tt, "dexterity", player, w2)
+	e.tooltip = tip
+	local e = add_gui_stat(tt, global.rpg[player.index].dexterity, w2)
+	e.tooltip = tip
+	add_gui_increase_stat(tt, "dexterity", player)
 	
+	local tip = "Increases your health."
 	local e = add_gui_description(tt, "VITALITY", w1)
-	e.tooltip = "Increases health and damage resistance."
-	add_gui_stat(tt, global.rpg[player.index].vitality, w2)
-	add_gui_increase_stat(tt, "vitality", player, w2)
+	e.tooltip = tip
+	local e = add_gui_stat(tt, global.rpg[player.index].vitality, w2)
+	e.tooltip = tip
+	add_gui_increase_stat(tt, "vitality", player)
 	
 	add_gui_description(tt, "POINTS TO\nDISTRIBUTE", w1)
 	local e = add_gui_stat(tt, global.rpg[player.index].points_to_distribute, w2)
@@ -198,8 +211,8 @@ local function draw_gui(player)
 	add_gui_description(tt, " ", w2)
 	
 	add_gui_description(tt, "LIFE", w1)
-	add_gui_stat(tt, player.character.health, w2)
-	add_gui_stat(tt, player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus, w2)
+	add_gui_stat(tt, math.floor(player.character.health), w2)
+	add_gui_stat(tt, math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
 
 	local shield = 0
 	local shield_max = 0	
@@ -217,7 +230,7 @@ local function draw_gui(player)
 	
 	local tt = t.add({type = "table", column_count = 3})
 	tt.style.cell_padding = 1
-	local w0 = 18
+	local w0 = 2
 	local w1 = 80
 	local w2 = 80
 	
@@ -231,18 +244,24 @@ local function draw_gui(player)
 	local value = "+ " .. player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus
 	add_gui_stat(tt, value, w2)
 	
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, " ", w0)
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "REACH\nDISTANCE", w1)
 	local value = "+ " .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
 	add_gui_stat(tt, value, w2)
 	
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, " ", w0)
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "CRAFTING\nSPEED", w1)
@@ -254,19 +273,26 @@ local function draw_gui(player)
 	local value = (player.force.character_running_speed_modifier  + player.character_running_speed_modifier + 1) * 100 .. "%"
 	add_gui_stat(tt, value, w2)
 	
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, " ", w0)
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
+	local e = add_gui_description(tt, "", w0)
+	e.style.maximal_height = 16
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "HEALTH\nBONUS", w1)
 	local value = "+ " .. (player.force.character_health_bonus + player.character_health_bonus)
 	add_gui_stat(tt, value, w2)
 	
+	--[[
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "DAMAGE\nRESISTANCE", w1)
 	local value = 0 .. "%"
 	add_gui_stat(tt, value, w2)
+	]]
+	
+	update_char_button(player)
 end
 
 local function draw_level_text(player)
@@ -275,19 +301,17 @@ local function draw_level_text(player)
 		global.rpg[player.index].text = nil
 	end
 	
+	local scale = 1.0 + global.rpg[player.index].level * 0.01
+	if scale > 2 then scale = 2 end
+	
 	global.rpg[player.index].text = rendering.draw_text{
 		text = "lvl " .. global.rpg[player.index].level,
 		surface = player.surface,
 		target = player.character,
 		target_offset = {-0.05, -3},
-		color = {
-			r = player.color.r * 0.6 + 0.25,
-			g = player.color.g * 0.6 + 0.25,
-			b = player.color.b * 0.6 + 0.25,
-			a = 1
-		},
+		color = player.chat_color,
 		--time_to_live = 600,
-		scale = 1.0 + global.rpg[player.index].level * 0.01,
+		scale = scale,
 		font = "scenario-message-dialog",
 		alignment = "center",
 		scale_with_zoom = false
@@ -295,13 +319,26 @@ local function draw_level_text(player)
 end
 
 local function level_up(player)
-	global.rpg[player.index].level = global.rpg[player.index].level + 1
-	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute + 5
+	global.rpg[player.index].level = 1
+	for k, level in pairs(experience_levels) do
+		if global.rpg[player.index].xp > level then
+			global.rpg[player.index].level = k
+		else
+			break
+		end
+	end
+	
 	draw_level_text(player)
-	draw_gui(player)
+	if global.rpg[player.index].level == 1 then return end
+	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute + 5
+	update_char_button(player)
+	
+	player.create_local_flying_text{text="LEVEL UP", position=player.position, color={r = 255, g = 255, b = 0}, time_to_live=180, speed=1}
+	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.80}
 end
 
 local function gain_xp(player, amount)
+	amount = math.round(amount, 3)
 	global.rpg[player.index].xp = global.rpg[player.index].xp + amount
 	global.rpg[player.index].xp_since_last_floaty_text = global.rpg[player.index].xp_since_last_floaty_text + amount
 	if not experience_levels[global.rpg[player.index].level + 1] then return end
@@ -310,7 +347,7 @@ local function gain_xp(player, amount)
 		return
 	end
 	if global.rpg[player.index].last_floaty_text > game.tick then return end
-	player.create_local_flying_text{text="+" .. global.rpg[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color={r = 177, g = 177, b = 177}, time_to_live=120, speed=1}
+	player.create_local_flying_text{text="+" .. global.rpg[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color={r = 177, g = 177, b = 177}, time_to_live=120, speed=2}
 	if player.gui.left.rpg then draw_gui(player) end
 	global.rpg[player.index].xp_since_last_floaty_text = 0
 	global.rpg[player.index].last_floaty_text = game.tick + visuals_delay
@@ -349,17 +386,17 @@ end
 local xp_yield = {
 	["small-biter"] = 1,
 	["medium-biter"] = 2,
-	["big-biter"] = 3,
-	["behemoth-biter"] = 5,
+	["big-biter"] = 4,
+	["behemoth-biter"] = 8,
 	["small-spitter"] = 1,
 	["medium-spitter"] = 2,
-	["big-spitter"] = 3,
-	["behemoth-spitter"] = 5,
-	["spitter-spawner"] = 32,
-	["biter-spawner"] = 32,	
-	["small-worm-turret"] = 8,
-	["medium-worm-turret"] = 16,
-	["big-worm-turret"] = 24
+	["big-spitter"] = 4,
+	["behemoth-spitter"] = 8,
+	["spitter-spawner"] = 16,
+	["biter-spawner"] = 16,	
+	["small-worm-turret"] = 6,
+	["medium-worm-turret"] = 12,
+	["big-worm-turret"] = 18
 }
 
 local function on_entity_died(event)
@@ -372,6 +409,14 @@ local function on_entity_died(event)
 	local xp = 0.5
 	if xp_yield[event.entity.name] then xp = xp_yield[event.entity.name] end
 	gain_xp(event.cause.player, xp)	
+end
+
+local function on_entity_damaged(event)
+	if not event.entity.valid then return end
+	if event.final_damage_amount == 0 then return end
+	if not event.entity.player then return end
+	if event.entity.name ~= "character" then return end	
+	gain_xp(event.entity.player, event.final_damage_amount * 0.25)	
 end
 
 local function on_player_changed_position(event)
@@ -391,12 +436,11 @@ end
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.rpg[player.index] then
-		global.rpg[player.index] = {level = 0, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = -5, last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0}
+		global.rpg[player.index] = {level = 0, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0, last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0}
 	end
-	create_gui_char_button(player)
+	draw_gui_char_button(player)
 	level_up(player)
 	update_player_stats(player)
-	draw_gui(player)
 end
 
 local function on_init(event)
@@ -408,5 +452,6 @@ event.on_init(on_init)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_entity_died, on_entity_died)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
