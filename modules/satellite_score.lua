@@ -16,10 +16,7 @@ local function satellite_score_toggle_button(player)
 	button.style.font = "default-bold"
 	button.style.minimal_height = 38
 	button.style.minimal_width = 38
-	button.style.top_padding = 2
-	button.style.left_padding = 4
-	button.style.right_padding = 4
-	button.style.bottom_padding = 2
+	button.style.padding = 1
 end
 
 local function level_up_popup(player)

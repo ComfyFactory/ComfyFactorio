@@ -1,5 +1,5 @@
 --[[
-Character Experience Gain RPG module by MewMew
+Character Experience Gain RPG by MewMew
 
 STRENGTH > character_inventory_slots_bonus , character_mining_speed_modifier 
 
@@ -11,8 +11,9 @@ DEXTERITY > character_running_speed_modifier, character_crafting_speed_modifier
 VITALITY > character_health_bonus 
 ]]
 
-local visuals_delay = 60
-
+local visuals_delay = 900
+local level_up_floating_text_color = {255, 255, 0}
+local xp_floating_text_color = {157, 157, 157}
 local experience_levels = {0}
 for a = 1, 9999, 1 do
 	experience_levels[#experience_levels + 1] = experience_levels[#experience_levels] + a * 8
@@ -40,7 +41,7 @@ end
 local function update_char_button(player)
 	if not player.gui.top.rpg then draw_gui_char_button(player) end
 	if global.rpg[player.index].points_to_distribute > 0 then
-		player.gui.top.rpg.style.font_color = {255, 50, 50}
+		player.gui.top.rpg.style.font_color = {245, 0, 0}
 	else
 		player.gui.top.rpg.style.font_color = {175,175,175}
 	end
@@ -48,23 +49,24 @@ end
 
 local function update_player_stats(player)
 	local strength = global.rpg[player.index].strength - 10
-	player.character_inventory_slots_bonus = strength * 0.1
-	player.character_mining_speed_modifier = strength * 0.005
+	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = strength * 0.1
+	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.003
 	
 	local magic = global.rpg[player.index].magic - 10
 	local v = magic * 0.2
-	player.character_build_distance_bonus = v
-	player.character_item_drop_distance_bonus = v
-	player.character_reach_distance_bonus = v
-	--player.character_resource_reach_distance_bonus = v
-	player.character_item_pickup_distance_bonus = v
-	player.character_loot_pickup_distance_bonus = v
+	global.player_modifiers[player.index].character_build_distance_bonus["rpg"] = v
+	global.player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = v
+	global.player_modifiers[player.index].character_reach_distance_bonus["rpg"] = v
+	global.player_modifiers[player.index].character_item_pickup_distance_bonus["rpg"] = v
+	global.player_modifiers[player.index].character_loot_pickup_distance_bonus["rpg"] = v
 	
 	local dexterity = global.rpg[player.index].dexterity - 10
-	player.character_running_speed_modifier = dexterity * 0.002
-	player.character_crafting_speed_modifier = dexterity * 0.01
+	global.player_modifiers[player.index].character_running_speed_modifier["rpg"] = dexterity * 0.002
+	global.player_modifiers[player.index].character_crafting_speed_modifier["rpg"] = dexterity * 0.01
 	
-	player.character_health_bonus = (global.rpg[player.index].vitality - 10) * 8
+	global.player_modifiers[player.index].character_health_bonus["rpg"] = (global.rpg[player.index].vitality - 10) * 6
+
+	update_player_modifiers(player)
 end
 
 local function get_class(player)
@@ -96,7 +98,7 @@ local function add_gui_description(element, value, width)
 end
 
 local function add_gui_stat(element, value, width)
-	local e = element.add({type = "textfield", text = value, read_only = true})
+	local e = element.add({type = "sprite-button", caption = value})
 	e.style.maximal_width = width
 	e.style.minimal_width = width
 	e.style.maximal_height = 42
@@ -304,13 +306,21 @@ local function draw_level_text(player)
 	local scale = 1.0 + global.rpg[player.index].level * 0.01
 	if scale > 2 then scale = 2 end
 	
+	local players = {}
+	for _, p in pairs(game.players) do
+		if p.index ~= player.index then
+			players[#players + 1] = p.index
+		end
+	end	
+	if #players == 0 then return end
+	
 	global.rpg[player.index].text = rendering.draw_text{
 		text = "lvl " .. global.rpg[player.index].level,
 		surface = player.surface,
 		target = player.character,
 		target_offset = {-0.05, -3},
 		color = player.chat_color,
-		--time_to_live = 600,
+		players = players,
 		scale = scale,
 		font = "scenario-message-dialog",
 		alignment = "center",
@@ -327,18 +337,23 @@ local function level_up(player)
 			break
 		end
 	end
-	
 	draw_level_text(player)
 	if global.rpg[player.index].level == 1 then return end
 	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute + 5
 	update_char_button(player)
-	
-	player.create_local_flying_text{text="LEVEL UP", position=player.position, color={r = 255, g = 255, b = 0}, time_to_live=180, speed=1}
-	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.80}
+	if player.gui.left.rpg then draw_gui(player) end
+	player.surface.create_entity({name = "flying-text", position = {player.position.x - 0.8, player.position.y}, text = "LEVEL UP", color = level_up_floating_text_color})
+	for _, p in pairs(game.connected_players) do
+		if p.index == player.index then
+			p.play_sound{path="utility/achievement_unlocked", volume_modifier=0.80}
+		else
+			p.play_sound{path="utility/achievement_unlocked", position = player.position, volume_modifier=0.80}
+		end
+	end
 end
 
 local function gain_xp(player, amount)
-	amount = math.round(amount, 3)
+	amount = math.round(amount, 2)
 	global.rpg[player.index].xp = global.rpg[player.index].xp + amount
 	global.rpg[player.index].xp_since_last_floaty_text = global.rpg[player.index].xp_since_last_floaty_text + amount
 	if not experience_levels[global.rpg[player.index].level + 1] then return end
@@ -347,7 +362,7 @@ local function gain_xp(player, amount)
 		return
 	end
 	if global.rpg[player.index].last_floaty_text > game.tick then return end
-	player.create_local_flying_text{text="+" .. global.rpg[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color={r = 177, g = 177, b = 177}, time_to_live=120, speed=2}
+	player.create_local_flying_text{text="+" .. global.rpg[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color=xp_floating_text_color, time_to_live=120, speed=2}
 	if player.gui.left.rpg then draw_gui(player) end
 	global.rpg[player.index].xp_since_last_floaty_text = 0
 	global.rpg[player.index].last_floaty_text = game.tick + visuals_delay
@@ -413,10 +428,10 @@ end
 
 local function on_entity_damaged(event)
 	if not event.entity.valid then return end
-	if event.final_damage_amount == 0 then return end
+	if event.final_damage_amount == 0 then return end	
+	if event.entity.name ~= "character" then return end
 	if not event.entity.player then return end
-	if event.entity.name ~= "character" then return end	
-	gain_xp(event.entity.player, event.final_damage_amount * 0.25)	
+	gain_xp(event.entity.player, event.final_damage_amount * 0.05)	
 end
 
 local function on_player_changed_position(event)
@@ -426,21 +441,35 @@ local function on_player_changed_position(event)
 	gain_xp(player, 0.01)	
 end
 
-local function on_player_mined_entity(event)
+local function on_pre_player_mined_item(event)
 	if not event.entity.valid then return end	
 	local player = game.players[event.player_index]
-	if event.entity.force.name == "neutral" then gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.005) return end
+	if event.entity.type == "resource" then gain_xp(player, 0.5) return end
+	if event.entity.force.name == "neutral" then gain_xp(player, 1.25 + event.entity.prototype.max_health * 0.0025) return end
 	gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
+end
+
+local function on_built_entity(event)
+	if not event.created_entity.valid then return end	
+	if event.created_entity.type == "entity-ghost" then return end
+	local player = game.players[event.player_index]
+	gain_xp(player, 0.1)
+end
+
+local function on_player_crafted_item(event)
+	if not event.recipe.energy then return end
+	local player = game.players[event.player_index]
+	gain_xp(player, event.recipe.energy * 0.2)
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.rpg[player.index] then
-		global.rpg[player.index] = {level = 0, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0, last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0}
+		global.rpg[player.index] = {level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0, last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0}
 	end
-	draw_gui_char_button(player)
-	level_up(player)
+	draw_gui_char_button(player)	
 	update_player_stats(player)
+	draw_level_text(player)
 end
 
 local function on_init(event)
@@ -449,9 +478,11 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
+event.add(defines.events.on_built_entity, on_built_entity)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
+event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)

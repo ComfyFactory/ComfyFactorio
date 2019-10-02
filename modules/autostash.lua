@@ -179,10 +179,10 @@ local function create_gui_button(player)
 	b.style.font = "heading-1"
 	b.style.minimal_height = 38
 	b.style.minimal_width = 38
-	b.style.top_padding = 2
-	b.style.left_padding = 4
-	b.style.right_padding = 4
-	b.style.bottom_padding = 2
+	b.style.maximal_height = 38
+	b.style.maximal_width = 38
+	b.style.padding = 1
+	b.style.margin = 0
 end
 
 local function on_player_joined_game(event)

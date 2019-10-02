@@ -1,8 +1,6 @@
 -- hunger module by mewmew --
 
-local event = require 'utils.event'
 local math_random = math.random
-
 local player_hunger_fish_food_value = 10
 local player_hunger_spawn_value = 80				
 local player_hunger_stages = {}
@@ -26,36 +24,56 @@ for x = 1, 50, 1 do
 end
 
 local player_hunger_buff = {}
-local buff_top_value = 0.70		
-for x = 1, 200, 1 do
-	player_hunger_buff[x] = buff_top_value
+local max_buff = 0.50
+local max_buff_high = 110
+local max_buff_low = 89
+local max_debuff = -0.85
+local max_debuff_high = 180
+local max_debuff_low = 20
+
+for x = 1, max_debuff_low, 1 do
+	player_hunger_buff[x] = max_debuff
 end
-local y = 1
-for x = 89, 1, -1 do			
-	player_hunger_buff[x] = buff_top_value - y * 0.015
-	y = y + 1
+for x = max_debuff_high, 200, 1 do
+	player_hunger_buff[x] = max_debuff
 end
-local y = 1		
-for x = 111, 200, 1 do			
-	player_hunger_buff[x] = buff_top_value - y * 0.015
-	y = y + 1
+for x = max_buff_low, max_buff_high, 1 do
+	player_hunger_buff[x] = max_buff
+end
+
+for x = max_debuff_low, max_buff_low, 1 do
+	local step = (max_buff - max_debuff) / (max_buff_low - max_debuff_low)
+	player_hunger_buff[x] = math.round(max_debuff + (x - max_debuff_low) * step, 2)
+end
+
+for x = max_buff_high, max_debuff_high, 1 do
+	local step = (max_buff - max_debuff) / (max_debuff_high - max_buff_high)
+	player_hunger_buff[x] = math.round(max_buff - (x - max_buff_high) * step, 2)
 end
 
 local function create_hunger_gui(player)
 	if player.gui.top["hunger_frame"] then player.gui.top["hunger_frame"].destroy() end
-	
-	local frame = player.gui.top.add { type = "frame", name = "hunger_frame"}
-	
+	local element = player.gui.top.add { type = "sprite-button", name = "hunger_frame", caption = " "}
+	element.style.font = "default-bold"
+	element.style.minimal_height = 38
+	element.style.minimal_width = 128
+	element.style.maximal_height = 38
+	element.style.padding = 0
+	element.style.margin = 0
+	element.style.vertical_align = "center"
+	element.style.horizontal_align = "center"
+end
+
+local function update_hunger_gui(player)
+	if not player.gui.top["hunger_frame"] then create_hunger_gui(player) end
 	local str = tostring(global.player_hunger[player.name])
 	str = str .. "% "
 	str = str .. player_hunger_stages[global.player_hunger[player.name]]
-	local caption_hunger = frame.add { type = "label", caption = str  }
-	caption_hunger.style.font = "default-bold"
-	caption_hunger.style.font_color = player_hunger_color_list[global.player_hunger[player.name]]
-	caption_hunger.style.top_padding = 2	
+	player.gui.top["hunger_frame"].caption = str
+	player.gui.top["hunger_frame"].style.font_color = player_hunger_color_list[global.player_hunger[player.name]]
 end
 
-local function hunger_update(player, food_value)
+function hunger_update(player, food_value)
 	if not player.character then return end
 	if food_value == -1 and player.character.driving == true then return end
 	
@@ -91,21 +109,26 @@ local function hunger_update(player, food_value)
 			player.print(print_message, player_hunger_color_list[global.player_hunger[player.name]])
 		end
 	end
+
+	if player_hunger_buff[global.player_hunger[player.name]] < 0 then
+		global.player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.75
+	else
+		global.player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.15
+	end
+	global.player_modifiers[player.index].character_mining_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]]
+	update_player_modifiers(player)
 	
-	player.character.character_running_speed_modifier = player_hunger_buff[global.player_hunger[player.name]] * 0.5
-	player.character.character_mining_speed_modifier  = player_hunger_buff[global.player_hunger[player.name]]
-	
-	create_hunger_gui(player)
+	update_hunger_gui(player)
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.player_hunger then global.player_hunger = {} end
-	if player.online_time < 2 then		
+	if player.online_time == 0 then		
 		global.player_hunger[player.name] = player_hunger_spawn_value
 		hunger_update(player, 0)
 	end
-	create_hunger_gui(player)
+	update_hunger_gui(player)
 end
 
 local function on_player_used_capsule(event)
@@ -113,18 +136,24 @@ local function on_player_used_capsule(event)
 		local player = game.players[event.player_index]
 		if player.character.health < 250 then return end		
 		hunger_update(player, player_hunger_fish_food_value)		
-		player.play_sound{path="utility/armor_insert", volume_modifier=0.65}				
+		player.play_sound{path="utility/armor_insert", volume_modifier=0.9}				
 	end
 end
 
-local function on_tick()		
-	if game.tick % 3600 == 0 then
-		for _, player in pairs(game.connected_players) do
-			if player.afk_time < 18000 then	hunger_update(player, -1) end		
-		end			
-	end		
+local function on_player_respawned(event)
+	local player = game.players[event.player_index]
+	global.player_hunger[player.name] = player_hunger_spawn_value
+	hunger_update(player, 0)
 end
 
-event.add(defines.events.on_tick, on_tick)	
+local function on_tick()		
+	for _, player in pairs(game.connected_players) do
+		if player.afk_time < 18000 then hunger_update(player, -1) end
+	end
+end
+
+local event = require 'utils.event'
+event.on_nth_tick(3600, on_tick)
+event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
