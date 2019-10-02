@@ -1,6 +1,11 @@
 -- hunger module by mewmew --
 
 local math_random = math.random
+
+local starve_messages = {" ran out of foodstamps.", " starved.", " should not have skipped breakfast today."}
+
+local overfeed_messages = {" ate too much and exploded.", " needs to work on their bad eating habbits.", " should have skipped dinner today.", " forgot to count them calories."}
+
 local player_hunger_fish_food_value = 10
 local player_hunger_spawn_value = 80				
 local player_hunger_stages = {}
@@ -85,15 +90,13 @@ function hunger_update(player, food_value)
 		global.player_hunger[player.name] = player_hunger_spawn_value
 		player.surface.create_entity({name = "big-artillery-explosion", position = player.character.position})
 		player.character.die("player")
-		local t = {" ate too much and exploded.", " needs to work on their bad eating habbits.", " should have skipped dinner today."}
-		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})				
+		game.print(player.name .. overfeed_messages[math.random(1,#overfeed_messages)], { r=0.75, g=0.0, b=0.0})				
 	end	
 	
 	if global.player_hunger[player.name] < 1 then
 		global.player_hunger[player.name] = player_hunger_spawn_value		
 		player.character.die("player")
-		local t = {" ran out of foodstamps.", " starved.", " should not have skipped breakfast today."}
-		game.print(player.name .. t[math.random(1,#t)], { r=0.75, g=0.0, b=0.0})	
+		game.print(player.name .. starve_messages[math.random(1,#starve_messages)], { r=0.75, g=0.0, b=0.0})	
 	end
 	
 	if player.character then
@@ -109,7 +112,9 @@ function hunger_update(player, food_value)
 			player.print(print_message, player_hunger_color_list[global.player_hunger[player.name]])
 		end
 	end
-
+	
+	if not player.character then return end
+	
 	if player_hunger_buff[global.player_hunger[player.name]] < 0 then
 		global.player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.75
 	else
