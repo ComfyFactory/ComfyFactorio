@@ -24,7 +24,7 @@ local function on_entity_damaged(event)
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if not whitelist[event.cause.name] then return end
-	if math.random(1,3) == 1 then
+	if math.random(1,5) == 1 then
 		event.cause.surface.create_entity({
 			name = "flying-text",
 			position = event.cause.position,
