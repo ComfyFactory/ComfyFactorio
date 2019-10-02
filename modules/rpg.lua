@@ -11,7 +11,7 @@ DEXTERITY > character_running_speed_modifier, character_crafting_speed_modifier
 VITALITY > character_health_bonus 
 ]]
 
-local visuals_delay = 900
+local visuals_delay = 1800
 local level_up_floating_text_color = {255, 255, 0}
 local xp_floating_text_color = {157, 157, 157}
 local experience_levels = {0}
@@ -49,7 +49,7 @@ end
 
 local function update_player_stats(player)
 	local strength = global.rpg[player.index].strength - 10
-	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = strength * 0.1
+	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = strength * 0.2
 	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.003
 	
 	local magic = global.rpg[player.index].magic - 10
@@ -88,8 +88,8 @@ local function add_gui_description(element, value, width)
 	e.style.single_line = false
 	e.style.maximal_width = width
 	e.style.minimal_width = width
-	e.style.maximal_height = 42
-	e.style.minimal_height = 42
+	e.style.maximal_height = 40
+	e.style.minimal_height = 38
 	e.style.font = "default-bold"
 	e.style.font_color = {175, 175, 200}
 	e.style.horizontal_align = "right"
@@ -101,8 +101,8 @@ local function add_gui_stat(element, value, width)
 	local e = element.add({type = "sprite-button", caption = value})
 	e.style.maximal_width = width
 	e.style.minimal_width = width
-	e.style.maximal_height = 42
-	e.style.minimal_height = 42
+	e.style.maximal_height = 38
+	e.style.minimal_height = 38
 	e.style.font = "default-bold"
 	e.style.font_color = {222, 222, 222}
 	e.style.horizontal_align = "center"
@@ -115,10 +115,10 @@ local function add_gui_increase_stat(element, name, player, width)
 	local symbol = "✚"
 	if global.rpg[player.index].points_to_distribute <= 0 then sprite = "virtual-signal/signal-black" end
 	local e = element.add({type = "sprite-button", name = name, caption = symbol, sprite = sprite})
-	e.style.maximal_height = 42
-	e.style.minimal_height = 42
-	e.style.maximal_width = 42
-	e.style.minimal_width = 42
+	e.style.maximal_height = 38
+	e.style.minimal_height = 38
+	e.style.maximal_width = 38
+	e.style.minimal_width = 38
 	e.style.font = "default-large-semibold"
 	e.style.font_color = {0,0,0}
 	e.style.horizontal_align = "center"	
@@ -142,6 +142,8 @@ local function draw_gui(player)
 	local frame = player.gui.left.add({type = "frame", name = "rpg", direction = "vertical"})
 	frame.style.maximal_width = 425
 	frame.style.minimal_width = 425
+	
+	add_separator(frame, 400)
 	
 	local t = frame.add({type = "table", column_count = 2})
 	local e = add_gui_stat(t, player.name, 200)
@@ -293,6 +295,15 @@ local function draw_gui(player)
 	local value = 0 .. "%"
 	add_gui_stat(tt, value, w2)
 	]]
+	add_separator(frame, 400)
+	local t = frame.add({type = "table", column_count = 14})
+	for i = 1, 14, 1 do
+		local e = t.add({type = "sprite", sprite = global.frame_icons[i]})
+		e.style.maximal_width = 24
+		e.style.maximal_height = 24
+		e.style.padding = 0
+	end
+	add_separator(frame, 400)
 	
 	update_char_button(player)
 end
@@ -302,10 +313,7 @@ local function draw_level_text(player)
 		rendering.destroy(global.rpg[player.index].text)
 		global.rpg[player.index].text = nil
 	end
-	
-	local scale = 1.0 + global.rpg[player.index].level * 0.01
-	if scale > 2 then scale = 2 end
-	
+
 	local players = {}
 	for _, p in pairs(game.players) do
 		if p.index ~= player.index then
@@ -318,10 +326,15 @@ local function draw_level_text(player)
 		text = "lvl " .. global.rpg[player.index].level,
 		surface = player.surface,
 		target = player.character,
-		target_offset = {-0.05, -3},
-		color = player.chat_color,
+		target_offset = {-0.05, -3.5},
+		color = {
+			r = player.color.r * 0.6 + 0.25,
+			g = player.color.g * 0.6 + 0.25,
+			b = player.color.b * 0.6 + 0.25,
+			a = 1
+		},
 		players = players,
-		scale = scale,
+		scale = 1.0,
 		font = "scenario-message-dialog",
 		alignment = "center",
 		scale_with_zoom = false
@@ -341,15 +354,10 @@ local function level_up(player)
 	if global.rpg[player.index].level == 1 then return end
 	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute + 5
 	update_char_button(player)
+	table.shuffle_table(global.frame_icons)
 	if player.gui.left.rpg then draw_gui(player) end
-	player.surface.create_entity({name = "flying-text", position = {player.position.x - 0.8, player.position.y}, text = "LEVEL UP", color = level_up_floating_text_color})
-	for _, p in pairs(game.connected_players) do
-		if p.index == player.index then
-			p.play_sound{path="utility/achievement_unlocked", volume_modifier=0.80}
-		else
-			p.play_sound{path="utility/achievement_unlocked", position = player.position, volume_modifier=0.80}
-		end
-	end
+	player.surface.create_entity({name = "flying-text", position = {player.position.x - 0.8, player.position.y}, text = "LEVEL UP", color = level_up_floating_text_color})	
+	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.80}
 end
 
 local function gain_xp(player, amount)
@@ -474,6 +482,12 @@ end
 
 local function on_init(event)
 	global.rpg = {}
+	global.frame_icons = {
+		"entity/small-worm-turret", "entity/medium-worm-turret", "entity/big-worm-turret", "entity/behemoth-worm-turret",
+		"entity/small-biter", "entity/small-biter", "entity/small-spitter", "entity/medium-biter", "entity/medium-biter",
+		"entity/medium-spitter", "entity/big-biter", "entity/big-biter", "entity/big-spitter", "entity/behemoth-biter", "entity/behemoth-biter", "entity/behemoth-spitter"
+	}
+	table.shuffle_table(global.frame_icons)
 end
 
 local event = require 'utils.event'

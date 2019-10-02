@@ -114,8 +114,9 @@ local function create_cave_miner_info(player)
 	l.style.font_color = {r=0.95, g=0.95, b=0.95}	
 end
 
-local function create_cave_miner_stats_gui(player)	
-	if player.gui.top["caver_miner_stats_frame"] then player.gui.top["caver_miner_stats_frame"].destroy() end
+local function create_cave_miner_stats_gui(player)
+	if not player.character then return end
+	if player.gui.top["caver_miner_stats_frame"] then player.gui.top["caver_miner_stats_frame"].destroy() end	
 	
 	local captions = {}
 	local caption_style = {{"font", "default-bold"}, {"font_color",{ r=0.63, g=0.63, b=0.63}}, {"top_padding",2}, {"left_padding",0},{"right_padding",0},{"minimal_width",0}}
