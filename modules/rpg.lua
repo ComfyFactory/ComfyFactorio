@@ -11,6 +11,7 @@ DEXTERITY > character_running_speed_modifier, character_crafting_speed_modifier
 VITALITY > character_health_bonus 
 ]]
 
+local math_random = math.random
 local visuals_delay = 1800
 local level_up_floating_text_color = {255, 255, 0}
 local xp_floating_text_color = {157, 157, 157}
@@ -53,7 +54,7 @@ local function update_player_stats(player)
 	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.003
 	
 	local magic = global.rpg[player.index].magic - 10
-	local v = magic * 0.1
+	local v = magic * 0.15
 	global.player_modifiers[player.index].character_build_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_reach_distance_bonus["rpg"] = v
@@ -409,18 +410,21 @@ end
 
 local xp_yield = {
 	["small-biter"] = 1,
-	["medium-biter"] = 2,
-	["big-biter"] = 4,
-	["behemoth-biter"] = 8,
+	["medium-biter"] = 4,
+	["big-biter"] = 8,
+	["behemoth-biter"] = 16,
 	["small-spitter"] = 1,
-	["medium-spitter"] = 2,
-	["big-spitter"] = 4,
-	["behemoth-spitter"] = 8,
-	["spitter-spawner"] = 16,
-	["biter-spawner"] = 16,	
-	["small-worm-turret"] = 6,
-	["medium-worm-turret"] = 12,
-	["big-worm-turret"] = 18
+	["medium-spitter"] = 4,
+	["big-spitter"] = 8,
+	["behemoth-spitter"] = 16,
+	["spitter-spawner"] = 32,
+	["biter-spawner"] = 32,	
+	["small-worm-turret"] = 8,
+	["medium-worm-turret"] = 16,
+	["big-worm-turret"] = 32,
+	["character"] = 16,
+	["gun-turret"] = 8,
+	["laser-turret"] = 16,
 }
 
 local function on_entity_died(event)
@@ -429,12 +433,15 @@ local function on_entity_died(event)
 	if event.cause.name ~= "character" then return end
 	if not event.cause.player then return end
 	if not event.entity.valid then return end
-	if event.cause.force.name == event.entity.force.name then return end
-	local xp = 0.5
-	if xp_yield[event.entity.name] then xp = xp_yield[event.entity.name] end
-	gain_xp(event.cause.player, xp)	
+	if event.cause.force.index == event.entity.force.index then return end
+	if xp_yield[event.entity.name] then
+		gain_xp(event.cause.player, xp_yield[event.entity.name])
+	else
+		gain_xp(event.cause.player, 0.5)
+	end		
 end
 
+--[[
 local function on_entity_damaged(event)
 	if not event.entity.valid then return end
 	if event.final_damage_amount == 0 then return end	
@@ -443,13 +450,27 @@ local function on_entity_damaged(event)
 	local damage_taken = event.final_damage_amount
 	if damage_taken > 500 then damage_taken = 500 end
 	gain_xp(event.entity.player, damage_taken * 0.055)
+end]]
+
+local function on_player_repaired_entity(event)
+	if math_random(1, 8) ~= 1 then return end
+	local player = game.players[event.player_index]
+	if not player.character then return end
+	gain_xp(player, 0.30)
+end
+
+local function on_player_rotated_entity(event)
+	local player = game.players[event.player_index]
+	if not player.character then return end
+	gain_xp(player, 0.20)
 end
 
 local function on_player_changed_position(event)
+	if math_random(1, 64) ~= 1 then return end
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if player.character.driving then return end
-	gain_xp(player, 0.01)	
+	gain_xp(player, 1.0)	
 end
 
 local function on_pre_player_mined_item(event)
@@ -470,7 +491,7 @@ end
 local function on_player_crafted_item(event)
 	if not event.recipe.energy then return end
 	local player = game.players[event.player_index]
-	gain_xp(player, event.recipe.energy * 0.2)
+	gain_xp(player, event.recipe.energy * 0.25)
 end
 
 local function on_player_respawned(event)
@@ -499,12 +520,14 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
+--event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 event.add(defines.events.on_player_respawned, on_player_respawned)
+event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
 event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
