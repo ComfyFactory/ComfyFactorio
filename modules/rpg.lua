@@ -53,7 +53,7 @@ local function update_player_stats(player)
 	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.003
 	
 	local magic = global.rpg[player.index].magic - 10
-	local v = magic * 0.2
+	local v = magic * 0.1
 	global.player_modifiers[player.index].character_build_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_reach_distance_bonus["rpg"] = v
@@ -138,7 +138,8 @@ end
 
 local function draw_gui(player)
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
-
+	if not player.character then return end
+	
 	local frame = player.gui.left.add({type = "frame", name = "rpg", direction = "vertical"})
 	frame.style.maximal_width = 425
 	frame.style.minimal_width = 425
@@ -326,7 +327,7 @@ local function draw_level_text(player)
 		text = "lvl " .. global.rpg[player.index].level,
 		surface = player.surface,
 		target = player.character,
-		target_offset = {-0.05, -3.5},
+		target_offset = {-0.05, -3.15},
 		color = {
 			r = player.color.r * 0.6 + 0.25,
 			g = player.color.g * 0.6 + 0.25,
@@ -334,7 +335,7 @@ local function draw_level_text(player)
 			a = 1
 		},
 		players = players,
-		scale = 1.0,
+		scale = 1.10,
 		font = "scenario-message-dialog",
 		alignment = "center",
 		scale_with_zoom = false
@@ -439,7 +440,9 @@ local function on_entity_damaged(event)
 	if event.final_damage_amount == 0 then return end	
 	if event.entity.name ~= "character" then return end
 	if not event.entity.player then return end
-	gain_xp(event.entity.player, event.final_damage_amount * 0.05)	
+	local damage_taken = event.final_damage_amount
+	if damage_taken > 500 then damage_taken = 500 end
+	gain_xp(event.entity.player, damage_taken * 0.055)
 end
 
 local function on_player_changed_position(event)
@@ -468,6 +471,10 @@ local function on_player_crafted_item(event)
 	if not event.recipe.energy then return end
 	local player = game.players[event.player_index]
 	gain_xp(player, event.recipe.energy * 0.2)
+end
+
+local function on_player_respawned(event)
+	draw_level_text(game.players[event.player_index])
 end
 
 local function on_player_joined_game(event)
@@ -499,4 +506,5 @@ event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)

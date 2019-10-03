@@ -10,8 +10,8 @@ require "modules.rocks_yield_ore"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
 --require "modules.splice_double"
-require "modules.more_attacks"
-require "modules.evolution_extended"
+--require "modules.more_attacks"
+--require "modules.evolution_extended"
 
 local event = require 'utils.event'
 local math_random = math.random

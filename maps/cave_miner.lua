@@ -14,7 +14,7 @@ local Event = require 'utils.event'
 local market_items = require "maps.cave_miner_market_items"
 local math_random = math.random
 
-local spawn_dome_size = 7500
+local spawn_dome_size = 7000
 
 local darkness_messages = {
 		"Something is lurking in the dark...",
@@ -885,11 +885,13 @@ local function biter_attack_event()
 	local surface = game.surfaces[1]
 	local valid_positions = {}
 	for _, player in pairs(game.connected_players) do
-		if player.character.driving == false then
-			local position = {x = player.position.x, y = player.position.y}
-			local p = find_first_entity_spiral_scan(position, {"rock-huge", "rock-big", "sand-rock-big"}, 32)		
-			if p then
-				if p.x^2 + p.y^2 > spawn_dome_size then table.insert(valid_positions, p) end
+		if player.character then
+			if player.character.driving == false then
+				local position = {x = player.position.x, y = player.position.y}
+				local p = find_first_entity_spiral_scan(position, {"rock-huge", "rock-big", "sand-rock-big"}, 32)		
+				if p then
+					if p.x^2 + p.y^2 > spawn_dome_size then table.insert(valid_positions, p) end
+				end
 			end
 		end
 	end
@@ -1084,10 +1086,10 @@ local function pre_player_mined_item(event)
 		if tile_distance_to_center > 1450 then tile_distance_to_center = 1450 end	
 		if math_random(1,3) == 1 then hunger_update(player, -1) end
 		
-		surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(2,4)},true)
+		surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(1,3)},true)
 		local bonus_amount = math.floor((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.115) + 1
 		if bonus_amount < 0 then bonus_amount = 0 end		
-		local amount = math_random(25,35) + bonus_amount
+		local amount = math_random(25,45) + bonus_amount
 		if amount > 500 then amount = 500 end
 		amount = amount * (1+game.forces.player.mining_drill_productivity_bonus)		
 		
