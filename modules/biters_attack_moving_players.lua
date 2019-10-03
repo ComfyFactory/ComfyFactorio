@@ -19,7 +19,7 @@ local function on_player_changed_position(event)
 			},
 		unit_count = amount,
 		force = "enemy",
-		unit_search_distance=256
+		unit_search_distance=1024
 	})
 	global.biters_attack_moving_players_last_action_tick = game.tick
 end

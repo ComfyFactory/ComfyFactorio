@@ -328,7 +328,7 @@ local function draw_level_text(player)
 		text = "lvl " .. global.rpg[player.index].level,
 		surface = player.surface,
 		target = player.character,
-		target_offset = {-0.05, -3.15},
+		target_offset = {0, -3.25},
 		color = {
 			r = player.color.r * 0.6 + 0.25,
 			g = player.color.g * 0.6 + 0.25,
@@ -336,8 +336,8 @@ local function draw_level_text(player)
 			a = 1
 		},
 		players = players,
-		scale = 1.10,
-		font = "scenario-message-dialog",
+		scale = 1.00,
+		font = "default-large-semibold",
 		alignment = "center",
 		scale_with_zoom = false
 	}

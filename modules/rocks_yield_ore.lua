@@ -70,7 +70,7 @@ end
 
 local function get_amount(entity)
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
-	local amount = 50 + (distance_to_center * 0.33)
+	local amount = 35 + (distance_to_center * 0.25)
 	if amount > 150 then amount = 150 end
 	amount = rock_yield[entity.name] * amount
 	

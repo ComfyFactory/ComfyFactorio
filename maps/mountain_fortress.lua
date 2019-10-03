@@ -1,17 +1,20 @@
 -- mountain digger fortress -- by mewmew --
 
-require "modules.backpack_research"
+require "modules.rpg"
 require "modules.biters_yield_coins"
-require "modules.dynamic_landfill"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.rocks_yield_ore"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
---require "modules.splice_double"
+require "modules.splice_double"
+require "modules.biters_attack_moving_players"
+--require "modules.flashlight_toggle_button"
 --require "modules.more_attacks"
 --require "modules.evolution_extended"
+
+local difficulty_factor = 4
 
 local event = require 'utils.event'
 local math_random = math.random
@@ -116,7 +119,7 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["uranium-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
-			["trees"] = {frequency = "normal", size = "normal", richness = "normal"},
+			["trees"] = {frequency = "2", size = "1", richness = 0.2},
 			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
 			--["grass"] = {frequency = "none", size = "none", richness = "none"},
 			--["sand"] = {frequency = "none", size = "none", richness = "none"},
@@ -131,17 +134,24 @@ local function on_player_joined_game(event)
 		
 		game.map_settings.pollution.enabled = true
 		game.map_settings.enemy_expansion.enabled = true
-		game.map_settings.enemy_evolution.destroy_factor = 0.005
-		game.map_settings.enemy_evolution.time_factor = 0.000015
-		game.map_settings.enemy_evolution.pollution_factor = 0.000001					
+
+		--default game setting values
+		global.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor
+		global.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor
+		global.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor
+		
+		game.map_settings.enemy_evolution.destroy_factor = global.enemy_evolution_destroy_factor * difficulty_factor
+		game.map_settings.enemy_evolution.time_factor = global.enemy_evolution_time_factor * difficulty_factor
+		game.map_settings.enemy_evolution.pollution_factor = global.enemy_evolution_pollution_factor * difficulty_factor
+		
 		game.map_settings.enemy_expansion.max_expansion_distance = 15
 		game.map_settings.enemy_expansion.settler_group_min_size = 8
 		game.map_settings.enemy_expansion.settler_group_max_size = 16
 		game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 7200
-				
+		
 		surface.ticks_per_day = surface.ticks_per_day * 2
-		game.forces.player.manual_mining_speed_modifier = 2
+		game.forces.player.technologies["steel-axe"].researched = true
 		
 		global.surface_init_done = true
 	end
