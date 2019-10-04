@@ -13,7 +13,7 @@ VITALITY > character_health_bonus
 
 local math_random = math.random
 local visuals_delay = 1800
-local level_up_floating_text_color = {255, 255, 0}
+local level_up_floating_text_color = {0, 205, 0}
 local xp_floating_text_color = {157, 157, 157}
 local experience_levels = {0}
 for a = 1, 9999, 1 do
@@ -27,6 +27,17 @@ local classes = {
 	["dexterity"] = "ROGUE",
 	["vitality"] = "TANK",
 }
+
+local function level_up_effects(player)
+	local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+	player.surface.create_entity({name = "flying-text", position = position, text = "LEVEL UP", color = level_up_floating_text_color})
+	local b = 1.05
+	for a = 1, 5, 1 do
+		local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}			
+		player.surface.create_entity({name = "flying-text", position = p, text = "✚", color = {255, math_random(0, 127), 0}})						
+	end	
+	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.50}
+end
 
 local function draw_gui_char_button(player)
 	if player.gui.top.rpg then return end
@@ -54,12 +65,13 @@ local function update_player_stats(player)
 	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.004
 	
 	local magic = global.rpg[player.index].magic - 10
-	local v = magic * 0.15
+	local v = magic * 0.2
 	global.player_modifiers[player.index].character_build_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_reach_distance_bonus["rpg"] = v
-	global.player_modifiers[player.index].character_item_pickup_distance_bonus["rpg"] = v
-	global.player_modifiers[player.index].character_loot_pickup_distance_bonus["rpg"] = v
+	global.player_modifiers[player.index].character_loot_pickup_distance_bonus["rpg"] = v * 0.5
+	global.player_modifiers[player.index].character_item_pickup_distance_bonus["rpg"] = v * 0.25
+	global.player_modifiers[player.index].character_resource_reach_distance_bonus["rpg"] = v * 0.15
 	
 	local dexterity = global.rpg[player.index].dexterity - 10
 	global.player_modifiers[player.index].character_running_speed_modifier["rpg"] = dexterity * 0.002
@@ -260,10 +272,19 @@ local function draw_gui(player, forced)
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 16
 	
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, "REACH\nDISTANCE", w1)
 	local value = "+ " .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
-	add_gui_stat(tt, value, w2)
+	local tooltip = ""
+	tooltip = tooltip .. "Reach distance bonus: " .. player.character_reach_distance_bonus
+	tooltip = tooltip .. "\nBuild distance bonus: " .. player.character_build_distance_bonus
+	tooltip = tooltip .. "\nItem drop distance bonus: " .. player.character_item_drop_distance_bonus	
+	tooltip = tooltip .. "\nLoot pickup distance bonus: " .. player.character_loot_pickup_distance_bonus
+	tooltip = tooltip .. "\nItem pickup distance bonus: " .. player.character_item_pickup_distance_bonus
+	tooltip = tooltip .. "\nResource reach distance bonus: " .. player.character_resource_reach_distance_bonus
+	add_gui_description(tt, " ", w0)
+	local e = add_gui_description(tt, "REACH\nDISTANCE", w1)
+	e.tooltip = tooltip
+	local e = add_gui_stat(tt, value, w2)
+	e.tooltip = tooltip
 	
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 16
@@ -363,8 +384,7 @@ local function level_up(player)
 	update_char_button(player)
 	table.shuffle_table(global.frame_icons)
 	if player.gui.left.rpg then draw_gui(player, true) end
-	player.surface.create_entity({name = "flying-text", position = {player.position.x - 0.8, player.position.y}, text = "LEVEL UP", color = level_up_floating_text_color})	
-	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.80}
+	level_up_effects(player)
 end
 
 local function gain_xp(player, amount)
@@ -462,7 +482,7 @@ local function on_player_repaired_entity(event)
 	if math_random(1, 8) ~= 1 then return end
 	local player = game.players[event.player_index]
 	if not player.character then return end
-	gain_xp(player, 0.30)
+	gain_xp(player, 0.33)
 end
 
 local function on_player_rotated_entity(event)
@@ -470,7 +490,7 @@ local function on_player_rotated_entity(event)
 	if not player.character then return end
 	if global.rpg[player.index].rotated_entity_delay > game.tick then return end
 	global.rpg[player.index].rotated_entity_delay = game.tick + 20
-	gain_xp(player, 0.25)
+	gain_xp(player, 0.20)
 end
 
 local function on_player_changed_position(event)
