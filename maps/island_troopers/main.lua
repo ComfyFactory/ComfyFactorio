@@ -27,6 +27,7 @@ local function create_stage_gui(player)
 end
 
 function update_stage_gui()
+	if not global.stages then return end
 	local caption = "Level: " .. global.current_level
 	caption = caption .. "  |  Stage: "
 	local stage = global.current_stage
