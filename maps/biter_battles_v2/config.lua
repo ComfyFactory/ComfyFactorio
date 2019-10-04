@@ -19,7 +19,7 @@ bb_config = {
 	["fast_pregen"] = false,	 						--Force fast pregeneration.
 
 	--TERRAIN OPTIONS--
-	["border_river_width"] = 29,						--Approximate width of the horizontal impassable river seperating the teams. (values up to 100)
+	["border_river_width"] = 25,						--Approximate width of the horizontal impassable river seperating the teams. (values up to 100)
 	["builders_area"] = true,							--Grant each side a peaceful direction with no nests and biters?
 	["random_scrap"] = true,							--Generate harvestable scrap around worms randomly?
 

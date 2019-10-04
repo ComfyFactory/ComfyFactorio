@@ -2,7 +2,7 @@ local event = require 'utils.event'
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
-local spawn_circle_size = bb_config.border_river_width
+local spawn_circle_size = 32
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 
 local function shuffle(tbl)
