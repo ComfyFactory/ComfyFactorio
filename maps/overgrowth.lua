@@ -147,6 +147,8 @@ function reset_map()
 	global.market = spawn_market(global.current_surface, {x = 0, y = -8})
 	
 	game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[4]
+	
+	if global.rpg then rpg_reset_all_players() end
 end
 
 local function on_player_joined_game(event)

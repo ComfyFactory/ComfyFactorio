@@ -1,9 +1,10 @@
 --optionals
 require "modules.satellite_score"
-require "modules.dynamic_landfill"
 require "modules.dangerous_goods"
 require "modules.spawners_contain_biters"
-require "modules.manual_mining_booster"
+--require "modules.manual_mining_booster"
+require "modules.rpg"
+require "modules.hunger"
 
 --essentials
 require "functions.maze"

@@ -65,7 +65,7 @@ local function update_player_stats(player)
 	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.004
 	
 	local magic = global.rpg[player.index].magic - 10
-	local v = magic * 0.2
+	local v = magic * 0.15
 	global.player_modifiers[player.index].character_build_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = v
 	global.player_modifiers[player.index].character_reach_distance_bonus["rpg"] = v
@@ -403,6 +403,25 @@ local function gain_xp(player, amount)
 	global.rpg[player.index].last_floaty_text = game.tick + visuals_delay
 end
 
+function rpg_reset_player(player)
+	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
+	global.rpg[player.index] = {
+		level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
+		last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0,
+		rotated_entity_delay = 0, gui_refresh_delay = 0,
+	}
+	draw_gui_char_button(player)
+	update_char_button(player)
+	update_player_stats(player)
+	draw_level_text(player)
+end
+
+function rpg_reset_all_players()
+	for _, p in pairs(game.players) do
+		rpg_reset_player(p)
+	end
+end
+
 local function on_gui_click(event)
 	if not event.element then return end
 	if not event.element.valid then return end
@@ -529,11 +548,7 @@ end
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.rpg[player.index] then
-		global.rpg[player.index] = {
-			level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
-			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0,
-			rotated_entity_delay = 0, gui_refresh_delay = 0,
-		}
+		rpg_reset_player(player) 
 	end
 	draw_gui_char_button(player)	
 	update_player_stats(player)
