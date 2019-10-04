@@ -51,7 +51,7 @@ end
 local function update_player_stats(player)
 	local strength = global.rpg[player.index].strength - 10
 	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = strength * 0.2
-	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.003
+	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.004
 	
 	local magic = global.rpg[player.index].magic - 10
 	local v = magic * 0.15
@@ -137,7 +137,10 @@ local function add_separator(element, width)
 	return e
 end
 
-local function draw_gui(player)
+local function draw_gui(player, forced)
+	if not forced then
+		if global.rpg[player.index].gui_refresh_delay > game.tick then return end
+	end
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
 	if not player.character then return end
 	
@@ -307,6 +310,7 @@ local function draw_gui(player)
 	end
 	add_separator(frame, 400)
 	
+	global.rpg[player.index].gui_refresh_delay = game.tick + 6
 	update_char_button(player)
 end
 
@@ -344,20 +348,21 @@ local function draw_level_text(player)
 end
 
 local function level_up(player)
-	global.rpg[player.index].level = 1
-	for k, level in pairs(experience_levels) do
-		if global.rpg[player.index].xp > level then
-			global.rpg[player.index].level = k
+	local distribute_points_gain = 0	
+	for i = global.rpg[player.index].level + 1, #experience_levels, 1 do
+		if global.rpg[player.index].xp > experience_levels[i] then
+			global.rpg[player.index].level = i
+			distribute_points_gain = distribute_points_gain + 5
 		else
 			break
 		end
 	end
+	if distribute_points_gain == 0 then return end
 	draw_level_text(player)
-	if global.rpg[player.index].level == 1 then return end
-	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute + 5
+	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute + distribute_points_gain
 	update_char_button(player)
 	table.shuffle_table(global.frame_icons)
-	if player.gui.left.rpg then draw_gui(player) end
+	if player.gui.left.rpg then draw_gui(player, true) end
 	player.surface.create_entity({name = "flying-text", position = {player.position.x - 0.8, player.position.y}, text = "LEVEL UP", color = level_up_floating_text_color})	
 	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.80}
 end
@@ -366,6 +371,7 @@ local function gain_xp(player, amount)
 	amount = math.round(amount, 2)
 	global.rpg[player.index].xp = global.rpg[player.index].xp + amount
 	global.rpg[player.index].xp_since_last_floaty_text = global.rpg[player.index].xp_since_last_floaty_text + amount
+	if player.gui.left.rpg then draw_gui(player) end
 	if not experience_levels[global.rpg[player.index].level + 1] then return end
 	if global.rpg[player.index].xp >= experience_levels[global.rpg[player.index].level + 1] then
 		level_up(player)
@@ -373,7 +379,6 @@ local function gain_xp(player, amount)
 	end
 	if global.rpg[player.index].last_floaty_text > game.tick then return end
 	player.create_local_flying_text{text="+" .. global.rpg[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color=xp_floating_text_color, time_to_live=120, speed=2}
-	if player.gui.left.rpg then draw_gui(player) end
 	global.rpg[player.index].xp_since_last_floaty_text = 0
 	global.rpg[player.index].last_floaty_text = game.tick + visuals_delay
 end
@@ -402,6 +407,7 @@ local function on_gui_click(event)
 	local index = element.name
 	local player = game.players[event.player_index]
 	if not global.rpg[player.index][index] then return end
+	if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player) return end
 	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute - 1
 	global.rpg[player.index][index] = global.rpg[player.index][index] + 1
 	update_player_stats(player)
@@ -462,7 +468,9 @@ end
 local function on_player_rotated_entity(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
-	gain_xp(player, 0.20)
+	if global.rpg[player.index].rotated_entity_delay > game.tick then return end
+	global.rpg[player.index].rotated_entity_delay = game.tick + 20
+	gain_xp(player, 0.25)
 end
 
 local function on_player_changed_position(event)
@@ -501,7 +509,11 @@ end
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.rpg[player.index] then
-		global.rpg[player.index] = {level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0, last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0}
+		global.rpg[player.index] = {
+			level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
+			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0,
+			rotated_entity_delay = 0, gui_refresh_delay = 0,
+		}
 	end
 	draw_gui_char_button(player)	
 	update_player_stats(player)
