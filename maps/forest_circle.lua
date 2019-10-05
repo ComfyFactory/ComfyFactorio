@@ -2,28 +2,25 @@
 
 require 'utils.table'
 require "functions.soft_reset"
+require "functions.create_empty_surface"
 
 local event = require 'utils.event'
 
-global.map_gen_settings = {}
-global.map_gen_settings.seed = 1024
-global.map_gen_settings.water = "0.01"
-global.map_gen_settings.starting_area = "2.5"
-global.map_gen_settings.cliff_settings = {cliff_elevation_interval = 38, cliff_elevation_0 = 38}	
-global.map_gen_settings.autoplace_controls = {
-	["coal"] = {frequency = "2", size = "1", richness = "1"},
-	["stone"] = {frequency = "2", size = "1", richness = "1"},
-	["copper-ore"] = {frequency = "2", size = "1", richness = "1"},
-	["iron-ore"] = {frequency = "2.5", size = "1.1", richness = "1"},
-	["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
-	["crude-oil"] = {frequency = "2.5", size = "1", richness = "1.5"},
-	["trees"] = {frequency = "1.25", size = "0.6", richness = "0.5"},
-	["enemy-base"] = {frequency = "256", size = "0.61", richness = "1"}	
-}
 
 local function init_surface()	
-	
-	game.create_surface("forest_circle", global.map_gen_settings)
+	local map = {
+		["seed"] = math.random(1, 1000000),
+		["water"] = 0,
+		["starting_area"] = 1,
+		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+		["autoplace_settings"] = {
+			["entity"] = {treat_missing_as_default = false},
+			["tile"] = {treat_missing_as_default = false},
+			["decorative"] = {treat_missing_as_default = false},
+		},
+		["default_enable_all_autoplace_controls"] = false,
+	}
+	game.create_surface("forest_circle", map)
 			
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_evolution.destroy_factor = 0
@@ -63,40 +60,29 @@ local circles = {
 	[6] = "tree-06",
 }
 
-local function process_position(surface, pos)
-	surface.set_tiles({{name = "grass-1", position = pos}}, true)
-	
-	local m = 0.035
-	
-	if pos.y <= math.floor(40 * math.sin(pos.x * m)) + 9 and pos.y >= math.floor(40 * math.sin(pos.x * m)) - 9 then
-		surface.create_entity({name = circles[1], position = pos})
-		return
-	else
-		
-		return 
-	end
-	
-	local current_radius = pos.x ^ 2 + pos.y ^ 2
-	local index = math.floor(current_radius / 2048)
-	if index == 0 then return end
-	if index > #circles then return end
-	if not surface.can_place_entity({name = circles[index], position = pos}) then return end
-	if math.random(1,3) ~= 1 then
-		surface.create_entity({name = circles[index], position = pos})
+local function process_position(surface, p)
+	local distance_to_center = math.sqrt(p.x^2 + p.y^2)	
+	local index = math.floor((distance_to_center / 16) % 18) + 1
+	--if index == 7 then surface.create_entity({name = "rock-big", position = p}) return end
+	if index % 2 == 1 then
+		if math.random(1, 3) == 1 then
+			surface.create_entity({name = "rock-big", position = p})
+		else
+			surface.create_entity({name = "tree-0" .. math.ceil(index * 0.5), position = p})
+		end
+		return		
 	end
 end
 
 local function on_chunk_generated(event)
-	local pos
 	local left_top = event.area.left_top
 	local surface = event.surface
-	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "neutral"})) do
-		e.destroy()
-	end
+	
 	for x = 0.5, 31.5, 1 do
 		for y = 0.5, 31.5, 1 do
-			pos = {x = left_top.x + x, y = left_top.y + y}
-			process_position(surface, pos)
+			p = {x = left_top.x + x, y = left_top.y + y}
+			process_position(surface, p)
+					
 		end
 	end
 end

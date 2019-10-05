@@ -75,7 +75,7 @@ local function update_player_stats(player)
 	
 	local dexterity = global.rpg[player.index].dexterity - 10
 	global.player_modifiers[player.index].character_running_speed_modifier["rpg"] = dexterity * 0.002
-	global.player_modifiers[player.index].character_crafting_speed_modifier["rpg"] = dexterity * 0.01
+	global.player_modifiers[player.index].character_crafting_speed_modifier["rpg"] = dexterity * 0.015
 	
 	global.player_modifiers[player.index].character_health_bonus["rpg"] = (global.rpg[player.index].vitality - 10) * 6
 
