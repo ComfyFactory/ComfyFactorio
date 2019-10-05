@@ -70,7 +70,7 @@ end
 
 local function on_entity_died(event)
 	if not event.entity.valid then return end
-	if event.entity.type == "unit-spawner" then
+	if event.entity.type == "unit-spawner" or event.entity.type == "turret" then
 		event.entity.surface.spill_item_stack({event.entity.position.x, event.entity.position.y + 2}, {name = "railgun-dart", count = 1}, false)
 	end	
 end
@@ -81,9 +81,9 @@ local function on_init()
 	
 	local map_gen_settings = {}
 	map_gen_settings.seed = math.random(1, 999999999)
-	map_gen_settings.water = 1.5
+	map_gen_settings.water = 1.25
 	map_gen_settings.starting_area = 1.5
-	map_gen_settings.terrain_segmentation = 3
+	map_gen_settings.terrain_segmentation = 3.5
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 6, cliff_elevation_0 = 6}
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 3, size = 0.75, richness = 0.75},
