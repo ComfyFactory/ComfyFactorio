@@ -50,6 +50,7 @@ local valid_types = {
 }
 
 local function process_entity(surface, entity)
+	if not entity.valid then return end
 	if not valid_types[entity.type] then return end
 	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
 	if entity.type == "tree" then

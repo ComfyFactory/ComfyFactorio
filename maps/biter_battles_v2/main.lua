@@ -3,7 +3,6 @@
 require 'utils.table'
 require "on_tick_schedule"
 require "maps.biter_battles_v2.config"
-require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters" 
 require "modules.mineable_wreckage_yields_scrap"
 

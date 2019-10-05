@@ -116,12 +116,13 @@ local function on_gui_click(event)
 	end
 	if event.element.type ~= "button" then return end
 	if event.element.parent.name ~= "difficulty_poll" then return end
-	if event.element.name == "close" then event.element.parent.destroy() return end		
-	local i = tonumber(event.element.name)
+	if event.element.name == "close" then event.element.parent.destroy() return end
+	if game.tick > timeout then event.element.parent.destroy() return end
+	local i = tonumber(event.element.name)	
 	game.print(player.name .. " has voted for " .. difficulties[i].name .. " difficulty!", difficulties[i].print_color)
 	global.difficulty_player_votes[player.name] = i
 	set_difficulty()
-	difficulty_gui()
+	difficulty_gui()	
 	event.element.parent.destroy()
 end
 	
