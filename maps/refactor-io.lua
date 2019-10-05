@@ -13,7 +13,7 @@ global.map_info.text = [[
 
 	You cannot mine things.
 	You cannot deconstruct things ... the only way to "deconstruct" is your railgun.
-	You cannot destroy things ... except the biters ...  railgun darts may be found within their nests.
+	You cannot destroy things ... except the biters ... and they have been known to hoard railgun darts.
 	
 	Have fun <3
 ]]
@@ -71,7 +71,7 @@ end
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	if event.entity.type == "unit-spawner" or event.entity.type == "turret" then
-		event.entity.surface.spill_item_stack({event.entity.position.x, event.entity.position.y + 2}, {name = "railgun-dart", count = 1}, false)
+		event.entity.surface.spill_item_stack({event.entity.position.x, event.entity.position.y + 2}, {name = "railgun-dart", count = math.random(0, 2)}, false)
 	end	
 end
 
