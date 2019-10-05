@@ -3,30 +3,28 @@
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
 require "modules.no_blueprint_library"
-
 require "modules.map_info"
+
 global.map_info = {}
 global.map_info.main_caption = "Refactor-io"
 global.map_info.sub_caption = ""
 global.map_info.text = [[
 	Hello visitor.
 
-	You can not mine things.
-	You can not deconstruct things.
-	You can not destroy things,
-				...except the biters.
-	
-	The only way to "deconstruct" is your railgun.
-	Additional darts may be found within biter spawners.
+	You cannot mine things.
+	You cannot deconstruct things ... the only way to "deconstruct" is your railgun.
+	You cannot destroy things ... except the biters ...  railgun darts may be found within their nests.
 	
 	Have fun <3
 ]]
 
 local math_random = math.random
 
+-- noobs spawn with things
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
 	local surface = game.surfaces["refactor-io"]
+
 	if player.online_time == 0 then
 		local non_colliding_position = surface.find_non_colliding_position("character", {0,0}, 96, 1)
 		player.teleport(non_colliding_position, surface)
@@ -41,7 +39,14 @@ local function on_player_joined_game(event)
 	end
 end
 
-local function on_marked_for_deconstruction(event)	
+-- players always spawn with railgun
+local function on_player_respawned(event)  
+	local player = game.players[event.player_index]
+    player.insert{name = 'railgun', count = 1}
+end
+
+-- decon planner doesn't work
+local function on_marked_for_deconstruction(event)
 	event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
 end
 
@@ -66,7 +71,7 @@ end
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	if event.entity.type == "unit-spawner" then
-		event.entity.surface.spill_item_stack({event.entity.position.x, event.entity.position.y + 2},{name = "railgun-dart", count = 1}, false)
+		event.entity.surface.spill_item_stack({event.entity.position.x, event.entity.position.y + 2}, {name = "railgun-dart", count = 1}, false)
 	end	
 end
 
@@ -83,11 +88,11 @@ local function on_init()
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 3, size = 0.75, richness = 0.75},
 		["stone"] = {frequency = 3, size = 0.75, richness = 0.75},
-		["copper-ore"] = {frequency = 3, size = 0.75, richness = 0.75},
-		["iron-ore"] = {frequency = 3, size = 0.75, richness = 0.75},
-		["uranium-ore"] = {frequency = 3, size = 0.75, richness = 0.75},
-		["crude-oil"] = {frequency = 3, size = 1, richness = 1},
-		["trees"] = {frequency = 4, size = 1.15, richness = 1},
+		["copper-ore"] = {frequency = 3.5, size = 0.95, richness = 0.85},
+		["iron-ore"] = {frequency = 3.5, size = 0.95, richness = 0.85},
+		["uranium-ore"] = {frequency = 3.5, size = 0.95, richness = 0.85},
+		["crude-oil"] = {frequency = 3, size = 0.85, richness = 1},
+		["trees"] = {frequency = 3, size = 1, richness = 1},
 		["enemy-base"] = {frequency = 5, size = 2.0, richness = 1}	
 	}	
 	local surface = game.create_surface("refactor-io", map_gen_settings)
