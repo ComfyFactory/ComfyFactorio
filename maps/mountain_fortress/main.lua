@@ -1,7 +1,9 @@
 -- Cave Defender, protect the locomotive! -- by MewMew
 
-require "maps.cave_defender.terrain"
-require "maps.cave_defender.locomotive"
+require "modules.wave_defense"
+
+require "maps.mountain_fortress.terrain"
+require "maps.mountain_fortress.locomotive"
 
 local function init_surface()	
 	local map = {
@@ -16,11 +18,11 @@ local function init_surface()
 		},
 		["default_enable_all_autoplace_controls"] = false,
 	}
-	game.create_surface("cave_defender", map)
+	game.create_surface("mountain_fortress", map)
 end
 
 local function on_player_joined_game(event)	
-	local surface = game.surfaces["cave_defender"]
+	local surface = game.surfaces["mountain_fortress"]
 	local player = game.players[event.player_index]	
 	
 	if player.online_time == 0 then
@@ -31,9 +33,11 @@ end
 local function on_init(surface)
 	init_surface()
 	
-	local surface = game.surfaces["cave_defender"]
+	local surface = game.surfaces["mountain_fortress"]
 	surface.request_to_generate_chunks({0,0}, 6)
 	surface.force_generate_chunk_requests()
+	
+	global.wave_defense.surface = surface
 	
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	

@@ -17,7 +17,7 @@ end
 local function accelerate()
 	local driver = global.locomotive.get_driver()
 	if driver then return	end	
-	global.locomotive_driver = game.surfaces["cave_defender"].create_entity({name = "character", position = global.locomotive.position, force = "player"})
+	global.locomotive_driver = global.locomotive.surface.create_entity({name = "character", position = global.locomotive.position, force = "player"})
 	global.locomotive_driver.driving = true
 	global.locomotive_driver.riding_state = {acceleration = defines.riding.acceleration.accelerating, direction = defines.riding.direction.straight}
 end
@@ -27,6 +27,9 @@ local function remove_acceleration()
 end
 
 local function tick()
+	if not global.locomotive then return end
+	if not global.locomotive.valid then return end
+	
 	if game.tick % 30 == 0 then
 		accelerate()
 	else
