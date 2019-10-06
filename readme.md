@@ -23,3 +23,4 @@ A factorio scenario.
 ## Using Comfy maps
 - Check out the [wiki](https://github.com/M3wM3w/ComfyFactorio/wiki) for getting started.
 - We're also live at [discord](https://getcomfy.eu/discord). Don't hesitate to reach out if you're having issues getting started!
+- The scenario is free to play, host or modify, however, you are welcome to visit our servers.

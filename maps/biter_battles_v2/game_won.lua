@@ -18,7 +18,7 @@ local function create_victory_gui(player)
 	local values = gui_values[global.bb_game_won_by_team]
 	local c = values.c1
 	if global.tm_custom_name[global.bb_game_won_by_team] then c = global.tm_custom_name[global.bb_game_won_by_team] end
-	local frame = player.gui.left.add {type = "frame", name = "bb_victory_gui", direction = "vertical", caption = c .. " team has won!" }
+	local frame = player.gui.left.add {type = "frame", name = "bb_victory_gui", direction = "vertical", caption = c .. " won!" }
 	frame.style.font = "heading-1"
 	frame.style.font_color = values.color1	
 	
