@@ -3,6 +3,7 @@
 require "modules.biter_evasion_hp_increaser"
 require "modules.wave_defense"
 --require "modules.dense_rocks"
+require "functions.soft_reset"
 require "modules.biters_yield_coins"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
@@ -32,7 +33,9 @@ require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.locomotive"
 require "maps.mountain_fortress_v2.explosives"
 
-local function init_surface()	
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16}
+
+local function get_gen_settings()
 	local map = {
 		["seed"] = math.random(1, 1000000),
 		["water"] = 0,
@@ -45,7 +48,42 @@ local function init_surface()
 			["decorative"] = {treat_missing_as_default = true},
 		},
 	}
-	game.create_surface("mountain_fortress", map)
+	return map
+end
+
+function reset_map()
+	global.chunk_queue = {}
+	
+	if not global.active_surface then
+		global.active_surface = game.create_surface("mountain_fortress", get_gen_settings())
+	else	
+		global.active_surface = soft_reset_map(global.active_surface, get_gen_settings(), starting_items)
+	end
+	
+	global.active_surface.request_to_generate_chunks({0,0}, 2)
+	global.active_surface.force_generate_chunk_requests()
+	
+	game.map_settings.enemy_evolution.destroy_factor = 0
+	game.map_settings.enemy_evolution.pollution_factor = 0	
+	game.map_settings.enemy_evolution.time_factor = 0
+	game.map_settings.enemy_expansion.enabled = true
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
+	game.map_settings.enemy_expansion.settler_group_max_size = 16
+	game.map_settings.enemy_expansion.settler_group_min_size = 32
+	game.map_settings.pollution.enabled = false
+	
+	game.forces.player.technologies["steel-axe"].researched = true
+	game.forces.player.technologies["railway"].researched = true
+	game.forces.player.set_spawn_position({-2, 16}, global.active_surface)
+	
+	locomotive_spawn(global.active_surface, {x = 0, y = 16})
+	
+	reset_wave_defense()
+	global.wave_defense.surface = global.active_surface
+	global.wave_defense.target = global.locomotive_cargo	
+	
+	if global.rpg then rpg_reset_all_players() end
 end
 
 local function on_entity_died(event)
@@ -55,6 +93,7 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
 		game.print("The cargo was destroyed!")
+		reset_map()
 		--global.wave_defense.game_lost = true 
 		return 
 	end
@@ -73,46 +112,19 @@ local function on_entity_damaged(event)
 	end
 end
 
-local function on_player_joined_game(event)	
-	local surface = game.surfaces["mountain_fortress"]
+local function on_player_joined_game(event)
 	local player = game.players[event.player_index]	
 	
 	if player.online_time == 0 then
-		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
-		player.insert({name = 'pistol', count = 1})
-		player.insert({name = 'firearm-magazine', count = 16})
-		player.insert({name = 'rail', count = 16})
-		player.insert({name = 'wood', count = 16})
+		player.teleport(global.active_surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(global.active_surface), 3, 0.5), global.active_surface)
+		for item, amount in pairs(starting_items) do
+			player.insert({name = item, count = amount})
+		end
 	end
 end
 
 local function on_init(surface)
-	global.chunk_queue = {}
-
-	init_surface()
-	
-	local surface = game.surfaces["mountain_fortress"]
-	surface.request_to_generate_chunks({0,0}, 6)
-	surface.force_generate_chunk_requests()
-	
-	game.map_settings.enemy_evolution.destroy_factor = 0
-	game.map_settings.enemy_evolution.pollution_factor = 0	
-	game.map_settings.enemy_evolution.time_factor = 0
-	game.map_settings.enemy_expansion.enabled = true
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
-	game.map_settings.enemy_expansion.settler_group_max_size = 16
-	game.map_settings.enemy_expansion.settler_group_min_size = 32
-	game.map_settings.pollution.enabled = false
-	
-	game.forces.player.technologies["steel-axe"].researched = true
-	game.forces.player.technologies["railway"].researched = true
-	game.forces.player.set_spawn_position({-2, 16}, surface)
-	
-	locomotive_spawn(surface, {x = 0, y = 16})
-	
-	global.wave_defense.surface = surface
-	global.wave_defense.target = global.locomotive_cargo
+	reset_map()
 end
 
 local event = require 'utils.event'

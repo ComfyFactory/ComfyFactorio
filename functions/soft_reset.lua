@@ -1,13 +1,9 @@
-local function reset_forces()
+local function reset_forces(new_surface, old_surface)
 	for _, f in pairs(game.forces) do
+		local spawn = {x = game.forces.player.get_spawn_position(old_surface).x, y = game.forces.player.get_spawn_position(old_surface).y}
 		f.reset()
 		f.reset_evolution()
-	end
-end
-
-local function set_spawn_positions(new_surface, old_surface)
-	for _, f in pairs(game.forces) do
-		f.set_spawn_position(f.get_spawn_position(old_surface), new_surface)
+		f.set_spawn_position(spawn, new_surface)
 	end
 end
 
@@ -16,7 +12,7 @@ local function teleport_players(surface)
 		local spawn = player.force.get_spawn_position(surface)
 		local chunk = {math.floor(spawn.x / 32), math.floor(spawn.y / 32)}
 		if not surface.is_chunk_generated(chunk) then
-			surface.request_to_generate_chunks(spawn, 2)
+			surface.request_to_generate_chunks(spawn, 1)
 			surface.force_generate_chunk_requests()
 		end		
 		local pos = surface.find_non_colliding_position("character", spawn, 3, 0.5)
@@ -42,11 +38,10 @@ function soft_reset_map(old_surface, map_gen_settings, player_starting_items)
 	global.soft_reset_counter = global.soft_reset_counter + 1
 
 	local new_surface = game.create_surface(global.original_surface_name .. "_" .. tostring(global.soft_reset_counter), map_gen_settings)
-	new_surface.request_to_generate_chunks({0,0}, 3)
+	new_surface.request_to_generate_chunks({0,0}, 1)
 	new_surface.force_generate_chunk_requests()
 	
-	reset_forces()
-	set_spawn_positions(new_surface, old_surface)
+	reset_forces(new_surface, old_surface)
 	teleport_players(new_surface)
 	equip_players(player_starting_items)
 	

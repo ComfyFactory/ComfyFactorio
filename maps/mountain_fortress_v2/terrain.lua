@@ -175,10 +175,9 @@ local function out_of_map(surface, left_top)
 	end
 end
 
-local function process_chunk(left_top)
-	local surface = game.surfaces["mountain_fortress"]
+local function process_chunk(surface, left_top)
 	--game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
-	if left_top.y == 96 and left_top.x == 96 then
+	if left_top.y == 64 and left_top.x == 64 then
 		local p = global.locomotive.position
 		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 8}}, force = "neutral"})) do	entity.destroy() end
 	end
@@ -189,24 +188,22 @@ local function process_chunk(left_top)
 end
 
 local function process_chunk_queue()
-	for k, left_top in pairs(global.chunk_queue) do
-		process_chunk(left_top)
+	for k, chunk in pairs(global.chunk_queue) do
+		if chunk.surface then
+			if chunk.surface.valid then
+				process_chunk(chunk.surface, chunk.left_top)
+			end
+		end
 		global.chunk_queue[k] = nil
 		return
 	end
 end
 
 local function on_chunk_generated(event)
-	if game.surfaces["mountain_fortress"].index ~= event.surface.index then return end
-	local left_top = event.area.left_top
-	
-	if game.tick == 0 then
-		process_chunk(left_top)
-	else
-		global.chunk_queue[#global.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
-	end
+	if event.surface.index == 1 then return end
+	global.chunk_queue[#global.chunk_queue + 1] = {left_top = event.area.left_top, surface = event.surface}
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(10, process_chunk_queue)
+event.on_nth_tick(15, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

@@ -10,7 +10,7 @@ local threat_values = {
 	["small-spitter"] = 1,
 }
 
-function roll_biter_name()
+local function roll_biter_name()
 	local max_chance = 0
 	for k, v in pairs(global.wave_defense.biter_raffle) do
 		max_chance = max_chance + v
@@ -23,7 +23,7 @@ function roll_biter_name()
 	end
 end
 
-function set_biter_raffle(level)
+local function set_biter_raffle(level)
 	global.wave_defense.biter_raffle = {
 		["small-biter"] = 1000 - level * 2,
 		["small-spitter"] = 1000 - level * 2,
@@ -97,6 +97,8 @@ local function set_enemy_evolution()
 	if evolution > 1 then
 		global.biter_evasion_health_increase_factor = (evolution - 1) * 4
 		evolution = 1
+	else
+		global.biter_evasion_health_increase_factor = 1
 	end
 	game.forces.enemy.evolution_factor = evolution
 end
@@ -135,7 +137,7 @@ local function spawn_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
 	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 4
+	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 3
 	set_enemy_evolution()
 	set_biter_raffle(global.wave_defense.wave_number)
 	for a = 1, 16, 1 do
@@ -194,8 +196,8 @@ local function update_gui(player)
 	if not player.gui.top.wave_defense then create_gui(player) end
 	player.gui.top.wave_defense.label.caption = "Wave: " .. global.wave_defense.wave_number
 	if global.wave_defense.wave_number == 0 then player.gui.top.wave_defense.label.caption = "First wave in " .. math.floor((global.wave_defense.next_wave - game.tick) / 60) + 1 end
-	local v = math.round(game.tick / global.wave_defense.next_wave, 3)
-	player.gui.top.wave_defense.progressbar.value = v
+	local interval = global.wave_defense.next_wave - global.wave_defense.last_wave
+	player.gui.top.wave_defense.progressbar.value = 1 - (global.wave_defense.next_wave - game.tick) / interval
 end
 
 local function on_entity_died(event)
@@ -214,6 +216,7 @@ local function on_tick()
 	if game.tick < global.wave_defense.next_wave then return end
 	
 	if global.wave_defense.active_biter_count < global.wave_defense.max_active_biters then
+		global.wave_defense.last_wave = global.wave_defense.next_wave
 		global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval
 		time_out_biters()
 		set_target()
@@ -229,7 +232,7 @@ local function on_tick()
 	end		
 end
 
-local function on_init()
+function reset_wave_defense()
 	global.wave_defense = {
 		surface = game.surfaces["nauvis"],
 		active_biters = {},
@@ -239,7 +242,8 @@ local function on_init()
 		max_biter_age = 3600 * 30,
 		active_biter_count = 0,
 		spawn_position = {x = 0, y = 48},
-		next_wave = 3600 * 10,
+		last_wave = game.tick,
+		next_wave = game.tick + 36 * 10,
 		wave_interval = 1800,
 		wave_number = 0,
 		game_lost = false,
@@ -247,6 +251,9 @@ local function on_init()
 	}
 end
 
+local function on_init()
+	reset_wave_defense()
+end
 
 local event = require 'utils.event'
 event.on_nth_tick(30, on_tick)
