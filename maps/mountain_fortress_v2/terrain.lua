@@ -45,6 +45,17 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 			if math_random(1,96) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 250} end
 			return
 		end
+		if noise_cave_ponds < 0.08 and noise_cave_ponds > -0.08 then
+			if noise > 0.45 then
+				tiles[#tiles + 1] = {name = "out-of-map", position = p}
+				return
+			end
+			if noise < -0.45 then
+				tiles[#tiles + 1] = {name = "out-of-map", position = p}
+				return
+			end
+		end
+		
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
@@ -62,7 +73,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 	end	
 	if math.abs(noise) > m * 5 then
 		tiles[#tiles + 1] = {name = "grass-2", position = p}
-		if math_random(1,128) == 1 then entities[#entities + 1] = {name=spawner_raffle[math_random(1, #spawner_raffle)], position=p} end
+		--if math_random(1,128) == 1 then entities[#entities + 1] = {name=spawner_raffle[math_random(1, #spawner_raffle)], position=p} end
 		return
 	end
 	
@@ -205,5 +216,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(15, process_chunk_queue)
+event.on_nth_tick(1, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

@@ -4,7 +4,9 @@ require "modules.biter_evasion_hp_increaser"
 require "modules.wave_defense"
 --require "modules.dense_rocks"
 require "functions.soft_reset"
+--require "modules.dynamic_player_spawn"
 require "modules.biters_yield_coins"
+require "modules.no_deconstruction_of_neutral_entities"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
@@ -15,7 +17,7 @@ require "modules.rpg"
 
 global.map_info = {}
 global.map_info.main_caption = "Mountain Fortress"
-global.map_info.sub_caption =  "    ..diggy diggy choo.."
+global.map_info.sub_caption =  "    ..diggy diggy choo choo.."
 global.map_info.text = [[
 	The biters have catched the scent of fish in the cargo wagon.
 	Guide the choo into the mountain and protect it as long as possible!
@@ -32,6 +34,7 @@ require "maps.mountain_fortress_v2.treasure"
 require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.locomotive"
 require "maps.mountain_fortress_v2.explosives"
+require "maps.mountain_fortress_v2.flamethrower_nerf"
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16}
 
@@ -40,7 +43,7 @@ local function get_gen_settings()
 		["seed"] = math.random(1, 1000000),
 		["water"] = 0.001,
 		["starting_area"] = 1,
-		["cliff_settings"] = {cliff_elevation_interval = 8, cliff_elevation_0 = 8},
+		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
 		["default_enable_all_autoplace_controls"] = true,
 		["autoplace_settings"] = {
 			["entity"] = {treat_missing_as_default = false},
