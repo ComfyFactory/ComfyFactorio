@@ -94,7 +94,10 @@ end
 
 local function set_enemy_evolution()
 	local evolution = global.wave_defense.wave_number * 0.001
-	if evolution > 1 then evolution = 1 end
+	if evolution > 1 then
+		global.biter_evasion_health_increase_factor = (evolution - 1) * 4
+		evolution = 1
+	end
 	game.forces.enemy.evolution_factor = evolution
 end
 
@@ -132,7 +135,7 @@ local function spawn_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
 	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 2
+	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 4
 	set_enemy_evolution()
 	set_biter_raffle(global.wave_defense.wave_number)
 	for a = 1, 16, 1 do
@@ -191,7 +194,8 @@ local function update_gui(player)
 	if not player.gui.top.wave_defense then create_gui(player) end
 	player.gui.top.wave_defense.label.caption = "Wave: " .. global.wave_defense.wave_number
 	if global.wave_defense.wave_number == 0 then player.gui.top.wave_defense.label.caption = "First wave in " .. math.floor((global.wave_defense.next_wave - game.tick) / 60) + 1 end
-	player.gui.top.wave_defense.progressbar.value = 1 - math.round((global.wave_defense.next_wave - game.tick) / global.wave_defense.wave_interval, 3)
+	local v = math.round(game.tick / global.wave_defense.next_wave, 3)
+	player.gui.top.wave_defense.progressbar.value = v
 end
 
 local function on_entity_died(event)
@@ -235,7 +239,7 @@ local function on_init()
 		max_biter_age = 3600 * 30,
 		active_biter_count = 0,
 		spawn_position = {x = 0, y = 48},
-		next_wave = 3600 * 0.15,
+		next_wave = 3600 * 10,
 		wave_interval = 1800,
 		wave_number = 0,
 		game_lost = false,

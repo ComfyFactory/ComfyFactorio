@@ -24,7 +24,7 @@ local function create_map_intro(player)
 	
 	local tt = t.add {type = "table", column_count = 3}
 	local l = tt.add {type = "label", caption = global.map_info.main_caption}
-	l.style.font = "default-listbox"
+	l.style.font = "heading-1"
 	l.style.font_color = {r=0.6, g=0.3, b=0.99}
 	l.style.top_padding = 6	
 	l.style.bottom_padding = 6
@@ -46,7 +46,8 @@ local function create_map_intro(player)
 	local tt = t.add {type = "table", column_count = 1}
 	local frame = t.add {type = "frame"}
 	local l = frame.add {type = "label", caption = global.map_info.text}
-	l.style.single_line = false	
+	l.style.font = "heading-3"
+	l.style.single_line = false
 	l.style.font_color = {r=0.95, g=0.95, b=0.95}	
 end
 

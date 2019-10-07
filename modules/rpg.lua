@@ -454,22 +454,22 @@ local function on_gui_click(event)
 end
 
 local xp_yield = {
-	["small-biter"] = 1,
-	["medium-biter"] = 4,
-	["big-biter"] = 8,
 	["behemoth-biter"] = 16,
-	["small-spitter"] = 1,
-	["medium-spitter"] = 4,
-	["big-spitter"] = 8,
 	["behemoth-spitter"] = 16,
-	["spitter-spawner"] = 32,
-	["biter-spawner"] = 32,	
-	["small-worm-turret"] = 8,
-	["medium-worm-turret"] = 16,
+	["big-biter"] = 8,
+	["big-spitter"] = 8,
 	["big-worm-turret"] = 32,
+	["biter-spawner"] = 32,	
 	["character"] = 16,
 	["gun-turret"] = 8,
 	["laser-turret"] = 16,
+	["medium-biter"] = 4,
+	["medium-spitter"] = 4,
+	["medium-worm-turret"] = 16,
+	["small-biter"] = 1.5,
+	["small-spitter"] = 1.5,
+	["small-worm-turret"] = 8,
+	["spitter-spawner"] = 32,
 }
 
 local function on_entity_died(event)
