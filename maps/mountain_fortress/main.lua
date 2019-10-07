@@ -31,12 +31,28 @@ local function on_entity_died(event)
 	end
 end
 
+local function on_entity_damaged(event)
+	if not event.entity.valid then	return end
+	if event.entity.force.index ~= 1 then return end
+	if event.entity == global.locomotive or event.entity == global.locomotive_cargo then
+		if event.cause then
+			if event.cause.force.index == 2 then
+				return
+			end
+		end
+		event.entity.health = event.entity.health + event.final_damage_amount
+	end
+end
+
 local function on_player_joined_game(event)	
 	local surface = game.surfaces["mountain_fortress"]
 	local player = game.players[event.player_index]	
 	
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
+		player.insert({name = 'pistol', count = 1})
+		player.insert({name = 'firearm-magazine', count = 16})
+		player.insert({name = 'rail', count = 16})
 	end
 end
 
@@ -59,6 +75,8 @@ local function on_init(surface)
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.pollution.enabled = false
 	
+	game.forces.player.technologies["steel-axe"].researched = true
+	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({-2, 16}, surface)
 	
 	locomotive_spawn(surface, {x = 0, y = 16})
@@ -69,5 +87,6 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

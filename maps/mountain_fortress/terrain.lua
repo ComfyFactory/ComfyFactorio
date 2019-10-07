@@ -1,25 +1,82 @@
 local math_random = math.random
+local simplex_noise = require "utils.simplex_noise".d2
 local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
+local noises = {
+	["large_caves"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
+	["small_caves"] = {{modifier = 0.008, weight = 1}, {modifier = 0.03, weight = 0.15}, {modifier = 0.25, weight = 0.05}},
+}
+local caves_start = -360
 
-local function process_position(surface, p)
-	local distance_to_center = math.sqrt(p.x^2 + p.y^2)	
-	local index = math.floor((distance_to_center / 16) % 18) + 1
-	--if index == 7 then surface.create_entity({name = "rock-big", position = p}) return end
-	if index % 2 == 1 then
-		if math.random(1, 3) == 1 then
-			surface.create_entity({name = "rock-big", position = p})
-		else
-			surface.create_entity({name = "tree-0" .. math.ceil(index * 0.5), position = p})
-		end
-		return		
+local function get_noise(name, pos, seed)
+	local noise = 0
+	local d = 0
+	for _, n in pairs(noises[name]) do
+		noise = noise + simplex_noise(pos.x * n.modifier, pos.y * n.modifier, seed) * n.weight
+		d = d + n.weight
+		seed = seed + 10000
 	end
+	noise = noise / d
+	return noise
+end
+
+function get_cave_density_modifer(y)
+	if y < caves_start then y = y - 2048 end
+	local m = 1 + ((y) * 0.000175)
+	if m < 0.10 then m = 0.10 end
+	return m
+end
+
+local function process_rock_chunk_position(p, seed, tiles, entities)
+	local m = get_cave_density_modifer(p.y)
+	local noise = get_noise("large_caves", p, seed)
+	if noise > m * -1 and noise < m then
+		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+		return
+	end
+	
+	if math.abs(noise) > m * 7 then
+		tiles[#tiles + 1] = {name = "water", position = p}
+		return
+	end	
+	if math.abs(noise) > m * 6.5 then
+		if math_random(1,16) == 1 then entities[#entities + 1] = {name="tree-02", position=p} end
+	end	
+	if math.abs(noise) > m * 5 then
+		tiles[#tiles + 1] = {name = "grass-2", position = p}
+		if math_random(1,128) == 1 then entities[#entities + 1] = {name=spawner_raffle[math_random(1, #spawner_raffle)], position=p} end
+		return
+	end
+	
+	local noise = get_noise("small_caves", p, seed)
+	if noise > (m + 0.05) * -1 and noise < m - 0.05 then
+		tiles[#tiles + 1] = {name = "dirt-6", position = p}
+		if math_random(1,5) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+		return
+	end			
+		
+	tiles[#tiles + 1] = {name = "out-of-map", position = p}
 end
 
 local function rock_chunk(surface, left_top)
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			surface.set_tiles({{name = "dirt-7", position = {x = left_top.x + x, y = left_top.y + y}}})				
+	local tiles = {}
+	local entities = {}
+	local seed = game.surfaces[1].map_gen_settings.seed
+	for y = 0, 31, 1 do
+		for x = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}
+			process_rock_chunk_position(p, seed, tiles, entities)
+		end
+	end
+	surface.set_tiles(tiles, true)
+	for _, e in pairs(entities) do
+		if game.entity_prototypes[e.name].type == "simple-entity" then
+			surface.create_entity(e)
+		else
+			if surface.can_place_entity(e) then
+				surface.create_entity(e)
+			end
 		end
 	end
 end
@@ -80,7 +137,7 @@ local function biter_chunk(surface, left_top)
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local p = {x = left_top.x + x, y = left_top.y + y}
-			surface.set_tiles({{name = "sand-3", position = p}})
+			surface.set_tiles({{name = "dirt-3", position = p}})
 			tile_positions[#tile_positions + 1] = p
 		end
 	end
@@ -102,6 +159,7 @@ end
 
 local function process_chunk(left_top)
 	local surface = game.surfaces["mountain_fortress"]
+	game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
 	if left_top.y == 96 and left_top.x == 96 then
 		local p = global.locomotive.position
 		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 8}}, force = "neutral"})) do	entity.destroy() end
@@ -132,5 +190,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(60, process_chunk_queue)
+event.on_nth_tick(1, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

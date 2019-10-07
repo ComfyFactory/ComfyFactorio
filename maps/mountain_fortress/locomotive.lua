@@ -3,7 +3,7 @@ function locomotive_spawn(surface, position)
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
 	end
 	global.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -3}, force = "player"})
-	global.locomotive.get_inventory(defines.inventory.fuel).insert({name = "coal", count = 50})
+	global.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
 	
 	global.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 3}, force = "player"})
 	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 4000})
