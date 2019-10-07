@@ -27,8 +27,8 @@ function set_biter_raffle(level)
 	global.wave_defense.biter_raffle = {
 		["small-biter"] = 1000 - level * 2,
 		["small-spitter"] = 1000 - level * 2,
-		["medium-biter"] = level * 2,
-		["medium-spitter"] = level * 2,
+		["medium-biter"] = level,
+		["medium-spitter"] = level,
 		["big-biter"] = 0,
 		["big-spitter"] = 0,
 		["behemoth-biter"] = 0,
@@ -44,6 +44,16 @@ function set_biter_raffle(level)
 	end
 	for k, v in pairs(global.wave_defense.biter_raffle) do
 		if global.wave_defense.biter_raffle[k] < 0 then global.wave_defense.biter_raffle[k] = 0 end
+	end
+end
+
+local function time_out_biters()	
+	for k, biter in pairs(global.wave_defense.active_biters) do
+		if biter.spawn_tick + global.wave_defense.max_biter_age < game.tick then
+			global.wave_defense.threat = global.wave_defense.threat + threat_values[biter.entity.name]
+			biter.entity.destroy()
+			global.wave_defense.active_biters[k] = nil
+		end
 	end
 end
 
@@ -77,7 +87,7 @@ end
 local function set_group_spawn_position()
 	local spawner = get_random_close_spawner()
 	if not spawner then return end
-	local position = global.wave_defense.surface.find_non_colliding_position("rocket-silo", spawner.position, 32, 1)
+	local position = global.wave_defense.surface.find_non_colliding_position("rocket-silo", spawner.position, 48, 1)
 	if not position then return end	
 	global.wave_defense.spawn_position = position
 end
@@ -113,21 +123,75 @@ local function spawn_unit_group()
 		if not biter then break end
 		unit_group.add_member(biter)
 	end
+	global.wave_defense.unit_groups[#global.wave_defense.unit_groups + 1] = unit_group
 	return true
 end
 
 local function spawn_wave()
-	if game.tick < global.wave_defense.next_wave then return end
-	global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval	
+	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
-	global.wave_defense.group_size = global.wave_defense.wave_number * 4
+	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 4
+	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 2
 	set_enemy_evolution()
 	set_biter_raffle(global.wave_defense.wave_number)
 	for a = 1, 16, 1 do
 		if not spawn_unit_group() then break end
 	end
+end
+
+local function give_commands_to_unit_groups()
+	if #global.wave_defense.unit_groups == 0 then return end
+	if not global.wave_defense.target then return end
+	if not global.wave_defense.target.valid then return end
+	for k, group in pairs(global.wave_defense.unit_groups) do
+		if group.valid then
+			group.set_command({
+				type = defines.command.compound,
+				structure_type = defines.compound_command.return_last,
+				commands = {
+					{
+						type = defines.command.attack_area,
+						destination = global.wave_defense.target.position,
+						radius = 16,
+						distraction = defines.distraction.by_enemy
+					},									
+					{
+						type = defines.command.attack,
+						target = global.wave_defense.target,
+						distraction = defines.distraction.by_enemy
+					}
+				}
+			})
+		else
+			global.wave_defense.unit_groups[k] = nil 
+		end
+	end	
+end
+
+local function create_gui(player)
+	local frame = player.gui.top.add({ type = "frame", name = "wave_defense", tooltip = "Click to show map info"})
+	frame.style.maximal_height = 38
+
+	local label = frame.add({ type = "label", caption = " ", name = "label"})
+	label.style.font_color = {r=0.88, g=0.88, b=0.88}
+	label.style.font = "default-listbox"
+	label.style.left_padding = 4
+	label.style.right_padding = 4
+	label.style.minimal_width = 68
+	label.style.font_color = {r=0.33, g=0.66, b=0.9}
+
+	local progressbar = frame.add({ type = "progressbar", name = "progressbar", value = 0})
+	progressbar.style.minimal_width = 128
+	progressbar.style.maximal_width = 128
+	progressbar.style.top_padding = 10
+end
+
+local function update_gui(player)
+	if not player.gui.top.wave_defense then create_gui(player) end
+	player.gui.top.wave_defense.label.caption = "Wave: " .. global.wave_defense.wave_number
+	if global.wave_defense.wave_number == 0 then player.gui.top.wave_defense.label.caption = "First wave in " .. math.floor((global.wave_defense.next_wave - game.tick) / 60) + 1 end
+	player.gui.top.wave_defense.progressbar.value = 1 - math.round((global.wave_defense.next_wave - game.tick) / global.wave_defense.wave_interval, 3)
 end
 
 local function on_entity_died(event)
@@ -139,30 +203,48 @@ local function on_entity_died(event)
 end
 
 local function on_tick()
-	if game.tick % 60 == 0 then
+	if global.wave_defense.game_lost then return end
+	
+	for _, player in pairs(game.connected_players) do update_gui(player) end
+	
+	if game.tick < global.wave_defense.next_wave then return end
+	
+	if global.wave_defense.active_biter_count < global.wave_defense.max_active_biters then
+		global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval
+		time_out_biters()
 		set_target()
 		spawn_wave()
-	end	
+		give_commands_to_unit_groups()
+		return
+	end
+	
+	if game.tick % 3600 == 0 then
+		time_out_biters() 
+		set_target()
+		give_commands_to_unit_groups()
+	end		
 end
 
 local function on_init()
 	global.wave_defense = {
 		surface = game.surfaces["nauvis"],
 		active_biters = {},
-		max_active_biters = 2048,
+		unit_groups = {},
+		max_active_biters = 1024,
 		max_group_size = 256,
+		max_biter_age = 3600 * 30,
 		active_biter_count = 0,
 		spawn_position = {x = 0, y = 48},
-		--next_wave = 3600 * 15,
-		next_wave = 60,
-		wave_interval = 60,
+		next_wave = 3600 * 0.15,
+		wave_interval = 1800,
 		wave_number = 0,
+		game_lost = false,
 		threat = 0,
 	}
 end
 
 
 local event = require 'utils.event'
-event.on_nth_tick(60, on_tick)
+event.on_nth_tick(30, on_tick)
 event.on_init(on_init)
 event.add(defines.events.on_entity_died, on_entity_died)
