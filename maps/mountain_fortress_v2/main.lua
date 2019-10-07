@@ -38,7 +38,7 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16
 local function get_gen_settings()
 	local map = {
 		["seed"] = math.random(1, 1000000),
-		["water"] = 0,
+		["water"] = 0.001,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 8, cliff_elevation_0 = 8},
 		["default_enable_all_autoplace_controls"] = true,
@@ -56,7 +56,8 @@ function reset_map()
 	
 	if not global.active_surface then
 		global.active_surface = game.create_surface("mountain_fortress", get_gen_settings())
-	else	
+	else
+		game.forces.player.set_spawn_position({-2, 16}, global.active_surface)
 		global.active_surface = soft_reset_map(global.active_surface, get_gen_settings(), starting_items)
 	end
 	
@@ -88,12 +89,12 @@ end
 
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
-	if event.entity == global.locomotive_cargo then
+	if event.entity == global.locomotive_cargo then	
+		game.print("The cargo was destroyed!")
+		reset_map()
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
-		game.print("The cargo was destroyed!")
-		reset_map()
 		--global.wave_defense.game_lost = true 
 		return 
 	end

@@ -26,12 +26,21 @@ local function remove_acceleration()
 	if global.locomotive_driver then global.locomotive_driver.destroy() end
 end
 
+local function set_player_spawn()
+	if not global.locomotive_cargo then return end
+	if not global.locomotive_cargo.valid then return end
+	local position = global.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", global.locomotive_cargo.position, 16, 2)
+	if not position then return end
+	game.forces.player.set_spawn_position(position, global.locomotive_cargo.surface)
+end
+
 local function tick()
 	if not global.locomotive then return end
 	if not global.locomotive.valid then return end
 	
 	if game.tick % 30 == 0 then
 		accelerate()
+		if game.tick % 1800 == 0 then set_player_spawn() end
 	else
 		remove_acceleration()
 	end

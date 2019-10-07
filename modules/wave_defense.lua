@@ -243,7 +243,7 @@ function reset_wave_defense()
 		active_biter_count = 0,
 		spawn_position = {x = 0, y = 48},
 		last_wave = game.tick,
-		next_wave = game.tick + 36 * 10,
+		next_wave = game.tick + 3600 * 5,
 		wave_interval = 1800,
 		wave_number = 0,
 		game_lost = false,
