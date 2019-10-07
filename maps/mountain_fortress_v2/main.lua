@@ -90,6 +90,27 @@ function reset_map()
 	if global.rpg then rpg_reset_all_players() end
 end
 
+local function protect_train(event)
+	if event.entity.force.index ~= 1 then return end --Player Force
+	if event.entity == global.locomotive or event.entity == global.locomotive_cargo then
+		if event.cause then
+			if event.cause.force.index == 2 then
+				return
+			end
+		end
+		event.entity.health = event.entity.health + event.final_damage_amount
+	end
+end
+
+local function biters_chew_rocks_faster(event)
+	if event.entity.force.index ~= 3 then return end --Neutral Force
+	if not event.cause then return end
+	if not event.cause.valid then return end
+	if event.cause.force.index ~= 2 then return end --Enemy Force
+	local bonus_damage =  event.final_damage_amount * math.abs(global.wave_defense.threat) * 0.0003
+	event.entity.health = event.entity.health - bonus_damage
+end
+
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
 	if event.entity == global.locomotive_cargo then	
@@ -104,16 +125,9 @@ local function on_entity_died(event)
 end
 
 local function on_entity_damaged(event)
-	if not event.entity.valid then	return end
-	if event.entity.force.index ~= 1 then return end
-	if event.entity == global.locomotive or event.entity == global.locomotive_cargo then
-		if event.cause then
-			if event.cause.force.index == 2 then
-				return
-			end
-		end
-		event.entity.health = event.entity.health + event.final_damage_amount
-	end
+	if not event.entity.valid then	return end	
+	protect_train(event)
+	biters_chew_rocks_faster(event)
 end
 
 local function on_player_joined_game(event)

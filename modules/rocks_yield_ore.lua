@@ -87,15 +87,23 @@ local function on_player_mined_entity(event)
 	if not entity.valid then return end
 	if rock_yield[entity.name] then
 		event.buffer.clear()
-		
 		local ore = ore_raffle[math.random(1, #ore_raffle)]
 		
+		local player = game.players[event.player_index]
+		local inventory = player.get_inventory(defines.inventory.character_main)
+		if not inventory.can_insert({name = ore, count = 1}) then
+			local e = entity.surface.create_entity({name = entity.name, position = entity.position})
+			e.health = entity.health
+			player.print("Inventory full.", {200, 200, 200})
+			return
+		end
+				
 		local amount = get_amount(entity)
 		
 		local amount_to_spill = math.ceil(amount * 0.5)
 		local amount_to_insert = math.floor(amount * 0.5)
 		
-		local player = game.players[event.player_index]
+		
 		local inserted_count = player.insert({name = ore, count = amount_to_insert})
 		local amount_to_spill = amount_to_spill + (amount_to_insert - inserted_count)
 				
