@@ -56,7 +56,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 			tiles[#tiles + 1] = {name = "grass-2", position = p}
 			if math_random(1,64) == 1 then markets[#markets + 1] = p end
 			if math_random(1,96) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 250} end
-			if math_random(1,160) == 1 then
+			if math_random(1,256) == 1 then
 				wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
 				entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 			end
@@ -66,6 +66,10 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
+		if math_random(1,8192) == 1 then
+			wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
+			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+		end
 		return
 	end
 	
@@ -102,7 +106,7 @@ local function rock_chunk(surface, left_top)
 	local entities = {}
 	local markets = {}
 	local treasure = {}
-	local seed = math.random(1, 9999999)
+	local seed = surface.map_gen_settings.seed
 	for y = 0, 31, 1 do
 		for x = 0, 31, 1 do
 			local p = {x = left_top.x + x, y = left_top.y + y}
@@ -111,7 +115,7 @@ local function rock_chunk(surface, left_top)
 	end
 	surface.set_tiles(tiles, true)
 	for _, e in pairs(entities) do
-		if game.entity_prototypes[e.name].type == "simple-entity" then
+		if game.entity_prototypes[e.name].type == "simple-entity" or game.entity_prototypes[e.name].type == "turret" then
 			surface.create_entity(e)
 		else
 			if surface.can_place_entity(e) then
@@ -122,8 +126,9 @@ local function rock_chunk(surface, left_top)
 	--if #markets > 0 then secret_shop(markets[math_random(1, #markets)], surface) end  
 	if #markets > 0 then
 		local position = markets[math_random(1, #markets)]
-		if surface.count_entities_filtered{area = {{position.x - 128, position.y - 128}, {position.x + 128, position.y + 128}}, name = "market", limit = 1} == 0 then
-			local market = random_type_market(surface, position, math.abs(position.y) * 0.004) 
+		if surface.count_entities_filtered{area = {{position.x - 96, position.y - 96}, {position.x + 96, position.y + 96}}, name = "market", limit = 1} == 0 then
+			local market = random_type_market(surface, position, math.abs(position.y) * 0.004)
+			market.destructible = false
 		end
 	end
 	for _, p in pairs(treasure) do	treasure_chest(surface, p) end
@@ -231,5 +236,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(1, process_chunk_queue)
+event.on_nth_tick(5, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

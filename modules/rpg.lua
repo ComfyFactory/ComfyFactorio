@@ -62,7 +62,7 @@ end
 local function update_player_stats(player)
 	local strength = global.rpg[player.index].strength - 10
 	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = strength * 0.2
-	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.004
+	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.005
 	
 	local magic = global.rpg[player.index].magic - 10
 	local v = magic * 0.15

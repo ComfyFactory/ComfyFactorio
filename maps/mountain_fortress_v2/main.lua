@@ -164,6 +164,10 @@ local function on_player_joined_game(event)
 			player.insert({name = item, count = amount})
 		end
 	end
+	
+	if player.surface.index ~= global.active_surface.index then
+		player.teleport(global.active_surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(global.active_surface), 3, 0.5), global.active_surface)
+	end
 end
 
 local function on_init(surface)
