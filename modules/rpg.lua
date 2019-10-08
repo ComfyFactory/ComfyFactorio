@@ -448,6 +448,7 @@ local function on_gui_click(event)
 	local index = element.name
 	local player = game.players[event.player_index]
 	if not global.rpg[player.index][index] then return end
+	if not player.character then return end
 	
 	if event.button == defines.mouse_button_type.right then
 		for a = 1, 5, 1 do
@@ -470,6 +471,7 @@ end
 local xp_yield = {
 	["behemoth-biter"] = 16,
 	["behemoth-spitter"] = 16,
+	["behemoth-worm-turret"] = 48,
 	["big-biter"] = 8,
 	["big-spitter"] = 8,
 	["big-worm-turret"] = 32,
@@ -480,8 +482,8 @@ local xp_yield = {
 	["medium-biter"] = 4,
 	["medium-spitter"] = 4,
 	["medium-worm-turret"] = 16,
-	["small-biter"] = 1.5,
-	["small-spitter"] = 1.5,
+	["small-biter"] = 1,
+	["small-spitter"] = 1,
 	["small-worm-turret"] = 8,
 	["spitter-spawner"] = 32,
 }

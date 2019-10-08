@@ -3,6 +3,7 @@ local function draw_map_tag(surface, force, position)
 end
 
 local function is_tag_valid(tag)
+	if not tag.icon then return end
 	if tag.icon.type ~= "item" then return end
 	if tag.icon.name ~= "heavy-armor" then return end
 	if tag.text ~= "   " then return end

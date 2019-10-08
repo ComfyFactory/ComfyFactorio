@@ -25,6 +25,7 @@ market.ammo = {
 	["explosive-rocket"] = {value = 12, rarity = 5},
 	["atomic-bomb"] = {value = 5000, rarity = 10},
 	["flamethrower-ammo"] = {value = 20, rarity = 6},
+	["explosives"] = {value = 2, rarity = 1},
 }
 
 market.caspules = {
@@ -37,6 +38,7 @@ market.caspules = {
 	["destroyer-capsule"] = {value = 24, rarity = 7},
 	["discharge-defense-remote"] = {value = 64, rarity = 6},
 	["artillery-targeting-remote"] = {value = 32, rarity = 7},
+	["raw-fish"] = {value = 6, rarity = 1},
 }
 
 market.armor = {
@@ -88,6 +90,9 @@ market.logistic = {
 	["splitter"] = {value = 16, rarity = 1},
 	["fast-splitter"] = {value = 48, rarity = 4},
 	["express-splitter"] = {value = 128, rarity = 7},
+	["loader"] = {value = 256, rarity = 2},
+	["fast-loader'"] = {value = 512, rarity = 5},
+	["express-loader"] = {value = 768, rarity = 8},
 	["burner-inserter"] = {value = 4, rarity = 1},
 	["inserter"] = {value = 8, rarity = 1},
 	["long-handed-inserter"] = {value = 12, rarity = 2},
@@ -178,7 +183,7 @@ function random_type_market(surface, position, rarity)
 	local items = get_market_item_list({types[1], types[2]}, rarity)
 	if not items then return end
 	if #items > 0 then table.shuffle_table(items) end
-	local market = surface.create_entity({name = "market", position = position})
+	local market = surface.create_entity({name = "market", position = position, force="neutral"})
 	for i = 1, math.random(5, 10), 1 do
 		if not items[i] then break end
 		market.add_market_item(items[i])
