@@ -179,9 +179,8 @@ function random_type_market(surface, position, rarity)
 	if #items > 0 then table.shuffle_table(items) end
 	local market = surface.create_entity({name = "market", position = position})
 	for i = 1, math.random(4, 10), 1 do
-		if items[i] then
-			market.add_market_item(items[i])
-		end
+		if not items[i] then break end
+		market.add_market_item(items[i])
 	end
 	return market
 end
