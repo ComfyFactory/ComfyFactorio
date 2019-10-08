@@ -56,6 +56,10 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 			tiles[#tiles + 1] = {name = "grass-2", position = p}
 			if math_random(1,64) == 1 then markets[#markets + 1] = p end
 			if math_random(1,96) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 250} end
+			if math_random(1,160) == 1 then
+				wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
+				entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+			end
 			return
 		end
 		
@@ -76,7 +80,10 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 	end	
 	if math.abs(noise_large_caves) > m * 5 then
 		tiles[#tiles + 1] = {name = "grass-2", position = p}
-		--if math_random(1,128) == 1 then entities[#entities + 1] = {name=spawner_raffle[math_random(1, #spawner_raffle)], position=p} end
+		if math_random(1,320) == 1 then
+			wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
+			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+		end
 		return
 	end
 	
@@ -95,7 +102,7 @@ local function rock_chunk(surface, left_top)
 	local entities = {}
 	local markets = {}
 	local treasure = {}
-	local seed = game.surfaces[1].map_gen_settings.seed
+	local seed = math.random(1, 9999999)
 	for y = 0, 31, 1 do
 		for x = 0, 31, 1 do
 			local p = {x = left_top.x + x, y = left_top.y + y}
