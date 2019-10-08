@@ -1,16 +1,16 @@
 -- Mountain digger fortress, protect the locomotive! -- by MewMew
 
 require "modules.biter_evasion_hp_increaser"
-require "modules.wave_defense"
+require "modules.wave_defense.main"
 --require "modules.dense_rocks"
 require "functions.soft_reset"
+require "functions.basic_markets"
 --require "modules.dynamic_player_spawn"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
-require "modules.rocks_yield_ore"
 require "modules.spawners_contain_biters"
 require "modules.map_info"
 require "modules.rpg"
@@ -111,6 +111,20 @@ local function biters_chew_rocks_faster(event)
 	event.entity.health = event.entity.health - bonus_damage
 end
 
+local function hidden_biter(entity)
+	wave_defense_set_biter_raffle(math.floor(math.abs(entity.position.y) * 0.5) + 1)
+	entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = entity.position})
+end
+
+local function on_player_mined_entity(event)
+	if not event.entity.valid then	return end
+	if event.entity.force.index == 3 then
+		if math.random(1,48) == 1 then
+			hidden_biter(event.entity)
+		end
+	end
+end
+
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
 	if event.entity == global.locomotive_cargo then	
@@ -121,6 +135,17 @@ local function on_entity_died(event)
 		end
 		--global.wave_defense.game_lost = true 
 		return 
+	end
+	
+	if event.cause then
+		if event.cause.valid then
+			if event.cause.force.index == 2 then return end 
+		end
+	end
+	if event.entity.force.index == 3 then
+		if math.random(1,16) == 1 then
+			hidden_biter(event.entity) 
+		end
 	end
 end
 
@@ -149,4 +174,7 @@ local event = require 'utils.event'
 event.on_init(on_init)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
+event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+require "modules.rocks_yield_ore"

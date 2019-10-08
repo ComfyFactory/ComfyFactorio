@@ -16,7 +16,7 @@ local function debug_print(msg)
 	end
 end
 
-local function roll_biter_name()
+function wave_defense_roll_biter_name()
 	local max_chance = 0
 	for k, v in pairs(global.wave_defense.biter_raffle) do
 		max_chance = max_chance + v
@@ -29,7 +29,7 @@ local function roll_biter_name()
 	end
 end
 
-local function set_biter_raffle(level)
+function wave_defense_set_biter_raffle(level)
 	global.wave_defense.biter_raffle = {
 		["small-biter"] = 1000 - level * 2,
 		["small-spitter"] = 1000 - level * 2,
@@ -128,7 +128,7 @@ end
 local function spawn_biter()
 	if global.wave_defense.threat <= 0 then return false end
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
-	local name = roll_biter_name()
+	local name = wave_defense_roll_biter_name()
 	local position = global.wave_defense.surface.find_non_colliding_position(name, global.wave_defense.spawn_position, 32, 1)
 	if not position then return false end
 	local biter = global.wave_defense.surface.create_entity({name = name, position = position, force = "enemy"})
@@ -173,7 +173,7 @@ end
 
 local function spawn_attack_groups()
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
-	set_biter_raffle(global.wave_defense.wave_number)
+	wave_defense_set_biter_raffle(global.wave_defense.wave_number)
 	for a = 1, global.wave_defense.max_active_unit_groups - global.wave_defense.active_unit_group_count, 1 do
 		if not spawn_unit_group() then break end
 	end
@@ -181,9 +181,9 @@ end
 
 local function set_next_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
-	global.wave_defense.group_size = global.wave_defense.wave_number * 3
+	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 3
+	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 2
 	global.wave_defense.last_wave = global.wave_defense.next_wave
 	global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval
 end
@@ -214,7 +214,7 @@ local function get_commmands(group)
 				type = defines.command.attack_area,
 				destination = {x = position.x, y = position.y},
 				radius = 16,
-				distraction = defines.distraction.by_enemy
+				distraction = defines.distraction.by_anything
 			}
 			if global.wave_defense.debug then print(position) end
 		end
@@ -340,7 +340,7 @@ function reset_wave_defense()
 		max_active_unit_groups = 6,
 		max_active_biters = 1024,
 		max_group_size = 256,
-		max_biter_age = 3600 * 30,
+		max_biter_age = 3600 * 60,
 		active_unit_group_count = 0,
 		active_biter_count = 0,
 		spawn_position = {x = 0, y = 48},
