@@ -220,7 +220,7 @@ local function give_commands_to_unit_groups()
 end
 
 local function create_gui(player)
-	local frame = player.gui.top.add({ type = "frame", name = "wave_defense", tooltip = "Click to show map info"})
+	local frame = player.gui.top.add({ type = "frame", name = "wave_defense"})
 	frame.style.maximal_height = 38
 
 	local label = frame.add({ type = "label", caption = " ", name = "label"})
@@ -240,7 +240,7 @@ local function create_gui(player)
 	line.style.left_padding = 4
 	line.style.right_padding = 4
 	
-	local label = frame.add({ type = "label", caption = " ", name = "threat"})
+	local label = frame.add({ type = "label", caption = " ", name = "threat", tooltip = "high threat may empower biters"})
 	label.style.font_color = {r=0.88, g=0.88, b=0.88}
 	label.style.font = "default-bold"
 	label.style.left_padding = 4

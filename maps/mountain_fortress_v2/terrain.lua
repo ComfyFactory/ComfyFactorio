@@ -213,10 +213,12 @@ local function biter_chunk(surface, left_top)
 			tile_positions[#tile_positions + 1] = p
 		end
 	end
-	for i = 1, 4, 1 do
+	for i = 1, 2, 1 do
 		local position = surface.find_non_colliding_position("biter-spawner", tile_positions[math_random(1, #tile_positions)], 16, 2)
 		if position then
-			surface.create_entity({name = spawner_raffle[math_random(1, #spawner_raffle)], position = position})
+			local e = surface.create_entity({name = spawner_raffle[math_random(1, #spawner_raffle)], position = position})
+			e.destructible = false
+			e.active = false
 		end		
 	end
 	for _, e in pairs(surface.find_entities_filtered({area = {{left_top.x, left_top.y},{left_top.x + 32, left_top.y + 32}}, type = "cliff"})) do	e.destroy() end
@@ -238,7 +240,8 @@ local function process_chunk(surface, left_top)
 	end
 	if left_top.y < 0 then rock_chunk(surface, left_top) return end
 	if left_top.y > 128 then out_of_map(surface, left_top) return end
-	if left_top.y > 64 or left_top.x > 480 or left_top.x < -512 then biter_chunk(surface, left_top) return end
+	--if left_top.y > 64 or left_top.x > 480 or left_top.x < -512 then biter_chunk(surface, left_top) return end
+	if left_top.y > 64 then biter_chunk(surface, left_top) return end
 	if left_top.y >= 0 then border_chunk(surface, left_top) return end
 end
 

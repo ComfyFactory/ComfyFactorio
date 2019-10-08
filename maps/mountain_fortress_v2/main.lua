@@ -45,6 +45,7 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16
 local function get_gen_settings()
 	local map = {
 		["seed"] = math.random(1, 1000000),
+		["width"] = 768,
 		["water"] = 0.001,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -115,14 +116,14 @@ local function biters_chew_rocks_faster(event)
 end
 
 local function hidden_biter(entity)
-	wave_defense_set_biter_raffle(math.floor(math.abs(entity.position.y) * 0.5) + 1)
+	wave_defense_set_biter_raffle(math.sqrt(entity.position.x ^ 2, entity.position.y ^ 2) * 0.65)
 	entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = entity.position})
 end
 
 local function on_player_mined_entity(event)
-	if not event.entity.valid then	return end
+	if not event.entity.valid then	return end	
 	if event.entity.force.index == 3 then
-		if math.random(1,48) == 1 then
+		if math.random(1,32) == 1 then
 			hidden_biter(event.entity)
 		end
 	end
@@ -142,7 +143,7 @@ local function on_entity_died(event)
 	
 	if event.cause then
 		if event.cause.valid then
-			if event.cause.force.index == 2 then return end 
+			if event.cause.force.index == 2 or event.cause.force.index == 3 then return end 
 		end
 	end
 	if event.entity.force.index == 3 then
