@@ -66,7 +66,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
-		if math_random(1,8192) == 1 then
+		if math_random(1,16384) == 1 then
 			wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
 			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 		end
@@ -214,7 +214,7 @@ local function process_chunk(surface, left_top)
 	end
 	if left_top.y < 0 then rock_chunk(surface, left_top) return end
 	if left_top.y > 128 then out_of_map(surface, left_top) return end
-	if left_top.y > 64 then biter_chunk(surface, left_top) return end
+	if left_top.y > 64 or left_top.x > 480 or left_top.x < -512 then biter_chunk(surface, left_top) return end
 	if left_top.y >= 0 then border_chunk(surface, left_top) return end
 end
 

@@ -1,16 +1,7 @@
 require "modules.wave_defense.biter_rolls"
-
+require "modules.wave_defense.threat_events"
+local threat_values = require "modules.wave_defense.threat_values"
 local math_random = math.random
-local threat_values = {
-	["behemoth-biter"] = 10,
-	["behemoth-spitter"] = 10,
-	["big-biter"] = 5,
-	["big-spitter"] = 5,
-	["medium-biter"] = 3,
-	["medium-spitter"] = 3,
-	["small-biter"] = 1,
-	["small-spitter"] = 1,
-}
 
 local function debug_print(msg)
 	if global.wave_defense.debug then 
@@ -19,10 +10,10 @@ local function debug_print(msg)
 end
 
 local function is_unit_valid(biter)
-	if not biter.entity then debug_print("is_unit_valid - Unit did no longer exist") return false end
-	if not biter.entity.valid then debug_print("is_unit_valid - Unit invalid") return false end
-	if not biter.entity.unit_group then debug_print("is_unit_valid - Unit had no unitgroup") return false end
-	if biter.spawn_tick + global.wave_defense.max_biter_age < game.tick then debug_print("is_unit_valid - Unit timed out") return false end
+	if not biter.entity then debug_print("is_unit_valid - unit destroyed - does no longer exist") return false end
+	if not biter.entity.valid then debug_print("is_unit_valid - unit destroyed - invalid") return false end
+	if not biter.entity.unit_group then debug_print("is_unit_valid - unit destroyed - no unitgroup") return false end
+	if biter.spawn_tick + global.wave_defense.max_biter_age < game.tick then debug_print("is_unit_valid - unit destroyed - timed out") return false end
 	return true
 end
 
@@ -76,7 +67,7 @@ local function set_group_spawn_position()
 	if not spawner then return end
 	local position = global.wave_defense.surface.find_non_colliding_position("rocket-silo", spawner.position, 48, 1)
 	if not position then return end	
-	global.wave_defense.spawn_position = position
+	global.wave_defense.spawn_position = {x = position.x, y = position.y}
 end
 
 local function set_enemy_evolution()
@@ -138,6 +129,7 @@ end
 
 local function spawn_attack_groups()
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
+	if global.wave_defense.threat <= 0 then return false end
 	wave_defense_set_biter_raffle(global.wave_defense.wave_number)
 	for a = 1, global.wave_defense.max_active_unit_groups - global.wave_defense.active_unit_group_count, 1 do
 		if not spawn_unit_group() then break end
@@ -266,14 +258,6 @@ local function update_gui(player)
 	player.gui.top.wave_defense.threat.caption = "Threat: " .. global.wave_defense.threat
 end
 
-local function on_entity_died(event)
-	if not event.entity.valid then	return end
-	if event.entity.type ~= "unit" then return end
-	if not global.wave_defense.active_biters[event.entity.unit_number] then return end
-	global.wave_defense.active_biters[event.entity.unit_number] = nil
-	global.wave_defense.active_biter_count = global.wave_defense.active_biter_count - 1
-end
-
 local function on_tick()
 	if global.wave_defense.game_lost then return end
 	
@@ -302,13 +286,13 @@ function reset_wave_defense()
 		unit_group_last_command = {},
 		unit_group_command_delay = 3600 * 5,
 		unit_group_command_step_length = 96,
-		max_active_unit_groups = 6,
-		max_active_biters = 1024,
 		max_group_size = 256,
+		max_active_unit_groups = 6,
+		max_active_biters = 256 * 6,
 		max_biter_age = 3600 * 60,
 		active_unit_group_count = 0,
 		active_biter_count = 0,
-		spawn_position = {x = 0, y = 48},
+		spawn_position = {x = 0, y = 64},
 		last_wave = game.tick,
 		next_wave = game.tick + 3600 * 5,
 		wave_interval = 1800,
@@ -325,4 +309,3 @@ end
 local event = require 'utils.event'
 event.on_nth_tick(30, on_tick)
 event.on_init(on_init)
-event.add(defines.events.on_entity_died, on_entity_died)
