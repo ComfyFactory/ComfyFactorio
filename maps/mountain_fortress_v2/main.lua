@@ -24,6 +24,10 @@ global.map_info.text = [[
 	This however will not be an easy task,
 	since their strength and resistance increases constantly over time.
 	
+	Delve deep for greater treasures, but also face increased dangers.
+	Mining productivity research, will overhaul your mining equipment,
+	reinforcing your pickaxe as well as increasing the size of your backpack.
+	
 	As you dig, you will encounter black bedrock that is just too solid for your pickaxe.
 	Some explosives could even break through the impassable dark rock.
 	All they need is a container and a well aimed shot.
@@ -77,7 +81,6 @@ function reset_map()
 	game.map_settings.enemy_expansion.settler_group_min_size = 32
 	game.map_settings.pollution.enabled = false
 	
-	game.forces.player.technologies["steel-axe"].researched = true
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({-2, 16}, global.active_surface)
 	
@@ -155,6 +158,13 @@ local function on_entity_damaged(event)
 	biters_chew_rocks_faster(event)
 end
 
+local function on_research_finished(event)
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
+	local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 2.5 -- +25% speed / level
+	if event.research.force.technologies["steel-axe"].researched then mining_speed_bonus = mining_speed_bonus + 1 end -- +100% speed for steel-axe research
+	event.research.force.manual_mining_speed_modifier = mining_speed_bonus
+end
+
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]	
 	
@@ -179,6 +189,7 @@ event.on_init(on_init)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 require "modules.rocks_yield_ore"
