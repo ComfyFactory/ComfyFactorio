@@ -36,7 +36,7 @@ market.caspules = {
 	["distractor-capsule"] = {value = 16, rarity = 5},
 	["destroyer-capsule"] = {value = 24, rarity = 7},
 	["discharge-defense-remote"] = {value = 64, rarity = 6},
-	["artillery-targeting-remote"] = {value = 16, rarity = 7},
+	["artillery-targeting-remote"] = {value = 32, rarity = 7},
 }
 
 market.armor = {
@@ -152,6 +152,7 @@ local function get_market_item_list(market_types, rarity)
 			if item.rarity <= rarity then
 				local price = math.random(math.floor(item.value * 0.75), math.floor(item.value * 1.25))
 				if price < 1 then price = 1 end
+				if price > 64000 then price = 64000 end
 				list[#list + 1] = {price = {{"coin", price}}, offer = {type = 'give-item', item = k}}
 			end
 		end
@@ -178,7 +179,7 @@ function random_type_market(surface, position, rarity)
 	if not items then return end
 	if #items > 0 then table.shuffle_table(items) end
 	local market = surface.create_entity({name = "market", position = position})
-	for i = 1, math.random(4, 10), 1 do
+	for i = 1, math.random(5, 10), 1 do
 		if not items[i] then break end
 		market.add_market_item(items[i])
 	end

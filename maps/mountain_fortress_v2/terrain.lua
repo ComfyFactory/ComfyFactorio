@@ -3,8 +3,9 @@ local simplex_noise = require "utils.simplex_noise".d2
 local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local noises = {
-	["large_caves"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
-	["small_caves"] = {{modifier = 0.008, weight = 1}, {modifier = 0.03, weight = 0.15}, {modifier = 0.25, weight = 0.05}},
+	["no_rocks"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
+	["large_caves"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},	
+	["small_caves"] = {{modifier = 0.008, weight = 1}, {modifier = 0.03, weight = 0.15}, {modifier = 0.25, weight = 0.05}},	
 	["cave_ponds"] = {{modifier = 0.01, weight = 1}, {modifier = 0.1, weight = 0.06}},
 }
 local caves_start = -360
@@ -31,45 +32,60 @@ end
 local function process_rock_chunk_position(p, seed, tiles, entities, markets, treasure)
 	local m = get_cave_density_modifer(p.y)
 	
-	local noise_large_caves = get_noise("large_caves", p, seed)
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 	local small_caves = get_noise("small_caves", p, seed)
 	
 	if noise_cave_ponds < 0.08 and noise_cave_ponds > -0.08 then
-		if small_caves > 0.45 then
+		if small_caves > 0.55 then
 			tiles[#tiles + 1] = {name = "out-of-map", position = p}
 			return
 		end
-		if small_caves < -0.45 then
+		if small_caves < -0.55 then
 			tiles[#tiles + 1] = {name = "out-of-map", position = p}
 			return
 		end
 	end	
 	
+	local no_rocks = get_noise("no_rocks", p, seed + 25000)
+	local noise_large_caves = get_noise("large_caves", p, seed)
+	
 	if noise_large_caves > m * -1 and noise_large_caves < m then	
+	
+		--Green Water Ponds
 		if noise_cave_ponds > 0.80 then
 			tiles[#tiles + 1] = {name = "deepwater-green", position = p}
 			if math_random(1,16) == 1 then entities[#entities + 1] = {name="fish", position=p} end
 			return
 		end
+		
+		--Market Spots 
 		if noise_cave_ponds < -0.80 then
-			tiles[#tiles + 1] = {name = "grass-2", position = p}
+			tiles[#tiles + 1] = {name = "grass-" .. math_random(1, 3), position = p}
 			if math_random(1,64) == 1 then markets[#markets + 1] = p end
-			if math_random(1,96) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 250} end
-			if math_random(1,256) == 1 then
-				wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
-				entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
-			end
+			if math_random(1,32) == 1 then entities[#entities + 1] = {name = "tree-0" .. math_random(1, 9), position=p} end
 			return
 		end
+				
+		--Rock Free Zones
+		if p.y < -64 + noise_cave_ponds * 10 then
+			if no_rocks < 0.08 and no_rocks > -0.08 then
+				if small_caves > 0.25 then
+					tiles[#tiles + 1] = {name = "dirt-" .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+					if math_random(1,320) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
+					if math_random(1,128) == 1 then
+						wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
+						entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+					end
+					if math_random(1,1024) == 1 then treasure[#treasure + 1] = p end
+					return
+				end
+			end
+		end
 		
+		--Main Rock Terrain
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
-		if math_random(1,16384) == 1 then
-			wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
-			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
-		end
 		return
 	end
 	
@@ -84,15 +100,21 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 	end	
 	if math.abs(noise_large_caves) > m * 5 then
 		tiles[#tiles + 1] = {name = "grass-2", position = p}
-		if math_random(1,320) == 1 then
+		if math_random(1,384) == 1 then
 			wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
 			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 		end
 		return
 	end
+	if math.abs(noise_large_caves) > m * 4.75 then
+		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
+		return
+	end
 	
 	if small_caves > (m + 0.05) * -1 and small_caves < m - 0.05 then
-		tiles[#tiles + 1] = {name = "dirt-6", position = p}
+		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if math_random(1,5) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		if math_random(1, 512) == 1 then treasure[#treasure + 1] = p end
 		return
@@ -114,6 +136,17 @@ local function rock_chunk(surface, left_top)
 		end
 	end
 	surface.set_tiles(tiles, true)
+
+	if #markets > 0 then
+		local position = markets[math_random(1, #markets)]
+		if surface.count_entities_filtered{area = {{position.x - 96, position.y - 96}, {position.x + 96, position.y + 96}}, name = "market", limit = 1} == 0 then
+			local market = random_type_market(surface, position, math.abs(position.y) * 0.004)
+			market.destructible = false
+		end
+	end
+	
+	for _, p in pairs(treasure) do	treasure_chest(surface, p) end
+	
 	for _, e in pairs(entities) do
 		if game.entity_prototypes[e.name].type == "simple-entity" or game.entity_prototypes[e.name].type == "turret" then
 			surface.create_entity(e)
@@ -123,15 +156,6 @@ local function rock_chunk(surface, left_top)
 			end
 		end
 	end
-	--if #markets > 0 then secret_shop(markets[math_random(1, #markets)], surface) end  
-	if #markets > 0 then
-		local position = markets[math_random(1, #markets)]
-		if surface.count_entities_filtered{area = {{position.x - 96, position.y - 96}, {position.x + 96, position.y + 96}}, name = "market", limit = 1} == 0 then
-			local market = random_type_market(surface, position, math.abs(position.y) * 0.004)
-			market.destructible = false
-		end
-	end
-	for _, p in pairs(treasure) do	treasure_chest(surface, p) end
 end
 
 local function border_chunk(surface, left_top)
@@ -236,5 +260,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(5, process_chunk_queue)
+event.on_nth_tick(8, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
