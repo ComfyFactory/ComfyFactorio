@@ -40,13 +40,6 @@ local function acid_nova(entity)
 	return true
 end
 
-local function spawn_worm(entity)
-	if global.wave_defense.threat < 10000 then return end
-	if math_random(1, 1024) ~= 1 then return end
-	
-	
-end
-
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
 	if event.entity.type ~= "unit" then return end
@@ -54,8 +47,6 @@ local function on_entity_died(event)
 	global.wave_defense.active_biters[event.entity.unit_number] = nil
 	global.wave_defense.active_biter_count = global.wave_defense.active_biter_count - 1
 
-	if acid_nova(event.entity) then return end
-	if acid_nova(event.entity) then return end
 	if acid_nova(event.entity) then return end
 end
 
