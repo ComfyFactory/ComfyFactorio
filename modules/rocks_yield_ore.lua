@@ -81,7 +81,7 @@ local function get_amount(entity)
 	local amount = base_amount + (distance_to_center * distance_modifier)
 	if amount > maximum_amount then amount = maximum_amount end
 	
-	local m = (75 + math_random(0, 50)) * 0.01
+	local m = (70 + math_random(0, 60)) * 0.01
 	
 	amount = math.floor(amount * rock_yield[entity.name] * m)
 	if amount < 1 then amount = 1 end
@@ -136,7 +136,7 @@ local function on_entity_died(event)
 		if event.cause then
 			if event.cause.valid then
 				if event.cause.force.index == 2 then
-					amount = math_random(4, 6)
+					amount = math_random(4, 8)
 				end
 			end
 		end		

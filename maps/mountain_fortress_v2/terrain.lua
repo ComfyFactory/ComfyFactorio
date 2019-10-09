@@ -61,7 +61,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		--Market Spots 
 		if noise_cave_ponds < -0.80 then
 			tiles[#tiles + 1] = {name = "grass-" .. math_random(1, 3), position = p}
-			if math_random(1,64) == 1 then markets[#markets + 1] = p end
+			if math_random(1,32) == 1 then markets[#markets + 1] = p end
 			if math_random(1,32) == 1 then entities[#entities + 1] = {name = "tree-0" .. math_random(1, 9), position=p} end
 			return
 		end
@@ -71,7 +71,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 			if no_rocks < 0.08 and no_rocks > -0.08 then
 				if small_caves > 0.20 then
 					tiles[#tiles + 1] = {name = "dirt-" .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
-					if math_random(1,320) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
+					if math_random(1,500) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 					if math_random(1,96) == 1 then
 						wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
 						entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
@@ -235,16 +235,15 @@ end
 local function process_chunk(surface, left_top)
 	if not surface then return end
 	if not surface.valid then return end
-	if left_top.x >= 640 then return end
-	if left_top.x < -640 then return end
-	--game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
+	if left_top.x >= 768 then return end
+	if left_top.x < -768 then return end
+	if left_top.y > 0 then game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}}) end	
 	if left_top.y == 64 and left_top.x == 64 then
 		local p = global.locomotive.position
 		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 8}}, force = "neutral"})) do	entity.destroy() end
 	end
 	if left_top.y < 0 then rock_chunk(surface, left_top) return end
-	if left_top.y > 128 then out_of_map(surface, left_top) return end
-	--if left_top.y > 64 or left_top.x > 480 or left_top.x < -512 then biter_chunk(surface, left_top) return end
+	if left_top.y > 96 then out_of_map(surface, left_top) return end
 	if left_top.y > 64 then biter_chunk(surface, left_top) return end
 	if left_top.y >= 0 then border_chunk(surface, left_top) return end
 end
@@ -263,5 +262,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(8, process_chunk_queue)
+event.on_nth_tick(5, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

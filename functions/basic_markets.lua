@@ -23,7 +23,7 @@ market.ammo = {
 	["artillery-shell"] = {value = 64, rarity = 7},
 	["rocket"] = {value = 4, rarity = 3},
 	["explosive-rocket"] = {value = 12, rarity = 5},
-	["atomic-bomb"] = {value = 5000, rarity = 10},
+	["atomic-bomb"] = {value = 10000, rarity = 10},
 	["flamethrower-ammo"] = {value = 20, rarity = 6},
 	["explosives"] = {value = 2, rarity = 1},
 }

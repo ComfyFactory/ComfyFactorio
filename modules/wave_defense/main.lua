@@ -287,14 +287,14 @@ function reset_wave_defense()
 		unit_groups = {},
 		unit_group_last_command = {},
 		unit_group_command_delay = 3600 * 5,
-		unit_group_command_step_length = 96,
+		unit_group_command_step_length = 64,
 		max_group_size = 256,
-		max_active_unit_groups = 6,
-		max_active_biters = 256 * 6,
+		max_active_unit_groups = 8,
+		max_active_biters = 1280,
 		max_biter_age = 3600 * 60,
 		active_unit_group_count = 0,
 		active_biter_count = 0,
-		get_random_close_spawner_attempts = 2,
+		get_random_close_spawner_attempts = 3,
 		spawn_position = {x = 0, y = 64},
 		last_wave = game.tick,
 		next_wave = game.tick + 3600 * 5,
@@ -303,7 +303,7 @@ function reset_wave_defense()
 		game_lost = false,
 		threat = 0,
 		simple_entity_shredding_count_modifier = 0.0003,
-		simple_entity_shredding_cost_modifier = 0.005,		--threat cost for one health
+		simple_entity_shredding_cost_modifier = 0.01,		--threat cost for one health
 	}
 end
 

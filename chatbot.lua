@@ -1,30 +1,36 @@
 local event = require 'utils.event'
 local session = require 'utils.session_data'
-local message_color = {r = 0.5, g = 0.3, b = 1}
+local font_color = {r = 150, g = 100, b = 255, a = 255}
+local font = "default-game"
 
 local brain = {
-    [1] = {"Our Discord server is at https://getcomfy.eu/discord"},
-    [2] = {"Need an admin? Type @Mods in game chat to notify moderators,", "or put a message in the discord help channel."}
+    [1] = {"Our Discord server is at: https://getcomfy.eu/discord"},
+    [2] = {"Need an admin? Type @Mods in game chat to notify moderators,", "or put a message in the discord help channel."},
+	[3] = {"Scenario repository for download:", "https://github.com/M3wM3w/ComfyFactorio"},
 }
 
 local links = {
-    ["discord"] = brain[1],
-    ["admin"] = brain[2],
-    ["administrator"] = brain[2],
-    ["mod"] = brain[2],
-    ["moderator"] = brain[2],
-    ["grief"] = brain[2],
-    ["troll"] = brain[2],
-    ["trolling"] = brain[2],
-    ["stealing"] = brain[2],
-    ["stole"] = brain[2],
-    ["griefer"] = brain[2],
-    ["greifer"] = brain[2]
+	["admin"] = brain[2],
+	["administrator"] = brain[2],
+	["discord"] = brain[1],
+	["download"] = brain[3],
+	["github"] = brain[3],
+	["greifer"] = brain[2],
+	["grief"] = brain[2],
+	["griefer"] = brain[2],
+	["griefing"] = brain[2],
+	["mod"] = brain[2],
+	["moderator"] = brain[2],
+	["scenario"] = brain[3],
+	["stealing"] = brain[2],
+	["stole"] = brain[2],
+	["troll"] = brain[2],
+	["trolling"] = brain[2],
 }
 
 local function on_player_created(event)
     local player = game.players[event.player_index]
-    player.print("Join the comfy discord >> getcomfy.eu/discord", message_color)
+    player.print("[font=" .. font .. "]" .. "Join the comfy discord >> getcomfy.eu/discord" .. "[/font]", font_color)
 end
 
 commands.add_command(
@@ -124,7 +130,7 @@ local function process_bot_answers(event)
         if links[word] then
             local player = game.players[event.player_index]
             for _, bot_answer in pairs(links[word]) do
-                player.print(bot_answer, message_color)
+                player.print("[font=" .. font .. "]" .. bot_answer .. "[/font]", font_color)
             end
             return
         end

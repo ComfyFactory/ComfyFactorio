@@ -45,7 +45,7 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16
 local function get_gen_settings()
 	local map = {
 		["seed"] = math.random(1, 1000000),
-		["width"] = 1280,
+		["width"] = 1536,
 		["water"] = 0.001,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -71,6 +71,11 @@ function reset_map()
 	
 	global.active_surface.request_to_generate_chunks({0,0}, 2)
 	global.active_surface.force_generate_chunk_requests()
+	
+	for x = -768 + 32, 768 - 32, 32 do
+		global.active_surface.request_to_generate_chunks({x, 96}, 1)
+		global.active_surface.force_generate_chunk_requests()
+	end
 	
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
@@ -104,6 +109,22 @@ local function protect_train(event)
 		end
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
+end
+
+local function neutral_force_player_damage_resistance(event)
+	if event.entity.force.index ~= 3 then return end  -- Neutral Force
+	if event.cause then
+		if event.cause.valid then
+			if event.cause.force.index == 2 then -- Enemy Force
+				return
+			end
+		end
+	end
+	if event.entity.health <= event.final_damage_amount then				
+		event.entity.die("neutral")
+		return
+	end
+	event.entity.health = event.entity.health + (event.final_damage_amount * 0.5)		
 end
 
 local function biters_chew_rocks_faster(event)
@@ -156,12 +177,15 @@ end
 local function on_entity_damaged(event)
 	if not event.entity.valid then	return end	
 	protect_train(event)
+	
+	if not event.entity.health then return end
 	biters_chew_rocks_faster(event)
+	neutral_force_player_damage_resistance(event)
 end
 
 local function on_research_finished(event)
 	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
-	local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 2.5 -- +25% speed / level
+	local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
 	if event.research.force.technologies["steel-axe"].researched then mining_speed_bonus = mining_speed_bonus + 1 end -- +100% speed for steel-axe research
 	event.research.force.manual_mining_speed_modifier = mining_speed_bonus
 end
@@ -182,7 +206,9 @@ local function on_player_joined_game(event)
 end
 
 local function on_init(surface)
-	global.rocks_yield_ore_distance_modifier = 0.1
+	global.rocks_yield_ore_maximum_amount = 250
+	global.rocks_yield_ore_base_amount = 50
+	global.rocks_yield_ore_distance_modifier = 0.04
 	reset_map()
 end
 
