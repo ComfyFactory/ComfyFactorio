@@ -62,7 +62,7 @@ end
 local function update_player_stats(player)
 	local strength = global.rpg[player.index].strength - 10
 	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = strength * 0.2
-	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.005
+	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = strength * 0.006
 	
 	local magic = global.rpg[player.index].magic - 10
 	local v = magic * 0.15
@@ -559,6 +559,7 @@ end
 
 local function on_player_respawned(event)
 	draw_level_text(game.players[event.player_index])
+	update_player_stats(game.players[event.player_index])
 end
 
 local function on_player_joined_game(event)
@@ -566,7 +567,8 @@ local function on_player_joined_game(event)
 	if not global.rpg[player.index] then
 		rpg_reset_player(player) 
 	end
-	draw_gui_char_button(player)	
+	draw_gui_char_button(player)
+	if not player.character then return end
 	update_player_stats(player)
 	draw_level_text(player)
 end
