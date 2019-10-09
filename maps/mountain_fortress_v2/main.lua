@@ -45,7 +45,7 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16
 local function get_gen_settings()
 	local map = {
 		["seed"] = math.random(1, 1000000),
-		["width"] = 768,
+		["width"] = 1280,
 		["water"] = 0.001,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -182,6 +182,7 @@ local function on_player_joined_game(event)
 end
 
 local function on_init(surface)
+	global.rocks_yield_ore_distance_modifier = 0.1
 	reset_map()
 end
 

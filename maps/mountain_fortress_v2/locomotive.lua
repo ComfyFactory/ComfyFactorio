@@ -26,7 +26,6 @@ local function remove_acceleration()
 	if global.locomotive_driver then global.locomotive_driver.destroy() end
 end
 
----DESYNC?
 local function set_player_spawn()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
@@ -44,14 +43,31 @@ local function set_player_spawn_and_refill_fish()
 	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
 end
 
+local function force_nearby_units_to_attack()
+	if not global.locomotive_cargo then return end
+	if not global.locomotive_cargo.valid then return end
+	
+	global.locomotive_cargo.surface.set_multi_command({
+		command={
+			type = defines.command.attack,
+			target = global.locomotive_cargo,
+			distraction = defines.distraction.none
+			},
+		unit_count = 4,
+		force = "enemy",
+		unit_search_distance = 256
+	})
+end
+
 local function tick()
 	if not global.locomotive then return end
 	if not global.locomotive.valid then return end
 	
 	if game.tick % 30 == 0 then
-		accelerate()
-		if game.tick % 900 == 0 then
-			set_player_spawn_and_refill_fish() 
+		accelerate()		
+		if game.tick % 1800 == 0 then
+			--force_nearby_units_to_attack()
+			set_player_spawn_and_refill_fish()
 		end
 	else
 		remove_acceleration()

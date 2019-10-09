@@ -69,10 +69,10 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		--Rock Free Zones
 		if p.y < -64 + noise_cave_ponds * 10 then
 			if no_rocks < 0.08 and no_rocks > -0.08 then
-				if small_caves > 0.25 then
+				if small_caves > 0.20 then
 					tiles[#tiles + 1] = {name = "dirt-" .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 					if math_random(1,320) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
-					if math_random(1,128) == 1 then
+					if math_random(1,96) == 1 then
 						wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
 						entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 					end
@@ -233,6 +233,10 @@ local function out_of_map(surface, left_top)
 end
 
 local function process_chunk(surface, left_top)
+	if not surface then return end
+	if not surface.valid then return end
+	if left_top.x >= 640 then return end
+	if left_top.x < -640 then return end
 	--game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
 	if left_top.y == 64 and left_top.x == 64 then
 		local p = global.locomotive.position
@@ -246,12 +250,8 @@ local function process_chunk(surface, left_top)
 end
 
 local function process_chunk_queue()
-	for k, chunk in pairs(global.chunk_queue) do
-		if chunk.surface then
-			if chunk.surface.valid then
-				process_chunk(chunk.surface, chunk.left_top)
-			end
-		end
+	for k, chunk in pairs(global.chunk_queue) do		
+		process_chunk(game.surfaces[chunk.surface_index], chunk.left_top)		
 		global.chunk_queue[k] = nil
 		return
 	end
@@ -259,7 +259,7 @@ end
 
 local function on_chunk_generated(event)
 	if event.surface.index == 1 then return end
-	global.chunk_queue[#global.chunk_queue + 1] = {left_top = event.area.left_top, surface = event.surface}
+	global.chunk_queue[#global.chunk_queue + 1] = {left_top = {x = event.area.left_top.x, y = event.area.left_top.y}, surface_index = event.surface.index}
 end
 
 local event = require 'utils.event'

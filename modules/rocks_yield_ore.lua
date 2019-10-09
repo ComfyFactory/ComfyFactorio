@@ -1,6 +1,6 @@
 --destroying and mining rocks yields ore -- load as last module
 
-local event = require 'utils.event'
+local math_random = math.random
 
 local rock_yield = {
 	["rock-big"] = 1,
@@ -40,7 +40,7 @@ for _, t in pairs (rock_mining_chance_weights) do
 end
 
 local function create_particles(surface, name, position, amount, cause_position)
-	local math_random = math.random
+	
 	
 	local direction_mod = (-100 + math_random(0,200)) * 0.0004
 	local direction_mod_2 = (-100 + math_random(0,200)) * 0.0004
@@ -69,16 +69,23 @@ local function create_particles(surface, name, position, amount, cause_position)
 end
 
 local function get_amount(entity)
-	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
-	local amount = 35 + (distance_to_center * 0.15)
-	if amount > 100 then amount = 100 end
-	amount = rock_yield[entity.name] * amount
+	local distance_to_center = math.floor(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
 	
-	if not global.rock_yield_amount_modifier then global.rock_yield_amount_modifier = 1 end
-	amount = amount * global.rock_yield_amount_modifier
+	local distance_modifier = 0.25
+	local base_amount = 35
+	local maximum_amount = 100
+	if global.rocks_yield_ore_distance_modifier then distance_modifier = global.rocks_yield_ore_distance_modifier end
+	if global.rocks_yield_ore_base_amount then base_amount = global.rocks_yield_ore_base_amount end
+	if global.rocks_yield_ore_maximum_amount then maximum_amount = global.rocks_yield_ore_maximum_amount end
 	
-	amount = math.random(math.ceil(amount * 0.5), math.ceil(amount * 1.5))		
+	local amount = base_amount + (distance_to_center * distance_modifier)
+	if amount > maximum_amount then amount = maximum_amount end
 	
+	local m = (75 + math_random(0, 50)) * 0.01
+	
+	amount = math.floor(amount * rock_yield[entity.name] * m)
+	if amount < 1 then amount = 1 end
+		
 	return amount
 end
 
@@ -87,7 +94,7 @@ local function on_player_mined_entity(event)
 	if not entity.valid then return end
 	if rock_yield[entity.name] then
 		event.buffer.clear()
-		local ore = ore_raffle[math.random(1, #ore_raffle)]
+		local ore = ore_raffle[math_random(1, #ore_raffle)]
 		
 		local player = game.players[event.player_index]
 		local inventory = player.get_inventory(defines.inventory.character_main)
@@ -120,11 +127,21 @@ end
 local function on_entity_died(event)	
 	local entity = event.entity
 	if not entity.valid then return end
+	
 	if rock_yield[entity.name] then
 		local surface = entity.surface
 		local amount = get_amount(entity)
 		amount = math.ceil(amount * 0.1)
-		local ore = ore_raffle[math.random(1, #ore_raffle)]
+		
+		if event.cause then
+			if event.cause.valid then
+				if event.cause.force.index == 2 then
+					amount = math_random(4, 6)
+				end
+			end
+		end		
+		
+		local ore = ore_raffle[math_random(1, #ore_raffle)]
 		local pos = {entity.position.x, entity.position.y}
 		entity.destroy()
 		surface.spill_item_stack(pos,{name = ore, count = amount}, true)
@@ -132,5 +149,6 @@ local function on_entity_died(event)
 	end
 end
 
+local event = require 'utils.event'
 event.add(defines.events.on_entity_died, on_entity_died)	
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

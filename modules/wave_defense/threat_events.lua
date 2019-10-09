@@ -68,9 +68,10 @@ local function shred_simple_entities(entity)
 	if global.wave_defense.threat < 10000 then return end
 	local simple_entities = entity.surface.find_entities_filtered({type = "simple-entity", area = {{entity.position.x - 3, entity.position.y - 3},{entity.position.x + 3, entity.position.y + 3}}})
 	if #simple_entities == 0 then return end
-	if #simple_entities > 1 then table.shuffle_table(simple_entities) end
-	
-	local count = math.random(1, math.floor(global.wave_defense.threat * 0.0003))
+	if #simple_entities > 1 then table.shuffle_table(simple_entities) end	
+	local r = math.floor(global.wave_defense.threat * global.wave_defense.simple_entity_shredding_count_modifier)
+	if r < 1 then r = 1 end
+	local count = math.random(1, r)
 	local damage_dealt = 0
 	for i = 1, count, 1 do
 		if not simple_entities[i] then break end
@@ -83,7 +84,7 @@ local function shred_simple_entities(entity)
 		end
 	end
 	if damage_dealt == 0 then return end
-	local threat_cost = math.floor(damage_dealt * 0.01)
+	local threat_cost = math.floor(damage_dealt * global.wave_defense.simple_entity_shredding_cost_modifier)
 	if threat_cost < 1 then threat_cost = 1 end
 	global.wave_defense.threat = global.wave_defense.threat - threat_cost
 end

@@ -37,7 +37,7 @@ local function get_random_close_spawner()
 	if not spawners[1] then return false end
 	local center = global.wave_defense.target.position
 	local spawner = spawners[math_random(1,#spawners)]
-	for i = 1, 5, 1 do
+	for i = 1, global.wave_defense.get_random_close_spawner_attempts, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
 		if (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then spawner = spawner_2 end	
 	end	
@@ -84,7 +84,7 @@ end
 local function spawn_biter()
 	if global.wave_defense.threat <= 0 then return false end
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
-	local name = wave_defense_roll_biter_name()
+	local name = wave_defense_roll_biter_name()	
 	local position = global.wave_defense.surface.find_non_colliding_position(name, global.wave_defense.spawn_position, 32, 1)
 	if not position then return false end
 	local biter = global.wave_defense.surface.create_entity({name = name, position = position, force = "enemy"})
@@ -255,7 +255,9 @@ local function update_gui(player)
 	if global.wave_defense.wave_number == 0 then player.gui.top.wave_defense.label.caption = "First wave in " .. math.floor((global.wave_defense.next_wave - game.tick) / 60) + 1 end
 	local interval = global.wave_defense.next_wave - global.wave_defense.last_wave
 	player.gui.top.wave_defense.progressbar.value = 1 - (global.wave_defense.next_wave - game.tick) / interval
-	player.gui.top.wave_defense.threat.caption = "Threat: " .. global.wave_defense.threat
+	local value = global.wave_defense.threat
+	if value < 0 then value = 0 end
+	player.gui.top.wave_defense.threat.caption = "Threat: " .. value
 end
 
 local function on_tick()
@@ -292,6 +294,7 @@ function reset_wave_defense()
 		max_biter_age = 3600 * 60,
 		active_unit_group_count = 0,
 		active_biter_count = 0,
+		get_random_close_spawner_attempts = 2,
 		spawn_position = {x = 0, y = 64},
 		last_wave = game.tick,
 		next_wave = game.tick + 3600 * 5,
@@ -299,6 +302,8 @@ function reset_wave_defense()
 		wave_number = 0,
 		game_lost = false,
 		threat = 0,
+		simple_entity_shredding_count_modifier = 0.0003,
+		simple_entity_shredding_cost_modifier = 0.005,		--threat cost for one health
 	}
 end
 
