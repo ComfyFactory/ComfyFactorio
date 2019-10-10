@@ -165,16 +165,24 @@ local function auto_stash(player)
 	
 	chest_floating_text_y_offsets = {}
 	
+	local hotbar_items = {}
+	for i = 1, 100, 1 do
+		local prototype = player.get_quick_bar_slot(i)
+		if prototype then
+			hotbar_items[prototype.name] = true
+		end
+	end
+	
 	for name, count in pairs(inventory.get_contents()) do
-		if not inventory.find_item_stack(name).grid then
-			insert_item_into_chest(inventory, chests, filtered_chests, name, count)	
+		if not inventory.find_item_stack(name).grid and not hotbar_items[name] then	
+			insert_item_into_chest(inventory, chests, filtered_chests, name, count)			
 		end
 	end
 end
 
 local function create_gui_button(player)
 	if player.gui.top.auto_stash then return end
-	local b = player.gui.top.add({type = "sprite-button", sprite = "item/wooden-chest", name = "auto_stash", tooltip = "Sort your inventory into nearby chests."})
+	local b = player.gui.top.add({type = "sprite-button", sprite = "item/wooden-chest", name = "auto_stash", tooltip = "Sort your inventory into nearby chests,\nexcluding quickbar items."})
 	b.style.font_color = {r=0.11, g=0.8, b=0.44}
 	b.style.font = "heading-1"
 	b.style.minimal_height = 38
