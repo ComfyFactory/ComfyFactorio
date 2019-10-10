@@ -4,6 +4,7 @@ local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local noises = {
 	["no_rocks"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
+	["no_rocks_2"] = {{modifier = 0.013, weight = 1}, {modifier = 0.1, weight = 0.1}},
 	["large_caves"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},	
 	["small_caves"] = {{modifier = 0.008, weight = 1}, {modifier = 0.03, weight = 0.15}, {modifier = 0.25, weight = 0.05}},	
 	["cave_ponds"] = {{modifier = 0.01, weight = 1}, {modifier = 0.1, weight = 0.06}},
@@ -98,10 +99,13 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 			end
 		end
 		
-		--Main Rock Terrain
+		--Main Rock Terrain	
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
-		if math_random(1,4) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
+		local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
+		if no_rocks_2 > 0.82 then return end
+		if no_rocks_2 < -0.82 then return end
+		if math_random(1,4) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end		
 		return
 	end
 	

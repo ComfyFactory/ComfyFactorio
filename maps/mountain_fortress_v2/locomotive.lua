@@ -25,7 +25,28 @@ end
 local function remove_acceleration()
 	if global.locomotive_driver then global.locomotive_driver.destroy() end
 end
-
+--[[
+local function constant_speed()
+	if not global.locomotive_cargo then return end
+	if not global.locomotive_cargo.valid then return end
+	if not global.locomotive_cargo.train.locomotives then return end
+	if not global.locomotive_cargo.train.locomotives.front_movers then return end
+	if not global.locomotive_cargo.train.locomotives.front_movers[1] then return end
+	local loco = global.locomotive_cargo.train.locomotives.front_movers[1]
+	local front_rail_connection = global.locomotive_cargo.train.front_rail.
+defines.rail_direction.front
+defines.rail_direction.back	
+	if loco.speed < 1 and  then
+		local driver = loco.get_driver()
+		if driver then return	end	
+		global.locomotive_driver = loco.surface.create_entity({name = "character", position = loco.position, force = "player"})
+		global.locomotive_driver.driving = true
+		global.locomotive_driver.riding_state = {acceleration = defines.riding.acceleration.accelerating, direction = defines.riding.direction.straight}
+	else
+		if global.locomotive_driver then global.locomotive_driver.destroy() end
+	end
+end
+]]
 local function set_player_spawn()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
@@ -62,12 +83,18 @@ end
 local function tick()
 	if not global.locomotive then return end
 	if not global.locomotive.valid then return end
-	
+	--constant_speed()
 	if game.tick % 30 == 0 then
 		accelerate()		
 		if game.tick % 1800 == 0 then
 			--force_nearby_units_to_attack()
 			set_player_spawn_and_refill_fish()
+			if global.game_reset_tick then
+				if global.game_reset_tick < game.tick then
+					global.game_reset_tick = nil
+					reset_map()
+				end
+			end
 		end
 	else
 		remove_acceleration()

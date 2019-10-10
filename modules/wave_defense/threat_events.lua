@@ -110,7 +110,6 @@ local function create_particles(entity)
 end
 
 local function shred_simple_entities(entity)
-	if math_random(1, 2) ~= 1 then return end
 	if global.wave_defense.threat < 5000 then return end
 	local simple_entities = entity.surface.find_entities_filtered({type = "simple-entity", area = {{entity.position.x - 3, entity.position.y - 3},{entity.position.x + 3, entity.position.y + 3}}})
 	if #simple_entities == 0 then return end

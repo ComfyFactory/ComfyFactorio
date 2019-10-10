@@ -416,9 +416,9 @@ function rpg_reset_player(player)
 		rotated_entity_delay = 0, gui_refresh_delay = 0,
 	}
 	draw_gui_char_button(player)
+	draw_level_text(player)
 	update_char_button(player)
 	update_player_stats(player)
-	draw_level_text(player)
 end
 
 function rpg_reset_all_players()
@@ -472,22 +472,22 @@ local function on_gui_click(event)
 end
 
 local xp_yield = {
-	["behemoth-biter"] = 16,
-	["behemoth-spitter"] = 16,
-	["behemoth-worm-turret"] = 48,
-	["big-biter"] = 8,
-	["big-spitter"] = 8,
+	["behemoth-biter"] = 12,
+	["behemoth-spitter"] = 12,
+	["behemoth-worm-turret"] = 40,
+	["big-biter"] = 6,
+	["big-spitter"] = 6,
 	["big-worm-turret"] = 32,
 	["biter-spawner"] = 32,	
 	["character"] = 16,
 	["gun-turret"] = 8,
 	["laser-turret"] = 16,
-	["medium-biter"] = 4,
-	["medium-spitter"] = 4,
-	["medium-worm-turret"] = 16,
+	["medium-biter"] = 3,
+	["medium-spitter"] = 3,
+	["medium-worm-turret"] = 24,
 	["small-biter"] = 1,
 	["small-spitter"] = 1,
-	["small-worm-turret"] = 8,
+	["small-worm-turret"] = 16,
 	["spitter-spawner"] = 32,
 }
 
@@ -517,10 +517,10 @@ local function on_entity_damaged(event)
 end]]
 
 local function on_player_repaired_entity(event)
-	if math_random(1, 8) ~= 1 then return end
+	if math_random(1, 4) ~= 1 then return end
 	local player = game.players[event.player_index]
 	if not player.character then return end
-	gain_xp(player, 0.33)
+	gain_xp(player, 0.40)
 end
 
 local function on_player_rotated_entity(event)
@@ -543,7 +543,7 @@ local function on_pre_player_mined_item(event)
 	if not event.entity.valid then return end	
 	local player = game.players[event.player_index]
 	if event.entity.type == "resource" then gain_xp(player, 0.5) return end
-	if event.entity.force.name == "neutral" then gain_xp(player, 1.25 + event.entity.prototype.max_health * 0.0025) return end
+	if event.entity.force.name == "neutral" then gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035) return end
 	gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
 end
 

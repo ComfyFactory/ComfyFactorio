@@ -136,7 +136,7 @@ local function on_entity_died(event)
 		if event.cause then
 			if event.cause.valid then
 				if event.cause.force.index == 2 then
-					amount = math_random(4, 8)
+					amount = math_random(2, 6)
 				end
 			end
 		end		

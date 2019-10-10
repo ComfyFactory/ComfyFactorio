@@ -178,7 +178,7 @@ local function set_next_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
 	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 2
+	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 3
 	global.wave_defense.last_wave = global.wave_defense.next_wave
 	global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval
 end
@@ -366,9 +366,9 @@ function reset_wave_defense()
 		unit_group_last_command = {},
 		unit_group_command_delay = 3600 * 5,
 		unit_group_command_step_length = 48,
-		max_group_size = 256,
+		max_group_size = 192,
 		max_active_unit_groups = 8,
-		max_active_biters = 1280,
+		max_active_biters = 1024,
 		max_biter_age = 3600 * 60,
 		active_unit_group_count = 0,
 		active_biter_count = 0,

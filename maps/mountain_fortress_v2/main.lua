@@ -1,11 +1,11 @@
 -- Mountain digger fortress, protect the locomotive! -- by MewMew
 
+require "modules.biter_noms_you"
 require "modules.biter_evasion_hp_increaser"
 require "modules.wave_defense.main"
 --require "modules.dense_rocks"
 require "functions.soft_reset"
 require "functions.basic_markets"
---require "modules.dynamic_player_spawn"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.rocks_broken_paint_tiles"
@@ -41,6 +41,11 @@ require "maps.mountain_fortress_v2.explosives"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16}
+local treasure_chest_messages = {
+	"You notice an old crate within the rubble. It's filled with treasure!",
+	"You find a chest underneath the broken rocks. It's filled with goodies!",
+	"We has found the precious!",
+}
 
 local function get_gen_settings()
 	local map = {
@@ -96,9 +101,7 @@ function reset_map()
 	global.wave_defense.surface = global.active_surface
 	global.wave_defense.target = global.locomotive_cargo	
 	
-	global.wave_defense.wave_interval = 1500
-	
-	rpg_reset_all_players()
+	global.wave_defense.game_lost = false
 end
 
 local function protect_train(event)
@@ -143,24 +146,35 @@ local function hidden_biter(entity)
 	entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = entity.position})
 end
 
+local function hidden_treasure(event)
+	if math.random(1, 320) ~= 1 then return end
+	if event.entity.type ~= "simple-entity" then return end
+	game.players[event.player_index].print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r=0.98, g=0.66, b=0.22})
+	treasure_chest(event.entity.surface, event.entity.position)
+end
+
 local function on_player_mined_entity(event)
 	if not event.entity.valid then	return end	
 	if event.entity.force.index == 3 then
 		if math.random(1,32) == 1 then
 			hidden_biter(event.entity)
+			return
 		end
+		hidden_treasure(event)
 	end
 end
 
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
 	if event.entity == global.locomotive_cargo then	
-		game.print("The cargo was destroyed!")
-		reset_map()
+		game.print("The cargo was destroyed!")	
+		global.wave_defense.game_lost = true 
+		global.game_reset_tick = game.tick + 1800
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
-		--global.wave_defense.game_lost = true 
+		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
+		--rpg_reset_all_players()
 		return 
 	end
 	
@@ -170,7 +184,7 @@ local function on_entity_died(event)
 		end
 	end
 	if event.entity.force.index == 3 then
-		if math.random(1,16) == 1 then
+		if math.random(1,8) == 1 then
 			hidden_biter(event.entity) 
 		end
 	end
@@ -182,7 +196,7 @@ local function on_entity_damaged(event)
 	
 	if not event.entity.health then return end
 	biters_chew_rocks_faster(event)
-	neutral_force_player_damage_resistance(event)
+	--neutral_force_player_damage_resistance(event)
 end
 
 local function on_research_finished(event)
