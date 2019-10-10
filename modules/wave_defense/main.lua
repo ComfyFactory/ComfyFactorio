@@ -365,7 +365,7 @@ function reset_wave_defense()
 		unit_groups = {},
 		unit_group_last_command = {},
 		unit_group_command_delay = 3600 * 5,
-		unit_group_command_step_length = 64,
+		unit_group_command_step_length = 48,
 		max_group_size = 256,
 		max_active_unit_groups = 8,
 		max_active_biters = 1280,
@@ -383,10 +383,10 @@ function reset_wave_defense()
 		threat = 0,
 		simple_entity_shredding_count_modifier = 0.0003,
 		simple_entity_shredding_cost_modifier = 0.01,			--threat cost for one health
-		nest_building_density = 16,										--lower values = more dense building
-		nest_building_chance = 8,											--high value = less chance
-		worm_building_density = 16,									--lower values = more dense building
-		worm_building_chance = 8,										--high value = less chance
+		nest_building_density = 32,										--lower values = more dense building
+		nest_building_chance = 16,										--high value = less chance
+		worm_building_density = 8,										--lower values = more dense building
+		worm_building_chance = 4,										--high value = less chance
 	}
 end
 

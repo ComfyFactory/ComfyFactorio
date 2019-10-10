@@ -96,7 +96,9 @@ function reset_map()
 	global.wave_defense.surface = global.active_surface
 	global.wave_defense.target = global.locomotive_cargo	
 	
-	if global.rpg then rpg_reset_all_players() end
+	global.wave_defense.wave_interval = 1500
+	
+	rpg_reset_all_players()
 end
 
 local function protect_train(event)
