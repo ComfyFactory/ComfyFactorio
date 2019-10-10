@@ -364,7 +364,7 @@ function reset_wave_defense()
 		active_biters = {},
 		unit_groups = {},
 		unit_group_last_command = {},
-		unit_group_command_delay = 3600 * 5,
+		unit_group_command_delay = 3600 * 15,
 		unit_group_command_step_length = 48,
 		max_group_size = 192,
 		max_active_unit_groups = 8,
@@ -382,11 +382,11 @@ function reset_wave_defense()
 		game_lost = false,
 		threat = 0,
 		simple_entity_shredding_count_modifier = 0.0003,
-		simple_entity_shredding_cost_modifier = 0.01,			--threat cost for one health
-		nest_building_density = 32,										--lower values = more dense building
-		nest_building_chance = 16,										--high value = less chance
+		simple_entity_shredding_cost_modifier = 0.005,		--threat cost for one health
+		nest_building_density = 64,										--lower values = more dense building
+		nest_building_chance = 8,											--high value = less chance
 		worm_building_density = 8,										--lower values = more dense building
-		worm_building_chance = 4,										--high value = less chance
+		worm_building_chance = 2,										--high value = less chance
 	}
 end
 

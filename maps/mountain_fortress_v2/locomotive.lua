@@ -14,6 +14,23 @@ function locomotive_spawn(surface, position)
 	global.locomotive_cargo.operable = false
 end
 
+local function fish_tag()
+	if not global.locomotive_cargo then return end
+	if not global.locomotive_cargo.valid then return end
+	if global.locomotive_tag then
+		if global.locomotive_tag.valid then
+			if global.locomotive_tag.position.x == global.locomotive_cargo.position.x and global.locomotive_tag.position.y == global.locomotive_cargo.position.y then return end
+			global.locomotive_tag.destroy() 
+		end
+	end
+	global.locomotive_tag = global.locomotive_cargo.force.add_chart_tag(
+		global.locomotive_cargo.surface,
+		{icon = {type = 'item', name = 'raw-fish'},
+		position = global.locomotive_cargo.position,
+		text = " "
+	})
+end
+
 local function accelerate()
 	local driver = global.locomotive.get_driver()
 	if driver then return	end	
@@ -85,6 +102,7 @@ local function tick()
 	if not global.locomotive.valid then return end
 	--constant_speed()
 	if game.tick % 30 == 0 then
+		fish_tag()
 		accelerate()		
 		if game.tick % 1800 == 0 then
 			--force_nearby_units_to_attack()

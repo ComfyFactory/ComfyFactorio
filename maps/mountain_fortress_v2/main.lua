@@ -142,7 +142,7 @@ local function biters_chew_rocks_faster(event)
 end
 
 local function hidden_biter(entity)
-	wave_defense_set_biter_raffle(math.sqrt(entity.position.x ^ 2, entity.position.y ^ 2) * 0.65)
+	wave_defense_set_biter_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.45)
 	entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = entity.position})
 end
 

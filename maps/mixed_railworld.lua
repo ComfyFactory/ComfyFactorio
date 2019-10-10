@@ -2,7 +2,6 @@ local event = require 'utils.event'
 
 require "modules.spawners_contain_acid"
 require "modules.spawners_contain_biters"
-require "modules.dynamic_landfill"
 require "modules.dangerous_goods"
 require "modules.satellite_score"
 require "modules.splice_double"
