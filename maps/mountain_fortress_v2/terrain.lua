@@ -7,6 +7,7 @@ local noises = {
 	["large_caves"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},	
 	["small_caves"] = {{modifier = 0.008, weight = 1}, {modifier = 0.03, weight = 0.15}, {modifier = 0.25, weight = 0.05}},	
 	["cave_ponds"] = {{modifier = 0.01, weight = 1}, {modifier = 0.1, weight = 0.06}},
+	["cave_rivers"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.25}, {modifier = 0.05, weight = 0.01}},
 }
 local caves_start = -360
 
@@ -31,45 +32,60 @@ end
 
 local function process_rock_chunk_position(p, seed, tiles, entities, markets, treasure)
 	local m = get_cave_density_modifer(p.y)
-	
-	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
-	local small_caves = get_noise("small_caves", p, seed)
-	
-	if noise_cave_ponds < 0.08 and noise_cave_ponds > -0.08 then
-		if small_caves > 0.55 then
-			tiles[#tiles + 1] = {name = "out-of-map", position = p}
-			return
-		end
-		if small_caves < -0.55 then
-			tiles[#tiles + 1] = {name = "out-of-map", position = p}
-			return
-		end
-	end	
-	
-	local no_rocks = get_noise("no_rocks", p, seed + 25000)
+		
+	local small_caves = get_noise("small_caves", p, seed)	
 	local noise_large_caves = get_noise("large_caves", p, seed)
 	
 	if noise_large_caves > m * -1 and noise_large_caves < m then	
-	
+		
+		local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 		--Green Water Ponds
 		if noise_cave_ponds > 0.80 then
 			tiles[#tiles + 1] = {name = "deepwater-green", position = p}
 			if math_random(1,16) == 1 then entities[#entities + 1] = {name="fish", position=p} end
 			return
+		else
+			if noise_cave_ponds > 0.785 then
+				tiles[#tiles + 1] = {name = "dirt-7", position = p}
+				return 
+			end
+		end
+		
+		--Chasms
+		if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
+			if small_caves > 0.55 then
+				tiles[#tiles + 1] = {name = "out-of-map", position = p}
+				return
+			end
+			if small_caves < -0.55 then
+				tiles[#tiles + 1] = {name = "out-of-map", position = p}
+				return
+			end
+		end	
+		
+		--Rivers
+		local cave_rivers = get_noise("cave_rivers", p, seed + 100000)
+		if cave_rivers < 0.025 and cave_rivers > -0.025 then
+			if noise_cave_ponds > 0 then
+				tiles[#tiles + 1] = {name = "water-shallow", position = p}
+				if math_random(1,64) == 1 then entities[#entities + 1] = {name="fish", position=p} end
+				return				
+			end
 		end
 		
 		--Market Spots 
 		if noise_cave_ponds < -0.80 then
-			tiles[#tiles + 1] = {name = "grass-" .. math_random(1, 3), position = p}
+			tiles[#tiles + 1] = {name = "grass-" .. math.floor(noise_cave_ponds * 32) % 3 + 1, position = p}
 			if math_random(1,32) == 1 then markets[#markets + 1] = p end
 			if math_random(1,32) == 1 then entities[#entities + 1] = {name = "tree-0" .. math_random(1, 9), position=p} end
 			return
 		end
-				
-		--Rock Free Zones
+		
+		local no_rocks = get_noise("no_rocks", p, seed + 25000)
+		--Worm oil Zones
 		if p.y < -64 + noise_cave_ponds * 10 then
 			if no_rocks < 0.08 and no_rocks > -0.08 then
-				if small_caves > 0.20 then
+				if small_caves > 0.35 then
 					tiles[#tiles + 1] = {name = "dirt-" .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 					if math_random(1,500) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 					if math_random(1,96) == 1 then
@@ -84,7 +100,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		
 		--Main Rock Terrain
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
-		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+		if math_random(1,4) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
 		return
 	end
@@ -262,5 +278,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(5, process_chunk_queue)
+event.on_nth_tick(1, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

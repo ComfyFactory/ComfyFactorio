@@ -141,6 +141,8 @@ local function on_entity_died(event)
 			end
 		end		
 		
+		if amount > 16 then amount = 16 end
+		
 		local ore = ore_raffle[math_random(1, #ore_raffle)]
 		local pos = {entity.position.x, entity.position.y}
 		entity.destroy()

@@ -19,6 +19,7 @@ local experience_levels = {0}
 for a = 1, 9999, 1 do
 	experience_levels[#experience_levels + 1] = experience_levels[#experience_levels] + a * 8
 end
+local gain_info_tooltip = "XP gain from mining, building, moving, crafting, repairing and combat."
 
 local classes = {
 	["engineer"] = "ENGINEER",
@@ -180,14 +181,16 @@ local function draw_gui(player, forced)
 	add_gui_stat(t, global.rpg[player.index].level, 80)
 
 	add_gui_description(t, "EXPERIENCE", 100)
-	add_gui_stat(t, math.floor(global.rpg[player.index].xp), 125)
+	local e = add_gui_stat(t, math.floor(global.rpg[player.index].xp), 125)
+	e.tooltip = gain_info_tooltip
 	
 	add_gui_description(t, " ", 75)
 	add_gui_description(t, " ", 75)
 	
 	add_gui_description(t, "NEXT LEVEL", 100)
-	add_gui_stat(t, experience_levels[global.rpg[player.index].level + 1], 125)
-
+	local e = add_gui_stat(t, experience_levels[global.rpg[player.index].level + 1], 125)
+	e.tooltip = gain_info_tooltip
+	
 	add_separator(frame, 400)
 	
 	local t = frame.add({type = "table", column_count = 2})
