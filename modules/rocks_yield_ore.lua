@@ -1,6 +1,6 @@
 --destroying and mining rocks yields ore -- load as last module
-
 local math_random = math.random
+local max_spill = 64
 
 local rock_yield = {
 	["rock-big"] = 1,
@@ -105,22 +105,22 @@ local function on_player_mined_entity(event)
 			return
 		end
 				
-		local amount = get_amount(entity)
+		local count = get_amount(entity)
 		
-		local amount_to_spill = math.ceil(amount * 0.5)
-		local amount_to_insert = math.floor(amount * 0.5)
-		
-		
-		local inserted_count = player.insert({name = ore, count = amount_to_insert})
-		local amount_to_spill = amount_to_spill + (amount_to_insert - inserted_count)
-				
-		entity.surface.spill_item_stack(entity.position,{name = ore, count = amount_to_spill}, true)
-		
-		--entity.surface.create_entity({name = "flying-text", position = entity.position, text = amount .. " " .. texts[ore][1], color = texts[ore][2]})
-		entity.surface.create_entity({name = "flying-text", position = entity.position, text = "+" .. amount .. " [img=item/" .. ore .. "]", color = {r = 200, g = 160, b = 30}})
-		
+		entity.surface.create_entity({name = "flying-text", position = entity.position, text = "+" .. count .. " [img=item/" .. ore .. "]", color = {r = 200, g = 160, b = 30}})
 		create_particles(entity.surface, particles[ore], entity.position, 64, game.players[event.player_index].position)
 		
+		if count > max_spill then
+			entity.surface.spill_item_stack(entity.position,{name = ore, count = max_spill}, true)
+			count = count - max_spill
+			local inserted_count = player.insert({name = ore, count = count})
+			count = count - inserted_count
+			if count > 0 then
+				entity.surface.spill_item_stack(entity.position,{name = ore, count = count}, true)
+			end
+		else			
+			entity.surface.spill_item_stack(entity.position,{name = ore, count = count}, true)
+		end
 	end
 end
 
