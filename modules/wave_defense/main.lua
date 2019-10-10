@@ -132,6 +132,12 @@ local function spawn_unit_group()
 		if not biter then break end
 		unit_group.add_member(biter)
 	end
+	for i = 1, #global.wave_defense.unit_groups, 1 do
+		if not global.wave_defense.unit_groups[i] then
+			global.wave_defense.unit_groups[i] = unit_group
+			return true
+		end
+	end
 	global.wave_defense.unit_groups[#global.wave_defense.unit_groups + 1] = unit_group
 	return true
 end
@@ -328,7 +334,7 @@ local function on_tick()
 	
 	if game.tick > global.wave_defense.next_wave then	set_next_wave() end
 	
-	if game.tick % 180 == 0 then
+	if game.tick % 300 == 0 then
 		if game.tick % 1800 == 0 then
 			time_out_biters()
 		end
@@ -337,6 +343,8 @@ local function on_tick()
 		spawn_attack_groups()
 		set_unit_group_count()
 		give_commands_to_unit_groups()
+		build_nest()
+		build_worm()
 	end	
 end
 
@@ -365,7 +373,11 @@ function reset_wave_defense()
 		game_lost = false,
 		threat = 0,
 		simple_entity_shredding_count_modifier = 0.0003,
-		simple_entity_shredding_cost_modifier = 0.01,		--threat cost for one health
+		simple_entity_shredding_cost_modifier = 0.01,			--threat cost for one health
+		nest_building_density = 16,										--lower values = more dense building
+		nest_building_chance = 8,											--high value = less chance
+		worm_building_density = 16,									--lower values = more dense building
+		worm_building_chance = 8,										--high value = less chance
 	}
 end
 

@@ -7,8 +7,8 @@ return {
 	["medium-spitter"] = 4,
 	["small-biter"] = 1,
 	["small-spitter"] = 1,
-	["small-worm-turret"] = 16,		
-	["medium-worm-turret"] = 24,		
-	["big-worm-turret"] = 32,		
-	["behemoth-worm-turret"] = 48,
+	["small-worm-turret"] = 32,		
+	["medium-worm-turret"] = 48,		
+	["big-worm-turret"] = 64,		
+	["behemoth-worm-turret"] = 80,
 }
