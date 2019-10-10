@@ -62,28 +62,34 @@ local function set_main_target()
 	global.wave_defense.target = characters[math_random(1, #characters)]
 end
 
-local function get_side_target()
+local function set_side_target_list()
 	if not global.wave_defense.target then return false end
 	if not global.wave_defense.target.valid then return false end
-	local center_position = global.wave_defense.target.position
-
-	local side_targets = global.wave_defense.target.surface.find_entities_filtered({
+	global.wave_defense.side_targets = global.wave_defense.target.surface.find_entities_filtered({
 		area = {
-			{center_position.x - global.wave_defense.side_target_search_radius, center_position.y - global.wave_defense.side_target_search_radius},
-			{center_position.x + global.wave_defense.side_target_search_radius, center_position.y + global.wave_defense.side_target_search_radius}
+			{global.wave_defense.target.position.x - global.wave_defense.side_target_search_radius, global.wave_defense.target.position.y - global.wave_defense.side_target_search_radius},
+			{global.wave_defense.target.position.x + global.wave_defense.side_target_search_radius, global.wave_defense.target.position.y + global.wave_defense.side_target_search_radius}
 		},
 		force = global.wave_defense.target.force,
 		type = side_target_types
 	})
+end
 
-	if #side_targets == 0 then return false end
-	if #side_targets == 1 then return side_targets[1] end
-	local side_target = side_targets[math_random(1,#side_targets)]
-	for _ = 1, 7, 1 do
-		local new_target = side_targets[math_random(1,#side_targets)]
-		local side_target_distance = (center_position.x - side_target.position.x) ^ 2 + (center_position.y - side_target.position.y) ^ 2
-		local new_target_distance = (center_position.x - new_target.position.x) ^ 2 + (center_position.y - new_target.position.y) ^ 2
-		if new_target_distance > side_target_distance then side_target = new_target end	
+local function get_side_target()
+	if not global.wave_defense.side_targets then return false end
+	if #global.wave_defense.side_targets < 2 then return false end
+	local side_target = global.wave_defense.side_targets[math_random(1,#global.wave_defense.side_targets)]
+	if not side_target then return false end
+	if not side_target.valid then return false end
+	for _ = 1, 4, 1 do
+		local new_target = global.wave_defense.side_targets[math_random(1,#global.wave_defense.side_targets)]
+		if new_target then
+			if new_target.valid then
+				local side_target_distance = (global.wave_defense.target.position.x - side_target.position.x) ^ 2 + (global.wave_defense.target.position.y - side_target.position.y) ^ 2
+				local new_target_distance = (global.wave_defense.target.position.x - new_target.position.x) ^ 2 + (global.wave_defense.target.position.y - new_target.position.y) ^ 2
+				if new_target_distance > side_target_distance then side_target = new_target end		
+			end	
+		end		
 	end	
 	return side_target
 end
@@ -182,7 +188,11 @@ local function get_commmands(group)
 	local group_position = {x = group.position.x, y = group.position.y}
 	local step_length = global.wave_defense.unit_group_command_step_length
 	
-	local side_target = get_side_target()
+	local side_target = false
+	for _ = 1, 3, 1 do
+		side_target = get_side_target()
+		if side_target then break end
+	end
 	if side_target then
 		local target_position = side_target.position	
 		local distance_to_target = math.floor(math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
@@ -335,9 +345,8 @@ local function on_tick()
 	if game.tick > global.wave_defense.next_wave then	set_next_wave() end
 	
 	if game.tick % 300 == 0 then
-		if game.tick % 1800 == 0 then
-			time_out_biters()
-		end
+		if game.tick % 1800 == 0 then time_out_biters() end
+		if game.tick % 7200 == 0 then set_side_target_list() end
 		set_main_target()
 		set_enemy_evolution()
 		spawn_attack_groups()
@@ -364,7 +373,7 @@ function reset_wave_defense()
 		active_unit_group_count = 0,
 		active_biter_count = 0,
 		get_random_close_spawner_attempts = 3,
-		side_target_search_radius = 512,
+		side_target_search_radius = 768,
 		spawn_position = {x = 0, y = 64},
 		last_wave = game.tick,
 		next_wave = game.tick + 3600 * 5,
