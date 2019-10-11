@@ -29,7 +29,7 @@ market.ammo = {
 }
 
 market.caspules = {
-	["grenade"] = {value = 12, rarity = 1},
+	["grenade"] = {value = 16, rarity = 2},
 	["cluster-grenade"] = {value = 32, rarity = 5},
 	["poison-capsule"] = {value = 48, rarity = 6},
 	["slowdown-capsule"] = {value = 8, rarity = 1},

@@ -58,7 +58,7 @@ function treasure_chest(surface, position)
 		{{name = "advanced-circuit", count = math_random(50,150)}, weight = 3, evo_min = 0.4, evo_max = 1},
 		{{name = "electronic-circuit", count = math_random(50,150)}, weight = 3, evo_min = 0.0, evo_max = 0.4},
 		{{name = "processing-unit", count = math_random(50,150)}, weight = 3, evo_min = 0.7, evo_max = 1},
-		{{name = "explosives", count = math_random(40,50)}, weight = 10, evo_min = 0.0, evo_max = 1},
+		{{name = "explosives", count = math_random(50,150)}, weight = 20, evo_min = 0.0, evo_max = 1},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evo_min = 0.3, evo_max = 0.5},
 		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evo_min = 0.3, evo_max = 0.7},
 		--{{name = "computer", count = 1}, weight = 2, evo_min = 0, evo_max = 1},
@@ -156,7 +156,7 @@ function treasure_chest(surface, position)
 	local e = surface.create_entity({name = name, position=position, force="neutral"})	
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
-	for x = 1, math_random(3,4), 1 do
+	for x = 1, math_random(2,6), 1 do
 		local loot = chest_raffle[math_random(1,#chest_raffle)]
 		i.insert(loot)
 	end

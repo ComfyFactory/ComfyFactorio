@@ -10,6 +10,7 @@ end
 function build_nest()
 	if global.wave_defense.threat < 1000 then return end
 	if math_random(1, global.wave_defense.nest_building_chance) ~= 1 then return end
+	if #global.wave_defense.unit_groups == 0 then return end
 	local group = global.wave_defense.unit_groups[math_random(1, #global.wave_defense.unit_groups)]
 	if not group then return end
 	if not group.valid then return end
@@ -32,6 +33,7 @@ end
 function build_worm()
 	if global.wave_defense.threat < 1000 then return end
 	if math_random(1, global.wave_defense.worm_building_chance) ~= 1 then return end
+	if #global.wave_defense.unit_groups == 0 then return end
 	local group = global.wave_defense.unit_groups[math_random(1, #global.wave_defense.unit_groups)]
 	if not group then return end
 	if not group.valid then return end

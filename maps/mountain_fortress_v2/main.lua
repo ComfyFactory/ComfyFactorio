@@ -1,5 +1,6 @@
--- Mountain digger fortress, protect the locomotive! -- by MewMew
+-- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
+--require "modules.flashlight_toggle_button"
 require "modules.biter_noms_you"
 require "modules.biter_evasion_hp_increaser"
 require "modules.wave_defense.main"
@@ -16,29 +17,10 @@ require "modules.spawners_contain_biters"
 require "modules.map_info"
 require "modules.rpg"
 
-global.map_info = {}
-global.map_info.main_caption = "Mountain Fortress"
-global.map_info.sub_caption =  "    ..diggy diggy choo choo.."
-global.map_info.text = [[
-	The biters have catched the scent of fish in the cargo wagon.
-	Guide the choo into the mountain and protect it as long as possible!
-	This however will not be an easy task,
-	since their strength and resistance increases constantly over time.
-	
-	Delve deep for greater treasures, but also face increased dangers.
-	Mining productivity research, will overhaul your mining equipment,
-	reinforcing your pickaxe as well as increasing the size of your backpack.
-	
-	As you dig, you will encounter black bedrock that is just too solid for your pickaxe.
-	Some explosives could even break through the impassable dark rock.
-	All they need is a container and a well aimed shot.
-]]
-
 require "maps.mountain_fortress_v2.market"
 require "maps.mountain_fortress_v2.treasure"
 require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.locomotive"
---require "maps.mountain_fortress_v2.explosives"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16}
@@ -68,19 +50,21 @@ end
 function reset_map()
 	global.chunk_queue = {}
 	
-	if not global.active_surface then
-		global.active_surface = game.create_surface("mountain_fortress", get_gen_settings())
+	if not global.active_surface_index then
+		global.active_surface_index = game.create_surface("mountain_fortress", get_gen_settings()).index
 	else
-		game.forces.player.set_spawn_position({-2, 16}, global.active_surface)
-		global.active_surface = soft_reset_map(global.active_surface, get_gen_settings(), starting_items)
+		game.forces.player.set_spawn_position({-2, 16}, game.surfaces[global.active_surface_index])	
+		global.active_surface_index = soft_reset_map(game.surfaces[global.active_surface_index], get_gen_settings(), starting_items).index
 	end
 	
-	global.active_surface.request_to_generate_chunks({0,0}, 2)
-	global.active_surface.force_generate_chunk_requests()
+	local surface = game.surfaces[global.active_surface_index]
+
+	surface.request_to_generate_chunks({0,0}, 2)
+	surface.force_generate_chunk_requests()
 	
 	for x = -768 + 32, 768 - 32, 32 do
-		global.active_surface.request_to_generate_chunks({x, 96}, 1)
-		global.active_surface.force_generate_chunk_requests()
+		surface.request_to_generate_chunks({x, 96}, 1)
+		surface.force_generate_chunk_requests()
 	end
 	
 	game.map_settings.enemy_evolution.destroy_factor = 0
@@ -94,12 +78,12 @@ function reset_map()
 	game.map_settings.pollution.enabled = false
 	
 	game.forces.player.technologies["railway"].researched = true
-	game.forces.player.set_spawn_position({-2, 16}, global.active_surface)
+	game.forces.player.set_spawn_position({-2, 16}, surface)
 	
-	locomotive_spawn(global.active_surface, {x = 0, y = 16})
+	locomotive_spawn(surface, {x = 0, y = 16})
 	
 	reset_wave_defense()
-	global.wave_defense.surface = global.active_surface
+	global.wave_defense.surface = surface
 	global.wave_defense.target = global.locomotive_cargo	
 	
 	global.wave_defense.game_lost = false
@@ -170,7 +154,7 @@ local function on_entity_died(event)
 	if event.entity == global.locomotive_cargo then	
 		game.print("The cargo was destroyed!")	
 		global.wave_defense.game_lost = true 
-		global.game_reset_tick = game.tick + 1800
+		global.game_reset_tick = game.tick + 900
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
@@ -209,16 +193,17 @@ end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]	
+	local surface = game.surfaces[global.active_surface_index]
 	
 	if player.online_time == 0 then
-		player.teleport(global.active_surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(global.active_surface), 3, 0.5), global.active_surface)
+		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
 		end
 	end
 	
-	if player.surface.index ~= global.active_surface.index then
-		player.teleport(global.active_surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(global.active_surface), 3, 0.5), global.active_surface)
+	if player.surface.index ~= global.active_surface_index then
+		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
 	end
 end
 
@@ -227,6 +212,25 @@ local function on_init(surface)
 	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.04
 	
+	global.map_info = {}
+	global.map_info.main_caption = "Mountain Fortress"
+	global.map_info.sub_caption =  "    ..diggy diggy choo choo.."
+	global.map_info.text = table.concat({
+		"The biters have catched the scent of fish in the cargo wagon.\n",
+		"Guide the choo into the mountain and protect it as long as possible!\n",
+		"This however will not be an easy task,\n",
+		"since their strength and resistance increases constantly over time.\n",
+		"\n",
+		"Delve deep for greater treasures, but also face increased dangers.\n",
+		"Mining productivity research, will overhaul your mining equipment,\n",
+		"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
+		"\n",
+		"As you dig, you will encounter impassable dark chasms.\n",
+		"Some explosives may cause parts of the ceiling to crumble,\n",
+		"filling the void and creating new ways.\n",
+		"All they need is a container and a well aimed shot.\n",
+	})
+		
 	global.explosion_cells_destructible_tiles = {
 		["out-of-map"] = 2500,
 	}

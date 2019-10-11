@@ -6,9 +6,8 @@ local side_target_types = {"accumulator", "assembling-machine", "beacon", "boile
  "logistic-container", "mining-drill", "container", "pump", "radar", "reactor", "roboport", "rocket-silo", "solar-panel", "storage-tank",}
 
 local function debug_print(msg)
-	if global.wave_defense.debug then 
-		print("WaveDefense>> " .. msg) 
-	end
+	if not global.wave_defense.debug then return end 
+	print("WaveDefense: " .. msg) 
 end
 
 local function is_unit_valid(biter)
@@ -99,7 +98,7 @@ local function set_group_spawn_position()
 	if not spawner then return end
 	local position = global.wave_defense.surface.find_non_colliding_position("rocket-silo", spawner.position, 48, 1)
 	if not position then return end	
-	global.wave_defense.spawn_position = {x = position.x, y = position.y}
+	global.wave_defense.spawn_position = {x = math.floor(position.x), y = math.floor(position.y)}
 end
 
 local function set_enemy_evolution()
@@ -117,7 +116,7 @@ local function spawn_biter()
 	if global.wave_defense.threat <= 0 then return false end
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
 	local name = wave_defense_roll_biter_name()	
-	local position = global.wave_defense.surface.find_non_colliding_position(name, global.wave_defense.spawn_position, 32, 1)
+	local position = global.wave_defense.surface.find_non_colliding_position(name, global.wave_defense.spawn_position, 48, 2)
 	if not position then return false end
 	local biter = global.wave_defense.surface.create_entity({name = name, position = position, force = "enemy"})
 	biter.ai_settings.allow_destroy_when_commands_fail = false
@@ -132,6 +131,7 @@ local function spawn_unit_group()
 	if global.wave_defense.threat <= 0 then return false end
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
 	set_group_spawn_position()
+	debug_print("Spawning unit group at position:" .. global.wave_defense.spawn_position.x .." " .. global.wave_defense.spawn_position.y)
 	local unit_group = global.wave_defense.surface.create_unit_group({position = global.wave_defense.spawn_position, force = "enemy"})
 	for a = 1, global.wave_defense.group_size, 1 do
 		local biter = spawn_biter()
@@ -148,28 +148,26 @@ local function spawn_unit_group()
 	return true
 end
 
-local function set_unit_group_count()
-	c = 0
-	for k, group in pairs(global.wave_defense.unit_groups) do
-		if group.valid then
-			if #group.members > 0 then
-				c = c + 1
-			else
-				group.destroy()
-				global.wave_defense.unit_groups[k] = nil
-			end
-		else
-			global.wave_defense.unit_groups[k] = nil
+local function get_active_unit_groups_count()
+	local count = 0
+	for _, g in pairs(global.wave_defense.unit_groups) do
+		if g.valid then
+			count = count + 1
 		end
 	end
-	global.wave_defense.active_unit_group_count = c
+	debug_print("Active unit groups count: " .. count)
+	return count
 end
 
 local function spawn_attack_groups()
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
 	if global.wave_defense.threat <= 0 then return false end
 	wave_defense_set_biter_raffle(global.wave_defense.wave_number)
-	for a = 1, global.wave_defense.max_active_unit_groups - global.wave_defense.active_unit_group_count, 1 do
+	
+	local count = get_active_unit_groups_count()
+	if count >= global.wave_defense.max_active_unit_groups then return end
+	
+	for _ = 1, math_random(1,2), 1 do
 		if not spawn_unit_group() then break end
 	end
 end
@@ -178,7 +176,7 @@ local function set_next_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
 	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 3
+	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 2
 	global.wave_defense.last_wave = global.wave_defense.next_wave
 	global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval
 end
@@ -188,46 +186,48 @@ local function get_commmands(group)
 	local group_position = {x = group.position.x, y = group.position.y}
 	local step_length = global.wave_defense.unit_group_command_step_length
 	
-	local side_target = false
-	for _ = 1, 3, 1 do
-		side_target = get_side_target()
-		if side_target then break end
-	end
-	if side_target then
-		local target_position = side_target.position	
-		local distance_to_target = math.floor(math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
-		local steps = math.floor(distance_to_target / step_length) + 1
-		local vector = {math.round((target_position.x - group_position.x) / steps, 3), math.round((target_position.y - group_position.y) / steps, 3)}
-		
-		if global.wave_defense.debug then
-			print("side_target x" .. side_target.position.x .. " y" .. side_target.position.y)
-			print("distance_to_target " .. distance_to_target)
-			print("steps " .. steps)
-			print("vector " .. vector[1] .. "_" .. vector[2])
+	if math_random(1,3) ~= 1 then
+		local side_target = false
+		for _ = 1, 3, 1 do
+			side_target = get_side_target()
+			if side_target then break end
 		end
-		
-		for i = 1, steps, 1 do
-			group_position.x = group_position.x + vector[1]
-			group_position.y = group_position.y + vector[2]	
-			local position = group.surface.find_non_colliding_position("small-biter", group_position, 64, 2)
-			if position then
-				commands[#commands + 1] = {
-					type = defines.command.attack_area,
-					destination = {x = position.x, y = position.y},
-					radius = 16,
-					distraction = defines.distraction.by_anything
-				}
-				if global.wave_defense.debug then print(position) end
-			end		
+		if side_target then
+			local target_position = side_target.position	
+			local distance_to_target = math.floor(math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+			local steps = math.floor(distance_to_target / step_length) + 1
+			local vector = {math.round((target_position.x - group_position.x) / steps, 3), math.round((target_position.y - group_position.y) / steps, 3)}
+			
+			if global.wave_defense.debug then
+				print("side_target x" .. side_target.position.x .. " y" .. side_target.position.y)
+				print("distance_to_target " .. distance_to_target)
+				print("steps " .. steps)
+				print("vector " .. vector[1] .. "_" .. vector[2])
+			end
+			
+			for i = 1, steps, 1 do
+				group_position.x = group_position.x + vector[1]
+				group_position.y = group_position.y + vector[2]	
+				local position = group.surface.find_non_colliding_position("small-biter", group_position, 64, 2)
+				if position then
+					commands[#commands + 1] = {
+						type = defines.command.attack_area,
+						destination = {x = position.x, y = position.y},
+						radius = 16,
+						distraction = defines.distraction.by_anything
+					}
+					if global.wave_defense.debug then print(position) end
+				end		
+			end
+			
+			commands[#commands + 1] = {
+				type = defines.command.attack,
+				target = side_target,
+				distraction = defines.distraction.by_enemy,
+			}	
 		end
-		
-		commands[#commands + 1] = {
-			type = defines.command.attack,
-			target = side_target,
-			distraction = defines.distraction.by_enemy,
-		}	
 	end
-		
+	
 	local target_position = global.wave_defense.target.position	
 	local distance_to_target = math.floor(math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
 	local steps = math.floor(distance_to_target / step_length) + 1
@@ -350,7 +350,6 @@ local function on_tick()
 		set_main_target()
 		set_enemy_evolution()
 		spawn_attack_groups()
-		set_unit_group_count()
 		give_commands_to_unit_groups()
 		build_nest()
 		build_worm()
@@ -370,7 +369,6 @@ function reset_wave_defense()
 		max_active_unit_groups = 8,
 		max_active_biters = 1024,
 		max_biter_age = 3600 * 60,
-		active_unit_group_count = 0,
 		active_biter_count = 0,
 		get_random_close_spawner_attempts = 5,
 		side_target_search_radius = 768,

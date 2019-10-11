@@ -32,6 +32,8 @@ local function fish_tag()
 end
 
 local function accelerate()
+	if not global.locomotive then return end
+	if not global.locomotive.valid then return end
 	local driver = global.locomotive.get_driver()
 	if driver then return	end	
 	global.locomotive_driver = global.locomotive.surface.create_entity({name = "character", position = global.locomotive.position, force = "player"})
@@ -40,6 +42,8 @@ local function accelerate()
 end
 
 local function remove_acceleration()
+	if not global.locomotive then return end
+	if not global.locomotive.valid then return end
 	if global.locomotive_driver then global.locomotive_driver.destroy() end
 end
 --[[
@@ -98,14 +102,10 @@ local function force_nearby_units_to_attack()
 end
 
 local function tick()
-	if not global.locomotive then return end
-	if not global.locomotive.valid then return end
-	--constant_speed()
 	if game.tick % 30 == 0 then
 		fish_tag()
-		accelerate()		
+		accelerate()
 		if game.tick % 1800 == 0 then
-			--force_nearby_units_to_attack()
 			set_player_spawn_and_refill_fish()
 			if global.game_reset_tick then
 				if global.game_reset_tick < game.tick then

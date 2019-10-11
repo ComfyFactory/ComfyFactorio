@@ -56,6 +56,7 @@ require "modules.floaty_chat"
 --require "modules.more_attacks"
 --require "modules.evolution_extended"
 --require "modules.no_blueprint_library"
+--require "modules.explosives"
 -----------------------------
 
 ---- enable maps here ----

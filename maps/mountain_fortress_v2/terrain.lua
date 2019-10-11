@@ -31,6 +31,18 @@ function get_cave_density_modifer(y)
 	return m
 end
 
+local function get_replacement_tile(surface, position)
+	for i = 1, 128, 1 do
+		local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
+		table.shuffle_table(vectors)
+		for k, v in pairs(vectors) do
+			local tile = surface.get_tile(position.x + v[1], position.y + v[2])
+			if not tile.collides_with("resource-layer") then return tile.name end
+		end
+	end
+	return "grass-1"
+end
+
 local function process_rock_chunk_position(p, seed, tiles, entities, markets, treasure)
 	local m = get_cave_density_modifer(p.y)
 		
@@ -244,6 +256,17 @@ local function biter_chunk(surface, left_top)
 	for _, e in pairs(surface.find_entities_filtered({area = {{left_top.x, left_top.y},{left_top.x + 32, left_top.y + 32}}, type = "cliff"})) do	e.destroy() end
 end
 
+local function replace_water(surface, left_top)
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}
+			if surface.get_tile(p).collides_with("resource-layer") then
+				surface.set_tiles({{name = get_replacement_tile(surface, p), position = p}}, true)
+			end		
+		end
+	end	
+end
+
 local function out_of_map(surface, left_top)
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
@@ -257,7 +280,8 @@ local function process_chunk(surface, left_top)
 	if not surface.valid then return end
 	if left_top.x >= 768 then return end
 	if left_top.x < -768 then return end
-	if left_top.y > 0 then game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}}) end	
+	if left_top.y >= 0 then replace_water(surface, left_top) end
+	if left_top.y > 32 then game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}}) end	
 	if left_top.y == 64 and left_top.x == 64 then
 		local p = global.locomotive.position
 		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 8}}, force = "neutral"})) do	entity.destroy() end
@@ -282,5 +306,5 @@ local function on_chunk_generated(event)
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(6, process_chunk_queue)
+event.on_nth_tick(4, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

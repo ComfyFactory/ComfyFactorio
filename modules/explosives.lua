@@ -136,7 +136,7 @@ end
 local function tick(event)
 	for key, cell in pairs(global.explosion_cells) do
 		if cell.spawn_tick < game.tick then
-			life_cycle(cell, key)
+			life_cycle(cell)
 			global.explosion_cells[key] = nil
 		end
 	end
