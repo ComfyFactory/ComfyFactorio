@@ -243,7 +243,7 @@ local function get_commmands(group)
 	for i = 1, steps, 1 do
 		group_position.x = group_position.x + vector[1]
 		group_position.y = group_position.y + vector[2]	
-		local position = group.surface.find_non_colliding_position("small-biter", group_position, 64, 2)
+		local position = group.surface.find_non_colliding_position("small-biter", group_position, 64, 1)
 		if position then
 			commands[#commands + 1] = {
 				type = defines.command.attack_area,
@@ -364,15 +364,15 @@ function reset_wave_defense()
 		active_biters = {},
 		unit_groups = {},
 		unit_group_last_command = {},
-		unit_group_command_delay = 3600 * 15,
-		unit_group_command_step_length = 48,
+		unit_group_command_delay = 3600 * 8,
+		unit_group_command_step_length = 64,
 		max_group_size = 192,
 		max_active_unit_groups = 8,
 		max_active_biters = 1024,
 		max_biter_age = 3600 * 60,
 		active_unit_group_count = 0,
 		active_biter_count = 0,
-		get_random_close_spawner_attempts = 3,
+		get_random_close_spawner_attempts = 5,
 		side_target_search_radius = 768,
 		spawn_position = {x = 0, y = 64},
 		last_wave = game.tick,
@@ -384,7 +384,7 @@ function reset_wave_defense()
 		simple_entity_shredding_count_modifier = 0.0003,
 		simple_entity_shredding_cost_modifier = 0.005,		--threat cost for one health
 		nest_building_density = 64,										--lower values = more dense building
-		nest_building_chance = 8,											--high value = less chance
+		nest_building_chance = 4,											--high value = less chance
 		worm_building_density = 8,										--lower values = more dense building
 		worm_building_chance = 2,										--high value = less chance
 	}

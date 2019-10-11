@@ -8,6 +8,7 @@ require "functions.soft_reset"
 require "functions.basic_markets"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
+require "modules.explosives"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
@@ -37,7 +38,7 @@ require "maps.mountain_fortress_v2.market"
 require "maps.mountain_fortress_v2.treasure"
 require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.locomotive"
-require "maps.mountain_fortress_v2.explosives"
+--require "maps.mountain_fortress_v2.explosives"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16}
@@ -225,6 +226,11 @@ local function on_init(surface)
 	global.rocks_yield_ore_maximum_amount = 250
 	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.04
+	
+	global.explosion_cells_destructible_tiles = {
+		["out-of-map"] = 2500,
+	}
+	
 	reset_map()
 end
 
