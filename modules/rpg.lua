@@ -31,13 +31,13 @@ local classes = {
 
 local function level_up_effects(player)
 	local position = {x = player.position.x - 0.75, y = player.position.y - 1}
-	player.surface.create_entity({name = "flying-text", position = position, text = "LEVEL UP", color = level_up_floating_text_color})
-	local b = 1.05
+	player.surface.create_entity({name = "flying-text", position = position, text = "+LVL ", color = level_up_floating_text_color})
+	local b = 0.75
 	for a = 1, 5, 1 do
 		local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}			
-		player.surface.create_entity({name = "flying-text", position = p, text = "✚", color = {255, math_random(0, 127), 0}})						
+		player.surface.create_entity({name = "flying-text", position = p, text = "✚", color = {255, math_random(0, 100), 0}})						
 	end	
-	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.50}
+	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.40}
 end
 
 local function draw_gui_char_button(player)
@@ -410,11 +410,15 @@ end
 
 function rpg_reset_player(player)
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
+	if not player.character then
+		player.set_controller({type=defines.controllers.god})
+		player.create_character() 
+	end
 	global.rpg[player.index] = {
 		level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
 		last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0,
 		rotated_entity_delay = 0, gui_refresh_delay = 0,
-	}
+	}	
 	draw_gui_char_button(player)
 	draw_level_text(player)
 	update_char_button(player)
