@@ -58,7 +58,7 @@ function treasure_chest(surface, position)
 		{{name = "advanced-circuit", count = math_random(50,150)}, weight = 3, evo_min = 0.4, evo_max = 1},
 		{{name = "electronic-circuit", count = math_random(50,150)}, weight = 3, evo_min = 0.0, evo_max = 0.4},
 		{{name = "processing-unit", count = math_random(50,150)}, weight = 3, evo_min = 0.7, evo_max = 1},
-		{{name = "explosives", count = math_random(50,150)}, weight = 20, evo_min = 0.0, evo_max = 1},
+		{{name = "explosives", count = math_random(40,100)}, weight = 20, evo_min = 0.0, evo_max = 1},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evo_min = 0.3, evo_max = 0.5},
 		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evo_min = 0.3, evo_max = 0.7},
 		--{{name = "computer", count = 1}, weight = 2, evo_min = 0, evo_max = 1},

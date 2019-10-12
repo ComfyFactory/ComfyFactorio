@@ -71,10 +71,10 @@ function reset_map()
 	game.map_settings.enemy_evolution.pollution_factor = 0	
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_expansion.enabled = true
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
-	game.map_settings.enemy_expansion.settler_group_max_size = 16
-	game.map_settings.enemy_expansion.settler_group_min_size = 32
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
+	game.map_settings.enemy_expansion.settler_group_max_size = 8
+	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.pollution.enabled = false
 	
 	game.forces.player.technologies["railway"].researched = true
@@ -84,7 +84,8 @@ function reset_map()
 	
 	reset_wave_defense()
 	global.wave_defense.surface = surface
-	global.wave_defense.target = global.locomotive_cargo	
+	global.wave_defense.target = global.locomotive_cargo
+	global.wave_defense.side_target_search_radius = 512
 	
 	global.wave_defense.game_lost = false
 end

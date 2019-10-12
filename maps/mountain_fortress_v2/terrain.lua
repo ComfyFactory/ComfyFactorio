@@ -172,7 +172,7 @@ local function rock_chunk(surface, left_top)
 	if #markets > 0 then
 		local position = markets[math_random(1, #markets)]
 		if surface.count_entities_filtered{area = {{position.x - 96, position.y - 96}, {position.x + 96, position.y + 96}}, name = "market", limit = 1} == 0 then
-			local market = random_type_market(surface, position, math.abs(position.y) * 0.004)
+			local market = mountain_market(surface, position, math.abs(position.y) * 0.004)
 			market.destructible = false
 		end
 	end

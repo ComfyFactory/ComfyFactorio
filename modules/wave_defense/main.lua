@@ -380,7 +380,7 @@ function reset_wave_defense()
 		game_lost = false,
 		threat = 0,
 		simple_entity_shredding_count_modifier = 0.0003,
-		simple_entity_shredding_cost_modifier = 0.005,		--threat cost for one health
+		simple_entity_shredding_cost_modifier = 0.007,		--threat cost for one health
 		nest_building_density = 64,										--lower values = more dense building
 		nest_building_chance = 4,											--high value = less chance
 		worm_building_density = 8,										--lower values = more dense building

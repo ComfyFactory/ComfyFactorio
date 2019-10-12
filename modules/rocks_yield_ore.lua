@@ -140,7 +140,7 @@ local function on_entity_died(event)
 	
 	if event.cause then
 		if event.cause.valid then
-			if event.cause.force.index == 2 then
+			if event.cause.force.index == 2 or event.cause.force.index == 3 then
 				entity.destroy()
 				return
 			end
