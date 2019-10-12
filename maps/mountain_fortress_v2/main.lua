@@ -83,7 +83,7 @@ function reset_map()
 	locomotive_spawn(surface, {x = 0, y = 16})
 	
 	reset_wave_defense()
-	global.wave_defense.surface = surface
+	global.wave_defense.surface_index = global.active_surface_index
 	global.wave_defense.target = global.locomotive_cargo
 	global.wave_defense.side_target_search_radius = 512
 	
@@ -128,8 +128,12 @@ local function biters_chew_rocks_faster(event)
 end
 
 local function hidden_biter(entity)
-	wave_defense_set_biter_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.45)
-	entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = entity.position})
+	wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.42)
+	if math.random(1,3) == 1 then
+		entity.surface.create_entity({name = wave_defense_roll_spitter_name(), position = entity.position})
+	else
+		entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = entity.position})
+	end
 end
 
 local function hidden_treasure(event)

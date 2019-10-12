@@ -33,8 +33,8 @@ local function time_out_biters()
 	end
 end
 
-local function get_random_close_spawner()
-	local spawners = global.wave_defense.surface.find_entities_filtered({type = "unit-spawner"})	
+local function get_random_close_spawner(surface)
+	local spawners = surface.find_entities_filtered({type = "unit-spawner"})	
 	if not spawners[1] then return false end
 	local center = global.wave_defense.target.position
 	local spawner = spawners[math_random(1,#spawners)]
@@ -53,7 +53,9 @@ local function set_main_target()
 	for i = 1, #game.connected_players, 1 do
 		if game.connected_players[i].character then
 			if game.connected_players[i].character.valid then
-				characters[#characters + 1] = game.connected_players[i].character
+				if game.connected_players[i].surface.index == global.wave_defense.surface_index then
+					characters[#characters + 1] = game.connected_players[i].character
+				end
 			end
 		end
 	end
@@ -93,10 +95,10 @@ local function get_side_target()
 	return side_target
 end
 
-local function set_group_spawn_position()
-	local spawner = get_random_close_spawner()
+local function set_group_spawn_position(surface)
+	local spawner = get_random_close_spawner(surface)
 	if not spawner then return end
-	local position = global.wave_defense.surface.find_non_colliding_position("rocket-silo", spawner.position, 48, 1)
+	local position = surface.find_non_colliding_position("rocket-silo", spawner.position, 48, 1)
 	if not position then return end	
 	global.wave_defense.spawn_position = {x = math.floor(position.x), y = math.floor(position.y)}
 end
@@ -112,13 +114,18 @@ local function set_enemy_evolution()
 	game.forces.enemy.evolution_factor = evolution
 end
 
-local function spawn_biter()
+local function spawn_biter(surface)
 	if global.wave_defense.threat <= 0 then return false end
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
-	local name = wave_defense_roll_biter_name()	
-	local position = global.wave_defense.surface.find_non_colliding_position(name, global.wave_defense.spawn_position, 48, 2)
+	local name
+	if math.random(1,100) > 73 then
+		name = wave_defense_roll_spitter_name()
+	else
+		name = wave_defense_roll_biter_name()
+	end
+	local position = surface.find_non_colliding_position(name, global.wave_defense.spawn_position, 48, 2)
 	if not position then return false end
-	local biter = global.wave_defense.surface.create_entity({name = name, position = position, force = "enemy"})
+	local biter = surface.create_entity({name = name, position = position, force = "enemy"})
 	biter.ai_settings.allow_destroy_when_commands_fail = false
 	biter.ai_settings.allow_try_return_to_spawner = false
 	global.wave_defense.active_biters[biter.unit_number] = {entity = biter, spawn_tick = game.tick}
@@ -130,11 +137,12 @@ end
 local function spawn_unit_group()
 	if global.wave_defense.threat <= 0 then return false end
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
-	set_group_spawn_position()
+	local surface = game.surfaces[global.wave_defense.surface_index]
+	set_group_spawn_position(surface)
 	debug_print("Spawning unit group at position:" .. global.wave_defense.spawn_position.x .." " .. global.wave_defense.spawn_position.y)
-	local unit_group = global.wave_defense.surface.create_unit_group({position = global.wave_defense.spawn_position, force = "enemy"})
+	local unit_group = surface.create_unit_group({position = global.wave_defense.spawn_position, force = "enemy"})
 	for a = 1, global.wave_defense.group_size, 1 do
-		local biter = spawn_biter()
+		local biter = spawn_biter(surface)
 		if not biter then break end
 		unit_group.add_member(biter)
 	end
@@ -162,7 +170,7 @@ end
 local function spawn_attack_groups()
 	if global.wave_defense.active_biter_count >= global.wave_defense.max_active_biters then return false end
 	if global.wave_defense.threat <= 0 then return false end
-	wave_defense_set_biter_raffle(global.wave_defense.wave_number)
+	wave_defense_set_unit_raffle(global.wave_defense.wave_number)
 	
 	local count = get_active_unit_groups_count()
 	if count >= global.wave_defense.max_active_unit_groups then return end
@@ -359,7 +367,7 @@ end
 function reset_wave_defense()
 	global.wave_defense = {
 		debug = false,
-		surface = game.surfaces["nauvis"],
+		surface_index = 1,
 		active_biters = {},
 		unit_groups = {},
 		unit_group_last_command = {},
