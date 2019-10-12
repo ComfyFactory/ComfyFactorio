@@ -30,8 +30,10 @@ local treasure_chest_messages = {
 	"We has found the precious!",
 }
 
-local function get_gen_settings()
-	local map = {
+function reset_map()
+	global.chunk_queue = {}
+	
+	local map_gen_settings = {
 		["seed"] = math.random(1, 1000000),
 		["width"] = 1536,
 		["water"] = 0.001,
@@ -44,17 +46,12 @@ local function get_gen_settings()
 			["decorative"] = {treat_missing_as_default = true},
 		},
 	}
-	return map
-end
-
-function reset_map()
-	global.chunk_queue = {}
 	
 	if not global.active_surface_index then
-		global.active_surface_index = game.create_surface("mountain_fortress", get_gen_settings()).index
+		global.active_surface_index = game.create_surface("mountain_fortress", map_gen_settings).index
 	else
 		game.forces.player.set_spawn_position({-2, 16}, game.surfaces[global.active_surface_index])	
-		global.active_surface_index = soft_reset_map(game.surfaces[global.active_surface_index], get_gen_settings(), starting_items).index
+		global.active_surface_index = soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
 	end
 	
 	local surface = game.surfaces[global.active_surface_index]

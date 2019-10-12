@@ -44,7 +44,7 @@ local function get_melee_modifier(player) return (global.rpg[player.index].stren
 
 local function get_one_punch_chance(player)
 	if global.rpg[player.index].strength < 100 then return 0 end
-	local chance = math.round(global.rpg[player.index].strength * 0.005, 1)
+	local chance = math.round(global.rpg[player.index].strength * 0.01, 1)
 	if chance > 100 then chance = 100 end
 	return chance
 end
@@ -426,7 +426,7 @@ function rpg_reset_player(player)
 	global.rpg[player.index] = {
 		level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
 		last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0,
-		rotated_entity_delay = 0, gui_refresh_delay = 0,
+		rotated_entity_delay = 0, gui_refresh_delay = 0, last_mined_entity_position = {x = 0, y = 0},
 	}	
 	draw_gui_char_button(player)
 	draw_level_text(player)
@@ -599,7 +599,12 @@ local function on_entity_damaged(event)
 		damage = damage * math_random(100, 125) * 0.01
 		event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})	
 	end
-	event.entity.damage(damage, event.cause.force, "physical")
+	
+	event.entity.health = event.entity.health - damage
+	if event.entity.health <= 0 then
+		event.entity.die(event.entity.force.name, event.cause)
+	end	
+	--event.entity.damage(damage, event.cause.force, "physical")
 end
 
 local function on_player_repaired_entity(event)
@@ -634,6 +639,9 @@ local function on_pre_player_mined_item(event)
 	if not event.entity.valid then return end
 	if building_and_mining_blacklist[event.entity.type] then return end
 	local player = game.players[event.player_index]
+	if global.rpg[player.index].last_mined_entity_position.x == event.entity.position.x and global.rpg[player.index].last_mined_entity_position.y == event.entity.position.y then return end
+	global.rpg[player.index].last_mined_entity_position.x = event.entity.position.x
+	global.rpg[player.index].last_mined_entity_position.y = event.entity.position.y
 	if event.entity.type == "resource" then gain_xp(player, 0.5) return end
 	if event.entity.force.name == "neutral" then gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035) return end
 	gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
