@@ -1097,3 +1097,4 @@ event.add(defines.events.on_tick, on_tick)
 event.on_init(on_init)
 
 require "modules.difficulty_vote"
+require "modules.rpg"

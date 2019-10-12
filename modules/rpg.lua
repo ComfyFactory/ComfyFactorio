@@ -625,8 +625,14 @@ local function on_player_changed_position(event)
 	gain_xp(player, 1.0)	
 end
 
+local building_and_mining_blacklist = {
+	["tile-ghost"] = true,
+	["entity-ghost"] = true,
+}
+
 local function on_pre_player_mined_item(event)
-	if not event.entity.valid then return end	
+	if not event.entity.valid then return end
+	if building_and_mining_blacklist[event.entity.type] then return end
 	local player = game.players[event.player_index]
 	if event.entity.type == "resource" then gain_xp(player, 0.5) return end
 	if event.entity.force.name == "neutral" then gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035) return end
@@ -634,8 +640,8 @@ local function on_pre_player_mined_item(event)
 end
 
 local function on_built_entity(event)
-	if not event.created_entity.valid then return end	
-	if event.created_entity.type == "entity-ghost" then return end
+	if not event.created_entity.valid then return end
+	if building_and_mining_blacklist[event.created_entity.type] then return end
 	local player = game.players[event.player_index]
 	gain_xp(player, 0.1)
 end
