@@ -405,7 +405,9 @@ local function on_entity_died(event)
 			end
 			-- Add
 			local score = global.score[event.force.name].players[p.name]
-			score.killscore = points + (score.killscore or 0)
+			if score then
+				score.killscore = points + (score.killscore or 0)
+			end
 		end
 
 		if show_floating_text == true then
