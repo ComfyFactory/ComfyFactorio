@@ -1,48 +1,47 @@
--- rocks and wreckage heal over time -- by mewmew
+-- rocks and other entities heal over time -- by mewmew
 
-local event = require 'utils.event'
+local entity_whitelist = {
+	["rock-big"] = true,
+	["sand-rock-big"] = true,
+	["rock-huge"] = true,
+	["mineable-wreckage"] = true,
+}
 
-local healing_amount = {
-		["rock-big"] = 4,
-		["sand-rock-big"] = 4,
-		["rock-huge"] = 16,
-		["mineable-wreckage"] = 4
-	}
+local function process_entity(v, key)
+	if not v.entity then
+		global.entities_regenerate_health[key] = nil
+		return 
+	end	
+	if not v.entity.valid then
+		global.entities_regenerate_health[key] = nil
+		return 
+	end
 	
-local function heal_rocks()
-	for key, rock in pairs(global.damaged_rocks) do
-		if rock.last_damage + 54000 < game.tick then
-			if rock.entity then
-				if rock.entity.valid then
-					rock.entity.health = rock.entity.health + healing_amount[rock.entity.name]
-					if rock.entity.prototype.max_health == rock.entity.health then
-						global.damaged_rocks[key] = nil
-					end
-				else
-					global.damaged_rocks[key] = nil
-				end
-			else
-				global.damaged_rocks[key] = nil
-			end
-		end
+	if v.last_damage + 36000 < game.tick then		
+		v.entity.health = v.entity.health + math.floor(v.entity.prototype.max_health * 0.01)
+		if v.entity.prototype.max_health == v.entity.health then
+			global.entities_regenerate_health[key] = nil
+		end				
 	end
 end
 
 local function on_entity_damaged(event)
 	if not event.entity.valid then return end
-	if not healing_amount[event.entity.name] then return end
-	global.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] = {last_damage = game.tick, entity = event.entity}		
+	if not entity_whitelist[event.entity.name] then return end
+	global.entities_regenerate_health[tostring(event.entity.position.x) .. "_" .. tostring(event.entity.position.y)] = {last_damage = game.tick, entity = event.entity}		
 end
 
-local function on_player_joined_game(event)
-	if not global.damaged_rocks then global.damaged_rocks = {} end	
-end
-
-local function on_tick(event)
-	if game.tick % 3600 ~= 1 then return end
-	heal_rocks()
+local function tick(event)
+	for key, entity in pairs(global.entities_regenerate_health) do
+		process_entity(entity, key)
+	end
 end
 	
-event.add(defines.events.on_tick, on_tick)	
-event.add(defines.events.on_player_joined_game, on_player_joined_game)	
+local function on_init(event)
+	global.entities_regenerate_health = {}
+end	
+	
+local event = require 'utils.event'	
+event.on_nth_tick(1800, tick)
+event.on_init(on_init)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
