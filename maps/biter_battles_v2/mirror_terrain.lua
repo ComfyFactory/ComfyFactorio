@@ -246,13 +246,17 @@ local function ticking_work()
 	local task = tasks[c.state]
 	-- game.print(task.name)
 	d = d or task.list()
+	local last_idx = nil
 	for k, v in pairs(d) do
 		task.action(v)
 		d[k] = nil
+		last_idx = k
 		w = w + 1
 		if w > work then break end
 	end
-	if #d == 0 then
+
+	local next_idx, _ = next(d, last_idx)
+	if next_idx == nil then
 		c.state = c.state + 1
 		c.data = nil
 	else
