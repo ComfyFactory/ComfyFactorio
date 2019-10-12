@@ -14,6 +14,7 @@ require "modules.dangerous_goods"
 require "modules.custom_death_messages"
 require "modules.biter_evasion_hp_increaser"
 require "modules.rocks_yield_ore"
+require "modules.rpg"
 
 local event = require 'utils.event'
 local boss_biter = require "maps.fish_defender.boss_biters"

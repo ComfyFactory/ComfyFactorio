@@ -580,8 +580,7 @@ local function on_entity_damaged(event)
 
 	event.entity.health = event.entity.health + event.final_damage_amount
 	
-	local damage = event.original_damage_amount + event.original_damage_amount * get_melee_modifier(event.cause.player)
-	
+	local damage = event.final_damage_amount + event.final_damage_amount * get_melee_modifier(event.cause.player)	
 	
 	if math_random(0,999) < get_one_punch_chance(event.cause.player) * 10 then
 		one_punch(event.cause, event.entity, damage)
@@ -657,7 +656,7 @@ end
 local function on_player_crafted_item(event)
 	if not event.recipe.energy then return end
 	local player = game.players[event.player_index]
-	gain_xp(player, event.recipe.energy * 0.25)
+	gain_xp(player, event.recipe.energy * 0.20)
 end
 
 local function on_player_respawned(event)
