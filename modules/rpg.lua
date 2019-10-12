@@ -40,6 +40,8 @@ local function level_up_effects(player)
 	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.40}
 end
 
+local function get_melee_modifier(player) return (global.rpg[player.index].strength - 10) * 0.1 end
+
 local function draw_gui_char_button(player)
 	if player.gui.top.rpg then return end
 	local b = player.gui.top.add({type = "sprite-button", name = "rpg", caption = "CHAR"})
@@ -270,12 +272,17 @@ local function draw_gui(player, forced)
 	local value = "+ " .. player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus
 	add_gui_stat(tt, value, w2)
 	
+	add_gui_description(tt, " ", w0)
+	add_gui_description(tt, "MELEE\nDAMAGE", w1)
+	local value = 100 * (1 + get_melee_modifier(player)) .. "%"
+	add_gui_stat(tt, value, w2)
+	
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	
 	local value = "+ " .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
 	local tooltip = ""
@@ -292,11 +299,11 @@ local function draw_gui(player, forced)
 	e.tooltip = tooltip
 	
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "CRAFTING\nSPEED", w1)
@@ -309,11 +316,11 @@ local function draw_gui(player, forced)
 	add_gui_stat(tt, value, w2)
 	
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
-	e.style.maximal_height = 16
+	e.style.maximal_height = 10
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "HEALTH\nBONUS", w1)
@@ -509,16 +516,31 @@ local function on_entity_died(event)
 	end		
 end
 
---[[
+--Melee damage modifier
+local splatters = {"blood-explosion-small", "blood-explosion-big", "blood-explosion-huge"}
 local function on_entity_damaged(event)
-	if not event.entity.valid then return end
-	if event.final_damage_amount == 0 then return end	
-	if event.entity.name ~= "character" then return end
-	if not event.entity.player then return end
-	local damage_taken = event.final_damage_amount
-	if damage_taken > 500 then damage_taken = 500 end
-	gain_xp(event.entity.player, damage_taken * 0.055)
-end]]
+	if not event.cause then return end
+	if not event.cause.valid then return end
+	if event.cause.force.index == 2 then return end
+	if event.cause.name ~= "character" then return end
+	if event.damage_type.name ~= "physical" then return end
+	if event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].valid_for_read 
+	and event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].valid_for_read then return end
+	if not event.cause.player then return end
+
+	event.entity.health = event.entity.health + event.final_damage_amount
+
+	local damage = event.original_damage_amount + event.original_damage_amount * get_melee_modifier(event.cause.player)
+
+	if math.random(1,8) == 1 then
+		damage = damage * math_random(20, 30) * 0.1
+		event.cause.surface.create_entity({name = "flying-text", position = event.entity.position, text = "‼" .. math.floor(damage), color = {255, 0, 0}})
+		event.cause.surface.create_entity({name = splatters[math_random(1, #splatters)], position = event.entity.position})
+	else
+		event.cause.surface.create_entity({name = "flying-text", position = event.entity.position, text = math.floor(damage), color = {150, 150, 150}})		
+	end
+	event.entity.damage(damage, event.cause.force, "physical")
+end
 
 local function on_player_repaired_entity(event)
 	if math_random(1, 4) ~= 1 then return end
@@ -592,7 +614,7 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
---event.add(defines.events.on_entity_damaged, on_entity_damaged)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_gui_click, on_gui_click)

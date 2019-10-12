@@ -164,8 +164,8 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
 		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
-		--rpg_reset_all_players()
-		return 
+		rpg_reset_all_players()
+		return
 	end
 	
 	if event.cause then
