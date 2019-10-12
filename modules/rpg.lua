@@ -40,7 +40,14 @@ local function level_up_effects(player)
 	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.40}
 end
 
-local function get_melee_modifier(player) return (global.rpg[player.index].strength - 10) * 0.1 end
+local function get_melee_modifier(player) return (global.rpg[player.index].strength - 10) * 0.10 end
+
+local function get_one_punch_chance(player)
+	if global.rpg[player.index].strength < 100 then return 0 end
+	local chance = math.round(global.rpg[player.index].strength * 0.005, 1)
+	if chance > 100 then chance = 100 end
+	return chance
+end
 
 local function draw_gui_char_button(player)
 	if player.gui.top.rpg then return end
@@ -275,7 +282,8 @@ local function draw_gui(player, forced)
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "MELEE\nDAMAGE", w1)
 	local value = 100 * (1 + get_melee_modifier(player)) .. "%"
-	add_gui_stat(tt, value, w2)
+	local e = add_gui_stat(tt, value, w2)
+	e.tooltip = "One punch chance " .. get_one_punch_chance(player) .. "%"
 	
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
@@ -327,12 +335,6 @@ local function draw_gui(player, forced)
 	local value = "+ " .. (player.force.character_health_bonus + player.character_health_bonus)
 	add_gui_stat(tt, value, w2)
 	
-	--[[
-	add_gui_description(tt, " ", w0)
-	add_gui_description(tt, "DAMAGE\nRESISTANCE", w1)
-	local value = 0 .. "%"
-	add_gui_stat(tt, value, w2)
-	]]
 	add_separator(frame, 400)
 	local t = frame.add({type = "table", column_count = 14})
 	for i = 1, 14, 1 do
@@ -517,7 +519,55 @@ local function on_entity_died(event)
 end
 
 --Melee damage modifier
-local splatters = {"blood-explosion-small", "blood-explosion-big", "blood-explosion-huge"}
+local function one_punch(character, target, damage)
+	local base_vector = {target.position.x - character.position.x, target.position.y - character.position.y}
+	local vector = {base_vector[1], base_vector[2]}
+	vector[1] = vector[1] * 1000
+	vector[2] = vector[2] * 1000
+	
+	character.surface.create_entity({name = "flying-text", position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5}, text = "ONE PUNCH", color = {255, 0, 0}})
+	character.surface.create_entity({name = "blood-explosion-huge", position = target.position})
+	character.surface.create_entity({name = "big-artillery-explosion", position = {target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5}})
+	
+	if math.abs(vector[1]) > math.abs(vector[2]) then
+		local d = math.abs(vector[1])
+		vector[1] = vector[1] / d
+		vector[2] = vector[2] / d
+	else
+		local d = math.abs(vector[2])
+		vector[2] = vector[2] / d
+		vector[1] = vector[1] / d
+	end
+	
+	vector[1] = vector[1] * 1.5
+	vector[2] = vector[2] * 1.5
+
+	local a = 0.25
+
+	for i = 1, 16, 1 do
+		for x = i * -1 * a, i * a, 1 do
+			for y = i * -1 * a, i * a, 1 do
+				local p = {character.position.x + x + vector[1] * i, character.position.y + y + vector[2] * i}
+				character.surface.create_trivial_smoke({name="train-smoke", position=p})				
+				for _, e in pairs(character.surface.find_entities({{p[1] - a, p[2] - a},{p[1] + a, p[2] + a}})) do
+					if e.valid then
+						if e.health then
+							if e.destructible and e.minable then
+								if e.force.index ~= character.force.index then
+									e.health = e.health - damage * 0.05
+									if e.health <= 0 then
+										e.die(e.force.name, character)
+									end
+								end
+							end
+						end
+					end
+				end			
+			end
+		end	
+	end	
+end
+
 local function on_entity_damaged(event)
 	if not event.cause then return end
 	if not event.cause.valid then return end
@@ -529,15 +579,25 @@ local function on_entity_damaged(event)
 	if not event.cause.player then return end
 
 	event.entity.health = event.entity.health + event.final_damage_amount
-
+	
 	local damage = event.original_damage_amount + event.original_damage_amount * get_melee_modifier(event.cause.player)
-
-	if math.random(1,8) == 1 then
-		damage = damage * math_random(20, 30) * 0.1
+	
+	
+	if math_random(0,999) < get_one_punch_chance(event.cause.player) * 10 then
+		one_punch(event.cause, event.entity, damage)
+		if event.entity.valid then
+			event.entity.die(event.entity.force.name, event.cause)
+		end	
+		return
+	end
+	
+	if math_random(1,7) == 1 then
+		damage = damage * math_random(250, 350) * 0.01
 		event.cause.surface.create_entity({name = "flying-text", position = event.entity.position, text = "‼" .. math.floor(damage), color = {255, 0, 0}})
-		event.cause.surface.create_entity({name = splatters[math_random(1, #splatters)], position = event.entity.position})
+		event.cause.surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
 	else
-		event.cause.surface.create_entity({name = "flying-text", position = event.entity.position, text = math.floor(damage), color = {150, 150, 150}})		
+		damage = damage * math_random(100, 125) * 0.01
+		event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})	
 	end
 	event.entity.damage(damage, event.cause.force, "physical")
 end
