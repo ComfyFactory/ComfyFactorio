@@ -149,7 +149,6 @@ end
 
 local function hidden_treasure(event)
 	if math.random(1, 320) ~= 1 then return end
-	if event.entity.type ~= "simple-entity" then return end
 	game.players[event.player_index].print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r=0.98, g=0.66, b=0.22})
 	treasure_chest(event.entity.surface, event.entity.position)
 end
@@ -157,6 +156,7 @@ end
 local function on_player_mined_entity(event)
 	if not event.entity.valid then	return end	
 	if event.entity.force.index == 3 then
+		if event.entity.type ~= "simple-entity" then return end
 		if math.random(1,32) == 1 then
 			hidden_biter(event.entity)
 			return

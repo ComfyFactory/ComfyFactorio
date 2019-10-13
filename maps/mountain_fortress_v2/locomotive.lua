@@ -34,19 +34,17 @@ end
 local function accelerate()
 	if not global.locomotive then return end
 	if not global.locomotive.valid then return end
-	if global.locomotive.get_driver() then return end
-	local driver = global.locomotive.surface.create_entity({name = "character", position = global.locomotive.position, force = "player"})
-	driver.driving = true
-	driver.riding_state = {acceleration = defines.riding.acceleration.accelerating, direction = defines.riding.direction.straight}
+	if global.locomotive.get_driver() then return end	
+	global.locomotive_driver = global.locomotive.surface.create_entity({name = "character", position = global.locomotive.position, force = "player"})
+	global.locomotive_driver.driving = true
+	global.locomotive_driver.riding_state = {acceleration = defines.riding.acceleration.accelerating, direction = defines.riding.direction.straight}
 end
 
 local function remove_acceleration()
 	if not global.locomotive then return end
 	if not global.locomotive.valid then return end
-	local driver = global.locomotive.get_driver()
-	if not driver then return end
-	if driver.player then return end
-	driver.destroy()
+	if global.locomotive_driver then global.locomotive_driver.destroy() end
+	global.locomotive_driver = nil
 end
 
 local function set_player_spawn_and_refill_fish()
@@ -59,7 +57,7 @@ local function set_player_spawn_and_refill_fish()
 end
 
 local function tick()
-	if game.tick % 30 == 0 then
+	if game.tick % 30 == 0 then	
 		fish_tag()
 		accelerate()
 		if game.tick % 1800 == 0 then

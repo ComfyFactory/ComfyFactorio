@@ -75,7 +75,7 @@ local function command_unit(entity, player)
 end
 
 local function on_player_changed_position(event)
-	if math_random(1, 64) ~= 1 then return end
+	if math_random(1, 100) ~= 1 then return end
 	local player = game.players[event.player_index]
 	if not global.biter_pets[player.index] then return end	
 	if not global.biter_pets[player.index].entity then global.biter_pets[player.index] = nil return end
@@ -92,7 +92,7 @@ local function on_player_dropped_item(event)
 	local unit = find_unit(player, event.entity)
 	if not unit then return end
 	if biter_pets_tame_unit(player, unit, false) then event.entity.destroy() return end
-	feed_pet(unit)
+	if unit.force.index == player.force.index then feed_pet(unit) end	
 end
 
 local function on_init(event)

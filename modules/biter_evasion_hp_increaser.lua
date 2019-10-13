@@ -14,6 +14,7 @@ local function get_evade_chance()
 end
 
 local function on_entity_damaged(event)
+	if global.biter_evasion_health_increase_factor == 1 then return end
 	if not event.entity.valid then return end
 	if not types[event.entity.type] then return end
 	if event.final_damage_amount > event.entity.prototype.max_health * global.biter_evasion_health_increase_factor then return end

@@ -18,7 +18,7 @@ local function process_entity(v, key)
 	end
 	
 	if v.last_damage + 36000 < game.tick then		
-		v.entity.health = v.entity.health + math.floor(v.entity.prototype.max_health * 0.01)
+		v.entity.health = v.entity.health + math.floor(v.entity.prototype.max_health * 0.02)
 		if v.entity.prototype.max_health == v.entity.health then
 			global.entities_regenerate_health[key] = nil
 		end				

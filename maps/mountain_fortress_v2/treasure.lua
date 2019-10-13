@@ -139,7 +139,7 @@ function treasure_chest(surface, position)
 		{{name = "gun-turret", count = math_random(1,4)}, weight = 3, evo_min = 0.2, evo_max = 0.9}		
 	}
 	
-	distance_to_center = (math.abs(position.y) + 1) * 0.0002	
+	local distance_to_center = (math.abs(position.y) + 1) * 0.0002	
 	if distance_to_center > 1 then distance_to_center = 1 end
 	
 	for _, t in pairs (chest_loot) do
