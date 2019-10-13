@@ -57,6 +57,7 @@ require "modules.floaty_chat"
 --require "modules.evolution_extended"
 --require "modules.no_blueprint_library"
 --require "modules.explosives"
+--require "modules.biter_pets"
 -----------------------------
 
 ---- enable maps here ----

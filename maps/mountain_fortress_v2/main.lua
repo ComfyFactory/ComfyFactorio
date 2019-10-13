@@ -1,7 +1,8 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
 --require "modules.flashlight_toggle_button"
-require "modules.biter_noms_you"
+--require "modules.biter_noms_you"
+require "modules.biter_pets"
 require "modules.biter_evasion_hp_increaser"
 require "modules.wave_defense.main"
 --require "modules.dense_rocks"
@@ -134,6 +135,18 @@ local function hidden_biter(entity)
 	end
 end
 
+local function hidden_biter_pet(event)
+	if math.random(1, 1024) ~= 1 then return end
+	wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.42)
+	local unit
+	if math.random(1,3) == 1 then
+		unit = event.entity.surface.create_entity({name = wave_defense_roll_spitter_name(), position = event.entity.position})
+	else
+		unit = event.entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = event.entity.position})
+	end		
+	biter_pets_tame_unit(game.players[event.player_index], unit, true)
+end
+
 local function hidden_treasure(event)
 	if math.random(1, 320) ~= 1 then return end
 	if event.entity.type ~= "simple-entity" then return end
@@ -147,7 +160,8 @@ local function on_player_mined_entity(event)
 		if math.random(1,32) == 1 then
 			hidden_biter(event.entity)
 			return
-		end
+		end		
+		hidden_biter_pet(event)
 		hidden_treasure(event)
 	end
 end
