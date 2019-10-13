@@ -104,14 +104,29 @@ local function set_group_spawn_position(surface)
 end
 
 local function set_enemy_evolution()
-	local evolution = global.wave_defense.wave_number * 0.001
-	if evolution > 1 then
-		global.biter_evasion_health_increase_factor = (evolution - 1) * 4
-		evolution = 1
-	else
-		global.biter_evasion_health_increase_factor = 1
+	local evolution_factor = global.wave_defense.wave_number * 0.001
+	local evasion_factor = 1
+	local damage_increase = 0
+	
+	if evolution_factor > 1 then
+		evasion_factor = evasion_factor + (evolution_factor - 1) * 3
+		evolution_factor = 1
 	end
-	game.forces.enemy.evolution_factor = evolution
+	
+	if global.wave_defense.threat > 0 then
+		local m = math.round(global.wave_defense.threat / 50000, 3)
+		evasion_factor = evasion_factor + m
+		damage_increase = damage_increase + m
+	end
+
+	global.biter_evasion_health_increase_factor = evasion_factor
+	game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
+	game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
+	game.forces.enemy.evolution_factor = evolution_factor
+	
+	debug_print("evolution_factor: " .. evolution_factor)
+	debug_print("evasion_factor: " .. global.biter_evasion_health_increase_factor)
+	debug_print("damage_increase: " .. game.forces.enemy.get_ammo_damage_modifier("melee"))	
 end
 
 local function spawn_biter(surface)
@@ -373,6 +388,7 @@ function reset_wave_defense()
 		unit_group_last_command = {},
 		unit_group_command_delay = 3600 * 8,
 		unit_group_command_step_length = 64,
+		group_size = 2,
 		max_group_size = 192,
 		max_active_unit_groups = 8,
 		max_active_biters = 1024,
