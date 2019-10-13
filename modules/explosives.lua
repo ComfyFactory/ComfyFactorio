@@ -75,8 +75,44 @@ local function grow_cell(cell)
 	if new_cell_health <= 0 then return end
 	
 	for _, p in pairs(positions) do
-		cell_birth(cell.surface_index, cell.origin_position, cell.origin_tick, p, new_cell_health)			
+		cell_birth(cell.surface_index, cell.origin_position, cell.origin_tick, p, new_cell_health)
 	end
+end
+
+local function reflect_cell(entity, cell)
+	table.shuffle_table(global.explosion_cells_vectors)
+	for i = 1, 4, 1 do
+		local position = {x = cell.position.x + global.explosion_cells_vectors[i][1], y = cell.position.y + global.explosion_cells_vectors[i][2]}
+		if global.explosion_cells[pos_to_key(position)] then
+			cell_birth(cell.surface_index, cell.origin_position, cell.origin_tick, position, cell.health)
+			entity.damage(global.explosion_cells_reflect[entity.name] * 0.01 * math.random(75, 125), "player", "explosion")
+			return true
+		end
+	end
+	return false
+end
+
+local function damage_entity(entity, cell)
+	if not entity.valid then return true end
+	if not entity.health then return true end
+	if not entity.destructible then return true end
+	if not entity.minable then return true end
+	--if global.explosion_cells_reflect[entity.name] then
+	--	if reflect_cell(entity, cell) then return end
+	--end
+	
+	local damage_required = entity.health
+	for _ = 1, 4, 1 do
+		if damage_required > cell.health then		
+			entity.damage(cell.health, "player", "explosion")
+			return false
+		end		
+		local damage_dealt = entity.damage(damage_required, "player", "explosion")		
+		cell.health = cell.health - damage_required
+		if not entity then return true end
+		if not entity.valid then return true end
+		damage_required = math.floor(entity.health * (damage_required / damage_dealt)) + 1
+	end										
 end
 
 local function damage_area(cell)
@@ -84,26 +120,12 @@ local function damage_area(cell)
 	if not surface then return end
 	if not surface.valid then return end
 	
-	if math.random(1,6) == 1 then
+	if math.random(1,4) == 1 then
 		surface.create_entity({name = get_explosion_name(cell.health), position = cell.position})
 	end
 	
-	for _, e in pairs(surface.find_entities({{cell.position.x - density_r, cell.position.y - density_r},{cell.position.x + density_r, cell.position.y + density_r}})) do
-		if e.valid then
-			if e.health then
-				if e.destructible and e.minable then
-					if cell.health > e.health then				
-						--global.explosion_cells_damage_dealt = global.explosion_cells_damage_dealt + e.health					
-						cell.health = cell.health - e.health
-						e.die()
-					else				
-						--global.explosion_cells_damage_dealt = global.explosion_cells_damage_dealt + cell.health					
-						e.health = e.health - cell.health
-						return
-					end
-				end
-			end
-		end
+	for _, entity in pairs(surface.find_entities({{cell.position.x - density_r, cell.position.y - density_r},{cell.position.x + density_r, cell.position.y + density_r}})) do
+		if not damage_entity(entity, cell) then return end
 	end
 	
 	local tile = surface.get_tile(cell.position)
@@ -162,7 +184,9 @@ local function on_init(surface)
 	global.explosion_cells = {}
 	global.explosion_cells_vectors = {{density, 0}, {density * -1, 0}, {0, density}, {0, density * -1}}
 	--global.explosion_cells_damage_dealt = 0
-	
+	--global.explosion_cells_reflect = {
+	--	["stone-wall"] = 25,
+	--}
 	global.explosion_cells_tiles = {}
 	global.explosion_cells_destructible_tiles = {
 		["water"] = false,

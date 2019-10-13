@@ -35,6 +35,7 @@ function reset_map()
 	
 	local map_gen_settings = {
 		["seed"] = math.random(1, 1000000),
+		--["height"] = 256,
 		["width"] = 1536,
 		["water"] = 0.001,
 		["starting_area"] = 1,
@@ -234,7 +235,7 @@ local function on_init(surface)
 	})
 		
 	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 2500,
+		["out-of-map"] = 1500,
 	}
 	
 	reset_map()
