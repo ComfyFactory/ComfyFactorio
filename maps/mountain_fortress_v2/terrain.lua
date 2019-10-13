@@ -284,7 +284,7 @@ local function process_chunk(surface, left_top)
 	if left_top.y > 32 then game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}}) end	
 	if left_top.y == 64 and left_top.x == 64 then
 		local p = global.locomotive.position
-		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 8}}, force = "neutral"})) do	entity.destroy() end
+		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 10}}, type = "simple-entity"})) do	entity.destroy() end
 	end
 	if left_top.y < 0 then rock_chunk(surface, left_top) return end
 	if left_top.y > 96 then out_of_map(surface, left_top) return end

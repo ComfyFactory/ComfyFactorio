@@ -92,7 +92,7 @@ market.logistic = {
 	["fast-splitter"] = {value = 48, rarity = 4},
 	["express-splitter"] = {value = 128, rarity = 7},
 	["loader"] = {value = 256, rarity = 2},
-	["fast-loader'"] = {value = 512, rarity = 5},
+	["fast-loader"] = {value = 512, rarity = 5},
 	["express-loader"] = {value = 768, rarity = 8},
 	["burner-inserter"] = {value = 4, rarity = 1},
 	["inserter"] = {value = 8, rarity = 1},

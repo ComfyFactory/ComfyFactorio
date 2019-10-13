@@ -95,6 +95,7 @@ end
 local function damage_entity(entity, cell)
 	if not entity.valid then return true end
 	if not entity.health then return true end
+	if entity.health <= 0 then return true end
 	if not entity.destructible then return true end
 	if not entity.minable then return true end
 	--if global.explosion_cells_reflect[entity.name] then
@@ -111,6 +112,7 @@ local function damage_entity(entity, cell)
 		cell.health = cell.health - damage_required
 		if not entity then return true end
 		if not entity.valid then return true end
+		if entity.health <= 0 then return true end
 		damage_required = math.floor(entity.health * (damage_required / damage_dealt)) + 1
 	end										
 end

@@ -29,7 +29,7 @@ local function tame_unit_effects(player, entity)
 			a = 1
 		},
 		scale = 1.05,
-		font = "default-game",
+		font = "default-large-semibold",
 		alignment = "center",
 		scale_with_zoom = false
 	}

@@ -2,13 +2,13 @@
 
 --require "modules.flashlight_toggle_button"
 --require "modules.biter_noms_you"
-require "modules.biter_pets"
 require "modules.biter_evasion_hp_increaser"
 require "modules.wave_defense.main"
 --require "modules.dense_rocks"
 require "functions.soft_reset"
 require "functions.basic_markets"
 require "modules.biters_yield_coins"
+require "modules.biter_pets"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.explosives"
 require "modules.rocks_broken_paint_tiles"
@@ -91,7 +91,7 @@ end
 
 local function protect_train(event)
 	if event.entity.force.index ~= 1 then return end --Player Force
-	if event.entity == global.locomotive or event.entity == global.locomotive_cargo then
+	if event.entity == global.locomotive_cargo then
 		if event.cause then
 			if event.cause.force.index == 2 then
 				return
@@ -136,7 +136,7 @@ local function hidden_biter(entity)
 end
 
 local function hidden_biter_pet(event)
-	if math.random(1, 1024) ~= 1 then return end
+	if math.random(1, 2048) ~= 1 then return end
 	wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.42)
 	local unit
 	if math.random(1,3) == 1 then
