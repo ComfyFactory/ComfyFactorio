@@ -463,7 +463,7 @@ local function on_built_entity(event)
 end
 
 --event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_player_died, on_player_died)
+--event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_console_chat, on_console_chat)
 event.add(defines.events.on_gui_click, on_gui_click)

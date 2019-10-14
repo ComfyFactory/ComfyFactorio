@@ -1,5 +1,5 @@
 local function coord_string(x, y)
-	str = tostring(x) .. "_"
+	local str = tostring(x) .. "_"
 	str = str .. tostring(y)
 	return str
 end

@@ -41,14 +41,14 @@ local function on_entity_died(event)
 				reward_has_been_given = true
 			end			
 			if event.cause.type == "car" then
-				player = event.cause.get_driver()
-				passenger = event.cause.get_passenger()
+				local player = event.cause.get_driver()
+				local passenger = event.cause.get_passenger()
 				if player then insert(players_to_reward, player.player)	end
 				if passenger then insert(players_to_reward, passenger.player) end
 				reward_has_been_given = true
 			end
 			if event.cause.type == "locomotive" then
-				train_passengers = event.cause.train.passengers			
+				local train_passengers = event.cause.train.passengers			
 				if train_passengers then
 					for _, passenger in pairs(train_passengers) do
 						insert(players_to_reward, passenger)
