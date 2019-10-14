@@ -338,7 +338,7 @@ local function draw_gui(player, forced)
 	add_separator(frame, 400)
 	local t = frame.add({type = "table", column_count = 14})
 	for i = 1, 14, 1 do
-		local e = t.add({type = "sprite", sprite = global.frame_icons[i]})
+		local e = t.add({type = "sprite", sprite = global.rpg_frame_icons[i]})
 		e.style.maximal_width = 24
 		e.style.maximal_height = 24
 		e.style.padding = 0
@@ -396,7 +396,7 @@ local function level_up(player)
 	draw_level_text(player)
 	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute + distribute_points_gain
 	update_char_button(player)
-	table.shuffle_table(global.frame_icons)
+	table.shuffle_table(global.rpg_frame_icons)
 	if player.gui.left.rpg then draw_gui(player, true) end
 	level_up_effects(player)
 end
@@ -436,6 +436,9 @@ end
 
 function rpg_reset_all_players()
 	for _, p in pairs(game.players) do
+		global.rpg[p.index] = nil
+	end
+	for _, p in pairs(game.connected_players) do
 		rpg_reset_player(p)
 	end
 end
@@ -632,6 +635,7 @@ end
 local building_and_mining_blacklist = {
 	["tile-ghost"] = true,
 	["entity-ghost"] = true,
+	["item-entity"] = true,
 }
 
 local function on_pre_player_mined_item(event)
@@ -660,15 +664,15 @@ local function on_player_crafted_item(event)
 end
 
 local function on_player_respawned(event)
-	draw_level_text(game.players[event.player_index])
-	update_player_stats(game.players[event.player_index])
+	local player = game.players[event.player_index]
+	if not global.rpg[player.index] then rpg_reset_player(player) return end
+	update_player_stats(player)
+	draw_level_text(player)
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if not global.rpg[player.index] then
-		rpg_reset_player(player) 
-	end
+	if not global.rpg[player.index] then rpg_reset_player(player) return end
 	draw_gui_char_button(player)
 	if not player.character then return end
 	update_player_stats(player)
@@ -677,12 +681,12 @@ end
 
 local function on_init(event)
 	global.rpg = {}
-	global.frame_icons = {
+	global.rpg_frame_icons = {
 		"entity/small-worm-turret", "entity/medium-worm-turret", "entity/big-worm-turret", "entity/behemoth-worm-turret",
 		"entity/small-biter", "entity/small-biter", "entity/small-spitter", "entity/medium-biter", "entity/medium-biter",
 		"entity/medium-spitter", "entity/big-biter", "entity/big-biter", "entity/big-spitter", "entity/behemoth-biter", "entity/behemoth-biter", "entity/behemoth-spitter"
 	}
-	table.shuffle_table(global.frame_icons)
+	table.shuffle_table(global.rpg_frame_icons)
 end
 
 local event = require 'utils.event'
