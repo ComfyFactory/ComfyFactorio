@@ -212,6 +212,10 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]	
 	local surface = game.surfaces[global.active_surface_index]
 	
+	--20 Players for maximum difficulty
+	global.wave_defense.wave_interval = 3600 - #game.connected_players * 180
+	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end	
+	
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
 		for item, amount in pairs(starting_items) do
@@ -221,7 +225,7 @@ local function on_player_joined_game(event)
 	
 	if player.surface.index ~= global.active_surface_index then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
-	end
+	end	
 end
 
 local function on_init(surface)
@@ -244,7 +248,7 @@ local function on_init(surface)
 		"\n",
 		"As you dig, you will encounter impassable dark chasms.\n",
 		"Some explosives may cause parts of the ceiling to crumble,\n",
-		"filling the void and creating new ways.\n",
+		"filling the void, creating new ways.\n",
 		"All they need is a container and a well aimed shot.\n",
 	})
 		

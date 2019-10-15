@@ -39,9 +39,7 @@ for _, t in pairs (rock_mining_chance_weights) do
 	end			
 end
 
-local function create_particles(surface, name, position, amount, cause_position)
-	
-	
+local function create_particles(surface, name, position, amount, cause_position)	
 	local direction_mod = (-100 + math_random(0,200)) * 0.0004
 	local direction_mod_2 = (-100 + math_random(0,200)) * 0.0004
 	
@@ -111,7 +109,7 @@ local function on_player_mined_entity(event)
 	local position = {x = entity.position.x, y = entity.position.y}
 	
 	player.surface.create_entity({name = "flying-text", position = position, text = "+" .. count .. " [img=item/" .. ore .. "]", color = {r = 200, g = 160, b = 30}})
-	create_particles(player.surface, particles[ore], position, 64, player.position)
+	create_particles(player.surface, particles[ore], position, 64, {x = player.position.x, y = player.position.y})
 	
 	entity.destroy()
 	

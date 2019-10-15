@@ -2,16 +2,22 @@ local threat_values = require "modules.wave_defense.threat_values"
 local math_random = math.random
 
 local function remove_unit(entity)
-	if not global.wave_defense.active_units[entity.unit_number] then return end
-	global.wave_defense.active_units[entity.unit_number] = nil
+	if not global.wave_defense.active_biters[entity.unit_number] then return end
+	global.wave_defense.active_biters[entity.unit_number] = nil
 	global.wave_defense.active_biter_count = global.wave_defense.active_biter_count - 1
 end
 
 function build_nest()
 	if global.wave_defense.threat < 1000 then return end
-	if math_random(1, global.wave_defense.nest_building_chance) ~= 1 then return end	
-	local unit = wave_defense_get_random_unit()
-	if not unit then return end	
+	if math_random(1, global.wave_defense.nest_building_chance) ~= 1 then return end
+	if #global.wave_defense.unit_groups == 0 then return end
+	local group = global.wave_defense.unit_groups[math_random(1, #global.wave_defense.unit_groups)]
+	if not group then return end
+	if not group.valid then return end
+	if not group.members then return end
+	if not group.members[1] then return end
+	local unit = group.members[math_random(1, #group.members)]
+	if not unit.valid then return end	
 	local position = unit.surface.find_non_colliding_position("biter-spawner", unit.position, 8, 1)
 	if not position then return end
 	local r = global.wave_defense.nest_building_density	
@@ -27,8 +33,14 @@ end
 function build_worm()
 	if global.wave_defense.threat < 1000 then return end
 	if math_random(1, global.wave_defense.worm_building_chance) ~= 1 then return end
-	local unit = wave_defense_get_random_unit()
-	if not unit then return end
+	if #global.wave_defense.unit_groups == 0 then return end
+	local group = global.wave_defense.unit_groups[math_random(1, #global.wave_defense.unit_groups)]
+	if not group then return end
+	if not group.valid then return end
+	if not group.members then return end
+	if not group.members[1] then return end
+	local unit = group.members[math_random(1, #group.members)]
+	if not unit.valid then return end
 	wave_defense_set_worm_raffle(global.wave_defense.wave_number)
 	local worm = wave_defense_roll_worm_name()
 	local position = unit.surface.find_non_colliding_position(worm, unit.position, 8, 1)
@@ -74,12 +86,29 @@ local function acid_nova(entity)
 			force = entity.force.name,
 			source = entity.position,
 			target = {x = entity.position.x + acid_nova_entities[entity.name].vectors[i][1], y = entity.position.y + acid_nova_entities[entity.name].vectors[i][2]},
-			max_range = radius, 
+			max_range = 10, 
 			speed = 0.001
 		})
 	end	
 	global.wave_defense.threat = global.wave_defense.threat - acid_nova_entities[entity.name].threat_cost	
 	return true
+end
+
+local function create_particles(entity)
+	local particle = "stone-particle"
+	if entity.type == "tree" then particle = "branch-particle" end
+	local m = math_random(16, 24)
+	local m2 = m * 0.005
+	for i = 1, 64, 1 do 
+		entity.surface.create_entity({
+			name = particle,
+			position = entity.position,
+			frame_speed = 0.1,
+			vertical_speed = 0.1,
+			height = 0.1,
+			movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
+		})
+	end
 end
 
 local function shred_simple_entities(entity)
@@ -95,6 +124,7 @@ local function shred_simple_entities(entity)
 		if not simple_entities[i] then break end
 		if simple_entities[i].valid then
 			if simple_entities[i].health then
+				--create_particles(entity)
 				damage_dealt = damage_dealt + simple_entities[i].health
 				simple_entities[i].die("neutral", simple_entities[i])
 			end

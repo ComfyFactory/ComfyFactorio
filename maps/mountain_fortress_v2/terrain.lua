@@ -128,10 +128,11 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 	end	
 	if math.abs(noise_large_caves) > m * 6.5 then
 		if math_random(1,16) == 1 then entities[#entities + 1] = {name="tree-02", position=p} end
-		if math_random(1,128) == 1 then markets[#markets + 1] = p end
+		if math_random(1,64) == 1 then markets[#markets + 1] = p end
 	end	
 	if math.abs(noise_large_caves) > m * 5 then
 		tiles[#tiles + 1] = {name = "grass-2", position = p}
+		if math_random(1,512) == 1 then markets[#markets + 1] = p end
 		if math_random(1,384) == 1 then
 			wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
 			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
