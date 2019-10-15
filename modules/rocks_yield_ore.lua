@@ -134,7 +134,7 @@ local function on_entity_died(event)
 	local surface = entity.surface
 	local ore = ore_raffle[math_random(1, #ore_raffle)]
 	local pos = {entity.position.x, entity.position.y}		
-	create_particles(surface, particles[ore], pos, 16)			
+	create_particles(surface, particles[ore], pos, 16, false)
 	
 	if event.cause then
 		if event.cause.valid then

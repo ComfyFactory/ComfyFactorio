@@ -16,7 +16,8 @@ local coin_yield = {
 	["biter-spawner"] = 32,	
 	["small-worm-turret"] = 8,
 	["medium-worm-turret"] = 16,
-	["big-worm-turret"] = 24
+	["big-worm-turret"] = 24,
+	["behemoth-worm-turret"] = 32,
 }
 
 local entities_that_earn_coins = {

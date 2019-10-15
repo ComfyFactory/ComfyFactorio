@@ -158,7 +158,7 @@ local function get_resource_market_sells()
 		{price = {{"coin", math.random(5,10)}}, offer = {type = 'give-item', item = 'stone', count = 50}},
 		{price = {{"coin", math.random(5,10)}}, offer = {type = 'give-item', item = 'coal', count = 50}},
 		{price = {{"coin", math.random(8,16)}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},	
-		{price = {{"coin", math.random(2,3)}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},				
+		{price = {{"coin", math.random(2,4)}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},				
 	}
 	table.shuffle_table(sells)
 	return sells

@@ -54,7 +54,7 @@ local function on_player_mined_entity(event)
 				local ore_entities_placed = 0
 				local modifier_raffle = {{0,-1},{-1,0},{1,0},{0,1}}
 				while ore_entities_placed < math_random(size[2],size[3]) do						
-					local a = math.ceil((math_random(tile_distance_to_center*4, tile_distance_to_center*5)) / 1 + ore_entities_placed * 0.5, 0)						
+					local a = math.floor((math_random(tile_distance_to_center*4, tile_distance_to_center*5)) / 1 + ore_entities_placed * 0.5) + 1
 					for x = 1, 150, 1 do
 						local m = modifier_raffle[math_random(1,#modifier_raffle)]
 						local pos = {x = p.x + m[1], y = p.y + m[2]}

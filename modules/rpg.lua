@@ -405,7 +405,7 @@ local function gain_xp(player, amount)
 	amount = math.round(amount, 2)
 	global.rpg[player.index].xp = global.rpg[player.index].xp + amount
 	global.rpg[player.index].xp_since_last_floaty_text = global.rpg[player.index].xp_since_last_floaty_text + amount
-	if player.gui.left.rpg then draw_gui(player) end
+	if player.gui.left.rpg then draw_gui(player, false) end
 	if not experience_levels[global.rpg[player.index].level + 1] then return end
 	if global.rpg[player.index].xp >= experience_levels[global.rpg[player.index].level + 1] then
 		level_up(player)
@@ -457,7 +457,7 @@ local function on_gui_click(event)
 				player.gui.left.rpg.destroy()
 				return
 			end
-			draw_gui(player)
+			draw_gui(player, false)
 		end
 	end
 	
@@ -471,20 +471,20 @@ local function on_gui_click(event)
 	
 	if event.button == defines.mouse_button_type.right then
 		for a = 1, 5, 1 do
-			if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player) return end
+			if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player, false) return end
 			global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute - 1
 			global.rpg[player.index][index] = global.rpg[player.index][index] + 1
 			update_player_stats(player)
 		end
-		draw_gui(player)
+		draw_gui(player, false)
 		return
 	end
 	
-	if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player) return end
+	if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player, false) return end
 	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute - 1
 	global.rpg[player.index][index] = global.rpg[player.index][index] + 1
 	update_player_stats(player)
-	draw_gui(player)
+	draw_gui(player, false)
 end
 
 local xp_yield = {

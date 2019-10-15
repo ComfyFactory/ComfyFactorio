@@ -100,7 +100,7 @@ local function protect_train(event)
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
 end
-
+--[[
 local function neutral_force_player_damage_resistance(event)
 	if event.entity.force.index ~= 3 then return end  -- Neutral Force
 	if event.cause then
@@ -116,7 +116,7 @@ local function neutral_force_player_damage_resistance(event)
 	end
 	event.entity.health = event.entity.health + (event.final_damage_amount * 0.5)		
 end
-
+]]
 local function biters_chew_rocks_faster(event)
 	if event.entity.force.index ~= 3 then return end --Neutral Force
 	if not event.cause then return end
