@@ -3,14 +3,14 @@
 local print_color = {r = 120, g = 255, b = 0}
 
 local function create_floaty_text(surface, position, name, count, height_offset)
-	if chest_floating_text_y_offsets[position.x .. "_" .. position.y] then
-		chest_floating_text_y_offsets[position.x .. "_" .. position.y] = chest_floating_text_y_offsets[position.x .. "_" .. position.y] - 0.5
+	if global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y] then
+		global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y] = global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y] - 0.5
 	else
-		chest_floating_text_y_offsets[position.x .. "_" .. position.y] = 0
+		global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y] = 0
 	end
 	surface.create_entity({
 		name = "flying-text",
-		position = {position.x, position.y + chest_floating_text_y_offsets[position.x .. "_" .. position.y]},
+		position = {position.x, position.y + global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y]},
 		text = "-" .. count .. " " .. name,
 		color = {r = 255, g = 255, b = 255},
 	})
@@ -163,7 +163,7 @@ local function auto_stash(player)
 		if chest_is_valid(e) then filtered_chests[#filtered_chests + 1] = e end
 	end
 	
-	chest_floating_text_y_offsets = {}
+	global.autostash_floating_text_y_offsets = {}
 	
 	local hotbar_items = {}
 	for i = 1, 100, 1 do
@@ -178,6 +178,8 @@ local function auto_stash(player)
 			insert_item_into_chest(inventory, chests, filtered_chests, name, count)			
 		end
 	end
+	
+	global.autostash_floating_text_y_offsets = nil
 end
 
 local function create_gui_button(player)
