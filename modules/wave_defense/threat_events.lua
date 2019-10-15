@@ -94,23 +94,6 @@ local function acid_nova(entity)
 	return true
 end
 
-local function create_particles(entity)
-	local particle = "stone-particle"
-	if entity.type == "tree" then particle = "branch-particle" end
-	local m = math_random(16, 24)
-	local m2 = m * 0.005
-	for i = 1, 64, 1 do 
-		entity.surface.create_entity({
-			name = particle,
-			position = entity.position,
-			frame_speed = 0.1,
-			vertical_speed = 0.1,
-			height = 0.1,
-			movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
-		})
-	end
-end
-
 local function shred_simple_entities(entity)
 	if global.wave_defense.threat < 5000 then return end
 	local simple_entities = entity.surface.find_entities_filtered({type = "simple-entity", area = {{entity.position.x - 2, entity.position.y - 2},{entity.position.x + 2, entity.position.y + 2}}})
@@ -124,7 +107,6 @@ local function shred_simple_entities(entity)
 		if not simple_entities[i] then break end
 		if simple_entities[i].valid then
 			if simple_entities[i].health then
-				--create_particles(entity)
 				damage_dealt = damage_dealt + simple_entities[i].health
 				simple_entities[i].die("neutral", simple_entities[i])
 			end
