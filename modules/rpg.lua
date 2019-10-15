@@ -524,6 +524,7 @@ end
 --Melee damage modifier
 local function one_punch(character, target, damage)
 	local base_vector = {target.position.x - character.position.x, target.position.y - character.position.y}
+	
 	local vector = {base_vector[1], base_vector[2]}
 	vector[1] = vector[1] * 1000
 	vector[2] = vector[2] * 1000
@@ -534,12 +535,12 @@ local function one_punch(character, target, damage)
 	
 	if math.abs(vector[1]) > math.abs(vector[2]) then
 		local d = math.abs(vector[1])
-		vector[1] = vector[1] / d
-		vector[2] = vector[2] / d
+		if math.abs(vector[1]) > 0 then vector[1] = vector[1] / d end
+		if math.abs(vector[2]) > 0 then vector[2] = vector[2] / d end
 	else
-		local d = math.abs(vector[2])
-		vector[2] = vector[2] / d
-		vector[1] = vector[1] / d
+		local d = math.abs(vector[2])		
+		if math.abs(vector[2]) > 0 then vector[2] = vector[2] / d end
+		if math.abs(vector[1]) > 0 and d > 0 then vector[1] = vector[1] / d end	
 	end
 	
 	vector[1] = vector[1] * 1.5

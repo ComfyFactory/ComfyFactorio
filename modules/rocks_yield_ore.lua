@@ -1,6 +1,6 @@
 --destroying and mining rocks yields ore -- load as last module
 local math_random = math.random
-local max_spill = 64
+local max_spill = 48
 
 local rock_yield = {
 	["rock-big"] = 1,

@@ -78,7 +78,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		
 		--Rivers
 		local cave_rivers = get_noise("cave_rivers", p, seed + 100000)
-		if cave_rivers < 0.025 and cave_rivers > -0.025 then
+		if cave_rivers < 0.024 and cave_rivers > -0.024 then
 			if noise_cave_ponds > 0 then
 				tiles[#tiles + 1] = {name = "water-shallow", position = p}
 				if math_random(1,64) == 1 then entities[#entities + 1] = {name="fish", position=p} end
@@ -293,6 +293,7 @@ local function process_chunk(surface, left_top)
 	if left_top.y >= 0 then border_chunk(surface, left_top) return end
 end
 
+--[[
 local function process_chunk_queue()
 	for k, chunk in pairs(global.chunk_queue) do		
 		process_chunk(game.surfaces[chunk.surface_index], chunk.left_top)		
@@ -300,10 +301,19 @@ local function process_chunk_queue()
 		return
 	end
 end
+]]
+
+local function process_chunk_queue()
+	local chunk = global.chunk_queue[#global.chunk_queue]
+	if not chunk then return end
+	process_chunk(game.surfaces[chunk.surface_index], chunk.left_top)		
+	global.chunk_queue[#global.chunk_queue] = nil
+end
 
 local function on_chunk_generated(event)
 	if event.surface.index == 1 then return end
-	global.chunk_queue[#global.chunk_queue + 1] = {left_top = {x = event.area.left_top.x, y = event.area.left_top.y}, surface_index = event.surface.index}
+	process_chunk(event.surface, event.area.left_top)
+	--global.chunk_queue[#global.chunk_queue + 1] = {left_top = {x = event.area.left_top.x, y = event.area.left_top.y}, surface_index = event.surface.index}
 end
 
 local event = require 'utils.event'

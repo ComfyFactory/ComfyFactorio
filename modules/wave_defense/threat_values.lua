@@ -1,4 +1,4 @@
-return {
+local t = {
 	["behemoth-biter"] = 24,
 	["behemoth-spitter"] = 24,
 	["big-biter"] = 8,
@@ -12,3 +12,4 @@ return {
 	["big-worm-turret"] = 64,		
 	["behemoth-worm-turret"] = 80,
 }
+return t

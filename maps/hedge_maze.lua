@@ -1,6 +1,9 @@
 -- forest maze from mewmew
 
 require "modules.satellite_score"
+require "modules.biter_pets"
+require "modules.no_deconstruction_of_neutral_entities"
+require "modules.spawners_contain_biters"
 
 local event = require 'utils.event'
 local map_functions = require "tools.map_functions"
@@ -481,17 +484,6 @@ local function on_player_joined_game(event)
 	end	
 end
 
-local disabled_for_deconstruction = {
-		["fish"] = true,
-		["simple-entity"] = true,
-		["tree"] = true
-	}	
-local function on_marked_for_deconstruction(event)	
-	if disabled_for_deconstruction[event.entity.type] then
-		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
-	end
-end
-
 --TREE BURNING NERF
 local function on_entity_died(event)	
 	if not event.entity.valid then return end
@@ -508,7 +500,6 @@ end
 
 event.on_init(on_init)
 event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

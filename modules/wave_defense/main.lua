@@ -303,7 +303,9 @@ local function get_commmands(group)
 end
 
 local function command_unit_group(group)
-	if not global.wave_defense.unit_group_last_command[group.group_number] then global.wave_defense.unit_group_last_command[group.group_number] = game.tick - (global.wave_defense.unit_group_command_delay + 1) end
+	if not global.wave_defense.unit_group_last_command[group.group_number] then
+		global.wave_defense.unit_group_last_command[group.group_number] = game.tick - (global.wave_defense.unit_group_command_delay + 1) 
+	end
 	if global.wave_defense.unit_group_last_command[group.group_number] + global.wave_defense.unit_group_command_delay > game.tick then return end	
 	global.wave_defense.unit_group_last_command[group.group_number] = game.tick
 	
