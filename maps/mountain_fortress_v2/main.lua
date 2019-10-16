@@ -176,7 +176,7 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
 		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
-		rpg_reset_all_players()
+		--rpg_reset_all_players()
 		return
 	end
 	
@@ -204,13 +204,16 @@ end
 local function on_research_finished(event)
 	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
 	local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
-	if event.research.force.technologies["steel-axe"].researched then mining_speed_bonus = mining_speed_bonus + 1 end -- +100% speed for steel-axe research
+	if event.research.force.technologies["steel-axe"].researched then mining_speed_bonus = mining_speed_bonus + 0.5 end -- +50% speed for steel-axe research
 	event.research.force.manual_mining_speed_modifier = mining_speed_bonus
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]	
 	local surface = game.surfaces[global.active_surface_index]
+	
+	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
+	update_player_modifiers(player)
 	
 	--20 Players for maximum difficulty
 	global.wave_defense.wave_interval = 3600 - #game.connected_players * 180
@@ -224,7 +227,13 @@ local function on_player_joined_game(event)
 	end
 	
 	if player.surface.index ~= global.active_surface_index then
+		player.character = nil
+		player.set_controller({type=defines.controllers.god})
+		player.create_character()
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
+		for item, amount in pairs(starting_items) do
+			player.insert({name = item, count = amount})
+		end
 	end	
 end
 

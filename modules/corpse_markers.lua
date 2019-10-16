@@ -11,7 +11,11 @@ local function is_tag_valid(tag)
 end
 
 local function get_corpse_force(corpse)
-	if corpse.character_corpse_player_index then return game.players[corpse.character_corpse_player_index].force end
+	if corpse.character_corpse_player_index then 
+		if game.players[corpse.character_corpse_player_index] then
+			return game.players[corpse.character_corpse_player_index].force
+		end
+	end
 	return game.forces.neutral
 end
 

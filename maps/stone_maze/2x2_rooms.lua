@@ -205,7 +205,10 @@ room.circle_pond_with_trees = function(surface, cell_left_top, direction)
 	
 	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size, y = left_top.y + grid_size}, "grass-2", surface, grid_size * 0.75)
 	map_functions.draw_noise_tile_circle({x = left_top.x + grid_size, y = left_top.y + grid_size}, "water", surface, grid_size * 0.5)
-		
+	
+	local position = surface.find_non_colliding_position("market", center_pos, grid_size, 1)
+	if position then	super_market(surface, position, math.floor(global.maze_depth * 0.01) + 1) end
+	
 	for x = math.floor(grid_size * 2 * 0.1), math.floor(grid_size * 2 * 0.9), 1 do
 		for y = math.floor(grid_size * 2 * 0.1), math.floor(grid_size * 2 * 0.9), 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}
@@ -308,7 +311,7 @@ room.maze = function(surface, cell_left_top, direction)
 end
 
 local room_weights = {
-	{func = room.circle_pond_with_trees, weight = 10},	
+	{func = room.circle_pond_with_trees, weight = 20},
 	{func = room.scrapyard, weight = 9},
 	{func = room.stone_block, weight = 12},
 	{func = room.tons_of_rocks, weight = 12},

@@ -20,7 +20,9 @@ function update_player_modifiers(player)
 		for _, value in pairs(global.player_modifiers[player.index][modifier]) do
 			sum_value = sum_value + value
 		end
-		player[modifier] = sum_value
+		if player.character then
+			player[modifier] = sum_value
+		end
 	end
 end
 

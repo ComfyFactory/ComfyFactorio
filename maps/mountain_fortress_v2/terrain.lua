@@ -275,15 +275,66 @@ local function out_of_map(surface, left_top)
 		end
 	end
 end
-
+--[[
+local function wall(surface, left_top, seed)
+	local entities = {}
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}
+			local small_caves = get_noise("small_caves", p, seed)	
+			local cave_ponds = get_noise("cave_rivers", p, seed + 100000)
+			if y > 9 + cave_ponds * 6 and y < 23 + small_caves * 6 then
+				if small_caves > 0.35 or cave_ponds > 0.35 then
+					surface.set_tiles({{name = "water-shallow", position = p}})
+				else
+					surface.set_tiles({{name = "dirt-7", position = p}})
+					if math_random(1, 5) ~= 1 then
+						surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = p})
+					end
+				end
+			else
+				surface.set_tiles({{name = "dirt-7", position = p}})
+				
+				if surface.can_place_entity({name = "stone-wall", position = p, force = "enemy"}) then
+					if math_random(1,512) == 1 and y > 3 and y < 28 then
+						treasure_chest(surface, p)
+					else
+						if y < 7 or y > 23 then
+							if y <= 15 then
+								if math_random(1, y + 1) == 1 then
+									surface.create_entity({name = "stone-wall", position = p, force = "enemy"})
+								end
+							else
+								if math_random(1, 32 - y)  == 1 then
+									surface.create_entity({name = "stone-wall", position = p, force = "enemy"})
+								end
+							end
+						end
+					end				
+				end		
+				
+				if math_random(1, 32) == 1 then
+					if surface.can_place_entity({name = "small-worm-turret", position = p, force = "enemy"}) then
+						wave_defense_set_worm_raffle(math.abs(p.y) * 0.5)
+						surface.create_entity({name = wave_defense_roll_worm_name(), position = p, force = "enemy"})
+					end
+				end			
+			end
+		end
+	end
+end
+]]
 local function process_chunk(surface, left_top)
 	if not surface then return end
 	if not surface.valid then return end
 	if left_top.x >= 768 then return end
 	if left_top.x < -768 then return end
+	
+	--if left_top.y % 1024 == 0 then wall(surface, left_top, surface.map_gen_settings.seed) return end
+	
 	if left_top.y >= 0 then replace_water(surface, left_top) end
 	if left_top.y > 32 then game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}}) end	
-	if left_top.y == 64 and left_top.x == 64 then
+	if left_top.y == -128 and left_top.x == -128 then
 		local p = global.locomotive.position
 		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 10}}, type = "simple-entity"})) do	entity.destroy() end
 	end
@@ -301,7 +352,7 @@ local function process_chunk_queue()
 		return
 	end
 end
-]]
+
 
 local function process_chunk_queue()
 	local chunk = global.chunk_queue[#global.chunk_queue]
@@ -309,6 +360,7 @@ local function process_chunk_queue()
 	process_chunk(game.surfaces[chunk.surface_index], chunk.left_top)		
 	global.chunk_queue[#global.chunk_queue] = nil
 end
+]]
 
 local function on_chunk_generated(event)
 	if event.surface.index == 1 then return end

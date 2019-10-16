@@ -237,5 +237,27 @@ function mountain_market(surface, position, rarity)
 end
 
 function super_market(surface, position, rarity)
-
+	local items = get_market_item_list(get_types(), rarity)
+	if not items then return end
+	if #items > 0 then table.shuffle_table(items) end
+	local market = surface.create_entity({name = "market", position = position, force="neutral"})
+	market.minable = false
+	market.destructible = false
+	
+	for i = 1, math.random(6, 12), 1 do
+		if not items[i] then break end
+		market.add_market_item(items[i])
+	end
+	
+	local sells = get_resource_market_sells()
+	for i = 1, math.random(1, 3), 1 do
+		market.add_market_item(sells[i])
+	end
+	
+	local buys = get_resource_market_buys()
+	for i = 1, math.random(1, 3), 1 do
+		market.add_market_item(buys[i])
+	end
+	
+	return market
 end

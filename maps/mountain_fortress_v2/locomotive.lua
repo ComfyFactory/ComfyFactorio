@@ -17,6 +17,8 @@ end
 local function fish_tag()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
+	if not global.locomotive_cargo.surface then return end
+	if not global.locomotive_cargo.surface.valid then return end
 	if global.locomotive_tag then
 		if global.locomotive_tag.valid then
 			if global.locomotive_tag.position.x == global.locomotive_cargo.position.x and global.locomotive_tag.position.y == global.locomotive_cargo.position.y then return end
