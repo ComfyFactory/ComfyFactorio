@@ -42,6 +42,8 @@ end
 
 local function get_melee_modifier(player) return (global.rpg[player.index].strength - 10) * 0.10 end
 
+local function get_life_on_hit(player) return (global.rpg[player.index].vitality - 10) * 0.2 end
+
 local function get_one_punch_chance(player)
 	if global.rpg[player.index].strength < 100 then return 0 end
 	local chance = math.round(global.rpg[player.index].strength * 0.01, 1)
@@ -208,7 +210,7 @@ local function draw_gui(player, forced)
 	local w1 = 85
 	local w2 = 63
 	
-	local tip = "Increases inventory slots and mining speed."
+	local tip = "Increases inventory slots and mining speed.\nIncreases melee damage."
 	local e = add_gui_description(tt, "STRENGTH", w1)
 	e.tooltip = tip
 	local e = add_gui_stat(tt, global.rpg[player.index].strength, w2)
@@ -229,7 +231,7 @@ local function draw_gui(player, forced)
 	e.tooltip = tip
 	add_gui_increase_stat(tt, "dexterity", player)
 	
-	local tip = "Increases your health."
+	local tip = "Increases health.\nIncreases melee life on-hit."
 	local e = add_gui_description(tt, "VITALITY", w1)
 	e.tooltip = tip
 	local e = add_gui_stat(tt, global.rpg[player.index].vitality, w2)
@@ -283,7 +285,7 @@ local function draw_gui(player, forced)
 	add_gui_description(tt, "MELEE\nDAMAGE", w1)
 	local value = 100 * (1 + get_melee_modifier(player)) .. "%"
 	local e = add_gui_stat(tt, value, w2)
-	e.tooltip = "One punch chance " .. get_one_punch_chance(player) .. "%"
+	e.tooltip = "Life on-hit: " .. get_life_on_hit(player) .. "\nOne punch chance: " .. get_one_punch_chance(player) .. "%"
 	
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
@@ -583,6 +585,7 @@ local function on_entity_damaged(event)
 	if not event.cause.player then return end
 
 	event.entity.health = event.entity.health + event.final_damage_amount
+	event.cause.health = event.cause.health + get_life_on_hit(event.cause.player)
 	
 	local damage = event.final_damage_amount + event.final_damage_amount * get_melee_modifier(event.cause.player)	
 	

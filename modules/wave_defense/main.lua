@@ -411,7 +411,7 @@ function reset_wave_defense()
 		max_biter_age = 3600 * 60,
 		active_biter_count = 0,
 		get_random_close_spawner_attempts = 5,
-		side_target_search_radius = 512,
+		side_target_search_radius = 768,
 		spawn_position = {x = 0, y = 64},
 		last_wave = game.tick,
 		next_wave = game.tick + 3600 * 5,
