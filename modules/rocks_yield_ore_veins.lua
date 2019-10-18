@@ -106,8 +106,6 @@ local function ore_vein(event)
 		if count <= 0 then break end
 	end
 	
-	game.print(#ore_entities)
-	
 	for _, e in pairs(ore_entities) do surface.create_entity(e) end
 end
 
