@@ -68,7 +68,7 @@ market.equipment = {
 market.defense = {	
 	["stone-wall"] = {value = 4, rarity = 1},
 	["gate"] = {value = 8, rarity = 1},
-	["repair-pack"] = {value = 10, rarity = 1},
+	["repair-pack"] = {value = 8, rarity = 1},
 	["gun-turret"] = {value = 64, rarity = 1},
 	["laser-turret"] = {value = 1024, rarity = 6},
 	["flamethrower-turret"] = {value = 2048, rarity = 6},

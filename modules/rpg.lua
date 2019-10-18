@@ -352,6 +352,8 @@ local function draw_gui(player, forced)
 end
 
 local function draw_level_text(player)
+	if not player.character then return end
+	
 	if global.rpg[player.index].text then
 		rendering.destroy(global.rpg[player.index].text)
 		global.rpg[player.index].text = nil
@@ -676,11 +678,13 @@ end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if not global.rpg[player.index] then rpg_reset_player(player) return end
+	if not global.rpg[player.index] then rpg_reset_player(player) end	
+	for _, p in pairs(game.connected_players) do
+		draw_level_text(p)
+	end
 	draw_gui_char_button(player)
 	if not player.character then return end
 	update_player_stats(player)
-	draw_level_text(player)
 end
 
 local function on_init(event)

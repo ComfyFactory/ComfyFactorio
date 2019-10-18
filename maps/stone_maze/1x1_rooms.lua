@@ -312,8 +312,8 @@ local room_weights = {
 	{func = room.tons_of_trees, weight = 15},	
 	
 	{func = room.tons_of_rocks, weight = 35},	
-	{func = room.quad_rocks, weight = 10},
-	{func = room.three_rocks, weight = 5},
+	{func = room.quad_rocks, weight = 7},
+	{func = room.three_rocks, weight = 3},
 	{func = room.single_rock, weight = 8},
 	
 	{func = room.checkerboard_ore, weight = 7},

@@ -8,6 +8,12 @@ function locomotive_spawn(surface, position)
 	global.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 3}, force = "player"})
 	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 8})
 	
+	rendering.draw_light({
+		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
+		oriented = true, color = {255,255,255}, target = global.locomotive,
+		surface = surface, visible = true, only_in_alt_mode = false,
+	})
+	
 	global.locomotive.color = {0, 255, 0}
 	global.locomotive.minable = false
 	global.locomotive_cargo.minable = false
@@ -58,9 +64,20 @@ local function set_player_spawn_and_refill_fish()
 	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
 end
 
+local function set_daytime()
+	if not global.locomotive_cargo then return end
+	if not global.locomotive_cargo.valid then return end
+	local p = global.locomotive_cargo.position.y
+	local t = math.abs(global.locomotive_cargo.position.y) * 0.02
+	if t > 0.5 then t = 0.5 end	
+	global.locomotive_cargo.surface.daytime = t
+	game.print(t)
+end
+
 local function tick()
 	if game.tick % 30 == 0 then	
 		fish_tag()
+		--set_daytime()
 		accelerate()
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()

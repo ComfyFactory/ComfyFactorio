@@ -27,6 +27,7 @@ end
 
 local function on_entity_damaged(event)
 	if not event.entity.valid then return end
+	if event.entity.force.index ~= 3 then return end
 	if not entity_whitelist[event.entity.name] then return end
 	global.entities_regenerate_health[tostring(event.entity.position.x) .. "_" .. tostring(event.entity.position.y)] = {last_damage = game.tick, entity = event.entity}		
 end

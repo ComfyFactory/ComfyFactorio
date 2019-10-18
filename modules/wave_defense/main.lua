@@ -288,7 +288,7 @@ local function get_commmands(group)
 	
 	commands[#commands + 1] = {
 		type = defines.command.attack_area,
-		destination = {x = global.wave_defense.target.position.x, y = global.wave_defense.target.position.y},
+		destination = {x = target_position.x, y = target_position.y},
 		radius = 8,
 		distraction = defines.distraction.by_enemy
 	}

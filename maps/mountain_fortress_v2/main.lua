@@ -58,6 +58,8 @@ function reset_map()
 	
 	local surface = game.surfaces[global.active_surface_index]
 
+	surface.freeze_daytime = true
+	surface.daytime = 0.5
 	surface.request_to_generate_chunks({0,0}, 2)
 	surface.force_generate_chunk_requests()
 	
@@ -76,6 +78,7 @@ function reset_map()
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.pollution.enabled = false
 	
+	game.forces.player.technologies["landfill"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({-2, 16}, surface)
 	
@@ -84,9 +87,13 @@ function reset_map()
 	reset_wave_defense()
 	global.wave_defense.surface_index = global.active_surface_index
 	global.wave_defense.target = global.locomotive_cargo
-	global.wave_defense.side_target_search_radius = 512
+	global.wave_defense.side_target_search_radius = 768
 	
 	global.wave_defense.game_lost = false
+	
+	for _, p in pairs(game.connected_players) do
+		if p.character then p.character.disable_flashlight() end
+	end
 end
 
 local function protect_train(event)
@@ -209,14 +216,20 @@ local function on_research_finished(event)
 end
 
 local function on_player_joined_game(event)
-	local player = game.players[event.player_index]	
+	local player = game.players[event.player_index]
+	if player.character then player.character.disable_flashlight() end
+	
 	local surface = game.surfaces[global.active_surface_index]
 	
+	global.wave_defense.surface_index = global.active_surface_index
+	global.wave_defense.target = global.locomotive_cargo
+	global.wave_defense.side_target_search_radius = 768
+		
 	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
 	update_player_modifiers(player)
 	
 	--20 Players for maximum difficulty
-	global.wave_defense.wave_interval = 3600 - #game.connected_players * 180
+	global.wave_defense.wave_interval = 3600 - #game.connected_players * 90
 	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end	
 	
 	if player.online_time == 0 then
@@ -237,10 +250,16 @@ local function on_player_joined_game(event)
 	end	
 end
 
+local function on_player_respawned(event)
+	local player = game.players[event.player_index]
+	if player.character then player.character.disable_flashlight() end
+end
+
+
 local function on_init(surface)
-	global.rocks_yield_ore_maximum_amount = 250
+	global.rocks_yield_ore_maximum_amount = 999
 	global.rocks_yield_ore_base_amount = 50
-	global.rocks_yield_ore_distance_modifier = 0.04
+	global.rocks_yield_ore_distance_modifier = 0.03
 	
 	global.map_info = {}
 	global.map_info.main_caption = "Mountain Fortress"
@@ -255,14 +274,19 @@ local function on_init(surface)
 		"Mining productivity research, will overhaul your mining equipment,\n",
 		"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
 		"\n",
-		"As you dig, you will encounter impassable dark chasms.\n",
+		"As you dig, you will encounter impassable dark chasms or rivers.\n",
 		"Some explosives may cause parts of the ceiling to crumble,\n",
 		"filling the void, creating new ways.\n",
 		"All they need is a container and a well aimed shot.\n",
 	})
 		
 	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 1500,
+		["out-of-map"] = 2000,
+		["water"] = 1500,
+		["water-green"] = 1500,
+		["deepwater-green"] = 1500,
+		["deepwater"] = 1500,
+		["water-shallow"] = 1000,	
 	}
 	
 	reset_map()
@@ -275,5 +299,6 @@ event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_respawned, on_player_respawned)
 
 require "modules.rocks_yield_ore"
