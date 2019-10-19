@@ -10,7 +10,7 @@ local valid_entities = {
 local rock_mining_chance_weights = {
 	{"iron-ore", 25},
 	{"copper-ore",18},
-	{"rainbow",15},
+	{"mixed",15},
 	{"coal",14},
 	{"stone",8},
 	{"uranium-ore",3}
@@ -23,22 +23,23 @@ for _, t in pairs (rock_mining_chance_weights) do
 	end			
 end
 
-local rainbow_ores = {"iron-ore", "copper-ore", "stone", "coal"}
+local mixed_ores = {"iron-ore", "copper-ore", "stone", "coal"}
 
 local size_raffle = {
-		{"huge", 33, 42},
+		{"giant", 65, 128},
+		{"huge", 33, 64},
 		{"big", 17, 32},
-		{"", 8, 16},
-		{"tiny", 5, 11},
+		{"smol", 9, 16},
+		{"tiny", 4, 8},
 	}
 
 local ore_prints = {
-		["coal"] = {"dark", "Coal"},
-		["iron-ore"] = {"shiny", "Iron"},
-		["copper-ore"] = {"glimmering", "Copper"},
-		["uranium-ore"] = {"glowing", "Uranium"},
-		["stone"] = {"solid", "Stone"},
-		["rainbow"] = {"glitter", "Rainbow ore"},
+		["coal"] = {"dark", "coal"},
+		["iron-ore"] = {"shiny", "iron"},
+		["copper-ore"] = {"glimmering", "copper"}, 
+		["uranium-ore"] = {"glowing", "uranium"},
+		["stone"] = {"solid", "stone"},
+		["mixed"] = {"glitter", "mixed ore"},
 	}
 
 
@@ -62,7 +63,7 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
 					position.y = p.y
 					ore_positions[p.x .. "_" .. p.y] = true
 					local name = ore
-					if ore == "rainbow" then name = rainbow_ores[math_random(1, #rainbow_ores)] end
+					if ore == "mixed" then name = mixed_ores[math_random(1, #mixed_ores)] end
 					ore_entities[#ore_entities + 1] = {name = name, position = p, amount = get_amount(position)}
 					break
 				end
@@ -86,8 +87,8 @@ local function ore_vein(event)
 	end	
 	
 	local ore_entities = {{name = ore, position = {x = event.entity.position.x, y = event.entity.position.y}, amount = get_amount(event.entity.position)}}
-	if ore == "rainbow" then
-		ore_entities = {{name = rainbow_ores[math_random(1, #rainbow_ores)], position = {x = event.entity.position.x, y = event.entity.position.y}, amount = get_amount(event.entity.position)}} 
+	if ore == "mixed" then
+		ore_entities = {{name = mixed_ores[math_random(1, #mixed_ores)], position = {x = event.entity.position.x, y = event.entity.position.y}, amount = get_amount(event.entity.position)}} 
 	end
 	
 	local ore_positions = {[event.entity.position.x .. "_" .. event.entity.position.y] = true}

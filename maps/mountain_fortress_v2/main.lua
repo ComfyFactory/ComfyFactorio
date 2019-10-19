@@ -58,8 +58,8 @@ function reset_map()
 	
 	local surface = game.surfaces[global.active_surface_index]
 
-	surface.freeze_daytime = true
-	surface.daytime = 0.5
+	--surface.freeze_daytime = true
+	--surface.daytime = 0.5
 	surface.request_to_generate_chunks({0,0}, 2)
 	surface.force_generate_chunk_requests()
 	
@@ -91,9 +91,9 @@ function reset_map()
 	
 	global.wave_defense.game_lost = false
 	
-	for _, p in pairs(game.connected_players) do
-		if p.character then p.character.disable_flashlight() end
-	end
+	--for _, p in pairs(game.connected_players) do
+	--	if p.character then p.character.disable_flashlight() end
+	--end
 end
 
 local function protect_train(event)
@@ -215,9 +215,17 @@ local function on_research_finished(event)
 	event.research.force.manual_mining_speed_modifier = mining_speed_bonus
 end
 
+local function set_difficulty()
+	--20 Players for maximum difficulty
+	global.wave_defense.wave_interval = 3600 - #game.connected_players * 90
+	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end	
+end
+
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if player.character then player.character.disable_flashlight() end
+	--if player.character then player.character.disable_flashlight() end
+	
+	set_difficulty()
 	
 	local surface = game.surfaces[global.active_surface_index]
 	
@@ -227,10 +235,6 @@ local function on_player_joined_game(event)
 		
 	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
 	update_player_modifiers(player)
-	
-	--20 Players for maximum difficulty
-	global.wave_defense.wave_interval = 3600 - #game.connected_players * 90
-	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end	
 	
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
@@ -249,12 +253,12 @@ local function on_player_joined_game(event)
 		end
 	end	
 end
-
+--[[
 local function on_player_respawned(event)
 	local player = game.players[event.player_index]
 	if player.character then player.character.disable_flashlight() end
 end
-
+]]
 
 local function on_init(surface)
 	global.rocks_yield_ore_maximum_amount = 999
@@ -299,6 +303,6 @@ event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_respawned, on_player_respawned)
+--event.add(defines.events.on_player_respawned, on_player_respawned)
 
 require "modules.rocks_yield_ore"

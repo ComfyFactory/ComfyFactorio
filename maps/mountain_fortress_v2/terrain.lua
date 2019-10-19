@@ -90,7 +90,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		if noise_cave_ponds < -0.80 then
 			tiles[#tiles + 1] = {name = "grass-" .. math.floor(noise_cave_ponds * 32) % 3 + 1, position = p}
 			if math_random(1,32) == 1 then markets[#markets + 1] = p end
-			if math_random(1,32) == 1 then entities[#entities + 1] = {name = "tree-0" .. math_random(1, 9), position=p} end
+			if math_random(1,16) == 1 then entities[#entities + 1] = {name = "tree-0" .. math_random(1, 9), position=p} end
 			return
 		end
 		
@@ -111,12 +111,17 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 			end
 		end
 		
-		--Main Rock Terrain	
-		tiles[#tiles + 1] = {name = "dirt-7", position = p}
-		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
+		--Main Rock Terrain			
+		
 		local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
-		if no_rocks_2 > 0.82 then return end
-		if no_rocks_2 < -0.82 then return end
+		if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
+			tiles[#tiles + 1] = {name = "dirt-" .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
+			if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
+			return 
+		end
+		
+		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
+		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if math_random(1,4) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end		
 		return
 	end
