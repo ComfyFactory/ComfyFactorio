@@ -16,6 +16,26 @@ require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.spawners_contain_biters"
 require "modules.map_info"
+map_info = {}
+map_info.main_caption = "M O U N T A I N    F O R T R E S S"
+map_info.sub_caption =  "    ..diggy diggy choo choo.."
+map_info.text = table.concat({
+	"The biters have catched the scent of fish in the cargo wagon.\n",
+	"Guide the choo into the mountain and protect it as long as possible!\n",
+	"This however will not be an easy task,\n",
+	"since their strength and resistance increases constantly over time.\n",
+	"\n",
+	"Delve deep for greater treasures, but also face increased dangers.\n",
+	"Mining productivity research, will overhaul your mining equipment,\n",
+	"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
+	"\n",
+	"As you dig, you will encounter impassable dark chasms or rivers.\n",
+	"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
+	"All they need is a container and a well aimed shot.\n",
+})
+map_info.main_caption_color = {r = 150, g = 150, b = 0}
+map_info.sub_caption_color = {r = 0, g = 150, b = 0}
+
 require "modules.rpg"
 
 require "maps.mountain_fortress_v2.market"
@@ -265,25 +285,6 @@ local function on_init(surface)
 	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.03
 	
-	global.map_info = {}
-	global.map_info.main_caption = "Mountain Fortress"
-	global.map_info.sub_caption =  "    ..diggy diggy choo choo.."
-	global.map_info.text = table.concat({
-		"The biters have catched the scent of fish in the cargo wagon.\n",
-		"Guide the choo into the mountain and protect it as long as possible!\n",
-		"This however will not be an easy task,\n",
-		"since their strength and resistance increases constantly over time.\n",
-		"\n",
-		"Delve deep for greater treasures, but also face increased dangers.\n",
-		"Mining productivity research, will overhaul your mining equipment,\n",
-		"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
-		"\n",
-		"As you dig, you will encounter impassable dark chasms or rivers.\n",
-		"Some explosives may cause parts of the ceiling to crumble,\n",
-		"filling the void, creating new ways.\n",
-		"All they need is a container and a well aimed shot.\n",
-	})
-		
 	global.explosion_cells_destructible_tiles = {
 		["out-of-map"] = 2000,
 		["water"] = 1500,

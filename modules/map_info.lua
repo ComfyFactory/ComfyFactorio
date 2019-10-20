@@ -1,79 +1,75 @@
-global.map_info = {}
-global.map_info.main_caption = "Insert Main Caption"
-global.map_info.sub_caption = "Insert Sub Caption"
-global.map_info.text = [[
-Add info text to global.map_info.
+map_info = {}
+map_info.main_caption = "Insert Main Caption"
+map_info.main_caption_color = {r=0.6, g=0.3, b=0.99}
+map_info.sub_caption = "Insert Sub Caption"
+map_info.sub_caption_color = {r=0.2, g=0.9, b=0.2}
+map_info.text = [[
+Add info text to map_info.
 ]]
 
-local function create_map_intro_button(player)
-	if player.gui.top["map_intro_button"] then return end
-	local b = player.gui.top.add({type = "sprite-button", caption = "?", name = "map_intro_button", tooltip = "Map Info"})
-	b.style.font_color = {r = 0.1, g = 0.8, b = 0.1}
-	b.style.font = "heading-1"
-	b.style.minimal_height = 38
-	b.style.minimal_width = 38
-	b.style.top_padding = 2
-	b.style.left_padding = 4
-	b.style.right_padding = 4
-	b.style.bottom_padding = 2
-end
-
-local function create_map_intro(player)	
-	local frame = player.gui.left.add {type = "frame", name = "map_intro_frame", direction = "vertical"}
-	local t = frame.add {type = "table", column_count = 1}	
+local function create_map_intro(player, frame)
+	frame.clear()
+	frame.style.padding = 4
+	frame.style.margin = 0
 	
-	local tt = t.add {type = "table", column_count = 3}
-	local l = tt.add {type = "label", caption = global.map_info.main_caption}
+	local t = frame.add {type = "table", column_count = 1}
+	
+	local line = t.add { type = "line"}
+	line.style.top_margin = 4
+	line.style.bottom_margin = 4
+	
+	local l = t.add {type = "label", caption = map_info.main_caption}
 	l.style.font = "heading-1"
-	l.style.font_color = {r=0.6, g=0.3, b=0.99}
-	l.style.top_padding = 6	
-	l.style.bottom_padding = 6
+	l.style.font_color = map_info.main_caption_color
+	l.style.minimal_width = 780	
+	l.style.horizontal_align = "center"	
+	l.style.vertical_align = "center"
 	
-	local l = tt.add {type = "label", caption = global.map_info.sub_caption}
-	l.style.font = "default"
-	l.style.font_color = {r=0.2, g=0.9, b=0.2}
-	l.style.minimal_width = 280	
+	local l = t.add {type = "label", caption = map_info.sub_caption}
+	l.style.font = "heading-2"
+	l.style.font_color = map_info.sub_caption_color
+	l.style.minimal_width = 780
+	l.style.horizontal_align = "center"	
+	l.style.vertical_align = "center"
 	
-	local b = tt.add {type = "button", caption = "X", name = "close_map_intro_frame", align = "right"}	
-	b.style.font = "default"
-	b.style.minimal_height = 30
-	b.style.minimal_width = 30
-	b.style.top_padding = 2
-	b.style.left_padding = 4
-	b.style.right_padding = 4
-	b.style.bottom_padding = 2
+	local line = t.add { type = "line"}
+	line.style.top_margin = 4
+	line.style.bottom_margin = 4
 	
-	local tt = t.add {type = "table", column_count = 1}
-	local frame = t.add {type = "frame"}
-	local l = frame.add {type = "label", caption = global.map_info.text}
-	l.style.font = "heading-3"
+	local scroll_pane = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
+	scroll_pane.style.maximal_height = 320
+	scroll_pane.style.minimal_height = 320
+	
+	local l = scroll_pane.add {type = "label", caption = map_info.text}
+	l.style.font = "heading-2"
 	l.style.single_line = false
-	l.style.font_color = {r=0.95, g=0.95, b=0.95}	
+	l.style.font_color = {r=0.85, g=0.85, b=0.88}
+	l.style.minimal_width = 780	
+	l.style.horizontal_align = "center"	
+	l.style.vertical_align = "center"
+	
+	local b = frame.add {type = "button", caption = "CLOSE", name = "close_map_intro"}
+	b.style.font = "heading-2"
+	b.style.padding = 2
+	b.style.top_margin = 3
+	b.style.left_margin = 333
+	b.style.horizontal_align = "center"	
+	b.style.vertical_align = "center"
 end
 
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
-	create_map_intro_button(player)
-	if player.online_time == 0 then
-		create_map_intro(player)
-	end
+	if player.online_time == 0 then	comfy_panel_call_tab(player, "Map Info") end
 end
 
 local function on_gui_click(event)
 	if not event then return end
 	if not event.element then return end
 	if not event.element.valid then return end	
-	local player = game.players[event.element.player_index]
-	if event.element.name == "close_map_intro_frame" then player.gui.left["map_intro_frame"].destroy() return end	
-	if event.element.name == "map_intro_button" then
-		if player.gui.left["map_intro_frame"] then
-			player.gui.left["map_intro_frame"].destroy()
-		else
-			create_map_intro(player)
-		end		
-		return
-	end	
+	if event.element.name == "close_map_intro" then game.players[event.player_index].gui.left.comfy_panel.destroy() return end
 end
+
+comfy_panel_tabs["Map Info"] = create_map_intro
 
 local event = require 'utils.event'
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

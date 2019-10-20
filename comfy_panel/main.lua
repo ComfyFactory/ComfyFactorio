@@ -31,13 +31,14 @@ local function top_button(player)
 end
 
 local function main_frame(player)
-	if player.gui.left["comfy_panel"] then return end
+	if player.gui.left.comfy_panel then player.gui.left.comfy_panel.destroy() end
+	
 	local frame = player.gui.left.add({type = "frame", name = "comfy_panel"})
-	frame.style.margin = 8
+	frame.style.margin = 6
 	
 	local tabbed_pane = frame.add({type = "tabbed-pane", name = "tabbed_pane"})
-		
-	for name, func in pairs(comfy_panel_tabs) do
+	
+	for name, func in pairs(comfy_panel_tabs) do		
 		if name == "Admin" then
 			if player.admin then
 				local tab = tabbed_pane.add({type = "tab", caption = name})
@@ -58,6 +59,19 @@ local function main_frame(player)
 	end
 	
 	comfy_panel_refresh_active_tab(player)
+	
+	return tabs
+end
+
+function comfy_panel_call_tab(player, name)
+	main_frame(player)
+	local tabbed_pane = player.gui.left.comfy_panel.tabbed_pane
+	for key, v in pairs(tabbed_pane.tabs) do
+		if v.tab.caption == name then
+			tabbed_pane.selected_tab_index = key
+			comfy_panel_refresh_active_tab(player)
+		end		
+	end
 end
 
 local function on_player_joined_game(event)
