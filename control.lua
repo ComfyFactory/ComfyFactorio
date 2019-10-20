@@ -16,9 +16,9 @@ require "player_modifiers"
 
 require "comfy_panel.main"
 require "comfy_panel.player_list"
-require "comfy_panel.poll"
 require "comfy_panel.group"
 require "comfy_panel.score"
+require "comfy_panel.poll"
 require "comfy_panel.admin"
 
 require "modules.autostash"
