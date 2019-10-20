@@ -235,7 +235,12 @@ local function player_list_show(player, frame, sort_by)
 
 	player_list_panel_table = player_list_panel_table.add { type = "table", name = "player_list_panel_table", column_count = 5 }
 
-	local player_list = get_sorted_list(sort_by)
+	local player_list
+	if sort_by then
+		player_list = get_sorted_list(sort_by)
+	else
+		player_list = get_sorted_list("total_time_played_desc")
+	end
 
 	for i = 1, #player_list, 1 do
 		-- Icon
