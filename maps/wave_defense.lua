@@ -1,6 +1,5 @@
 --vanilla with wave_defense
 
-require "modules.satellite_score"
 require "modules.wave_defense.main"
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['iron-plate'] = 16, ['iron-gear-wheel'] = 8, ['raw-fish'] = 3,}

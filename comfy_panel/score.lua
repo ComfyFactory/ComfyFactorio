@@ -2,15 +2,11 @@
 
 local event = require 'utils.event'
 local sorting_symbol = {ascending = "▲", descending = "▼"}
-
-local function create_score_button(player)
-	if not player.gui.top.score then
-		local button = player.gui.top.add({ type = "sprite-button", name = "score", sprite = "item/rocket-silo", tooltip = "Scoreboard" })
-		button.style.minimal_height = 38
-		button.style.minimal_width = 38
-		button.style.padding = 1
-	end
-end
+local building_and_mining_blacklist = {
+	["tile-ghost"] = true,
+	["entity-ghost"] = true,
+	["item-entity"] = true,
+}
 
 local function get_score_list(force)
 	local score = global.score[force]
@@ -64,7 +60,7 @@ local function add_global_stats(frame, player)
 	l.style.font_color = { r=0.9, g=0.9, b=0.9}
 	l.style.minimal_width = 123
 
-	local l = t.add { type = "label", caption = "Dead biters: "}
+	local l = t.add { type = "label", caption = "Dead bugs: "}
 	l.style.font = "default-game"
 	l.style.font_color = { r=0.90, g=0.3, b=0.3}
 	l.style.minimal_width = 100
@@ -78,20 +74,17 @@ local function add_global_stats(frame, player)
 	l.style.font_color = { r=0.8, g=0.8, b=0.8}
 end
 
-local function show_score(player)
-	if player.gui.left["score_panel"] then
-		player.gui.left["score_panel"].destroy()
-	end
-
-	local frame = player.gui.left.add { type = "frame", name = "score_panel", direction = "vertical" }
+local function show_score(player, frame)
+	frame.clear()
 
 	-- Global stats : rockets, biters kills
 	add_global_stats(frame, player)
 
 	-- Separator
-	local l = frame.add { type = "label", caption = "---------------------------------------------------------------------------------------------------------------"}
-	l.style.font_color = { r=0.9, g=0.9, b=0.9 }
-
+	local line = frame.add { type = "line"}
+	line.style.top_margin = 8
+	line.style.bottom_margin = 8
+	
 	-- Score per player
 	local t = frame.add { type = "table", column_count = 5 }
 
@@ -122,7 +115,8 @@ local function show_score(player)
 		}
 		label.style.font = "default-listbox"
 		label.style.font_color = { r=0.98, g=0.66, b=0.22 } -- yellow
-		label.style.minimal_width = 140
+		label.style.minimal_width = 150
+		label.style.horizontal_align = "right"
 	end
 
 	-- Score list
@@ -162,62 +156,23 @@ local function show_score(player)
 				color = column.color or default_color
 			}
 			label.style.font = "default"
-			label.style.minimal_width = 140
-			label.style.maximal_width = 140
+			label.style.minimal_width = 150
+			label.style.maximal_width = 150
+			label.style.horizontal_align = "right"
 		end -- foreach column
 	end -- foreach entry
 end -- show_score
 
 local function refresh_score_full()
 	for _, player in pairs(game.connected_players) do
-		if player.gui.left["score_panel"] then
-			show_score(player)
-		end
-	end
-end
-
---[[
-local function refresh_score()
-	for _, player in pairs(game.connected_players) do
-		if player.gui.left["score_panel"] then
-			if global.score[player.force.name].rocket_launches then player.gui.left["score_panel"].children[1].children[2].caption = global.score[player.force.name].rocket_launches end
-			player.gui.left["score_panel"].children[1].children[4].caption = get_total_biter_killcount(player.force)
-			local score = global.score[player.force.name]
-			local score_list = {}
-			for _, p in pairs(game.connected_players) do
-				local killscore = 0
-				if score.players[p.name].killscore then killscore = score.players[p.name].killscore end
-				local deaths = 0
-				if score.players[p.name].deaths then deaths = score.players[p.name].deaths end
-				local built_entities = 0
-				if score.players[p.name].built_entities then built_entities = score.players[p.name].built_entities end
-				local mined_entities = 0
-				if score.players[p.name].mined_entities then mined_entities = score.players[p.name].mined_entities end
-				table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})
-			end
-			if #game.connected_players > 1 then
-				score_list = get_sorted_list(global.score_sort_by[player.name].method, global.score_sort_by[player.name].column, score_list)
-			end
-			local index = 1
-			for _, entry in pairs(score_list) do
-				player.gui.left["score_panel"].children[4].children[1].children[index].caption = entry.name
-				local p = game.players[entry.name]
-				local color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
-				player.gui.left["score_panel"].children[4].children[1].children[index].style.font_color = color
-				index = index + 1
-				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.killscore)
-				index = index + 1
-				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.deaths)
-				index = index + 1
-				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.built_entities)
-				index = index + 1
-				player.gui.left["score_panel"].children[4].children[1].children[index].caption = tostring(entry.mined_entities)
-				index = index + 1
+		local frame = comfy_panel_get_active_frame(player)
+		if frame then
+			if frame.name == "Scoreboard" then
+				show_score(player, frame)
 			end
 		end
 	end
 end
-]]
 
 local function init_player_table(player)
 	if not player then return end
@@ -236,13 +191,6 @@ local function on_player_joined_game(event)
 	end
 	if not global.show_floating_killscore then global.show_floating_killscore = {} end
 	if not global.show_floating_killscore[player.name] then global.show_floating_killscore[player.name] = false end
-
-	create_score_button(player)
-	refresh_score_full()
-end
-
-local function on_player_left_game(event)
-	refresh_score_full()
 end
 
 local function on_gui_click(event)
@@ -251,18 +199,11 @@ local function on_gui_click(event)
 	if not event.element.valid then return end
 
 	local player = game.players[event.element.player_index]
+	local frame = comfy_panel_get_active_frame(player)
+	if not frame then return end
+	if frame.name ~= "Scoreboard" then return end
+	
 	local name = event.element.name
-
-	-- Handles click on the score button
-	if name == "score" then
-		if player.gui.left["score_panel"] then
-			player.gui.left["score_panel"].destroy()
-		else
-			global.score_sort_by[player.name].get_sorted_list = true
-			show_score(player)
-		end
-		return
-	end
 
 	-- Handles click on the checkbox, for floating score
 	if name == "show_floating_killscore_texts" then
@@ -286,7 +227,7 @@ local function on_gui_click(event)
 			sorting_pref.method = "descending"
 			sorting_pref.column = column
 		end
-		show_score(player)
+		show_score(player, frame)
 		return
 	end
 
@@ -424,7 +365,10 @@ local function on_player_died(event)
 end
 
 local function on_player_mined_entity(event)
-	local player = game.players[event.player_index]
+	if not event.entity.valid then return end
+	if building_and_mining_blacklist[event.entity.type] then return end
+	
+	local player = game.players[event.player_index]	
 	init_player_table(player)
 	local score = global.score[player.force.name].players[player.name]
 	score.mined_entities = 1 + (score.mined_entities or 0)
@@ -432,7 +376,7 @@ end
 
 local function on_built_entity(event)
 	if not event.created_entity.valid then return end
-	if event.created_entity.type == "entity-ghost" then return end
+	if building_and_mining_blacklist[event.created_entity.type] then return end
 	local player = game.players[event.player_index]
 	init_player_table(player)
 	local score = global.score[player.force.name].players[player.name]
@@ -445,6 +389,8 @@ local function on_tick(event)
 	end
 end
 
+comfy_panel_tabs["Scoreboard"] = show_score
+
 event.add(defines.events.on_tick, on_tick)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_player_died, on_player_died)
@@ -452,5 +398,4 @@ event.add(defines.events.on_built_entity, on_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_rocket_launched, on_rocket_launched)

@@ -124,37 +124,41 @@ local function ally(player, source_player)
 	admin_only_message(source_player.name .. " made " .. player.name .. " our ally")	
 end
 
-local function turn_off_global_speakers(player, source_player)
-	local speakers = source_player.surface.find_entities_filtered({name = "programmable-speaker"})
+local function turn_off_global_speakers(player)
 	local counter = 0
-	for i, speaker in pairs(speakers) do
-		if speaker.parameters.playback_globally == true then
-			speaker.surface.create_entity({name = "massive-explosion", position = speaker.position})
-			speaker.die("player")
-			counter = counter + 1
+	for _, surface in pairs(game.surfaces) do
+		local speakers = surface.find_entities_filtered({name = "programmable-speaker"})
+		for i, speaker in pairs(speakers) do
+			if speaker.parameters.playback_globally == true then
+				speaker.surface.create_entity({name = "massive-explosion", position = speaker.position})
+				speaker.die("player")
+				counter = counter + 1
+			end
 		end
-	end
+	end	
 	if counter == 0 then return end
 	if counter == 1 then
-		game.print(source_player.name .. " has nuked " .. counter .. " global speaker.", { r=0.98, g=0.66, b=0.22})
+		game.print(player.name .. " has nuked " .. counter .. " global speaker.", { r=0.98, g=0.66, b=0.22})
 	else
-		game.print(source_player.name .. " has nuked " .. counter .. " global speakers.", { r=0.98, g=0.66, b=0.22})
+		game.print(player.name .. " has nuked " .. counter .. " global speakers.", { r=0.98, g=0.66, b=0.22})
 	end
 end
 
-local function delete_all_blueprints(player, source_player)
+local function delete_all_blueprints(player)
 	local counter = 0
-	for _, ghost in pairs(source_player.surface.find_entities_filtered({type = {"entity-ghost", "tile-ghost"}})) do
-		ghost.destroy()
-		counter = counter + 1
-	end	
+	for _, surface in pairs(game.surfaces) do
+		for _, ghost in pairs(surface.find_entities_filtered({type = {"entity-ghost", "tile-ghost"}})) do
+			ghost.destroy()
+			counter = counter + 1
+		end
+	end
 	if counter == 0 then return end
 	if counter == 1 then
 		game.print(counter .. " blueprint has been cleared!", { r=0.98, g=0.66, b=0.22})		
 	else
 		game.print(counter .. " blueprints have been cleared!", { r=0.98, g=0.66, b=0.22})		
 	end
-	admin_only_message(source_player.name .. " has cleared all blueprints.")
+	admin_only_message(player.name .. " has cleared all blueprints.")
 end
 
 local function create_mini_camera_gui(player, caption, position)
@@ -184,6 +188,7 @@ local function create_admin_panel(player, frame)
 	end
 	
 	local drop_down = frame.add({type = "drop-down", name = "admin_player_select", items = player_names, selected_index = selected_index})
+	drop_down.style.minimal_width = 326
 	drop_down.style.right_padding = 12
 	drop_down.style.left_padding = 12
 			
@@ -207,7 +212,10 @@ local function create_admin_panel(player, frame)
 		button.style.minimal_width = 106
 	end
 	
-	--local l = frame.add({type = "label", caption = "----------------------------------------------"})
+	local line = frame.add { type = "line"}
+	line.style.top_margin = 8
+	line.style.bottom_margin = 8
+	
 	local l = frame.add({type = "label", caption = "Global Actions:"})
 	local t = frame.add({type = "table", column_count = 2})
 	local buttons = {
@@ -220,6 +228,10 @@ local function create_admin_panel(player, frame)
 		button.style.font_color = { r=0.98, g=0.66, b=0.22}
 		button.style.minimal_width = 80
 	end
+	
+	local line = frame.add { type = "line"}
+	line.style.top_margin = 8
+	line.style.bottom_margin = 8
 	
 	local histories = {}	
 	if global.friendly_fire_history then table.insert(histories, "Friendly Fire History") end
@@ -268,13 +280,15 @@ local admin_functions = {
 		["bring_player"] = bring_player,
 		["spank"] = spank,
 		["damage"] = damage,
-		["kill"] = kill,	
-		["turn_off_global_speakers"] = turn_off_global_speakers,
-		["delete_all_blueprints"] = delete_all_blueprints,
-		--["remove_all_deconstruction_orders"] = remove_all_deconstruction_orders,
+		["kill"] = kill,
 		["enemy"] = enemy,
 		["ally"] = ally,
 		["go_to_player"] = go_to_player
+	}
+
+local admin_global_functions = {
+		["turn_off_global_speakers"] = turn_off_global_speakers,
+		["delete_all_blueprints"] = delete_all_blueprints,
 	}
 
 local function get_position_from_string(str)
@@ -331,6 +345,12 @@ local function on_gui_click(event)
 		if target_player.connected == true then
 			admin_functions[name](target_player, player)
 		end
+		return
+	end
+	
+	if admin_global_functions[name] then		
+		admin_global_functions[name](player)		
+		return
 	end
 	
 	if name == "mini_camera" or name == "mini_cam_element" then

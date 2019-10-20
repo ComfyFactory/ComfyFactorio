@@ -336,7 +336,7 @@ local function on_gui_click(event)
 	--Poke other players
 	if string.sub(event.element.name, 1, 11) == "poke_player" then
 		local poked_player = string.sub(event.element.name, 13, string.len(event.element.name))
-		--if player.name == poked_player then return end
+		if player.name == poked_player then return end
 		if global.player_list.last_poke_tick[event.element.player_index] + 300 < game.tick then
 			local str = ">> "
 			str = str .. player.name

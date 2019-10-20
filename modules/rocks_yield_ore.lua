@@ -1,5 +1,4 @@
 --destroying and mining rocks yields ore -- load as last module
-local math_random = math.random
 local max_spill = 48
 
 local rock_yield = {
@@ -40,8 +39,8 @@ for _, t in pairs (rock_mining_chance_weights) do
 end
 
 local function create_particles(surface, name, position, amount, cause_position)	
-	local direction_mod = (-100 + math_random(0,200)) * 0.0004
-	local direction_mod_2 = (-100 + math_random(0,200)) * 0.0004
+	local direction_mod = (-100 + math.random(0,200)) * 0.0004
+	local direction_mod_2 = (-100 + math.random(0,200)) * 0.0004
 	
 	if cause_position then
 		direction_mod = (cause_position.x - position.x) * 0.025
@@ -49,7 +48,7 @@ local function create_particles(surface, name, position, amount, cause_position)
 	end
 	
 	for i = 1, amount, 1 do 
-		local m = math_random(4, 10)
+		local m = math.random(4, 10)
 		local m2 = m * 0.005
 		
 		surface.create_entity({
@@ -59,8 +58,8 @@ local function create_particles(surface, name, position, amount, cause_position)
 			vertical_speed = 0.130,
 			height = 0,
 			movement = {
-				(m2 - (math_random(0, m) * 0.01)) + direction_mod,
-				(m2 - (math_random(0, m) * 0.01)) + direction_mod_2
+				(m2 - (math.random(0, m) * 0.01)) + direction_mod,
+				(m2 - (math.random(0, m) * 0.01)) + direction_mod_2
 			}
 		})
 	end	
@@ -79,7 +78,7 @@ local function get_amount(entity)
 	local amount = base_amount + (distance_to_center * distance_modifier)
 	if amount > maximum_amount then amount = maximum_amount end
 	
-	local m = (70 + math_random(0, 60)) * 0.01
+	local m = (70 + math.random(0, 60)) * 0.01
 	
 	amount = math.floor(amount * rock_yield[entity.name] * m)
 	if amount < 1 then amount = 1 end
@@ -94,7 +93,7 @@ local function on_player_mined_entity(event)
 	
 	event.buffer.clear()
 	
-	local ore = ore_raffle[math_random(1, #ore_raffle)]	
+	local ore = ore_raffle[math.random(1, #ore_raffle)]	
 	local player = game.players[event.player_index]
 	
 	local inventory = player.get_inventory(defines.inventory.character_main)
@@ -132,7 +131,7 @@ local function on_entity_died(event)
 	if not rock_yield[entity.name] then return end
 	
 	local surface = entity.surface
-	local ore = ore_raffle[math_random(1, #ore_raffle)]
+	local ore = ore_raffle[math.random(1, #ore_raffle)]
 	local pos = {entity.position.x, entity.position.y}		
 	create_particles(surface, particles[ore], pos, 16, false)
 	

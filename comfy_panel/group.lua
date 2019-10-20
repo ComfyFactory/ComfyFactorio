@@ -139,9 +139,7 @@ local function on_gui_click(event)
 	local name = event.element.name
 	local frame = comfy_panel_get_active_frame(player)
 	if not frame then return end
-	if frame.name ~= "Groups" then return end	
-	
-	if not frame then return end
+	if frame.name ~= "Groups" then return end
 	
 	if name == "create_new_group" then			
 		local new_group_name = frame.frame2.group_table.new_group_name.text
