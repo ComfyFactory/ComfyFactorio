@@ -26,7 +26,7 @@ end
 local mixed_ores = {"iron-ore", "copper-ore", "stone", "coal"}
 
 local size_raffle = {
-		{"giant", 65, 128},
+		{"giant", 65, 96},
 		{"huge", 33, 64},
 		{"big", 17, 32},
 		{"smol", 9, 16},
@@ -113,7 +113,7 @@ end
 local function on_player_mined_entity(event)
 	if not event.entity.valid then return end
 	if not valid_entities[event.entity.name] then return end
-	if math_random(1,512) ~= 1 then return end	
+	if math_random(1,768) ~= 1 then return end	
 	ore_vein(event)
 end
 
