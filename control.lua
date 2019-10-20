@@ -11,13 +11,20 @@ require "utils.color_data"
 require "utils.session_data"
 require "chatbot"
 require "commands"
+
+require "comfy_panel.main"
+require "comfy_panel.player_list"
+require "comfy_panel.group"
+require "comfy_panel.admin"
+
 require "antigrief"
-require "antigrief_admin_panel"
-require "group"
-require "player_list"
+--require "antigrief_admin_panel"
+
+--require "group"
+--require "player_list"
 require "player_modifiers"
 require "poll"
-require "score"
+--require "score"
 require "modules.autostash"
 require "modules.corpse_markers"
 require "modules.floaty_chat"
@@ -43,7 +50,6 @@ require "modules.floaty_chat"
 --require "modules.fish_respawner"
 --require "modules.fluids_are_explosive"
 --require "modules.hunger"
---require "modules.rpg"
 --require "modules.hunger_games"
 --require "modules.players_trample_paths"
 --require "modules.railgun_enhancer"
@@ -58,13 +64,14 @@ require "modules.floaty_chat"
 --require "modules.no_blueprint_library"
 --require "modules.explosives"
 --require "modules.biter_pets"
+--require "modules.wave_defense.main"
 -----------------------------
 
 ---- enable maps here ----
 --require "maps.fish_defender.main"
 --require "maps.fish_defender_v1.fish_defender"
 --require "maps.biter_battles_v2.main"
-require "maps.mountain_fortress_v2.main"
+--require "maps.mountain_fortress_v2.main"
 --require "maps.mountain_fortress"
 --require "maps.island_troopers.main"
 --require "maps.tank_conquest.tank_conquest"
@@ -74,6 +81,7 @@ require "maps.mountain_fortress_v2.main"
 --require "maps.wave_of_death.WoD"
 --require "maps.stone_maze.main"
 --require "maps.overgrowth"
+--require "maps.wave_defense"
 --require "maps.quarters"
 --require "maps.tetris.main"
 --require "maps.maze_challenge"
@@ -108,11 +116,10 @@ require "maps.mountain_fortress_v2.main"
 -----------------------------
 
 ---- more modules here ----
+--require "modules.rpg"
 --require "modules.trees_grow"
 --require "modules.trees_randomly_die"
 ------
-
-local event = require 'utils.event'
 
 if _DUMP_ENV then
     require 'utils.dump_env'
@@ -136,5 +143,6 @@ function require(path)
     return loaded[path] or error('Can only require files at runtime that have been required in the control stage.', 2)
 end
 
+local event = require 'utils.event'
 event.on_init(on_init)
 event.add(defines.events.on_player_created, on_player_created)

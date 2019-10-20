@@ -6,6 +6,7 @@
 local event = require 'utils.event'
 local session = require 'utils.session_data'
 
+--[[
 local function create_admin_button(player)
 	if player.gui.top["admin_button"] then return end
 	local b = player.gui.top.add({type = "button", caption = "Admin", name = "admin_button", tooltip = "Use your powers wisely"})
@@ -36,6 +37,7 @@ local function on_player_demoted(event)
 	if player.gui.top["admin_button"] then player.gui.top["admin_button"].destroy() end
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 end
+]]
 
 local function on_marked_for_deconstruction(event)
 	local tracker = session.get_session_table()
@@ -251,8 +253,8 @@ event.add(defines.events.on_gui_opened, on_gui_opened)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
-event.add(defines.events.on_player_demoted, on_player_demoted)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+--event.add(defines.events.on_player_demoted, on_player_demoted)
+--event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
-event.add(defines.events.on_player_promoted, on_player_promoted)
+--event.add(defines.events.on_player_promoted, on_player_promoted)
 event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
