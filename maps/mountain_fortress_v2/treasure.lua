@@ -4,7 +4,6 @@ function treasure_chest(surface, position)
 	
 	local chest_raffle = {}
 	local chest_loot = {			
-		--{{name = "steel-axe", count = math_random(1,3)}, weight = 2, evo_min = 0.0, evo_max = 0.5},
 		{{name = "submachine-gun", count = math_random(1,3)}, weight = 3, evo_min = 0.0, evo_max = 0.1},		
 		{{name = "slowdown-capsule", count = math_random(16,32)}, weight = 1, evo_min = 0.3, evo_max = 0.7},
 		{{name = "poison-capsule", count = math_random(8,16)}, weight = 3, evo_min = 0.3, evo_max = 1},		
@@ -37,17 +36,17 @@ function treasure_chest(surface, position)
 		{{name = "heavy-armor", count = 1}, weight = 3, evo_min = 0.1, evo_max = 0.3},
 		{{name = "modular-armor", count = 1}, weight = 2, evo_min = 0.2, evo_max = 0.6},
 		{{name = "power-armor", count = 1}, weight = 2, evo_min = 0.4, evo_max = 1},
-		--{{name = "power-armor-mk2", count = 1}, weight = 1, evo_min = 0.9, evo_max = 1},
+		{{name = "power-armor-mk2", count = 1}, weight = 1, evo_min = 0.9, evo_max = 1},
 		{{name = "battery-equipment", count = 1}, weight = 2, evo_min = 0.3, evo_max = 0.7},
 		{{name = "battery-mk2-equipment", count = 1}, weight = 2, evo_min = 0.7, evo_max = 1},
 		{{name = "belt-immunity-equipment", count = 1}, weight = 1, evo_min = 0.5, evo_max = 1},
-		--{{name = "solar-panel-equipment", count = math_random(1,4)}, weight = 5, evo_min = 0.3, evo_max = 0.8},
+		{{name = "solar-panel-equipment", count = math_random(1,4)}, weight = 5, evo_min = 0.4, evo_max = 0.8},
 		{{name = "discharge-defense-equipment", count = 1}, weight = 1, evo_min = 0.5, evo_max = 1},
 		{{name = "energy-shield-equipment", count = math_random(1,2)}, weight = 2, evo_min = 0.3, evo_max = 0.8},
 		{{name = "energy-shield-mk2-equipment", count = 1}, weight = 2, evo_min = 0.8, evo_max = 1},
 		{{name = "exoskeleton-equipment", count = 1}, weight = 1, evo_min = 0.3, evo_max = 1},
 		{{name = "fusion-reactor-equipment", count = 1}, weight = 1, evo_min = 0.8, evo_max = 1},
-		--{{name = "night-vision-equipment", count = 1}, weight = 1, evo_min = 0.3, evo_max = 0.8},
+		{{name = "night-vision-equipment", count = 1}, weight = 1, evo_min = 0.3, evo_max = 0.8},
 		{{name = "personal-laser-defense-equipment", count = 1}, weight = 1, evo_min = 0.8, evo_max = 1},						
 		
 		{{name = "iron-gear-wheel", count = math_random(80,100)}, weight = 3, evo_min = 0.0, evo_max = 0.3},
@@ -90,7 +89,7 @@ function treasure_chest(surface, position)
 		{{name = "boiler", count = math_random(3,6)}, weight = 3, evo_min = 0.0, evo_max = 0.3},
 		{{name = "steam-engine", count = math_random(2,4)}, weight = 3, evo_min = 0.0, evo_max = 0.5},
 		{{name = "steam-turbine", count = math_random(1,2)}, weight = 2, evo_min = 0.6, evo_max = 1},
-		--{{name = "nuclear-reactor", count = 1}, weight = 1, evo_min = 0.6, evo_max = 1},
+		{{name = "nuclear-reactor", count = 1}, weight = 1, evo_min = 0.7, evo_max = 1},
 		{{name = "centrifuge", count = 1}, weight = 1, evo_min = 0.6, evo_max = 1},
 		{{name = "heat-pipe", count = math_random(4,8)}, weight = 2, evo_min = 0.5, evo_max = 1},
 		{{name = "heat-exchanger", count = math_random(2,4)}, weight = 2, evo_min = 0.5, evo_max = 1},
@@ -118,7 +117,7 @@ function treasure_chest(surface, position)
 		{{name = "pipe-to-ground", count = math_random(4,8)}, weight = 1, evo_min = 0.2, evo_max = 0.5},
 		{{name = "pumpjack", count = math_random(1,3)}, weight = 1, evo_min = 0.3, evo_max = 0.8},
 		{{name = "pump", count = math_random(1,2)}, weight = 1, evo_min = 0.3, evo_max = 0.8},
-		--{{name = "solar-panel", count = math_random(8,16)}, weight = 3, evo_min = 0.4, evo_max = 0.9},
+		{{name = "solar-panel", count = math_random(3,6)}, weight = 3, evo_min = 0.4, evo_max = 0.9},
 		{{name = "electric-furnace", count = math_random(2,4)}, weight = 3, evo_min = 0.5, evo_max = 1},
 		{{name = "steel-furnace", count = math_random(4,8)}, weight = 3, evo_min = 0.2, evo_max = 0.7},
 		{{name = "stone-furnace", count = math_random(8,16)}, weight = 3, evo_min = 0.0, evo_max = 0.2},		
@@ -133,13 +132,13 @@ function treasure_chest(surface, position)
 		{{name = "fast-loader", count = 1}, weight = 1, evo_min = 0.2, evo_max = 0.7},
 		{{name = "loader", count = 1}, weight = 1, evo_min = 0.0, evo_max = 0.5},
 		{{name = "lab", count = math_random(1,2)}, weight = 2, evo_min = 0.0, evo_max = 0.3},	
-		--{{name = "roboport", count = math_random(2,4)}, weight = 2, evo_min = 0.6, evo_max = 1},
-		--{{name = "flamethrower-turret", count = math_random(1,3)}, weight = 3, evo_min = 0.5, evo_max = 1},		
-		--{{name = "laser-turret", count = math_random(4,8)}, weight = 3, evo_min = 0.5, evo_max = 1},	
-		{{name = "gun-turret", count = math_random(1,4)}, weight = 3, evo_min = 0.2, evo_max = 0.9}		
+		{{name = "roboport", count = 1}, weight = 2, evo_min = 0.8, evo_max = 1},
+		{{name = "flamethrower-turret", count = 1}, weight = 3, evo_min = 0.5, evo_max = 1},		
+		{{name = "laser-turret", count = math_random(3,6)}, weight = 3, evo_min = 0.5, evo_max = 1},	
+		{{name = "gun-turret", count = math_random(2,4)}, weight = 3, evo_min = 0.2, evo_max = 0.9},
 	}
 	
-	local distance_to_center = (math.abs(position.y) + 1) * 0.0002	
+	local distance_to_center = (math.abs(position.y) + 1) * 0.00025
 	if distance_to_center > 1 then distance_to_center = 1 end
 	
 	for _, t in pairs (chest_loot) do

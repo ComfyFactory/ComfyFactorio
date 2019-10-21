@@ -149,12 +149,12 @@ local function biters_chew_rocks_faster(event)
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if event.cause.force.index ~= 2 then return end --Enemy Force
-	local bonus_damage =  event.final_damage_amount * math.abs(global.wave_defense.threat) * 0.0003
+	local bonus_damage = event.final_damage_amount * math.abs(global.wave_defense.threat) * 0.0002
 	event.entity.health = event.entity.health - bonus_damage
 end
 
 local function hidden_biter(entity)
-	wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.42)
+	wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.33)
 	if math.random(1,3) == 1 then
 		entity.surface.create_entity({name = wave_defense_roll_spitter_name(), position = entity.position})
 	else
@@ -164,7 +164,7 @@ end
 
 local function hidden_biter_pet(event)
 	if math.random(1, 2048) ~= 1 then return end
-	wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.42)
+	wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.33)
 	local unit
 	if math.random(1,3) == 1 then
 		unit = event.entity.surface.create_entity({name = wave_defense_roll_spitter_name(), position = event.entity.position})
@@ -286,11 +286,11 @@ local function on_init(surface)
 	global.rocks_yield_ore_distance_modifier = 0.03
 	
 	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 2000,
-		["water"] = 1500,
-		["water-green"] = 1500,
-		["deepwater-green"] = 1500,
-		["deepwater"] = 1500,
+		["out-of-map"] = 1500,
+		["water"] = 1000,
+		["water-green"] = 1000,
+		["deepwater-green"] = 1000,
+		["deepwater"] = 1000,
 		["water-shallow"] = 1000,	
 	}
 	

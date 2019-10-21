@@ -116,14 +116,14 @@ local function set_enemy_evolution()
 	local damage_increase = 0
 	
 	if evolution_factor > 1 then
-		evasion_factor = evasion_factor + (evolution_factor - 1) * 3
+		evasion_factor = evasion_factor + (evolution_factor - 1) * 2
 		evolution_factor = 1
 	end
 	
 	if global.wave_defense.threat > 0 then
 		local m = math.round(global.wave_defense.threat / 50000, 3)
 		evasion_factor = evasion_factor + m
-		damage_increase = damage_increase + m
+		damage_increase = damage_increase + m * 0.5
 	end
 
 	global.biter_evasion_health_increase_factor = evasion_factor

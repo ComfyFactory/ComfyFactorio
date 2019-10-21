@@ -185,10 +185,11 @@ end
 
 local function get_market_item_list(market_types, rarity)
 	if rarity < 1 then rarity = 1 end
+	if rarity > 10 then rarity = 10 end
 	local list = {}
 	for _, market_type in pairs(market_types) do
 		for k, item in pairs(market[market_type]) do
-			if item.rarity <= rarity then
+			if item.rarity <= rarity and item.rarity + 7 >= rarity then
 				local price = math.random(math.floor(item.value * 0.75), math.floor(item.value * 1.25))
 				if price < 1 then price = 1 end
 				if price > 64000 then price = 64000 end
