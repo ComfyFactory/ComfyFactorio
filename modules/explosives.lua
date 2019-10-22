@@ -97,7 +97,7 @@ local function damage_entity(entity, cell)
 	if not entity.health then return true end
 	if entity.health <= 0 then return true end
 	if not entity.destructible then return true end
-	if not entity.minable then return true end
+	--if not entity.minable then return true end
 	--if global.explosion_cells_reflect[entity.name] then
 	--	if reflect_cell(entity, cell) then return end
 	--end

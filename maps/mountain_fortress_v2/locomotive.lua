@@ -20,6 +20,7 @@ function locomotive_spawn(surface, position)
 	global.locomotive_cargo.operable = false
 end
 
+--[[
 local function fish_tag()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
@@ -55,15 +56,6 @@ local function remove_acceleration()
 	global.locomotive_driver = nil
 end
 
-local function set_player_spawn_and_refill_fish()
-	if not global.locomotive_cargo then return end
-	if not global.locomotive_cargo.valid then return end
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 4})
-	local position = global.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", global.locomotive_cargo.position, 16, 2)
-	if not position then return end
-	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
-end
-
 local function set_daytime()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
@@ -73,12 +65,19 @@ local function set_daytime()
 	global.locomotive_cargo.surface.daytime = t
 	game.print(t)
 end
+]]
+
+local function set_player_spawn_and_refill_fish()
+	if not global.locomotive_cargo then return end
+	if not global.locomotive_cargo.valid then return end
+	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 4})
+	local position = global.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", global.locomotive_cargo.position, 16, 2)
+	if not position then return end
+	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
+end
 
 local function tick()
 	if game.tick % 30 == 0 then	
-		fish_tag()
-		--set_daytime()
-		accelerate()
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()
 		end
@@ -87,9 +86,13 @@ local function tick()
 				global.game_reset_tick = nil
 				reset_map()
 			end
+			return
 		end
+		--fish_tag()
+		--set_daytime()
+		--accelerate()
 	else
-		remove_acceleration()
+		--remove_acceleration()
 	end
 end
 

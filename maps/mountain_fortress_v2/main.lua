@@ -252,9 +252,6 @@ local function on_player_joined_game(event)
 	global.wave_defense.surface_index = global.active_surface_index
 	global.wave_defense.target = global.locomotive_cargo
 	global.wave_defense.side_target_search_radius = 768
-		
-	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
-	update_player_modifiers(player)
 	
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
@@ -271,7 +268,10 @@ local function on_player_joined_game(event)
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
 		end
-	end	
+	end
+
+	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
+	update_player_modifiers(player)
 end
 --[[
 local function on_player_respawned(event)
