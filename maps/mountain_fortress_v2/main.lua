@@ -4,7 +4,6 @@
 --require "modules.biter_noms_you"
 require "modules.biter_evasion_hp_increaser"
 require "modules.wave_defense.main"
---require "modules.dense_rocks"
 require "functions.soft_reset"
 require "functions.basic_markets"
 require "modules.biters_yield_coins"

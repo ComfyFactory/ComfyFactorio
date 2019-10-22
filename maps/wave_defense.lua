@@ -41,8 +41,6 @@ end
 local function on_init()	
 	game.surfaces[1].request_to_generate_chunks({0,0}, 16)
 	game.surfaces[1].force_generate_chunk_requests()
-	
-	global.wave_defense.next_wave = 3600 * 15
 end
 
 local event = require 'utils.event'
