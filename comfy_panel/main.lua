@@ -58,9 +58,18 @@ local function main_frame(player)
 		end
 	end
 	
-	comfy_panel_refresh_active_tab(player)
+	local tab = tabbed_pane.add({type = "tab", name = "comfy_panel_close", caption = "X"})
+	tab.style.maximal_width = 32
+	local frame = tabbed_pane.add({type = "frame", name = name, direction = "vertical"})
+	tabbed_pane.add_tab(tab, frame)
 	
-	return tabs
+	for _, child in pairs(tabbed_pane.children) do
+		child.style.padding = 8
+		child.style.left_padding = 2
+		child.style.right_padding = 2
+	end
+	
+	comfy_panel_refresh_active_tab(player)
 end
 
 function comfy_panel_call_tab(player, name)
@@ -91,6 +100,11 @@ local function on_gui_click(event)
 			main_frame(player)
 			return
 		end	
+	end
+	
+	if event.element.caption == "X" and event.element.name == "comfy_panel_close" then
+		player.gui.left.comfy_panel.destroy()
+		return
 	end
 	
 	if not event.element.caption then return end
