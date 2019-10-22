@@ -139,7 +139,7 @@ end
 local function on_player_used_capsule(event)
 	if event.item.name == "raw-fish" then		
 		local player = game.players[event.player_index]
-		if player.character.health < 250 then return end		
+		if player.character.health < player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus then return end		
 		hunger_update(player, player_hunger_fish_food_value)		
 		player.play_sound{path="utility/armor_insert", volume_modifier=0.9}				
 	end
