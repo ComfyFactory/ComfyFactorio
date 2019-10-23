@@ -319,7 +319,7 @@ local function on_entity_died(event)
 	if #players_to_reward == 0 then return end	
 	for _, player in pairs(players_to_reward) do
 		init_player_table(player)		
-		local score = global.score[event.force.name].players[player.name]		
+		local score = global.score[player.force.name].players[player.name]		
 		score.killscore = score.killscore + entity_score_values[event.entity.name]
 		if global.show_floating_killscore[player.name] then
 			event.entity.surface.create_entity({name = "flying-text", position = event.entity.position, text = tostring(entity_score_values[event.entity.name]), color = player.chat_color})

@@ -10,7 +10,7 @@ local function on_research_finished(event)
 	end
 	
 	if string.sub(research.name, 0, 18) == "refined-flammables" then
-		global.flamethrower_damage[force_name] = global.flamethrower_damage[force_name] + 0.05
+		global.flamethrower_damage[force_name] = global.flamethrower_damage[force_name] + 0.08
 		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.flamethrower_damage[force_name])								
 		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.flamethrower_damage[force_name])
 	end	

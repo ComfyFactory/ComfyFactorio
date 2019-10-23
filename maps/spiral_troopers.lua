@@ -507,7 +507,7 @@ local function on_player_rotated_entity(event)
 	end
 end
 
-local disabled_entities = {"gun-turret", "laser-turret", "flamethrower-turret"}
+--local disabled_entities = {"gun-turret", "laser-turret", "flamethrower-turret"}
 local function on_built_entity(event)
 	for _, e in pairs(disabled_entities) do
 		if e == event.created_entity.name then
@@ -526,7 +526,7 @@ local function on_built_entity(event)
 		end
 	end
 end
-
+--[[
 local function on_entity_damaged(event)
 	for _, e in pairs(disabled_entities) do
 		if e == event.entity.name then
@@ -537,7 +537,7 @@ local function on_entity_damaged(event)
 		end
 	end
 end
-
+]]
 local function on_robot_built_entity(event)
 	on_built_entity(event)
 end
@@ -611,7 +611,7 @@ local function on_tick(event)
 end
 
 event.add(defines.events.on_tick, on_tick)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+--event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_player_built_tile, on_player_built_tile)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
