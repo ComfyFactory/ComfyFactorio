@@ -23,7 +23,7 @@ market.ammo = {
 	["artillery-shell"] = {value = 64, rarity = 7},
 	["rocket"] = {value = 4, rarity = 3},
 	["explosive-rocket"] = {value = 12, rarity = 5},
-	["atomic-bomb"] = {value = 10000, rarity = 10},
+	["atomic-bomb"] = {value = 9000, rarity = 10},
 	["flamethrower-ammo"] = {value = 20, rarity = 6},
 	["explosives"] = {value = 3, rarity = 1},
 }
@@ -60,7 +60,7 @@ market.equipment = {
 	["discharge-defense-equipment"] = {value = 2000, rarity = 5},
 	["belt-immunity-equipment"] = {value = 500, rarity = 1},
 	["exoskeleton-equipment"] = {value = 1000, rarity = 3},
-	["personal-roboport-equipment"] = {value = 500, rarity = 4},
+	["personal-roboport-equipment"] = {value = 500, rarity = 3},
 	["personal-roboport-mk2-equipment"] = {value = 5000, rarity = 8},
 	["night-vision-equipment"] = {value = 250, rarity = 1},
 }
@@ -108,8 +108,8 @@ market.logistic = {
 	["pipe"] = {value = 2, rarity = 1},
 	["pipe-to-ground"] = {value = 8, rarity = 1},
 	["pump"] = {value = 16, rarity = 4},
-	["logistic-robot"] = {value = 32, rarity = 5},
-	["construction-robot"] = {value = 32, rarity = 5},
+	["logistic-robot"] = {value = 28, rarity = 5},
+	["construction-robot"] = {value = 28, rarity = 3},
 	["logistic-chest-active-provider"] = {value = 128, rarity = 7},
 	["logistic-chest-passive-provider"] = {value = 128, rarity = 6},
 	["logistic-chest-storage"] = {value = 128, rarity = 6},
@@ -189,7 +189,8 @@ local function get_market_item_list(market_types, rarity)
 	local list = {}
 	for _, market_type in pairs(market_types) do
 		for k, item in pairs(market[market_type]) do
-			if item.rarity <= rarity and item.rarity + 7 >= rarity then
+			--if item.rarity <= rarity and item.rarity + 7 >= rarity then
+			if item.rarity <= rarity then
 				local price = math.random(math.floor(item.value * 0.75), math.floor(item.value * 1.25))
 				if price < 1 then price = 1 end
 				if price > 64000 then price = 64000 end
@@ -214,8 +215,7 @@ end
 function mountain_market(surface, position, rarity)
 	local types = get_types()
 	table.shuffle_table(types)
-	local types = {types[1], types[2]}
-	local items = get_market_item_list({types[1], types[2]}, rarity)
+	local items = get_market_item_list({types[1], types[2], types[3]}, rarity)
 	if not items then return end
 	if #items > 0 then table.shuffle_table(items) end
 	local market = surface.create_entity({name = "market", position = position, force="neutral"})

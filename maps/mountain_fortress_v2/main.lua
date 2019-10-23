@@ -43,7 +43,7 @@ require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.locomotive"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16}
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
 local treasure_chest_messages = {
 	"You notice an old crate within the rubble. It's filled with treasure!",
 	"You find a chest underneath the broken rocks. It's filled with goodies!",

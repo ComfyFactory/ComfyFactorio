@@ -316,10 +316,7 @@ local function on_entity_died(event)
 	if not kill_causes[event.cause.type] then return end	
 	local players_to_reward = kill_causes[event.cause.type](event)
 	if not players_to_reward then return end
-	if #players_to_reward == 0 then return end
-	if not global.score[event.force.name] then global.score[event.force.name] = {} end
-	if not global.score[event.force.name].players then global.score[event.force.name].players = {} end
-	
+	if #players_to_reward == 0 then return end	
 	for _, player in pairs(players_to_reward) do
 		init_player_table(player)		
 		local score = global.score[event.force.name].players[player.name]		
