@@ -2,7 +2,7 @@
 
 --require "modules.flashlight_toggle_button"
 --require "modules.biter_noms_you"
-require "modules.biter_evasion_hp_increaser"
+require "modules.biter_health_booster"
 require "modules.wave_defense.main"
 require "functions.soft_reset"
 require "functions.basic_markets"
@@ -197,7 +197,7 @@ local function on_entity_died(event)
 	if event.entity == global.locomotive_cargo then	
 		game.print("The cargo was destroyed!")	
 		global.wave_defense.game_lost = true 
-		global.game_reset_tick = game.tick + 900
+		global.game_reset_tick = game.tick + 1800
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end

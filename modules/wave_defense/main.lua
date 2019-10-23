@@ -113,27 +113,28 @@ end
 
 local function set_enemy_evolution()
 	local evolution_factor = global.wave_defense.wave_number * 0.001
-	local evasion_factor = 1
+	local biter_health_boost = 1
 	local damage_increase = 0
 	
 	if evolution_factor > 1 then
-		evasion_factor = evasion_factor + (evolution_factor - 1) * 2
+		damage_increase = damage_increase + (evolution_factor - 1)
+		biter_health_boost = biter_health_boost + (evolution_factor - 1)
 		evolution_factor = 1
 	end
-	
+
 	if global.wave_defense.threat > 0 then
-		local m = math.round(global.wave_defense.threat / 50000, 3)
-		evasion_factor = evasion_factor + m
-		damage_increase = damage_increase + m * 0.5
+		local m = math.round(global.wave_defense.threat / 100000, 3)
+		biter_health_boost = biter_health_boost + m
+		damage_increase = damage_increase + m * 0.25
 	end
 
-	global.biter_evasion_health_increase_factor = evasion_factor
+	global.biter_health_boost = biter_health_boost
 	game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
 	game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
 	game.forces.enemy.evolution_factor = evolution_factor
 	
 	debug_print("evolution_factor: " .. evolution_factor)
-	debug_print("evasion_factor: " .. global.biter_evasion_health_increase_factor)
+	debug_print("biter_health_boost: " .. global.biter_health_boost)
 	debug_print("damage_increase: " .. game.forces.enemy.get_ammo_damage_modifier("melee"))	
 end
 
@@ -209,7 +210,7 @@ local function set_next_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
 	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + global.wave_defense.wave_number * 2
+	global.wave_defense.threat = global.wave_defense.threat + math.floor(global.wave_defense.wave_number * 1.5)
 	global.wave_defense.last_wave = global.wave_defense.next_wave
 	global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval
 end
@@ -382,7 +383,7 @@ function reset_wave_defense()
 		game_lost = false,
 		threat = 0,
 		simple_entity_shredding_count_modifier = 0.0003,
-		simple_entity_shredding_cost_modifier = 0.007,		--threat cost for one health
+		simple_entity_shredding_cost_modifier = 0.01,		--threat cost for one health
 		nest_building_density = 64,										--lower values = more dense building
 		nest_building_chance = 4,											--high value = less chance
 		worm_building_density = 8,										--lower values = more dense building
