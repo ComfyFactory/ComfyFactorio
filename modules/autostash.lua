@@ -1,4 +1,5 @@
 --this adds a button that stashes/sorts your inventory into nearby chests in some kind of intelligent way - mewmew
+-- modified by gerkiz
 
 local print_color = {r = 120, g = 255, b = 0}
 
@@ -98,6 +99,7 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
 		if chest_inventory.can_insert({name = name, count = count}) then
 			if chest_inventory.find_item_stack(name) then
 				local inserted_count = chest_inventory.insert({name = name, count = count})
+
 				player_inventory.remove({name = name, count = inserted_count})				
 				create_floaty_text(chest.surface, chest.position, name, inserted_count)
 				count = count - inserted_count
@@ -150,7 +152,8 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
 	end
 end
 
-local function auto_stash(player)
+local function auto_stash(player, event)
+	local button = event.button
 	if not player.character then player.print("It seems that you are not in the realm of the living.", print_color) return end
 	if not player.character.valid then player.print("It seems that you are not in the realm of the living.", print_color) return end
 	local inventory = player.get_inventory(defines.inventory.character_main)
@@ -172,13 +175,27 @@ local function auto_stash(player)
 			hotbar_items[prototype.name] = true
 		end
 	end
-	
+
+	local ore_types = {
+    ["coal"] = true,
+    ["stone"] = true,
+    ["iron-ore"] = true,
+    ["copper-ore"] = true,
+    ["uranium-ore"] = true
+}
+
 	for name, count in pairs(inventory.get_contents()) do
-		if not inventory.find_item_stack(name).grid and not hotbar_items[name] then	
-			insert_item_into_chest(inventory, chests, filtered_chests, name, count)			
+		if not inventory.find_item_stack(name).grid and not hotbar_items[name] then
+			if button == defines.mouse_button_type.right then
+				if ore_types[name] then
+					insert_item_into_chest(inventory, chests, filtered_chests, name, count)
+				end
+			elseif button == defines.mouse_button_type.left then
+				insert_item_into_chest(inventory, chests, filtered_chests, name, count)
+			end
 		end
 	end
-	
+
 	global.autostash_floating_text_y_offsets = nil
 end
 
@@ -203,8 +220,9 @@ local function on_gui_click(event)
 	if not event.element then return end
 	if not event.element.valid then return end
 	if event.element.name == "auto_stash" then
-		auto_stash(game.players[event.player_index])
+		auto_stash(game.players[event.player_index], event)
 	end
+
 end
 
 local event = require 'utils.event' 
