@@ -167,12 +167,16 @@ local function draw_gui(player, forced)
 	if not forced then
 		if global.rpg[player.index].gui_refresh_delay > game.tick then return end
 	end
+	
+	comfy_panel_clear_left_gui(player)
+	
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
 	if not player.character then return end
 	
 	local frame = player.gui.left.add({type = "frame", name = "rpg", direction = "vertical"})
 	frame.style.maximal_width = 425
 	frame.style.minimal_width = 425
+	frame.style.margin = 6
 	
 	add_separator(frame, 400)
 	
@@ -611,8 +615,7 @@ local function on_entity_damaged(event)
 	event.entity.health = event.entity.health - damage
 	if event.entity.health <= 0 then
 		event.entity.die(event.entity.force.name, event.cause)
-	end	
-	--event.entity.damage(damage, event.cause.force, "physical")
+	end
 end
 
 local function on_player_repaired_entity(event)
@@ -699,8 +702,8 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_built_entity, on_built_entity)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)

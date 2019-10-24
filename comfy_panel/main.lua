@@ -10,6 +10,12 @@ draw_map_scores would be a function with the player and the frame as arguments
 
 comfy_panel_tabs = {}
 
+function comfy_panel_clear_left_gui(player)
+	for _, child in pairs(player.gui.left.children) do
+		child.destroy()
+	end
+end
+
 function comfy_panel_get_active_frame(player)
 	if not player.gui.left.comfy_panel then return false end
 	if not player.gui.left.comfy_panel.tabbed_pane.selected_tab_index then return player.gui.left.comfy_panel.tabbed_pane.tabs[1].content end
@@ -31,7 +37,7 @@ local function top_button(player)
 end
 
 local function main_frame(player)
-	if player.gui.left.comfy_panel then player.gui.left.comfy_panel.destroy() end
+	comfy_panel_clear_left_gui(player)
 	
 	local frame = player.gui.left.add({type = "frame", name = "comfy_panel"})
 	frame.style.margin = 6
@@ -44,6 +50,7 @@ local function main_frame(player)
 				local tab = tabbed_pane.add({type = "tab", caption = name})
 				local frame = tabbed_pane.add({type = "frame", name = name, direction = "vertical"})
 				frame.style.minimal_height = 480
+				frame.style.maximal_height = 480
 				frame.style.minimal_width = 800
 				frame.style.maximal_width = 800
 				tabbed_pane.add_tab(tab, frame)
@@ -52,6 +59,7 @@ local function main_frame(player)
 			local tab = tabbed_pane.add({type = "tab", caption = name})
 			local frame = tabbed_pane.add({type = "frame", name = name, direction = "vertical"})
 			frame.style.minimal_height = 480
+			frame.style.maximal_height = 480
 			frame.style.minimal_width = 800
 			frame.style.maximal_width = 800
 			tabbed_pane.add_tab(tab, frame)

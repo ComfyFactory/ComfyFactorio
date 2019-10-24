@@ -2,6 +2,7 @@
 
 --require "modules.flashlight_toggle_button"
 --require "modules.biter_noms_you"
+require "modules.rpg"
 require "modules.biter_health_booster"
 require "modules.wave_defense.main"
 require "functions.soft_reset"
@@ -34,8 +35,6 @@ map_info.text = table.concat({
 })
 map_info.main_caption_color = {r = 150, g = 150, b = 0}
 map_info.sub_caption_color = {r = 0, g = 150, b = 0}
-
-require "modules.rpg"
 
 require "maps.mountain_fortress_v2.market"
 require "maps.mountain_fortress_v2.treasure"
