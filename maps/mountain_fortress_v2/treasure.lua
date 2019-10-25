@@ -59,8 +59,8 @@ function treasure_chest(surface, position)
 		{{name = "engine-unit", count = math_random(16,32)}, weight = 2, evo_min = 0.1, evo_max = 0.5},
 		{{name = "electric-engine-unit", count = math_random(16,32)}, weight = 2, evo_min = 0.4, evo_max = 0.8},
 		{{name = "battery", count = math_random(50,150)}, weight = 2, evo_min = 0.3, evo_max = 0.8},
-		{{name = "advanced-circuit", count = math_random(50,150)}, weight = 3, evo_min = 0.4, evo_max = 1},
-		{{name = "electronic-circuit", count = math_random(50,150)}, weight = 3, evo_min = 0.0, evo_max = 0.4},
+		{{name = "advanced-circuit", count = math_random(50,150)}, weight = 3, evo_min = 0.3, evo_max = 1},
+		{{name = "electronic-circuit", count = math_random(50,150)}, weight = 4, evo_min = 0.0, evo_max = 0.4},
 		{{name = "processing-unit", count = math_random(50,150)}, weight = 3, evo_min = 0.7, evo_max = 1},
 		{{name = "explosives", count = math_random(40,100)}, weight = 20, evo_min = 0.0, evo_max = 1},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evo_min = 0.3, evo_max = 0.5},
@@ -87,7 +87,7 @@ function treasure_chest(surface, position)
 		{{name = "rail", count = math_random(25,75)}, weight = 3, evo_min = 0.1, evo_max = 0.6},
 		{{name = "assembling-machine-1", count = math_random(2,4)}, weight = 3, evo_min = 0.0, evo_max = 0.3},
 		{{name = "assembling-machine-2", count = math_random(2,4)}, weight = 3, evo_min = 0.2, evo_max = 0.8},
-		{{name = "assembling-machine-3", count = math_random(1,2)}, weight = 3, evo_min = 0.5, evo_max = 1},
+		{{name = "assembling-machine-3", count = math_random(2,4)}, weight = 3, evo_min = 0.5, evo_max = 1},
 		{{name = "accumulator", count = math_random(4,8)}, weight = 3, evo_min = 0.4, evo_max = 1},
 		{{name = "offshore-pump", count = math_random(1,3)}, weight = 2, evo_min = 0.0, evo_max = 0.2},
 		{{name = "beacon", count = 1}, weight = 3, evo_min = 0.7, evo_max = 1},
@@ -129,9 +129,9 @@ function treasure_chest(surface, position)
 		{{name = "radar", count = math_random(1,2)}, weight = 1, evo_min = 0.1, evo_max = 0.4},
 		{{name = "rail-signal", count = math_random(8,16)}, weight = 2, evo_min = 0.2, evo_max = 0.8},
 		{{name = "rail-chain-signal", count = math_random(8,16)}, weight = 2, evo_min = 0.2, evo_max = 0.8},		
-		{{name = "stone-wall", count = math_random(25,75)}, weight = 1, evo_min = 0.1, evo_max = 0.5},
-		{{name = "gate", count = math_random(4,8)}, weight = 1, evo_min = 0.1, evo_max = 0.5},
-		{{name = "storage-tank", count = math_random(1,4)}, weight = 3, evo_min = 0.3, evo_max = 0.6},
+		{{name = "stone-wall", count = math_random(33,99)}, weight = 3, evo_min = 0.0, evo_max = 0.7},
+		{{name = "gate", count = math_random(16,32)}, weight = 3, evo_min = 0.0, evo_max = 0.7},
+		{{name = "storage-tank", count = math_random(2,6)}, weight = 3, evo_min = 0.3, evo_max = 0.6},
 		{{name = "train-stop", count = math_random(1,2)}, weight = 1, evo_min = 0.2, evo_max = 0.7},
 		{{name = "express-loader", count = math_random(1,2)}, weight = 1, evo_min = 0.5, evo_max = 1},
 		{{name = "fast-loader", count = math_random(1,2)}, weight = 1, evo_min = 0.2, evo_max = 0.7},
@@ -143,7 +143,7 @@ function treasure_chest(surface, position)
 		{{name = "gun-turret", count = math_random(2,4)}, weight = 3, evo_min = 0.2, evo_max = 0.9},
 	}
 	
-	local distance_to_center = (math.abs(position.y) + 1) * 0.00025
+	local distance_to_center = (math.abs(position.y) + 1) * 0.0002
 	if distance_to_center > 1 then distance_to_center = 1 end
 	
 	for _, t in pairs (chest_loot) do

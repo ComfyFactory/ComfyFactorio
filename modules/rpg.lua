@@ -351,7 +351,7 @@ local function draw_gui(player, forced)
 	end
 	add_separator(frame, 400)
 	
-	global.rpg[player.index].gui_refresh_delay = game.tick + 6
+	global.rpg[player.index].gui_refresh_delay = game.tick + 60
 	update_char_button(player)
 end
 

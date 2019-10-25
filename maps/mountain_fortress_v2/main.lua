@@ -3,13 +3,13 @@
 --require "modules.flashlight_toggle_button"
 --require "modules.biter_noms_you"
 require "modules.rpg"
-require "modules.biter_health_booster"
 require "modules.wave_defense.main"
 require "functions.soft_reset"
 require "functions.basic_markets"
 require "modules.biters_yield_coins"
 require "modules.biter_pets"
 require "modules.no_deconstruction_of_neutral_entities"
+require "modules.shotgun_buff"
 require "modules.explosives"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
@@ -147,8 +147,8 @@ local function biters_chew_rocks_faster(event)
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if event.cause.force.index ~= 2 then return end --Enemy Force
-	local bonus_damage = event.final_damage_amount * math.abs(global.wave_defense.threat) * 0.0002
-	event.entity.health = event.entity.health - bonus_damage
+	--local bonus_damage = event.final_damage_amount * math.abs(global.wave_defense.threat) * 0.0002
+	event.entity.health = event.entity.health - event.final_damage_amount * 2.5
 end
 
 local function hidden_biter(entity)
@@ -246,10 +246,6 @@ local function on_player_joined_game(event)
 	set_difficulty()
 	
 	local surface = game.surfaces[global.active_surface_index]
-	
-	global.wave_defense.surface_index = global.active_surface_index
-	global.wave_defense.target = global.locomotive_cargo
-	global.wave_defense.side_target_search_radius = 768
 	
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)

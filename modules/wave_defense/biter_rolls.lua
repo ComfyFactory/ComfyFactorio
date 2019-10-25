@@ -44,8 +44,8 @@ function wave_defense_set_unit_raffle(level)
 		global.wave_defense.spitter_raffle["big-spitter"] = (level - 500) * 2
 	end
 	if level > 800 then
-		global.wave_defense.biter_raffle["behemoth-biter"] = (level - 800) * 4
-		global.wave_defense.spitter_raffle["behemoth-spitter"] = (level - 800) * 4
+		global.wave_defense.biter_raffle["behemoth-biter"] = (level - 800) * 3
+		global.wave_defense.spitter_raffle["behemoth-spitter"] = (level - 800) * 3
 	end
 	for k, v in pairs(global.wave_defense.biter_raffle) do
 		if global.wave_defense.biter_raffle[k] < 0 then global.wave_defense.biter_raffle[k] = 0 end
@@ -80,7 +80,7 @@ function wave_defense_set_worm_raffle(level)
 		global.wave_defense.worm_raffle["big-worm-turret"] = (level - 500) * 2		
 	end
 	if level > 800 then
-		global.wave_defense.worm_raffle["behemoth-worm-turret"] = (level - 800) * 4		
+		global.wave_defense.worm_raffle["behemoth-worm-turret"] = (level - 800) * 3		
 	end
 	for k, v in pairs(global.wave_defense.worm_raffle) do
 		if global.wave_defense.worm_raffle[k] < 0 then global.wave_defense.worm_raffle[k] = 0 end

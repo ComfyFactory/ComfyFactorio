@@ -3,8 +3,9 @@ local math_random = math.random
 
 local function remove_unit(entity)
 	if not global.wave_defense.active_biters[entity.unit_number] then return end
-	global.wave_defense.active_biters[entity.unit_number] = nil
+	global.wave_defense.active_biter_threat = global.wave_defense.active_biter_threat - math.round(threat_values[entity.name] * global.biter_health_boost, 2)
 	global.wave_defense.active_biter_count = global.wave_defense.active_biter_count - 1
+	global.wave_defense.active_biters[entity.unit_number] = nil
 end
 
 function build_nest()
@@ -95,13 +96,14 @@ local function acid_nova(entity)
 end
 
 local function shred_simple_entities(entity)
-	if global.wave_defense.threat < 5000 then return end
+	if global.wave_defense.threat < 10000 then return end
 	local simple_entities = entity.surface.find_entities_filtered({type = "simple-entity", area = {{entity.position.x - 2, entity.position.y - 2},{entity.position.x + 2, entity.position.y + 2}}})
 	if #simple_entities == 0 then return end
 	if #simple_entities > 1 then table.shuffle_table(simple_entities) end	
-	local r = math.floor(global.wave_defense.threat * global.wave_defense.simple_entity_shredding_count_modifier)
-	if r < 1 then r = 1 end
-	local count = math.random(1, r)
+	--local r = math.floor(global.wave_defense.threat * global.wave_defense.simple_entity_shredding_count_modifier)
+	--if r < 1 then r = 1 end
+	--local count = math.random(1, r)
+	local count = 1
 	local damage_dealt = 0
 	for i = 1, count, 1 do
 		if not simple_entities[i] then break end
@@ -119,18 +121,28 @@ local function shred_simple_entities(entity)
 end
 
 local function on_entity_died(event)
-	if not event.entity.valid then	return end
+	local entity = event.entity
+	if not entity.valid then	return end
 	
-	if event.entity.type == "unit" then
-		remove_unit(event.entity)
-		acid_nova(event.entity)
+	if entity.type == "unit" then
+		global.wave_defense.threat = math.round(global.wave_defense.threat - threat_values[entity.name] * global.biter_health_boost, 2)
+		remove_unit(entity)
+		acid_nova(entity)
+	else
+		if entity.force.index == 2 then	
+			if entity.health then
+				if threat_values[entity.name] then
+					global.wave_defense.threat = global.wave_defense.threat - threat_values[entity.name]
+				end
+			end
+		end
 	end
-	
-	if event.entity.force.index == 3 then
+
+	if entity.force.index == 3 then
 		if event.cause then
 			if event.cause.valid then
 				if event.cause.force.index == 2 then
-					shred_simple_entities(event.entity)
+					shred_simple_entities(entity)
 				end
 			end
 		end

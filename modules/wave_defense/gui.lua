@@ -11,8 +11,8 @@ local function create_gui(player)
 	label.style.font_color = {r=0.33, g=0.66, b=0.9}
 
 	local progressbar = frame.add({ type = "progressbar", name = "progressbar", value = 0})
-	progressbar.style.minimal_width = 128
-	progressbar.style.maximal_width = 128
+	progressbar.style.minimal_width = 96
+	progressbar.style.maximal_width = 96
 	progressbar.style.top_padding = 10
 	
 	local line = frame.add({type = "line", direction = "vertical"})
@@ -34,9 +34,7 @@ local function update_gui(player)
 	if global.wave_defense.wave_number == 0 then player.gui.top.wave_defense.label.caption = "First wave in " .. math.floor((global.wave_defense.next_wave - game.tick) / 60) + 1 end
 	local interval = global.wave_defense.next_wave - global.wave_defense.last_wave
 	player.gui.top.wave_defense.progressbar.value = 1 - (global.wave_defense.next_wave - game.tick) / interval
-	local value = global.wave_defense.threat
-	if value < 0 then value = 0 end
-	player.gui.top.wave_defense.threat.caption = "Threat: " .. value
+	player.gui.top.wave_defense.threat.caption = "Threat: " .. math.floor(global.wave_defense.threat)
 end
 
 return update_gui

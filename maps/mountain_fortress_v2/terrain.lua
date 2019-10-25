@@ -1,6 +1,6 @@
 local math_random = math.random
 local simplex_noise = require "utils.simplex_noise".d2
-local rock_raffle = {"sand-rock-big","sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local noises = {
 	["no_rocks"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
@@ -163,6 +163,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 		local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
 		if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
 			tiles[#tiles + 1] = {name = "dirt-" .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
+			if math_random(1,32) == 1 then entities[#entities + 1] = {name = "dead-tree-desert", position=p} end
 			if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 			return 
 		end
@@ -184,7 +185,7 @@ local function process_rock_chunk_position(p, seed, tiles, entities, markets, tr
 	end	
 	if math.abs(noise_large_caves) > m * 5 then
 		tiles[#tiles + 1] = {name = "grass-2", position = p}
-		if math_random(1,512) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 1000} end
+		if math_random(1,512) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 		if math_random(1,512) == 1 then markets[#markets + 1] = p end
 		if math_random(1,384) == 1 then
 			wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
@@ -299,7 +300,7 @@ local function biter_chunk(surface, left_top)
 			tile_positions[#tile_positions + 1] = p
 		end
 	end
-	for i = 1, 2, 1 do
+	for i = 1, 1, 1 do
 		local position = surface.find_non_colliding_position("biter-spawner", tile_positions[math_random(1, #tile_positions)], 16, 2)
 		if position then
 			local e = surface.create_entity({name = spawner_raffle[math_random(1, #spawner_raffle)], position = position})
@@ -307,7 +308,7 @@ local function biter_chunk(surface, left_top)
 			e.active = false
 		end		
 	end
-	for _, e in pairs(surface.find_entities_filtered({area = {{left_top.x, left_top.y},{left_top.x + 32, left_top.y + 32}}, type = "cliff"})) do	e.destroy() end
+	--for _, e in pairs(surface.find_entities_filtered({area = {{left_top.x, left_top.y},{left_top.x + 32, left_top.y + 32}}, type = "cliff"})) do	e.destroy() end
 end
 
 local function replace_water(surface, left_top)
