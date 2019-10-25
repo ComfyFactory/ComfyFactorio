@@ -288,6 +288,12 @@ local kill_causes = {
 			if not event.cause.player then return end
 			return {event.cause.player}
 		end,
+	["combat-robot"] = 
+		function(event)
+			if not event.cause.last_user then return end
+			if not game.players[event.cause.last_user.index] then return end
+			return {game.players[event.cause.last_user.index]}
+		end,
 	["car"] = 
 		function(event)
 			local players = {}

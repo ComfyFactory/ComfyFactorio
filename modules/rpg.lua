@@ -74,7 +74,7 @@ end
 local function update_player_stats(player)
 	local strength = global.rpg[player.index].strength - 10
 	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = math.round(strength * 0.2, 3)
-	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = math.round(strength * 0.006, 3)
+	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = math.round(strength * 0.008, 3)
 	
 	local magic = global.rpg[player.index].magic - 10
 	local v = magic * 0.15
@@ -496,37 +496,81 @@ local function on_gui_click(event)
 end
 
 local xp_yield = {
-	["behemoth-biter"] = 12,
-	["behemoth-spitter"] = 12,
-	["behemoth-worm-turret"] = 40,
-	["big-biter"] = 6,
-	["big-spitter"] = 6,
-	["big-worm-turret"] = 32,
-	["biter-spawner"] = 32,	
+	["behemoth-biter"] = 16,
+	["behemoth-spitter"] = 16,
+	["behemoth-worm-turret"] = 64,
+	["big-biter"] = 8,
+	["big-spitter"] = 8,
+	["big-worm-turret"] = 48,
+	["biter-spawner"] = 64,	
 	["character"] = 16,
 	["gun-turret"] = 8,
 	["laser-turret"] = 16,
-	["medium-biter"] = 3,
-	["medium-spitter"] = 3,
-	["medium-worm-turret"] = 24,
+	["medium-biter"] = 4,
+	["medium-spitter"] = 4,
+	["medium-worm-turret"] = 32,
 	["small-biter"] = 1,
 	["small-spitter"] = 1,
 	["small-worm-turret"] = 16,
-	["spitter-spawner"] = 32,
+	["spitter-spawner"] = 64,
+}
+
+local function train_type_cause(cause)	
+	local players = {}
+	if cause.train.passengers then
+		for _, player in pairs(cause.train.passengers) do
+			players[#players + 1] = player
+		end
+	end			
+	return players
+end
+
+local get_cause_player = {
+	["character"] = function(cause)
+		if not cause.player then return end
+		return {cause.player}
+	end,
+	["combat-robot"] = function(cause)
+		if not cause.last_user then return end
+		if not game.players[cause.last_user.index] then return end
+		return {game.players[cause.last_user.index]}
+	end,
+	["car"] = function(cause)
+		local players = {}
+		local driver = cause.get_driver()
+		if driver then
+			if driver.player then players[#players + 1] = driver.player end
+		end
+		local passenger = cause.get_passenger()
+		if passenger then
+			if passenger.player then players[#players + 1] = passenger.player end
+		end
+		return players
+	end,
+	["locomotive"] = train_type_cause,
+	["cargo-wagon"] = train_type_cause,
+	["artillery-wagon"] = train_type_cause,
+	["fluid-wagon"] = train_type_cause,
 }
 
 local function on_entity_died(event)
 	if not event.cause then return end
 	if not event.cause.valid then return end
-	if event.cause.name ~= "character" then return end
-	if not event.cause.player then return end
 	if not event.entity.valid then return end
 	if event.cause.force.index == event.entity.force.index then return end
-	if xp_yield[event.entity.name] then
-		gain_xp(event.cause.player, xp_yield[event.entity.name])
-	else
-		gain_xp(event.cause.player, 0.5)
-	end		
+	if not get_cause_player[event.cause.type] then return end
+		
+	local players = get_cause_player[event.cause.type](event.cause)
+	if not players then return end
+	if not players[1] then return end
+	
+	for _, player in pairs(players) do
+		if xp_yield[event.entity.name] then
+			gain_xp(player, xp_yield[event.entity.name])
+		else
+			gain_xp(player, 0.5)
+		end
+	end
 end
 
 --Melee damage modifier
