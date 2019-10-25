@@ -201,7 +201,12 @@ end
 
 local function create_gui_button(player)
 	if player.gui.top.auto_stash then return end
-	local b = player.gui.top.add({type = "sprite-button", sprite = "item/wooden-chest", name = "auto_stash", tooltip = "Sort your inventory into nearby chests,\nexcluding quickbar items."})
+	local b = player.gui.top.add({
+		type = "sprite-button",
+		sprite = "item/wooden-chest",
+		name = "auto_stash",
+		tooltip = "Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores."
+	})
 	b.style.font_color = {r=0.11, g=0.8, b=0.44}
 	b.style.font = "heading-1"
 	b.style.minimal_height = 38
