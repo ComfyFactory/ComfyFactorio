@@ -261,7 +261,7 @@ local function set_next_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
 	global.wave_defense.group_size = global.wave_defense.wave_number * 2
 	if global.wave_defense.group_size > global.wave_defense.max_group_size then global.wave_defense.group_size = global.wave_defense.max_group_size end
-	global.wave_defense.threat = global.wave_defense.threat + math.floor(global.wave_defense.wave_number * 1.5)
+	global.wave_defense.threat = global.wave_defense.threat + math.floor(global.wave_defense.wave_number * global.wave_defense.threat_gain_multiplier)
 	global.wave_defense.last_wave = global.wave_defense.next_wave
 	global.wave_defense.next_wave = game.tick + global.wave_defense.wave_interval
 end
@@ -407,35 +407,36 @@ end
 
 function reset_wave_defense()
 	global.wave_defense = {
-		debug = false,
-		surface_index = 1,
-		active_biters = {},
+		active_biter_count = 0,
 		active_biter_threat = 0,
-		unit_groups = {},
-		unit_group_last_command = {},
+		active_biters = {},
+		debug = false,
+		game_lost = false,
+		get_random_close_spawner_attempts = 5,
+		group_size = 2,
+		last_wave = game.tick,
+		max_active_biters = 1024,
+		max_active_unit_groups = 8,
+		max_biter_age = 3600 * 60,
+		max_group_size = 192,
+		nest_building_chance = 4,											--high value = less chance
+		nest_building_density = 64,										--lower values = more dense building
+		next_wave = game.tick + 3600 * 15,
+		side_target_search_radius = 768,
+		simple_entity_shredding_cost_modifier = 0.01,			--threat cost for one health
+		simple_entity_shredding_count_modifier = 0.0003,
+		spawn_position = {x = 0, y = 64},
+		surface_index = 1,
+		threat = 0,
+		threat_gain_multiplier = 2,
 		unit_group_command_delay = 3600 * 8,
 		unit_group_command_step_length = 64,
-		group_size = 2,
-		max_group_size = 192,
-		max_active_unit_groups = 8,
-		max_active_biters = 1024,
-		max_biter_age = 3600 * 60,
-		active_biter_count = 0,
-		get_random_close_spawner_attempts = 5,
-		side_target_search_radius = 768,
-		spawn_position = {x = 0, y = 64},
-		last_wave = game.tick,
-		next_wave = game.tick + 3600 * 15,
+		unit_group_last_command = {},
+		unit_groups = {},
 		wave_interval = 3600,
 		wave_number = 0,
-		game_lost = false,
-		threat = 0,
-		simple_entity_shredding_count_modifier = 0.0003,
-		simple_entity_shredding_cost_modifier = 0.01,		--threat cost for one health
-		nest_building_density = 64,										--lower values = more dense building
-		nest_building_chance = 4,											--high value = less chance
-		worm_building_density = 8,										--lower values = more dense building
 		worm_building_chance = 2,										--high value = less chance
+		worm_building_density = 8,										--lower values = more dense building
 	}
 end
 

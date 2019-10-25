@@ -144,11 +144,11 @@ local function on_entity_died(event)
 		end
 	end		
 		
-	local amount = get_amount(entity)
-	amount = math.ceil(amount * 0.1)
-	if amount > 16 then amount = 16 end	
+	--local amount = get_amount(entity)
+	--amount = math.ceil(amount * 0.1)
+	--if amount > 12 then amount = 12 end
 	entity.destroy()		
-	surface.spill_item_stack(pos,{name = ore, count = amount}, true)
+	surface.spill_item_stack(pos,{name = ore, count = math.random(8,12)}, true)
 end
 
 local event = require 'utils.event'
