@@ -96,14 +96,14 @@ local function acid_nova(entity)
 end
 
 local function shred_simple_entities(entity)
-	if global.wave_defense.threat < 10000 then return end
-	local simple_entities = entity.surface.find_entities_filtered({type = "simple-entity", area = {{entity.position.x - 2, entity.position.y - 2},{entity.position.x + 2, entity.position.y + 2}}})
+	if global.wave_defense.threat < 25000 then return end
+	local simple_entities = entity.surface.find_entities_filtered({type = "simple-entity", area = {{entity.position.x - 3, entity.position.y - 3},{entity.position.x + 3, entity.position.y + 3}}})
 	if #simple_entities == 0 then return end
 	if #simple_entities > 1 then table.shuffle_table(simple_entities) end	
-	--local r = math.floor(global.wave_defense.threat * global.wave_defense.simple_entity_shredding_count_modifier)
-	--if r < 1 then r = 1 end
-	--local count = math.random(1, r)
-	local count = 1
+	local r = math.floor(global.wave_defense.threat * 0.00004)
+	if r < 1 then r = 1 end
+	local count = math.random(1, r)
+	--local count = 1
 	local damage_dealt = 0
 	for i = 1, count, 1 do
 		if not simple_entities[i] then break end

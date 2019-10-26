@@ -564,6 +564,19 @@ local function on_entity_died(event)
 	if not players then return end
 	if not players[1] then return end
 	
+	if global.biter_health_boost then
+		if event.entity.type == "unit" then
+			for _, player in pairs(players) do
+				if xp_yield[event.entity.name] then
+					gain_xp(player, xp_yield[event.entity.name] * global.biter_health_boost)
+				else
+					gain_xp(player, 0.5 * global.biter_health_boost)
+				end
+			end
+			return
+		end
+	end
+	
 	for _, player in pairs(players) do
 		if xp_yield[event.entity.name] then
 			gain_xp(player, xp_yield[event.entity.name])

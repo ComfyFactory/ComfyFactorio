@@ -138,6 +138,7 @@ local function set_main_target()
 	if global.wave_defense.target then	
 		if global.wave_defense.target.valid then return end
 	end
+	if not global.wave_defense.side_targets then return end
 	if #global.wave_defense.side_targets == 0 then return end
 	local target = global.wave_defense.side_targets[math_random(1, #global.wave_defense.side_targets)]
 	if not target then return end
@@ -158,27 +159,28 @@ end
 local function set_enemy_evolution()
 	local evolution_factor = global.wave_defense.wave_number * 0.001
 	local biter_health_boost = 1
-	local damage_increase = 0
+	--local damage_increase = 0
 	
 	if evolution_factor > 1 then
-		damage_increase = damage_increase + (evolution_factor - 1)
+		--damage_increase = damage_increase + (evolution_factor - 1)
 		biter_health_boost = biter_health_boost + (evolution_factor - 1) * 2
 		evolution_factor = 1
 	end
 
 	if global.wave_defense.threat > 0 then
 		biter_health_boost = math.round(biter_health_boost + global.wave_defense.threat * 0.00005, 3)
-		damage_increase = math.round(damage_increase + global.wave_defense.threat * 0.000005, 3)
+		--damage_increase = math.round(damage_increase + global.wave_defense.threat * 0.0000025, 3)
 	end
 
 	global.biter_health_boost = biter_health_boost
-	game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
-	game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
+	--game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
+	--game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
 	game.forces.enemy.evolution_factor = evolution_factor
 	
 	if global.biter_health_boost then
 		for _, player in pairs(game.connected_players) do		
-			player.gui.top.wave_defense.threat.tooltip = "High threat may empower biters.\nBiter health " .. biter_health_boost * 100 .. "% | damage " .. (damage_increase + 1) * 100 .. "%"	
+			--player.gui.top.wave_defense.threat.tooltip = "High threat may empower biters.\nBiter health " .. biter_health_boost * 100 .. "% | damage " .. (damage_increase + 1) * 100 .. "%"
+			player.gui.top.wave_defense.threat.tooltip = "High threat may empower biters.\nBiter health " .. biter_health_boost * 100 .. "%"
 		end
 	end
 end
@@ -203,7 +205,11 @@ local function get_active_unit_groups_count()
 	local count = 0
 	for _, g in pairs(global.wave_defense.unit_groups) do
 		if g.valid then
-			count = count + 1
+			if #g.members > 0 then
+				count = count + 1
+			else
+				g.destroy()
+			end
 		end
 	end
 	debug_print("Active unit group count: " .. count)
@@ -424,19 +430,18 @@ function reset_wave_defense()
 		next_wave = game.tick + 3600 * 15,
 		side_target_search_radius = 768,
 		simple_entity_shredding_cost_modifier = 0.01,			--threat cost for one health
-		simple_entity_shredding_count_modifier = 0.0003,
 		spawn_position = {x = 0, y = 64},
 		surface_index = 1,
 		threat = 0,
 		threat_gain_multiplier = 2,
 		unit_group_command_delay = 3600 * 8,
-		unit_group_command_step_length = 64,
+		unit_group_command_step_length = 80,
 		unit_group_last_command = {},
 		unit_groups = {},
 		wave_interval = 3600,
 		wave_number = 0,
-		worm_building_chance = 2,										--high value = less chance
-		worm_building_density = 8,										--lower values = more dense building
+		worm_building_chance = 3,										--high value = less chance
+		worm_building_density = 16,									--lower values = more dense building
 	}
 end
 

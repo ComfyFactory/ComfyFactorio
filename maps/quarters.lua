@@ -1,6 +1,21 @@
 require "modules.mineable_wreckage_yields_scrap"
-require "modules.biters_attack_moving_players"
+require "modules.wave_defense.main"
+require "modules.map_info"
+map_info = {}
+map_info.main_caption = "4 Quarters"
+map_info.sub_caption =  "coal ++ iron ++ copper ++ stone"
+map_info.text = table.concat({
+	"Green energy ore may be found in the stone area.\n",
+	"Oil may be found in the coal area.\n",
+	"\n",
+	"Hold the door as long as possible.\n",
+	"Don't let them in!\n",
+})
+map_info.main_caption_color = {r = 0, g = 120, b = 0}
+map_info.sub_caption_color = {r = 255, g = 0, b = 255}
 
+--require "modules.biters_attack_moving_players"
+--[[
 local difficulties_votes = {
     [1] = {tick_increase = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},
     [2] = {tick_increase = 4100, amount_modifier = 0.76, strength_modifier = 0.65, boss_modifier = 4.0},
@@ -10,7 +25,7 @@ local difficulties_votes = {
     [6] = {tick_increase = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0},
     [7] = {tick_increase = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
 }
-
+]]
 local simplex_noise = require 'utils.simplex_noise'.d2
 local spawn_size = 96
 local wall_thickness = 3
@@ -35,8 +50,8 @@ local function clone_chunk(event, source_surface_name)
 end
 
 local function is_spawn_wall(p)
-	if p.y < -32 and p.x < -32 then return false end
-	if p.y > 32 and p.x > 32 then return false end
+	--if p.y < -32 and p.x < -32 then return false end
+	--if p.y > 32 and p.x > 32 then return false end
 	if p.x >= spawn_size - wall_thickness then return true end
 	if p.x < spawn_size * -1 + wall_thickness then return true end
 	if p.y >= spawn_size - wall_thickness then return true end
@@ -114,7 +129,7 @@ local function get_quarter_name(position)
 		end	
 	end
 end
-
+--[[
 local function send_peace_quarter_biters()
 	local surface = game.surfaces[1]
 	local target = surface.find_nearest_enemy({position = {0, 0}, max_distance = 99999, force = "enemy"})
@@ -141,7 +156,7 @@ local function send_peace_quarter_biters()
 		end
 	end
 end
-
+]]
 local function draw_borders(surface, left_top, area)	
 	if left_top.x == 0 or left_top.x == -32 then
 		for x = 0, 31, 1 do
@@ -194,10 +209,21 @@ local function on_chunk_generated(event)
 	game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}})
 end
 
-local function on_player_joined_game(event)
-	
+local function set_difficulty()
+	--20 Players for maximum difficulty
+	global.wave_defense.wave_interval = 7200 - #game.connected_players * 270
+	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end	
 end
 
+local function on_player_joined_game(event)
+	set_difficulty()
+end
+
+local function on_player_left_game(event)
+	set_difficulty()
+end
+
+--[[
 local function tick(event)
 	local size = math.floor((8 + game.tick / difficulties_votes[global.difficulty_vote_index].tick_increase) * difficulties_votes[global.difficulty_vote_index].amount_modifier)
 	if size > 80 then size = 80 end
@@ -223,6 +249,7 @@ local function tick(event)
 	--game.surfaces[1].pollute({-1 + math.random(0, 2), -1 + math.random(0, 2)}, amount)
 end
 
+
 --Flamethrower Turret Nerf
 local function on_research_finished(event)
 	local research = event.research
@@ -240,48 +267,39 @@ local function on_research_finished(event)
 		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.flamethrower_damage[force_name])
 	end	
 end
+]]
 
 local function on_init()
-	
 	for i, quarter in pairs({"coal", "iron-ore", "stone", "copper-ore"}) do
 		local map_gen_settings = {}
 		map_gen_settings.seed = math.random(1, 999999999)
 		map_gen_settings.water = math.random(25, 50) * 0.01
 		map_gen_settings.starting_area = 1.5
 		map_gen_settings.terrain_segmentation = math.random(25, 50) * 0.1	
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 16, cliff_elevation_0 = 16}
+		map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}
 		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = 0, size = 0.5, richness = 0.25},
-			["stone"] = {frequency = 0, size = 0.5, richness = 0.25},
-			["copper-ore"] = {frequency = 0, size = 0.5, richness = 0.25},
-			["iron-ore"] = {frequency = 0, size = 0.5, richness = 0.25},
-			["uranium-ore"] = {frequency = 0, size = 0.75, richness = 0.5},
+			["coal"] = {frequency = 0, size = 0.5, richness = 0.5},
+			["stone"] = {frequency = 0, size = 0.5, richness = 0.5},
+			["copper-ore"] = {frequency = 0, size = 0.5, richness = 0.5},
+			["iron-ore"] = {frequency = 0, size = 0.5, richness = 0.5},
+			["uranium-ore"] = {frequency = 0, size = 1, richness = 1},
 			["crude-oil"] = {frequency = 0, size = 1, richness = 1},
-			["trees"] = {frequency = 3, size = 1.5, richness = 1},
-			["enemy-base"] = {frequency = 0, size = 1.5, richness = 1}	
-		}		
+			["trees"] = {frequency = math.random(10, 50) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(1, 10) * 0.1},
+			["enemy-base"] = {frequency = 2, size = 2, richness = 1}	
+		}	
+		map_gen_settings.autoplace_controls[quarter].frequency = 16
+		
 		if quarter == "coal" then
-			map_gen_settings.autoplace_controls["coal"].frequency = 16
-			map_gen_settings.autoplace_controls["iron-ore"].frequency = 16
-			map_gen_settings.autoplace_controls["uranium-ore"].frequency = 2
+			map_gen_settings.autoplace_controls["crude-oil"].frequency = 8
 		end
 		if quarter == "stone" then
-			map_gen_settings.autoplace_controls["stone"].frequency = 16
-			map_gen_settings.autoplace_controls["copper-ore"].frequency = 16
-			map_gen_settings.autoplace_controls["crude-oil"].frequency = 2
+			map_gen_settings.autoplace_controls["uranium-ore"].frequency = 8
 		end
-		if quarter == "copper-ore" or quarter == "iron-ore" then
-			map_gen_settings.autoplace_controls["enemy-base"].frequency = 256
-			map_gen_settings.autoplace_controls["trees"].frequency = 3
-			map_gen_settings.autoplace_controls["trees"].size = 0.4
-			map_gen_settings.autoplace_controls["trees"].richness = 0.05
-			map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
-			map_gen_settings.water = math.random(15, 30) * 0.01
-			map_gen_settings.terrain_segmentation = math.random(50, 100) * 0.1
-		end	
+		
 		game.create_surface(quarter, map_gen_settings)
 	end
 	
+	--[[
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.settler_group_min_size = 8
 	game.map_settings.enemy_expansion.settler_group_max_size = 16
@@ -297,14 +315,16 @@ local function on_init()
 	global.enemy_evolution_destroy_factor = game.map_settings.enemy_evolution.destroy_factor * modifier_factor
 	global.enemy_evolution_time_factor = game.map_settings.enemy_evolution.time_factor * modifier_factor
 	global.enemy_evolution_pollution_factor = game.map_settings.enemy_evolution.pollution_factor * modifier_factor
+	]]
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(60, tick)
+--event.on_nth_tick(60, tick)
 event.on_init(on_init)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_research_finished, on_research_finished)
+--event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_left_game, on_player_left_game)
 
-require "modules.difficulty_vote"
+--require "modules.difficulty_vote"
