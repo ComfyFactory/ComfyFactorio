@@ -76,7 +76,6 @@ function Public.show(container)
     end
 
     local right_panel = main_flow.add {type = 'text-box', name = right_panel_name}
-    right_panel.word_wrap = true
     right_panel.read_only = true
     right_panel.selectable = true
 
