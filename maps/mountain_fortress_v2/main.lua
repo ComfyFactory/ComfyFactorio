@@ -106,7 +106,9 @@ function reset_map()
 	global.wave_defense.surface_index = global.active_surface_index
 	global.wave_defense.target = global.locomotive_cargo
 	global.wave_defense.side_target_search_radius = 768
-	
+	global.wave_defense.unit_group_command_step_length = 32
+	global.wave_defense.nest_building_density = 32
+	global.wave_defense.threat_gain_multiplier = 3
 	global.wave_defense.game_lost = false
 	
 	--for _, p in pairs(game.connected_players) do

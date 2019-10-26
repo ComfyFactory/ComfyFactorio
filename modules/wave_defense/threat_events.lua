@@ -19,7 +19,7 @@ function build_nest()
 	if not group.members[1] then return end
 	local unit = group.members[math_random(1, #group.members)]
 	if not unit.valid then return end	
-	local position = unit.surface.find_non_colliding_position("rocket-silo", unit.position, 9, 1)
+	local position = unit.surface.find_non_colliding_position("biter-spawner", unit.position, 16, 1)
 	if not position then return end
 	local r = global.wave_defense.nest_building_density	
 	if unit.surface.count_entities_filtered({type = "unit-spawner", area = {{position.x - r, position.y - r},{position.x + r, position.y + r}}}) > 0 then return end
@@ -44,7 +44,7 @@ function build_worm()
 	if not unit.valid then return end
 	wave_defense_set_worm_raffle(global.wave_defense.wave_number)
 	local worm = wave_defense_roll_worm_name()
-	local position = unit.surface.find_non_colliding_position("biter-spawner", unit.position, 9, 1)
+	local position = unit.surface.find_non_colliding_position("assembling-machine-1", unit.position, 8, 1)
 	if not position then return end
 	local r = global.wave_defense.worm_building_density
 	if unit.surface.count_entities_filtered({type = "turret", area = {{position.x - r, position.y - r},{position.x + r, position.y + r}}}) > 0 then return end

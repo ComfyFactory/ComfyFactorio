@@ -163,7 +163,7 @@ local function set_enemy_evolution()
 	
 	if evolution_factor > 1 then
 		--damage_increase = damage_increase + (evolution_factor - 1)
-		biter_health_boost = biter_health_boost + (evolution_factor - 1) * 2
+		--biter_health_boost = biter_health_boost + (evolution_factor - 1) * 2
 		evolution_factor = 1
 	end
 
@@ -422,7 +422,7 @@ function reset_wave_defense()
 		group_size = 2,
 		last_wave = game.tick,
 		max_active_biters = 1024,
-		max_active_unit_groups = 8,
+		max_active_unit_groups = 6,
 		max_biter_age = 3600 * 60,
 		max_group_size = 192,
 		nest_building_chance = 4,											--high value = less chance
@@ -434,8 +434,8 @@ function reset_wave_defense()
 		surface_index = 1,
 		threat = 0,
 		threat_gain_multiplier = 2,
-		unit_group_command_delay = 3600 * 8,
-		unit_group_command_step_length = 80,
+		unit_group_command_delay = 3600 * 15,
+		unit_group_command_step_length = 32,
 		unit_group_last_command = {},
 		unit_groups = {},
 		wave_interval = 3600,
