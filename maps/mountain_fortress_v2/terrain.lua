@@ -590,12 +590,12 @@ local function wall(surface, left_top, seed)
 						if y < 5 or y > 26 then
 							if y <= 15 then
 								if math_random(1, y + 1) == 1 then
-									local e = surface.create_entity({name = "stone-wall", position = p, force = "neutral"})
+									local e = surface.create_entity({name = "stone-wall", position = p, force = "player"})
 									e.minable = false
 								end
 							else
 								if math_random(1, 32 - y)  == 1 then
-									local e = surface.create_entity({name = "stone-wall", position = p, force = "neutral"})
+									local e = surface.create_entity({name = "stone-wall", position = p, force = "player"})
 									e.minable = false
 								end
 							end

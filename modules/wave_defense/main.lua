@@ -298,7 +298,7 @@ local function get_commmands(group)
 			for i = 1, steps, 1 do
 				group_position.x = group_position.x + vector[1]
 				group_position.y = group_position.y + vector[2]	
-				local position = group.surface.find_non_colliding_position("small-biter", group_position, 64, 2)
+				local position = group.surface.find_non_colliding_position("small-biter", group_position, step_length, 2)
 				if position then
 					commands[#commands + 1] = {
 						type = defines.command.attack_area,
@@ -331,7 +331,7 @@ local function get_commmands(group)
 	for i = 1, steps, 1 do
 		group_position.x = group_position.x + vector[1]
 		group_position.y = group_position.y + vector[2]	
-		local position = group.surface.find_non_colliding_position("small-biter", group_position, 64, 1)
+		local position = group.surface.find_non_colliding_position("small-biter", group_position, step_length, 1)
 		if position then
 			commands[#commands + 1] = {
 				type = defines.command.attack_area,
