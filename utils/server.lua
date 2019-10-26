@@ -3,7 +3,6 @@ local Task = require 'utils.task'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Game = require 'utils.game'
-local Timestamp = require 'utils.timestamp'
 local Print = require('utils.print_override')
 
 local serialize = serpent.serialize
@@ -17,6 +16,7 @@ local serialize_options = {sparse = true, compact = true}
 local Public = {}
 
 local server_time = {secs = nil, tick = 0}
+local requests = {}
 
 Global.register(
     {
