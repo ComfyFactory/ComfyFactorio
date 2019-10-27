@@ -4,7 +4,7 @@ bb_config = {
 	--TEAM SETTINGS--
 	["team_balancing"] = true,			--Should players only be able to join a team that has less or equal members than the opposing team?
 	["only_admins_vote"] = false,		--Are only admins able to vote on the global difficulty?
-    ['training_mode'] = true, 			--Players must join north team and all feeding affects their own biters. Southern team is disabled. Designed for 1 or more players to train aginst themselves.
+    ['training_mode'] = false, 			--Designed for 1 or more players to train aginst themselves. Players must join north team and all feeding affects their own biters. Southern team is disabled.
 
 	--Optional custom team names, can also be modified via "Team Manager"
 	["north_side_team_name"] = "Team North",
