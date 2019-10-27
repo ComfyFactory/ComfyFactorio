@@ -17,6 +17,9 @@ local enemy_team_of = {
 	["north"] = "south",
 	["south"] = "north"
 }
+if bb_config.training_mode then
+	enemy_team_of["north"] = "north"
+end
 
 
 

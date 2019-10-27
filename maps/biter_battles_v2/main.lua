@@ -164,7 +164,7 @@ local function init_forces()
 		global.bb_threat_income[force.name] = 0
 		global.bb_threat[force.name] = 0	
 	end
-	global.game_lobby_active = true
+	global.game_lobby_active = not bb_config.training_mode
 end
 
 local function on_player_joined_game(event)	

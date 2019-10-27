@@ -3,6 +3,9 @@ local forces = {
 	{name = "spectator", color = {r = 111, g = 111, b = 111}},
 	{name = "south",	color = {r = 200, g = 0, b = 0}},
 }
+if bb_config.training_mode then
+	forces[3] = nil
+end
 
 local function get_player_array(force_name)
 	local a = {}	
@@ -129,7 +132,8 @@ local function draw_manager_gui(player)
 	
 	local frame = player.gui.center.add({type = "frame", name = "team_manager_gui", caption = "Manage Teams", direction = "vertical"})
 	
-	local t = frame.add({type = "table", name = "team_manager_root_table", column_count = 5})
+	local column_count = (#forces * 2) - 1
+	local t = frame.add({type = "table", name = "team_manager_root_table", column_count = column_count})
 	
 	local i2 = 1
 	for i = 1, #forces * 2 - 1, 1 do
@@ -152,6 +156,7 @@ local function draw_manager_gui(player)
 			list_box.style.minimal_height = 360
 			list_box.style.minimal_width = 160
 			list_box.style.maximal_height = 480
+			list_box.style.maximal_width = 160
 			i2 = i2 + 1
 		else
 			local tt = t.add({type = "table", column_count = 1})

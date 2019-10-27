@@ -275,9 +275,13 @@ end
 
 ai.raise_evo = function()
 	if global.freeze_players then return end
-	if #game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0 then return end
+	if #game.forces.north.connected_players == 0 or (not bb_config.training_mode and #game.forces.south.connected_players == 0) then return end
 	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
-	for _, f in pairs({"north_biters", "south_biters"}) do	
+	local biter_teams = {["north_biters"] = true, ["south_biters"] = true}
+	if bb_config.training_mode then 
+		biter_teams["south_biters"] = nil
+	end
+	for f in pairs(biter_teams) do
 		set_evo_and_threat(amount, "automation-science-pack", f)
 	end
 	global.evo_raise_counter = global.evo_raise_counter + (1 * 0.50)
