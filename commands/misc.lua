@@ -17,35 +17,9 @@ commands.add_command(
                 p = log
 			end
         end
-        if cmd.parameter == nil then player.print("Arguments are enable/disable", {r=0.22, g=0.99, b=0.99}) return end
-        if cmd.parameter == "enable" then
+        if cmd.parameter == nil then player.print("Arguments are true/false", {r=0.22, g=0.99, b=0.99}) return end
+        if cmd.parameter == "true" then
 			game.print("The world has been spaghettified!", {r = 1, g = 0.5, b = 0.1})
-			force.technologies["logistic-system"].enabled = true
-			force.technologies["construction-robotics"].enabled = true
-			force.technologies["logistic-robotics"].enabled = true
-			force.technologies["robotics"].enabled = true
-			force.technologies["personal-roboport-equipment"].enabled = true
-			force.technologies["personal-roboport-mk2-equipment"].enabled = true
-			force.technologies["character-logistic-trash-slots-1"].enabled = true
-			force.technologies["character-logistic-trash-slots-2"].enabled = true
-			force.technologies["auto-character-logistic-trash-slots"].enabled = true
-			force.technologies["worker-robots-storage-1"].enabled = true
-			force.technologies["worker-robots-storage-2"].enabled = true
-			force.technologies["worker-robots-storage-3"].enabled = true
-			force.technologies["character-logistic-slots-1"].enabled = true
-			force.technologies["character-logistic-slots-2"].enabled = true
-			force.technologies["character-logistic-slots-3"].enabled = true
-			force.technologies["character-logistic-slots-4"].enabled = true
-			force.technologies["character-logistic-slots-5"].enabled = true
-			force.technologies["character-logistic-slots-6"].enabled = true
-			force.technologies["worker-robots-speed-1"].enabled = true
-			force.technologies["worker-robots-speed-2"].enabled = true
-			force.technologies["worker-robots-speed-3"].enabled = true
-			force.technologies["worker-robots-speed-4"].enabled = true
-			force.technologies["worker-robots-speed-5"].enabled = true
-			force.technologies["worker-robots-speed-6"].enabled = true
-        elseif cmd.parameter == "disable" then
-			game.print("The world is no longer spaghett!", {r = 1, g = 0.5, b = 0.1})
 			force.technologies["logistic-system"].enabled = false
 			force.technologies["construction-robotics"].enabled = false
 			force.technologies["logistic-robotics"].enabled = false
@@ -70,6 +44,32 @@ commands.add_command(
 			force.technologies["worker-robots-speed-4"].enabled = false
 			force.technologies["worker-robots-speed-5"].enabled = false
 			force.technologies["worker-robots-speed-6"].enabled = false
+        elseif cmd.parameter == "false" then
+			game.print("The world is no longer spaghett!", {r = 1, g = 0.5, b = 0.1})
+			force.technologies["logistic-system"].enabled = true
+			force.technologies["construction-robotics"].enabled = true
+			force.technologies["logistic-robotics"].enabled = true
+			force.technologies["robotics"].enabled = true
+			force.technologies["personal-roboport-equipment"].enabled = true
+			force.technologies["personal-roboport-mk2-equipment"].enabled = true
+			force.technologies["character-logistic-trash-slots-1"].enabled = true
+			force.technologies["character-logistic-trash-slots-2"].enabled = true
+			force.technologies["auto-character-logistic-trash-slots"].enabled = true
+			force.technologies["worker-robots-storage-1"].enabled = true
+			force.technologies["worker-robots-storage-2"].enabled = true
+			force.technologies["worker-robots-storage-3"].enabled = true
+			force.technologies["character-logistic-slots-1"].enabled = true
+			force.technologies["character-logistic-slots-2"].enabled = true
+			force.technologies["character-logistic-slots-3"].enabled = true
+			force.technologies["character-logistic-slots-4"].enabled = true
+			force.technologies["character-logistic-slots-5"].enabled = true
+			force.technologies["character-logistic-slots-6"].enabled = true
+			force.technologies["worker-robots-speed-1"].enabled = true
+			force.technologies["worker-robots-speed-2"].enabled = true
+			force.technologies["worker-robots-speed-3"].enabled = true
+			force.technologies["worker-robots-speed-4"].enabled = true
+			force.technologies["worker-robots-speed-5"].enabled = true
+			force.technologies["worker-robots-speed-6"].enabled = true
 	end
 end)
 
