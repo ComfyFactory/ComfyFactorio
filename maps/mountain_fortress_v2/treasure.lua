@@ -34,23 +34,23 @@ function treasure_chest(surface, position)
 		{{name = "atomic-bomb", count = 1}, weight = 1, evo_min = 0.8, evo_max = 1},		
 		{{name = "light-armor", count = 1}, weight = 3, evo_min = 0, evo_max = 0.1},		
 		{{name = "heavy-armor", count = 1}, weight = 3, evo_min = 0.1, evo_max = 0.3},
-		{{name = "modular-armor", count = 1}, weight = 3, evo_min = 0.2, evo_max = 0.6},
-		{{name = "power-armor", count = 1}, weight = 2, evo_min = 0.4, evo_max = 1},
-		{{name = "power-armor-mk2", count = 1}, weight = 1, evo_min = 0.9, evo_max = 1},
+		{{name = "modular-armor", count = 1}, weight = 2, evo_min = 0.2, evo_max = 0.6},
+		{{name = "power-armor", count = 1}, weight = 1, evo_min = 0.4, evo_max = 1},
+		--{{name = "power-armor-mk2", count = 1}, weight = 1, evo_min = 0.9, evo_max = 1},
 		{{name = "battery-equipment", count = 1}, weight = 2, evo_min = 0.3, evo_max = 0.7},
-		{{name = "battery-mk2-equipment", count = 1}, weight = 2, evo_min = 0.7, evo_max = 1},
+		--{{name = "battery-mk2-equipment", count = 1}, weight = 2, evo_min = 0.7, evo_max = 1},
 		{{name = "belt-immunity-equipment", count = 1}, weight = 1, evo_min = 0.5, evo_max = 1},
 		{{name = "solar-panel-equipment", count = math_random(1,4)}, weight = 5, evo_min = 0.4, evo_max = 0.8},
 		{{name = "discharge-defense-equipment", count = 1}, weight = 1, evo_min = 0.5, evo_max = 1},
 		{{name = "energy-shield-equipment", count = math_random(1,2)}, weight = 2, evo_min = 0.3, evo_max = 0.8},
-		{{name = "energy-shield-mk2-equipment", count = 1}, weight = 2, evo_min = 0.8, evo_max = 1},
+		--{{name = "energy-shield-mk2-equipment", count = 1}, weight = 2, evo_min = 0.8, evo_max = 1},
 		{{name = "exoskeleton-equipment", count = 1}, weight = 1, evo_min = 0.3, evo_max = 1},
-		{{name = "fusion-reactor-equipment", count = 1}, weight = 1, evo_min = 0.8, evo_max = 1},
+		--{{name = "fusion-reactor-equipment", count = 1}, weight = 1, evo_min = 0.8, evo_max = 1},
 		{{name = "night-vision-equipment", count = 1}, weight = 1, evo_min = 0.3, evo_max = 0.8},
 		{{name = "personal-laser-defense-equipment", count = 1}, weight = 1, evo_min = 0.7, evo_max = 1},
 		
 		{{name = "personal-roboport-equipment", count = math_random(1,2)}, weight = 3, evo_min = 0.4, evo_max = 1},
-		{{name = "personal-roboport-mk2-equipment", count = 1}, weight = 1, evo_min = 0.9, evo_max = 1},
+		--{{name = "personal-roboport-mk2-equipment", count = 1}, weight = 1, evo_min = 0.9, evo_max = 1},
 		{{name = "logistic-robot", count = math_random(5,25)}, weight = 2, evo_min = 0.5, evo_max = 1},
 		{{name = "construction-robot", count = math_random(5,25)}, weight = 5, evo_min = 0.4, evo_max = 1},
 		
@@ -155,8 +155,9 @@ function treasure_chest(surface, position)
 	end
 
 	local name = "wooden-chest"
-	if distance_to_center > 0.5 then name = "iron-chest" end
-	if distance_to_center > 0.75 then name = "steel-chest" end
+	if math_random(1, 6) == 1 then name = "iron-chest" end
+	--if distance_to_center > 0.75 then name = "steel-chest" end
+	
 	local e = surface.create_entity({name = name, position=position, force="neutral"})	
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)

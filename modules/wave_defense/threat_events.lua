@@ -77,8 +77,8 @@ local acid_nova_entities = {
 
 local function acid_nova(entity)
 	if not acid_nova_entities[entity.name] then return end
-	if global.wave_defense.threat < 100000 then return end
-	if math_random(1, 16) ~= 1 then return end	
+	if global.wave_defense.threat < 1000000 then return end
+	if math_random(1, 32) ~= 1 then return end	
 	for _ = 1, acid_nova_entities[entity.name].amount, 1 do
 		local i = math_random(1, #acid_nova_entities[entity.name].vectors)		
 		entity.surface.create_entity({	

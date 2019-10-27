@@ -95,6 +95,15 @@ local function set_side_target_list()
 end
 
 local function get_side_target()
+	if math.random(1, 2) == 1 then
+		local surface = game.surfaces[global.wave_defense.surface_index]
+		local characters = surface.find_entities_filtered({name = "character"})
+		if not characters[1] then return false end
+		local character = characters[math.random(1, #characters)]
+		if not character.valid then return false end
+		return character
+	end
+
 	if not global.wave_defense.side_targets then return false end
 	if #global.wave_defense.side_targets < 2 then return false end
 	local side_target = global.wave_defense.side_targets[math_random(1,#global.wave_defense.side_targets)]
@@ -236,33 +245,6 @@ local function spawn_biter(surface)
 	return biter
 end
 
-local function spawn_unit_group()
-	if not can_units_spawn() then return end
-	if not global.wave_defense.target then return end
-	if not global.wave_defense.target.valid then return end
-	if get_active_unit_groups_count() >= global.wave_defense.max_active_unit_groups then return end
-	
-	wave_defense_set_unit_raffle(global.wave_defense.wave_number)
-	
-	local surface = game.surfaces[global.wave_defense.surface_index]
-	set_group_spawn_position(surface)
-	debug_print("Spawning unit group at x" .. global.wave_defense.spawn_position.x .." y" .. global.wave_defense.spawn_position.y)
-	local unit_group = surface.create_unit_group({position = global.wave_defense.spawn_position, force = "enemy"})
-	for a = 1, global.wave_defense.group_size, 1 do
-		local biter = spawn_biter(surface)
-		if not biter then break end
-		unit_group.add_member(biter)
-	end
-	for i = 1, #global.wave_defense.unit_groups, 1 do
-		if not global.wave_defense.unit_groups[i] then
-			global.wave_defense.unit_groups[i] = unit_group
-			return true
-		end
-	end
-	global.wave_defense.unit_groups[#global.wave_defense.unit_groups + 1] = unit_group
-	return true
-end
-
 local function set_next_wave()
 	global.wave_defense.wave_number = global.wave_defense.wave_number + 1
 	global.wave_defense.group_size = global.wave_defense.wave_number * 2
@@ -359,17 +341,17 @@ local function get_commmands(group)
 end
 
 local function command_unit_group(group)
-	if not global.wave_defense.unit_group_last_command[group.group_number] then
-		global.wave_defense.unit_group_last_command[group.group_number] = game.tick - (global.wave_defense.unit_group_command_delay + 1) 
+	if global.wave_defense.unit_group_last_command[group.group_number] then
+		if global.wave_defense.unit_group_last_command[group.group_number] + global.wave_defense.unit_group_command_delay > game.tick then return end		
 	end
-	if global.wave_defense.unit_group_last_command[group.group_number] + global.wave_defense.unit_group_command_delay > game.tick then return end	
-	global.wave_defense.unit_group_last_command[group.group_number] = game.tick
 	
 	group.set_command({
 		type = defines.command.compound,
 		structure_type = defines.compound_command.return_last,
 		commands = get_commmands(group)
 	})
+	
+	global.wave_defense.unit_group_last_command[group.group_number] = game.tick
 end
 
 local function give_commands_to_unit_groups()
@@ -380,9 +362,42 @@ local function give_commands_to_unit_groups()
 		if group.valid then
 			command_unit_group(group)
 		else
-			global.wave_defense.unit_groups[k] = nil 
+			table.remove(global.wave_defense.unit_groups, k)
+			--global.wave_defense.unit_groups[k] = nil 
 		end
 	end	
+end
+
+local function spawn_unit_group()
+	if not can_units_spawn() then return end
+	if not global.wave_defense.target then return end
+	if not global.wave_defense.target.valid then return end
+	if get_active_unit_groups_count() >= global.wave_defense.max_active_unit_groups then return end
+	
+	wave_defense_set_unit_raffle(global.wave_defense.wave_number)
+	
+	local surface = game.surfaces[global.wave_defense.surface_index]
+	set_group_spawn_position(surface)
+	debug_print("Spawning unit group at x" .. global.wave_defense.spawn_position.x .." y" .. global.wave_defense.spawn_position.y)
+	local unit_group = surface.create_unit_group({position = global.wave_defense.spawn_position, force = "enemy"})
+	for a = 1, global.wave_defense.group_size, 1 do
+		local biter = spawn_biter(surface)
+		if not biter then break end
+		unit_group.add_member(biter)
+	end
+	--command_unit_group(unit_group)
+	
+	table.insert(global.wave_defense.unit_groups, unit_group)
+	--[[
+	for i = 1, #global.wave_defense.unit_groups, 1 do
+		if not global.wave_defense.unit_groups[i] then
+			global.wave_defense.unit_groups[i] = unit_group
+			return true
+		end
+	end
+	global.wave_defense.unit_groups[#global.wave_defense.unit_groups + 1] = unit_group
+	]]
+	return true
 end
 
 local tick_tasks = {
@@ -435,7 +450,7 @@ function reset_wave_defense()
 		threat = 0,
 		threat_gain_multiplier = 2,
 		unit_group_command_delay = 3600 * 15,
-		unit_group_command_step_length = 32,
+		unit_group_command_step_length = 64,
 		unit_group_last_command = {},
 		unit_groups = {},
 		wave_interval = 3600,

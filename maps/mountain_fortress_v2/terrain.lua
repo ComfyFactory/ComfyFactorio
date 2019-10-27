@@ -69,7 +69,7 @@ local function process_level_5_position(p, seed, tiles, entities, markets, treas
 	
 	if small_caves > -0.10 and small_caves < 0.10 then
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
-		if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
+		if math_random(1,768) == 1 then treasure[#treasure + 1] = p end
 		if math_random(1,2) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		return
 	end
@@ -87,7 +87,7 @@ local function process_level_5_position(p, seed, tiles, entities, markets, treas
 	if small_caves > -0.30 and small_caves < 0.30 then
 		if noise_cave_ponds > 0.35 then		
 			tiles[#tiles + 1] = {name = "dirt-" .. math.random(1, 4), position = p}
-			if math_random(1,128) == 1 then treasure[#treasure + 1] = p end
+			if math_random(1,256) == 1 then treasure[#treasure + 1] = p end
 			if math_random(1,256) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 			return
 		end			
@@ -275,12 +275,12 @@ local function process_level_2_position(p, seed, tiles, entities, markets, treas
 		local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 		
 		--Chasms
-		if noise_cave_ponds < 0.13 and noise_cave_ponds > -0.13 then
-			if small_caves > 0.35 then
+		if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
+			if small_caves > 0.32 then
 				tiles[#tiles + 1] = {name = "out-of-map", position = p}
 				return
 			end
-			if small_caves < -0.35 then
+			if small_caves < -0.32 then
 				tiles[#tiles + 1] = {name = "out-of-map", position = p}
 				return
 			end

@@ -164,6 +164,7 @@ local function tick(event)
 			global.explosion_cells[key] = nil
 		end
 	end
+	if game.tick % 216000 == 0 then global.explosion_cells_tiles = {} end
 end
 
 local function on_entity_died(event)
@@ -182,7 +183,7 @@ local function on_entity_died(event)
 	cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage_per_explosive)
 end
 
-local function on_init(surface)
+local function on_init()
 	global.explosion_cells = {}
 	global.explosion_cells_vectors = {{density, 0}, {density * -1, 0}, {0, density}, {0, density * -1}}
 	--global.explosion_cells_damage_dealt = 0

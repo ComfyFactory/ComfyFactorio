@@ -1,7 +1,5 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
---require "modules.flashlight_toggle_button"
---require "modules.biter_noms_you"
 require "modules.rpg"
 require "modules.wave_defense.main"
 require "functions.soft_reset"
@@ -94,7 +92,7 @@ function reset_map()
 	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
 	game.map_settings.enemy_expansion.settler_group_max_size = 8
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
-	game.map_settings.pollution.enabled = false
+	game.map_settings.pollution.enabled = true
 	
 	game.forces.player.technologies["landfill"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
@@ -105,9 +103,9 @@ function reset_map()
 	reset_wave_defense()
 	global.wave_defense.surface_index = global.active_surface_index
 	global.wave_defense.target = global.locomotive_cargo
-	global.wave_defense.side_target_search_radius = 768
-	global.wave_defense.unit_group_command_step_length = 32
-	global.wave_defense.nest_building_density = 32
+	global.wave_defense.side_target_search_radius = 512
+	global.wave_defense.unit_group_command_step_length = 64
+	global.wave_defense.nest_building_density = 48
 	global.wave_defense.threat_gain_multiplier = 3
 	global.wave_defense.game_lost = false
 	
@@ -279,7 +277,7 @@ end
 local function on_init(surface)
 	global.rocks_yield_ore_maximum_amount = 999
 	global.rocks_yield_ore_base_amount = 50
-	global.rocks_yield_ore_distance_modifier = 0.03
+	global.rocks_yield_ore_distance_modifier = 0.025
 	
 	global.explosion_cells_destructible_tiles = {
 		["out-of-map"] = 1500,
