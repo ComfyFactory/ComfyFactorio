@@ -562,7 +562,12 @@ local function on_entity_died(event)
 	
 	--Grant XP for hand placed land mines
 	if event.entity.last_user then
-		if event.entity.type == "land-mine" then		
+		if event.entity.type == "land-mine" then
+			if event.cause then
+				if event.cause.valid then
+					if event.cause.force.index == event.entity.force.index then return end
+				end
+			end
 			gain_xp(event.entity.last_user, 1)
 			return
 		end
@@ -667,9 +672,11 @@ local function on_entity_damaged(event)
 	
 	--Calculate modified damage.
 	local damage = event.original_damage_amount + event.original_damage_amount * get_melee_modifier(event.cause.player)
-	if event.entity.prototype.resistances.physical then
-		damage = damage - event.entity.prototype.resistances.physical.decrease
-		damage = damage - damage * event.entity.prototype.resistances.physical.percent 
+	if event.entity.prototype.resistances then
+		if event.entity.prototype.resistances.physical then
+			damage = damage - event.entity.prototype.resistances.physical.decrease
+			damage = damage - damage * event.entity.prototype.resistances.physical.percent 
+		end
 	end
 	damage = math.round(damage, 3)
 	if damage < 1 then damage = 1 end
