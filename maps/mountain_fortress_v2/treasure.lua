@@ -95,7 +95,7 @@ function treasure_chest(surface, position)
 		{{name = "assembling-machine-3", count = math_random(2,4)}, weight = 3, evo_min = 0.5, evo_max = 1},
 		{{name = "accumulator", count = math_random(4,8)}, weight = 3, evo_min = 0.4, evo_max = 1},
 		{{name = "offshore-pump", count = math_random(1,3)}, weight = 2, evo_min = 0.0, evo_max = 0.2},
-		{{name = "beacon", count = 1}, weight = 3, evo_min = 0.7, evo_max = 1},
+		{{name = "beacon", count = 1}, weight = 2, evo_min = 0.7, evo_max = 1},
 		{{name = "boiler", count = math_random(3,6)}, weight = 3, evo_min = 0.0, evo_max = 0.3},
 		{{name = "steam-engine", count = math_random(2,4)}, weight = 3, evo_min = 0.0, evo_max = 0.5},
 		{{name = "steam-turbine", count = math_random(1,2)}, weight = 2, evo_min = 0.6, evo_max = 1},

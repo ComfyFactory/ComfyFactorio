@@ -28,7 +28,6 @@ require "modules.floaty_chat"
 --require "on_tick_schedule"
 
 ---- enable modules here ----
---require "tools.cheat_mode"
 --require "modules.the_floor_is_lava"
 --require "modules.biters_landfill_on_death"
 --require "modules.autodecon_when_depleted"

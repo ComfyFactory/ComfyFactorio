@@ -400,6 +400,12 @@ local function spawn_unit_group()
 	return true
 end
 
+local function log_threat()
+	global.wave_defense.threat_log_index = global.wave_defense.threat_log_index + 1
+	global.wave_defense.threat_log[global.wave_defense.threat_log_index] = global.wave_defense.threat
+	if global.wave_defense.threat_log_index > 900 then global.wave_defense.threat_log[global.wave_defense.threat_log_index - 901] = nil end	
+end
+
 local tick_tasks = {
 	[30] = set_main_target,
 	[60] = set_enemy_evolution,
@@ -414,16 +420,17 @@ local tick_tasks = {
 
 local function on_tick()
 	if global.wave_defense.game_lost then return end
-	
-	for _, player in pairs(game.connected_players) do update_gui(player) end
-	
+			
 	if game.tick > global.wave_defense.next_wave then	set_next_wave() end
 
 	local t = game.tick % 300
 	local t2 = game.tick % 18000
-
+	
 	if tick_tasks[t] then tick_tasks[t]() end
 	if tick_tasks[t2] then tick_tasks[t2]() end
+	
+	if game.tick % 60 == 0 then log_threat() end
+	for _, player in pairs(game.connected_players) do update_gui(player) end
 end
 
 function reset_wave_defense()
@@ -448,6 +455,8 @@ function reset_wave_defense()
 		spawn_position = {x = 0, y = 64},
 		surface_index = 1,
 		threat = 0,
+		threat_log = {},
+		threat_log_index = 0,
 		threat_gain_multiplier = 2,
 		unit_group_command_delay = 3600 * 15,
 		unit_group_command_step_length = 64,

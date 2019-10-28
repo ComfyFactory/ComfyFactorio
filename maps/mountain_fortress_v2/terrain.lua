@@ -68,10 +68,10 @@ local function process_level_5_position(p, seed, tiles, entities, markets, treas
 	local small_caves = get_noise("small_caves", p, seed)
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 	
-	if small_caves > -0.10 and small_caves < 0.10 then
+	if small_caves > -0.14 and small_caves < 0.14 then
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if math_random(1,768) == 1 then treasure[#treasure + 1] = p end
-		if math_random(1,2) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+		if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 		return
 	end
 	
