@@ -554,9 +554,18 @@ local get_cause_player = {
 }
 
 local function on_entity_died(event)
-	if not event.cause then return end
-	if not event.cause.valid then return end
 	if not event.entity.valid then return end
+	
+	--Grant XP for hand placed land mines
+	if event.entity.last_user then
+		if event.entity.type == "land-mine" then		
+			gain_xp(event.entity.last_user, 1)
+			return
+		end
+	end
+	
+	if not event.cause then return end
+	if not event.cause.valid then return end	
 	if event.cause.force.index == event.entity.force.index then return end
 	if not get_cause_player[event.cause.type] then return end
 		
@@ -564,6 +573,7 @@ local function on_entity_died(event)
 	if not players then return end
 	if not players[1] then return end
 	
+	--Grant modified XP for health boosted units
 	if global.biter_health_boost then
 		if event.entity.type == "unit" then
 			for _, player in pairs(players) do
@@ -577,6 +587,7 @@ local function on_entity_died(event)
 		end
 	end
 	
+	--Grant normal XP
 	for _, player in pairs(players) do
 		if xp_yield[event.entity.name] then
 			gain_xp(player, xp_yield[event.entity.name])
