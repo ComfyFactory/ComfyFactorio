@@ -1,4 +1,5 @@
 local Server = require 'utils.server'
+local Modifers = require 'player_modifiers'
 
 local Public = {}
 
@@ -33,7 +34,7 @@ local function equip_players(player_starting_items)
 		for item, amount in pairs(player_starting_items) do
 			player.insert({name = item, count = amount})
 		end
-		update_player_modifiers(player)
+		Modifers.update_player_modifiers(player)
 	end
 end
 
