@@ -556,9 +556,14 @@ local get_cause_player = {
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	
-	--Grant XP for hand placed land mines
+	--Grant XP for detonated land mines
 	if event.entity.last_user then
-		if event.entity.type == "land-mine" then		
+		if event.entity.type == "land-mine" then			
+			if event.cause then
+				if event.cause.valid then
+					if event.cause.force.index == event.entity.force.index then return end
+				end
+			end
 			gain_xp(event.entity.last_user, 1)
 			return
 		end
