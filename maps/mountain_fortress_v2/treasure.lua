@@ -66,6 +66,11 @@ function treasure_chest(surface, position)
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, evo_min = 0.3, evo_max = 0.5},
 		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, evo_min = 0.3, evo_max = 0.7},
 		--{{name = "computer", count = 1}, weight = 2, evo_min = 0, evo_max = 1},
+		
+		{{name = "effectivity-module", count = math_random(1,4)}, weight = 2, evo_min = 0.1, evo_max = 1},
+		{{name = "productivity-module", count = math_random(1,4)}, weight = 2, evo_min = 0.1, evo_max = 1},
+		{{name = "speed-module", count = math_random(1,4)}, weight = 2, evo_min = 0.1, evo_max = 1},
+		
 		{{name = "steel-plate", count = math_random(25,75)}, weight = 2, evo_min = 0.1, evo_max = 0.3},
 		{{name = "nuclear-fuel", count = 1}, weight = 2, evo_min = 0.7, evo_max = 1},
 				

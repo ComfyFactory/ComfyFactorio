@@ -41,13 +41,14 @@ end
 
 local function process_level_6_position(p, seed, tiles, entities, markets, treasure)
 	local large_caves = get_noise("large_caves", p, seed)
-	if large_caves > -0.03 and large_caves < 0.03 then
+	local cave_rivers = get_noise("cave_rivers", p, seed)
+	
+	if large_caves > -0.03 and large_caves < 0.03 and cave_rivers < 0.25 then
 		tiles[#tiles + 1] = {name = "water-green", position = p}
 		if math_random(1,128) == 1 then entities[#entities + 1] = {name="fish", position=p} end
 		return
 	end
-
-	local cave_rivers = get_noise("cave_rivers", p, seed)
+	
 	if cave_rivers > -0.05 and cave_rivers < 0.05 then		
 		if math_random(1,48) == 1 then entities[#entities + 1] = {name = "tree-0" .. math_random(1, 9), position=p} end
 		if math_random(1,768) == 1 then
