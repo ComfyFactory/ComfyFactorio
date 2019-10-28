@@ -1,4 +1,6 @@
-function locomotive_spawn(surface, position)
+local Public = {}
+
+function Public.locomotive_spawn(surface, position)
 	for y = -6, 6, 2 do
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
 	end
@@ -77,6 +79,7 @@ local function set_player_spawn_and_refill_fish()
 end
 
 local function tick()
+	local Reset = require "maps.mountain_fortress_v2.main".reset_map
 	if game.tick % 30 == 0 then	
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()
@@ -84,7 +87,7 @@ local function tick()
 		if global.game_reset_tick then
 			if global.game_reset_tick < game.tick then
 				global.game_reset_tick = nil
-				reset_map()
+				Reset()
 			end
 			return
 		end
@@ -98,3 +101,5 @@ end
 
 local event = require 'utils.event'
 event.on_nth_tick(5, tick)
+
+return Public

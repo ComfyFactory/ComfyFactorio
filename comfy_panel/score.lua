@@ -1,6 +1,8 @@
 --scoreboard by mewmew
 
 local event = require 'utils.event'
+local Tabs = require 'comfy_panel.main'
+
 local sorting_symbol = {ascending = "▲", descending = "▼"}
 local building_and_mining_blacklist = {
 	["tile-ghost"] = true,
@@ -74,7 +76,7 @@ local function add_global_stats(frame, player)
 	l.style.font_color = { r=0.8, g=0.8, b=0.8}
 end
 
-local function show_score(player, frame)
+local show_score = (function (player, frame)
 	frame.clear()
 
 	-- Global stats : rockets, biters kills
@@ -162,10 +164,11 @@ local function show_score(player, frame)
 		end -- foreach column
 	end -- foreach entry
 end -- show_score
+)
 
 local function refresh_score_full()
 	for _, player in pairs(game.connected_players) do
-		local frame = comfy_panel_get_active_frame(player)
+		local frame = Tabs.comfy_panel_get_active_frame(player)
 		if frame then
 			if frame.name == "Scoreboard" then
 				show_score(player, frame)
@@ -184,7 +187,7 @@ local function init_player_table(player)
 			deaths = 0,
 			killscore = 0,
 			mined_entities = 0,
-		}		
+		}
 	end
 end
 
@@ -206,7 +209,7 @@ local function on_gui_click(event)
 	if not event.element.valid then return end
 
 	local player = game.players[event.element.player_index]
-	local frame = comfy_panel_get_active_frame(player)
+	local frame = Tabs.comfy_panel_get_active_frame(player)
 	if not frame then return end
 	if frame.name ~= "Scoreboard" then return end
 	

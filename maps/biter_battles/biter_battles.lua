@@ -1,5 +1,6 @@
 -- Biter Battles -- mewmew made this --
 
+local Server = require 'utils.server'
 require "on_tick_schedule"
 require "modules.splice_double"
 require "modules.explosive_biters"
@@ -150,7 +151,7 @@ local function show_mvps(player)
 			insert(result, 'MVP Deaths: \\n')
 			insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
 			local message = table.concat(result)
-			server_commands.to_discord_embed(message)
+			Server.to_discord_embed(message)
 			global.results_sent_north = true
 		end
 	end
@@ -195,7 +196,7 @@ local function show_mvps(player)
 			insert(result, 'MVP Deaths: \\n')
 			insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
 			local message = table.concat(result)
-			server_commands.to_discord_embed(message)
+			Server.to_discord_embed(message)
 			global.results_sent_south = true
 		end
 	end
@@ -1193,8 +1194,8 @@ local function on_tick(event)
 				global.game_restart_timer_completed = true
 				game.print("Map is restarting!", { r=0.22, g=0.88, b=0.22})
 				local message = 'Map is restarting! '
-				server_commands.to_discord_bold(table.concat{'*** ', message, ' ***'})
-				server_commands.start_scenario('Biter_Battles')
+				Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+				Server.start_scenario('Biter_Battles')
 			end
 		end
 	end

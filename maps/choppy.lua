@@ -4,28 +4,7 @@ require "on_tick_schedule"
 require "modules.dynamic_landfill"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
-require "modules.map_info"
-map_info = {}
-map_info.main_caption = "Choppy"
-map_info.sub_caption =  ""
-map_info.text = [[
-	You are a lumberjack with a passion to chop.	
-	
-	Different kinds of trees, yield different kinds of ore and wood. 	
-	Yes, they seem to draw minerals out of the ground and manifesting it as "fruit".
-	Their yield increases with distance. Mining Productivity Research will increase chopping speed and backpack size.
-	
-	Beware, sometimes there are some bugs hiding underneath the trees.
-	Even dangerous traps have been encountered before.
-	
-	Also, these mysterious ore trees don't burn very well, so do not worry if some of them catch on fire.
-	
-	Choppy Choppy Wood
-]]
-
-map_info.main_caption_color = {r = 0, g = 120, b = 0}
-map_info.sub_caption_color = {r = 255, g = 0, b = 255}
-
+local Map = require "modules.map_info"
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
 local tick_tack_trap = require "functions.tick_tack_trap"
@@ -351,7 +330,31 @@ local function on_entity_died(event)
 		end
 	end		
 end
-	
+
+local on_init = function()
+	local T = Map.Pop_info()
+	T.main_caption = "Choppy"
+	T.sub_caption =  ""
+	T.text = [[
+		You are a lumberjack with a passion to chop.	
+		
+		Different kinds of trees, yield different kinds of ore and wood. 	
+		Yes, they seem to draw minerals out of the ground and manifesting it as "fruit".
+		Their yield increases with distance. Mining Productivity Research will increase chopping speed and backpack size.
+		
+		Beware, sometimes there are some bugs hiding underneath the trees.
+		Even dangerous traps have been encountered before.
+		
+		Also, these mysterious ore trees don't burn very well, so do not worry if some of them catch on fire.
+		
+		Choppy Choppy Wood
+	]]
+
+	T.main_caption_color = {r = 0, g = 120, b = 0}
+	T.sub_caption_color = {r = 255, g = 0, b = 255}
+end
+
+event.on_init(on_init)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

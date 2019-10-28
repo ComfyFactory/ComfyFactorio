@@ -1,3 +1,5 @@
+local WD = require "modules.wave_defense.table"
+
 local function create_gui(player)
 	local frame = player.gui.top.add({ type = "frame", name = "wave_defense"})
 	frame.style.maximal_height = 38
@@ -34,28 +36,30 @@ end
 
 --display threat gain/loss per minute during last 15 minutes
 local function get_threat_gain()
-	local past_index = global.wave_defense.threat_log_index - 900
+	local wave_defense_table = WD.get_table()
+	local past_index = wave_defense_table.threat_log_index - 900
 	if past_index < 1 then past_index = 1 end
-	local gain = math.floor((global.wave_defense.threat_log[global.wave_defense.threat_log_index] - global.wave_defense.threat_log[past_index]) / 15)
+	local gain = math.floor((wave_defense_table.threat_log[wave_defense_table.threat_log_index] - wave_defense_table.threat_log[past_index]) / 15)
 	return gain
 end
 
 local function update_gui(player)
+	local wave_defense_table = WD.get_table()
 	if not player.gui.top.wave_defense then create_gui(player) end
-	player.gui.top.wave_defense.label.caption = "Wave: " .. global.wave_defense.wave_number
-	if global.wave_defense.wave_number == 0 then player.gui.top.wave_defense.label.caption = "First wave in " .. math.floor((global.wave_defense.next_wave - game.tick) / 60) + 1 end
-	local interval = global.wave_defense.next_wave - global.wave_defense.last_wave
-	player.gui.top.wave_defense.progressbar.value = 1 - (global.wave_defense.next_wave - game.tick) / interval
+	player.gui.top.wave_defense.label.caption = "Wave: " .. wave_defense_table.wave_number
+	if wave_defense_table.wave_number == 0 then player.gui.top.wave_defense.label.caption = "First wave in " .. math.floor((wave_defense_table.next_wave - game.tick) / 60) + 1 end
+	local interval = wave_defense_table.next_wave - wave_defense_table.last_wave
+	player.gui.top.wave_defense.progressbar.value = 1 - (wave_defense_table.next_wave - game.tick) / interval
 	
-	player.gui.top.wave_defense.threat.caption = "Threat: " .. math.floor(global.wave_defense.threat)
+	player.gui.top.wave_defense.threat.caption = "Threat: " .. math.floor(wave_defense_table.threat)
 	
-	if global.wave_defense.wave_number == 0 then
+	if wave_defense_table.wave_number == 0 then
 		player.gui.top.wave_defense.threat_gains.caption = ""
 		return 
 	end
 	
 	local gain = get_threat_gain()
-	local d = global.wave_defense.wave_number / 75
+	local d = wave_defense_table.wave_number / 75
 	
 	if gain >= 0 then
 		player.gui.top.wave_defense.threat_gains.caption = " (+" .. gain .. ")"

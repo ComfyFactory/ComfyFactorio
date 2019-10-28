@@ -1,4 +1,5 @@
 local event = require 'utils.event'
+local Server = require 'utils.server'
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
@@ -516,7 +517,7 @@ end
 local function on_init(surface)
 	local surface = game.surfaces["biter_battles"]
 	if bb_config.on_init_pregen then
-		server_commands.to_discord_embed("Generating chunks...")
+		Server.to_discord_embed("Generating chunks...")
 		print("Generating chunks...")
 		surface.request_to_generate_chunks({x = 0, y = -512}, 16)
 		surface.request_to_generate_chunks({x = 1024, y = -512}, 16)

@@ -12,6 +12,8 @@ VITALITY > character_health_bonus
 ]]
 
 local math_random = math.random
+local Tabs = require "comfy_panel.main"
+local P = require "player_modifiers"
 local visuals_delay = 1800
 local level_up_floating_text_color = {0, 205, 0}
 local xp_floating_text_color = {157, 157, 157}
@@ -20,6 +22,8 @@ for a = 1, 9999, 1 do
 	experience_levels[#experience_levels + 1] = experience_levels[#experience_levels] + a * 8
 end
 local gain_info_tooltip = "XP gain from mining, building, moving, crafting, repairing and combat."
+
+local Public = {}
 
 local classes = {
 	["engineer"] = "ENGINEER",
@@ -91,7 +95,7 @@ local function update_player_stats(player)
 	
 	global.player_modifiers[player.index].character_health_bonus["rpg"] = math.round((global.rpg[player.index].vitality - 10) * 6, 3)
 
-	update_player_modifiers(player)
+	P.update_player_modifiers(player)
 end
 
 local function get_class(player)
@@ -168,7 +172,7 @@ local function draw_gui(player, forced)
 		if global.rpg[player.index].gui_refresh_delay > game.tick then return end
 	end
 	
-	comfy_panel_clear_left_gui(player)
+	Tabs.comfy_panel_clear_left_gui(player)
 	
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
 	if not player.character then return end
@@ -425,7 +429,7 @@ local function gain_xp(player, amount)
 	global.rpg[player.index].last_floaty_text = game.tick + visuals_delay
 end
 
-function rpg_reset_player(player)
+function Public.rpg_reset_player(player)
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
 	if not player.character then
 		player.set_controller({type=defines.controllers.god})
@@ -442,12 +446,12 @@ function rpg_reset_player(player)
 	update_player_stats(player)
 end
 
-function rpg_reset_all_players()
+function Public.rpg_reset_all_players()
 	for _, p in pairs(game.players) do
 		global.rpg[p.index] = nil
 	end
 	for _, p in pairs(game.connected_players) do
-		rpg_reset_player(p)
+		Public.rpg_reset_player(p)
 	end
 end
 
@@ -556,14 +560,9 @@ local get_cause_player = {
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	
-	--Grant XP for detonated land mines
+	--Grant XP for hand placed land mines
 	if event.entity.last_user then
-		if event.entity.type == "land-mine" then			
-			if event.cause then
-				if event.cause.valid then
-					if event.cause.force.index == event.entity.force.index then return end
-				end
-			end
+		if event.entity.type == "land-mine" then		
 			gain_xp(event.entity.last_user, 1)
 			return
 		end
@@ -776,14 +775,14 @@ end
 
 local function on_player_respawned(event)
 	local player = game.players[event.player_index]
-	if not global.rpg[player.index] then rpg_reset_player(player) return end
+	if not global.rpg[player.index] then Public.rpg_reset_player(player) return end
 	update_player_stats(player)
 	draw_level_text(player)
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if not global.rpg[player.index] then rpg_reset_player(player) end	
+	if not global.rpg[player.index] then Public.rpg_reset_player(player) end	
 	for _, p in pairs(game.connected_players) do
 		draw_level_text(p)
 	end
@@ -815,3 +814,5 @@ event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
 event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
+
+return Public

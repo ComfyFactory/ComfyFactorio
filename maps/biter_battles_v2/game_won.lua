@@ -1,4 +1,5 @@
-local event = require 'utils.event' 
+local event = require 'utils.event'
+local Server = require 'utils.server'
 
 local gui_values = {
 		["north"] = {c1 = "Team North", color1 = {r = 0.55, g = 0.55, b = 0.99}},
@@ -235,7 +236,7 @@ local function show_mvps(player)
 			table.insert(result, 'MVP Deaths: \\n')
 			table.insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
 			local message = table.concat(result)
-			server_commands.to_discord_embed(message)
+			Server.to_discord_embed(message)
 			global.results_sent_north = true
 		end
 	end
@@ -280,7 +281,7 @@ local function show_mvps(player)
 			table.insert(result, 'MVP Deaths: \\n')
 			table.insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )		
 			local message = table.concat(result)
-			server_commands.to_discord_embed(message)
+			Server.to_discord_embed(message)
 			global.results_sent_south = true
 		end
 	end
@@ -298,8 +299,8 @@ local function server_restart()
 	if global.server_restart_timer == 0 then
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
-		server_commands.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		server_commands.start_scenario('Biter_Battles')
+		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+		Server.start_scenario('Biter_Battles')
 		global.server_restart_timer = nil
 		return
 	end
@@ -346,8 +347,8 @@ local function on_entity_died(event)
 		local c = gui_values[global.bb_game_won_by_team].c1
 		if global.tm_custom_name[global.bb_game_won_by_team] then c = global.tm_custom_name[global.bb_game_won_by_team] end
 		
-		server_commands.to_discord_embed(c .. " has won!")
-		server_commands.to_discord_embed(global.victory_time)
+		Server.to_discord_embed(c .. " has won!")
+		Server.to_discord_embed(global.victory_time)
 		
 		fireworks(event.entity.surface)
 		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)			

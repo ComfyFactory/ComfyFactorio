@@ -7,8 +7,8 @@ require "modules.dynamic_player_spawn"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.biter_pets"
 require "modules.biter_evasion_hp_increaser"
-require "modules.wave_defense.main"
 
+local WD = require "modules.wave_defense.main"
 local event = require 'utils.event'
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -144,6 +144,7 @@ local function on_chunk_generated(event)
 end
 
 local function init_surface()
+	local wave_defense_table = WD.get_table()
 	if game.surfaces["blue_beach"] then return game.surfaces["blue_beach"] end
 
 	local map_gen_settings = {}
@@ -181,18 +182,19 @@ local function init_surface()
 	
 	global.average_worm_amount_per_chunk = 4
 	
-	global.wave_defense.surface_index = surface.index
+	wave_defense_table.surface_index = surface.index
 	
 	return surface
 end
 
 local function on_player_joined_game(event)	
+	local wave_defense_table = WD.get_table()
 	local surface = init_surface()	
 	local player = game.players[event.player_index]
 	
 	--20 Players for maximum difficulty
-	global.wave_defense.wave_interval = 3600 - #game.connected_players * 180
-	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end
+	wave_defense_table.wave_interval = 3600 - #game.connected_players * 180
+	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
 	
 	if player.online_time == 0 then
 		local spawn = game.forces["player"].get_spawn_position(game.surfaces["blue_beach"])

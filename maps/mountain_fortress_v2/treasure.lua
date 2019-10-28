@@ -1,6 +1,8 @@
 local math_random = math.random
 
-function treasure_chest(surface, position)
+local Public = {}
+
+function Public.treasure_chest(surface, position)
 	
 	local chest_raffle = {}
 	local chest_loot = {			
@@ -171,3 +173,5 @@ function treasure_chest(surface, position)
 		i.insert(loot)
 	end
 end
+
+return Public.treasure_chest
