@@ -1,6 +1,9 @@
 local math_random = math.random
 
-function secret_shop(pos, surface)
+local Public = {}
+
+
+function Public.secret_shop(pos, surface)
 	if surface.count_entities_filtered{area={{pos.x - 128, pos.y - 128}, {pos.x + 128, pos.y + 128}}, name="market", limit=1} > 0 then return end
 	local secret_market_items = {
 	{price = {{"coin", math_random(8,16)}}, offer = {type = 'give-item', item = 'grenade'}},
@@ -49,3 +52,5 @@ function secret_shop(pos, surface)
 		market.add_market_item(secret_market_items[i])
 	end
 end
+
+return Public.secret_shop

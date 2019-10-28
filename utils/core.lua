@@ -1,6 +1,7 @@
 -- Dependencies
 local Game = require 'utils.game'
 local Color = require 'utils.color_presets'
+local Server = require 'utils.server'
 
 -- localized functions
 local random = math.random
@@ -59,7 +60,7 @@ function Module.print_admins(msg, source)
             chat_color = source.chat_color
         end
     else
-        source_name = 'server_commands'
+        source_name = 'Server'
         chat_color = Color.yellow
     end
     local formatted_msg = {'utils_core.print_admins',prefix, source_name, msg}
@@ -76,7 +77,7 @@ function Module.get_actor()
     if game.player then
         return game.player.name
     end
-    return '<server_commands>'
+    return '<server>'
 end
 
 function Module.cast_bool(var)
@@ -205,7 +206,7 @@ function Module.action_warning(warning_prefix, msg)
     game.print(prefix .. msg, Color.yellow)
     msg = format('%s %s', warning_prefix, msg)
     log(msg)
-    server_commands_commands.to_discord_bold(msg)
+    Server.to_discord_bold(msg)
 end
 
 --- Takes msg and prints it to all players except provided player. Also prints to the log and discord
@@ -216,7 +217,7 @@ function Module.silent_action_warning(warning_prefix, msg, player)
     Module.print_except(prefix .. msg, player, Color.yellow)
     msg = format('%s %s', warning_prefix, msg)
     log(msg)
-    server_commands.to_discord_bold(msg)
+    Server.to_discord_bold(msg)
 end
 
 -- add utility functions that exist in base factorio/util

@@ -1,3 +1,7 @@
+local Server = require 'utils.server'
+
+local Public = {}
+
 local function reset_forces(new_surface, old_surface)
 	for _, f in pairs(game.forces) do
 		local spawn = {x = game.forces.player.get_spawn_position(old_surface).x, y = game.forces.player.get_spawn_position(old_surface).y}
@@ -33,7 +37,7 @@ local function equip_players(player_starting_items)
 	end
 end
 
-function soft_reset_map(old_surface, map_gen_settings, player_starting_items)
+function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
 	if not global.soft_reset_counter then global.soft_reset_counter = 0 end
 	if not global.original_surface_name then global.original_surface_name = old_surface.name end
 	global.soft_reset_counter = global.soft_reset_counter + 1
@@ -53,7 +57,9 @@ function soft_reset_map(old_surface, map_gen_settings, player_starting_items)
 		message = table.concat({">> The world has been reshaped, welcome to ", global.original_surface_name, " number ", tostring(global.soft_reset_counter), "!"})
 	end
 	game.print(message, {r=0.98, g=0.66, b=0.22})
-	server_commands.to_discord_embed(message)
+	Server.to_discord_embed(message)
 	
 	return new_surface
 end
+
+return Public

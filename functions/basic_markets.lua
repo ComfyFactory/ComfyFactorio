@@ -1,3 +1,5 @@
+local Public = {}
+
 local market = {}
 
 market.weapons = {
@@ -212,7 +214,7 @@ local function get_random_market_item_list(rarity)
 	return false
 end
 
-function mountain_market(surface, position, rarity)
+function Public.mountain_market(surface, position, rarity)
 	local types = get_types()
 	table.shuffle_table(types)
 	local items = get_market_item_list({types[1], types[2], types[3]}, rarity)
@@ -237,7 +239,7 @@ function mountain_market(surface, position, rarity)
 	return market
 end
 
-function super_market(surface, position, rarity)
+function Public.super_market(surface, position, rarity)
 	local items = get_market_item_list(get_types(), rarity)
 	if not items then return end
 	if #items > 0 then table.shuffle_table(items) end
@@ -262,3 +264,5 @@ function super_market(surface, position, rarity)
 	
 	return market
 end
+
+return Public

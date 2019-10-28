@@ -1,6 +1,7 @@
 --antigrief things made by mewmew
 
 local event = require 'utils.event'
+local Tabs = require 'comfy_panel.main'
 
 local function admin_only_message(str)
 	for _, player in pairs(game.connected_players) do
@@ -169,7 +170,7 @@ local function create_mini_camera_gui(player, caption, position)
 	camera.style.minimal_height = 480
 end
 
-local function create_admin_panel(player, frame)
+local create_admin_panel = (function (player, frame)
 	frame.clear()
 	
 	local player_names = {}	
@@ -272,7 +273,7 @@ local function create_admin_panel(player, frame)
 		scroll_pane.add({type = "label", caption = history_index[history][i], tooltip = "Click to open mini camera."})
 	end
 
-end
+end)
 
 local admin_functions = {
 		["jail"] = jail,
@@ -328,7 +329,7 @@ end
 	
 local function on_gui_click(event)
 	local player = game.players[event.player_index]
-	local frame = comfy_panel_get_active_frame(player)
+	local frame = Tabs.comfy_panel_get_active_frame(player)
 	if not frame then return end
 	if frame.name ~= "Admin" then return end
 	
@@ -381,7 +382,7 @@ local function on_gui_selection_state_changed(event)
 		if not global.admin_panel_selected_history_index then global.admin_panel_selected_history_index = {} end
 		global.admin_panel_selected_history_index[player.name] = event.element.selected_index
 		
-		local frame = comfy_panel_get_active_frame(player)
+		local frame = Tabs.comfy_panel_get_active_frame(player)
 		if not frame then return end
 		if frame.name ~= "Admin" then return end
 
@@ -390,6 +391,8 @@ local function on_gui_selection_state_changed(event)
 end
 
 comfy_panel_tabs["Admin"] = create_admin_panel
+
+
 
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)

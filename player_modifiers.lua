@@ -1,5 +1,7 @@
 --Central to add all player modifiers together.
 
+local Public = {}
+
 local modifiers = {
 	"character_build_distance_bonus",
 	"character_crafting_speed_modifier",
@@ -14,7 +16,7 @@ local modifiers = {
 	"character_running_speed_modifier",
 }
 
-function update_player_modifiers(player)
+function Public.update_player_modifiers(player)
 	for _, modifier in pairs(modifiers) do
 		local sum_value = 0
 		for _, value in pairs(global.player_modifiers[player.index][modifier]) do
@@ -41,3 +43,5 @@ end
 local event = require 'utils.event'
 event.on_init(on_init)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+return Public

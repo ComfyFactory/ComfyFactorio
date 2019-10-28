@@ -6,7 +6,6 @@ require "functions.basic_markets"
 require "modules.wave_defense.main"
 require "modules.rpg"
 require "modules.biters_yield_coins"
-require "modules.biter_pets"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.shotgun_buff"
 require "modules.explosives"
@@ -14,32 +13,21 @@ require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.spawners_contain_biters"
-require "modules.map_info"
-map_info = {}
-map_info.main_caption = "M O U N T A I N    F O R T R E S S"
-map_info.sub_caption =  "    ..diggy diggy choo choo.."
-map_info.text = table.concat({
-	"The biters have catched the scent of fish in the cargo wagon.\n",
-	"Guide the choo into the mountain and protect it as long as possible!\n",
-	"This however will not be an easy task,\n",
-	"since their strength and resistance increases constantly over time.\n",
-	"\n",
-	"Delve deep for greater treasures, but also face increased dangers.\n",
-	"Mining productivity research, will overhaul your mining equipment,\n",
-	"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
-	"\n",
-	"As you dig, you will encounter impassable dark chasms or rivers.\n",
-	"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
-	"All they need is a container and a well aimed shot.\n",
-})
-map_info.main_caption_color = {r = 150, g = 150, b = 0}
-map_info.sub_caption_color = {r = 0, g = 150, b = 0}
-
 require "maps.mountain_fortress_v2.market"
-require "maps.mountain_fortress_v2.treasure"
+require "modules.rpg"
+require "modules.wave_defense.main"
 require "maps.mountain_fortress_v2.terrain"
-require "maps.mountain_fortress_v2.locomotive"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
+local BiterRolls = require "modules.wave_defense.biter_rolls"
+local Reset = require "functions.soft_reset"
+local Pets = require "modules.biter_pets"
+local Map = require "modules.map_info"
+local WD = require "modules.wave_defense.table"
+local Treasure = require "maps.mountain_fortress_v2.treasure"
+local Locomotive = require "maps.mountain_fortress_v2.locomotive".locomotive_spawn
+local Modifier = require "player_modifiers"
+
+local Public = {}
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
 local treasure_chest_messages = {
@@ -48,7 +36,8 @@ local treasure_chest_messages = {
 	"We has found the precious!",
 }
 
-function reset_map()
+function Public.reset_map()
+	local wave_defense_table = WD.get_table()
 	global.chunk_queue = {}
 	
 	local map_gen_settings = {
@@ -70,7 +59,7 @@ function reset_map()
 		global.active_surface_index = game.create_surface("mountain_fortress", map_gen_settings).index
 	else
 		game.forces.player.set_spawn_position({-2, 16}, game.surfaces[global.active_surface_index])	
-		global.active_surface_index = soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
+		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
 	end
 	
 	local surface = game.surfaces[global.active_surface_index]
@@ -99,16 +88,16 @@ function reset_map()
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({-2, 16}, surface)
 	
-	locomotive_spawn(surface, {x = 0, y = 16})
+	Locomotive(surface, {x = 0, y = 16})
 	
-	reset_wave_defense()
-	global.wave_defense.surface_index = global.active_surface_index
-	global.wave_defense.target = global.locomotive_cargo
-	global.wave_defense.side_target_search_radius = 512
-	global.wave_defense.unit_group_command_step_length = 64
-	global.wave_defense.nest_building_density = 48
-	global.wave_defense.threat_gain_multiplier = 3
-	global.wave_defense.game_lost = false
+	WD.reset_wave_defense()
+	wave_defense_table.surface_index = global.active_surface_index
+	wave_defense_table.target = global.locomotive_cargo
+	wave_defense_table.side_target_search_radius = 768
+	wave_defense_table.unit_group_command_step_length = 32
+	wave_defense_table.nest_building_density = 32
+	wave_defense_table.threat_gain_multiplier = 3
+	wave_defense_table.game_lost = false
 	
 	--for _, p in pairs(game.connected_players) do
 	--	if p.character then p.character.disable_flashlight() end
@@ -148,35 +137,35 @@ local function biters_chew_rocks_faster(event)
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if event.cause.force.index ~= 2 then return end --Enemy Force
-	--local bonus_damage = event.final_damage_amount * math.abs(global.wave_defense.threat) * 0.0002
+	--local bonus_damage = event.final_damage_amount * math.abs(wave_defense_table.threat) * 0.0002
 	event.entity.health = event.entity.health - event.final_damage_amount * 2.5
 end
 
 local function hidden_biter(entity)
-	wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.33)
+	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.33)
 	if math.random(1,3) == 1 then
-		entity.surface.create_entity({name = wave_defense_roll_spitter_name(), position = entity.position})
+		entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = entity.position})
 	else
-		entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = entity.position})
+		entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = entity.position})
 	end
 end
 
 local function hidden_biter_pet(event)
 	if math.random(1, 2048) ~= 1 then return end
-	wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.33)
+	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.33)
 	local unit
 	if math.random(1,3) == 1 then
-		unit = event.entity.surface.create_entity({name = wave_defense_roll_spitter_name(), position = event.entity.position})
+		unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position})
 	else
-		unit = event.entity.surface.create_entity({name = wave_defense_roll_biter_name(), position = event.entity.position})
-	end		
-	biter_pets_tame_unit(game.players[event.player_index], unit, true)
+		unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = event.entity.position})
+	end
+	Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
 end
 
 local function hidden_treasure(event)
 	if math.random(1, 320) ~= 1 then return end
 	game.players[event.player_index].print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r=0.98, g=0.66, b=0.22})
-	treasure_chest(event.entity.surface, event.entity.position)
+	Treasure(event.entity.surface, event.entity.position)
 end
 
 local function on_player_mined_entity(event)
@@ -186,17 +175,19 @@ local function on_player_mined_entity(event)
 		if math.random(1,32) == 1 then
 			hidden_biter(event.entity)
 			return
-		end		
+		end
 		hidden_biter_pet(event)
 		hidden_treasure(event)
 	end
 end
 
 local function on_entity_died(event)
+	local wave_defense_table = WD.get_table()
 	if not event.entity.valid then	return end
 	if event.entity == global.locomotive_cargo then	
 		game.print("The cargo was destroyed!")	
-		global.wave_defense.game_lost = true 
+		wave_defense_table.game_lost = true
+		wave_defense_table.target = nil
 		global.game_reset_tick = game.tick + 1800
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
@@ -205,7 +196,7 @@ local function on_entity_died(event)
 		--rpg_reset_all_players()
 		return
 	end
-	
+
 	if event.cause then
 		if event.cause.valid then
 			if event.cause.force.index == 2 or event.cause.force.index == 3 then return end 
@@ -235,9 +226,10 @@ local function on_research_finished(event)
 end
 
 local function set_difficulty()
+	local wave_defense_table = WD.get_table()
 	--20 Players for maximum difficulty
-	global.wave_defense.wave_interval = 3600 - #game.connected_players * 90
-	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end	
+	wave_defense_table.wave_interval = 3600 - #game.connected_players * 90
+	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end	
 end
 
 local function on_player_joined_game(event)
@@ -266,7 +258,7 @@ local function on_player_joined_game(event)
 	end
 
 	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
-	update_player_modifiers(player)
+	Modifier.update_player_modifiers(player)
 end
 --[[
 local function on_player_respawned(event)
@@ -275,7 +267,26 @@ local function on_player_respawned(event)
 end
 ]]
 
-local function on_init(surface)
+local function on_init()
+	local T = Map.Pop_info()
+	T.main_caption = "M O U N T A I N    F O R T R E S S"
+	T.sub_caption =  "    ..diggy diggy choo choo.."
+	T.text = table.concat({
+		"The biters have catched the scent of fish in the cargo wagon.\n",
+		"Guide the choo into the mountain and protect it as long as possible!\n",
+		"This however will not be an easy task,\n",
+		"since their strength and resistance increases constantly over time.\n",
+		"\n",
+		"Delve deep for greater treasures, but also face increased dangers.\n",
+		"Mining productivity research, will overhaul your mining equipment,\n",
+		"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
+		"\n",
+		"As you dig, you will encounter impassable dark chasms or rivers.\n",
+		"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
+		"All they need is a container and a well aimed shot.\n",
+	})
+	T.main_caption_color = {r = 150, g = 150, b = 0}
+	T.sub_caption_color = {r = 0, g = 150, b = 0}
 	global.rocks_yield_ore_maximum_amount = 999
 	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.025
@@ -289,7 +300,7 @@ local function on_init(surface)
 		["water-shallow"] = 1000,	
 	}
 	
-	reset_map()
+	Public.reset_map()
 end
 
 local event = require 'utils.event'
@@ -302,3 +313,5 @@ event.add(defines.events.on_player_joined_game, on_player_joined_game)
 --event.add(defines.events.on_player_respawned, on_player_respawned)
 
 require "modules.rocks_yield_ore"
+
+return Public

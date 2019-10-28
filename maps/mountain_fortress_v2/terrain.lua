@@ -1,3 +1,6 @@
+local Biters = require 'modules.wave_defense.biter_rolls'
+local Treasure = require 'maps.mountain_fortress_v2.treasure'
+local Market = require 'functions.basic_markets'
 local math_random = math.random
 local simplex_noise = require "utils.simplex_noise".d2
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
@@ -52,8 +55,8 @@ local function process_level_6_position(p, seed, tiles, entities, markets, treas
 	if cave_rivers > -0.05 and cave_rivers < 0.05 then		
 		if math_random(1,48) == 1 then entities[#entities + 1] = {name = "tree-0" .. math_random(1, 9), position=p} end
 		if math_random(1,768) == 1 then
-			wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
-			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+			Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+			entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 		end
 	else
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}	
@@ -79,8 +82,8 @@ local function process_level_5_position(p, seed, tiles, entities, markets, treas
 		tiles[#tiles + 1] = {name = "deepwater-green", position = p}
 		if math_random(1,128) == 1 then entities[#entities + 1] = {name="fish", position=p} end
 		if math_random(1,128) == 1 then
-			wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
-			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+			Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+			entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 		end
 		return
 	end	
@@ -121,8 +124,8 @@ local function process_level_4_position(p, seed, tiles, entities, markets, treas
 		tiles[#tiles + 1] = {name = "grass-2", position = p}
 		if math_random(1,620) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 		if math_random(1,384) == 1 then
-			wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
-			entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+			Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+			entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 		end
 		if math_random(1, 1024) == 1 then treasure[#treasure + 1] = p end
 		return
@@ -241,8 +244,8 @@ local function process_level_3_position(p, seed, tiles, entities, markets, treas
 				tiles[#tiles + 1] = {name = "dirt-" .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 				if math_random(1,320) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 				if math_random(1,50) == 1 then
-					wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
-					entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+					Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+					entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 				end
 				if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 				if math_random(1,64) == 1 then entities[#entities + 1] = {name = "dead-tree-desert", position=p} end
@@ -324,8 +327,8 @@ local function process_level_2_position(p, seed, tiles, entities, markets, treas
 				tiles[#tiles + 1] = {name = "dirt-" .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 				if math_random(1,450) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 				if math_random(1,64) == 1 then
-					wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
-					entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+					Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+					entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 				end
 				if math_random(1,1024) == 1 then treasure[#treasure + 1] = p end
 				if math_random(1,64) == 1 then entities[#entities + 1] = {name = "dead-tree-desert", position=p} end
@@ -407,8 +410,8 @@ local function process_level_1_position(p, seed, tiles, entities, markets, treas
 				tiles[#tiles + 1] = {name = "dirt-" .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 				if math_random(1,450) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = math.abs(p.y) * 500} end
 				if math_random(1,96) == 1 then
-					wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
-					entities[#entities + 1] = {name = wave_defense_roll_worm_name(), position = p, force = "enemy"} 
+					Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+					entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"} 
 				end
 				if math_random(1,1024) == 1 then treasure[#treasure + 1] = p end
 				if math_random(1,64) == 1 then entities[#entities + 1] = {name = "dead-tree-desert", position=p} end
@@ -459,12 +462,12 @@ local function rock_chunk(surface, left_top)
 	if #markets > 0 then
 		local position = markets[math_random(1, #markets)]
 		if surface.count_entities_filtered{area = {{position.x - 96, position.y - 96}, {position.x + 96, position.y + 96}}, name = "market", limit = 1} == 0 then
-			local market = mountain_market(surface, position, math.abs(position.y) * 0.004)
+			local market = Market.mountain_market(surface, position, math.abs(position.y) * 0.004)
 			market.destructible = false
 		end
 	end
 	
-	for _, p in pairs(treasure) do	treasure_chest(surface, p) end
+	for _, p in pairs(treasure) do	Treasure(surface, p) end
 	
 	for _, e in pairs(entities) do
 		if game.entity_prototypes[e.name].type == "simple-entity" or game.entity_prototypes[e.name].type == "turret" then
@@ -585,7 +588,7 @@ local function wall(surface, left_top, seed)
 				
 				if surface.can_place_entity({name = "stone-wall", position = p, force = "enemy"}) then
 					if math_random(1,512) == 1 and y > 3 and y < 28 then
-						treasure_chest(surface, p)
+						Treasure(surface, p)
 					else
 						
 						if y < 5 or y > 26 then
@@ -607,8 +610,8 @@ local function wall(surface, left_top, seed)
 				
 				if math_random(1, 16) == 1 then
 					if surface.can_place_entity({name = "small-worm-turret", position = p, force = "enemy"}) then
-						wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
-						surface.create_entity({name = wave_defense_roll_worm_name(), position = p, force = "enemy"})
+						Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+						surface.create_entity({name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"})
 					end
 				end
 				

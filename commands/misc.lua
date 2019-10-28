@@ -208,8 +208,8 @@ commands.add_command(
 		for k, v in pairs(item) do
 			i = i + 1
 			if k and v.type ~= "mining-tool" then
-				game.player.character_inventory_slots_bonus = tonumber(i)
-				game.player.insert{name=k, count=v.stack_size}
+				player.force.character_inventory_slots_bonus = tonumber(i)
+				player.insert{name=k, count=v.stack_size}
 			end
 		end
 end)

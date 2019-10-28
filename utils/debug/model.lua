@@ -71,6 +71,7 @@ local function inspect_process(item)
         return concat(luaEntity)
     elseif obj_type == 'LuaGuiElement' then
         local name = item.name
+        if gui_names == nil then return end
         luaGuiElement[2] = gui_names[name] or name or 'nil'
 
         return concat(luaGuiElement)

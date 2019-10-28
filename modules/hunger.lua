@@ -1,6 +1,7 @@
 -- hunger module by mewmew --
 
 local math_random = math.random
+local P = require "player_modifiers"
 
 local starve_messages = {" ran out of foodstamps.", " starved.", " should not have skipped breakfast today."}
 
@@ -121,7 +122,7 @@ function hunger_update(player, food_value)
 		global.player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.15
 	end
 	global.player_modifiers[player.index].character_mining_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]]
-	update_player_modifiers(player)
+	P.update_player_modifiers(player)
 	
 	update_hunger_gui(player)
 end

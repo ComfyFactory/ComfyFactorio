@@ -1,18 +1,6 @@
 require "modules.mineable_wreckage_yields_scrap"
 require "modules.wave_defense.main"
-require "modules.map_info"
-map_info = {}
-map_info.main_caption = "4 Quarters"
-map_info.sub_caption =  "coal ++ iron ++ copper ++ stone"
-map_info.text = table.concat({
-	"Green energy ore may be found in the stone area.\n",
-	"Oil may be found in the coal area.\n",
-	"\n",
-	"Hold the door as long as possible.\n",
-	"Don't let them in!\n",
-})
-map_info.main_caption_color = {r = 0, g = 120, b = 0}
-map_info.sub_caption_color = {r = 255, g = 0, b = 255}
+local Map = require "modules.map_info"
 
 --require "modules.biters_attack_moving_players"
 --[[
@@ -26,6 +14,7 @@ local difficulties_votes = {
     [7] = {tick_increase = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
 }
 ]]
+local WD = require "modules.wave_defense.main"
 local simplex_noise = require 'utils.simplex_noise'.d2
 local spawn_size = 96
 local wall_thickness = 3
@@ -210,9 +199,10 @@ local function on_chunk_generated(event)
 end
 
 local function set_difficulty()
+	local wave_defense_table = WD.get_table()
 	--20 Players for maximum difficulty
-	global.wave_defense.wave_interval = 7200 - #game.connected_players * 270
-	if global.wave_defense.wave_interval < 1800 then global.wave_defense.wave_interval = 1800 end	
+	wave_defense_table.wave_interval = 7200 - #game.connected_players * 270
+	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end	
 end
 
 local function on_player_joined_game(event)
@@ -270,6 +260,18 @@ end
 ]]
 
 local function on_init()
+	local T = Map.Pop_info()
+	T.main_caption = "4 Quarters"
+	T.sub_caption =  "coal ++ iron ++ copper ++ stone"
+	T.text = table.concat({
+		"Green energy ore may be found in the stone area.\n",
+		"Oil may be found in the coal area.\n",
+		"\n",
+		"Hold the door as long as possible.\n",
+		"Don't let them in!\n",
+	})
+	T.main_caption_color = {r = 0, g = 120, b = 0}
+	T.sub_caption_color = {r = 255, g = 0, b = 255}
 	for i, quarter in pairs({"coal", "iron-ore", "stone", "copper-ore"}) do
 		local map_gen_settings = {}
 		map_gen_settings.seed = math.random(1, 999999999)
@@ -322,7 +324,7 @@ local event = require 'utils.event'
 --event.on_nth_tick(60, tick)
 event.on_init(on_init)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_entity_died, on_entity_died)
+--event.add(defines.events.on_entity_died, on_entity_died)
 --event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_left_game, on_player_left_game)
