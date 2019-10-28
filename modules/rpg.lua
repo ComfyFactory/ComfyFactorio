@@ -42,7 +42,7 @@ end
 
 local function get_melee_modifier(player) return (global.rpg[player.index].strength - 10) * 0.10 end
 
-local function get_life_on_hit(player) return (global.rpg[player.index].vitality - 10) * 0.2 end
+local function get_life_on_hit(player) return (global.rpg[player.index].vitality - 10) * 0.4 end
 
 local function get_one_punch_chance(player)
 	if global.rpg[player.index].strength < 100 then return 0 end
@@ -646,12 +646,20 @@ local function on_entity_damaged(event)
 	if event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].valid_for_read 
 	and event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].valid_for_read then return end
 	if not event.cause.player then return end
-
-	event.entity.health = event.entity.health + event.final_damage_amount
+	
+	--Grant the player life-on-hit.
 	event.cause.health = event.cause.health + get_life_on_hit(event.cause.player)
 	
-	local damage = event.final_damage_amount + event.final_damage_amount * get_melee_modifier(event.cause.player)	
+	--Calculate modified damage.
+	local damage = event.original_damage_amount + event.original_damage_amount * get_melee_modifier(event.cause.player)
+	if event.entity.prototype.resistances.physical then
+		damage = damage - event.entity.prototype.resistances.physical.decrease
+		damage = damage - damage * event.entity.prototype.resistances.physical.percent 
+	end
+	damage = math.round(damage, 3)
+	if damage < 1 then damage = 1 end
 	
+	--Cause a one punch.
 	if math_random(0,999) < get_one_punch_chance(event.cause.player) * 10 then
 		one_punch(event.cause, event.entity, damage)
 		if event.entity.valid then
@@ -660,6 +668,7 @@ local function on_entity_damaged(event)
 		return
 	end
 	
+	--Floating messages and particle effects.
 	if math_random(1,7) == 1 then
 		damage = damage * math_random(250, 350) * 0.01
 		event.cause.surface.create_entity({name = "flying-text", position = event.entity.position, text = "‼" .. math.floor(damage), color = {255, 0, 0}})
@@ -669,6 +678,26 @@ local function on_entity_damaged(event)
 		event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})	
 	end
 	
+	--Handle the custom health pool of the biter health booster, if it is used in the map.
+	if global.biter_health_boost then
+		local health_pool = global.biter_health_boost_units[event.entity.unit_number]
+		if health_pool then
+			health_pool[1] = health_pool[1] + event.final_damage_amount
+			health_pool[1] = health_pool[1] - damage
+
+			--Set entity health relative to health pool
+			event.entity.health = health_pool[1] * health_pool[2]
+
+			if health_pool[1] <= 0 then
+				event.entity.die(event.entity.force.name, event.cause)
+				global.biter_health_boost_units[event.entity.unit_number] = nil
+			end
+			return
+		end
+	end
+	
+	--Handle vanilla damage.
+	event.entity.health = event.entity.health + event.final_damage_amount
 	event.entity.health = event.entity.health - damage
 	if event.entity.health <= 0 then
 		event.entity.die(event.entity.force.name, event.cause)

@@ -1,9 +1,10 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
-require "modules.rpg"
-require "modules.wave_defense.main"
 require "functions.soft_reset"
 require "functions.basic_markets"
+
+require "modules.wave_defense.main"
+require "modules.rpg"
 require "modules.biters_yield_coins"
 require "modules.biter_pets"
 require "modules.no_deconstruction_of_neutral_entities"
