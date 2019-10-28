@@ -184,20 +184,6 @@ commands.add_command(
                 p = log
 			end
         end
-        local starting_items = {
-            {name = 'submachine-gun', count = 1},
-            {name = 'uranium-rounds-magazine', count = 200},
-            {name = 'construction-robot', count = 250},
-            {name = 'logistic-robot', count = 250},
-            {name = 'electric-energy-interface', count = 50},
-            {name = 'substation', count = 50},
-            {name = 'roboport', count = 10},
-            {name = 'infinity-chest', count = 10},
-            {name = 'raw-fish', count = 200},
-            {name = 'infinity-pipe', count = 10},
-            {name = 'heat-interface', count = 10},
-            {name = 'selection-tool', count = 1}
-        }
         game.print(player.name .. " has activated creative-mode!", {r=0.22, g=0.99, b=0.99})
         log(player.name .. " has activated creative-mode!")
         player.cheat_mode = true
@@ -217,7 +203,13 @@ commands.add_command(
         p_armor.put({name = "night-vision-equipment"})
         p_armor.put({name = "battery-mk2-equipment"})
         p_armor.put({name = "battery-mk2-equipment"})
-        for _, item in pairs(starting_items) do
-            player.insert(item)
-        end
+		local item = game.item_prototypes
+		local i = 0
+		for k, v in pairs(item) do
+			i = i + 1
+			if k and v.type ~= "mining-tool" then
+				game.player.character_inventory_slots_bonus = tonumber(i)
+				game.player.insert{name=k, count=v.stack_size}
+			end
+		end
 end)
