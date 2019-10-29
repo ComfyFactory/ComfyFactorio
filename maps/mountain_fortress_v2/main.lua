@@ -3,8 +3,8 @@
 require "functions.soft_reset"
 require "functions.basic_markets"
 
-require "modules.wave_defense.main"
 require "modules.rpg"
+require "modules.wave_defense.main"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.shotgun_buff"
@@ -14,9 +14,7 @@ require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.spawners_contain_biters"
 require "maps.mountain_fortress_v2.market"
-require "modules.rpg"
-require "modules.wave_defense.main"
-require "maps.mountain_fortress_v2.terrain"
+local level_depth = require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
 local Reset = require "functions.soft_reset"
@@ -93,15 +91,8 @@ function Public.reset_map()
 	WD.reset_wave_defense()
 	wave_defense_table.surface_index = global.active_surface_index
 	wave_defense_table.target = global.locomotive_cargo
-	wave_defense_table.side_target_search_radius = 768
-	wave_defense_table.unit_group_command_step_length = 32
 	wave_defense_table.nest_building_density = 32
-	wave_defense_table.threat_gain_multiplier = 3
 	wave_defense_table.game_lost = false
-	
-	--for _, p in pairs(game.connected_players) do
-	--	if p.character then p.character.disable_flashlight() end
-	--end
 end
 
 local function protect_train(event)
@@ -150,6 +141,11 @@ local function hidden_biter(entity)
 	end
 end
 
+local function hidden_worm(entity)
+	BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.33)
+	entity.surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position})	
+end
+
 local function hidden_biter_pet(event)
 	if math.random(1, 2048) ~= 1 then return end
 	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.33)
@@ -168,17 +164,50 @@ local function hidden_treasure(event)
 	Treasure(event.entity.surface, event.entity.position)
 end
 
+local projectiles = {"grenade", "explosive-rocket", "grenade", "explosive-rocket", "explosive-cannon-projectile"}
+local function angry_tree(entity, cause)
+	if entity.type ~= "tree" then return end
+	if math.abs(entity.position.y) < level_depth * 2 then return end
+	if math.random(1,2) == 1 then hidden_biter(entity) end
+	if math.random(1,2) == 1 then hidden_worm(entity) end
+	
+	local position = false
+	if cause then 
+		if cause.valid then
+			position = cause.position
+		end
+	end
+	if not position then position = {entity.position.x + (-20 + math.random(0, 40)), entity.position.y + (-20 + math.random(0, 40))} end
+	
+	entity.surface.create_entity({
+		name = projectiles[math.random(1, 5)],
+		position = entity.position,
+		force = "neutral",
+		source = entity.position,
+		target = position,
+		max_range = 64, 
+		speed = 0.10
+	})	
+end
+
 local function on_player_mined_entity(event)
 	if not event.entity.valid then	return end	
-	if event.entity.force.index == 3 then
-		if event.entity.type ~= "simple-entity" then return end
+	if event.entity.force.index ~= 3 then return end
+	
+	if event.entity.type == "simple-entity" then 
 		if math.random(1,32) == 1 then
 			hidden_biter(event.entity)
 			return
 		end
+		if math.random(1,512) == 1 then
+			hidden_worm(entity)
+			return
+		end
 		hidden_biter_pet(event)
-		hidden_treasure(event)
+		hidden_treasure(event)		
 	end
+	
+	angry_tree(event.entity, game.players[event.player_index].character)
 end
 
 local function on_entity_died(event)
@@ -202,10 +231,17 @@ local function on_entity_died(event)
 			if event.cause.force.index == 2 or event.cause.force.index == 3 then return end 
 		end
 	end
+	
 	if event.entity.force.index == 3 then
-		if math.random(1,8) == 1 then
+		local r_max = 15 - math.floor(math.abs(event.entity.position.y) / (level_depth * 0.5))
+		if r_max < 3 then r_max = 3 end
+		if math.random(1,r_max) == 1 then
 			hidden_biter(event.entity) 
 		end
+		
+		if math.random(1,256) == 1 then hidden_worm(event.entity) end
+		
+		angry_tree(event.entity, event.cause)
 	end
 end
 
@@ -227,15 +263,16 @@ end
 
 local function set_difficulty()
 	local wave_defense_table = WD.get_table()
-	--20 Players for maximum difficulty
+
+	wave_defense_table.threat_gain_multiplier = 2 + #game.connected_players * 0.1
+	--20 Players for fastest wave_interval
 	wave_defense_table.wave_interval = 3600 - #game.connected_players * 90
-	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end	
+	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	--if player.character then player.character.disable_flashlight() end
-	
+
 	set_difficulty()
 	
 	local surface = game.surfaces[global.active_surface_index]
@@ -260,12 +297,10 @@ local function on_player_joined_game(event)
 	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
 	Modifier.update_player_modifiers(player)
 end
---[[
-local function on_player_respawned(event)
-	local player = game.players[event.player_index]
-	if player.character then player.character.disable_flashlight() end
+
+local function on_player_left_game(event)
+	set_difficulty()
 end
-]]
 
 local function on_init()
 	local T = Map.Pop_info()
@@ -307,10 +342,10 @@ local event = require 'utils.event'
 event.on_init(on_init)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
+event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
---event.add(defines.events.on_player_respawned, on_player_respawned)
 
 require "modules.rocks_yield_ore"
 

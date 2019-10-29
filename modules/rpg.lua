@@ -483,20 +483,20 @@ local function on_gui_click(event)
 	
 	if event.button == defines.mouse_button_type.right then
 		for a = 1, 5, 1 do
-			if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player, false) return end
+			if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player, true) return end
 			global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute - 1
 			global.rpg[player.index][index] = global.rpg[player.index][index] + 1
 			update_player_stats(player)
 		end
-		draw_gui(player, false)
+		draw_gui(player, true)
 		return
 	end
 	
-	if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player, false) return end
+	if global.rpg[player.index].points_to_distribute <= 0 then draw_gui(player, true) return end
 	global.rpg[player.index].points_to_distribute = global.rpg[player.index].points_to_distribute - 1
 	global.rpg[player.index][index] = global.rpg[player.index][index] + 1
 	update_player_stats(player)
-	draw_gui(player, false)
+	draw_gui(player, true)
 end
 
 local xp_yield = {

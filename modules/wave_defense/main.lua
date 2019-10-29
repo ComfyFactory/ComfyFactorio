@@ -1,13 +1,11 @@
 require "modules.biter_health_booster"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
+local SideTargets = require "modules.wave_defense.side_targets"
 local ThreatEvent = require "modules.wave_defense.threat_events"
 local update_gui = require "modules.wave_defense.gui"
 local threat_values = require "modules.wave_defense.threat_values"
 local WD = require "modules.wave_defense.table"
 local event = require 'utils.event'
-local side_target_types = {"accumulator", "assembling-machine", "beacon", "boiler", "container", "furnace", "lamp", "lab", "logistic-container", "mining-drill", "container", "pump", "radar", "reactor", "roboport", "rocket-silo", "solar-panel", "storage-tank",}
---local side_target_types = {"assembling-machine", "electric-pole", "furnace", "mining-drill", "pump", "radar", "reactor", "roboport"}
-
 local Public = {}
 
 local function debug_print(msg)
@@ -71,87 +69,6 @@ local function get_random_close_spawner(surface)
 	debug_print("get_random_close_spawner - Found at x" .. spawner.position.x .. " y" .. spawner.position.y)
 	return spawner
 end
-
-local function set_side_target_list()
-	local wave_defense_table = WD.get_table()
-	local surface = game.surfaces[wave_defense_table.surface_index]
-	local position = false
-	local force = false
-
-	if wave_defense_table.target then
-		if wave_defense_table.target.valid then
-			position = wave_defense_table.target.position
-			force = wave_defense_table.target.force
-		end
-	end
-
-	if not position then
-		local r = math.random(1, #game.connected_players)
-		position = {x = game.connected_players[r].position.x, y = game.connected_players[r].position.y}
-		force = game.connected_players[r].force
-	end
-
-	wave_defense_table.side_targets = surface.find_entities_filtered({
-		area = {
-			{position.x - wave_defense_table.side_target_search_radius, position.y - wave_defense_table.side_target_search_radius},
-			{position.x + wave_defense_table.side_target_search_radius, position.y + wave_defense_table.side_target_search_radius}
-		},
-		force = force,
-		type = side_target_types,
-	})
-
-	debug_print("set_side_target_list -- " .. #wave_defense_table.side_targets .. " targets around position x" .. position.x .. " y" .. position.y .. " saved.")
-end
-
-local function get_side_target()
-	local wave_defense_table = WD.get_table()
-	if math.random(1, 2) == 1 then
-		local surface = game.surfaces[wave_defense_table.surface_index]
-		local characters = surface.find_entities_filtered({name = "character"})
-		if not characters[1] then return false end
-		local character = characters[math.random(1, #characters)]
-		if not character.valid then return false end
-		return character
-	end
-
-	if not wave_defense_table.side_targets then return false end
-	if #wave_defense_table.side_targets < 2 then return false end
-	local side_target = wave_defense_table.side_targets[math_random(1,#wave_defense_table.side_targets)]
-	if not side_target then return false end
-	if not side_target.valid then return false end
-	for _ = 1, 4, 1 do
-		local new_target = wave_defense_table.side_targets[math.random(1,#wave_defense_table.side_targets)]
-		if new_target then
-			if new_target.valid then
-				local side_target_distance = (wave_defense_table.target.position.x - side_target.position.x) ^ 2 + (wave_defense_table.target.position.y - side_target.position.y) ^ 2
-				local new_target_distance = (wave_defense_table.target.position.x - new_target.position.x) ^ 2 + (wave_defense_table.target.position.y - new_target.position.y) ^ 2
-				if new_target_distance > side_target_distance then side_target = new_target end
-			end
-		end
-	end
-	debug_print("get_side_target -- " .. side_target.name .. " at position x" .. side_target.position.x .. " y" .. side_target.position.y .. " selected.")
-	return side_target
-end
-
---[[
-local function set_main_target()
-	if wave_defense_table.target then
-		if wave_defense_table.target.valid then return end
-	end
-	local characters = {}
-	for i = 1, #game.connected_players, 1 do
-		if game.connected_players[i].character then
-			if game.connected_players[i].character.valid then
-				if game.connected_players[i].surface.index == wave_defense_table.surface_index then
-					characters[#characters + 1] = game.connected_players[i].character
-				end
-			end
-		end
-	end
-	if #characters == 0 then return end
-	wave_defense_table.target = characters[math.random(1, #characters)]
-end
-]]
 
 local function set_main_target()
 	local wave_defense_table = WD.get_table()
@@ -279,13 +196,10 @@ local function get_commmands(group)
 	local group_position = {x = group.position.x, y = group.position.y}
 	local step_length = wave_defense_table.unit_group_command_step_length
 
-	if math.random(1,3) ~= 1 then
-		local side_target = false
-		for _ = 1, 3, 1 do
-			side_target = get_side_target()
-			if side_target then break end
-		end
+	if math.random(1,2) == 1 then
+		local side_target = SideTargets.get_side_target()
 		if side_target then
+			debug_print("get_side_target -- " .. side_target.name .. " at position x" .. side_target.position.x .. " y" .. side_target.position.y .. " selected.")
 			local target_position = side_target.position
 			local distance_to_target = math.floor(math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
 			local steps = math.floor(distance_to_target / step_length) + 1
@@ -410,19 +324,8 @@ local function spawn_unit_group()
 		local biter = spawn_biter(surface)
 		if not biter then break end
 		unit_group.add_member(biter)
-	end
-	--command_unit_group(unit_group)
-	
-	table.insert(wave_defense_table.unit_groups, unit_group)
-	--[[
-	for i = 1, #wave_defense_table.unit_groups, 1 do
-		if not wave_defense_table.unit_groups[i] then
-			wave_defense_table.unit_groups[i] = unit_group
-			return true
-		end
-	end
-	wave_defense_table.unit_groups[#wave_defense_table.unit_groups + 1] = unit_group
-	]]
+	end	
+	table.insert(wave_defense_table.unit_groups, unit_group)	
 	return true
 end
 
@@ -440,7 +343,6 @@ local tick_tasks = {
 	[120] = give_commands_to_unit_groups,
 	[150] = ThreatEvent.build_nest,
 	[180] = ThreatEvent.build_worm,
-	[1800] = set_side_target_list,
 	[3600] = time_out_biters,
 	[7200] = refresh_active_unit_threat,
 }

@@ -55,7 +55,7 @@ local function on_entity_damaged(event)
 	
 	if event.cause then
 		if event.cause.valid then
-			event.entity.die(event.entity.force, event.cause)
+			event.entity.die(event.cause.force, event.cause)
 			return
 		end
 	end

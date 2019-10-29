@@ -677,3 +677,5 @@ end
 local event = require 'utils.event'
 event.on_nth_tick(4, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+
+return level_depth
