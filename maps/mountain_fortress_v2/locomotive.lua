@@ -22,7 +22,7 @@ function Public.locomotive_spawn(surface, position)
 	global.locomotive_cargo.operable = false
 end
 
---[[
+
 local function fish_tag()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
@@ -41,7 +41,7 @@ local function fish_tag()
 		text = " "
 	})
 end
-
+--[[
 local function accelerate()
 	if not global.locomotive then return end
 	if not global.locomotive.valid then return end
@@ -57,18 +57,7 @@ local function remove_acceleration()
 	if global.locomotive_driver then global.locomotive_driver.destroy() end
 	global.locomotive_driver = nil
 end
-
-local function set_daytime()
-	if not global.locomotive_cargo then return end
-	if not global.locomotive_cargo.valid then return end
-	local p = global.locomotive_cargo.position.y
-	local t = math.abs(global.locomotive_cargo.position.y) * 0.02
-	if t > 0.5 then t = 0.5 end	
-	global.locomotive_cargo.surface.daytime = t
-	game.print(t)
-end
 ]]
-
 local function set_player_spawn_and_refill_fish()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
@@ -78,8 +67,7 @@ local function set_player_spawn_and_refill_fish()
 	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
 end
 
-local function tick()
-	local Reset = require "maps.mountain_fortress_v2.main".reset_map
+local function tick()	
 	if game.tick % 30 == 0 then	
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()
@@ -87,12 +75,11 @@ local function tick()
 		if global.game_reset_tick then
 			if global.game_reset_tick < game.tick then
 				global.game_reset_tick = nil
-				Reset()
+				require "maps.mountain_fortress_v2.main".reset_map()
 			end
 			return
 		end
-		--fish_tag()
-		--set_daytime()
+		fish_tag()
 		--accelerate()
 	else
 		--remove_acceleration()
