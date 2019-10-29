@@ -13,11 +13,7 @@ local function remove_unit(entity)
 	wave_defense_table.active_biters[entity.unit_number] = nil
 end
 
-function Public.build_nest()
-	local wave_defense_table = WD.get_table()
-	if wave_defense_table.threat < 512 then return end
-	if math_random(1, wave_defense_table.nest_building_chance) ~= 1 then return end
-	if #wave_defense_table.unit_groups == 0 then return end
+local function place_nest_near_unit_group(wave_defense_table)
 	local group = wave_defense_table.unit_groups[math_random(1, #wave_defense_table.unit_groups)]
 	if not group then return end
 	if not group.valid then return end
@@ -37,6 +33,16 @@ function Public.build_nest()
 	remove_unit(unit)
 	unit.destroy()
 	wave_defense_table.threat = wave_defense_table.threat - threat_values[name]
+	return true	
+end
+
+function Public.build_nest()
+	local wave_defense_table = WD.get_table()
+	if wave_defense_table.threat < 512 then return end
+	if #wave_defense_table.unit_groups == 0 then return end
+	for _ = 1, 4, 1 do 
+		if place_nest_near_unit_group(wave_defense_table) then return end 
+	end
 end
 
 function Public.build_worm()

@@ -25,7 +25,6 @@ function Public.reset_wave_defense()
     wave_defense.max_active_unit_groups = 8
     wave_defense.max_biter_age = 3600 * 60
     wave_defense.max_group_size = 200
-    wave_defense.nest_building_chance = 4
     wave_defense.nest_building_density = 64
     wave_defense.next_wave = game.tick + 3600 * 15
     wave_defense.side_targets = {}
