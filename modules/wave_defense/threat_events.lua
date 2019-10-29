@@ -141,7 +141,7 @@ local function spawn_unit_spawner_inhabitants(wave_defense_table, entity)
 	if count > 128 then count = 128 end
 	BiterRolls.wave_defense_set_unit_raffle(wave_defense_table.wave_number)
 	for _ = 1, count, 1 do
-		local position = {entity.position.x + (-5 + math.random(0, 10)), entity.position.y + (-5 + math.random(0, 10))}		
+		local position = {entity.position.x + (-4 + math.random(0, 8)), entity.position.y + (-4 + math.random(0, 8))}		
 		if math.random(1,4) == 1 then
 			entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position, force = "enemy"})
 		else

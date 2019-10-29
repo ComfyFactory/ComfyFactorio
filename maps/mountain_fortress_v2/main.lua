@@ -92,6 +92,8 @@ function Public.reset_map()
 	wave_defense_table.target = global.locomotive_cargo
 	wave_defense_table.nest_building_density = 32
 	wave_defense_table.game_lost = false
+	
+	RPG.rpg_reset_all_players()
 end
 
 local function protect_train(event)
@@ -205,7 +207,7 @@ local function on_player_mined_entity(event)
 			return
 		end
 		if math.random(1,512) == 1 then
-			hidden_worm(entity)
+			hidden_worm(event.entity)
 			return
 		end
 		hidden_biter_pet(event)
@@ -227,7 +229,6 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
 		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
-		RPG.rpg_reset_all_players()
 		return
 	end
 
