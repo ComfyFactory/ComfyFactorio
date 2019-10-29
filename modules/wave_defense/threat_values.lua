@@ -1,6 +1,6 @@
 local t = {
-	["biter-spawner"] = 64,
-	["spitter-spawner"] = 64,
+	["biter-spawner"] = 128,
+	["spitter-spawner"] = 128,
 	["behemoth-biter"] = 48,
 	["behemoth-spitter"] = 48,
 	["big-biter"] = 16,

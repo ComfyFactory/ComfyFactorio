@@ -15,7 +15,7 @@ end
 
 function Public.build_nest()
 	local wave_defense_table = WD.get_table()
-	if wave_defense_table.threat < 1000 then return end
+	if wave_defense_table.threat < 512 then return end
 	if math_random(1, wave_defense_table.nest_building_chance) ~= 1 then return end
 	if #wave_defense_table.unit_groups == 0 then return end
 	local group = wave_defense_table.unit_groups[math_random(1, #wave_defense_table.unit_groups)]
@@ -24,22 +24,24 @@ function Public.build_nest()
 	if not group.members then return end
 	if not group.members[1] then return end
 	local unit = group.members[math_random(1, #group.members)]
-	if not unit.valid then return end	
-	local position = unit.surface.find_non_colliding_position("biter-spawner", unit.position, 16, 1)
+	if not unit.valid then return end
+	local name = "biter-spawner"
+	if math_random(1, 3) == 1 then name = "spitter-spawner" end
+	local position = unit.surface.find_non_colliding_position(name, unit.position, 16, 1)
 	if not position then return end
 	local r = wave_defense_table.nest_building_density	
 	if unit.surface.count_entities_filtered({type = "unit-spawner", area = {{position.x - r, position.y - r},{position.x + r, position.y + r}}}) > 0 then return end
-	unit.surface.create_entity({name = "biter-spawner", position = position, force = unit.force})
+	unit.surface.create_entity({name = name, position = position, force = unit.force})
 	unit.surface.create_entity({name = "blood-explosion-huge", position = position})
 	unit.surface.create_entity({name = "blood-explosion-huge", position = unit.position})
 	remove_unit(unit)
 	unit.destroy()
-	wave_defense_table.threat = wave_defense_table.threat - 500
+	wave_defense_table.threat = wave_defense_table.threat - threat_values[name]
 end
 
 function Public.build_worm()
 	local wave_defense_table = WD.get_table()
-	if wave_defense_table.threat < 1000 then return end
+	if wave_defense_table.threat < 512 then return end
 	if math_random(1, wave_defense_table.worm_building_chance) ~= 1 then return end
 	if #wave_defense_table.unit_groups == 0 then return end
 	local group = wave_defense_table.unit_groups[math_random(1, #wave_defense_table.unit_groups)]
@@ -127,6 +129,21 @@ local function shred_simple_entities(entity)
 	wave_defense_table.threat = wave_defense_table.threat - threat_cost
 end
 
+local function spawn_unit_spawner_inhabitants(wave_defense_table, entity)
+	if entity.type ~= "unit-spawner" then return end
+	local count = 8 + math.floor(wave_defense_table.wave_number * 0.02)
+	if count > 128 then count = 128 end
+	BiterRolls.wave_defense_set_unit_raffle(wave_defense_table.wave_number)
+	for _ = 1, count, 1 do
+		local position = {entity.position.x + (-5 + math.random(0, 10)), entity.position.y + (-5 + math.random(0, 10))}		
+		if math.random(1,4) == 1 then
+			entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position, force = "enemy"})
+		else
+			entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position, force = "enemy"})
+		end
+	end
+end
+
 local function on_entity_died(event)
 	local wave_defense_table = WD.get_table()
 	local entity = event.entity
@@ -142,6 +159,8 @@ local function on_entity_died(event)
 				if threat_values[entity.name] then
 					wave_defense_table.threat = wave_defense_table.threat - threat_values[entity.name]
 				end
+				
+				spawn_unit_spawner_inhabitants(wave_defense_table, entity)
 			end
 		end
 	end

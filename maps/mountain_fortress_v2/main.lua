@@ -12,7 +12,6 @@ require "modules.explosives"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
-require "modules.spawners_contain_biters"
 require "maps.mountain_fortress_v2.market"
 local level_depth = require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
@@ -165,12 +164,12 @@ local function hidden_treasure(event)
 end
 
 local projectiles = {"grenade", "explosive-rocket", "grenade", "explosive-rocket", "explosive-cannon-projectile"}
-local function angry_tree(entity, cause)
+local function angry_tree(entity, cause)	
 	if entity.type ~= "tree" then return end
 	if math.abs(entity.position.y) < level_depth * 2 then return end
 	if math.random(1,2) == 1 then hidden_biter(entity) end
 	if math.random(1,2) == 1 then hidden_worm(entity) end
-	
+	if math.random(1,2) == 1 then return end
 	local position = false
 	if cause then 
 		if cause.valid then
