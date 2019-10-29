@@ -3,7 +3,7 @@
 require "functions.soft_reset"
 require "functions.basic_markets"
 
-require "modules.rpg"
+local RPG = require "modules.rpg"
 require "modules.wave_defense.main"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
@@ -167,8 +167,8 @@ local projectiles = {"grenade", "explosive-rocket", "grenade", "explosive-rocket
 local function angry_tree(entity, cause)	
 	if entity.type ~= "tree" then return end
 	if math.abs(entity.position.y) < level_depth * 2 then return end
-	if math.random(1,2) == 1 then hidden_biter(entity) end
-	if math.random(1,2) == 1 then hidden_worm(entity) end
+	if math.random(1,4) == 1 then hidden_biter(entity) end
+	if math.random(1,4) == 1 then hidden_worm(entity) end
 	if math.random(1,2) == 1 then return end
 	local position = false
 	if cause then 
@@ -189,11 +189,17 @@ local function angry_tree(entity, cause)
 	})	
 end
 
+local function give_coin(player)
+	player.insert({name = "coin", count = 1})
+end
+
 local function on_player_mined_entity(event)
 	if not event.entity.valid then	return end	
 	if event.entity.force.index ~= 3 then return end
 	
-	if event.entity.type == "simple-entity" then 
+	if event.entity.type == "simple-entity" then
+		give_coin(game.players[event.player_index])
+		
 		if math.random(1,32) == 1 then
 			hidden_biter(event.entity)
 			return
@@ -221,7 +227,7 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
 		end
 		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
-		--rpg_reset_all_players()
+		RPG.rpg_reset_all_players()
 		return
 	end
 
