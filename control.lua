@@ -3,7 +3,7 @@ _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
 _DUMP_ENV = false
 
-server_commands = require 'utils.server'
+require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
 require "utils.table"
