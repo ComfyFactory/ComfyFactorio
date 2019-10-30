@@ -169,9 +169,9 @@ local projectiles = {"grenade", "explosive-rocket", "grenade", "explosive-rocket
 local function angry_tree(entity, cause)	
 	if entity.type ~= "tree" then return end
 	if math.abs(entity.position.y) < level_depth then return end
-	if math.random(1,3) == 1 then hidden_biter(entity) end
-	if math.random(1,6) == 1 then hidden_worm(entity) end
-	if math.random(1,9) ~= 1 then return end
+	if math.random(1,4) == 1 then hidden_biter(entity) end
+	if math.random(1,8) == 1 then hidden_worm(entity) end
+	if math.random(1,16) ~= 1 then return end
 	local position = false
 	if cause then 
 		if cause.valid then
