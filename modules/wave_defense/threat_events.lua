@@ -23,7 +23,7 @@ local function place_nest_near_unit_group(wave_defense_table)
 	if not unit.valid then return end
 	local name = "biter-spawner"
 	if math_random(1, 3) == 1 then name = "spitter-spawner" end
-	local position = unit.surface.find_non_colliding_position(name, unit.position, 16, 1)
+	local position = unit.surface.find_non_colliding_position(name, unit.position, 12, 1)
 	if not position then return end
 	local r = wave_defense_table.nest_building_density	
 	if unit.surface.count_entities_filtered({type = "unit-spawner", area = {{position.x - r, position.y - r},{position.x + r, position.y + r}}}) > 0 then return end
@@ -38,9 +38,9 @@ end
 
 function Public.build_nest()
 	local wave_defense_table = WD.get_table()
-	if wave_defense_table.threat < 512 then return end
+	if wave_defense_table.threat < 1024 then return end
 	if #wave_defense_table.unit_groups == 0 then return end
-	for _ = 1, 4, 1 do 
+	for _ = 1, 3, 1 do 
 		if place_nest_near_unit_group(wave_defense_table) then return end 
 	end
 end
@@ -58,6 +58,7 @@ function Public.build_worm()
 	local unit = group.members[math_random(1, #group.members)]
 	if not unit.valid then return end
 	local position = unit.surface.find_non_colliding_position("assembling-machine-1", unit.position, 8, 1)
+	BiterRolls.wave_defense_set_worm_raffle(wave_defense_table.wave_number)
 	local worm = BiterRolls.wave_defense_roll_worm_name()
 	if not position then return end
 	local r = wave_defense_table.worm_building_density
