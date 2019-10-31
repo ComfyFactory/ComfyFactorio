@@ -40,7 +40,7 @@ function Public.build_nest()
 	local wave_defense_table = WD.get_table()
 	if wave_defense_table.threat < 1024 then return end
 	if #wave_defense_table.unit_groups == 0 then return end
-	for _ = 1, 3, 1 do 
+	for _ = 1, 2, 1 do 
 		if place_nest_near_unit_group(wave_defense_table) then return end 
 	end
 end

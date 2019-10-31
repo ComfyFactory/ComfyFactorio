@@ -134,7 +134,7 @@ local function biters_chew_rocks_faster(event)
 end
 
 local function hidden_biter(entity)
-	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.33)
+	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.25)
 	if math.random(1,3) == 1 then
 		entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = entity.position})
 	else
@@ -143,13 +143,13 @@ local function hidden_biter(entity)
 end
 
 local function hidden_worm(entity)
-	BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.33)
+	BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.25)
 	entity.surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position})	
 end
 
 local function hidden_biter_pet(event)
 	if math.random(1, 2048) ~= 1 then return end
-	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.33)
+	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
 	local unit
 	if math.random(1,3) == 1 then
 		unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position})
@@ -239,9 +239,9 @@ local function on_entity_died(event)
 	end
 	
 	if event.entity.force.index == 3 then
-		local r_max = 15 - math.floor(math.abs(event.entity.position.y) / (level_depth * 0.5))
-		if r_max < 3 then r_max = 3 end
-		if math.random(1,r_max) == 1 then
+		--local r_max = 15 - math.floor(math.abs(event.entity.position.y) / (level_depth * 0.5))
+		--if r_max < 3 then r_max = 3 end
+		if math.random(1,8) == 1 then
 			hidden_biter(event.entity) 
 		end
 		
