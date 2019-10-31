@@ -70,7 +70,7 @@ function Public.build_worm()
 	unit.destroy()
 	wave_defense_table.threat = wave_defense_table.threat - threat_values[worm]
 end
-
+--[[
 local function get_circle_vectors(radius)
 	local vectors = {}
 	for x = radius * -1, radius, 1 do
@@ -84,17 +84,18 @@ local function get_circle_vectors(radius)
 end
 
 local acid_nova_entities = {
-	["small-biter"] = {projectile = "acid-stream-worm-small", vectors = get_circle_vectors(3), amount = 8, threat_cost = 32},
-	["medium-biter"] = {projectile = "acid-stream-worm-medium", vectors = get_circle_vectors(4), amount = 8, threat_cost = 64},
-	["big-biter"] = {projectile = "acid-stream-worm-big", vectors = get_circle_vectors(5), amount = 8, threat_cost = 96},
-	["behemoth-biter"] = {projectile = "acid-stream-worm-behemoth", vectors = get_circle_vectors(6), amount = 8, threat_cost = 128},
+	["small-biter"] = {projectile = "acid-stream-worm-small", vectors = get_circle_vectors(3), threat_cost = 32},
+	["medium-biter"] = {projectile = "acid-stream-worm-medium", vectors = get_circle_vectors(4), threat_cost = 64},
+	["big-biter"] = {projectile = "acid-stream-worm-big", vectors = get_circle_vectors(5), threat_cost = 96},
+	["behemoth-biter"] = {projectile = "acid-stream-worm-behemoth", vectors = get_circle_vectors(6), threat_cost = 128},
 }
 
 local function acid_nova(entity)
 	local wave_defense_table = WD.get_table()
 	if not acid_nova_entities[entity.name] then return end
 	if wave_defense_table.threat < 100000 then return end
-	for _ = 1, acid_nova_entities[entity.name].amount, 1 do
+	if math.random(1, 32) ~= 1 then return end
+	for _ = 1, 8, 1 do
 		local i = math_random(1, #acid_nova_entities[entity.name].vectors)		
 		entity.surface.create_entity({	
 			name = acid_nova_entities[entity.name].projectile,
@@ -109,7 +110,7 @@ local function acid_nova(entity)
 	wave_defense_table.threat = wave_defense_table.threat - acid_nova_entities[entity.name].threat_cost	
 	return true
 end
-
+]]
 local function shred_simple_entities(entity)
 	local wave_defense_table = WD.get_table()
 	if wave_defense_table.threat < 25000 then return end
@@ -159,7 +160,7 @@ local function on_entity_died(event)
 	if entity.type == "unit" then
 		wave_defense_table.threat = math.round(wave_defense_table.threat - threat_values[entity.name] * global.biter_health_boost, 2)
 		remove_unit(entity)
-		acid_nova(entity)
+		--acid_nova(entity)
 	else
 		if entity.force.index == 2 then	
 			if entity.health then

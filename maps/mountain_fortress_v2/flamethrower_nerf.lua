@@ -2,7 +2,7 @@
 local function on_research_finished(event)
 	local research = event.research
 	local force_name = research.force.name
-	if research.name == "flamethrower" then
+	if research.name == "military" then
 		if not global.flamethrower_damage then global.flamethrower_damage = {} end
 		global.flamethrower_damage[force_name] = -0.50
 		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.flamethrower_damage[force_name])
