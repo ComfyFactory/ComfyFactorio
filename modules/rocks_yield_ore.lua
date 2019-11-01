@@ -11,7 +11,7 @@ local rock_mining_chance_weights = {
 	{"iron-ore", 25},
 	{"copper-ore",17},
 	{"coal",13},
-	{"stone",9},
+	{"stone",10},
 	{"uranium-ore",2}
 }
 

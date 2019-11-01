@@ -61,7 +61,8 @@ end
 local function set_player_spawn_and_refill_fish()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 4})
+	global.locomotive_cargo.health = global.locomotive_cargo.health + 6
+	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math.random(2, 5)})
 	local position = global.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", global.locomotive_cargo.position, 16, 2)
 	if not position then return end
 	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)

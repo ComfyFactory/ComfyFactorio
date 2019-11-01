@@ -15,16 +15,24 @@ local side_target_types = {
 }
 
 local function get_random_target(wave_defense_table)	
-	local r = math.random(1, #wave_defense_table.side_targets)
-	if not wave_defense_table.side_targets[r] then table.remove(wave_defense_table.side_targets, r) return end
-	if not wave_defense_table.side_targets[r].valid then table.remove(wave_defense_table.side_targets, r) return end
-	return wave_defense_table.side_targets[r]	
+	local r = math.random(1, wave_defense_table.side_target_count)
+	if not wave_defense_table.side_targets[r] then
+		table.remove(wave_defense_table.side_targets, r) 
+		wave_defense_table.side_target_count = wave_defense_table.side_target_count - 1
+		return 
+	end
+	if not wave_defense_table.side_targets[r].valid then
+		table.remove(wave_defense_table.side_targets, r)
+		wave_defense_table.side_target_count = wave_defense_table.side_target_count - 1
+		return 
+	end
+	return wave_defense_table.side_targets[r]
 end
 
 function Public.get_side_target()
-	local wave_defense_table = WD.get_table()
-	for _ = 1, 1024, 1 do
-		if #wave_defense_table.side_targets == 0 then return false end
+	local wave_defense_table = WD.get_table()	
+	for _ = 1, 512, 1 do
+		if wave_defense_table.side_target_count == 0 then return end
 		local target = get_random_target(wave_defense_table)
 		if target then return target end
 	end
@@ -33,6 +41,7 @@ end
 local function add_entity(entity)
 	local wave_defense_table = WD.get_table()
 	table.insert(wave_defense_table.side_targets, entity)
+	wave_defense_table.side_target_count = wave_defense_table.side_target_count + 1
 end
 
 local function on_built_entity(event)

@@ -79,7 +79,7 @@ function Public.reset_map()
 	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
 	game.map_settings.enemy_expansion.settler_group_max_size = 8
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
-	game.map_settings.pollution.enabled = true
+	game.map_settings.pollution.enabled = false
 	
 	game.forces.player.technologies["landfill"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
@@ -316,7 +316,7 @@ local function on_init()
 		"The biters have catched the scent of fish in the cargo wagon.\n",
 		"Guide the choo into the mountain and protect it as long as possible!\n",
 		"This however will not be an easy task,\n",
-		"since their strength and resistance increases constantly over time.\n",
+		"since their strength and numbers increase over time.\n",
 		"\n",
 		"Delve deep for greater treasures, but also face increased dangers.\n",
 		"Mining productivity research, will overhaul your mining equipment,\n",

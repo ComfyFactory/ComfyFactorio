@@ -28,6 +28,7 @@ function Public.reset_wave_defense()
     wave_defense.nest_building_density = 48
     wave_defense.next_wave = game.tick + 3600 * 15
     wave_defense.side_targets = {}
+	wave_defense.side_target_count = 0
     wave_defense.simple_entity_shredding_cost_modifier = 0.005
     wave_defense.spawn_position = {x = 0, y = 64}
     wave_defense.spitter_raffle = {}

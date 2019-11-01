@@ -88,9 +88,9 @@ local function set_group_spawn_position(surface)
 	local wave_defense_table = WD.get_table()
 	local spawner = get_random_close_spawner(surface)
 	if not spawner then return end
-	local position = surface.find_non_colliding_position("rocket-silo", spawner.position, 48, 1)
+	local position = surface.find_non_colliding_position("rocket-silo", spawner.position, 64, 1)
 	if not position then return end
-	wave_defense_table.spawn_position = {x = math.floor(position.x), y = math.floor(position.y)}
+	wave_defense_table.spawn_position = {x = position.x, y = position.y}
 	debug_print("set_group_spawn_position -- Changed position to x" .. wave_defense_table.spawn_position.x .. " y" .. wave_defense_table.spawn_position.y .. ".")
 end
 
@@ -169,9 +169,9 @@ local function spawn_biter(surface)
 	else
 		name = BiterRolls.wave_defense_roll_biter_name()
 	end
-	local position = surface.find_non_colliding_position(name, wave_defense_table.spawn_position, 48, 2)
-	if not position then return false end
-	local biter = surface.create_entity({name = name, position = position, force = "enemy"})
+	--local position = surface.find_non_colliding_position(name, wave_defense_table.spawn_position, 48, 2)
+	--if not position then return false end
+	local biter = surface.create_entity({name = name, position = wave_defense_table.spawn_position, force = "enemy"})
 	biter.ai_settings.allow_destroy_when_commands_fail = false
 	biter.ai_settings.allow_try_return_to_spawner = false
 	wave_defense_table.active_biters[biter.unit_number] = {entity = biter, spawn_tick = game.tick}
