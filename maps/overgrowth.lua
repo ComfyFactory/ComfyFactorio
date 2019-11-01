@@ -18,6 +18,7 @@ require "modules.trees_randomly_die"
 require "maps.overgrowth_map_info"
 
 require "functions.soft_reset"
+local rpg_t = require 'modules.rpg'
 local kaboom = require "functions.omegakaboom"
 
 require "modules.difficulty_vote"
@@ -131,6 +132,7 @@ local function get_surface_settings()
 end
 
 function reset_map()
+	local rpg = rpg_t.get_table()
 	global.trees_grow_chunk_next_visit = {}
 	global.trees_grow_chunk_raffle = {}
 	global.trees_grow_chunk_position = {}
@@ -148,7 +150,7 @@ function reset_map()
 	
 	game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[4]
 	
-	if global.rpg then rpg_reset_all_players() end
+	if rpg then rpg_reset_all_players() end
 end
 
 local function on_player_joined_game(event)
