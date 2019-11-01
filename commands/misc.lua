@@ -1,8 +1,11 @@
+local Session = require 'utils.session_data'
+
 commands.add_command(
     'spaghetti',
     'Does spaghett.',
     function(cmd)
         local player = game.player
+        local param = tostring(cmd.parameter)
         local force = game.forces["player"]
         local p
 
@@ -17,8 +20,8 @@ commands.add_command(
                 p = log
 			end
         end
-        if cmd.parameter == nil then player.print("Arguments are true/false", {r=0.22, g=0.99, b=0.99}) return end
-        if cmd.parameter == "true" then
+        if param == nil then player.print("Arguments are true/false", {r=0.22, g=0.99, b=0.99}) return end
+        if param == "true" then
 			game.print("The world has been spaghettified!", {r = 1, g = 0.5, b = 0.1})
 			force.technologies["logistic-system"].enabled = false
 			force.technologies["construction-robotics"].enabled = false
@@ -44,7 +47,7 @@ commands.add_command(
 			force.technologies["worker-robots-speed-4"].enabled = false
 			force.technologies["worker-robots-speed-5"].enabled = false
 			force.technologies["worker-robots-speed-6"].enabled = false
-        elseif cmd.parameter == "false" then
+        elseif param == "false" then
 			game.print("The world is no longer spaghett!", {r = 1, g = 0.5, b = 0.1})
 			force.technologies["logistic-system"].enabled = true
 			force.technologies["construction-robotics"].enabled = true
@@ -78,6 +81,7 @@ commands.add_command(
     'Pregenerates map.',
     function(cmd)
         local player = game.player
+        local param = tonumber(cmd.parameter)
         local p
 
         if player then
@@ -91,8 +95,8 @@ commands.add_command(
                 p = log
 			end
         end
-        if cmd.parameter == nil then player.print("Must specify radius!", {r=0.22, g=0.99, b=0.99}) return end
-        local radius = cmd.parameter
+        if param == nil then player.print("Must specify radius!", {r=0.22, g=0.99, b=0.99}) return end
+        local radius = param
 		local surface = game.players[1].surface
 			if surface.is_chunk_generated({radius, radius}) then
 				game.print("Map generation done!", {r=0.22, g=0.99, b=0.99})
@@ -163,6 +167,7 @@ commands.add_command(
 			str = str .. t.name
 			str = str .. '"},'
 			game.write_file("layout.lua", str .. '\n' , true)
+			player.print("Dumped layout as file: layout.lua")
 		end
 end)
 
@@ -210,6 +215,37 @@ commands.add_command(
 			if k and v.type ~= "mining-tool" then
 				player.force.character_inventory_slots_bonus = tonumber(i)
 				player.insert{name=k, count=v.stack_size}
+				player.print("Inserted all items")
 			end
+		end
+end)
+
+commands.add_command(
+    'clear-corpses',
+    'Clears all the biter corpses..',
+    function(cmd)
+        local player = game.player
+        local trusted = Session.get_trusted_table()
+        local param = tonumber(cmd.parameter)
+        local p
+
+        if player then
+            if player ~= nil then
+                p = player.print
+                if not trusted[player.name] then
+	                if not player.admin then
+	                    p("Only admins and trusted weebs are allowed to run this command!", {r = 1, g = 0.5, b = 0.1})
+	                    return
+	                end
+	            end
+			else
+                p = log
+			end
+        end
+	    if param == nil then player.print("Must specify radius!", {r=0.22, g=0.99, b=0.99}) return end
+        local radius = {{x = -param, y = -param}, {x = param, y = param}} or {{x = -1, y = -1}, {x = 1, y = 1}}
+		for _, entity in pairs(player.surface.find_entities_filtered{area = radius, type = "corpse"}) do
+			player.print("Cleared biter-corpses.")
+			entity.destroy()
 		end
 end)
