@@ -1,13 +1,15 @@
 local event = require 'utils.event'
+local rpg_t = require 'modules.rpg'
 
 local function on_console_chat(event)
+	local rpg = rpg_t.get_table()
 	if not event.message then return end	
 	if not event.player_index then return end	
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	
 	local y_offset = -4
-	if global.rpg then y_offset = -4.5 end
+	if rpg then y_offset = -4.5 end
 	
 	if global.player_floaty_chat[player.index] then
 		rendering.destroy(global.player_floaty_chat[player.index])
