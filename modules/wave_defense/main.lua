@@ -106,8 +106,8 @@ local function set_enemy_evolution()
 		evolution_factor = 1
 	end
 
-	if wave_defense_table.threat > 0 then
-		biter_health_boost = math.round(biter_health_boost + wave_defense_table.threat * 0.000033, 3)
+	if wave_defense_table.threat > 50000 then
+		biter_health_boost = math.round(biter_health_boost + (wave_defense_table.threat - 50000) * 0.000033, 3)
 		--damage_increase = math.round(damage_increase + wave_defense_table.threat * 0.0000025, 3)
 	end
 
@@ -187,7 +187,9 @@ local function set_next_wave()
 	if wave_defense_table.group_size > wave_defense_table.max_group_size then wave_defense_table.group_size = wave_defense_table.max_group_size end
 	
 	local threat_gain = wave_defense_table.wave_number * wave_defense_table.threat_gain_multiplier
-	threat_gain = threat_gain * (wave_defense_table.wave_number * 0.001 + 1)
+	if wave_defense_table.wave_number > 1000 then
+		threat_gain = threat_gain * (wave_defense_table.wave_number * 0.001)
+	end
 	
 	wave_defense_table.threat = wave_defense_table.threat + math.floor(threat_gain)	
 	wave_defense_table.last_wave = wave_defense_table.next_wave

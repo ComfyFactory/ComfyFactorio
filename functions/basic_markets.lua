@@ -125,12 +125,12 @@ market.vehicles = {
 	["train-stop"] = {value = 32, rarity = 3},
 	["rail-signal"] = {value = 8, rarity = 5},
 	["rail-chain-signal"] = {value = 8, rarity = 5},
-	["locomotive"] = {value = 640, rarity = 4},
-	["cargo-wagon"] = {value = 320, rarity = 4},
-	["fluid-wagon"] = {value = 480, rarity = 5},
+	["locomotive"] = {value = 400, rarity = 4},
+	["cargo-wagon"] = {value = 200, rarity = 4},
+	["fluid-wagon"] = {value = 300, rarity = 5},
 	["artillery-wagon"] = {value = 8192, rarity = 8},
 	["car"] = {value = 80, rarity = 1},
-	["tank"] = {value = 1800, rarity = 5},	
+	["tank"] = {value = 1800, rarity = 5},
 }
 
 market.wire = {

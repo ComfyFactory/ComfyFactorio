@@ -81,7 +81,7 @@ local function kill_random_tree(surface)
 end
 
 local function tick(event)
-	local r = 16
+	local r = 48
 	if global.difficulty_vote_index then r = difficulties_votes[global.difficulty_vote_index] end
 	if math_random(1, r) ~= 1 then return end
 	local surface = game.players[1].surface	
