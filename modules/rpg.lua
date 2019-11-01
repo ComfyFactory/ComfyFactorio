@@ -27,11 +27,18 @@ end
 local gain_info_tooltip = "XP gain from mining, building, moving, crafting, repairing and combat."
 
 local rpg_t = {}
+local rpg_frame_icons = {
+	"entity/small-worm-turret", "entity/medium-worm-turret", "entity/big-worm-turret", "entity/behemoth-worm-turret",
+	"entity/small-biter", "entity/small-biter", "entity/small-spitter", "entity/medium-biter", "entity/medium-biter",
+	"entity/medium-spitter", "entity/big-biter", "entity/big-biter", "entity/big-spitter", "entity/behemoth-biter", "entity/behemoth-biter",
+	"entity/behemoth-spitter"
+}
 
 Global.register(
-    rpg_t,
+    {rpg_t=rpg_t, rpg_frame_icons=rpg_frame_icons},
     function(tbl)
-        rpg_t = tbl
+        rpg_t = tbl.rpg_t
+        rpg_frame_icons = tbl.rpg_frame_icons
     end
 )
 
@@ -364,7 +371,7 @@ local function draw_gui(player, forced)
 	add_separator(frame, 400)
 	local t = frame.add({type = "table", column_count = 14})
 	for i = 1, 14, 1 do
-		local e = t.add({type = "sprite", sprite = global.rpg_frame_icons[i]})
+		local e = t.add({type = "sprite", sprite = rpg_frame_icons[i]})
 		e.style.maximal_width = 24
 		e.style.maximal_height = 24
 		e.style.padding = 0
@@ -424,7 +431,7 @@ local function level_up(player)
 	draw_level_text(player)
 	rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
 	update_char_button(player)
-	table.shuffle_table(global.rpg_frame_icons)
+	table.shuffle_table(rpg_frame_icons)
 	if player.gui.left.rpg then draw_gui(player, true) end
 	level_up_effects(player)
 end
@@ -815,12 +822,7 @@ local function on_player_joined_game(event)
 end
 
 local function on_init(event)
-	global.rpg_frame_icons = {
-		"entity/small-worm-turret", "entity/medium-worm-turret", "entity/big-worm-turret", "entity/behemoth-worm-turret",
-		"entity/small-biter", "entity/small-biter", "entity/small-spitter", "entity/medium-biter", "entity/medium-biter",
-		"entity/medium-spitter", "entity/big-biter", "entity/big-biter", "entity/big-spitter", "entity/behemoth-biter", "entity/behemoth-biter", "entity/behemoth-spitter"
-	}
-	table.shuffle_table(global.rpg_frame_icons)
+	table.shuffle_table(rpg_frame_icons)
 end
 
 local event = require 'utils.event'
