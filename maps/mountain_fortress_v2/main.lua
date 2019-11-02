@@ -163,7 +163,7 @@ end
 local function hidden_treasure(event)
 	if math.random(1, 320) ~= 1 then return end
 	game.players[event.player_index].print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r=0.98, g=0.66, b=0.22})
-	Treasure(event.entity.surface, event.entity.position)
+	Treasure(event.entity.surface, event.entity.position, "wooden-chest")
 end
 
 local projectiles = {"grenade", "explosive-rocket", "grenade", "explosive-rocket", "explosive-cannon-projectile"}

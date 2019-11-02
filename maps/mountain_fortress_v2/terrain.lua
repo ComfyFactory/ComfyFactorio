@@ -20,7 +20,7 @@ local noises = {
 	["cave_rivers_4"] = {{modifier = 0.001, weight = 1}, {modifier = 0.01, weight = 0.11}, {modifier = 0.05, weight = 0.01}},
 	["scrapyard"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}},
 }
-local level_depth = 1024
+local level_depth = 960
 local worm_level_modifier = 0.20
 
 local function get_noise(name, pos, seed)
