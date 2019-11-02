@@ -2,6 +2,8 @@
 -- Use global.biter_health_boost to modify their health.
 -- 1 = vanilla health, 2 = 200% vanilla health
 -- do not use values below 1
+local math_floor = math.floor
+local math_round = math.round
 
 local function clean_table()
 	local units_to_delete = {}
@@ -32,8 +34,8 @@ local function on_entity_damaged(event)
 	--Create new health pool
 	if not global.biter_health_boost_units[event.entity.unit_number] then
 		global.biter_health_boost_units[event.entity.unit_number] = {
-			math.floor(event.entity.prototype.max_health * global.biter_health_boost),
-			math.round(1 / global.biter_health_boost, 5),
+			math_floor(event.entity.prototype.max_health * global.biter_health_boost),
+			math_round(1 / global.biter_health_boost, 5),
 		}
 		
 		--Perform a table cleanup every 5000 boosts

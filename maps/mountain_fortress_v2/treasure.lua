@@ -2,7 +2,7 @@ local math_random = math.random
 
 local Public = {}
 
-function Public.treasure_chest(surface, position)
+function Public.treasure_chest(surface, position, container_name)
 	
 	local chest_raffle = {}
 	local chest_loot = {			
@@ -168,12 +168,8 @@ function Public.treasure_chest(surface, position)
 			end
 		end			
 	end
-
-	local name = "wooden-chest"
-	if math_random(1, 6) == 1 then name = "iron-chest" end
-	--if distance_to_center > 0.75 then name = "steel-chest" end
 	
-	local e = surface.create_entity({name = name, position=position, force="neutral"})	
+	local e = surface.create_entity({name = container_name, position=position, force="neutral"})	
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
 	for x = 1, math_random(2,6), 1 do

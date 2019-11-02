@@ -88,7 +88,7 @@ local function set_group_spawn_position(surface)
 	local wave_defense_table = WD.get_table()
 	local spawner = get_random_close_spawner(surface)
 	if not spawner then return end
-	local position = surface.find_non_colliding_position("rocket-silo", spawner.position, 64, 1)
+	local position = surface.find_non_colliding_position("electric-furnace", spawner.position, 64, 1)
 	if not position then return end
 	wave_defense_table.spawn_position = {x = position.x, y = position.y}
 	debug_print("set_group_spawn_position -- Changed position to x" .. wave_defense_table.spawn_position.x .. " y" .. wave_defense_table.spawn_position.y .. ".")

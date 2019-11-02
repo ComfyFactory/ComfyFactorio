@@ -1,5 +1,5 @@
 --destroying and mining rocks yields ore -- load as last module
-local max_spill = 48
+local max_spill = 40
 
 local rock_yield = {
 	["rock-big"] = 1,
@@ -95,7 +95,7 @@ local function on_player_mined_entity(event)
 	
 	local ore = ore_raffle[math.random(1, #ore_raffle)]	
 	local player = game.players[event.player_index]
-	
+	--[[
 	local inventory = player.get_inventory(defines.inventory.character_main)
 	if not inventory.can_insert({name = ore, count = 1}) then
 		local e = entity.surface.create_entity({name = entity.name, position = entity.position})
@@ -103,7 +103,7 @@ local function on_player_mined_entity(event)
 		player.print("Inventory full.", {200, 200, 200})
 		return
 	end
-			
+	]]		
 	local count = get_amount(entity)
 	local position = {x = entity.position.x, y = entity.position.y}
 	
