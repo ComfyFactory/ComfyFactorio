@@ -27,41 +27,47 @@ local function clean_table()
 end
 
 local function on_entity_damaged(event)
-	if not event.entity.valid then return end
-	if event.entity.force.index ~= 2 then return end
-	if event.entity.type ~= "unit" then return end
+	local biter = event.entity
+	if not (biter and biter.valid) then return end
+	if biter.force.index ~= 2 then return end
+	if biter.type ~= "unit" then return end
+
+	local biter_health_boost_units = global.biter_health_boost_units
+
+	local unit_number = biter.unit_number
 
 	--Create new health pool
-	if not global.biter_health_boost_units[event.entity.unit_number] then
-		global.biter_health_boost_units[event.entity.unit_number] = {
-			math_floor(event.entity.prototype.max_health * global.biter_health_boost),
+	local health_pool = biter_health_boost_units[unit_number]
+	if not health_pool then
+		health_pool = {
+			math_floor(biter.prototype.max_health * global.biter_health_boost),
 			math_round(1 / global.biter_health_boost, 5),
 		}
-		
+		biter_health_boost_units[unit_number] = health_pool
 		--Perform a table cleanup every 5000 boosts
 		global.biter_health_boost_count = global.biter_health_boost_count + 1
 		if global.biter_health_boost_count % 5000 == 0 then clean_table() end
 	end
-	
+
 	--Reduce health pool
-	global.biter_health_boost_units[event.entity.unit_number][1] = global.biter_health_boost_units[event.entity.unit_number][1] - event.final_damage_amount
-	
+	health_pool[1] = health_pool[1] - event.final_damage_amount
+
 	--Set entity health relative to health pool
-	event.entity.health = global.biter_health_boost_units[event.entity.unit_number][1] * global.biter_health_boost_units[event.entity.unit_number][2]
-	
+	biter.health = health_pool[1] * health_pool[2]
+
 	--Proceed to kill entity if health is 0
-	if event.entity.health > 0 then return end
-		
+	if biter.health > 0 then return end
+
 	--Remove health pool
-	global.biter_health_boost_units[event.entity.unit_number] = nil
-	
+	biter_health_boost_units[unit_number] = nil
+
 	if event.cause then
 		if event.cause.valid then
 			event.entity.die(event.cause.force, event.cause)
 			return
 		end
 	end
-	event.entity.die(event.entity.force)
+	biter.die(biter.force)
 end
 
 local function on_init()
