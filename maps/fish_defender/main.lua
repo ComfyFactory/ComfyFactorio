@@ -1,7 +1,8 @@
 -- fish defender -- by mewmew --
 
+require "modules.rpg"
+
 require "maps.fish_defender.terrain"
-require "maps.fish_defender.map_intro"
 require "maps.fish_defender.market"
 require "maps.fish_defender.shotgun_buff"
 require "maps.fish_defender.on_entity_damaged"
@@ -9,17 +10,14 @@ require "maps.fish_defender.on_entity_damaged"
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"
 require "modules.biters_yield_coins"
-require "modules.dynamic_landfill"
 require "modules.dangerous_goods"
 require "modules.custom_death_messages"
-require "modules.biter_evasion_hp_increaser"
-require "modules.rocks_yield_ore"
-require "modules.rpg"
 
+local Unit_health_booster = require "modules.biter_health_booster"
+local Map = require "modules.map_info"
 local event = require 'utils.event'
 local Server = require 'utils.server'
 local boss_biter = require "maps.fish_defender.boss_biters"
-require "functions.boss_unit"
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
@@ -483,7 +481,7 @@ local function spawn_boss_units(surface)
 				biter.ai_settings.allow_destroy_when_commands_fail = false
 				biter.ai_settings.allow_try_return_to_spawner = false
 				global.boss_biters[biter.unit_number] = biter
-				add_boss_unit(biter, global.biter_evasion_health_increase_factor * health_factor, 0.55)
+				Unit_health_booster.add_boss_unit(biter, global.biter_health_boost * health_factor, 0.55)
 				biter_group.add_member(biter)
 			end
 		end
@@ -574,7 +572,7 @@ local function biter_attack_wave()
 	end
 	game.forces.enemy.set_ammo_damage_modifier("melee", global.wave_count * m)
 	game.forces.enemy.set_ammo_damage_modifier("biological", global.wave_count * m)
-	global.biter_evasion_health_increase_factor = 1 + (global.wave_count * (m * 2))
+	global.biter_health_boost = 1 + (global.wave_count * (m * 2))
 	
 	local m = 4
 	if global.difficulty_vote_index then
@@ -1082,6 +1080,32 @@ local function on_init(event)
 	fish_eye(surface, {x = -2150, y = -300})	
 	
 	global.chunk_queue = {}
+	
+	local T = Map.Pop_info()
+	T.main_caption = "--Fish Defender--"
+	T.sub_caption =  "*blb blubby blub*"
+	T.text = [[
+		The biters have catched the scent of fish in the market.
+		Fend them off as long as possible!
+		This however will not be an easy task,
+		since their strength and resistance increases constantly over time.
+		
+		Your ultimate goal is to evacuate all the fish to cat planet!
+		Put them in your rocket's cargo and launch them into space.
+		Don't worry, you will still get space science.
+		
+		The Market will gladly take any coin you might find.
+		Additional turret slots can be bought at the market.
+		Several unique upgrades are available too.
+		
+		Researching tanks will unlock the artillery technology early.
+		
+		Any container bearing dangerous goods, like ammo, grenades or barrels,
+		causes heavy explosions when it breaks.
+		Maybe this can be used to our advantage.
+	]]
+	T.main_caption_color = {r=0.11, g=0.8, b=0.44}
+	T.sub_caption_color = {r=0.33, g=0.66, b=0.9}
 end
 
 event.add(defines.events.on_gui_click, on_gui_click)
@@ -1099,4 +1123,3 @@ event.add(defines.events.on_tick, on_tick)
 event.on_init(on_init)
 
 require "modules.difficulty_vote"
-require "modules.rpg"
