@@ -34,12 +34,12 @@ local size_raffle = {
 	}
 
 local ore_prints = {
-		["coal"] = {"dark", "coal"},
-		["iron-ore"] = {"shiny", "iron"},
-		["copper-ore"] = {"glimmering", "copper"}, 
-		["uranium-ore"] = {"glowing", "uranium"},
-		["stone"] = {"solid", "stone"},
-		["mixed"] = {"glitter", "mixed ore"},
+		["coal"] = {"dark", "coal", "[img=entity/coal]"},
+		["iron-ore"] = {"shiny", "iron", "[img=entity/iron-ore]"},
+		["copper-ore"] = {"glimmering", "copper", "[img=entity/copper-ore]"}, 
+		["uranium-ore"] = {"glowing", "uranium", "[img=entity/uranium-ore]"},
+		["stone"] = {"solid", "stone", "[img=entity/stone]"},
+		["mixed"] = {"glitter", "mixed ore", " "},
 	}
 
 
@@ -80,9 +80,11 @@ local function ore_vein(event)
 	local player = game.players[event.player_index]
 	for _, p in pairs(game.connected_players) do
 		if p.index == player.index then
-			p.print("You notice something " .. ore_prints[ore][1] .. " underneath the rubble covered floor. It's a " .. size[1] .. " vein of " ..  ore_prints[ore][2] .. "!!", { r=0.98, g=0.66, b=0.22})
+			p.print("You notice something " .. ore_prints[ore][1] .. " underneath the rubble. It's a " .. size[1] .. " vein of " ..  ore_prints[ore][2] .. "!! " .. ore_prints[ore][3], { r=0.80, g=0.80, b=0.80})
 		else
-			game.print(player.name .. " found a " .. size[1] .. " vein of " ..  ore_prints[ore][2] .. "!", { r=0.98, g=0.66, b=0.22})
+			game.print(
+			"[color=" .. player.chat_color.r .. "," .. player.chat_color.g .. "," .. player.chat_color.b .. "]" .. player.name
+			.. "[/color] found a " .. size[1] .. " vein of " ..  ore_prints[ore][2] .. "! " .. ore_prints[ore][3], { r=0.80, g=0.80, b=0.80})
 		end
 	end	
 	

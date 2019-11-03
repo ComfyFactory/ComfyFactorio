@@ -1,4 +1,5 @@
 local event = require 'utils.event' 
+local Server = require 'utils.server'
 
 local difficulties = {
 	[1] = {name = "Peaceful", value = 0.25, color = {r=0.00, g=0.45, b=0.00}, print_color = {r=0.00, g=0.8, b=0.00}},
@@ -70,7 +71,7 @@ local function set_difficulty()
 	if global.difficulty_vote_index ~= new_index then
 		local message = table.concat({">> Map difficulty has changed to ", difficulties[new_index].name, " difficulty!"})
 		game.print(message, difficulties[new_index].print_color)
-		server_commands.to_discord_embed(message)	
+		Server.to_discord_embed(message)	
 	end
 	 global.difficulty_vote_index = new_index
 	 global.difficulty_vote_value = difficulties[new_index].value

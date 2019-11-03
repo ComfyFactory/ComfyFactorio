@@ -14,7 +14,6 @@ require "modules.biters_avoid_damage"
 require "modules.biters_double_damage"
 require "modules.spawners_contain_biters"
 require "modules.rocks_broken_paint_tiles"
-require "modules.rocks_yield_ore"
 require "modules.rpg"
 require "modules.hunger"
 
@@ -393,6 +392,7 @@ local ore_spawn_raffle = {
 	}
 
 local function on_entity_died(event)
+	if not event.entity.valid then return end
 	local surface = event.entity.surface
 	
 	if event.entity.name == "biter-spawner" or event.entity.name == "spitter-spawner" then		
@@ -448,7 +448,7 @@ local function on_player_joined_game(event)
 		local turret_positions = {{6, 6}, {-5, -5}, {-5, 6}, {6, -5}}
 		for _, pos in pairs(turret_positions) do
 			local turret = surface.create_entity({name = "gun-turret", position = pos, force = "player"})
-			turret.insert({name = "firearm-magazine", count = 32})
+			turret.insert({name = "firearm-magazine", count = 64})
 		end
 		
 		local radius = 320
@@ -465,7 +465,6 @@ local function on_player_joined_game(event)
 		player.insert({name = "land-mine", count = 2})
 		player.insert({name = "light-armor", count = 1})
 		player.insert({name = "firearm-magazine", count = 64})
-		if global.show_floating_killscore then global.show_floating_killscore[player.name] = false end
 	end
 	
 	local surface = game.surfaces["spooky_forest"]
@@ -638,3 +637,6 @@ event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+require "modules.rocks_yield_ore"
+global.rocks_yield_ore_base_amount = 100

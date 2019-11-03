@@ -1,4 +1,6 @@
-function locomotive_spawn(surface, position)
+local Public = {}
+
+function Public.locomotive_spawn(surface, position)
 	for y = -6, 6, 2 do
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
 	end
@@ -20,7 +22,7 @@ function locomotive_spawn(surface, position)
 	global.locomotive_cargo.operable = false
 end
 
---[[
+
 local function fish_tag()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
@@ -39,7 +41,7 @@ local function fish_tag()
 		text = " "
 	})
 end
-
+--[[
 local function accelerate()
 	if not global.locomotive then return end
 	if not global.locomotive.valid then return end
@@ -55,28 +57,18 @@ local function remove_acceleration()
 	if global.locomotive_driver then global.locomotive_driver.destroy() end
 	global.locomotive_driver = nil
 end
-
-local function set_daytime()
-	if not global.locomotive_cargo then return end
-	if not global.locomotive_cargo.valid then return end
-	local p = global.locomotive_cargo.position.y
-	local t = math.abs(global.locomotive_cargo.position.y) * 0.02
-	if t > 0.5 then t = 0.5 end	
-	global.locomotive_cargo.surface.daytime = t
-	game.print(t)
-end
 ]]
-
 local function set_player_spawn_and_refill_fish()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 4})
+	global.locomotive_cargo.health = global.locomotive_cargo.health + 6
+	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math.random(2, 5)})
 	local position = global.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", global.locomotive_cargo.position, 16, 2)
 	if not position then return end
 	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
 end
 
-local function tick()
+local function tick()	
 	if game.tick % 30 == 0 then	
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()
@@ -84,12 +76,11 @@ local function tick()
 		if global.game_reset_tick then
 			if global.game_reset_tick < game.tick then
 				global.game_reset_tick = nil
-				reset_map()
+				require "maps.mountain_fortress_v2.main".reset_map()
 			end
 			return
 		end
-		--fish_tag()
-		--set_daytime()
+		fish_tag()
 		--accelerate()
 	else
 		--remove_acceleration()
@@ -98,3 +89,5 @@ end
 
 local event = require 'utils.event'
 event.on_nth_tick(5, tick)
+
+return Public

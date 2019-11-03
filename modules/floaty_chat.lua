@@ -7,7 +7,7 @@ local function on_console_chat(event)
 	if not player.character then return end
 	
 	local y_offset = -4
-	if global.rpg then y_offset = -4.5 end
+	if package.loaded['modules.rpg'] then y_offset = -4.5 end
 	
 	if global.player_floaty_chat[player.index] then
 		rendering.destroy(global.player_floaty_chat[player.index])

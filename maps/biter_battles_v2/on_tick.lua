@@ -1,4 +1,5 @@
 local event = require 'utils.event'
+local Server = require 'utils.server'
 
 local gui = require "maps.biter_battles_v2.gui"
 local ai = require "maps.biter_battles_v2.ai"
@@ -44,7 +45,7 @@ local function restart_idle_map()
 	if not global.restart_idle_map_countdown then global.restart_idle_map_countdown = 2 end
 	global.restart_idle_map_countdown = global.restart_idle_map_countdown - 1
 	if global.restart_idle_map_countdown ~= 0 then return end
-	server_commands.start_scenario('Biter_Battles')
+	Server.start_scenario('Biter_Battles')
 end
 
 local function on_tick(event)

@@ -1,8 +1,10 @@
 local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 local Game = require 'utils.game'
 local session = require 'utils.session_data'
+local Tabs = require 'comfy_panel.main'
 
 local insert = table.insert
 
@@ -148,7 +150,7 @@ local function send_poll_result_to_discord(poll)
     end
 
     local message = table.concat(result)
-    server_commands.to_discord_embed(message)
+    Server.to_discord_embed(message)
 end
 
 local function redraw_poll_viewer_content(data)
@@ -425,7 +427,7 @@ local function toggle(event)
     if main_frame then
         remove_main_frame(main_frame, left, event.player)
     else
-        comfy_panel_call_tab(p, "Polls")
+        Tabs.comfy_panel_call_tab(p, "Polls")
     end
 end
 
@@ -637,7 +639,7 @@ local function show_new_poll(poll_data)
         if block_notify[p.index] then
           p.print(message)
         else
-          local frame = comfy_panel_call_tab(p, "Polls")
+          local frame = Tabs.comfy_panel_call_tab(p, "Polls")
           p.print(message)
             if frame and frame.valid then
                 local data = Gui.get_data(frame)
@@ -645,7 +647,7 @@ local function show_new_poll(poll_data)
                 update_poll_viewer(data)
             else
                 player_poll_index[p.index] = nil
-                comfy_panel_call_tab(p, "Polls")
+                Tabs.comfy_panel_call_tab(p, "Polls")
             end
         end
     end
@@ -801,16 +803,20 @@ end
 local function tick()
     for _, p in pairs(game.connected_players) do
       if p.gui.left.comfy_panel ~= nil then
-        local frame = p.gui.left.comfy_panel.tabbed_pane.Polls[main_frame_name]
-        if frame and frame.valid then
-            local data = Gui.get_data(frame)
-            local poll = polls[data.poll_index]
-            if poll then
-                local poll_enabled = do_remaining_time(poll, data.remaining_time_label)
+        if p.gui.left.comfy_panel.tabbed_pane ~= nil then
+            if p.gui.left.comfy_panel.tabbed_pane.Polls ~= nil then
+                local frame = p.gui.left.comfy_panel.tabbed_pane.Polls[main_frame_name]
+                if frame and frame.valid then
+                    local data = Gui.get_data(frame)
+                    local poll = polls[data.poll_index]
+                    if poll then
+                        local poll_enabled = do_remaining_time(poll, data.remaining_time_label)
 
-                if not poll_enabled then
-                    for _, v in pairs(data.vote_buttons) do
-                        v.enabled = poll_enabled
+                        if not poll_enabled then
+                            for _, v in pairs(data.vote_buttons) do
+                                v.enabled = poll_enabled
+                            end
+                        end
                     end
                 end
             end
@@ -1094,7 +1100,7 @@ Gui.on_click(
                     main_frame_data.poll_index = poll_index
                     update_poll_viewer(main_frame_data)
                 else
-                    comfy_panel_call_tab(p, "Polls")
+                    Tabs.comfy_panel_call_tab(p, "Polls")
                 end
             end
         end
@@ -1276,7 +1282,7 @@ end
 
 function Class.send_poll_result_to_discord(id)
     if type(id) ~= 'number' then
-        server_commands.to_discord_embed('poll-id must be a number')
+        Server.to_discord_embed('poll-id must be a number')
         return
     end
 
@@ -1288,7 +1294,7 @@ function Class.send_poll_result_to_discord(id)
     end
 
     local message = table.concat {'poll #', id, ' not found'}
-    server_commands.to_discord_embed(message)
+    Server.to_discord_embed(message)
 end
 
 comfy_panel_tabs["Polls"] = draw_main_frame

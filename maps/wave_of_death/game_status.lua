@@ -1,4 +1,5 @@
 local game_status = {}
+local Server = require 'utils.server'
 
 local function create_victory_gui(winning_lane)
 	for _, player in pairs(game.connected_players) do
@@ -16,8 +17,8 @@ game_status.restart_server = function()
 	if global.server_restart_timer == 0 then
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
-		server_commands.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		server_commands.start_scenario('wave_of_death')
+		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+		Server.start_scenario('wave_of_death')
 		global.server_restart_timer = nil
 		return
 	end

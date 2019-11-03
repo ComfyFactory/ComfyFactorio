@@ -1,3 +1,5 @@
+local Public = {}
+
 local market = {}
 
 market.weapons = {
@@ -34,8 +36,8 @@ market.caspules = {
 	["poison-capsule"] = {value = 32, rarity = 6},
 	["slowdown-capsule"] = {value = 8, rarity = 1},
 	["defender-capsule"] = {value = 8, rarity = 1},
-	["distractor-capsule"] = {value = 16, rarity = 5},
-	["destroyer-capsule"] = {value = 24, rarity = 7},
+	["distractor-capsule"] = {value = 20, rarity = 5},
+	["destroyer-capsule"] = {value = 32, rarity = 7},
 	["discharge-defense-remote"] = {value = 64, rarity = 6},
 	["artillery-targeting-remote"] = {value = 32, rarity = 7},
 	["raw-fish"] = {value = 6, rarity = 1},
@@ -123,12 +125,12 @@ market.vehicles = {
 	["train-stop"] = {value = 32, rarity = 3},
 	["rail-signal"] = {value = 8, rarity = 5},
 	["rail-chain-signal"] = {value = 8, rarity = 5},
-	["locomotive"] = {value = 640, rarity = 4},
-	["cargo-wagon"] = {value = 320, rarity = 4},
-	["fluid-wagon"] = {value = 480, rarity = 5},
+	["locomotive"] = {value = 400, rarity = 4},
+	["cargo-wagon"] = {value = 200, rarity = 4},
+	["fluid-wagon"] = {value = 300, rarity = 5},
 	["artillery-wagon"] = {value = 8192, rarity = 8},
-	["car"] = {value = 96, rarity = 1},
-	["tank"] = {value = 2048, rarity = 5},	
+	["car"] = {value = 80, rarity = 1},
+	["tank"] = {value = 1800, rarity = 5},
 }
 
 market.wire = {
@@ -172,7 +174,7 @@ local function get_resource_market_buys()
 		{price = {{'stone', math.random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
 		{price = {{'coal', math.random(10,12)}}, offer = {type = 'give-item', item = "coin"}},
 		{price = {{'uranium-ore', math.random(8,10)}}, offer = {type = 'give-item', item = "coin"}},
-		{price = {{'water-barrel', 1}}, offer = {type = 'give-item', item = "coin", count = math.random(1,3)}},
+		{price = {{'water-barrel', 1}}, offer = {type = 'give-item', item = "coin", count = math.random(1,2)}},
 		{price = {{'lubricant-barrel', 1}}, offer = {type = 'give-item', item = "coin", count = math.random(3,6)}},
 		{price = {{'sulfuric-acid-barrel', 1}}, offer = {type = 'give-item', item = "coin", count = math.random(4,8)}},
 		{price = {{'light-oil-barrel', 1}}, offer = {type = 'give-item', item = "coin", count = math.random(2,4)}},
@@ -212,7 +214,7 @@ local function get_random_market_item_list(rarity)
 	return false
 end
 
-function mountain_market(surface, position, rarity)
+function Public.mountain_market(surface, position, rarity)
 	local types = get_types()
 	table.shuffle_table(types)
 	local items = get_market_item_list({types[1], types[2], types[3]}, rarity)
@@ -237,7 +239,7 @@ function mountain_market(surface, position, rarity)
 	return market
 end
 
-function super_market(surface, position, rarity)
+function Public.super_market(surface, position, rarity)
 	local items = get_market_item_list(get_types(), rarity)
 	if not items then return end
 	if #items > 0 then table.shuffle_table(items) end
@@ -262,3 +264,5 @@ function super_market(surface, position, rarity)
 	
 	return market
 end
+
+return Public

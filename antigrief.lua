@@ -5,6 +5,7 @@
 
 local event = require 'utils.event'
 local session = require 'utils.session_data'
+local Server = require 'utils.server'
 
 --[[
 local function create_admin_button(player)
@@ -73,7 +74,7 @@ local function on_player_ammo_inventory_changed(event)
 		if nukes > 0 then
 			player.surface.spill_item_stack(player.position, {name = "atomic-bomb", count = nukes}, false)
 			player.print("You have not grown accustomed to this technology yet.", {r=0.22, g=0.99, b=0.99})
-			server_commands.to_discord_bold(table.concat{'[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.'})
+			Server.to_discord_bold(table.concat{'[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.'})
 			player.character.health = 0
 		end
 	end
@@ -230,7 +231,7 @@ local function on_gui_opened(event)
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
 		game.print(player.name .. " is looting " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
-		server_commands.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " is looting " .. corpse_owner.name .. "´s body."})
+		Server.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " is looting " .. corpse_owner.name .. "´s body."})
 	end
 end
 
@@ -242,7 +243,7 @@ local function on_pre_player_mined_item(event)
 	if corpse_owner.force.name ~= player.force.name then return end
 	if player.name ~= corpse_owner.name then
 		game.print(player.name .. " has looted " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
-		server_commands.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " has looted " .. corpse_owner.name .. "´s body."})
+		Server.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " has looted " .. corpse_owner.name .. "´s body."})
 	end
 end
 
