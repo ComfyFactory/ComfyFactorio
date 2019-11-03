@@ -41,17 +41,14 @@ function Public.reset_map()
 	}
 	
 	if not global.active_surface_index then
-		global.active_surface_index = game.create_surface("biter_hatchery", map_gen_settings).index
-		game.forces.west.set_spawn_position({-128, 0}, game.surfaces[global.active_surface_index])
-		game.forces.east.set_spawn_position({128, 0}, game.surfaces[global.active_surface_index])
+		global.active_surface_index = game.create_surface("biter_hatchery", map_gen_settings).index		
 	else
-		game.forces.west.set_spawn_position({-128, 0}, game.surfaces[global.active_surface_index])
-		game.forces.east.set_spawn_position({128, 0}, game.surfaces[global.active_surface_index])	
 		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
 	end
 	
-	game.surfaces[global.active_surface_index].request_to_generate_chunks({0,0}, 10)
-	game.surfaces[global.active_surface_index].force_generate_chunk_requests()
+	local surface = game.surfaces[global.active_surface_index]
+	surface.request_to_generate_chunks({0,0}, 10)
+	surface.force_generate_chunk_requests()
 	
 	for key, _ in pairs(global.map_forces) do
 		game.forces[key].technologies["artillery"].enabled = false
@@ -59,19 +56,32 @@ function Public.reset_map()
 		game.forces[key].technologies["artillery-shell-speed-1"].enabled = false	
 	end
 		
-	local e = game.surfaces[global.active_surface_index].create_entity({name = "biter-spawner", position = {-128, 0}, force = "west"})
+	local e = surface.create_entity({name = "biter-spawner", position = {-160, 0}, force = "west"})
 	e.active = false
 	global.map_forces.west.hatchery = e
 	global.map_forces.east.target = e
 	
-	local e = game.surfaces[global.active_surface_index].create_entity({name = "biter-spawner", position = {128, 0}, force = "east"})
+	local e = surface.create_entity({name = "biter-spawner", position = {160, 0}, force = "east"})
 	e.active = false
 	global.map_forces.east.hatchery = e
 	global.map_forces.west.target = e
 	
-	draw_spawn_ores(game.surfaces[global.active_surface_index])
+	draw_spawn_ores(surface)
 	
 	RPG.rpg_reset_all_players()
+	
+	game.forces.west.set_spawn_position({-160, 0}, surface)
+	game.forces.east.set_spawn_position({160, 0}, surface)
+	
+	for _, player in pairs(game.connected_players) do
+		for _, child in pairs(player.gui.left.children) do child.destroy() end		
+		if math_random(1, 2) == 1 then
+			player.force = game.forces.east 
+		else
+			player.force = game.forces.west 
+		end
+		player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
+	end
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
@@ -164,25 +174,30 @@ end
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
 	if event.entity.type ~= "unit-spawner" then return end
-
+	
+	local gui_str
 	if event.entity.force.name == "east" then
 		game.print("East lost their Hatchery.", {100, 100, 100})
-		game.print(">>>> West team has won the game!!! <<<<", {255, 110, 22})
+		gui_str = ">>>> West team has won the game!!! <<<<"
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
-		game.print(">>>> East team has won the game!!! <<<<", {255, 110, 22})
+		gui_str = ">>>> East team has won the game!!! <<<<"
 	end
 
 	global.game_reset_tick = game.tick + 1800
 	
 	for _, player in pairs(game.connected_players) do
 		player.play_sound{path="utility/game_won", volume_modifier=0.85}
-	end		
+		for _, child in pairs(player.gui.left.children) do child.destroy() end
+		player.gui.left.add({type = "frame", caption = gui_str})
+	end
 end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces[global.active_surface_index]
+	
+	for _, child in pairs(player.gui.left.children) do child.destroy() end
 	
 	if player.surface.index ~= global.active_surface_index then
 		local force

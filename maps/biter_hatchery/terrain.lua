@@ -30,7 +30,7 @@ local function on_chunk_generated(event)
 	if left_top.y >= 96 then return end
 	if left_top.y < -96 then return end
 	
-	if left_top.x >= -160 and left_top.x < 160 then combat_area(event) end
+	if left_top.x >= -192 and left_top.x < 192 then combat_area(event) end
 
 	if left_top.x > 512 then return end
 	if left_top.x < -512 then return end
