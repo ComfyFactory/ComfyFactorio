@@ -15,6 +15,7 @@ Minor changes by ~~~Gerkiz~~~
 
 local event = require 'utils.event'
 local play_time = require 'utils.session_data'
+local Tabs = require 'comfy_panel.main'
 
 local symbol_asc = "▲"
 local symbol_desc = "▼"
@@ -167,7 +168,7 @@ local function get_sorted_list(sort_by)
 	return player_list
 end
 
-local column_widths = {40, 250, 250, 150, 100}
+
 
 local function player_list_show(player, frame, sort_by)
 	-- Frame management
@@ -176,6 +177,7 @@ local function player_list_show(player, frame, sort_by)
 
 	-- Header management
 	local t = frame.add { type = "table", name = "player_list_panel_header_table", column_count = 5 }
+	local column_widths = {tonumber(40), tonumber(250), tonumber(250), tonumber(150), tonumber(100)}
 	for _, w in ipairs(column_widths) do
 		local label = t.add { type = "label", caption = "" }
 		label.style.minimal_width = w
@@ -293,7 +295,7 @@ local function on_gui_click(event)
 	if not event.element.name then return end
 	local player = game.players[event.element.player_index]
 	
-	local frame = comfy_panel_get_active_frame(player)
+	local frame = Tabs.comfy_panel_get_active_frame(player)
 	if not frame then return end
 	if frame.name ~= "Players" then return end
 	
@@ -367,20 +369,20 @@ local function on_player_joined_game(event)
 		global.player_list.last_poke_tick[event.player_index] = 0
 	end	
 
-	local frame = comfy_panel_get_active_frame(player)
+	local frame = Tabs.comfy_panel_get_active_frame(player)
 	if not frame then return end
 	if frame.name ~= "Players" then return end
 	
 	player_list_show(player, frame, "total_time_played_desc")
 end
 
-comfy_panel_tabs["Players"] = player_list_show
-
-local function on_init()
+local on_init = function()
 	global.player_list = {}
 	global.player_list.last_poke_tick = {}
 	global.player_list.pokes = {}
 end
+
+comfy_panel_tabs["Players"] = player_list_show
 
 event.on_init(on_init)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

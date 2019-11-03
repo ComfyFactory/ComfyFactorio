@@ -3,7 +3,7 @@ _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
 _DUMP_ENV = false
 
-server_commands = require 'utils.server'
+require 'utils.server'
 require "utils.server_commands"
 require "utils.utils"
 require "utils.table"
@@ -13,22 +13,21 @@ require "chatbot"
 require "commands"
 require "antigrief"
 require "player_modifiers"
+require "modules.corpse_markers"
+require "modules.floaty_chat"
+require "modules.autohotbar"
 
 require "comfy_panel.main"
 require "comfy_panel.player_list"
-require "comfy_panel.group"
-require "comfy_panel.score"
-require "comfy_panel.poll"
 require "comfy_panel.admin"
+require "comfy_panel.group"
+require "comfy_panel.poll"
+require "comfy_panel.score"
+require "comfy_panel.config"
 
 require "modules.autostash"
-require "modules.corpse_markers"
-require "modules.floaty_chat"
---require "modules.autohotbar"
---require "on_tick_schedule"
 
 ---- enable modules here ----
---require "tools.cheat_mode"
 --require "modules.the_floor_is_lava"
 --require "modules.biters_landfill_on_death"
 --require "modules.autodecon_when_depleted"

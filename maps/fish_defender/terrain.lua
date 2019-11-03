@@ -1,6 +1,9 @@
 local map_functions = require "tools.map_functions"
 local simplex_noise = require "utils.simplex_noise".d2
 local math_random = math.random
+local math_abs = math.abs
+local math_floor = math.floor
+local math_sqrt = math.sqrt
 
 local hourglass_center_piece_length = 64
 local worm_raffle_table = {
@@ -30,22 +33,22 @@ local function get_replacement_tile(surface, position)
 end
 
 local function is_enemy_territory(p)
-	if p.x - 64 < math.abs(p.y) then return false end
+	if p.x - 64 < math_abs(p.y) then return false end
 	--if p.x - 64 < p.y then return false end
 	if p.x < 160 then return false end
 	if p.x > 1024 then return false end
 	if p.y > 512 then return false end
 	if p.y < -512 then return false end
-	local noise = math.abs(simplex_noise(0, p.y * 0.015, game.surfaces[1].map_gen_settings.seed) * 96)
-	local noise_2 = math.abs(simplex_noise(0, p.y * 0.1, game.surfaces[1].map_gen_settings.seed) * 16)
-	if p.x > 288 + noise + noise_2 + math.abs(p.y * 0.75) then return false end
+	local noise = math_abs(simplex_noise(0, p.y * 0.015, game.surfaces[1].map_gen_settings.seed) * 96)
+	local noise_2 = math_abs(simplex_noise(0, p.y * 0.1, game.surfaces[1].map_gen_settings.seed) * 16)
+	if p.x > 288 + noise + noise_2 + math_abs(p.y * 0.75) then return false end
 	return true
 end
 
 local body_radius = 3072
 local body_square_radius = body_radius ^ 2
 local body_center_position = {x = -1500, y = 0}
-local body_spacing = math.floor(body_radius * 0.82)
+local body_spacing = math_floor(body_radius * 0.82)
 local body_circle_center_1 = {x = body_center_position.x, y = body_center_position.y - body_spacing}
 local body_circle_center_2 = {x = body_center_position.x, y = body_center_position.y + body_spacing}
 
@@ -64,7 +67,7 @@ local function is_body(p)
 	
 	--Fish Fins
 	local distance_to_center_1 = ((p.x - fin_circle_center_1.x)^2 + (p.y - fin_circle_center_1.y)^2)
-	if distance_to_center_1 + math.abs(simplex_noise(0, p.y * 0.075, game.surfaces[1].map_gen_settings.seed) * 32000) > square_fin_radius then
+	if distance_to_center_1 + math_abs(simplex_noise(0, p.y * 0.075, game.surfaces[1].map_gen_settings.seed) * 32000) > square_fin_radius then
 		local distance_to_center_2 = ((p.x - fin_circle_center_2.x)^2 + (p.y - fin_circle_center_2.y)^2)
 		if distance_to_center_2 < square_fin_radius then
 			return true
@@ -98,13 +101,13 @@ local function generate_spawn_area(surface)
 	surface.create_entity({name = "electric-beam", position = {160, -96}, source = {160, -96}, target = {160,96}})
 
 	for _, tile in pairs(surface.find_tiles_filtered({name = {"water", "deepwater"}, area = {{-160, -160},{160, 160}}})) do
-		local noise = math.abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
+		local noise = math_abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
 		if tile.position.x > -160 + noise then	surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true) end
 	end
 
 	for _, entity in pairs(surface.find_entities_filtered({type = {"resource", "cliff"}, area = {{spawn_position_x - 32, -256},{160, 256}}})) do
 		if is_body(entity.position) then
-			if entity.position.x > spawn_position_x - 32 + math.abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16) then
+			if entity.position.x > spawn_position_x - 32 + math_abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16) then
 				entity.destroy() 
 			end
 		end
@@ -137,7 +140,7 @@ local function generate_spawn_area(surface)
 	
 	local r = 16
 	for _, entity in pairs(surface.find_entities_filtered({area = {{global.market.position.x - r, global.market.position.y - r}, {global.market.position.x + r, global.market.position.y + r}}, type = "tree"})) do
-		local distance_to_center = math.sqrt((entity.position.x - global.market.position.x)^2 + (entity.position.y - global.market.position.y)^2)
+		local distance_to_center = math_sqrt((entity.position.x - global.market.position.x)^2 + (entity.position.y - global.market.position.y)^2)
 		if distance_to_center < r then
 			if math_random(1, r) > distance_to_center then entity.destroy() end
 		end
@@ -150,7 +153,7 @@ local function generate_spawn_area(surface)
 	for x = -20, 20, 1 do
 		for y = -20, 20, 1 do
 			local pos = {x = global.market.position.x + x, y = global.market.position.y + y}
-			local distance_to_center = math.sqrt(x^2 + y^2)
+			local distance_to_center = math_sqrt(x^2 + y^2)
 			if distance_to_center > 8 and distance_to_center < 15 then
 				if math_random(1,3) == 1 and surface.can_place_entity({name = "wooden-chest", position = pos, force = "player"}) then
 					local chest = surface.create_entity({name = "wooden-chest", position = pos, force = "player"})
@@ -215,7 +218,7 @@ local function enemy_territory(surface, left_top)
 					--		  decorative_names[#decorative_names+1] = k
 					--		end
 					--	 end
-					--	surface.regenerate_decorative(decorative_names, {{x=math.floor(pos.x/32),y=math.floor(pos.y/32)}})
+					--	surface.regenerate_decorative(decorative_names, {{x=math_floor(pos.x/32),y=math_floor(pos.y/32)}})
 					--end
 				end
 			end
@@ -258,7 +261,7 @@ function fish_eye(surface, position)
 	for x = -48, 48, 1 do
 		for y = -48, 48, 1 do
 			local p = {x = position.x + x, y = position.y + y}
-			local distance = math.sqrt(((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2))
+			local distance = math_sqrt(((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2))
 			if distance < 44 then
 				surface.set_tiles({{name = "water-green", position = p}}, true)
 			end
@@ -274,26 +277,26 @@ local ores = {"coal", "iron-ore", "copper-ore", "stone"}
 local function plankton_territory(surface, position, seed)		
 	local noise = simplex_noise(position.x * 0.009, position.y * 0.009, seed)	
 	local d = 196
-	if position.x + position.y > (d * -1) - (math.abs(noise) * d * 3) and position.x > position.y - (d + (math.abs(noise) * d * 3)) then return false end
+	if position.x + position.y > (d * -1) - (math_abs(noise) * d * 3) and position.x > position.y - (d + (math_abs(noise) * d * 3)) then return false end
 	
 	local noise_2 = simplex_noise(position.x * 0.0075, position.y * 0.0075, seed + 10000)
 	if noise_2 > 0.87 then surface.set_tiles({{name = "deepwater-green", position = position}}, true) return true end
 	if noise_2 > 0.75 then
-		local i = math.floor(noise * 6) % 4 + 1
+		local i = math_floor(noise * 6) % 4 + 1
 		surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
-		surface.create_entity({name = ores[i], position = position, amount = 1 + 2500 * math.abs(noise_2 * 3)})	
+		surface.create_entity({name = ores[i], position = position, amount = 1 + 2500 * math_abs(noise_2 * 3)})	
 		return true 
 	end	
 	if noise_2 < -0.76 then
-		local i = math.floor(noise * 6) % 4 + 1
+		local i = math_floor(noise * 6) % 4 + 1
 		surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
-		if noise_2 < -0.86 then surface.create_entity({name = "uranium-ore", position = position, amount = 1 + 1000 * math.abs(noise_2 * 2)}) return true end
+		if noise_2 < -0.86 then surface.create_entity({name = "uranium-ore", position = position, amount = 1 + 1000 * math_abs(noise_2 * 2)}) return true end
 		if math_random(1, 3) ~= 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position}) end
 		return true 
 	end
 	
 	if noise < 0.12 and noise > -0.12 then
-		local i = math.floor(noise * 32) % 4 + 1
+		local i = math_floor(noise * 32) % 4 + 1
 		surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
 		if math_random(1, 5) == 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position}) end
 		return true
@@ -343,10 +346,10 @@ local function on_chunk_generated(event)
 	if game.tick == 0 then
 		process_chunk(left_top)
 	else
-		global.chunk_queue[#global.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
+		table.insert(global.chunk_queue, {x = left_top.x, y = left_top.y})
 	end
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(30, process_chunk_queue)
+event.on_nth_tick(25, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)

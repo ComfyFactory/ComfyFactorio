@@ -1,6 +1,8 @@
 -- this script adds a group button to create groups for your players -- 
 
-local function build_group_gui(player, frame)
+local Tabs = require 'comfy_panel.main'
+
+local build_group_gui = (function (player, frame)
 	local group_name_width = 150
 	local description_width = 240
 	local members_width = 90
@@ -99,13 +101,13 @@ local function build_group_gui(player, frame)
 	b.style.minimal_width = 150
 	b.style.font = "default-bold"
 		
-end
+end)
 
 
 
 local function refresh_gui()
 	for _, p in pairs(game.connected_players) do
-		local frame = comfy_panel_get_active_frame(p)
+		local frame = Tabs.comfy_panel_get_active_frame(p)
 		if frame then
 			if frame.name == "Groups" then
 				local new_group_name = frame.frame2.group_table.new_group_name.text
@@ -113,7 +115,7 @@ local function refresh_gui()
 				
 				build_group_gui(p, frame)
 				
-				local frame = comfy_panel_get_active_frame(p)
+				local frame = Tabs.comfy_panel_get_active_frame(p)
 				frame.frame2.group_table.new_group_name.text = new_group_name
 				frame.frame2.group_table.new_group_description.text = new_group_description
 			end
@@ -137,7 +139,7 @@ local function on_gui_click(event)
 
 	local player = game.players[event.element.player_index]
 	local name = event.element.name
-	local frame = comfy_panel_get_active_frame(player)
+	local frame = Tabs.comfy_panel_get_active_frame(player)
 	if not frame then return end
 	if frame.name ~= "Groups" then return end
 	
@@ -214,6 +216,7 @@ end
 
 comfy_panel_tabs["Groups"] = build_group_gui
 
-local event = require 'utils.event' 
+
+local event = require 'utils.event'
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

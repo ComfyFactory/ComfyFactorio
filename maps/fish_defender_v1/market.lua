@@ -6,6 +6,7 @@ require 'maps.fish_defender.vehicle_nanobots'
 require 'maps.fish_defender.laser_pointer'
 
 local event = require 'utils.event'
+local Server = require 'utils.server'
 
 local slot_upgrade_offers = {
 		[1] = {"gun-turret", "gun turret"},
@@ -166,7 +167,7 @@ local function slot_upgrade(player, offer_index)
 				 
 	global.entity_limits[slot_upgrade_offers[offer_index][1]].limit = global.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
 	game.print(player.name .. " has bought a " .. slot_upgrade_offers[offer_index][2] .. " slot for " .. price .. " coins!", {r = 0.22, g = 0.77, b = 0.44})
-	server_commands.to_discord_bold(table.concat{player.name .. " has bought a " .. slot_upgrade_offers[offer_index][2] .. " slot for " .. price .. " coins!"})
+	Server.to_discord_bold(table.concat{player.name .. " has bought a " .. slot_upgrade_offers[offer_index][2] .. " slot for " .. price .. " coins!"})
 	refresh_market_offers()
 end
 

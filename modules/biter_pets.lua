@@ -1,6 +1,8 @@
 local math_random = math.random
 local nom_msg = {"munch", "munch", "yum"}
 
+local Public = {}
+
 local function feed_floaty_text(unit)
 	unit.surface.create_entity({name = "flying-text", position = unit.position, text = nom_msg[math_random(1, #nom_msg)], color = {math_random(50, 100), 0, 255}})
 end
@@ -48,7 +50,7 @@ local function feed_pet(unit)
 	return true
 end
 
-function biter_pets_tame_unit(player, unit, forced)
+function Public.biter_pets_tame_unit(player, unit, forced)
 	if global.biter_pets[player.index] then return false end
 	if not forced then
 		if math_random(1, math.floor(unit.prototype.max_health * 0.01) + 1) ~= 1 then
@@ -91,7 +93,7 @@ local function on_player_dropped_item(event)
 	if event.entity.stack.name ~= "raw-fish" then return end
 	local unit = find_unit(player, event.entity)
 	if not unit then return end
-	if biter_pets_tame_unit(player, unit, false) then event.entity.destroy() return end
+	if Public.biter_pets_tame_unit(player, unit, false) then event.entity.destroy() return end
 	if unit.force.index == player.force.index then feed_pet(unit) end	
 end
 
@@ -103,3 +105,5 @@ local event = require 'utils.event'
 event.on_init(on_init)
 event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
+
+return Public

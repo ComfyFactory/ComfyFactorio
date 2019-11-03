@@ -14,6 +14,7 @@ require "modules.custom_death_messages"
 require "modules.biter_evasion_hp_increaser"
 
 local event = require 'utils.event'
+local Server = require 'utils.server'
 local boss_biter = require "maps.fish_defender.boss_biters"
 require "functions.boss_unit"
 local map_functions = require "tools.map_functions"
@@ -840,7 +841,7 @@ local function is_game_lost()
 				insert(result, 'MVP Deaths: \\n')
 				insert(result, mvp.deaths.name .. " died " .. mvp.deaths.score .. " times" )
 				local message = table.concat(result)
-				server_commands.to_discord_embed(message)
+				Server.to_discord_embed(message)
 				global.results_sent = true
 			end
 		end
@@ -1371,8 +1372,8 @@ local function on_tick()
 					--game.write_file("commandPipe", ":loadscenario --force", false, 0)
 
 					local message = 'Map is restarting! '
-					server_commands.to_discord_bold(table.concat{'*** ', message, ' ***'})
-					server_commands.start_scenario('Fish_Defender')
+					Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+					Server.start_scenario('Fish_Defender')
 
 				end
 			end
