@@ -1,4 +1,5 @@
 require "modules.no_turrets"
+local RPG = require "modules.rpg"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
@@ -69,6 +70,8 @@ function Public.reset_map()
 	global.map_forces.west.target = e
 	
 	draw_spawn_ores(game.surfaces[global.active_surface_index])
+	
+	RPG.rpg_reset_all_players()
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
@@ -225,6 +228,26 @@ local function tick()
 	end
 end
 
+--Construction Robot Restriction
+local robot_build_restriction = {
+	["east"] = function(x)
+		if x < 0 then return true end
+	end,
+	["west"] = function(x)
+		if x > 0 then return true end
+	end
+}
+
+local function on_robot_built_entity(event)
+	if not robot_build_restriction[event.robot.force.name] then return end
+	if not robot_build_restriction[event.robot.force.name](event.created_entity.position.x) then return end
+	local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+	inventory.insert({name = event.created_entity.name, count = 1})
+	event.robot.surface.create_entity({name = "explosion", position = event.created_entity.position})
+	game.print("Team " .. event.robot.force.name .. "'s construction drone had an accident.", {r = 200, g = 50, b = 100})
+	event.created_entity.destroy()
+end
+
 local function on_init()
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
@@ -242,13 +265,14 @@ local function on_init()
 	T.text = table.concat({
 		"Defeat the enemy teams nest.\n",
 		"Feed your hatchery science flasks to breed biters!\n",
-		"They will swarm to the opposing teams nest!,\n",
+		"They will soon after swarm to the opposing teams nest!,\n",
 		"\n",
-		"Lay transport belts to the nest and they will happily nom the juice.\n",
+		"Lay transport belts to your hatchery and they will happily nom the juice off the conveyor.\n",
 		"Higher tier flasks will breed stronger biters!\n",
 		"\n",
-		"Turrets are disabled!\n",
-		"The center river may not be crossed!\n",
+		"Turrets are disabled.\n",
+		"The center river may not be crossed.\n",
+		"Construction robots may not build over the river.\n",
 	})
 	T.main_caption_color = {r = 150, g = 0, b = 255}
 	T.sub_caption_color = {r = 0, g = 250, b = 150}
@@ -260,6 +284,7 @@ end
 local event = require 'utils.event'
 event.on_init(on_init)
 event.on_nth_tick(60, tick)
+event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
