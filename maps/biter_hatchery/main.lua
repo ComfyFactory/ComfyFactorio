@@ -7,34 +7,48 @@ local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
 local math_random = math.random
 local Public = {}
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['iron-plate'] = 32, ['iron-gear-wheel'] = 32, ['stone'] = 32}
+local starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 25}
 
 local function draw_spawn_ores(surface)
 	local x = global.map_forces.west.hatchery.position.x - 64
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "iron-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = -32}, "copper-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = 0}, "coal", surface, 15, 1500)
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = 64}, "stone", surface, 15, 1500)
 	
 	local x = global.map_forces.east.hatchery.position.x + 64
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "copper-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = -32}, "iron-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = 0}, "coal", surface, 15, 1500)
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = -64}, "stone", surface, 15, 1500)
 end
 
 local function assign_force_to_player(player)
-	if #game.forces.east.connected_players == #game.forces.west.connected_players then
-		if math_random(1, 2) == 1 then
+	if math_random(1, 2) == 1 then
+		if #game.forces.east.connected_players > #game.forces.west.connected_players then
+			player.force = game.forces.west
+		else
+			player.force = game.forces.east 
+		end
+	else
+		if #game.forces.east.connected_players < #game.forces.west.connected_players then
 			player.force = game.forces.east
 		else
-			player.force = game.forces.west
+			player.force = game.forces.west 
 		end
-		return
 	end
-	
-	if #game.forces.east.connected_players > #game.forces.west.connected_players then
-		player.force = game.forces.west
-	else
-		player.force = game.forces.east 
+end
+
+local function assign_force_to_all_players()
+	local player_indexes = {}
+	for _, p in pairs(game.players) do player_indexes[#player_indexes + 1] = p.index end
+	table.shuffle_table(player_indexes)
+	for key, player_index in pairs(player_indexes) do
+		if key % 2 == 1 then
+			game.players[player_index].force = game.forces.west
+		else
+			game.players[player_index].force = game.forces.east
+		end
 	end
 end
 
@@ -44,8 +58,8 @@ function Public.reset_map()
 	map_gen_settings.height = 192
 	map_gen_settings.water = 0.2
 	map_gen_settings.starting_area = 1
-	map_gen_settings.terrain_segmentation = 10
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = math.random(16, 48), cliff_elevation_0 = math.random(16, 48)}	
+	map_gen_settings.terrain_segmentation = 12
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = math_random(16, 48), cliff_elevation_0 = math_random(16, 48)}	
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 100, size = 0.5, richness = 0.5,},
 		["stone"] = {frequency = 100, size = 0.5, richness = 0.5,},
@@ -53,7 +67,7 @@ function Public.reset_map()
 		["iron-ore"] = {frequency = 100, size = 0.5, richness = 0.5,},
 		["uranium-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
 		["crude-oil"] = {frequency = 50, size = 0.5, richness = 0.5,},
-		["trees"] = {frequency = math.random(5, 10) * 0.1, size = math.random(5, 10) * 0.1, richness = math.random(3, 10) * 0.1},
+		["trees"] = {frequency = math_random(5, 10) * 0.1, size = math_random(5, 10) * 0.1, richness = math_random(3, 10) * 0.1},
 		["enemy-base"] = {frequency = 0, size = 0, richness = 0}	
 	}
 	
@@ -68,6 +82,7 @@ function Public.reset_map()
 	surface.force_generate_chunk_requests()
 	
 	for key, _ in pairs(global.map_forces) do
+		game.forces[key].research_queue_enabled = true
 		game.forces[key].technologies["artillery"].enabled = false
 		game.forces[key].technologies["artillery-shell-range-1"].enabled = false					
 		game.forces[key].technologies["artillery-shell-speed-1"].enabled = false	
@@ -90,20 +105,23 @@ function Public.reset_map()
 	game.forces.west.set_spawn_position({-160, 0}, surface)
 	game.forces.east.set_spawn_position({160, 0}, surface)
 	
+	assign_force_to_all_players()
+	
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
-		assign_force_to_player(player)
 		player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
 	end
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
-	local count = unit_raffle[food_item][2]
+	local count_per_flask = unit_raffle[food_item][2]
 	local raffle = unit_raffle[food_item][1]
-	for _ = 1, count, 1 do
-		local unit = belt.surface.create_entity({name = raffle[math_random(1, #raffle)], position = belt.position, force = belt.force})
-		unit.ai_settings.allow_destroy_when_commands_fail = false
-		unit.ai_settings.allow_try_return_to_spawner = false
+	for _ = 1, removed_item_count, 1 do
+		for _ = 1, count_per_flask, 1 do
+			local unit = belt.surface.create_entity({name = raffle[math_random(1, #raffle)], position = belt.position, force = belt.force})
+			unit.ai_settings.allow_destroy_when_commands_fail = false
+			unit.ai_settings.allow_try_return_to_spawner = false
+		end
 	end
 end
 
@@ -144,6 +162,7 @@ end
 local function nom()
 	local surface = game.surfaces[global.active_surface_index]
 	for key, force in pairs(global.map_forces) do
+		force.hatchery.health = force.hatchery.health + 1
 		local belts = get_belts(force.hatchery)
 		for _, belt in pairs(belts) do
 			eat_food_from_belt(belt)
@@ -199,21 +218,33 @@ end
 
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
+	if global.game_reset_tick then return end
 	if event.entity.type ~= "unit-spawner" then return end
 	
 	local gui_str
 	if event.entity.force.name == "east" then
 		game.print("East lost their Hatchery.", {100, 100, 100})
 		gui_str = ">>>> West team has won the game!!! <<<<"
+		for _, player in pairs(game.forces.east.connected_players) do
+			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
+		end
+		for _, player in pairs(game.forces.west.connected_players) do
+			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+		end
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
 		gui_str = ">>>> East team has won the game!!! <<<<"
+		for _, player in pairs(game.forces.west.connected_players) do
+			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
+		end
+		for _, player in pairs(game.forces.east.connected_players) do
+			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+		end
 	end
 
 	global.game_reset_tick = game.tick + 1800
 	
 	for _, player in pairs(game.connected_players) do
-		player.play_sound{path="utility/game_won", volume_modifier=0.85}
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
 		player.gui.left.add({type = "frame", name = "biter_hatchery_game_won", caption = gui_str})
 	end
@@ -243,6 +274,12 @@ local function on_player_joined_game(event)
 end
 
 local function tick()	
+	if game.tick % 240 == 0 then
+		local area = {{-256, -96}, {255, 96}}
+		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
+		game.forces.east.chart(game.surfaces[global.active_surface_index], area)
+	end
+
 	local t2 = game.tick % 900
 	if t2 == 0 then send_unit_groups() end
 	
@@ -255,12 +292,6 @@ local function tick()
 	end
 	
 	nom()
-	
-	if game.tick % 240 == 0 then
-		local area = {{-256, -96}, {255, 96}}
-		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
-		game.forces.east.chart(game.surfaces[global.active_surface_index], area)
-	end
 end
 
 --Construction Robot Restriction
