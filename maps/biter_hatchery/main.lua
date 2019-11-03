@@ -7,7 +7,7 @@ local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
 local math_random = math.random
 local Public = {}
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16}
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['iron-plate'] = 32, ['iron-gear-wheel'] = 32, ['stone'] = 32}
 
 local function draw_spawn_ores(surface)
 	local x = global.map_forces.west.hatchery.position.x - 64
@@ -19,6 +19,23 @@ local function draw_spawn_ores(surface)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "copper-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = -32}, "iron-ore", surface, 15, 2500)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = 0}, "coal", surface, 15, 1500)
+end
+
+local function assign_force_to_player(player)
+	if #game.forces.east.connected_players == #game.forces.west.connected_players then
+		if math_random(1, 2) == 1 then
+			player.force = game.forces.east
+		else
+			player.force = game.forces.west
+		end
+		return
+	end
+	
+	if #game.forces.east.connected_players > #game.forces.west.connected_players then
+		player.force = game.forces.west
+	else
+		player.force = game.forces.east 
+	end
 end
 
 function Public.reset_map()
@@ -75,11 +92,7 @@ function Public.reset_map()
 	
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
-		if math_random(1, 2) == 1 then
-			player.force = game.forces.east 
-		else
-			player.force = game.forces.west 
-		end
+		assign_force_to_player(player)
 		player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
 	end
 end
@@ -213,13 +226,7 @@ local function on_player_joined_game(event)
 	if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
 
 	if player.surface.index ~= global.active_surface_index then
-		local force
-		if math_random(1, 2) == 1 then
-			force = game.forces.east 
-		else
-			force = game.forces.west 
-		end
-		player.force = force
+		assign_force_to_player(player)
 		if player.character then
 			if player.character.valid then
 				player.character.destroy()
@@ -228,7 +235,7 @@ local function on_player_joined_game(event)
 		player.character = nil
 		player.set_controller({type=defines.controllers.god})
 		player.create_character()
-		player.teleport(surface.find_non_colliding_position("character", force.get_spawn_position(surface), 32, 0.5), surface)
+		player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
 		end
