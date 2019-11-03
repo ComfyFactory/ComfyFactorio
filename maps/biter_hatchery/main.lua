@@ -74,7 +74,7 @@ function Public.reset_map()
 	game.forces.east.set_spawn_position({160, 0}, surface)
 	
 	for _, player in pairs(game.connected_players) do
-		for _, child in pairs(player.gui.left.children) do child.destroy() end		
+		if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
 		if math_random(1, 2) == 1 then
 			player.force = game.forces.east 
 		else
@@ -103,12 +103,25 @@ local function get_belts(spawner)
 	return belts
 end
 
+local nom_msg = {"munch", "munch", "yum"}
+
+local function feed_floaty_text(entity)
+	entity.surface.create_entity({name = "flying-text", position = entity.position, text = nom_msg[math_random(1, #nom_msg)], color = {math_random(50, 100), 0, 255}})
+	local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
+	local b = 1.35
+	for a = 1, math_random(0, 2), 1 do
+		local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}			
+		entity.surface.create_entity({name = "flying-text", position = p, text = "♥", color = {math_random(150, 255), 0, 255}})						
+	end
+end
+
 local function eat_food_from_belt(belt)
 	for i = 1, 2, 1 do
 		local line = belt.get_transport_line(i)
 		for food_item, raffle in pairs(unit_raffle) do
 			local removed_item_count = line.remove_item({name = food_item, count = 8})
 			if removed_item_count > 0 then
+				feed_floaty_text(belt)
 				spawn_units(belt, food_item, removed_item_count)
 			end
 		end
@@ -189,7 +202,7 @@ local function on_entity_died(event)
 	for _, player in pairs(game.connected_players) do
 		player.play_sound{path="utility/game_won", volume_modifier=0.85}
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
-		player.gui.left.add({type = "frame", caption = gui_str})
+		player.gui.left.add({type = "frame", name = "biter_hatchery_game_won", caption = gui_str})
 	end
 end
 
@@ -197,8 +210,8 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces[global.active_surface_index]
 	
-	for _, child in pairs(player.gui.left.children) do child.destroy() end
-	
+	if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
+
 	if player.surface.index ~= global.active_surface_index then
 		local force
 		if math_random(1, 2) == 1 then
@@ -263,6 +276,19 @@ local function on_robot_built_entity(event)
 	event.created_entity.destroy()
 end
 
+local function on_entity_damaged(event)
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.type ~= "unit-spawner" then return end
+	local cause = event.cause
+	if cause then
+		if cause.valid then
+			if cause.type == "unit" then return end
+		end
+	end
+	entity.health = entity.health + event.final_damage_amount	
+end
+
 local function on_init()
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
@@ -303,3 +329,4 @@ event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
+event.add(defines.events.on_entity_damaged, on_entity_damaged)
