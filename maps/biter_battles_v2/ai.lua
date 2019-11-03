@@ -256,15 +256,18 @@ end
 ai.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
 	local force_name = global.next_attack
-	local biter_force_name = force_name .. "_biters"
-	local wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
 	
-	set_biter_raffle_table(surface, biter_force_name)
-	
-	for c = 1, wave_amount, 1 do		
-		create_attack_group(surface, force_name, biter_force_name)
+	if not global.training_mode or (global.training_mode and #game.forces[force_name].connected_players > 0) then
+		local biter_force_name = force_name .. "_biters"
+		local wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
+		
+		set_biter_raffle_table(surface, biter_force_name)
+		
+		for c = 1, wave_amount, 1 do		
+			create_attack_group(surface, force_name, biter_force_name)
+		end
+		if global.bb_debug then game.print(wave_amount .. " unit groups designated for " .. force_name .. " biters.") end
 	end
-	if global.bb_debug then game.print(wave_amount .. " unit groups designated for " .. force_name .. " biters.") end
 	
 	if global.next_attack == "north" then
 		global.next_attack = "south"
@@ -275,15 +278,17 @@ end
 
 ai.raise_evo = function()
 	if global.freeze_players then return end
-	if #game.forces.north.connected_players == 0 or (not bb_config.training_mode and #game.forces.south.connected_players == 0) then return end
+	if not global.training_mode and (#game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0) then return end
 	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
-	local biter_teams = {["north_biters"] = true, ["south_biters"] = true}
-	if bb_config.training_mode then 
-		biter_teams["south_biters"] = nil
+	local biter_teams = {["north_biters"] = "north", ["south_biters"] = "south"}
+	local a_team_has_players = false
+	for bf, pf in pairs(biter_teams) do
+		if #game.forces[pf].connected_players > 0 then
+			set_evo_and_threat(amount, "automation-science-pack", bf)
+			a_team_has_players = true
+		end
 	end
-	for f in pairs(biter_teams) do
-		set_evo_and_threat(amount, "automation-science-pack", f)
-	end
+	if not a_team_has_players then return end
 	global.evo_raise_counter = global.evo_raise_counter + (1 * 0.50)
 end
 

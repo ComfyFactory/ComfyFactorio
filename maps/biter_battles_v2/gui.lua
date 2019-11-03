@@ -20,9 +20,6 @@ local gui_values = {
 		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44}}
 }
-if bb_config.training_mode then
-	gui_values["south"] = nil
-end
 
 local map_gen_messages = {
 	"Map is still generating, please get comfy.",
@@ -232,7 +229,7 @@ function join_team(player, force_name, forced_join)
 	local enemy_team = "south"
 	if force_name == "south" then enemy_team = "north" end
 	
-	if not bb_config.training_mode and bb_config.team_balancing then
+	if not global.training_mode and bb_config.team_balancing then
 		if not forced_join then
 			if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
 				if not global.chosen_team[player.name] then
