@@ -41,7 +41,7 @@ end
 
 local function assign_force_to_all_players()
 	local player_indexes = {}
-	for _, p in pairs(game.players) do player_indexes[#player_indexes + 1] = p.index end
+	for _, p in pairs(game.connected_players) do player_indexes[#player_indexes + 1] = p.index end
 	table.shuffle_table(player_indexes)
 	for key, player_index in pairs(player_indexes) do
 		if key % 2 == 1 then
@@ -328,6 +328,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_init()
+	game.difficulty_settings.technology_price_multiplier = 0.5 
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
 	game.map_settings.enemy_evolution.time_factor = 0
