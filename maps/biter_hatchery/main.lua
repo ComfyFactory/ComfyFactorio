@@ -1,6 +1,7 @@
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local Terrain = require "maps.biter_hatchery.terrain"
 local Reset = require "functions.soft_reset"
+local Map = require "modules.map_info"
 local math_random = math.random
 local Public = {}
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16}
@@ -8,41 +9,47 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16}
 function Public.reset_map()
 	local map_gen_settings = {}
 	map_gen_settings.seed = math_random(1, 10000000)
-	map_gen_settings.height = 160
-	map_gen_settings.water = math.random(30, 40) * 0.01
-	map_gen_settings.starting_area = 2.5
-	map_gen_settings.terrain_segmentation = math.random(30, 40) * 0.1	
+	map_gen_settings.height = 192
+	map_gen_settings.water = 0.5
+	map_gen_settings.starting_area = 1
+	map_gen_settings.terrain_segmentation = 5
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = math.random(16, 48), cliff_elevation_0 = math.random(16, 48)}	
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = math.random(20, 40) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
-		["stone"] = {frequency = math.random(20, 40) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
-		["copper-ore"] = {frequency = math.random(20, 40) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
-		["iron-ore"] = {frequency = math.random(20, 40) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
-		["uranium-ore"] = {frequency = math.random(20, 40) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(5, 15) * 0.1},
-		["crude-oil"] = {frequency = math.random(25, 50) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(10, 20) * 0.1},
-		["trees"] = {frequency = math.random(5, 25) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(3, 10) * 0.1},
+		["coal"] = {frequency = 50, size = 0.5, richness = 0.5,},
+		["stone"] = {frequency = 50, size = 0.5, richness = 0.5,},
+		["copper-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
+		["iron-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
+		["uranium-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
+		["crude-oil"] = {frequency = 50, size = 0.5, richness = 0.5,},
+		["trees"] = {frequency = math.random(5, 15) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(3, 10) * 0.1},
 		["enemy-base"] = {frequency = 0, size = 0, richness = 0}	
 	}
 	
 	if not global.active_surface_index then
 		global.active_surface_index = game.create_surface("biter_hatchery", map_gen_settings).index
-		game.forces.west.set_spawn_position({-64, 0}, game.surfaces[global.active_surface_index])
-		game.forces.east.set_spawn_position({64, 0}, game.surfaces[global.active_surface_index])
+		game.forces.west.set_spawn_position({-128, 0}, game.surfaces[global.active_surface_index])
+		game.forces.east.set_spawn_position({128, 0}, game.surfaces[global.active_surface_index])
 	else
-		game.forces.west.set_spawn_position({-64, 0}, game.surfaces[global.active_surface_index])
-		game.forces.east.set_spawn_position({64, 0}, game.surfaces[global.active_surface_index])	
+		game.forces.west.set_spawn_position({-128, 0}, game.surfaces[global.active_surface_index])
+		game.forces.east.set_spawn_position({128, 0}, game.surfaces[global.active_surface_index])	
 		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
 	end
 	
 	game.surfaces[global.active_surface_index].request_to_generate_chunks({0,0}, 8)
 	game.surfaces[global.active_surface_index].force_generate_chunk_requests()
 	
-	local e = game.surfaces[global.active_surface_index].create_entity({name = "biter-spawner", position = {-64, 0}, force = "west"})
+	for key, _ in pairs(global.map_forces) do
+		game.forces[key].technologies["artillery"].enabled = false
+		game.forces[key].technologies["artillery-shell-range-1"].enabled = false					
+		game.forces[key].technologies["artillery-shell-speed-1"].enabled = false	
+	end
+		
+	local e = game.surfaces[global.active_surface_index].create_entity({name = "biter-spawner", position = {-128, 0}, force = "west"})
 	e.active = false
 	global.map_forces.west.hatchery = e
 	global.map_forces.east.target = e
 	
-	local e = game.surfaces[global.active_surface_index].create_entity({name = "biter-spawner", position = {64, 0}, force = "east"})
+	local e = game.surfaces[global.active_surface_index].create_entity({name = "biter-spawner", position = {128, 0}, force = "east"})
 	e.active = false
 	global.map_forces.east.hatchery = e
 	global.map_forces.west.target = e
@@ -122,6 +129,19 @@ local function send_unit_groups()
 	end
 end
 
+local border_teleport = {
+	["east"] = 2,
+	["west"] = -2,
+}
+
+local function on_player_changed_position(event)
+	local player = game.players[event.player_index]
+	if player.position.x >= -4 and player.position.x <= 4 then
+		if player.character.driving then player.character.driving = false end
+		player.teleport({player.position.x + border_teleport[player.force.name], player.position.y}, game.surfaces[global.active_surface_index])
+	end
+end
+
 local function on_entity_died(event)
 	if not event.entity.valid then	return end
 	if event.entity.type ~= "unit-spawner" then return end
@@ -193,6 +213,24 @@ local function on_init()
 		["west"] = {},
 		["east"] = {},
 	}
+	
+	local T = Map.Pop_info()
+	T.main_caption = "Biter Hatchery"
+	T.sub_caption =  "..nibble nibble nom nom.."
+	T.text = table.concat({
+		"Defeat the enemy teams nest.\n",
+		"Feed your hatchery science flasks to breed biters!\n",
+		"They will swarm to the opposing teams nest!,\n",
+		"\n",
+		"Lay transport belts to the nest and they will happily nom the juice.\n",
+		"Higher tier flasks will breed stronger biters!\n",
+		"\n",
+		"Turrets are disabled!\n",
+		"The center river may not be crossed!\n",
+	})
+	T.main_caption_color = {r = 150, g = 0, b = 255}
+	T.sub_caption_color = {r = 0, g = 250, b = 150}
+	
 	for key, _ in pairs(global.map_forces) do game.create_force(key) end
 	Public.reset_map()
 end
@@ -202,3 +240,4 @@ event.on_init(on_init)
 event.on_nth_tick(60, tick)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_changed_position, on_player_changed_position)
