@@ -1,4 +1,6 @@
+require "modules.no_turrets"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
+local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
@@ -6,22 +8,34 @@ local math_random = math.random
 local Public = {}
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16}
 
+local function draw_spawn_ores(surface)
+	local x = global.map_forces.west.hatchery.position.x - 64
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "iron-ore", surface, 15, 2500)
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = -32}, "copper-ore", surface, 15, 2500)
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = 0}, "coal", surface, 15, 1500)
+	
+	local x = global.map_forces.east.hatchery.position.x + 64
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "copper-ore", surface, 15, 2500)
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = -32}, "iron-ore", surface, 15, 2500)
+	map_functions.draw_smoothed_out_ore_circle({x = x, y = 0}, "coal", surface, 15, 1500)
+end
+
 function Public.reset_map()
 	local map_gen_settings = {}
 	map_gen_settings.seed = math_random(1, 10000000)
 	map_gen_settings.height = 192
-	map_gen_settings.water = 0.5
+	map_gen_settings.water = 0.2
 	map_gen_settings.starting_area = 1
-	map_gen_settings.terrain_segmentation = 5
+	map_gen_settings.terrain_segmentation = 10
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = math.random(16, 48), cliff_elevation_0 = math.random(16, 48)}	
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = 50, size = 0.5, richness = 0.5,},
-		["stone"] = {frequency = 50, size = 0.5, richness = 0.5,},
-		["copper-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
-		["iron-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
+		["coal"] = {frequency = 100, size = 0.5, richness = 0.5,},
+		["stone"] = {frequency = 100, size = 0.5, richness = 0.5,},
+		["copper-ore"] = {frequency = 100, size = 0.5, richness = 0.5,},
+		["iron-ore"] = {frequency = 100, size = 0.5, richness = 0.5,},
 		["uranium-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
 		["crude-oil"] = {frequency = 50, size = 0.5, richness = 0.5,},
-		["trees"] = {frequency = math.random(5, 15) * 0.1, size = math.random(5, 15) * 0.1, richness = math.random(3, 10) * 0.1},
+		["trees"] = {frequency = math.random(5, 10) * 0.1, size = math.random(5, 10) * 0.1, richness = math.random(3, 10) * 0.1},
 		["enemy-base"] = {frequency = 0, size = 0, richness = 0}	
 	}
 	
@@ -35,7 +49,7 @@ function Public.reset_map()
 		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
 	end
 	
-	game.surfaces[global.active_surface_index].request_to_generate_chunks({0,0}, 8)
+	game.surfaces[global.active_surface_index].request_to_generate_chunks({0,0}, 10)
 	game.surfaces[global.active_surface_index].force_generate_chunk_requests()
 	
 	for key, _ in pairs(global.map_forces) do
@@ -53,6 +67,8 @@ function Public.reset_map()
 	e.active = false
 	global.map_forces.east.hatchery = e
 	global.map_forces.west.target = e
+	
+	draw_spawn_ores(game.surfaces[global.active_surface_index])
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
@@ -201,6 +217,12 @@ local function tick()
 	end
 	
 	nom()
+	
+	if game.tick % 240 == 0 then
+		local area = {{-256, -96}, {255, 96}}
+		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
+		game.forces.east.chart(game.surfaces[global.active_surface_index], area)
+	end
 end
 
 local function on_init()
