@@ -3,6 +3,7 @@ local RPG = require "modules.rpg"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
+local Gui = require "maps.biter_hatchery.gui"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
 local math_random = math.random
@@ -89,11 +90,13 @@ function Public.reset_map()
 	end
 		
 	local e = surface.create_entity({name = "biter-spawner", position = {-160, 0}, force = "west"})
+	surface.create_entity({name = "small-worm-turret", position = {-148, 0}, force = "west"})
 	e.active = false
 	global.map_forces.west.hatchery = e
 	global.map_forces.east.target = e
 	
 	local e = surface.create_entity({name = "biter-spawner", position = {160, 0}, force = "east"})
+	surface.create_entity({name = "small-worm-turret", position = {148, 0}, force = "east"})
 	e.active = false
 	global.map_forces.east.hatchery = e
 	global.map_forces.west.target = e
@@ -242,6 +245,9 @@ local function on_entity_died(event)
 		end
 	end
 
+	for _, player in pairs(game.forces.player.connected_players) do
+		player.play_sound{path="utility/game_won", volume_modifier=0.85}
+	end
 	global.game_reset_tick = game.tick + 1800
 	
 	for _, player in pairs(game.connected_players) do
@@ -253,6 +259,8 @@ end
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces[global.active_surface_index]
+	
+	Gui.spectate_button(player)
 	
 	if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
 
@@ -358,6 +366,14 @@ local function on_init()
 	T.sub_caption_color = {r = 0, g = 250, b = 150}
 	
 	for key, _ in pairs(global.map_forces) do game.create_force(key) end
+	
+	game.forces.west.set_friend("player", true)
+	game.forces.east.set_friend("player", true)
+	game.forces.player.set_friend("west", true)
+	game.forces.player.set_friend("east", true)	
+	game.forces.west.share_chart = true
+	game.forces.east.share_chart = true
+	
 	Public.reset_map()
 end
 
