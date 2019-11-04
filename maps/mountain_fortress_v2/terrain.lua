@@ -21,7 +21,7 @@ local noises = {
 	["scrapyard"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}},
 }
 local level_depth = 960
-local worm_level_modifier = 0.20
+local worm_level_modifier = 0.18
 
 local function get_noise(name, pos, seed)
 	local noise = 0
@@ -254,6 +254,20 @@ end
 local function process_level_6_position(p, seed, tiles, entities, markets, treasure)
 	local large_caves = get_noise("large_caves", p, seed)
 	local cave_rivers = get_noise("cave_rivers", p, seed)
+	
+	--Chasms
+	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
+	local small_caves = get_noise("small_caves", p, seed)
+	if noise_cave_ponds < 0.45 and noise_cave_ponds > -0.45 then
+		if small_caves > 0.45 then
+			tiles[#tiles + 1] = {name = "out-of-map", position = p}
+			return
+		end
+		if small_caves < -0.45 then
+			tiles[#tiles + 1] = {name = "out-of-map", position = p}
+			return
+		end
+	end
 	
 	if large_caves > -0.03 and large_caves < 0.03 and cave_rivers < 0.25 then
 		tiles[#tiles + 1] = {name = "water-green", position = p}
@@ -764,12 +778,21 @@ local function biter_chunk(surface, left_top)
 			tile_positions[#tile_positions + 1] = p
 		end
 	end
+
 	for i = 1, 1, 1 do
 		local position = surface.find_non_colliding_position("biter-spawner", tile_positions[math_random(1, #tile_positions)], 16, 2)
 		if position then
-			local e = surface.create_entity({name = spawner_raffle[math_random(1, #spawner_raffle)], position = position})
+			local e = surface.create_entity({name = spawner_raffle[math_random(1, #spawner_raffle)], position = position, force = "enemy"})
 			e.destructible = false
 			e.active = false
+		end		
+	end
+	
+	for i = 1, 3, 1 do
+		local position = surface.find_non_colliding_position("big-worm-turret", tile_positions[math_random(1, #tile_positions)], 16, 2)
+		if position then
+			local e = surface.create_entity({name = "big-worm-turret", position = position, force = "enemy"})
+			e.destructible = false
 		end		
 	end
 	--for _, e in pairs(surface.find_entities_filtered({area = {{left_top.x, left_top.y},{left_top.x + 32, left_top.y + 32}}, type = "cliff"})) do	e.destroy() end
@@ -866,8 +889,8 @@ end
 local function process_chunk(surface, left_top)
 	if not surface then return end
 	if not surface.valid then return end
-	if left_top.x >= 768 then return end
-	if left_top.x < -768 then return end
+	if left_top.x >= level_depth * 0.5 then return end
+	if left_top.x < level_depth * -0.5 then return end
 	
 	if left_top.y % level_depth == 0 and left_top.y < 0 and left_top.y > level_depth * -10 then wall(surface, left_top, surface.map_gen_settings.seed) return end
 	

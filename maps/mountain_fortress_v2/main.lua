@@ -41,7 +41,7 @@ function Public.reset_map()
 	local map_gen_settings = {
 		["seed"] = math.random(1, 1000000),
 		--["height"] = 256,
-		["width"] = 1536,
+		["width"] = level_depth,
 		["water"] = 0.001,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
