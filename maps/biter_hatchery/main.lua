@@ -56,7 +56,6 @@ end
 function Public.reset_map()
 	local map_gen_settings = {}
 	map_gen_settings.seed = math_random(1, 10000000)
-	map_gen_settings.height = 192
 	map_gen_settings.water = 0.2
 	map_gen_settings.starting_area = 1
 	map_gen_settings.terrain_segmentation = 12
@@ -144,7 +143,7 @@ local function get_belts(spawner)
 	return belts
 end
 
-local nom_msg = {"munch", "munch", "yum"}
+local nom_msg = {"munch", "munch", "yum", "nom"}
 
 local function feed_floaty_text(entity)
 	entity.surface.create_entity({name = "flying-text", position = entity.position, text = nom_msg[math_random(1, #nom_msg)], color = {math_random(50, 100), 0, 255}})
@@ -295,7 +294,7 @@ end
 
 local function tick()	
 	if game.tick % 240 == 0 then
-		local area = {{-256, -96}, {255, 96}}
+		local area = {{-256, -97}, {255, 96}}
 		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
 		game.forces.east.chart(game.surfaces[global.active_surface_index], area)
 	end

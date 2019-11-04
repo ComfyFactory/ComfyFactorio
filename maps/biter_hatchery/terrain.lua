@@ -1,3 +1,5 @@
+local math_abs = math.abs
+
 local function get_replacement_tile(surface, position)
 	for i = 1, 128, 1 do
 		local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
@@ -12,6 +14,11 @@ end
 
 local function combat_area(event)
 	local surface = event.surface
+	local left_top = event.area.left_top
+	
+	if left_top.y >= 96 then return end
+	if left_top.y < -96 then return end
+	
 	for _, tile in pairs(surface.find_tiles_filtered({area = event.area})) do
 		if tile.name == "water" or tile.name == "deepwater" then
 			surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = tile.position}}, true)
@@ -25,11 +32,29 @@ local function combat_area(event)
 	end	
 end
 
+local function is_out_of_map(p)
+	if p.y < 96 and p.y >= -96 then return end
+	if p.x * 0.5 > math_abs(p.y) then return end
+	if p.x * -0.5 > math_abs(p.y) then return end
+	return true
+end
+
+local function out_of_map_area(event)
+	local surface = event.surface
+	local left_top = event.area.left_top
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}			
+			if is_out_of_map(p) then surface.set_tiles({{name = "out-of-map", position = p}}, true) end
+		end
+	end
+end
+
 local function on_chunk_generated(event)
 	local left_top = event.area.left_top
-	if left_top.y >= 96 then return end
-	if left_top.y < -96 then return end
 	
+	out_of_map_area(event)
+
 	if left_top.x >= -192 and left_top.x < 192 then combat_area(event) end
 
 	if left_top.x > 512 then return end
