@@ -106,7 +106,13 @@ function Public.reset_map()
 	RPG.rpg_reset_all_players()
 	
 	game.forces.west.set_spawn_position({-160, 0}, surface)
-	game.forces.east.set_spawn_position({160, 0}, surface)
+	game.forces.east.set_spawn_position({160, 0}, surface)	
+	game.forces.west.set_friend("player", true)
+	game.forces.east.set_friend("player", true)
+	game.forces.player.set_friend("west", true)
+	game.forces.player.set_friend("east", true)
+	game.forces.west.share_chart = true
+	game.forces.east.share_chart = true
 	
 	assign_force_to_all_players()
 	
@@ -158,6 +164,7 @@ local function eat_food_from_belt(belt)
 			if removed_item_count > 0 then
 				feed_floaty_text(belt)
 				spawn_units(belt, food_item, removed_item_count)
+				break
 			end
 		end
 	end	
@@ -247,7 +254,9 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_won", volume_modifier=0.85}
 		end
 	end
-
+	
+	game.print("Next round starting in 30 seconds..", {150, 150, 150})
+	
 	for _, player in pairs(game.forces.player.connected_players) do
 		player.play_sound{path="utility/game_won", volume_modifier=0.85}
 	end
@@ -356,7 +365,7 @@ local function on_init()
 	T.text = table.concat({
 		"Defeat the enemy teams nest.\n",
 		"Feed your hatchery science flasks to breed biters!\n",
-		"They will soon after swarm to the opposing teams nest!,\n",
+		"They will soon after swarm to the opposing teams nest!\n",
 		"\n",
 		"Lay transport belts to your hatchery and they will happily nom the juice off the conveyor.\n",
 		"Higher tier flasks will breed stronger biters!\n",
@@ -369,14 +378,7 @@ local function on_init()
 	T.sub_caption_color = {r = 0, g = 250, b = 150}
 	
 	for key, _ in pairs(global.map_forces) do game.create_force(key) end
-	
-	game.forces.west.set_friend("player", true)
-	game.forces.east.set_friend("player", true)
-	game.forces.player.set_friend("west", true)
-	game.forces.player.set_friend("east", true)	
-	game.forces.west.share_chart = true
-	game.forces.east.share_chart = true
-	
+
 	Public.reset_map()
 end
 
