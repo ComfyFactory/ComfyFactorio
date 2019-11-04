@@ -10,6 +10,21 @@ local Map = require "modules.map_info"
 local math_random = math.random
 local Public = {}
 
+local worm_turret_spawn_radius = 18
+local worm_turret_vectors = {}
+worm_turret_vectors.west = {}
+for x = 0, worm_turret_spawn_radius, 1 do
+	for y = worm_turret_spawn_radius * -1, worm_turret_spawn_radius, 1 do
+		if math.sqrt(x ^ 2 + y ^ 2) <= worm_turret_spawn_radius then table.insert(worm_turret_vectors.west, {x, y}) end
+	end
+end
+worm_turret_vectors.east = {}
+for x = worm_turret_spawn_radius * -1, 0, 1 do
+	for y = worm_turret_spawn_radius * -1, worm_turret_spawn_radius, 1 do
+		if math.sqrt(x ^ 2 + y ^ 2) <= worm_turret_spawn_radius then table.insert(worm_turret_vectors.east, {x, y}) end
+	end
+end
+
 local function draw_spawn_ores(surface)
 	local x = global.map_forces.west.hatchery.position.x - 64
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "iron-ore", surface, 15, 2500)
@@ -56,13 +71,11 @@ function Public.reset_map()
 	game.forces.east.set_spawn_position({160, 0}, surface)		
 		
 	local e = surface.create_entity({name = "biter-spawner", position = {-160, 0}, force = "west"})
-	surface.create_entity({name = "small-worm-turret", position = {-148, 0}, force = "west"})
 	e.active = false
 	global.map_forces.west.hatchery = e
 	global.map_forces.east.target = e
 	
 	local e = surface.create_entity({name = "biter-spawner", position = {160, 0}, force = "east"})
-	surface.create_entity({name = "small-worm-turret", position = {148, 0}, force = "east"})
 	e.active = false
 	global.map_forces.east.hatchery = e
 	global.map_forces.west.target = e
@@ -81,9 +94,26 @@ function Public.reset_map()
 	
 	for _, player in pairs(game.forces.spectator.connected_players) do
 		player.character.destroy()
-		Team.set_player_to_spectator(player)
+		Team.set_player_to_spectator(player)	
+	end	
+	for _, player in pairs(game.forces.spectator.players) do
 		Gui.rejoin_question(player)
 	end
+end
+
+local function spawn_worm_turret(surface, force_name, food_item)
+	local r_max = surface.count_entities_filtered({type = "turret", force = force_name}) + 1
+	if math_random(1, r_max) ~= 1 then return end
+	local vectors = worm_turret_vectors[force_name]
+	local vector = vectors[math_random(1, #vectors)]
+	local worm = "small-worm-turret"
+	local position = global.map_forces[force_name].hatchery.position
+	position.x = position.x + vector[1]
+	position.y = position.y + vector[2]
+	position = surface.find_non_colliding_position("biter-spawner", position, 16, 1)
+	if not position then return end
+	surface.create_entity({name = worm, position = position, force = force_name})
+	surface.create_entity({name = "blood-explosion-huge", position = position})
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
@@ -96,6 +126,7 @@ local function spawn_units(belt, food_item, removed_item_count)
 			unit.ai_settings.allow_try_return_to_spawner = false
 		end
 	end
+	if math_random(1, 32) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
 end
 
 local function get_belts(spawner)
@@ -240,7 +271,11 @@ local function on_player_joined_game(event)
 	if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
 	
 	if player.surface.index ~= global.active_surface_index then		
-		if player.force.name == "spectator" then Team.teleport_player_to_active_surface(player) return end
+		if player.force.name == "spectator" then 
+			Team.set_player_to_spectator(player)
+			Team.teleport_player_to_active_surface(player)		
+			return 
+		end
 		Team.assign_force_to_player(player)
 		Team.teleport_player_to_active_surface(player)
 		Team.put_player_into_random_team(player)	
@@ -321,7 +356,8 @@ local function on_init()
 		"Lay transport belts to your hatchery and they will happily nom the juice off the conveyor.\n",
 		"Higher tier flasks will breed stronger biters!\n",
 		"\n",
-		"Turrets are disabled.\n",
+		"Player turrets are disabled.\n",
+		"Feeding may spawn friendly worm turrets.\n",
 		"The center river may not be crossed.\n",
 		"Construction robots may not build over the river.\n",
 	})
