@@ -74,11 +74,13 @@ function Public.reset_map()
 	game.forces.east.set_spawn_position({160, 0}, surface)		
 		
 	local e = surface.create_entity({name = "biter-spawner", position = {-160, 0}, force = "west"})
+	surface.create_entity({name = "small-worm-turret", position = {-155, 0}, force = "west"})
 	e.active = false
 	global.map_forces.west.hatchery = e
 	global.map_forces.east.target = e
 	
 	local e = surface.create_entity({name = "biter-spawner", position = {160, 0}, force = "east"})
+	surface.create_entity({name = "small-worm-turret", position = {155, 0}, force = "east"})
 	e.active = false
 	global.map_forces.east.hatchery = e
 	global.map_forces.west.target = e
@@ -144,7 +146,7 @@ end
 local nom_msg = {"munch", "munch", "yum", "nom"}
 
 local function feed_floaty_text(entity)
-	entity.surface.create_entity({name = "flying-text", position = entity.position, text = nom_msg[math_random(1, #nom_msg)], color = {math_random(50, 100), 0, 255}})
+	entity.surface.create_entity({name = "flying-text", position = entity.position, text = nom_msg[math_random(1, 4)], color = {math_random(50, 100), 0, 255}})
 	local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
 	local b = 1.35
 	for a = 1, math_random(0, 2), 1 do
@@ -192,6 +194,8 @@ local function send_unit_groups()
 			local position = {x = force.hatchery.position.x + vector[1], y = force.hatchery.position.y + vector[2]}	
 			local unit_group = surface.create_unit_group({position = position, force = key})
 			for _, unit in pairs(units) do unit_group.add_member(unit) end
+			if not force.target then return end
+			if not force.target.valid then return end
 			unit_group.set_command({
 				type = defines.command.compound,
 				structure_type = defines.compound_command.return_last,
@@ -199,8 +203,8 @@ local function send_unit_groups()
 					{
 						type = defines.command.attack_area,
 						destination = {x = force.target.position.x, y = force.target.position.y},
-						radius = 8,
-						distraction = defines.distraction.by_enemy
+						radius = 6,
+						distraction = defines.distraction.by_anything
 					},
 					{
 						type = defines.command.attack,
@@ -257,7 +261,7 @@ local function on_entity_died(event)
 	
 	game.print("Next round starting in 30 seconds..", {150, 150, 150})
 	
-	for _, player in pairs(game.forces.player.connected_players) do
+	for _, player in pairs(game.forces.spectator.connected_players) do
 		player.play_sound{path="utility/game_won", volume_modifier=0.85}
 	end
 	global.game_reset_tick = game.tick + 1800
