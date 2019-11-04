@@ -4,11 +4,11 @@ local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
 local Gui = require "maps.biter_hatchery.gui"
+local Team = require "maps.biter_hatchery.team"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
 local math_random = math.random
 local Public = {}
-local starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 25}
 
 local function draw_spawn_ores(surface)
 	local x = global.map_forces.west.hatchery.position.x - 64
@@ -24,41 +24,12 @@ local function draw_spawn_ores(surface)
 	map_functions.draw_smoothed_out_ore_circle({x = x, y = -64}, "stone", surface, 15, 1500)
 end
 
-local function assign_force_to_player(player)
-	if math_random(1, 2) == 1 then
-		if #game.forces.east.connected_players > #game.forces.west.connected_players then
-			player.force = game.forces.west
-		else
-			player.force = game.forces.east 
-		end
-	else
-		if #game.forces.east.connected_players < #game.forces.west.connected_players then
-			player.force = game.forces.east
-		else
-			player.force = game.forces.west 
-		end
-	end
-end
-
-local function assign_force_to_all_players()
-	local player_indexes = {}
-	for _, p in pairs(game.connected_players) do player_indexes[#player_indexes + 1] = p.index end
-	table.shuffle_table(player_indexes)
-	for key, player_index in pairs(player_indexes) do
-		if key % 2 == 1 then
-			game.players[player_index].force = game.forces.west
-		else
-			game.players[player_index].force = game.forces.east
-		end
-	end
-end
-
 function Public.reset_map()
 	local map_gen_settings = {}
 	map_gen_settings.seed = math_random(1, 10000000)
 	map_gen_settings.water = 0.2
 	map_gen_settings.starting_area = 1
-	map_gen_settings.terrain_segmentation = 12
+	map_gen_settings.terrain_segmentation = 10
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = math_random(16, 48), cliff_elevation_0 = math_random(16, 48)}	
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 100, size = 0.5, richness = 0.5,},
@@ -74,19 +45,15 @@ function Public.reset_map()
 	if not global.active_surface_index then
 		global.active_surface_index = game.create_surface("biter_hatchery", map_gen_settings).index		
 	else
-		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
+		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, Team.starting_items).index
 	end
 	
 	local surface = game.surfaces[global.active_surface_index]
 	surface.request_to_generate_chunks({0,0}, 10)
 	surface.force_generate_chunk_requests()
-	
-	for key, _ in pairs(global.map_forces) do
-		game.forces[key].research_queue_enabled = true
-		game.forces[key].technologies["artillery"].enabled = false
-		game.forces[key].technologies["artillery-shell-range-1"].enabled = false					
-		game.forces[key].technologies["artillery-shell-speed-1"].enabled = false	
-	end
+		
+	game.forces.west.set_spawn_position({-160, 0}, surface)
+	game.forces.east.set_spawn_position({160, 0}, surface)		
 		
 	local e = surface.create_entity({name = "biter-spawner", position = {-160, 0}, force = "west"})
 	surface.create_entity({name = "small-worm-turret", position = {-148, 0}, force = "west"})
@@ -104,21 +71,18 @@ function Public.reset_map()
 	
 	RPG.rpg_reset_all_players()
 	
-	game.forces.west.set_spawn_position({-160, 0}, surface)
-	game.forces.east.set_spawn_position({160, 0}, surface)	
-	game.forces.west.set_friend("player", true)
-	game.forces.east.set_friend("player", true)
-	game.forces.player.set_friend("west", true)
-	game.forces.player.set_friend("east", true)
-	game.forces.west.share_chart = true
-	game.forces.east.share_chart = true
-	
-	assign_force_to_all_players()
+	Team.set_force_attributes()	
+	Team.assign_random_force_to_active_players()
 	
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
-		player.spectator = false
-		player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
+		Team.teleport_player_to_active_surface(player)		
+	end
+	
+	for _, player in pairs(game.forces.spectator.connected_players) do
+		player.character.destroy()
+		Team.set_player_to_spectator(player)
+		Gui.rejoin_question(player)
 	end
 end
 
@@ -159,11 +123,10 @@ local function eat_food_from_belt(belt)
 	for i = 1, 2, 1 do
 		local line = belt.get_transport_line(i)
 		for food_item, raffle in pairs(unit_raffle) do
-			local removed_item_count = line.remove_item({name = food_item, count = 8})
+			local removed_item_count = line.remove_item({name = food_item, count = math_random(1, 2)})
 			if removed_item_count > 0 then
 				feed_floaty_text(belt)
 				spawn_units(belt, food_item, removed_item_count)
-				break
 			end
 		end
 	end	
@@ -223,6 +186,7 @@ local function on_player_changed_position(event)
 	if not player.character then return end
 	if not player.character.valid then return end
 	if player.position.x >= -4 and player.position.x <= 4 then
+		if not border_teleport[player.force.name] then return end
 		if player.character.driving then player.character.driving = false end
 		player.teleport({player.position.x + border_teleport[player.force.name], player.position.y}, game.surfaces[global.active_surface_index])
 	end
@@ -274,21 +238,12 @@ local function on_player_joined_game(event)
 	Gui.spectate_button(player)
 	
 	if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
-
-	if player.surface.index ~= global.active_surface_index then
-		assign_force_to_player(player)
-		if player.character then
-			if player.character.valid then
-				player.character.destroy()
-			end
-		end		
-		player.character = nil
-		player.set_controller({type=defines.controllers.god})
-		player.create_character()
-		player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
-		for item, amount in pairs(starting_items) do
-			player.insert({name = item, count = amount})
-		end
+	
+	if player.surface.index ~= global.active_surface_index then		
+		if player.force.name == "spectator" then Team.teleport_player_to_active_surface(player) return end
+		Team.assign_force_to_player(player)
+		Team.teleport_player_to_active_surface(player)
+		Team.put_player_into_random_team(player)	
 	end
 end
 
@@ -298,19 +253,16 @@ local function tick()
 		local area = {{-256, -97}, {255, 96}}
 		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
 		game.forces.east.chart(game.surfaces[global.active_surface_index], area)
-	end
-
-	if game_tick % 1200 == 0 then send_unit_groups() end
-	
+	end	
+	if game_tick % 1200 == 0 then send_unit_groups() end	
 	if global.game_reset_tick then
 		if global.game_reset_tick < game_tick then
 			global.game_reset_tick = nil
 			Public.reset_map()
 		end
 		return
-	end
-	
-	nom()
+	end	
+	nom()	
 end
 
 --Construction Robot Restriction
@@ -376,8 +328,7 @@ local function on_init()
 	T.main_caption_color = {r = 150, g = 0, b = 255}
 	T.sub_caption_color = {r = 0, g = 250, b = 150}
 	
-	for key, _ in pairs(global.map_forces) do game.create_force(key) end
-
+	Team.create_forces()
 	Public.reset_map()
 end
 

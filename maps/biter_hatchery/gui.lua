@@ -1,4 +1,5 @@
 local Public = {}
+local Team = require "maps.biter_hatchery.team"
 
 function Public.spectate_button(player)
 	if player.gui.top.spectate_button then return end
@@ -22,20 +23,36 @@ local function create_spectate_confirmation(player)
 	frame.add({type = "button", name = "cancel_spectate", caption = "Cancel"})
 end
 
+function Public.rejoin_question(player)
+	if player.gui.center.rejoin_question_frame then return end
+	local frame = player.gui.center.add({type = "frame", name = "rejoin_question_frame", caption = "Rejoin the game?"})
+	frame.style.font = "default"
+	frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
+	frame.add({type = "button", name = "confirm_rejoin", caption = "Rejoin"})
+	frame.add({type = "button", name = "cancel_rejoin", caption = "Cancel"})
+end
+
 local function on_gui_click(event)
 	if not event then return end
 	if not event.element then return end
 	if not event.element.valid then return end
 	local player = game.players[event.element.player_index]
-	if player.force.index == 1 then return end
+	
+	if event.element.name == "confirm_rejoin" then
+		player.gui.center["rejoin_question_frame"].destroy()
+		Team.assign_force_to_player(player)
+		Team.teleport_player_to_active_surface(player)
+		Team.put_player_into_random_team(player)
+		game.print(player.name .. " has rejoined the game!")
+		return 
+	end
+	if event.element.name == "cancel_rejoin" then player.gui.center["rejoin_question_frame"].destroy() return end
+	
+	if player.force.name == "spectator" then return end
 	if event.element.name == "cancel_spectate" then player.gui.center["spectate_confirmation_frame"].destroy() return end
 	if event.element.name == "confirm_spectate" then
 		player.gui.center["spectate_confirmation_frame"].destroy()
-		if player.character then player.character.die() end
-		player.force = game.forces.player	
-		player.character = nil
-		player.spectator = true
-		player.set_controller({type=defines.controllers.spectator})
+		Team.set_player_to_spectator(player)
 		game.print(player.name .. " has turned into a spectator ghost.")
 		return 
 	end
