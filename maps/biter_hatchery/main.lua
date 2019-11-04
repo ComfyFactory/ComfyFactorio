@@ -292,18 +292,18 @@ local function on_player_joined_game(event)
 	end
 end
 
-local function tick()	
-	if game.tick % 240 == 0 then
+local function tick()
+	local game_tick = game.tick
+	if game_tick % 240 == 0 then
 		local area = {{-256, -97}, {255, 96}}
 		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
 		game.forces.east.chart(game.surfaces[global.active_surface_index], area)
 	end
 
-	local t2 = game.tick % 900
-	if t2 == 0 then send_unit_groups() end
+	if game_tick % 1200 == 0 then send_unit_groups() end
 	
 	if global.game_reset_tick then
-		if global.game_reset_tick < game.tick then
+		if global.game_reset_tick < game_tick then
 			global.game_reset_tick = nil
 			Public.reset_map()
 		end

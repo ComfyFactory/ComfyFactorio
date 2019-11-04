@@ -34,7 +34,7 @@ end
 
 local function is_out_of_map(p)
 	if p.y < 96 and p.y >= -96 then return end
-	if p.x * 0.5 > math_abs(p.y) then return end
+	if p.x * 0.5 >= math_abs(p.y) then return end
 	if p.x * -0.5 > math_abs(p.y) then return end
 	return true
 end
