@@ -4,6 +4,7 @@ local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
 local Gui = require "maps.biter_hatchery.gui"
+require "maps.biter_hatchery.share_chat"
 local Team = require "maps.biter_hatchery.team"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
@@ -15,13 +16,15 @@ local worm_turret_vectors = {}
 worm_turret_vectors.west = {}
 for x = 0, worm_turret_spawn_radius, 1 do
 	for y = worm_turret_spawn_radius * -1, worm_turret_spawn_radius, 1 do
-		if math.sqrt(x ^ 2 + y ^ 2) <= worm_turret_spawn_radius then table.insert(worm_turret_vectors.west, {x, y}) end
+		local d = math.sqrt(x ^ 2 + y ^ 2)
+		if d <= worm_turret_spawn_radius and d > 3 then table.insert(worm_turret_vectors.west, {x, y}) end
 	end
 end
 worm_turret_vectors.east = {}
 for x = worm_turret_spawn_radius * -1, 0, 1 do
 	for y = worm_turret_spawn_radius * -1, worm_turret_spawn_radius, 1 do
-		if math.sqrt(x ^ 2 + y ^ 2) <= worm_turret_spawn_radius then table.insert(worm_turret_vectors.east, {x, y}) end
+		local d = math.sqrt(x ^ 2 + y ^ 2)
+		if d <= worm_turret_spawn_radius and d > 3 then table.insert(worm_turret_vectors.east, {x, y}) end
 	end
 end
 
@@ -107,7 +110,7 @@ local function spawn_worm_turret(surface, force_name, food_item)
 	local vectors = worm_turret_vectors[force_name]
 	local vector = vectors[math_random(1, #vectors)]
 	local worm = "small-worm-turret"
-	local position = global.map_forces[force_name].hatchery.position
+	local position = {x = global.map_forces[force_name].hatchery.position.x, y = global.map_forces[force_name].hatchery.position.y}
 	position.x = position.x + vector[1]
 	position.y = position.y + vector[2]
 	position = surface.find_non_colliding_position("biter-spawner", position, 16, 1)
@@ -154,7 +157,7 @@ local function eat_food_from_belt(belt)
 	for i = 1, 2, 1 do
 		local line = belt.get_transport_line(i)
 		for food_item, raffle in pairs(unit_raffle) do
-			local removed_item_count = line.remove_item({name = food_item, count = math_random(1, 2)})
+			local removed_item_count = line.remove_item({name = food_item, count = 8})
 			if removed_item_count > 0 then
 				feed_floaty_text(belt)
 				spawn_units(belt, food_item, removed_item_count)
@@ -184,7 +187,10 @@ local function send_unit_groups()
 			end
 		end
 		if #units > 0 then
-			local unit_group = surface.create_unit_group({position = force.hatchery.position, force = key})
+			local vectors = worm_turret_vectors[key]
+			local vector = vectors[math_random(1, #vectors)]
+			local position = {x = force.hatchery.position.x + vector[1], y = force.hatchery.position.y + vector[2]}	
+			local unit_group = surface.create_unit_group({position = position, force = key})
 			for _, unit in pairs(units) do unit_group.add_member(unit) end
 			unit_group.set_command({
 				type = defines.command.compound,
