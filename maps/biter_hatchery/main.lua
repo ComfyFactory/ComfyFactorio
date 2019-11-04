@@ -1,5 +1,7 @@
 require "modules.no_turrets"
 local RPG = require "modules.rpg"
+local Tabs = require 'comfy_panel.main'
+local Map_score = require "modules.map_score"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
@@ -238,27 +240,30 @@ local function on_entity_died(event)
 	if global.game_reset_tick then return end
 	if event.entity.type ~= "unit-spawner" then return end
 	
-	local gui_str
+	local str
 	if event.entity.force.name == "east" then
 		game.print("East lost their Hatchery.", {100, 100, 100})
-		gui_str = ">>>> West team has won the game!!! <<<<"
+		str = ">>>> West team has won the game!!! <<<<"
 		for _, player in pairs(game.forces.east.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
 		end
 		for _, player in pairs(game.forces.west.connected_players) do
-			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+			player.play_sound{path="utility/game_won", volume_modifier=0.85}			
+			Map_score.set_score(player, Map_score.get_score(player) + 1)
 		end
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
-		gui_str = ">>>> East team has won the game!!! <<<<"
+		str = ">>>> East team has won the game!!! <<<<"
 		for _, player in pairs(game.forces.west.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
 		end
 		for _, player in pairs(game.forces.east.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+			Map_score.set_score(player, Map_score.get_score(player) + 1)
 		end
 	end
 	
+	game.print(string.upper(str), {250, 120, 0})
 	game.print("Next round starting in 30 seconds..", {150, 150, 150})
 	
 	for _, player in pairs(game.forces.spectator.connected_players) do
@@ -268,7 +273,8 @@ local function on_entity_died(event)
 	
 	for _, player in pairs(game.connected_players) do
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
-		player.gui.left.add({type = "frame", name = "biter_hatchery_game_won", caption = gui_str})
+		Tabs.comfy_panel_call_tab(player, "Map Scores")
+		--player.gui.left.add({type = "frame", name = "biter_hatchery_game_won", caption = str})
 	end
 end
 
