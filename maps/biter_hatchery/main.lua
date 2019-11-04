@@ -112,6 +112,7 @@ function Public.reset_map()
 	
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
+		player.spectator = false
 		player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
 	end
 end
@@ -213,6 +214,8 @@ local border_teleport = {
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
+	if not player.character then return end
+	if not player.character.valid then return end
 	if player.position.x >= -4 and player.position.x <= 4 then
 		if player.character.driving then player.character.driving = false end
 		player.teleport({player.position.x + border_teleport[player.force.name], player.position.y}, game.surfaces[global.active_surface_index])

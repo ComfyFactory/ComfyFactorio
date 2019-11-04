@@ -27,12 +27,14 @@ local function on_gui_click(event)
 	if not event.element then return end
 	if not event.element.valid then return end
 	local player = game.players[event.element.player_index]
+	if player.force.index == 1 then return end
 	if event.element.name == "cancel_spectate" then player.gui.center["spectate_confirmation_frame"].destroy() return end
 	if event.element.name == "confirm_spectate" then
 		player.gui.center["spectate_confirmation_frame"].destroy()
 		if player.character then player.character.die() end
 		player.force = game.forces.player	
 		player.character = nil
+		player.spectator = true
 		player.set_controller({type=defines.controllers.spectator})
 		game.print(player.name .. " has turned into a spectator ghost.")
 		return 
