@@ -71,7 +71,6 @@ end
 local function on_entity_damaged(event)
 	local biter = event.entity
 	if not (biter and biter.valid) then return end
-	if biter.force.index ~= 2 then return end
 	if biter.type ~= "unit" then return end
 
 	local biter_health_boost_units = global.biter_health_boost_units

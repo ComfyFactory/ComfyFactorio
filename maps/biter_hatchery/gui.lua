@@ -14,6 +14,28 @@ function Public.spectate_button(player)
 	button.style.bottom_padding = 2
 end
 
+function Public.unit_health_buttons(player)
+	if player.gui.top.health_boost_west then return end
+	local button = player.gui.top.add({type = "sprite-button", name = "health_boost_west", caption = 1, tooltip = "Health increase of west side biters."})
+	button.style.font = "heading-1"
+	button.style.font_color = {r = 0, g = 180, b = 0}
+	button.style.minimal_height = 38
+	button.style.minimal_width = 78	
+	button.style.padding = 2
+	local button = player.gui.top.add({type = "sprite-button", name = "health_boost_east", caption = 1, tooltip = "Health increase of east side biters."})
+	button.style.font = "heading-1"
+	button.style.font_color = {r = 180, g = 180, b = 0}
+	button.style.minimal_height = 38
+	button.style.minimal_width = 78	
+	button.style.padding = 2
+end
+
+function Public.update_health_boost_buttons(player)
+	local gui = player.gui.top
+	gui.health_boost_west.caption = math.round(global.map_forces.west.unit_health_boost * 100, 2) .. "%"
+	gui.health_boost_east.caption = math.round(global.map_forces.east.unit_health_boost * 100, 2) .. "%"
+end
+
 local function create_spectate_confirmation(player)
 	if player.gui.center.spectate_confirmation_frame then return end
 	local frame = player.gui.center.add({type = "frame", name = "spectate_confirmation_frame", caption = "Are you sure you want to spectate this round?"})

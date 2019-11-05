@@ -20,6 +20,7 @@ local enemy_team_of = {
 
 
 
+
 local minimum_modifier = 125
 local maximum_modifier = 250
 local player_amount_for_maximum_threat_gain = 20
@@ -46,8 +47,16 @@ local function set_biter_endgame_modifiers(force)
 	global.bb_evasion[force.name] = evasion_mod
 end
 
+local function get_enemy_team_of(team)
+	if global.training_mode then
+		return team
+	else
+		return enemy_team_of[team]
+	end
+end
+
 local function print_feeding_msg(player, food, flask_amount)
-	if not enemy_team_of[player.force.name] then return end
+	if not get_enemy_team_of(player.force.name) then return end
 	
 	local n = bb_config.north_side_team_name
 	local s = bb_config.south_side_team_name
@@ -63,12 +72,16 @@ local function print_feeding_msg(player, food, flask_amount)
 	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})
 	
 	if flask_amount >= 20 then
-		game.print(colored_player_name .. " fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to team " .. team_strings[enemy_team_of[player.force.name]] .. " biters!", {r = 0.9, g = 0.9, b = 0.9})
+		game.print(colored_player_name .. " fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to team " .. team_strings[get_enemy_team_of(player.force.name)] .. " biters!", {r = 0.9, g = 0.9, b = 0.9})
 	else
+		local target_team_text = "the enemy"
+		if global.training_mode then
+			target_team_text = "your own"
+		end
 		if flask_amount == 1 then
-			player.print("You fed one flask of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+			player.print("You fed one flask of " .. formatted_food .. " to " .. target_team_text .. " team's biters.", {r = 0.98, g = 0.66, b = 0.22})
 		else
-			player.print("You fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to the enemy team's biters.", {r = 0.98, g = 0.66, b = 0.22})
+			player.print("You fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to " .. target_team_text .. " team's biters.", {r = 0.98, g = 0.66, b = 0.22})
 		end				
 	end	
 end
@@ -110,7 +123,7 @@ function set_evo_and_threat(flask_amount, food, biter_force_name)
 end
 
 local function feed_biters(player, food)	
-	local enemy_force_name = enemy_team_of[player.force.name]  ---------------
+	local enemy_force_name = get_enemy_team_of(player.force.name)  ---------------
 	--enemy_force_name = player.force.name
 	
 	local biter_force_name = enemy_force_name .. "_biters"

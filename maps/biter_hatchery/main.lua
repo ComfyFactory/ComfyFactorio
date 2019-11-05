@@ -1,5 +1,8 @@
 require "modules.no_turrets"
 local RPG = require "modules.rpg"
+local Tabs = require 'comfy_panel.main'
+local Map_score = require "modules.map_score"
+local Unit_health_booster = require "modules.biter_health_booster"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
@@ -10,6 +13,17 @@ local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
 local math_random = math.random
 local Public = {}
+
+local m = 4
+local health_boost_food_values = {
+	["automation-science-pack"] =		0.000001 * m,
+	["logistic-science-pack"] = 			0.0000025 * m,
+	["military-science-pack"] = 			0.0000096 * m,
+	["chemical-science-pack"] = 			0.0000264 * m,
+	["production-science-pack"] = 		0.00008874 * m,
+	["utility-science-pack"] =			 	0.00009943 * m,
+	["space-science-pack"] = 				0.00028957 * m,
+}
 
 local worm_turret_spawn_radius = 18
 local worm_turret_vectors = {}
@@ -52,8 +66,8 @@ function Public.reset_map()
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 100, size = 0.5, richness = 0.5,},
 		["stone"] = {frequency = 100, size = 0.5, richness = 0.5,},
-		["copper-ore"] = {frequency = 100, size = 0.5, richness = 0.5,},
-		["iron-ore"] = {frequency = 100, size = 0.5, richness = 0.5,},
+		["copper-ore"] = {frequency = 200, size = 0.6, richness = 0.5,},
+		["iron-ore"] = {frequency = 200, size = 0.6, richness = 0.5,},
 		["uranium-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
 		["crude-oil"] = {frequency = 50, size = 0.5, richness = 0.5,},
 		["trees"] = {frequency = math_random(5, 10) * 0.1, size = math_random(5, 10) * 0.1, richness = math_random(3, 10) * 0.1},
@@ -85,6 +99,13 @@ function Public.reset_map()
 	global.map_forces.east.hatchery = e
 	global.map_forces.west.target = e
 	
+	global.map_forces.east.unit_health_boost = 1
+	global.map_forces.west.unit_health_boost = 1
+	global.map_forces.east.unit_count = 0
+	global.map_forces.west.unit_count = 0
+	global.map_forces.east.max_unit_count = 1024
+	global.map_forces.west.max_unit_count = 1024
+	
 	draw_spawn_ores(surface)
 	
 	RPG.rpg_reset_all_players()
@@ -108,6 +129,7 @@ end
 
 local function spawn_worm_turret(surface, force_name, food_item)
 	local r_max = surface.count_entities_filtered({type = "turret", force = force_name}) + 1
+	if r_max >  8 then return end
 	if math_random(1, r_max) ~= 1 then return end
 	local vectors = worm_turret_vectors[force_name]
 	local vector = vectors[math_random(1, #vectors)]
@@ -124,11 +146,16 @@ end
 local function spawn_units(belt, food_item, removed_item_count)
 	local count_per_flask = unit_raffle[food_item][2]
 	local raffle = unit_raffle[food_item][1]
-	for _ = 1, removed_item_count, 1 do
+	local team = global.map_forces[belt.force.name]
+	team.unit_health_boost = team.unit_health_boost + (health_boost_food_values[food_item]  * removed_item_count)
+	for _ = 1, removed_item_count, 1 do		
 		for _ = 1, count_per_flask, 1 do
-			local unit = belt.surface.create_entity({name = raffle[math_random(1, #raffle)], position = belt.position, force = belt.force})
+			local name = raffle[math_random(1, #raffle)]
+			local unit = belt.surface.create_entity({name = name, position = belt.position, force = belt.force})
 			unit.ai_settings.allow_destroy_when_commands_fail = false
 			unit.ai_settings.allow_try_return_to_spawner = false
+			Unit_health_booster.add_unit(unit, team.unit_health_boost)
+			team.unit_count = team.unit_count + 1		
 		end
 	end
 	if math_random(1, 32) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
@@ -159,6 +186,7 @@ local function eat_food_from_belt(belt)
 	for i = 1, 2, 1 do
 		local line = belt.get_transport_line(i)
 		for food_item, raffle in pairs(unit_raffle) do
+			if global.map_forces[belt.force.name].unit_count > global.map_forces[belt.force.name].max_unit_count then return end
 			local removed_item_count = line.remove_item({name = food_item, count = 8})
 			if removed_item_count > 0 then
 				feed_floaty_text(belt)
@@ -177,6 +205,7 @@ local function nom()
 			eat_food_from_belt(belt)
 		end
 	end
+	for _, player in pairs(game.connected_players) do Gui.update_health_boost_buttons(player) end
 end
 
 local function send_unit_groups()
@@ -234,31 +263,42 @@ local function on_player_changed_position(event)
 end
 
 local function on_entity_died(event)
-	if not event.entity.valid then	return end
+	local entity = event.entity
+	if not entity.valid then	return end
 	if global.game_reset_tick then return end
-	if event.entity.type ~= "unit-spawner" then return end
 	
-	local gui_str
-	if event.entity.force.name == "east" then
+	if entity.type == "unit" then
+		local team = global.map_forces[entity.force.name]
+		team.unit_count = team.unit_count - 1
+		return
+	end
+	
+	if entity.type ~= "unit-spawner" then return end
+	
+	local str
+	if entity.force.name == "east" then
 		game.print("East lost their Hatchery.", {100, 100, 100})
-		gui_str = ">>>> West team has won the game!!! <<<<"
+		str = ">>>> West team has won the game!!! <<<<"
 		for _, player in pairs(game.forces.east.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
 		end
 		for _, player in pairs(game.forces.west.connected_players) do
-			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+			player.play_sound{path="utility/game_won", volume_modifier=0.85}			
+			Map_score.set_score(player, Map_score.get_score(player) + 1)
 		end
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
-		gui_str = ">>>> East team has won the game!!! <<<<"
+		str = ">>>> East team has won the game!!! <<<<"
 		for _, player in pairs(game.forces.west.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
 		end
 		for _, player in pairs(game.forces.east.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+			Map_score.set_score(player, Map_score.get_score(player) + 1)
 		end
 	end
 	
+	game.print(string.upper(str), {250, 120, 0})
 	game.print("Next round starting in 30 seconds..", {150, 150, 150})
 	
 	for _, player in pairs(game.forces.spectator.connected_players) do
@@ -268,7 +308,8 @@ local function on_entity_died(event)
 	
 	for _, player in pairs(game.connected_players) do
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
-		player.gui.left.add({type = "frame", name = "biter_hatchery_game_won", caption = gui_str})
+		Tabs.comfy_panel_call_tab(player, "Map Scores")
+		--player.gui.left.add({type = "frame", name = "biter_hatchery_game_won", caption = str})
 	end
 end
 
@@ -277,6 +318,8 @@ local function on_player_joined_game(event)
 	local surface = game.surfaces[global.active_surface_index]
 	
 	Gui.spectate_button(player)
+	Gui.unit_health_buttons(player)
+	Gui.update_health_boost_buttons(player)
 	
 	if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
 	
