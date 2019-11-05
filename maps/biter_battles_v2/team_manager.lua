@@ -40,27 +40,6 @@ local function unfreeze_players()
 	end
 end
 
-local function toggle_ghost_spectate(player)
-	if player.character then
-		player.character.destroy() 
-		player.character = nil
-		player.set_controller({type=defines.controllers.spectator})
-		game.print(player.name .. " has turned into a spectator ghost.")
-	else
-		local spawn = player.force.get_spawn_position(player.surface)
-		player.character = nil
-		player.set_controller({type=defines.controllers.god})
-		local pos = player.surface.find_non_colliding_position("character", spawn, 3, 0.5)
-		if pos then
-			player.teleport(pos, player.surface)
-		else
-			player.teleport(spawn, player.surface)
-		end
-		player.create_character()
-		game.print(player.name .. " has stopped being a spectator ghost.")
-	end	
-end
-
 local function leave_corpse(player)
 	if not player.character then return end
 	
@@ -128,7 +107,7 @@ local function draw_manager_gui(player)
 	if player.gui.center["team_manager_gui"] then player.gui.center["team_manager_gui"].destroy() end
 	
 	local frame = player.gui.center.add({type = "frame", name = "team_manager_gui", caption = "Manage Teams", direction = "vertical"})
-	
+
 	local t = frame.add({type = "table", name = "team_manager_root_table", column_count = 5})
 	
 	local i2 = 1
@@ -215,13 +194,23 @@ local function draw_manager_gui(player)
 	end
 	button.style.font = "heading-2"
 	
-	button = t.add({
-		type = "button",
-		name = "team_manager_turn_ghost",
-		caption = "Ghost-Spectate",
-		tooltip = "Turn yourself into a spooky spectator ghost."
-	})
-	button.style.font_color = {r = 88, g = 88, b = 88}
+	if global.training_mode then
+		button = t.add({
+			type = "button",
+			name = "team_manager_activate_training",
+			caption = "Training Mode Activated",
+			tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
+		})
+		button.style.font_color = {r = 222, g = 22, b = 22}
+	else
+		button = t.add({
+			type = "button",
+			name = "team_manager_activate_training",
+			caption = "Training Mode Disabled",
+			tooltip = "Feed your own team's biters and only teams with players gain threat & evo."
+		})
+		button.style.font_color = {r = 55, g = 55, b = 55}
+	end
 	button.style.font = "heading-2"
 end
 
@@ -303,9 +292,19 @@ local function team_manager_gui_click(event)
 		return
 	end
 	
-	if name == "team_manager_turn_ghost" then
-		if not player.admin then player.print("Only admins can become spooky spectator ghosts.", {r = 175, g = 0, b = 0}) return end
-		toggle_ghost_spectate(player)
+	if name == "team_manager_activate_training" then
+		if not player.admin then player.print("Only admins can switch training mode.", {r = 175, g = 0, b = 0}) return end
+		if global.training_mode then
+			global.training_mode = false
+			global.game_lobby_active = true
+			draw_manager_gui(player)
+			game.print(">>> Training Mode has been disabled.", {r = 111, g = 111, b = 111})
+			return
+		end
+		global.training_mode = true
+		global.game_lobby_active = false
+		draw_manager_gui(player)
+		game.print(">>> Training Mode has been enabled!", {r = 225, g = 0, b = 0})
 		return
 	end
 	
