@@ -247,9 +247,9 @@ local function on_entity_died(event)
 		end
 		for _, player in pairs(game.forces.west.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=0.85}
-			--if #entity.force.players > 0 then
+			if global.map_forces.east.player_count > 0 then
 				Map_score.set_score(player, Map_score.get_score(player) + 1)
-			--end
+			end
 		end
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
@@ -259,9 +259,9 @@ local function on_entity_died(event)
 		end
 		for _, player in pairs(game.forces.east.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=0.85}
-			--if #entity.force.players > 0 then
+			if global.map_forces.west.player_count > 0 then
 				Map_score.set_score(player, Map_score.get_score(player) + 1)
-			--end
+			end
 		end
 	end
 	

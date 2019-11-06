@@ -21,12 +21,12 @@ function Public.set_force_attributes()
 	game.forces.east.technologies["artillery-shell-range-1"].enabled = false					
 	game.forces.east.technologies["artillery-shell-speed-1"].enabled = false
 	
-	global.map_forces.east.unit_health_boost = 1
-	global.map_forces.west.unit_health_boost = 1
-	global.map_forces.east.unit_count = 0
-	global.map_forces.west.unit_count = 0
-	global.map_forces.east.max_unit_count = 1024
-	global.map_forces.west.max_unit_count = 1024
+	for _, force_name in pairs({"west", "east"}) do
+		global.map_forces[force_name].unit_health_boost = 1
+		global.map_forces[force_name].unit_count = 0	
+		global.map_forces[force_name].max_unit_count = 1024
+		global.map_forces[force_name].player_count = 0
+	end	
 end
 
 function Public.create_forces()
@@ -93,6 +93,7 @@ function Public.put_player_into_random_team(player)
 	for item, amount in pairs(Public.starting_items) do
 		player.insert({name = item, count = amount})
 	end
+	global.map_forces[player.force.name].player_count = global.map_forces[player.force.name].player_count + 1
 end
 
 function Public.set_player_to_spectator(player)
