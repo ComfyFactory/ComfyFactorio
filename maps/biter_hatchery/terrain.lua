@@ -33,6 +33,12 @@ local function create_nests(surface)
 	global.map_forces.west.target = e
 end
 
+local function create_border_beams(surface)
+	surface.create_entity({name = "electric-beam", position = {4, -96}, source = {4, -96}, target = {4,96}})
+	surface.create_entity({name = "electric-beam", position = {-4, -96}, source = {-4, -96}, target = {-4,96}})
+end
+
+
 function Public.create_mirror_surface()
 	if game.surfaces["mirror_terrain"] then return end
 
@@ -173,7 +179,10 @@ local function on_chunk_generated(event)
 	
 	if left_top.x >= -192 and left_top.x < 192 then combat_area(event) end
 	
-	if left_top.x == 256 and left_top.y == 256 then create_nests(event.surface) end
+	if left_top.x == 256 and left_top.y == 256 then 
+		create_nests(event.surface) 
+		create_border_beams(event.surface)
+	end
 	
 	if left_top.x > 320 then return end
 	if left_top.x < -320 then return end

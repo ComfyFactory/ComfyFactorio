@@ -70,7 +70,15 @@ end
 
 function Public.teleport_player_to_active_surface(player)
 	local surface = game.surfaces[global.active_surface_index]
-	player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 32, 0.5), surface)
+	local position	
+	if player.force.name == "spectator" then
+		position = player.force.get_spawn_position(surface)
+		position = {x = (position.x - 160) + math_random(0, 320), y = (position.y - 16) + math_random(0, 32)}
+	else
+		position = surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 48, 1)
+		if not position then position = player.force.get_spawn_position(surface) end
+	end
+	player.teleport(position, surface)
 end
 
 function Public.put_player_into_random_team(player)

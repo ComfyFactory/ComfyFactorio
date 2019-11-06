@@ -65,9 +65,9 @@ function Public.reset_map()
 	
 	local surface = game.surfaces[global.active_surface_index]
 	
-	surface.request_to_generate_chunks({0,0}, 10)
+	surface.request_to_generate_chunks({0,0}, 8)
 	surface.force_generate_chunk_requests()
-	game.forces.spectator.set_spawn_position({0, 128}, surface)
+	game.forces.spectator.set_spawn_position({0, -128}, surface)
 	game.forces.west.set_spawn_position({-200, 0}, surface)
 	game.forces.east.set_spawn_position({200, 0}, surface)		
 	
@@ -210,15 +210,15 @@ local function send_unit_groups()
 end
 
 local border_teleport = {
-	["east"] = 2,
-	["west"] = -2,
+	["east"] = 1,
+	["west"] = -1,
 }
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if not player.character.valid then return end
-	if player.position.x >= -4 and player.position.x <= 4 then
+	if player.position.x > -4 and player.position.x < 4 then
 		if not border_teleport[player.force.name] then return end
 		if player.character.driving then player.character.driving = false end
 		player.teleport({player.position.x + border_teleport[player.force.name], player.position.y}, game.surfaces[global.active_surface_index])
@@ -305,9 +305,12 @@ end
 local function tick()
 	local game_tick = game.tick
 	if game_tick % 240 == 0 then
-		local area = {{-320, -161}, {319, 160}}
-		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
-		game.forces.east.chart(game.surfaces[global.active_surface_index], area)		
+		local surface = game.surfaces[global.active_surface_index]
+		--if surface.is_chunk_generated({10, 0}) then
+			local area = {{-320, -161}, {319, 160}}
+			game.forces.west.chart(surface, area)
+			game.forces.east.chart(surface, area)
+		--end
 	end	
 	if game_tick % 1200 == 0 then send_unit_groups() end	
 	if global.game_reset_tick then
