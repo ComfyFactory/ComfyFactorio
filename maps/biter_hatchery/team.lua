@@ -20,6 +20,13 @@ function Public.set_force_attributes()
 	game.forces.east.technologies["artillery"].enabled = false
 	game.forces.east.technologies["artillery-shell-range-1"].enabled = false					
 	game.forces.east.technologies["artillery-shell-speed-1"].enabled = false
+	
+	global.map_forces.east.unit_health_boost = 1
+	global.map_forces.west.unit_health_boost = 1
+	global.map_forces.east.unit_count = 0
+	global.map_forces.west.unit_count = 0
+	global.map_forces.east.max_unit_count = 1024
+	global.map_forces.west.max_unit_count = 1024
 end
 
 function Public.create_forces()

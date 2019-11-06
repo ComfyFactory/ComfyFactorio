@@ -4,7 +4,6 @@ local Tabs = require 'comfy_panel.main'
 local Map_score = require "modules.map_score"
 local Unit_health_booster = require "modules.biter_health_booster"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
-local map_functions = require "tools.map_functions"
 local Terrain = require "maps.biter_hatchery.terrain"
 local Gui = require "maps.biter_hatchery.gui"
 require "maps.biter_hatchery.share_chat"
@@ -14,7 +13,20 @@ local Map = require "modules.map_info"
 local math_random = math.random
 local Public = {}
 
-local m = 4
+local map_gen_settings = {
+		["seed"] = 1,
+		["water"] = 1,
+		["starting_area"] = 1,
+		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+		["default_enable_all_autoplace_controls"] = false,
+		["autoplace_settings"] = {
+			["entity"] = {treat_missing_as_default = false},
+			["tile"] = {treat_missing_as_default = false},
+			["decorative"] = {treat_missing_as_default = false},
+		},
+	}
+
+local m = 3
 local health_boost_food_values = {
 	["automation-science-pack"] =		0.000001 * m,
 	["logistic-science-pack"] = 			0.0000025 * m,
@@ -42,37 +54,8 @@ for x = worm_turret_spawn_radius * -1, 0, 1 do
 	end
 end
 
-local function draw_spawn_ores(surface)
-	local x = global.map_forces.west.hatchery.position.x - 64
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "iron-ore", surface, 15, 2500)
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = -32}, "copper-ore", surface, 15, 2500)
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = 0}, "coal", surface, 15, 1500)
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = 64}, "stone", surface, 15, 1500)
-	
-	local x = global.map_forces.east.hatchery.position.x + 64
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = 32}, "copper-ore", surface, 15, 2500)
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = -32}, "iron-ore", surface, 15, 2500)
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = 0}, "coal", surface, 15, 1500)
-	map_functions.draw_smoothed_out_ore_circle({x = x, y = -64}, "stone", surface, 15, 1500)
-end
-
 function Public.reset_map()
-	local map_gen_settings = {}
-	map_gen_settings.seed = math_random(1, 10000000)
-	map_gen_settings.water = 0.2
-	map_gen_settings.starting_area = 1
-	map_gen_settings.terrain_segmentation = 10
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = math_random(16, 48), cliff_elevation_0 = math_random(16, 48)}	
-	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = 100, size = 0.5, richness = 0.5,},
-		["stone"] = {frequency = 100, size = 0.5, richness = 0.5,},
-		["copper-ore"] = {frequency = 200, size = 0.6, richness = 0.5,},
-		["iron-ore"] = {frequency = 200, size = 0.6, richness = 0.5,},
-		["uranium-ore"] = {frequency = 50, size = 0.5, richness = 0.5,},
-		["crude-oil"] = {frequency = 50, size = 0.5, richness = 0.5,},
-		["trees"] = {frequency = math_random(5, 10) * 0.1, size = math_random(5, 10) * 0.1, richness = math_random(3, 10) * 0.1},
-		["enemy-base"] = {frequency = 0, size = 0, richness = 0}	
-	}
+	Terrain.create_mirror_surface()
 	
 	if not global.active_surface_index then
 		global.active_surface_index = game.create_surface("biter_hatchery", map_gen_settings).index		
@@ -81,32 +64,12 @@ function Public.reset_map()
 	end
 	
 	local surface = game.surfaces[global.active_surface_index]
+	
 	surface.request_to_generate_chunks({0,0}, 10)
 	surface.force_generate_chunk_requests()
-		
-	game.forces.west.set_spawn_position({-160, 0}, surface)
-	game.forces.east.set_spawn_position({160, 0}, surface)		
-		
-	local e = surface.create_entity({name = "biter-spawner", position = {-160, 0}, force = "west"})
-	surface.create_entity({name = "small-worm-turret", position = {-155, 0}, force = "west"})
-	e.active = false
-	global.map_forces.west.hatchery = e
-	global.map_forces.east.target = e
-	
-	local e = surface.create_entity({name = "biter-spawner", position = {160, 0}, force = "east"})
-	surface.create_entity({name = "small-worm-turret", position = {155, 0}, force = "east"})
-	e.active = false
-	global.map_forces.east.hatchery = e
-	global.map_forces.west.target = e
-	
-	global.map_forces.east.unit_health_boost = 1
-	global.map_forces.west.unit_health_boost = 1
-	global.map_forces.east.unit_count = 0
-	global.map_forces.west.unit_count = 0
-	global.map_forces.east.max_unit_count = 1024
-	global.map_forces.west.max_unit_count = 1024
-	
-	draw_spawn_ores(surface)
+	game.forces.spectator.set_spawn_position({0, 128}, surface)
+	game.forces.west.set_spawn_position({-200, 0}, surface)
+	game.forces.east.set_spawn_position({200, 0}, surface)		
 	
 	RPG.rpg_reset_all_players()
 	
@@ -114,7 +77,6 @@ function Public.reset_map()
 	Team.assign_random_force_to_active_players()
 	
 	for _, player in pairs(game.connected_players) do
-		if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
 		Team.teleport_player_to_active_surface(player)		
 	end
 	
@@ -199,6 +161,7 @@ end
 local function nom()
 	local surface = game.surfaces[global.active_surface_index]
 	for key, force in pairs(global.map_forces) do
+		if not force.hatchery then return end
 		force.hatchery.health = force.hatchery.health + 1
 		local belts = get_belts(force.hatchery)
 		for _, belt in pairs(belts) do
@@ -283,8 +246,10 @@ local function on_entity_died(event)
 			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
 		end
 		for _, player in pairs(game.forces.west.connected_players) do
-			player.play_sound{path="utility/game_won", volume_modifier=0.85}			
-			Map_score.set_score(player, Map_score.get_score(player) + 1)
+			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+			--if #entity.force.players > 0 then
+				Map_score.set_score(player, Map_score.get_score(player) + 1)
+			--end
 		end
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
@@ -294,7 +259,9 @@ local function on_entity_died(event)
 		end
 		for _, player in pairs(game.forces.east.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=0.85}
-			Map_score.set_score(player, Map_score.get_score(player) + 1)
+			--if #entity.force.players > 0 then
+				Map_score.set_score(player, Map_score.get_score(player) + 1)
+			--end
 		end
 	end
 	
@@ -304,7 +271,9 @@ local function on_entity_died(event)
 	for _, player in pairs(game.forces.spectator.connected_players) do
 		player.play_sound{path="utility/game_won", volume_modifier=0.85}
 	end
+	
 	global.game_reset_tick = game.tick + 1800
+	game.delete_surface("mirror_terrain")
 	
 	for _, player in pairs(game.connected_players) do
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
@@ -321,8 +290,6 @@ local function on_player_joined_game(event)
 	Gui.unit_health_buttons(player)
 	Gui.update_health_boost_buttons(player)
 	
-	if player.gui.left.biter_hatchery_game_won then player.gui.left.biter_hatchery_game_won.destroy() end
-	
 	if player.surface.index ~= global.active_surface_index then		
 		if player.force.name == "spectator" then 
 			Team.set_player_to_spectator(player)
@@ -338,16 +305,16 @@ end
 local function tick()
 	local game_tick = game.tick
 	if game_tick % 240 == 0 then
-		local area = {{-256, -97}, {255, 96}}
+		local area = {{-320, -161}, {319, 160}}
 		game.forces.west.chart(game.surfaces[global.active_surface_index], area)
-		game.forces.east.chart(game.surfaces[global.active_surface_index], area)
+		game.forces.east.chart(game.surfaces[global.active_surface_index], area)		
 	end	
 	if game_tick % 1200 == 0 then send_unit_groups() end	
 	if global.game_reset_tick then
 		if global.game_reset_tick < game_tick then
 			global.game_reset_tick = nil
 			Public.reset_map()
-		end
+		end		
 		return
 	end	
 	nom()	
@@ -380,7 +347,9 @@ local function on_entity_damaged(event)
 	local cause = event.cause
 	if cause then
 		if cause.valid then
-			if cause.type == "unit" then return end
+			if cause.type == "unit" then
+				if math_random(1,5) == 1 then return end
+			end
 		end
 	end
 	entity.health = entity.health + event.final_damage_amount	

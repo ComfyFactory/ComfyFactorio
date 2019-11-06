@@ -16,13 +16,13 @@ end
 
 function Public.unit_health_buttons(player)
 	if player.gui.top.health_boost_west then return end
-	local button = player.gui.top.add({type = "sprite-button", name = "health_boost_west", caption = 1, tooltip = "Health increase of west side biters."})
+	local button = player.gui.top.add({type = "sprite-button", name = "health_boost_west", caption = 1, tooltip = "Health modfier of west side biters.\nIncreases by feeding."})
 	button.style.font = "heading-1"
 	button.style.font_color = {r = 0, g = 180, b = 0}
 	button.style.minimal_height = 38
 	button.style.minimal_width = 78	
 	button.style.padding = 2
-	local button = player.gui.top.add({type = "sprite-button", name = "health_boost_east", caption = 1, tooltip = "Health increase of east side biters."})
+	local button = player.gui.top.add({type = "sprite-button", name = "health_boost_east", caption = 1, tooltip = "Health modfier of east side biters.\nIncreases by feeding."})
 	button.style.font = "heading-1"
 	button.style.font_color = {r = 180, g = 180, b = 0}
 	button.style.minimal_height = 38
