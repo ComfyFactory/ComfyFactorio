@@ -10,7 +10,7 @@ local insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
-local uncover_radius = 8
+local uncover_radius = 10
 
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local enemies = {"small-biter", "medium-biter", "small-spitter", "small-worm-turret", "medium-spitter", "medium-worm-turret", "big-biter", "big-spitter", "big-worm-turret", "behemoth-biter", "behemoth-spitter"}
@@ -202,7 +202,7 @@ function Public.reveal(player)
 						if math_random(1,4) ~= 1 then
 							insert(entities, {name = "mineable-wreckage", position = pos})
 						else
-							if math_random(1,512) == 1 then
+							if math_random(1,256) == 1 then
 								Loot.create_loot(surface, pos, "wooden-chest")
 							else
 								if math_random(1,512) == 1 then
