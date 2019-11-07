@@ -10,7 +10,7 @@ local function shuffle(tbl)
 	return tbl
 end
 
-function Public.secret_shop(pos, surface)
+function Public.add(pos, surface)
 	local secret_market_items = {
     {price = {{"coin", math_random(30,60)}}, offer = {type = 'give-item', item = 'construction-robot'}},
 	{price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'loader'}},
@@ -42,7 +42,7 @@ function Public.secret_shop(pos, surface)
 	}
 	secret_market_items = shuffle(secret_market_items)
 
-	local market = surface.create_entity {name = "market", position = pos}
+	local market = surface.create_entity {name = "market", position = pos, force = "scrap"}
 	market.destructible = false
 
 	for i = 1, math_random(6, 8), 1 do

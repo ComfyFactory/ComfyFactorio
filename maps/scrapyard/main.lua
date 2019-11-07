@@ -1,10 +1,11 @@
 require "on_tick_schedule"
 require "modules.dynamic_landfill"
-require "modules.mineable_wreckage_yields_ores"
+require "modules.mineable_wreckage_yields_scrap"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.spawners_contain_biters"
 require "modules.biters_yield_coins"
+require "modules.explosives"
 require "modules.dangerous_goods"
 require "modules.wave_defense.main"
 
@@ -13,7 +14,8 @@ local Map = require 'modules.map_info'
 local RPG = require 'modules.rpg'
 local Reset = require "functions.soft_reset"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
-
+local unearthing_worm = require "functions.unearthing_worm"
+local unearthing_biters = require "functions.unearthing_biters"
 local Loot = require 'maps.scrapyard.loot'
 local Pets = require "modules.biter_pets"
 local Modifier = require "player_modifiers"
@@ -34,6 +36,15 @@ local treasure_chest_messages = {
 	"You find a chest underneath the broken rocks. It's filled with goodies!",
 	"We has found the precious!",
 }
+
+local function shuffle(tbl)
+	local size = #tbl
+		for i = size, 1, -1 do
+			local rand = math_random(size)
+			tbl[i], tbl[rand] = tbl[rand], tbl[i]
+		end
+	return tbl
+end
 
 function Public.reset_map()
 	global.spawn_generated = false
@@ -187,10 +198,34 @@ function Public.reset_map()
 	wave_defense_table.game_lost = false
 	wave_defense_table.spawn_position = {x=0,y=220}
 
+	game.forces.player.set_friend('scrap', true)
+	game.forces.enemy.set_friend('scrap', true)
+	game.forces.scrap.set_friend('player', true)
+	game.forces.scrap.set_friend('enemy', true)
+	game.forces.scrap.share_chart = false
+
+	global.explosion_cells_destructible_tiles = {
+		["out-of-map"] = 1500,
+		["water"] = 1000,
+		["water-green"] = 1000,
+		["deepwater-green"] = 1000,
+		["deepwater"] = 1000,
+		["water-shallow"] = 1000,
+	}
+
 	surface.create_entity({name = "electric-beam", position = {-96, 190}, source = {-96, 190}, target = {96,190}})
 	surface.create_entity({name = "electric-beam", position = {-96, 190}, source = {-96, 190}, target = {96,190}})
 
 	RPG.rpg_reset_all_players()
+end
+
+local function set_difficulty()
+	local wave_defense_table = WD.get_table()
+
+	wave_defense_table.threat_gain_multiplier = 2 + #game.connected_players * 0.1
+	--20 Players for fastest wave_interval
+	wave_defense_table.wave_interval = 3600 - #game.connected_players * 90
+	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
 end
 
 local function protect_train(event)
@@ -208,7 +243,9 @@ end
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces[global.active_surface_index]
-	if player.position.y < 20 then Terrain.reveal(player) end
+	if player.position.x >= 960 then return end
+	if player.position.x <= -960 then return end
+	if player.position.y < 5 then Terrain.reveal(player, event) end
 	if player.position.y >= 190 then
 		player.teleport({player.position.x, player.position.y - 1}, surface)
 		player.print("The forcefield does not approve.",{r=0.98, g=0.66, b=0.22})
@@ -226,10 +263,15 @@ local function on_marked_for_deconstruction(event)
 	end
 end
 
+local function on_player_left_game(event)
+	set_difficulty()
+end
+
 local function on_player_joined_game(event)
 	local surface = game.surfaces[global.active_surface_index]
 	local player = game.players[event.player_index]
 
+	set_difficulty(event)
 
 	if player.surface.index ~= global.active_surface_index then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0,5), surface)
@@ -277,10 +319,18 @@ local function hidden_treasure(event)
 	Loot.create_loot(event.entity.surface, event.entity.position, "wooden-chest")
 end
 
+local function biters_chew_rocks_faster(event)
+	if event.entity.force.index ~= 3 then return end --Neutral Force
+	if not event.cause then return end
+	if not event.cause.valid then return end
+	if event.cause.force.index ~= 2 then return end --Enemy Force
+
+	event.entity.health = event.entity.health - event.final_damage_amount * 2.5
+end
+
 local function give_coin(player)
 	player.insert({name = "coin", count = 1})
 end
-
 
 local function on_player_mined_entity(event)
 	local entity = event.entity
@@ -311,11 +361,29 @@ local function on_player_mined_entity(event)
 	end
 
 	if entity.force.name ~= "scrap" then return end
+	local positions = {}
+	local r = math.ceil(entity.prototype.max_health / 32)
+	for x = r * -1, r, 1 do
+		for y = r * -1, r, 1 do
+			positions[#positions + 1] = {x = entity.position.x + x, y = entity.position.y + y}
+		end
+	end
+	positions = shuffle(positions)
+	for i = 1, math.ceil(entity.prototype.max_health / 32), 1 do
+		if not positions[i] then return end
+		if math_random(1,3) ~= 1 then
+			unearthing_biters(entity.surface, positions[i], math_random(5,10))
+		else
+			unearthing_worm(entity.surface, positions[i])
+		end
+	end
 end
 
 local function on_entity_damaged(event)
 	if not event.entity.valid then	return end
 	protect_train(event)
+	if not event.entity.health then return end
+	biters_chew_rocks_faster(event)
 end
 
 local function on_entity_died(event)
@@ -326,7 +394,7 @@ local function on_entity_died(event)
 	end
 
 	if event.entity == global.locomotive_cargo then
-		game.print("Fools! The cargo was destroyed!")
+		game.print("The cargo was destroyed!")
 		wave_defense_table.game_lost = true
 		wave_defense_table.target = nil
 		global.game_reset_tick = game.tick + 1800
@@ -359,6 +427,13 @@ local function on_research_finished(event)
 end
 
 local on_init = function()
+	game.create_force("scrap")
+	game.create_force("scrap_defense")
+	game.forces.player.set_friend('scrap', true)
+	game.forces.enemy.set_friend('scrap', true)
+	game.forces.scrap.set_friend('player', true)
+	game.forces.scrap.set_friend('enemy', true)
+	game.forces.scrap.share_chart = false
 	Public.reset_map()
 	local T = Map.Pop_info()
 		T.main_caption = "S c r a p y a r d"
@@ -377,13 +452,6 @@ local on_init = function()
 		})
 		T.main_caption_color = {r = 150, g = 150, b = 0}
 		T.sub_caption_color = {r = 0, g = 150, b = 0}
-		game.create_force("scrap")
-		game.create_force("scrap_defense")
-		game.forces.player.set_friend('scrap', true)
-		game.forces.enemy.set_friend('scrap', true)
-		game.forces.scrap.set_friend('player', true)
-		game.forces.scrap.set_friend('enemy', true)
-		game.forces.scrap.share_chart = false
 end
 
 
@@ -392,6 +460,7 @@ Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
