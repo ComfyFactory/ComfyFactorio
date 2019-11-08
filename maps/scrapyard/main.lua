@@ -8,7 +8,7 @@ require "modules.spawners_contain_biters"
 require "modules.biters_yield_coins"
 require "modules.biter_noms_you"
 require "modules.explosives"
-require "modules.dangerous_goods"
+require "maps.scrapyard.dangerous_goods"
 require "modules.wave_defense.main"
 
 local WD = require "modules.wave_defense.table"
