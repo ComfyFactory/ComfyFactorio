@@ -12,8 +12,7 @@ require "modules.biters_yield_coins"
 require "modules.dangerous_nights"
 require "modules.dangerous_goods"
 
-require "maps.junkyard_map_intro"
-
+local Map = require 'modules.map_info'
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
 local tick_tack_trap = require "functions.tick_tack_trap"
@@ -489,7 +488,39 @@ end
 local function on_research_finished(event)
 	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 300
 end
-	
+
+local on_init = function()
+local T = Map.Pop_info()
+	T.main_caption = "J u n k y a r d"
+	T.sub_caption =  "    ..the scrap is your friend.."
+	T.text = table.concat({
+	"Citizen Log #468-2A-3287, Freelancer Cole\n",
+	"\n",
+	"To whoever is reading this message,\n",
+	"i have most likely already left this doomed place,	or... well..\n",
+	"\n",
+	"I am stranded on this foreign world since months and i have given up on fixing my ships transceiver.\n",
+	"Things aren't looking too good, i must admit.\n",
+	"The rust and devastation tells a story of an advanced civilization,\n",
+	"which seems to have evacuated their home long time ago.\n",
+	"\n",
+	"Any natural resources are rare and the ones worth while are too hard for me to reach.\n",
+	"Luckily, the wrecks yield all kinds of useful scraps, but also various dangers.\n",
+	"Almost lost half a leg some days ago while digging out a crate.\n",
+	"\n",
+	"The wildlife is extremely aggressive, especially at the time of night.\n",
+	"Most of these insect appearing like creatures seem to live underground.\n",
+	"Stay near your light sources, if you want to have a chance of surviving here!!\n",
+	"\n",
+	"I must make a move now, hopefully will find those missing parts.\n",
+	"\n",
+	"###Log End###"
+	})
+	T.main_caption_color = {r = 150, g = 150, b = 0}
+	T.sub_caption_color = {r = 0, g = 150, b = 0}
+end
+
+event.on_init(on_init)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

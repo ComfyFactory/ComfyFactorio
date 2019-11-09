@@ -4,7 +4,8 @@ local math_random = math.random
 local valid_entities = {
 	["rock-big"] = true,
 	["rock-huge"] = true,
-	["sand-rock-big"] = true	
+	["sand-rock-big"] = true,
+	["mineable-wreckage"] = true	
 }
 
 local rock_mining_chance_weights = {
