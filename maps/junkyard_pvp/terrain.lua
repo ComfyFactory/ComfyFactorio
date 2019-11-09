@@ -19,7 +19,7 @@ local noises = {
 	["cave_rivers_4"] = {{modifier = 0.001, weight = 1}, {modifier = 0.01, weight = 0.11}, {modifier = 0.05, weight = 0.01}},
 	["scrapyard"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}},
 }
-local cargo_wagon_position = {x = 96, y = 0}
+local cargo_wagon_position = {x = 86, y = 0}
 local Public = {}
 
 local function get_noise(name, pos, seed)

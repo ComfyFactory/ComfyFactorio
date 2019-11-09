@@ -5,6 +5,7 @@ local Gui = require "maps.junkyard_pvp.gui"
 require "modules.rocks_heal_over_time"
 require "maps.junkyard_pvp.share_chat"
 require "modules.mineable_wreckage_yields_scrap"
+require "modules.explosives"
 local Team = require "maps.junkyard_pvp.team"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
@@ -38,8 +39,8 @@ function Public.reset_map()
 	surface.request_to_generate_chunks({0,0}, 6)
 	surface.force_generate_chunk_requests()
 	game.forces.spectator.set_spawn_position({0, -128}, surface)
-	game.forces.west.set_spawn_position({-96, 0}, surface)
-	game.forces.east.set_spawn_position({96, 0}, surface)		
+	game.forces.west.set_spawn_position({-85, 5}, surface)
+	game.forces.east.set_spawn_position({85, 5}, surface)		
 	
 	Team.set_force_attributes()	
 	Team.assign_random_force_to_active_players()
@@ -192,9 +193,22 @@ local function on_init()
 		"The opponent team wants your fish cargo!\n",
 		"\n",
 		"Destroy their cargo wagon to win the round!\n",
+		"\n",
+		"Sometimes you will encounter impassable dark chasms or ponds.\n",
+		"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
+		"All they need is a container and a well aimed shot.\n",
 	})
 	T.main_caption_color = {r = 150, g = 0, b = 255}
 	T.sub_caption_color = {r = 0, g = 250, b = 150}
+	
+	global.explosion_cells_destructible_tiles = {
+		["out-of-map"] = 1500,
+		["water"] = 1000,
+		["water-green"] = 1000,
+		["deepwater-green"] = 1000,
+		["deepwater"] = 1000,
+		["water-shallow"] = 1000,	
+	}
 	
 	Team.create_forces()
 	Public.reset_map()
