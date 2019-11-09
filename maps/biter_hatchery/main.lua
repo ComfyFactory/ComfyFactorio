@@ -286,8 +286,8 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces[global.active_surface_index]
 	
-	Gui.spectate_button(player)
 	Gui.unit_health_buttons(player)
+	Gui.spectate_button(player)
 	Gui.update_health_boost_buttons(player)
 	
 	if player.surface.index ~= global.active_surface_index then		

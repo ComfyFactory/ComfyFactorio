@@ -1,4 +1,4 @@
-require "modules.biter_health_booster"
+local BiterHealthBooster = require "modules.biter_health_booster"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
 local SideTargets = require "modules.wave_defense.side_targets"
 local ThreatEvent = require "modules.wave_defense.threat_events"
@@ -90,8 +90,9 @@ local function set_main_target()
 		if wave_defense_table.target.valid then return end
 	end
 	if not wave_defense_table.side_targets then return end
-	if #wave_defense_table.side_targets == 0 then return end
-	local target = wave_defense_table.side_targets[math_random(1, #wave_defense_table.side_targets)]
+	local size_of_side_targets = #wave_defense_table.side_targets
+	if size_of_side_targets == 0 then return end
+	local target = wave_defense_table.side_targets[math_random(1, size_of_side_targets)]
 	if not target then return end
 	if not target.valid then return end
 	wave_defense_table.target = target
@@ -173,10 +174,12 @@ local function get_active_unit_groups_count()
 	return count
 end
 
-local function spawn_biter(surface)
+local function spawn_biter(surface, is_boss_biter)
 	local wave_defense_table = WD.get_table()
-	if not can_units_spawn() then return end
-
+	if not is_boss_biter then
+		if not can_units_spawn() then return end
+	end
+		
 	local name
 	if math_random(1,100) > 73 then
 		name = BiterRolls.wave_defense_roll_spitter_name()
@@ -188,6 +191,7 @@ local function spawn_biter(surface)
 	local biter = surface.create_entity({name = name, position = wave_defense_table.spawn_position, force = "enemy"})
 	biter.ai_settings.allow_destroy_when_commands_fail = false
 	biter.ai_settings.allow_try_return_to_spawner = false
+	if is_boss_biter then BiterHealthBooster.add_boss_unit(biter, global.biter_health_boost * 5, 0.35) end
 	wave_defense_table.active_biters[biter.unit_number] = {entity = biter, spawn_tick = game.tick}
 	wave_defense_table.active_biter_count = wave_defense_table.active_biter_count + 1
 	wave_defense_table.active_biter_threat = wave_defense_table.active_biter_threat + math_round(threat_values[name] * global.biter_health_boost, 2)
@@ -201,6 +205,10 @@ local function set_next_wave()
 	local threat_gain = wave_defense_table.wave_number * wave_defense_table.threat_gain_multiplier
 	if wave_defense_table.wave_number > 1000 then
 		threat_gain = threat_gain * (wave_defense_table.wave_number * 0.001)
+	end
+	if wave_defense_table.wave_number % 25 == 0 then
+		wave_defense_table.boss_wave = true
+		threat_gain = threat_gain * 2 
 	end
 	
 	wave_defense_table.threat = wave_defense_table.threat + math_floor(threat_gain)	
@@ -320,7 +328,6 @@ local function give_commands_to_unit_groups()
 			command_unit_group(group)
 		else
 			table.remove(wave_defense_table.unit_groups, k)
-			--wave_defense_table.unit_groups[k] = nil 
 		end
 	end
 end
@@ -333,7 +340,7 @@ local function spawn_unit_group()
 	if get_active_unit_groups_count() >= wave_defense_table.max_active_unit_groups then return end
 	local pos = wave_defense_table.spawn_position
 	local radius = 10
-	local area = {left_top = {pos.x-radius, pos.y-radius}, right_bottom = {pos.x+radius, pos.y+radius}}
+	local area = {left_top = {pos.x - radius, pos.y - radius}, right_bottom = {pos.x + radius, pos.y + radius}}
 
 	BiterRolls.wave_defense_set_unit_raffle(wave_defense_table.wave_number)
 
@@ -343,11 +350,23 @@ local function spawn_unit_group()
 	debug_print("Spawning unit group at x" .. wave_defense_table.spawn_position.x .." y" .. wave_defense_table.spawn_position.y)
 	local unit_group = surface.create_unit_group({position = wave_defense_table.spawn_position, force = "enemy"})			
 	local group_size = math_floor(wave_defense_table.average_unit_group_size * group_size_modifier_raffle[math_random(1, group_size_modifier_raffle_size)])
-	for a = 1, group_size, 1 do
+	for _ = 1, group_size, 1 do
 		local biter = spawn_biter(surface)
 		if not biter then break end
 		unit_group.add_member(biter)
-	end	
+	end
+	
+	if wave_defense_table.boss_wave then
+		local count = math_random(1, math_floor(wave_defense_table.wave_number * 0.01) + 2)
+		if count > 8 then count = 8 end
+		for _ = 1, count, 1 do
+			local biter = spawn_biter(surface, true)
+			if not biter then break end
+			unit_group.add_member(biter)
+		end
+		wave_defense_table.boss_wave = false
+	end
+
 	table_insert(wave_defense_table.unit_groups, unit_group)	
 	return true
 end

@@ -13,7 +13,6 @@ require "modules.mineable_wreckage_yields_scrap"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
-require "maps.mountain_fortress_v2.market"
 local level_depth = require "maps.mountain_fortress_v2.terrain"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
@@ -24,7 +23,7 @@ local WD = require "modules.wave_defense.table"
 local Treasure = require "maps.mountain_fortress_v2.treasure"
 local Locomotive = require "maps.mountain_fortress_v2.locomotive".locomotive_spawn
 local Modifier = require "player_modifiers"
-
+local math_random = math.random
 local Public = {}
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -39,10 +38,9 @@ function Public.reset_map()
 	global.chunk_queue = {}
 	
 	local map_gen_settings = {
-		["seed"] = math.random(1, 1000000),
-		--["height"] = 256,
+		["seed"] = math_random(1, 1000000),
 		["width"] = level_depth,
-		["water"] = 0.001,
+		["water"] = 0.1,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
 		["default_enable_all_autoplace_controls"] = true,
@@ -82,7 +80,8 @@ function Public.reset_map()
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.pollution.enabled = false
 	
-	game.forces.player.technologies["landfill"].enabled = false
+	game.forces.player.set_ammo_damage_modifier("landmine", -0.5)
+	game.forces.player.technologies["landfill"].enabled = false	
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({-2, 16}, surface)
 	
@@ -94,7 +93,7 @@ function Public.reset_map()
 	wave_defense_table.nest_building_density = 32
 	wave_defense_table.game_lost = false
 	
-	RPG.rpg_reset_all_players()
+	--RPG.rpg_reset_all_players()
 end
 
 local function protect_train(event)
@@ -108,35 +107,18 @@ local function protect_train(event)
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
 end
---[[
-local function neutral_force_player_damage_resistance(event)
-	if event.entity.force.index ~= 3 then return end  -- Neutral Force
-	if event.cause then
-		if event.cause.valid then
-			if event.cause.force.index == 2 then -- Enemy Force
-				return
-			end
-		end
-	end
-	if event.entity.health <= event.final_damage_amount then				
-		event.entity.die("neutral")
-		return
-	end
-	event.entity.health = event.entity.health + (event.final_damage_amount * 0.5)		
-end
-]]
+
 local function biters_chew_rocks_faster(event)
 	if event.entity.force.index ~= 3 then return end --Neutral Force
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if event.cause.force.index ~= 2 then return end --Enemy Force
-	--local bonus_damage = event.final_damage_amount * math.abs(wave_defense_table.threat) * 0.0002
 	event.entity.health = event.entity.health - event.final_damage_amount * 2.5
 end
 
 local function hidden_biter(entity)
 	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.25)
-	if math.random(1,3) == 1 then
+	if math_random(1,3) == 1 then
 		entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = entity.position})
 	else
 		entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = entity.position})
@@ -149,10 +131,10 @@ local function hidden_worm(entity)
 end
 
 local function hidden_biter_pet(event)
-	if math.random(1, 2048) ~= 1 then return end
+	if math_random(1, 2048) ~= 1 then return end
 	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
 	local unit
-	if math.random(1,3) == 1 then
+	if math_random(1,3) == 1 then
 		unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position})
 	else
 		unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = event.entity.position})
@@ -161,8 +143,8 @@ local function hidden_biter_pet(event)
 end
 
 local function hidden_treasure(event)
-	if math.random(1, 320) ~= 1 then return end
-	game.players[event.player_index].print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r=0.98, g=0.66, b=0.22})
+	if math_random(1, 320) ~= 1 then return end
+	game.players[event.player_index].print(treasure_chest_messages[math_random(1, #treasure_chest_messages)], {r=0.98, g=0.66, b=0.22})
 	Treasure(event.entity.surface, event.entity.position, "wooden-chest")
 end
 
@@ -170,19 +152,19 @@ local projectiles = {"grenade", "explosive-rocket", "grenade", "explosive-rocket
 local function angry_tree(entity, cause)	
 	if entity.type ~= "tree" then return end
 	if math.abs(entity.position.y) < level_depth then return end
-	if math.random(1,4) == 1 then hidden_biter(entity) end
-	if math.random(1,8) == 1 then hidden_worm(entity) end
-	if math.random(1,16) ~= 1 then return end
+	if math_random(1,4) == 1 then hidden_biter(entity) end
+	if math_random(1,8) == 1 then hidden_worm(entity) end
+	if math_random(1,16) ~= 1 then return end
 	local position = false
 	if cause then 
 		if cause.valid then
 			position = cause.position
 		end
 	end
-	if not position then position = {entity.position.x + (-20 + math.random(0, 40)), entity.position.y + (-20 + math.random(0, 40))} end
+	if not position then position = {entity.position.x + (-20 + math_random(0, 40)), entity.position.y + (-20 + math_random(0, 40))} end
 	
 	entity.surface.create_entity({
-		name = projectiles[math.random(1, 5)],
+		name = projectiles[math_random(1, 5)],
 		position = entity.position,
 		force = "neutral",
 		source = entity.position,
@@ -203,11 +185,11 @@ local function on_player_mined_entity(event)
 	if event.entity.type == "simple-entity" then
 		give_coin(game.players[event.player_index])
 		
-		if math.random(1,32) == 1 then
+		if math_random(1,32) == 1 then
 			hidden_biter(event.entity)
 			return
 		end
-		if math.random(1,512) == 1 then
+		if math_random(1,512) == 1 then
 			hidden_worm(event.entity)
 			return
 		end
@@ -242,11 +224,11 @@ local function on_entity_died(event)
 	if event.entity.force.index == 3 then
 		--local r_max = 15 - math.floor(math.abs(event.entity.position.y) / (level_depth * 0.5))
 		--if r_max < 3 then r_max = 3 end
-		if math.random(1,8) == 1 then
+		if math_random(1,8) == 1 then
 			hidden_biter(event.entity) 
 		end
 		
-		if math.random(1,256) == 1 then hidden_worm(event.entity) end
+		if math_random(1,256) == 1 then hidden_worm(event.entity) end
 		
 		angry_tree(event.entity, event.cause)
 	end

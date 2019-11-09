@@ -7,10 +7,13 @@ local Public = {}
 
 local function remove_unit(entity)
 	local wave_defense_table = WD.get_table()
-	if not wave_defense_table.active_biters[entity.unit_number] then return end
-	wave_defense_table.active_biter_threat = wave_defense_table.active_biter_threat - math.round(threat_values[entity.name] * global.biter_health_boost, 2)
+	local unit_number = entity.unit_number
+	if not wave_defense_table.active_biters[unit_number] then return end	
+	local m = 1 / global.biter_health_boost_units[unit_number][2]
+	local active_threat_loss = math.round(threat_values[entity.name] * m, 2)
+	wave_defense_table.active_biter_threat = wave_defense_table.active_biter_threat - active_threat_loss
 	wave_defense_table.active_biter_count = wave_defense_table.active_biter_count - 1
-	wave_defense_table.active_biters[entity.unit_number] = nil
+	wave_defense_table.active_biters[unit_number] = nil
 end
 
 local function place_nest_near_unit_group(wave_defense_table)
