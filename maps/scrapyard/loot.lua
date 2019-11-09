@@ -1,7 +1,7 @@
 local Public = {}
 local math_random = math.random
 
-function Public.create_loot(surface, position, chest)
+function Public.add(surface, position, chest)
 	local chest_raffle = {}
 	local chest_loot = {
 		{{name = "submachine-gun", count = math_random(1,3)}, weight = 3, d_min = 0.0, d_max = 0.1},
@@ -154,7 +154,7 @@ function Public.create_loot(surface, position, chest)
 		end
 	end
 
-	local e = surface.create_entity({name = chest, position=position, force="neutral"})
+	local e = surface.create_entity({name = chest, position=position, force="scrap"})
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
 	for x = 1, math_random(2,6), 1 do
