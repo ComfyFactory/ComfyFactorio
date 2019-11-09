@@ -124,7 +124,7 @@ local function wall(surface, left_top, seed)
 				if surface.can_place_entity({name = "stone-wall", position = p, force = "enemy"}) then
 					if math_random(1,512) == 1 and y > 3 and y < 28 then
 						if math_random(1, 2) == 1 then
-							Loot.add(surface, p, "bait-chest")
+							Loot.add(surface, p, "wooden-chest")
 						else
 							Loot.add(surface, p, "crash-site-chest-2")
 						end
@@ -133,12 +133,12 @@ local function wall(surface, left_top, seed)
 						if y < 5 or y > 26 then
 							if y <= 15 then
 								if math_random(1, y + 1) == 1 then
-									local e = surface.create_entity({name = "stone-wall", position = p, force = "player"})
+									local e = surface.create_entity({name = "stone-wall", position = p, force = "enemy"})
 									e.minable = false
 								end
 							else
 								if math_random(1, 32 - y)  == 1 then
-									local e = surface.create_entity({name = "stone-wall", position = p, force = "player"})
+									local e = surface.create_entity({name = "stone-wall", position = p, force = "enemy"})
 									e.minable = false
 								end
 							end
@@ -589,7 +589,7 @@ function Public.reveal_area(x, y, surface, max_radius)
 		end
 	end
 	for _, p in pairs(treasure) do
-		local name = "bait-chest"
+		local name = "crash-site-chest-1"
 		if math_random(1, 6) == 1 then name = "crash-site-chest-2" end
 		Loot.add(surface, p, name)
 		if math_random(1,wave_defense_table.math) == 1 then
@@ -651,7 +651,7 @@ function Public.reveal(player)
 		end
 	end
 	for _, p in pairs(treasure) do
-		local name = "bait-chest"
+		local name = "crash-site-chest-1"
 		if math_random(1, 6) == 1 then name = "crash-site-chest-2" end
 		Loot.add(surface, p, name)
 	end

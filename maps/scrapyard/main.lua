@@ -8,7 +8,6 @@ require "modules.spawners_contain_biters"
 require "modules.biters_yield_coins"
 require "modules.biter_noms_you"
 require "modules.explosives"
-require "maps.scrapyard.dangerous_goods"
 require "modules.wave_defense.main"
 
 local WD = require "modules.wave_defense.table"
@@ -335,6 +334,17 @@ local function on_player_mined_entity(event)
 		return
 	end
 
+	if entity.type == "unit" or entity.type == "unit-spawner" then
+		if math_random(1,160) == 1 then
+			tick_tack_trap(entity.surface, entity.position)
+			return
+		end
+		if math.random(1,32) == 1 then
+			hidden_biter(event.entity)
+			return
+		end
+	end
+
 	if entity.name == "mineable-wreckage" then
 		give_coin(player)
 
@@ -396,6 +406,16 @@ local function on_entity_died(event)
 		return
 	end
 
+	if entity.type == "unit" or entity.type == "unit-spawner" then
+		if math_random(1,160) == 1 then
+			tick_tack_trap(entity.surface, entity.position)
+			return
+		end
+		if math.random(1,32) == 1 then
+			hidden_biter(event.entity)
+			return
+		end
+	end
 
 	if entity.name == "mineable-wreckage" then
 		if math.random(1,32) == 1 then
@@ -433,7 +453,7 @@ local function on_built_entity(event)
 	local y = event.created_entity.position.y
 	local ent = event.created_entity
 	if y >= 150 then
-		player.print("The scrapyard grandmaster does not approve. Your " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
+		player.print("The scrapyard grandmaster does not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
 		ent.die()
 		return
 	else
@@ -452,7 +472,25 @@ local function on_built_entity(event)
 end
 
 local function on_robot_built_entity(event)
-	on_built_entity(event)
+	local y = event.created_entity.position.y
+	local ent = event.created_entity
+	if y >= 150 then
+		game.print("The scrapyard grandmaster does not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
+		ent.die()
+		return
+	else
+		for _, e in pairs(disabled_entities) do
+			if e == event.created_entity.name then
+				if y >= 0 then
+					ent.active = false
+					if event.player_index then
+						game.print("The scrapyard grandmaster disabled " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
+						return
+					end
+				end
+			end
+		end
+	end
 end
 
 local function on_research_finished(event)
