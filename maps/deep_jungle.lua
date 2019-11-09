@@ -1,15 +1,8 @@
 --deep jungle-- mewmew made this --
-require "modules.railgun_enhancer"
-require "modules.dynamic_landfill"
 require "modules.spawners_contain_biters"
 require "modules.biters_yield_coins"
 require "modules.rocks_yield_coins"
 require "modules.flashlight_toggle_button"
-require "modules.splice_double"
-require "modules.spitters_spit_biters"
-require "modules.biters_double_hp"
-require "modules.rocks_broken_paint_tiles"
-require "modules.rocks_yield_ore"
 
 local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
@@ -203,6 +196,7 @@ local function get_noise(name, pos)
 end
 
 local rock_raffle = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local tree_raffle = {"tree-04", "tree-07", "tree-09", "tree-06", "tree-04", "tree-07", "tree-09", "tree-04"}
 
 local function process_tile(pos)
 	local noise_1 = get_noise(1, pos)
@@ -221,11 +215,9 @@ local function process_tile(pos)
 	end
 	
 	local noise_2 = get_noise(2, pos)		
-	if noise_2 > 0.37 or noise_2 < -0.37 then
-		local tree_raffle = {"tree-04", "tree-07", "tree-09", "tree-06", "tree-04", "tree-07", "tree-09", "tree-04"}
+	if noise_2 > 0.37 or noise_2 < -0.37 then		
 		if math_random(1, 4) == 1 then return false, tree_raffle[math.ceil(math.abs(noise_1 * 8))] end
-	end
-	
+	end	
 	local noise_3 = get_noise(3, pos)		
 	if noise_3 > 0.5 then
 		if math_random(1,3) == 1 then return false, rock_raffle[math_random(1,#rock_raffle)] end
@@ -311,25 +303,6 @@ end
 
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
-	if not global.map_init_done then			
-		local map_gen_settings = {}
-		map_gen_settings.water = "none"
-		map_gen_settings.starting_area = "normal"
-		map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}		
-		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "none", size = "none", richness = "none"},
-			["stone"] = {frequency = "none", size = "none", richness = "none"},
-			["copper-ore"] = {frequency = "none", size = "none", richness = "none"},
-			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
-			["crude-oil"] = {frequency = "very-high", size = "big", richness = "normal"},
-			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "high", size = "big", richness = "good"}			
-		}		
-		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
-		game.create_surface("deep_jungle", map_gen_settings)		
-		game.forces["player"].set_spawn_position({0,0},game.surfaces["deep_jungle"])								
-		global.map_init_done = true									
-	end	
 	local surface = game.surfaces["deep_jungle"]
 	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
 		player.teleport(surface.find_non_colliding_position("character", {0,0}, 2, 1), "deep_jungle")
@@ -352,45 +325,67 @@ end
 local function on_entity_died(event)
 	local surface = event.entity.surface
 	if event.entity.type == "tree" then 	
-		if math_random(1,4) == 1 then			
+		if math_random(1,8) == 1 then			
 			local p = surface.find_non_colliding_position("small-biter" , event.entity.position, 2, 0.5)			
 			if p then surface.create_entity {name="small-biter", position=event.entity.position} end
 			return
 		end
-		if math_random(1,8) == 1 then			
+		if math_random(1,16) == 1 then			
 			local p = surface.find_non_colliding_position("medium-biter" , event.entity.position, 2, 0.5)			
 			if p then surface.create_entity {name="medium-biter", position=event.entity.position} end
 			return
 		end
-		if math_random(1,16) == 1 then			
+		if math_random(1,32) == 1 then			
 			local p = surface.find_non_colliding_position("big-biter" , event.entity.position, 2, 0.5)			
 			if p then surface.create_entity {name="big-biter", position=event.entity.position} end
 			return
 		end
-		if math_random(1,256) == 1 then			
+		if math_random(1,512) == 1 then			
 			local p = surface.find_non_colliding_position("behemoth-biter" , event.entity.position, 2, 0.5)			
 			if p then surface.create_entity {name="behemoth-biter", position=event.entity.position} end
 			return
 		end
 	end
 	if event.entity.type == "simple-entity" then 	
-		if math_random(1,4) == 1 then								
+		if math_random(1,8) == 1 then								
 			surface.create_entity {name="small-worm-turret", position=event.entity.position}
 			return
 		end
-		if math_random(1,8) == 1 then							
+		if math_random(1,16) == 1 then							
 			surface.create_entity {name="medium-worm-turret", position=event.entity.position}
 			return
 		end
-		if math_random(1,16) == 1 then							
+		if math_random(1,32) == 1 then							
 			surface.create_entity {name="big-worm-turret", position=event.entity.position}
 			return
 		end
 	end
 end
 
+local function on_init()
+	local map_gen_settings = {}
+	map_gen_settings.moisture = 1
+	map_gen_settings.water = "none"
+	map_gen_settings.starting_area = "normal"
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}		
+	map_gen_settings.autoplace_controls = {
+		["coal"] = {frequency = "none", size = "none", richness = "none"},
+		["stone"] = {frequency = "none", size = "none", richness = "none"},
+		["copper-ore"] = {frequency = "none", size = "none", richness = "none"},
+		["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
+		["crude-oil"] = {frequency = "very-high", size = "big", richness = "normal"},
+		["trees"] = {frequency = "none", size = "none", richness = "none"},
+		["enemy-base"] = {frequency = "high", size = "big", richness = "good"}			
+	}
+	game.create_surface("deep_jungle", map_gen_settings)		
+	game.forces["player"].set_spawn_position({0,0},game.surfaces["deep_jungle"])
+end
+
+event.on_init(on_init)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+require "modules.rocks_yield_ore"
