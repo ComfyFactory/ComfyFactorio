@@ -208,11 +208,14 @@ local function player_list_show(player, frame, sort_by)
 		["pokes_asc"]  = function (h) h[5] = symbol_asc  .. h[5] end,
 		["pokes_desc"] = function (h) h[5] = symbol_desc .. h[5] end
 	}
+	
 	if sort_by then
-		header_modifier[sort_by](headers)
+		global.player_list.sorting_method[player.index] = sort_by		
 	else
-		header_modifier["total_time_played_desc"](headers)
+		sort_by = global.player_list.sorting_method[player.index]		
 	end
+
+	header_modifier[sort_by](headers)
 
 	for k, v in ipairs(headers) do
 		local label = t.add {
@@ -230,20 +233,13 @@ local function player_list_show(player, frame, sort_by)
 	label.style.maximal_width = 36
 	label.style.horizontal_align = "right"
 
-
 	-- List management
 	local player_list_panel_table = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
 	player_list_panel_table.style.maximal_height = 530
 
 	player_list_panel_table = player_list_panel_table.add { type = "table", name = "player_list_panel_table", column_count = 5 }
-
-	local player_list
-	if sort_by then
-		player_list = get_sorted_list(sort_by)
-	else
-		player_list = get_sorted_list("total_time_played_desc")
-	end
-
+	
+	local player_list = get_sorted_list(sort_by)
 	for i = 1, #player_list, 1 do
 		-- Icon
 		local sprite = player_list_panel_table.add { type = "sprite", name = "player_rank_sprite_" .. i, sprite = player_list[i].rank }
@@ -361,29 +357,40 @@ local function on_gui_click(event)
 	end
 end
 
+local function refresh()
+	for _, player in pairs(game.connected_players) do
+		local frame = Tabs.comfy_panel_get_active_frame(player)
+		if frame then
+			if frame.name ~= "Players" then return end		
+			player_list_show(player, frame, global.player_list.sorting_method[player.index])
+		end	
+	end
+end
+
 local function on_player_joined_game(event)
-	local player = game.players[event.player_index]
-	
+	local player = game.players[event.player_index]	
 	if not global.player_list.last_poke_tick[event.player_index] then
 		global.player_list.pokes[event.player_index] = 0
 		global.player_list.last_poke_tick[event.player_index] = 0
+		global.player_list.sorting_method[event.player_index] = "total_time_played_desc"
 	end	
+	refresh()
+end
 
-	local frame = Tabs.comfy_panel_get_active_frame(player)
-	if not frame then return end
-	if frame.name ~= "Players" then return end
-	
-	player_list_show(player, frame, "total_time_played_desc")
+local function on_player_left_game(event)
+	refresh()
 end
 
 local on_init = function()
 	global.player_list = {}
 	global.player_list.last_poke_tick = {}
 	global.player_list.pokes = {}
+	global.player_list.sorting_method = {}
 end
 
 comfy_panel_tabs["Players"] = player_list_show
 
 event.on_init(on_init)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_gui_click, on_gui_click)

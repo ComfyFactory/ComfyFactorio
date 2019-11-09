@@ -55,9 +55,7 @@ local function add_global_stats(frame, player)
 	l.style.font_color = {r = 175, g = 75, b = 255}
 	l.style.minimal_width = 140
 
-	local str = "0"
-	if score.rocket_launches then str = tostring(score.rocket_launches) end
-	local l = t.add { type = "label", caption = str}
+	local l = t.add { type = "label", caption = player.force.rockets_launched}
 	l.style.font = "default-listbox"
 	l.style.font_color = { r=0.9, g=0.9, b=0.9}
 	l.style.minimal_width = 123
@@ -245,12 +243,6 @@ local function on_gui_click(event)
 end
 
 local function on_rocket_launched(event)
-	local force_name = event.rocket_silo.force.name
-	if not global.score[force_name]
-		then global.score[force_name] = {}
-	end
-	local force_score = global.score[force_name]
-	force_score.rocket_launches = 1 + (force_score.rocket_launches or 0)
 	refresh_score_full()
 end
 
@@ -361,16 +353,14 @@ local function on_built_entity(event)
 	local score = global.score[player.force.name].players[player.name]
 	score.built_entities = 1 + (score.built_entities or 0)
 end
-
-local function on_tick(event)
-	if game.tick % 300 == 0 then
-		refresh_score_full()
-	end
+--[[
+local function tick(event)	
+	refresh_score_full()	
 end
-
+]]
 comfy_panel_tabs["Scoreboard"] = show_score
 
-event.add(defines.events.on_tick, on_tick)
+--event.on_nth_tick(300, tick)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_built_entity, on_built_entity)
