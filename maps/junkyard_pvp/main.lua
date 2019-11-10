@@ -2,10 +2,10 @@ local Tabs = require 'comfy_panel.main'
 local Map_score = require "modules.map_score"
 local Terrain = require "maps.junkyard_pvp.terrain"
 local Gui = require "maps.junkyard_pvp.gui"
+require "maps.junkyard_pvp.surrounded_by_worms"
 require "modules.rocks_heal_over_time"
 require "maps.junkyard_pvp.share_chat"
 require "modules.mineable_wreckage_yields_scrap"
-require "modules.explosives"
 local Team = require "maps.junkyard_pvp.team"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
@@ -24,6 +24,16 @@ local map_gen_settings = {
 			["decorative"] = {treat_missing_as_default = false},
 		},
 	}
+
+
+local function set_player_colors()
+	for _, player in pairs(game.forces.west.players) do
+		player.color = {50, 255, 50}
+	end
+	for _, player in pairs(game.forces.east.players) do
+		player.color = {50, 50, 255}
+	end
+end
 
 function Public.reset_map()
 	Terrain.create_mirror_surface()
@@ -56,6 +66,8 @@ function Public.reset_map()
 	for _, player in pairs(game.forces.spectator.players) do
 		Gui.rejoin_question(player)
 	end
+	
+	set_player_colors()
 end
 
 local function on_entity_died(event)
@@ -108,6 +120,7 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces[global.active_surface_index]
 	
+	set_player_colors()
 	Gui.spectate_button(player)
 	
 	if player.surface.index ~= global.active_surface_index then		
@@ -118,7 +131,8 @@ local function on_player_joined_game(event)
 		end
 		Team.assign_force_to_player(player)
 		Team.teleport_player_to_active_surface(player)
-		Team.put_player_into_random_team(player)	
+		Team.put_player_into_random_team(player)
+		set_player_colors()
 	end
 end
 
@@ -154,11 +168,15 @@ local function set_player_spawn_and_refill_fish()
 	end
 end
 
+local function on_console_command(event)
+	set_player_colors()
+end
+
 local function tick()
 	local game_tick = game.tick
 	if game_tick % 240 == 0 then
 		local surface = game.surfaces[global.active_surface_index]	
-		local area = {{-320, -161}, {319, 160}}
+		local area = {{-256, -127}, {255, 128}}
 		game.forces.west.chart(surface, area)
 		game.forces.east.chart(surface, area)
 	end		
@@ -169,13 +187,13 @@ local function tick()
 		end		
 		return
 	end
-	if game_tick % 900 == 0 then
+	if game_tick % 1800 == 0 then
 		set_player_spawn_and_refill_fish()
 	end
 end
 
 local function on_init()
-	game.difficulty_settings.technology_price_multiplier = 0.5 
+	game.difficulty_settings.technology_price_multiplier = 0.25 
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
 	game.map_settings.enemy_evolution.time_factor = 0
@@ -194,22 +212,15 @@ local function on_init()
 		"\n",
 		"Destroy their cargo wagon to win the round!\n",
 		"\n",
-		"Sometimes you will encounter impassable dark chasms or ponds.\n",
-		"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
-		"All they need is a container and a well aimed shot.\n",
+		--"Sometimes you will encounter impassable dark chasms or ponds.\n",
+		--"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
+		--"All they need is a container and a well aimed shot.\n",
 	})
 	T.main_caption_color = {r = 150, g = 0, b = 255}
 	T.sub_caption_color = {r = 0, g = 250, b = 150}
-	
-	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 1500,
-		["water"] = 1000,
-		["water-green"] = 1000,
-		["deepwater-green"] = 1000,
-		["deepwater"] = 1000,
-		["water-shallow"] = 1000,	
-	}
-	
+
+	global.rocks_yield_ore_base_amount = 100
+
 	Team.create_forces()
 	Public.reset_map()
 end
@@ -217,6 +228,7 @@ end
 local event = require 'utils.event'
 event.on_init(on_init)
 event.on_nth_tick(60, tick)
+event.add(defines.events.on_console_command, on_console_command)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 

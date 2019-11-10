@@ -23,7 +23,7 @@ function Public.treasure_chest(surface, position, container_name)
 		{{name = "rocket", count = math_random(16,32)}, weight = 5, d_min = 0.2, d_max = 0.7},		
 		{{name = "explosive-rocket", count = math_random(16,32)}, weight = 5, d_min = 0.3, d_max = 1},
 		{{name = "land-mine", count = math_random(16,32)}, weight = 5, d_min = 0.2, d_max = 0.7},
-		{{name = "grenade", count = math_random(16,32)}, weight = 5, d_min = 0.0, d_max = 0.5},
+		{{name = "grenade", count = math_random(8,16)}, weight = 5, d_min = 0.0, d_max = 0.5},
 		{{name = "cluster-grenade", count = math_random(8,16)}, weight = 5, d_min = 0.4, d_max = 1},
 		{{name = "firearm-magazine", count = math_random(32,128)}, weight = 5, d_min = 0, d_max = 0.3},
 		{{name = "piercing-rounds-magazine", count = math_random(32,128)}, weight = 5, d_min = 0.1, d_max = 0.8},
@@ -64,7 +64,7 @@ function Public.treasure_chest(surface, position, container_name)
 		{{name = "advanced-circuit", count = math_random(50,150)}, weight = 3, d_min = 0.3, d_max = 1},
 		{{name = "electronic-circuit", count = math_random(50,150)}, weight = 4, d_min = 0.0, d_max = 0.4},
 		{{name = "processing-unit", count = math_random(50,150)}, weight = 3, d_min = 0.7, d_max = 1},
-		{{name = "explosives", count = math_random(40,100)}, weight = 20, d_min = 0.0, d_max = 1},
+		--{{name = "explosives", count = math_random(25,50)}, weight = 1, d_min = 0.0, d_max = 1},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, d_min = 0.3, d_max = 0.5},
 		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, d_min = 0.3, d_max = 0.7},
 		--{{name = "computer", count = 1}, weight = 2, d_min = 0, d_max = 1},
@@ -158,7 +158,7 @@ function Public.treasure_chest(surface, position, container_name)
 		{{name = "gun-turret", count = math_random(2,4)}, weight = 3, d_min = 0.2, d_max = 0.9},
 	}
 	
-	local distance_to_center = (math.abs(position.y) + 1) * 0.0002
+	local distance_to_center = (math.abs(position.x) + 1) * 0.0002
 	if distance_to_center > 1 then distance_to_center = 1 end
 	
 	for _, t in pairs (chest_loot) do

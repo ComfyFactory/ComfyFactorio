@@ -37,10 +37,11 @@ end
 local function create_objectives(surface)
 	local d = 6
 	
-	for key, modifier in pairs({west = -1, east = 1}) do
-		
+	for key, modifier in pairs({west = -1, east = 1}) do	
 		for x = -6, 6, 2 do surface.create_entity({name = "straight-rail", position = {(cargo_wagon_position.x + x) * modifier, cargo_wagon_position.y}, force = key, direction = 2}) end
 		local e = surface.create_entity({name = "locomotive", position = {(cargo_wagon_position.x + 3) * modifier, cargo_wagon_position.y}, force = key, direction = d})
+		e.color = {0, 255, 0}
+		if key == "east" then e.color = {0, 0, 255} end
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 50})
 		local e = surface.create_entity({name = "cargo-wagon", position = {(cargo_wagon_position.x - 3) * modifier, cargo_wagon_position.y}, force = key})
 		e.minable = false
@@ -55,7 +56,7 @@ function Public.create_mirror_surface()
 	local map_gen_settings = {}
 	map_gen_settings.seed = math_random(1, 99999999)
 	map_gen_settings.water = 0.2
-	map_gen_settings.starting_area = 1
+	map_gen_settings.starting_area = 1.5
 	map_gen_settings.terrain_segmentation = 8
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}	
 	map_gen_settings.autoplace_controls = {
@@ -153,16 +154,16 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
 			entities[#entities + 1] = {name="gun-turret", position=p, force = "enemy"}
 		end
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
-		if scrapyard < -0.55 or scrapyard > 0.55 then
+		if scrapyard < -0.65 or scrapyard > 0.65 then
 			if math_random(1,5) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 			return
 		end
 		if scrapyard < -0.28 or scrapyard > 0.28 then
-			if math_random(1,2048) == 1 then
-				entities[#entities + 1] = {name = "small-worm-turret", position = p, force = "enemy"} 
-			end
+			--if math_random(1,2048) == 1 then
+				--entities[#entities + 1] = {name = "small-worm-turret", position = p, force = "enemy"} 
+			--end
 			if math_random(1,96) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end	
-			if math_random(1,5) > 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
+			if math_random(1,3) > 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
 			return
 		end
 		return
@@ -177,9 +178,9 @@ local function process_junk_position(p, seed, tiles, entities, markets, treasure
 	
 	local large_caves = get_noise("large_caves", p, seed)
 	if scrapyard > -0.15 and scrapyard < 0.15 then
-		if math_floor(large_caves * 10) % 4 < 2 then
+		if math_floor(large_caves * 10) % 4 < 1 then
 			tiles[#tiles + 1] = {name = "dirt-7", position = p}
-			if math_random(1,3) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+			if math_random(1,2) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
 			return
 		end
 	end
