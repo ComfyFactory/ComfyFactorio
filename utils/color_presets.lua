@@ -145,18 +145,11 @@ return {
     white_smoke = {r = 245, g = 245, b = 245},
     white = {r = 255, g = 255, b = 255},
     jailed = {r = 255, g = 255, b = 255},
-    probation = {r = 255, g = 255, b = 255},
-    guest = {r = 255, g = 255, b = 255},
-    auto_trusted = {r = 192, g = 192, b = 192},
+    trusted = {r = 192, g = 192, b = 192},
     regular = {r = 0.155, g = 0.540, b = 0.898},
     admin = {r = 0.093, g = 0.768, b = 0.172},
-    [-10] = {r = 255, g = 255, b = 255}, -- probation
-    [0] = {r = 255, g = 255, b = 255}, -- guest
-    [10] = {r = 192, g = 192, b = 192}, -- auto_trusted
-    [20] = {r = 0.155, g = 0.540, b = 0.898}, -- regular
-    [30] = {r = 0.093, g = 0.768, b = 0.172}, -- admin
     success = {r = 0, g = 255, b = 0},
     warning = {r = 255, g = 255, b = 0},
-    fail = {r = 255, g = 0, b = 0},
+    fail = {r = 255, g = 51, b = 51},
     info = {r = 255, g = 255, b = 255}
 }

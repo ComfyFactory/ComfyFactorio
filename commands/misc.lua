@@ -112,8 +112,8 @@ commands.add_command(
                 p = log
 			end
         end
-		if param > 50 then player.print("[ERROR] Value is too big.", Color.fail) return end
         if param == nil then player.print("[ERROR] Must specify radius!", Color.fail) return end
+        if param > 50 then player.print("[ERROR] Value is too big.", Color.fail) return end
 
 		if not _a.generate_map then
             _a.generate_map = true
@@ -292,8 +292,9 @@ commands.add_command(
                 p = log
 			end
         end
-		if param > 500 then player.print("[ERROR] Value is too big.", Color.warning) return end
-	    if param == nil then player.print("[ERROR] Must specify radius!", Color.warning) return end
+	    if param == nil then player.print("[ERROR] Must specify radius!", Color.fail) return end
+	    if param > 500 then player.print("[ERROR] Value is too big.", Color.fail) return end
+
         local radius = {{x = -param, y = -param}, {x = param, y = param}} or {{x = -1, y = -1}, {x = 1, y = 1}}
 		for _, entity in pairs(player.surface.find_entities_filtered{area = radius, type = "corpse"}) do
 			player.print("Cleared biter-corpses.", Color.success)
