@@ -204,8 +204,8 @@ function Public.reset_map()
 	game.forces.scrap.set_friend('enemy', true)
 	game.forces.scrap.share_chart = false
 
-	surface.create_entity({name = "electric-beam", position = {-96, 190}, source = {-96, 190}, target = {96,190}})
-	surface.create_entity({name = "electric-beam", position = {-96, 190}, source = {-96, 190}, target = {96,190}})
+	surface.create_entity({name = "electric-beam", position = {-196, 190}, source = {-196, 190}, target = {196,190}})
+	surface.create_entity({name = "electric-beam", position = {-196, 190}, source = {-196, 190}, target = {196,190}})
 
 	RPG.rpg_reset_all_players()
 end
