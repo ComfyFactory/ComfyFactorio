@@ -80,6 +80,7 @@ local function update_hunger_gui(player)
 end
 
 function hunger_update(player, food_value)
+	local player_modifiers = P.get_table()
 	if not player.character then return end
 	if food_value == -1 and player.character.driving == true then return end
 	
@@ -117,11 +118,11 @@ function hunger_update(player, food_value)
 	if not player.character then return end
 	
 	if player_hunger_buff[global.player_hunger[player.name]] < 0 then
-		global.player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.75
+		player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.75
 	else
-		global.player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.15
+		player_modifiers[player.index].character_running_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]] * 0.15
 	end
-	global.player_modifiers[player.index].character_mining_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]]
+	player_modifiers[player.index].character_mining_speed_modifier["hunger"] = player_hunger_buff[global.player_hunger[player.name]]
 	P.update_player_modifiers(player)
 	
 	update_hunger_gui(player)
