@@ -80,7 +80,7 @@ end
 
 local function draw_gui_char_button(player)
 	if player.gui.top.rpg then return end
-	local b = player.gui.top.add({type = "sprite-button", name = "rpg", caption = "[RPG]"})
+	local b = player.gui.top.add({type = "sprite-button", name = "rpg", caption = "CHAR"})
 	b.style.font_color = {165,165,165}
 	b.style.font = "heading-1"
 	b.style.minimal_height = 38
