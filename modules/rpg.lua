@@ -99,24 +99,25 @@ local function update_char_button(player)
 end
 
 local function update_player_stats(player)
+	local player_modifiers = P.get_table()
 	local strength = rpg_t[player.index].strength - 10
-	global.player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = math.round(strength * 0.2, 3)
-	global.player_modifiers[player.index].character_mining_speed_modifier["rpg"] = math.round(strength * 0.008, 3)
+	player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = math.round(strength * 0.2, 3)
+	player_modifiers[player.index].character_mining_speed_modifier["rpg"] = math.round(strength * 0.008, 3)
 	
 	local magic = rpg_t[player.index].magic - 10
 	local v = magic * 0.15
-	global.player_modifiers[player.index].character_build_distance_bonus["rpg"] = math.round(v, 3)
-	global.player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = math.round(v, 3)
-	global.player_modifiers[player.index].character_reach_distance_bonus["rpg"] = math.round(v, 3)
-	global.player_modifiers[player.index].character_loot_pickup_distance_bonus["rpg"] = math.round(v * 0.5, 3)
-	global.player_modifiers[player.index].character_item_pickup_distance_bonus["rpg"] = math.round(v * 0.25, 3)
-	global.player_modifiers[player.index].character_resource_reach_distance_bonus["rpg"] = math.round(v * 0.15, 3)
+	player_modifiers[player.index].character_build_distance_bonus["rpg"] = math.round(v, 3)
+	player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = math.round(v, 3)
+	player_modifiers[player.index].character_reach_distance_bonus["rpg"] = math.round(v, 3)
+	player_modifiers[player.index].character_loot_pickup_distance_bonus["rpg"] = math.round(v * 0.5, 3)
+	player_modifiers[player.index].character_item_pickup_distance_bonus["rpg"] = math.round(v * 0.25, 3)
+	player_modifiers[player.index].character_resource_reach_distance_bonus["rpg"] = math.round(v * 0.15, 3)
 	
 	local dexterity = rpg_t[player.index].dexterity - 10
-	global.player_modifiers[player.index].character_running_speed_modifier["rpg"] = math.round(dexterity * 0.002, 3)
-	global.player_modifiers[player.index].character_crafting_speed_modifier["rpg"] = math.round(dexterity * 0.015, 3)
+	player_modifiers[player.index].character_running_speed_modifier["rpg"] = math.round(dexterity * 0.002, 3)
+	player_modifiers[player.index].character_crafting_speed_modifier["rpg"] = math.round(dexterity * 0.015, 3)
 	
-	global.player_modifiers[player.index].character_health_bonus["rpg"] = math.round((rpg_t[player.index].vitality - 10) * 6, 3)
+	player_modifiers[player.index].character_health_bonus["rpg"] = math.round((rpg_t[player.index].vitality - 10) * 6, 3)
 
 	P.update_player_modifiers(player)
 end

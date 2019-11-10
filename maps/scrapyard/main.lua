@@ -260,6 +260,7 @@ local function on_player_left_game(event)
 end
 
 local function on_player_joined_game(event)
+	local player_modifiers = Modifier.get_table()
 	local surface = game.surfaces[global.active_surface_index]
 	local player = game.players[event.player_index]
 
@@ -272,7 +273,7 @@ local function on_player_joined_game(event)
 		end
 	end
 
-	global.player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0
+	player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0
 	Modifier.update_player_modifiers(player)
 	if global.first_load then return end
 	Public.reset_map()
