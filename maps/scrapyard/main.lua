@@ -204,8 +204,8 @@ function Public.reset_map()
 	game.forces.scrap.set_friend('enemy', true)
 	game.forces.scrap.share_chart = false
 
-	surface.create_entity({name = "electric-beam", position = {-96, 190}, source = {-96, 190}, target = {96,190}})
-	surface.create_entity({name = "electric-beam", position = {-96, 190}, source = {-96, 190}, target = {96,190}})
+	surface.create_entity({name = "electric-beam", position = {-196, 190}, source = {-196, 190}, target = {196,190}})
+	surface.create_entity({name = "electric-beam", position = {-196, 190}, source = {-196, 190}, target = {196,190}})
 
 	RPG.rpg_reset_all_players()
 end
@@ -260,6 +260,7 @@ local function on_player_left_game(event)
 end
 
 local function on_player_joined_game(event)
+	local player_modifiers = Modifier.get_table()
 	local surface = game.surfaces[global.active_surface_index]
 	local player = game.players[event.player_index]
 
@@ -272,7 +273,7 @@ local function on_player_joined_game(event)
 		end
 	end
 
-	global.player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0
+	player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0
 	Modifier.update_player_modifiers(player)
 	if global.first_load then return end
 	Public.reset_map()

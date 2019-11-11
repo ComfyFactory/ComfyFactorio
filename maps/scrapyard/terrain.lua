@@ -17,8 +17,8 @@ local level_depth = 960
 local worm_level_modifier = 0.18
 
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
-local enemies = {"small-biter", "medium-biter", "small-spitter", "small-worm-turret", "medium-spitter", "medium-worm-turret", "big-biter", "big-spitter", "big-worm-turret", "behemoth-biter", "behemoth-spitter"}
 local scrap_buildings = {"nuclear-reactor", "centrifuge", "beacon", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine"}
+local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local trees = {"dead-grey-trunk", "dead-grey-trunk", "dry-tree"}
 
 local noises = {
@@ -682,7 +682,7 @@ local function generate_spawn_area(surface, position_left_top)
 end
 
 local function is_out_of_map(p)
-	if p.x < 96 and p.x >= -96 then return end
+	if p.x < 196 and p.x >= -196 then return end
 	if p.y * 0.5 >= math_abs(p.x) then return end
 	if p.y * -0.5 > math_abs(p.x) then return end
 	return true
@@ -793,7 +793,7 @@ local function biter_chunk(surface, left_top)
 	for i = 1, 1, 1 do
 		local position = surface.find_non_colliding_position("biter-spawner", tile_positions[math_random(1, #tile_positions)], 16, 2)
 		if position then
-			local e = surface.create_entity({name = enemies[math_random(1, #enemies)], position = position, force = "enemy"})
+			local e = surface.create_entity({name = spawner_raffle[math_random(1, #spawner_raffle)], position = position, force = "enemy"})
 			e.destructible = false
 			e.active = false
 		end

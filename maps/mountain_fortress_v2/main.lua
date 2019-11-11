@@ -253,6 +253,7 @@ end
 local function set_difficulty()
 	local wave_defense_table = WD.get_table()
 
+
 	wave_defense_table.threat_gain_multiplier = 2 + #game.connected_players * 0.1
 	--20 Players for fastest wave_interval
 	wave_defense_table.wave_interval = 3600 - #game.connected_players * 90
@@ -260,6 +261,7 @@ local function set_difficulty()
 end
 
 local function on_player_joined_game(event)
+	local player_modifiers = Modifier.get_table()
 	local player = game.players[event.player_index]
 
 	set_difficulty()
@@ -283,7 +285,7 @@ local function on_player_joined_game(event)
 		end
 	end
 
-	global.player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
+	player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
 	Modifier.update_player_modifiers(player)
 end
 
