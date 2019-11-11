@@ -259,44 +259,40 @@ local function on_entity_died(event)
 	local str
 	if entity.force.name == "east" then
 		game.print("East lost their Hatchery.", {100, 100, 100})
-		str = ">>>> West team has won the game!!! <<<<"
-		for _, player in pairs(game.forces.east.connected_players) do
-			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
-		end
+		game.forces.east.play_sound{path="utility/game_lost", volume_modifier=0.85}
+		
+		game.print(">>>> WEST TEAM HAS WON THE GAME!!! <<<<", {250, 120, 0})	
+		game.forces.west.play_sound{path="utility/game_won", volume_modifier=0.85}
+		
 		for _, player in pairs(game.forces.west.connected_players) do
-			player.play_sound{path="utility/game_won", volume_modifier=0.85}
 			if global.map_forces.east.player_count > 0 then
 				Map_score.set_score(player, Map_score.get_score(player) + 1)
 			end
 		end
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
-		str = ">>>> East team has won the game!!! <<<<"
-		for _, player in pairs(game.forces.west.connected_players) do
-			player.play_sound{path="utility/game_lost", volume_modifier=0.85}
-		end
+		game.forces.west.play_sound{path="utility/game_lost", volume_modifier=0.85}
+				
+		game.print(">>>> EAST TEAM HAS WON THE GAME!!! <<<<", {250, 120, 0})
+		game.forces.east.play_sound{path="utility/game_won", volume_modifier=0.85}
+		
 		for _, player in pairs(game.forces.east.connected_players) do
-			player.play_sound{path="utility/game_won", volume_modifier=0.85}
 			if global.map_forces.west.player_count > 0 then
 				Map_score.set_score(player, Map_score.get_score(player) + 1)
 			end
 		end
 	end
+		
+	game.print("Next round starting in 60 seconds..", {150, 150, 150})
 	
-	game.print(string.upper(str), {250, 120, 0})
-	game.print("Next round starting in 30 seconds..", {150, 150, 150})
-	
-	for _, player in pairs(game.forces.spectator.connected_players) do
-		player.play_sound{path="utility/game_won", volume_modifier=0.85}
-	end
-	
-	global.game_reset_tick = game.tick + 1800
+	game.forces.spectator.play_sound{path="utility/game_won", volume_modifier=0.85}
+
+	global.game_reset_tick = game.tick + 3600
 	game.delete_surface("mirror_terrain")
 	
 	for _, player in pairs(game.connected_players) do
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
 		Tabs.comfy_panel_call_tab(player, "Map Scores")
-		--player.gui.left.add({type = "frame", name = "biter_hatchery_game_won", caption = str})
 	end
 end
 
