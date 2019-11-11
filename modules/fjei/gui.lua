@@ -1,13 +1,16 @@
+local Functions = require "modules.fjei.functions"
 local math_ceil = math.ceil
-local height = 600
-local width = 400
+local height = 594
+local width = 360
 local column_count = 8
 local line_count = 12
 local items_per_page = column_count * line_count
 local Public = {}
 
 local function get_total_page_count(player)
-	return math_ceil(global.fjei.player_data[player.index].size_of_filtered_list / items_per_page)
+	local count = math_ceil(global.fjei.player_data[player.index].size_of_filtered_list / items_per_page)
+	if count < 1 then count = 1 end
+	return count
 end
 
 local function set_page_count_caption(player)
@@ -33,6 +36,8 @@ local function display_item_list(player)
 		local item_key = filtered_list[i]
 		if not item_list[item_key] then return end		
 		local sprite = item_list_table.add({type = "sprite", sprite = "recipe/" .. item_list[item_key].name, tooltip = item_list[item_key].name})
+		sprite.style.minimal_width = 32
+		sprite.style.minimal_height = 32
 		sprite.style.maximal_width = 32
 		sprite.style.maximal_height = 32
 		sprite.style.margin = 4		
@@ -49,6 +54,8 @@ local function draw_main_window(player)
 	local frame = player.gui.left.add({type = "frame", name = "fjei_main_window", direction = "vertical"})
 	frame.style.minimal_height = height
 	frame.style.minimal_width = width
+	frame.style.maximal_height = height
+	frame.style.maximal_width = width
 	frame.style.padding = 2
 	
 	local t = frame.add({type = "table", name = "fjei_main_window_control_table",  column_count = 4})
@@ -64,8 +71,11 @@ local function draw_main_window(player)
 	element.style.font = "heading-1"
 	element.style.maximal_height = 38
 	element.style.maximal_width = 38
-	local textfield = t.add({ type = "textfield", name = "fjei_main_window_search_textfield", text = "" })
-	textfield.style.minimal_width = 160	
+	local text = global.fjei.player_data[player.index].active_filter
+	if not text then text = "" end
+	local textfield = t.add({ type = "textfield", name = "fjei_main_window_search_textfield", text = text})
+	textfield.style.minimal_width = 150	
+	textfield.style.maximal_width = 150
 	
 	frame.add({type = "line"})
 		
@@ -74,7 +84,7 @@ local function draw_main_window(player)
 	Public.refresh_main_window(player)
 end
 
-local function toggle_main_window(element, player)
+local function toggle_main_window(element, player, button)
 	if player.gui.left.fjei_main_window then
 		player.gui.left.fjei_main_window.destroy()		
 	else
@@ -83,15 +93,29 @@ local function toggle_main_window(element, player)
 	return true
 end
 
-local function main_window_next_page(element, player)
-	if global.fjei.player_data[player.index].active_page == get_total_page_count(player) then return end
-	global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page + 1
+local function main_window_next_page(element, player, button)
+	if global.fjei.player_data[player.index].active_page == get_total_page_count(player) then
+		global.fjei.player_data[player.index].active_page = 1
+	else
+		global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page + 1
+	end	
 	Public.refresh_main_window(player)
 end
 
-local function main_window_previous_page(element, player)
-	if global.fjei.player_data[player.index].active_page == 1 then return end
-	global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page - 1
+local function main_window_previous_page(element, player, button)
+	if global.fjei.player_data[player.index].active_page == 1 then
+		global.fjei.player_data[player.index].active_page = get_total_page_count(player)
+	else
+		global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page - 1
+	end	
+	Public.refresh_main_window(player)
+end
+
+local function clear_search_textfield(element, player, button)
+	if button ~= defines.mouse_button_type.right then return end
+	global.fjei.player_data[player.index].active_filter = false
+	element.text = ""
+	Functions.set_filtered_list(player)
 	Public.refresh_main_window(player)
 end
 
@@ -99,11 +123,12 @@ local gui_actions = {
 	["fjei_toggle_button"] = toggle_main_window,
 	["fjei_main_window_next_page"] = main_window_next_page,
 	["fjei_main_window_previous_page"] = main_window_previous_page,
+	["fjei_main_window_search_textfield"] = clear_search_textfield,	
 }
 
-function Public.gui_click_actions(element, player)
+function Public.gui_click_actions(element, player, button)
 	if not gui_actions[element.name] then return end
-	gui_actions[element.name](element, player)
+	gui_actions[element.name](element, player, button)
 end
 
 function Public.draw_top_toggle_button(player)

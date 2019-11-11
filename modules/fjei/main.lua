@@ -4,47 +4,13 @@ An item recipe browser - MewMew
 ]]
 
 local Gui = require "modules.fjei.gui"
-
-local function set_base_item_list()
-	global.fjei.item_list = {}
-	local list = global.fjei.item_list
-	local i = 1
-	for name, prototype in pairs(game.recipe_prototypes) do	
-		list[i] = {name = name}
-		i = i + 1
-	end
-	table.sort(list, function (a, b) return a.name < b.name end)
-	global.fjei.size_of_item_list = #list
-end
-
-local function set_filtered_list(player)
-	local player_data = global.fjei.player_data[player.index]
-	local active_filter = player_data.active_filter
-	local base_list = global.fjei.item_list
-	player_data.active_page = 1
-	player_data.filtered_list = {}
-	local filtered_list = player_data.filtered_list
-	local i = 1
-	for key, entry in pairs(base_list) do
-		if active_filter then
-			local a, b = string.find(entry.name, active_filter)
-			if a then
-				filtered_list[i] = key
-				i = i + 1
-			end
-		else
-			filtered_list[i] = key
-			i = i + 1
-		end
-	end
-	player_data.size_of_filtered_list = #player_data.filtered_list
-end
+local Functions = require "modules.fjei.functions"
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	global.fjei.player_data[player.index] = {}
-	set_base_item_list()
-	set_filtered_list(player)
+	Functions.set_base_item_list()
+	Functions.set_filtered_list(player)
 	Gui.draw_top_toggle_button(player)
 end
 
@@ -59,7 +25,7 @@ local function on_gui_click(event)
 	if not element then return end
 	if not element.valid then return end
 	local player = game.players[event.player_index]	
-	Gui.gui_click_actions(element, player)
+	Gui.gui_click_actions(element, player, event.button)
 end
 
 local function on_gui_text_changed(event)
@@ -73,7 +39,7 @@ local function on_gui_text_changed(event)
 	else
 		global.fjei.player_data[player.index].active_filter = element.text
 	end
-	set_filtered_list(player)
+	Functions.set_filtered_list(player)
 	Gui.refresh_main_window(player)
 end
 
