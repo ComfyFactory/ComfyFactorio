@@ -117,7 +117,8 @@ local function spawn_units(belt, food_item, removed_item_count)
 			unit.ai_settings.allow_destroy_when_commands_fail = false
 			unit.ai_settings.allow_try_return_to_spawner = false
 			Unit_health_booster.add_unit(unit, team.unit_health_boost)
-			team.unit_count = team.unit_count + 1		
+			team.units[unit.unit_number] = unit
+			team.unit_count = team.unit_count + 1
 		end
 	end
 	if math_random(1, 32) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
@@ -171,16 +172,32 @@ local function nom()
 	for _, player in pairs(game.connected_players) do Gui.update_health_boost_buttons(player) end
 end
 
+local function get_units(force_name)
+	local units = {}
+	local count = 0
+	for _, unit in pairs(global.map_forces[force_name].units) do		
+		if not unit.unit_group then
+			if count > 160 then break end
+			units[#units + 1] = unit
+			count = count + 1			
+		end
+	end
+	return units
+end
+
+local function alert_bubble(force_name, entity)
+	if force_name == "west" then force_name = "east"	else	force_name = "west" end
+	for _, player in pairs(game.forces[force_name].connected_players) do
+		player.add_custom_alert(entity, {type = "item", name = "tank"}, "Incoming enemy units!", true)
+	end	
+end
+
 local function send_unit_groups()
 	local surface = game.surfaces[global.active_surface_index]
-	for key, force in pairs(global.map_forces) do
-		local units = {}
-		for _, unit in pairs(surface.find_entities_filtered({type = "unit", force = key})) do
-			if not unit.unit_group then
-				units[#units + 1] = unit
-			end
-		end
+	for key, force in pairs(global.map_forces) do			
+		local units = get_units(key)	
 		if #units > 0 then
+			alert_bubble(key, units[1])
 			local vectors = worm_turret_vectors[key]
 			local vector = vectors[math_random(1, #vectors)]
 			local position = {x = force.hatchery.position.x + vector[1], y = force.hatchery.position.y + vector[2]}	
@@ -233,6 +250,7 @@ local function on_entity_died(event)
 	if entity.type == "unit" then
 		local team = global.map_forces[entity.force.name]
 		team.unit_count = team.unit_count - 1
+		team.units[entity.unit_number] = nil
 		return
 	end
 	
@@ -312,7 +330,7 @@ local function tick()
 			game.forces.east.chart(surface, area)
 		--end
 	end	
-	if game_tick % 1200 == 0 then send_unit_groups() end	
+	if game_tick % 1800 == 0 then send_unit_groups() end	
 	if global.game_reset_tick then
 		if global.game_reset_tick < game_tick then
 			global.game_reset_tick = nil
