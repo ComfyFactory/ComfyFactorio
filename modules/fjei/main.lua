@@ -8,7 +8,7 @@ local Functions = require "modules.fjei.functions"
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	global.fjei.player_data[player.index] = {}
+	if not global.fjei.player_data[player.index] then global.fjei.player_data[player.index] = {} end
 	Functions.set_crafting_machines(player.force.name)
 	Functions.set_base_item_list(player.force.name)
 	Gui.draw_top_toggle_button(player)
@@ -16,6 +16,7 @@ end
 
 local function on_player_left_game(event)
 	local player = game.players[event.player_index]
+	global.fjei.player_data[player.index].history = nil
 	global.fjei.player_data[player.index].filtered_list = nil
 	global.fjei.player_data[player.index] = nil
 end
@@ -35,7 +36,12 @@ local function on_gui_click(event)
 	if not element then return end
 	if not element.valid then return end
 	local player = game.players[event.player_index]	
-	Gui.gui_click_actions(element, player, event.button)
+	if Gui.gui_click_actions(element, player, event.button) then return end
+	
+	if element.parent.name ~= "fjei_main_window_item_list_table" then return end
+	if element.type ~= "sprite" then return end
+
+	Gui.open_recipe(element, player, event.button)
 end
 
 local function on_gui_text_changed(event)

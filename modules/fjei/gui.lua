@@ -29,7 +29,6 @@ end
 
 local function display_item_list(player)
 	if not player.gui.left.fjei_main_window then return end
-	if not player.gui.left.fjei_main_window.fjei_main_window_item_list_table then return end
 	if not global.fjei.player_data[player.index].filtered_list then Functions.set_filtered_list(player) end
 	
 	local active_page = global.fjei.player_data[player.index].active_page
@@ -43,7 +42,7 @@ local function display_item_list(player)
 		if not filtered_list[i] then return end
 		local item_key = filtered_list[i]
 		if not item_list[item_key] then return end		
-		local sprite = item_list_table.add({type = "sprite", sprite = "recipe/" .. item_list[item_key].name, tooltip = get_tooltip(item_list[item_key].name)})
+		local sprite = item_list_table.add({type = "sprite", name = item_list[item_key].name, sprite = "recipe/" .. item_list[item_key].name, tooltip = get_tooltip(item_list[item_key].name)})
 		sprite.style.minimal_width = 32
 		sprite.style.minimal_height = 32
 		sprite.style.maximal_width = 32
@@ -52,9 +51,31 @@ local function display_item_list(player)
 	end
 end
 
+local function display_history(player)
+	if not player.gui.left.fjei_main_window then return end
+	local player_data = global.fjei.player_data[player.index]
+	local history = player_data.history	
+	if not history then return end
+	local history_table = player.gui.left.fjei_main_window.fjei_main_window_history_table
+	history_table.clear()	
+	
+	for i = player_data.size_of_history - 8, player_data.size_of_history, 1 do
+		local name = history[i]
+		if name then
+			local sprite = history_table.add({type = "sprite", name = name, sprite = "recipe/" .. name, tooltip = get_tooltip(name)})
+			sprite.style.minimal_width = 32
+			sprite.style.minimal_height = 32
+			sprite.style.maximal_width = 32
+			sprite.style.maximal_height = 32
+			sprite.style.margin = 4
+		end
+	end
+end
+
 function Public.refresh_main_window(player)
 	set_page_count_caption(player)
 	display_item_list(player)
+	display_history(player)
 end
 
 local function draw_main_window(player)
@@ -88,6 +109,14 @@ local function draw_main_window(player)
 	frame.add({type = "line"})
 		
 	local t = frame.add({type = "table", name = "fjei_main_window_item_list_table", column_count = column_count})
+	
+	frame.add({type = "line"})
+	
+	local element = frame.add({type = "label", caption = "Recently looked at:"})
+	element.style.font = "heading-2"
+	element.style.margin = 2
+	
+	local t = frame.add({type = "table", name = "fjei_main_window_history_table", column_count = column_count})
 	
 	Public.refresh_main_window(player)
 end
@@ -137,6 +166,7 @@ local gui_actions = {
 function Public.gui_click_actions(element, player, button)
 	if not gui_actions[element.name] then return end
 	gui_actions[element.name](element, player, button)
+	return true
 end
 
 function Public.draw_top_toggle_button(player)
@@ -145,6 +175,30 @@ function Public.draw_top_toggle_button(player)
 	button.style.minimal_height = 38
 	button.style.minimal_width = 38
 	button.style.padding = -2
+end
+
+local function add_to_history(element, player)
+	local player_data = global.fjei.player_data[player.index]
+	if not player_data.history then
+		player_data.history = {element.name}
+		player_data.size_of_history = 1
+		return
+	end
+	
+	--avoid double elements
+	for _, v in pairs(player_data.history) do
+		if v == element.name then return end
+	end
+	
+	player_data.size_of_history = player_data.size_of_history + 1
+	player_data.history[player_data.size_of_history] = element.name	
+	if player_data.size_of_history > column_count then player_data.history[player_data.size_of_history - column_count] = nil end
+end
+
+function Public.open_recipe(element, player, button)
+	game.print(element.name)
+	add_to_history(element, player)
+	display_history(player)
 end
 
 return Public
