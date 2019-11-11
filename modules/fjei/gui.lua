@@ -20,6 +20,11 @@ local function set_page_count_caption(player)
 	element.caption = "Page " .. active_page .. " of " .. get_total_page_count(player)
 end
 
+local function get_tooltip(recipe_name)
+	local recipe = game.recipe_prototypes[recipe_name]
+	return recipe.localised_name
+end
+
 local function display_item_list(player)
 	if not player.gui.left.fjei_main_window then return end
 	if not player.gui.left.fjei_main_window.fjei_main_window_item_list_table then return end
@@ -35,7 +40,7 @@ local function display_item_list(player)
 		if not filtered_list[i] then return end
 		local item_key = filtered_list[i]
 		if not item_list[item_key] then return end		
-		local sprite = item_list_table.add({type = "sprite", sprite = "recipe/" .. item_list[item_key].name, tooltip = item_list[item_key].name})
+		local sprite = item_list_table.add({type = "sprite", sprite = "recipe/" .. item_list[item_key].name, tooltip = get_tooltip(item_list[item_key].name)})
 		sprite.style.minimal_width = 32
 		sprite.style.minimal_height = 32
 		sprite.style.maximal_width = 32

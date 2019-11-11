@@ -9,6 +9,7 @@ local Functions = require "modules.fjei.functions"
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	global.fjei.player_data[player.index] = {}
+	Functions.set_crafting_machines()
 	Functions.set_base_item_list()
 	Functions.set_filtered_list(player)
 	Gui.draw_top_toggle_button(player)
