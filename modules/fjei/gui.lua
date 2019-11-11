@@ -24,27 +24,33 @@ local function set_page_count_caption(player)
 end
 
 local function get_localised_name(name)
-	local recipe = game.recipe_prototypes[name]
-	if recipe then return recipe.localised_name end
-	local item = game.item_prototypes [name]
+	local item = game.item_prototypes[name]
 	if item then return item.localised_name end
 	local fluid = game.fluid_prototypes[name]
 	if fluid then return fluid.localised_name end
+	local recipe = game.recipe_prototypes[name]
+	if recipe then return recipe.localised_name end
 	return name
 end
 
 local function get_sprite_type(name)
-	if game.recipe_prototypes[name] then return "recipe" end
-	if game.entity_prototypes [name] then return "entity" end
 	if game.item_prototypes[name] then return "item" end
 	if game.fluid_prototypes[name] then return "fluid" end
+	if game.entity_prototypes[name] then return "entity" end
+	if game.recipe_prototypes[name] then return "recipe" end
 	return false
 end
 
-local function add_recipe_icon(element, name)
-	local sprite_type = get_sprite_type(name)
+local function add_recipe_icon(element, name, is_recipe)
+	local sprite_type = false
+	if is_recipe then
+		sprite_type = "recipe"
+	else
+		sprite_type = get_sprite_type(name)
+	end
+
 	if not sprite_type then return end
-	local sprite = element.add({type = "sprite", name = name, sprite = sprite_type .. "/" .. name, tooltip = get_localised_name(name)})
+	local sprite = element.add({type = "sprite", name = name, sprite = sprite_type .. "/" .. name, tooltip = name})
 	sprite.style.minimal_width = 32
 	sprite.style.minimal_height = 32
 	sprite.style.maximal_width = 32
@@ -67,7 +73,7 @@ local function display_item_list(player)
 		if not filtered_list[i] then return end
 		local item_key = filtered_list[i]
 		if not item_list[item_key] then return end
-		add_recipe_icon(item_list_table, item_list[item_key].name)	
+		add_recipe_icon(item_list_table, item_list[item_key].name, true)	
 	end
 end
 
@@ -82,7 +88,7 @@ local function display_history(player)
 	for i = player_data.size_of_history - 8, player_data.size_of_history, 1 do
 		local name = history[i]
 		if name then
-			add_recipe_icon(history_table, name)
+			add_recipe_icon(history_table, name, true)
 		end
 	end
 end
@@ -96,7 +102,6 @@ end
 local function draw_main_window(player)
 	if player.gui.left["fjei_main_window"] then player.gui.left["fjei_main_window"].destroy() end
 	local frame = player.gui.left.add({type = "frame", name = "fjei_main_window", direction = "vertical"})
-	frame.style.minimal_height = height
 	frame.style.minimal_width = width
 	frame.style.maximal_height = height
 	frame.style.maximal_width = width
@@ -142,26 +147,36 @@ local function create_recipe_window(recipe_name, player, button)
 	if not recipe then return end
 	
 	if player.gui.center["fjei_recipe_window"] then player.gui.center["fjei_recipe_window"].destroy() end
+	
+	local machines = Functions.get_crafting_machines_for_recipe(player.force.name, recipe)
 	local products = recipe.products
 	local ingredients = recipe.ingredients
-	local crafting_time = recipe.energy
 	
 	local frame = player.gui.center.add({type = "frame", name = "fjei_recipe_window", direction = "vertical"})
-	frame.style.minimal_height = 320
 	frame.style.minimal_width = recipe_window_width
-	frame.style.maximal_height = 320
 	frame.style.maximal_width = recipe_window_width
 	frame.style.padding = 4
 	
 	local t = frame.add({type = "table", column_count = 2})
-	local element = t.add({type = "label", caption = 'Recipe for "' .. recipe.name .. '"'})
+	local element = t.add {type = "button", caption = "X", name = "fjei_close_recipe_window"}
+	element.style.font = "heading-1"
+	element.style.padding = 0
+	element.style.right_margin = 12
+	element.style.minimal_width = 32
+	element.style.maximal_width = 32
+	element.style.minimal_height = 32
+	element.style.maximal_height = 32	
 	element.style.horizontal_align = "center"
 	element.style.vertical_align = "center"
-	element.style.font = "heading-1"
-	element.style.minimal_width = recipe_window_width
-	element.style.maximal_width = recipe_window_width
 	
+	local tt = t.add({type = "table", column_count = 1})
+	local element = tt.add({type = "label", caption = "Recipe - " .. recipe.name})
+	element.style.font = "heading-1"
+	local element = tt.add({type = "label", caption = recipe.energy .. " seconds crafting time."})
+	element.style.font = "default"
+
 	frame.add({type = "line"})
+	
 	
 	local element = frame.add({type = "label", caption = "Products:"})
 	element.style.font = "heading-2"		
@@ -170,15 +185,15 @@ local function create_recipe_window(recipe_name, player, button)
 	for _, product in pairs(products) do
 		local tt = t.add({type = "table", column_count = 3})
 		local element = tt.add({type = "label", caption = product.amount * product.probability .. " x "})
+		element.style.minimal_width = 32
+		element.style.horizontal_align = "right"
 		add_recipe_icon(tt, product.name)
 		local element = tt.add({type = "label", caption = get_localised_name(product.name)})
-		element.style.minimal_width = recipe_window_width * 0.5 - 85
-		element.style.maximal_width = recipe_window_width * 0.5 - 85
+		element.style.minimal_width = recipe_window_width * 0.5 - 82
+		element.style.maximal_width = recipe_window_width * 0.5 - 82
 		element.style.single_line = false
-		element.style.font = "heading-2"
+		element.style.font = "default"
 	end
-	
-	frame.add({type = "line"})
 	
 	local element = frame.add({type = "label", caption = "Ingredients:"})
 	element.style.font = "heading-2"		
@@ -187,12 +202,34 @@ local function create_recipe_window(recipe_name, player, button)
 	for key, ingredient in pairs(ingredients) do
 		local tt = t.add({type = "table", column_count = 3})
 		local element = tt.add({type = "label", caption = ingredient.amount .. " x "})
+		element.style.minimal_width = 32
+		element.style.horizontal_align = "right"
+		
 		add_recipe_icon(tt, ingredient.name)
 		local element = tt.add({type = "label", caption = get_localised_name(ingredient.name)})
-		element.style.minimal_width = recipe_window_width * 0.5 - 85
-		element.style.maximal_width = recipe_window_width * 0.5 - 85
+		element.style.minimal_width = recipe_window_width * 0.5 - 82
+		element.style.maximal_width = recipe_window_width * 0.5 - 82
 		element.style.single_line = false
-		element.style.font = "heading-2"
+		element.style.font = "default"
+	end
+	
+	frame.add({type = "line"})
+	
+	local element = frame.add({type = "label", caption = "Made by:"})
+	element.style.font = "heading-2"		
+	local t = frame.add({type = "table", column_count = 2})
+	
+	for key, machine in pairs(machines) do
+		local prototype = game.entity_prototypes[machine]
+		if prototype then
+			local tt = t.add({type = "table", column_count = 2})
+			add_recipe_icon(tt, machine)
+			local element = tt.add({type = "label", caption = prototype.localised_name})
+			element.style.minimal_width = recipe_window_width * 0.5 - 85
+			element.style.maximal_width = recipe_window_width * 0.5 - 85
+			element.style.single_line = false
+			element.style.font = "default"
+		end
 	end
 end
 
@@ -231,11 +268,16 @@ local function clear_search_textfield(element, player, button)
 	Public.refresh_main_window(player)
 end
 
+local function close_recipe_window(element, player, button)
+	element.parent.parent.destroy()
+end
+
 local gui_actions = {
 	["fjei_toggle_button"] = toggle_main_window,
 	["fjei_main_window_next_page"] = main_window_next_page,
 	["fjei_main_window_previous_page"] = main_window_previous_page,
-	["fjei_main_window_search_textfield"] = clear_search_textfield,	
+	["fjei_main_window_search_textfield"] = clear_search_textfield,
+	["fjei_close_recipe_window"] = close_recipe_window,
 }
 
 function Public.gui_click_actions(element, player, button)
@@ -253,6 +295,8 @@ function Public.draw_top_toggle_button(player)
 end
 
 local function add_to_history(recipe_name, player)
+	if not game.recipe_prototypes[recipe_name] then return end
+
 	local player_data = global.fjei.player_data[player.index]
 	if not player_data.history then
 		player_data.history = {recipe_name}
