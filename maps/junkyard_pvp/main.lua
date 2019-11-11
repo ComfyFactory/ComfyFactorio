@@ -3,6 +3,7 @@ local Map_score = require "modules.map_score"
 local Terrain = require "maps.junkyard_pvp.terrain"
 local Gui = require "maps.junkyard_pvp.gui"
 require "maps.junkyard_pvp.surrounded_by_worms"
+require "modules.flashlight_toggle_button"
 require "modules.rocks_heal_over_time"
 require "maps.junkyard_pvp.share_chat"
 require "modules.mineable_wreckage_yields_scrap"
@@ -219,7 +220,7 @@ local function on_init()
 	T.main_caption_color = {r = 150, g = 0, b = 255}
 	T.sub_caption_color = {r = 0, g = 250, b = 150}
 
-	global.rocks_yield_ore_base_amount = 100
+	global.rocks_yield_ore_base_amount = 150
 
 	Team.create_forces()
 	Public.reset_map()

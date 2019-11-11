@@ -235,7 +235,7 @@ local function secret_shop(pos, surface)
 	}
 	secret_market_items = shuffle(secret_market_items)
 										
-	local market = surface.create_entity {name = "market", position = pos}
+	local market = surface.create_entity {name = "market", position = pos, force = "neutral"}
 	market.destructible = false			
 	
 	for i = 1, math.random(6, 8), 1 do
