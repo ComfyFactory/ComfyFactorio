@@ -157,11 +157,11 @@ local function create_recipe_window(recipe_name, player, button)
 	frame.style.maximal_width = recipe_window_width
 	frame.style.padding = 4
 	
-	local t = frame.add({type = "table", column_count = 2})
+	local t = frame.add({type = "table", column_count = 3})
 	local element = t.add {type = "button", caption = "X", name = "fjei_close_recipe_window"}
 	element.style.font = "heading-1"
 	element.style.padding = 0
-	element.style.right_margin = 12
+	element.style.right_margin = 4
 	element.style.minimal_width = 32
 	element.style.maximal_width = 32
 	element.style.minimal_height = 32
@@ -169,9 +169,14 @@ local function create_recipe_window(recipe_name, player, button)
 	element.style.horizontal_align = "center"
 	element.style.vertical_align = "center"
 	
+	add_recipe_icon(t, recipe.name, true)
+	
 	local tt = t.add({type = "table", column_count = 1})
-	local element = tt.add({type = "label", caption = "Recipe - " .. recipe.name})
+	local ttt = tt.add({type = "table", column_count = 2})	
+	local element = ttt.add({type = "label", caption = recipe.localised_name})
 	element.style.font = "heading-1"
+	local element = ttt.add({type = "label", caption = " (" .. recipe.name .. ")"})
+	element.style.font = "heading-2"
 	local element = tt.add({type = "label", caption = recipe.energy .. " seconds crafting time."})
 	element.style.font = "default"
 
@@ -235,7 +240,8 @@ end
 
 local function toggle_main_window(element, player, button)
 	if player.gui.left.fjei_main_window then
-		player.gui.left.fjei_main_window.destroy()		
+		player.gui.left.fjei_main_window.destroy()
+		if player.gui.center.fjei_recipe_window then player.gui.center.fjei_recipe_window.destroy() end
 	else
 		draw_main_window(player)	
 	end
