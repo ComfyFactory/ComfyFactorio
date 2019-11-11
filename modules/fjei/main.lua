@@ -31,6 +31,12 @@ local function on_research_finished(event)
 	end
 end
 
+local sprite_parent_whitelist = {
+	["fjei_main_window_item_list_table"] = true,
+	["fjei_main_window_history_table"] = true,
+	["fjei_recipe_window"] = true,
+}
+
 local function on_gui_click(event)
 	local element = event.element
 	if not element then return end
@@ -38,10 +44,16 @@ local function on_gui_click(event)
 	local player = game.players[event.player_index]	
 	if Gui.gui_click_actions(element, player, event.button) then return end
 	
-	if element.parent.name ~= "fjei_main_window_item_list_table" then return end
 	if element.type ~= "sprite" then return end
-
-	Gui.open_recipe(element, player, event.button)
+	local parent = element.parent
+	if not parent then return end
+	if sprite_parent_whitelist[parent.name] then Gui.open_recipe(element.name, player, event.button) return end
+	local parent = parent.parent
+	if not parent then return end
+	if sprite_parent_whitelist[parent.parent.name] then Gui.open_recipe(element.name, player, event.button) return end
+	local parent = parent.parent
+	if not parent then return end
+	if sprite_parent_whitelist[parent.parent.name] then Gui.open_recipe(element.name, player, event.button) return end
 end
 
 local function on_gui_text_changed(event)

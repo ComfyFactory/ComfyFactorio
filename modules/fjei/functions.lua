@@ -8,6 +8,11 @@ local function is_recipe_valid(force_name, name)
 	return true
 end
 
+function Public.get_recipes(force_name, recipe)
+	local recipes = {}
+	local list = global.fjei[force_name].item_list
+end
+
 function Public.get_crafting_machines_for_recipe(force_name, recipe)
 	local crafting_machine_list = global.fjei[force_name].crafting_machines
 	local recipe_category = recipe.category
