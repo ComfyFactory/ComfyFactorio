@@ -8,6 +8,7 @@ local items_per_page = column_count * line_count
 local Public = {}
 
 local function get_total_page_count(player)
+	if not global.fjei.player_data[player.index].filtered_list then Functions.set_filtered_list(player) end
 	local count = math_ceil(global.fjei.player_data[player.index].size_of_filtered_list / items_per_page)
 	if count < 1 then count = 1 end
 	return count
@@ -15,6 +16,7 @@ end
 
 local function set_page_count_caption(player)
 	if not player.gui.left.fjei_main_window then return end
+	if not global.fjei.player_data[player.index].filtered_list then Functions.set_filtered_list(player) end
 	local active_page = global.fjei.player_data[player.index].active_page
 	local element = player.gui.left.fjei_main_window.fjei_main_window_control_table.fjei_main_window_page_counter
 	element.caption = "Page " .. active_page .. " of " .. get_total_page_count(player)
@@ -28,13 +30,14 @@ end
 local function display_item_list(player)
 	if not player.gui.left.fjei_main_window then return end
 	if not player.gui.left.fjei_main_window.fjei_main_window_item_list_table then return end
-	local item_list_table = player.gui.left.fjei_main_window.fjei_main_window_item_list_table
-	item_list_table.clear()
+	if not global.fjei.player_data[player.index].filtered_list then Functions.set_filtered_list(player) end
 	
 	local active_page = global.fjei.player_data[player.index].active_page
 	local starting_index = 1 + (active_page - 1) * items_per_page
-	local item_list = global.fjei.item_list
+	local item_list = global.fjei[player.force.name].item_list
 	local filtered_list = global.fjei.player_data[player.index].filtered_list	
+	local item_list_table = player.gui.left.fjei_main_window.fjei_main_window_item_list_table
+	item_list_table.clear()	
 	
 	for i = starting_index, starting_index + items_per_page - 1, 1 do
 		if not filtered_list[i] then return end
