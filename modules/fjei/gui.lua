@@ -2,11 +2,10 @@ local Functions = require "modules.fjei.functions"
 local math_ceil = math.ceil
 local string_find = string.find
 local table_remove = table.remove
-local height = 492
-local width = 360
+local width = 278
 local recipe_window_width = 480
-local column_count = 8
-local line_count = 4
+local column_count = 6
+local line_count = 6
 local items_per_page = column_count * line_count
 local Public = {}
 
@@ -22,7 +21,7 @@ local function set_page_count_caption(player)
 	if not global.fjei.player_data[player.index].filtered_list then Functions.set_filtered_list(player) end
 	local active_page = global.fjei.player_data[player.index].active_page
 	local element = player.gui.left.fjei_main_window.fjei_main_window_control_table.fjei_main_window_page_counter
-	element.caption = "Page " .. active_page .. " of " .. get_total_page_count(player)
+	element.caption = active_page .. "/" .. get_total_page_count(player)
 end
 
 local function get_localised_name(name)
@@ -103,7 +102,6 @@ local function draw_main_window(player)
 	if player.gui.left["fjei_main_window"] then player.gui.left["fjei_main_window"].destroy() end
 	local frame = player.gui.left.add({type = "frame", name = "fjei_main_window", direction = "vertical"})
 	frame.style.minimal_width = width
-	frame.style.maximal_height = height
 	frame.style.maximal_width = width
 	frame.style.padding = 4
 	frame.style.margin = 2
@@ -126,8 +124,8 @@ local function draw_main_window(player)
 	if not text then text = "" end
 	local textfield = t.add({ type = "textfield", name = "fjei_main_window_search_textfield", text = text})
 	textfield.style.left_margin = 4
-	textfield.style.minimal_width = 186	
-	textfield.style.maximal_width = 186
+	textfield.style.minimal_width = 140	
+	textfield.style.maximal_width = 140
 	
 	frame.add({type = "line"})
 		
@@ -165,11 +163,27 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 			category_string = "is ingredient in: "
 		end
 	end
+	if not recipes then return end
 	if #recipes == 0 then return end
 	
-	if selected_recipe then Functions.shift_recipe_forward(recipes, selected_recipe) end
-
+	if not selected_recipe then
+		for key, recipe_name in pairs(recipes) do
+			if #Functions.get_crafting_machines_for_recipe(player.force.name, game.recipe_prototypes[recipe_name]) > 0 then
+				selected_recipe = recipe_name
+				break
+			end
+			if key > 16 then break end
+		end
+	end	
+	
+	if selected_recipe and #Functions.get_crafting_machines_for_recipe(player.force.name, game.recipe_prototypes[selected_recipe]) > 0 then
+		Functions.shift_recipe_forward(recipes, selected_recipe)
+	end
+	
 	local recipe = recipes[1]
+	if selected_recipe then
+		for k, v in pairs(recipes) do if v == selected_recipe then recipe = recipes[k] end end
+	end
 	
 	recipe = game.recipe_prototypes[recipe]
 	local machines = Functions.get_crafting_machines_for_recipe(player.force.name, recipe)
@@ -193,21 +207,19 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 	element.style.maximal_width = 110
 	
 	local scroll_pane = t.add({ type = "scroll-pane", name = "scroll_pane", horizontal_scroll_policy = "always", vertical_scroll_policy = "never"})	
-	scroll_pane.style.minimal_width = recipe_window_width - 210
-	scroll_pane.style.maximal_width = recipe_window_width - 210
+	scroll_pane.style.minimal_width = recipe_window_width - 214
+	scroll_pane.style.maximal_width = recipe_window_width - 214
 	scroll_pane.style.minimal_height = 56
 	scroll_pane.style.maximal_height = 56
-	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 256}) 
-	for _, recipe_name in pairs(recipes) do
-		--local machines = Functions.get_crafting_machines_for_recipe(player.force.name, game.recipe_prototypes[recipe_name])
-		--if #machines > 0 then
-		add_sprite_icon(tt, recipe_name, true) 
-		--end		
-	end
+	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 256})
+		
+	for key, recipe_name in pairs(recipes) do add_sprite_icon(tt, recipe_name, true) end
 	
 	local element = t.add {type = "sprite-button", caption = "X", name = "fjei_close_recipe_window"}
 	element.style.font = "heading-1"
 	element.style.margin = 4
+	element.style.right_margin = 4
+	element.style.padding = 4
 	element.style.minimal_width = 32
 	element.style.maximal_width = 32
 	element.style.minimal_height = 32

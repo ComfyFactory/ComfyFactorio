@@ -66,13 +66,13 @@ end
 local function set_item_list()	
 	global.fjei.item_list = {}		
 	local item_list = global.fjei.item_list	
-	for recipe_name, recipe in pairs(game.recipe_prototypes) do
+	for recipe_name, recipe in pairs(game.recipe_prototypes) do	
 		for key, product in pairs(recipe.products) do
 			add_item_list_product(item_list, product.name, recipe_name)
 		end
 		for key, ingredient in pairs(recipe.ingredients) do
 			add_item_list_ingredient(item_list, ingredient.name, recipe_name)
-		end
+		end	
 	end	
 end
 
@@ -114,8 +114,8 @@ local function set_item_whitelist(force)
 	global.fjei.item_whitelist[force.name] = {}
 	local item_whitelist = global.fjei.item_whitelist[force.name]
 	
-	for key, recipe in pairs(game.recipe_prototypes) do
-		if recipe.enabled then
+	for key, recipe in pairs(force.recipes) do
+		if recipe.enabled and not recipe.hidden then
 			add_recipe_to_whitelist(item_whitelist, recipe)
 		end
 	end
