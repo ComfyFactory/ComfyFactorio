@@ -4,7 +4,7 @@ local height = 492
 local width = 360
 local recipe_window_width = 480
 local column_count = 8
-local line_count = 8
+local line_count = 4
 local items_per_page = column_count * line_count
 local Public = {}
 
@@ -86,7 +86,7 @@ local function display_history(player)
 	for i = player_data.size_of_history - 8, player_data.size_of_history, 1 do
 		local name = history[i]
 		if name then
-			add_recipe_icon(history_table, name, true)
+			add_recipe_icon(history_table, name, false)
 		end
 	end
 end
@@ -103,27 +103,29 @@ local function draw_main_window(player)
 	frame.style.minimal_width = width
 	frame.style.maximal_height = height
 	frame.style.maximal_width = width
-	frame.style.padding = 2
-	frame.style.margin = 1
+	frame.style.padding = 4
+	frame.style.margin = 2
 	
 	local t = frame.add({type = "table", name = "fjei_main_window_control_table",  column_count = 4})
 	local element = t.add({type = "label", name = "fjei_main_window_page_counter",  caption = " "})
-	element.style.font = "heading-1"
-	element.style.margin = 4
+	element.style.font = "heading-2"
+	element.style.font_color = {222, 222, 222}
+	element.style.right_margin = 4
 	
 	local element = t.add({type = "sprite-button", name = "fjei_main_window_previous_page", caption = "←"})
 	element.style.font = "heading-1"
-	element.style.maximal_height = 38
-	element.style.maximal_width = 38
+	element.style.maximal_height = 32
+	element.style.maximal_width = 32
 	local element = t.add({type = "sprite-button", name = "fjei_main_window_next_page", caption = "→"})
 	element.style.font = "heading-1"
-	element.style.maximal_height = 38
-	element.style.maximal_width = 38
+	element.style.maximal_height = 32
+	element.style.maximal_width = 32
 	local text = global.fjei.player_data[player.index].active_filter
 	if not text then text = "" end
 	local textfield = t.add({ type = "textfield", name = "fjei_main_window_search_textfield", text = text})
-	textfield.style.minimal_width = 150	
-	textfield.style.maximal_width = 150
+	textfield.style.left_margin = 4
+	textfield.style.minimal_width = 186	
+	textfield.style.maximal_width = 186
 	
 	frame.add({type = "line"})
 		
@@ -133,7 +135,6 @@ local function draw_main_window(player)
 	
 	local element = frame.add({type = "label", caption = "Recently looked at:"})
 	element.style.font = "heading-2"
-	--element.style.margin = 2
 	
 	local t = frame.add({type = "table", name = "fjei_main_window_history_table", column_count = column_count})
 	
@@ -323,9 +324,11 @@ end
 
 function Public.draw_top_toggle_button(player)
 	if player.gui.top["fjei_toggle_button"] then return end
-	local button = player.gui.top.add({type = "sprite-button", name = "fjei_toggle_button", sprite = "virtual-signal/signal-J"})
+	local button = player.gui.top.add({type = "sprite-button", name = "fjei_toggle_button", caption = "FJEI"})
+	button.style.font = "heading-1"
+	button.style.font_color = {222, 222, 222}
 	button.style.minimal_height = 38
-	button.style.minimal_width = 38
+	button.style.minimal_width = 50
 	button.style.padding = -2
 end
 
