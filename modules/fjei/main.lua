@@ -1,6 +1,6 @@
 --[[
-FJEI - Factorio "Just enough items"
-An item recipe browser - MewMew
+FJEI - "Factorio Just enough items"
+A comfy recipe browser - MewMew
 ]]
 
 local Gui = require "modules.fjei.gui"

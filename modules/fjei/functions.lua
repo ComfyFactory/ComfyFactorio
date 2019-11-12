@@ -8,11 +8,6 @@ local function is_recipe_valid(force_name, name)
 	return true
 end
 
-function Public.get_recipes(force_name, recipe)
-	local recipes = {}
-	local list = global.fjei[force_name].item_list
-end
-
 function Public.get_crafting_machines_for_recipe(force_name, recipe)
 	local crafting_machine_list = global.fjei[force_name].crafting_machines
 	local recipe_category = recipe.category
@@ -55,14 +50,14 @@ function Public.set_base_item_list(force_name)
 	local i = 1
 	for name, prototype in pairs(game.recipe_prototypes) do
 		if is_recipe_valid(force_name, name) then
-			local machines = Public.get_crafting_machines_for_recipe(force_name, prototype)
-			if #machines > 0 then
-				list[i] = {name = name}
+			--local machines = Public.get_crafting_machines_for_recipe(force_name, prototype)
+			--if #machines > 0 then
+				list[i] = name
 				i = i + 1
-			end
+			--end
 		end
 	end
-	table.sort(list, function (a, b) return a.name < b.name end)
+	table.sort(list, function (a, b) return a < b end)
 	global.fjei.size_of_item_list = #list
 end
 
@@ -74,9 +69,9 @@ function Public.set_filtered_list(player)
 	player_data.filtered_list = {}
 	local filtered_list = player_data.filtered_list
 	local i = 1
-	for key, entry in pairs(base_list) do
+	for key, name in pairs(base_list) do
 		if active_filter then
-			local a, b = string.find(entry.name, active_filter)
+			local a, b = string.find(name, active_filter)
 			if a then
 				filtered_list[i] = key
 				i = i + 1

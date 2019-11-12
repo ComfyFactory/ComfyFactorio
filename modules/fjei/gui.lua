@@ -73,7 +73,7 @@ local function display_item_list(player)
 		if not filtered_list[i] then return end
 		local item_key = filtered_list[i]
 		if not item_list[item_key] then return end
-		add_recipe_icon(item_list_table, item_list[item_key].name, true)	
+		add_recipe_icon(item_list_table, item_list[item_key], true)	
 	end
 end
 
@@ -249,20 +249,40 @@ local function toggle_main_window(element, player, button)
 end
 
 local function main_window_next_page(element, player, button)
-	if global.fjei.player_data[player.index].active_page == get_total_page_count(player) then
-		global.fjei.player_data[player.index].active_page = 1
+	if button == defines.mouse_button_type.right then
+		for _ = 1, 5, 1 do
+			if global.fjei.player_data[player.index].active_page == get_total_page_count(player) then
+				global.fjei.player_data[player.index].active_page = 1
+			else
+				global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page + 1
+			end	
+		end
 	else
-		global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page + 1
-	end	
+		if global.fjei.player_data[player.index].active_page == get_total_page_count(player) then
+			global.fjei.player_data[player.index].active_page = 1
+		else
+			global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page + 1
+		end	
+	end
 	Public.refresh_main_window(player)
 end
 
 local function main_window_previous_page(element, player, button)
-	if global.fjei.player_data[player.index].active_page == 1 then
-		global.fjei.player_data[player.index].active_page = get_total_page_count(player)
+	if button == defines.mouse_button_type.right then
+		for _ = 1, 5, 1 do
+			if global.fjei.player_data[player.index].active_page == 1 then
+				global.fjei.player_data[player.index].active_page = get_total_page_count(player)
+			else
+				global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page - 1
+			end
+		end
 	else
-		global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page - 1
-	end	
+		if global.fjei.player_data[player.index].active_page == 1 then
+			global.fjei.player_data[player.index].active_page = get_total_page_count(player)
+		else
+			global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page - 1
+		end
+	end		
 	Public.refresh_main_window(player)
 end
 
