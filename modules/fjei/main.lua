@@ -46,7 +46,7 @@ local function on_gui_click(event)
 	for _ = 1, 4, 1 do
 		if not parent then return end
 		if not parent.name then return end
-		if sprite_parent_whitelist[parent.name] then Gui.open_recipe(element.name, player, event.button) return end	
+		if sprite_parent_whitelist[parent.name] then Gui.open_recipe(element, player, event.button) return end	
 		parent = parent.parent		
 	end
 end

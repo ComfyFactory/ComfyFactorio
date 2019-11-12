@@ -9,13 +9,25 @@ local function is_recipe_valid(force_name, name)
 	return true
 end
 
+function Public.shift_recipe_forward(recipes, selected_recipe)
+	local t = {}
+	table_insert(t, selected_recipe)
+	for k, v in pairs(recipes) do
+		if v ~= selected_recipe then table_insert(t, v) end
+	end
+	for k, v in pairs(recipes) do
+		recipes[k] = t[k]
+	end
+end
+
 function Public.get_crafting_machines_for_recipe(force_name, recipe)
+	local item_whitelist = global.fjei.item_whitelist[force_name]
 	local crafting_machines = global.fjei.crafting_machines
 	local recipe_category = recipe.category
 	local result = {}
 	local i = 1
 	for _, name in pairs(crafting_machines) do
-		if is_recipe_valid(force_name, name) or name == "character" then
+		if item_whitelist[name] or name == "character" then
 			local crafting_categories = game.entity_prototypes[name].crafting_categories
 			for category, _ in pairs(crafting_categories) do
 				if recipe_category == category then

@@ -1,6 +1,7 @@
 local Functions = require "modules.fjei.functions"
 local math_ceil = math.ceil
 local string_find = string.find
+local table_remove = table.remove
 local height = 492
 local width = 360
 local recipe_window_width = 480
@@ -142,26 +143,19 @@ local function draw_main_window(player)
 	Public.refresh_main_window(player)
 end
 
-local function create_recipe_window(item_name, player, button)
-	local selected_recipe = false
+local function create_recipe_window(item_name, player, button, selected_recipe)
 	local mode
 	if button == defines.mouse_button_type.left then mode = "product" else mode = "ingredient" end
-	local recipe_window = player.gui.center["fjei_recipe_window"]
-	if recipe_window then
-		local sprites = recipe_window.t1.scroll_pane.scroll_pane_table.children
-		for _, sprite in pairs(sprites) do
-			if sprite.name == item_name then
-				selected_recipe = item_name
-				item_name = recipe_window.t1.children[1].name
-				local a, b = string_find(recipe_window.t1.children[2].caption, "product")
-				if a then mode = "product" else mode = "ingredient" end
-				break
-			end
-		end
+	
+	if selected_recipe then
+		local recipe_window = player.gui.center["fjei_recipe_window"]
+		item_name = recipe_window.t1.children[1].name
+		local a, b = string_find(recipe_window.t1.children[2].caption, "product")
+		if a then mode = "product" else mode = "ingredient" end
 	end
 	
 	local category_string
-	local recipes = {}
+	local recipes
 	if global.fjei.item_list[item_name] then
 		if mode == "product" then
 			recipes = global.fjei.item_list[item_name][1]
@@ -172,19 +166,14 @@ local function create_recipe_window(item_name, player, button)
 		end
 	end
 	if #recipes == 0 then return end
+	
+	if selected_recipe then Functions.shift_recipe_forward(recipes, selected_recipe) end
 
 	local recipe = recipes[1]
-	if selected_recipe then
-		for _, name in pairs(recipes) do
-			if selected_recipe == name then
-				recipe = selected_recipe
-				break
-			end
-		end
-	end	
 	
 	recipe = game.recipe_prototypes[recipe]
 	local machines = Functions.get_crafting_machines_for_recipe(player.force.name, recipe)
+	--if #machines == 0 then return end
 	local products = recipe.products
 	local ingredients = recipe.ingredients
 	
@@ -196,22 +185,24 @@ local function create_recipe_window(item_name, player, button)
 	
 	local t = frame.add({type = "table", name = "t1", column_count = 4})
 	add_sprite_icon(t, item_name, false)
-	local element = t.add({type = "label", caption = item_name .. "\n" .. category_string})
-	element.style.single_line = false
+	local element = t.add({type = "label", caption = category_string})
+	--element.style.single_line = false
 	element.style.font = "heading-2"
 	element.style.font_color = {222, 222, 222}
 	element.style.minimal_width = 110
 	element.style.maximal_width = 110
 	
-	
 	local scroll_pane = t.add({ type = "scroll-pane", name = "scroll_pane", horizontal_scroll_policy = "always", vertical_scroll_policy = "never"})	
-	scroll_pane.style.minimal_width = recipe_window_width - 212
-	scroll_pane.style.maximal_width = recipe_window_width - 212
-	scroll_pane.style.minimal_height = 54
-	scroll_pane.style.maximal_height = 54
-	local tt = scroll_pane.add({type = "table", name = "scroll_pane_table", column_count = 256}) 
+	scroll_pane.style.minimal_width = recipe_window_width - 210
+	scroll_pane.style.maximal_width = recipe_window_width - 210
+	scroll_pane.style.minimal_height = 56
+	scroll_pane.style.maximal_height = 56
+	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 256}) 
 	for _, recipe_name in pairs(recipes) do
-		add_sprite_icon(tt, recipe_name, true)
+		--local machines = Functions.get_crafting_machines_for_recipe(player.force.name, game.recipe_prototypes[recipe_name])
+		--if #machines > 0 then
+		add_sprite_icon(tt, recipe_name, true) 
+		--end		
 	end
 	
 	local element = t.add {type = "sprite-button", caption = "X", name = "fjei_close_recipe_window"}
@@ -291,6 +282,8 @@ local function create_recipe_window(item_name, player, button)
 			element.style.font = "default"
 		end
 	end
+	
+	return true
 end
 
 local function toggle_main_window(element, player, button)
@@ -399,9 +392,14 @@ local function add_to_history(item_name, player)
 	if player_data.size_of_history > column_count then player_data.history[player_data.size_of_history - column_count] = nil end
 end
 
-function Public.open_recipe(item_name, player, button)
+function Public.open_recipe(element, player, button)
+	local item_name = element.name
+	local selected_recipe = false
+	if element.parent then
+		if element.parent.name == "fjei_recipe_window_select_table" then selected_recipe = item_name end
+	end
 	add_to_history(item_name, player)
-	create_recipe_window(item_name, player, button)
+	if not create_recipe_window(item_name, player, button, selected_recipe) then return end
 	display_history(player)	
 end
 
