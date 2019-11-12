@@ -43,14 +43,12 @@ local function on_gui_click(event)
 	
 	if element.type ~= "sprite" then return end
 	local parent = element.parent
-	if not parent then return end
-	if sprite_parent_whitelist[parent.name] then Gui.open_recipe(element.name, player, event.button) return end
-	local parent = parent.parent
-	if not parent then return end
-	if sprite_parent_whitelist[parent.parent.name] then Gui.open_recipe(element.name, player, event.button) return end
-	local parent = parent.parent
-	if not parent then return end
-	if sprite_parent_whitelist[parent.parent.name] then Gui.open_recipe(element.name, player, event.button) return end
+	for _ = 1, 4, 1 do
+		if not parent then return end
+		if not parent.name then return end
+		if sprite_parent_whitelist[parent.name] then Gui.open_recipe(element.name, player, event.button) return end	
+		parent = parent.parent		
+	end
 end
 
 local function on_gui_text_changed(event)
