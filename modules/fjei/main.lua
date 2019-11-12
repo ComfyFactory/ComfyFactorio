@@ -74,7 +74,14 @@ local function on_init()
 	Functions.build_tables()
 end
 
---script.on_configuration_changed(Functions.build_tables())
+local function on_configuration_changed()
+	Functions.build_tables()
+	local player_data = global.fjei.player_data
+	for _, player in pairs(game.connected_players) do
+		player_data[player.index].filtered_list = nil
+		Gui.refresh_main_window(player)
+	end
+end
 
 local event = require "utils.event"
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
@@ -83,3 +90,4 @@ event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_gui_text_changed, on_gui_text_changed)
 event.on_init(on_init)
+script.on_configuration_changed(on_configuration_changed)
