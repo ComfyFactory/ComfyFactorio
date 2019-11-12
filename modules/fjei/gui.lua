@@ -64,16 +64,14 @@ local function display_item_list(player)
 	
 	local active_page = global.fjei.player_data[player.index].active_page
 	local starting_index = 1 + (active_page - 1) * items_per_page
-	local item_list = global.fjei[player.force.name].item_list
+	local sorted_item_list = global.fjei.sorted_item_list
 	local filtered_list = global.fjei.player_data[player.index].filtered_list	
 	local item_list_table = player.gui.left.fjei_main_window.fjei_main_window_item_list_table
 	item_list_table.clear()	
 	
 	for i = starting_index, starting_index + items_per_page - 1, 1 do
 		if not filtered_list[i] then return end
-		local item_key = filtered_list[i]
-		if not item_list[item_key] then return end
-		add_recipe_icon(item_list_table, item_list[item_key], true)	
+		add_recipe_icon(item_list_table, sorted_item_list[filtered_list[i]], false)	
 	end
 end
 
@@ -142,12 +140,21 @@ local function draw_main_window(player)
 	Public.refresh_main_window(player)
 end
 
-local function create_recipe_window(recipe_name, player, button)
-	local recipe = game.recipe_prototypes[recipe_name]
-	if not recipe then return end
-	
+local function create_recipe_window(item_name, player, button)
+	local recipes
+	local category_string
+	if button == defines.mouse_button_type.left then
+		recipes = global.fjei.item_list[item_name][1]
+		category_string = "Product of"
+	else
+		recipes = global.fjei.item_list[item_name][2]
+		category_string = "Ingredient in"
+	end
+	if #recipes == 0 then return end
+
 	if player.gui.center["fjei_recipe_window"] then player.gui.center["fjei_recipe_window"].destroy() end
 	
+	local recipe = game.recipe_prototypes[recipes[1]]
 	local machines = Functions.get_crafting_machines_for_recipe(player.force.name, recipe)
 	local products = recipe.products
 	local ingredients = recipe.ingredients
@@ -249,38 +256,40 @@ local function toggle_main_window(element, player, button)
 end
 
 local function main_window_next_page(element, player, button)
+	local player_data = global.fjei.player_data[player.index]
 	if button == defines.mouse_button_type.right then
 		for _ = 1, 5, 1 do
-			if global.fjei.player_data[player.index].active_page == get_total_page_count(player) then
-				global.fjei.player_data[player.index].active_page = 1
+			if player_data.active_page == get_total_page_count(player) then
+				player_data.active_page = 1
 			else
-				global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page + 1
+				player_data.active_page = player_data.active_page + 1
 			end	
 		end
 	else
-		if global.fjei.player_data[player.index].active_page == get_total_page_count(player) then
-			global.fjei.player_data[player.index].active_page = 1
+		if player_data.active_page == get_total_page_count(player) then
+			player_data.active_page = 1
 		else
-			global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page + 1
+			player_data.active_page = player_data.active_page + 1
 		end	
 	end
 	Public.refresh_main_window(player)
 end
 
 local function main_window_previous_page(element, player, button)
+	local player_data = global.fjei.player_data[player.index]
 	if button == defines.mouse_button_type.right then
 		for _ = 1, 5, 1 do
-			if global.fjei.player_data[player.index].active_page == 1 then
-				global.fjei.player_data[player.index].active_page = get_total_page_count(player)
+			if player_data.active_page == 1 then
+				player_data.active_page = get_total_page_count(player)
 			else
-				global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page - 1
+				player_data.active_page = player_data.active_page - 1
 			end
 		end
 	else
-		if global.fjei.player_data[player.index].active_page == 1 then
-			global.fjei.player_data[player.index].active_page = get_total_page_count(player)
+		if player_data.active_page == 1 then
+			player_data.active_page = get_total_page_count(player)
 		else
-			global.fjei.player_data[player.index].active_page = global.fjei.player_data[player.index].active_page - 1
+			player_data.active_page = player_data.active_page - 1
 		end
 	end		
 	Public.refresh_main_window(player)
@@ -320,29 +329,29 @@ function Public.draw_top_toggle_button(player)
 	button.style.padding = -2
 end
 
-local function add_to_history(recipe_name, player)
-	if not game.recipe_prototypes[recipe_name] then return end
+local function add_to_history(item_name, player)
+	--if not game.recipe_prototypes[recipe_name] then return end
 
 	local player_data = global.fjei.player_data[player.index]
 	if not player_data.history then
-		player_data.history = {recipe_name}
+		player_data.history = {item_name}
 		player_data.size_of_history = 1
 		return
 	end
 	
 	--avoid double elements
 	for _, v in pairs(player_data.history) do
-		if v == recipe_name then return end
+		if v == item_name then return end
 	end
 	
 	player_data.size_of_history = player_data.size_of_history + 1
-	player_data.history[player_data.size_of_history] = recipe_name	
+	player_data.history[player_data.size_of_history] = item_name	
 	if player_data.size_of_history > column_count then player_data.history[player_data.size_of_history - column_count] = nil end
 end
 
-function Public.open_recipe(recipe_name, player, button)
-	add_to_history(recipe_name, player)
-	create_recipe_window(recipe_name, player, button)
+function Public.open_recipe(item_name, player, button)
+	add_to_history(item_name, player)
+	create_recipe_window(item_name, player, button)
 	display_history(player)	
 end
 

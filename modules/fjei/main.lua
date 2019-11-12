@@ -9,8 +9,6 @@ local Functions = require "modules.fjei.functions"
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.fjei.player_data[player.index] then global.fjei.player_data[player.index] = {} end
-	Functions.set_crafting_machines(player.force.name)
-	Functions.set_base_item_list(player.force.name)
 	Gui.draw_top_toggle_button(player)
 end
 
@@ -22,11 +20,10 @@ local function on_player_left_game(event)
 end
 
 local function on_research_finished(event)
-	local force_name = event.research.force.name
-	Functions.set_crafting_machines(force_name)
-	Functions.set_base_item_list(force_name)
-	for _, player in pairs(game.connected_players) do
-		global.fjei.player_data[player.index].filtered_list = nil
+	if not Functions.add_research_to_whitelist(event.research.force, event.research.effects) then return end
+	local player_data = global.fjei.player_data
+	for _, player in pairs(event.research.force.connected_players) do
+		player_data[player.index].filtered_list = nil
 		Gui.refresh_main_window(player)
 	end
 end
@@ -71,10 +68,13 @@ local function on_gui_text_changed(event)
 	Gui.refresh_main_window(player)
 end
 
-local function on_init()
+local function on_init()	
 	global.fjei = {}
 	global.fjei.player_data = {}
+	Functions.build_tables()
 end
+
+--script.on_configuration_changed(Functions.build_tables())
 
 local event = require "utils.event"
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
