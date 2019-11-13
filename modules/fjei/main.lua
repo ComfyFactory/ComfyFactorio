@@ -8,8 +8,12 @@ local Functions = require "modules.fjei.functions"
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
+	
+	if not global.fjei then Public.build_tables() end
 	if not global.fjei.player_data[player.index] then global.fjei.player_data[player.index] = {} end
+	
 	Gui.draw_top_toggle_button(player)
+	Gui.refresh_main_window(player)
 end
 
 local function on_player_left_game(event)
@@ -32,6 +36,7 @@ local sprite_parent_whitelist = {
 	["fjei_main_window_item_list_table"] = true,
 	["fjei_main_window_history_table"] = true,
 	["fjei_recipe_window"] = true,
+	["fjei_recipe_window_select_table"] = true,
 }
 
 local function on_gui_click(event)
@@ -66,18 +71,21 @@ local function on_gui_text_changed(event)
 	Gui.refresh_main_window(player)
 end
 
-local function on_init()	
-	global.fjei = {}
-	global.fjei.player_data = {}
+local function on_configuration_changed()
+	Functions.build_tables()
+	for _, player in pairs(game.players) do
+		if player.gui.left["fjei_main_window"] then player.gui.left["fjei_main_window"].destroy() end
+		if player.gui.center["fjei_recipe_window"] then player.gui.center["fjei_recipe_window"].destroy() end
+	end
+end
+
+local function on_init()
 	Functions.build_tables()
 end
 
-local function on_configuration_changed()
-	Functions.build_tables()
-	local player_data = global.fjei.player_data
-	for _, player in pairs(game.connected_players) do
-		player_data[player.index].filtered_list = nil
-		Gui.refresh_main_window(player)
+local function on_load()
+	for _, player in pairs(game.players) do
+		Gui.draw_top_toggle_button(player)
 	end
 end
 
@@ -87,5 +95,6 @@ event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_gui_text_changed, on_gui_text_changed)
-event.on_init(on_init)
 script.on_configuration_changed(on_configuration_changed)
+event.on_init(on_init)
+event.on_init(on_load)

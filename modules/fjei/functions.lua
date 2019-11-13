@@ -3,23 +3,6 @@ local string_find = string.find
 
 local Public = {}
 
-local function is_recipe_valid(force_name, name)
-	local force_recipes = game.forces[force_name].recipes
-	if not force_recipes[name] then return end
-	return true
-end
-
-function Public.shift_recipe_forward(recipes, selected_recipe)
-	local t = {}
-	table_insert(t, selected_recipe)
-	for k, v in pairs(recipes) do
-		if v ~= selected_recipe then table_insert(t, v) end
-	end
-	for k, v in pairs(recipes) do
-		recipes[k] = t[k]
-	end
-end
-
 function Public.get_crafting_machines_for_recipe(force_name, recipe)
 	local item_whitelist = global.fjei.item_whitelist[force_name]
 	local crafting_machines = global.fjei.crafting_machines
@@ -73,7 +56,20 @@ local function set_item_list()
 		for key, ingredient in pairs(recipe.ingredients) do
 			add_item_list_ingredient(item_list, ingredient.name, recipe_name)
 		end	
-	end	
+	end
+	
+	for key, v in pairs(item_list) do
+		if v[1] then
+			if v[1][2] then
+				table.sort(v[1], function (a, b) return a < b end)
+			end
+		end
+		if v[2] then
+			if v[2][2] then
+				table.sort(v[2], function (a, b) return a < b end)
+			end
+		end	
+	end
 end
 
 local function set_sorted_item_list()
@@ -164,6 +160,8 @@ function Public.set_filtered_list(player)
 end
 
 function Public.build_tables()
+	global.fjei = {}
+	global.fjei.player_data = {}
 	set_item_list()										--creates list of all items as key and two tables for each key containing [1] product recipes and [2] ingredient recipes
 	set_sorted_item_list()							--creates sorted list of all items in the game for faster searching
 	set_crafting_machines()						--creates list of available crafting entities
