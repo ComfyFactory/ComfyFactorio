@@ -342,12 +342,12 @@ local function spawn_unit_group()
 	set_group_spawn_position(surface)
 	local pos = wave_defense_table.spawn_position
 	if not surface.can_place_entity({name = "small-biter", position = pos}) then return end
-	--local radius = 10
-	--local area = {left_top = {pos.x - radius, pos.y - radius}, right_bottom = {pos.x + radius, pos.y + radius}}
-
+	
+	local radius = 10
+	local area = {left_top = {pos.x - radius, pos.y - radius}, right_bottom = {pos.x + radius, pos.y + radius}}
+	for k,v in pairs(surface.find_entities_filtered{area = area, name = "land-mine"}) do if v and v.valid then v.die() end end
+	
 	BiterRolls.wave_defense_set_unit_raffle(wave_defense_table.wave_number)
-
-	--for k,v in pairs(surface.find_entities_filtered{area = area, name = "land-mine"}) do if v and v.valid then v.die() end end
 	
 	debug_print("Spawning unit group at x" .. wave_defense_table.spawn_position.x .." y" .. wave_defense_table.spawn_position.y)
 	local unit_group = surface.create_unit_group({position = wave_defense_table.spawn_position, force = "enemy"})			
