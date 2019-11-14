@@ -334,7 +334,7 @@ end
 local function process_chunk_queue()
 	for k, left_top in pairs(global.chunk_queue) do
 		process_chunk(left_top)
-		global.chunk_queue[k] = nil
+		table.remove(global.chunk_queue, k)
 		return
 	end
 end
