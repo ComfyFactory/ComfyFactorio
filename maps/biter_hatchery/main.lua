@@ -256,7 +256,6 @@ local function on_entity_died(event)
 	
 	if entity.type ~= "unit-spawner" then return end
 	
-	local str
 	if entity.force.name == "east" then
 		game.print("East lost their Hatchery.", {100, 100, 100})
 		game.forces.east.play_sound{path="utility/game_lost", volume_modifier=0.85}
