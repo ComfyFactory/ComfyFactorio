@@ -7,6 +7,7 @@ local level_depth = require "maps.mountain_fortress_v2.terrain"
 local math_floor = math.floor
 local table_remove = table.remove
 local table_insert = table.insert
+local chart_radius = 30
 local tile_conversion = {
 	["concrete"] = "stone-path",
 	["hazard-concrete-left"] = "stone-path",
@@ -37,7 +38,7 @@ end
 
 local function set_x_positions()
 	local x_positions = global.map_collapse.x_positions	
-	for x = level_depth * -1, level_depth, 1 do
+	for x = level_depth * -1, level_depth - 1, 1 do
 		table_insert(x_positions, x)
 	end
 	table.shuffle_table(x_positions)
@@ -48,8 +49,8 @@ local function get_position(surface)
 	if #x_positions == 0 then set_x_positions() end
 	local x = x_positions[1]
 	local position = false
-	for y = 256, -100000, -1 do
-		y = y + math_random(1, 8)
+	for y = 160, -100000, -1 do
+		y = y + math_random(1, 16)
 		local tile = surface.get_tile({x, y})
 		if tile.valid then
 			if tile.name ~= "out-of-map" then
@@ -100,8 +101,14 @@ local function collapse_map()
 	local surface = game.surfaces[global.active_surface_index]
 	local vectors = get_collapse_vectors(math_random(8, 24))
 	local position = get_position(surface)
-	if not position then return end
-	game.forces.player.chart(surface, {{position.x - 31, position.y - 31},{position.x + 31, position.y + 31}})
+	if not position then return end	
+	
+	local last_position = global.map_collapse.last_position
+	game.forces.player.chart(surface, {{last_position.x - chart_radius, last_position.y - chart_radius},{last_position.x + chart_radius, last_position.y + chart_radius}})
+	global.map_collapse.last_position = {x = position.x, y = position.y}
+	
+	game.forces.player.chart(surface, {{position.x - chart_radius, position.y - chart_radius},{position.x + chart_radius, position.y + chart_radius}})
+	
 	set_collapse_tiles(surface, position, vectors)	
 end
 
@@ -129,6 +136,7 @@ function Public.init()
 	global.map_collapse = {}
 	global.map_collapse.x_positions = {}
 	global.map_collapse.processing = {}
+	global.map_collapse.last_position = {x = 0, y = 0}
 end
 
 local event = require 'utils.event'
