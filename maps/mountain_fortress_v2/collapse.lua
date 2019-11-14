@@ -56,6 +56,8 @@ local function get_position(surface)
 			if tile.name ~= "out-of-map" then
 				position = {x = x, y = y}
 				break
+			else
+				y = y + math_random(8, 32)
 			end
 		else
 			y = y + 96 
@@ -110,6 +112,16 @@ local function collapse_map()
 	game.forces.player.chart(surface, {{position.x - chart_radius, position.y - chart_radius},{position.x + chart_radius, position.y + chart_radius}})
 	
 	set_collapse_tiles(surface, position, vectors)	
+end
+
+function Public.delete_out_of_map_chunks(surface)
+	local count = 0
+	for chunk in surface.get_chunks() do
+		if surface.count_tiles_filtered({name = "out-of-map", area = chunk.area}) == 1024 then
+			surface.delete_chunk({chunk.x, chunk.y})
+			count = count + 1
+		end
+	end
 end
 
 function Public.process()

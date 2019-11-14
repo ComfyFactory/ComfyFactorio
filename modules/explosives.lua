@@ -3,7 +3,12 @@
 --Example: cell_birth(game.player.surface.index, {x = -0, y = -64}, game.tick, {x = -0, y = -64}, 100000) --100000 = damage
 
 --1 steel chest filled with explosives = ~1 million damage
-
+local math_abs = math.abs
+local math_floor = math.floor
+local math_sqrt = math.sqrt
+local math_round = math.round
+local math_random = math.random
+local table_shuffle_table = table.shuffle_table
 local damage_per_explosive = 500
 local damage_decay = 10
 local speed = 3
@@ -47,13 +52,13 @@ local function cell_birth(surface_index, origin_position, origin_tick, position,
 end
 
 local function grow_cell(cell)
-	table.shuffle_table(global.explosion_cells_vectors)
-	local radius = math.floor((game.tick - cell.origin_tick) / 9) + 2
+	table_shuffle_table(global.explosion_cells_vectors)
+	local radius = math_floor((game.tick - cell.origin_tick) / 9) + 2
 	local positions = {}
 	for i = 1, 4, 1 do
 		local position = {x = cell.position.x + global.explosion_cells_vectors[i][1], y = cell.position.y + global.explosion_cells_vectors[i][2]}			
 		if not global.explosion_cells[pos_to_key(position)] then
-			local distance = math.sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
+			local distance = math_sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
 			if distance < radius then
 				positions[#positions + 1] = position
 			end
@@ -62,7 +67,7 @@ local function grow_cell(cell)
 	
 	if #positions == 0 then positions[#positions + 1] = {x = cell.position.x + global.explosion_cells_vectors[1][1], y = cell.position.y + global.explosion_cells_vectors[1][2]} end
 	
-	local new_cell_health = math.round(cell.health / #positions, 3) - damage_decay
+	local new_cell_health = math_round(cell.health / #positions, 3) - damage_decay
 	
 	--[[
 	if new_cell_health > 0 then
@@ -80,7 +85,7 @@ local function grow_cell(cell)
 end
 
 local function reflect_cell(entity, cell)
-	table.shuffle_table(global.explosion_cells_vectors)
+	table_shuffle_table(global.explosion_cells_vectors)
 	for i = 1, 4, 1 do
 		local position = {x = cell.position.x + global.explosion_cells_vectors[i][1], y = cell.position.y + global.explosion_cells_vectors[i][2]}
 		if global.explosion_cells[pos_to_key(position)] then
@@ -113,7 +118,7 @@ local function damage_entity(entity, cell)
 		if not entity then return true end
 		if not entity.valid then return true end
 		if entity.health <= 0 then return true end
-		damage_required = math.floor(entity.health * (damage_required / damage_dealt)) + 1
+		damage_required = math_floor(entity.health * (damage_required / damage_dealt)) + 1
 	end										
 end
 
@@ -122,7 +127,7 @@ local function damage_area(cell)
 	if not surface then return end
 	if not surface.valid then return end
 	
-	if math.random(1,4) == 1 then
+	if math_random(1,4) == 1 then
 		surface.create_entity({name = get_explosion_name(cell.health), position = cell.position})
 	end
 	
@@ -140,7 +145,9 @@ local function damage_area(cell)
 						
 			cell.health = cell.health - global.explosion_cells_tiles[key]
 			global.explosion_cells_tiles[key] = nil
-			surface.set_tiles({{name = "landfill", position = tile.position}}, true)
+			if math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
+				surface.set_tiles({{name = "landfill", position = tile.position}}, true)
+			end
 		else
 			--global.explosion_cells_damage_dealt = global.explosion_cells_damage_dealt + cell.health
 			
