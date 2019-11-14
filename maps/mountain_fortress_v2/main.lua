@@ -300,6 +300,13 @@ local function tick()
 	if game.tick % 30 == 0 then	
 		if game.tick % 1800 == 0 then
 			Locomotive.set_player_spawn_and_refill_fish()
+			
+			local last_position = global.map_collapse.last_position
+			local position = game.surfaces[global.active_surface_index].find_non_colliding_position("stone-furnace", {last_position.x, last_position.y - 16}, 128, 4)
+			if position then 
+				local wave_defense_table = WD.get_table()
+				wave_defense_table.spawn_position = position
+			end 
 		end
 		if global.game_reset_tick then
 			if global.game_reset_tick < game.tick then
@@ -322,6 +329,9 @@ local function on_init()
 		"Guide the choo into the mountain and protect it as long as possible!\n",
 		"This however will not be an easy task,\n",
 		"since their strength and numbers increase over time.\n",
+		"\n",
+		"In additon, the southern grounds collapse over time.\n",
+		"Stone bricks, concrete or other solid tiles, might improve the stability of the floor.\n",
 		"\n",
 		"Delve deep for greater treasures, but also face increased dangers.\n",
 		"Mining productivity research, will overhaul your mining equipment,\n",

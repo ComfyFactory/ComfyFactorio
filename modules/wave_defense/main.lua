@@ -338,15 +338,17 @@ local function spawn_unit_group()
 	if not wave_defense_table.target then return end
 	if not wave_defense_table.target.valid then return end
 	if get_active_unit_groups_count() >= wave_defense_table.max_active_unit_groups then return end
+	local surface = game.surfaces[wave_defense_table.surface_index]
+	set_group_spawn_position(surface)
 	local pos = wave_defense_table.spawn_position
-	local radius = 10
-	local area = {left_top = {pos.x - radius, pos.y - radius}, right_bottom = {pos.x + radius, pos.y + radius}}
+	if not surface.can_place_entity({name = "small-biter", position = pos}) then return end
+	--local radius = 10
+	--local area = {left_top = {pos.x - radius, pos.y - radius}, right_bottom = {pos.x + radius, pos.y + radius}}
 
 	BiterRolls.wave_defense_set_unit_raffle(wave_defense_table.wave_number)
 
-	local surface = game.surfaces[wave_defense_table.surface_index]
-	for k,v in pairs(surface.find_entities_filtered{area = area, name = "land-mine"}) do if v and v.valid then v.die() end end
-	set_group_spawn_position(surface)
+	--for k,v in pairs(surface.find_entities_filtered{area = area, name = "land-mine"}) do if v and v.valid then v.die() end end
+	
 	debug_print("Spawning unit group at x" .. wave_defense_table.spawn_position.x .." y" .. wave_defense_table.spawn_position.y)
 	local unit_group = surface.create_unit_group({position = wave_defense_table.spawn_position, force = "enemy"})			
 	local group_size = math_floor(wave_defense_table.average_unit_group_size * group_size_modifier_raffle[math_random(1, group_size_modifier_raffle_size)])
