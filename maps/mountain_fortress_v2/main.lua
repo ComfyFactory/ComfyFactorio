@@ -14,6 +14,7 @@ require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 local level_depth = require "maps.mountain_fortress_v2.terrain"
+local Collapse = require "maps.mountain_fortress_v2.collapse"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
 local Reset = require "functions.soft_reset"
@@ -21,7 +22,7 @@ local Pets = require "modules.biter_pets"
 local Map = require "modules.map_info"
 local WD = require "modules.wave_defense.table"
 local Treasure = require "maps.mountain_fortress_v2.treasure"
-local Locomotive = require "maps.mountain_fortress_v2.locomotive".locomotive_spawn
+local Locomotive = require "maps.mountain_fortress_v2.locomotive"
 local Modifier = require "player_modifiers"
 local math_random = math.random
 local Public = {}
@@ -85,7 +86,7 @@ function Public.reset_map()
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({-2, 16}, surface)
 	
-	Locomotive(surface, {x = 0, y = 16})
+	Locomotive.locomotive_spawn(surface, {x = 0, y = 16})
 	
 	WD.reset_wave_defense()
 	wave_defense_table.surface_index = global.active_surface_index
@@ -93,7 +94,9 @@ function Public.reset_map()
 	wave_defense_table.nest_building_density = 32
 	wave_defense_table.game_lost = false
 	
-	--RPG.rpg_reset_all_players()
+	Collapse.init()
+	
+	RPG.rpg_reset_all_players()
 end
 
 local function protect_train(event)
@@ -293,6 +296,23 @@ local function on_player_left_game(event)
 	set_difficulty()
 end
 
+local function tick()	
+	if game.tick % 30 == 0 then	
+		if game.tick % 1800 == 0 then
+			Locomotive.set_player_spawn_and_refill_fish()
+		end
+		if global.game_reset_tick then
+			if global.game_reset_tick < game.tick then
+				global.game_reset_tick = nil
+				require "maps.mountain_fortress_v2.main".reset_map()
+			end
+			return
+		end
+		Locomotive.fish_tag()
+	end
+	Collapse.process()
+end
+
 local function on_init()
 	local T = Map.Pop_info()
 	T.main_caption = "M O U N T A I N    F O R T R E S S"
@@ -331,6 +351,7 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
+event.on_nth_tick(2, tick)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

@@ -23,7 +23,7 @@ function Public.locomotive_spawn(surface, position)
 end
 
 
-local function fish_tag()
+function Public.fish_tag()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
 	if not global.locomotive_cargo.surface then return end
@@ -58,7 +58,7 @@ local function remove_acceleration()
 	global.locomotive_driver = nil
 end
 ]]
-local function set_player_spawn_and_refill_fish()
+function Public.set_player_spawn_and_refill_fish()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
 	global.locomotive_cargo.health = global.locomotive_cargo.health + 6
@@ -67,27 +67,5 @@ local function set_player_spawn_and_refill_fish()
 	if not position then return end
 	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
 end
-
-local function tick()	
-	if game.tick % 30 == 0 then	
-		if game.tick % 1800 == 0 then
-			set_player_spawn_and_refill_fish()
-		end
-		if global.game_reset_tick then
-			if global.game_reset_tick < game.tick then
-				global.game_reset_tick = nil
-				require "maps.mountain_fortress_v2.main".reset_map()
-			end
-			return
-		end
-		fish_tag()
-		--accelerate()
-	else
-		--remove_acceleration()
-	end
-end
-
-local event = require 'utils.event'
-event.on_nth_tick(5, tick)
 
 return Public

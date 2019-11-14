@@ -3,9 +3,19 @@ local simplex_noise = require "utils.simplex_noise".d2
 local math_random = math.random
 local math_abs = math.abs
 local math_sqrt = math.sqrt
+local level_depth = require "maps.mountain_fortress_v2.terrain"
 local math_floor = math.floor
 local table_remove = table.remove
 local table_insert = table.insert
+local tile_conversion = {
+	["concrete"] = "stone-path",
+	["hazard-concrete-left"] = "stone-path",
+	["hazard-concrete-right"] = "stone-path",
+	["refined-concrete"] = "concrete",
+	["refined-hazard-concrete-left"] = "hazard-concrete-left",
+	["refined-hazard-concrete-right"] = "hazard-concrete-right",
+	["stone-path"] = "landfill",
+}
 
 local function get_collapse_vectors(radius)
 	local vectors = {}
@@ -14,7 +24,7 @@ local function get_collapse_vectors(radius)
 	local seed = math_random(1, 9999999)
 	for x = radius * -1, radius, 1 do
 		for y = radius * -1, radius, 1 do
-			local noise = math_abs(simplex_noise(x * m, y * m, seed) * radius * 1.5)
+			local noise = math_abs(simplex_noise(x * m, y * m, seed) * radius * 1.3)
 			local d = math_sqrt(x ^ 2 + y ^ 2)
 			if d + noise < radius then
 				vectors[i] = {x, y}
@@ -25,8 +35,32 @@ local function get_collapse_vectors(radius)
 	return vectors
 end
 
-local function get_position()
-	local position = {x = 0, y = 64}
+local function set_x_positions()
+	local x_positions = global.map_collapse.x_positions	
+	for x = level_depth * -1, level_depth, 1 do
+		table_insert(x_positions, x)
+	end
+	table.shuffle_table(x_positions)
+end
+
+local function get_position(surface)
+	local x_positions = global.map_collapse.x_positions
+	if #x_positions == 0 then set_x_positions() end
+	local x = x_positions[1]
+	local position = false
+	for y = 256, -100000, -1 do
+		y = y + math_random(1, 8)
+		local tile = surface.get_tile({x, y})
+		if tile.valid then
+			if tile.name ~= "out-of-map" then
+				position = {x = x, y = y}
+				break
+			end
+		else
+			y = y + 96 
+		end		
+	end
+	table_remove(x_positions, 1)
 	return position
 end
 
@@ -53,7 +87,7 @@ local function set_collapse_tiles(surface, position, vectors)
 	for _, vector in pairs(vectors) do
 		local position = {x = position.x + vector[1], y = position.y + vector[2]}
 		local tile = surface.get_tile(position)
-		if tile then
+		if tile.valid then
 			tiles[i] = tile
 			i = i + 1
 		end
@@ -62,31 +96,38 @@ local function set_collapse_tiles(surface, position, vectors)
 	table_insert(global.map_collapse.processing, sorted_tiles)
 end
 
+local function collapse_map()
+	local surface = game.surfaces[global.active_surface_index]
+	local vectors = get_collapse_vectors(math_random(8, 24))
+	local position = get_position(surface)
+	if not position then return end
+	game.forces.player.chart(surface, {{position.x - 31, position.y - 31},{position.x + 31, position.y + 31}})
+	set_collapse_tiles(surface, position, vectors)	
+end
+
 function Public.process()
-	if not global.map_collapse then return end
 	local processing = global.map_collapse.processing
-	if #processing == 0 then return end
+	if #processing == 0 then collapse_map() return end
 	local surface = game.surfaces[global.active_surface_index]
 	for k1, tile_set in pairs(processing) do	
 		for k2, tile in pairs(tile_set) do
-			surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
+			local conversion_tile = tile_conversion[tile.name]
+			if conversion_tile then
+				surface.set_tiles({{name = conversion_tile, position = tile.position}}, true)
+				surface.create_trivial_smoke({name="train-smoke", position = tile.position})	
+			else
+				surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
+			end			
 			table_remove(tile_set, k2)
 			break
 		end
 		if #tile_set == 0 then table_remove(processing, k1) end
-		break
 	end
-end
-
-function collapse_map()
-	local surface = game.surfaces[global.active_surface_index]
-	local vectors = get_collapse_vectors(20)
-	set_collapse_tiles(surface, get_position(), vectors)	
 end
 
 function Public.init()
 	global.map_collapse = {}
-	global.map_collapse.last_position = "mew"
+	global.map_collapse.x_positions = {}
 	global.map_collapse.processing = {}
 end
 
