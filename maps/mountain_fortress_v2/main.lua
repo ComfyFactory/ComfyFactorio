@@ -303,7 +303,7 @@ local function tick()
 			Locomotive.set_player_spawn_and_refill_fish()
 			local surface = game.surfaces[global.active_surface_index]
 			local last_position = global.map_collapse.last_position
-			local position = surface.find_non_colliding_position("stone-furnace", {last_position.x, last_position.y - 16}, 128, 4)
+			local position = surface.find_non_colliding_position("stone-furnace", {last_position.x, last_position.y - 32}, 128, 4)
 			if position then 
 				local wave_defense_table = WD.get_table()
 				wave_defense_table.spawn_position = position
