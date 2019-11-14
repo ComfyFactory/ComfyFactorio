@@ -366,7 +366,8 @@ local function clear_search_textfield(element, player, button)
 end
 
 local function close_recipe_window(element, player, button)
-	element.parent.parent.destroy()
+	local recipe_window = player.gui.center["fjei_recipe_window"]
+	if recipe_window then recipe_window.destroy() end
 end
 
 local gui_actions = {
