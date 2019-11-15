@@ -91,7 +91,17 @@ local function set_positions(surface)
 	
 	if #tile_positions > 1 then table_shuffle_table(tile_positions) end
 	
+	local tiles = {}
 	for k, p in pairs(tile_positions) do
+		tiles[k] = p
+		if k > 512 then break end
+	end
+	
+	if #tiles > 1 then
+		table.sort(tiles, function (a, b) return a[2] > b[2] end)
+	end
+	
+	for k, p in pairs(tiles) do
 		global.map_collapse.positions[k] = {p[1], p[2]}
 		if k > 128 then break end
 	end
