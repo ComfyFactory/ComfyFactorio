@@ -81,7 +81,7 @@ function Public.reset_map()
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.pollution.enabled = false
 	
-	game.forces.player.set_ammo_damage_modifier("landmine", -0.5)
+	game.forces.player.technologies["land-mine"].enabled = false	
 	game.forces.player.technologies["landfill"].enabled = false	
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({-2, 16}, surface)
@@ -308,9 +308,9 @@ local function tick()
 				local wave_defense_table = WD.get_table()
 				wave_defense_table.spawn_position = position
 			end
-			if tick % 216000 == 0 then
-				Collapse.delete_out_of_map_chunks(surface)
-			end
+			--if tick % 216000 == 0 then
+			--	Collapse.delete_out_of_map_chunks(surface)
+			--end
 		end
 		if global.game_reset_tick then
 			if global.game_reset_tick < tick then

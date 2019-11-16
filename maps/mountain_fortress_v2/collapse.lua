@@ -53,72 +53,70 @@ local function get_collapse_vectors(radius, seed)
 	return final_list
 end
 
-local function set_positions(surface)
+local function set_y(surface)
 	local level_width = surface.map_gen_settings.width
-	local row_count = level_width * 32
-	
-	local chunk_x = math.floor((level_width * -0.5) / 32)
-	local chunk_y = false
-	
-	local position_x = level_width * -0.5
-	local position_y = false
-	
-	local area = false
-	
-	for y = start_chunk_y, -1024, -1 do		
-		if surface.is_chunk_generated({chunk_x, y}) then			
-			position_y = y * 32
-			area = {{position_x, position_y},{position_x + level_width, position_y + 32}}			
-			if surface.count_tiles_filtered({name = "out-of-map", area = area}) < row_count then
-				break
-			else
-				area = false
-			end
+	local map_collapse = global.map_collapse
+	local x_left = surface.map_gen_settings.width * -0.5
+	local x_right = surface.map_gen_settings.width * 0.5
+	for _ = 1, 16, 1 do
+		local area = {{x_left, map_collapse.last_position.y},{x_right, map_collapse.last_position.y + 1}}
+		if surface.count_tiles_filtered({name = "out-of-map", area = area}) < level_width then
+			return area 
 		end
+		map_collapse.last_position.y = map_collapse.last_position.y - 1
 	end
+end
+
+local function set_positions(surface)
+	local area = set_y(surface)
 	if not area then return end
 
-	local tile_positions = {}
+	local map_collapse = global.map_collapse
+	map_collapse.positions = {}
+	
 	local i = 1
 	for _, tile in pairs(surface.find_tiles_filtered({area = area})) do
 		if tile.valid then
 			if tile.name ~= "out-of-map" then
-				tile_positions[i] = {tile.position.x, tile.position.y}
+				map_collapse.positions[i] = tile
 				i = i + 1
 			end
 		end
 	end
 	
-	if #tile_positions > 1 then table_shuffle_table(tile_positions) end
-	
-	local tiles = {}
-	for k, p in pairs(tile_positions) do
-		tiles[k] = p
-		if k > 512 then break end
+	if i == 1 then
+		map_collapse.positions = nil
+		return
 	end
-	
-	if #tiles > 1 then
-		table.sort(tiles, function (a, b) return a[2] > b[2] end)
-	end
-	
-	for k, p in pairs(tiles) do
-		global.map_collapse.positions[k] = {p[1], p[2]}
-		if k > 128 then break end
-	end
-	
-	return true
+	if i > 1 then table_shuffle_table(map_collapse.positions) end
 end
 
 local function set_collapse_tiles(surface, position, vectors)
+	local map_collapse = global.map_collapse
+	map_collapse.processing = {}
 	local i = 1
 	for _, vector in pairs(vectors) do
 		local position = {x = position[1] + vector[1], y = position[2] + vector[2]}
 		local tile = surface.get_tile(position)
-		if tile.valid then
-			global.map_collapse.processing[i] = tile
+		if tile.valid and tile.name ~= "out-of-map" then
+			map_collapse.processing[i] = tile
 			i = i + 1
 		end
 	end
+	map_collapse.processing_index = 1
+	map_collapse.size_of_processing = #map_collapse.processing
+end
+
+local function clean_positions(tbl)
+	for k, tile in pairs(tbl) do
+		if not tile.valid then 
+			table_remove(tbl, k)
+		else
+			if tile.name == "out-of-map" then 
+				table_remove(tbl, k)
+			end
+		end		
+	end	
 end
 
 local function setup_next_collapse()
@@ -127,24 +125,25 @@ local function setup_next_collapse()
 	if not map_collapse.vector_list then
 		map_collapse.vector_list = {} 
 		for _ = 1, size_of_vector_list, 1 do
-			table_insert(global.map_collapse.vector_list, get_collapse_vectors(math_random(16, 24), math_random(1, 9999999)))
+			table_insert(global.map_collapse.vector_list, get_collapse_vectors(math_random(16, 32), math_random(1, 9999999)))
 		end
 	end
 
-	local size_of_positions = #map_collapse.positions
-	if size_of_positions == 0 then
-		if not set_positions(surface) then return end
+	if not map_collapse.positions then
+		if math_random(1, 64) == 1 then map_collapse.last_position = {x = 0, y = 128} end
+		set_positions(surface)
+		return
 	end
 
-	local position = map_collapse.positions[size_of_positions]
-	if not position then return end
-	
-	local tile = surface.get_tile(position)
-	if not tile.valid then map_collapse.positions[size_of_positions] = nil return end
-	if tile.name == "out-of-map" then map_collapse.positions[size_of_positions] = nil return end
+	local tile = map_collapse.positions[#map_collapse.positions]
+	if not tile then map_collapse.positions = nil return end
+	if not tile.valid then clean_positions(map_collapse.positions) return end
+	if tile.name == "out-of-map" then clean_positions(map_collapse.positions) return end
+
+	local position = {tile.position.x, tile.position.y}
 	
 	local vectors = map_collapse.vector_list[math_random(1, size_of_vector_list)]
-	set_collapse_tiles(surface, position, vectors)	
+	set_collapse_tiles(surface, position, vectors)
 	
 	local last_position = global.map_collapse.last_position
 	game.forces.player.chart(surface, {{last_position.x - chart_radius, last_position.y - chart_radius},{last_position.x + chart_radius, last_position.y + chart_radius}})
@@ -162,31 +161,51 @@ function Public.delete_out_of_map_chunks(surface)
 	end
 end
 
+local function process_tile(surface, tile, tiles_to_set)
+	if not tile then return end
+	if not tile.valid then return end
+	
+	local conversion_tile = tile_conversion[tile.name]			
+	if conversion_tile then
+		table_insert(tiles_to_set, {name = conversion_tile, position = tile.position})
+		surface.create_trivial_smoke({name="train-smoke", position = tile.position})	
+	else
+		table_insert(tiles_to_set, {name = "out-of-map", position = tile.position})
+	end
+
+	return true
+end
+
 function Public.process()
 	local surface = game.surfaces[global.active_surface_index]
 	local map_collapse = global.map_collapse
 	
-	for key, tile in pairs(map_collapse.processing) do
-		if not tile.valid then table_remove(map_collapse.processing, key) return end
-		local conversion_tile = tile_conversion[tile.name]			
-		if conversion_tile then
-			surface.set_tiles({{name = conversion_tile, position = tile.position}}, true)
-			surface.create_trivial_smoke({name="train-smoke", position = tile.position})	
-		else
-			surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
-		end
-		table_remove(map_collapse.processing, 1)
+	if map_collapse.processing_index >= map_collapse.size_of_processing then
+		setup_next_collapse()
 		return
 	end
-
-	setup_next_collapse() 
+	
+	local count = 0
+	local tiles_to_set = {}
+	for i = map_collapse.processing_index, map_collapse.size_of_processing, 1 do
+		if process_tile(surface, map_collapse.processing[i], tiles_to_set) then
+			count = count + 1
+			if count >= map_collapse.speed then break end
+		end
+		map_collapse.processing_index = map_collapse.processing_index + 1
+	end
+	
+	if count > 1 then surface.set_tiles(tiles_to_set, true) end
 end
 
 function Public.init()
-	global.map_collapse = {}
-	global.map_collapse.positions = {}
-	global.map_collapse.processing = {}
-	global.map_collapse.last_position = {x = 0, y = 0}
+	global.map_collapse = {
+		["processing_index"] = 0,
+		["size_of_processing"] = 0,
+		["processing"] = {},
+		["last_position"] = {x = 0, y = 128},
+		["speed"] = 5,
+	}
 end
 
 local event = require 'utils.event'
