@@ -493,7 +493,7 @@ local function on_gui_click(event)
 				player.gui.left.rpg.destroy()
 				return
 			end
-			draw_gui(player, false)
+			draw_gui(player, true)
 		end
 	end
 	
