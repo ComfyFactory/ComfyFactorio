@@ -2,7 +2,7 @@ local Functions = require "modules.fjei.functions"
 local math_ceil = math.ceil
 local string_find = string.find
 local table_remove = table.remove
-local width = 278
+local main_window_width = 278
 local recipe_window_width = 480
 local column_count = 6
 local line_count = 6
@@ -91,7 +91,7 @@ local function display_history(player)
 	local history_table = player.gui.left.fjei_main_window.fjei_main_window_history_table
 	history_table.clear()	
 	
-	for i = player_data.size_of_history - 8, player_data.size_of_history, 1 do
+	for i = player_data.size_of_history - column_count, player_data.size_of_history, 1 do
 		local name = history[i]
 		if name then
 			add_sprite_icon(history_table, name, false)
@@ -108,8 +108,8 @@ end
 local function draw_main_window(player)
 	if player.gui.left["fjei_main_window"] then player.gui.left["fjei_main_window"].destroy() end
 	local frame = player.gui.left.add({type = "frame", name = "fjei_main_window", direction = "vertical"})
-	frame.style.minimal_width = width
-	frame.style.maximal_width = width
+	frame.style.minimal_width = main_window_width
+	frame.style.maximal_width = main_window_width
 	frame.style.padding = 4
 	frame.style.margin = 2
 	
@@ -140,11 +140,8 @@ local function draw_main_window(player)
 	
 	frame.add({type = "line"})
 	
-	local element = frame.add({type = "label", caption = "Recently looked at:"})
-	element.style.font = "heading-2"
-	
 	local t = frame.add({type = "table", name = "fjei_main_window_history_table", column_count = column_count})
-	
+		
 	Public.refresh_main_window(player)
 end
 
@@ -174,8 +171,6 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 	local element = t.add {type = "sprite-button", caption = "X", name = "fjei_close_recipe_window"}
 	element.style.font = "heading-1"
 	element.style.margin = 8
-	--element.style.left_margin = 8
-	--element.style.right_margin = 8
 	element.style.padding = 4
 	element.style.minimal_width = 34
 	element.style.maximal_width = 34
@@ -307,7 +302,41 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 	return true
 end
 
+local function add_to_history(item_name, player)
+	if not game.item_prototypes[item_name] and not game.fluid_prototypes[item_name] then return end
+
+	local player_data = global.fjei.player_data[player.index]
+	if not player_data.history then
+		player_data.history = {item_name}
+		player_data.size_of_history = 1
+		return
+	end
+	
+	--avoid double elements
+	for _, v in pairs(player_data.history) do
+		if v == item_name then return end
+	end
+	
+	player_data.size_of_history = player_data.size_of_history + 1
+	player_data.history[player_data.size_of_history] = item_name	
+	if player_data.size_of_history > column_count then player_data.history[player_data.size_of_history - column_count] = nil end
+end
+
+local function show_cursor_stack_item(element, player, button)
+	local cursor_stack = player.cursor_stack
+	if not cursor_stack then return end
+	if not cursor_stack.valid_for_read then return end
+	if not global.fjei then Functions.build_tables() end
+	if not global.fjei.player_data[player.index] then global.fjei.player_data[player.index] = {} end
+	if not global.fjei.item_list[cursor_stack.name] then return end
+	add_to_history(cursor_stack.name, player)
+	draw_main_window(player)
+	create_recipe_window(cursor_stack.name, player, button)
+	return true
+end
+
 local function toggle_main_window(element, player, button)
+	if show_cursor_stack_item(element, player, button) then return true end
 	if player.gui.left.fjei_main_window then
 		player.gui.left.fjei_main_window.destroy()
 		if player.gui.center.fjei_recipe_window then player.gui.center.fjei_recipe_window.destroy() end
@@ -335,6 +364,7 @@ local function main_window_next_page(element, player, button)
 		end	
 	end
 	Public.refresh_main_window(player)
+	return true
 end
 
 local function main_window_previous_page(element, player, button)
@@ -355,19 +385,23 @@ local function main_window_previous_page(element, player, button)
 		end
 	end		
 	Public.refresh_main_window(player)
+	return true
 end
 
 local function clear_search_textfield(element, player, button)
-	if button ~= defines.mouse_button_type.right then return end
+	if show_cursor_stack_item(element, player, button) then return true end
+	if button ~= defines.mouse_button_type.right then return end	
 	global.fjei.player_data[player.index].active_filter = false
 	element.text = ""
 	Functions.set_filtered_list(player)
 	Public.refresh_main_window(player)
+	return true
 end
 
 local function close_recipe_window(element, player, button)
 	local recipe_window = player.gui.center["fjei_recipe_window"]
 	if recipe_window then recipe_window.destroy() end
+	return true
 end
 
 local gui_actions = {
@@ -394,26 +428,6 @@ function Public.draw_top_toggle_button(player)
 	button.style.minimal_height = 38
 	button.style.minimal_width = 50
 	button.style.padding = -2
-end
-
-local function add_to_history(item_name, player)
-	if not game.item_prototypes[item_name] and not game.fluid_prototypes[item_name] then return end
-
-	local player_data = global.fjei.player_data[player.index]
-	if not player_data.history then
-		player_data.history = {item_name}
-		player_data.size_of_history = 1
-		return
-	end
-	
-	--avoid double elements
-	for _, v in pairs(player_data.history) do
-		if v == item_name then return end
-	end
-	
-	player_data.size_of_history = player_data.size_of_history + 1
-	player_data.history[player_data.size_of_history] = item_name	
-	if player_data.size_of_history > column_count then player_data.history[player_data.size_of_history - column_count] = nil end
 end
 
 function Public.open_recipe(element, player, button)

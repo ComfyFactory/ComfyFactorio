@@ -145,7 +145,7 @@ function Public.set_filtered_list(player)
 	for key, name in pairs(sorted_item_list) do
 		if item_whitelist[name] then
 			if active_filter then
-				local a, b = string_find(name, active_filter)
+				local a, b = string_find(name, active_filter, 1, true)
 				if a then
 					filtered_list[i] = key
 					i = i + 1
