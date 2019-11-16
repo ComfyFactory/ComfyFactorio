@@ -36,6 +36,38 @@ local function set_crafting_machines()
 	end
 end
 
+local uncommon_recipes = {"barrel", "void", "blackhole"}
+local function is_uncommon_recipe(recipe_name)
+	for _, name in pairs(uncommon_recipes) do
+		local a, b = string_find(recipe_name, name, 1, true)
+		if a then return true end
+	end
+end
+
+local function shift_uncommon_recipe_names(tbl)
+	local list_common = {}
+	local list_uncommon = {}
+	
+	for key, recipe_name in pairs(tbl) do
+		if is_uncommon_recipe(recipe_name) then
+			table_insert(list_uncommon, recipe_name)
+		else
+			table_insert(list_common, recipe_name)
+		end
+	end
+	if #list_uncommon == 0 then return end
+	
+	local i = 1
+	for _, recipe_name in pairs(list_common) do
+		tbl[i] = recipe_name
+		i = i + 1
+	end
+	for _, recipe_name in pairs(list_uncommon) do
+		tbl[i] = recipe_name
+		i = i + 1
+	end
+end
+
 local function add_item_list_product(item_list, product_name, recipe_name)
 	if not item_list[product_name] then item_list[product_name] = {{}, {}} end
 	table_insert(item_list[product_name][1], recipe_name)
@@ -61,12 +93,14 @@ local function set_item_list()
 	for key, v in pairs(item_list) do
 		if v[1] then
 			if v[1][2] then
-				table.sort(v[1], function (a, b) return a < b end)
+				table.sort(v[1], function (a, b) return a < b end)				
+				shift_uncommon_recipe_names(v[1])
 			end
 		end
 		if v[2] then
 			if v[2][2] then
 				table.sort(v[2], function (a, b) return a < b end)
+				shift_uncommon_recipe_names(v[2])
 			end
 		end	
 	end
@@ -75,13 +109,39 @@ end
 local function set_sorted_item_list()
 	global.fjei.sorted_item_list = {}
 	local sorted_item_list = global.fjei.sorted_item_list
-	local item_list = global.fjei.item_list	
+	local item_list = global.fjei.item_list
+	local item_prototypes = game.item_prototypes
+	local fluid_prototypes = game.fluid_prototypes
+	
+	local sorted_items = {}
 	local i = 1
 	for key, value in pairs(item_list) do
-		sorted_item_list[i] = key
-		i = i + 1
-	end	
-	table.sort(sorted_item_list, function (a, b) return a < b end)
+		if item_prototypes[key] then
+			sorted_items[i] = key
+			i = i + 1
+		end
+	end
+	table.sort(sorted_items, function (a, b) return a < b end)
+	
+	local sorted_fluids = {}
+	local i = 1
+	for key, value in pairs(item_list) do
+		if fluid_prototypes[key] then
+			sorted_fluids[i] = key
+			i = i + 1
+		end
+	end
+	table.sort(sorted_fluids, function (a, b) return a < b end)
+	
+	local i = 1
+	for key, name in pairs(sorted_items) do	
+		sorted_item_list[i] = name
+		i = i + 1		
+	end
+	for key, name in pairs(sorted_fluids) do		
+		sorted_item_list[i] = name
+		i = i + 1		
+	end
 end
 
 local function add_recipe_to_whitelist(item_whitelist, recipe)
