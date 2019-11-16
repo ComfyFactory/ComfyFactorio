@@ -2,6 +2,7 @@ local Functions = require "modules.fjei.functions"
 local math_ceil = math.ceil
 local string_find = string.find
 local table_remove = table.remove
+local table_insert = table.insert
 local main_window_width = 278
 local recipe_window_width = 480
 local column_count = 6
@@ -164,7 +165,7 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 	scroll_pane.style.maximal_width = recipe_window_width - 190
 	scroll_pane.style.minimal_height = 60
 	scroll_pane.style.maximal_height = 60
-	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 256})
+	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 1024})
 		
 	for key, name in pairs(recipes) do add_sprite_icon(tt, name, true) end
 	
@@ -177,7 +178,8 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 	element.style.minimal_height = 34
 	element.style.maximal_height = 34
 	
-	container.add({type = "line"})
+	local element = container.add({type = "line"})
+	element.style.right_margin = 6
 end
 
 local function draw_recipe(player, container, recipe_name)
@@ -190,9 +192,15 @@ local function draw_recipe(player, container, recipe_name)
 	local ttt = tt.add({type = "table", column_count = 2})	
 	local element = ttt.add({type = "label", caption = recipe.localised_name})
 	element.style.font = "heading-1"
-	local element = ttt.add({type = "label", caption = " (" .. recipe.name .. ")"})
-	element.style.font = "heading-2"
-	local element = tt.add({type = "label", caption = recipe.energy .. " seconds crafting time"})
+	local element = ttt.add({type = "label", caption = " "})
+	element.style.font = "heading-1"
+	if not player.force.recipes[recipe_name].enabled then
+		element.style.font_color = {200, 0, 0}
+		element.caption = "*"		
+		element.tooltip = "Further research is required to unlock this recipe."
+	end
+	
+	local element = tt.add({type = "label", caption = "◷ " .. recipe.energy .. " seconds crafting time"})
 	element.style.font = "default"
 
 	container.add({type = "line"})
@@ -267,9 +275,24 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 	end
 
 	if not global.fjei.item_list[item_name] then return end
-	local recipes = global.fjei.item_list[item_name][mode]
-
-	if not recipes then return end
+	
+	--shift researched recipes forward in the list
+	local recipes = {}
+	local researched_recipes = {}
+	local unknown_recipes = {}
+	for k, recipe_name in pairs(global.fjei.item_list[item_name][mode]) do
+		if player.force.recipes[recipe_name] then
+			if player.force.recipes[recipe_name].enabled then
+				table_insert(researched_recipes, recipe_name)
+			else
+				table_insert(unknown_recipes, recipe_name)
+			end
+		end		
+	end
+	
+	for k, recipe_name in pairs(researched_recipes) do table_insert(recipes, recipe_name) end
+	for k, recipe_name in pairs(unknown_recipes) do table_insert(recipes, recipe_name) end
+	
 	if #recipes == 0 then return end
 	
 	if not selected_recipe then
