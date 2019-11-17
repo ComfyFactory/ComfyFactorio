@@ -94,16 +94,14 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
 	if not surface then return end
 	if not radius then return end
 	if not richness then return end
-	local math_random = math.random
+	local seed = game.surfaces[1].map_gen_settings.seed
 	local noise_seed_add = 25000
 	local richness_part = richness / radius
 	for y = radius * -3, radius * 3, 1 do
 		for x = radius * -3, radius * 3, 1 do
-			local pos = {x = x + position.x, y = y + position.y}
-			local seed = game.surfaces[1].map_gen_settings.seed
+			local pos = {x = x + position.x + 0.5, y = y + position.y + 0.5}			
 			local noise_1 = simplex_noise(pos.x * 0.0125, pos.y * 0.0125, seed)
-			seed = seed + noise_seed_add
-			local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
+			local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed + 25000)
 			local noise = noise_1 + noise_2 * 0.12
 			local distance_to_center = math.sqrt(x^2 + y^2)
 			local a = richness - richness_part * distance_to_center
@@ -113,6 +111,13 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
 
 					local mirror_pos = {x = pos.x * -1, y = pos.y * -1}
 					surface.create_entity{name = name, position = mirror_pos, amount = a}
+					
+					for _, e in pairs(surface.find_entities_filtered({position = pos, name = {"wooden-chest", "stone-wall", "gun-turret"}})) do					
+						e.destroy()
+					end
+					for _, e in pairs(surface.find_entities_filtered({position = mirror_pos, name = {"wooden-chest", "stone-wall", "gun-turret"}})) do
+						e.destroy()
+					end
 				end
 			end
 		end
@@ -148,7 +153,7 @@ local function generate_circle_spawn(event)
 	if left_top_x > 320 then return end
 	if left_top_y < -320 then return end
 
-	local r = 101
+	local r = 120
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
@@ -167,47 +172,46 @@ local function generate_circle_spawn(event)
 				local tile_name = surface.get_tile(pos).name
 				if tile_name == "water" or tile_name == "deepwater" then
 					surface.set_tiles({{name = get_replacement_tile(surface, pos), position = pos}}, true)
-					--surface.set_tiles({{name = "stone-path", position = pos}}, true)
-					--if math_random(1,256) == 1 then
-					--	local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
-					--	surface.create_entity({name = wrecks[math_random(1, #wrecks)], position = pos, force = "north"})
-					--end
-					--if bb_config.random_scrap and math_random(1,64) == 1 then
-					--	surface.create_entity({name = "mineable-wreckage", position = pos})
-					--end
 				end
 			end
 
 			if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 
-			if surface.can_place_entity({name = "coal", position = pos}) then
-
-				if distance_to_center + noise < r and distance_to_center + noise > r - 1.75 then
-					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
-				end
-
-				if distance_to_center + noise < r - 4 and distance_to_center + noise > r - 6 then
-					if math_random(1,56) == 1 then
-						if surface.can_place_entity({name = "gun-turret", position = pos}) then
-							local t = surface.create_entity({name = "gun-turret", position = pos, force = "north"})
-							t.insert({name = "firearm-magazine", count = math_random(6,12)})
+			if surface.can_place_entity({name = "wooden-chest", position = pos}) and surface.can_place_entity({name = "coal", position = pos}) then
+				local noise_2 = get_noise(3, pos)
+				if math.abs(noise_2) > 0.20 then
+					local spawn_wall_r = distance_to_center + noise
+					if noise_2 > -0.5 then
+						if spawn_wall_r < r and spawn_wall_r > r - 1.55 then				
+							surface.create_entity({name = "stone-wall", position = pos, force = "north"})
+						end
+					else
+						if spawn_wall_r < r and spawn_wall_r > r - 1.75 then				
+							surface.create_entity({name = "stone-wall", position = pos, force = "north"})
+						else
+							if spawn_wall_r < r + 5.5 and spawn_wall_r > r then
+								local name = "wooden-chest"
+								local r_max = math.floor(math.abs(spawn_wall_r - r)) + 2
+								if math_random(1,3) == 1 then name = name .. "-remnants" end
+								if math_random(1,r_max) == 1 then surface.create_entity({name = name, position = pos, force = "north"}) end
+							end
+						end	
+						if spawn_wall_r < r - 3 and spawn_wall_r > r - 6 then
+							if math_random(1, 16) == 1 then
+								if surface.can_place_entity({name = "gun-turret", position = pos}) then
+									local t = surface.create_entity({name = "gun-turret", position = pos, force = "north"})
+									t.insert({name = "firearm-magazine", count = math_random(6,12)})
+								end
+							else
+								if math_random(1, 16) == 1 then
+									if surface.can_place_entity({name = "gun-turret", position = pos}) then
+										surface.create_entity({name = "gun-turret-remnants", position = pos, force = "north"})
+									end
+								end
+							end
 						end
 					end
 				end
-
-				--if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 7 then
-					--if math_random(1,3) ~= 1 then
-						--surface.set_tiles({{name = "stone-path", position = pos}}, true)
-					--end
-				--end
-
-				--if distance_to_center + noise < r - 3 and distance_to_center + noise > r - 20 then
-					--if math_random(1, 256) == 1 then
-						--if surface.can_place_entity({name = "mineable-wreckage", position = pos}) then
-							--surface.create_entity({name = "mineable-wreckage", position = pos, force = "neutral"})
-						--end
-					--end
-				--end
 			end
 		end
 	end

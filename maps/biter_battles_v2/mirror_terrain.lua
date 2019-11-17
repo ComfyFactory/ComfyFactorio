@@ -35,73 +35,68 @@ local cliff_orientation_translation = {
 	["none-to-west"] =  "none-to-east"
 }
 
-local valid_types = {
-	["tree"] = true,
-	["simple-entity"] = true,
-	["cliff"] = true,
-	["resource"] = true,
-	["unit-spawner"] = true,
-	["turret"] = true,
-	["rocket-silo"] = true,
-	["character"] = true,
-	["ammo-turret"] = true,
-	["wall"] = true,
-	["fish"] = true,
+local entity_copy_functions = {
+	["tree"] = function(surface, entity, mirror_position)
+		if not surface.can_place_entity({name = entity.name, position = mirror_position}) then return end
+		entity.clone({position = mirror_position, surface = surface, force = "neutral"})
+	end,
+	["simple-entity"] = function(surface, entity, mirror_position)
+		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction]}
+		if not surface.can_place_entity(mirror_entity) then return end
+		local mirror_entity = surface.create_entity(mirror_entity)
+		mirror_entity.graphics_variation = entity.graphics_variation
+	end,
+	["cliff"] = function(surface, entity, mirror_position)
+		local mirror_entity = {name = entity.name, position = mirror_position, cliff_orientation = cliff_orientation_translation[entity.cliff_orientation]}
+		if not surface.can_place_entity(mirror_entity) then return end
+		surface.create_entity(mirror_entity)
+		return
+	end,	
+	["resource"] = function(surface, entity, mirror_position)
+		surface.create_entity({name = entity.name, position = mirror_position, amount = entity.amount})
+	end,	
+	["corpse"] = function(surface, entity, mirror_position)
+		surface.create_entity({name = entity.name, position = mirror_position})
+	end,	
+	["unit-spawner"] = function(surface, entity, mirror_position)
+		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south_biters"}
+		if not surface.can_place_entity(mirror_entity) then return end
+		surface.create_entity(mirror_entity)
+	end,
+	["turret"] = function(surface, entity, mirror_position)
+		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south_biters"}
+		if not surface.can_place_entity(mirror_entity) then return end
+		surface.create_entity(mirror_entity)
+	end,
+	["rocket-silo"] = function(surface, entity, mirror_position)
+		if surface.count_entities_filtered({name = "rocket-silo", area = {{mirror_position.x - 8, mirror_position.y - 8},{mirror_position.x + 8, mirror_position.y + 8}}}) > 0 then return end
+		global.rocket_silo["south"] = surface.create_entity({name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south"})
+		global.rocket_silo["south"].minable = false
+	end,	
+	["ammo-turret"] = function(surface, entity, mirror_position)
+		if not surface.can_place_entity({name = entity.name, position = mirror_position, force = "south"}) then return end
+		entity.clone({position = mirror_position, surface = surface, force="south"})
+	end,
+	["wall"] = function(surface, entity, mirror_position)
+		--if not surface.can_place_entity({name = entity.name, position = mirror_position, force = "south"}) then return end
+		entity.clone({position = mirror_position, surface = surface, force="south"})
+	end,
+	["container"] = function(surface, entity, mirror_position)
+		--if not surface.can_place_entity({name = entity.name, position = mirror_position, force = "south"}) then return end
+		entity.clone({position = mirror_position, surface = surface, force="south"})
+	end,
+	["fish"] = function(surface, entity, mirror_position)
+		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction]}
+		if not surface.can_place_entity(mirror_entity) then return end
+		local e = surface.create_entity(mirror_entity)
+	end,
 }
 
 local function process_entity(surface, entity)
 	if not entity.valid then return end
-	if not valid_types[entity.type] then return end
-	local new_pos = {x = entity.position.x * -1, y = entity.position.y * -1}
-	if entity.type == "tree" then
-		if not surface.can_place_entity({name = entity.name, position = new_pos}) then return end
-		entity.clone({position=new_pos, surface=surface, force="neutral"})
-		return
-	end
-	if entity.type == "simple-entity" then
-		local new_e = {name = entity.name, position = new_pos, direction = direction_translation[entity.direction]}
-		if not surface.can_place_entity(new_e) then return end
-		local e = surface.create_entity(new_e)
-		e.graphics_variation = entity.graphics_variation
-		return
-	end
-	if entity.type == "cliff" then
-		local new_e = {name = entity.name, position = new_pos, cliff_orientation = cliff_orientation_translation[entity.cliff_orientation]}
-		if not surface.can_place_entity(new_e) then return end
-		surface.create_entity(new_e)
-		return
-	end
-	if entity.type == "resource" then
-		surface.create_entity({name = entity.name, position = new_pos, amount = entity.amount})
-		return
-	end
-	--if entity.type == "unit-spawner" or entity.type == "unit" or entity.type == "turret" then
-	if entity.type == "unit-spawner" or entity.type == "turret" then
-		local new_e = {name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south_biters"}
-		if not surface.can_place_entity(new_e) then return end
-		surface.create_entity(new_e)
-		return
-	end
-	if entity.name == "rocket-silo" then
-		if surface.count_entities_filtered({name = "rocket-silo", area = {{new_pos.x - 8, new_pos.y - 8},{new_pos.x + 8, new_pos.y + 8}}}) > 0 then return end
-		global.rocket_silo["south"] = surface.create_entity({name = entity.name, position = new_pos, direction = direction_translation[entity.direction], force = "south"})
-		global.rocket_silo["south"].minable = false
-		return
-	end
-	if entity.name == "gun-turret" or entity.name == "stone-wall" then
-		if not surface.can_place_entity({name = entity.name, position = new_pos, force = "south"}) then return end
-		entity.clone({position=new_pos, surface=surface, force="south"})
-		return
-	end
-	if entity.name == "character" then
-		return
-	end
-	if entity.name == "fish" then
-		local new_e = {name = entity.name, position = new_pos, direction = direction_translation[entity.direction]}
-		if not surface.can_place_entity(new_e) then return end
-		local e = surface.create_entity(new_e)
-		return
-	end
+	if not entity_copy_functions[entity.type] then return end
+	local mirror_position = {x = entity.position.x * -1, y = entity.position.y * -1}
+	entity_copy_functions[entity.type](surface, entity, mirror_position)
 end
 
 local function clear_chunk(surface, area)
