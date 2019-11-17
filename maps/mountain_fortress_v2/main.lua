@@ -34,6 +34,21 @@ local treasure_chest_messages = {
 	"We has found the precious!",
 }
 
+local function set_difficulty()
+	local wave_defense_table = WD.get_table()
+	local player_count = #game.connected_players
+
+	-- threat gain / wave
+	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
+	
+	--1 additional map collapse tile / 8 players in game
+	global.map_collapse.speed = math.floor(player_count * 0.125) + 2
+	
+	--20 Players for fastest wave_interval
+	wave_defense_table.wave_interval = 3600 - player_count * 90
+	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
+end
+
 function Public.reset_map()
 	local wave_defense_table = WD.get_table()
 	global.chunk_queue = {}
@@ -97,6 +112,8 @@ function Public.reset_map()
 	Collapse.init()
 	
 	RPG.rpg_reset_all_players()
+	
+	set_difficulty()
 end
 
 local function protect_train(event)
@@ -253,16 +270,6 @@ local function on_research_finished(event)
 	event.research.force.manual_mining_speed_modifier = mining_speed_bonus
 end
 
-local function set_difficulty()
-	local wave_defense_table = WD.get_table()
-
-
-	wave_defense_table.threat_gain_multiplier = 2 + #game.connected_players * 0.1
-	--20 Players for fastest wave_interval
-	wave_defense_table.wave_interval = 3600 - #game.connected_players * 90
-	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
-end
-
 local function on_player_joined_game(event)
 	local player_modifiers = Modifier.get_table()
 	local player = game.players[event.player_index]
@@ -272,7 +279,7 @@ local function on_player_joined_game(event)
 	local surface = game.surfaces[global.active_surface_index]
 	
 	if player.online_time == 0 then
-		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
+		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
 		end
@@ -282,7 +289,7 @@ local function on_player_joined_game(event)
 		player.character = nil
 		player.set_controller({type=defines.controllers.god})
 		player.create_character()
-		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0.5), surface)
+		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
 		end
@@ -290,6 +297,13 @@ local function on_player_joined_game(event)
 
 	player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
 	Modifier.update_player_modifiers(player)
+	
+	local tile = surface.get_tile(player.position)
+	if tile.valid then
+		if tile.name == "out-of-map" then
+			player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
+		end
+	end
 end
 
 local function on_player_left_game(event)

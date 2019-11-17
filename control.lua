@@ -25,7 +25,7 @@ require "comfy_panel.poll"
 require "comfy_panel.score"
 require "comfy_panel.config"
 
-require "modules.autostash"
+--require "modules.autostash"
 
 ---- enable modules here ----
 --require "modules.the_floor_is_lava"
@@ -60,17 +60,18 @@ require "modules.autostash"
 --require "modules.explosives"
 --require "modules.biter_pets"
 --require "modules.wave_defense.main"
+--require "modules.fjei.main"
 -----------------------------
 
 ---- enable maps here ----
 --require "maps.fish_defender.main"
 --require "maps.fish_defender_v1.fish_defender"
---require "maps.biter_battles_v2.main"
+require "maps.biter_battles_v2.main"
 --require "maps.mountain_fortress_v2.main"
 --require "maps.mountain_fortress"
 --require "maps.island_troopers.main"
 --require "maps.biter_hatchery.main"
-require "maps.junkyard_pvp.main"
+--require "maps.junkyard_pvp.main"
 --require "maps.scrapyard.main"
 --require "maps.tank_conquest.tank_conquest"
 --require "maps.territorial_control"

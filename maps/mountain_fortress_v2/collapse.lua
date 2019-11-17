@@ -19,7 +19,7 @@ local tile_conversion = {
 	["stone-path"] = "landfill",
 }
 
-local size_of_vector_list = 128
+local size_of_vector_list = 64
 local function get_collapse_vectors(radius, seed)
 	local vectors = {}
 	local i = 1
@@ -125,7 +125,7 @@ local function setup_next_collapse()
 	if not map_collapse.vector_list then
 		map_collapse.vector_list = {} 
 		for _ = 1, size_of_vector_list, 1 do
-			table_insert(global.map_collapse.vector_list, get_collapse_vectors(math_random(16, 32), math_random(1, 9999999)))
+			table_insert(global.map_collapse.vector_list, get_collapse_vectors(math_random(24, 48), math_random(1, 9999999)))
 		end
 	end
 
@@ -204,7 +204,7 @@ function Public.init()
 		["size_of_processing"] = 0,
 		["processing"] = {},
 		["last_position"] = {x = 0, y = 128},
-		["speed"] = 5,
+		["speed"] = 2,
 	}
 end
 
