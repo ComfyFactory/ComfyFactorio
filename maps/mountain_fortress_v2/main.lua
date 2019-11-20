@@ -41,8 +41,8 @@ local function set_difficulty()
 	-- threat gain / wave
 	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
 	
-	--1 additional map collapse tile / 8 players in game
-	global.map_collapse.speed = math.floor(player_count * 0.125) + 2
+	--1 additional map collapse tile / 10 players in game
+	global.map_collapse.speed = math.floor(player_count * 0.1) + 1
 	
 	--20 Players for fastest wave_interval
 	wave_defense_table.wave_interval = 3600 - player_count * 90
@@ -86,6 +86,7 @@ function Public.reset_map()
 		surface.force_generate_chunk_requests()
 	end
 	
+	game.difficulty_settings.technology_price_multiplier = 0.5 
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
 	game.map_settings.enemy_evolution.time_factor = 0
@@ -377,6 +378,12 @@ local function on_init()
 	Public.reset_map()
 end
 
+local function on_player_driving_changed_state(event)
+	local player = game.players[event.player_index]
+	local vehicle = event.entity
+	Locomotive.enter_cargo_wagon(player, vehicle)
+end
+
 local event = require 'utils.event'
 event.on_init(on_init)
 event.on_nth_tick(2, tick)
@@ -386,6 +393,7 @@ event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
+event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 
 require "modules.rocks_yield_ore"
 

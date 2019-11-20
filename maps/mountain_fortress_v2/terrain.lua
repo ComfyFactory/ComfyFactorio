@@ -925,7 +925,7 @@ end
 ]]
 
 local function on_chunk_generated(event)
-	if event.surface.index == 1 then return end
+	if event.surface.index ~= global.active_surface_index then return end
 	process_chunk(event.surface, event.area.left_top)
 	--global.chunk_queue[#global.chunk_queue + 1] = {left_top = {x = event.area.left_top.x, y = event.area.left_top.y}, surface_index = event.surface.index}
 end

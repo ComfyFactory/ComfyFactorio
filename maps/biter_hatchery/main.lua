@@ -1,4 +1,4 @@
-require "modules.no_turrets"
+--require "modules.no_turrets"
 local RPG = require "modules.rpg"
 local Tabs = require 'comfy_panel.main'
 local Map_score = require "modules.map_score"
@@ -26,15 +26,15 @@ local map_gen_settings = {
 		},
 	}
 
-local m = 3
+local m = 5
 local health_boost_food_values = {
 	["automation-science-pack"] =		0.000001 * m,
-	["logistic-science-pack"] = 			0.0000025 * m,
-	["military-science-pack"] = 			0.0000096 * m,
-	["chemical-science-pack"] = 			0.0000264 * m,
-	["production-science-pack"] = 		0.00008874 * m,
-	["utility-science-pack"] =			 	0.00009943 * m,
-	["space-science-pack"] = 				0.00028957 * m,
+	["logistic-science-pack"] = 			0.000003 * m,
+	["military-science-pack"] = 			0.00000822 * m,
+	["chemical-science-pack"] = 			0.00002271 * m,
+	["production-science-pack"] = 		0.00009786 * m,
+	["utility-science-pack"] =			 	0.00010634 * m,
+	["space-science-pack"] = 				0.00041828 * m,
 }
 
 local worm_turret_spawn_radius = 18
@@ -394,7 +394,7 @@ local function on_init()
 		"Lay transport belts to your hatchery and they will happily nom the juice off the conveyor.\n",
 		"Higher tier flasks will breed stronger biters!\n",
 		"\n",
-		"Player turrets are disabled.\n",
+		--"Player turrets are disabled.\n",
 		"Feeding may spawn friendly worm turrets.\n",
 		"The center river may not be crossed.\n",
 		"Construction robots may not build over the river.\n",
