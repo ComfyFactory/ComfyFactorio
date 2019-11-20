@@ -134,7 +134,7 @@ local function create_main_gui(player)
 		frame.add { type = "table", name = "biter_battle_table", column_count = 4 }
 		local t = frame.biter_battle_table
 		local foods = {"automation-science-pack","logistic-science-pack","military-science-pack","chemical-science-pack","production-science-pack","utility-science-pack","space-science-pack","raw-fish"}
-		local food_tooltips = {"10 Mutagen strength","25 Mutagen strength", "96 Mutagen strength", "264 Mutagen strength", "887 Mutagen strength", "994 Mutagen strength", "2895 Mutagen strength", "Send spy"}
+		local food_tooltips = {"10 Mutagen strength","30 Mutagen strength", "82 Mutagen strength", "227 Mutagen strength", "978 Mutagen strength", "1063 Mutagen strength", "4182 Mutagen strength", "Send spy"}
 		local x = 1
 		for _, f in pairs(foods) do
 			local s = t.add { type = "sprite-button", name = f, sprite = "item/" .. f }
@@ -305,7 +305,7 @@ function join_team(player, force_name, forced_join)
 				return
 			end
 		end
-		local p = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 8, 0.5)
+		local p = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 8, 1)
 		player.teleport(p, surface)
 		player.force = game.forces[force_name]
 		player.character.destructible = true
@@ -315,7 +315,7 @@ function join_team(player, force_name, forced_join)
 		player.spectator = false
 		return
 	end
-	local pos = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 3, 1)
+	local pos = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 8, 1)
 	if not pos then pos = game.forces[force_name].get_spawn_position(surface) end
 	player.teleport(pos)
 	player.force = game.forces[force_name]

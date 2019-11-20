@@ -21,7 +21,7 @@ local function init_surface()
 		["iron-ore"] = {frequency = 3.5, size = 1.25, richness = 1},
 		["uranium-ore"] = {frequency = 2, size = 1, richness = 1},
 		["crude-oil"] = {frequency = 4, size = 2, richness = 0.75},
-		["trees"] = {frequency = math.random(8, 16) * 0.1, size = math.random(6, 12) * 0.1, richness = math.random(2, 10) * 0.1},
+		["trees"] = {frequency = math.random(8, 16) * 0.1, size = math.random(8, 16) * 0.1, richness = math.random(2, 10) * 0.1},
 		["enemy-base"] = {frequency = 256, size = 0.61, richness = 1}
 	}
 	game.create_surface("biter_battles", map_gen_settings)
@@ -65,7 +65,6 @@ local function init_forces()
 	f.set_friend("south_biters", true)
 	f.set_friend("south", true)
 	f.set_friend("player", true)
-	--f.set_friend("enemy", true)
 	f.set_friend("spectator", true)
 	f.share_chart = false
 
@@ -73,15 +72,8 @@ local function init_forces()
 	f.set_friend("north_biters", true)
 	f.set_friend("north", true)
 	f.set_friend("player", true)
-	--f.set_friend("enemy", true)
 	f.set_friend("spectator", true)
 	f.share_chart = false
-
-	--local f = game.forces["enemy"]
-	--f.set_friend("spectator", true)
-	--f.set_friend("player", true)
-	--f.set_friend("north_biters", true)
-	--f.set_friend("south_biters", true)
 
 	local f = game.forces["spectator"]
 	f.set_spawn_position({0,0},surface)
@@ -116,19 +108,23 @@ local function init_forces()
 	end
 
 	local defs = {
-		defines.input_action.write_to_console,
+		defines.input_action.activate_copy,
+		defines.input_action.activate_cut,
+		defines.input_action.activate_paste,
+		defines.input_action.clean_cursor_stack,
+		defines.input_action.edit_permission_group,
+		defines.input_action.gui_checked_state_changed,
 		defines.input_action.gui_click,
-		defines.input_action.gui_selection_state_changed,
-		defines.input_action.gui_checked_state_changed	,
 		defines.input_action.gui_elem_changed,
+		defines.input_action.gui_selection_state_changed,
 		defines.input_action.gui_text_changed,
 		defines.input_action.gui_value_changed,
-		defines.input_action.start_walking,
-		defines.input_action.open_kills_gui,
 		defines.input_action.open_character_gui,
-		defines.input_action.edit_permission_group,
-		defines.input_action.toggle_show_entity_info,
+		defines.input_action.open_kills_gui,
 		defines.input_action.rotate_entity,
+		defines.input_action.start_walking,
+		defines.input_action.toggle_show_entity_info,
+		defines.input_action.write_to_console,
 	}
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end
 

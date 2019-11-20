@@ -1,11 +1,11 @@
 local food_values = {
 	["automation-science-pack"] =	{value = 0.001, name = "automation science", color = "255, 50, 50"},
-	["logistic-science-pack"] =			{value = 0.0025, name = "logistic science", color = "50, 255, 50"},
-	["military-science-pack"] =			{value = 0.0096, name = "military science", color = "105, 105, 105"},
-	["chemical-science-pack"] = 		{value = 0.0264, name = "chemical science", color = "100, 200, 255"},
-	["production-science-pack"] =	{value = 0.08874, name = "production science", color = "150, 25, 255"},
-	["utility-science-pack"] =			{value = 0.09943, name = "utility science", color = "210, 210, 60"},
-	["space-science-pack"] = 			{value = 0.28957, name = "space science", color = "255, 255, 255"},
+	["logistic-science-pack"] =			{value = 0.003, name = "logistic science", color = "50, 255, 50"},
+	["military-science-pack"] =			{value = 0.00822, name = "military science", color = "105, 105, 105"},
+	["chemical-science-pack"] = 		{value = 0.02271, name = "chemical science", color = "100, 200, 255"},
+	["production-science-pack"] =	{value = 0.09786, name = "production science", color = "150, 25, 255"},
+	["utility-science-pack"] =			{value = 0.10634, name = "utility science", color = "210, 210, 60"},
+	["space-science-pack"] = 			{value = 0.41828, name = "space science", color = "255, 255, 255"},
 }
 
 local force_translation = {
@@ -17,9 +17,6 @@ local enemy_team_of = {
 	["north"] = "south",
 	["south"] = "north"
 }
-
-
-
 
 local minimum_modifier = 125
 local maximum_modifier = 250

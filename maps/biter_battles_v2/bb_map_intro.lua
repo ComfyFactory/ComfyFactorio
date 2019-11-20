@@ -12,7 +12,11 @@ local info = [[
 	Construction robots can not build on the other teams's side.
 	The random map layout is mirrored to provide a fair competition.
 	
-	There is no biter evolution from pollution, time or destruction.
+	West and East directions contain no biter nests,
+	leaving room for factory expansion and outpost building.
+	North and South directions are biter territory.
+	
+	There is no biter evolution from pollution, or destruction.
 	ONLY feeding increases their power and will lead to your teams victory.	
 	The gui yields two different main stats for each team's biters.
 	

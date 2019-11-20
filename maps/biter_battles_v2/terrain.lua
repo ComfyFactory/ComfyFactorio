@@ -182,14 +182,14 @@ local function generate_circle_spawn(event)
 				if math.abs(noise_2) > 0.20 then
 					local spawn_wall_r = distance_to_center + noise
 					if noise_2 > -0.5 then
-						if spawn_wall_r < r and spawn_wall_r > r - 1.55 then				
+						if spawn_wall_r < r and spawn_wall_r > r - 1.75 then				
 							surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 						end
 					else
-						if spawn_wall_r < r and spawn_wall_r > r - 1.75 then				
+						if spawn_wall_r < r and spawn_wall_r > r - 1.95 then				
 							surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 						else
-							if spawn_wall_r < r + 5.5 and spawn_wall_r > r then
+							if spawn_wall_r < r + 4.5 and spawn_wall_r > r then
 								local name = "wooden-chest"
 								local r_max = math.floor(math.abs(spawn_wall_r - r)) + 2
 								if math_random(1,3) == 1 then name = name .. "-remnants" end
@@ -264,7 +264,7 @@ local function generate_potential_spawn_ore(surface)
 	ores["coal"] = surface.count_entities_filtered({name = "coal", area = area})
 	ores["stone"] = surface.count_entities_filtered({name = "stone", area = area})
 	for ore, ore_count in pairs(ores) do
-		if ore_count < 750 or ore_count == nil then
+		if ore_count < 250 or ore_count == nil then
 			local pos = {}
 			for a = 1, 32, 1 do
 				pos = {x = -96 + math_random(0, 192), y = -20 - math_random(0, 96)}
@@ -272,7 +272,7 @@ local function generate_potential_spawn_ore(surface)
 					break
 				end
 			end
-			draw_noise_ore_patch(pos, ore, surface, math_random(18, 28), math_random(1000, 2000))
+			draw_noise_ore_patch(pos, ore, surface, math_random(16, 24), math_random(800, 1600))
 		end
 	end
 end
