@@ -8,7 +8,7 @@ function Public.locomotive_spawn(surface, position)
 	global.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
 	
 	global.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 3}, force = "player"})
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 8})
+	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 1})
 	
 	rendering.draw_light({
 		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
@@ -59,6 +59,17 @@ local function remove_acceleration()
 end
 ]]
 
+local market_offers = {
+	{price = {{'coin', 5}}, offer = {type = 'give-item', item = "raw-fish"}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'wood', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'stone', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'coal', count = 50}},
+	{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},	
+	{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
+}
+
 local function create_wagon_room()
 	local width = 15
 	local height = 35
@@ -79,21 +90,78 @@ local function create_wagon_room()
 	surface.request_to_generate_chunks({0,0}, 1)
 	surface.force_generate_chunk_requests()
 	
-	for x = width * -0.5, width * 0.5, 1 do
+	for x = width * -0.5 + 1, width * 0.5, 1 do
 		for y = height * -0.5, height * 0.5, 1 do
 			surface.set_tiles({{name = "tutorial-grid", position = {x,y}}})
-			if math.random(1, 5) == 1 then
+			if math.random(1, 5) == 1 and y < 4 then
 				surface.spill_item_stack({x + math.random(0, 9) * 0.1,y + math.random(0, 9) * 0.1},{name = "raw-fish", count = 1}, false)
 			end
 		end
 	end
-	
-	for _, x in pairs({width * -0.5 - 1, width * 0.5 + 1}) do
-		local e = surface.create_entity({name = "car", position = {x, 0}, force = "player"})
+
+	for _, x in pairs({width * -0.5, width * 0.5 + 1}) do
+		local e = surface.create_entity({name = "car", position = {x, 0}, force = "player", create_build_effect_smoke = false})
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
 		e.destructible = false
 		e.minable = false
 		e.operable = false
+	end
+	
+	local market = surface.create_entity({name = "market", position = {0, height * -0.25}, force="neutral", create_build_effect_smoke = false})
+	market.minable = false
+	market.destructible = false
+	for _, offer in pairs(market_offers) do market.add_market_item(offer) end
+	
+	local e = surface.create_entity({name = "behemoth-biter", position = {0, height * -0.4}, force = "player", create_build_effect_smoke = false})
+	e.ai_settings.allow_destroy_when_commands_fail = false
+	e.ai_settings.allow_try_return_to_spawner = false
+	
+	local positions = {}
+	for x = width * -0.5 + 2, width * 0.5 - 1, 1 do
+		for y = 4, height * 0.5 - 1, 1 do
+			positions[#positions + 1] = {x = x, y = y}
+		end
+	end
+	table.shuffle_table(positions)
+	
+	local cargo_boxes = {
+		{name = "grenade", count = math.random(2, 3)},
+		{name = "submachine-gun", count = 1},
+		{name = "land-mine", count = math.random(8, 12)},
+		{name = "explosives", count = math.random(57, 73)},
+		{name = "explosives", count = math.random(57, 73)},
+		{name = "iron-gear-wheel", count = math.random(7, 15)},
+		{name = "iron-plate", count = math.random(15, 23)},
+		{name = "copper-plate", count = math.random(15, 23)},
+		{name = "shotgun", count = 1},
+		{name = "shotgun-shell", count = math.random(5, 7)},
+		{name = "firearm-magazine", count = math.random(7, 15)},
+		{name = "rail", count = math.random(16, 24)},
+		{name = "rail", count = math.random(16, 24)},
+		{name = "rail", count = math.random(16, 24)},
+	}	
+	
+	local i = 1
+	for _ = 1, 10, 1 do
+		if not positions[i] then break end
+		local e = surface.create_entity({name = "wooden-chest", position = positions[i], force="player", create_build_effect_smoke = false})
+		local inventory = e.get_inventory(defines.inventory.chest)
+		inventory.insert({name = "raw-fish", count = math.random(2, 5)})
+		i = i + 1
+	end
+	
+	for _ = 1, 24, 1 do
+		if not positions[i] then break end
+		local e = surface.create_entity({name = "wooden-chest", position = positions[i], force="player", create_build_effect_smoke = false})
+		i = i + 1
+	end
+	
+	for loot_i = 1, #cargo_boxes, 1 do
+		if not positions[i] then break end
+		local e = surface.create_entity({name = "wooden-chest", position = positions[i], force="player", create_build_effect_smoke = false})
+		local inventory = e.get_inventory(defines.inventory.chest)
+		inventory.insert(cargo_boxes[loot_i])
+		i = i + 1
 	end
 end
 
@@ -101,7 +169,7 @@ function Public.set_player_spawn_and_refill_fish()
 	if not global.locomotive_cargo then return end
 	if not global.locomotive_cargo.valid then return end
 	global.locomotive_cargo.health = global.locomotive_cargo.health + 6
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math.random(2, 5)})
+	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math.random(1, 2)})
 	local position = global.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", global.locomotive_cargo.position, 16, 2)
 	if not position then return end
 	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)

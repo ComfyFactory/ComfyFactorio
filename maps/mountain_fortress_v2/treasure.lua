@@ -169,7 +169,7 @@ function Public.treasure_chest(surface, position, container_name)
 		end			
 	end
 	
-	local e = surface.create_entity({name = container_name, position=position, force="neutral"})	
+	local e = surface.create_entity({name = container_name, position=position, force="neutral", create_build_effect_smoke = false})	
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
 	for x = 1, math_random(2,6), 1 do

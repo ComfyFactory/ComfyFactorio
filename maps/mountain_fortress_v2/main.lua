@@ -53,6 +53,8 @@ function Public.reset_map()
 	local wave_defense_table = WD.get_table()
 	global.chunk_queue = {}
 	
+	if game.surfaces["cargo_wagon"] then game.delete_surface(game.surfaces["cargo_wagon"]) end
+	
 	local map_gen_settings = {
 		["seed"] = math_random(1, 1000000),
 		["width"] = level_depth,
