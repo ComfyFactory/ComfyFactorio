@@ -288,14 +288,14 @@ local function on_player_joined_game(event)
 		end
 	end
 	
-	if player.surface.index ~= global.active_surface_index then
+	if player.surface.index ~= global.active_surface_index and player.surface.name ~= "cargo_wagon" then		
 		player.character = nil
 		player.set_controller({type=defines.controllers.god})
 		player.create_character()
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
-		end
+		end		
 	end
 
 	player_modifiers[player.index].character_mining_speed_modifier["mountain_fortress"] = 0.5
@@ -361,6 +361,10 @@ local function on_init()
 		"As you dig, you will encounter impassable dark chasms or rivers.\n",
 		"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
 		"All they need is a container and a well aimed shot.\n",
+		"\n",
+		"You may find some supply goods, if you enter the wagon.",
+		"\n",
+		"Good luck on your journey!",
 	})
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}

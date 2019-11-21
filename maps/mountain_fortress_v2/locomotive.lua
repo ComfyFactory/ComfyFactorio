@@ -87,6 +87,8 @@ local function create_wagon_room()
 		},
 	}
 	local surface = 	game.create_surface("cargo_wagon", map_gen_settings)
+	surface.freeze_daytime = true
+	surface.daytime = 0.1
 	surface.request_to_generate_chunks({0,0}, 1)
 	surface.force_generate_chunk_requests()
 	
