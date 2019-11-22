@@ -71,8 +71,8 @@ local market_offers = {
 }
 
 local function create_wagon_room()
-	local width = 15
-	local height = 35
+	local width = 17
+	local height = 39
 	local map_gen_settings = {
 		["width"] = width,
 		["height"] = height,
@@ -95,11 +95,24 @@ local function create_wagon_room()
 	for x = width * -0.5 + 1, width * 0.5, 1 do
 		for y = height * -0.5, height * 0.5, 1 do
 			surface.set_tiles({{name = "tutorial-grid", position = {x,y}}})
-			if math.random(1, 5) == 1 and y < 4 then
+			if math.random(1, 5) == 1 and y > 2 then
 				surface.spill_item_stack({x + math.random(0, 9) * 0.1,y + math.random(0, 9) * 0.1},{name = "raw-fish", count = 1}, false)
 			end
 		end
 	end
+
+	for x = width * -0.5 + 6, width * 0.5 - 5, 1 do
+		for y = height * -0.5 + 2, height * -0.5 + 4, 1 do
+			local p = {x,y}
+			surface.set_tiles({{name = "water", position = p}})
+			if math.random(1, 2) == 1 then surface.create_entity({name = "fish", position = p}) end
+		end
+	end
+
+	local market = surface.create_entity({name = "market", position = {0, height * -0.5 + 7}, force="neutral", create_build_effect_smoke = false})
+	market.minable = false
+	market.destructible = false
+	for _, offer in pairs(market_offers) do market.add_market_item(offer) end
 
 	for _, x in pairs({width * -0.5, width * 0.5 + 1}) do
 		local e = surface.create_entity({name = "car", position = {x, 0}, force = "player", create_build_effect_smoke = false})
@@ -109,12 +122,7 @@ local function create_wagon_room()
 		e.operable = false
 	end
 	
-	local market = surface.create_entity({name = "market", position = {0, height * -0.25}, force="neutral", create_build_effect_smoke = false})
-	market.minable = false
-	market.destructible = false
-	for _, offer in pairs(market_offers) do market.add_market_item(offer) end
-	
-	local e = surface.create_entity({name = "behemoth-biter", position = {0, height * -0.4}, force = "player", create_build_effect_smoke = false})
+	local e = surface.create_entity({name = "big-biter", position = {width * -0.5 + 2, height * -0.5 + 2}, force = "player", create_build_effect_smoke = false})
 	e.ai_settings.allow_destroy_when_commands_fail = false
 	e.ai_settings.allow_try_return_to_spawner = false
 	
