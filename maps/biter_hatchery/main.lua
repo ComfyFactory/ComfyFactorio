@@ -1,4 +1,5 @@
 --require "modules.no_turrets"
+require "maps.biter_hatchery.flamethrower_nerf"
 local RPG = require "modules.rpg"
 local Tabs = require 'comfy_panel.main'
 local Map_score = require "modules.map_score"
@@ -177,7 +178,7 @@ local function get_units(force_name)
 	local count = 0
 	for _, unit in pairs(global.map_forces[force_name].units) do		
 		if not unit.unit_group then
-			if count > 160 then break end
+			if count > 256 then break end
 			units[#units + 1] = unit
 			count = count + 1			
 		end
