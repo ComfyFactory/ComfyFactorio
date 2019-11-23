@@ -175,12 +175,14 @@ end
 
 local function get_units(force_name)
 	local units = {}
-	local count = 0
+	local count = 1
 	for _, unit in pairs(global.map_forces[force_name].units) do		
 		if not unit.unit_group then
-			if count > 256 then break end
-			units[#units + 1] = unit
-			count = count + 1			
+			if count > 320 then break end
+			if math_random(1, 3) ~= 1 then
+				units[count] = unit
+				count = count + 1
+			end
 		end
 	end
 	return units
@@ -223,6 +225,7 @@ local function send_unit_groups()
 					},			
 				}
 			})
+			unit_group.start_moving()
 		end
 	end
 end
