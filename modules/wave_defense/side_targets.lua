@@ -40,6 +40,11 @@ end
 
 local function add_entity(entity)
 	local wave_defense_table = WD.get_table()
+	
+	--skip entities that are on another surface
+	if entity.surface.index ~= wave_defense_table.surface_index then return end
+	
+	--add entity to the side target list
 	table.insert(wave_defense_table.side_targets, entity)
 	wave_defense_table.side_target_count = wave_defense_table.side_target_count + 1
 end
