@@ -1,3 +1,4 @@
+local bb_config = require "maps.biter_battles_v2.config"
 local event = require 'utils.event'
 local Server = require 'utils.server'
 

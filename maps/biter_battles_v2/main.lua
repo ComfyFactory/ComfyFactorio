@@ -1,8 +1,7 @@
 -- Biter Battles v2 -- by MewMew
 
-require 'utils.table'
 require "on_tick_schedule"
-require "maps.biter_battles_v2.config"
+local bb_config = require "maps.biter_battles_v2.config"
 require "modules.spawners_contain_biters"
 require "modules.mineable_wreckage_yields_scrap"
 
@@ -113,10 +112,13 @@ local function init_forces()
 		defines.input_action.activate_paste,
 		defines.input_action.clean_cursor_stack,
 		defines.input_action.edit_permission_group,
-		defines.input_action.gui_checked_state_changed,
 		defines.input_action.gui_click,
+		defines.input_action.gui_confirmed,
 		defines.input_action.gui_elem_changed,
+		defines.input_action.gui_location_changed,
+		defines.input_action.gui_selected_tab_changed,
 		defines.input_action.gui_selection_state_changed,
+		defines.input_action.gui_switch_state_changed,
 		defines.input_action.gui_text_changed,
 		defines.input_action.gui_value_changed,
 		defines.input_action.open_character_gui,
@@ -126,6 +128,7 @@ local function init_forces()
 		defines.input_action.toggle_show_entity_info,
 		defines.input_action.write_to_console,
 	}
+	
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end
 
 	global.rocket_silo = {}

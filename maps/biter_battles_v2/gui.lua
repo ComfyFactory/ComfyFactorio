@@ -1,3 +1,4 @@
+local bb_config = require "maps.biter_battles_v2.config"
 local event = require 'utils.event'
 local spy_fish = require "maps.biter_battles_v2.spy_fish"
 local feed_the_biters = require "maps.biter_battles_v2.feeding"

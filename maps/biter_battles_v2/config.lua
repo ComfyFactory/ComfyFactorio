@@ -1,6 +1,6 @@
 --BITER BATTLES CONFIG--
 
-bb_config = {
+local bb_config = {
 	--TEAM SETTINGS--
 	["team_balancing"] = true,			--Should players only be able to join a team that has less or equal members than the opposing team?
 	["only_admins_vote"] = false,		--Are only admins able to vote on the global difficulty?
@@ -29,3 +29,5 @@ bb_config = {
 	["biter_timeout"] = 54000,						--Time it takes in ticks for an attacking unit to be deleted. This prevents perma stuck units.
 	["bitera_area_distance"] = 416					--Distance to the biter area.
 }
+
+return bb_config

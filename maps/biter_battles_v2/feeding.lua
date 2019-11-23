@@ -1,3 +1,5 @@
+local bb_config = require "maps.biter_battles_v2.config"
+
 local food_values = {
 	["automation-science-pack"] =	{value = 0.001, name = "automation science", color = "255, 50, 50"},
 	["logistic-science-pack"] =			{value = 0.003, name = "logistic science", color = "50, 255, 50"},
