@@ -294,10 +294,11 @@ commands.add_command(
         end
 	    if param == nil then player.print("[ERROR] Must specify radius!", Color.fail) return end
 	    if param > 500 then player.print("[ERROR] Value is too big.", Color.fail) return end
+	    local pos = player.position
 
-        local radius = {{x = -param, y = -param}, {x = param, y = param}} or {{x = -1, y = -1}, {x = 1, y = 1}}
+        local radius = {{x = (pos.x + -param), y = (pos.y + -param)}, {x = (pos.x + param), y = (pos.y + param)}}
 		for _, entity in pairs(player.surface.find_entities_filtered{area = radius, type = "corpse"}) do
-			player.print("Cleared biter-corpses.", Color.success)
 			entity.destroy()
 		end
+		player.print("Cleared biter-corpses.", Color.success)
 end)
