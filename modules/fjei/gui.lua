@@ -190,14 +190,16 @@ local function draw_recipe(player, container, recipe_name)
 	
 	local tt = t.add({type = "table", column_count = 1})
 	local ttt = tt.add({type = "table", column_count = 2})	
-	local element = ttt.add({type = "label", caption = recipe.localised_name})
-	element.style.font = "heading-1"
-	local element = ttt.add({type = "label", caption = " "})
-	element.style.font = "heading-1"
+	local element_1 = ttt.add({type = "label", caption = recipe.localised_name})
+	element_1.style.font = "heading-1"
+	local element_2 = ttt.add({type = "label", caption = " "})
+	element_2.style.font = "heading-1"
 	if not player.force.recipes[recipe_name].enabled then
-		element.style.font_color = {200, 0, 0}
-		element.caption = "*"		
-		element.tooltip = "Further research is required to unlock this recipe."
+		element_2.style.font_color = {200, 0, 0}
+		element_2.caption = "*"
+		local str = "Further research is required to unlock this recipe."
+		element_2.tooltip = str
+		element_1.tooltip = str
 	end
 	
 	local element = tt.add({type = "label", caption = "◷ " .. recipe.energy .. " seconds crafting time"})
@@ -215,11 +217,21 @@ local function draw_recipe(player, container, recipe_name)
 		element.style.minimal_width = 32
 		element.style.horizontal_align = "right"
 		add_sprite_icon(tt, product.name)
-		local element = tt.add({type = "label", caption = get_localised_name(product.name)})
-		element.style.minimal_width = 140
-		element.style.maximal_width = 140
-		element.style.single_line = false
-		element.style.font = "default"
+		if product.temperature then
+			local ttt = tt.add({type = "table", column_count = 1})
+			local element = ttt.add({type = "label", caption = get_localised_name(product.name)})
+			element.style.minimal_width = 140
+			element.style.maximal_width = 140
+			element.style.single_line = false
+			element.style.font = "default"
+			local element = ttt.add({type = "label", caption = product.temperature .. " °C"})
+		else
+			local element = tt.add({type = "label", caption = get_localised_name(product.name)})
+			element.style.minimal_width = 140
+			element.style.maximal_width = 140
+			element.style.single_line = false
+			element.style.font = "default"
+		end	
 	end
 	
 	local element = container.add({type = "label", caption = "Ingredients:"})
@@ -233,11 +245,21 @@ local function draw_recipe(player, container, recipe_name)
 		element.style.horizontal_align = "right"
 		
 		add_sprite_icon(tt, ingredient.name)
-		local element = tt.add({type = "label", caption = get_localised_name(ingredient.name)})
-		element.style.minimal_width = 140
-		element.style.maximal_width = 140
-		element.style.single_line = false
-		element.style.font = "default"
+		if ingredient.temperature then
+			local ttt = tt.add({type = "table", column_count = 1})
+			local element = ttt.add({type = "label", caption = get_localised_name(ingredient.name)})
+			element.style.minimal_width = 140
+			element.style.maximal_width = 140	
+			element.style.single_line = false
+			element.style.font = "default"
+			local element = ttt.add({type = "label", caption = ingredient.temperature .. " °C"})
+		else		
+			local element = tt.add({type = "label", caption = get_localised_name(ingredient.name)})
+			element.style.minimal_width = 140
+			element.style.maximal_width = 140
+			element.style.single_line = false
+			element.style.font = "default"
+		end
 	end
 	
 	local machines = Functions.get_crafting_machines_for_recipe(player.force.name, recipe)
