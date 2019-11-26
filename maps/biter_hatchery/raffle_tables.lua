@@ -10,7 +10,7 @@ local raffle = {
 
 local function add_unit(t, size, chance)
 	for _ = 1, chance, 1 do table.insert(t, size .. "-spitter") end
-	for _ = 1, chance * 5, 1 do table.insert(t, size .. "-biter") end
+	for _ = 1, chance * 6, 1 do table.insert(t, size .. "-biter") end
 end
 
 local t = raffle["automation-science-pack"][1]

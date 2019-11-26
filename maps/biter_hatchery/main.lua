@@ -178,7 +178,6 @@ local function get_units(force_name)
 	local count = 1
 	for _, unit in pairs(global.map_forces[force_name].units) do		
 		if not unit.unit_group then
-			if count > 320 then break end
 			if math_random(1, 3) ~= 1 then
 				units[count] = unit
 				count = count + 1
@@ -329,7 +328,7 @@ local function tick()
 			game.forces.east.chart(surface, area)
 		--end
 	end	
-	if game_tick % 1800 == 0 then send_unit_groups() end	
+	if game_tick % 1200 == 0 then send_unit_groups() end	
 	if global.game_reset_tick then
 		if global.game_reset_tick < game_tick then
 			global.game_reset_tick = nil

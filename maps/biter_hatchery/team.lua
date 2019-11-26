@@ -8,20 +8,14 @@ function Public.set_force_attributes()
 	game.forces.east.set_friend("spectator", true)
 	game.forces.spectator.set_friend("west", true)
 	game.forces.spectator.set_friend("east", true)
-	game.forces.west.share_chart = true
-	game.forces.east.share_chart = true
-	
-	game.forces.west.research_queue_enabled = true
-	game.forces.west.technologies["artillery"].enabled = false
-	game.forces.west.technologies["artillery-shell-range-1"].enabled = false					
-	game.forces.west.technologies["artillery-shell-speed-1"].enabled = false
-	
-	game.forces.east.research_queue_enabled = true
-	game.forces.east.technologies["artillery"].enabled = false
-	game.forces.east.technologies["artillery-shell-range-1"].enabled = false					
-	game.forces.east.technologies["artillery-shell-speed-1"].enabled = false
 	
 	for _, force_name in pairs({"west", "east"}) do
+		game.forces[force_name].share_chart = true
+		game.forces[force_name].research_queue_enabled = true
+		game.forces[force_name].technologies["artillery"].enabled = false
+		game.forces[force_name].technologies["artillery-shell-range-1"].enabled = false
+		game.forces[force_name].technologies["artillery-shell-speed-1"].enabled = false
+		game.forces[force_name].technologies["land-mine"].enabled = false	
 		global.map_forces[force_name].unit_health_boost = 1
 		global.map_forces[force_name].unit_count = 0
 		global.map_forces[force_name].units = {}
