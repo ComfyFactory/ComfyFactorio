@@ -40,6 +40,14 @@ local entity_copy_functions = {
 		if not surface.can_place_entity({name = entity.name, position = mirror_position}) then return end
 		entity.clone({position = mirror_position, surface = surface, force = "neutral"})
 	end,
+	--[[
+	["simple-entity"] = function(surface, entity, mirror_position)
+		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction]}
+		if surface.count_entities_filtered({type = "simple-entity", position = mirror_position}) ~= 0 then return end
+		local mirror_entity = surface.create_entity(mirror_entity)
+		mirror_entity.graphics_variation = entity.graphics_variation
+	end,
+	]]		
 	["simple-entity"] = function(surface, entity, mirror_position)
 		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction]}
 		if not surface.can_place_entity(mirror_entity) then return end

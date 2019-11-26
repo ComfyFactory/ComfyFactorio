@@ -9,17 +9,17 @@ local event = require 'utils.event'
 
 local function init_surface()
 	local map_gen_settings = {}
-	map_gen_settings.water = math.random(30, 40) * 0.01
+	map_gen_settings.water = math.random(15, 65) * 0.01
 	map_gen_settings.starting_area = 2.5
 	map_gen_settings.terrain_segmentation = math.random(30, 40) * 0.1
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = math.random(16, 48), cliff_elevation_0 = math.random(16, 48)}
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = 2.25, size = 1, richness = 1},
-		["stone"] = {frequency = 2.25, size = 1, richness = 1},
-		["copper-ore"] = {frequency = 3.5, size = 1.25, richness = 1},
-		["iron-ore"] = {frequency = 3.5, size = 1.25, richness = 1},
+		["coal"] = {frequency = 2.5, size = 0.65, richness = 0.5},
+		["stone"] = {frequency = 2.5, size = 0.65, richness = 0.5},
+		["copper-ore"] = {frequency = 3.5, size = 0.65, richness = 0.5},
+		["iron-ore"] = {frequency = 3.5, size = 0.65, richness = 0.5},
 		["uranium-ore"] = {frequency = 2, size = 1, richness = 1},
-		["crude-oil"] = {frequency = 4, size = 2, richness = 0.75},
+		["crude-oil"] = {frequency = 3, size = 1, richness = 0.75},
 		["trees"] = {frequency = math.random(8, 16) * 0.1, size = math.random(8, 16) * 0.1, richness = math.random(2, 10) * 0.1},
 		["enemy-base"] = {frequency = 256, size = 0.61, richness = 1}
 	}
@@ -29,12 +29,7 @@ local function init_surface()
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
 	game.map_settings.pollution.enabled = false
-
-	game.map_settings.enemy_expansion.enabled = true
-	game.map_settings.enemy_expansion.settler_group_min_size = 8
-	game.map_settings.enemy_expansion.settler_group_max_size = 16
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 54000
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 108000
+	game.map_settings.enemy_expansion.enabled = false
 end
 
 local function init_forces()

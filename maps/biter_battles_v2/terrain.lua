@@ -2,10 +2,12 @@ local bb_config = require "maps.biter_battles_v2.config"
 local event = require 'utils.event'
 local Server = require 'utils.server'
 local math_random = math.random
+local math_abs = math.abs
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
 local spawn_circle_size = 32
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}
+local rocks = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big", "rock-huge"}
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -26,7 +28,7 @@ local function get_noise(name, pos)
 		noise[2] = simplex_noise(pos.x * 0.031, pos.y * 0.031, seed)
 		seed = seed + noise_seed_add
 		noise[3] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.08 + noise[3] * 0.015
+		local noise = noise[1] + noise[2] * 0.08 + noise[3] * 0.025
 		return noise
 	end
 	if name == 2 then
@@ -154,7 +156,7 @@ local function generate_circle_spawn(event)
 	if left_top_x > 320 then return end
 	if left_top_y < -320 then return end
 
-	local r = 120
+	local r = 116
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
@@ -180,7 +182,7 @@ local function generate_circle_spawn(event)
 
 			if surface.can_place_entity({name = "wooden-chest", position = pos}) and surface.can_place_entity({name = "coal", position = pos}) then
 				local noise_2 = get_noise(3, pos)
-				if math.abs(noise_2) > 0.20 then
+				if noise_2 < 0.25 then
 					local spawn_wall_r = distance_to_center + noise
 					if noise_2 > -0.5 then
 						if spawn_wall_r < r and spawn_wall_r > r - 1.75 then				
@@ -409,11 +411,11 @@ local function mixed_ore(event)
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = get_noise(1, pos)
-				if noise > 0.85 then
-					local amount = math_random(750, 1500) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 1.1
-					local m = (noise - 0.82) * 40
+				if noise > 0.81 then
+					local amount = math_random(1250, 1500) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 1.1
+					local m = (noise - 0.75) * 16
 					amount = amount * m
-					local i = math.ceil(math.abs(noise * 75)) % 4
+					local i = math.ceil(math.abs(noise * 35)) % 4
 					if i == 0 then i = 4 end
 					surface.create_entity({name = ores[i], position = pos, amount = amount})
 				end
@@ -421,18 +423,49 @@ local function mixed_ore(event)
 		end
 	end
 end
+--[[
+local cliff_vectors = {} 
+local cliff_brush_radius = 3.5
+for x = cliff_brush_radius * -1, cliff_brush_radius, 0.5 do
+	for y = cliff_brush_radius * -1, cliff_brush_radius, 0.5 do
+		if math.sqrt(x^2 + y^2) < cliff_brush_radius then
+			cliff_vectors[#cliff_vectors + 1] = {x,y}
+		end
+	end
+end
 
+local function replace_cliff(surface, entity)
+	if surface.get_tile(entity.position).collides_with("resource-layer") then return end
+	for _, vector in pairs(cliff_vectors) do
+		if math_random(0, (math_abs(vector[1]) + math_abs(vector[2])) * 0.75) == 0 then
+			local position = {entity.position.x + vector[1], entity.position.y + vector[2]}
+			if surface.count_entities_filtered({type = "simple-entity", position = position}) == 0 then
+				surface.create_entity({name = rocks[math_random(1, 7)], position = position})
+			end
+		end
+	end	
+end
+
+local function replace_cliffs_with_rocks(surface, area)
+	for _, cliff in pairs(surface.find_entities_filtered({area = area, type = "cliff"})) do
+		replace_cliff(surface, cliff)
+		cliff.destroy()
+	end
+end
+]]
 local function on_chunk_generated(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
 	local left_top = event.area.left_top
 	if surface.name ~= "biter_battles" then return end
 
-	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do
+	for _, e in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do		
 		surface.create_entity({name = e.name, position = e.position, force = "north_biters", direction = e.direction})
 		e.destroy()
 	end
 
+	--replace_cliffs_with_rocks(surface, event.area)
+	
 	mixed_ore(event)
 	generate_river(event)
 	generate_circle_spawn(event)
