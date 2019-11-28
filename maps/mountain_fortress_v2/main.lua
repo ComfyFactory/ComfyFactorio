@@ -17,6 +17,7 @@ local level_depth = require "maps.mountain_fortress_v2.terrain"
 local Collapse = require "maps.mountain_fortress_v2.collapse"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
+local BiterHealthBooster = require "modules.biter_health_booster"
 local Reset = require "functions.soft_reset"
 local Pets = require "modules.biter_pets"
 local Map = require "modules.map_info"
@@ -41,8 +42,8 @@ local function set_difficulty()
 	-- threat gain / wave
 	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
 	
-	--1 additional map collapse tile / 10 players in game
-	global.map_collapse.speed = math.floor(player_count * 0.1) + 1
+	--1 additional map collapse tile / 8 players in game
+	global.map_collapse.speed = math.floor(player_count * 0.125) + 1
 	
 	--20 Players for fastest wave_interval
 	wave_defense_table.wave_interval = 3600 - player_count * 90
@@ -140,11 +141,24 @@ local function biters_chew_rocks_faster(event)
 end
 
 local function hidden_biter(entity)
-	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.25)
+	local d = math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)
+	
+	BiterRolls.wave_defense_set_unit_raffle(d * 0.25)
+	
+	local unit
 	if math_random(1,3) == 1 then
-		entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = entity.position})
+		unit = entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = entity.position})
 	else
-		entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = entity.position})
+		unit = entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = entity.position})
+	end
+	
+	local m = 1 / level_depth
+	m = m * d
+	
+	if math_random(1, 256) == 1 then
+		BiterHealthBooster.add_boss_unit(unit, m * 15 + 1, 0.38)
+	else
+		BiterHealthBooster.add_unit(unit, m * 2.5 + 1)
 	end
 end
 
