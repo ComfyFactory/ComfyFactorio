@@ -29,7 +29,7 @@ end
 local function poll_difficulty(player)
 	if player.gui.center["difficulty_poll"] then player.gui.center["difficulty_poll"].destroy() return end
 	
-	if bb_config.only_admins_vote then
+	if bb_config.only_admins_vote or global.tournament_mode then
 		if not player.admin then return end
 	end
 	
@@ -86,7 +86,7 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if game.tick < timeout then
 		if not global.difficulty_player_votes[player.name] then
-			if bb_config.only_admins_vote then
+			if bb_config.only_admins_vote or global.tournament_mode then
 				if player.admin then poll_difficulty(player) end
 			else
 				poll_difficulty(player)
@@ -120,7 +120,19 @@ local function on_gui_click(event)
 	if event.element.parent.name ~= "difficulty_poll" then return end
 	if event.element.name == "close" then event.element.parent.destroy() return end
 	if game.tick > timeout then event.element.parent.destroy() return end
-	local i = tonumber(event.element.name)	
+	local i = tonumber(event.element.name)
+	
+	if bb_config.only_admins_vote or global.tournament_mode then
+		if player.admin then
+			game.print(player.name .. " has voted for " .. difficulties[i].name .. " difficulty!", difficulties[i].print_color)
+			global.difficulty_player_votes[player.name] = i
+			set_difficulty()
+			difficulty_gui()				
+		end
+		event.element.parent.destroy()
+		return
+	end
+	
 	game.print(player.name .. " has voted for " .. difficulties[i].name .. " difficulty!", difficulties[i].print_color)
 	global.difficulty_player_votes[player.name] = i
 	set_difficulty()

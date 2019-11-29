@@ -160,8 +160,8 @@ local function draw_manager_gui(player)
 		button = t.add({
 			type = "button",
 			name = "team_manager_activate_tournament",
-			caption = "Tournament Mode Activated",
-			tooltip = "Only admins can move players. Active players can no longer go spectate. New joining players are spectators."
+			caption = "Tournament Mode Enabled",
+			tooltip = "Only admins can move players and vote for difficulty.\nActive players can no longer go spectate.\nNew joining players are spectators."
 		})
 		button.style.font_color = {r = 222, g = 22, b = 22}
 	else
