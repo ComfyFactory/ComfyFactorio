@@ -285,7 +285,7 @@ function join_team(player, force_name, forced_join)
 	local enemy_team = "south"
 	if force_name == "south" then enemy_team = "north" end
 
-	if not global.training_mode and bb_config.team_balancing then
+	if not global.training_mode and global.bb_settings.team_balancing then
 		if not forced_join then
 			if #game.forces[force_name].connected_players > #game.forces[enemy_team].connected_players then
 				if not global.chosen_team[player.name] then

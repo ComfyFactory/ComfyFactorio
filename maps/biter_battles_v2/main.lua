@@ -1,11 +1,24 @@
 -- Biter Battles v2 -- by MewMew
 
-require "on_tick_schedule"
 local bb_config = require "maps.biter_battles_v2.config"
+require "on_tick_schedule"
+require "maps.biter_battles_v2.map_settings_tab"
 require "modules.spawners_contain_biters"
 require "modules.mineable_wreckage_yields_scrap"
 
 local event = require 'utils.event'
+
+local function init_settings()
+	global.bb_settings = {
+		--TEAM SETTINGS--
+		["team_balancing"] = true,			--Should players only be able to join a team that has less or equal members than the opposing team?
+		["only_admins_vote"] = false,		--Are only admins able to vote on the global difficulty?
+		
+		--GENERAL SETTINGS--
+		["blueprint_library_importing"] = false,		--Allow the importing of blueprints from the blueprint library?
+		["blueprint_string_importing"] = false,		--Allow the importing of blueprints via blueprint strings?
+	}
+end
 
 local function init_surface()
 	local map_gen_settings = {}
@@ -88,10 +101,10 @@ local function init_forces()
 	f.set_cease_fire('south', true)
 	f.share_chart = false
 
-	if not bb_config.blueprint_library_importing then
+	if not global.bb_settings.blueprint_library_importing then
 		game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
 	end
-	if not bb_config.blueprint_string_importing then
+	if not global.bb_settings.blueprint_string_importing then
 		game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
 		game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, false)
 	end
@@ -179,7 +192,8 @@ local function on_player_joined_game(event)
 	end
 end
 
-local function on_init(surface)
+local function on_init()
+	init_settings()
 	init_surface()
 	init_forces()
 	global.gui_refresh_delay = 0
