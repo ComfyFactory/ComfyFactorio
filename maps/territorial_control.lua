@@ -445,7 +445,9 @@ end
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
-	uncover_map_for_player(player)
+	if player.surface.index == 4 then
+		uncover_map_for_player(player)
+	end
 end
 
 local function generate_spawn_area(position_left_top)				
