@@ -445,7 +445,7 @@ end
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
-	if player.surface.index == 4 then
+	if player.surface.name == "territorial_control" then
 		uncover_map_for_player(player)
 	end
 end
