@@ -2,6 +2,7 @@ local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 
 local map_info = {
+	localised_category = false,
 	main_caption = "Insert Main Caption",
 	main_caption_color = {r=0.6, g=0.3, b=0.99},
 	sub_caption = "Insert Sub Caption",
@@ -35,14 +36,25 @@ local create_map_intro = (function (player, frame)
 	line.style.top_margin = 4
 	line.style.bottom_margin = 4
 
-	local l = t.add {type = "label", caption = map_info.main_caption}
+	local caption
+	if map_info.localised_category then
+		caption = {map_info.localised_category .. ".map_info_main_caption"}
+	else
+		caption = map_info.main_caption
+	end
+	local l = t.add {type = "label", caption = caption}
 	l.style.font = "heading-1"
 	l.style.font_color = map_info.main_caption_color
 	l.style.minimal_width = 780
 	l.style.horizontal_align = "center"
 	l.style.vertical_align = "center"
 
-	local l_2 = t.add {type = "label", caption = map_info.sub_caption}
+	if map_info.localised_category then
+		caption = {map_info.localised_category .. ".map_info_sub_caption"}
+	else
+		caption = map_info.sub_caption
+	end
+	local l_2 = t.add {type = "label", caption = caption}
 	l_2.style.font = "heading-2"
 	l_2.style.font_color = map_info.sub_caption_color
 	l_2.style.minimal_width = 780
@@ -57,7 +69,12 @@ local create_map_intro = (function (player, frame)
 	scroll_pane.style.maximal_height = 320
 	scroll_pane.style.minimal_height = 320
 
-	local l_3 = scroll_pane.add {type = "label", caption = map_info.text}
+	if map_info.localised_category then
+		caption = {map_info.localised_category .. ".map_info_text"}
+	else
+		caption = map_info.text
+	end
+	local l_3 = scroll_pane.add {type = "label", caption = caption}
 	l_3.style.font = "heading-2"
 	l_3.style.single_line = false
 	l_3.style.font_color = {r=0.85, g=0.85, b=0.88}

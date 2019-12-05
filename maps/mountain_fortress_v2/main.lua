@@ -357,29 +357,7 @@ end
 
 local function on_init()
 	local T = Map.Pop_info()
-	T.main_caption = "M O U N T A I N    F O R T R E S S"
-	T.sub_caption =  "    ..diggy diggy choo choo.."
-	T.text = table.concat({
-		"The biters have catched the scent of fish in the cargo wagon.\n",
-		"Guide the choo into the mountain and protect it as long as possible!\n",
-		"This however will not be an easy task,\n",
-		"since their strength and numbers increase over time.\n",
-		"\n",
-		"In additon, the southern grounds collapse over time.\n",
-		"Stone bricks, concrete or other solid tiles, might improve the stability of the floor.\n",
-		"\n",
-		"Delve deep for greater treasures, but also face increased dangers.\n",
-		"Mining productivity research, will overhaul your mining equipment,\n",
-		"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
-		"\n",
-		"As you dig, you will encounter impassable dark chasms or rivers.\n",
-		"Some explosives may cause parts of the ceiling to crumble, filling the void, creating new ways.\n",
-		"All they need is a container and a well aimed shot.\n",
-		"\n",
-		"You may find some supply goods, if you enter the wagon.",
-		"\n",
-		"Good luck on your journey!",
-	})
+	T.localised_category = "mountain_fortress"
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
 	global.rocks_yield_ore_maximum_amount = 999
