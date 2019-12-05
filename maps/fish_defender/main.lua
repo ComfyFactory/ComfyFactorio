@@ -1082,28 +1082,7 @@ local function on_init(event)
 	global.chunk_queue = {}
 	
 	local T = Map.Pop_info()
-	T.main_caption = "--Fish Defender--"
-	T.sub_caption =  "*blb blubby blub*"
-	T.text = [[
-		The biters have catched the scent of fish in the market.
-		Fend them off as long as possible!
-		This however will not be an easy task,
-		since their strength and resistance increases constantly over time.
-		
-		Your ultimate goal is to evacuate all the fish to cat planet!
-		Put them in your rocket's cargo and launch them into space.
-		Don't worry, you will still get space science.
-		
-		The Market will gladly take any coin you might find.
-		Additional turret slots can be bought at the market.
-		Several unique upgrades are available too.
-		
-		Researching tanks will unlock the artillery technology early.
-		
-		Any container bearing dangerous goods, like ammo, grenades or barrels,
-		causes heavy explosions when it breaks.
-		Maybe this can be used to our advantage.
-	]]
+	T.localised_category = "fish_defender"
 	T.main_caption_color = {r=0.11, g=0.8, b=0.44}
 	T.sub_caption_color = {r=0.33, g=0.66, b=0.9}
 end
