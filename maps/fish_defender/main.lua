@@ -456,10 +456,10 @@ local function send_unit_group(unit_group)
 end
 
 local function spawn_boss_units(surface)
-	if boss_wave_names[global.wave_count] then
-		game.print("Boss Wave " .. global.wave_count .. " - - " .. boss_wave_names[global.wave_count], {r = 0.8, g = 0.1, b = 0.1})
+	if global.wave_count <= 2000 then
+		game.print({"fish_defender.boss_message", global.wave_count, {"fish_defender." .. global.wave_count}}, {r = 0.8, g = 0.1, b = 0.1})
 	else
-		game.print("Boss Wave " .. global.wave_count, {r = 0.8, g = 0.1, b = 0.1})
+		game.print({"fish_defender.boss_message", global.wave_count}, {r = 0.8, g = 0.1, b = 0.1})
 	end
 
 	if not boss_waves[global.wave_count] then
