@@ -30,7 +30,7 @@ local size_raffle = {
 		{"giant", 65, 96},
 		{"huge", 33, 64},
 		{"big", 17, 32},
-		{"smol", 9, 16},
+		{"small", 9, 16},
 		{"tiny", 4, 8},
 	}
 
@@ -80,12 +80,26 @@ local function ore_vein(event)
 	
 	local player = game.players[event.player_index]
 	for _, p in pairs(game.connected_players) do
-		if p.index == player.index then
-			p.print("You notice something " .. ore_prints[ore][1] .. " underneath the rubble. It's a " .. size[1] .. " vein of " ..  ore_prints[ore][2] .. "!! " .. ore_prints[ore][3], { r=0.80, g=0.80, b=0.80})
+		if p.index == player.index then			
+			p.print(
+				{"rocks_yield_ore_veins.player_print",
+					{"rocks_yield_ore_veins_colors." .. ore},
+					{"rocks_yield_ore_veins." .. size[1]},
+					{"rocks_yield_ore_veins." .. ore},
+					ore_prints[ore][3]
+				},
+				{r=0.80, g=0.80, b=0.80}
+			)
 		else
 			game.print(
-			"[color=" .. player.chat_color.r .. "," .. player.chat_color.g .. "," .. player.chat_color.b .. "]" .. player.name
-			.. "[/color] found a " .. size[1] .. " vein of " ..  ore_prints[ore][2] .. "! " .. ore_prints[ore][3], { r=0.80, g=0.80, b=0.80})
+				{"rocks_yield_ore_veins.game_print",
+					"[color=" .. player.chat_color.r .. "," .. player.chat_color.g .. "," .. player.chat_color.b .. "]" .. player.name .. "[/color]",
+					{"rocks_yield_ore_veins." .. size[1]},
+					{"rocks_yield_ore_veins." .. ore},
+					ore_prints[ore][3]
+				},
+				{r=0.80, g=0.80, b=0.80}
+			)
 		end
 	end	
 	
