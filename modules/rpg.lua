@@ -33,12 +33,14 @@ local rpg_frame_icons = {
 	"entity/medium-spitter", "entity/big-biter", "entity/big-biter", "entity/big-spitter", "entity/behemoth-biter", "entity/behemoth-biter",
 	"entity/behemoth-spitter"
 }
+local last_built_entities = {}
 
 Global.register(
     {rpg_t=rpg_t, rpg_frame_icons=rpg_frame_icons},
     function(tbl)
         rpg_t = tbl.rpg_t
         rpg_frame_icons = tbl.rpg_frame_icons
+		last_built_entities = tbl.last_built_entities
     end
 )
 
@@ -779,21 +781,41 @@ local building_and_mining_blacklist = {
 	["item-entity"] = true,
 }
 
+local function is_replaced_entity(entity)
+	if not last_built_entities[entity.position.x .. "_" .. entity.position.y] then return end
+	for key, tick in pairs(last_built_entities) do			
+		if tick < game.tick then last_built_entities[key] = nil end
+	end
+	return true
+end
+
 local function on_pre_player_mined_item(event)
-	if not event.entity.valid then return end
-	if building_and_mining_blacklist[event.entity.type] then return end
+	local entity = event.entity
+	if not entity.valid then return end
+	if building_and_mining_blacklist[entity.type] then return end
+		
 	local player = game.players[event.player_index]
+	
+	if is_replaced_entity(entity) then
+		gain_xp(player, -0.1)
+		return 
+	end
+	
 	if rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y then return end
-	rpg_t[player.index].last_mined_entity_position.x = event.entity.position.x
-	rpg_t[player.index].last_mined_entity_position.y = event.entity.position.y
-	if event.entity.type == "resource" then gain_xp(player, 0.5) return end
-	if event.entity.force.name == "neutral" then gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035) return end
+	rpg_t[player.index].last_mined_entity_position.x = entity.position.x
+	rpg_t[player.index].last_mined_entity_position.y = entity.position.y
+	if entity.type == "resource" then gain_xp(player, 0.5) return end
+	if entity.force.name == "neutral" then gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035) return end
 	gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
 end
 
 local function on_built_entity(event)
-	if not event.created_entity.valid then return end
-	if building_and_mining_blacklist[event.created_entity.type] then return end
+	local created_entity = event.created_entity
+	if not created_entity.valid then return end
+	if building_and_mining_blacklist[created_entity.type] then return end
+	
+	last_built_entities[created_entity.position.x .. "_" .. created_entity.position.y] = game.tick + 1800
+	
 	local player = game.players[event.player_index]
 	gain_xp(player, 0.1)
 end
