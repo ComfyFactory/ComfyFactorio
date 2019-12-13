@@ -146,7 +146,37 @@ local function draw_main_window(player)
 	Public.refresh_main_window(player)
 end
 
-local function draw_recipe_window_header(player, container, item_name, recipes, mode)
+local function refresh_recipe_bar(player, selected_recipe)
+	if not player.gui.center["fjei_recipe_window"] then return end
+	if not player.gui.center["fjei_recipe_window"].header_container then return end
+	
+	local container = player.gui.center["fjei_recipe_window"].header_container.header_table.scroll_pane.fjei_recipe_window_select_table
+	local recipes = {}
+	
+	for _, child in pairs(container.children) do
+		if child.type == "frame" then
+			childchild = child.children[1]
+			table_insert(recipes, childchild.name)
+		else
+			table_insert(recipes, child.name)
+		end
+	end
+	
+	container.clear()
+	
+	for key, name in pairs(recipes) do
+		if name == selected_recipe then
+			local element = container.add({ type = "frame", name = "fjei_recipe_window_selected_recipe"})
+			element.style.margin = 0
+			element.style.padding = -4
+			add_sprite_icon(element, name, true)
+		else
+			add_sprite_icon(container, name, true)
+		end
+	end
+end
+
+local function draw_recipe_window_header(player, container, item_name, recipes, mode, recipe_name)
 	
 	local t = container.add({type = "table", name = "header_table", column_count = 4})
 	
@@ -166,8 +196,17 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 	scroll_pane.style.minimal_height = 60
 	scroll_pane.style.maximal_height = 60
 	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 1024})
-		
-	for key, name in pairs(recipes) do add_sprite_icon(tt, name, true) end
+	
+	for key, name in pairs(recipes) do
+		if recipe_name == name then
+			local element = tt.add({type = "frame", name = "fjei_recipe_window_selected_recipe"})
+			element.style.margin = 0
+			element.style.padding = -3
+			add_sprite_icon(element, name, true)
+		else
+			add_sprite_icon(tt, name, true)
+		end
+	end
 	
 	local element = t.add {type = "sprite-button", caption = "X", name = "fjei_close_recipe_window"}
 	element.style.font = "heading-1"
@@ -290,6 +329,7 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 	if button == defines.mouse_button_type.left then mode = 1 else mode = 2 end
 
 	if selected_recipe and player.gui.center["fjei_recipe_window"] then
+		refresh_recipe_bar(player, selected_recipe)
 		local container = player.gui.center["fjei_recipe_window"].recipe_container
 		container.clear()
 		draw_recipe(player, container, selected_recipe)
@@ -339,7 +379,7 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 	frame.style.padding = 4
 	
 	local container = frame.add({type = "table", name = "header_container", column_count = 1})	
-	draw_recipe_window_header(player, container, item_name, recipes, mode)
+	draw_recipe_window_header(player, container, item_name, recipes, mode, recipe_name)
 
 	local container = frame.add({type = "table", name = "recipe_container", column_count = 1})
 	draw_recipe(player, container, recipe_name)
@@ -482,6 +522,7 @@ function Public.open_recipe(element, player, button)
 	local item_name = element.name
 	local selected_recipe = false
 	
+	if element.parent.name == "fjei_recipe_window_selected_recipe" then return end
 	if element.parent.name == "fjei_recipe_window_select_table" then selected_recipe = item_name end
 	if element.parent.name == "fjei_main_window_item_list_table" or element.parent.name == "fjei_main_window_history_table" then
 		local recipe_window = player.gui.center["fjei_recipe_window"]
