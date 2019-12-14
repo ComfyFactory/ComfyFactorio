@@ -43,6 +43,15 @@ local function get_sprite_type(name)
 	return false
 end
 
+local function get_active_recipe_name(player)
+	local fjei_recipe_window = player.gui.center["fjei_recipe_window"]
+	if not fjei_recipe_window then return end
+	if not fjei_recipe_window.recipe_container then return end
+	local container = fjei_recipe_window.recipe_container.children[1]
+	if not container then return end
+	return container.children[1].name		
+end
+
 local function add_sprite_icon(element, name, is_recipe, use_localised_name)
 	local sprite_type = false
 	if is_recipe then
@@ -147,33 +156,23 @@ local function draw_main_window(player)
 end
 
 local function refresh_recipe_bar(player, selected_recipe)
+	local old_recipe_name = get_active_recipe_name(player)
+	if not old_recipe_name then return end
+	
 	if not player.gui.center["fjei_recipe_window"] then return end
-	if not player.gui.center["fjei_recipe_window"].header_container then return end
+	if not player.gui.center["fjei_recipe_window"].header_container then return end	
+	local fjei_recipe_window_select_table = player.gui.center["fjei_recipe_window"].header_container.header_table.scroll_pane.fjei_recipe_window_select_table
 	
-	local container = player.gui.center["fjei_recipe_window"].header_container.header_table.scroll_pane.fjei_recipe_window_select_table
-	local recipes = {}
-	
-	for _, child in pairs(container.children) do
-		if child.type == "frame" then
-			childchild = child.children[1]
-			table_insert(recipes, childchild.name)
-		else
-			table_insert(recipes, child.name)
-		end
-	end
-	
+	local container = fjei_recipe_window_select_table[old_recipe_name]	
 	container.clear()
+	add_sprite_icon(container, old_recipe_name, true)
 	
-	for key, name in pairs(recipes) do
-		if name == selected_recipe then
-			local element = container.add({ type = "frame", name = "fjei_recipe_window_selected_recipe"})
-			element.style.margin = 0
-			element.style.padding = -4
-			add_sprite_icon(element, name, true)
-		else
-			add_sprite_icon(container, name, true)
-		end
-	end
+	local container = fjei_recipe_window_select_table[selected_recipe]	
+	container.clear()
+	local element = container.add({ type = "frame", name = "fjei_recipe_window_selected_recipe"})
+	element.style.margin = 0
+	element.style.padding = -4
+	add_sprite_icon(element, selected_recipe, true)
 end
 
 local function draw_recipe_window_header(player, container, item_name, recipes, mode, recipe_name)
@@ -195,16 +194,17 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 	scroll_pane.style.maximal_width = recipe_window_width - 190
 	scroll_pane.style.minimal_height = 60
 	scroll_pane.style.maximal_height = 60
-	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 1024})
+	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 8192})
 	
 	for key, name in pairs(recipes) do
+		local ttt = tt.add({type = "table", name = name, column_count = 1})
 		if recipe_name == name then
-			local element = tt.add({type = "frame", name = "fjei_recipe_window_selected_recipe"})
+			local element = ttt.add({type = "frame", name = "fjei_recipe_window_selected_recipe"})
 			element.style.margin = 0
 			element.style.padding = -3
 			add_sprite_icon(element, name, true)
 		else
-			add_sprite_icon(tt, name, true)
+			add_sprite_icon(ttt, name, true)
 		end
 	end
 	
@@ -312,14 +312,8 @@ local function draw_recipe(player, container, recipe_name)
 	
 	for key, machine in pairs(machines) do
 		local prototype = game.entity_prototypes[machine]
-		if prototype then
-			
+		if prototype then			
 			add_sprite_icon(t, machine, false, true)
-			--local element = tt.add({type = "label", caption = prototype.localised_name})
-			--element.style.minimal_width = recipe_window_width * 0.5 - 85
-			--element.style.maximal_width = recipe_window_width * 0.5 - 85
-			--element.style.single_line = false
-			--element.style.font = "default"
 		end
 	end
 end
@@ -523,7 +517,11 @@ function Public.open_recipe(element, player, button)
 	local selected_recipe = false
 	
 	if element.parent.name == "fjei_recipe_window_selected_recipe" then return end
-	if element.parent.name == "fjei_recipe_window_select_table" then selected_recipe = item_name end
+	if element.parent then
+		if element.parent.parent then
+			if element.parent.parent.name == "fjei_recipe_window_select_table" then selected_recipe = item_name end
+		end
+	end
 	if element.parent.name == "fjei_main_window_item_list_table" or element.parent.name == "fjei_main_window_history_table" then
 		local recipe_window = player.gui.center["fjei_recipe_window"]
 		if recipe_window then
