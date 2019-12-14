@@ -346,22 +346,36 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 	
 	--shift researched recipes forward in the list
 	local recipes = {}
+	local size_of_recipes = 0
 	local researched_recipes = {}
+	local size_of_researched_recipes = 0
 	local unknown_recipes = {}
+	local size_of_unknown_recipes = 0
+	local force_recipes = player.force.recipes
+	
 	for k, recipe_name in pairs(global.fjei.item_list[item_name][mode]) do
-		if player.force.recipes[recipe_name] then
-			if player.force.recipes[recipe_name].enabled then
-				table_insert(researched_recipes, recipe_name)
+		if k > 512 then break end
+		if force_recipes[recipe_name] then
+			if force_recipes[recipe_name].enabled then
+				size_of_researched_recipes = size_of_researched_recipes + 1
+				researched_recipes[size_of_researched_recipes] = recipe_name
 			else
-				table_insert(unknown_recipes, recipe_name)
+				size_of_unknown_recipes = size_of_unknown_recipes + 1
+				unknown_recipes[size_of_unknown_recipes] = recipe_name
 			end
 		end		
 	end
 	
-	for k, recipe_name in pairs(researched_recipes) do table_insert(recipes, recipe_name) end
-	for k, recipe_name in pairs(unknown_recipes) do table_insert(recipes, recipe_name) end
+	for k, recipe_name in pairs(researched_recipes) do
+		size_of_recipes = size_of_recipes + 1
+		recipes[size_of_recipes] = recipe_name
+	end
+	for k, recipe_name in pairs(unknown_recipes) do
+		size_of_recipes = size_of_recipes + 1
+		recipes[size_of_recipes] = recipe_name
+	end
 	
-	if #recipes == 0 then return end
+	if size_of_recipes == 0 then return end
 	
 	if not selected_recipe then
 		for key, recipe_name in pairs(recipes) do
