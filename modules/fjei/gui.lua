@@ -201,7 +201,7 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 		if recipe_name == name then
 			local element = ttt.add({type = "frame", name = "fjei_recipe_window_selected_recipe"})
 			element.style.margin = 0
-			element.style.padding = -3
+			element.style.padding = -4
 			add_sprite_icon(element, name, true)
 		else
 			add_sprite_icon(ttt, name, true)
@@ -231,6 +231,7 @@ local function draw_recipe(player, container, recipe_name)
 	local ttt = tt.add({type = "table", column_count = 2})	
 	local element_1 = ttt.add({type = "label", caption = recipe.localised_name})
 	element_1.style.font = "heading-1"
+	element_1.style.single_line = false
 	local element_2 = ttt.add({type = "label", caption = " "})
 	element_2.style.font = "heading-1"
 	if not player.force.recipes[recipe_name].enabled then
@@ -241,9 +242,20 @@ local function draw_recipe(player, container, recipe_name)
 		element_1.tooltip = str
 	end
 	
-	local element = tt.add({type = "label", caption = "◷ " .. recipe.energy .. " seconds crafting time"})
+	--[[
+	local element = tt.add({type = "label", caption = "(" .. recipe_name .. ")"})
 	element.style.font = "default"
-
+	element.style.font_color = {150, 150, 150}
+	element.style.single_line = false
+	element.style.top_margin = -9
+	element.style.top_padding = 0
+	]]
+	
+	local element = tt.add({type = "label", caption = "◷ " .. math.round(recipe.energy, 2) .. " seconds crafting time"})
+	element.style.font = "default"
+	element.style.font_color = {215, 215, 215}
+	element.style.top_margin = -4
+	
 	container.add({type = "line"})
 		
 	local element = container.add({type = "label", caption = "Products:"})
@@ -371,6 +383,8 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 	frame.style.minimal_width = recipe_window_width
 	frame.style.maximal_width = recipe_window_width
 	frame.style.padding = 4
+	frame.style.left_padding = 6
+	frame.style.right_padding = 6
 	
 	local container = frame.add({type = "table", name = "header_container", column_count = 1})	
 	draw_recipe_window_header(player, container, item_name, recipes, mode, recipe_name)
