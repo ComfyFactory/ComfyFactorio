@@ -55,14 +55,14 @@ local function init_forces()
 	game.create_force("spectator")
 
 	local f = game.forces["north"]
-	f.set_spawn_position({0, -32}, surface)
+	f.set_spawn_position({0, -44}, surface)
 	f.set_cease_fire('player', true)
 	f.set_friend("spectator", true)
 	f.set_friend("south_biters", true)
 	f.share_chart = true
 
 	local f = game.forces["south"]
-	f.set_spawn_position({0, 32}, surface)
+	f.set_spawn_position({0, 44}, surface)
 	f.set_cease_fire('player', true)
 	f.set_friend("spectator", true)
 	f.set_friend("north_biters", true)

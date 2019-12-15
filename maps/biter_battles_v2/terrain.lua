@@ -5,7 +5,7 @@ local math_random = math.random
 local math_abs = math.abs
 local simplex_noise = require 'utils.simplex_noise'.d2
 local create_tile_chain = require "functions.create_tile_chain"
-local spawn_circle_size = 32
+local spawn_circle_size = 40
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 local rocks = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big", "rock-huge"}
 
@@ -128,19 +128,20 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
 end
 
 function is_within_spawn_circle(pos)
-	if math.abs(pos.x) > spawn_circle_size then return false end
-	if math.abs(pos.y) > spawn_circle_size then return false end
+	if math_abs(pos.x) > spawn_circle_size then return false end
+	if math_abs(pos.y) > spawn_circle_size then return false end
 	if math.sqrt(pos.x ^ 2 + pos.y ^ 2) > spawn_circle_size then return false end
 	return true
 end
 
 local river_y_1 = bb_config.border_river_width * -1.5
 local river_y_2 = bb_config.border_river_width * 1.5
+local river_width_half = math.floor(bb_config.border_river_width * -0.5)
 function is_horizontal_border_river(pos)
 	if pos.y < river_y_1 then return false end
 	if pos.y > river_y_2 then return false end
 	if pos.y > -5 and pos.x > -5 and pos.x < 5 then return false end
-	if math.floor(bb_config.border_river_width * -0.5) < pos.y + (get_noise(1, pos) * 5) then return true end
+	if pos.y >= river_width_half - (math_abs(get_noise(1, pos)) * 4) then return true end
 	return false
 end
 
@@ -223,7 +224,7 @@ local function generate_circle_spawn(event)
 end
 
 local function generate_north_silo(surface)
-	local pos = {x = -12 + math.random(0, 24), y = -64 + math.random(0, 16)}
+	local pos = {x = -32 + math.random(0, 64), y = -72}
 
 	for _, t in pairs(surface.find_tiles_filtered({area = {{pos.x - 6, pos.y - 6},{pos.x + 6, pos.y + 6}}, name = {"water", "deepwater"}})) do
 		surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}})
@@ -267,7 +268,7 @@ local function generate_potential_spawn_ore(surface)
 	ores["coal"] = surface.count_entities_filtered({name = "coal", area = area})
 	ores["stone"] = surface.count_entities_filtered({name = "stone", area = area})
 	for ore, ore_count in pairs(ores) do
-		if ore_count < 250 or ore_count == nil then
+		if ore_count < 1000 or ore_count == nil then
 			local pos = {}
 			for a = 1, 32, 1 do
 				pos = {x = -96 + math_random(0, 192), y = -20 - math_random(0, 96)}
@@ -275,7 +276,7 @@ local function generate_potential_spawn_ore(surface)
 					break
 				end
 			end
-			draw_noise_ore_patch(pos, ore, surface, math_random(16, 24), math_random(800, 1600))
+			draw_noise_ore_patch(pos, ore, surface, math_random(18, 24), math_random(1500, 2000))
 		end
 	end
 end
