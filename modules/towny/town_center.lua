@@ -1,6 +1,7 @@
 local Team = require "modules.towny.team"
 local Public = {}
 
+local math_random = math.random
 local table_insert = table.insert
 
 local min_distance_to_spawn = 1
@@ -8,19 +9,63 @@ local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 32
 
 local town_wall_vectors = {}
-for x = -32, 32, 1 do
-	table_insert(town_wall_vectors, {x, 32})
-	table_insert(town_wall_vectors, {x, -32})
+for x = town_radius * -1, town_radius, 1 do
+	table_insert(town_wall_vectors, {x, town_radius})
+	table_insert(town_wall_vectors, {x, town_radius * -1})
 end
-for y = -31, 31, 1 do
-	table_insert(town_wall_vectors, {32, y})
-	table_insert(town_wall_vectors, {-32, y})
+for y = (town_radius - 1) * -1, town_radius - 1, 1 do
+	table_insert(town_wall_vectors, {town_radius, y})
+	table_insert(town_wall_vectors, {town_radius * -1, y})
 end
+
+local gate_vectors_horizontal = {}
+for x = -1, 1, 1 do
+	table_insert(gate_vectors_horizontal, {x, town_radius})
+	table_insert(gate_vectors_horizontal, {x, town_radius * -1})
+end
+local gate_vectors_vertical = {}
+for y = -1, 1, 1 do
+	table_insert(gate_vectors_vertical, {town_radius, y})
+	table_insert(gate_vectors_vertical, {town_radius * -1, y})
+end
+
+local turret_vectors = {}
+local turret_d = 5
+table_insert(turret_vectors, {turret_d * -1, turret_d * -1})
+table_insert(turret_vectors, {turret_d * 1, turret_d * 1})
+table_insert(turret_vectors, {turret_d * -1, turret_d * 1})
+table_insert(turret_vectors, {turret_d * 1, turret_d * -1})
+
+local resource_vectors = {}
+resource_vectors[1] = {}
+for x = 7, 25, 1 do
+	for y = 7, 25, 1 do	
+		table_insert(resource_vectors[1], {x, y})
+	end
+end
+resource_vectors[2] = {}
+for _, vector in pairs(resource_vectors[1]) do table_insert(resource_vectors[2], {vector[1] * -1, vector[2]}) end
+resource_vectors[3] = {}
+for _, vector in pairs(resource_vectors[1]) do table_insert(resource_vectors[3], {vector[1] * -1, vector[2] * -1}) end
+resource_vectors[4] = {}
+for _, vector in pairs(resource_vectors[1]) do table_insert(resource_vectors[4], {vector[1], vector[2] * -1}) end
 
 local clear_blacklist_types = {
 	["simple-entity"] = true,
-	["tree"] = true,
 	["cliff"] = true,
+}
+
+local starter_supplies = {
+	{name = "grenade", count = 3},
+	{name = "stone", count = 32},
+	{name = "submachine-gun", count = 1},
+	{name = "land-mine", count = 4},
+	{name = "iron-gear-wheel", count = 16},
+	{name = "iron-plate", count = 32},
+	{name = "copper-plate", count = 16},
+	{name = "shotgun", count = 1},
+	{name = "shotgun-shell", count = 8},
+	{name = "firearm-magazine", count = 16},
 }
 
 local function draw_town_spawn(player_name)
@@ -35,11 +80,53 @@ local function draw_town_spawn(player_name)
 			e.destroy()
 		end
 	end
+	
+	for _, vector in pairs(gate_vectors_horizontal) do
+		local p = {position.x + vector[1], position.y + vector[2]}	
+		if surface.can_place_entity({name = "gate", position = p, force = player_name}) then
+			surface.create_entity({name = "gate", position = p, force = player_name, direction = 2})
+		end
+	end
+	for _, vector in pairs(gate_vectors_vertical) do
+		local p = {position.x + vector[1], position.y + vector[2]}	
+		if surface.can_place_entity({name = "gate", position = p, force = player_name}) then
+			surface.create_entity({name = "gate", position = p, force = player_name, direction = 0})
+		end
+	end
+
 
 	for _, vector in pairs(town_wall_vectors) do
-		local p = {position.x + vector[1], position.y + vector[2]}
+		local p = {position.x + vector[1], position.y + vector[2]}	
 		if surface.can_place_entity({name = "stone-wall", position = p, force = player_name}) then
 			surface.create_entity({name = "stone-wall", position = p, force = player_name})
+		end
+	end
+	
+	for _, vector in pairs(turret_vectors) do
+		local p = {position.x + vector[1], position.y + vector[2]}
+		local turret = surface.create_entity({name = "gun-turret", position = p, force = player_name})
+		turret.insert({name = "firearm-magazine", count = 16})
+	end
+	
+	local ores = {"iron-ore", "copper-ore", "stone", "coal"}
+	table.shuffle_table(ores)
+	
+	for i = 1, 4, 1 do
+		for _, vector in pairs(resource_vectors[i]) do
+			local p = {position.x + vector[1], position.y + vector[2]}
+			surface.create_entity({name = ores[i], position = p, amount = 1500})
+		end
+	end
+	
+	for _, item_stack in pairs(starter_supplies) do
+		local m1 = -8 + math_random(0, 16)
+		local m2 = -8 + math_random(0, 16)		
+		local p = {position.x + m1, position.x + m2}
+		p = surface.find_non_colliding_position("wooden-chest", p, 32, 1)
+		if p then 
+			local e = surface.create_entity({name = "wooden-chest", position = p, force = player_name})
+			local inventory = e.get_inventory(defines.inventory.chest)
+			inventory.insert(item_stack)
 		end
 	end
 end

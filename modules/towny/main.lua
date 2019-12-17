@@ -39,6 +39,7 @@ local function on_init()
 	global.towny = {}
 	global.towny.town_centers = {}
 	global.towny.size_of_town_centers = 0
+	game.difficulty_settings.technology_price_multiplier = 0.5 
 end
 
 local Event = require 'utils.event'

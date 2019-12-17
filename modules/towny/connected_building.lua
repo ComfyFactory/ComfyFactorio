@@ -1,6 +1,6 @@
 local Public = {}
 
-local connection_radius = 3
+local connection_radius = 5
 
 local function is_entity_isolated(surface, entity)
 	local position_x = entity.position.x
