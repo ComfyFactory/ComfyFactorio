@@ -160,7 +160,6 @@ local function init_forces()
 		game.forces[force.name].technologies["artillery-shell-range-1"].enabled = false
 		game.forces[force.name].technologies["artillery-shell-speed-1"].enabled = false
 		game.forces[force.name].technologies["atomic-bomb"].enabled = false
-		game.forces[force.name].set_ammo_damage_modifier("shotgun-shell", 1)
 		game.forces[force.name].research_queue_enabled = true
 		global.spy_fish_timeout[force.name] = 0
 		global.active_biters[force.name] = {}
@@ -209,6 +208,7 @@ require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.biters_landfill"
 require "maps.biter_battles_v2.no_turret_creep"
 require "maps.biter_battles_v2.chat"
+require "maps.biter_battles_v2.combat_balance"
 require "maps.biter_battles_v2.bb_map_intro"
 require "maps.biter_battles_v2.difficulty_vote"
 require "maps.biter_battles_v2.team_manager"
