@@ -35,6 +35,20 @@ local function on_entity_died(event)
 	end
 end
 
+local function on_entity_damaged(event)	
+	local entity = event.entity
+	if entity.name == "market" then
+		Town_center.set_market_health(entity, event.final_damage_amount)
+	end
+end
+
+local function on_player_repaired_entity(event)	
+	local entity = event.entity
+	if entity.name == "market" then
+		Town_center.set_market_health(entity, -3)
+	end
+end
+
 local function on_init()
 	global.towny = {}
 	global.towny.town_centers = {}
@@ -49,3 +63,6 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
+

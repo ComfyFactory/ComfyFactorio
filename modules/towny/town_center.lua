@@ -69,7 +69,7 @@ local starter_supplies = {
 }
 
 local function draw_town_spawn(player_name)
-	local market = global.towny.town_centers[player_name]
+	local market = global.towny.town_centers[player_name].market
 	local position = market.position
 	local surface = market.surface
 
@@ -113,15 +113,17 @@ local function draw_town_spawn(player_name)
 	
 	for i = 1, 4, 1 do
 		for _, vector in pairs(resource_vectors[i]) do
-			local p = {position.x + vector[1], position.y + vector[2]}
-			surface.create_entity({name = ores[i], position = p, amount = 1500})
+			local p = {position.x + vector[1], position.y + vector[2]} 
+			if not surface.get_tile(p).collides_with("resource-layer") then
+				surface.create_entity({name = ores[i], position = p, amount = 1500})
+			end
 		end
 	end
 	
 	for _, item_stack in pairs(starter_supplies) do
 		local m1 = -8 + math_random(0, 16)
 		local m2 = -8 + math_random(0, 16)		
-		local p = {position.x + m1, position.x + m2}
+		local p = {position.x + m1, position.y + m2}
 		p = surface.find_non_colliding_position("wooden-chest", p, 32, 1)
 		if p then 
 			local e = surface.create_entity({name = "wooden-chest", position = p, force = player_name})
@@ -182,6 +184,15 @@ local function is_valid_location(surface, entity)
 	return true
 end
 
+function Public.set_market_health(entity, final_damage_amount)
+	local town_center = global.towny.town_centers[entity.force.name]
+	town_center.health = town_center.health - final_damage_amount
+	local m = town_center.health / town_center.max_health
+	entity.health = 150 * m
+	rendering.set_text(town_center.health_text, "Health: " .. town_center.health)
+	
+end
+
 function Public.found(event)
 	local entity = event.created_entity
 	if entity.name ~= "stone-furnace" then return end
@@ -201,7 +212,36 @@ function Public.found(event)
 	
 	Team.add_new_force(player_name)
 	
-	global.towny.town_centers[player_name] = surface.create_entity({name = "market", position = entity.position, force = player_name})
+	global.towny.town_centers[player_name] = {}
+	local town_center = global.towny.town_centers[player_name]
+	town_center.market = surface.create_entity({name = "market", position = entity.position, force = player_name})
+	town_center.max_health = 5000
+	town_center.health = town_center.max_health
+	
+	town_center.health_text = rendering.draw_text{
+		text = "HP: " .. town_center.health .. " / " .. town_center.max_health,
+		surface = surface,
+		target = town_center.market,
+		target_offset = {0, -2.5},
+		color = {200, 200, 200},
+		scale = 1.00,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false
+	}
+	
+	town_center.town_caption = rendering.draw_text{
+		text = player.name .. "'s town",
+		surface = surface,
+		target = town_center.market,
+		target_offset = {0, -3.25},
+		color = player.chat_color,
+		scale = 1.30,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false
+	}
+	
 	global.towny.size_of_town_centers = global.towny.size_of_town_centers + 1
 	
 	entity.destroy()

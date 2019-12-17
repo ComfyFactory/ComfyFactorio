@@ -1,6 +1,53 @@
 local Public = {}
 
-local connection_radius = 5
+local connection_radius = 4
+
+local entity_type_whitelist = {
+	["accumulator"] = true,
+	["ammo-turret"] = true,
+	["arithmetic-combinator"] = true,
+	["artillery-turret"] = true,
+	["assembling-machine"] = true,
+	["boiler"] = true,
+	["constant-combinator"] = true,
+	["container"] = true,
+	["curved-rail"] = true,
+	["decider-combinator"] = true,
+	["electric-turret"] = true,
+	["fluid-turret"] = true,
+	["furnace"] = true,
+	["gate"] = true,
+	["generator"] = true,
+	["heat-pipe"] = true,
+	["infinity-container"] = true,
+	["heat-interface"] = true,
+	["infinity-pipe"] = true,
+	["inserter"] = true,
+	["lamp"] = true,
+	["loader"] = true,
+	["logistic-container"] = true,
+	["market"] = true,
+	["mining-drill"] = true,
+	["offshore-pump"] = true,
+	["pipe"] = true,
+	["pipe-to-ground"] = true,
+	["programmable-speaker"] = true,
+	["pump"] = true,
+	["radar"] = true,
+	["rail-chain-signal"] = true,
+	["rail-signal"] = true,
+	["reactor"] = true,
+	["roboport"] = true,
+	["rocket-silo"] = true,
+	["solar-panel"] = true,
+	["splitter"] = true,
+	["storage-tank"] = true,
+	["straight-rail"] = true,
+	["train-stop"] = true,
+	["transport-belt"] = true,
+	["underground-belt"] = true,
+	["wall"] = true,
+}
 
 local function is_entity_isolated(surface, entity)
 	local position_x = entity.position.x
@@ -9,7 +56,7 @@ local function is_entity_isolated(surface, entity)
 	local count = 0
 	
 	for _, e in pairs(surface.find_entities_filtered({area = area, force = entity.force.name})) do
-		if game.entity_prototypes[e.name] and game.recipe_prototypes[e.name] or e.name == "market" then
+		if entity_type_whitelist[e.type] then
 			count = count + 1
 			if count > 1 then return end
 		end
@@ -36,6 +83,7 @@ end
 function Public.prevent_isolation(event)
 	local entity = event.created_entity
 	if not entity.valid then return end
+	if entity.type == "entity-ghost" then return end
 	local surface = event.created_entity.surface
 	
 	if is_entity_isolated(surface, entity) then

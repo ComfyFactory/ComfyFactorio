@@ -9,8 +9,10 @@ end
 
 function Public.kill_force(force_name)
 	local force = game.forces[force_name]
-	local market = global.towny.town_centers[force_name]
+	local market = global.towny.town_centers[force_name].market	
 	local surface = market.surface
+	
+	surface.create_entity({name = "big-artillery-explosion", position = market.position})
 	
 	for _, player in pairs(force.players) do
 		if player.character then player.character.die() end
