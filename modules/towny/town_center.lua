@@ -1,4 +1,5 @@
 local Team = require "modules.towny.team"
+local Public = {}
 
 local table_insert = table.insert
 
@@ -16,13 +17,27 @@ for y = -31, 31, 1 do
 	table_insert(town_wall_vectors, {-32, y})
 end
 
+local clear_blacklist_types = {
+	["simple-entity"] = true,
+	["tree"] = true,
+	["cliff"] = true,
+}
+
 local function draw_town_spawn(player_name)
 	local market = global.towny.town_centers[player_name]
 	local position = market.position
 	local surface = market.surface
 
+	local area = {{position.x - town_radius, position.y - town_radius}, {position.x + town_radius, position.y + town_radius}}
+	
+	for _, e in pairs(surface.find_entities_filtered({area = area, force = "neutral"})) do
+		if not clear_blacklist_types[e.type] then
+			e.destroy()
+		end
+	end
+
 	for _, vector in pairs(town_wall_vectors) do
-		local p = {position.x + vector[1], position.x + vector[2]}
+		local p = {position.x + vector[1], position.y + vector[2]}
 		if surface.can_place_entity({name = "stone-wall", position = p, force = player_name}) then
 			surface.create_entity({name = "stone-wall", position = p, force = player_name})
 		end
@@ -67,10 +82,20 @@ local function is_valid_location(surface, entity)
 		end
 	end
 
-	if count <= 4 then return true end
+	if count > 3 then 
+		surface.create_entity({
+			name = "flying-text",
+			position = entity.position,
+			text = "Area has too many non-neutral entities!",
+			color = {r=0.77, g=0.0, b=0.0}
+		})
+		return 
+	end
+	
+	return true
 end
 
-local function found_town_center(event)
+function Public.found(event)
 	local entity = event.created_entity
 	if entity.name ~= "stone-furnace" then return end
 	
@@ -97,7 +122,9 @@ local function found_town_center(event)
 	draw_town_spawn(player_name)
 	
 	player.force = game.forces[player_name]
-	game.print(player.name .. " has founded a new town!", {255, 255, 0})
+	game.print(">> " .. player.name .. " has founded a new town!", {255, 255, 0})
+	
+	return true
 end
 
-return found_town_center
+return Public
