@@ -3,7 +3,6 @@ local Server = require 'utils.server'
 
 local gui = require "maps.biter_battles_v2.gui"
 local ai = require "maps.biter_battles_v2.ai"
-local chunk_pregen = require "maps.biter_battles_v2.pregenerate_chunks"
 local mirror_tick_routine = require "maps.biter_battles_v2.mirror_terrain"
 local server_restart = require "maps.biter_battles_v2.game_won"
 
@@ -29,16 +28,6 @@ local function reveal_map()
 	end
 end
 
-local function clear_corpses()
-	local corpses = game.surfaces["biter_battles"].find_entities_filtered({type = "corpse"})
-	if #corpses < 1024 then return end
-	for _, e in pairs(corpses) do
-		if math.random(1, 3) == 1 then
-			e.destroy()
-		end
-	end
-end
-
 local function restart_idle_map()
 	if game.tick < 432000 then return end
 	if #game.connected_players ~= 0 then global.restart_idle_map_countdown = 2 return end
@@ -48,34 +37,36 @@ local function restart_idle_map()
 	Server.start_scenario('Biter_Battles')
 end
 
+local tick_minute_functions = {
+	[300 * 1] = ai.raise_evo,
+	[300 * 2] = ai.destroy_inactive_biters,
+	[300 * 3] = ai.main_attack,
+	[300 * 4] = ai.send_near_biters_to_silo,
+	[300 * 5] = ai.destroy_old_age_biters,
+	[300 * 6] = restart_idle_map,
+}
+
 local function on_tick(event)
 	mirror_tick_routine()
-	if game.tick % 30 ~= 0 then return end
-	chunk_pregen()
+	
+	local tick = game.tick
 
-	if game.tick % 60 ~= 0 then return end
+	if tick % 60 ~= 0 then return end
 	global.bb_threat["north_biters"] = global.bb_threat["north_biters"] + global.bb_threat_income["north_biters"]
 	global.bb_threat["south_biters"] = global.bb_threat["south_biters"] + global.bb_threat_income["south_biters"]
 
-	if game.tick % 180 == 0 then gui() end
+	if tick % 180 == 0 then gui() end
 
-	if game.tick % 300 ~= 0 then return end
+	if tick % 300 ~= 0 then return end
 	spy_fish()
 	if global.bb_game_won_by_team then
 		reveal_map()
 		server_restart()
 		return
 	end
-
-	if game.tick % 3600 ~= 0 then return end
-	ai.raise_evo()
-	ai.destroy_inactive_biters()
-	ai.main_attack()
-	ai.send_near_biters_to_silo()
-	ai.destroy_old_age_biters()
-
-	clear_corpses()
-	restart_idle_map()
+	
+	local key = tick % 3600
+	if tick_minute_functions[key] then tick_minute_functions[key]() end
 end
 
 event.add(defines.events.on_tick, on_tick)

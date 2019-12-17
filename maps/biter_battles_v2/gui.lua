@@ -2,6 +2,7 @@ local bb_config = require "maps.biter_battles_v2.config"
 local event = require 'utils.event'
 local spy_fish = require "maps.biter_battles_v2.spy_fish"
 local feed_the_biters = require "maps.biter_battles_v2.feeding"
+local math_random = math.random
 
 require "maps.biter_battles_v2.spec_spy"
 
@@ -26,14 +27,14 @@ local gui_values = {
 		tech_spy = "spy-south-tech", prod_spy = "spy-south-prod"}
 	}
 
-local map_gen_messages = {
-	"Map is still generating, please get comfy.",
-	"Map is still generating, get comfy!!",
-	"Map is still generating, go and grab a drink.",
-	"Map is still generating, take a short healthy break.",
-	"Map is still generating, go and stretch your legs.",
-	"Map is still generating, please pet the cat.",
-	"Map is still generating, time to get a bowl of snacks :3"
+local wait_messages = {
+	"please get comfy.",
+	"get comfy!!",
+	"go and grab a drink.",
+	"take a short healthy break.",
+	"go and stretch your legs.",
+	"please pet the cat.",
+	"time to get a bowl of snacks :3",
 }
 
 local function create_sprite_button(player)
@@ -364,15 +365,6 @@ local function join_gui_click(name, player)
 
 	if not team[name] then return end
 
-	-- JOIN PREVENTION IF MAP IS STILL GENERATING
-	if not global.map_generation_complete then
-		if not global.map_pregen_message_counter[player.name] then global.map_pregen_message_counter[player.name] = 1 end
-		player.print(map_gen_messages[global.map_pregen_message_counter[player.name]], {r = 0.98, g = 0.66, b = 0.22})
-		global.map_pregen_message_counter[player.name] = global.map_pregen_message_counter[player.name] + 1
-		if global.map_pregen_message_counter[player.name] > #map_gen_messages then global.map_pregen_message_counter[player.name] = 1 end
-		return
-	end
-
 	if global.game_lobby_active then
 		if player.admin then
 			join_team(player, team[name])
@@ -380,7 +372,7 @@ local function join_gui_click(name, player)
 			global.game_lobby_active = false
 			return
 		end
-		player.print("Waiting for more players to join the game.", { r=0.98, g=0.66, b=0.22})
+		player.print("Waiting for more players, " .. wait_messages[math_random(1, #wait_messages)], { r=0.98, g=0.66, b=0.22})
 		return
 	end
 	join_team(player, team[name])
