@@ -8,6 +8,29 @@ local min_distance_to_spawn = 1
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 32
 
+local colors = {}
+local c1 = 250
+local c2 = 125
+local c3 = -25
+for v = c1, c2, c3 do
+	table.insert(colors, {0, 0, v})
+end
+for v = c1, c2, c3 do
+	table.insert(colors, {0, v, 0})
+end
+for v = c1, c2, c3 do
+	table.insert(colors, {v, 0, 0})
+end
+for v = c1, c2, c3 do
+	table.insert(colors, {0, v, v})
+end
+for v = c1, c2, c3 do
+	table.insert(colors, {v, v, 0})
+end
+for v = c1, c2, c3 do
+	table.insert(colors, {v, 0, v})
+end
+
 local town_wall_vectors = {}
 for x = town_radius * -1, town_radius, 1 do
 	table_insert(town_wall_vectors, {x, town_radius})
@@ -189,7 +212,7 @@ function Public.set_market_health(entity, final_damage_amount)
 	town_center.health = town_center.health - final_damage_amount
 	local m = town_center.health / town_center.max_health
 	entity.health = 150 * m
-	rendering.set_text(town_center.health_text, "Health: " .. town_center.health)
+	rendering.set_text(town_center.health_text, "HP: " .. town_center.health .. " / " .. town_center.max_health)
 	
 end
 
@@ -217,6 +240,7 @@ function Public.found(event)
 	town_center.market = surface.create_entity({name = "market", position = entity.position, force = player_name})
 	town_center.max_health = 5000
 	town_center.health = town_center.max_health
+	town_center.color = colors[math_random(1, #colors)]
 	
 	town_center.health_text = rendering.draw_text{
 		text = "HP: " .. town_center.health .. " / " .. town_center.max_health,
@@ -235,7 +259,7 @@ function Public.found(event)
 		surface = surface,
 		target = town_center.market,
 		target_offset = {0, -3.25},
-		color = player.chat_color,
+		color = town_center.color,
 		scale = 1.30,
 		font = "default-game",
 		alignment = "center",
@@ -248,9 +272,11 @@ function Public.found(event)
 	
 	draw_town_spawn(player_name)
 	
-	player.force = game.forces[player_name]
-	game.print(">> " .. player.name .. " has founded a new town!", {255, 255, 0})
+	Team.add_player_to_town(player, town_center)
 	
+	player.force.set_spawn_position({x = town_center.market.position.x, y = town_center.market.position.y + 4}, surface)
+	
+	game.print(">> " .. player.name .. " has founded a new town!", {255, 255, 0})	
 	return true
 end
 
