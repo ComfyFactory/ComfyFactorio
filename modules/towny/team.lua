@@ -50,8 +50,10 @@ function Public.ally_town(player, item)
 		local target_player = target.player
 		if not target_player then return end
 		if not global.towny.homeless_requests[target_player.index] then return end
-		game.print(">> " .. player.name .. " has accepted " .. target_player.name .. " into their Town!", {255, 255, 0})
-		Public.add_player_to_town(target_player, global.towny.town_centers[player.name])
+		if global.towny.homeless_requests[target_player.index] == player.force.name then
+			game.print(">> " .. player.name .. " has accepted " .. target_player.name .. " into their Town!", {255, 255, 0})
+			Public.add_player_to_town(target_player, global.towny.town_centers[player.name])
+		end
 		return
 	end
 	
@@ -121,8 +123,12 @@ function Public.kill_force(force_name)
 		player.force = game.forces.player
 	end
 
-	for _, e in pairs(surface.find_entities_filtered({force = force_name})) do 
-		if e.health > 0 then e.active = false end
+	for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
+		if e.health then
+			if e.valid then
+				if e.health > 0 then e.active = false end
+			end
+		end
 	end
 
 	game.merge_forces(force_name, "neutral")

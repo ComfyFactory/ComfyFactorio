@@ -4,7 +4,7 @@ local Public = {}
 local math_random = math.random
 local table_insert = table.insert
 
-local min_distance_to_spawn = 1
+local min_distance_to_spawn = 64
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 32
 
@@ -157,6 +157,16 @@ local function draw_town_spawn(player_name)
 end
 
 local function is_valid_location(surface, entity)
+	if not surface.can_place_entity({name = "market", position = entity.position}) then
+		surface.create_entity({
+			name = "flying-text",
+			position = entity.position,
+			text = "Position is obstructed!",
+			color = {r=0.77, g=0.0, b=0.0}
+		})
+		return 
+	end
+
 	if global.towny.size_of_town_centers > 48 then
 		surface.create_entity({
 			name = "flying-text",
@@ -177,6 +187,17 @@ local function is_valid_location(surface, entity)
 		return 
 	end
 	
+	local area = {{entity.position.x - town_radius * 2, entity.position.y - town_radius * 2}, {entity.position.x + town_radius * 2, entity.position.y + town_radius * 2}}	
+	if surface.count_entities_filtered({area = area, type = "market"}) > 0 then
+		surface.create_entity({
+			name = "flying-text",
+			position = entity.position,
+			text = "Town location is too close to another town center!",
+			color = {r=0.77, g=0.0, b=0.0}
+		})
+		return
+	end
+		
 	local area = {{entity.position.x - town_radius, entity.position.y - town_radius}, {entity.position.x + town_radius, entity.position.y + town_radius}}
 	local count = 0
 	for _, e in pairs(surface.find_entities_filtered({area = area})) do
@@ -218,7 +239,8 @@ end
 
 function Public.found(event)
 	local entity = event.created_entity
-	if entity.name ~= "stone-furnace" then return end
+	if entity.force.index ~= 1 then return end
+	if entity.name ~= "stone-furnace" then return end	
 	
 	local player = game.players[event.player_index]
 	local player_name = tostring(player.name)
