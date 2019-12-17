@@ -24,7 +24,7 @@ end
 function Public.ally_town(player, item)
 	local position = item.position
 	local surface = player.surface
-	local area = {{position.x - 2, position.y - 2}, {position.x + 2, position.y + 2}}
+	local area = {{position.x - 2.5, position.y - 2.5}, {position.x + 2.5, position.y + 2.5}}
 
 	local requesting_force = player.force
 	local target = false
@@ -55,10 +55,12 @@ function Public.ally_town(player, item)
 		return
 	end
 	
+	if target_force.get_friend(requesting_force) and requesting_force.get_friend(target_force) then return end
+	
 	requesting_force.set_friend(target_force, true)
 	game.print(">> Town " .. requesting_force.name .. " has set " .. target_force.name .. " as their friend!", {255, 255, 0})
 	
-	if requesting_force.get_friend(target_force) then
+	if target_force.get_friend(requesting_force) then
 		game.print(">> The towns " .. requesting_force.name .. " and " .. target_force.name .. " have formed an alliance!", {255, 255, 0})
 	end
 end
@@ -66,7 +68,7 @@ end
 function Public.declare_war(player, item)
 	local position = item.position
 	local surface = player.surface
-	local area = {{position.x - 2, position.y - 2}, {position.x + 2, position.y + 2}}
+	local area = {{position.x - 2.5, position.y - 2.5}, {position.x + 2.5, position.y + 2.5}}
 
 	local requesting_force = player.force
 	local target = surface.find_entities_filtered({type = {"character", "market"}, area = area})[1]
@@ -74,10 +76,13 @@ function Public.declare_war(player, item)
 	if not target then return end
 	local target_force = target.force
 	
+	if target_force.index == 1 then return end
+	
 	if requesting_force.name == target_force.name then
 		if player.name ~= target.force.name then
 			Public.set_player_to_homeless(player)
 			game.print(">> " .. player.name .. " has abandoned " .. target_force.name .. "'s Town!", {255, 255, 0})
+			global.towny.homeless_requests[player.index] = nil
 		end	
 		if player.name == target.force.name then
 			if target.type ~= "character" then return end
@@ -89,8 +94,6 @@ function Public.declare_war(player, item)
 		end
 		return
 	end
-	
-	if target_force.index == 1 then return end
 	
 	requesting_force.set_friend(target_force, false)
 	target_force.set_friend(requesting_force, false)
@@ -118,7 +121,9 @@ function Public.kill_force(force_name)
 		player.force = game.forces.player
 	end
 
-	for _, e in pairs(surface.find_entities_filtered({force = force_name})) do e.active = false end
+	for _, e in pairs(surface.find_entities_filtered({force = force_name})) do 
+		if e.health > 0 then e.active = false end
+	end
 
 	game.merge_forces(force_name, "neutral")
 	

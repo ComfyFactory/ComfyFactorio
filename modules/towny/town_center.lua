@@ -10,7 +10,7 @@ local town_radius = 32
 
 local colors = {}
 local c1 = 250
-local c2 = 125
+local c2 = 150
 local c3 = -25
 for v = c1, c2, c3 do
 	table.insert(colors, {0, 0, v})
