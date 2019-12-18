@@ -1,6 +1,6 @@
 local Public = {}
 
-local connection_radius = 4
+local connection_radius = 5
 
 local entity_type_whitelist = {
 	["accumulator"] = true,
@@ -13,14 +13,15 @@ local entity_type_whitelist = {
 	["container"] = true,
 	["curved-rail"] = true,
 	["decider-combinator"] = true,
+	["electric-pole"] = true,
 	["electric-turret"] = true,
 	["fluid-turret"] = true,
 	["furnace"] = true,
 	["gate"] = true,
 	["generator"] = true,
+	["heat-interface"] = true,
 	["heat-pipe"] = true,
 	["infinity-container"] = true,
-	["heat-interface"] = true,
 	["infinity-pipe"] = true,
 	["inserter"] = true,
 	["lamp"] = true,

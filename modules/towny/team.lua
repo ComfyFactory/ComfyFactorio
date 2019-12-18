@@ -1,6 +1,6 @@
 local Public = {}
 
-local item_drop_radius = 2
+local item_drop_radius = 1.75
 
 function Public.set_player_color(player)
 	if player.force.index == 1 then
@@ -31,7 +31,7 @@ function Public.set_town_color(event)
 	town_center.color = {player.color.r, player.color.g, player.color.b}
 	rendering.set_color(town_center.town_caption, town_center.color)
 	for _, p in pairs(player.force.players) do
-		Public.set_player_color(player)
+		Public.set_player_color(p)
 	end
 end
 
@@ -63,6 +63,26 @@ local function ally_homeless(player, target)
 	
 	if requesting_force.index == 1 then
 		global.towny.requests[player.index] = target_force.name
+		
+		local target_player = false
+		if target.type == "character" then 
+			target_player = target.player
+		else
+			target_player = game.players[target_force.name]
+		end
+	
+		if target_player then
+			if global.towny.requests[target_player.index] then 
+				if global.towny.requests[target_player.index] == player.name then			
+					if global.towny.town_centers[target_force.name] then
+						game.print(">> " .. player.name .. " has settled in " .. target_force.name .. "'s Town!", {255, 255, 0})
+						Public.add_player_to_town(player, global.towny.town_centers[target_force.name])
+						return true
+					end
+				end
+			end
+		end
+
 		game.print(">> " .. player.name .. " wants to settle in " .. target_force.name .. " Town!", {255, 255, 0})
 		return true
 	end
@@ -76,7 +96,7 @@ local function ally_homeless(player, target)
 		if global.towny.requests[target_player.index] then 
 			if global.towny.requests[target_player.index] == player.force.name then
 				game.print(">> " .. player.name .. " has accepted " .. target_player.name .. " into their Town!", {255, 255, 0})
-				Public.add_player_to_town(target_player, global.towny.town_centers[player.name])
+				Public.add_player_to_town(target_player, global.towny.town_centers[player.force.name])
 				return true
 			end
 		end	
@@ -104,7 +124,7 @@ function Public.ally_town(player, item)
 	local position = item.position
 	local surface = player.surface
 	local area = {{position.x - item_drop_radius, position.y - item_drop_radius}, {position.x + item_drop_radius, position.y + item_drop_radius}}
-	
+	local requesting_force = player.force
 	local target = false
 	
 	for _, e in pairs(surface.find_entities_filtered({type = {"character", "market"}, area = area})) do
@@ -115,6 +135,7 @@ function Public.ally_town(player, item)
 	end
 	
 	if not target then return end
+	if target.force.index == 2 or target.force.index == 3 then return end
 
 	if ally_homeless(player, target) then return end	
 	ally_neighbour_towns(player, target)
@@ -130,8 +151,7 @@ function Public.declare_war(player, item)
 
 	if not target then return end
 	local target_force = target.force
-	
-	if target_force.index == 1 then return end
+	if target_force.index <= 3 then return end
 	
 	if requesting_force.name == target_force.name then
 		if player.name ~= target.force.name then
@@ -146,6 +166,7 @@ function Public.declare_war(player, item)
 			if target_player.index == player.index then return end
 			Public.set_player_to_homeless(target_player)
 			game.print(">> " .. player.name .. " has banished " .. target_player.name .. " from their Town!", {255, 255, 0})
+			global.towny.requests[player.index] = nil
 		end
 		return
 	end

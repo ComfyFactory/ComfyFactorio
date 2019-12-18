@@ -452,6 +452,12 @@ local function on_player_joined_game(event)
 	global.map_init_done = true
 end
 
+local function on_force_created(event)
+	event.force.set_friend(game.forces.scrap, true)
+	game.forces.scrap.set_friend(event.force, true)
+	event.force.technologies["optics"].researched = true
+end
+
 local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
@@ -521,6 +527,7 @@ local T = Map.Pop_info()
 end
 
 event.on_init(on_init)
+event.add(defines.events.on_force_created, on_force_created)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

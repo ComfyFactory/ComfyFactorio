@@ -54,7 +54,7 @@ local function on_console_chat(event)
 	if button.caption ~= "Global Chat" then return	end
 	for _, force in pairs(game.forces) do
 		if force.name ~= player.force.name then
-			force.print(event.message, player.chat_color)
+			force.print(player.name .. " " .. player.tag .. ": " .. event.message, player.chat_color)
 		end
 	end
 end

@@ -21,6 +21,7 @@ local function set_offers(town_center)
 	local market = town_center.market
 	local market_items = {
 		{price = {{"coin", town_center.max_health * 0.1}}, offer = {type = 'nothing', effect_description = "Upgrade Town Center Health"}},
+		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
 		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'wood', count = 50}},
 		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
 		{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
@@ -32,6 +33,7 @@ local function set_offers(town_center)
 		{price = {{'copper-ore', 12}}, offer = {type = 'give-item', item = "coin"}},
 		{price = {{'stone', 12}}, offer = {type = 'give-item', item = "coin"}},
 		{price = {{'coal', 12}}, offer = {type = 'give-item', item = "coin"}},
+		{price = {{'uranium-ore', 10}}, offer = {type = 'give-item', item = "coin"}},
 		{price = {{'uranium-ore', 10}}, offer = {type = 'give-item', item = "coin"}},
 	}
 	for _, item in pairs(market_items) do

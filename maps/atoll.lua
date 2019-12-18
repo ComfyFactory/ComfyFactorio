@@ -1,7 +1,5 @@
 --atoll-- mewmew made this --
 
-require "modules.dynamic_landfill"
-require "modules.satellite_score"
 require "modules.spawners_contain_biters"
 require "modules.surrounded_by_worms"
 

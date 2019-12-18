@@ -4,7 +4,7 @@ local Market = require "modules.towny.market"
 local Team = require "modules.towny.team"
 local Town_center = require "modules.towny.town_center"
 require "modules.global_chat_toggle"
-
+require "modules.custom_death_messages"
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
@@ -14,7 +14,7 @@ local function on_player_joined_game(event)
 	
 	Team.set_player_to_homeless(player)	
 	player.print("Towny is enabled! To found your town, place down a stone furnace.", {255, 255, 0})
-	player.print("To ally or settle with another player, drop a fish on their market or character. Coal will yield the opposite result.", {255, 255, 0})
+	player.print("To ally or settle with another player, drop a fish on their market or character. Coal yields the opposite result.", {255, 255, 0})
 	
 	if player.online_time == 0 then
 		Team.give_homeless_items(player)
@@ -74,7 +74,7 @@ end
 
 local function on_player_dropped_item(event)
 	local player = game.players[event.player_index]
-	local entity = event.entity
+	local entity = event.entity	
 	if entity.stack.name == "raw-fish" then 
 		Team.ally_town(player, entity)
 		return
@@ -108,34 +108,15 @@ local function on_init()
 	
 	local p = game.permissions.create_group("Homeless")
 	for action_name, _ in pairs(defines.input_action) do
-		p.set_allows_action(defines.input_action[action_name], false)
+		p.set_allows_action(defines.input_action[action_name], true)
 	end
 	local defs = {
 		defines.input_action.craft,
-		defines.input_action.build_item,
-		defines.input_action.cursor_split,	
-		defines.input_action.cursor_transfer,
-		defines.input_action.clean_cursor_stack,
-		defines.input_action.drop_item,
-		defines.input_action.begin_mining,
-		defines.input_action.change_picking_state,
-		defines.input_action.edit_permission_group,
-		defines.input_action.gui_click,
-		defines.input_action.gui_confirmed,
-		defines.input_action.gui_elem_changed,
-		defines.input_action.gui_location_changed,
-		defines.input_action.gui_selected_tab_changed,
-		defines.input_action.gui_selection_state_changed,
-		defines.input_action.gui_switch_state_changed,
-		defines.input_action.gui_text_changed,
-		defines.input_action.gui_value_changed,
-		defines.input_action.open_character_gui,
-		defines.input_action.open_kills_gui,
-		defines.input_action.start_walking,
-		defines.input_action.toggle_show_entity_info,
-		defines.input_action.write_to_console,
+		defines.input_action.deconstruct,
+		defines.input_action.start_research,
+		defines.input_action.open_technology_gui,
 	}
-	for _, d in pairs(defs) do p.set_allows_action(d, true) end
+	for _, d in pairs(defs) do p.set_allows_action(d, false) end
 end
 
 local Event = require 'utils.event'

@@ -4,14 +4,14 @@ local Public = {}
 local math_random = math.random
 local table_insert = table.insert
 
-local min_distance_to_spawn = 1
+local min_distance_to_spawn = 96
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 30
-local radius_between_towns = town_radius * 4
+local radius_between_towns = 160
 
 local colors = {}
 local c1 = 250
-local c2 = 150
+local c2 = 175
 local c3 = -25
 for v = c1, c2, c3 do
 	table.insert(colors, {0, 0, v})
@@ -101,6 +101,7 @@ local clear_blacklist_types = {
 }
 
 local starter_supplies = {
+	{name = "raw-fish", count = 3},
 	{name = "grenade", count = 3},
 	{name = "stone", count = 32},
 	{name = "submachine-gun", count = 1},
