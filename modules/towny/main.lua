@@ -1,5 +1,6 @@
 local Combat_balance = require "modules.towny.combat_balance"
 local Connected_building = require "modules.towny.connected_building"
+local Info = require "modules.towny.info"
 local Market = require "modules.towny.market"
 local Team = require "modules.towny.team"
 local Town_center = require "modules.towny.town_center"
@@ -7,14 +8,14 @@ require "modules.global_chat_toggle"
 require "modules.custom_death_messages"
 
 local function on_player_joined_game(event)
-	local player = game.players[event.player_index]
+	local player = game.players[event.player_index]	
+	Info.show(player)
+	
 	Team.set_player_color(player)
 	
 	if player.force.index ~= 1 then return end
 	
 	Team.set_player_to_homeless(player)	
-	player.print("Towny is enabled! To found your town, place down a stone furnace.", {255, 255, 0})
-	player.print("To ally or settle with another player, drop a fish on their market or character. Coal yields the opposite result.", {255, 255, 0})
 	
 	if player.online_time == 0 then
 		Team.give_homeless_items(player)
@@ -98,6 +99,10 @@ local function on_gui_opened(event)
 	Market.refresh_offers(event)
 end
 
+local function on_gui_click(event)
+	Info.close(event)
+end
+
 local function on_init()
 	global.towny = {}
 	global.towny.requests = {}
@@ -121,6 +126,7 @@ end
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
+Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_console_command, on_console_command)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
