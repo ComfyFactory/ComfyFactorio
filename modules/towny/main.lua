@@ -1,9 +1,10 @@
-local Town_center = require "modules.towny.town_center"
-local Team = require "modules.towny.team"
-local Connected_building = require "modules.towny.connected_building"
 local Combat_balance = require "modules.towny.combat_balance"
+local Connected_building = require "modules.towny.connected_building"
+local Market = require "modules.towny.market"
+local Team = require "modules.towny.team"
+local Town_center = require "modules.towny.town_center"
 require "modules.global_chat_toggle"
---local Market = require "modules.towny.market"
+
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
@@ -67,7 +68,7 @@ end
 local function on_player_repaired_entity(event)	
 	local entity = event.entity
 	if entity.name == "market" then
-		Town_center.set_market_health(entity, -3)
+		Town_center.set_market_health(entity, -4)
 	end
 end
 
@@ -86,6 +87,15 @@ end
 
 local function on_console_command(event)
 	Team.set_town_color(event)
+end
+
+local function on_market_item_purchased(event)
+	Market.offer_purchased(event)
+	Market.refresh_offers(event)
+end
+
+local function on_gui_opened(event)
+	Market.refresh_offers(event)
 end
 
 local function on_init()
@@ -140,3 +150,5 @@ Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
+Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+Event.add(defines.events.on_gui_opened, on_gui_opened)

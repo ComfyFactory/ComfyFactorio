@@ -122,7 +122,7 @@ local function draw_town_spawn(player_name)
 	
 	for _, e in pairs(surface.find_entities_filtered({area = area, force = "neutral"})) do
 		if not clear_blacklist_types[e.type] then
-			--e.destroy()
+			e.destroy()
 		end
 	end
 	
@@ -183,18 +183,19 @@ local function draw_town_spawn(player_name)
 	local vector_indexes = {1,2,3,4}
 	table.shuffle_table(vector_indexes)
 		
+	local tree = "tree-0" .. math_random(1, 9)
 	for _, vector in pairs(additional_resource_vectors[vector_indexes[1]]) do
 		if math_random(1, 6) == 1 then
 			local p = {position.x + vector[1], position.y + vector[2]} 
-			p = surface.find_non_colliding_position("tree-01", p, 32, 1)
+			p = surface.find_non_colliding_position(tree, p, 32, 1)
 			if p then 
-				surface.create_entity({name = "tree-01", position = p})
+				surface.create_entity({name = tree, position = p})
 			end
 		end
 	end
 	
 	local area = {{position.x - town_radius * 1.5, position.y - town_radius * 1.5}, {position.x + town_radius * 1.5, position.y + town_radius * 1.5}}
-	if surface.count_tiles_filtered({name = {"water", "deepwater"}, area = area}) == 0 then
+	if surface.count_tiles_filtered({name = {"water", "deepwater"}, area = area}) < 8 then
 		for _, vector in pairs(additional_resource_vectors[vector_indexes[2]]) do
 			local p = {position.x + vector[1], position.y + vector[2]}
 			if surface.get_tile(p).name ~= "out-of-map" then
@@ -301,8 +302,7 @@ function Public.set_market_health(entity, final_damage_amount)
 	town_center.health = town_center.health - final_damage_amount
 	local m = town_center.health / town_center.max_health
 	entity.health = 150 * m
-	rendering.set_text(town_center.health_text, "HP: " .. town_center.health .. " / " .. town_center.max_health)
-	
+	rendering.set_text(town_center.health_text, "HP: " .. town_center.health .. " / " .. town_center.max_health)	
 end
 
 function Public.found(event)
@@ -342,7 +342,7 @@ function Public.found(event)
 	global.towny.town_centers[player_name] = {}
 	local town_center = global.towny.town_centers[player_name]
 	town_center.market = surface.create_entity({name = "market", position = entity.position, force = player_name})
-	town_center.max_health = 5000
+	town_center.max_health = 1000
 	town_center.health = town_center.max_health
 	town_center.color = colors[math_random(1, #colors)]
 	
