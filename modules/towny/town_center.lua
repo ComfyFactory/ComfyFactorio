@@ -6,7 +6,7 @@ local table_insert = table.insert
 
 local min_distance_to_spawn = 1
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
-local town_radius = 32
+local town_radius = 30
 local radius_between_towns = town_radius * 4
 
 local colors = {}
@@ -74,10 +74,29 @@ for _, vector in pairs(resource_vectors[1]) do table_insert(resource_vectors[3],
 resource_vectors[4] = {}
 for _, vector in pairs(resource_vectors[1]) do table_insert(resource_vectors[4], {vector[1], vector[2] * -1}) end
 
+local additional_resource_vectors = {}
+additional_resource_vectors[1] = {}
+for x = 10, 22, 1 do
+	for y = -4, 4, 1 do	
+		table_insert(additional_resource_vectors[1], {x, y})
+	end
+end
+additional_resource_vectors[2] = {}
+for _, vector in pairs(additional_resource_vectors[1]) do table_insert(additional_resource_vectors[2], {vector[1] * -1, vector[2]}) end
+additional_resource_vectors[3] = {}
+for y = 10, 22, 1 do
+	for x = -4, 4, 1 do	
+		table_insert(additional_resource_vectors[3], {x, y})
+	end
+end
+additional_resource_vectors[4] = {}
+for _, vector in pairs(additional_resource_vectors[3]) do table_insert(additional_resource_vectors[4], {vector[1], vector[2] * -1}) end
+
 local market_collide_vectors = {{-1, 1},{0, 1},{1, 1},{1, 0},{1, -1}}
 
 local clear_blacklist_types = {
 	["simple-entity"] = true,
+	["resource"] = true,
 	["cliff"] = true,
 }
 
@@ -99,7 +118,7 @@ local function draw_town_spawn(player_name)
 	local position = market.position
 	local surface = market.surface
 
-	local area = {{position.x - town_radius, position.y - town_radius}, {position.x + town_radius, position.y + town_radius}}
+	local area = {{position.x - (town_radius + 1), position.y - (town_radius + 1)}, {position.x + (town_radius + 1), position.y + (town_radius + 1)}}
 	
 	for _, e in pairs(surface.find_entities_filtered({area = area, force = "neutral"})) do
 		if not clear_blacklist_types[e.type] then
@@ -129,7 +148,8 @@ local function draw_town_spawn(player_name)
 	
 	for _, vector in pairs(turret_vectors) do
 		local p = {position.x + vector[1], position.y + vector[2]}
-		if surface.can_place_entity({name = "gun-turret", position = p, force = player_name}) then
+		p = surface.find_non_colliding_position("gun-turret", p, 32, 1)
+		if p then 
 			local turret = surface.create_entity({name = "gun-turret", position = p, force = player_name})
 			turret.insert({name = "firearm-magazine", count = 16})
 		end
@@ -141,12 +161,13 @@ local function draw_town_spawn(player_name)
 	for i = 1, 4, 1 do
 		for _, vector in pairs(resource_vectors[i]) do
 			local p = {position.x + vector[1], position.y + vector[2]} 
-			if not surface.get_tile(p).collides_with("resource-layer") then
+			p = surface.find_non_colliding_position(ores[i], p, 32, 1)
+			if p then 
 				surface.create_entity({name = ores[i], position = p, amount = 1500})
 			end
 		end
 	end
-	
+
 	for _, item_stack in pairs(starter_supplies) do
 		local m1 = -8 + math_random(0, 16)
 		local m2 = -8 + math_random(0, 16)		
@@ -157,6 +178,45 @@ local function draw_town_spawn(player_name)
 			local inventory = e.get_inventory(defines.inventory.chest)
 			inventory.insert(item_stack)
 		end
+	end
+	
+	local vector_indexes = {1,2,3,4}
+	table.shuffle_table(vector_indexes)
+		
+	for _, vector in pairs(additional_resource_vectors[vector_indexes[1]]) do
+		if math_random(1, 6) == 1 then
+			local p = {position.x + vector[1], position.y + vector[2]} 
+			p = surface.find_non_colliding_position("tree-01", p, 32, 1)
+			if p then 
+				surface.create_entity({name = "tree-01", position = p})
+			end
+		end
+	end
+	
+	local area = {{position.x - town_radius * 1.5, position.y - town_radius * 1.5}, {position.x + town_radius * 1.5, position.y + town_radius * 1.5}}
+	if surface.count_tiles_filtered({name = {"water", "deepwater"}, area = area}) == 0 then
+		for _, vector in pairs(additional_resource_vectors[vector_indexes[2]]) do
+			local p = {position.x + vector[1], position.y + vector[2]}
+			if surface.get_tile(p).name ~= "out-of-map" then
+				surface.set_tiles({{name = "water", position = p}})
+			end
+		end
+	end
+	for _, vector in pairs(additional_resource_vectors[vector_indexes[3]]) do	
+		local p = {position.x + vector[1], position.y + vector[2]} 
+		p = surface.find_non_colliding_position("uranium-ore", p, 32, 1)
+		if p then 
+			surface.create_entity({name = "uranium-ore", position = p, amount = 1500})
+		end	
+	end
+	local vectors = additional_resource_vectors[vector_indexes[4]]
+	for _ = 1, 3, 1 do
+		local vector = vectors[math_random(1, #vectors)]	
+		local p = {position.x + vector[1], position.y + vector[2]} 
+		p = surface.find_non_colliding_position("crude-oil", p, 32, 1)
+		if p then 
+			surface.create_entity({name = "crude-oil", position = p, amount = 500000})
+		end		
 	end
 end
 
@@ -257,10 +317,24 @@ function Public.found(event)
 	
 	local surface = entity.surface
 	
+	if global.towny.cooldowns[player.index] then
+		if game.tick < global.towny.cooldowns[player.index] then
+			surface.create_entity({
+				name = "flying-text",
+				position = entity.position,
+				text = "Town founding is on cooldown for " .. math.ceil((global.towny.cooldowns[player.index] - game.tick) / 3600) .. " minutes.",
+				color = {r=0.77, g=0.0, b=0.0}
+			})
+			player.insert({name = "stone-furnace", count = 1})
+			entity.destroy()
+			return true
+		end	
+	end
+	
 	if not is_valid_location(surface, entity) then
 		player.insert({name = "stone-furnace", count = 1})
 		entity.destroy()
-		return
+		return true
 	end
 	
 	Team.add_new_force(player_name)
@@ -285,7 +359,7 @@ function Public.found(event)
 	}
 	
 	town_center.town_caption = rendering.draw_text{
-		text = player.name .. "'s town",
+		text = player.name .. "'s Town",
 		surface = surface,
 		target = town_center.market,
 		target_offset = {0, -3.25},
@@ -306,7 +380,9 @@ function Public.found(event)
 	
 	player.force.set_spawn_position({x = town_center.market.position.x, y = town_center.market.position.y + 4}, surface)
 	
-	game.print(">> " .. player.name .. " has founded a new town!", {255, 255, 0})	
+	global.towny.cooldowns[player.index] = game.tick + 3600 * 15
+	
+	game.print(">> " .. player.name .. " has founded a new town!", {255, 255, 0})
 	return true
 end
 

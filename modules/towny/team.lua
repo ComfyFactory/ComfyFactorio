@@ -2,12 +2,44 @@ local Public = {}
 
 local item_drop_radius = 2
 
+function Public.set_player_color(player)
+	if player.force.index == 1 then
+		player.color = {150, 150, 150}
+		player.chat_color = {150, 150, 150}
+		return
+	end
+	local town_center = global.towny.town_centers[player.force.name]
+	if not town_center then return end	
+	player.color = town_center.color
+	player.chat_color = town_center.color
+end
+
+function Public.set_town_color(event)
+	if event.command ~= "color" then return end
+	local player = game.players[event.player_index]	
+	if player.force.index == 1 then
+		player.color = {150, 150, 150}
+		player.chat_color = {150, 150, 150}
+		return
+	end
+	local town_center = global.towny.town_centers[player.name]
+	if not town_center then
+		Public.set_player_color(player)
+		return
+	end	
+	
+	town_center.color = {player.color.r, player.color.g, player.color.b}
+	rendering.set_color(town_center.town_caption, town_center.color)
+	for _, p in pairs(player.force.players) do
+		Public.set_player_color(player)
+	end
+end
+
 function Public.add_player_to_town(player, town_center)
 	player.force = town_center.market.force
 	game.permissions.get_group("Default").add_player(player)
 	player.tag = ""
-	player.color = town_center.color
-	player.chat_color = town_center.color
+	Public.set_player_color(player)	
 end
 
 function Public.give_homeless_items(player)
@@ -19,8 +51,7 @@ function Public.set_player_to_homeless(player)
 	player.force = game.forces.player
 	game.permissions.get_group("Homeless").add_player(player)
 	player.tag = "[Homeless]"
-	player.color = {150, 150, 150}
-	player.chat_color = {150, 150, 150}
+	Public.set_player_color(player)
 end
 
 local function ally_homeless(player, target)

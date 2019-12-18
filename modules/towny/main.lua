@@ -1,18 +1,19 @@
 local Town_center = require "modules.towny.town_center"
 local Team = require "modules.towny.team"
 local Connected_building = require "modules.towny.connected_building"
+local Combat_balance = require "modules.towny.combat_balance"
 require "modules.global_chat_toggle"
 --local Market = require "modules.towny.market"
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
+	Team.set_player_color(player)
 	
 	if player.force.index ~= 1 then return end
 	
 	Team.set_player_to_homeless(player)	
-	player.print("Towny is enabled!", {255, 255, 0})
-	player.print("Place a stone furnace, to found a new town center. Or join a town by visiting another player's center.", {255, 255, 0})
-	player.print("Or join a town by visiting another player's center.", {255, 255, 0})
+	player.print("Towny is enabled! To found your town, place down a stone furnace.", {255, 255, 0})
+	player.print("To ally or settle with another player, drop a fish on their market or character. Coal will yield the opposite result.", {255, 255, 0})
 	
 	if player.online_time == 0 then
 		Team.give_homeless_items(player)
@@ -34,6 +35,10 @@ local function on_player_respawned(event)
 	if player.force.index ~= 1 then return end
 	Team.set_player_to_homeless(player)
 	Team.give_homeless_items(player)
+end
+
+local function on_player_used_capsule(event)
+	Combat_balance.fish(event)
 end
 
 local function on_built_entity(event)
@@ -79,12 +84,17 @@ local function on_player_dropped_item(event)
 	end
 end
 
+local function on_console_command(event)
+	Team.set_town_color(event)
+end
+
 local function on_init()
 	global.towny = {}
 	global.towny.requests = {}
 	global.towny.town_centers = {}
+	global.towny.cooldowns = {}
 	global.towny.size_of_town_centers = 0
-	game.difficulty_settings.technology_price_multiplier = 0.5 
+	game.difficulty_settings.technology_price_multiplier = 0.25 
 	
 	local p = game.permissions.create_group("Homeless")
 	for action_name, _ in pairs(defines.input_action) do
@@ -120,6 +130,7 @@ end
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
+Event.add(defines.events.on_console_command, on_console_command)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
@@ -128,3 +139,4 @@ Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
+Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
