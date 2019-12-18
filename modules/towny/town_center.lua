@@ -4,9 +4,10 @@ local Public = {}
 local math_random = math.random
 local table_insert = table.insert
 
-local min_distance_to_spawn = 64
+local min_distance_to_spawn = 1
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 32
+local radius_between_towns = town_radius * 4
 
 local colors = {}
 local c1 = 250
@@ -73,6 +74,8 @@ for _, vector in pairs(resource_vectors[1]) do table_insert(resource_vectors[3],
 resource_vectors[4] = {}
 for _, vector in pairs(resource_vectors[1]) do table_insert(resource_vectors[4], {vector[1], vector[2] * -1}) end
 
+local market_collide_vectors = {{-1, 1},{0, 1},{1, 1},{1, 0},{1, -1}}
+
 local clear_blacklist_types = {
 	["simple-entity"] = true,
 	["cliff"] = true,
@@ -100,7 +103,7 @@ local function draw_town_spawn(player_name)
 	
 	for _, e in pairs(surface.find_entities_filtered({area = area, force = "neutral"})) do
 		if not clear_blacklist_types[e.type] then
-			e.destroy()
+			--e.destroy()
 		end
 	end
 	
@@ -117,7 +120,6 @@ local function draw_town_spawn(player_name)
 		end
 	end
 
-
 	for _, vector in pairs(town_wall_vectors) do
 		local p = {position.x + vector[1], position.y + vector[2]}	
 		if surface.can_place_entity({name = "stone-wall", position = p, force = player_name}) then
@@ -127,8 +129,10 @@ local function draw_town_spawn(player_name)
 	
 	for _, vector in pairs(turret_vectors) do
 		local p = {position.x + vector[1], position.y + vector[2]}
-		local turret = surface.create_entity({name = "gun-turret", position = p, force = player_name})
-		turret.insert({name = "firearm-magazine", count = 16})
+		if surface.can_place_entity({name = "gun-turret", position = p, force = player_name}) then
+			local turret = surface.create_entity({name = "gun-turret", position = p, force = player_name})
+			turret.insert({name = "firearm-magazine", count = 16})
+		end
 	end
 	
 	local ores = {"iron-ore", "copper-ore", "stone", "coal"}
@@ -157,14 +161,18 @@ local function draw_town_spawn(player_name)
 end
 
 local function is_valid_location(surface, entity)
-	if not surface.can_place_entity({name = "market", position = entity.position}) then
-		surface.create_entity({
-			name = "flying-text",
-			position = entity.position,
-			text = "Position is obstructed!",
-			color = {r=0.77, g=0.0, b=0.0}
-		})
-		return 
+
+	for _, vector in pairs(market_collide_vectors) do
+		local p = {entity.position.x + vector[1], entity.position.y + vector[2]} 
+		if not surface.can_place_entity({name = "iron-chest", position = p}) then
+			surface.create_entity({
+				name = "flying-text",
+				position = entity.position,
+				text = "Position is obstructed!",
+				color = {r=0.77, g=0.0, b=0.0}
+			})
+			return 
+		end
 	end
 
 	if global.towny.size_of_town_centers > 48 then
@@ -187,8 +195,8 @@ local function is_valid_location(surface, entity)
 		return 
 	end
 	
-	local area = {{entity.position.x - town_radius * 2, entity.position.y - town_radius * 2}, {entity.position.x + town_radius * 2, entity.position.y + town_radius * 2}}	
-	if surface.count_entities_filtered({area = area, type = "market"}) > 0 then
+	local area = {{entity.position.x - radius_between_towns, entity.position.y - radius_between_towns}, {entity.position.x + radius_between_towns, entity.position.y + radius_between_towns}}	
+	if surface.count_entities_filtered({area = area, name = "market"}) > 0 then
 		surface.create_entity({
 			name = "flying-text",
 			position = entity.position,

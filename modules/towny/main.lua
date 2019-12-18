@@ -1,6 +1,7 @@
 local Town_center = require "modules.towny.town_center"
 local Team = require "modules.towny.team"
 local Connected_building = require "modules.towny.connected_building"
+require "modules.global_chat_toggle"
 --local Market = require "modules.towny.market"
 
 local function on_player_joined_game(event)
@@ -9,19 +10,23 @@ local function on_player_joined_game(event)
 	if player.force.index ~= 1 then return end
 	
 	Team.set_player_to_homeless(player)	
-	player.print("Towny is enabled on this server!", {255, 255, 0})
+	player.print("Towny is enabled!", {255, 255, 0})
 	player.print("Place a stone furnace, to found a new town center. Or join a town by visiting another player's center.", {255, 255, 0})
+	player.print("Or join a town by visiting another player's center.", {255, 255, 0})
 	
 	if player.online_time == 0 then
 		Team.give_homeless_items(player)
 		return
 	end
 	
+	if not global.towny.requests[player.index] then return end
+	if global.towny.requests[player.index] ~= "kill-character" then return end	
 	if player.character then
 		if player.character.valid then
 			player.character.die()
 		end
 	end
+	global.towny.requests[player.index] = nil
 end
 
 local function on_player_respawned(event)
@@ -76,7 +81,7 @@ end
 
 local function on_init()
 	global.towny = {}
-	global.towny.homeless_requests = {}
+	global.towny.requests = {}
 	global.towny.town_centers = {}
 	global.towny.size_of_town_centers = 0
 	game.difficulty_settings.technology_price_multiplier = 0.5 
