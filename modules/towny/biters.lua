@@ -23,7 +23,7 @@ local function get_random_close_spawner(surface, market)
 	local size_of_spawners = #spawners
 	local center = market.position
 	local spawner = spawners[math_random(1, size_of_spawners)]
-	for i = 1, 3, 1 do
+	for i = 1, 8, 1 do
 		local spawner_2 = spawners[math_random(1, size_of_spawners)]
 		if (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then spawner = spawner_2 end
 	end
@@ -39,8 +39,9 @@ function Public.swarm()
 	if not spawner then return end	
 	local units = spawner.surface.find_enemy_units(spawner.position, 256, market.force)
 	if not units[1] then return end
-	local unit_group_position = units[1].position
-	local unit_group = surface.create_unit_group({position = units[1].position, force = units[1].force})
+	local unit_group_position = surface.find_non_colliding_position("market", units[1].position, 256, 1)
+	if not unit_group_position then return end
+	local unit_group = surface.create_unit_group({position = unit_group_position, force = units[1].force})
 	local count = town_center.research_counter
 	for key, unit in pairs(units) do
 		if key > count then break end
@@ -63,7 +64,6 @@ function Public.swarm()
 			}
 		}
 	})
-	unit_group.start_moving()
 end
 
 function Public.set_evolution()

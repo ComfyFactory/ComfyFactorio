@@ -9,7 +9,8 @@ require "modules.global_chat_toggle"
 require "modules.custom_death_messages"
 
 local function on_player_joined_game(event)
-	local player = game.players[event.player_index]	
+	local player = game.players[event.player_index]
+	Info.toggle_button(player)
 	Info.show(player)
 	
 	Team.set_player_color(player)
@@ -102,6 +103,7 @@ end
 
 local function on_gui_click(event)
 	Info.close(event)
+	Info.toggle(event)
 end
 
 local function on_research_finished(event)
