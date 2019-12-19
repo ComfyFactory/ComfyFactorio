@@ -1,5 +1,6 @@
 local Session = require 'utils.session_data'
 local Server = require 'utils.server'
+local Event = require 'utils.event'
 
 local function admin_only_message(str)
     for _, player in pairs(game.connected_players) do
@@ -119,3 +120,29 @@ commands.add_command(
         end
     end
 )
+
+local function on_console_command(event)
+    local cmd = event.command
+    if not event.player_index then return end
+    local player = game.players[event.player_index]
+    local reason = event.parameters
+    if cmd == 'ban' then
+        if player then
+            Server.to_banned_embed(table.concat{'[BANNED] ' .. player.name .. ' banned ' .. reason})
+            return
+        else
+            Server.to_banned_embed(table.concat{'[BANNED] Server banned ' .. reason})
+            return
+        end
+    elseif cmd == 'unban' then
+        if player then
+            Server.to_banned_embed(table.concat{'[UNBANNED] ' .. player.name .. ' unbanned ' .. reason})
+            return
+        else
+            Server.to_banned_embed(table.concat{'[UNBANNED] Server unbanned ' .. reason})
+            return
+        end
+    end
+end
+
+Event.add(defines.events.on_console_command, on_console_command)
