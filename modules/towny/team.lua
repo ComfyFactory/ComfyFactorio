@@ -35,6 +35,12 @@ function Public.set_town_color(event)
 	end
 end
 
+function Public.set_all_player_colors()
+	for _, p in pairs(game.connected_players) do
+		Public.set_player_color(p)
+	end
+end
+
 function Public.add_player_to_town(player, town_center)
 	player.force = town_center.market.force
 	game.permissions.get_group("Default").add_player(player)
@@ -175,7 +181,52 @@ function Public.declare_war(player, item)
 	
 	requesting_force.set_friend(target_force, false)
 	target_force.set_friend(requesting_force, false)
-	game.print(">> Town " .. requesting_force.name .. " has set " .. target_force.name .. " as their foe!", {255, 255, 0})
+	
+	game.print(">> " .. player.name .. " has dropped the coal! Town " .. target_force.name .. " and " .. requesting_force.name .. " are now at war!", {255, 255, 0})
+end
+
+local radius = 48
+function Public.reveal_entity_to_all(entity)
+	local chart_area = {{entity.position.x - radius, entity.position.y - radius}, {entity.position.x + radius, entity.position.y + radius}}
+	local surface = entity.surface
+	for _, force in pairs(game.forces) do
+		force.chart(surface, chart_area)
+	end
+end
+
+local function delete_chart_tag_for_all_forces(market)
+	local forces = game.forces
+	local position = market.position	
+	local surface = market.surface
+	for _, force in pairs(forces) do		
+		local tags = force.find_chart_tags(surface, {{position.x - 0.1, position.y - 0.1}, {position.x + 0.1, position.y + 0.1}})
+		local tag = tags[1]
+		if tag then
+			if tag.icon.name == "stone-furnace" then
+				tag.destroy()
+			end
+		end
+	end
+end
+
+local function add_chart_tag(force, market)
+	local position = market.position
+	local tags = force.find_chart_tags(market.surface, {{position.x - 0.1, position.y - 0.1}, {position.x + 0.1, position.y + 0.1}})
+	if tags[1] then return end
+	force.add_chart_tag(market.surface, {icon = {type = 'item', name = 'stone-furnace'}, position = position, text = market.force.name .. "'s Town"})	
+end
+
+function Public.update_town_chart_tags()
+	local town_centers = global.towny.town_centers
+	local forces = game.forces
+	for _, town_center in pairs(town_centers) do
+		local market = town_center.market
+		for _, force in pairs(forces) do
+			if force.is_chunk_visible(market.surface, town_center.chunk_position) then
+				add_chart_tag(force, market)
+			end
+		end	
+	end		
 end
 
 function Public.add_new_force(force_name)
@@ -202,11 +253,15 @@ function Public.kill_force(force_name)
 		end
 		player.force = game.forces.player
 	end
-
+	
 	for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
-		if e.health then
-			if e.valid then
-				if e.health > 0 then e.active = false end
+		if e.valid then
+			if e.type == "wall" or e.type == "gate" then
+				e.die()
+			else
+				if e.health then				
+					if e.health > 0 then e.active = false end			
+				end
 			end
 		end
 	end
@@ -215,6 +270,9 @@ function Public.kill_force(force_name)
 	
 	global.towny.town_centers[force_name] = nil
 	global.towny.size_of_town_centers = global.towny.size_of_town_centers - 1
+	
+	delete_chart_tag_for_all_forces(market)
+	Public.reveal_entity_to_all(market)
 	
 	game.print(">> " .. force_name .. "'s town has fallen!", {255, 255, 0})	
 end

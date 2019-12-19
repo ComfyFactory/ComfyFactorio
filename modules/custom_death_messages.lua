@@ -48,7 +48,7 @@ local function on_player_died(event)
 			return
 		end
 		
-		if cause.name == "tank" then
+		if cause.type == "car" then
 			local driver = cause.get_driver()
 			if driver.player then				
 				game.print(player.name .. tag .. " was killed by " .. driver.player.name .. " " .. player.tag .. ".", message_color)

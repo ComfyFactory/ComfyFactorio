@@ -103,9 +103,28 @@ local function on_gui_click(event)
 	Info.close(event)
 end
 
+local function on_player_died(event)
+	local player = game.players[event.player_index]
+	if not player.character then return end
+	if not player.character.valid then return end
+	Team.reveal_entity_to_all(player.character)
+end
+
+local minute_actions = {
+	[60 * 5] = Team.update_town_chart_tags,
+	[60 * 10] = Team.set_all_player_colors,
+}
+
+local function on_nth_tick(event)
+	local tick = game.tick % 3600	
+	if not minute_actions[tick] then return end 
+	minute_actions[tick]()
+end
+
 local function on_init()
 	global.towny = {}
 	global.towny.requests = {}
+	global.towny.request_cooldowns = {}
 	global.towny.town_centers = {}
 	global.towny.cooldowns = {}
 	global.towny.size_of_town_centers = 0
@@ -126,6 +145,7 @@ end
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
+Event.on_nth_tick(60, on_nth_tick)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_console_command, on_console_command)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
@@ -139,3 +159,4 @@ Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(defines.events.on_player_died, on_player_died)

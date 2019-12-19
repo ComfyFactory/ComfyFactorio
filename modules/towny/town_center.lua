@@ -6,12 +6,12 @@ local table_insert = table.insert
 
 local min_distance_to_spawn = 96
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
-local town_radius = 30
+local town_radius = 28
 local radius_between_towns = 160
 
 local colors = {}
 local c1 = 250
-local c2 = 175
+local c2 = 200
 local c3 = -25
 for v = c1, c2, c3 do
 	table.insert(colors, {0, 0, v})
@@ -149,7 +149,7 @@ local function draw_town_spawn(player_name)
 	
 	for _, vector in pairs(turret_vectors) do
 		local p = {position.x + vector[1], position.y + vector[2]}
-		p = surface.find_non_colliding_position("gun-turret", p, 32, 1)
+		p = surface.find_non_colliding_position("gun-turret", p, 64, 1)
 		if p then 
 			local turret = surface.create_entity({name = "gun-turret", position = p, force = player_name})
 			turret.insert({name = "firearm-magazine", count = 16})
@@ -162,7 +162,7 @@ local function draw_town_spawn(player_name)
 	for i = 1, 4, 1 do
 		for _, vector in pairs(resource_vectors[i]) do
 			local p = {position.x + vector[1], position.y + vector[2]} 
-			p = surface.find_non_colliding_position(ores[i], p, 32, 1)
+			p = surface.find_non_colliding_position(ores[i], p, 64, 1)
 			if p then 
 				surface.create_entity({name = ores[i], position = p, amount = 1500})
 			end
@@ -173,7 +173,7 @@ local function draw_town_spawn(player_name)
 		local m1 = -8 + math_random(0, 16)
 		local m2 = -8 + math_random(0, 16)		
 		local p = {position.x + m1, position.y + m2}
-		p = surface.find_non_colliding_position("wooden-chest", p, 32, 1)
+		p = surface.find_non_colliding_position("wooden-chest", p, 64, 1)
 		if p then 
 			local e = surface.create_entity({name = "wooden-chest", position = p, force = player_name})
 			local inventory = e.get_inventory(defines.inventory.chest)
@@ -188,7 +188,7 @@ local function draw_town_spawn(player_name)
 	for _, vector in pairs(additional_resource_vectors[vector_indexes[1]]) do
 		if math_random(1, 6) == 1 then
 			local p = {position.x + vector[1], position.y + vector[2]} 
-			p = surface.find_non_colliding_position(tree, p, 32, 1)
+			p = surface.find_non_colliding_position(tree, p, 64, 1)
 			if p then 
 				surface.create_entity({name = tree, position = p})
 			end
@@ -206,7 +206,7 @@ local function draw_town_spawn(player_name)
 	end
 	for _, vector in pairs(additional_resource_vectors[vector_indexes[3]]) do	
 		local p = {position.x + vector[1], position.y + vector[2]} 
-		p = surface.find_non_colliding_position("uranium-ore", p, 32, 1)
+		p = surface.find_non_colliding_position("uranium-ore", p, 64, 1)
 		if p then 
 			surface.create_entity({name = "uranium-ore", position = p, amount = 1500})
 		end	
@@ -215,7 +215,7 @@ local function draw_town_spawn(player_name)
 	for _ = 1, 3, 1 do
 		local vector = vectors[math_random(1, #vectors)]	
 		local p = {position.x + vector[1], position.y + vector[2]} 
-		p = surface.find_non_colliding_position("crude-oil", p, 32, 1)
+		p = surface.find_non_colliding_position("crude-oil", p, 64, 1)
 		if p then 
 			surface.create_entity({name = "crude-oil", position = p, amount = 500000})
 		end		
@@ -343,6 +343,7 @@ function Public.found(event)
 	global.towny.town_centers[player_name] = {}
 	local town_center = global.towny.town_centers[player_name]
 	town_center.market = surface.create_entity({name = "market", position = entity.position, force = player_name})
+	town_center.chunk_position = {math.floor(town_center.market.position.x / 32), math.floor(town_center.market.position.y / 32)}
 	town_center.max_health = 1000
 	town_center.health = town_center.max_health
 	town_center.color = colors[math_random(1, #colors)]

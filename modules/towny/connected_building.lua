@@ -1,6 +1,6 @@
 local Public = {}
 
-local connection_radius = 5
+local connection_radius = 7
 
 local entity_type_whitelist = {
 	["accumulator"] = true,
