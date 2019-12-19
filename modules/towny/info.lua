@@ -41,7 +41,4 @@ function Public.close(event)
 	end	
 end
 
-local event = require 'utils.event'
-event.add(defines.events.on_gui_click, on_gui_click)
-
 return Public

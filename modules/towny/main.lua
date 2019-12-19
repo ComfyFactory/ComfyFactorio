@@ -121,6 +121,7 @@ local minute_actions = {
 	[60 * 5] = Team.update_town_chart_tags,
 	[60 * 10] = Team.set_all_player_colors,
 	[60 * 15] = Biters.swarm,
+	[60 * 20] = Biters.set_evolution,
 }
 
 local function on_nth_tick(event)
@@ -154,18 +155,18 @@ end
 local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.on_nth_tick(60, on_nth_tick)
-Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(defines.events.on_console_command, on_console_command)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_player_respawned, on_player_respawned)
-Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_built_entity, on_built_entity)
-Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_console_command, on_console_command)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
-Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
-Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
-Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
