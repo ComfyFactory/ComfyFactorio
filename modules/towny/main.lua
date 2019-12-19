@@ -1,3 +1,4 @@
+local Biters = require "modules.towny.biters"
 local Combat_balance = require "modules.towny.combat_balance"
 local Connected_building = require "modules.towny.connected_building"
 local Info = require "modules.towny.info"
@@ -103,6 +104,12 @@ local function on_gui_click(event)
 	Info.close(event)
 end
 
+local function on_research_finished(event)
+	local town_center = global.towny.town_centers[event.research.force.name]
+	if not town_center then return end
+	town_center.research_counter = town_center.research_counter + 1
+end
+
 local function on_player_died(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
@@ -113,6 +120,7 @@ end
 local minute_actions = {
 	[60 * 5] = Team.update_town_chart_tags,
 	[60 * 10] = Team.set_all_player_colors,
+	[60 * 15] = Biters.swarm,
 }
 
 local function on_nth_tick(event)
@@ -160,3 +168,4 @@ Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_research_finished, on_research_finished)

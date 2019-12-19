@@ -9,7 +9,8 @@ local info = [[
 		
 	To found your own town, place down a stone furnace at a valid location.
 	Buildings can only be placed close to your other buildings.	
-		
+	Beware, biters are more aggressive towards towns that are advanced in research.
+	
 	Only one town center can be owned at a time.
 	Only the owner can banish members.
 	Members can invite other players and teams.
