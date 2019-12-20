@@ -42,7 +42,7 @@ function Public.swarm()
 	local unit_group_position = surface.find_non_colliding_position("market", units[1].position, 256, 1)
 	if not unit_group_position then return end
 	local unit_group = surface.create_unit_group({position = unit_group_position, force = units[1].force})
-	local count = town_center.research_counter
+	local count = town_center.research_counter + 4
 	for key, unit in pairs(units) do
 		if key > count then break end
 		unit_group.add_member(unit) 
@@ -73,7 +73,7 @@ function Public.set_evolution()
 		return 
 	end
 		
-	local max_research_count = math.floor(#game.technology_prototypes * 0.5)	
+	local max_research_count = math.floor(#game.technology_prototypes * 0.25)	
 	
 	local evo = 0
 	for _, town_center in pairs(global.towny.town_centers) do

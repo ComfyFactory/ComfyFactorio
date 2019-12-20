@@ -230,12 +230,12 @@ function Public.update_town_chart_tags()
 end
 
 function Public.add_new_force(force_name)
-	game.create_force(force_name)
-	
-	game.forces.player.set_cease_fire(force_name, true)
-	game.forces[force_name].set_cease_fire('player', true)
-	
-	game.forces[force_name].research_queue_enabled = true
+	local new_force = game.create_force(force_name)
+	new_force.research_queue_enabled = true	
+	new_force.technologies["atomic-bomb"].enabled = false
+	new_force.technologies["explosive-rocketry"].enabled = false
+	new_force.technologies["rocketry"].enabled = false
+	new_force.set_ammo_damage_modifier("landmine", -0.5)
 end
 
 function Public.kill_force(force_name)
@@ -275,6 +275,32 @@ function Public.kill_force(force_name)
 	Public.reveal_entity_to_all(market)
 	
 	game.print(">> " .. force_name .. "'s town has fallen!", {255, 255, 0})	
+end
+
+local player_force_disabled_recipes = {"lab", "automation-science-pack", "stone-brick"}
+local player_force_enabled_recipes = {"submachine-gun", "assembling-machine-1", "small-lamp", "shotgun", "shotgun-shell", "underground-belt", "splitter", "steel-plate", "car", "cargo-wagon", "constant-combinator", "engine-unit", "green-wire", "locomotive", "rail", "train-stop"}
+
+function Public.setup_player_force()
+	local p = game.permissions.create_group("Homeless")
+	for action_name, _ in pairs(defines.input_action) do
+		p.set_allows_action(defines.input_action[action_name], true)
+	end
+	local defs = {
+		defines.input_action.start_research,
+	}
+	for _, d in pairs(defs) do p.set_allows_action(d, false) end
+	
+	local force = game.forces.player
+	local recipes = force.recipes
+	
+	for k, recipe_name in pairs(player_force_disabled_recipes) do
+		recipes[recipe_name].enabled = false
+	end
+	for k, recipe_name in pairs(player_force_enabled_recipes) do
+		recipes[recipe_name].enabled = true
+	end
+	
+	force.set_ammo_damage_modifier("landmine", -0.5)
 end
 
 return Public

@@ -24,9 +24,6 @@ local function init_surface()
 		["trees"] = {frequency = "0.5", size = "0.75", richness = "1"},
 		["enemy-base"] = {frequency = "1", size = "1", richness = "1"}
 	}
-	
-	game.map_settings.enemy_expansion.enabled = false
-	game.difficulty_settings.technology_price_multiplier = 2
 		
 	local surface = game.create_surface("mixed_railworld", map_gen_settings)				
 	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
@@ -61,6 +58,12 @@ local function on_chunk_generated(event)
 	end
 end
 
+local function on_init()
+	game.difficulty_settings.technology_price_multiplier = 2
+	game.map_settings.enemy_expansion.enabled = false
+end
+
+event.on_init(on_init)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 

@@ -1,12 +1,13 @@
 local Biters = require "modules.towny.biters"
 local Combat_balance = require "modules.towny.combat_balance"
-local Connected_building = require "modules.towny.connected_building"
+local Building = require "modules.towny.building"
 local Info = require "modules.towny.info"
 local Market = require "modules.towny.market"
 local Team = require "modules.towny.team"
 local Town_center = require "modules.towny.town_center"
-require "modules.global_chat_toggle"
 require "modules.custom_death_messages"
+require "modules.global_chat_toggle"
+require "modules.biters_yield_coins"
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
@@ -47,11 +48,13 @@ end
 
 local function on_built_entity(event)
 	if Town_center.found(event) then return end
-	Connected_building.prevent_isolation(event)
+	if Building.prevent_isolation(event) then return end
+	Building.protect_spawn(event)
 end
 
 local function on_robot_built_entity(event)
-	Connected_building.prevent_isolation(event)
+	if Building.prevent_isolation(event) then return end
+	Building.protect_spawn(event)
 end
 
 local function on_entity_died(event)	
@@ -139,19 +142,15 @@ local function on_init()
 	global.towny.town_centers = {}
 	global.towny.cooldowns = {}
 	global.towny.size_of_town_centers = 0
-	game.difficulty_settings.technology_price_multiplier = 0.25 
 	
-	local p = game.permissions.create_group("Homeless")
-	for action_name, _ in pairs(defines.input_action) do
-		p.set_allows_action(defines.input_action[action_name], true)
-	end
-	local defs = {
-		defines.input_action.craft,
-		defines.input_action.deconstruct,
-		defines.input_action.start_research,
-		defines.input_action.open_technology_gui,
-	}
-	for _, d in pairs(defs) do p.set_allows_action(d, false) end
+	game.difficulty_settings.technology_price_multiplier = 0.20
+	game.map_settings.enemy_evolution.time_factor = 0
+	game.map_settings.enemy_evolution.destroy_factor = 0
+	game.map_settings.enemy_evolution.pollution_factor = 0
+	game.map_settings.pollution.enabled = false
+	game.map_settings.enemy_expansion.enabled = true	
+	
+	Team.setup_player_force()
 end
 
 local Event = require 'utils.event'

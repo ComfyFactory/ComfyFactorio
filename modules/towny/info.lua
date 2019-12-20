@@ -7,10 +7,10 @@ local info = [[
 	They will have to do the same to you to complete the request.
 	Coal yields the opposite result, as it will make foes or banish settlers.
 		
-	To found your own town, place down a stone furnace at a valid location.
+	To found a town, place down a stone furnace at a valid location.
 	Buildings can only be placed close to your other buildings.	
 	Beware, biters are more aggressive towards towns that are advanced in research.
-	Their evolution will scale around the average techology progress all towns.
+	Their evolution will scale around the average technology progress all towns.
 	
 	Only one town center can be owned at a time.
 	Only the owner can banish members.

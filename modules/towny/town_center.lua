@@ -3,8 +3,9 @@ local Public = {}
 
 local math_random = math.random
 local table_insert = table.insert
+local math_floor = math.floor
 
-local min_distance_to_spawn = 96
+local min_distance_to_spawn = 128
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 28
 local radius_between_towns = 160
@@ -53,13 +54,6 @@ for y = -1, 1, 1 do
 	table_insert(gate_vectors_vertical, {town_radius * -1, y})
 end
 
-local turret_vectors = {}
-local turret_d = 5
-table_insert(turret_vectors, {turret_d * -1, turret_d * -1})
-table_insert(turret_vectors, {turret_d * 1, turret_d * 1})
-table_insert(turret_vectors, {turret_d * -1, turret_d * 1})
-table_insert(turret_vectors, {turret_d * 1, turret_d * -1})
-
 local resource_vectors = {}
 resource_vectors[1] = {}
 for x = 7, 25, 1 do
@@ -104,7 +98,6 @@ local starter_supplies = {
 	{name = "raw-fish", count = 3},
 	{name = "grenade", count = 3},
 	{name = "stone", count = 32},
-	{name = "submachine-gun", count = 1},
 	{name = "land-mine", count = 4},
 	{name = "iron-gear-wheel", count = 16},
 	{name = "iron-plate", count = 32},
@@ -112,6 +105,8 @@ local starter_supplies = {
 	{name = "shotgun", count = 1},
 	{name = "shotgun-shell", count = 8},
 	{name = "firearm-magazine", count = 16},
+	{name = "firearm-magazine", count = 16},
+	{name = "gun-turret", count = 2},	
 }
 
 local function draw_town_spawn(player_name)
@@ -144,15 +139,6 @@ local function draw_town_spawn(player_name)
 		local p = {position.x + vector[1], position.y + vector[2]}	
 		if surface.can_place_entity({name = "stone-wall", position = p, force = player_name}) then
 			surface.create_entity({name = "stone-wall", position = p, force = player_name})
-		end
-	end
-	
-	for _, vector in pairs(turret_vectors) do
-		local p = {position.x + vector[1], position.y + vector[2]}
-		p = surface.find_non_colliding_position("gun-turret", p, 64, 1)
-		if p then 
-			local turret = surface.create_entity({name = "gun-turret", position = p, force = player_name})
-			turret.insert({name = "firearm-magazine", count = 16})
 		end
 	end
 	
@@ -272,20 +258,11 @@ local function is_valid_location(surface, entity)
 	local count = 0
 	for _, e in pairs(surface.find_entities_filtered({area = area})) do
 		if e.force.index ~= 3 then
-			if e.name == "market" then
-				surface.create_entity({
-					name = "flying-text",
-					position = entity.position,
-					text = "Town location is too close to another town center!",
-					color = {r=0.77, g=0.0, b=0.0}
-				})
-				return
-			end
 			count = count + 1
 		end
 	end
 
-	if count > 3 then 
+	if count > 2 then 
 		surface.create_entity({
 			name = "flying-text",
 			position = entity.position,
@@ -300,7 +277,8 @@ end
 
 function Public.set_market_health(entity, final_damage_amount)
 	local town_center = global.towny.town_centers[entity.force.name]
-	town_center.health = town_center.health - final_damage_amount
+	town_center.health = math_floor(town_center.health - final_damage_amount)
+	if town_center.health > town_center.max_health then town_center.health = town_center.max_health end
 	local m = town_center.health / town_center.max_health
 	entity.health = 150 * m
 	rendering.set_text(town_center.health_text, "HP: " .. town_center.health .. " / " .. town_center.max_health)	

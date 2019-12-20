@@ -84,7 +84,8 @@ end
 function Public.prevent_isolation(event)
 	local entity = event.created_entity
 	if not entity.valid then return end
-	if entity.type == "entity-ghost" then return end
+	if entity.force.index == 1 then return end
+	if not entity_type_whitelist[entity.type] then return end
 	local surface = event.created_entity.surface
 	
 	if is_entity_isolated(surface, entity) then
@@ -92,11 +93,30 @@ function Public.prevent_isolation(event)
 		surface.create_entity({
 			name = "flying-text",
 			position = entity.position,
-			text = "Building is not connected to the town!",
+			text = "Building is not connected to town!",
 			color = {r=0.77, g=0.0, b=0.0}
 		})
 		entity.destroy()
+		return true
 	end	
+end
+
+local square_min_distance_to_spawn = 96 ^ 2
+
+function Public.protect_spawn(event)
+	local entity = event.created_entity
+	if not entity.valid then return end
+	if entity.force.index == 1 then return end
+	if not entity_type_whitelist[entity.type] then return end
+	if entity.position.x ^ 2 + entity.position.y ^ 2 > square_min_distance_to_spawn then return end
+	refund_entity(event)
+	entity.surface.create_entity({
+		name = "flying-text",
+		position = entity.position,
+		text = "Building too close to spawn!",
+		color = {r=0.77, g=0.0, b=0.0}
+	})
+	entity.destroy()
 end
 
 return Public
