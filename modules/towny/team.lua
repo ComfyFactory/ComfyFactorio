@@ -185,7 +185,7 @@ function Public.declare_war(player, item)
 	game.print(">> " .. player.name .. " has dropped the coal! Town " .. target_force.name .. " and " .. requesting_force.name .. " are now at war!", {255, 255, 0})
 end
 
-local radius = 48
+local radius = 96
 function Public.reveal_entity_to_all(entity)
 	local chart_area = {{entity.position.x - radius, entity.position.y - radius}, {entity.position.x + radius, entity.position.y + radius}}
 	local surface = entity.surface
@@ -235,7 +235,7 @@ function Public.add_new_force(force_name)
 	new_force.technologies["atomic-bomb"].enabled = false
 	new_force.technologies["explosive-rocketry"].enabled = false
 	new_force.technologies["rocketry"].enabled = false
-	new_force.set_ammo_damage_modifier("landmine", -0.5)
+	new_force.set_ammo_damage_modifier("landmine", -0.6)	
 end
 
 function Public.kill_force(force_name)
@@ -300,7 +300,7 @@ function Public.setup_player_force()
 		recipes[recipe_name].enabled = true
 	end
 	
-	force.set_ammo_damage_modifier("landmine", -0.5)
+	force.set_ammo_damage_modifier("landmine", -0.6)
 end
 
 return Public

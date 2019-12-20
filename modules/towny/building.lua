@@ -25,6 +25,7 @@ local entity_type_whitelist = {
 	["infinity-pipe"] = true,
 	["inserter"] = true,
 	["lamp"] = true,
+	["land-mine"] = true,
 	["loader"] = true,
 	["logistic-container"] = true,
 	["market"] = true,

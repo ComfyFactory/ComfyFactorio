@@ -110,6 +110,7 @@ local function on_gui_click(event)
 end
 
 local function on_research_finished(event)
+	Combat_balance.research(event)
 	local town_center = global.towny.town_centers[event.research.force.name]
 	if not town_center then return end
 	town_center.research_counter = town_center.research_counter + 1

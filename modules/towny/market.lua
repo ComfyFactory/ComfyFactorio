@@ -8,6 +8,10 @@ local upgrade_functions = {
 		town_center.max_health = town_center.max_health * 2
 		Town_center.set_market_health(town_center.market, 0)
 	end,
+	--Upgrade Backpack
+	[2] = function(town_center)
+		town_center.market.force.character_inventory_slots_bonus = town_center.market.force.character_inventory_slots_bonus + 5
+	end,
 }
 
 local function clear_offers(market)
@@ -19,8 +23,10 @@ end
 
 local function set_offers(town_center)
 	local market = town_center.market
+	local force = market.force
 	local market_items = {
-		{price = {{"coin", town_center.max_health * 0.1}}, offer = {type = 'nothing', effect_description = "Upgrade Town Center Health"}},
+		{price = {{"coin", town_center.max_health  * 0.1}}, offer = {type = 'nothing', effect_description = "Upgrade Town Center Health"}},
+		{price = {{"coin", (force.character_inventory_slots_bonus / 5 + 1) * 25}}, offer = {type = 'nothing', effect_description = "Upgrade Backpack +5 Slot"}},
 		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
 		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'wood', count = 50}},
 		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},

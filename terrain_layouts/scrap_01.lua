@@ -157,6 +157,16 @@ local function is_scrap_area(noise)
 	if noise < -0.25 then return true end
 end
 
+local function move_away_biteys(surface, area)
+	for _, e in pairs(surface.find_entities_filtered({type = {"unit-spawner", "turret", "unit"}, area = area})) do
+		local position = surface.find_non_colliding_position(e.name, e.position, 96, 4)
+		if position then 
+			surface.create_entity({name = e.name, position = position, force = "enemy"})
+			e.destroy()
+		end
+	end
+end
+
 local function on_chunk_generated(event)	
 	local surface = event.surface
 	local seed = surface.map_gen_settings.seed
@@ -177,6 +187,8 @@ local function on_chunk_generated(event)
 			end
 		end
 	end
+	
+	move_away_biteys(surface, event.area)
 end
 
 local Event = require 'utils.event'

@@ -23,7 +23,7 @@ local function get_random_close_spawner(surface, market)
 	local size_of_spawners = #spawners
 	local center = market.position
 	local spawner = spawners[math_random(1, size_of_spawners)]
-	for i = 1, 8, 1 do
+	for i = 1, 16, 1 do
 		local spawner_2 = spawners[math_random(1, size_of_spawners)]
 		if (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then spawner = spawner_2 end
 	end
@@ -73,7 +73,7 @@ function Public.set_evolution()
 		return 
 	end
 		
-	local max_research_count = math.floor(#game.technology_prototypes * 0.25)	
+	local max_research_count = math.floor(#game.technology_prototypes * 0.30)	
 	
 	local evo = 0
 	for _, town_center in pairs(global.towny.town_centers) do
