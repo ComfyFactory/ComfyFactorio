@@ -1,4 +1,17 @@
---mineable-wreckage yields scrap -- by mewmew
+require "modules.no_deconstruction_of_neutral_entities"
+require "modules.mineable_wreckage_yields_scrap"
+
+local get_noise = require "utils.get_noise"
+local math_random = math.random
+local math_floor = math.floor
+local math_abs = math.abs
+
+local scrap_entities = {"crash-site-assembling-machine-1-broken", "crash-site-assembling-machine-2-broken", "crash-site-lab-broken",
+ "medium-ship-wreck", "small-ship-wreck",
+ "crash-site-chest-1", "crash-site-chest-2", "crash-site-chest-1", "crash-site-chest-2", "crash-site-chest-1", "crash-site-chest-2",
+ "big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3", "big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3", "big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3",
+ }
+local scrap_entities_index = #scrap_entities
 
 local mining_chance_weights = {
 	{name = "iron-plate", chance = 1000},
@@ -115,35 +128,56 @@ end
 
 local size_of_scrap_raffle = #scrap_raffle
 
-local function on_player_mined_entity(event)
-	local entity = event.entity
-	if not entity.valid then return end
-	if entity.name ~= "mineable-wreckage" then return end
-			
-	event.buffer.clear()
-	
-	local scrap = scrap_raffle[math.random(1, size_of_scrap_raffle)]
-	
-	local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
-	local r1 = math.ceil(scrap_yield_amounts[scrap] * (0.3 + (amount_bonus * 0.3)))
-	local r2 = math.ceil(scrap_yield_amounts[scrap] * (1.7 + (amount_bonus * 1.7)))	
-	local amount = math.random(r1, r2)
-	
-	local player = game.players[event.player_index]	
-	local inserted_count = player.insert({name = scrap, count = amount})
-	
-	if inserted_count ~= amount then
-		local amount_to_spill = amount - inserted_count			
-		entity.surface.spill_item_stack(entity.position,{name = scrap, count = amount_to_spill}, true)
+local function place_scrap(surface, position)
+	if math_random(1, 768) == 1 then
+		if position.x ^ 2 + position.x ^ 2 > 4096 then
+			local e = surface.create_entity({name = "gun-turret", position = position, force = "enemy"})			
+			e.insert({name = "piercing-rounds-magazine", count = math_random(64, 128)})		
+			return
+		end
 	end
-	
-	entity.surface.create_entity({
-		name = "flying-text",
-		position = entity.position,
-		text = "+" .. amount .. " [img=item/" .. scrap .. "]",
-		color = {r=0.98, g=0.66, b=0.22}
-	})	
+
+	if math_random(1, 128) == 1 then
+		local e = surface.create_entity({name = scrap_entities[math_random(1, scrap_entities_index)], position = position, force = "neutral"})
+		local i = e.get_inventory(defines.inventory.chest)
+		if i then
+			for x = 1, math_random(3,12), 1 do
+				local loot = scrap_raffle[math_random(1, size_of_scrap_raffle)]
+				
+				i.insert({name = loot, count = math.floor(scrap_yield_amounts[loot] * math_random(5, 25) * 0.1) + 1})
+			end
+		end
+		return
+	end		
+	surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})
+end
+
+local function is_scrap_area(noise)
+	if noise > 0.25 then return true end	
+	if noise < -0.25 then return true end
+end
+
+local function on_chunk_generated(event)	
+	local surface = event.surface
+	local seed = surface.map_gen_settings.seed
+	local left_top_x = event.area.left_top.x
+	local left_top_y = event.area.left_top.y
+	local position
+	local noise
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			if math_random(1, 3) > 1 then
+				position = {x = left_top_x + x, y = left_top_y + y}				
+				if not surface.get_tile(position).collides_with("resource-layer") then 
+					noise = get_noise("scrapyard", position, seed)
+					if is_scrap_area(noise) then
+						place_scrap(surface, position)
+					end
+				end		
+			end
+		end
+	end
 end
 
 local Event = require 'utils.event'
-Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

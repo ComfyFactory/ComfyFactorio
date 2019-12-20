@@ -325,7 +325,7 @@ function Public.found(event)
 	town_center.max_health = 1000
 	town_center.health = town_center.max_health
 	town_center.color = colors[math_random(1, #colors)]
-	town_center.research_counter = 0
+	town_center.research_counter = 1
 	
 	town_center.health_text = rendering.draw_text{
 		text = "HP: " .. town_center.health .. " / " .. town_center.max_health,
