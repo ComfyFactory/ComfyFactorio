@@ -3,6 +3,21 @@ local event = require 'utils.event'
 local math_random = math.random
 local ai = {}
 
+local vector_radius = 360
+local attack_vectors = {}
+attack_vectors.north = {}
+attack_vectors.south = {}
+for x = vector_radius * -1, vector_radius, 1 do
+	for y = 0, vector_radius, 1 do
+		local r = math.sqrt(x ^ 2 + y ^ 2)
+		if r < vector_radius and r > vector_radius - 1 then
+			attack_vectors.north[#attack_vectors.north + 1] = {x, y * -1}
+			attack_vectors.south[#attack_vectors.south + 1] = {x, y}
+		end
+	end
+end
+local size_of_vectors = #attack_vectors.north
+
 local threat_values = {
 	["small-spitter"] = 1.5,
 	["small-biter"] = 1.5,
@@ -168,22 +183,39 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 	local target = nearest_player_unit.position
 	if math_random(1,2) == 1 then target = global.rocket_silo[force_name].position end
 	
+	local commands = {}
+	
+	local vector = attack_vectors[force_name][math_random(1, size_of_vectors)]
+	local position = {target.x + vector[1], target.y + vector[2]}
+	position = unit_group.surface.find_non_colliding_position("stone-furnace", position, 96, 1)
+	if position then
+		if math.abs(position.y) < math.abs(unit_group.position.y) then
+			commands[#commands + 1] = {
+				type = defines.command.attack_area,
+				destination = position,
+				radius = 24,
+				distraction = defines.distraction.by_enemy
+			}
+		end
+	end
+	
+	commands[#commands + 1] = {
+		type = defines.command.attack_area,
+		destination = target,
+		radius = 32,
+		distraction = defines.distraction.by_enemy
+	}
+	
+	commands[#commands + 1] = {
+		type = defines.command.attack,
+		target = global.rocket_silo[force_name],
+		distraction = defines.distraction.by_enemy
+	}
+	
 	unit_group.set_command({
 		type = defines.command.compound,
 		structure_type = defines.compound_command.return_last,
-		commands = {
-			{
-				type = defines.command.attack_area,
-				destination = target,
-				radius = 32,
-				distraction = defines.distraction.by_enemy
-			},									
-			{
-				type = defines.command.attack,
-				target = global.rocket_silo[force_name],
-				distraction = defines.distraction.by_enemy
-			}
-		}
+		commands = commands
 	})
 	return true
 end
