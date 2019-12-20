@@ -56,6 +56,7 @@ commands.add_command(
         if player then
             if player ~= nil then
                 p = player.print
+                if not total_time[player.name] then goto continue end
                 if total_time[player.name] < 51900000 then
                     if not player.admin then
                         p("You're not admin nor are you trusted enough to run this command!", {r = 1, g = 0.5, b = 0.1})
@@ -71,6 +72,7 @@ commands.add_command(
                 trusted[target_player.name] = false
                 jail(target_player, player)
                 Server.to_discord_bold(table.concat{'[Jailed] ' .. target_player.name .. ' has been jailed by ' .. player.name .. '!'})
+                return
             end
         else
             if cmd.parameter == nil then return end
@@ -79,8 +81,10 @@ commands.add_command(
                 trusted[target_player.name] = false
                 jail(target_player, 'Server')
                 Server.to_discord_bold(table.concat{'[Jailed] ' .. target_player.name .. ' has been jailed by Server!'})
+                return
             end
         end
+        ::continue::
     end
 )
 
@@ -95,6 +99,7 @@ commands.add_command(
         if player then
             if player ~= nil then
                 p = player.print
+                if not total_time[player.name] then goto continue end
                 if total_time[player.name] < 51900000 then
                     if not player.admin then
                         p("You're not admin nor are you trusted enough to run this command!", {r = 1, g = 0.5, b = 0.1})
@@ -109,6 +114,7 @@ commands.add_command(
                if target_player.name == player.name then player.print("You can't unjail yourself!", {r = 1, g = 0.5, b = 0.1}) return end
                 free(target_player, player)
                 Server.to_discord_bold(table.concat{'[Unjailed] ' .. target_player.name .. ' has been unjailed by ' .. player.name .. '!'})
+                return
             end
         else
             if cmd.parameter == nil then return end
@@ -116,8 +122,10 @@ commands.add_command(
             if target_player then
                 free(target_player, 'Server')
                 Server.to_discord_bold(table.concat{'[Unjailed] ' .. target_player.name .. ' has been unjailed by Server!'})
+                return
             end
         end
+        ::continue::
     end
 )
 
@@ -126,6 +134,7 @@ local function on_console_command(event)
     if not event.player_index then return end
     local player = game.players[event.player_index]
     local reason = event.parameters
+    if not reason then return end
     if cmd == 'ban' then
         if player then
             Server.to_banned_embed(table.concat{'[BANNED] ' .. player.name .. ' banned ' .. reason})
