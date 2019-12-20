@@ -294,6 +294,9 @@ function Public.found(event)
 	
 	if game.forces[player_name] then return end
 	
+	local inventory = player.get_main_inventory()
+	if inventory.get_item_count("small-plane") < 1 then return end
+	
 	local surface = entity.surface
 	
 	if global.towny.cooldowns[player.index] then
@@ -362,6 +365,8 @@ function Public.found(event)
 	player.force.set_spawn_position({x = town_center.market.position.x, y = town_center.market.position.y + 4}, surface)
 	
 	global.towny.cooldowns[player.index] = game.tick + 3600 * 15
+	
+	inventory.remove({name = "small-plane", count = 1})
 	
 	game.print(">> " .. player.name .. " has founded a new town!", {255, 255, 0})
 	return true

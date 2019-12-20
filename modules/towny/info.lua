@@ -8,7 +8,8 @@ local info = [[
 	Coal yields the opposite result, as it will make foes or banish settlers.
 		
 	To found a town, place down a stone furnace at a valid location.
-	Buildings can only be placed close to your other buildings.	
+	This will only trigger, if your character is in possession a "small-plane" token item!
+	Town buildings can only be placed close to it's other buildings.
 	Beware, biters are more aggressive towards towns that are advanced in research.
 	Their evolution will scale around the average technology progress all towns.
 	

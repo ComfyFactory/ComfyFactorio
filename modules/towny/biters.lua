@@ -1,5 +1,47 @@
 local Public = {}
 local math_random = math.random
+local math_floor = math.floor
+local math_sqrt = math.sqrt
+local math_round = math.round
+
+local function get_commmands(target, group)
+	local commands = {}
+	local group_position = {x = group.position.x, y = group.position.y}
+	local step_length = 128
+
+	local target_position = target.position
+	local distance_to_target = math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+	local steps = math_floor(distance_to_target / step_length) + 1
+	local vector = {math_round((target_position.x - group_position.x) / steps, 3), math_round((target_position.y - group_position.y) / steps, 3)}
+
+	for i = 1, steps, 1 do
+		group_position.x = group_position.x + vector[1]
+		group_position.y = group_position.y + vector[2]
+		local position = group.surface.find_non_colliding_position("small-biter", group_position, step_length, 2)
+		if position then
+			commands[#commands + 1] = {
+				type = defines.command.attack_area,
+				destination = {x = position.x, y = position.y},
+				radius = 16,
+				distraction = defines.distraction.by_anything
+			}
+		end
+	end
+
+	commands[#commands + 1] = {
+		type = defines.command.attack_area,
+		destination = target.position,
+		radius = 12,
+		distraction = defines.distraction.by_enemy,
+	}
+	commands[#commands + 1] = {
+		type = defines.command.attack,
+		target = target,
+		distraction = defines.distraction.by_enemy,
+	}
+
+	return commands
+end
 
 local function roll_market()
 	local r_max = 0
@@ -25,7 +67,9 @@ local function get_random_close_spawner(surface, market)
 	local spawner = spawners[math_random(1, size_of_spawners)]
 	for i = 1, 16, 1 do
 		local spawner_2 = spawners[math_random(1, size_of_spawners)]
-		if (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then spawner = spawner_2 end
+		if (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
+			spawner = spawner_2
+		end
 	end
 	return spawner
 end
@@ -50,19 +94,7 @@ function Public.swarm()
 	unit_group.set_command({
 		type = defines.command.compound,
 		structure_type = defines.compound_command.return_last,
-		commands = {
-			{
-				type = defines.command.attack_area,
-				destination = market.position,
-				radius = 12,
-				distraction = defines.distraction.by_enemy
-			},									
-			{
-				type = defines.command.attack,
-				target = market,
-				distraction = defines.distraction.by_enemy
-			}
-		}
+		commands = get_commmands(market, unit_group)
 	})
 end
 
@@ -73,7 +105,7 @@ function Public.set_evolution()
 		return 
 	end
 		
-	local max_research_count = math.floor(#game.technology_prototypes * 0.30)	
+	local max_research_count = math.floor(#game.technology_prototypes * 0.28)
 	
 	local evo = 0
 	for _, town_center in pairs(global.towny.town_centers) do

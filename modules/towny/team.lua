@@ -50,6 +50,7 @@ end
 
 function Public.give_homeless_items(player)
 	player.insert({name = "stone-furnace", count = 1})
+	player.insert({name = "small-plane", count = 1})
 	player.insert({name = "raw-fish", count = 3})
 end
 
@@ -230,12 +231,15 @@ function Public.update_town_chart_tags()
 end
 
 function Public.add_new_force(force_name)
-	local new_force = game.create_force(force_name)
-	new_force.research_queue_enabled = true	
-	new_force.technologies["atomic-bomb"].enabled = false
-	new_force.technologies["explosive-rocketry"].enabled = false
-	new_force.technologies["rocketry"].enabled = false
-	new_force.set_ammo_damage_modifier("landmine", -0.6)	
+	local force = game.create_force(force_name)
+	force.research_queue_enabled = true	
+	force.technologies["atomic-bomb"].enabled = false
+	force.technologies["explosive-rocketry"].enabled = false
+	force.technologies["rocketry"].enabled = false
+	force.technologies["artillery-shell-range-1"].enabled = false					
+	force.technologies["artillery-shell-speed-1"].enabled = false
+	force.set_ammo_damage_modifier("landmine", -0.6)
+	force.set_ammo_damage_modifier("artillery-shell", -0.75)
 end
 
 function Public.kill_force(force_name)
@@ -274,7 +278,7 @@ function Public.kill_force(force_name)
 	delete_chart_tag_for_all_forces(market)
 	Public.reveal_entity_to_all(market)
 	
-	game.print(">> " .. force_name .. "'s town has fallen!", {255, 255, 0})	
+	game.print(">> " .. force_name .. "'s town has fallen! [gps=" .. math.floor(market.position.x) .. "," .. math.floor(market.position.y) .. "]", {255, 255, 0})	
 end
 
 local player_force_disabled_recipes = {"lab", "automation-science-pack", "stone-brick"}
@@ -301,6 +305,7 @@ function Public.setup_player_force()
 	end
 	
 	force.set_ammo_damage_modifier("landmine", -0.6)
+	force.set_ammo_damage_modifier("artillery-shell", -0.75)
 end
 
 return Public
