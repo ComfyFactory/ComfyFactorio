@@ -4,13 +4,16 @@ local Public = {}
 local upgrade_functions = {
 	--Upgrade Town Center Health
 	[1] = function(town_center)
+		if town_center.max_health > 500000 then return end
 		town_center.health = town_center.health + town_center.max_health
 		town_center.max_health = town_center.max_health * 2
 		Town_center.set_market_health(town_center.market, 0)
 	end,
 	--Upgrade Backpack
 	[2] = function(town_center)
-		town_center.market.force.character_inventory_slots_bonus = town_center.market.force.character_inventory_slots_bonus + 5
+		local force = town_center.market.force
+		if force.character_inventory_slots_bonus > 100 then return end
+		force.character_inventory_slots_bonus = force.character_inventory_slots_bonus + 5
 	end,
 }
 
@@ -24,23 +27,39 @@ end
 local function set_offers(town_center)
 	local market = town_center.market
 	local force = market.force
-	local market_items = {
-		{price = {{"coin", town_center.max_health  * 0.1}}, offer = {type = 'nothing', effect_description = "Upgrade Town Center Health"}},
-		{price = {{"coin", (force.character_inventory_slots_bonus / 5 + 1) * 25}}, offer = {type = 'nothing', effect_description = "Upgrade Backpack +5 Slot"}},
-		{price = {{"coin", 3}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'wood', count = 50}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'stone', count = 50}},
-		{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'coal', count = 50}},
-		{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
-		{price = {{'wood', 7}}, offer = {type = 'give-item', item = "coin"}},
-		{price = {{'iron-ore', 7}}, offer = {type = 'give-item', item = "coin"}},
-		{price = {{'copper-ore', 7}}, offer = {type = 'give-item', item = "coin"}},
-		{price = {{'stone', 7}}, offer = {type = 'give-item', item = "coin"}},
-		{price = {{'coal', 7}}, offer = {type = 'give-item', item = "coin"}},
-		{price = {{'uranium-ore', 5}}, offer = {type = 'give-item', item = "coin"}},
-	}
+	
+	local special_offers = {}	
+	if town_center.max_health < 500000 then 
+		special_offers[1] = {{{"coin", town_center.max_health  * 0.1}}, "Upgrade Town Center Health"}
+	else
+		special_offers[1] = {{{"computer", 1}}, "Maximum Health upgrades reached!"}
+	end
+	if force.character_inventory_slots_bonus <= 100 then 
+		special_offers[2] = {{{"coin", (force.character_inventory_slots_bonus / 5 + 1) * 35}}, "Upgrade Backpack +5 Slot"}
+	else
+		special_offers[2] = {{{"computer", 1}}, "Maximum Backpack upgrades reached!"}
+	end
+	
+	local market_items = {}	
+	for _, v in pairs(special_offers) do
+		table.insert(market_items, {price = v[1], offer = {type = 'nothing', effect_description = v[2]}})
+		--table.insert(market_items, {price = {v[1], offer = {type = 'nothing', effect_description = v[2]}}})
+	end
+	
+	table.insert(market_items, {price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}})
+	table.insert(market_items, {price = {{"coin", 8}}, offer = {type = 'give-item', item = 'wood', count = 50}})
+	table.insert(market_items, {price = {{"coin", 8}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}})
+	table.insert(market_items, {price = {{"coin", 8}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}})
+	table.insert(market_items, {price = {{"coin", 8}}, offer = {type = 'give-item', item = 'stone', count = 50}})
+	table.insert(market_items, {price = {{"coin", 8}}, offer = {type = 'give-item', item = 'coal', count = 50}})
+	table.insert(market_items, {price = {{"coin", 12}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}})
+	table.insert(market_items, {price = {{'wood', 7}}, offer = {type = 'give-item', item = "coin"}})
+	table.insert(market_items, {price = {{'iron-ore', 7}}, offer = {type = 'give-item', item = "coin"}})
+	table.insert(market_items, {price = {{'copper-ore', 7}}, offer = {type = 'give-item', item = "coin"}})
+	table.insert(market_items, {price = {{'stone', 7}}, offer = {type = 'give-item', item = "coin"}})
+	table.insert(market_items, {price = {{'coal', 7}}, offer = {type = 'give-item', item = "coin"}})
+	table.insert(market_items, {price = {{'uranium-ore', 5}}, offer = {type = 'give-item', item = "coin"}})
+		
 	for _, item in pairs(market_items) do
 		market.add_market_item(item)
 	end

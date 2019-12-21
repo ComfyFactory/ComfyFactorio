@@ -1,11 +1,13 @@
 local Public = {}
 
+local homeless_color = {150, 150, 150}
+local homeless_chat_color = {170, 170, 170}
 local item_drop_radius = 1.75
 
 function Public.set_player_color(player)
 	if player.force.index == 1 then
-		player.color = {150, 150, 150}
-		player.chat_color = {150, 150, 150}
+		player.color = homeless_color
+		player.chat_color = homeless_chat_color
 		return
 	end
 	local town_center = global.towny.town_centers[player.force.name]
@@ -18,8 +20,8 @@ function Public.set_town_color(event)
 	if event.command ~= "color" then return end
 	local player = game.players[event.player_index]	
 	if player.force.index == 1 then
-		player.color = {150, 150, 150}
-		player.chat_color = {150, 150, 150}
+		player.color = homeless_color
+		player.chat_color = homeless_chat_color
 		return
 	end
 	local town_center = global.towny.town_centers[player.name]

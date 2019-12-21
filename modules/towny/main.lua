@@ -12,7 +12,6 @@ require "modules.biters_yield_coins"
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	Info.toggle_button(player)
-	Info.show(player)
 	
 	Team.set_player_color(player)
 	
@@ -144,7 +143,7 @@ local function on_init()
 	global.towny.cooldowns = {}
 	global.towny.size_of_town_centers = 0
 	
-	game.difficulty_settings.technology_price_multiplier = 0.20
+	game.difficulty_settings.technology_price_multiplier = 0.25
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0

@@ -5,10 +5,11 @@ local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
 
-local min_distance_to_spawn = 128
+local min_distance_to_spawn = 1
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
-local town_radius = 28
+local town_radius = 27
 local radius_between_towns = 160
+local ore_amount = 750
 
 local colors = {}
 local c1 = 250
@@ -56,8 +57,8 @@ end
 
 local resource_vectors = {}
 resource_vectors[1] = {}
-for x = 7, 25, 1 do
-	for y = 7, 25, 1 do	
+for x = 7, 24, 1 do
+	for y = 7, 24, 1 do	
 		table_insert(resource_vectors[1], {x, y})
 	end
 end
@@ -150,7 +151,7 @@ local function draw_town_spawn(player_name)
 			local p = {position.x + vector[1], position.y + vector[2]} 
 			p = surface.find_non_colliding_position(ores[i], p, 64, 1)
 			if p then 
-				surface.create_entity({name = ores[i], position = p, amount = 1500})
+				surface.create_entity({name = ores[i], position = p, amount = ore_amount})
 			end
 		end
 	end
@@ -194,7 +195,7 @@ local function draw_town_spawn(player_name)
 		local p = {position.x + vector[1], position.y + vector[2]} 
 		p = surface.find_non_colliding_position("uranium-ore", p, 64, 1)
 		if p then 
-			surface.create_entity({name = "uranium-ore", position = p, amount = 1500})
+			surface.create_entity({name = "uranium-ore", position = p, amount = ore_amount})
 		end	
 	end
 	local vectors = additional_resource_vectors[vector_indexes[4]]
