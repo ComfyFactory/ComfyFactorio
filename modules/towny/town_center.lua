@@ -5,7 +5,7 @@ local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
 
-local min_distance_to_spawn = 1
+local min_distance_to_spawn = 128
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 27
 local radius_between_towns = 160
@@ -363,11 +363,12 @@ function Public.found(event)
 	
 	Team.add_player_to_town(player, town_center)
 	
-	player.force.set_spawn_position({x = town_center.market.position.x, y = town_center.market.position.y + 4}, surface)
+	local force = player.force
+	force.set_spawn_position({x = town_center.market.position.x, y = town_center.market.position.y + 4}, surface)	
 	
 	global.towny.cooldowns[player.index] = game.tick + 3600 * 15
 	
-	inventory.remove({name = "small-plane", count = 1})
+	if inventory.valid then inventory.remove({name = "small-plane", count = 1}) end
 	
 	game.print(">> " .. player.name .. " has founded a new town!", {255, 255, 0})
 	return true

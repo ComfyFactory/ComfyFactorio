@@ -77,7 +77,7 @@ function Public.refresh_offers(event)
 end
 
 function Public.offer_purchased(event)
-	local offer_index = event.offer_index		
+	local offer_index = event.offer_index
 	if not upgrade_functions[offer_index] then return end
 	
 	local market = event.market
@@ -86,6 +86,13 @@ function Public.offer_purchased(event)
 	if not town_center then return end
 	
 	upgrade_functions[offer_index](town_center)
+	
+	count = event.count
+	if count > 1 then
+		local offers = market.get_market_items()
+		local price = offers[offer_index].price[1].amount
+		game.players[event.player_index].insert({name = "coin", count = price * (count - 1)})
+	end
 end
 
 return Public

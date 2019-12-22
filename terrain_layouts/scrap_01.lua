@@ -1,5 +1,5 @@
-require "modules.no_deconstruction_of_neutral_entities"
 require "modules.mineable_wreckage_yields_scrap"
+require "modules.no_deconstruction_of_neutral_entities"
 
 local get_noise = require "utils.get_noise"
 local math_random = math.random
@@ -129,10 +129,10 @@ end
 local size_of_scrap_raffle = #scrap_raffle
 
 local function place_scrap(surface, position)
-	if math_random(1, 768) == 1 then
+	if math_random(1, 700) == 1 then
 		if position.x ^ 2 + position.x ^ 2 > 4096 then
 			local e = surface.create_entity({name = "gun-turret", position = position, force = "enemy"})			
-			e.insert({name = "piercing-rounds-magazine", count = math_random(64, 128)})		
+			e.insert({name = "piercing-rounds-magazine", count = 100})		
 			return
 		end
 	end
@@ -141,10 +141,10 @@ local function place_scrap(surface, position)
 		local e = surface.create_entity({name = scrap_entities[math_random(1, scrap_entities_index)], position = position, force = "neutral"})
 		local i = e.get_inventory(defines.inventory.chest)
 		if i then
-			for x = 1, math_random(3,12), 1 do
+			for x = 1, math_random(6,18), 1 do
 				local loot = scrap_raffle[math_random(1, size_of_scrap_raffle)]
 				
-				i.insert({name = loot, count = math.floor(scrap_yield_amounts[loot] * math_random(5, 25) * 0.1) + 1})
+				i.insert({name = loot, count = math_floor(scrap_yield_amounts[loot] * math_random(5, 35) * 0.1) + 1})
 			end
 		end
 		return
@@ -181,6 +181,7 @@ local function on_chunk_generated(event)
 				if not surface.get_tile(position).collides_with("resource-layer") then 
 					noise = get_noise("scrapyard", position, seed)
 					if is_scrap_area(noise) then
+						surface.set_tiles({{name = "dirt-" .. math_floor(math_abs(noise) * 6) % 6 + 2, position = position}}, true)
 						place_scrap(surface, position)
 					end
 				end		

@@ -1,13 +1,13 @@
 local Public = {}
 
-local homeless_color = {150, 150, 150}
-local homeless_chat_color = {170, 170, 170}
+local outlander_color = {150, 150, 150}
+local outlander_chat_color = {170, 170, 170}
 local item_drop_radius = 1.75
 
 function Public.set_player_color(player)
 	if player.force.index == 1 then
-		player.color = homeless_color
-		player.chat_color = homeless_chat_color
+		player.color = outlander_color
+		player.chat_color = outlander_chat_color
 		return
 	end
 	local town_center = global.towny.town_centers[player.force.name]
@@ -20,8 +20,8 @@ function Public.set_town_color(event)
 	if event.command ~= "color" then return end
 	local player = game.players[event.player_index]	
 	if player.force.index == 1 then
-		player.color = homeless_color
-		player.chat_color = homeless_chat_color
+		player.color = outlander_color
+		player.chat_color = outlander_chat_color
 		return
 	end
 	local town_center = global.towny.town_centers[player.name]
@@ -50,20 +50,20 @@ function Public.add_player_to_town(player, town_center)
 	Public.set_player_color(player)	
 end
 
-function Public.give_homeless_items(player)
+function Public.give_outlander_items(player)
 	player.insert({name = "stone-furnace", count = 1})
 	player.insert({name = "small-plane", count = 1})
 	player.insert({name = "raw-fish", count = 3})
 end
 
-function Public.set_player_to_homeless(player)
+function Public.set_player_to_outlander(player)
 	player.force = game.forces.player
-	game.permissions.get_group("Homeless").add_player(player)
-	player.tag = "[Homeless]"
+	game.permissions.get_group("outlander").add_player(player)
+	player.tag = "[Outlander]"
 	Public.set_player_color(player)
 end
 
-local function ally_homeless(player, target)
+local function ally_outlander(player, target)
 	local requesting_force = player.force
 	local target_force = target.force
 
@@ -146,7 +146,7 @@ function Public.ally_town(player, item)
 	if not target then return end
 	if target.force.index == 2 or target.force.index == 3 then return end
 
-	if ally_homeless(player, target) then return end	
+	if ally_outlander(player, target) then return end	
 	ally_neighbour_towns(player, target)
 end
 
@@ -164,7 +164,7 @@ function Public.declare_war(player, item)
 	
 	if requesting_force.name == target_force.name then
 		if player.name ~= target.force.name then
-			Public.set_player_to_homeless(player)
+			Public.set_player_to_outlander(player)
 			game.print(">> " .. player.name .. " has abandoned " .. target_force.name .. "'s Town!", {255, 255, 0})
 			global.towny.requests[player.index] = nil
 		end	
@@ -173,7 +173,7 @@ function Public.declare_war(player, item)
 			local target_player = target.player
 			if not target_player then return end
 			if target_player.index == player.index then return end
-			Public.set_player_to_homeless(target_player)
+			Public.set_player_to_outlander(target_player)
 			game.print(">> " .. player.name .. " has banished " .. target_player.name .. " from their Town!", {255, 255, 0})
 			global.towny.requests[player.index] = nil
 		end
@@ -287,7 +287,7 @@ local player_force_disabled_recipes = {"lab", "automation-science-pack", "stone-
 local player_force_enabled_recipes = {"submachine-gun", "assembling-machine-1", "small-lamp", "shotgun", "shotgun-shell", "underground-belt", "splitter", "steel-plate", "car", "cargo-wagon", "constant-combinator", "engine-unit", "green-wire", "locomotive", "rail", "train-stop"}
 
 function Public.setup_player_force()
-	local p = game.permissions.create_group("Homeless")
+	local p = game.permissions.create_group("outlander")
 	for action_name, _ in pairs(defines.input_action) do
 		p.set_allows_action(defines.input_action[action_name], true)
 	end

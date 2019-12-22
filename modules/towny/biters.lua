@@ -105,7 +105,7 @@ function Public.set_evolution()
 		return 
 	end
 		
-	local max_research_count = math.floor(#game.technology_prototypes * 0.28)
+	local max_research_count = math.floor(#game.technology_prototypes * 0.26)
 	
 	local evo = 0
 	for _, town_center in pairs(global.towny.town_centers) do

@@ -12,15 +12,16 @@ require "modules.biters_yield_coins"
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	Info.toggle_button(player)
+	Info.show(player)
 	
 	Team.set_player_color(player)
 	
 	if player.force.index ~= 1 then return end
 	
-	Team.set_player_to_homeless(player)	
+	Team.set_player_to_outlander(player)	
 	
 	if player.online_time == 0 then
-		Team.give_homeless_items(player)
+		Team.give_outlander_items(player)
 		return
 	end
 	
@@ -37,8 +38,8 @@ end
 local function on_player_respawned(event)
 	local player = game.players[event.player_index]	
 	if player.force.index ~= 1 then return end
-	Team.set_player_to_homeless(player)
-	Team.give_homeless_items(player)
+	Team.set_player_to_outlander(player)
+	Team.give_outlander_items(player)
 end
 
 local function on_player_used_capsule(event)
@@ -54,6 +55,14 @@ end
 local function on_robot_built_entity(event)
 	if Building.prevent_isolation(event) then return end
 	Building.protect_spawn(event)
+end
+
+local function on_player_built_tile(event)
+	Building.prevent_isolation_landfill(event)
+end
+
+local function on_robot_built_tile(event)
+	Building.prevent_isolation_landfill(event)
 end
 
 local function on_entity_died(event)	
@@ -122,7 +131,7 @@ local function on_player_died(event)
 	Team.reveal_entity_to_all(player.character)
 end
 
-local minute_actions = {
+local tick_actions = {
 	[60 * 5] = Team.update_town_chart_tags,
 	[60 * 10] = Team.set_all_player_colors,
 	[60 * 15] = Biters.swarm,
@@ -131,8 +140,8 @@ local minute_actions = {
 
 local function on_nth_tick(event)
 	local tick = game.tick % 3600	
-	if not minute_actions[tick] then return end 
-	minute_actions[tick]()
+	if not tick_actions[tick] then return end 
+	tick_actions[tick]()
 end
 
 local function on_init()
@@ -171,3 +180,5 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
+Event.add(defines.events.on_player_built_tile, on_player_built_tile)

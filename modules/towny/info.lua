@@ -49,7 +49,7 @@ function Public.show(player)
 	
 	local t = t.add {type = "table", column_count = 4}
 		
-	local label = t.add {type = "label", caption = "Homeless" .. "(" .. #game.forces.player.connected_players .. ")"}
+	local label = t.add {type = "label", caption = "Outlander" .. "(" .. #game.forces.player.connected_players .. ")"}
 	label.style.font_color = {170, 170, 170}
 	label.style.font = "heading-3"
 	label.style.minimal_width = 80

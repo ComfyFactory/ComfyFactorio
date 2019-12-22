@@ -51,13 +51,13 @@ local entity_type_whitelist = {
 	["wall"] = true,
 }
 
-local function is_entity_isolated(surface, entity)
-	local position_x = entity.position.x
-	local position_y = entity.position.y
+local function is_position_isolated(surface, force, position)
+	local position_x = position.x
+	local position_y = position.y
 	local area = {{position_x - connection_radius, position_y - connection_radius}, {position_x + connection_radius, position_y + connection_radius}}
 	local count = 0
 	
-	for _, e in pairs(surface.find_entities_filtered({area = area, force = entity.force.name})) do
+	for _, e in pairs(surface.find_entities_filtered({area = area, force = force.name})) do
 		if entity_type_whitelist[e.type] then
 			count = count + 1
 			if count > 1 then return end
@@ -67,19 +67,26 @@ local function is_entity_isolated(surface, entity)
 	return true
 end
 
-local function refund_entity(event)
-	local entity_name = event.created_entity.name 
-
+local function refund_item(event, item_name)
 	if event.player_index then 
-		game.players[event.player_index].insert({name = entity_name, count = 1})
+		game.players[event.player_index].insert({name = item_name, count = 1})
 		return 
 	end	
 	
 	if event.robot then
 		local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-		inventory.insert({name = entity_name, count = 1})
+		inventory.insert({name = item_name, count = 1})
 		return
 	end
+end
+
+local function error_floaty(surface, position, msg)
+	surface.create_entity({
+		name = "flying-text",
+		position = position,
+		text = msg,
+		color = {r=0.77, g=0.0, b=0.0}
+	})
 end
 
 function Public.prevent_isolation(event)
@@ -89,16 +96,33 @@ function Public.prevent_isolation(event)
 	if not entity_type_whitelist[entity.type] then return end
 	local surface = event.created_entity.surface
 	
-	if is_entity_isolated(surface, entity) then
-		refund_entity(event)
-		surface.create_entity({
-			name = "flying-text",
-			position = entity.position,
-			text = "Building is not connected to town!",
-			color = {r=0.77, g=0.0, b=0.0}
-		})
+	if is_position_isolated(surface, entity.force, entity.position) then
+		error_floaty(surface, entity.position, "Building is not connected to town!")
+		refund_item(event, event.created_entity.name)	
 		entity.destroy()
 		return true
+	end	
+end
+
+function Public.prevent_isolation_landfill(event)
+	if event.item.name ~= "landfill" then return end
+	local surface = game.surfaces[event.surface_index]
+	local tiles = event.tiles
+	
+	local force
+	if event.player_index then
+		force = game.players[event.player_index].force
+	else
+		force = event.robot.force
+	end
+	
+	for _, placed_tile in pairs(tiles) do
+		local position = placed_tile.position
+		if is_position_isolated(surface, force, position) then
+			error_floaty(surface, position, "Tile is not connected to town!")
+			surface.set_tiles({{name = "water", position = position}}, true)			
+			refund_item(event, "landfill")		
+		end
 	end	
 end
 
@@ -110,13 +134,8 @@ function Public.protect_spawn(event)
 	if entity.force.index == 1 then return end
 	if not entity_type_whitelist[entity.type] then return end
 	if entity.position.x ^ 2 + entity.position.y ^ 2 > square_min_distance_to_spawn then return end
-	refund_entity(event)
-	entity.surface.create_entity({
-		name = "flying-text",
-		position = entity.position,
-		text = "Building too close to spawn!",
-		color = {r=0.77, g=0.0, b=0.0}
-	})
+	refund_item(event, event.created_entity.name)
+	error_floaty(entity.surface, entity.position, "Building too close to spawn!")
 	entity.destroy()
 end
 
