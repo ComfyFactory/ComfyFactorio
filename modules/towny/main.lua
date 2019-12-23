@@ -152,7 +152,7 @@ local function on_init()
 	global.towny.cooldowns = {}
 	global.towny.size_of_town_centers = 0
 	
-	game.difficulty_settings.technology_price_multiplier = 0.25
+	game.difficulty_settings.technology_price_multiplier = 0.30
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0

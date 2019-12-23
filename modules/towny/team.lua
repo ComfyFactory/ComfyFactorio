@@ -2,7 +2,26 @@ local Public = {}
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
-local item_drop_radius = 1.75
+local item_drop_radius = 1.65
+
+local function can_force_accept_member(force)
+	local town_centers = global.towny.town_centers
+	local size_of_town_centers = global.towny.size_of_town_centers
+	local member_limit = 0
+	
+	if size_of_town_centers <= 1 then return true end	
+		
+	for _, town in pairs(town_centers) do
+		member_limit = member_limit + #town.market.force.connected_players
+	end
+	member_limit = math.floor(member_limit / size_of_town_centers) + 4
+	
+	if #force.connected_players >= member_limit then 
+		game.print(">> Town " .. force.name .. " has too many settlers! Current limit (" .. member_limit .. ")" , {255, 255, 0})
+		return 
+	end
+	return true
+end
 
 function Public.set_player_color(player)
 	if player.force.index == 1 then
@@ -11,9 +30,9 @@ function Public.set_player_color(player)
 		return
 	end
 	local town_center = global.towny.town_centers[player.force.name]
-	if not town_center then return end	
+	if not town_center then return end
 	player.color = town_center.color
-	player.chat_color = town_center.color
+	player.chat_color= town_center.color
 end
 
 function Public.set_town_color(event)
@@ -54,6 +73,7 @@ function Public.give_outlander_items(player)
 	player.insert({name = "stone-furnace", count = 1})
 	player.insert({name = "small-plane", count = 1})
 	player.insert({name = "raw-fish", count = 3})
+	player.insert({name = "coal", count = 3})
 end
 
 function Public.set_player_to_outlander(player)
@@ -84,6 +104,7 @@ local function ally_outlander(player, target)
 			if global.towny.requests[target_player.index] then 
 				if global.towny.requests[target_player.index] == player.name then			
 					if global.towny.town_centers[target_force.name] then
+						if not can_force_accept_member(target_force) then return true end
 						game.print(">> " .. player.name .. " has settled in " .. target_force.name .. "'s Town!", {255, 255, 0})
 						Public.add_player_to_town(player, global.towny.town_centers[target_force.name])
 						return true
@@ -104,13 +125,18 @@ local function ally_outlander(player, target)
 		
 		if global.towny.requests[target_player.index] then 
 			if global.towny.requests[target_player.index] == player.force.name then
+				if not can_force_accept_member(player.force) then return true end
 				game.print(">> " .. player.name .. " has accepted " .. target_player.name .. " into their Town!", {255, 255, 0})
 				Public.add_player_to_town(target_player, global.towny.town_centers[player.force.name])
 				return true
 			end
 		end	
-			
-		game.print(">> " .. player.name .. " is inviting " .. target_player.name .. " into their Town!", {255, 255, 0})	
+		
+		if player.force.name == player.name then
+			game.print(">> " .. player.name .. " is inviting " .. target_player.name .. " into their Town!", {255, 255, 0})
+		else
+			game.print(">> " .. player.name .. " is inviting " .. target_player.name .. " into " .. player.force.name .. "'s Town!", {255, 255, 0})
+		end
 		return true
 	end
 end
@@ -235,6 +261,7 @@ end
 function Public.add_new_force(force_name)
 	local force = game.create_force(force_name)
 	force.research_queue_enabled = true	
+	force.share_chart = true
 	force.technologies["atomic-bomb"].enabled = false
 	force.technologies["explosive-rocketry"].enabled = false
 	force.technologies["rocketry"].enabled = false
@@ -264,10 +291,6 @@ function Public.kill_force(force_name)
 		if e.valid then
 			if e.type == "wall" or e.type == "gate" then
 				e.die()
-			else
-				if e.health then				
-					if e.health > 0 then e.active = false end			
-				end
 			end
 		end
 	end

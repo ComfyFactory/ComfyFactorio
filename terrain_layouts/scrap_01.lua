@@ -167,6 +167,26 @@ local function move_away_biteys(surface, area)
 	end
 end
 
+local vectors = {{0,0}, {1,0}, {-1,0}, {0,1}, {0,-1}}
+
+local function on_player_mined_entity(event)
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.name ~= "mineable-wreckage" then return end
+	local surface = entity.surface
+	for _, v in pairs(vectors) do
+		local position = {entity.position.x + v[1], entity.position.y + v[2]}
+		if not surface.get_tile(position).collides_with("resource-layer") then 
+			surface.set_tiles({{name = "landfill", position = position}}, true)
+		end
+	end
+end
+
+local function on_entity_died(event)	
+	if not event.entity.valid then return end
+	on_player_mined_entity(event)
+end
+
 local function on_chunk_generated(event)	
 	local surface = event.surface
 	local seed = surface.map_gen_settings.seed
@@ -194,3 +214,5 @@ end
 
 local Event = require 'utils.event'
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_entity_died, on_entity_died)

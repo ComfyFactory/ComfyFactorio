@@ -5,7 +5,7 @@ local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
 
-local min_distance_to_spawn = 128
+local min_distance_to_spawn = 1
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 27
 local radius_between_towns = 160
@@ -13,7 +13,7 @@ local ore_amount = 750
 
 local colors = {}
 local c1 = 250
-local c2 = 200
+local c2 = 225
 local c3 = -25
 for v = c1, c2, c3 do
 	table.insert(colors, {0, 0, v})
@@ -285,6 +285,28 @@ function Public.set_market_health(entity, final_damage_amount)
 	rendering.set_text(town_center.health_text, "HP: " .. town_center.health .. " / " .. town_center.max_health)	
 end
 
+local function is_color_used(color, town_centers)
+	for k, center in pairs(town_centers) do
+		if center.color == color then return true end		
+	end
+end
+
+local function get_color()
+	local shuffle_index = {}
+	local town_centers = global.towny.town_centers
+	local color
+	
+	for i = 1, #colors, 1 do shuffle_index[i] = i end
+	table.shuffle_table(shuffle_index)
+	
+	for i = 1, #colors, 1 do
+		color = colors[shuffle_index[i]]
+		if not is_color_used(color, town_centers) then return color end	
+	end
+	
+	return color
+end
+
 function Public.found(event)
 	local entity = event.created_entity
 	if entity.force.index ~= 1 then return end
@@ -328,7 +350,7 @@ function Public.found(event)
 	town_center.chunk_position = {math.floor(town_center.market.position.x / 32), math.floor(town_center.market.position.y / 32)}
 	town_center.max_health = 1000
 	town_center.health = town_center.max_health
-	town_center.color = colors[math_random(1, #colors)]
+	town_center.color = get_color()
 	town_center.research_counter = 1
 	
 	town_center.health_text = rendering.draw_text{

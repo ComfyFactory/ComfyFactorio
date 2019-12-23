@@ -43,7 +43,6 @@ local function set_offers(town_center)
 	local market_items = {}	
 	for _, v in pairs(special_offers) do
 		table.insert(market_items, {price = v[1], offer = {type = 'nothing', effect_description = v[2]}})
-		--table.insert(market_items, {price = {v[1], offer = {type = 'nothing', effect_description = v[2]}}})
 	end
 	
 	table.insert(market_items, {price = {{"coin", 1}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}})
@@ -59,7 +58,11 @@ local function set_offers(town_center)
 	table.insert(market_items, {price = {{'stone', 7}}, offer = {type = 'give-item', item = "coin"}})
 	table.insert(market_items, {price = {{'coal', 7}}, offer = {type = 'give-item', item = "coin"}})
 	table.insert(market_items, {price = {{'uranium-ore', 5}}, offer = {type = 'give-item', item = "coin"}})
-		
+	
+	table.insert(market_items, {price = {{"coin", 300}}, offer = {type = 'give-item', item = 'loader', count = 1}})
+	table.insert(market_items, {price = {{"coin", 600}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}})
+	table.insert(market_items, {price = {{"coin", 900}}, offer = {type = 'give-item', item = 'express-loader', count = 1}})
+	
 	for _, item in pairs(market_items) do
 		market.add_market_item(item)
 	end

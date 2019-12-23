@@ -98,7 +98,7 @@ function Public.prevent_isolation(event)
 	
 	if is_position_isolated(surface, entity.force, entity.position) then
 		error_floaty(surface, entity.position, "Building is not connected to town!")
-		refund_item(event, event.created_entity.name)	
+		refund_item(event, event.stack.name)	
 		entity.destroy()
 		return true
 	end	
@@ -134,7 +134,7 @@ function Public.protect_spawn(event)
 	if entity.force.index == 1 then return end
 	if not entity_type_whitelist[entity.type] then return end
 	if entity.position.x ^ 2 + entity.position.y ^ 2 > square_min_distance_to_spawn then return end
-	refund_item(event, event.created_entity.name)
+	refund_item(event, event.stack.name)
 	error_floaty(entity.surface, entity.position, "Building too close to spawn!")
 	entity.destroy()
 end
