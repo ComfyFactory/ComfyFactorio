@@ -125,8 +125,12 @@ local function ally_outlander(player, target)
 		
 		if global.towny.requests[target_player.index] then 
 			if global.towny.requests[target_player.index] == player.force.name then
-				if not can_force_accept_member(player.force) then return true end
-				game.print(">> " .. player.name .. " has accepted " .. target_player.name .. " into their Town!", {255, 255, 0})
+				if not can_force_accept_member(player.force) then return true end		
+				if player.force.name == player.name then
+					game.print(">> " .. player.name .. " has accepted " .. target_player.name .. " into their Town!", {255, 255, 0})
+				else
+					game.print(">> " .. player.name .. " has accepted " .. target_player.name .. " into" .. player.force.name .. "'s Town!", {255, 255, 0})
+				end
 				Public.add_player_to_town(target_player, global.towny.town_centers[player.force.name])
 				return true
 			end
