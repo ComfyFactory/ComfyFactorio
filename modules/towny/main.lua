@@ -135,8 +135,10 @@ end
 local tick_actions = {
 	[60 * 5] = Team.update_town_chart_tags,
 	[60 * 10] = Team.set_all_player_colors,
-	[60 * 15] = Biters.swarm,
-	[60 * 20] = Biters.set_evolution,
+	[60 * 25] = Biters.unit_groups_start_moving,
+	[60 * 45] = Biters.validate_swarms,
+	[60 * 50] = Biters.swarm,
+	[60 * 55] = Biters.set_evolution,	
 }
 
 local function on_nth_tick(event)
@@ -152,6 +154,7 @@ local function on_init()
 	global.towny.town_centers = {}
 	global.towny.cooldowns = {}
 	global.towny.size_of_town_centers = 0
+	global.towny.swarms = {}
 	
 	game.difficulty_settings.technology_price_multiplier = 0.30
 	game.map_settings.enemy_evolution.time_factor = 0

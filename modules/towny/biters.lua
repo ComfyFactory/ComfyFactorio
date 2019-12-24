@@ -3,6 +3,8 @@ local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
 local math_round = math.round
+local table_insert = table.insert
+local table_remove = table.remove
 
 local function get_commmands(target, group)
 	local commands = {}
@@ -74,7 +76,42 @@ local function get_random_close_spawner(surface, market)
 	return spawner
 end
 
+local function is_swarm_valid(swarm)
+	local group = swarm.group
+	if not group then return end
+	if not group.valid then return end
+	if game.tick >= swarm.timeout then	
+		group.destroy()		
+		return
+	end
+	return true
+end
+
+function Public.validate_swarms()
+	for k, swarm in pairs(global.towny.swarms) do
+		if not is_swarm_valid(swarm) then
+			table_remove(global.towny.swarms, k)
+		end
+	end
+end
+
+function Public.unit_groups_start_moving()
+	for k, swarm in pairs(global.towny.swarms) do
+		if swarm.group then
+			if swarm.group.valid then
+				swarm.group.start_moving()
+			end
+		end
+	end
+end
+
 function Public.swarm()
+	local count = 0
+	for k, swarm in pairs(global.towny.swarms) do
+		count = count + 1
+	end	
+	if count > 6 then return end
+	
 	local town_center = roll_market()
 	if not town_center then return end
 	local market = town_center.market
@@ -96,6 +133,7 @@ function Public.swarm()
 		structure_type = defines.compound_command.return_last,
 		commands = get_commmands(market, unit_group)
 	})
+	table_insert(global.towny.swarms, {group = unit_group, timeout = game.tick + 36000})
 end
 
 function Public.set_evolution()
@@ -105,7 +143,7 @@ function Public.set_evolution()
 		return 
 	end
 		
-	local max_research_count = math.floor(#game.technology_prototypes * 0.33)
+	local max_research_count = math_floor(#game.technology_prototypes * 0.30)
 	
 	local evo = 0
 	for _, town_center in pairs(global.towny.town_centers) do
