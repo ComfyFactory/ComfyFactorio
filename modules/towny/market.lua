@@ -15,6 +15,13 @@ local upgrade_functions = {
 		if force.character_inventory_slots_bonus > 100 then return end
 		force.character_inventory_slots_bonus = force.character_inventory_slots_bonus + 5
 	end,
+	--Upgrade Backpack
+	[3] = function(town_center)
+		local force = town_center.market.force		
+		if town_center.upgrades.mining_prod >= 10 then return end
+		town_center.upgrades.mining_prod = town_center.upgrades.mining_prod + 1
+		force.mining_drill_productivity_bonus = force.mining_drill_productivity_bonus + 0.1
+	end,
 }
 
 local function clear_offers(market)
@@ -35,10 +42,16 @@ local function set_offers(town_center)
 		special_offers[1] = {{{"computer", 1}}, "Maximum Health upgrades reached!"}
 	end
 	if force.character_inventory_slots_bonus <= 100 then 
-		special_offers[2] = {{{"coin", (force.character_inventory_slots_bonus / 5 + 1) * 35}}, "Upgrade Backpack +5 Slot"}
+		special_offers[2] = {{{"coin", (force.character_inventory_slots_bonus / 5 + 1) * 50}}, "Upgrade Backpack +5 Slot"}
 	else
 		special_offers[2] = {{{"computer", 1}}, "Maximum Backpack upgrades reached!"}
 	end
+	if town_center.upgrades.mining_prod < 10 then
+		special_offers[3] = {{{"coin", (town_center.upgrades.mining_prod + 1) * 400}}, "Upgrade Mining Productivity +10%"}
+	else
+		special_offers[3] = {{{"computer", 1}}, "Maximum Backpack upgrades reached!"}
+	end
+	
 	
 	local market_items = {}	
 	for _, v in pairs(special_offers) do

@@ -242,7 +242,7 @@ local function delete_chart_tag_for_all_forces(market)
 	end
 end
 
-local function add_chart_tag(force, market)
+function Public.add_chart_tag(force, market)
 	local position = market.position
 	local tags = force.find_chart_tags(market.surface, {{position.x - 0.1, position.y - 0.1}, {position.x + 0.1, position.y + 0.1}})
 	if tags[1] then return end
@@ -256,7 +256,7 @@ function Public.update_town_chart_tags()
 		local market = town_center.market
 		for _, force in pairs(forces) do
 			if force.is_chunk_visible(market.surface, town_center.chunk_position) then
-				add_chart_tag(force, market)
+				Public.add_chart_tag(force, market)
 			end
 		end	
 	end		

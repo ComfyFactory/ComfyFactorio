@@ -5,7 +5,7 @@ local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
 
-local min_distance_to_spawn = 136
+local min_distance_to_spawn = 128
 local square_min_distance_to_spawn = min_distance_to_spawn ^ 2
 local town_radius = 27
 local radius_between_towns = 160
@@ -35,13 +35,17 @@ for v = c1, c2, c3 do
 end
 
 local town_wall_vectors = {}
-for x = town_radius * -1, town_radius, 1 do
+for x = 2, town_radius, 1 do
 	table_insert(town_wall_vectors, {x, town_radius})
+	table_insert(town_wall_vectors, {x * -1, town_radius})
 	table_insert(town_wall_vectors, {x, town_radius * -1})
+	table_insert(town_wall_vectors, {x * -1, town_radius * -1})
 end
-for y = (town_radius - 1) * -1, town_radius - 1, 1 do
+for y = 2, town_radius - 1, 1 do
 	table_insert(town_wall_vectors, {town_radius, y})
+	table_insert(town_wall_vectors, {town_radius, y * -1})
 	table_insert(town_wall_vectors, {town_radius * -1, y})
+	table_insert(town_wall_vectors, {town_radius * -1, y * -1})
 end
 
 local gate_vectors_horizontal = {}
@@ -110,6 +114,15 @@ local starter_supplies = {
 	{name = "gun-turret", count = 2},	
 }
 
+local function count_nearby_ore(surface, position, ore_name)
+	local count = 0
+	local r = town_radius + 8
+	for _, e in pairs(surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = "neutral", name = ore_name})) do
+		count = count + e.amount
+	end
+	return count
+end
+
 local function draw_town_spawn(player_name)
 	local market = global.towny.town_centers[player_name].market
 	local position = market.position
@@ -125,20 +138,23 @@ local function draw_town_spawn(player_name)
 	
 	for _, vector in pairs(gate_vectors_horizontal) do
 		local p = {position.x + vector[1], position.y + vector[2]}	
-		if surface.can_place_entity({name = "gate", position = p, force = player_name}) then
+		p = surface.find_non_colliding_position("gate", p, 64, 1)
+		if p then
 			surface.create_entity({name = "gate", position = p, force = player_name, direction = 2})
 		end
 	end
 	for _, vector in pairs(gate_vectors_vertical) do
 		local p = {position.x + vector[1], position.y + vector[2]}	
-		if surface.can_place_entity({name = "gate", position = p, force = player_name}) then
+		p = surface.find_non_colliding_position("gate", p, 64, 1)
+		if p then
 			surface.create_entity({name = "gate", position = p, force = player_name, direction = 0})
 		end
 	end
 
 	for _, vector in pairs(town_wall_vectors) do
-		local p = {position.x + vector[1], position.y + vector[2]}	
-		if surface.can_place_entity({name = "stone-wall", position = p, force = player_name}) then
+		local p = {position.x + vector[1], position.y + vector[2]}
+		p = surface.find_non_colliding_position("stone-wall", p, 64, 1)
+		if p then
 			surface.create_entity({name = "stone-wall", position = p, force = player_name})
 		end
 	end
@@ -147,11 +163,13 @@ local function draw_town_spawn(player_name)
 	table.shuffle_table(ores)
 	
 	for i = 1, 4, 1 do
-		for _, vector in pairs(resource_vectors[i]) do
-			local p = {position.x + vector[1], position.y + vector[2]} 
-			p = surface.find_non_colliding_position(ores[i], p, 64, 1)
-			if p then 
-				surface.create_entity({name = ores[i], position = p, amount = ore_amount})
+		if count_nearby_ore(surface, position, ores[i]) < 200000 then
+			for _, vector in pairs(resource_vectors[i]) do
+				local p = {position.x + vector[1], position.y + vector[2]} 
+				p = surface.find_non_colliding_position(ores[i], p, 64, 1)
+				if p then 
+					surface.create_entity({name = ores[i], position = p, amount = ore_amount})
+				end
 			end
 		end
 	end
@@ -191,12 +209,14 @@ local function draw_town_spawn(player_name)
 			end
 		end
 	end
-	for _, vector in pairs(additional_resource_vectors[vector_indexes[3]]) do	
-		local p = {position.x + vector[1], position.y + vector[2]} 
-		p = surface.find_non_colliding_position("uranium-ore", p, 64, 1)
-		if p then 
-			surface.create_entity({name = "uranium-ore", position = p, amount = ore_amount})
-		end	
+	if count_nearby_ore(surface, position, "uranium-ore") < 100000 then
+		for _, vector in pairs(additional_resource_vectors[vector_indexes[3]]) do	
+			local p = {position.x + vector[1], position.y + vector[2]} 
+			p = surface.find_non_colliding_position("uranium-ore", p, 64, 1)
+			if p then 
+				surface.create_entity({name = "uranium-ore", position = p, amount = ore_amount * 2})
+			end	
+		end
 	end
 	local vectors = additional_resource_vectors[vector_indexes[4]]
 	for _ = 1, 3, 1 do
@@ -354,6 +374,8 @@ function Public.found(event)
 	town_center.health = town_center.max_health
 	town_center.color = get_color()
 	town_center.research_counter = 1
+	town_center.upgrades = {}
+	town_center.upgrades.mining_prod = 0
 	
 	town_center.health_text = rendering.draw_text{
 		text = "HP: " .. town_center.health .. " / " .. town_center.max_health,
@@ -386,6 +408,7 @@ function Public.found(event)
 	draw_town_spawn(player_name)
 	
 	Team.add_player_to_town(player, town_center)
+	Team.add_chart_tag(game.forces.player, town_center.market)
 	
 	local force = player.force
 	force.set_spawn_position({x = town_center.market.position.x, y = town_center.market.position.y + 4}, surface)	

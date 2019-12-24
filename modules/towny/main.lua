@@ -6,6 +6,7 @@ local Market = require "modules.towny.market"
 local Team = require "modules.towny.team"
 local Town_center = require "modules.towny.town_center"
 require "modules.custom_death_messages"
+require "modules.flashlight_toggle_button"
 require "modules.global_chat_toggle"
 require "modules.biters_yield_coins"
 

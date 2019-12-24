@@ -126,7 +126,7 @@ function Public.prevent_isolation_landfill(event)
 	end	
 end
 
-local square_min_distance_to_spawn = 96 ^ 2
+local square_min_distance_to_spawn = 80 ^ 2
 
 function Public.protect_spawn(event)
 	local entity = event.created_entity

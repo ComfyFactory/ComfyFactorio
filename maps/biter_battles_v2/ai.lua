@@ -260,8 +260,22 @@ local function get_unit_group_position(surface, nearest_player_unit, spawner)
 	return unit_group_position
 end
 
+local function get_active_threat(biter_force_name)
+	local active_threat = 0
+	for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
+		if biter.entity then 
+			if biter.entity.valid then 
+				active_threat = active_threat + threat_values[biter.entity.name]
+			end
+		end
+	end
+	return active_threat
+end
+
 local function create_attack_group(surface, force_name, biter_force_name)
-	if global.bb_threat[biter_force_name] <= 0 then return false end
+	local threat = global.bb_threat[biter_force_name]	
+	if get_active_threat(biter_force_name) > threat * 1.20 then return end
+	if threat <= 0 then return false end
 	
 	if bb_config.max_active_biters - get_active_biter_count(biter_force_name) < bb_config.max_group_size then
 		if global.bb_debug then game.print("Not enough slots for biters for team " .. force_name .. ". Available slots: " .. bb_config.max_active_biters - get_active_biter_count(biter_force_name)) end
