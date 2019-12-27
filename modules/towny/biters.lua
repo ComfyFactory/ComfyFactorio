@@ -48,16 +48,22 @@ end
 local function roll_market()
 	local r_max = 0
 	local town_centers = global.towny.town_centers
+	local research_threshold = game.forces.enemy.evolution_factor ^ 0.5 * 50
+
 	for k, town_center in pairs(town_centers) do
-		r_max = r_max + town_center.research_counter
+		if town_center.research_counter >= research_threshold then
+			r_max = r_max + town_center.research_counter
+		end
 	end
 	if r_max == 0 then return end	
 	local r = math_random(0, r_max)
 	
 	local chance = 0
 	for k, town_center in pairs(town_centers) do
-		chance = chance + town_center.research_counter
-		if r <= chance then return town_center end
+		if town_center.research_counter >= research_threshold then
+			chance = chance + town_center.research_counter
+			if r <= chance then return town_center end
+		end
 	end
 end
 
