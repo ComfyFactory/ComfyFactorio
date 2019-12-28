@@ -15,6 +15,7 @@ Only the owner can banish members.
 Members can invite other players and teams.
 Members can leave their town with a piece of coal.
 The Market can only repaired manually.
+Outlanders can not build close to it.
 
 All towns are opponents to each other, if no alliance is formed with a raw fish.
 If a center falls, the whole team will fall with it and all buildings will turn neutral and lootable.

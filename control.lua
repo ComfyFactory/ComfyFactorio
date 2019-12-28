@@ -52,6 +52,7 @@ require "modules.autostash"
 --require "modules.satellite_score"
 --require "modules.show_health"
 --require "modules.splice_double"
+--require "modules.ores_are_mixed"
 --require "modules.team_teleport" --(REQUIRES "on_tick_schedule" !)
 --require "modules.surrounded_by_worms"
 --require "modules.more_attacks"
@@ -114,12 +115,13 @@ require "modules.autostash"
 -----------------------------
 
 ---- more modules here ----
---require "modules.towny.main"
+require "modules.towny.main"
 --require "modules.rpg"
 --require "modules.trees_grow"
 --require "modules.trees_randomly_die"
 --require "terrain_layouts.cone_to_east"
 --require "terrain_layouts.biters_and_resources_east"
+require "terrain_layouts.scrap_01"
 ------
 
 if _DUMP_ENV then

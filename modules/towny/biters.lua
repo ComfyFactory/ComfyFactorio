@@ -48,7 +48,9 @@ end
 local function roll_market()
 	local r_max = 0
 	local town_centers = global.towny.town_centers
-	local research_threshold = game.forces.enemy.evolution_factor ^ 0.5 * 50
+	
+	--Skip Towns that are too low in reserach for the current biter evolution.
+	local research_threshold = game.forces.enemy.evolution_factor * #game.technology_prototypes * 0.175
 
 	for k, town_center in pairs(town_centers) do
 		if town_center.research_counter >= research_threshold then
@@ -98,6 +100,35 @@ function Public.validate_swarms()
 		if not is_swarm_valid(swarm) then
 			table_remove(global.towny.swarms, k)
 		end
+	end
+end
+
+--Destroy biters that are out of the current evolution range.
+function Public.wipe_units_out_of_evo_range()
+	local units_to_wipe = {}
+	local evo = game.forces.enemy.evolution_factor	
+	if evo > 0.80 then return end
+		units_to_wipe[#units_to_wipe + 1] = "behemoth-biter"
+		units_to_wipe[#units_to_wipe + 1] = "behemoth-spitter"
+	if evo < 0.40 then 
+		units_to_wipe[#units_to_wipe + 1] = "big-biter"
+		units_to_wipe[#units_to_wipe + 1] = "big-spitter"
+	end
+	if evo < 0.10 then 
+		units_to_wipe[#units_to_wipe + 1] = "medium-biter"
+		units_to_wipe[#units_to_wipe + 1] = "medium-spitter"
+	end	
+	for k, surface in pairs(game.surfaces) do
+		for k2, unit in pairs(surface.find_entities_filtered({name = units_to_wipe, force = "enemy"})) do
+			unit.destroy()
+		end
+	end
+end
+
+function Public.clear_spawn_for_player(player)
+	local area = {{player.position.x - 64, player.position.y - 64}, {player.position.x + 64, player.position.y + 64}}
+	for _, e in pairs(player.surface.find_entities_filtered({force = "enemy", type = {"unit-spawner", "unit", "turret"}, area = area})) do
+		e.destroy()
 	end
 end
 

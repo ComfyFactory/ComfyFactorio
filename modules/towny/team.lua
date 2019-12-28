@@ -311,7 +311,7 @@ function Public.kill_force(force_name)
 end
 
 local player_force_disabled_recipes = {"lab", "automation-science-pack", "stone-brick"}
-local player_force_enabled_recipes = {"submachine-gun", "assembling-machine-1", "small-lamp", "shotgun", "shotgun-shell", "underground-belt", "splitter", "steel-plate", "car", "cargo-wagon", "constant-combinator", "engine-unit", "green-wire", "locomotive", "rail", "train-stop"}
+local player_force_enabled_recipes = {"submachine-gun", "assembling-machine-1", "small-lamp", "shotgun", "shotgun-shell", "underground-belt", "splitter", "steel-plate", "car", "cargo-wagon", "constant-combinator", "engine-unit", "green-wire", "locomotive", "rail", "train-stop", "arithmetic-combinator", "decider-combinator"}
 
 function Public.setup_player_force()
 	local p = game.permissions.create_group("outlander")

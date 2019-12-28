@@ -41,6 +41,7 @@ local function on_player_respawned(event)
 	if player.force.index ~= 1 then return end
 	Team.set_player_to_outlander(player)
 	Team.give_outlander_items(player)
+	Biters.clear_spawn_for_player(player)
 end
 
 local function on_player_used_capsule(event)
@@ -50,12 +51,12 @@ end
 local function on_built_entity(event)
 	if Town_center.found(event) then return end
 	if Building.prevent_isolation(event) then return end
-	Building.protect_spawn(event)
+	Building.restrictions(event)
 end
 
 local function on_robot_built_entity(event)
 	if Building.prevent_isolation(event) then return end
-	Building.protect_spawn(event)
+	Building.restrictions(event)
 end
 
 local function on_player_built_tile(event)
@@ -135,10 +136,11 @@ end
 local tick_actions = {
 	[60 * 5] = Team.update_town_chart_tags,
 	[60 * 10] = Team.set_all_player_colors,
+	[60 * 20] = Biters.wipe_units_out_of_evo_range,
 	[60 * 25] = Biters.unit_groups_start_moving,
 	[60 * 45] = Biters.validate_swarms,
 	[60 * 50] = Biters.swarm,
-	[60 * 55] = Biters.set_evolution,	
+	[60 * 55] = Biters.set_evolution,
 }
 
 local function on_nth_tick(event)
