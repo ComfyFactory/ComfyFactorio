@@ -3,7 +3,7 @@ local event = require 'utils.event'
 local main_caption = " --Fish Defender-- "
 local sub_caption = " *blb blubby blub* "
 local info = [[
-	The biters have catched the scent of fish in the market.
+	The biters have caught the scent of fish in the market.
 	Fend them off as long as possible!
 	This however will not be an easy task,
 	since their strength and resistance increases constantly over time.
