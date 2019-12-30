@@ -105,6 +105,20 @@ function Public.draw_top_toggle_button(player)
 	button.style.bottom_padding = 2
 end
 
+local function draw_science_stats_button(player)
+	if player.gui.top["stats_toggle_button"] then player.gui.top["stats_toggle_button"].destroy() end	
+	local button = player.gui.top.add({type = "sprite-button", name = "stats_toggle_button", caption = "Science logs", tooltip = tooltip})
+	button.style.font = "heading-2"
+	button.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
+	button.style.minimal_height = 38
+	button.style.minimal_width = 120
+	button.style.top_padding = 2
+	button.style.left_padding = 0
+	button.style.right_padding = 0
+	button.style.bottom_padding = 2
+end
+
+
 local function draw_manager_gui(player)
 	if player.gui.center["team_manager_gui"] then player.gui.center["team_manager_gui"].destroy() end
 	
@@ -214,6 +228,87 @@ local function draw_manager_gui(player)
 		button.style.font_color = {r = 55, g = 55, b = 55}
 	end
 	button.style.font = "heading-2"
+end
+
+
+local function draw_stats_gui(player)
+	if player.gui.center["stats_gui"] then player.gui.center["stats_gui"].destroy() end
+	
+	local frame = player.gui.center.add({type = "frame", name = "stats_gui", caption = "Science logs", direction = "vertical"})
+
+	local t = frame.add({type = "table", name = "stats_root_table", column_count = 4})
+	
+	local l = t.add({type = "sprite-button", caption = "Date", "Date"})
+	l.style.minimal_width = 160
+	l.style.maximal_width = 160
+	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
+	l.style.font = "heading-1"
+	
+	local l = t.add({type = "sprite-button", caption = "Science details", "Science details"})
+	l.style.minimal_width = 160
+	l.style.maximal_width = 160
+	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
+	l.style.font = "heading-1"
+	
+	local l = t.add({type = "sprite-button", caption = "Evo jump", "Evo jump"})
+	l.style.minimal_width = 160
+	l.style.maximal_width = 160
+	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
+	l.style.font = "heading-1"
+	
+	local l = t.add({type = "sprite-button", caption = "Threat jump", "Threat jump"})
+	l.style.minimal_width = 160
+	l.style.maximal_width = 160
+	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
+	l.style.font = "heading-1"
+
+	if global.science_logs_date then
+		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 1, items = global.science_logs_all})
+		list_box.style.minimal_height = 360
+		list_box.style.minimal_width = 160
+		list_box.style.maximal_height = 480
+	end
+	if global.science_logs_text then
+		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 2, items = global.science_logs_text})
+		list_box.style.minimal_height = 360
+		list_box.style.minimal_width = 160
+		list_box.style.maximal_height = 480
+	end
+	if global.science_logs_evo_jump then
+		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 3, items = global.science_logs_evo_jump})
+		list_box.style.minimal_height = 360
+		list_box.style.minimal_width = 160
+		list_box.style.maximal_height = 480
+	end
+	if global.science_logs_threat then
+		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 4, items = global.science_logs_threat})
+		list_box.style.minimal_height = 360
+		list_box.style.minimal_width = 160
+		list_box.style.maximal_height = 480
+	end
+	
+	
+	frame.add({type = "label", caption = ""})
+	
+	local t = frame.add({type = "table", name = "stats_bottom_buttons", column_count = 4})	
+	local button = t.add({
+			type = "button",
+			name = "stats_close",
+			caption = "Close",
+			tooltip = "Close this window."
+		})
+	button.style.font = "heading-2"
+	
+end
+
+local function stats_gui_click(event)
+	local player = game.players[event.player_index]
+	local name = event.element.name
+	if name == "stats_close" then
+		player.gui.center["stats_gui"].destroy()	
+		return
+	end
+	
 end
 
 local function set_custom_team_name(force_name, team_name)
@@ -343,6 +438,13 @@ function Public.gui_click(event)
 		return
 	end
 	
+	if name == "stats_toggle_button" then
+		if player.gui.center["stats_gui"] then player.gui.center["stats_gui"].destroy() return end
+		draw_stats_gui(player)
+	end
+	
+	if player.gui.center["stats_gui"] then stats_gui_click(event) end
+	
 	if player.gui.center["team_manager_gui"] then team_manager_gui_click(event) end
 	
 	if player.gui.center["custom_team_name_gui"] then
@@ -364,6 +466,7 @@ end
 
 function Public.init()
 	global.tm_custom_name = {}
+	draw_science_stats_button(game.players[event.player_index])
 end
 
 return Public
