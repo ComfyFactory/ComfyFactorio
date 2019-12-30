@@ -91,6 +91,8 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})	
 	local n = bb_config.north_side_team_name
 	local s = bb_config.south_side_team_name
+	if global.tm_custom_name["north"] then n = global.tm_custom_name["north"] end
+	if global.tm_custom_name["south"] then s = global.tm_custom_name["south"] end	
 	local team_strings = {
 		["north"] = table.concat({"[color=120, 120, 255]", n, "'s[/color]"}),
 		["south"] = table.concat({"[color=255, 65, 65]", s, "'s[/color]"})
@@ -126,7 +128,7 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 		local formatted_threat_after_feed = math.round(global.bb_threat[biter_force_name],0)
 		local evo_jump = table.concat({evo_before_science_feed .. " to " .. formatted_evo_after_feed})
 		local threat_jump = table.concat({threat_before_science_feed .. " to ".. formatted_threat_after_feed})
-		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
+		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)] .. " biters"})
 		
 		if global.science_logs_text then
 			table.insert(global.science_logs_date, formatted_feed_time)

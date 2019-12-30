@@ -234,57 +234,57 @@ local function draw_stats_gui(player)
 	
 	local frame = player.gui.center.add({type = "frame", name = "stats_gui", caption = "Science logs", direction = "vertical"})
 
-	local t = frame.add({type = "table", name = "stats_root_table", column_count = 4})
-	
-	local l = t.add({type = "sprite-button", caption = "Date", "Date"})
-	l.style.minimal_width = 160
-	l.style.maximal_width = 160
-	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
-	l.style.font = "heading-1"
-	
-	local l = t.add({type = "sprite-button", caption = "Science details", "Science details"})
-	l.style.minimal_width = 160
-	l.style.maximal_width = 160
-	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
-	l.style.font = "heading-1"
-	
-	local l = t.add({type = "sprite-button", caption = "Evo jump", "Evo jump"})
-	l.style.minimal_width = 160
-	l.style.maximal_width = 160
-	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
-	l.style.font = "heading-1"
-	
-	local l = t.add({type = "sprite-button", caption = "Threat jump", "Threat jump"})
-	l.style.minimal_width = 160
-	l.style.maximal_width = 160
-	l.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
-	l.style.font = "heading-1"
+	local t = frame.add { type = "table", name = "science_logs_header_table", column_count = 4 }
+	local column_widths = {tonumber(150), tonumber(400), tonumber(150), tonumber(150)}
+	for _, w in ipairs(column_widths) do
+		local label = t.add { type = "label", caption = "" }
+		label.style.minimal_width = w
+		label.style.maximal_width = w
+	end
 
-	if global.science_logs_date then
-		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 1, items = global.science_logs_date})
-		list_box.style.minimal_height = 360
-		list_box.style.minimal_width = 160
-		list_box.style.maximal_height = 480
-	end
-	if global.science_logs_text then
-		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 2, items = global.science_logs_text})
-		list_box.style.minimal_height = 360
-		list_box.style.minimal_width = 160
-		list_box.style.maximal_height = 480
-	end
-	if global.science_logs_evo_jump then
-		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 3, items = global.science_logs_evo_jump})
-		list_box.style.minimal_height = 360
-		list_box.style.minimal_width = 160
-		list_box.style.maximal_height = 480
-	end
-	if global.science_logs_threat then
-		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 4, items = global.science_logs_threat})
-		list_box.style.minimal_height = 360
-		list_box.style.minimal_width = 160
-		list_box.style.maximal_height = 480
-	end
+	local headers = {
+		[1] = "Date",
+		[2] = "Science details",
+		[3] = "Evo jump",
+		[4] = "Threat jump",
+	}
 	
+	for k, v in ipairs(headers) do
+		local label = t.add {
+			type = "label",
+			name = "science_logs_panel_header_" .. k,
+			caption = v
+		}
+		label.style.font = "default-bold"
+		label.style.font_color = { r=0.98, g=0.66, b=0.22 }
+	end
+
+	-- special style on first header
+	local label = t["science_logs_panel_header_1"]
+	label.style.minimal_width = 36
+	label.style.maximal_width = 36
+	label.style.horizontal_align = "right"
+	
+	-- List management
+	local science_panel_table = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
+	science_panel_table.style.maximal_height = 530
+	science_panel_table = science_panel_table.add { type = "table", name = "science_panel_table", column_count = 4 }
+	if global.science_logs_date then
+		for i = 1, #global.science_logs_date, 1 do
+			local label = science_panel_table.add { type = "label", name = "science_logs_date" .. i, caption = global.science_logs_date[i] }
+			label.style.minimal_width = column_widths[1]
+			label.style.maximal_width = column_widths[1]
+			local label = science_panel_table.add { type = "label", name = "science_logs_text" .. i, caption = global.science_logs_text[i] }
+			label.style.minimal_width = column_widths[2]
+			label.style.maximal_width = column_widths[2]
+			local label = science_panel_table.add { type = "label", name = "science_logs_evo_jump" .. i, caption = global.science_logs_evo_jump[i] }
+			label.style.minimal_width = column_widths[3]
+			label.style.maximal_width = column_widths[3]
+			local label = science_panel_table.add { type = "label", name = "science_logs_threat" .. i, caption = global.science_logs_threat[i] }
+			label.style.minimal_width = column_widths[4]
+			label.style.maximal_width = column_widths[4]
+		end
+	end
 	
 	frame.add({type = "label", caption = ""})
 	
@@ -296,7 +296,6 @@ local function draw_stats_gui(player)
 			tooltip = "Close this window."
 		})
 	button.style.font = "heading-2"
-	
 end
 
 local function stats_gui_click(event)
