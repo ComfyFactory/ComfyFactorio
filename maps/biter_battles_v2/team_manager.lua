@@ -270,7 +270,7 @@ local function draw_stats_gui(player)
 	-- List management
 	local science_panel_table = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
 	science_panel_table.style.maximal_height = 530
-	science_panel_table = science_panel_table.add { type = "table", name = "science_panel_table", column_count = 4 }
+	science_panel_table = science_panel_table.add { type = "table", name = "science_panel_table", column_count = 4, draw_horizontal_lines = true }
 	if global.science_logs_date then
 		for i = 1, #global.science_logs_date, 1 do
 			local label = science_panel_table.add { type = "label", name = "science_logs_date" .. i, caption = global.science_logs_date[i] }
