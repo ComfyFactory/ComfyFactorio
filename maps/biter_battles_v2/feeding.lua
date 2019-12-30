@@ -123,7 +123,6 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 			global.science_logs_text = { line_log_stats_to_add }
 			global.science_logs_evo_jump = { evo_jump }
 			global.science_logs_threat = { threat_jump }
-			global.science_logs_all = { formatted_feed_time .. line_log_stats_to_add .. evo_jump .. threat_jump }
 		end
 	end
 end
