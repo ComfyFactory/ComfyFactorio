@@ -263,7 +263,7 @@ local function draw_stats_gui(player)
 	l.style.font = "heading-1"
 
 	if global.science_logs_date then
-		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 1, items = global.science_logs_all})
+		local list_box = t.add({type = "list-box", name = "stats_list_box_" .. 1, items = global.science_logs_date})
 		list_box.style.minimal_height = 360
 		list_box.style.minimal_width = 160
 		list_box.style.maximal_height = 480
