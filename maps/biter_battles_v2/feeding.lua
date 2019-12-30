@@ -70,6 +70,64 @@ local function print_feeding_msg(player, food, flask_amount)
 	end	
 end
 
+function add_stats(player, food, flask_amount,biter_force_name,evo_before_science_feed,threat_before_science_feed)
+	local colored_player_name = table.concat({"[color=", player.color.r * 0.6 + 0.35, ",", player.color.g * 0.6 + 0.35, ",", player.color.b * 0.6 + 0.35, "]", player.name, "[/color]"})
+	local formatted_food = table.concat({"[color=", food_values[food].color, "][/color]", "[img=item/", food, "]"})
+	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})	
+	local n = bb_config.north_side_team_name
+	local s = bb_config.south_side_team_name
+	local team_strings = {
+		["north"] = table.concat({"[color=120, 120, 255]", n, "'s[/color]"}),
+		["south"] = table.concat({"[color=255, 65, 65]", s, "'s[/color]"})
+	}
+	if flask_amount > 1 then
+	-- FIX HOUR/MIN HANDLING(genre 5h58 => 4H MAIS NON, à tester mon idée)
+	-- fix
+		local feed_time = math.round(game.tick,0)
+		--local feed_time_hours = math.round(game.tick / (60*60*60),0)
+		--local feed_time_mins = math.round(game.tick / (60*60) - (feed_time/(60*60*60)) * 60,0)
+		local feed_time_mins = math.round(game.tick / (60*60),0)
+		local minute_unit = ""
+		if feed_time_mins <= 1 then
+			minute_unit = "min"
+		else
+			minute_unit = "mins"
+		end
+		
+		local shown_feed_time_hours = ""
+		--if feed_time_hours > 0 then
+		--	shown_feed_time_hours = feed_time_hours .. "h"
+		--end
+		local shown_feed_time_mins = ""
+		shown_feed_time_mins = feed_time_mins .. minute_unit
+		--if feed_time_mins == 0  and feed_time_hours == 0 then
+		--	shown_feed_time_mins = feed_time_mins .. minute_unit
+		--end
+		
+		local formatted_feed_time = shown_feed_time_hours .. shown_feed_time_mins
+		evo_before_science_feed = math.round(evo_before_science_feed*100,1) 
+		threat_before_science_feed = math.round(threat_before_science_feed,0) 
+		local formatted_evo_after_feed = math.round(global.bb_evolution[biter_force_name]*100,1)
+		local formatted_threat_after_feed = math.round(global.bb_threat[biter_force_name],0)
+		local evo_jump = table.concat({evo_before_science_feed .. " to " .. formatted_evo_after_feed})
+		local threat_jump = table.concat({threat_before_science_feed .. " to ".. formatted_threat_after_feed})
+		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
+		
+		if global.science_logs_text then
+			table.insert(global.science_logs_date, formatted_feed_time)
+			table.insert(global.science_logs_text, line_log_stats_to_add)
+			table.insert(global.science_logs_evo_jump, evo_jump)
+			table.insert(global.science_logs_threat, threat_jump)
+		else
+			global.science_logs_date = { formatted_feed_time }
+			global.science_logs_text = { line_log_stats_to_add }
+			global.science_logs_evo_jump = { evo_jump }
+			global.science_logs_threat = { threat_jump }
+			global.science_logs_all = { formatted_feed_time .. line_log_stats_to_add .. evo_jump .. threat_jump }
+		end
+	end
+end
+
 function set_evo_and_threat(flask_amount, food, biter_force_name)
 	local decimals = 9
 	local math_round = math.round
@@ -118,9 +176,13 @@ local function feed_biters(player, food)
 	
 	i.remove({name = food, count = flask_amount})
 	
-	print_feeding_msg(player, food, flask_amount)							
+	print_feeding_msg(player, food, flask_amount)	
+	evolution_before_feed = global.bb_evolution[biter_force_name]
+	threat_before_feed = global.bb_threat[biter_force_name]						
 	
 	set_evo_and_threat(flask_amount, food, biter_force_name)
+	
+	add_stats(player, food, flask_amount ,biter_force_name, evolution_before_feed, threat_before_feed)
 end
 
 return feed_biters
