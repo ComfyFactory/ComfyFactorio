@@ -83,11 +83,7 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 		["south"] = table.concat({"[color=255, 65, 65]", s, "[/color]"})
 	}
 	if flask_amount > 1 then
-	-- FIX HOUR/MIN HANDLING(genre 5h58 => 4H MAIS NON, à tester mon idée)
-	-- fix
 		local feed_time = math.round(game.tick,0)
-		--local feed_time_hours = math.round(game.tick / (60*60*60),0)
-		--local feed_time_mins = math.round(game.tick / (60*60) - (feed_time/(60*60*60)) * 60,0)
 		local feed_time_mins = math.round(game.tick / (60*60),0)
 		local minute_unit = ""
 		if feed_time_mins <= 1 then
@@ -95,18 +91,9 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 		else
 			minute_unit = "mins"
 		end
-		
-		local shown_feed_time_hours = ""
-		--if feed_time_hours > 0 then
-		--	shown_feed_time_hours = feed_time_hours .. "h"
-		--end
 		local shown_feed_time_mins = ""
 		shown_feed_time_mins = feed_time_mins .. minute_unit
-		--if feed_time_mins == 0  and feed_time_hours == 0 then
-		--	shown_feed_time_mins = feed_time_mins .. minute_unit
-		--end
-		
-		local formatted_feed_time = shown_feed_time_hours .. shown_feed_time_mins
+		local formatted_feed_time = shown_feed_time_mins
 		evo_before_science_feed = math.round(evo_before_science_feed*100,1) 
 		threat_before_science_feed = math.round(threat_before_science_feed,0) 
 		local formatted_evo_after_feed = math.round(global.bb_evolution[biter_force_name]*100,1)
@@ -116,7 +103,6 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 		local evo_jump_difference =  math.round(formatted_evo_after_feed - evo_before_science_feed,1)
 		local threat_jump_difference =  math.round(formatted_threat_after_feed - threat_before_science_feed,0)
 		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
-		
 		if global.science_logs_text then
 			table.insert(global.science_logs_date, formatted_feed_time)
 			table.insert(global.science_logs_text, line_log_stats_to_add)
