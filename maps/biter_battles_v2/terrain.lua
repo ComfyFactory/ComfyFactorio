@@ -146,28 +146,31 @@ function is_horizontal_border_river(pos)
 end
 
 local function generate_inner_spawn_circle(pos, distance_to_center, surface)
+	-- assert(distance_to_center < spawn_circle_size) == true
 	local tile = false
-	if distance_to_center < spawn_circle_size then
+	if distance_to_center < 7 then 
+		tile = "sand-1"
+	elseif distance_to_center < 9.5 then 
+		tile = "refined-concrete"
+	else
 		tile = "deepwater"
 		if math_random(1, 48) == 1 then surface.create_entity({name = "fish", position = pos}) end
 	end
-	if distance_to_center < 9.5 then tile = "refined-concrete" end
-	if distance_to_center < 7 then tile = "sand-1" end
-	if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
+
+	surface.set_tiles({{name = tile, position = pos}}, true)
 end
 
 local function generate_starting_area(pos, distance_to_center, surface)
+	-- assert(distance_to_center >= spawn_circle_size) == true
 	local r = 116
 	local noise = get_noise(2, pos) * 15
 
-	if distance_to_center + noise < r - 10 and distance_to_center > spawn_circle_size and not is_horizontal_border_river(pos) then
+	if distance_to_center + noise < r - 10 and not is_horizontal_border_river(pos) then
 		local tile_name = surface.get_tile(pos).name
 		if tile_name == "water" or tile_name == "deepwater" then
 			surface.set_tiles({{name = get_replacement_tile(surface, pos), position = pos}}, true)
 		end
 	end
-
-	if tile then surface.set_tiles({{name = tile, position = pos}}, true) end
 
 	if surface.can_place_entity({name = "wooden-chest", position = pos}) and surface.can_place_entity({name = "coal", position = pos}) then
 		local noise_2 = get_noise(3, pos)
