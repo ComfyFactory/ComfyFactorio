@@ -115,13 +115,15 @@ require "modules.autostash"
 -----------------------------
 
 ---- more modules here ----
-require "modules.towny.main"
+--require "modules.towny.main"
+--require "terrain_layouts.scrap_01"  
+--require "terrain_layouts.caves" 
+
 --require "modules.rpg"
 --require "modules.trees_grow"
 --require "modules.trees_randomly_die"
 --require "terrain_layouts.cone_to_east"
 --require "terrain_layouts.biters_and_resources_east"
-require "terrain_layouts.scrap_01"
 ------
 
 if _DUMP_ENV then
