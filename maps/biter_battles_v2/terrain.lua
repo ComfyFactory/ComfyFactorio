@@ -22,29 +22,25 @@ local function get_noise(name, pos)
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local noise_seed_add = 25000
 	if name == 1 then
-		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.0042, pos.y * 0.0042, seed)
+		local noise = simplex_noise(pos.x * 0.0042, pos.y * 0.0042, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.031, pos.y * 0.031, seed)
-		seed = seed + noise_seed_add
-		noise[3] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.08 + noise[3] * 0.025
+		noise = noise + simplex_noise(pos.x * 0.031, pos.y * 0.031, seed) * 0.08
+		seed  = seed + noise_seed_add
+		noise = noise + simplex_noise(pos.x * 0.1, pos.y * 0.1, seed) * 0.025
 		return noise
 	end
+
 	if name == 2 then
-		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.011, pos.y * 0.011, seed)
+		local noise = simplex_noise(pos.x * 0.011, pos.y * 0.011, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
-		local noise = noise[1] + noise[2] * 0.2
+		noise = noise + simplex_noise(pos.x * 0.08, pos.y * 0.08, seed) * 0.2
 		return noise
 	end
+
 	if name == 3 then
-		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
+		local noise = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.08, pos.y * 0.08, seed)
-		local noise = noise[1] + noise[2] * 0.1
+		noise = noise + simplex_noise(pos.x * 0.08, pos.y * 0.08, seed) * 0.1
 		return noise
 	end
 end
@@ -163,35 +159,55 @@ end
 local function generate_starting_area(pos, distance_to_center, surface)
 	-- assert(distance_to_center >= spawn_circle_size) == true
 	local r = 116
-	local noise = get_noise(2, pos) * 15
+	local min_noise = -20
 
-	if distance_to_center + noise < r - 10 and not is_horizontal_border_river(pos) then
+	-- Avoid calculating noise, see comment below
+	if (distance_to_center + min_noise - r) > 4.5 then
+		return
+	end
+
+	local noise = get_noise(2, pos) * 15 -- noise is in about [-18, 18]
+	local delta_spawn_wall_r = distance_to_center + noise - r
+	-- delta_spawn_wall_r is the difference between the distance_to_center (with added noise) 
+	-- and our spawn_wall radius (r=116), i.e. how far are we from the ring with radius r.
+	-- The following shows what happens depending on delta_spawn_wall_r:
+	--   	min     max
+    --  	N/A     -10	    => replace water
+	-- if noise_2 > -0.5:
+	--      -1.75    0 	    => wall
+	-- else:
+	--   	-6      -3 	 	=> 1/16 chance of turrent or turret-remnants
+	--   	-1.95    0 	 	=> wall
+	--    	 0       4.5    => chest-remnants with 1/3, chest with 1/(delta_spawn_wall_r+2)
+	--
+	-- => We never do anything for (distance_to_center + min_noise - r) > 4.5
+
+	if delta_spawn_wall_r < -10 and not is_horizontal_border_river(pos) then
 		local tile_name = surface.get_tile(pos).name
 		if tile_name == "water" or tile_name == "deepwater" then
 			surface.set_tiles({{name = get_replacement_tile(surface, pos), position = pos}}, true)
 		end
+		return
 	end
 
 	if surface.can_place_entity({name = "wooden-chest", position = pos}) and surface.can_place_entity({name = "coal", position = pos}) then
 		local noise_2 = get_noise(3, pos)
 		if noise_2 < 0.25 then
-			local spawn_wall_r = distance_to_center + noise
 			if noise_2 > -0.5 then
-				if spawn_wall_r < r and spawn_wall_r > r - 1.75 then				
+				if delta_spawn_wall_r > -1.75 and delta_spawn_wall_r < 0 then				
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 				end
 			else
-				if spawn_wall_r < r and spawn_wall_r > r - 1.95 then				
+				if delta_spawn_wall_r > -1.95 and delta_spawn_wall_r < 0 then				
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
-				else
-					if spawn_wall_r < r + 4.5 and spawn_wall_r > r then
+
+				elseif delta_spawn_wall_r > 0 and delta_spawn_wall_r < 4.5 then
 						local name = "wooden-chest"
-						local r_max = math.floor(math.abs(spawn_wall_r - r)) + 2
+					local r_max = math.floor(math.abs(delta_spawn_wall_r)) + 2
 						if math_random(1,3) == 1 then name = name .. "-remnants" end
 						if math_random(1,r_max) == 1 then surface.create_entity({name = name, position = pos, force = "north"}) end
-					end
-				end	
-				if spawn_wall_r < r - 3 and spawn_wall_r > r - 6 then
+
+				elseif delta_spawn_wall_r > -6 and delta_spawn_wall_r < -3 then
 					if math_random(1, 16) == 1 then
 						if surface.can_place_entity({name = "gun-turret", position = pos}) then
 							local t = surface.create_entity({name = "gun-turret", position = pos, force = "north"})
@@ -218,9 +234,9 @@ local function generate_circle_spawn(event)
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
 
-	if left_top_x < -320 then return end
-	if left_top_x > 320 then return end
-	if left_top_y < -320 then return end
+	if left_top_x < -160 then return end
+	if left_top_x > 160 then return end
+	if left_top_y < -160 then return end
 
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
