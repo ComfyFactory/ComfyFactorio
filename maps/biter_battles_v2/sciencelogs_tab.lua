@@ -5,54 +5,44 @@ local Tabs = require 'comfy_panel.main'
 
 local function add_science_logs(element)
 	local t = element.add { type = "table", name = "science_logs_header_table", column_count = 4 }
-	local column_widths = {tonumber(100), tonumber(400), tonumber(145), tonumber(145)}
-	for _, w in ipairs(column_widths) do
-		local label = t.add { type = "label", caption = "" }
-		label.style.minimal_width = w
-		label.style.maximal_width = w
-	end
-
+	local column_widths = {tonumber(90), tonumber(340), tonumber(170), tonumber(190)}
 	local headers = {
-		[1] = "Date",
-		[2] = "Science details",
+		[1] = "Time",
+		[2] = "Details",
 		[3] = "Evo jump",
 		[4] = "Threat jump",
 	}
-	
-	for k, v in ipairs(headers) do
-		local label = t.add {
-			type = "label",
-			name = "science_logs_panel_header_" .. k,
-			caption = v
-		}
-		label.style.font = "default-bold"
-		label.style.font_color = { r=0.98, g=0.66, b=0.22 }
+	for _, w in ipairs(column_widths) do
+	local label = t.add { type = "label", caption = headers[_] }
+	label.style.minimal_width = w
+	label.style.maximal_width = w
+	label.style.font = "default-bold"
+	label.style.font_color = { r=0.98, g=0.66, b=0.22 }
+	if _ == 1 then
+		label.style.horizontal_align = "center"
+		end
 	end
-
-	-- special style on first header
-	local label = t["science_logs_panel_header_1"]
-	label.style.minimal_width = 36
-	label.style.maximal_width = 36
-	label.style.horizontal_align = "right"
 	
 	-- List management
-	local science_panel_table = element.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
-	science_panel_table.style.maximal_height = 530
-	science_panel_table = science_panel_table.add { type = "table", name = "science_panel_table", column_count = 4, draw_horizontal_lines = true }
 	if global.science_logs_date then
+		local science_scrollpanel = element.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
+		science_scrollpanel.style.maximal_height = 530
 		for i = 1, #global.science_logs_date, 1 do
+			science_panel_table = science_scrollpanel.add { type = "table", column_count = 4 }
 			local label = science_panel_table.add { type = "label", name = "science_logs_date" .. i, caption = global.science_logs_date[i] }
 			label.style.minimal_width = column_widths[1]
 			label.style.maximal_width = column_widths[1]
+			label.style.horizontal_align = "center"
 			local label = science_panel_table.add { type = "label", name = "science_logs_text" .. i, caption = global.science_logs_text[i] }
 			label.style.minimal_width = column_widths[2]
 			label.style.maximal_width = column_widths[2]
-			local label = science_panel_table.add { type = "label", name = "science_logs_evo_jump" .. i, caption = global.science_logs_evo_jump[i] }
+			local label = science_panel_table.add { type = "label", name = "science_logs_evo_jump" .. i, caption = global.science_logs_evo_jump[i].."   [color=200,200,200](+"..global.science_logs_evo_jump_difference[i]..")[/color]" }
 			label.style.minimal_width = column_widths[3]
 			label.style.maximal_width = column_widths[3]
-			local label = science_panel_table.add { type = "label", name = "science_logs_threat" .. i, caption = global.science_logs_threat[i] }
+			local label = science_panel_table.add { type = "label", name = "science_logs_threat" .. i, caption = global.science_logs_threat[i].."   [color=200,200,200](+"..global.science_logs_threat_jump_difference[i]..")[/color]" }
 			label.style.minimal_width = column_widths[4]
 			label.style.maximal_width = column_widths[4]
+			science_scrollpanel.add({type = "line"})
 		end
 	end
 end
@@ -68,7 +58,7 @@ local function on_gui_click(event)
 	if not event.element.valid then return end
 end
 
-comfy_panel_tabs["ScienceLogs"] = build_config_gui
+comfy_panel_tabs["MutagenLog"] = build_config_gui
 
 
 local event = require 'utils.event'
