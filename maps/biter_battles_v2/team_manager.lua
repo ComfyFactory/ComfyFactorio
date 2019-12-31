@@ -105,20 +105,6 @@ function Public.draw_top_toggle_button(player)
 	button.style.bottom_padding = 2
 end
 
-local function draw_science_stats_button(player)
-	if player.gui.top["stats_toggle_button"] then player.gui.top["stats_toggle_button"].destroy() end	
-	local button = player.gui.top.add({type = "sprite-button", name = "stats_toggle_button", caption = "Science logs", tooltip = tooltip})
-	button.style.font = "heading-2"
-	button.style.font_color = {r = 0.88, g = 0.55, b = 0.11}
-	button.style.minimal_height = 38
-	button.style.minimal_width = 120
-	button.style.top_padding = 2
-	button.style.left_padding = 0
-	button.style.right_padding = 0
-	button.style.bottom_padding = 2
-end
-
-
 local function draw_manager_gui(player)
 	if player.gui.center["team_manager_gui"] then player.gui.center["team_manager_gui"].destroy() end
 	
@@ -228,86 +214,6 @@ local function draw_manager_gui(player)
 		button.style.font_color = {r = 55, g = 55, b = 55}
 	end
 	button.style.font = "heading-2"
-end
-
-
-local function draw_stats_gui(player)
-	if player.gui.center["stats_gui"] then player.gui.center["stats_gui"].destroy() end
-	
-	local frame = player.gui.center.add({type = "frame", name = "stats_gui", caption = "Science logs", direction = "vertical"})
-
-	local t = frame.add { type = "table", name = "science_logs_header_table", column_count = 4 }
-	local column_widths = {tonumber(150), tonumber(400), tonumber(150), tonumber(150)}
-	for _, w in ipairs(column_widths) do
-		local label = t.add { type = "label", caption = "" }
-		label.style.minimal_width = w
-		label.style.maximal_width = w
-	end
-
-	local headers = {
-		[1] = "Date",
-		[2] = "Science details",
-		[3] = "Evo jump",
-		[4] = "Threat jump",
-	}
-	
-	for k, v in ipairs(headers) do
-		local label = t.add {
-			type = "label",
-			name = "science_logs_panel_header_" .. k,
-			caption = v
-		}
-		label.style.font = "default-bold"
-		label.style.font_color = { r=0.98, g=0.66, b=0.22 }
-	end
-
-	-- special style on first header
-	local label = t["science_logs_panel_header_1"]
-	label.style.minimal_width = 36
-	label.style.maximal_width = 36
-	label.style.horizontal_align = "right"
-	
-	-- List management
-	local science_panel_table = frame.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
-	science_panel_table.style.maximal_height = 530
-	science_panel_table = science_panel_table.add { type = "table", name = "science_panel_table", column_count = 4, draw_horizontal_lines = true }
-	if global.science_logs_date then
-		for i = 1, #global.science_logs_date, 1 do
-			local label = science_panel_table.add { type = "label", name = "science_logs_date" .. i, caption = global.science_logs_date[i] }
-			label.style.minimal_width = column_widths[1]
-			label.style.maximal_width = column_widths[1]
-			local label = science_panel_table.add { type = "label", name = "science_logs_text" .. i, caption = global.science_logs_text[i] }
-			label.style.minimal_width = column_widths[2]
-			label.style.maximal_width = column_widths[2]
-			local label = science_panel_table.add { type = "label", name = "science_logs_evo_jump" .. i, caption = global.science_logs_evo_jump[i] }
-			label.style.minimal_width = column_widths[3]
-			label.style.maximal_width = column_widths[3]
-			local label = science_panel_table.add { type = "label", name = "science_logs_threat" .. i, caption = global.science_logs_threat[i] }
-			label.style.minimal_width = column_widths[4]
-			label.style.maximal_width = column_widths[4]
-		end
-	end
-	
-	frame.add({type = "label", caption = ""})
-	
-	local t = frame.add({type = "table", name = "stats_bottom_buttons", column_count = 4})	
-	local button = t.add({
-			type = "button",
-			name = "stats_close",
-			caption = "Close",
-			tooltip = "Close this window."
-		})
-	button.style.font = "heading-2"
-end
-
-local function stats_gui_click(event)
-	local player = game.players[event.player_index]
-	local name = event.element.name
-	if name == "stats_close" then
-		player.gui.center["stats_gui"].destroy()	
-		return
-	end
-	
 end
 
 local function set_custom_team_name(force_name, team_name)
@@ -436,13 +342,6 @@ function Public.gui_click(event)
 		draw_manager_gui(player)
 		return
 	end
-	
-	if name == "stats_toggle_button" then
-		if player.gui.center["stats_gui"] then player.gui.center["stats_gui"].destroy() return end
-		draw_stats_gui(player)
-	end
-	
-	if player.gui.center["stats_gui"] then stats_gui_click(event) end
 	
 	if player.gui.center["team_manager_gui"] then team_manager_gui_click(event) end
 	
