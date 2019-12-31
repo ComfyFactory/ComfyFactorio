@@ -79,8 +79,8 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 	if global.tm_custom_name["north"] then n = global.tm_custom_name["north"] end
 	if global.tm_custom_name["south"] then s = global.tm_custom_name["south"] end	
 	local team_strings = {
-		["north"] = table.concat({"[color=120, 120, 255]", n, "'s[/color]"}),
-		["south"] = table.concat({"[color=255, 65, 65]", s, "'s[/color]"})
+		["north"] = table.concat({"[color=120, 120, 255]", n, "[/color]"}),
+		["south"] = table.concat({"[color=255, 65, 65]", s, "[/color]"})
 	}
 	if flask_amount > 1 then
 	-- FIX HOUR/MIN HANDLING(genre 5h58 => 4H MAIS NON, à tester mon idée)
@@ -113,18 +113,24 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 		local formatted_threat_after_feed = math.round(global.bb_threat[biter_force_name],0)
 		local evo_jump = table.concat({evo_before_science_feed .. " to " .. formatted_evo_after_feed})
 		local threat_jump = table.concat({threat_before_science_feed .. " to ".. formatted_threat_after_feed})
-		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)] .. " biters"})
+		local evo_jump_difference =  math.round(formatted_evo_after_feed - evo_before_science_feed,1)
+		local threat_jump_difference =  math.round(formatted_threat_after_feed - threat_before_science_feed,0)
+		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
 		
 		if global.science_logs_text then
 			table.insert(global.science_logs_date, formatted_feed_time)
 			table.insert(global.science_logs_text, line_log_stats_to_add)
 			table.insert(global.science_logs_evo_jump, evo_jump)
+			table.insert(global.science_logs_evo_jump_difference, evo_jump_difference)
 			table.insert(global.science_logs_threat, threat_jump)
+			table.insert(global.science_logs_threat_jump_difference, threat_jump_difference)
 		else
 			global.science_logs_date = { formatted_feed_time }
 			global.science_logs_text = { line_log_stats_to_add }
 			global.science_logs_evo_jump = { evo_jump }
+			global.science_logs_evo_jump_difference = { evo_jump_difference }
 			global.science_logs_threat = { threat_jump }
+			global.science_logs_threat_jump_difference = { threat_jump_difference }
 		end
 	end
 end
