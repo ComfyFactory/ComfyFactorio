@@ -107,6 +107,22 @@ local function process_entity(surface, entity)
 	entity_copy_functions[entity.type](surface, entity, mirror_position)
 end
 
+
+local function mirror_tiles(surface, source_area) 
+	mirrored = {}
+
+	local i = 0
+	for x = source_area.left_top.x, source_area.left_top.x+31 do
+		for y = source_area.left_top.y, source_area.left_top.y+31 do
+			local tile = surface.get_tile(x, y)
+			mirrored[i] = {name = tile.name, position = {-x, -y - 1}}
+			i = i + 1
+		end
+	end
+	
+    surface.set_tiles(mirrored, true)
+end
+
 local function clear_chunk(surface, area)
 	surface.destroy_decoratives{area=area}
 	if area.left_top.y > 32 or area.left_top.x > 32 or area.left_top.x < -32 then
@@ -163,6 +179,13 @@ local function on_chunk_generated(event)
 	global.chunks_to_mirror[game.tick + delay][#global.chunks_to_mirror[game.tick + delay] + 1] = {x = x / 32, y = y / 32}
 end
 
+local function add_work(work) 
+	if not global.ctp then global.ctp = { continue = 1, last = 0 } end
+	local idx = global.ctp.last + 1
+	global.ctp[idx] = work 
+	global.ctp.last = idx
+end
+
 local function ocg (event)
 	if event.area.left_top.y < 0 then return end
 	if event.surface.name ~= "biter_battles" then return end
@@ -176,17 +199,13 @@ local function ocg (event)
 
 	local x = ((event.area.left_top.x + 16) * -1) - 16
 	local y = ((event.area.left_top.y + 16) * -1) - 16
+	add_work({x = x / 32, y = y / 32, state = 1})
 
-	if not global.ctp then global.ctp = { continue = 1, last = 0 } end
-	local idx = global.ctp.last + 1
-	global.ctp[idx] = {x = x / 32, y = y / 32, state = 1}
-	global.ctp.last = idx
 end
-
 
 local function ticking_work()
 	if not global.ctp then return end
-	local work = global.mws or 512 -- define the number of work per tick here (for copies, creations, deletions)
+	local work = global.mws or 1024 -- define the number of work per tick here (for copies, creations, deletions)
 	-- 136.5333 is the number of work needed to finish 4*(32*32) operations over 30 ticks (spreading a chunk copy over 30 ticks)
 	local w = 0
 	local i = global.ctp.continue
@@ -204,8 +223,12 @@ local function ticking_work()
 	}
 	local surface = game.surfaces["biter_battles"]
 	if not surface.is_chunk_generated(c) then
-		-- game.print("Chunk not generated yet, requesting..")
-		surface.request_to_generate_chunks({x = area.left_top.x - 16, y = area.left_top.y - 16}, 1)
+		--game.print("Chunk not generated yet, requesting..")
+		surface.request_to_generate_chunks({x = area.left_top.x + 16, y = area.left_top.y + 16}, 0)
+		-- requeue
+		add_work(c)
+		global.ctp.continue = i+1
+		global.ctp[i] = nil 
 		return
 	end
 
@@ -215,16 +238,7 @@ local function ticking_work()
 			list = function () return surface.find_entities_filtered({area = inverted_area, name = "character", invert = true}) end,
 			action = function (e) e.destroy() end
 		},
-		[2] = {
-			name = "Tile copy",
-			list = function () return surface.find_tiles_filtered({area = area}) end,
-			action = function (tile)
-				surface.set_tiles({{
-					name = tile.name,
-					position = {x = tile.position.x * -1, y = (tile.position.y * -1) - 1}
-				}}, true)
-			end
-		},
+		[2] = {},
 		[3] = {
 			name = "Entity copy",
 			list = function () return surface.find_entities_filtered({area = area}) end,
@@ -246,24 +260,31 @@ local function ticking_work()
 		}
 	}
 
-	local task = tasks[c.state]
-	-- game.print(task.name)
-	d = d or task.list()
-	local last_idx = nil
-	for k, v in pairs(d) do
-		task.action(v)
-		d[k] = nil
-		last_idx = k
-		w = w + 1
-		if w > work then break end
-	end
 
-	local next_idx, _ = next(d, last_idx)
-	if next_idx == nil then
-		c.state = c.state + 1
-		c.data = nil
-	else
-		c.data = d
+    if c.state == 2 then 
+        mirror_tiles(surface, area)
+        c.state = c.state + 1
+        c.data = nil
+    else
+		local task = tasks[c.state]
+		-- game.print(task.name)
+		d = d or task.list()
+		local last_idx = nil
+		for k, v in pairs(d) do
+			task.action(v)
+			d[k] = nil
+			last_idx = k
+			w = w + 1
+			if w > work then break end
+		end
+		
+		local next_idx, _ = next(d, last_idx)
+		if next_idx == nil then
+			c.state = c.state + 1
+			c.data = nil
+		else
+			c.data = d
+		end
 	end
 
 	if c.state == 5 then
