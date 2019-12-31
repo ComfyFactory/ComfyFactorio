@@ -103,6 +103,7 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 		local evo_jump_difference =  math.round(formatted_evo_after_feed - evo_before_science_feed,1)
 		local threat_jump_difference =  math.round(formatted_threat_after_feed - threat_before_science_feed,0)
 		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
+		
 		if global.science_logs_text then
 			table.insert(global.science_logs_date, formatted_feed_time)
 			table.insert(global.science_logs_text, line_log_stats_to_add)
