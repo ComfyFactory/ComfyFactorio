@@ -1,4 +1,5 @@
 --deep jungle-- mewmew made this --
+require "modules.no_deconstruction_of_neutral_entities"
 require "modules.spawners_contain_biters"
 require "modules.biters_yield_coins"
 require "modules.rocks_yield_coins"
@@ -316,12 +317,6 @@ local function on_player_joined_game(event)
 	end	
 end
 
-local function on_marked_for_deconstruction(event)
-	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" or event.entity.name == "fish" or event.entity.type == "tree" then
-		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
-	end
-end
-
 local function on_entity_died(event)
 	local surface = event.entity.surface
 	if event.entity.type == "tree" then 	
@@ -364,7 +359,7 @@ end
 
 local function on_init()
 	local map_gen_settings = {}
-	map_gen_settings.moisture = 1
+	map_gen_settings.moisture = 0.99
 	map_gen_settings.water = "none"
 	map_gen_settings.starting_area = "normal"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 4, cliff_elevation_0 = 0.1}		
@@ -385,7 +380,6 @@ event.on_init(on_init)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 require "modules.rocks_yield_ore"

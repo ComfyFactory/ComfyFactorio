@@ -1,12 +1,5 @@
 -- forest circle --  MewMew
 
-require 'utils.table'
-require "functions.soft_reset"
-require "functions.create_empty_surface"
-
-local event = require 'utils.event'
-
-
 local function init_surface()	
 	local map = {
 		["seed"] = math.random(1, 1000000),
@@ -88,10 +81,10 @@ local function on_chunk_generated(event)
 end
 
 local function on_init(surface)
-	if game.surfaces["forest_circle"] then return end
 	init_surface()
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+local Event = require 'utils.event'
+Event.on_init(on_init)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

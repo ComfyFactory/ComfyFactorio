@@ -6,10 +6,10 @@ require "modules.landfill_reveals_nauvis"
 require "modules.dynamic_player_spawn"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.biter_pets"
-require "modules.biter_evasion_hp_increaser"
 
-local WD = require "modules.wave_defense.main"
-local event = require 'utils.event'
+local WD = require "modules.wave_defense.table"
+require "modules.wave_defense.main"
+
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 
@@ -246,9 +246,10 @@ local function on_entity_died(event)
 	make_sand(event.entity.surface, event.entity.position)
 end
 
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+local Event = require 'utils.event'
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 require "modules.ores_are_mixed"
 require "modules.surrounded_by_worms"

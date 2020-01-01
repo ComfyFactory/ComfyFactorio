@@ -1,12 +1,15 @@
 local WD = require "modules.wave_defense.table"
 local Public = {}
 local side_target_types = {
-	["assembling-machine"] = true,
 	["accumulator"] = true,
+	["assembling-machine"] = true,
 	["boiler"] = true,
 	["furnace"] = true,
+	["generator"] = true,
 	["lab"] = true,
+	["lamp"] = true,
 	["mining-drill"] = true,
+	["power-switch"] = true,
 	["radar"] = true,
 	["reactor"] = true,
 	["roboport"] = true,

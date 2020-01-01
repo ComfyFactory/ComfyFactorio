@@ -84,18 +84,32 @@ local function get_random_close_spawner(surface)
 	return spawner
 end
 
+local function get_random_character(wave_defense_table)
+	local characters = {}
+	for _, player in pairs(game.connected_players) do
+		if player.character then
+			if player.character.valid then
+				if player.character.surface.index == wave_defense_table.surface_index then
+					characters[#characters + 1] = player.character
+				end
+			end
+		end
+	end
+	if not characters[1] then return end
+	return characters[math_random(1, #characters)]
+end
+
 local function set_main_target()
 	local wave_defense_table = WD.get_table()
 	if wave_defense_table.target then
 		if wave_defense_table.target.valid then return end
 	end
-	if not wave_defense_table.side_targets then return end
-	local size_of_side_targets = #wave_defense_table.side_targets
-	if size_of_side_targets == 0 then return end
-	local target = wave_defense_table.side_targets[math_random(1, size_of_side_targets)]
+	
+	local target = SideTargets.get_side_target()
+	if not target then target = get_random_character(wave_defense_table) end
 	if not target then return end
-	if not target.valid then return end
-	wave_defense_table.target = target
+	
+	wave_defense_table.target = target		
 	debug_print("set_main_target -- New main target " .. target.name .. " at position x" .. target.position.x .. " y" .. target.position.y .. " selected.")
 end
 
@@ -103,7 +117,7 @@ local function set_group_spawn_position(surface)
 	local wave_defense_table = WD.get_table()
 	local spawner = get_random_close_spawner(surface)
 	if not spawner then return end
-	local position = surface.find_non_colliding_position("electric-furnace", spawner.position, 64, 1)
+	local position = surface.find_non_colliding_position("behemoth-biter", spawner.position, 64, 1)
 	if not position then return end
 	wave_defense_table.spawn_position = {x = position.x, y = position.y}
 	debug_print("set_group_spawn_position -- Changed position to x" .. wave_defense_table.spawn_position.x .. " y" .. wave_defense_table.spawn_position.y .. ".")
