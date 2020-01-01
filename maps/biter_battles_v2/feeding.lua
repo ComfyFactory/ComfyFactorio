@@ -1,24 +1,9 @@
 local bb_config = require "maps.biter_battles_v2.config"
 
-local food_values = {
-	["automation-science-pack"] =	{value = 0.001, name = "automation science", color = "255, 50, 50"},
-	["logistic-science-pack"] =			{value = 0.003, name = "logistic science", color = "50, 255, 50"},
-	["military-science-pack"] =			{value = 0.00822, name = "military science", color = "105, 105, 105"},
-	["chemical-science-pack"] = 		{value = 0.02271, name = "chemical science", color = "100, 200, 255"},
-	["production-science-pack"] =	{value = 0.09786, name = "production science", color = "150, 25, 255"},
-	["utility-science-pack"] =			{value = 0.10634, name = "utility science", color = "210, 210, 60"},
-	["space-science-pack"] = 			{value = 0.41828, name = "space science", color = "255, 255, 255"},
-}
-
-local force_translation = {
-	["south_biters"] = "south",
-	["north_biters"] = "north"
-}
-
-local enemy_team_of = {
-	["north"] = "south",
-	["south"] = "north"
-}
+local tables = require "maps.biter_battles_v2.tables"
+local food_values = tables.food_values
+local force_translation = tables.force_translation
+local enemy_team_of = tables.enemy_team_of
 
 local minimum_modifier = 125
 local maximum_modifier = 250

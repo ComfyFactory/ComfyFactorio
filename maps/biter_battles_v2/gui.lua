@@ -2,19 +2,14 @@ local bb_config = require "maps.biter_battles_v2.config"
 local event = require 'utils.event'
 local spy_fish = require "maps.biter_battles_v2.spy_fish"
 local feed_the_biters = require "maps.biter_battles_v2.feeding"
+local Tables = require "maps.biter_battles_v2.tables"
+
+local wait_messages = Tables.wait_messages
+local food_names = Tables.gui_foods
+
 local math_random = math.random
 
 require "maps.biter_battles_v2.spec_spy"
-
-local food_names = {
-	["automation-science-pack"] = true,
-	["logistic-science-pack"] = true,
-	["military-science-pack"] = true,
-	["chemical-science-pack"] = true,
-	["production-science-pack"] = true,
-	["utility-science-pack"] = true,
-	["space-science-pack"] = true
-}
 
 local gui_values = {
 		["north"] = {force = "north", biter_force = "north_biters", c1 = bb_config.north_side_team_name, c2 = "JOIN ", n1 = "join_north_button",
@@ -26,16 +21,6 @@ local gui_values = {
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44},
 		tech_spy = "spy-south-tech", prod_spy = "spy-south-prod"}
 	}
-
-local wait_messages = {
-	"please get comfy.",
-	"get comfy!!",
-	"go and grab a drink.",
-	"take a short healthy break.",
-	"go and stretch your legs.",
-	"please pet the cat.",
-	"time to get a bowl of snacks :3",
-}
 
 local function create_sprite_button(player)
 	if player.gui.top["bb_toggle_button"] then return end
@@ -135,19 +120,15 @@ local function create_main_gui(player)
 	if not is_spec then
 		frame.add { type = "table", name = "biter_battle_table", column_count = 4 }
 		local t = frame.biter_battle_table
-		local foods = {"automation-science-pack","logistic-science-pack","military-science-pack","chemical-science-pack","production-science-pack","utility-science-pack","space-science-pack","raw-fish"}
-		local food_tooltips = {"10 Mutagen strength","30 Mutagen strength", "82 Mutagen strength", "227 Mutagen strength", "978 Mutagen strength", "1063 Mutagen strength", "4182 Mutagen strength", "Send spy"}
-		local x = 1
-		for _, f in pairs(foods) do
-			local s = t.add { type = "sprite-button", name = f, sprite = "item/" .. f }
-			s.tooltip = {"",food_tooltips[x]}
+		for food_name, tooltip in pairs(food_names) do
+			local s = t.add { type = "sprite-button", name = food_name, sprite = "item/" .. food_name }
+			s.tooltip = tooltip
 			s.style.minimal_height = 41
 			s.style.minimal_width = 41
 			s.style.top_padding = 0
 			s.style.left_padding = 0
 			s.style.right_padding = 0
 			s.style.bottom_padding = 0
-			x = x + 1
 		end
 	end
 
