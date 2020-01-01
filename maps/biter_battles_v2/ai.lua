@@ -67,6 +67,8 @@ end
 
 local function is_biter_inactive(biter, unit_number, biter_force_name)
 	if not biter.entity.valid then return true end	
+	if not biter.entity.unit_group then return true end	
+	if not biter.entity.unit_group.valid then return true end	
 	if game.tick - biter.active_since < bb_config.biter_timeout then return false end	
 	if biter.entity.surface.count_entities_filtered({area = {{biter.entity.position.x - 16, biter.entity.position.y - 16},{biter.entity.position.x + 16, biter.entity.position.y + 16}}, force = {"north", "south"}}) ~= 0 then
 		global.active_biters[biter_force_name][unit_number].active_since = game.tick
@@ -320,6 +322,30 @@ ai.main_attack = function()
 	else
 		global.next_attack = "north"
 	end	
+end
+
+ai.wake_up_sleepy_groups = function()
+	local force_name = global.next_attack
+	local biter_force_name = force_name .. "_biters"
+	local entity
+	local unit_group	
+	for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
+		entity = biter.entity
+		if entity then 
+			if entity.valid then
+				unit_group = entity.unit_group
+				if unit_group then
+					if unit_group.valid then
+						if unit_group.state == defines.group_state.finished then
+							local nearest_player_unit = entity.surface.find_nearest_enemy({position = entity.position, max_distance = 2048, force = biter_force_name})
+							if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
+							send_group(unit_group, force_name, nearest_player_unit)
+						end
+					end
+				end
+			end
+		end
+	end
 end
 
 ai.raise_evo = function()

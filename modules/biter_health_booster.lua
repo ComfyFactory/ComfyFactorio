@@ -1,5 +1,5 @@
 -- Biters and Spitters gain additional health / resistance -- mewmew
--- Use global.biter_health_boost to modify their health.
+-- Use global.biter_health_boost or global.biter_health_boost_forces to modify their health.
 -- 1 = vanilla health, 2 = 200% vanilla health
 -- do not use values below 1
 local math_floor = math.floor

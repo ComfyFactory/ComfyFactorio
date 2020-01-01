@@ -43,7 +43,8 @@ local tick_minute_functions = {
 	[300 * 3] = ai.main_attack,
 	[300 * 4] = ai.send_near_biters_to_silo,
 	[300 * 5] = ai.destroy_old_age_biters,
-	[300 * 6] = restart_idle_map,
+	[300 * 6] = ai.wake_up_sleepy_groups,
+	[300 * 7] = restart_idle_map,
 }
 
 local function on_tick(event)
