@@ -80,7 +80,11 @@ local function on_entity_damaged(event)
 	--Create new health pool
 	local health_pool = biter_health_boost_units[unit_number]
 	if not health_pool then
-		Public.add_unit(biter, global.biter_health_boost)
+		if global.biter_health_boost_forces[biter.force.index] then
+			Public.add_unit(biter, global.biter_health_boost_forces[biter.force.index])
+		else
+			Public.add_unit(biter, global.biter_health_boost)
+		end	
 		health_pool = biter_health_boost_units[unit_number]
 	end
 	
@@ -113,6 +117,7 @@ end
 
 local function on_init()
 	global.biter_health_boost = 1
+	global.biter_health_boost_forces = {}
 	global.biter_health_boost_units = {}
 	global.biter_health_boost_count = 0
 end

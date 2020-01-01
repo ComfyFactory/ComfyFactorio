@@ -1,6 +1,7 @@
 -- Biter Battles v2 -- by MewMew
 
 local bb_config = require "maps.biter_battles_v2.config"
+local BiterHealthBooster = require "modules.biter_health_booster"
 require "on_tick_schedule"
 require "maps.biter_battles_v2.map_settings_tab"
 require "modules.spawners_contain_biters"
@@ -149,7 +150,6 @@ local function init_forces()
 	global.next_attack = "north"
 	if math.random(1,2) == 1 then global.next_attack = "south" end
 	global.bb_evolution = {}
-	global.bb_evasion = {}
 	global.bb_threat_income = {}
 	global.bb_threat = {}
 	global.chunks_to_mirror = {}
@@ -165,7 +165,6 @@ local function init_forces()
 		global.active_biters[force.name] = {}
 		global.biter_raffle[force.name] = {}
 		global.bb_evolution[force.name] = 0
-		global.bb_evasion[force.name] = false
 		global.bb_threat_income[force.name] = 0
 		global.bb_threat[force.name] = 0
 	end

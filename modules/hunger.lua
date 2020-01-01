@@ -1,5 +1,7 @@
 -- hunger module by mewmew --
 
+require "player_modifiers"
+
 local math_random = math.random
 local P = require "player_modifiers"
 

@@ -1,5 +1,9 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
+ --enable / disable collapsing of the map
+local collapse_enabled = false
+
+require "player_modifiers"
 require "functions.soft_reset"
 require "functions.basic_markets"
 
@@ -352,6 +356,7 @@ local function tick()
 		end
 		Locomotive.fish_tag()
 	end
+	if not collapse_enabled then return end
 	Collapse.process()
 end
 

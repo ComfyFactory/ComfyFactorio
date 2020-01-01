@@ -13,6 +13,8 @@ VITALITY > character_health_bonus
 Modified by Gerkiz *-*
 ]]
 
+require "player_modifiers"
+
 local math_random = math.random
 local Global = require 'utils.global'
 local Tabs = require "comfy_panel.main"

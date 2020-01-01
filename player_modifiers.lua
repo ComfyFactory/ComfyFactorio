@@ -1,7 +1,7 @@
 --Central to add all player modifiers together.
+--Will overwrite character stats from other mods.
 
 local Global = require "utils.global"
-local Event = require 'utils.event'
 
 local this = {}
 
@@ -40,13 +40,22 @@ function Public.update_player_modifiers(player)
 end
 
 local function on_player_joined_game(event)
-	if this[event.player_index] then return end
+	if this[event.player_index] then 
+		Public.update_player_modifiers(player)
+		return
+	end
 	this[event.player_index] = {}
 	for _, modifier in pairs(modifiers) do
 		this[event.player_index][modifier] = {}
 	end
 end
 
+local function on_player_respawned(event) 
+	Public.update_player_modifiers(game.players[event.player_index])
+end
+
+local Event = require 'utils.event'
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
 
 return Public

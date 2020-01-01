@@ -16,7 +16,7 @@ M0JwPPnzLV+EcxobVOmRrEX45fZ5NCQz6S4h3qIRV18Vpu32sQNs
 VXdsJuZ76VsGvWeHyfNjW7REoyhvvvAetn9CzJb1cQ=<<<
 ]]
 
-
+require "player_modifiers"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"

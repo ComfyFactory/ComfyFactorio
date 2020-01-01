@@ -1,5 +1,4 @@
 local bb_config = require "maps.biter_battles_v2.config"
-local event = require 'utils.event' 
 local math_random = math.random
 local ai = {}
 
@@ -340,52 +339,15 @@ ai.raise_evo = function()
 end
 
 --Prevent Players from damaging Rocket Silos
-local function protect_silo(event)	
-	if event.cause then
-		if event.cause.type == "unit" then return end		 
-	end
-	if event.entity.name ~= "rocket-silo" then return end		
-	event.entity.health = event.entity.health + event.final_damage_amount
-end
-
---Prevent Players from doing direct pvp combat
-local function ignore_pvp(event)	
-	if not event.cause then return end
-	if event.cause.force.name == "north" then
-		if event.entity.force.name == "south" then
-			if not event.entity.valid then return end
-			event.entity.health = event.entity.health + event.final_damage_amount
-			return
-		end
-	end
-	if event.cause.force.name == "south" then
-		if event.entity.force.name == "north" then
-			if not event.entity.valid then return end
-			event.entity.health = event.entity.health + event.final_damage_amount
-			return
-		end
-	end
-end
-
---Biter Evasion
-local random_max = 10000
-
-local function get_evade_chance(force_name)	
-	return random_max - (random_max / global.bb_evasion[force_name])
-end
-
-local function evade(event)
-	if not event.entity.valid then return end
-	if not global.bb_evasion[event.entity.force.name] then return end	
-	if event.final_damage_amount > event.entity.prototype.max_health * global.bb_evasion[event.entity.force.name] then return end
-	if math_random(1, random_max) > get_evade_chance(event.entity.force.name) then return end
-	event.entity.health = event.entity.health + event.final_damage_amount
-end
-
 local function on_entity_damaged(event)
-	evade(event)
-	protect_silo(event)
-	--ignore_pvp(event)
+	local cause = event.cause
+	if cause then
+		if cause.type == "unit" then return end		 
+	end
+	local entity = event.entity	
+	if not entity.valid then return end
+	if entity.name ~= "rocket-silo" then return end		
+	entity.health = entity.health + event.final_damage_amount
 end
 
 --Biter Threat Value Substraction
@@ -399,7 +361,8 @@ local function on_entity_died(event)
 	refresh_gui_threat()	
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_entity_died, on_entity_died)
+local Event = require 'utils.event' 
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_died, on_entity_died)
 
 return ai
