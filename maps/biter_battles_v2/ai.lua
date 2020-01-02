@@ -1,6 +1,6 @@
+local Public = {}
 local bb_config = require "maps.biter_battles_v2.config"
 local math_random = math.random
-local ai = {}
 
 local vector_radius = 360
 local attack_vectors = {}
@@ -79,7 +79,7 @@ local function is_biter_inactive(biter, unit_number, biter_force_name)
 	return true
 end
 
-ai.destroy_old_age_biters = function()
+Public.destroy_old_age_biters = function()
 	local surface = game.surfaces["biter_battles"]
 	for _, e in pairs(surface.find_entities_filtered({type = "unit"})) do
 		if not e.unit_group then
@@ -88,7 +88,7 @@ ai.destroy_old_age_biters = function()
 	end
 end
 
-ai.destroy_inactive_biters = function()	
+Public.destroy_inactive_biters = function()	
 	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
 		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
 			if is_biter_inactive(biter, unit_number, biter_force_name) then
@@ -98,7 +98,7 @@ ai.destroy_inactive_biters = function()
 	end
 end
 
-ai.send_near_biters_to_silo = function()
+Public.send_near_biters_to_silo = function()
 	if game.tick < 108000 then return end
 	if not global.rocket_silo["north"] then return end
 	if not global.rocket_silo["south"] then return end
@@ -301,7 +301,7 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	send_group(unit_group, force_name, nearest_player_unit)
 end
 
-ai.main_attack = function()
+Public.main_attack = function()
 	local surface = game.surfaces["biter_battles"]
 	local force_name = global.next_attack
 	
@@ -324,7 +324,7 @@ ai.main_attack = function()
 	end	
 end
 
-ai.wake_up_sleepy_groups = function()
+Public.wake_up_sleepy_groups = function()
 	local force_name = global.next_attack
 	local biter_force_name = force_name .. "_biters"
 	local entity
@@ -349,7 +349,7 @@ ai.wake_up_sleepy_groups = function()
 	end
 end
 
-ai.raise_evo = function()
+Public.raise_evo = function()
 	if global.freeze_players then return end
 	if not global.training_mode and (#game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0) then return end
 	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
@@ -365,31 +365,14 @@ ai.raise_evo = function()
 	global.evo_raise_counter = global.evo_raise_counter + (1 * 0.50)
 end
 
---Prevent Players from damaging Rocket Silos
-local function on_entity_damaged(event)
-	local cause = event.cause
-	if cause then
-		if cause.type == "unit" then return end		 
-	end
-	local entity = event.entity	
-	if not entity.valid then return end
-	if entity.name ~= "rocket-silo" then return end		
-	entity.health = entity.health + event.final_damage_amount
-end
-
 --Biter Threat Value Substraction
-local function on_entity_died(event)
-	if not event.entity.valid then return end
-	if not threat_values[event.entity.name] then return end
-	if event.entity.type == "unit" then
-		global.active_biters[event.entity.force.name][event.entity.unit_number] = nil
+function Public.subtract_threat(entity)
+	if not threat_values[entity.name] then return end
+	if entity.type == "unit" then
+		global.active_biters[entity.force.name][entity.unit_number] = nil
 	end
-	global.bb_threat[event.entity.force.name] = global.bb_threat[event.entity.force.name] - threat_values[event.entity.name]
-	refresh_gui_threat()	
+	global.bb_threat[entity.force.name] = global.bb_threat[entity.force.name] - threat_values[entity.name]
+	return true
 end
 
-local Event = require 'utils.event' 
-Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.add(defines.events.on_entity_died, on_entity_died)
-
-return ai
+return Public

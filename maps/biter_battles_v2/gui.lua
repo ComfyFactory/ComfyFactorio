@@ -245,7 +245,7 @@ function Public.refresh()
 	global.gui_refresh_delay = game.tick + 5
 end
 
-function refresh_threat()
+function Public.refresh_threat()
 	if global.gui_refresh_delay > game.tick then return end
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["bb_main_gui"] then

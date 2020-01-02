@@ -66,9 +66,22 @@ end
 
 local function on_entity_died(event)
 	local entity = event.entity
-	if not entity.valid then return end	
+	if not entity.valid then return end
+	if Ai.subtract_threat(entity) then Gui.refresh_threat() end
 	if Biters_landfill.entity_died(entity) then return end
 	Game_over.silo_death(event)
+end
+
+--Prevent Players from damaging Rocket Silos
+local function on_entity_damaged(event)
+	local cause = event.cause
+	if cause then
+		if cause.type == "unit" then return end		 
+	end
+	local entity = event.entity	
+	if not entity.valid then return end
+	if entity.name ~= "rocket-silo" then return end		
+	entity.health = entity.health + event.final_damage_amount
 end
 
 local tick_minute_functions = {
@@ -112,15 +125,17 @@ local function on_init()
 end
 
 local Event = require 'utils.event'
-Event.on_init(on_init)
-Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(defines.events.on_research_finished, on_research_finished)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_console_chat, on_console_chat)
-Event.add(defines.events.on_entity_died, on_entity_died)
-Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_console_chat, on_console_chat)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_tick, on_tick)
+Event.on_init(on_init)
+
 
 require "maps.biter_battles_v2.spec_spy"
 require "maps.biter_battles_v2.terrain"
