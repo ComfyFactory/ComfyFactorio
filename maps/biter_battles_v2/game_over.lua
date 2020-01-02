@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Public = {}
 local Server = require 'utils.server'
 
 local gui_values = {
@@ -14,7 +14,14 @@ local function shuffle(tbl)
 		end
 	return tbl
 end
-	
+
+function Public.reveal_map()
+	for _, f in pairs({"north", "south", "player", "spectator"}) do
+		local r = 768
+		game.forces[f].chart(game.surfaces["biter_battles"], {{r * -1, r * -1}, {r, r}})
+	end
+end
+
 local function create_victory_gui(player)	
 	local values = gui_values[global.bb_game_won_by_team]
 	local c = values.c1
@@ -292,7 +299,7 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
-local function server_restart()
+function Public.server_restart()
 	if not global.server_restart_timer then return end
 	global.server_restart_timer = global.server_restart_timer - 5
 	if global.server_restart_timer == 180 then return end
@@ -309,6 +316,15 @@ local function server_restart()
 	end
 end
 
+function Public.restart_idle_map()
+	if game.tick < 432000 then return end
+	if #game.connected_players ~= 0 then global.restart_idle_map_countdown = 2 return end
+	if not global.restart_idle_map_countdown then global.restart_idle_map_countdown = 2 end
+	global.restart_idle_map_countdown = global.restart_idle_map_countdown - 1
+	if global.restart_idle_map_countdown ~= 0 then return end
+	Server.start_scenario('Biter_Battles')
+end
+
 local function set_victory_time()
 	local minutes = game.tick % 216000
 	local hours = game.tick - minutes
@@ -320,7 +336,7 @@ local function set_victory_time()
 	global.victory_time = global.victory_time .. " minutes"
 end
 
-local function on_entity_died(event)
+function Public.silo_death(event)
 	if not event.entity.valid then return end
 	if event.entity.name ~= "rocket-silo" then return end
 	if global.bb_game_won_by_team then return end
@@ -351,10 +367,8 @@ local function on_entity_died(event)
 		Server.to_discord_embed(global.victory_time)
 		
 		fireworks(event.entity.surface)
-		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)			
+		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)
 	end
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
-
-return server_restart
+return Public

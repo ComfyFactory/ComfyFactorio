@@ -1,3 +1,5 @@
+local Public = {}
+
 local string_sub = string.sub
 
 local balance_functions = {
@@ -26,7 +28,7 @@ local balance_functions = {
 	end,
 }
 
-local function on_research_finished(event)	
+function Public.research_finished(event)
 	local research_name = event.research.name
 	local force_name = event.research.force.name		
 	local key
@@ -40,10 +42,4 @@ local function on_research_finished(event)
 	end
 end
 
-local function on_init()
-	global.combat_balance = {}
-end
-
-local Event = require 'utils.event' 
-Event.on_init(on_init)
-Event.add(defines.events.on_research_finished, on_research_finished)
+return Public

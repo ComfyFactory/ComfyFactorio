@@ -1,3 +1,5 @@
+local Public = {}
+
 local forces = {
 	{name = "north", color = {r = 0, g = 0, b = 200}},
 	{name = "spectator", color = {r = 111, g = 111, b = 111}},
@@ -90,7 +92,7 @@ local function switch_force(player_name, force_name)
 	end
 end
 
-local function draw_manager_button(player)
+function Public.draw_top_toggle_button(player)
 	if player.gui.top["team_manager_toggle_button"] then player.gui.top["team_manager_toggle_button"].destroy() end	
 	local button = player.gui.top.add({type = "sprite-button", name = "team_manager_toggle_button", caption = "Team Manager", tooltip = tooltip})
 	button.style.font = "heading-2"
@@ -329,7 +331,7 @@ local function team_manager_gui_click(event)
 	draw_manager_gui(player)
 end
 
-local function on_gui_click(event)	
+function Public.gui_click(event)	
 	if not event.element then return end
 	if not event.element.valid then return end
 	local player = game.players[event.player_index]
@@ -360,15 +362,8 @@ local function on_gui_click(event)
 	end	
 end
 
-local function on_player_joined_game(event)
-	draw_manager_button(game.players[event.player_index])
-end
-
-local function on_init(surface)
+function Public.init()
 	global.tm_custom_name = {}
 end
 
-local event = require 'utils.event'
-event.on_init(on_init)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_gui_click, on_gui_click)
+return Public

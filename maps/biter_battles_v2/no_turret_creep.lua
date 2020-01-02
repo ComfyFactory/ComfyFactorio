@@ -1,4 +1,4 @@
-local event = require 'utils.event' 
+local Public = {}
 
 local type_blacklist = {
 	["ammo-turret"] = true,
@@ -7,7 +7,7 @@ local type_blacklist = {
 	["fluid-turret"] = true
 }
 
-local function on_built_entity(event)
+function Public.deny_building(event)
 	local entity = event.created_entity
 	if not entity.valid then return end
 	if not type_blacklist[event.created_entity.type] then return end
@@ -43,9 +43,4 @@ local function on_built_entity(event)
 	entity.destroy()
 end
 
-local function on_robot_built_entity(event)
-	on_built_entity(event)
-end
-
-event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_built_entity, on_built_entity)
+return Public

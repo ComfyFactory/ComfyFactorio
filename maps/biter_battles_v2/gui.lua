@@ -1,3 +1,5 @@
+local Public = {}
+
 local bb_config = require "maps.biter_battles_v2.config"
 local event = require 'utils.event'
 local spy_fish = require "maps.biter_battles_v2.spy_fish"
@@ -234,7 +236,7 @@ local function create_main_gui(player)
 	end
 end
 
-local function refresh_gui()
+function Public.refresh()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["bb_main_gui"] then
 			create_main_gui(player)
@@ -243,7 +245,7 @@ local function refresh_gui()
 	global.gui_refresh_delay = game.tick + 5
 end
 
-function refresh_gui_threat()
+function refresh_threat()
 	if global.gui_refresh_delay > game.tick then return end
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["bb_main_gui"] then
@@ -292,7 +294,7 @@ function join_team(player, force_name, forced_join)
 		player.teleport(p, surface)
 		player.force = game.forces[force_name]
 		player.character.destructible = true
-		refresh_gui()
+		Public.refresh()
 		game.permissions.get_group("Default").add_player(player)
 		game.print("Team " .. player.force.name .. " player " .. player.name .. " is no longer spectating.", {r = 0.98, g = 0.66, b = 0.22})
 		player.spectator = false
@@ -318,7 +320,7 @@ function join_team(player, force_name, forced_join)
 	player.insert {name = 'iron-plate', count = 16}
 	global.chosen_team[player.name] = force_name
 	player.spectator = false
-	refresh_gui()
+	Public.refresh()
 end
 
 function spectate(player, forced_join)
@@ -357,6 +359,21 @@ local function join_gui_click(name, player)
 		return
 	end
 	join_team(player, team[name])
+end
+
+local spy_forces = {{"north", "south"},{"south", "north"}}
+function Public.spy_fish()
+	for _, f in pairs(spy_forces) do
+		if global.spy_fish_timeout[f[1]] - game.tick > 0 then
+			local r = 96
+			local surface = game.surfaces["biter_battles"]
+			for _, player in pairs(game.forces[f[2]].connected_players) do
+				game.forces[f[1]].chart(surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}})
+			end
+		else
+			global.spy_fish_timeout[f[1]] = 0
+		end
+	end
 end
 
 local function on_gui_click(event)
@@ -430,4 +447,4 @@ end
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
-return refresh_gui
+return Public

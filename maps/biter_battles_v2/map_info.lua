@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Public = {}
 
 local function create_map_intro_button(player)
 	if player.gui.top["map_intro_button"] then return end
@@ -23,30 +23,25 @@ local function create_map_intro(player)
 	l.style.font_color = {r=0.7, g=0.6, b=0.99}			
 end
 
-local function on_player_joined_game(event)	
-	local player = game.players[event.player_index]
+function Public.player_joined_game(player)
 	create_map_intro_button(player)
 	if player.online_time == 0 then
 		--create_map_intro(player)
 	end
 end
 
-local function on_gui_click(event)
-	if not event then return end
-	if not event.element then return end
-	if not event.element.valid then return end	
-	local player = game.players[event.element.player_index]
-	if event.element.name == "close_map_intro_frame" then player.gui.center["map_intro_frame"].destroy() return end	
-	if event.element.name == "biter_battles_map_intro" then player.gui.center["map_intro_frame"].destroy() return end	
-	if event.element.name == "map_intro_button" then
+function Public.gui_click(player, element)
+	if element.name == "close_map_intro_frame" then player.gui.center["map_intro_frame"].destroy() return true end	
+	if element.name == "biter_battles_map_intro" then player.gui.center["map_intro_frame"].destroy() return true end	
+	if element.name == "map_intro_button" then
 		if player.gui.center["map_intro_frame"] then
 			player.gui.center["map_intro_frame"].destroy()
+			return true
 		else
 			create_map_intro(player)
-		end		
-		return
+			return true
+		end
 	end	
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_gui_click, on_gui_click)
+return Public

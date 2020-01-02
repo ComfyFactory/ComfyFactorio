@@ -1,17 +1,11 @@
-local event = require 'utils.event' 
+local Public = {}
 
 ----------share chat with player and spectator force-------------------
-local function on_console_chat(event)
+function Public.share(event)
 	if not event.message then return end	
 	if not event.player_index then return end	
-	local player = game.players[event.player_index] 
-	
-	local color = {}
-	color = player.color
-	color.r = color.r * 0.6 + 0.35
-	color.g = color.g * 0.6 + 0.35
-	color.b = color.b * 0.6 + 0.35
-	color.a = 1	
+	local player = game.players[event.player_index] 	
+	local color = player.chat_color
 	
 	if player.force.name == "north" then
 		game.forces.spectator.print(player.name .. " (north): ".. event.message, color)
@@ -36,4 +30,4 @@ local function on_console_chat(event)
 	end
 end
 
-event.add(defines.events.on_console_chat, on_console_chat)
+return Public

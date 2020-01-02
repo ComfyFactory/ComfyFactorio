@@ -340,6 +340,7 @@ ai.wake_up_sleepy_groups = function()
 							local nearest_player_unit = entity.surface.find_nearest_enemy({position = entity.position, max_distance = 2048, force = biter_force_name})
 							if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
 							send_group(unit_group, force_name, nearest_player_unit)
+							print("BiterBattles: Woke up Unit Group at x" .. unit_group.position.x .. " y" .. unit_group.position.y .. ".")
 						end
 					end
 				end
