@@ -111,6 +111,7 @@ require "modules.autostash"
 --require "maps.rainbow_road"
 --require "maps.cube"
 --require "maps.forest_circle"
+--require "maps.planet_prison"
 -----------------------------
 
 ---- more modules here ----
