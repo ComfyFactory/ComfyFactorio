@@ -41,7 +41,7 @@ end
 
 local function on_player_joined_game(event)
 	if this[event.player_index] then 
-		Public.update_player_modifiers(player)
+		Public.update_player_modifiers(game.players[event.player_index])
 		return
 	end
 	this[event.player_index] = {}
@@ -59,3 +59,4 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 
 return Public
+
