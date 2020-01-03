@@ -91,9 +91,11 @@ function add_stats(player, food, flask_amount,biter_force_name,evo_before_scienc
 		else
 			minute_unit = "mins"
 		end
+		
+		local shown_feed_time_hours = ""
 		local shown_feed_time_mins = ""
 		shown_feed_time_mins = feed_time_mins .. minute_unit
-		local formatted_feed_time = shown_feed_time_mins
+		local formatted_feed_time = shown_feed_time_hours .. shown_feed_time_mins
 		evo_before_science_feed = math.round(evo_before_science_feed*100,1) 
 		threat_before_science_feed = math.round(threat_before_science_feed,0) 
 		local formatted_evo_after_feed = math.round(global.bb_evolution[biter_force_name]*100,1)
