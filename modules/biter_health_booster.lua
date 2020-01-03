@@ -12,19 +12,19 @@ local function clean_table()
 	if global.biter_health_boost_count % 1000 ~= 0 then return end
 
 	local units_to_delete = {}
-	
+
 	--Mark all health boost entries for deletion
 	for key, health in pairs(global.biter_health_boost_units) do
 		units_to_delete[key] = true
 	end
-	
+
 	--Remove valid health boost entries from deletion
 	for _, surface in pairs(game.surfaces) do
 		for _, unit in pairs(surface.find_entities_filtered({type = "unit"})) do
 			units_to_delete[unit.unit_number] = nil
 		end
 	end
-	
+
 	--Remove abandoned health boost entries
 	for key, _ in pairs(units_to_delete) do
 		global.biter_health_boost_units[key] = nil
@@ -58,8 +58,8 @@ end
 
 function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
 	if not health_multiplier then health_multiplier = global.biter_health_boost end
-	if not health_bar_size then health_bar_size = 0.5 end	
-	local health = math_floor(unit.prototype.max_health * health_multiplier)	
+	if not health_bar_size then health_bar_size = 0.5 end
+	local health = math_floor(unit.prototype.max_health * health_multiplier)
 	global.biter_health_boost_units[unit.unit_number] = {
 		health,
 		math_round(1 / health_multiplier, 5),
@@ -72,6 +72,7 @@ local function on_entity_damaged(event)
 	local biter = event.entity
 	if not (biter and biter.valid) then return end
 	if biter.type ~= "unit" then return end
+  if event.final_damage_amount == 0 then return end
 
 	local biter_health_boost_units = global.biter_health_boost_units
 
@@ -84,10 +85,10 @@ local function on_entity_damaged(event)
 			Public.add_unit(biter, global.biter_health_boost_forces[biter.force.index])
 		else
 			Public.add_unit(biter, global.biter_health_boost)
-		end	
+		end
 		health_pool = biter_health_boost_units[unit_number]
 	end
-	
+
 	--Process boss unit health bars
 	local boss = health_pool[3]
 	if boss then
@@ -96,9 +97,12 @@ local function on_entity_damaged(event)
 			boss.last_update = game.tick
 		end
 	end
-	
+
+  --Calculate current actual health, accounting for regeneration
+  local current_health = biter.health * (1 / health_pool[2])
+
 	--Reduce health pool
-	health_pool[1] = health_pool[1] - event.final_damage_amount
+	health_pool[1] = current_health - event.final_damage_amount
 
 	--Set entity health relative to health pool
 	biter.health = health_pool[1] * health_pool[2]
