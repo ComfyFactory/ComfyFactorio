@@ -74,12 +74,15 @@ end
 
 --Prevent Players from damaging Rocket Silos
 local function on_entity_damaged(event)
+	local entity = event.entity	
+	if not entity.valid then return end
+	if entity.force.index > 5 then return end
+	
 	local cause = event.cause
 	if cause then
 		if cause.type == "unit" then return end		 
 	end
-	local entity = event.entity	
-	if not entity.valid then return end
+	
 	if entity.name ~= "rocket-silo" then return end		
 	entity.health = entity.health + event.final_damage_amount
 end

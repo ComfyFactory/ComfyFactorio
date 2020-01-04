@@ -45,12 +45,12 @@ end
 function Public.forces()
 	local surface = game.surfaces["biter_battles"]
 
-	game.create_force("north")
-	game.create_force("north_biters")
-	game.create_force("south")
-	game.create_force("south_biters")
+	game.create_force("north")	
+	game.create_force("south")	
 	game.create_force("spectator")
-
+	game.create_force("north_biters")
+	game.create_force("south_biters")
+	
 	local f = game.forces["north"]
 	f.set_spawn_position({0, -44}, surface)
 	f.set_cease_fire('player', true)
