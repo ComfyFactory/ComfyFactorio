@@ -2,7 +2,6 @@
 
 local Tabs = require 'comfy_panel.main'
 
-
 local function add_science_logs(element)
 	local t = element.add { type = "table", name = "science_logs_header_table", column_count = 4 }
 	local column_widths = {tonumber(90), tonumber(340), tonumber(170), tonumber(190)}
@@ -47,19 +46,9 @@ local function add_science_logs(element)
 	end
 end
 
-
 local build_config_gui = (function (player, frame)		
 	frame.clear()
 	add_science_logs(frame)
 end)
 
-local function on_gui_click(event)
-	if not event.element then return end
-	if not event.element.valid then return end
-end
-
 comfy_panel_tabs["MutagenLog"] = build_config_gui
-
-
-local event = require 'utils.event'
-event.add(defines.events.on_gui_click, on_gui_click)

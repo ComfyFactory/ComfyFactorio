@@ -140,7 +140,6 @@ Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
-
 require "maps.biter_battles_v2.spec_spy"
 require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.difficulty_vote"
