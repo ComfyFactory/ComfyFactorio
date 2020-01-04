@@ -225,11 +225,15 @@ end
 
 local function generate_north_silo(surface)
 	local pos = {x = -32 + math.random(0, 64), y = -72}
-
+	local mirror_position = {x = pos.x * -1, y = pos.y * -1}
+	
 	for _, t in pairs(surface.find_tiles_filtered({area = {{pos.x - 6, pos.y - 6},{pos.x + 6, pos.y + 6}}, name = {"water", "deepwater"}})) do
 		surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}})
 	end
-
+	for _, t in pairs(surface.find_tiles_filtered({area = {{mirror_position.x - 6, mirror_position.y - 6},{mirror_position.x + 6, mirror_position.y + 6}}, name = {"water", "deepwater"}})) do
+		surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}})
+	end
+	
 	global.rocket_silo["north"] = surface.create_entity({
 		name = "rocket-silo",
 		position = pos,
