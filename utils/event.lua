@@ -428,6 +428,18 @@ function Event.generate_event_name(name)
     return event_id
 end
 
+function Event.add_event_filter(event, filter)
+  local current_filters = script.get_event_filter(event)
+
+  if not current_filters then
+    current_filters = {filter}
+  else
+    table.insert(current_filters, filter)
+  end
+
+  script.set_event_filter(event, current_filters)
+end
+
 local function add_handlers()
     for event_name, tokens in pairs(token_handlers) do
         for i = 1, #tokens do

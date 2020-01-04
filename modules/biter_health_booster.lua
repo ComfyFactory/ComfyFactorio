@@ -130,4 +130,8 @@ local event = require 'utils.event'
 event.on_init(on_init)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 
+if package.loaded["maps.biter_battles_v2.init"] ~= nil then
+  event.add_event_filter(defines.events.on_entity_damaged, { filter = "type", type = "unit" })
+end
+
 return Public
