@@ -158,19 +158,20 @@ end
 
 local function generate_starting_area(pos, distance_to_center, surface)
 	-- assert(distance_to_center >= spawn_circle_size) == true
-	local r = 116
-	local min_noise = -20
+	local spawn_wall_radius = 116
+	local noise_multiplier = 15 
+	local min_noise = -noise_multiplier * 1.25
 
 	-- Avoid calculating noise, see comment below
-	if (distance_to_center + min_noise - r) > 4.5 then
+	if (distance_to_center + min_noise - spawn_wall_radius) > 4.5 then
 		return
 	end
 
-	local noise = get_noise(2, pos) * 15 -- noise is in about [-18, 18]
-	local delta_spawn_wall_r = distance_to_center + noise - r
-	-- delta_spawn_wall_r is the difference between the distance_to_center (with added noise) 
-	-- and our spawn_wall radius (r=116), i.e. how far are we from the ring with radius r.
-	-- The following shows what happens depending on delta_spawn_wall_r:
+	local noise = get_noise(2, pos) * noise_multiplier
+	local distance_from_spawn_wall = distance_to_center + noise - spawn_wall_radius
+	-- distance_from_spawn_wall is the difference between the distance_to_center (with added noise) 
+	-- and our spawn_wall radius (spawn_wall_radius=116), i.e. how far are we from the ring with radius spawn_wall_radius.
+	-- The following shows what happens depending on distance_from_spawn_wall:
 	--   	min     max
     --  	N/A     -10	    => replace water
 	-- if noise_2 > -0.5:
@@ -178,11 +179,11 @@ local function generate_starting_area(pos, distance_to_center, surface)
 	-- else:
 	--   	-6      -3 	 	=> 1/16 chance of turrent or turret-remnants
 	--   	-1.95    0 	 	=> wall
-	--    	 0       4.5    => chest-remnants with 1/3, chest with 1/(delta_spawn_wall_r+2)
+	--    	 0       4.5    => chest-remnants with 1/3, chest with 1/(distance_from_spawn_wall+2)
 	--
-	-- => We never do anything for (distance_to_center + min_noise - r) > 4.5
+	-- => We never do anything for (distance_to_center + min_noise - spawn_wall_radius) > 4.5
 
-	if delta_spawn_wall_r < -10 and not is_horizontal_border_river(pos) then
+	if distance_from_spawn_wall < -10 and not is_horizontal_border_river(pos) then
 		local tile_name = surface.get_tile(pos).name
 		if tile_name == "water" or tile_name == "deepwater" then
 			surface.set_tiles({{name = get_replacement_tile(surface, pos), position = pos}}, true)
@@ -194,20 +195,20 @@ local function generate_starting_area(pos, distance_to_center, surface)
 		local noise_2 = get_noise(3, pos)
 		if noise_2 < 0.25 then
 			if noise_2 > -0.5 then
-				if delta_spawn_wall_r > -1.75 and delta_spawn_wall_r < 0 then				
+				if distance_from_spawn_wall > -1.75 and distance_from_spawn_wall < 0 then				
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 				end
 			else
-				if delta_spawn_wall_r > -1.95 and delta_spawn_wall_r < 0 then				
+				if distance_from_spawn_wall > -1.95 and distance_from_spawn_wall < 0 then				
 					surface.create_entity({name = "stone-wall", position = pos, force = "north"})
 
-				elseif delta_spawn_wall_r > 0 and delta_spawn_wall_r < 4.5 then
+				elseif distance_from_spawn_wall > 0 and distance_from_spawn_wall < 4.5 then
 						local name = "wooden-chest"
-					local r_max = math.floor(math.abs(delta_spawn_wall_r)) + 2
+					local r_max = math.floor(math.abs(distance_from_spawn_wall)) + 2
 						if math_random(1,3) == 1 then name = name .. "-remnants" end
 						if math_random(1,r_max) == 1 then surface.create_entity({name = name, position = pos, force = "north"}) end
 
-				elseif delta_spawn_wall_r > -6 and delta_spawn_wall_r < -3 then
+				elseif distance_from_spawn_wall > -6 and distance_from_spawn_wall < -3 then
 					if math_random(1, 16) == 1 then
 						if surface.can_place_entity({name = "gun-turret", position = pos}) then
 							local t = surface.create_entity({name = "gun-turret", position = pos, force = "north"})
