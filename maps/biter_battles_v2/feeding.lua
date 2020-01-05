@@ -70,7 +70,7 @@ local function print_feeding_msg(player, food, flask_amount)
 	end	
 end
 
-function add_stats(player, food, flask_amount,biter_force_name,evo_before_science_feed,threat_before_science_feed)
+local function add_stats(player, food, flask_amount,biter_force_name,evo_before_science_feed,threat_before_science_feed)
 	local colored_player_name = table.concat({"[color=", player.color.r * 0.6 + 0.35, ",", player.color.g * 0.6 + 0.35, ",", player.color.b * 0.6 + 0.35, "]", player.name, "[/color]"})
 	local formatted_food = table.concat({"[color=", food_values[food].color, "][/color]", "[img=item/", food, "]"})
 	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})	
@@ -173,8 +173,8 @@ local function feed_biters(player, food)
 	i.remove({name = food, count = flask_amount})
 	
 	print_feeding_msg(player, food, flask_amount)	
-	evolution_before_feed = global.bb_evolution[biter_force_name]
-	threat_before_feed = global.bb_threat[biter_force_name]						
+	local evolution_before_feed = global.bb_evolution[biter_force_name]
+	local threat_before_feed = global.bb_threat[biter_force_name]						
 	
 	set_evo_and_threat(flask_amount, food, biter_force_name)
 	
