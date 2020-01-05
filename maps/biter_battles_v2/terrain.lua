@@ -352,24 +352,36 @@ local function is_biter_area(position)
 	return true
 end
 
+local biter_area_entity_functions = {
+	["resource"] = function(entity)
+		entity.destroy()
+	end,
+	["unit-spawner"] = function(entity)
+		local position = entity.surface.find_non_colliding_position("big-worm-turret", entity.position, 10, 2)
+		if position then
+			if math_random(1, 3) == 1 then
+				entity.surface.create_entity({name = "medium-worm-turret", position = position, force = "north_biters"})
+			else
+				entity.surface.create_entity({name = "big-worm-turret", position = position, force = "north_biters"})
+			end
+		end
+	end,
+	["cliff"] = function(entity)
+		entity.destroy()
+	end,
+	["tree"] = function(entity)
+		local noise = get_noise(3, entity.position)
+		if noise < 0.2 and noise > -0.2 then
+			if math_random(1, 5) ~= 1 then entity.surface.create_entity({name = "rock-big", position = entity.position, force = "neutral"}) end
+		end	
+		entity.destroy()
+	end,
+}
+
 local function builders_area_process_entity(e)
 	if is_biter_area(e.position) then
-		if e.type == "resource" then
-			e.destroy()
-			return
-		end
-		if e.type == "turret" then
-			e.destroy()
-			return
-		end
-		if e.type == "cliff" then
-			e.destroy()
-			return
-		end
-		if e.type == "tree" then
-			if math_random(1, 32) == 1 then e.surface.create_entity({name = "rock-big", position = e.position, force = "neutral"}) end
-			e.destroy()
-			return
+		if biter_area_entity_functions[e.type] then
+			biter_area_entity_functions[e.type](e)
 		end
 	else
 		if e.type == "turret" or e.type == "unit-spawner" then
