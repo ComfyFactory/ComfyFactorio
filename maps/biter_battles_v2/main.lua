@@ -93,8 +93,7 @@ local tick_minute_functions = {
 	[300 * 2] = Ai.destroy_inactive_biters,
 	[300 * 3] = Ai.main_attack,
 	[300 * 4] = Ai.send_near_biters_to_silo,
-	[300 * 5] = Ai.destroy_old_age_biters,
-	[300 * 6] = Ai.wake_up_sleepy_groups,
+	[300 * 5] = Ai.wake_up_sleepy_groups,
 	[300 * 7] = Game_over.restart_idle_map,
 }
 

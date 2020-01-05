@@ -79,15 +79,6 @@ local function is_biter_inactive(biter, unit_number, biter_force_name)
 	return true
 end
 
-Public.destroy_old_age_biters = function()
-	local surface = game.surfaces["biter_battles"]
-	for _, e in pairs(surface.find_entities_filtered({type = "unit"})) do
-		if not e.unit_group then
-			if math_random(1,8) == 1 then e.destroy() end
-		end
-	end
-end
-
 Public.destroy_inactive_biters = function()	
 	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
 		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
