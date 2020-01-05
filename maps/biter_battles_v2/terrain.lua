@@ -326,6 +326,7 @@ for x = -5, 5, 1 do
 		end
 	end
 end
+local size_of_scrap_vectors = #scrap_vectors
 
 local function generate_scrap(event)
 	local distance_to_center = math.sqrt(event.area.left_top.x ^ 2 + event.area.left_top.y ^ 2)
@@ -357,7 +358,8 @@ local biter_area_entity_functions = {
 		entity.destroy()
 	end,
 	["unit-spawner"] = function(entity)
-		local position = entity.surface.find_non_colliding_position("big-worm-turret", entity.position, 10, 2)
+		local vector = scrap_vectors[math_random(1, size_of_scrap_vectors)]
+		local position = entity.surface.find_non_colliding_position("big-worm-turret", {entity.position.x + vector[1], entity.position.y + vector[2]}, 10, 2)
 		if position then
 			if math_random(1, 3) == 1 then
 				entity.surface.create_entity({name = "medium-worm-turret", position = position, force = "north_biters"})
