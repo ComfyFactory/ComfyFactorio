@@ -312,7 +312,7 @@ function join_team(player, force_name, forced_join)
 		if global.tm_custom_name[player.force.name] then c = global.tm_custom_name[player.force.name] end
 		local message = table.concat({player.name, " has joined team ", c, "!"})
 		game.print(message, {r = 0.98, g = 0.66, b = 0.22})
-		Server.to_discord(message)
+		Server.to_discord_bold(message)
 	end
 	local i = player.get_inventory(defines.inventory.character_main)
 	i.clear()
