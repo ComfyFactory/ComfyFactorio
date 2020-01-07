@@ -185,6 +185,8 @@ local function get_random_close_spawner(surface, biter_force_name)
 	--
 	-- Option 1
 	--
+	
+	if false then
 	local rand_value = math_random(1, 10)
 
 	-- assume north_biters first
@@ -199,13 +201,14 @@ local function get_random_close_spawner(surface, biter_force_name)
 		area_name = "middle"
 		area = middle_spawner_area
 	end
+	end
 
 	--
 	-- Option 2
 	--
 
-	-- area = whole_spawner_area
-	-- area_name = whole
+	local area = whole_spawner_area
+	local area_name = "whole"
 
 	-- After here it's the same
 
