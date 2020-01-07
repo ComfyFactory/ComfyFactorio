@@ -110,8 +110,8 @@ local tick_minute_functions = {
 
 local function on_tick(event)
 	Mirror_terrain.ticking_work()
-	
-    local tick = game.tick
+
+	local tick = game.tick
 
 	if tick % 60 == 0 then 
 		global.bb_threat["north_biters"] = global.bb_threat["north_biters"] + global.bb_threat_income["north_biters"]
@@ -130,9 +130,10 @@ local function on_tick(event)
 		end
 	end
 
-	if tick % 30 ~= 0 then return end	
-	local key = tick % 3600
-	if tick_minute_functions[key] then tick_minute_functions[key]() end
+	if tick % 30 == 0 then	
+		local key = tick % 3600
+		if tick_minute_functions[key] then tick_minute_functions[key]() end
+	end
 end
 
 local function on_marked_for_deconstruction(event)
@@ -180,7 +181,6 @@ Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 Event.add(defines.events.on_tick, on_tick)
-Event.add(defines.events.on_chunk_generated, Ai.on_chunk_generated)
 Event.on_init(on_init)
 
 Event.add_event_filter(defines.events.on_entity_damaged, { filter = "name", name = "rocket-silo" })

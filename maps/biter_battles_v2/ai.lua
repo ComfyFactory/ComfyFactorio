@@ -178,69 +178,21 @@ Public.send_near_biters_to_silo = function()
 end
 
 local function get_random_close_spawner(surface, biter_force_name)
-	-- Here we have two options:
-	-- 1. Random the area (left, middle, right) => smaller area to search
-	-- 2. Search the whole area => larger area => if it's not cached we get a lag spike (~20ms)
-
-	--
-	-- Option 1
-	--
-	
-	if false then
-	local rand_value = math_random(1, 10)
-
-	-- assume north_biters first
-	local area = nil
-	if rand_value == 1 then
-		area_name = "left"
-		area = left_spawner_area
-	elseif rand_value == 2 then
-		area_name = "right"
-		area = right_spawner_area
-	else
-		area_name = "middle"
-		area = middle_spawner_area
-	end
-	end
-
-	--
-	-- Option 2
-	--
-
 	local area = whole_spawner_area
-	local area_name = "whole"
-
-	-- After here it's the same
-
 	-- If south_biters: Mirror area along x-axis
 	if biter_force_name == "south_biters" then
-		area_name = area_name .. "_south"
 		area = {left_top = {area.left_top[1], -1*area.right_bottom[2]}, right_bottom = {area.right_bottom[1], -1*area.left_top[2]}}
 	end
 
-	-- If possible get the spawners from cache
-	-- TODO: If a spawner was destroyed, we still have it in cache, this is fine for now as we just use spawner.position
-	local spawners = nil
-	if not global.cached_spawners then global.cached_spawners = {} end
-	if global.cached_spawners[area_name] then
-		spawners = global.cached_spawners[area_name]
-	else
-		spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name, area = area})	
-		global.cached_spawners[area_name] = spawners
-	end
-
+	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name, area = area})
 	if not spawners[1] then return false end
 
 	local spawner = spawners[math_random(1,#spawners)]
-	-- game.forces["north"].add_chart_tag("biter_battles", {icon={type="virtual", name="signal-green"}, position=spawner.position})
 	for i = 1, 5, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
-		-- game.forces["north"].add_chart_tag("biter_battles", {icon={type="virtual", name="signal-green"}, position=spawner_2.position})
 		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
 	end	
 	
-	-- rendering.draw_rectangle{color={g=1}, width=5, filled=false, left_top=area.left_top, right_bottom=area.right_bottom, surface="biter_battles"}
-	-- game.forces["north"].add_chart_tag("biter_battles", {icon={type="virtual", name="signal-blue"}, position=spawner.position})	
 	return spawner
 end
 
@@ -500,14 +452,6 @@ function Public.subtract_threat(entity)
 	global.bb_threat[entity.force.name] = global.bb_threat[entity.force.name] - threat_values[entity.name]
 	
 	return true
-end
-
--- Invalidate the cache if a new chunk was generated
--- TODO: This can be more precise
-Public.on_chunk_generated = function(event)
-	if event.area.right_bottom.x < -2048 then return end
-	if event.area.left_top.x > 2048 then return end
-	global.cached_spawners = {}
 end
 
 return Public
