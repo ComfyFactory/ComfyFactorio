@@ -141,7 +141,7 @@ Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
 Event.add_event_filter(defines.events.on_entity_damaged, { filter = "name", name = "rocket-silo" })
-Event.add_event_filter(defines.events.on_entity_damaged, { flter = "type", type = "unit" })
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = "type", type = "unit" })
 
 require "maps.biter_battles_v2.spec_spy"
 require "maps.biter_battles_v2.terrain"
