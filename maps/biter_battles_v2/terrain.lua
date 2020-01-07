@@ -405,7 +405,7 @@ local biter_area_entity_functions = {
 	end,
 	["tree"] = function(entity)
 		local noise = get_noise(3, entity.position)
-		if noise < 0.2 and noise > -0.2 then
+		if noise > 0.75 then
 			if math_random(1, 5) ~= 1 then entity.surface.create_entity({name = "rock-big", position = entity.position, force = "neutral"}) end
 		end	
 		entity.destroy()
