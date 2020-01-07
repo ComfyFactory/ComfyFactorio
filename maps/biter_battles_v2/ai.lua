@@ -34,6 +34,12 @@ local threat_values = {
 	["spitter-spawner"] = 16
 }
 
+-- these areas are for north
+local left_spawner_area   = {left_top = {-2000, -1200}, right_bottom = {-800, -700}}
+local right_spawner_area  = {left_top = {800,   -1200}, right_bottom = {2000, -700}}
+local middle_spawner_area = {left_top = {-600,  -1000}, right_bottom = {600,  -400}}
+local whole_spawner_area  = {left_top = {-2048, -1400}, right_bottom = {2048, -400}}
+
 local function get_active_biter_count(biter_force_name)
 	local count = 0
 	for _, biter in pairs(global.active_biters[biter_force_name]) do
@@ -51,11 +57,17 @@ local unit_evo_limits = {
 	["big-biter"] = 2,
 }
 
-function Public.set_biter_raffle_table()
-	local surface = game.surfaces["biter_battles"]
-	local biter_force_name = global.next_attack .. "_biters"
-	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name})
-	if not biters[5] then return end
+local function set_biter_raffle_table(surface, biter_force_name)
+	-- It's fine to only sample the middle
+	local area = middle_spawner_area
+	
+	-- If south_biters: Mirror area along x-axis
+	if biter_force_name == "south_biters" then
+		area = {left_top = {area.left_top[1], -1*area.right_bottom[2]}, right_bottom = {area.right_bottom[1], -1*area.left_top[2]}}
+	end
+
+	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name, area = area})
+	if not biters[1] then return end
 	global.biter_raffle[biter_force_name] = {}
 	local raffle = global.biter_raffle[biter_force_name]
 	local i = 1
@@ -166,15 +178,66 @@ Public.send_near_biters_to_silo = function()
 end
 
 local function get_random_close_spawner(surface, biter_force_name)
-	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name})	
+	-- Here we have two options:
+	-- 1. Random the area (left, middle, right) => smaller area to search
+	-- 2. Search the whole area => larger area => if it's not cached we get a lag spike (~20ms)
+
+	--
+	-- Option 1
+	--
+	local rand_value = math_random(1, 10)
+
+	-- assume north_biters first
+	local area = nil
+	if rand_value == 1 then
+		area_name = "left"
+		area = left_spawner_area
+	elseif rand_value == 2 then
+		area_name = "right"
+		area = right_spawner_area
+	else
+		area_name = "middle"
+		area = middle_spawner_area
+	end
+
+	--
+	-- Option 2
+	--
+
+	-- area = whole_spawner_area
+	-- area_name = whole
+
+	-- After here it's the same
+
+	-- If south_biters: Mirror area along x-axis
+	if biter_force_name == "south_biters" then
+		area_name = area_name .. "_south"
+		area = {left_top = {area.left_top[1], -1*area.right_bottom[2]}, right_bottom = {area.right_bottom[1], -1*area.left_top[2]}}
+	end
+
+	-- If possible get the spawners from cache
+	-- TODO: If a spawner was destroyed, we still have it in cache, this is fine for now as we just use spawner.position
+	local spawners = nil
+	if not global.cached_spawners then global.cached_spawners = {} end
+	if global.cached_spawners[area_name] then
+		spawners = global.cached_spawners[area_name]
+	else
+		spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name, area = area})	
+		global.cached_spawners[area_name] = spawners
+	end
+
 	if not spawners[1] then return false end
-	
+
 	local spawner = spawners[math_random(1,#spawners)]
+	-- game.forces["north"].add_chart_tag("biter_battles", {icon={type="virtual", name="signal-green"}, position=spawner.position})
 	for i = 1, 5, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
+		-- game.forces["north"].add_chart_tag("biter_battles", {icon={type="virtual", name="signal-green"}, position=spawner_2.position})
 		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
 	end	
 	
+	-- rendering.draw_rectangle{color={g=1}, width=5, filled=false, left_top=area.left_top, right_bottom=area.right_bottom, surface="biter_battles"}
+	-- game.forces["north"].add_chart_tag("biter_battles", {icon={type="virtual", name="signal-blue"}, position=spawner.position})	
 	return spawner
 end
 
@@ -330,7 +393,7 @@ local function create_attack_group(surface, force_name, biter_force_name)
 		if global.bb_debug then game.print("No spawner found for team " .. force_name) end
 		return false 
 	end
-	
+
 	local nearest_player_unit = surface.find_nearest_enemy({position = spawner.position, max_distance = 2048, force = biter_force_name})
 	if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
 	
@@ -345,20 +408,36 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	global.unit_groups[unit_group.group_number] = unit_group
 end
 
-Public.main_attack = function()
+Public.pre_main_attack = function()
 	local surface = game.surfaces["biter_battles"]
 	local force_name = global.next_attack
-	
+
 	if not global.training_mode or (global.training_mode and #game.forces[force_name].connected_players > 0) then
 		local biter_force_name = force_name .. "_biters"
-		local wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
-		
-		for c = 1, wave_amount, 1 do		
-			create_attack_group(surface, force_name, biter_force_name)
-		end
-		if global.bb_debug then game.print(wave_amount .. " unit groups designated for " .. force_name .. " biters.") end
+		global.main_attack_wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
+
+		set_biter_raffle_table(surface, biter_force_name)
+
+		if global.bb_debug then game.print(global.main_attack_wave_amount .. " unit groups designated for " .. force_name .. " biters.") end
+	else
+		global.main_attack_wave_amount = 0
 	end
-	
+end
+
+
+Public.perform_main_attack = function()
+	if global.main_attack_wave_amount > 0 then
+		local surface = game.surfaces["biter_battles"]
+		local force_name = global.next_attack
+		local biter_force_name = force_name .. "_biters"
+
+		create_attack_group(surface, force_name, biter_force_name)
+		global.main_attack_wave_amount = global.main_attack_wave_amount - 1	
+	end
+end
+
+Public.post_main_attack = function()
+	global.main_attack_wave_amount = 0
 	if global.next_attack == "north" then
 		global.next_attack = "south"
 	else
@@ -418,6 +497,14 @@ function Public.subtract_threat(entity)
 	global.bb_threat[entity.force.name] = global.bb_threat[entity.force.name] - threat_values[entity.name]
 	
 	return true
+end
+
+-- Invalidate the cache if a new chunk was generated
+-- TODO: This can be more precise
+Public.on_chunk_generated = function(event)
+	if event.area.right_bottom.x < -2048 then return end
+	if event.area.left_top.x > 2048 then return end
+	global.cached_spawners = {}
 end
 
 return Public
