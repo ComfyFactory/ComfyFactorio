@@ -1,6 +1,5 @@
 -- Biter Battles v2 -- by MewMew
 
-local Init = require "maps.biter_battles_v2.init"
 local Ai = require "maps.biter_battles_v2.ai"
 local BiterHealthBooster = require "modules.biter_health_booster"
 local Biters_landfill = require "maps.biter_battles_v2.biters_landfill"
@@ -8,6 +7,7 @@ local Chat = require "maps.biter_battles_v2.chat"
 local Combat_balance = require "maps.biter_battles_v2.combat_balance"
 local Game_over = require "maps.biter_battles_v2.game_over"
 local Gui = require "maps.biter_battles_v2.gui"
+local Init = require "maps.biter_battles_v2.init"
 local Map_info = require "maps.biter_battles_v2.map_info"
 local Mirror_terrain = require "maps.biter_battles_v2.mirror_terrain"
 local No_turret_creep = require "maps.biter_battles_v2.no_turret_creep"
@@ -140,9 +140,8 @@ Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
-if package.loaded["maps.biter_battles_v2.init"] ~= nil then
-  Event.add_event_filter(defines.events.on_entity_damaged, { filter = "name", name = "rocket-silo" })
-end
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = "name", name = "rocket-silo" })
+Event.add_event_filter(defines.events.on_entity_damaged, { flter = "type", type = "unit" })
 
 require "maps.biter_battles_v2.spec_spy"
 require "maps.biter_battles_v2.terrain"
