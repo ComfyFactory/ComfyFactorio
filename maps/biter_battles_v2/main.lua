@@ -21,7 +21,7 @@ require "modules.mineable_wreckage_yields_scrap"
 
 local function on_player_joined_game(event)
 	local surface = game.surfaces["biter_battles"]
-	local player = game.players[event.player_index]	
+	local player = game.players[event.player_index]
 
 	if player.online_time == 0 then
 		player.spectator = true
@@ -34,7 +34,7 @@ local function on_player_joined_game(event)
 		player.character.destructible = false
 		game.permissions.get_group("spectator").add_player(player)
 	end
-	
+
 	Map_info.player_joined_game(player)
 	Team_manager.draw_top_toggle_button(player)
 end
@@ -44,9 +44,9 @@ local function on_gui_click(event)
 	local element = event.element
 	if not element then return end
 	if not element.valid then return end
-	
+
 	if Map_info.gui_click(player, element) then return end
-	Team_manager.gui_click(event)	
+	Team_manager.gui_click(event)
 end
 
 local function on_research_finished(event)
@@ -75,16 +75,16 @@ end
 
 --Prevent Players from damaging Rocket Silos
 local function on_entity_damaged(event)
-	local entity = event.entity	
+	local entity = event.entity
 	if not entity.valid then return end
 	if entity.force.index > 5 then return end
-	
+
 	local cause = event.cause
 	if cause then
-		if cause.type == "unit" then return end		 
+		if cause.type == "unit" then return end
 	end
-	
-	if entity.name ~= "rocket-silo" then return end		
+
+	if entity.name ~= "rocket-silo" then return end
 	entity.health = entity.health + event.final_damage_amount
 end
 
@@ -99,7 +99,7 @@ local tick_minute_functions = {
 
 local function on_tick(event)
 	Mirror_terrain()
-	
+
 	local tick = game.tick
 
 	if tick % 60 ~= 0 then return end
@@ -115,7 +115,7 @@ local function on_tick(event)
 		Game_over.server_restart()
 		return
 	end
-	
+
 	local key = tick % 3600
 	if tick_minute_functions[key] then tick_minute_functions[key]() end
 end
@@ -138,6 +138,9 @@ Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
+
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = "name", name = "rocket-silo" })
+Event.add_event_filter(defines.events.on_entity_damaged, { filter = "type", type = "unit" })
 
 require "maps.biter_battles_v2.spec_spy"
 require "maps.biter_battles_v2.terrain"
