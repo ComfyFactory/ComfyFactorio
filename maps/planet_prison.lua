@@ -469,6 +469,10 @@ local function make_ore_patch(e)
 end
 
 local function on_chunk_generated(e)
+   if e.surface.name ~= "arena" then
+      return
+   end
+
    make_ore_patch(e)
    _layers.push_bounding_box(e.area)
 end
