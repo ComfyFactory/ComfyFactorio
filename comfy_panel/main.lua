@@ -23,7 +23,13 @@ end
 
 function Public.comfy_panel_clear_left_gui(player)
 	for _, child in pairs(player.gui.left.children) do
-		child.destroy()
+		child.visible = false
+	end
+end
+
+function Public.comfy_panel_restore_left_gui(player)
+	for _, child in pairs(player.gui.left.children) do
+		child.visible = true
 	end
 end
 
@@ -115,6 +121,7 @@ local function on_gui_click(event)
 	if event.element.name == "comfy_panel_top_button" then
 		if player.gui.left.comfy_panel then
 			player.gui.left.comfy_panel.destroy()
+			Public.comfy_panel_restore_left_gui(player)
 			return
 		else
 			main_frame(player)
@@ -124,6 +131,7 @@ local function on_gui_click(event)
 
 	if event.element.caption == "X" and event.element.name == "comfy_panel_close" then
 		player.gui.left.comfy_panel.destroy()
+		Public.comfy_panel_restore_left_gui(player)
 		return
 	end
 
