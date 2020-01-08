@@ -417,12 +417,7 @@ local function unlink_old_blueprints(name)
    end
 end
 
--- global.this.profiler = nil
 local function on_tick()
-   -- if not global.this.profiler then
-   --    global.this.profiler = game.create_profiler()
-   -- end
-
    local s = global.this.surface
    if not s then
       log("on_tick: surface empty!")
@@ -439,7 +434,6 @@ local function on_tick()
    end
 
    local surf = global.this.surface
-   -- global.this.profiler.reset()
    if game.tick % 4 == 0 then
       _ai.do_job(surf, _ai.command.seek_and_destroy_player)
    end
@@ -450,8 +444,6 @@ local function on_tick()
 
    _layers.do_job(surf, 64)
    cause_event(s)
-   -- global.this.profiler.stop()
-   -- log(global.this.profiler)
 end
 
 local function make_ore_patch(e)
@@ -753,12 +745,6 @@ local function create_console_message(p, message)
    return string.format(msg_fmt, prefix, p_msg)
 end
 
-local function create_speech_bubble_message(p, message)
-   local msg_fmt = "[color=%s]%s[/color]"
-   local color = stringify_color(p.chat_color)
-   return string.format(msg_fmt, color, message)
-end
-
 local function filter_out_gps(message)
    local msg = string.gsub(message, '%[gps=%-?%d+%,?%s*%-?%d+%]', '[gps]')
    return msg
@@ -774,15 +760,6 @@ local function on_console_chat(e)
    local p = game.players[pid]
    local msg = create_console_message(p, e.message)
    if global.this.perks[p.tag].chat_global then
-      local bubble = {
-         name = "compi-speech-bubble",
-         position = p.position,
-         target = p.character,
-         text = create_speech_bubble_message(p, e.message),
-         lifetime = 100,
-      }
-
-      p.surface.create_entity(bubble)
       for _, peer in pairs(game.players) do
          local perks = global.this.perks[peer.tag]
          if peer.tag ~= p.tag then
