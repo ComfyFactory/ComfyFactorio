@@ -34,7 +34,7 @@ global.this.maps = {
             frequency = 0,
          },
          ["crude-oil"] = {
-            frequency = 10,
+            frequency = 1000,
             size = 1,
          },
          ["trees"] = {
