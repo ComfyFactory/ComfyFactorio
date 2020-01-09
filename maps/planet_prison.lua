@@ -202,7 +202,7 @@ local function redraw_gui(p)
    p.gui.left.clear()
 
    local merchant = global.this.events.merchant
-   local perks = global.this.perks[p.tag]
+   local perks = global.this.perks[p.name]
    local chat_type = "Global chat"
    if not perks.chat_global then
       chat_type = "Buddies chat"
@@ -243,7 +243,7 @@ end
 
 local function print_merchant_position(player)
    local position = global.this.events.merchant.position
-   local perks = global.this.perks[player.tag]
+   local perks = global.this.perks[player.name]
    if not perks.minimap then
       player.print(string.format(">> You were able to spot him %s from your location",
                                  _common.get_readable_direction(player.position, position)))
@@ -255,7 +255,7 @@ end
 local function on_gui_click(e)
    local elem = e.element
    local p = game.players[e.player_index]
-   local perks = global.this.perks[p.tag]
+   local perks = global.this.perks[p.name]
 
    if elem.name == "chat_toggle" then
       if perks.chat_global then
@@ -293,17 +293,26 @@ local function on_gui_click(e)
    end
 end
 
+local function get_random_id()
+   while true do
+      local id = _common.rand_range(1000, 9999)
+      if global.this.perks[id] == nil then
+         return id
+      end
+   end
+end
+
 local function init_player(p)
    p.teleport({0, 0}, "arena")
    local s = p.surface
    local position = get_non_obstructed_position(s, 10)
 
    p.teleport(position, "arena")
-   p.name = "inmate"
-   p.tag = string.format("[%d]", _common.rand_range(1000, 9999))
-   p.force = game.create_force(p.tag)
+   local id = get_random_id()
+   p.name = string.format("inmate_%d", id)
+   p.force = game.create_force(p.name)
    p.force.set_friend("neutral", true)
-   global.this.perks[p.tag] = {
+   global.this.perks[p.name] = {
       flashlight = false,
       flashlight_enabled = false,
       minimap = false,
@@ -424,25 +433,16 @@ local function on_tick()
       return
    end
 
-   if not s.is_chunk_generated then
-      log("on_tick: is_chunk_generated nil, map save?")
-      return
-   end
-
-   if not s.is_chunk_generated({0, 0}) then
-      return
-   end
-
    local surf = global.this.surface
    if game.tick % 4 == 0 then
       _ai.do_job(surf, _ai.command.seek_and_destroy_player)
    end
 
-   if game.tick % 10000 == 0 then
+   if (game.tick + 1) % 500 == 0 then
       unlink_old_blueprints("player_ship")
    end
 
-   _layers.do_job(surf, 64)
+   _layers.do_job(surf)
    cause_event(s)
 end
 
@@ -466,7 +466,7 @@ local function on_chunk_generated(e)
    end
 
    make_ore_patch(e)
-   _layers.push_bounding_box(e.area)
+   _layers.push_chunk(e.position)
 end
 
 local function on_player_mined_entity(e)
@@ -503,13 +503,8 @@ local function on_player_died(e)
    end
 
    local p = game.players[index]
-   game.merge_forces(p.tag, "neutral")
-   global.this.perks[p.tag] = {
-      flashlight = false,
-      flashlight_enabled = false,
-      minimap = false,
-      chat_global = true,
-   }
+   game.merge_forces(p.name, "neutral")
+   global.this.perks[p.name] = nil
 end
 
 local function on_player_respawned(e)
@@ -537,23 +532,22 @@ local function on_player_dropped_item(e)
 
       local peer = ent_list[1].player
       if p.force.get_friend(peer.force) then
-         p.print(string.format("The %s %s is your buddy already", peer.name,
-                               peer.tag))
+         p.print(string.format("The %s is your buddy already", peer.name))
          return
       end
 
-      if global.this.last_friend[peer.tag] == p.tag then
+      if global.this.last_friend[peer.name] == p.name then
          p.force.set_cease_fire(peer.force, true)
          peer.force.set_cease_fire(p.force, true)
-         p.print(string.format("%s %s is now your buddy", peer.name, peer.tag))
-         peer.print(string.format("%s %s is now your buddy", p.name, p.tag))
-         global.this.last_friend[p.tag] = ""
+         p.print(string.format("%s is now your buddy", peer.name))
+         peer.print(string.format("%s is now your buddy", p.name))
+         global.this.last_friend[p.name] = nil
          return
       end
 
-      global.this.last_friend[p.tag] = peer.tag
-      p.print(string.format("You want %s %s to be your buddy", peer.name, peer.tag))
-      peer.print(string.format("The %s %s wants to be your buddy", p.name, p.tag))
+      global.this.last_friend[p.name] = peer.name
+      p.print(string.format("You want %s to be your buddy", peer.name))
+      peer.print(string.format("The %s wants to be your buddy", p.name))
    elseif ent.stack.name == "coal" then
       local ent_list = p.surface.find_entities_filtered({
          name = p.character.name,
@@ -567,15 +561,15 @@ local function on_player_dropped_item(e)
 
       local peer = ent_list[1].player
       if p.force.get_friend(peer.force) then
-         p.print(string.format("The %s %s is not your buddy", p.name, p.tag))
+         p.print(string.format("The %s is not your buddy", p.name))
          return
       end
 
       p.force.set_cease_fire(peer.force, false)
       peer.force.set_cease_fire(p.force, false)
 
-      p.print(string.format("The %s %s is no longer your buddy", peer.name, peer.tag))
-      peer.print(string.format("The %s %s is no longer your buddy", p.name, p.tag))
+      p.print(string.format("The %s is no longer your buddy", peer.name))
+      peer.print(string.format("The %s is no longer your buddy", p.name))
    end
 end
 
@@ -699,7 +693,7 @@ local function on_market_item_purchased(e)
    local p = game.players[e.player_index]
    local m = e.market
    local o = m.get_market_items()[e.offer_index].offer
-   local perks = global.this.perks[p.tag]
+   local perks = global.this.perks[p.name]
 
    if o.effect_description == "Construct a flashlight" then
       perks.flashlight = true
@@ -730,13 +724,13 @@ local function stringify_color(color)
 end
 
 local function create_console_message(p, message)
-   local prefix_fmt = "[color=%s]%s %s:[/color]"
+   local prefix_fmt = "[color=%s]%s:[/color]"
    local msg_fmt = "[color=%s]%s[/color]"
    local color = stringify_color(p.chat_color)
-   local prefix = string.format(prefix_fmt, color, p.name, p.tag)
+   local prefix = string.format(prefix_fmt, color, p.name)
    local p_msg = string.format(msg_fmt, color, message)
 
-   if global.this.perks[p.tag].chat_global then
+   if global.this.perks[p.name].chat_global then
       msg_fmt = "[color=red]global:[/color] %s %s"
    else
       msg_fmt = "[color=green]buddies:[/color] %s %s"
@@ -759,10 +753,10 @@ local function on_console_chat(e)
 
    local p = game.players[pid]
    local msg = create_console_message(p, e.message)
-   if global.this.perks[p.tag].chat_global then
+   if global.this.perks[p.name].chat_global then
       for _, peer in pairs(game.players) do
-         local perks = global.this.perks[peer.tag]
-         if peer.tag ~= p.tag then
+         if peer.name ~= p.name  then
+            local perks = global.this.perks[peer.name]
             if perks.minimap then
                peer.print(msg)
             else
@@ -774,8 +768,8 @@ local function on_console_chat(e)
       for _, f in pairs(game.forces) do
          if p.force.get_cease_fire(f) then
             local peer = f.players[1]
-            local perks = global.this.perks[peer.tag]
-            if peer.tag ~= p.tag then
+            if peer.name ~= p.name then
+               local perks = global.this.perks[peer.name]
                if perks.minimap then
                   peer.print(msg)
                else
@@ -813,7 +807,7 @@ local function on_rocket_launched(e)
       surf.print(">> Nobody escaped by it")
    else
       local p = game.players[pid]
-      surf.print(string.format(">> The inmate %s was able to escape", p.tag))
+      surf.print(string.format(">> The %s was able to escape", p.name))
       on_player_died({player_index = pid})
       p.character.die()
    end
