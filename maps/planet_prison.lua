@@ -447,7 +447,7 @@ local function on_tick()
 end
 
 local function make_ore_patch(e)
-   if _common.rand_range(1, 60) ~= 1 then
+   if _common.rand_range(1, 30) ~= 1 then
       return
    end
 
