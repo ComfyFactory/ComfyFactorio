@@ -534,7 +534,7 @@ public.merchant_offer = {
 }
 
 public.manual = [[
-[font=heading-1]Planet Prison (1.0.1) - Manual[/font]
+[font=heading-1]Planet Prison (1.0.2) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
 
 This is an ultimate survival scenario with very hostile environment.
