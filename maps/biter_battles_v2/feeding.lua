@@ -107,12 +107,12 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
 		
 		if global.science_logs_text then
-			table.insert(global.science_logs_date, formatted_feed_time)
-			table.insert(global.science_logs_text, line_log_stats_to_add)
-			table.insert(global.science_logs_evo_jump, evo_jump)
-			table.insert(global.science_logs_evo_jump_difference, evo_jump_difference)
-			table.insert(global.science_logs_threat, threat_jump)
-			table.insert(global.science_logs_threat_jump_difference, threat_jump_difference)
+			table.insert(global.science_logs_date,1, formatted_feed_time)
+			table.insert(global.science_logs_text,1, line_log_stats_to_add)
+			table.insert(global.science_logs_evo_jump,1, evo_jump)
+			table.insert(global.science_logs_evo_jump_difference,1, evo_jump_difference)
+			table.insert(global.science_logs_threat,1, threat_jump)
+			table.insert(global.science_logs_threat_jump_difference,1, threat_jump_difference)
 		else
 			global.science_logs_date = { formatted_feed_time }
 			global.science_logs_text = { line_log_stats_to_add }
