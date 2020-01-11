@@ -135,7 +135,7 @@ local function init_game()
    _layers.set_collision_mask({"water-tile"})
    _layers.add_noise_layer("LuaTile", "concrete", {"concrete"}, 0.3, 0.2)
    _layers.add_noise_layer("LuaTile", "stones", {"stone-path"},  0.2, 0.4)
-   _layers.add_noise_layer("LuaTile", "shallows", {"water-shallow"}, 0.5, 0.005)
+   _layers.add_noise_layer("LuaTile", "shallows", {"water-shallow"}, 0.6, 0.005)
    _layers.add_noise_layer("LuaEntity", "scrap", {"mineable-wreckage"}, 0.5, 0.1)
    _layers.add_noise_layer("LuaEntity", "walls", {"stone-wall"}, 0.5, 0.09)
    _layers.add_noise_layer("LuaEntity", "hostile", {"character",
