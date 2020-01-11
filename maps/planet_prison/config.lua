@@ -158,34 +158,6 @@ public.merchant_offer = {
          {
             type = "item",
             name = "iron-plate",
-            amount = 5
-         },
-         {
-            type = "item",
-            name = "copper-cable",
-            amount = 2
-         },
-         {
-            type = "item",
-            name = "electronic-circuit",
-            amount = 1
-         },
-         {
-            type = "item",
-            name = "small-lamp",
-            amount = 1
-         }
-      },
-      offer = {
-         type = "nothing",
-         effect_description = "Construct a flashlight",
-      },
-   },
-   {
-      price = {
-         {
-            type = "item",
-            name = "iron-plate",
             amount = 10
          },
          {

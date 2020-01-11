@@ -231,14 +231,12 @@ local function redraw_gui(p)
       p.gui.left.add(button)
    end
 
-   if perks.flashlight then
-      button = {
-         type = "button",
-         name = "flashlight_toggle",
-         caption = "Toggle flashlight"
-      }
-      p.gui.left.add(button)
-   end
+   button = {
+      type = "button",
+      name = "flashlight_toggle",
+      caption = "Toggle flashlight"
+   }
+   p.gui.left.add(button)
 end
 
 local function print_merchant_position(player)
@@ -313,8 +311,7 @@ local function init_player(p)
    p.force = game.create_force(p.name)
    p.force.set_friend("neutral", true)
    global.this.perks[p.name] = {
-      flashlight = false,
-      flashlight_enabled = false,
+      flashlight_enable = true,
       minimap = false,
       chat_global = true,
    }
@@ -718,12 +715,7 @@ local function on_market_item_purchased(e)
    local o = m.get_market_items()[e.offer_index].offer
    local perks = global.this.perks[p.name]
 
-   if o.effect_description == "Construct a flashlight" then
-      perks.flashlight = true
-      perks.flashlight_enable = true
-      p.character.enable_flashlight()
-      redraw_gui(p)
-   elseif o.effect_description == "Construct a GPS receiver" then
+   if o.effect_description == "Construct a GPS receiver" then
       perks.minimap = true
       p.minimap_enabled = true
    end
