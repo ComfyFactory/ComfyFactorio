@@ -516,6 +516,9 @@ This is an ultimate survival scenario with very hostile environment.
 [font=default-bold]Grab a raw fish [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you request an inmate to become your buddy.[/font]
 [font=default-bold]Grab a coal piece [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you discard buddy status with an inname.[/font]
 
+[font=heading-1]Coins[/font]
+[font=default-bold]Coins [img=item/coin] are the main medium that you use in the market. You obtain them by researching stuff and pvp activites.[/font]
+
 [font=heading-1]Other[/font]
 [font=default-bold]This scenario was made by cogito123. If you find any bugs/balancing issues, report it to getcomfy.eu/discord. Thanks for playing this map.[/font]
 ]]
