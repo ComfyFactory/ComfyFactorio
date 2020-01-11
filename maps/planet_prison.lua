@@ -306,6 +306,7 @@ local function init_player(p)
    local s = p.surface
    local position = get_non_obstructed_position(s, 10)
 
+   global.this.perks[p.name] = nil
    p.teleport(position, "arena")
    p.name = get_random_name()
    p.force = game.create_force(p.name)
@@ -501,7 +502,6 @@ local function on_player_died(e)
 
    local p = game.players[index]
    game.merge_forces(p.name, "neutral")
-   global.this.perks[p.name] = nil
 end
 
 local function on_player_respawned(e)
