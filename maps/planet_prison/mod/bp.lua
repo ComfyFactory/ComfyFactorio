@@ -123,7 +123,7 @@ public.unlink_references_filtered = function(name, query)
    end
 
    local refs = {}
-   for i = 1, #object.refs do
+   for i = #object.refs, 1, -1 do
       local ref = object.refs[i]
       if query and query.timestamp then
          if ref.timestamp > query.timestamp then
