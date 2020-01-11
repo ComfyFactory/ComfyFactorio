@@ -102,7 +102,6 @@ public.technologies = {
    ["energy-shield-mk2-equipment"] = false,
    ["exoskeleton-equipment"] = false,
    ["explosive-rocketry"] = false,
-   ["fast-inserter"] = false,
    ["flamethrower"] = false,
    ["fusion-reactor-equipment"] = false,
    ["inserter-capacity-bonus-1"] = false,
@@ -432,19 +431,6 @@ public.merchant_offer = {
          type = "give-item",
          item = "destroyer-capsule"
       }
-   },
-   {
-      price = {
-         {
-            type = "item",
-            name = "coin",
-            amount = 50
-         }
-      },
-      offer = {
-         type = "unlock-recipe",
-         recipe = "fast-inserter"
-      },
    },
    {
       price = {
