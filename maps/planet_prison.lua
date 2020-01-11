@@ -222,7 +222,7 @@ local function redraw_gui(p)
    }
    p.gui.left.add(button)
 
-   if merchant.alive and not perks.minimap then
+   if merchant.alive then
       button = {
          type = "button",
          name = "merchant_find",
