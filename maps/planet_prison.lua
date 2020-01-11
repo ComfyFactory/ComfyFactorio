@@ -293,11 +293,12 @@ local function on_gui_click(e)
    end
 end
 
-local function get_random_id()
+local function get_random_name()
    while true do
       local id = _common.rand_range(1000, 9999)
-      if global.this.perks[id] == nil then
-         return id
+      local name = string.format("inmate_%d", id)
+      if global.this.perks[name] == nil then
+         return name
       end
    end
 end
@@ -308,8 +309,7 @@ local function init_player(p)
    local position = get_non_obstructed_position(s, 10)
 
    p.teleport(position, "arena")
-   local id = get_random_id()
-   p.name = string.format("inmate_%d", id)
+   p.name = get_random_name()
    p.force = game.create_force(p.name)
    p.force.set_friend("neutral", true)
    global.this.perks[p.name] = {
