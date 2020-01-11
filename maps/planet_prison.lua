@@ -521,27 +521,38 @@ local function on_player_dropped_item(e)
    local ent = e.entity
    if ent.stack.name == "raw-fish" then
       local ent_list = p.surface.find_entities_filtered({
-         name = p.character.name,
+         name = "character",
          position = ent.position,
-         limit = 1,
          radius = 2,
       })
-      if not ent_list or not #ent_list then
+      if not ent_list then
          return
       end
 
-      local peer = ent_list[1].player
-      if p.force.get_friend(peer.force) then
+      local peer = nil
+      for _, char in pairs(ent_list) do
+         if char.player and char.player.name ~= p.name then
+            peer = char.player
+            break
+         end
+      end
+
+      if peer == nil then
+         return
+      end
+
+      if p.force.get_cease_fire(peer.name) then
          p.print(string.format("The %s is your buddy already", peer.name))
          return
       end
 
       if global.this.last_friend[peer.name] == p.name then
-         p.force.set_cease_fire(peer.force, true)
-         peer.force.set_cease_fire(p.force, true)
+         p.force.set_cease_fire(peer.name, true)
+         peer.force.set_cease_fire(p.name, true)
          p.print(string.format("%s is now your buddy", peer.name))
          peer.print(string.format("%s is now your buddy", p.name))
-         global.this.last_friend[p.name] = nil
+         global.this.last_friend[p.name] = ""
+         global.this.last_friend[peer.name] = ""
          return
       end
 
@@ -550,24 +561,36 @@ local function on_player_dropped_item(e)
       peer.print(string.format("The %s wants to be your buddy", p.name))
    elseif ent.stack.name == "coal" then
       local ent_list = p.surface.find_entities_filtered({
-         name = p.character.name,
+         name = "character",
          position = ent.position,
-         limit = 1,
-         radius = 1,
+         radius = 2,
       })
-      if not ent_list or not #ent_list then
+      if not ent_list then
          return
       end
 
-      local peer = ent_list[1].player
-      if p.force.get_friend(peer.force) then
+      local peer = nil
+      for _, char in pairs(ent_list) do
+         if char.player and char.player.name ~= p.name then
+            peer = char.player
+            break
+         end
+      end
+
+      if peer == nil then
+         return
+      end
+
+      if not p.force.get_cease_fire(peer.name) then
          p.print(string.format("The %s is not your buddy", p.name))
          return
       end
 
-      p.force.set_cease_fire(peer.force, false)
-      peer.force.set_cease_fire(p.force, false)
+      p.force.set_cease_fire(peer.name, false)
+      peer.force.set_cease_fire(p.name, false)
 
+      global.this.last_friend[p.name] = ""
+      global.this.last_friend[peer.name] = ""
       p.print(string.format("The %s is no longer your buddy", peer.name))
       peer.print(string.format("The %s is no longer your buddy", p.name))
    end
