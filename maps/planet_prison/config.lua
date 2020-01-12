@@ -498,9 +498,9 @@ This is an ultimate survival scenario with very hostile environment.
 - Flee by a rocket is a win. (Put a car into a rocket and enter the rocket).
 - The light is your best friend.
 [/font]
-[font=heading-1]Buddies[/font]
-[font=default-bold]Grab a raw fish [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you request an inmate to become your buddy.[/font]
-[font=default-bold]Grab a coal piece [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you discard buddy status with an inname.[/font]
+[font=heading-1]NAP contractors (A non-aggression pact)[/font]
+[font=default-bold]Grab a raw fish [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you request an inmate to get in NAP with you.[/font]
+[font=default-bold]Grab a coal piece [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you discard NAP with an inname.[/font]
 
 [font=heading-1]Coins[/font]
 [font=default-bold]Coins [img=item/coin] are the main medium that you use in the market. You obtain them by researching stuff and pvp activites.[/font]

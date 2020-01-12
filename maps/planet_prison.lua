@@ -205,7 +205,7 @@ local function redraw_gui(p)
    local perks = global.this.perks[p.name]
    local chat_type = "Global chat"
    if not perks.chat_global then
-      chat_type = "Buddies chat"
+      chat_type = "NAP chat"
    end
 
    local button = {
@@ -257,7 +257,7 @@ local function on_gui_click(e)
 
    if elem.name == "chat_toggle" then
       if perks.chat_global then
-         elem.caption = "Buddies chat"
+         elem.caption = "NAP chat"
          perks.chat_global = false
       else
          elem.caption = "Global chat"
@@ -539,23 +539,23 @@ local function on_player_dropped_item(e)
       end
 
       if p.force.get_cease_fire(peer.name) then
-         p.print(string.format("The %s is your buddy already", peer.name))
+         p.print(string.format("You're in the NAP with %s already", peer.name))
          return
       end
 
       if global.this.last_friend[peer.name] == p.name then
          p.force.set_cease_fire(peer.name, true)
          peer.force.set_cease_fire(p.name, true)
-         p.print(string.format("%s is now your buddy", peer.name))
-         peer.print(string.format("%s is now your buddy", p.name))
+         p.print(string.format("The NAP was formed with %s", peer.name))
+         peer.print(string.format("The NAP was formed with %s", p.name))
          global.this.last_friend[p.name] = ""
          global.this.last_friend[peer.name] = ""
          return
       end
 
       global.this.last_friend[p.name] = peer.name
-      p.print(string.format("You want %s to be your buddy", peer.name))
-      peer.print(string.format("The %s wants to be your buddy", p.name))
+      p.print(string.format("You want to form the NAP with %s", peer.name))
+      peer.print(string.format("The %s wants to form NAP with you", p.name))
    elseif ent.stack.name == "coal" then
       local ent_list = p.surface.find_entities_filtered({
          name = "character",
@@ -579,7 +579,7 @@ local function on_player_dropped_item(e)
       end
 
       if not p.force.get_cease_fire(peer.name) then
-         p.print(string.format("The %s is not your buddy", p.name))
+         p.print(string.format("You don't have the NAP with %s", p.name))
          return
       end
 
@@ -588,8 +588,8 @@ local function on_player_dropped_item(e)
 
       global.this.last_friend[p.name] = ""
       global.this.last_friend[peer.name] = ""
-      p.print(string.format("The %s is no longer your buddy", peer.name))
-      peer.print(string.format("The %s is no longer your buddy", p.name))
+      p.print(string.format("You're no longer in the NAP with %s", peer.name))
+      peer.print(string.format("You're no longer in the NAP with %s", p.name))
    end
 end
 
@@ -748,7 +748,7 @@ local function create_console_message(p, message)
    if global.this.perks[p.name].chat_global then
       msg_fmt = "[color=red]global:[/color] %s %s"
    else
-      msg_fmt = "[color=green]buddies:[/color] %s %s"
+      msg_fmt = "[color=green]nap:[/color] %s %s"
    end
 
    return string.format(msg_fmt, prefix, p_msg)
