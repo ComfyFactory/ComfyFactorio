@@ -255,6 +255,10 @@ local function on_gui_click(e)
    local p = game.players[e.player_index]
    local perks = global.this.perks[p.name]
 
+   if not elem.valid then
+      return
+   end
+
    if elem.name == "chat_toggle" then
       if perks.chat_global then
          elem.caption = "NAP chat"
