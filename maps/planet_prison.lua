@@ -10,7 +10,7 @@ global.this._config = require("planet_prison.config")
 
 global.this.maps = {
    {
-      name = "Flooded metropolia",
+      name = "flooded-metropolia",
       height = 2000,
       width = 2000,
       water = 1,
@@ -45,6 +45,118 @@ global.this.maps = {
          }
       },
    }
+}
+
+local function noise_hostile_hook(ent, common)
+   ent.force = "enemy"
+   if ent.name == "character" then
+      local shade = common.rand_range(20, 200)
+      ent.color = {
+         r = shade,
+         g = shade,
+         b = shade
+      }
+
+      if common.rand_range(1, 5) == 1 then
+         ent.insert({name="shotgun", count=1})
+         ent.insert({name="shotgun-shell", count=20})
+      else
+         ent.insert({name="pistol", count=1})
+         ent.insert({name="firearm-magazine", count=20})
+      end
+   else
+      ent.insert({name="firearm-magazine", count=200})
+   end
+end
+
+local function noise_set_neutral_hook(ent)
+   ent.force = "neutral"
+end
+
+local industrial_zone_layers = {
+   {
+      type = "LuaTile",
+      name = "concrete",
+      objects = {
+         "concrete",
+      },
+      elevation = 0.3,
+      resolution = 0.2,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaTile",
+      name = "stones",
+      objects = {
+         "stone-path",
+      },
+      elevation = 0.2,
+      resolution = 0.4,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaTile",
+      name = "shallows",
+      objects = {
+         "water-shallow",
+      },
+      elevation = 0.6,
+      resolution = 0.005,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaEntity",
+      name = "scrap",
+      objects = {
+         "mineable-wreckage",
+      },
+      elevation = 0.5,
+      resolution = 0.1,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaEntity",
+      name = "walls",
+      objects = {
+         "stone-wall"
+      },
+      elevation = 0.5,
+      resolution = 0.09,
+      hook = noise_set_neutral_hook,
+      deps = nil,
+   },
+   {
+      type = "LuaEntity",
+      name = "hostile",
+      objects = {
+         "character",
+         "gun-turret",
+      },
+      elevation = 0.92,
+      resolution = 0.99,
+      hook = noise_hostile_hook,
+      deps = _common,
+   },
+   {
+      type = "LuaEntity",
+      name = "structures",
+      objects = {
+         "big-electric-pole",
+         "medium-electric-pole",
+      },
+      elevation = 0.9,
+      resolution = 0.9,
+      hook = noise_set_neutral_hook,
+      deps = nil,
+   },
+}
+
+global.this.presets = {
+   ["flooded-metropolia"] = industrial_zone_layers,
 }
 
 global.this.entities_cache = nil
@@ -101,38 +213,15 @@ local function init_merchant_bp(entity, _)
    end
 end
 
-local function noise_hostile_hook(ent, common)
-   ent.force = "enemy"
-   if ent.name == "character" then
-      local shade = common.rand_range(20, 200)
-      ent.color = {
-         r = shade,
-         g = shade,
-         b = shade
-      }
-
-      if common.rand_range(1, 5) == 1 then
-         ent.insert({name="shotgun", count=1})
-         ent.insert({name="shotgun-shell", count=20})
-      else
-         ent.insert({name="pistol", count=1})
-         ent.insert({name="firearm-magazine", count=20})
-      end
-   else
-      ent.insert({name="firearm-magazine", count=200})
-   end
-end
-
-local function noise_set_neutral_hook(ent)
-   ent.force = "neutral"
-end
 
 global.this.bp = {
    player_ship = require("planet_prison.bp.player_ship"),
    merchant = require("planet_prison.bp.merchant")
 }
 local function init_game()
-   global.this.surface = game.create_surface("arena", pick_map())
+   local map = pick_map()
+   local preset = global.this.presets[map.name]
+   global.this.surface = game.create_surface("arena", map)
    global.this.surface.min_brightness = 0
    global.this.surface.ticks_per_day = 25000 * 4
    global.this.perks = {}
@@ -145,19 +234,20 @@ local function init_game()
 
    _layers.init()
    _layers.set_collision_mask({"water-tile"})
-   _layers.add_noise_layer("LuaTile", "concrete", {"concrete"}, 0.3, 0.2)
-   _layers.add_noise_layer("LuaTile", "stones", {"stone-path"},  0.2, 0.4)
-   _layers.add_noise_layer("LuaTile", "shallows", {"water-shallow"}, 0.6, 0.005)
-   _layers.add_noise_layer("LuaEntity", "scrap", {"mineable-wreckage"}, 0.5, 0.1)
-   _layers.add_noise_layer("LuaEntity", "walls", {"stone-wall"}, 0.5, 0.09)
-   _layers.add_noise_layer("LuaEntity", "hostile", {"character",
-                                                    "gun-turret"}, 0.92, 0.99)
-   _layers.add_noise_layer("LuaEntity", "structures", {"big-electric-pole",
-                                                       "medium-electric-pole"}, 0.9, 0.9)
-   _layers.add_noise_layer_hook("structures", noise_set_neutral_hook)
-   _layers.add_noise_layer_hook("walls", noise_set_neutral_hook)
-   _layers.add_noise_layer_hook("hostile", noise_hostile_hook)
-   _layers.add_noise_layer_dependency("hostile", _common)
+
+   for _, layer in pairs(preset) do
+      _layers.add_noise_layer(layer.type, layer.name,
+                              layer.objects, layer.elevation,
+                              layer.resolution)
+      if layer.hook ~= nil then
+         _layers.add_noise_layer_hook(layer.name, layer.hook)
+      end
+
+      if layer.deps ~= nil then
+         _layers.add_noise_layer_dependency(layer.name, layer.deps)
+      end
+   end
+
    _bp.push_blueprint("player_ship", global.this.bp.player_ship)
    _bp.set_blueprint_hook("player_ship", init_player_ship_bp)
    _bp.push_blueprint("merchant", global.this.bp.merchant)
