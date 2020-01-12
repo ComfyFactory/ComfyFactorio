@@ -111,8 +111,13 @@ local function noise_hostile_hook(ent, common)
          b = shade
       }
 
-      ent.insert({name="pistol", count=1})
-      ent.insert({name="firearm-magazine", count=20})
+      if common.rand_range(1, 5) == 1 then
+         ent.insert({name="shotgun", count=1})
+         ent.insert({name="shotgun-shell", count=20})
+      else
+         ent.insert({name="pistol", count=1})
+         ent.insert({name="firearm-magazine", count=20})
+      end
    else
       ent.insert({name="firearm-magazine", count=200})
    end
