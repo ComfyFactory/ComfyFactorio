@@ -101,9 +101,16 @@ local function init_merchant_bp(entity, _)
    end
 end
 
-local function noise_hostile_hook(ent)
+local function noise_hostile_hook(ent, common)
    ent.force = "enemy"
    if ent.name == "character" then
+      local shade = common.rand_range(20, 200)
+      ent.color = {
+         r = shade,
+         g = shade,
+         b = shade
+      }
+
       ent.insert({name="pistol", count=1})
       ent.insert({name="firearm-magazine", count=20})
    else
@@ -145,6 +152,7 @@ local function init_game()
    _layers.add_noise_layer_hook("structures", noise_set_neutral_hook)
    _layers.add_noise_layer_hook("walls", noise_set_neutral_hook)
    _layers.add_noise_layer_hook("hostile", noise_hostile_hook)
+   _layers.add_noise_layer_dependency("hostile", _common)
    _bp.push_blueprint("player_ship", global.this.bp.player_ship)
    _bp.set_blueprint_hook("player_ship", init_player_ship_bp)
    _bp.push_blueprint("merchant", global.this.bp.merchant)
