@@ -102,7 +102,6 @@ public.technologies = {
    ["energy-shield-mk2-equipment"] = false,
    ["exoskeleton-equipment"] = false,
    ["explosive-rocketry"] = false,
-   ["fast-inserter"] = false,
    ["flamethrower"] = false,
    ["fusion-reactor-equipment"] = false,
    ["inserter-capacity-bonus-1"] = false,
@@ -114,13 +113,8 @@ public.technologies = {
    ["inserter-capacity-bonus-7"] = false,
    ["kovarex-enrichment-process"] = false,
    ["land-mine"] = false,
-   ["logistics-2"] = false,
    ["logistics-3"] = false,
-   ["military-3"] = false,
    ["military-4"] = false,
-   ["mining-productivity-2"] = false,
-   ["mining-productivity-3"] = false,
-   ["mining-productivity-4"] = false,
    ["modular-armor"] = false,
    ["night-vision-equipment"] = false,
    ["nuclear-fuel-reprocessing"] = false,
@@ -153,34 +147,6 @@ public.technologies = {
 }
 
 public.merchant_offer = {
-   {
-      price = {
-         {
-            type = "item",
-            name = "iron-plate",
-            amount = 5
-         },
-         {
-            type = "item",
-            name = "copper-cable",
-            amount = 2
-         },
-         {
-            type = "item",
-            name = "electronic-circuit",
-            amount = 1
-         },
-         {
-            type = "item",
-            name = "small-lamp",
-            amount = 1
-         }
-      },
-      offer = {
-         type = "nothing",
-         effect_description = "Construct a flashlight",
-      },
-   },
    {
       price = {
          {
@@ -471,19 +437,6 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 50
-         }
-      },
-      offer = {
-         type = "unlock-recipe",
-         recipe = "fast-inserter"
-      },
-   },
-   {
-      price = {
-         {
-            type = "item",
-            name = "coin",
             amount = 70
          }
       },
@@ -534,7 +487,7 @@ public.merchant_offer = {
 }
 
 public.manual = [[
-[font=heading-1]Planet Prison (1.0.2) - Manual[/font]
+[font=heading-1]Planet Prison (1.0.3) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
 
 This is an ultimate survival scenario with very hostile environment.
@@ -548,6 +501,9 @@ This is an ultimate survival scenario with very hostile environment.
 [font=heading-1]Buddies[/font]
 [font=default-bold]Grab a raw fish [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you request an inmate to become your buddy.[/font]
 [font=default-bold]Grab a coal piece [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you discard buddy status with an inname.[/font]
+
+[font=heading-1]Coins[/font]
+[font=default-bold]Coins [img=item/coin] are the main medium that you use in the market. You obtain them by researching stuff and pvp activites.[/font]
 
 [font=heading-1]Other[/font]
 [font=default-bold]This scenario was made by cogito123. If you find any bugs/balancing issues, report it to getcomfy.eu/discord. Thanks for playing this map.[/font]

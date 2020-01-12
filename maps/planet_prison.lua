@@ -135,7 +135,7 @@ local function init_game()
    _layers.set_collision_mask({"water-tile"})
    _layers.add_noise_layer("LuaTile", "concrete", {"concrete"}, 0.3, 0.2)
    _layers.add_noise_layer("LuaTile", "stones", {"stone-path"},  0.2, 0.4)
-   _layers.add_noise_layer("LuaTile", "shallows", {"water-shallow"}, 0.5, 0.005)
+   _layers.add_noise_layer("LuaTile", "shallows", {"water-shallow"}, 0.6, 0.005)
    _layers.add_noise_layer("LuaEntity", "scrap", {"mineable-wreckage"}, 0.5, 0.1)
    _layers.add_noise_layer("LuaEntity", "walls", {"stone-wall"}, 0.5, 0.09)
    _layers.add_noise_layer("LuaEntity", "hostile", {"character",
@@ -222,7 +222,7 @@ local function redraw_gui(p)
    }
    p.gui.left.add(button)
 
-   if merchant.alive and not perks.minimap then
+   if merchant.alive then
       button = {
          type = "button",
          name = "merchant_find",
@@ -231,14 +231,12 @@ local function redraw_gui(p)
       p.gui.left.add(button)
    end
 
-   if perks.flashlight then
-      button = {
-         type = "button",
-         name = "flashlight_toggle",
-         caption = "Toggle flashlight"
-      }
-      p.gui.left.add(button)
-   end
+   button = {
+      type = "button",
+      name = "flashlight_toggle",
+      caption = "Toggle flashlight"
+   }
+   p.gui.left.add(button)
 end
 
 local function print_merchant_position(player)
@@ -293,11 +291,12 @@ local function on_gui_click(e)
    end
 end
 
-local function get_random_id()
+local function get_random_name()
    while true do
       local id = _common.rand_range(1000, 9999)
-      if global.this.perks[id] == nil then
-         return id
+      local name = string.format("inmate_%d", id)
+      if global.this.perks[name] == nil then
+         return name
       end
    end
 end
@@ -307,14 +306,13 @@ local function init_player(p)
    local s = p.surface
    local position = get_non_obstructed_position(s, 10)
 
+   global.this.perks[p.name] = nil
    p.teleport(position, "arena")
-   local id = get_random_id()
-   p.name = string.format("inmate_%d", id)
+   p.name = get_random_name()
    p.force = game.create_force(p.name)
    p.force.set_friend("neutral", true)
    global.this.perks[p.name] = {
-      flashlight = false,
-      flashlight_enabled = false,
+      flashlight_enable = true,
       minimap = false,
       chat_global = true,
    }
@@ -504,7 +502,6 @@ local function on_player_died(e)
 
    local p = game.players[index]
    game.merge_forces(p.name, "neutral")
-   global.this.perks[p.name] = nil
 end
 
 local function on_player_respawned(e)
@@ -521,27 +518,38 @@ local function on_player_dropped_item(e)
    local ent = e.entity
    if ent.stack.name == "raw-fish" then
       local ent_list = p.surface.find_entities_filtered({
-         name = p.character.name,
+         name = "character",
          position = ent.position,
-         limit = 1,
          radius = 2,
       })
-      if not ent_list or not #ent_list then
+      if not ent_list then
          return
       end
 
-      local peer = ent_list[1].player
-      if p.force.get_friend(peer.force) then
+      local peer = nil
+      for _, char in pairs(ent_list) do
+         if char.player and char.player.name ~= p.name then
+            peer = char.player
+            break
+         end
+      end
+
+      if peer == nil then
+         return
+      end
+
+      if p.force.get_cease_fire(peer.name) then
          p.print(string.format("The %s is your buddy already", peer.name))
          return
       end
 
       if global.this.last_friend[peer.name] == p.name then
-         p.force.set_cease_fire(peer.force, true)
-         peer.force.set_cease_fire(p.force, true)
+         p.force.set_cease_fire(peer.name, true)
+         peer.force.set_cease_fire(p.name, true)
          p.print(string.format("%s is now your buddy", peer.name))
          peer.print(string.format("%s is now your buddy", p.name))
-         global.this.last_friend[p.name] = nil
+         global.this.last_friend[p.name] = ""
+         global.this.last_friend[peer.name] = ""
          return
       end
 
@@ -550,24 +558,36 @@ local function on_player_dropped_item(e)
       peer.print(string.format("The %s wants to be your buddy", p.name))
    elseif ent.stack.name == "coal" then
       local ent_list = p.surface.find_entities_filtered({
-         name = p.character.name,
+         name = "character",
          position = ent.position,
-         limit = 1,
-         radius = 1,
+         radius = 2,
       })
-      if not ent_list or not #ent_list then
+      if not ent_list then
          return
       end
 
-      local peer = ent_list[1].player
-      if p.force.get_friend(peer.force) then
+      local peer = nil
+      for _, char in pairs(ent_list) do
+         if char.player and char.player.name ~= p.name then
+            peer = char.player
+            break
+         end
+      end
+
+      if peer == nil then
+         return
+      end
+
+      if not p.force.get_cease_fire(peer.name) then
          p.print(string.format("The %s is not your buddy", p.name))
          return
       end
 
-      p.force.set_cease_fire(peer.force, false)
-      peer.force.set_cease_fire(p.force, false)
+      p.force.set_cease_fire(peer.name, false)
+      peer.force.set_cease_fire(p.name, false)
 
+      global.this.last_friend[p.name] = ""
+      global.this.last_friend[peer.name] = ""
       p.print(string.format("The %s is no longer your buddy", peer.name))
       peer.print(string.format("The %s is no longer your buddy", p.name))
    end
@@ -695,12 +715,7 @@ local function on_market_item_purchased(e)
    local o = m.get_market_items()[e.offer_index].offer
    local perks = global.this.perks[p.name]
 
-   if o.effect_description == "Construct a flashlight" then
-      perks.flashlight = true
-      perks.flashlight_enable = true
-      p.character.enable_flashlight()
-      redraw_gui(p)
-   elseif o.effect_description == "Construct a GPS receiver" then
+   if o.effect_description == "Construct a GPS receiver" then
       perks.minimap = true
       p.minimap_enabled = true
    end
