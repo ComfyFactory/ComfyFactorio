@@ -6,6 +6,7 @@ local _common = require("planet_prison.mod.common")
 local _layers = require("planet_prison.mod.layers")
 local _ai = require("planet_prison.mod.ai")
 local _bp = require("planet_prison.mod.bp")
+local _afk = require("planet_prison.mod.afk")
 global.this._config = require("planet_prison.config")
 
 global.this.maps = {
@@ -531,6 +532,10 @@ local function unlink_old_blueprints(name)
    end
 end
 
+local function kill_player(p)
+   p.character.die()
+end
+
 local function on_tick()
    local s = global.this.surface
    if not s then
@@ -549,6 +554,10 @@ local function on_tick()
 
    _layers.do_job(surf)
    cause_event(s)
+
+   if (game.tick + 1) % 100 == 0 then
+      _afk.on_inactive_players(90, kill_player)
+   end
 end
 
 local function make_ore_patch(e)
