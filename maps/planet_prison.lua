@@ -265,41 +265,41 @@ local function do_spawn_point(player)
 end
 
 local function get_non_obstructed_position(s, radius)
-   while true do
-      local chunk = s.get_random_chunk()
+   local chunk
+
+   for i = 1, 32 do
+      chunk = s.get_random_chunk()
       chunk.x = chunk.x * 32
       chunk.y = chunk.y * 32
 
-      for x = 1, radius do
-         for y = 1, radius do
-            local tile = s.get_tile({chunk.x + x, chunk.y + y})
-            if not tile.collides_with("ground-tile") then
-               goto continue
-            end
+      local search_info = {
+         position = chunk,
+         radius = radius,
+      }
+
+      local tiles = s.find_tiles_filtered(search_info)
+      for _, tile in pairs(tiles) do
+         if string.find(tile.name, "water") ~= nil
+         or string.find(tile.name, "out") ~= nil then
+            goto continue
          end
       end
 
-      local search_info = {
+      search_info = {
          position = chunk,
          radius = radius,
          force = {"neutral", "enemy"},
          invert = true
       }
       local ents = s.find_entities_filtered(search_info)
-      if not ents then
-         return chunk
-      end
-
-      if #ents == 0 then
-         return chunk
-      end
-
-      if ents[1].name == "character" then
-         return chunk
+      if not ents or #ents == 0 then
+         break
       end
 
       ::continue::
    end
+
+   return chunk
 end
 
 local function redraw_gui(p)
