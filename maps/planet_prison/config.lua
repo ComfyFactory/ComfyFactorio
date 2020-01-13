@@ -31,6 +31,8 @@ public.player_ship_loot = {
    }
 }
 
+public.self_explode = 60 * 60 * 10
+
 public.wreck_loot = {
    ["iron-plate"] = {
       rare = 0.1,

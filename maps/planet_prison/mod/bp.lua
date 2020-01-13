@@ -196,6 +196,45 @@ public.destroy_references = function(surf, name)
    public.destroy_references_filtered(surf, name, {})
 end
 
+local function _destroy_reference(surf, ref)
+   for _, ent in pairs(ref.entities) do
+      if ent.valid then
+         ent.destroy()
+      end
+   end
+
+   local tiles = {}
+   for _, tile in pairs(ref.tiles) do
+      if tile.valid then
+         goto continue
+      end
+
+      tile.name = "concrete"
+      table.insert(tiles, tile)
+      ::continue::
+   end
+
+   surf.set_tiles(tiles)
+end
+
+--[[
+destroy_reference - Destroys reference of a blueprint at given surface.
+@param surf - Surface on which blueprints are placed.
+@param reference - Any valid reference.
+--]]
+public.destroy_reference = function(surf, reference)
+   for _, meta in pairs(this._bps) do
+      for i = 1, #meta.refs do
+         local ref = meta.refs[i]
+         if reference.id == ref.id then
+            _destroy_reference(surf, ref)
+            table.remove(meta.refs, i)
+            return
+         end
+      end
+   end
+end
+
 local function _build_tiles(surf, point, tiles)
    local _tiles = {}
 

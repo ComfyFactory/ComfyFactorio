@@ -265,4 +265,25 @@ public.merge_bounding_boxes = function(bbs)
    return box
 end
 
+--[[
+get_time - Return strigified time of a tick.
+@param ticks - Just a ticks.
+--]]
+public.get_time = function(ticks)
+   local seconds = math.floor((ticks / 60) % 60)
+   local minutes = math.floor((ticks / 60 / 60) % 60)
+   local hours = math.floor(ticks / 60 / 60 / 60)
+
+   local time
+   if hours > 0 then
+      time = string.format("%02d:%01d:%02d", hours, minutes, seconds)
+   elseif minutes > 0 then
+      time = string.format("%02d:%02d", minutes, seconds)
+   else
+      time = string.format("00:%02d", seconds)
+   end
+
+   return time
+end
+
 return public

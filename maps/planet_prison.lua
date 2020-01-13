@@ -2,6 +2,7 @@ global.this = {}
 local _global = require("utils.global")
 local _evt = require("utils.event")
 local _map = require("tools.map_functions")
+local _timers = require("planet_prison.mod.timers")
 local _common = require("planet_prison.mod.common")
 local _layers = require("planet_prison.mod.layers")
 local _ai = require("planet_prison.mod.ai")
@@ -233,6 +234,7 @@ local function init_game()
    game.difficulty_settings.technology_price_multiplier = 0.1
    game.difficulty_settings.research_queue_setting = "always"
 
+   _timers.init()
    _layers.init()
    _layers.set_collision_mask({"water-tile"})
 
@@ -255,6 +257,41 @@ local function init_game()
    _bp.set_blueprint_hook("merchant", init_merchant_bp)
 end
 
+local function explode_ship(deps)
+   local bp = deps.modules.bp
+   local layers = deps.modules.layers
+   for _, ent in pairs(bp.reference_get_entities(deps.ship)) do
+      if not ent.valid then
+         goto continue
+      end
+
+      local explosion = {
+         name = "massive-explosion",
+         position = ent.position
+      }
+      deps.surf.create_entity(explosion)
+
+      ::continue::
+   end
+
+   local bb = bp.reference_get_bounding_box(deps.ship)
+   layers.remove_excluding_bounding_box(bb)
+   bp.destroy_reference(deps.surf, deps.ship)
+   rendering.destroy(deps.id)
+end
+
+local function explode_ship_update(left, deps)
+   local common = deps.modules.common
+   for _, ent in pairs(deps.ship.entities) do
+      if not ent.valid then
+         return false
+      end
+   end
+
+   rendering.set_text(deps.id, common.get_time(left))
+   return true
+end
+
 local function do_spawn_point(player)
    local point = {
       x = _common.get_axis(player.position, "x"),
@@ -262,6 +299,38 @@ local function do_spawn_point(player)
    }
    local instance = _bp.build(player.surface, "player_ship", point, player)
    _layers.push_excluding_bounding_box(instance.bb)
+
+   local left = global.this._config.self_explode
+   local object = {
+      text = _common.get_time(left),
+      surface = player.surface,
+      color = {
+         r = 255,
+         g = 20,
+         b = 20
+      },
+      target = {
+         x = point.x - 2,
+         y = point.y - 3,
+      },
+      scale = 2.0
+   }
+
+   local entry = {
+      id = rendering.draw_text(object),
+      ship = instance,
+      modules = {
+         bp = _bp,
+         layers = _layers,
+         common = _common,
+         timers = _timers,
+      },
+      surf = player.surface,
+   }
+   local timer = _timers.set_timer(left, explode_ship)
+   _timers.set_timer_on_update(timer, explode_ship_update)
+   _timers.set_timer_dependency(timer, entry)
+   _timers.set_timer_start(timer)
 end
 
 local function get_non_obstructed_position(s, radius)
@@ -520,18 +589,6 @@ local function cause_event(s)
    merchant_event(s)
 end
 
-local function unlink_old_blueprints(name)
-   local query = {
-      timestamp = game.tick,
-   }
-
-   local refs = _bp.unlink_references_filtered(name, query)
-   for _, ref in pairs(refs) do
-      local bb = _bp.reference_get_bounding_box(ref)
-      _layers.remove_excluding_bounding_box(bb)
-   end
-end
-
 local function kill_player(p)
    p.character.die()
 end
@@ -548,15 +605,15 @@ local function on_tick()
       _ai.do_job(surf, _ai.command.seek_and_destroy_player)
    end
 
-   if (game.tick + 1) % 500 == 0 then
-      unlink_old_blueprints("player_ship")
-   end
-
    _layers.do_job(surf)
    cause_event(s)
 
    if (game.tick + 1) % 100 == 0 then
       _afk.on_inactive_players(90, kill_player)
+   end
+
+   if (game.tick + 1) % 60 == 0 then
+      _timers.do_job()
    end
 end
 
