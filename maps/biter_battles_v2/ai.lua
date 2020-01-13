@@ -42,13 +42,36 @@ local function get_active_biter_count(biter_force_name)
 	return count
 end
 
-local function set_biter_raffle_table(surface, biter_force_name)
+local unit_evo_limits = {
+	["small-spitter"] = 0.6,
+	["small-biter"] = 0.6,
+	["medium-spitter"] = 0.8,
+	["medium-biter"] = 0.8,
+	["big-spitter"] = 2,
+	["big-biter"] = 2,
+}
+
+function Public.set_biter_raffle_table()
+	local surface = game.surfaces["biter_battles"]
+	local biter_force_name = global.next_attack .. "_biters"
 	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name})
-	if not biters[1] then return end
+	if not biters[5] then return end
 	global.biter_raffle[biter_force_name] = {}
-	for _, e in pairs(biters) do
-		if math_random(1,3) == 1 then
-			global.biter_raffle[biter_force_name][#global.biter_raffle[biter_force_name] + 1] = e.name
+	local raffle = global.biter_raffle[biter_force_name]
+	local i = 1
+	local evolution_factor = global.bb_evolution[biter_force_name]
+	
+	for key, e in pairs(biters) do
+		if key % 5 == 0 then
+			if unit_evo_limits[e.name] then
+				if evolution_factor < unit_evo_limits[e.name] then
+					raffle[i] = e.name
+					i = i + 1
+				end
+			else
+				raffle[i] = e.name
+				i = i + 1
+			end		
 		end
 	end				
 end
@@ -153,17 +176,20 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	end
 	
 	--Manual spawning of additional units
-	for c = 1, max_unit_count - unit_count, 1 do
-		if threat < 0 then break end
-		local biter_name = global.biter_raffle[biter_force_name][math_random(1, #global.biter_raffle[biter_force_name])]
-		local position = spawner.surface.find_non_colliding_position(biter_name, spawner.position, 128, 2)
-		if not position then break end
-		
-		local biter = spawner.surface.create_entity({name = biter_name, force = biter_force_name, position = position})
-		threat = threat - threat_values[biter.name]
-		
-		valid_biters[#valid_biters + 1] = biter
-		global.active_biters[biter.force.name][biter.unit_number] = {entity = biter, active_since = game.tick}
+	local size_of_biter_raffle = #global.biter_raffle[biter_force_name]
+	if size_of_biter_raffle > 0 then
+		for c = 1, max_unit_count - unit_count, 1 do
+			if threat < 0 then break end
+			local biter_name = global.biter_raffle[biter_force_name][math_random(1, size_of_biter_raffle)]
+			local position = spawner.surface.find_non_colliding_position(biter_name, spawner.position, 128, 2)
+			if not position then break end
+			
+			local biter = spawner.surface.create_entity({name = biter_name, force = biter_force_name, position = position})
+			threat = threat - threat_values[biter.name]
+			
+			valid_biters[#valid_biters + 1] = biter
+			global.active_biters[biter.force.name][biter.unit_number] = {entity = biter, active_since = game.tick}
+		end
 	end
 	
 	if global.bb_debug then game.print(get_active_biter_count(biter_force_name) .. " active units for " .. biter_force_name) end
@@ -300,8 +326,6 @@ Public.main_attack = function()
 		local biter_force_name = force_name .. "_biters"
 		local wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
 		
-		set_biter_raffle_table(surface, biter_force_name)
-		
 		for c = 1, wave_amount, 1 do		
 			create_attack_group(surface, force_name, biter_force_name)
 		end
@@ -332,6 +356,7 @@ Public.wake_up_sleepy_groups = function()
 							if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
 							send_group(unit_group, force_name, nearest_player_unit)
 							print("BiterBattles: Woke up Unit Group at x" .. unit_group.position.x .. " y" .. unit_group.position.y .. ".")
+							return
 						end
 					end
 				end
