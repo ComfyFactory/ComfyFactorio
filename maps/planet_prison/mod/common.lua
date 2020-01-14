@@ -1,6 +1,7 @@
-local public, this = {}, {}
+local public = {}
 local _global = require("utils.global")
-_global.register(this, function(t) this = t end)
+global.this = {}
+_global.register(global.this, function(t) global.this = t end)
 
 --[[
 rand_range - Return random integer within the range.
@@ -8,11 +9,11 @@ rand_range - Return random integer within the range.
 @param stop - Stop range.
 --]]
 public.rand_range = function(start, stop)
-   if not this.rng then
-      this.rng = game.create_random_generator()
+   if not global.this.rng then
+      global.this.rng = game.create_random_generator()
    end
 
-   return this.rng(start, stop)
+   return global.this.rng(start, stop)
 end
 
 --[[
