@@ -321,6 +321,7 @@ public.build = function(surf, name, point, args)
    end
 
    instance.bb = _common.merge_bounding_boxes(bbs)
+   instance.id = game.tick
    table.insert(object.refs, instance)
 
    return instance
