@@ -1,16 +1,16 @@
 local public = {}
-global.this = {}
-local _global = require("utils.global")
 local _common = require(".common")
 local _simplex = require(".simplex_noise")
 
-_global.register(global.this, function(t) global.this = t end)
-global.this._grid = {}
-global.this._exclusions = {}
-global.this._layers = {}
-global.this._collision_mask = {}
-
 public.init = function()
+   if global.this == nil then
+      global.this = {}
+   end
+
+   global.this._grid = {}
+   global.this._exclusions = {}
+   global.this._layers = {}
+   global.this._collision_mask = {}
    _simplex.init()
 end
 --[[

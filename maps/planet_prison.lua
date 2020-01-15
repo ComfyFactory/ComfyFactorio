@@ -221,6 +221,12 @@ global.this.bp = {
    merchant = require("planet_prison.bp.merchant")
 }
 local function init_game()
+   _common.init()
+   _layers.init()
+   _bp.init()
+   _ai.init()
+   _timers.init()
+
    local map = pick_map()
    local preset = global.this.presets[map.name]
    global.this.surface = game.create_surface("arena", map)
@@ -234,8 +240,6 @@ local function init_game()
    game.difficulty_settings.technology_price_multiplier = 0.1
    game.difficulty_settings.research_queue_setting = "always"
 
-   _timers.init()
-   _layers.init()
    _layers.set_collision_mask({"water-tile"})
 
    for _, layer in pairs(preset) do
@@ -324,6 +328,7 @@ local function do_spawn_point(player)
          layers = _layers,
          common = _common,
          timers = _timers,
+         func = _bp.destroy_reference,
       },
       surf = player.surface,
    }

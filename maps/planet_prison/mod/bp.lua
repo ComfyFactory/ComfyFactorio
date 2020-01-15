@@ -1,9 +1,13 @@
-local this, public = {}, {}
-local _global = require("utils.global")
+local public = {}
 local _common = require(".common")
 
-_global.register(this, function(t) this = t end)
-this._bps = {}
+public.init = function()
+   if global.this == nil then
+      global.this = {}
+   end
+
+   global.this._bps = {}
+end
 
 --[[
 push_blueprint - Pushes blueprint into a list.
@@ -16,7 +20,7 @@ public.push_blueprint = function(name, bp)
       hook = nil,
       refs = {}
    }
-   this._bps[name] = entry
+   global.this._bps[name] = entry
 end
 
 --[[
@@ -30,12 +34,12 @@ public.set_blueprint_hook = function(name, hook)
       return
    end
 
-   if this._bps[name] == nil then
+   if global.this._bps[name] == nil then
       log("bp.set_blueprint_hook: unrecognized blueprint")
       return
    end
 
-   this._bps[name].hook = hook
+   global.this._bps[name].hook = hook
 end
 
 --[[
@@ -48,7 +52,7 @@ public.get_references = function(name)
       return {}
    end
 
-   local object = this._bps[name]
+   local object = global.this._bps[name]
    if object == nil then
       log("bp.get_references: unrecognized blueprint")
       return {}
@@ -67,7 +71,7 @@ public.get_references = function(name)
       return
    end
 
-   local object = this._bps[name]
+   local object = global.this._bps[name]
    if object == nil then
       log("bp.get_references: unrecognized blueprint")
       return
@@ -116,7 +120,7 @@ public.unlink_references_filtered = function(name, query)
       return
    end
 
-   local object = this._bps[name]
+   local object = global.this._bps[name]
    if object == nil then
       log("bp.get_references: unrecognized blueprint")
       return
@@ -154,7 +158,7 @@ public.destroy_references_filtered = function(surf, name, query)
       return
    end
 
-   local object = this._bps[name]
+   local object = global.this._bps[name]
    if object == nil then
       log("bp.get_references: unrecognized blueprint")
       return
@@ -196,7 +200,7 @@ public.destroy_references = function(surf, name)
    public.destroy_references_filtered(surf, name, {})
 end
 
-local function _destroy_reference(surf, ref)
+global._bp_destroy_reference = function(surf, ref)
    for _, ent in pairs(ref.entities) do
       if ent.valid then
          ent.destroy()
@@ -223,11 +227,11 @@ destroy_reference - Destroys reference of a blueprint at given surface.
 @param reference - Any valid reference.
 --]]
 public.destroy_reference = function(surf, reference)
-   for _, meta in pairs(this._bps) do
+   for _, meta in pairs(global.this._bps) do
       for i = 1, #meta.refs do
          local ref = meta.refs[i]
          if reference.id == ref.id then
-            _destroy_reference(surf, ref)
+            global._bp_destroy_reference(surf, ref)
             table.remove(meta.refs, i)
             return
          end
@@ -301,7 +305,7 @@ public.build = function(surf, name, point, args)
       return
    end
 
-   local object = this._bps[name]
+   local object = global.this._bps[name]
    if object == nil then
       log("bp.set_blueprint_hook: unrecognized blueprint")
       return

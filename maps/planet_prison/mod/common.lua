@@ -1,7 +1,10 @@
 local public = {}
-local _global = require("utils.global")
-global.this = {}
-_global.register(global.this, function(t) global.this = t end)
+
+public.init = function()
+   if global.this == nil then
+      global.this = {}
+   end
+end
 
 --[[
 rand_range - Return random integer within the range.

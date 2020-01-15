@@ -1,5 +1,5 @@
 local public = {}
-local _global = require("utils.global")
+local _global = require('utils.global')
 
 public.init = function()
    if global.this == nil then
