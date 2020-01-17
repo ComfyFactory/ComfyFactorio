@@ -794,6 +794,29 @@ local function on_entity_damaged(e)
       ent.force.set_friend(e.force, false)
       e.force.set_friend(ent.force, false)
    end
+
+   if ent.name == "character" then
+      local hp = 1.0 - ent.get_health_ratio()
+      local particles = 45 * hp
+      local coeff = _common.rand_range(-20, 20) / 100.0
+      for i = 1, particles do
+         local blood = {
+            name = "blood-particle",
+            position = {
+               x = ent.position.x,
+               y = ent.position.y,
+            },
+            movement = {
+               (_common.rand_range(-20, 20) / 100.0) + coeff,
+               (_common.rand_range(-20, 20) / 100.0) + coeff,
+            },
+            frame_speed = 0.01,
+            vertical_speed = 0.02,
+            height = 0.01,
+         }
+         ent.surface.create_entity(blood)
+      end
+   end
 end
 
 local function merchant_death(e)
@@ -843,6 +866,19 @@ local function hostile_death(e)
    return true
 end
 
+local function character_death(e)
+   local ent = e.entity
+   if ent.name ~= "character" then
+      return false
+   end
+
+   local explosion = {
+      name = "blood-explosion-big",
+      position = ent.position,
+   }
+   ent.surface.create_entity(explosion)
+end
+
 local function on_entity_died(e)
    if not e.entity.valid then
       return
@@ -853,6 +889,7 @@ local function on_entity_died(e)
    end
 
    hostile_death(e)
+   character_death(e)
 end
 
 
