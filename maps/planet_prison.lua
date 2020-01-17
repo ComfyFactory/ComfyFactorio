@@ -104,8 +104,8 @@ local industrial_zone_layers = {
       objects = {
          "water-shallow",
       },
-      elevation = 0.6,
-      resolution = 0.005,
+      elevation = 0.7,
+      resolution = 0.01,
       hook = nil,
       deps = nil,
    },
