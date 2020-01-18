@@ -8,6 +8,7 @@ local _layers = require("planet_prison.mod.layers")
 local _ai = require("planet_prison.mod.ai")
 local _bp = require("planet_prison.mod.bp")
 local _afk = require("planet_prison.mod.afk")
+local _claims = require("planet_prison.mod.claims")
 global.this._config = require("planet_prison.config")
 
 global.this.maps = {
@@ -226,6 +227,8 @@ local function init_game()
    _bp.init()
    _ai.init()
    _timers.init()
+   _claims.init(global.this._config.claim_markers,
+                global.this._config.claim_max_distance)
 
    local map = pick_map()
    local preset = global.this.presets[map.name]
@@ -378,6 +381,14 @@ local function get_non_obstructed_position(s, radius)
    end
 
    return chunk
+end
+
+local function switchable_perk(caption, status)
+   if status then
+      return string.format("[color=0,80,0]%s[/color]", caption)
+   end
+
+   return string.format("[color=80,0,0]%s[/color]", caption)
 end
 
 local function redraw_gui(p)
@@ -649,7 +660,7 @@ local function on_chunk_generated(e)
    _layers.push_chunk(e.position)
 end
 
-local function on_player_mined_entity(e)
+local function mined_wreckage(e)
    if e.entity.name ~= "mineable-wreckage" then
       return
    end
@@ -674,6 +685,16 @@ local function on_player_mined_entity(e)
 
    local cand = candidates[_common.rand_range(1, count)]
    e.buffer.insert(cand)
+end
+
+local function on_player_mined_entity(e)
+   local ent = e.entity
+   if not ent.valid then
+      return
+   end
+
+   mined_wreckage(e)
+   _claims.on_player_mined_entity(ent)
 end
 
 local function on_player_died(e)
@@ -894,6 +915,7 @@ local function on_entity_died(e)
 
    hostile_death(e)
    character_death(e)
+   _claims.on_entity_died(e.entity)
 end
 
 
@@ -929,6 +951,7 @@ local function on_built_entity(e)
       return
    end
 
+   _claims.on_built_entity(ent)
    merchant_exploit_check(ent)
 end
 

@@ -36,6 +36,11 @@ public.player_ship_loot = {
 }
 
 public.self_explode = 60 * 60 * 10
+public.claim_markers = {
+   "gun-turret",
+   "laser-turret",
+}
+public.claim_max_distance = 15
 
 public.wreck_loot = {
    ["iron-plate"] = {
