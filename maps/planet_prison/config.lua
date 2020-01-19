@@ -2,8 +2,12 @@ local public = {}
 
 public.player_ship_loot = {
    {
-      name = "firearm-magazine",
-      count = 60,
+      name = "piercing-rounds-magazine",
+      count = 35,
+   },
+   {
+      name = "grenade",
+      count = 2,
    },
    {
       name = "submachine-gun",
@@ -30,6 +34,8 @@ public.player_ship_loot = {
       count = 1
    }
 }
+
+public.self_explode = 60 * 60 * 10
 
 public.wreck_loot = {
    ["iron-plate"] = {
@@ -104,13 +110,6 @@ public.technologies = {
    ["explosive-rocketry"] = false,
    ["flamethrower"] = false,
    ["fusion-reactor-equipment"] = false,
-   ["inserter-capacity-bonus-1"] = false,
-   ["inserter-capacity-bonus-2"] = false,
-   ["inserter-capacity-bonus-3"] = false,
-   ["inserter-capacity-bonus-4"] = false,
-   ["inserter-capacity-bonus-5"] = false,
-   ["inserter-capacity-bonus-6"] = false,
-   ["inserter-capacity-bonus-7"] = false,
    ["kovarex-enrichment-process"] = false,
    ["land-mine"] = false,
    ["logistics-3"] = false,
@@ -140,6 +139,27 @@ public.technologies = {
    ["stronger-explosives-5"] = false,
    ["stronger-explosives-6"] = false,
    ["stronger-explosives-7"] = false,
+   ["physical-projectile-damage-4"] = false,
+   ["physical-projectile-damage-5"] = false,
+   ["physical-projectile-damage-6"] = false,
+   ["physical-projectile-damage-7"] = false,
+   ["weapon-shooting-speed-4"] = false,
+   ["weapon-shooting-speed-5"] = false,
+   ["weapon-shooting-speed-6"] = false,
+   ["energy-weapons-damage-1"] = false,
+   ["energy-weapons-damage-2"] = false,
+   ["energy-weapons-damage-3"] = false,
+   ["energy-weapons-damage-4"] = false,
+   ["energy-weapons-damage-5"] = false,
+   ["energy-weapons-damage-6"] = false,
+   ["energy-weapons-damage-7"] = false,
+   ["laser-turret-speed-1"] = false,
+   ["laser-turret-speed-2"] = false,
+   ["laser-turret-speed-3"] = false,
+   ["laser-turret-speed-4"] = false,
+   ["laser-turret-speed-5"] = false,
+   ["laser-turret-speed-6"] = false,
+   ["laser-turret-speed-7"] = false,
    ["tanks"] = false,
    ["uranium-ammo"] = false,
    ["uranium-processing"] = false,
@@ -190,12 +210,12 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 500
+            amount = 100
          }
       },
       offer = {
-         type = "unlock-recipe",
-         recipe = "modular-armor"
+         type = "give-item",
+         item = "heavy-armor"
       }
    },
    {
@@ -203,25 +223,25 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 5000
+            amount = 500
+         }
+      },
+      offer = {
+         type = "give-item",
+         item = "modular-armor"
+      }
+   },
+   {
+      price = {
+         {
+            type = "item",
+            name = "coin",
+            amount = 12000
          }
       },
       offer = {
          type = "give-item",
          item = "power-armor"
-      }
-   },
-   {
-      price = {
-         {
-            type = "item",
-            name = "coin",
-            amount = 10000
-         }
-      },
-      offer = {
-         type = "give-item",
-         item = "power-armor-mk2"
       }
    },
    {
@@ -268,7 +288,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 300
+            amount = 700
          }
       },
       offer = {
@@ -287,19 +307,6 @@ public.merchant_offer = {
       offer = {
          type = "give-item",
          item = "fusion-reactor-equipment"
-      }
-   },
-   {
-      price = {
-         {
-            type = "item",
-            name = "coin",
-            amount = 1000
-         }
-      },
-      offer = {
-         type = "give-item",
-         item = "personal-laser-defense-equipment"
       }
    },
    {
@@ -346,7 +353,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 100
+            amount = 300
          }
       },
       offer = {
@@ -359,7 +366,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 400
+            amount = 2000
          }
       },
       offer = {
@@ -372,12 +379,38 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 20
+            amount = 50
          }
       },
       offer = {
          type = "give-item",
          item = "flamethrower-ammo"
+      }
+   },
+   {
+      price = {
+         {
+            type = "item",
+            name = "coin",
+            amount = 1
+         }
+      },
+      offer = {
+         type = "give-item",
+         item = "firearm-magazine"
+      }
+   },
+   {
+      price = {
+         {
+            type = "item",
+            name = "coin",
+            amount = 5
+         }
+      },
+      offer = {
+         type = "give-item",
+         item = "piercing-rounds-magazine"
       }
    },
    {
@@ -398,7 +431,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 100
+            amount = 50
          }
       },
       offer = {
@@ -487,7 +520,7 @@ public.merchant_offer = {
 }
 
 public.manual = [[
-[font=heading-1]Planet Prison (1.0.3) - Manual[/font]
+[font=heading-1]Planet Prison (1.0.4) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
 
 This is an ultimate survival scenario with very hostile environment.
@@ -498,9 +531,9 @@ This is an ultimate survival scenario with very hostile environment.
 - Flee by a rocket is a win. (Put a car into a rocket and enter the rocket).
 - The light is your best friend.
 [/font]
-[font=heading-1]Buddies[/font]
-[font=default-bold]Grab a raw fish [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you request an inmate to become your buddy.[/font]
-[font=default-bold]Grab a coal piece [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you discard buddy status with an inname.[/font]
+[font=heading-1]NAP contractors (A non-aggression pact)[/font]
+[font=default-bold]Grab a raw fish [img=item/raw-fish] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you request an inmate to get in NAP with you.[/font]
+[font=default-bold]Grab a coal piece [img=item/coal] and drop it on someone with [virtual-signal=signal-Z] button (in default setting). This way you discard NAP with an inname.[/font]
 
 [font=heading-1]Coins[/font]
 [font=default-bold]Coins [img=item/coin] are the main medium that you use in the market. You obtain them by researching stuff and pvp activites.[/font]

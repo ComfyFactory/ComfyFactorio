@@ -1,6 +1,10 @@
-local public, this = {}, {}
-local _global = require("utils.global")
-_global.register(this, function(t) this = t end)
+local public = {}
+
+public.init = function()
+   if global.this == nil then
+      global.this = {}
+   end
+end
 
 --[[
 rand_range - Return random integer within the range.
@@ -8,11 +12,11 @@ rand_range - Return random integer within the range.
 @param stop - Stop range.
 --]]
 public.rand_range = function(start, stop)
-   if not this.rng then
-      this.rng = game.create_random_generator()
+   if not global.this.rng then
+      global.this.rng = game.create_random_generator()
    end
 
-   return this.rng(start, stop)
+   return global.this.rng(start, stop)
 end
 
 --[[
@@ -262,6 +266,27 @@ public.merge_bounding_boxes = function(bbs)
    end
 
    return box
+end
+
+--[[
+get_time - Return strigified time of a tick.
+@param ticks - Just a ticks.
+--]]
+public.get_time = function(ticks)
+   local seconds = math.floor((ticks / 60) % 60)
+   local minutes = math.floor((ticks / 60 / 60) % 60)
+   local hours = math.floor(ticks / 60 / 60 / 60)
+
+   local time
+   if hours > 0 then
+      time = string.format("%02d:%01d:%02d", hours, minutes, seconds)
+   elseif minutes > 0 then
+      time = string.format("%02d:%02d", minutes, seconds)
+   else
+      time = string.format("00:%02d", seconds)
+   end
+
+   return time
 end
 
 return public

@@ -1,8 +1,5 @@
-local public, this = {}, {}
-local _global = require("utils.global")
+local public = {}
 local _common = require(".common")
-
-_global.register(this, function(t) this = t end)
 
 public.command = {
    --[[
@@ -15,6 +12,15 @@ public.command = {
    --]]
    seek_and_destroy_player = 1,
 }
+
+--[[
+init - Initialize the module.
+--]]
+public.init = function()
+   if global.this == nil then
+      global.this = {}
+   end
+end
 
 local function _get_direction(src, dest)
    local src_x = _common.get_axis(src, "x")
