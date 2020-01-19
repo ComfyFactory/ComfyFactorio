@@ -1,15 +1,20 @@
---biters may revive depending of global.biter_reanimator["biter force index"]
+--biters may revive depending of global.biter_reanimator.forces["biter force index"]
 --0 = no extra life
 --0.25 = 25% chance for another life
 --1.5 = 1 extra life + 50% chance of another life
 --3 = 3 extra lifes
 
 local math_random = math.random
-local math_floor = math.floor
-local math_sqrt = math.sqrt
+
+local function register_unit(unit, extra_lifes, unit_group)
+	if global.biter_reanimator.units[unit.unit_number] then return end
+	global.biter_reanimator.units[unit.unit_number] = {extra_lifes, unit_group}
+	--game.print("bitey number " .. unit.unit_number .. ", i have " .. extra_lifes .. " extra lives left!")
+end
 
 local function reanimate(entity)
-	local extra_lifes = global.biter_reanimator.units[entity.unit_number]
+	local extra_lifes = global.biter_reanimator.units[entity.unit_number][1]
+	local unit_group = global.biter_reanimator.units[entity.unit_number][2]
 	
 	if extra_lifes <= 0 then
 		global.biter_reanimator.units[entity.unit_number] = nil
@@ -23,11 +28,10 @@ local function reanimate(entity)
 		end
 	end
 
-	local revived_entity = entity.clone({position = entity.position, surface = entity.surface, force = entity.force})
-	local unit_group = entity.unit_group
+	local revived_entity = entity.clone({position = entity.position, surface = entity.surface, force = entity.force})	
+	register_unit(revived_entity, extra_lifes - 1, unit_group)
 	if unit_group then unit_group.add_member(revived_entity) end
 	
-	global.biter_reanimator.units[revived_entity.unit_number] = extra_lifes - 1
 	global.biter_reanimator.units[entity.unit_number] = nil
 end
 
@@ -35,15 +39,22 @@ local function on_entity_died(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if entity.type ~= "unit" then return end
-	
-	if not global.biter_reanimator.units[entity.unit_number] then
-		local extra_lifes = global.biter_reanimator.forces[entity.force.index]
-		if not extra_lifes then return end
-		if extra_lifes <= 0 then return end		
-		global.biter_reanimator.units[entity.unit_number] = extra_lifes
+	local extra_lifes = 0
+	if global.biter_reanimator.forces[entity.force.index] then
+		extra_lifes = global.biter_reanimator.forces[entity.force.index]
 	end
-		
+	register_unit(entity, extra_lifes, false)	
 	reanimate(entity)
+end
+
+local function on_unit_added_to_group(event)
+	local unit = event.unit
+	local group = event.group
+	local extra_lifes = 0
+	if global.biter_reanimator.forces[unit.force.index] then
+		extra_lifes = global.biter_reanimator.forces[unit.force.index]
+	end
+	register_unit(unit, extra_lifes, group)
 end
 
 local function on_init()
@@ -55,3 +66,4 @@ end
 local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_unit_added_to_group, on_unit_added_to_group)
