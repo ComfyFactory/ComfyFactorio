@@ -1,7 +1,7 @@
 -- Biter Battles v2 -- by MewMew
 
+require "modules.biter_reanimator"
 local Ai = require "maps.biter_battles_v2.ai"
-local BiterHealthBooster = require "modules.biter_health_booster"
 local Biters_landfill = require "maps.biter_battles_v2.biters_landfill"
 local Chat = require "maps.biter_battles_v2.chat"
 local Combat_balance = require "maps.biter_battles_v2.combat_balance"

@@ -141,6 +141,7 @@ function Public.forces()
 	global.spy_fish_timeout = {}
 	global.force_area = {}
 	global.active_biters = {}
+	global.unit_groups = {}
 	global.biter_raffle = {}
 	global.evo_raise_counter = 1
 	global.next_attack = "north"

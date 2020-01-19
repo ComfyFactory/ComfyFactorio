@@ -102,7 +102,23 @@ local function is_biter_inactive(biter, unit_number, biter_force_name)
 	return true
 end
 
-Public.destroy_inactive_biters = function()	
+local function set_active_biters(group)
+	if not group.valid then return end
+	local active_biters = global.active_biters[group.force.name]
+	
+	for _, unit in pairs(group.members) do
+		if not active_biters[unit.unit_number] then
+			active_biters[unit.unit_number] = {entity = unit, active_since = game.tick}
+		end
+	end
+end
+
+Public.destroy_inactive_biters = function()
+	for _, group in pairs(global.unit_groups) do
+		if not set_active_biters(group) then
+			
+		end
+	end
 	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
 		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
 			if is_biter_inactive(biter, unit_number, biter_force_name) then
@@ -279,10 +295,10 @@ local function get_unit_group_position(surface, nearest_player_unit, spawner)
 end
 
 local function get_active_threat(biter_force_name)
-	local active_threat = 0
+	local active_threat = 0	
 	for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
 		if biter.entity then 
-			if biter.entity.valid then 
+			if biter.entity.valid then
 				active_threat = active_threat + threat_values[biter.entity.name]
 			end
 		end
@@ -316,6 +332,8 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	local unit_group = surface.create_unit_group({position = unit_group_position, force = biter_force_name})
 	for _, unit in pairs(units) do unit_group.add_member(unit) end
 	send_group(unit_group, force_name, nearest_player_unit)
+	
+	global.unit_groups[unit_group.group_number] = unit_group
 end
 
 Public.main_attack = function()
@@ -387,7 +405,9 @@ function Public.subtract_threat(entity)
 	if entity.type == "unit" then
 		global.active_biters[entity.force.name][entity.unit_number] = nil
 	end
+	
 	global.bb_threat[entity.force.name] = global.bb_threat[entity.force.name] - threat_values[entity.name]
+	
 	return true
 end
 

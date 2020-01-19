@@ -29,10 +29,12 @@ local function reanimate(entity)
 	end
 
 	local revived_entity = entity.clone({position = entity.position, surface = entity.surface, force = entity.force})	
+	revived_entity.health = revived_entity.prototype.max_health
 	register_unit(revived_entity, extra_lifes - 1, unit_group)
 	if unit_group then unit_group.add_member(revived_entity) end
 	
 	global.biter_reanimator.units[entity.unit_number] = nil
+	entity.destroy()
 end
 
 local function on_entity_died(event)	
@@ -50,11 +52,12 @@ end
 local function on_unit_added_to_group(event)
 	local unit = event.unit
 	local group = event.group
-	local extra_lifes = 0
-	if global.biter_reanimator.forces[unit.force.index] then
-		extra_lifes = global.biter_reanimator.forces[unit.force.index]
-	end
-	register_unit(unit, extra_lifes, group)
+	local extra_lifes = global.biter_reanimator.forces[unit.force.index]
+	if extra_lifes then
+		register_unit(unit, extra_lifes, group)
+	else
+		register_unit(unit, 0, group)
+	end	
 end
 
 local function on_init()
