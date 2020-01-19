@@ -909,7 +909,7 @@ local function merchant_exploit_check(ent)
    local query = {
       type = "electric-pole",
       position = bp_ent.position,
-      radius = 15
+      radius = 18
    }
    local ents = surf.find_entities_filtered(query)
    for _, s_ent in pairs(ents) do
