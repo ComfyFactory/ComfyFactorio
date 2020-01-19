@@ -1,16 +1,16 @@
 local public = {}
-global.this = {}
-local _global = require("utils.global")
 local _common = require(".common")
 local _simplex = require(".simplex_noise")
 
-_global.register(global.this, function(t) global.this = t end)
-global.this._grid = {}
-global.this._exclusions = {}
-global.this._layers = {}
-global.this._collision_mask = {}
-
 public.init = function()
+   if global.this == nil then
+      global.this = {}
+   end
+
+   global.this._grid = {}
+   global.this._exclusions = {}
+   global.this._layers = {}
+   global.this._collision_mask = {}
    _simplex.init()
 end
 --[[
@@ -60,6 +60,7 @@ public.add_noise_layer = function(type, name, objects, elevation, resolution)
       resolution = resolution,
       cache = {},
       hook = nil,
+      deps = nil,
    }
 
    table.insert(global.this._layers, layer)
@@ -80,6 +81,20 @@ public.add_noise_layer_hook = function(name, hook)
 end
 
 --[[
+add_noise_layer_dependency - Adds dependency to the layer. It can be any
+lua variable. This dependency then is injected into hook.
+@param deps - Dependencies, any variable.
+--]]
+public.add_noise_layer_dependency = function(name, deps)
+   for _, layer in pairs(global.this._layers) do
+      if layer.name == name then
+         layer.deps = deps
+         break
+      end
+   end
+end
+
+--[[
 set_collision_mask - Set which tiles should be ignored.
 @param mask - Table of collision masks.
 --]]
@@ -93,6 +108,7 @@ end
 
 local function _do_job_entity(surf, layer)
    local hook = layer.hook
+   local deps = layer.deps
    for _, object in pairs(layer.cache) do
       if object.name == "character" or object.name == "gun-turret" then
          if not surf.can_place_entity(object) then
@@ -106,7 +122,7 @@ local function _do_job_entity(surf, layer)
       end
 
       if hook then
-         hook(ent)
+         hook(ent, deps)
       end
 
       ::continue::

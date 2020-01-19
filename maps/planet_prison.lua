@@ -2,15 +2,17 @@ global.this = {}
 local _global = require("utils.global")
 local _evt = require("utils.event")
 local _map = require("tools.map_functions")
+local _timers = require("planet_prison.mod.timers")
 local _common = require("planet_prison.mod.common")
 local _layers = require("planet_prison.mod.layers")
 local _ai = require("planet_prison.mod.ai")
 local _bp = require("planet_prison.mod.bp")
+local _afk = require("planet_prison.mod.afk")
 global.this._config = require("planet_prison.config")
 
 global.this.maps = {
    {
-      name = "Flooded metropolia",
+      name = "flooded-metropolia",
       height = 2000,
       width = 2000,
       water = 1,
@@ -45,6 +47,118 @@ global.this.maps = {
          }
       },
    }
+}
+
+local function noise_hostile_hook(ent, common)
+   ent.force = "enemy"
+   if ent.name == "character" then
+      local shade = common.rand_range(20, 200)
+      ent.color = {
+         r = shade,
+         g = shade,
+         b = shade
+      }
+
+      if common.rand_range(1, 5) == 1 then
+         ent.insert({name="shotgun", count=1})
+         ent.insert({name="shotgun-shell", count=20})
+      else
+         ent.insert({name="pistol", count=1})
+         ent.insert({name="firearm-magazine", count=20})
+      end
+   else
+      ent.insert({name="firearm-magazine", count=200})
+   end
+end
+
+local function noise_set_neutral_hook(ent)
+   ent.force = "neutral"
+end
+
+local industrial_zone_layers = {
+   {
+      type = "LuaTile",
+      name = "concrete",
+      objects = {
+         "concrete",
+      },
+      elevation = 0.3,
+      resolution = 0.2,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaTile",
+      name = "stones",
+      objects = {
+         "stone-path",
+      },
+      elevation = 0.2,
+      resolution = 0.4,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaTile",
+      name = "shallows",
+      objects = {
+         "water-shallow",
+      },
+      elevation = 0.7,
+      resolution = 0.01,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaEntity",
+      name = "scrap",
+      objects = {
+         "mineable-wreckage",
+      },
+      elevation = 0.5,
+      resolution = 0.1,
+      hook = nil,
+      deps = nil,
+   },
+   {
+      type = "LuaEntity",
+      name = "walls",
+      objects = {
+         "stone-wall"
+      },
+      elevation = 0.5,
+      resolution = 0.09,
+      hook = noise_set_neutral_hook,
+      deps = nil,
+   },
+   {
+      type = "LuaEntity",
+      name = "hostile",
+      objects = {
+         "character",
+         "gun-turret",
+      },
+      elevation = 0.92,
+      resolution = 0.99,
+      hook = noise_hostile_hook,
+      deps = _common,
+   },
+   {
+      type = "LuaEntity",
+      name = "structures",
+      objects = {
+         "big-electric-pole",
+         "medium-electric-pole",
+      },
+      elevation = 0.9,
+      resolution = 0.9,
+      hook = noise_set_neutral_hook,
+      deps = nil,
+   },
+}
+
+global.this.presets = {
+   ["flooded-metropolia"] = industrial_zone_layers,
 }
 
 global.this.entities_cache = nil
@@ -101,26 +215,21 @@ local function init_merchant_bp(entity, _)
    end
 end
 
-local function noise_hostile_hook(ent)
-   ent.force = "enemy"
-   if ent.name == "character" then
-      ent.insert({name="pistol", count=1})
-      ent.insert({name="firearm-magazine", count=20})
-   else
-      ent.insert({name="firearm-magazine", count=200})
-   end
-end
-
-local function noise_set_neutral_hook(ent)
-   ent.force = "neutral"
-end
 
 global.this.bp = {
    player_ship = require("planet_prison.bp.player_ship"),
    merchant = require("planet_prison.bp.merchant")
 }
 local function init_game()
-   global.this.surface = game.create_surface("arena", pick_map())
+   _common.init()
+   _layers.init()
+   _bp.init()
+   _ai.init()
+   _timers.init()
+
+   local map = pick_map()
+   local preset = global.this.presets[map.name]
+   global.this.surface = game.create_surface("arena", map)
    global.this.surface.min_brightness = 0
    global.this.surface.ticks_per_day = 25000 * 4
    global.this.perks = {}
@@ -131,24 +240,60 @@ local function init_game()
    game.difficulty_settings.technology_price_multiplier = 0.1
    game.difficulty_settings.research_queue_setting = "always"
 
-   _layers.init()
    _layers.set_collision_mask({"water-tile"})
-   _layers.add_noise_layer("LuaTile", "concrete", {"concrete"}, 0.3, 0.2)
-   _layers.add_noise_layer("LuaTile", "stones", {"stone-path"},  0.2, 0.4)
-   _layers.add_noise_layer("LuaTile", "shallows", {"water-shallow"}, 0.6, 0.005)
-   _layers.add_noise_layer("LuaEntity", "scrap", {"mineable-wreckage"}, 0.5, 0.1)
-   _layers.add_noise_layer("LuaEntity", "walls", {"stone-wall"}, 0.5, 0.09)
-   _layers.add_noise_layer("LuaEntity", "hostile", {"character",
-                                                    "gun-turret"}, 0.92, 0.99)
-   _layers.add_noise_layer("LuaEntity", "structures", {"big-electric-pole",
-                                                       "medium-electric-pole"}, 0.9, 0.9)
-   _layers.add_noise_layer_hook("structures", noise_set_neutral_hook)
-   _layers.add_noise_layer_hook("walls", noise_set_neutral_hook)
-   _layers.add_noise_layer_hook("hostile", noise_hostile_hook)
+
+   for _, layer in pairs(preset) do
+      _layers.add_noise_layer(layer.type, layer.name,
+                              layer.objects, layer.elevation,
+                              layer.resolution)
+      if layer.hook ~= nil then
+         _layers.add_noise_layer_hook(layer.name, layer.hook)
+      end
+
+      if layer.deps ~= nil then
+         _layers.add_noise_layer_dependency(layer.name, layer.deps)
+      end
+   end
+
    _bp.push_blueprint("player_ship", global.this.bp.player_ship)
    _bp.set_blueprint_hook("player_ship", init_player_ship_bp)
    _bp.push_blueprint("merchant", global.this.bp.merchant)
    _bp.set_blueprint_hook("merchant", init_merchant_bp)
+end
+
+local function explode_ship(deps)
+   local bp = deps.modules.bp
+   local layers = deps.modules.layers
+   for _, ent in pairs(bp.reference_get_entities(deps.ship)) do
+      if not ent.valid then
+         goto continue
+      end
+
+      local explosion = {
+         name = "massive-explosion",
+         position = ent.position
+      }
+      deps.surf.create_entity(explosion)
+
+      ::continue::
+   end
+
+   local bb = bp.reference_get_bounding_box(deps.ship)
+   layers.remove_excluding_bounding_box(bb)
+   bp.destroy_reference(deps.surf, deps.ship)
+   rendering.destroy(deps.id)
+end
+
+local function explode_ship_update(left, deps)
+   local common = deps.modules.common
+   for _, ent in pairs(deps.ship.entities) do
+      if not ent.valid then
+         return false
+      end
+   end
+
+   rendering.set_text(deps.id, common.get_time(left))
+   return true
 end
 
 local function do_spawn_point(player)
@@ -158,44 +303,77 @@ local function do_spawn_point(player)
    }
    local instance = _bp.build(player.surface, "player_ship", point, player)
    _layers.push_excluding_bounding_box(instance.bb)
+
+   local left = global.this._config.self_explode
+   local object = {
+      text = _common.get_time(left),
+      surface = player.surface,
+      color = {
+         r = 255,
+         g = 20,
+         b = 20
+      },
+      target = {
+         x = point.x - 2,
+         y = point.y - 3,
+      },
+      scale = 2.0
+   }
+
+   local entry = {
+      id = rendering.draw_text(object),
+      ship = instance,
+      modules = {
+         bp = _bp,
+         layers = _layers,
+         common = _common,
+         timers = _timers,
+         func = _bp.destroy_reference,
+      },
+      surf = player.surface,
+   }
+   local timer = _timers.set_timer(left, explode_ship)
+   _timers.set_timer_on_update(timer, explode_ship_update)
+   _timers.set_timer_dependency(timer, entry)
+   _timers.set_timer_start(timer)
 end
 
 local function get_non_obstructed_position(s, radius)
-   while true do
-      local chunk = s.get_random_chunk()
+   local chunk
+
+   for i = 1, 32 do
+      chunk = s.get_random_chunk()
       chunk.x = chunk.x * 32
       chunk.y = chunk.y * 32
 
-      for x = 1, radius do
-         for y = 1, radius do
-            local tile = s.get_tile({chunk.x + x, chunk.y + y})
-            if not tile.collides_with("ground-tile") then
-               goto continue
-            end
+      local search_info = {
+         position = chunk,
+         radius = radius,
+      }
+
+      local tiles = s.find_tiles_filtered(search_info)
+      for _, tile in pairs(tiles) do
+         if string.find(tile.name, "water") ~= nil
+         or string.find(tile.name, "out") ~= nil then
+            goto continue
          end
       end
 
-      local search_info = {
+      search_info = {
          position = chunk,
          radius = radius,
          force = {"neutral", "enemy"},
          invert = true
       }
       local ents = s.find_entities_filtered(search_info)
-      if not ents then
-         return chunk
-      end
-
-      if #ents == 0 then
-         return chunk
-      end
-
-      if ents[1].name == "character" then
-         return chunk
+      if not ents or #ents == 0 then
+         break
       end
 
       ::continue::
    end
+
+   return chunk
 end
 
 local function redraw_gui(p)
@@ -205,7 +383,7 @@ local function redraw_gui(p)
    local perks = global.this.perks[p.name]
    local chat_type = "Global chat"
    if not perks.chat_global then
-      chat_type = "Buddies chat"
+      chat_type = "NAP chat"
    end
 
    local button = {
@@ -255,9 +433,13 @@ local function on_gui_click(e)
    local p = game.players[e.player_index]
    local perks = global.this.perks[p.name]
 
+   if not elem.valid then
+      return
+   end
+
    if elem.name == "chat_toggle" then
       if perks.chat_global then
-         elem.caption = "Buddies chat"
+         elem.caption = "NAP chat"
          perks.chat_global = false
       else
          elem.caption = "Global chat"
@@ -412,16 +594,8 @@ local function cause_event(s)
    merchant_event(s)
 end
 
-local function unlink_old_blueprints(name)
-   local query = {
-      timestamp = game.tick,
-   }
-
-   local refs = _bp.unlink_references_filtered(name, query)
-   for _, ref in pairs(refs) do
-      local bb = _bp.reference_get_bounding_box(ref)
-      _layers.remove_excluding_bounding_box(bb)
-   end
+local function kill_player(p)
+   p.character.die()
 end
 
 local function on_tick()
@@ -436,12 +610,16 @@ local function on_tick()
       _ai.do_job(surf, _ai.command.seek_and_destroy_player)
    end
 
-   if (game.tick + 1) % 500 == 0 then
-      unlink_old_blueprints("player_ship")
-   end
-
    _layers.do_job(surf)
    cause_event(s)
+
+   if (game.tick + 1) % 100 == 0 then
+      _afk.on_inactive_players(90, kill_player)
+   end
+
+   if (game.tick + 1) % 60 == 0 then
+      _timers.do_job()
+   end
 end
 
 local function make_ore_patch(e)
@@ -539,23 +717,23 @@ local function on_player_dropped_item(e)
       end
 
       if p.force.get_cease_fire(peer.name) then
-         p.print(string.format("The %s is your buddy already", peer.name))
+         p.print(string.format("You're in the NAP with %s already", peer.name))
          return
       end
 
       if global.this.last_friend[peer.name] == p.name then
          p.force.set_cease_fire(peer.name, true)
          peer.force.set_cease_fire(p.name, true)
-         p.print(string.format("%s is now your buddy", peer.name))
-         peer.print(string.format("%s is now your buddy", p.name))
+         p.print(string.format("The NAP was formed with %s", peer.name))
+         peer.print(string.format("The NAP was formed with %s", p.name))
          global.this.last_friend[p.name] = ""
          global.this.last_friend[peer.name] = ""
          return
       end
 
       global.this.last_friend[p.name] = peer.name
-      p.print(string.format("You want %s to be your buddy", peer.name))
-      peer.print(string.format("The %s wants to be your buddy", p.name))
+      p.print(string.format("You want to form the NAP with %s", peer.name))
+      peer.print(string.format("The %s wants to form NAP with you", p.name))
    elseif ent.stack.name == "coal" then
       local ent_list = p.surface.find_entities_filtered({
          name = "character",
@@ -579,7 +757,7 @@ local function on_player_dropped_item(e)
       end
 
       if not p.force.get_cease_fire(peer.name) then
-         p.print(string.format("The %s is not your buddy", p.name))
+         p.print(string.format("You don't have the NAP with %s", p.name))
          return
       end
 
@@ -588,8 +766,8 @@ local function on_player_dropped_item(e)
 
       global.this.last_friend[p.name] = ""
       global.this.last_friend[peer.name] = ""
-      p.print(string.format("The %s is no longer your buddy", peer.name))
-      peer.print(string.format("The %s is no longer your buddy", p.name))
+      p.print(string.format("You're no longer in the NAP with %s", peer.name))
+      peer.print(string.format("You're no longer in the NAP with %s", p.name))
    end
 end
 
@@ -615,6 +793,29 @@ local function on_entity_damaged(e)
 
       ent.force.set_friend(e.force, false)
       e.force.set_friend(ent.force, false)
+   end
+
+   if ent.name == "character" then
+      local hp = 1.0 - ent.get_health_ratio()
+      local particles = 45 * hp
+      local coeff = _common.rand_range(-20, 20) / 100.0
+      for i = 1, particles do
+         local blood = {
+            name = "blood-particle",
+            position = {
+               x = ent.position.x,
+               y = ent.position.y,
+            },
+            movement = {
+               (_common.rand_range(-20, 20) / 100.0) + coeff,
+               (_common.rand_range(-20, 20) / 100.0) + coeff,
+            },
+            frame_speed = 0.01,
+            vertical_speed = 0.02,
+            height = 0.01,
+         }
+         ent.surface.create_entity(blood)
+      end
    end
 end
 
@@ -665,6 +866,19 @@ local function hostile_death(e)
    return true
 end
 
+local function character_death(e)
+   local ent = e.entity
+   if ent.name ~= "character" then
+      return false
+   end
+
+   local explosion = {
+      name = "blood-explosion-big",
+      position = ent.position,
+   }
+   ent.surface.create_entity(explosion)
+end
+
 local function on_entity_died(e)
    if not e.entity.valid then
       return
@@ -675,6 +889,7 @@ local function on_entity_died(e)
    end
 
    hostile_death(e)
+   character_death(e)
 end
 
 
@@ -748,7 +963,7 @@ local function create_console_message(p, message)
    if global.this.perks[p.name].chat_global then
       msg_fmt = "[color=red]global:[/color] %s %s"
    else
-      msg_fmt = "[color=green]buddies:[/color] %s %s"
+      msg_fmt = "[color=green]nap:[/color] %s %s"
    end
 
    return string.format(msg_fmt, prefix, p_msg)
