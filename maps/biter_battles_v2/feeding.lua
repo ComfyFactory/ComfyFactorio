@@ -106,6 +106,47 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 		local threat_jump_difference =  math.round(formatted_threat_after_feed - threat_before_science_feed,0)
 		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
 		
+		if global.science_logs_total_north == nil then
+			global.science_logs_total_north = { 0 }
+			table.insert(global.science_logs_total_north, 0)
+			table.insert(global.science_logs_total_north, 0)
+			table.insert(global.science_logs_total_north, 0)
+			table.insert(global.science_logs_total_north, 0)
+			table.insert(global.science_logs_total_north, 0)
+			table.insert(global.science_logs_total_north, 0)
+			global.science_logs_total_south = { 0 }
+			table.insert(global.science_logs_total_south, 0)
+			table.insert(global.science_logs_total_south, 0)
+			table.insert(global.science_logs_total_south, 0)
+			table.insert(global.science_logs_total_south, 0)
+			table.insert(global.science_logs_total_south, 0)
+			table.insert(global.science_logs_total_south, 0)
+		end
+		
+		game.print("food is called : ".. player.force.name)
+		local total_science_of_player_force = nil
+		if player.force.name == "north" then
+			total_science_of_player_force  = global.science_logs_total_north
+		else
+			total_science_of_player_force  = global.science_logs_total_south
+		end
+		
+		if food == "automation-science-pack" then
+			total_science_of_player_force[1] = total_science_of_player_force[1] + flask_amount
+		elseif food == "logistic-science-pack" then
+			total_science_of_player_force[2] = total_science_of_player_force[2] + flask_amount
+		elseif food == "military-science-pack" then
+			total_science_of_player_force[3] = total_science_of_player_force[3] + flask_amount
+		elseif food == "chemical-science-pack" then
+			total_science_of_player_force[4] = total_science_of_player_force[4] + flask_amount
+		elseif food == "production-science-pack" then
+			total_science_of_player_force[5] = total_science_of_player_force[5] + flask_amount
+		elseif food == "utility-science-pack" then
+			total_science_of_player_force[6] = total_science_of_player_force[6] + flask_amount
+		elseif food == "space-science-pack" then
+			total_science_of_player_force[7] = total_science_of_player_force[7] + flask_amount
+		end
+		
 		if global.science_logs_text then
 			table.insert(global.science_logs_date,1, formatted_feed_time)
 			table.insert(global.science_logs_text,1, line_log_stats_to_add)
