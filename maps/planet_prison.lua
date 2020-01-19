@@ -1049,6 +1049,7 @@ end
 
 _evt.on_init(init_game)
 _evt.add(defines.events.on_built_entity, on_built_entity)
+_evt.add(defines.events.on_robot_built_entity, on_built_entity)
 _evt.add(defines.events.on_research_finished, on_research_finished)
 _evt.add(defines.events.on_player_joined_game, on_player_joined_game)
 _evt.add(defines.events.on_chunk_generated, on_chunk_generated)
