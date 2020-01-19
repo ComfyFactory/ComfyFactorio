@@ -1,9 +1,9 @@
 -- fish defender -- by mewmew --
 
-require "maps.fish_defender.map_intro"
-require "maps.fish_defender.market"
-require "maps.fish_defender.shotgun_buff"
-require "maps.fish_defender.on_entity_damaged"
+require "maps.fish_defender_v1.map_intro"
+require "maps.fish_defender_v1.market"
+require "maps.fish_defender_v1.shotgun_buff"
+require "maps.fish_defender_v1.on_entity_damaged"
 
 require "modules.rocket_launch_always_yields_science"
 require "modules.launch_fish_to_win"

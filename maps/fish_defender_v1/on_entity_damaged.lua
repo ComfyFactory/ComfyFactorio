@@ -1,9 +1,9 @@
 local event = require 'utils.event'
 
-local enhance_railgun = require 'maps.fish_defender.railgun_enhancer'
-local explosive_bullets = require 'maps.fish_defender.explosive_gun_bullets'
-local bouncy_shells = require 'maps.fish_defender.bouncy_shells'
-local boss_biter = require "maps.fish_defender.boss_biters"
+local enhance_railgun = require 'maps.fish_defender_v1.railgun_enhancer'
+local explosive_bullets = require 'maps.fish_defender_v1.explosive_gun_bullets'
+local bouncy_shells = require 'maps.fish_defender_v1.bouncy_shells'
+local boss_biter = require "maps.fish_defender_v1.boss_biters"
 
 local function protect_market(event)
 	if event.entity.name ~= "market" then return false end
