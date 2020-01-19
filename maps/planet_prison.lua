@@ -893,8 +893,7 @@ local function on_entity_died(e)
 end
 
 
-local function merchant_exploit_check(e)
-   local ent = e.created_entity
+local function merchant_exploit_check(ent)
    if ent.type ~= "electric-pole" then
       return
    end
@@ -921,7 +920,12 @@ local function merchant_exploit_check(e)
 end
 
 local function on_built_entity(e)
-   merchant_exploit_check(e)
+   local ent = e.created_entity
+   if not ent or not ent.valid then
+      return
+   end
+
+   merchant_exploit_check(ent)
 end
 
 local function on_market_item_purchased(e)
