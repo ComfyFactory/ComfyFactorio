@@ -1,5 +1,5 @@
---require "modules.no_turrets"
-require "maps.biter_hatchery.flamethrower_nerf"
+require "modules.no_turrets"
+--require "maps.biter_hatchery.flamethrower_nerf"
 local RPG = require "modules.rpg"
 local Tabs = require 'comfy_panel.main'
 local Map_score = require "modules.map_score"
@@ -27,7 +27,7 @@ local map_gen_settings = {
 		},
 	}
 
-local m = 5
+local m = 2
 local health_boost_food_values = {
 	["automation-science-pack"] =		0.000001 * m,
 	["logistic-science-pack"] = 			0.000003 * m,
@@ -388,7 +388,7 @@ local function on_init()
 	
 	local T = Map.Pop_info()
 	T.main_caption = "Biter Hatchery"
-	T.sub_caption =  "..nibble nibble nom nom.."
+	T.sub_caption =  "*nibble nibble nom nom*"
 	T.text = table.concat({
 		"Defeat the enemy teams nest.\n",
 		"Feed your hatchery science flasks to breed biters!\n",
@@ -397,7 +397,7 @@ local function on_init()
 		"Lay transport belts to your hatchery and they will happily nom the juice off the conveyor.\n",
 		"Higher tier flasks will breed stronger biters!\n",
 		"\n",
-		--"Player turrets are disabled.\n",
+		"Player turrets are disabled.\n",
 		"Feeding may spawn friendly worm turrets.\n",
 		"The center river may not be crossed.\n",
 		"Construction robots may not build over the river.\n",

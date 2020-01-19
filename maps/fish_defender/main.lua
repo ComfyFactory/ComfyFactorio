@@ -1,6 +1,6 @@
 -- fish defender -- by mewmew --
 
-require "modules.rpg"
+--require "modules.rpg"
 
 require "maps.fish_defender.terrain"
 require "maps.fish_defender.market"

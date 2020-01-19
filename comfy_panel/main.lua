@@ -20,7 +20,6 @@ function Public.get_tabs(data)
 	return comfy_panel_tabs
 end
 
-
 function Public.comfy_panel_clear_left_gui(player)
 	for _, child in pairs(player.gui.left.children) do
 		child.visible = false

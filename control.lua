@@ -60,6 +60,7 @@ require "modules.autostash"
 --require "modules.explosives"
 --require "modules.biter_pets"
 --require "modules.no_solar"
+--require "modules.biter_reanimator"
 --require "modules.wave_defense.main"
 --require "modules.fjei.main"
 -----------------------------
@@ -76,6 +77,7 @@ require "modules.autostash"
 --require "maps.territorial_control"
 --require "maps.cave_choppy.cave_miner"
 --require "maps.wave_of_death.WoD"
+--require "maps.planet_prison"
 --require "maps.stone_maze.main"
 --require "maps.choppy"
 --require "maps.overgrowth"
@@ -111,7 +113,6 @@ require "modules.autostash"
 --require "maps.rainbow_road"
 --require "maps.cube"
 --require "maps.forest_circle"
---require "maps.planet_prison"
 -----------------------------
 
 ---- more modules here ----

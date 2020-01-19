@@ -43,6 +43,8 @@ local function set_difficulty()
 	local wave_defense_table = WD.get_table()
 	local player_count = #game.connected_players
 
+	wave_defense_table.max_active_biters = 1024
+
 	-- threat gain / wave
 	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
 	
