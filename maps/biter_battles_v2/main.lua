@@ -156,18 +156,18 @@ end
 
 local Event = require 'utils.event'
 Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-Event.add(defines.events.on_tick, on_tick)
-Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
-Event.add(defines.events.on_player_built_tile, on_player_built_tile)
-Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
 Event.add_event_filter(defines.events.on_entity_damaged, { filter = "name", name = "rocket-silo" })
