@@ -366,8 +366,8 @@ function Public.silo_death(event)
 		Server.to_discord_embed(c .. " has won!")
 		Server.to_discord_embed(global.victory_time)
 		
-		fireworks(event.entity.surface)
-		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)
+		--fireworks(event.entity.surface)
+		--annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)
 	end
 end
 

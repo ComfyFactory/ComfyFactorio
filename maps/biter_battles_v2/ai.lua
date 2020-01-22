@@ -115,9 +115,7 @@ end
 
 Public.destroy_inactive_biters = function()
 	for _, group in pairs(global.unit_groups) do
-		if not set_active_biters(group) then
-			
-		end
+		set_active_biters(group)
 	end
 	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
 		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do

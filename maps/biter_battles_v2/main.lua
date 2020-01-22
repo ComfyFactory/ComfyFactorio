@@ -12,12 +12,13 @@ local Map_info = require "maps.biter_battles_v2.map_info"
 local Mirror_terrain = require "maps.biter_battles_v2.mirror_terrain"
 local No_turret_creep = require "maps.biter_battles_v2.no_turret_creep"
 local Team_manager = require "maps.biter_battles_v2.team_manager"
+local Terrain = require "maps.biter_battles_v2.terrain"
 
-require "on_tick_schedule"
 require "maps.biter_battles_v2.map_settings_tab"
 require "maps.biter_battles_v2.sciencelogs_tab"
 require "modules.spawners_contain_biters"
 require "modules.mineable_wreckage_yields_scrap"
+require "modules.custom_death_messages"
 
 local function on_player_joined_game(event)
 	local surface = game.surfaces["biter_battles"]
@@ -63,6 +64,7 @@ end
 
 local function on_robot_built_entity(event)
 	No_turret_creep.deny_building(event)
+	Terrain.deny_construction_bots(event)
 end
 
 local function on_entity_died(event)
@@ -99,7 +101,7 @@ local tick_minute_functions = {
 }
 
 local function on_tick(event)
-	Mirror_terrain()
+	Mirror_terrain.ticking_work()
 
 	local tick = game.tick
 
@@ -121,11 +123,35 @@ local function on_tick(event)
 	if tick_minute_functions[key] then tick_minute_functions[key]() end
 end
 
+local function on_marked_for_deconstruction(event)
+	if not event.entity.valid then return end
+	if event.entity.name == "fish" then event.entity.cancel_deconstruction(game.players[event.player_index].force.name) end
+end
+
+local function on_player_built_tile(event)
+	local player = game.players[event.player_index]
+	Terrain.restrict_landfill(player.surface, player, event.tiles)
+end
+
+local function on_robot_built_tile(event)
+	Terrain.restrict_landfill(event.robot.surface, event.robot.get_inventory(defines.inventory.robot_cargo), event.tiles)
+end
+
+local function on_chunk_generated(event)
+	Terrain.generate(event)
+	Mirror_terrain.add_chunks(event)
+end
+
 local function on_init()
 	Init.settings()
 	Init.surface()
 	Init.forces()
 	Team_manager.init()
+	
+	local surface = game.surfaces["biter_battles"]
+	surface.request_to_generate_chunks({x = 0, y = -256}, 8)
+	surface.force_generate_chunk_requests()
+	Terrain.generate_north_silo(surface)
 end
 
 local Event = require 'utils.event'
@@ -138,12 +164,13 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
+Event.add(defines.events.on_player_built_tile, on_player_built_tile)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.on_init(on_init)
 
 Event.add_event_filter(defines.events.on_entity_damaged, { filter = "name", name = "rocket-silo" })
-Event.add_event_filter(defines.events.on_entity_damaged, { filter = "type", type = "unit" })
 
 require "maps.biter_battles_v2.spec_spy"
-require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.difficulty_vote"
-require "modules.custom_death_messages"
