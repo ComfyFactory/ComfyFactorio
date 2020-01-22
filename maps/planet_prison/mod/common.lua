@@ -43,6 +43,10 @@ public.get_axis = function(point, axis)
       return public.get_axis(point.target, axis)
    end
 
+   if point.position then
+      return public.get_axis(point.position, axis)
+   end
+
    if point[axis] then
       return point[axis]
    end
@@ -164,18 +168,18 @@ end
 
 --[[
 create_bounding_box_by_points - Construct a BoundingBox using points
-from any array of objects with "position" or "bounding_box" datafield.
-@param objects - Array of objects that have "position" datafield.
+from any array of objects such as bounding boxes.
+@param objects - Array of objects.
 --]]
 public.create_bounding_box_by_points = function(objects)
    local box = {
       left_top = {
-         x = public.get_axis(objects[1].position, "x"),
-         y = public.get_axis(objects[1].position, "y")
+         x = public.get_axis(objects[1], "x"),
+         y = public.get_axis(objects[1], "y")
       },
       right_bottom = {
-         x = public.get_axis(objects[1].position, "x"),
-         y = public.get_axis(objects[1].position, "y")
+         x = public.get_axis(objects[1], "x"),
+         y = public.get_axis(objects[1], "y")
       }
    }
 
@@ -199,9 +203,8 @@ public.create_bounding_box_by_points = function(objects)
             box.right_bottom.y = bb.right_bottom.y
          end
       else
-         local point = objects[i].position
-         local x = public.get_axis(point, "x")
-         local y = public.get_axis(point, "y")
+         local x = public.get_axis(object, "x")
+         local y = public.get_axis(object, "y")
 
          if box.left_top.x > x then
             box.left_top.x = x
