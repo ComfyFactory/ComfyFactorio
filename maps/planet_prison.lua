@@ -814,7 +814,7 @@ local function on_entity_damaged(e)
             vertical_speed = 0.02,
             height = 0.01,
          }
-         ent.surface.create_entity(blood)
+         ent.surface.create_particle(blood)
       end
    end
 end
