@@ -12,6 +12,7 @@ local RPG = require "modules.rpg"
 require "modules.wave_defense.main"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
+require "modules.no_solar"
 require "modules.shotgun_buff"
 require "modules.explosives"
 require "modules.mineable_wreckage_yields_scrap"
@@ -89,8 +90,9 @@ function Public.reset_map()
 	if darkness then
 		surface.min_brightness = 0
 		surface.brightness_visual_weights = {1, 1, 1}
-		surface.daytime = 0.5
+		surface.daytime = 0.44
 		surface.freeze_daytime = true
+		surface.solar_power_multiplier = 999
 	end
 
 	surface.request_to_generate_chunks({0,0}, 2)
