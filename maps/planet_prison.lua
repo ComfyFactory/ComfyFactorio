@@ -893,8 +893,7 @@ local function on_entity_died(e)
 end
 
 
-local function merchant_exploit_check(e)
-   local ent = e.created_entity
+local function merchant_exploit_check(ent)
    if ent.type ~= "electric-pole" then
       return
    end
@@ -910,7 +909,7 @@ local function merchant_exploit_check(e)
    local query = {
       type = "electric-pole",
       position = bp_ent.position,
-      radius = 15
+      radius = 18
    }
    local ents = surf.find_entities_filtered(query)
    for _, s_ent in pairs(ents) do
@@ -921,7 +920,12 @@ local function merchant_exploit_check(e)
 end
 
 local function on_built_entity(e)
-   merchant_exploit_check(e)
+   local ent = e.created_entity
+   if not ent or not ent.valid then
+      return
+   end
+
+   merchant_exploit_check(ent)
 end
 
 local function on_market_item_purchased(e)
@@ -1045,6 +1049,7 @@ end
 
 _evt.on_init(init_game)
 _evt.add(defines.events.on_built_entity, on_built_entity)
+_evt.add(defines.events.on_robot_built_entity, on_built_entity)
 _evt.add(defines.events.on_research_finished, on_research_finished)
 _evt.add(defines.events.on_player_joined_game, on_player_joined_game)
 _evt.add(defines.events.on_chunk_generated, on_chunk_generated)
