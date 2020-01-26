@@ -1,6 +1,5 @@
+local Public = {}
 local bb_config = require "maps.biter_battles_v2.config"
-local event = require 'utils.event'
-local Server = require 'utils.server'
 local math_random = math.random
 local math_abs = math.abs
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -255,7 +254,7 @@ local function generate_circle_spawn(event)
 	regenerate_decoratives(surface, event.area.left_top)
 end
 
-local function generate_north_silo(surface)
+function Public.generate_north_silo(surface)
 	local pos = {x = -32 + math.random(0, 64), y = -72}
 	local mirror_position = {x = pos.x * -1, y = pos.y * -1}
 	
@@ -504,7 +503,7 @@ local function replace_cliffs_with_rocks(surface, area)
 	end
 end
 ]]
-local function on_chunk_generated(event)
+function Public.generate(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
 	local left_top = event.area.left_top
@@ -559,7 +558,7 @@ local function on_chunk_generated(event)
 end
 
 --Landfill Restriction
-local function restrict_landfill(surface, inventory, tiles)
+function Public.restrict_landfill(surface, inventory, tiles)
 	for _, t in pairs(tiles) do
 		local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
 		local check_position = t.position
@@ -569,13 +568,6 @@ local function restrict_landfill(surface, inventory, tiles)
 			inventory.insert({name = "landfill", count = 1})
 		end
 	end
-end
-local function on_player_built_tile(event)
-	local player = game.players[event.player_index]
-	restrict_landfill(player.surface, player, event.tiles)
-end
-local function on_robot_built_tile(event)
-	restrict_landfill(event.robot.surface, event.robot.get_inventory(defines.inventory.robot_cargo), event.tiles)
 end
 
 --Construction Robot Restriction
@@ -588,7 +580,7 @@ local robot_build_restriction = {
 	end
 }
 
-local function on_robot_built_entity(event)
+function Public.deny_construction_bots(event)
 	if not robot_build_restriction[event.robot.force.name] then return end
 	if not robot_build_restriction[event.robot.force.name](event.created_entity.position.y) then return end
 	local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
@@ -598,32 +590,4 @@ local function on_robot_built_entity(event)
 	event.created_entity.destroy()
 end
 
-local function on_marked_for_deconstruction(event)
-	if not event.entity.valid then return end
-	if event.entity.name == "fish" then event.entity.cancel_deconstruction(game.players[event.player_index].force.name) end
-end
-
-local function on_init(surface)
-	local surface = game.surfaces["biter_battles"]
-	if bb_config.on_init_pregen then
-		Server.to_discord_embed("Generating chunks...")
-		print("Generating chunks...")
-		surface.request_to_generate_chunks({x = 0, y = -512}, 16)
-		surface.request_to_generate_chunks({x = 1024, y = -512}, 16)
-		surface.request_to_generate_chunks({x = -1024, y = -512}, 16)
-		surface.force_generate_chunk_requests()
-	else
-		surface.request_to_generate_chunks({x = 0, y = -256}, 8)
-		surface.force_generate_chunk_requests()
-	end
-	generate_north_silo(surface)
-end
-
-event.on_init(on_init)
-
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
-event.add(defines.events.on_player_built_tile, on_player_built_tile)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+return Public

@@ -89,17 +89,27 @@ local function get_threat_ratio(biter_force_name)
 end
 
 local function is_biter_inactive(biter, unit_number, biter_force_name)
-	if not biter.entity.valid then return true end	
-	if not biter.entity.unit_group then return true end	
-	if not biter.entity.unit_group.valid then return true end	
-	if game.tick - biter.active_since < bb_config.biter_timeout then return false end	
-	if biter.entity.surface.count_entities_filtered({area = {{biter.entity.position.x - 16, biter.entity.position.y - 16},{biter.entity.position.x + 16, biter.entity.position.y + 16}}, force = {"north", "south"}}) ~= 0 then
-		global.active_biters[biter_force_name][unit_number].active_since = game.tick
-		return false 
-	end		
-	if global.bb_debug then game.print(biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since) end	
-	biter.entity.destroy()
-	return true
+	if not biter.entity then 
+		print("BiterBattles: active unit " .. unit_number .. " removed, possibly died.")
+		return true 
+	end	
+	if not biter.entity.valid then 
+		print("BiterBattles: active unit " .. unit_number .. " removed, biter invalid.")
+		return true 
+	end	
+	if not biter.entity.unit_group then
+		print("BiterBattles: active unit " .. unit_number .. "  at x" .. biter.entity.position.x .. " y" .. biter.entity.position.y .. " removed, had no unit group.")
+		return true 
+	end	
+	if not biter.entity.unit_group.valid then
+		print("BiterBattles: active unit " .. unit_number .. " removed, unit group invalid.")
+		return true 
+	end
+	if game.tick - biter.active_since > bb_config.biter_timeout then
+		print("BiterBattles: " .. biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since .. ".")
+		biter.entity.destroy()
+		return true 
+	end
 end
 
 local function set_active_biters(group)
@@ -114,16 +124,15 @@ local function set_active_biters(group)
 end
 
 Public.destroy_inactive_biters = function()
+	local biter_force_name = global.next_attack .. "_biters"
+	
 	for _, group in pairs(global.unit_groups) do
-		if not set_active_biters(group) then
-			
-		end
+		set_active_biters(group)
 	end
-	for _, biter_force_name in pairs({"north_biters", "south_biters"}) do
-		for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
-			if is_biter_inactive(biter, unit_number, biter_force_name) then
-				global.active_biters[biter_force_name][unit_number] = nil
-			end
+	
+	for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
+		if is_biter_inactive(biter, unit_number, biter_force_name) then
+			global.active_biters[biter_force_name][unit_number] = nil
 		end
 	end
 end

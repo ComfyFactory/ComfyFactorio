@@ -1,5 +1,5 @@
--- Mirrored Terrain for Biter Battles -- by MewMew
-local event = require 'utils.event'
+-- Mirrored Terrain for Biter Battles -- by MewMew and Serennie
+local Public = {}
 
 local direction_translation = {
 	[0] = 4,
@@ -186,7 +186,7 @@ local function add_work(work)
 	global.ctp.last = idx
 end
 
-local function ocg (event)
+function Public.add_chunks(event)
 	if event.area.left_top.y < 0 then return end
 	if event.surface.name ~= "biter_battles" then return end
 
@@ -203,7 +203,7 @@ local function ocg (event)
 
 end
 
-local function ticking_work()
+function Public.ticking_work()
 	if not global.ctp then return end
 	local work = global.mws or 512 -- define the number of work per tick here (for copies, creations, deletions)
 	-- 136.5333 is the number of work needed to finish 4*(32*32) operations over 30 ticks (spreading a chunk copy over 30 ticks)
@@ -296,23 +296,4 @@ local function ticking_work()
 	end
 end
 
-local function mirror_map()
-	--local limit = 32
-	for i, c in pairs(global.chunks_to_mirror) do
-		if i < game.tick then
-			for k, chunk in pairs(global.chunks_to_mirror[i]) do
-				mirror_chunk(game.surfaces["biter_battles"], chunk)
-				--global.chunks_to_mirror[i][k] = nil
-				--limit = limit - 1
-				--if limit == 0 then return end
-			end
-			global.chunks_to_mirror[i] = nil
-		end
-	end
-end
-
-event.add(defines.events.on_chunk_generated, ocg)
--- event.add(defines.events.on_chunk_generated, on_chunk_generated)
-
-return ticking_work
--- return mirror_map
+return Public
