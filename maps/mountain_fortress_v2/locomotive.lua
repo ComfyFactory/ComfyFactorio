@@ -16,6 +16,12 @@ function Public.locomotive_spawn(surface, position)
 		surface = surface, visible = true, only_in_alt_mode = false,
 	})
 	
+	rendering.draw_light({
+		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
+		oriented = true, color = {255,255,255}, target = global.locomotive_cargo,
+		surface = surface, visible = true, only_in_alt_mode = false,
+	})
+	
 	global.locomotive.color = {0, 255, 0}
 	global.locomotive.minable = false
 	global.locomotive_cargo.minable = false

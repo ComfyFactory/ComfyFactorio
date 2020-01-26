@@ -32,7 +32,7 @@ function Public.entity_died(entity)
 	for _, vector in pairs(vectors) do
 		local tile = surface.get_tile({position.x + vector[1], position.y + vector[2]})
 		if tile.collides_with("resource-layer") then
-			create_particles(surface, tile.position)
+			--create_particles(surface, tile.position)
 			surface.set_tiles({{name = "landfill", position = tile.position}})
 		end
 	end
