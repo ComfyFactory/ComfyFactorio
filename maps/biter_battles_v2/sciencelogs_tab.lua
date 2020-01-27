@@ -10,44 +10,28 @@ local dropdown_users_choice_science = {}
 local dropdown_users_choice_evo_filter = {}
 local frame_sciencelogs = nil
 
-local function get_science_text(food_name)
-	return table.concat({"[img=item/", food_name, "][color=",food_values[food_name].color, "]", food_values[food_name].name, "[/color]"})
+local function get_science_text(food_name,food_short_name)
+	return table.concat({"[img=item/", food_name, "][color=",food_values[food_name].color, "]", food_short_name, "[/color]"})
 end
 
 local function add_science_logs(player, element)
 	local science_scrollpanel = element.add { type = "scroll-pane", name = "scroll_pane", direction = "vertical", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}
 	science_scrollpanel.style.maximal_height = 530
 	
-	local t_summary = science_scrollpanel.add { type = "table", name = "science_logs_summary_header_table", column_count = 4 }
-	local column_widths = {tonumber(200), tonumber(150), tonumber(150), tonumber(150)}
-	local headersSummary = {
-		[1] = "  Science",
-		[2] = "Total sent by North",
-		[3] = "Total sent by South",
-		[4] = "Total passive feed"
-	}
-	for _, w in ipairs(column_widths) do
-	local label = t_summary.add { type = "label", caption = headersSummary[_] }
-	label.style.minimal_width = w
-	label.style.maximal_width = w
-	label.style.font = "default-bold"
-	label.style.font_color = { r=0.98, g=0.66, b=0.22 }
-	end
-	
 	if global.science_logs_category_potion == nil then
-		local science_text = get_science_text("automation-science-pack")
+		local science_text = get_science_text("automation-science-pack","automation")
 		global.science_logs_category_potion = { science_text }
-		science_text = get_science_text("logistic-science-pack")
+		science_text = get_science_text("logistic-science-pack", "logistic")
 		table.insert(global.science_logs_category_potion, science_text)
-		science_text = get_science_text("military-science-pack")
+		science_text = get_science_text("military-science-pack","military")
 		table.insert(global.science_logs_category_potion, science_text)
-		science_text = get_science_text("chemical-science-pack")
+		science_text = get_science_text("chemical-science-pack","chemical")
 		table.insert(global.science_logs_category_potion, science_text)
-		science_text = get_science_text("production-science-pack")
+		science_text = get_science_text("production-science-pack","production")
 		table.insert(global.science_logs_category_potion, science_text)
-		science_text = get_science_text("utility-science-pack")
+		science_text = get_science_text("utility-science-pack","utility")
 		table.insert(global.science_logs_category_potion, science_text)
-		science_text = get_science_text("space-science-pack")
+		science_text = get_science_text("space-science-pack","space")
 		table.insert(global.science_logs_category_potion, science_text)
 	end
 	if global.science_logs_total_north == nil then
@@ -67,6 +51,28 @@ local function add_science_logs(player, element)
 		table.insert(global.science_logs_total_south, 0)
 	end
 	
+	local t_summary = science_scrollpanel.add { type = "table", name = "science_logs_summary_header_table", column_count = 8 }
+	local width_summary_columns = tonumber(94)
+	local width_summary_first_column = tonumber(110)
+	local column_widths = {width_summary_first_column, width_summary_columns, width_summary_columns, width_summary_columns, width_summary_columns, width_summary_columns, width_summary_columns, width_summary_columns}
+	local headersSummary = {
+		[1] = "",
+		[2] = global.science_logs_category_potion[1],
+		[3] = global.science_logs_category_potion[2],
+		[4] = global.science_logs_category_potion[3],
+		[5] = global.science_logs_category_potion[4],
+		[6] = global.science_logs_category_potion[5],
+		[7] = global.science_logs_category_potion[6],
+		[8] = global.science_logs_category_potion[7]
+	}
+	for _, w in ipairs(column_widths) do
+	local label = t_summary.add { type = "label", caption = headersSummary[_] }
+	label.style.minimal_width = w
+	label.style.maximal_width = w
+	--label.style.font = "default-bold"
+	--label.style.font_color = { r=0.98, g=0.66, b=0.22 }
+	end
+	
 	local food_value_table_version = { food_values["automation-science-pack"].value }
 	table.insert(food_value_table_version, food_values["logistic-science-pack"].value)
 	table.insert(food_value_table_version, food_values["military-science-pack"].value)
@@ -74,26 +80,43 @@ local function add_science_logs(player, element)
 	table.insert(food_value_table_version, food_values["production-science-pack"].value)
 	table.insert(food_value_table_version, food_values["utility-science-pack"].value)
 	table.insert(food_value_table_version, food_values["space-science-pack"].value)
+	
+	summary_panel_table = science_scrollpanel.add { type = "table", column_count = 8 }
+	local label = summary_panel_table.add { type = "label", name = "science_logs_total_north_header", caption = "Total sent by north" }
+	label.style.minimal_width = width_summary_first_column
+	label.style.maximal_width = width_summary_first_column
 	for i = 1, 7, 1 do
-		summary_panel_table = science_scrollpanel.add { type = "table", column_count = 4 }
+		local label = summary_panel_table.add { type = "label", name = "science_logs_total_north_" .. i, caption = global.science_logs_total_north[i] }
+		label.style.minimal_width = width_summary_columns
+		label.style.maximal_width = width_summary_columns
+	end
+	science_scrollpanel.add({type = "line"})
+	
+	summary_panel_table2 = science_scrollpanel.add { type = "table", column_count = 8 }
+	local label = summary_panel_table2.add { type = "label", name = "science_logs_total_south_header", caption = "Total sent by south" }
+	label.style.minimal_width = width_summary_first_column
+	label.style.maximal_width = width_summary_first_column
+	for i = 1, 7, 1 do
+	local label = summary_panel_table2.add { type = "label", name = "science_logs_total_south" .. i, caption = global.science_logs_total_south[i] }
+		label.style.minimal_width = width_summary_columns
+		label.style.maximal_width = width_summary_columns
+	end
+	science_scrollpanel.add({type = "line"})
+	
+	summary_panel_table3 = science_scrollpanel.add { type = "table", column_count = 8 }
+	local label = summary_panel_table3.add { type = "label", name = "science_logs_total_passive_feed_header", caption = "Total passive feed" }
+	label.style.minimal_width = width_summary_first_column
+	label.style.maximal_width = width_summary_first_column
+	for i = 1, 7, 1 do
 		local text_passive_feed = "0"
 		if global.total_passive_feed_redpotion ~= nil then
-		text_passive_feed = math.round(global.total_passive_feed_redpotion * food_value_table_version[1] / food_value_table_version[i],1)
+			text_passive_feed = math.round(global.total_passive_feed_redpotion * food_value_table_version[1] / food_value_table_version[i],1)
 		end
-		local label = summary_panel_table.add { type = "label", name = "science_logs_category_potion" .. i, caption = global.science_logs_category_potion[i]  }
-		label.style.minimal_width = column_widths[1]
-		label.style.maximal_width = column_widths[1]
-		local label = summary_panel_table.add { type = "label", name = "science_logs_total_north" .. i, caption = global.science_logs_total_north[i] }
-		label.style.minimal_width = column_widths[2]
-		label.style.maximal_width = column_widths[2]
-		local label = summary_panel_table.add { type = "label", name = "science_logs_total_south" .. i, caption = global.science_logs_total_south[i] }
-		label.style.minimal_width = column_widths[3]
-		label.style.maximal_width = column_widths[3]
-		local label = summary_panel_table.add { type = "label", name = "science_logs_passive_feed" .. i, caption = text_passive_feed }
-		label.style.minimal_width = column_widths[4]
-		label.style.maximal_width = column_widths[4]
-		science_scrollpanel.add({type = "line"})
+		local label = summary_panel_table3.add { type = "label", name = "science_logs_passive_feed" .. i, caption = text_passive_feed }
+		label.style.minimal_width = width_summary_columns
+		label.style.maximal_width = width_summary_columns
 	end
+	science_scrollpanel.add({type = "line"})
 
 --	science_scrollpanel.add { type = "label", name = "whitespace1", caption = " " }
 	

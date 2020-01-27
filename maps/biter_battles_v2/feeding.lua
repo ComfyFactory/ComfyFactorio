@@ -124,7 +124,6 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 			table.insert(global.science_logs_total_south, 0)
 		end
 		
-		game.print("food is called : ".. player.force.name)
 		local total_science_of_player_force = nil
 		if player.force.name == "north" then
 			total_science_of_player_force  = global.science_logs_total_north
