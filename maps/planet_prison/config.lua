@@ -39,8 +39,96 @@ public.self_explode = 60 * 60 * 10
 public.claim_markers = {
    "gun-turret",
    "laser-turret",
+   "stone-wall",
 }
 public.claim_max_distance = 15
+public.base_costs = {
+   ["gun-turret"] = 1,
+   ["laser-turret"] = 5,
+   ["stone-wall"] = 0.1,
+}
+public.raid_costs = {
+   {
+      cost = 1,
+      chance = 300,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "light-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "light-armor"
+         }
+      }
+   },
+   {
+      cost = 15,
+      chance = 150,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "light-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "light-armor"
+         }
+      }
+   },
+   {
+      cost = 30,
+      chance = 100,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "light-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "light-armor"
+         }
+      }
+   },
+   {
+      cost = 40,
+      chance = 100,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "heavy-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "heavy-armor"
+         }
+      }
+   },
+   {
+      cost = 70,
+      chance = 100,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "piercing-shotgun-shell",
+            armor = "heavy-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "piercing-rounds-magazine",
+            armor = "heavy-armor"
+         }
+      }
+   },
+}
 
 public.wreck_loot = {
    ["iron-plate"] = {

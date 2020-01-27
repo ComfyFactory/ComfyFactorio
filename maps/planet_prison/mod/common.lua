@@ -20,6 +20,21 @@ public.rand_range = function(start, stop)
 end
 
 --[[
+for_bounding_box_extra - Execute function per every position within bb with parameter.
+@param surf - LuaSurface, that will be given into func.
+@param bb - BoundingBox
+@param func - User supplied callback that will be executed.
+@param args - User supplied arguments.
+--]]
+public.for_bounding_box_extra = function(surf, bb, func, args)
+   for x = bb.left_top.x, bb.right_bottom.x do
+      for y = bb.left_top.y, bb.right_bottom.y do
+         func(surf, x, y, args)
+      end
+   end
+end
+
+--[[
 for_bounding_box - Execute function per every position within bb.
 @param surf - LuaSurface, that will be given into func.
 @param bb - BoundingBox
@@ -33,22 +48,31 @@ public.for_bounding_box = function(surf, bb, func)
    end
 end
 
+local function safe_get(t, k)
+   local res, value = pcall(function() return t[k] end)
+   if res then
+      return value
+   end
+
+   return nil
+end
+
 --[[
 get_axis - Extract axis value from any point format.
 @param point - Table with or without explicity axis members.
 @param axis - Single character string describing the axis.
 --]]
 public.get_axis = function(point, axis)
-   if point.target then
-      return public.get_axis(point.target, axis)
-   end
-
    if point.position then
       return public.get_axis(point.position, axis)
    end
 
    if point[axis] then
       return point[axis]
+   end
+
+   if safe_get(point, "target") then
+      return public.get_axis(point.target, axis)
    end
 
    if #point ~= 2 then
@@ -225,6 +249,18 @@ public.create_bounding_box_by_points = function(objects)
    box.right_bottom.x = box.right_bottom.x + 1
    box.right_bottom.y = box.right_bottom.y + 1
    return box
+end
+
+--[[
+enlare_bounding_box - Performs enlargement operation on the bounding box.
+@param bb - BoundingBox
+@param size - By how many tiles to enlarge.
+--]]
+public.enlarge_bounding_box = function(bb, size)
+   bb.left_top.x = bb.left_top.x - size
+   bb.left_top.y = bb.left_top.y - size
+   bb.right_bottom.x = bb.right_bottom.x + size
+   bb.right_bottom.y = bb.right_bottom.y + size
 end
 
 --[[
@@ -495,5 +531,29 @@ public.get_convex_hull = function(_vertices)
    table.insert(stack, lowest)
    return stack
 end
+
+
+--[[
+get_closest_neighbour - Return object whose is closest to given position.
+@param position - Position, origin point
+@param object - Table of objects that have any sort of position datafield.
+--]]
+public.get_closest_neighbour = function(position, objects)
+   local closest = objects[1]
+   local min_dist = public.get_distance(position, closest)
+
+   local object, dist
+   for i = #objects, 1, -1 do
+      object = objects[i]
+      dist = public.get_distance(position, object)
+      if dist < min_dist then
+         closest = object
+         min_dist = dist
+      end
+   end
+
+   return closest
+end
+
 
 return public

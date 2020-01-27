@@ -164,6 +164,14 @@ public.on_player_mined_entity = function(ent)
 end
 
 --[[
+on_player_died - Event processing function
+@param player - Player
+--]]
+public.on_player_died = function(player)
+   global.this._claims_info[player.name] = nil
+end
+
+--[[
 get_claims - Get all claims data points for given force.
 @param f_name - Force name.
 --]]

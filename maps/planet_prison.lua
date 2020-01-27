@@ -50,15 +50,19 @@ global.this.maps = {
    }
 }
 
+global.this.assign_camouflage = function(ent, common)
+   local shade = common.rand_range(20, 200)
+   ent.color = {
+      r = shade,
+      g = shade,
+      b = shade
+   }
+end
+
 local function noise_hostile_hook(ent, common)
    ent.force = "enemy"
    if ent.name == "character" then
-      local shade = common.rand_range(20, 200)
-      ent.color = {
-         r = shade,
-         g = shade,
-         b = shade
-      }
+      global.this.assign_camouflage(ent, common)
 
       if common.rand_range(1, 5) == 1 then
          ent.insert({name="shotgun", count=1})
@@ -241,6 +245,8 @@ local function init_game()
    global.this.surface.ticks_per_day = 25000 * 4
    global.this.perks = {}
    global.this.events.merchant.spawn_tick = game.tick + 5000
+   global.this.events.raid_groups = {}
+   global.this.events.raid_init = false
 
    game.map_settings.pollution.enabled = false
    game.map_settings.enemy_evolution.enabled = false
@@ -605,8 +611,225 @@ local function merchant_event(s)
    end
 end
 
+local function _get_outer_points(surf, x, y, deps)
+   local inner = deps.inner
+   local points = deps.points
+
+   local point = {
+      x = x,
+      y = y,
+   }
+
+   if _common.point_in_bounding_box(point, inner) then
+      return
+   end
+
+   local tile = surf.get_tile(point)
+   if string.find(tile.name, "water") ~= nil
+   or string.find(tile.name, "out") ~= nil then
+      return
+   end
+
+   table.insert(points, point)
+end
+
+local function _calculate_attack_costs(surf, bb)
+   local query = {
+      area = bb,
+      force = {
+         "enemy",
+         "neutral",
+         "player",
+      },
+      invert = true,
+   }
+   local objects = surf.find_entities_filtered(query)
+   if next(objects) == nil then
+      log("B")
+      return 0
+   end
+
+   local cost = 0
+   local costs = global.this._config.base_costs
+   for _, obj in pairs(objects) do
+      for name, coeff in pairs(costs) do
+         if obj.name == name then
+            cost = cost + coeff
+         end
+      end
+   end
+
+   return cost
+end
+
+local function _get_raid_info(surf, bb)
+   local pick = nil
+   local cost = _calculate_attack_costs(surf, bb)
+   for _, entry in pairs(global.this._config.raid_costs) do
+      if entry.cost <= cost then
+         pick = entry
+      else
+         break
+      end
+   end
+
+   return pick
+end
+
+local function _create_npc_group(claim, surf)
+   local inner = _common.create_bounding_box_by_points(claim)
+   local info = _get_raid_info(surf, inner)
+   if info == nil then
+      return {}
+   end
+
+   local outer = _common.deepcopy(inner)
+   _common.enlarge_bounding_box(outer, 10)
+
+   local points = {}
+   local deps = {
+      points = points,
+      inner = inner,
+   }
+   _common.for_bounding_box_extra(surf, outer, _get_outer_points, deps)
+
+   local agents = {}
+   for i, point in ipairs(points) do
+      if _common.rand_range(1, info.chance) ~= 1 then
+         goto continue
+      end
+
+      local query = {
+         name = "character",
+         position = point
+      }
+
+      local agent = surf.create_entity(query)
+      local stash = {}
+      for attr, value in pairs(info.gear[(i % #info.gear) + 1]) do
+         local prop = {
+            name = value
+         }
+
+         if attr == "ammo" then
+            prop.count = 20
+         elseif attr == "weap" then
+            prop.count = 1
+         elseif attr == "armor" then
+            prop.count = 1
+         end
+
+         table.insert(stash, prop)
+      end
+
+      for _, stack in pairs(stash) do
+         agent.insert(stack)
+      end
+
+      global.this.assign_camouflage(agent, _common)
+
+      table.insert(agents, agent)
+      ::continue::
+   end
+
+   return agents
+end
+
+local function populate_raid_event(surf)
+   local claims, group
+   local status = false
+   local groups = global.this.events.raid_groups
+
+   for _, p in pairs(game.connected_players) do
+      groups[p.name] = {}
+      claims = _claims.get_claims(p.name)
+      for _, claim in pairs(claims) do
+         if #claim == 0 then
+            goto continue
+         end
+
+         status = true
+         group = {
+            agents = _create_npc_group(claim, surf),
+            objects = claim
+         }
+         table.insert(groups[p.name], group)
+
+         ::continue::
+      end
+   end
+
+   return status
+end
+
+local function raid_event(surf)
+   local raid_groups = global.this.events.raid_groups
+   if global.this.events.raid_init then
+      if surf.daytime > 0.01 and surf.daytime <= 0.1 then
+         for name, groups in pairs(raid_groups) do
+            for i = #groups, 1, -1 do
+               local group = groups[i]
+               local agents = group.agents
+               for j = #agents, 1, -1 do
+                  local agent = agents[j]
+                  if agent.valid then
+                     agent.destroy()
+                  end
+
+                  table.remove(agents, j)
+               end
+
+               if #agents == 0 then
+                  table.remove(group, i)
+               end
+            end
+
+            if #groups == 0 then
+               raid_groups[name] = nil
+            end
+         end
+
+         global.this.events.raid_init = false
+      end
+   else
+      if surf.daytime < 0.4 or surf.daytime > 0.6 then
+         return
+      end
+
+      if populate_raid_event(surf) then
+         global.this.events.raid_init = true
+      end
+   end
+
+   if game.tick % 4 ~= 0 then
+      return
+   end
+
+   for name, groups in pairs(raid_groups) do
+      local exists = false
+      for _, p in pairs(game.connected_players) do
+         if p.name == name then
+            exists = true
+            break
+         end
+      end
+
+      if not exists then
+         raid_groups[name] = nil
+         goto continue
+      end
+
+      for _, group in pairs(groups) do
+         _ai.do_job(surf, _ai.command.attack_objects, group)
+      end
+
+      ::continue::
+   end
+end
+
 local function cause_event(s)
    merchant_event(s)
+   raid_event(s)
 end
 
 local function kill_player(p)
@@ -704,6 +927,7 @@ local function on_player_died(e)
    end
 
    local p = game.players[index]
+   _claims.on_player_died(p)
    game.merge_forces(p.name, "neutral")
 end
 
