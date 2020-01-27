@@ -57,6 +57,7 @@ global.this.assign_camouflage = function(ent, common)
       g = shade,
       b = shade
    }
+   ent.disable_flashlight()
 end
 
 local function noise_hostile_hook(ent, common)
