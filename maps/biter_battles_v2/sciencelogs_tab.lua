@@ -129,9 +129,11 @@ local function add_science_logs(player, element)
 		dropdown_users_choice_evo_filter[player.name] = 1
 	end
 	
-	local dropdown_force = science_scrollpanel.add { name = "dropdown-force", type = "drop-down", items = forces_list, selected_index = dropdown_users_choice_force[player.name] }
-	local dropdown_science = science_scrollpanel.add { name = "dropdown-science", type = "drop-down", items = science_list, selected_index = dropdown_users_choice_science[player.name] }
-	local dropdown_evofilter = science_scrollpanel.add { name = "dropdown-evofilter", type = "drop-down", items = evofilter_list, selected_index = dropdown_users_choice_evo_filter[player.name] }
+	local t_filter = science_scrollpanel.add { type = "table", name = "science_logs_filter_table", column_count = 3 }
+	
+	local dropdown_force = t_filter.add { name = "dropdown-force", type = "drop-down", items = forces_list, selected_index = dropdown_users_choice_force[player.name] }
+	local dropdown_science = t_filter.add { name = "dropdown-science", type = "drop-down", items = science_list, selected_index = dropdown_users_choice_science[player.name] }
+	local dropdown_evofilter = t_filter.add { name = "dropdown-evofilter", type = "drop-down", items = evofilter_list, selected_index = dropdown_users_choice_evo_filter[player.name] }
 	
 	local t = science_scrollpanel.add { type = "table", name = "science_logs_header_table", column_count = 4 }
 	local column_widths = {tonumber(75), tonumber(310), tonumber(165), tonumber(230)}
@@ -181,7 +183,6 @@ local function add_science_logs(player, element)
 			elseif global.science_logs_food_name[i] == "space-science-pack" then
 				easy_food_name = "white"
 			end
-			game.print(dropdown_force.selected_index.."<VSSS>"..real_force_name .. "||" .. dropdown_force.selected_index)
 			if dropdown_force.selected_index == 1 or real_force_name:match(dropdown_force.get_item(dropdown_force.selected_index)) then
 				if dropdown_science.selected_index == 1
 				or (dropdown_science.selected_index == 2 and (easy_food_name:match("white") or easy_food_name:match("yellow") or easy_food_name:match("purple")))
@@ -190,7 +191,7 @@ local function add_science_logs(player, element)
 				or easy_food_name:match(dropdown_science.get_item(dropdown_science.selected_index))
 				then
 					if dropdown_evofilter.selected_index == 1 
-					or (dropdown_evofilter.selected_index == 2 and (global.science_logs_evo_jump_difference[i] >= 0))
+					or (dropdown_evofilter.selected_index == 2 and (global.science_logs_evo_jump_difference[i] > 0))
 					or (dropdown_evofilter.selected_index == 3 and (global.science_logs_evo_jump_difference[i] >= 10))
 					or (dropdown_evofilter.selected_index == 4 and (global.science_logs_evo_jump_difference[i] >= 5))
 					or (dropdown_evofilter.selected_index == 5 and (global.science_logs_evo_jump_difference[i] >= 4))
