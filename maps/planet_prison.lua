@@ -230,7 +230,11 @@ local function init_game()
    local map = pick_map()
    local preset = global.this.presets[map.name]
    global.this.surface = game.create_surface("arena", map)
-   global.this.surface.min_brightness = 0
+   global.this.surface.brightness_visual_weights = {
+      1 / 0.85,
+      1 / 0.85,
+      1 / 0.85
+   }
    global.this.surface.ticks_per_day = 25000 * 4
    global.this.perks = {}
    global.this.events.merchant.spawn_tick = game.tick + 5000
