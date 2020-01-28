@@ -338,10 +338,14 @@ local function generate_extra_worm_turrets(surface, left_top)
 	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance) * 0.002) + 1
 	if highest_worm_tier > 4 then highest_worm_tier = 4 end
 	
-	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance) * 0.0015 + 1
-	if amount > 32 then amount = 32 end
+	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance) * 0.0005
+	local floor_amount = math.floor(amount)
+	local r = math.round(amount - floor_amount, 3) * 1000
+	if math_random(0, 999) <= r then floor_amount = floor_amount + 1 end 
 	
-	for _ = 1, amount, 1 do	
+	if floor_amount > 64 then floor_amount = 64 end
+	
+	for _ = 1, floor_amount, 1 do	
 		local worm_turret_name = worm_turrets[math_random(1, highest_worm_tier)]
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
 		local position = surface.find_non_colliding_position(worm_turret_name, {left_top.x + v[1], left_top.y + v[2]}, 8, 1)
