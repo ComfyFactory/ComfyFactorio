@@ -22,12 +22,18 @@ global.this.maps = {
          moisture = 0,
          temperature = 30.
       },
+      cliff_settings = {
+         richness = 0,
+      },
       starting_area = "none",
       autoplace_controls = {
          ["iron-ore"] = {
             frequency = 0,
          },
          ["copper-ore"] = {
+            frequency = 0,
+         },
+         ["uranium-ore"] = {
             frequency = 0,
          },
          ["stone"] = {
