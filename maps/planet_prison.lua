@@ -503,8 +503,8 @@ end
 
 local function get_random_name()
    while true do
-      local id = _common.rand_range(1000, 9999)
-      local name = string.format("inmate_%d", id)
+      local id = _common.rand_range(100, 999)
+      local name = string.format("#%d", id)
       if global.this.perks[name] == nil then
          return name
       end
