@@ -135,20 +135,21 @@ local function on_console_command(event)
     local player = game.players[event.player_index]
     local reason = event.parameters
     if not reason then return end
+    if not player.admin then return end
     if cmd == 'ban' then
         if player then
-            Server.to_banned_embed(table.concat{'[BANNED] ' .. player.name .. ' banned ' .. reason})
+            Server.to_banned_embed(table.concat{player.name .. ' banned ' .. reason})
             return
         else
-            Server.to_banned_embed(table.concat{'[BANNED] Server banned ' .. reason})
+            Server.to_banned_embed(table.concat{'Server banned ' .. reason})
             return
         end
     elseif cmd == 'unban' then
         if player then
-            Server.to_banned_embed(table.concat{'[UNBANNED] ' .. player.name .. ' unbanned ' .. reason})
+            Server.to_banned_embed(table.concat{player.name .. ' unbanned ' .. reason})
             return
         else
-            Server.to_banned_embed(table.concat{'[UNBANNED] Server unbanned ' .. reason})
+            Server.to_banned_embed(table.concat{'Server unbanned ' .. reason})
             return
         end
     end
