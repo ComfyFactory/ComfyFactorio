@@ -335,10 +335,10 @@ local function generate_extra_worm_turrets(surface, left_top)
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
 	if bb_config.bitera_area_distance > chunk_distance_to_center then return end
 	
-	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance) * 0.002) + 1
-	if highest_worm_tier > 4 then highest_worm_tier = 4 end
+	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance) * 0.0015) + 1
+	if highest_worm_tier > 3 then highest_worm_tier = 3 end
 	
-	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance) * 0.0005
+	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance) * 0.00025
 	local floor_amount = math.floor(amount)
 	local r = math.round(amount - floor_amount, 3) * 1000
 	if math_random(0, 999) <= r then floor_amount = floor_amount + 1 end 

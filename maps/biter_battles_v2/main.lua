@@ -1,5 +1,6 @@
 -- Biter Battles v2 -- by MewMew
 
+require "on_tick_schedule"
 require "modules.biter_reanimator"
 local Ai = require "maps.biter_battles_v2.ai"
 local Biters_landfill = require "maps.biter_battles_v2.biters_landfill"
