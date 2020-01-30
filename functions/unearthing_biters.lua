@@ -5,7 +5,7 @@ local function create_particles(surface, position, amount)
 		local m = math_random(6, 12)
 		local m2 = m * 0.005
 		
-		surface.create_entity({
+		surface.create_particle({
 			name = "stone-particle",
 			position = position,
 			frame_speed = 0.1,

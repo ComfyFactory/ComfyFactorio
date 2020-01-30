@@ -782,7 +782,7 @@ local function market_kill_visuals()
 	local m = 32
 	local m2 = m * 0.005
 	for i = 1, 1024, 1 do
-		global.market.surface.create_entity({
+		global.market.surface.create_particle({
 			name = "branch-particle",
 			position = global.market.position,
 			frame_speed = 0.1,

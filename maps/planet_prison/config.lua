@@ -153,13 +153,17 @@ public.technologies = {
    ["energy-weapons-damage-5"] = false,
    ["energy-weapons-damage-6"] = false,
    ["energy-weapons-damage-7"] = false,
-   ["laser-turret-speed-1"] = false,
    ["laser-turret-speed-2"] = false,
    ["laser-turret-speed-3"] = false,
    ["laser-turret-speed-4"] = false,
    ["laser-turret-speed-5"] = false,
    ["laser-turret-speed-6"] = false,
    ["laser-turret-speed-7"] = false,
+   ["follower-robot-count-3"] = false,
+   ["follower-robot-count-4"] = false,
+   ["follower-robot-count-5"] = false,
+   ["follower-robot-count-6"] = false,
+   ["follower-robot-count-7"] = false,
    ["tanks"] = false,
    ["uranium-ammo"] = false,
    ["uranium-processing"] = false,
@@ -520,7 +524,7 @@ public.merchant_offer = {
 }
 
 public.manual = [[
-[font=heading-1]Planet Prison (1.0.4) - Manual[/font]
+[font=heading-1]Planet Prison (1.0.5) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
 
 This is an ultimate survival scenario with very hostile environment.

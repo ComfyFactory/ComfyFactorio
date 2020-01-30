@@ -112,7 +112,7 @@ local function create_fireworks_rocket(surface, position)
 	local m2 = m * 0.005
 				
 	for i = 1, 60, 1 do 
-		surface.create_entity({
+		surface.create_particle({
 			name = particle,
 			position = position,
 			frame_speed = 0.1,
@@ -366,8 +366,8 @@ function Public.silo_death(event)
 		Server.to_discord_embed(c .. " has won!")
 		Server.to_discord_embed(global.victory_time)
 		
-		--fireworks(event.entity.surface)
-		--annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)
+		fireworks(event.entity.surface)
+		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)
 	end
 end
 

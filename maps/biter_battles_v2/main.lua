@@ -1,5 +1,6 @@
 -- Biter Battles v2 -- by MewMew
 
+require "on_tick_schedule"
 require "modules.biter_reanimator"
 local Ai = require "maps.biter_battles_v2.ai"
 local Biters_landfill = require "maps.biter_battles_v2.biters_landfill"
@@ -93,10 +94,17 @@ end
 local tick_minute_functions = {
 	[300 * 1] = Ai.raise_evo,
 	[300 * 2] = Ai.destroy_inactive_biters,
-	[300 * 3] = Ai.set_biter_raffle_table,	
-	[300 * 4] = Ai.main_attack,
-	[300 * 5] = Ai.send_near_biters_to_silo,
-	[300 * 6] = Ai.wake_up_sleepy_groups,
+	[300 * 3 + 30 * 0] = Ai.pre_main_attack,		-- setup for main_attack
+	[300 * 3 + 30 * 1] = Ai.perform_main_attack,	-- call perform_main_attack 7 times on different ticks
+	[300 * 3 + 30 * 2] = Ai.perform_main_attack,	-- some of these might do nothing (if there are no wave left)
+	[300 * 3 + 30 * 3] = Ai.perform_main_attack,
+	[300 * 3 + 30 * 4] = Ai.perform_main_attack,
+	[300 * 3 + 30 * 5] = Ai.perform_main_attack,
+	[300 * 3 + 30 * 6] = Ai.perform_main_attack,
+	[300 * 3 + 30 * 7] = Ai.perform_main_attack,
+	[300 * 3 + 30 * 8] = Ai.post_main_attack,
+	[300 * 4] = Ai.send_near_biters_to_silo,
+	[300 * 5] = Ai.wake_up_sleepy_groups,
 	[300 * 7] = Game_over.restart_idle_map,
 }
 
@@ -105,22 +113,27 @@ local function on_tick(event)
 
 	local tick = game.tick
 
-	if tick % 60 ~= 0 then return end
-	global.bb_threat["north_biters"] = global.bb_threat["north_biters"] + global.bb_threat_income["north_biters"]
-	global.bb_threat["south_biters"] = global.bb_threat["south_biters"] + global.bb_threat_income["south_biters"]
+	if tick % 60 == 0 then 
+		global.bb_threat["north_biters"] = global.bb_threat["north_biters"] + global.bb_threat_income["north_biters"]
+		global.bb_threat["south_biters"] = global.bb_threat["south_biters"] + global.bb_threat_income["south_biters"]
+	end
 
 	if tick % 180 == 0 then Gui.refresh() end
 
-	if tick % 300 ~= 0 then return end
-	Gui.spy_fish()
-	if global.bb_game_won_by_team then
-		Game_over.reveal_map()
-		Game_over.server_restart()
-		return
+	if tick % 300 == 0 then
+		Gui.spy_fish()
+
+		if global.bb_game_won_by_team then
+			Game_over.reveal_map()
+			Game_over.server_restart()
+			return
+		end
 	end
 
-	local key = tick % 3600
-	if tick_minute_functions[key] then tick_minute_functions[key]() end
+	if tick % 30 == 0 then	
+		local key = tick % 3600
+		if tick_minute_functions[key] then tick_minute_functions[key]() end
+	end
 end
 
 local function on_marked_for_deconstruction(event)

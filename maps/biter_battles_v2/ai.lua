@@ -34,6 +34,10 @@ local threat_values = {
 	["spitter-spawner"] = 16
 }
 
+-- these areas are for north
+local middle_spawner_area = {left_top = {-600,  -1000}, right_bottom = {600,  -400}}
+local whole_spawner_area  = {left_top = {-2048, -1400}, right_bottom = {2048, -400}}
+
 local function get_active_biter_count(biter_force_name)
 	local count = 0
 	for _, biter in pairs(global.active_biters[biter_force_name]) do
@@ -51,11 +55,17 @@ local unit_evo_limits = {
 	["big-biter"] = 2,
 }
 
-function Public.set_biter_raffle_table()
-	local surface = game.surfaces["biter_battles"]
-	local biter_force_name = global.next_attack .. "_biters"
-	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name})
-	if not biters[5] then return end
+local function set_biter_raffle_table(surface, biter_force_name)
+	-- It's fine to only sample the middle
+	local area = middle_spawner_area
+	
+	-- If south_biters: Mirror area along x-axis
+	if biter_force_name == "south_biters" then
+		area = {left_top = {area.left_top[1], -1*area.right_bottom[2]}, right_bottom = {area.right_bottom[1], -1*area.left_top[2]}}
+	end
+
+	local biters = surface.find_entities_filtered({type = "unit", force = biter_force_name, area = area})
+	if not biters[1] then return end
 	global.biter_raffle[biter_force_name] = {}
 	local raffle = global.biter_raffle[biter_force_name]
 	local i = 1
@@ -166,9 +176,15 @@ Public.send_near_biters_to_silo = function()
 end
 
 local function get_random_close_spawner(surface, biter_force_name)
-	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name})	
+	local area = whole_spawner_area
+	-- If south_biters: Mirror area along x-axis
+	if biter_force_name == "south_biters" then
+		area = {left_top = {area.left_top[1], -1*area.right_bottom[2]}, right_bottom = {area.right_bottom[1], -1*area.left_top[2]}}
+	end
+
+	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name, area = area})
 	if not spawners[1] then return false end
-	
+
 	local spawner = spawners[math_random(1,#spawners)]
 	for i = 1, 5, 1 do
 		local spawner_2 = spawners[math_random(1,#spawners)]
@@ -330,7 +346,7 @@ local function create_attack_group(surface, force_name, biter_force_name)
 		if global.bb_debug then game.print("No spawner found for team " .. force_name) end
 		return false 
 	end
-	
+
 	local nearest_player_unit = surface.find_nearest_enemy({position = spawner.position, max_distance = 2048, force = biter_force_name})
 	if not nearest_player_unit then nearest_player_unit = global.rocket_silo[force_name] end
 	
@@ -345,20 +361,36 @@ local function create_attack_group(surface, force_name, biter_force_name)
 	global.unit_groups[unit_group.group_number] = unit_group
 end
 
-Public.main_attack = function()
+Public.pre_main_attack = function()
 	local surface = game.surfaces["biter_battles"]
 	local force_name = global.next_attack
-	
+
 	if not global.training_mode or (global.training_mode and #game.forces[force_name].connected_players > 0) then
 		local biter_force_name = force_name .. "_biters"
-		local wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
-		
-		for c = 1, wave_amount, 1 do		
-			create_attack_group(surface, force_name, biter_force_name)
-		end
-		if global.bb_debug then game.print(wave_amount .. " unit groups designated for " .. force_name .. " biters.") end
+		global.main_attack_wave_amount = math.ceil(get_threat_ratio(biter_force_name) * 7)
+
+		set_biter_raffle_table(surface, biter_force_name)
+
+		if global.bb_debug then game.print(global.main_attack_wave_amount .. " unit groups designated for " .. force_name .. " biters.") end
+	else
+		global.main_attack_wave_amount = 0
 	end
-	
+end
+
+
+Public.perform_main_attack = function()
+	if global.main_attack_wave_amount > 0 then
+		local surface = game.surfaces["biter_battles"]
+		local force_name = global.next_attack
+		local biter_force_name = force_name .. "_biters"
+
+		create_attack_group(surface, force_name, biter_force_name)
+		global.main_attack_wave_amount = global.main_attack_wave_amount - 1	
+	end
+end
+
+Public.post_main_attack = function()
+	global.main_attack_wave_amount = 0
 	if global.next_attack == "north" then
 		global.next_attack = "south"
 	else

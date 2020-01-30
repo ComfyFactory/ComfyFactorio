@@ -54,7 +54,7 @@ local function create_particles(surface, name, position, amount, cause_position)
 		local m = math_random(4, 10)
 		local m2 = m * 0.005
 		
-		surface.create_entity({
+		surface.create_particle({
 			name = name,
 			position = position,
 			frame_speed = 1,
