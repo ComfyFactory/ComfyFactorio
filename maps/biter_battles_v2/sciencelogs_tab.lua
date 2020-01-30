@@ -124,16 +124,16 @@ local function add_science_logs(player, element)
 	table.insert(forces_list, "north")
 	table.insert(forces_list, "south")
 	local science_list = { "all science" }
-	table.insert(science_list, "very high tier (white, yellow, purple)")
-	table.insert(science_list, " high tier (white, yellow, purple, blue)")
-	table.insert(science_list, " mid+ tier (white, yellow, purple, blue, mil)")
-	table.insert(science_list, "white")
-	table.insert(science_list, "yellow")
-	table.insert(science_list, "purple")
-	table.insert(science_list, "blue")
-	table.insert(science_list, "mil")
-	table.insert(science_list, "green")
-	table.insert(science_list, "red")
+	table.insert(science_list, "very high tier (space, utility, production)")
+	table.insert(science_list, " high tier (space, utility, production, chemical)")
+	table.insert(science_list, " mid+ tier (space, utility, production, chemical, military)")
+	table.insert(science_list, "space")
+	table.insert(science_list, "utility")
+	table.insert(science_list, "production")
+	table.insert(science_list, "chemical")
+	table.insert(science_list, "military")
+	table.insert(science_list, "logistic")
+	table.insert(science_list, "automation")
 	local evofilter_list = { "all evo jump" }
 	table.insert(evofilter_list, "no 0 evo jump")
 	table.insert(evofilter_list, "10+ only")
@@ -192,25 +192,25 @@ local function add_science_logs(player, element)
 			local easy_food_name = ""
 			
 			if global.science_logs_food_name[i] == "automation-science-pack" then
-				easy_food_name = "red"
+				easy_food_name = "automation"
 			elseif global.science_logs_food_name[i] == "logistic-science-pack" then
-				easy_food_name = "green"
+				easy_food_name = "logistic"
 			elseif global.science_logs_food_name[i] == "military-science-pack" then
-				easy_food_name = "mil"
+				easy_food_name = "military"
 			elseif global.science_logs_food_name[i] == "chemical-science-pack" then
-				easy_food_name = "blue"
+				easy_food_name = "chemical"
 			elseif global.science_logs_food_name[i] == "production-science-pack" then
-				easy_food_name = "purple"
+				easy_food_name = "production"
 			elseif global.science_logs_food_name[i] == "utility-science-pack" then
-				easy_food_name = "yellow"
+				easy_food_name = "utility"
 			elseif global.science_logs_food_name[i] == "space-science-pack" then
-				easy_food_name = "white"
+				easy_food_name = "space"
 			end
 			if dropdown_force.selected_index == 1 or real_force_name:match(dropdown_force.get_item(dropdown_force.selected_index)) then
 				if dropdown_science.selected_index == 1
-				or (dropdown_science.selected_index == 2 and (easy_food_name:match("white") or easy_food_name:match("yellow") or easy_food_name:match("purple")))
-				or (dropdown_science.selected_index == 3 and (easy_food_name:match("white") or easy_food_name:match("yellow") or easy_food_name:match("purple")or easy_food_name:match("blue")))
-				or (dropdown_science.selected_index == 4 and (easy_food_name:match("white") or easy_food_name:match("yellow") or easy_food_name:match("purple")or easy_food_name:match("blue") or easy_food_name:match("mil")))
+				or (dropdown_science.selected_index == 2 and (easy_food_name:match("space") or easy_food_name:match("utility") or easy_food_name:match("production")))
+				or (dropdown_science.selected_index == 3 and (easy_food_name:match("space") or easy_food_name:match("utility") or easy_food_name:match("production")or easy_food_name:match("chemical")))
+				or (dropdown_science.selected_index == 4 and (easy_food_name:match("space") or easy_food_name:match("utility") or easy_food_name:match("production")or easy_food_name:match("chemical") or easy_food_name:match("military")))
 				or easy_food_name:match(dropdown_science.get_item(dropdown_science.selected_index))
 				then
 					if dropdown_evofilter.selected_index == 1 
