@@ -1,6 +1,7 @@
 global.this = {}
 local _global = require("utils.global")
 local _evt = require("utils.event")
+local _server = require("utils.server")
 local _map = require("tools.map_functions")
 local _timers = require("planet_prison.mod.timers")
 local _common = require("planet_prison.mod.common")
@@ -227,6 +228,12 @@ local function init_merchant_bp(entity, _)
    end
 end
 
+local function create_orbit_group()
+   local orbit = game.permissions.create_group("orbit")
+   for _, perm in pairs(global.this._config.permission_orbit) do
+      orbit.set_allows_action(perm, false)
+   end
+end
 
 global.this.bp = {
    player_ship = require("planet_prison.bp.player_ship"),
@@ -254,7 +261,10 @@ local function init_game()
    global.this.events.merchant.spawn_tick = game.tick + 5000
    global.this.events.raid_groups = {}
    global.this.events.raid_init = false
+   global.this.events.annihilation = false
+   global.this.events.reset_time = nil
 
+   create_orbit_group()
    game.map_settings.pollution.enabled = false
    game.map_settings.enemy_evolution.enabled = false
    game.difficulty_settings.technology_price_multiplier = 0.1
@@ -404,11 +414,28 @@ local function switchable_perk(caption, status)
    return string.format("[color=80,0,0]%s[/color]", caption)
 end
 
-local function redraw_gui(p)
-   p.gui.left.clear()
-
+local function draw_normal_gui(player)
+   local button
    local merchant = global.this.events.merchant
-   local perks = global.this.perks[p.name]
+   if merchant.alive then
+      button = {
+         type = "button",
+         name = "merchant_find",
+         caption = "Merchant",
+      }
+      player.gui.left.add(button)
+   end
+
+   button = {
+      type = "button",
+      name = "flashlight_toggle",
+      caption = "Toggle flashlight"
+   }
+   player.gui.left.add(button)
+end
+
+local function draw_common_gui(player)
+   local perks = global.this.perks[player.name]
    local chat_type = "Global chat"
    if not perks.chat_global then
       chat_type = "NAP chat"
@@ -419,30 +446,33 @@ local function redraw_gui(p)
       name = "manual_toggle",
       caption = "Manual"
    }
-   p.gui.left.add(button)
+   player.gui.left.add(button)
 
    button = {
       type = "button",
       name = "chat_toggle",
       caption = chat_type,
    }
-   p.gui.left.add(button)
+   player.gui.left.add(button)
+end
 
-   if merchant.alive then
-      button = {
-         type = "button",
-         name = "merchant_find",
-         caption = "Merchant",
-      }
-      p.gui.left.add(button)
-   end
-
-   button = {
+local function draw_orbit_gui(player)
+   local button = {
       type = "button",
-      name = "flashlight_toggle",
-      caption = "Toggle flashlight"
+      name = "annihilate",
+      caption = "Annihilate"
    }
-   p.gui.left.add(button)
+   player.gui.left.add(button)
+end
+
+local function redraw_gui(player)
+   player.gui.left.clear()
+   draw_common_gui(player)
+   if player.spectator == true then
+      draw_orbit_gui(player)
+   else
+      draw_normal_gui(player)
+   end
 end
 
 local function print_merchant_position(player)
@@ -454,6 +484,56 @@ local function print_merchant_position(player)
    else
       player.print(string.format(">> You received a broadcast with [gps=%d,%d] coordinates", position.x, position.y))
    end
+end
+
+local function on_tick_reset()
+   if global.this.events.reset_time == nil then
+      return
+   end
+
+   if global.this.events.reset_time > game.tick then
+      return
+   end
+
+   _server.start_scenario('planet_prison')
+   global.this.events.reset_time = nil
+end
+
+local function annihilate(caller)
+   global.this.events.annihilation = true
+   for _, player in pairs(game.connected_players) do
+      if player.name == caller.name then
+         goto continue
+      end
+
+      local coeff
+      for i = 1, 5 do
+         if i % 2 == 0 then
+            coeff = -1
+         else
+            coeff = 1
+         end
+
+         local query = {
+            name = "atomic-rocket",
+            position = {
+               player.position.x - 100,
+               player.position.y - 100,
+            },
+            target = {
+               player.position.x + (8 * i * coeff),
+               player.position.y + (8 * i * coeff),
+            },
+            speed = 0.1,
+         }
+
+         player.surface.create_entity(query)
+         player.print(">> Annihilation in progress...")
+      end
+      ::continue::
+   end
+
+   global.this.events.reset_time = game.tick + (60 * 15)
 end
 
 local function on_gui_click(e)
@@ -498,6 +578,13 @@ local function on_gui_click(e)
       text_box.style.minimal_width = 512
       text_box.read_only = true
       text_box.word_wrap = true
+   elseif elem.name == "annihilate" then
+      if global.this.events.annihilation == true then
+         return
+      end
+
+      elem.destroy()
+      annihilate(p)
    end
 end
 
@@ -1291,6 +1378,19 @@ local function on_research_finished(e)
    end
 end
 
+local function move_to_orbit(player)
+   local char = player.character
+   player.character = nil
+   char.destroy()
+
+   game.merge_forces(player.name, "neutral")
+   player.spectator = true
+   redraw_gui(player)
+
+   local orbit_perms = game.permissions.get_group("orbit")
+   orbit_perms.add_player(player)
+end
+
 local function on_rocket_launched(e)
    local surf = global.this.surface
    local pid = e.player_index
@@ -1298,10 +1398,9 @@ local function on_rocket_launched(e)
    if pid == nil then
       surf.print(">> Nobody escaped by it")
    else
-      local p = game.players[pid]
-      surf.print(string.format(">> The %s was able to escape", p.name))
-      on_player_died({player_index = pid})
-      p.character.die()
+      local player = game.players[pid]
+      surf.print(string.format(">> The %s was able to escape", player.name))
+      move_to_orbit(player)
    end
 end
 
@@ -1325,6 +1424,7 @@ _evt.add(defines.events.on_chunk_charted, on_chunk_charted)
 _evt.add(defines.events.on_console_chat, on_console_chat)
 _evt.add(defines.events.on_gui_click, on_gui_click)
 _evt.add(defines.events.on_tick, on_tick)
+_evt.add(defines.events.on_tick, on_tick_reset)
 _evt.add(defines.events.on_rocket_launched, on_rocket_launched)
 
 _global.register_init({},
