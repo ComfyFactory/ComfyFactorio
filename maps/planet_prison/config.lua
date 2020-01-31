@@ -424,6 +424,7 @@ public.technologies = {
    ["laser-turret-speed-5"] = false,
    ["laser-turret-speed-6"] = false,
    ["laser-turret-speed-7"] = false,
+   ["follower-robot-count-2"] = false,
    ["follower-robot-count-3"] = false,
    ["follower-robot-count-4"] = false,
    ["follower-robot-count-5"] = false,
