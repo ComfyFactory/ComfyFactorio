@@ -544,7 +544,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 300
+            amount = 700
          }
       },
       offer = {
@@ -557,7 +557,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 700
+            amount = 1200
          }
       },
       offer = {
