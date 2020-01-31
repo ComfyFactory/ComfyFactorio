@@ -3,7 +3,6 @@ local bb_config = require "maps.biter_battles_v2.config"
 local math_random = math.random
 local math_abs = math.abs
 local simplex_noise = require 'utils.simplex_noise'.d2
-local create_tile_chain = require "functions.create_tile_chain"
 local spawn_circle_size = 40
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 local rocks = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big", "rock-huge"}
@@ -50,6 +49,42 @@ local function get_noise(name, pos)
 		noise = noise + simplex_noise(pos.x * 0.08, pos.y * 0.08, seed) * 0.1
 		return noise
 	end
+end
+
+local function create_mirrored_tile_chain(surface, tile, count, straightness)
+	if not surface then return end
+	if not tile then return end
+	if not count then return end
+
+	local position = {x = tile.position.x, y = tile.position.y}
+	
+	local modifiers = {
+		{x = 0, y = -1},{x = -1, y = 0},{x = 1, y = 0},{x = 0, y = 1},
+		{x = -1, y = 1},{x = 1, y = -1},{x = 1, y = 1},{x = -1, y = -1}
+	}	
+	modifiers = shuffle(modifiers)
+	
+	for a = 1, count, 1 do
+		local tile_placed = false
+		
+		if math.random(0, 100) > straightness then modifiers = shuffle(modifiers) end
+		for b = 1, 4, 1 do
+			local pos = {x = position.x + modifiers[b].x, y = position.y + modifiers[b].y}
+			if surface.get_tile(pos).name ~= tile.name then
+				surface.set_tiles({{name = "landfill", position = pos}}, true)
+				surface.set_tiles({{name = tile.name, position = pos}}, true)
+				surface.set_tiles({{name = "landfill", position = {pos.x * -1, (pos.y * -1) - 1}}}, true)
+				surface.set_tiles({{name = tile.name, position = {pos.x * -1, (pos.y * -1) - 1}}}, true)
+				position = {x = pos.x, y = pos.y}
+				tile_placed = true
+				break
+			end			
+		end						
+		
+		if not tile_placed then
+			position = {x = position.x + modifiers[1].x, y = position.y + modifiers[1].y}
+		end		
+	end			
 end
 
 local function get_replacement_tile(surface, position)
@@ -281,7 +316,7 @@ function Public.generate_north_silo(surface)
 	global.rocket_silo["north"].minable = false
 
 	for i = 1, 32, 1 do
-		create_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
+		create_mirrored_tile_chain(surface, {name = "stone-path", position = global.rocket_silo["north"].position}, 32, 10)
 	end
 end
 
@@ -331,14 +366,17 @@ local worm_turrets = {
 	[4] = "behemoth-worm-turret"
 }
 
+local worm_distance_multiplicator = 4
+
 local function generate_extra_worm_turrets(surface, left_top)
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-	if bb_config.bitera_area_distance > chunk_distance_to_center then return end
+	if bb_config.bitera_area_distance * worm_distance_multiplicator > chunk_distance_to_center then return end
 	
-	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance) * 0.0015) + 1
+	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance * worm_distance_multiplicator) * 0.0015) + 1
 	if highest_worm_tier > 3 then highest_worm_tier = 3 end
 	
-	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance) * 0.00025
+	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance * worm_distance_multiplicator) * 0.00075
+	if amount < 0 then return end
 	local floor_amount = math.floor(amount)
 	local r = math.round(amount - floor_amount, 3) * 1000
 	if math_random(0, 999) <= r then floor_amount = floor_amount + 1 end 
