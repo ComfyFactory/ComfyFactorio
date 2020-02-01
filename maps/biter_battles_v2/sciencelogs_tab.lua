@@ -5,9 +5,6 @@ local tables = require "maps.biter_battles_v2.tables"
 local event = require 'utils.event'
 local bb_config = require "maps.biter_battles_v2.config"
 local food_values = tables.food_values
-local dropdown_users_choice_force = {}
-local dropdown_users_choice_science = {}
-local dropdown_users_choice_evo_filter = {}
 local frame_sciencelogs = nil
 local food_long_and_short = tables.food_long_and_short
 local food_long_to_short = tables.food_long_to_short
@@ -15,6 +12,12 @@ local forces_list = tables.forces_list
 local science_list = tables.science_list
 local evofilter_list = tables.evofilter_list
 local food_value_table_version = tables.food_value_table_version
+
+local function initialize_dropdown_users_choice()
+		global.dropdown_users_choice_force = {}
+		global.dropdown_users_choice_science = {}
+		global.dropdown_users_choice_evo_filter = {}
+end
 
 local function get_science_text(food_name,food_short_name)
 	return table.concat({"[img=item/", food_name, "][color=",food_values[food_name].color, "]", food_short_name, "[/color]"})
@@ -96,21 +99,24 @@ local function add_science_logs(player, element)
 	end
 	science_scrollpanel.add({type = "line"})
 	
-	if dropdown_users_choice_force[player.name] == nil then
-		dropdown_users_choice_force[player.name] = 1
+	if global.dropdown_users_choice_force == nil then
+		initialize_dropdown_users_choice()
 	end
-	if dropdown_users_choice_science[player.name] == nil then
-		dropdown_users_choice_science[player.name] = 1
+	if global.dropdown_users_choice_force[player.name] == nil then
+		global.dropdown_users_choice_force[player.name] = 1
 	end
-	if dropdown_users_choice_evo_filter[player.name] == nil then
-		dropdown_users_choice_evo_filter[player.name] = 1
+	if global.dropdown_users_choice_science[player.name] == nil then
+		global.dropdown_users_choice_science[player.name] = 1
+	end
+	if global.dropdown_users_choice_evo_filter[player.name] == nil then
+		global.dropdown_users_choice_evo_filter[player.name] = 1
 	end
 	
 	local t_filter = science_scrollpanel.add { type = "table", name = "science_logs_filter_table", column_count = 3 }
 	
-	local dropdown_force = t_filter.add { name = "dropdown-force", type = "drop-down", items = forces_list, selected_index = dropdown_users_choice_force[player.name] }
-	local dropdown_science = t_filter.add { name = "dropdown-science", type = "drop-down", items = science_list, selected_index = dropdown_users_choice_science[player.name] }
-	local dropdown_evofilter = t_filter.add { name = "dropdown-evofilter", type = "drop-down", items = evofilter_list, selected_index = dropdown_users_choice_evo_filter[player.name] }
+	local dropdown_force = t_filter.add { name = "dropdown-force", type = "drop-down", items = forces_list, selected_index = global.dropdown_users_choice_force[player.name] }
+	local dropdown_science = t_filter.add { name = "dropdown-science", type = "drop-down", items = science_list, selected_index = global.dropdown_users_choice_science[player.name] }
+	local dropdown_evofilter = t_filter.add { name = "dropdown-evofilter", type = "drop-down", items = evofilter_list, selected_index = global.dropdown_users_choice_evo_filter[player.name] }
 	
 	local t = science_scrollpanel.add { type = "table", name = "science_logs_header_table", column_count = 4 }
 	local column_widths = {tonumber(75), tonumber(310), tonumber(165), tonumber(230)}
@@ -193,14 +199,17 @@ end)
 local function on_gui_selection_state_changed(event)
 	local player = game.players[event.player_index]	
 	local name = event.element.name
+	if global.dropdown_users_choice_force == nil then
+		initialize_dropdown_users_choice()
+	end
 	if name == "dropdown-force" then
-		dropdown_users_choice_force[player.name] = event.element.selected_index
+		global.dropdown_users_choice_force[player.name] = event.element.selected_index
 	end
 	if name == "dropdown-science" then
-		dropdown_users_choice_science[player.name] = event.element.selected_index
+		global.dropdown_users_choice_science[player.name] = event.element.selected_index
 	end
 	if name == "dropdown-evofilter" then
-		dropdown_users_choice_evo_filter[player.name] = event.element.selected_index
+		global.dropdown_users_choice_evo_filter[player.name] = event.element.selected_index
 	end
 	build_config_gui(player, frame_sciencelogs)
 end
