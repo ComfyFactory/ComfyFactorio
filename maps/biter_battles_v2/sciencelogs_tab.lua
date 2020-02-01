@@ -5,7 +5,6 @@ local tables = require "maps.biter_battles_v2.tables"
 local event = require 'utils.event'
 local bb_config = require "maps.biter_battles_v2.config"
 local food_values = tables.food_values
-local frame_sciencelogs = nil
 local food_long_and_short = tables.food_long_and_short
 local food_long_to_short = tables.food_long_to_short
 local forces_list = tables.forces_list
@@ -189,10 +188,16 @@ local function add_science_logs(player, element)
 	end
 end
 
+function comfy_panel_get_active_frame(player)
+	if not player.gui.left.comfy_panel then return false end
+	if not player.gui.left.comfy_panel.tabbed_pane.selected_tab_index then return player.gui.left.comfy_panel.tabbed_pane.tabs[1].content end
+	return player.gui.left.comfy_panel.tabbed_pane.tabs[player.gui.left.comfy_panel.tabbed_pane.selected_tab_index].content 
+end
+
 local build_config_gui = (function (player, frame)		
-	frame_sciencelogs = frame
-	frame.clear()
-	add_science_logs(player, frame)
+	local frame_sciencelogs = comfy_panel_get_active_frame(player)
+	frame_sciencelogs.clear()
+	add_science_logs(player, frame_sciencelogs)
 end)
 
 
@@ -214,8 +219,6 @@ local function on_gui_selection_state_changed(event)
 	build_config_gui(player, frame_sciencelogs)
 end
 
-
 event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
-
 
 comfy_panel_tabs["MutagenLog"] = build_config_gui
