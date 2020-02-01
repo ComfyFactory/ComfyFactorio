@@ -35,7 +35,272 @@ public.player_ship_loot = {
    }
 }
 
+public.permission_orbit = {
+   defines.input_action.activate_copy,
+   defines.input_action.activate_cut,
+   defines.input_action.activate_paste,
+   defines.input_action.add_permission_group,
+   defines.input_action.add_train_station,
+   defines.input_action.admin_action,
+   defines.input_action.alt_select_area,
+   defines.input_action.alt_select_blueprint_entities,
+   defines.input_action.alternative_copy,
+   defines.input_action.begin_mining,
+   defines.input_action.begin_mining_terrain,
+   defines.input_action.build_item,
+   defines.input_action.build_rail,
+   defines.input_action.build_terrain,
+   defines.input_action.cancel_craft,
+   defines.input_action.cancel_deconstruct,
+   defines.input_action.cancel_new_blueprint,
+   defines.input_action.cancel_research,
+   defines.input_action.cancel_upgrade,
+   defines.input_action.change_active_item_group_for_crafting,
+   defines.input_action.change_active_item_group_for_filters,
+   defines.input_action.change_active_quick_bar,
+   defines.input_action.change_arithmetic_combinator_parameters,
+   defines.input_action.change_blueprint_book_record_label,
+   defines.input_action.change_decider_combinator_parameters,
+   defines.input_action.change_item_label,
+   defines.input_action.change_multiplayer_config,
+   defines.input_action.change_picking_state,
+   defines.input_action.change_programmable_speaker_alert_parameters,
+   defines.input_action.change_programmable_speaker_circuit_parameters,
+   defines.input_action.change_programmable_speaker_parameters,
+   defines.input_action.change_riding_state,
+   defines.input_action.change_shooting_state,
+   defines.input_action.change_single_blueprint_record_label,
+   defines.input_action.change_train_stop_station,
+   defines.input_action.change_train_wait_condition,
+   defines.input_action.change_train_wait_condition_data,
+   defines.input_action.clean_cursor_stack,
+   defines.input_action.clear_selected_blueprint,
+   defines.input_action.clear_selected_deconstruction_item,
+   defines.input_action.clear_selected_upgrade_item,
+   defines.input_action.connect_rolling_stock,
+   defines.input_action.copy_entity_settings,
+   defines.input_action.craft,
+   defines.input_action.create_blueprint_like,
+   defines.input_action.cursor_split,
+   defines.input_action.cursor_transfer,
+   defines.input_action.custom_input,
+   defines.input_action.cycle_blueprint_book_backwards,
+   defines.input_action.cycle_blueprint_book_forwards,
+   defines.input_action.deconstruct,
+   defines.input_action.delete_blueprint_library,
+   defines.input_action.delete_blueprint_record,
+   defines.input_action.delete_custom_tag,
+   defines.input_action.delete_permission_group,
+   defines.input_action.destroy_opened_item,
+   defines.input_action.disconnect_rolling_stock,
+   defines.input_action.drag_train_schedule,
+   defines.input_action.drag_train_wait_condition,
+   defines.input_action.drop_blueprint_record,
+   defines.input_action.drop_item,
+   defines.input_action.drop_to_blueprint_book,
+   defines.input_action.edit_custom_tag,
+   defines.input_action.edit_permission_group,
+   defines.input_action.export_blueprint,
+   defines.input_action.fast_entity_split,
+   defines.input_action.fast_entity_transfer,
+   defines.input_action.go_to_train_station,
+   defines.input_action.grab_blueprint_record,
+   defines.input_action.import_blueprint,
+   defines.input_action.import_blueprint_string,
+   defines.input_action.import_permissions_string,
+   defines.input_action.inventory_split,
+   defines.input_action.inventory_transfer,
+   defines.input_action.launch_rocket,
+   defines.input_action.lua_shortcut,
+   defines.input_action.map_editor_action,
+   defines.input_action.market_offer,
+   defines.input_action.mod_settings_changed,
+   defines.input_action.open_achievements_gui,
+   defines.input_action.open_blueprint_library_gui,
+   defines.input_action.open_blueprint_record,
+   defines.input_action.open_bonus_gui,
+   defines.input_action.open_character_gui,
+   defines.input_action.open_equipment,
+   defines.input_action.open_gui,
+   defines.input_action.open_item,
+   defines.input_action.open_kills_gui,
+   defines.input_action.open_logistic_gui,
+   defines.input_action.open_mod_item,
+   defines.input_action.open_production_gui,
+   defines.input_action.open_technology_gui,
+   defines.input_action.open_train_gui,
+   defines.input_action.open_train_station_gui,
+   defines.input_action.open_trains_gui,
+   defines.input_action.open_tutorials_gui,
+   defines.input_action.paste_entity_settings,
+   defines.input_action.place_equipment,
+   defines.input_action.quick_bar_pick_slot,
+   defines.input_action.quick_bar_set_selected_page,
+   defines.input_action.quick_bar_set_slot,
+   defines.input_action.remove_cables,
+   defines.input_action.remove_train_station,
+   defines.input_action.reset_assembling_machine,
+   defines.input_action.rotate_entity,
+   defines.input_action.select_area,
+   defines.input_action.select_blueprint_entities,
+   defines.input_action.select_entity_slot,
+   defines.input_action.select_item,
+   defines.input_action.select_mapper_slot,
+   defines.input_action.select_next_valid_gun,
+   defines.input_action.select_tile_slot,
+   defines.input_action.set_auto_launch_rocket,
+   defines.input_action.set_autosort_inventory,
+   defines.input_action.set_behavior_mode,
+   defines.input_action.set_car_weapons_control,
+   defines.input_action.set_circuit_condition,
+   defines.input_action.set_circuit_mode_of_operation,
+   defines.input_action.set_deconstruction_item_tile_selection_mode,
+   defines.input_action.set_deconstruction_item_trees_and_rocks_only,
+   defines.input_action.set_entity_color,
+   defines.input_action.set_entity_energy_property,
+   defines.input_action.set_filter,
+   defines.input_action.set_heat_interface_mode,
+   defines.input_action.set_heat_interface_temperature,
+   defines.input_action.set_infinity_container_filter_item,
+   defines.input_action.set_infinity_container_remove_unfiltered_items,
+   defines.input_action.set_infinity_pipe_filter,
+   defines.input_action.set_inserter_max_stack_size,
+   defines.input_action.set_inventory_bar,
+   defines.input_action.set_logistic_filter_item,
+   defines.input_action.set_logistic_filter_signal,
+   defines.input_action.set_logistic_trash_filter_item,
+   defines.input_action.set_request_from_buffers,
+   defines.input_action.set_research_finished_stops_game,
+   defines.input_action.set_signal,
+   defines.input_action.set_single_blueprint_record_icon,
+   defines.input_action.set_splitter_priority,
+   defines.input_action.set_train_stopped,
+   defines.input_action.setup_assembling_machine,
+   defines.input_action.setup_blueprint,
+   defines.input_action.setup_single_blueprint_record,
+   defines.input_action.smart_pipette,
+   defines.input_action.stack_split,
+   defines.input_action.stack_transfer,
+   defines.input_action.start_repair,
+   defines.input_action.start_research,
+   defines.input_action.stop_building_by_moving,
+   defines.input_action.switch_connect_to_logistic_network,
+   defines.input_action.switch_constant_combinator_state,
+   defines.input_action.switch_inserter_filter_mode_state,
+   defines.input_action.switch_power_switch_state,
+   defines.input_action.switch_to_rename_stop_gui,
+   defines.input_action.take_equipment,
+   defines.input_action.toggle_deconstruction_item_entity_filter_mode,
+   defines.input_action.toggle_deconstruction_item_tile_filter_mode,
+   defines.input_action.toggle_driving,
+   defines.input_action.toggle_enable_vehicle_logistics_while_moving,
+   defines.input_action.toggle_equipment_movement_bonus,
+   defines.input_action.toggle_map_editor,
+   defines.input_action.toggle_personal_roboport,
+   defines.input_action.toggle_show_entity_info,
+   defines.input_action.translate_string,
+   defines.input_action.undo,
+   defines.input_action.upgrade,
+   defines.input_action.upgrade_opened_blueprint,
+   defines.input_action.use_artillery_remote,
+   defines.input_action.use_item,
+   defines.input_action.wire_dragging,
+}
+
 public.self_explode = 60 * 60 * 10
+public.claim_markers = {
+   "gun-turret",
+   "laser-turret",
+   "stone-wall",
+}
+public.claim_max_distance = 15
+public.base_costs = {
+   ["gun-turret"] = 1,
+   ["laser-turret"] = 5,
+   ["stone-wall"] = 0.1,
+}
+public.raid_costs = {
+   {
+      cost = 1,
+      chance = 300,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "light-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "light-armor"
+         }
+      }
+   },
+   {
+      cost = 15,
+      chance = 150,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "light-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "light-armor"
+         }
+      }
+   },
+   {
+      cost = 30,
+      chance = 100,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "light-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "light-armor"
+         }
+      }
+   },
+   {
+      cost = 40,
+      chance = 100,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "shotgun-shell",
+            armor = "heavy-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "firearm-magazine",
+            armor = "heavy-armor"
+         }
+      }
+   },
+   {
+      cost = 70,
+      chance = 100,
+      gear = {
+         {
+            weap = "shotgun",
+            ammo = "piercing-shotgun-shell",
+            armor = "heavy-armor"
+         },
+         {
+            weap = "pistol",
+            ammo = "piercing-rounds-magazine",
+            armor = "heavy-armor"
+         }
+      }
+   },
+}
 
 public.wreck_loot = {
    ["iron-plate"] = {
@@ -159,6 +424,7 @@ public.technologies = {
    ["laser-turret-speed-5"] = false,
    ["laser-turret-speed-6"] = false,
    ["laser-turret-speed-7"] = false,
+   ["follower-robot-count-2"] = false,
    ["follower-robot-count-3"] = false,
    ["follower-robot-count-4"] = false,
    ["follower-robot-count-5"] = false,
@@ -279,7 +545,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 300
+            amount = 700
          }
       },
       offer = {
@@ -292,7 +558,7 @@ public.merchant_offer = {
          {
             type = "item",
             name = "coin",
-            amount = 700
+            amount = 1200
          }
       },
       offer = {
@@ -524,7 +790,7 @@ public.merchant_offer = {
 }
 
 public.manual = [[
-[font=heading-1]Planet Prison (1.0.5) - Manual[/font]
+[font=heading-1]Planet Prison (1.1.0) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
 
 This is an ultimate survival scenario with very hostile environment.

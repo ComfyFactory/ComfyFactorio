@@ -11,6 +11,14 @@ public.command = {
       @param args nil
    --]]
    seek_and_destroy_player = 1,
+
+   --[[
+      @param args = {
+          agents, // All movable agents
+          positions, // Table of positions to attack
+      }
+   --]]
+   attack_objects = 2
 }
 
 --[[
@@ -117,14 +125,79 @@ local function _do_job_seek_and_destroy_player(surf)
    end
 end
 
+local function _do_job_attack_objects(surf, args)
+   local agents = args.agents
+   if #agents == 0 then
+      return
+   end
+
+   local objects = args.objects
+   local target, closest, agent, query
+   for i = #agents, 1, -1 do
+       agent = agents[i]
+      if not agent.valid then
+         table.remove(agents, i)
+         goto continue
+      end
+
+      if game.tick % i ~= 0 then
+         goto continue
+      end
+
+      query = {
+         position = agent.position,
+         radius = 15,
+         type = {
+            "projectile",
+            "beam"
+         },
+         force = {
+            "enemy",
+            "player",
+            "neutral",
+         },
+         invert = true
+      }
+      closest = surf.find_entities_filtered(query)
+      if #closest ~= 0 then
+         target = _common.get_closest_neighbour(agent.position, closest)
+      else
+         if #objects == 0 then
+            _shoot_stop(agent)
+            goto continue
+         end
+
+         target = _common.get_closest_neighbour(agent.position, objects)
+      end
+
+      if target == nil or not target.valid then
+         goto continue
+      end
+
+      if not _move_to(agent, target, _common.rand_range(5, 15)) then
+         _shoot_at(agent, target)
+      else
+         _shoot_stop(agent)
+      end
+
+      ::continue::
+   end
+end
+
 --[[
 do_job - Perform non-stateful operation on all enemy "character" entities.
 @param surf - LuaSurface, on which everything is happening.
 @param command - Command to perform on all non-player controllable characters.
 --]]
-public.do_job = function(surf, command)
+public.do_job = function(surf, command, args)
+   if args == nil then
+      args = {}
+   end
+
    if command == public.command.seek_and_destroy_player then
       _do_job_seek_and_destroy_player(surf)
+   elseif command == public.command.attack_objects then
+      _do_job_attack_objects(surf, args)
    end
 end
 
