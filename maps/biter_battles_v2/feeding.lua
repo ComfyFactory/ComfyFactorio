@@ -123,21 +123,8 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 			total_science_of_player_force  = global.science_logs_total_south
 		end
 		
-		if food == "automation-science-pack" then
-			total_science_of_player_force[1] = total_science_of_player_force[1] + flask_amount
-		elseif food == "logistic-science-pack" then
-			total_science_of_player_force[2] = total_science_of_player_force[2] + flask_amount
-		elseif food == "military-science-pack" then
-			total_science_of_player_force[3] = total_science_of_player_force[3] + flask_amount
-		elseif food == "chemical-science-pack" then
-			total_science_of_player_force[4] = total_science_of_player_force[4] + flask_amount
-		elseif food == "production-science-pack" then
-			total_science_of_player_force[5] = total_science_of_player_force[5] + flask_amount
-		elseif food == "utility-science-pack" then
-			total_science_of_player_force[6] = total_science_of_player_force[6] + flask_amount
-		elseif food == "space-science-pack" then
-			total_science_of_player_force[7] = total_science_of_player_force[7] + flask_amount
-		end
+		local indexScience = tables.food_long_to_short[food].indexScience
+		total_science_of_player_force[indexScience] = total_science_of_player_force[indexScience] + flask_amount
 		
 		if global.science_logs_text then
 			table.insert(global.science_logs_date,1, formatted_feed_time)

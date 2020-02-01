@@ -57,13 +57,13 @@ Public.food_long_and_short = {
 }
 
 Public.food_long_to_short = {
-	["automation-science-pack"] = {short_name= "automation"},
-	["logistic-science-pack"] = {short_name= "logistic"},
-	["military-science-pack"] = {short_name= "military"},
-	["chemical-science-pack"] = {short_name= "chemical"},
-	["production-science-pack"] = {short_name= "production"},
-	["utility-science-pack"] = {short_name= "utility"},
-	["space-science-pack"] = {short_name= "space"}
+	["automation-science-pack"] = {short_name= "automation", indexScience = 1},
+	["logistic-science-pack"] = {short_name= "logistic", indexScience = 2},
+	["military-science-pack"] = {short_name= "military", indexScience = 3},
+	["chemical-science-pack"] = {short_name= "chemical", indexScience = 4},
+	["production-science-pack"] = {short_name= "production", indexScience = 5},
+	["utility-science-pack"] = {short_name= "utility", indexScience = 6},
+	["space-science-pack"] = {short_name= "space", indexScience = 7}
 }
 Public.forces_list = { "all teams", "north", "south" }
 Public.science_list = { "all science", "very high tier (space, utility, production)", "high tier (space, utility, production, chemical)", "mid+ tier (space, utility, production, chemical, military)","space","utility","production","chemical","military", "logistic", "automation" }
