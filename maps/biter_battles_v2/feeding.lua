@@ -1,4 +1,5 @@
 local bb_config = require "maps.biter_battles_v2.config"
+local Server = require 'utils.server'
 
 local tables = require "maps.biter_battles_v2.tables"
 local food_values = tables.food_values
@@ -56,7 +57,9 @@ local function print_feeding_msg(player, food, flask_amount)
 	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})
 	
 	if flask_amount >= 20 then
-		game.print(colored_player_name .. " fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to team " .. team_strings[get_enemy_team_of(player.force.name)] .. " biters!", {r = 0.9, g = 0.9, b = 0.9})
+		local msg = table.concat({colored_player_name, " fed ", formatted_amount, " flasks of ", formatted_food, " to team ", team_strings[get_enemy_team_of(player.force.name)], " biters!"})
+		game.print(msg, {r = 0.9, g = 0.9, b = 0.9})
+		Server.to_discord_bold(msg)
 	else
 		local target_team_text = "the enemy"
 		if global.training_mode then
