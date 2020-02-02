@@ -57,9 +57,9 @@ local function print_feeding_msg(player, food, flask_amount)
 	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})
 	
 	if flask_amount >= 20 then
-		local msg = table.concat({colored_player_name, " fed ", formatted_amount, " flasks of ", formatted_food, " to team ", team_strings[get_enemy_team_of(player.force.name)], " biters!"})
-		game.print(msg, {r = 0.9, g = 0.9, b = 0.9})
-		Server.to_discord_bold(msg)
+		local enemy = get_enemy_team_of(player.force.name)
+		game.print(table.concat({colored_player_name, " fed ", formatted_amount, " flasks of ", formatted_food, " to team ", team_strings[enemy], " biters!"}), {r = 0.9, g = 0.9, b = 0.9})
+		Server.to_discord_bold(table.concat({player.name, " fed ", flask_amount, " flasks of ", food_values[food].name, " to team ", enemy, " biters!"}))
 	else
 		local target_team_text = "the enemy"
 		if global.training_mode then
