@@ -11,8 +11,6 @@ require "modules.spawners_contain_biters"
 require "modules.splice_double"
 require "modules.biters_attack_moving_players"
 --require "modules.flashlight_toggle_button"
---require "modules.more_attacks"
---require "modules.evolution_extended"
 
 local difficulty_factor = 4
 
