@@ -1,6 +1,7 @@
 require "modules.biter_reanimator"
 
 local Blood_moon = require "maps.pitch_black.blood_moon"
+local Gui = require "maps.pitch_black.gui"
 local Difficulty = require "maps.pitch_black.difficulty"
 
 local function on_entity_died(event)
@@ -8,6 +9,7 @@ local function on_entity_died(event)
 	if not entity.valid then return end
 	local cause = event.cause	
 	Difficulty.fleeing_biteys(entity, cause)
+	Difficulty.add_score(entity)
 end
 
 local function on_tick()
@@ -18,9 +20,11 @@ local function on_tick()
 	
 	Blood_moon.set_daytime(surface, tick)
 	
-	if tick % 20 ~= 0 then return end
+	if tick % 30 ~= 0 then return end
 	Difficulty.set_daytime_difficulty(surface, tick)
 	Difficulty.set_biter_difficulty()
+	
+	Gui.update()
 end
 
 local function on_init()

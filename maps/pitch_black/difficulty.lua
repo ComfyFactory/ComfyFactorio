@@ -2,6 +2,23 @@ local Public = {}
 
 local math_abs = math.abs
 
+local score_values = {
+	["small-spitter"] = 1,
+	["small-biter"] = 1,
+	["medium-spitter"] = 3,
+	["medium-biter"] = 3,
+	["big-spitter"] = 5,
+	["big-biter"] = 5,
+	["behemoth-spitter"] = 10,
+	["behemoth-biter"] = 10,
+	["small-worm-turret"] = 4,
+	["medium-worm-turret"] = 6,
+	["big-worm-turret"] = 8,
+	["behemoth-worm-turret"] = 10,
+	["biter-spawner"] = 16,
+	["spitter-spawner"] = 16
+}
+
 function Public.set_daytime_difficulty(surface, tick)
 	local daytime = surface.daytime
 	if daytime < 0.30 then
@@ -17,8 +34,14 @@ function Public.set_biter_difficulty()
 	local daytime_extra_life_modifier = (-0.30 + daytime) * 2
 	if daytime_extra_life_modifier < 0 then daytime_extra_life_modifier = 0 end
 	
-	local extra_lifes = global.map_score * 0.001 * daytime + daytime_extra_life_modifier
+	local extra_lifes = global.map_score * 0.0001 * daytime + daytime_extra_life_modifier
 	global.biter_reanimator.forces[2] = extra_lifes
+end
+
+function Public.add_score(entity)
+	local value = score_values[entity.name]
+	if not value then return end
+	global.map_score = global.map_score + value
 end
 
 function Public.fleeing_biteys(entity, cause)
