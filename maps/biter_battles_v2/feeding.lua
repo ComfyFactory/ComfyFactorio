@@ -113,7 +113,7 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 		if global.science_logs_total_north == nil then
 			global.science_logs_total_north = { 0 }
 			global.science_logs_total_south = { 0 }
-			for a = 1, flask_amount, 7 do	
+			for a = 1, 7 do	
 				table.insert(global.science_logs_total_north, 0)
 				table.insert(global.science_logs_total_south, 0)
 			end
