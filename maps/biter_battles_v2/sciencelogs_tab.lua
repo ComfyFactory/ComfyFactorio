@@ -196,6 +196,9 @@ end
 
 local build_config_gui = (function (player, frame)		
 	local frame_sciencelogs = comfy_panel_get_active_frame(player)
+	if not frame_sciencelogs then
+		return
+	end
 	frame_sciencelogs.clear()
 	add_science_logs(player, frame_sciencelogs)
 end)
