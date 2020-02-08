@@ -35,9 +35,6 @@ local function update_score_gui(player)
 	
 	local score_value = frame_table.children[2]
 	score_value.caption = global.map_score
-	
-	local score_value = frame_table.children[4]
-	score_value.caption = global.daytime	
 end
 
 function Public.update()

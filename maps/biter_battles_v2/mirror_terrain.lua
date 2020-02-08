@@ -61,8 +61,8 @@ local entity_copy_functions = {
 	end,	
 	["unit-spawner"] = function(surface, entity, mirror_position)
 		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south_biters"}
-		if not surface.can_place_entity(mirror_entity) then return end
-		surface.create_entity(mirror_entity)
+		if not surface.can_place_entity(mirror_entity) then return end		
+		table.insert(global.unit_spawners.south_biters, surface.create_entity(mirror_entity))
 	end,
 	["turret"] = function(surface, entity, mirror_position)
 		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south_biters"}
