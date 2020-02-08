@@ -31,7 +31,7 @@ function Public.surface()
 		["uranium-ore"] = {frequency = 2, size = 1, richness = 1},
 		["crude-oil"] = {frequency = 3, size = 1, richness = 0.75},
 		["trees"] = {frequency = math.random(8, 16) * 0.1, size = math.random(8, 16) * 0.1, richness = math.random(2, 10) * 0.1},
-		["enemy-base"] = {frequency = 256, size = 0.61, richness = 1}
+		["enemy-base"] = {frequency = 0, size = 0, richness = 0}
 	}
 	game.create_surface("biter_battles", map_gen_settings)
 
@@ -140,6 +140,9 @@ function Public.forces()
 	global.spectator_rejoin_delay = {}
 	global.spy_fish_timeout = {}
 	global.force_area = {}
+	global.unit_spawners = {}
+	global.unit_spawners.north_biters = {}
+	global.unit_spawners.south_biters = {}
 	global.active_biters = {}
 	global.unit_groups = {}
 	global.biter_raffle = {}

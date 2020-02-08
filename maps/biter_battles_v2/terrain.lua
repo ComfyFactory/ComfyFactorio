@@ -1,5 +1,6 @@
 local Public = {}
 local bb_config = require "maps.biter_battles_v2.config"
+local math_floor = math.floor
 local math_random = math.random
 local math_abs = math.abs
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -368,12 +369,23 @@ local worm_turrets = {
 
 local worm_distance_multiplicator = 4
 
+
+local scrap_vectors = {}
+for x = -5, 5, 1 do
+	for y = -5, 5, 1 do
+		if math.sqrt(x^2 + y^2) <= 5 then
+			scrap_vectors[#scrap_vectors + 1] = {x, y}
+		end
+	end
+end
+local size_of_scrap_vectors = #scrap_vectors
+
 local function generate_extra_worm_turrets(surface, left_top)
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
 	if bb_config.bitera_area_distance * worm_distance_multiplicator > chunk_distance_to_center then return end
 	
-	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance * worm_distance_multiplicator) * 0.0015) + 1
-	if highest_worm_tier > 3 then highest_worm_tier = 3 end
+	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance * worm_distance_multiplicator) * 0.00125) + 1
+	if highest_worm_tier > 4 then highest_worm_tier = 4 end
 	
 	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance * worm_distance_multiplicator) * 0.00025
 	if amount < 0 then return end
@@ -388,102 +400,85 @@ local function generate_extra_worm_turrets(surface, left_top)
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
 		local position = surface.find_non_colliding_position(worm_turret_name, {left_top.x + v[1], left_top.y + v[2]}, 8, 1)
 		if position then
-			surface.create_entity({name = worm_turret_name, position = position, force = "north_biters"})
-		end
-	end
-end
-
-local scrap_vectors = {}
-for x = -5, 5, 1 do
-	for y = -5, 5, 1 do
-		if math.sqrt(x^2 + y^2) <= 5 then
-			scrap_vectors[#scrap_vectors + 1] = {x, y}
-		end
-	end
-end
-local size_of_scrap_vectors = #scrap_vectors
-
-local function generate_scrap(event)
-	local distance_to_center = math.sqrt(event.area.left_top.x ^ 2 + event.area.left_top.y ^ 2)
-
-	local worms = event.surface.find_entities_filtered({area = event.area, type = "turret"})
-	if #worms == 0 then return end
-
-	for _, e in pairs(worms) do
-		if math_random(1,2) == 1 then
-			for c = 1, math_random(2,12), 1 do
-				local vector = scrap_vectors[math_random(1, #scrap_vectors)]
-				local position = {e.position.x + vector[1], e.position.y + vector[2]}
-				if e.surface.can_place_entity({name = "mineable-wreckage", position = position, force = "neutral"}) then
-					e.surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})
+			local worm = surface.create_entity({name = worm_turret_name, position = position, force = "north_biters"})
+			
+			-- add some scrap piles
+			if math_random(1,2) == 1 then
+				for c = 1, math_random(2,12), 1 do
+					local vector = scrap_vectors[math_random(1, size_of_scrap_vectors)]
+					local position = {position.x + vector[1], position.y + vector[2]}
+					if surface.can_place_entity({name = "mineable-wreckage", position = position, force = "neutral"}) then
+						surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})
+					end
 				end
 			end
+			
 		end
 	end
 end
 
+local bitera_area_distance = bb_config.bitera_area_distance * -1
 local function is_biter_area(position)
-	--if position.x + position.y > -352 + (get_noise(3, position) * 16) then return false end
-	if position.y + (get_noise(3, position) * 16) > (bb_config.bitera_area_distance * -1) - (math.abs(position.x) * 0.33) then return false end
+	if position.y - 48 > bitera_area_distance - (math_abs(position.x) * 1.10) then return false end
+	
+	if position.y + (get_noise(3, position) * 16) > bitera_area_distance - (math_abs(position.x) * 1.10) then return false end
 	return true
 end
 
-local biter_area_entity_functions = {
-	["resource"] = function(entity)
-		entity.destroy()
-	end,
-	["unit-spawner"] = function(entity)
-		local vector = scrap_vectors[math_random(1, size_of_scrap_vectors)]
-		local position = entity.surface.find_non_colliding_position("big-worm-turret", {entity.position.x + vector[1], entity.position.y + vector[2]}, 10, 2)
-		if position then
-			if math_random(1, 3) == 1 then
-				entity.surface.create_entity({name = "medium-worm-turret", position = position, force = "north_biters"})
-			else
-				entity.surface.create_entity({name = "big-worm-turret", position = position, force = "north_biters"})
+local function draw_biter_area(surface, left_top)
+	local left_top_x = left_top.x
+	local left_top_y = left_top.y
+	
+	if left_top_y > bb_config.bitera_area_distance * -1 + 32 then return end
+	
+	local out_of_map = {}
+	local tiles = {}
+	local i = 1
+	
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local position = {x = left_top_x + x, y = left_top_y + y}
+			if is_biter_area(position) then
+				local noise_index = math_floor(math_abs(get_noise(3, position)) * 7) + 1
+				if noise_index > 7 then noise_index = 7 end
+				out_of_map[i] = {name = "out-of-map", position = position}
+				tiles[i] = {name = "dirt-" .. noise_index, position = position}
+				i = i + 1			
 			end
-		end
-	end,
-	["cliff"] = function(entity)
-		entity.destroy()
-	end,
-	["tree"] = function(entity)
-		local noise = get_noise(3, entity.position)
-		if noise > 0.75 then
-			if math_random(1, 5) ~= 1 then entity.surface.create_entity({name = "rock-big", position = entity.position, force = "neutral"}) end
-		end	
-		entity.destroy()
-	end,
-}
-
-local function builders_area_process_entity(e)
-	if is_biter_area(e.position) then
-		if biter_area_entity_functions[e.type] then
-			biter_area_entity_functions[e.type](e)
-		end
-	else
-		if e.type == "turret" or e.type == "unit-spawner" then
-			e.destroy()
-			return
 		end
 	end
-end
-
-local function builders_area_process_tile(t, surface)
-	if is_horizontal_border_river(t.position) then return end
-	if not is_biter_area(t.position) then return end
-	local noise_index = math.floor(math.abs(get_noise(3, t.position)) * 7) + 1
-	if noise_index > 7 then noise_index = 7 end
-	surface.set_tiles({{name = "dirt-" .. noise_index, position = t.position}})
-
-	if math_random(1, 160) == 1 then
-		if t.position.x ^ 2 + t.position.y ^ 2 < 129600 then return end
-		local spawner_position = surface.find_non_colliding_position("biter-spawner", t.position, 8, 1)
-		if spawner_position then
+	
+	surface.set_tiles(out_of_map, false)
+	surface.set_tiles(tiles, true)
+	
+	for _ = 1, 4, 1 do
+		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
+		local position = {x = left_top_x + v[1], y = left_top_y + v[2]}
+		if is_biter_area(position) and surface.can_place_entity({name = "spitter-spawner", position = position}) then
 			if math_random(1, 4) == 1 then
-				surface.create_entity({name = "spitter-spawner", position = spawner_position, force = "north_biters"})
+				table.insert(global.unit_spawners.north_biters, surface.create_entity({name = "spitter-spawner", position = position, force = "north_biters"}))
 			else
-				surface.create_entity({name = "biter-spawner", position = spawner_position, force = "north_biters"})
+				table.insert(global.unit_spawners.north_biters, surface.create_entity({name = "biter-spawner", position = position, force = "north_biters"}))
 			end
+		end
+	end
+	
+	local highest_worm_tier = math_floor((math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.0035) + 1
+	if highest_worm_tier > 4 then highest_worm_tier = 4 end
+	for _ = 1, 8, 1 do
+		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
+		local position = {x = left_top_x + v[1], y = left_top_y + v[2]}
+		if is_biter_area(position) and surface.can_place_entity({name = "medium-worm-turret", position = position}) then
+			local worm_turret_name = worm_turrets[math_random(1, highest_worm_tier)]		
+			surface.create_entity({name = worm_turret_name, position = position, force = "north_biters"})			
+		end
+	end
+	
+	for _ = 1, 16, 1 do
+		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
+		local position = {x = left_top_x + v[1], y = left_top_y + v[2]}
+		if is_biter_area(position) and surface.can_place_entity({name = "mineable-wreckage", position = position}) then
+			surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})		
 		end
 	end
 end
@@ -563,7 +558,9 @@ function Public.generate(event)
 	mixed_ore(event)
 	generate_river(event)
 	generate_circle_spawn(event)
-
+	
+	draw_biter_area(surface, left_top)
+	--[[
 	if bb_config.builders_area then
 		for _, t in pairs(surface.find_tiles_filtered({area = event.area, name = {"water", "deepwater"}})) do
 			builders_area_process_tile(t, surface)
@@ -572,12 +569,9 @@ function Public.generate(event)
 			builders_area_process_entity(e)
 		end
 	end
-
+	]]
+	
 	generate_extra_worm_turrets(surface, left_top)
-
-	if bb_config.random_scrap then
-		generate_scrap(event)
-	end
 
 	if global.bb_spawn_generated then return end
 	if game.tick > 0 then
