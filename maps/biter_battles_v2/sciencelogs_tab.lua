@@ -206,20 +206,23 @@ end)
 
 local function on_gui_selection_state_changed(event)
 	local player = game.players[event.player_index]	
+	if not event.element.valid then return end
 	local name = event.element.name
 	if global.dropdown_users_choice_force == nil then
 		initialize_dropdown_users_choice()
 	end
 	if name == "dropdown-force" then
 		global.dropdown_users_choice_force[player.name] = event.element.selected_index
+		build_config_gui(player, frame_sciencelogs)
 	end
 	if name == "dropdown-science" then
 		global.dropdown_users_choice_science[player.name] = event.element.selected_index
+		build_config_gui(player, frame_sciencelogs)
 	end
 	if name == "dropdown-evofilter" then
 		global.dropdown_users_choice_evo_filter[player.name] = event.element.selected_index
+		build_config_gui(player, frame_sciencelogs)
 	end
-	build_config_gui(player, frame_sciencelogs)
 end
 
 event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
