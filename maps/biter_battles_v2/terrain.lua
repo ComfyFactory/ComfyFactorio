@@ -463,7 +463,7 @@ local function draw_biter_area(surface, left_top)
 		end
 	end
 	
-	local highest_worm_tier = math_floor((math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.0035) + 1
+	local highest_worm_tier = math_floor((math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.01) + 2
 	if highest_worm_tier > 4 then highest_worm_tier = 4 end
 	for _ = 1, 8, 1 do
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
