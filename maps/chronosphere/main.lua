@@ -694,6 +694,13 @@ local function on_entity_died(event)
 	--if not event.entity.valid then return end
 end
 
+local function on_research_finished(event)
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 100
+	refresh_gui()
+	if not event.research.force.technologies["steel-axe"].researched then return end
+	event.research.force.manual_mining_speed_modifier = 1 + game.forces.player.mining_drill_productivity_bonus * 4
+end
+
 local function on_player_driving_changed_state(event)
 	local player = game.players[event.player_index]
 	local vehicle = event.entity
@@ -713,7 +720,7 @@ event.add(defines.events.on_player_joined_game, on_player_joined_game)
 --event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_pre_player_mined_item, pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
---event.add(defines.events.on_research_finished, on_research_finished)
+event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 
