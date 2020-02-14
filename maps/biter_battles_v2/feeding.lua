@@ -1,4 +1,5 @@
 local bb_config = require "maps.biter_battles_v2.config"
+local Server = require 'utils.server'
 
 local tables = require "maps.biter_battles_v2.tables"
 local food_values = tables.food_values
@@ -56,7 +57,9 @@ local function print_feeding_msg(player, food, flask_amount)
 	local formatted_amount = table.concat({"[font=heading-1][color=255,255,255]" .. flask_amount .. "[/color][/font]"})
 	
 	if flask_amount >= 20 then
-		game.print(colored_player_name .. " fed " .. formatted_amount .. " flasks of " .. formatted_food .. " to team " .. team_strings[get_enemy_team_of(player.force.name)] .. " biters!", {r = 0.9, g = 0.9, b = 0.9})
+		local enemy = get_enemy_team_of(player.force.name)
+		game.print(table.concat({colored_player_name, " fed ", formatted_amount, " flasks of ", formatted_food, " to team ", team_strings[enemy], " biters!"}), {r = 0.9, g = 0.9, b = 0.9})
+		Server.to_discord_bold(table.concat({player.name, " fed ", flask_amount, " flasks of ", food_values[food].name, " to team ", enemy, " biters!"}))
 	else
 		local target_team_text = "the enemy"
 		if global.training_mode then
@@ -104,7 +107,27 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 		local threat_jump = table.concat({threat_before_science_feed .. " to ".. formatted_threat_after_feed})
 		local evo_jump_difference =  math.round(formatted_evo_after_feed - evo_before_science_feed,1)
 		local threat_jump_difference =  math.round(formatted_threat_after_feed - threat_before_science_feed,0)
-		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " .. team_strings[get_enemy_team_of(player.force.name)]})
+		local line_log_stats_to_add = table.concat({ formatted_amount .. " " .. formatted_food .. " by " .. colored_player_name .. " to " })
+		local team_name_fed_by_science = get_enemy_team_of(player.force.name)
+		
+		if global.science_logs_total_north == nil then
+			global.science_logs_total_north = { 0 }
+			global.science_logs_total_south = { 0 }
+			for a = 1, 7 do	
+				table.insert(global.science_logs_total_north, 0)
+				table.insert(global.science_logs_total_south, 0)
+			end
+		end
+		
+		local total_science_of_player_force = nil
+		if player.force.name == "north" then
+			total_science_of_player_force  = global.science_logs_total_north
+		else
+			total_science_of_player_force  = global.science_logs_total_south
+		end
+		
+		local indexScience = tables.food_long_to_short[food].indexScience
+		total_science_of_player_force[indexScience] = total_science_of_player_force[indexScience] + flask_amount
 		
 		if global.science_logs_text then
 			table.insert(global.science_logs_date,1, formatted_feed_time)
@@ -113,6 +136,8 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 			table.insert(global.science_logs_evo_jump_difference,1, evo_jump_difference)
 			table.insert(global.science_logs_threat,1, threat_jump)
 			table.insert(global.science_logs_threat_jump_difference,1, threat_jump_difference)
+			table.insert(global.science_logs_fed_team,1, team_name_fed_by_science)
+			table.insert(global.science_logs_food_name,1, food)
 		else
 			global.science_logs_date = { formatted_feed_time }
 			global.science_logs_text = { line_log_stats_to_add }
@@ -120,6 +145,8 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 			global.science_logs_evo_jump_difference = { evo_jump_difference }
 			global.science_logs_threat = { threat_jump }
 			global.science_logs_threat_jump_difference = { threat_jump_difference }
+			global.science_logs_fed_team = { team_name_fed_by_science }
+			global.science_logs_food_name = { food }
 		end
 	end
 end

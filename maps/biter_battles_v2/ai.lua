@@ -2,6 +2,7 @@ local Public = {}
 local bb_config = require "maps.biter_battles_v2.config"
 local math_random = math.random
 
+--[[
 local vector_radius = 360
 local attack_vectors = {}
 attack_vectors.north = {}
@@ -16,6 +17,7 @@ for x = vector_radius * -1, vector_radius, 1 do
 	end
 end
 local size_of_vectors = #attack_vectors.north
+]]
 
 local threat_values = {
 	["small-spitter"] = 1.5,
@@ -175,23 +177,35 @@ Public.send_near_biters_to_silo = function()
 		})
 end
 
+local function get_random_spawner(biter_force_name)
+	local spawners = global.unit_spawners[biter_force_name]
+	local size_of_spawners = #spawners
+	
+	for _ = 1, 256, 1 do
+		if size_of_spawners == 0 then return end
+		local index = math_random(1, size_of_spawners)
+		local spawner = spawners[index]	
+		if spawner and spawner.valid then
+			return spawner
+		else	
+			table.remove(spawners, index)
+			size_of_spawners = size_of_spawners - 1
+		end	
+	end	
+end
+
 local function get_random_close_spawner(surface, biter_force_name)
-	local area = whole_spawner_area
-	-- If south_biters: Mirror area along x-axis
-	if biter_force_name == "south_biters" then
-		area = {left_top = {area.left_top[1], -1*area.right_bottom[2]}, right_bottom = {area.right_bottom[1], -1*area.left_top[2]}}
-	end
+	local nearest_spawner = get_random_spawner(biter_force_name)
+	if not nearest_spawner then return end
 
-	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = biter_force_name, area = area})
-	if not spawners[1] then return false end
-
-	local spawner = spawners[math_random(1,#spawners)]
-	for i = 1, 5, 1 do
-		local spawner_2 = spawners[math_random(1,#spawners)]
-		if spawner_2.position.x ^ 2 + spawner_2.position.y ^ 2 < spawner.position.x ^ 2 + spawner.position.y ^ 2 then spawner = spawner_2 end	
+	for _ = 1, 16, 1 do	
+		local spawner = get_random_spawner(biter_force_name)
+		if spawner.position.x ^ 2 + spawner.position.y ^ 2 < nearest_spawner.position.x ^ 2 + nearest_spawner.position.y ^ 2 then
+			nearest_spawner = spawner
+		end
 	end	
 	
-	return spawner
+	return nearest_spawner
 end
 
 local function select_units_around_spawner(spawner, force_name, biter_force_name)
@@ -244,6 +258,7 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 	
 	local commands = {}
 	
+	--[[
 	local vector = attack_vectors[force_name][math_random(1, size_of_vectors)]
 	local position = {target.x + vector[1], target.y + vector[2]}
 	position = unit_group.surface.find_non_colliding_position("stone-furnace", position, 96, 1)
@@ -257,6 +272,7 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 			}
 		end
 	end
+	]]
 	
 	commands[#commands + 1] = {
 		type = defines.command.attack_area,
@@ -427,7 +443,9 @@ end
 Public.raise_evo = function()
 	if global.freeze_players then return end
 	if not global.training_mode and (#game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0) then return end
+	if not global.total_passive_feed_redpotion then global.total_passive_feed_redpotion = 0 end
 	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
+	global.total_passive_feed_redpotion = global.total_passive_feed_redpotion + amount
 	local biter_teams = {["north_biters"] = "north", ["south_biters"] = "south"}
 	local a_team_has_players = false
 	for bf, pf in pairs(biter_teams) do

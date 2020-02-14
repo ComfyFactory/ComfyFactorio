@@ -1,6 +1,7 @@
 global.this = {}
 local _global = require("utils.global")
 local _evt = require("utils.event")
+local _server = require("utils.server")
 local _map = require("tools.map_functions")
 local _timers = require("planet_prison.mod.timers")
 local _common = require("planet_prison.mod.common")
@@ -8,6 +9,7 @@ local _layers = require("planet_prison.mod.layers")
 local _ai = require("planet_prison.mod.ai")
 local _bp = require("planet_prison.mod.bp")
 local _afk = require("planet_prison.mod.afk")
+local _claims = require("planet_prison.mod.claims")
 global.this._config = require("planet_prison.config")
 
 global.this.maps = {
@@ -21,12 +23,18 @@ global.this.maps = {
          moisture = 0,
          temperature = 30.
       },
+      cliff_settings = {
+         richness = 0,
+      },
       starting_area = "none",
       autoplace_controls = {
          ["iron-ore"] = {
             frequency = 0,
          },
          ["copper-ore"] = {
+            frequency = 0,
+         },
+         ["uranium-ore"] = {
             frequency = 0,
          },
          ["stone"] = {
@@ -49,15 +57,20 @@ global.this.maps = {
    }
 }
 
+global.this.assign_camouflage = function(ent, common)
+   local shade = common.rand_range(20, 200)
+   ent.color = {
+      r = shade,
+      g = shade,
+      b = shade
+   }
+   ent.disable_flashlight()
+end
+
 local function noise_hostile_hook(ent, common)
    ent.force = "enemy"
    if ent.name == "character" then
-      local shade = common.rand_range(20, 200)
-      ent.color = {
-         r = shade,
-         g = shade,
-         b = shade
-      }
+      global.this.assign_camouflage(ent, common)
 
       if common.rand_range(1, 5) == 1 then
          ent.insert({name="shotgun", count=1})
@@ -215,6 +228,12 @@ local function init_merchant_bp(entity, _)
    end
 end
 
+local function create_orbit_group()
+   local orbit = game.permissions.create_group("orbit")
+   for _, perm in pairs(global.this._config.permission_orbit) do
+      orbit.set_allows_action(perm, false)
+   end
+end
 
 global.this.bp = {
    player_ship = require("planet_prison.bp.player_ship"),
@@ -226,15 +245,26 @@ local function init_game()
    _bp.init()
    _ai.init()
    _timers.init()
+   _claims.init(global.this._config.claim_markers,
+                global.this._config.claim_max_distance)
 
    local map = pick_map()
    local preset = global.this.presets[map.name]
    global.this.surface = game.create_surface("arena", map)
-   global.this.surface.min_brightness = 0
+   global.this.surface.brightness_visual_weights = {
+      1 / 0.85,
+      1 / 0.85,
+      1 / 0.85
+   }
    global.this.surface.ticks_per_day = 25000 * 4
    global.this.perks = {}
    global.this.events.merchant.spawn_tick = game.tick + 5000
+   global.this.events.raid_groups = {}
+   global.this.events.raid_init = false
+   global.this.events.annihilation = false
+   global.this.events.reset_time = nil
 
+   create_orbit_group()
    game.map_settings.pollution.enabled = false
    game.map_settings.enemy_evolution.enabled = false
    game.difficulty_settings.technology_price_multiplier = 0.1
@@ -376,11 +406,36 @@ local function get_non_obstructed_position(s, radius)
    return chunk
 end
 
-local function redraw_gui(p)
-   p.gui.left.clear()
+local function switchable_perk(caption, status)
+   if status then
+      return string.format("[color=0,80,0]%s[/color]", caption)
+   end
 
+   return string.format("[color=80,0,0]%s[/color]", caption)
+end
+
+local function draw_normal_gui(player)
+   local button
    local merchant = global.this.events.merchant
-   local perks = global.this.perks[p.name]
+   if merchant.alive then
+      button = {
+         type = "button",
+         name = "merchant_find",
+         caption = "Merchant",
+      }
+      player.gui.left.add(button)
+   end
+
+   button = {
+      type = "button",
+      name = "flashlight_toggle",
+      caption = "Toggle flashlight"
+   }
+   player.gui.left.add(button)
+end
+
+local function draw_common_gui(player)
+   local perks = global.this.perks[player.name]
    local chat_type = "Global chat"
    if not perks.chat_global then
       chat_type = "NAP chat"
@@ -391,30 +446,33 @@ local function redraw_gui(p)
       name = "manual_toggle",
       caption = "Manual"
    }
-   p.gui.left.add(button)
+   player.gui.left.add(button)
 
    button = {
       type = "button",
       name = "chat_toggle",
       caption = chat_type,
    }
-   p.gui.left.add(button)
+   player.gui.left.add(button)
+end
 
-   if merchant.alive then
-      button = {
-         type = "button",
-         name = "merchant_find",
-         caption = "Merchant",
-      }
-      p.gui.left.add(button)
-   end
-
-   button = {
+local function draw_orbit_gui(player)
+   local button = {
       type = "button",
-      name = "flashlight_toggle",
-      caption = "Toggle flashlight"
+      name = "annihilate",
+      caption = "Annihilate"
    }
-   p.gui.left.add(button)
+   player.gui.left.add(button)
+end
+
+local function redraw_gui(player)
+   player.gui.left.clear()
+   draw_common_gui(player)
+   if player.spectator == true then
+      draw_orbit_gui(player)
+   else
+      draw_normal_gui(player)
+   end
 end
 
 local function print_merchant_position(player)
@@ -426,6 +484,56 @@ local function print_merchant_position(player)
    else
       player.print(string.format(">> You received a broadcast with [gps=%d,%d] coordinates", position.x, position.y))
    end
+end
+
+local function on_tick_reset()
+   if global.this.events.reset_time == nil then
+      return
+   end
+
+   if global.this.events.reset_time > game.tick then
+      return
+   end
+
+   _server.start_scenario('planet_prison')
+   global.this.events.reset_time = nil
+end
+
+local function annihilate(caller)
+   global.this.events.annihilation = true
+   for _, player in pairs(game.connected_players) do
+      if player.name == caller.name then
+         goto continue
+      end
+
+      local coeff
+      for i = 1, 5 do
+         if i % 2 == 0 then
+            coeff = -1
+         else
+            coeff = 1
+         end
+
+         local query = {
+            name = "atomic-rocket",
+            position = {
+               player.position.x - 100,
+               player.position.y - 100,
+            },
+            target = {
+               player.position.x + (8 * i * coeff),
+               player.position.y + (8 * i * coeff),
+            },
+            speed = 0.1,
+         }
+
+         player.surface.create_entity(query)
+         player.print(">> Annihilation in progress...")
+      end
+      ::continue::
+   end
+
+   global.this.events.reset_time = game.tick + (60 * 15)
 end
 
 local function on_gui_click(e)
@@ -470,13 +578,20 @@ local function on_gui_click(e)
       text_box.style.minimal_width = 512
       text_box.read_only = true
       text_box.word_wrap = true
+   elseif elem.name == "annihilate" then
+      if global.this.events.annihilation == true then
+         return
+      end
+
+      elem.destroy()
+      annihilate(p)
    end
 end
 
 local function get_random_name()
    while true do
-      local id = _common.rand_range(1000, 9999)
-      local name = string.format("inmate_%d", id)
+      local id = _common.rand_range(100, 999)
+      local name = string.format("#%d", id)
       if global.this.perks[name] == nil then
          return name
       end
@@ -590,8 +705,225 @@ local function merchant_event(s)
    end
 end
 
+local function _get_outer_points(surf, x, y, deps)
+   local inner = deps.inner
+   local points = deps.points
+
+   local point = {
+      x = x,
+      y = y,
+   }
+
+   if _common.point_in_bounding_box(point, inner) then
+      return
+   end
+
+   local tile = surf.get_tile(point)
+   if string.find(tile.name, "water") ~= nil
+   or string.find(tile.name, "out") ~= nil then
+      return
+   end
+
+   table.insert(points, point)
+end
+
+local function _calculate_attack_costs(surf, bb)
+   local query = {
+      area = bb,
+      force = {
+         "enemy",
+         "neutral",
+         "player",
+      },
+      invert = true,
+   }
+   local objects = surf.find_entities_filtered(query)
+   if next(objects) == nil then
+      log("B")
+      return 0
+   end
+
+   local cost = 0
+   local costs = global.this._config.base_costs
+   for _, obj in pairs(objects) do
+      for name, coeff in pairs(costs) do
+         if obj.name == name then
+            cost = cost + coeff
+         end
+      end
+   end
+
+   return cost
+end
+
+local function _get_raid_info(surf, bb)
+   local pick = nil
+   local cost = _calculate_attack_costs(surf, bb)
+   for _, entry in pairs(global.this._config.raid_costs) do
+      if entry.cost <= cost then
+         pick = entry
+      else
+         break
+      end
+   end
+
+   return pick
+end
+
+local function _create_npc_group(claim, surf)
+   local inner = _common.create_bounding_box_by_points(claim)
+   local info = _get_raid_info(surf, inner)
+   if info == nil then
+      return {}
+   end
+
+   local outer = _common.deepcopy(inner)
+   _common.enlarge_bounding_box(outer, 10)
+
+   local points = {}
+   local deps = {
+      points = points,
+      inner = inner,
+   }
+   _common.for_bounding_box_extra(surf, outer, _get_outer_points, deps)
+
+   local agents = {}
+   for i, point in ipairs(points) do
+      if _common.rand_range(1, info.chance) ~= 1 then
+         goto continue
+      end
+
+      local query = {
+         name = "character",
+         position = point
+      }
+
+      local agent = surf.create_entity(query)
+      local stash = {}
+      for attr, value in pairs(info.gear[(i % #info.gear) + 1]) do
+         local prop = {
+            name = value
+         }
+
+         if attr == "ammo" then
+            prop.count = 20
+         elseif attr == "weap" then
+            prop.count = 1
+         elseif attr == "armor" then
+            prop.count = 1
+         end
+
+         table.insert(stash, prop)
+      end
+
+      for _, stack in pairs(stash) do
+         agent.insert(stack)
+      end
+
+      global.this.assign_camouflage(agent, _common)
+
+      table.insert(agents, agent)
+      ::continue::
+   end
+
+   return agents
+end
+
+local function populate_raid_event(surf)
+   local claims, group
+   local status = false
+   local groups = global.this.events.raid_groups
+
+   for _, p in pairs(game.connected_players) do
+      groups[p.name] = {}
+      claims = _claims.get_claims(p.name)
+      for _, claim in pairs(claims) do
+         if #claim == 0 then
+            goto continue
+         end
+
+         status = true
+         group = {
+            agents = _create_npc_group(claim, surf),
+            objects = claim
+         }
+         table.insert(groups[p.name], group)
+
+         ::continue::
+      end
+   end
+
+   return status
+end
+
+local function raid_event(surf)
+   local raid_groups = global.this.events.raid_groups
+   if global.this.events.raid_init then
+      if surf.daytime > 0.01 and surf.daytime <= 0.1 then
+         for name, groups in pairs(raid_groups) do
+            for i = #groups, 1, -1 do
+               local group = groups[i]
+               local agents = group.agents
+               for j = #agents, 1, -1 do
+                  local agent = agents[j]
+                  if agent.valid then
+                     agent.destroy()
+                  end
+
+                  table.remove(agents, j)
+               end
+
+               if #agents == 0 then
+                  table.remove(group, i)
+               end
+            end
+
+            if #groups == 0 then
+               raid_groups[name] = nil
+            end
+         end
+
+         global.this.events.raid_init = false
+      end
+   else
+      if surf.daytime < 0.4 or surf.daytime > 0.6 then
+         return
+      end
+
+      if populate_raid_event(surf) then
+         global.this.events.raid_init = true
+      end
+   end
+
+   if game.tick % 4 ~= 0 then
+      return
+   end
+
+   for name, groups in pairs(raid_groups) do
+      local exists = false
+      for _, p in pairs(game.connected_players) do
+         if p.name == name then
+            exists = true
+            break
+         end
+      end
+
+      if not exists then
+         raid_groups[name] = nil
+         goto continue
+      end
+
+      for _, group in pairs(groups) do
+         _ai.do_job(surf, _ai.command.attack_objects, group)
+      end
+
+      ::continue::
+   end
+end
+
 local function cause_event(s)
    merchant_event(s)
+   raid_event(s)
 end
 
 local function kill_player(p)
@@ -645,7 +977,7 @@ local function on_chunk_generated(e)
    _layers.push_chunk(e.position)
 end
 
-local function on_player_mined_entity(e)
+local function mined_wreckage(e)
    if e.entity.name ~= "mineable-wreckage" then
       return
    end
@@ -672,6 +1004,16 @@ local function on_player_mined_entity(e)
    e.buffer.insert(cand)
 end
 
+local function on_player_mined_entity(e)
+   local ent = e.entity
+   if not ent.valid then
+      return
+   end
+
+   mined_wreckage(e)
+   _claims.on_player_mined_entity(ent)
+end
+
 local function on_player_died(e)
    local index = e.player_index
    if not index then
@@ -679,6 +1021,7 @@ local function on_player_died(e)
    end
 
    local p = game.players[index]
+   _claims.on_player_died(p)
    game.merge_forces(p.name, "neutral")
 end
 
@@ -814,7 +1157,7 @@ local function on_entity_damaged(e)
             vertical_speed = 0.02,
             height = 0.01,
          }
-         ent.surface.create_entity(blood)
+         ent.surface.create_particle(blood)
       end
    end
 end
@@ -890,6 +1233,7 @@ local function on_entity_died(e)
 
    hostile_death(e)
    character_death(e)
+   _claims.on_entity_died(e.entity)
 end
 
 
@@ -925,6 +1269,7 @@ local function on_built_entity(e)
       return
    end
 
+   _claims.on_built_entity(ent)
    merchant_exploit_check(ent)
 end
 
@@ -1033,6 +1378,19 @@ local function on_research_finished(e)
    end
 end
 
+local function move_to_orbit(player)
+   local char = player.character
+   player.character = nil
+   char.destroy()
+
+   game.merge_forces(player.name, "neutral")
+   player.spectator = true
+   redraw_gui(player)
+
+   local orbit_perms = game.permissions.get_group("orbit")
+   orbit_perms.add_player(player)
+end
+
 local function on_rocket_launched(e)
    local surf = global.this.surface
    local pid = e.player_index
@@ -1040,10 +1398,9 @@ local function on_rocket_launched(e)
    if pid == nil then
       surf.print(">> Nobody escaped by it")
    else
-      local p = game.players[pid]
-      surf.print(string.format(">> The %s was able to escape", p.name))
-      on_player_died({player_index = pid})
-      p.character.die()
+      local player = game.players[pid]
+      surf.print(string.format(">> The %s was able to escape", player.name))
+      move_to_orbit(player)
    end
 end
 
@@ -1067,6 +1424,7 @@ _evt.add(defines.events.on_chunk_charted, on_chunk_charted)
 _evt.add(defines.events.on_console_chat, on_console_chat)
 _evt.add(defines.events.on_gui_click, on_gui_click)
 _evt.add(defines.events.on_tick, on_tick)
+_evt.add(defines.events.on_tick, on_tick_reset)
 _evt.add(defines.events.on_rocket_launched, on_rocket_launched)
 
 _global.register_init({},

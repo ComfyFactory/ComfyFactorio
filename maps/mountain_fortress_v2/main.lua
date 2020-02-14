@@ -88,9 +88,9 @@ function Public.reset_map()
 	local surface = game.surfaces[global.active_surface_index]
 
 	if darkness then
-		surface.min_brightness = 0
-		surface.brightness_visual_weights = {1, 1, 1}
-		surface.daytime = 0.44
+		surface.min_brightness = 0.10
+		surface.brightness_visual_weights = {0.90, 0.90, 0.90}
+		surface.daytime = 0.42
 		surface.freeze_daytime = true
 		surface.solar_power_multiplier = 999
 	end

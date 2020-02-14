@@ -40,14 +40,6 @@ local entity_copy_functions = {
 		if not surface.can_place_entity({name = entity.name, position = mirror_position}) then return end
 		entity.clone({position = mirror_position, surface = surface, force = "neutral"})
 	end,
-	--[[
-	["simple-entity"] = function(surface, entity, mirror_position)
-		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction]}
-		if surface.count_entities_filtered({type = "simple-entity", position = mirror_position}) ~= 0 then return end
-		local mirror_entity = surface.create_entity(mirror_entity)
-		mirror_entity.graphics_variation = entity.graphics_variation
-	end,
-	]]		
 	["simple-entity"] = function(surface, entity, mirror_position)
 		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction]}
 		if not surface.can_place_entity(mirror_entity) then return end
@@ -64,12 +56,13 @@ local entity_copy_functions = {
 		surface.create_entity({name = entity.name, position = mirror_position, amount = entity.amount})
 	end,	
 	["corpse"] = function(surface, entity, mirror_position)
+		if game.tick > 900 then return end
 		surface.create_entity({name = entity.name, position = mirror_position})
 	end,	
 	["unit-spawner"] = function(surface, entity, mirror_position)
 		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south_biters"}
-		if not surface.can_place_entity(mirror_entity) then return end
-		surface.create_entity(mirror_entity)
+		if not surface.can_place_entity(mirror_entity) then return end		
+		table.insert(global.unit_spawners.south_biters, surface.create_entity(mirror_entity))
 	end,
 	["turret"] = function(surface, entity, mirror_position)
 		local mirror_entity = {name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south_biters"}
@@ -77,20 +70,22 @@ local entity_copy_functions = {
 		surface.create_entity(mirror_entity)
 	end,
 	["rocket-silo"] = function(surface, entity, mirror_position)
+		if game.tick > 900 then return end
 		if surface.count_entities_filtered({name = "rocket-silo", area = {{mirror_position.x - 8, mirror_position.y - 8},{mirror_position.x + 8, mirror_position.y + 8}}}) > 0 then return end
 		global.rocket_silo["south"] = surface.create_entity({name = entity.name, position = mirror_position, direction = direction_translation[entity.direction], force = "south"})
 		global.rocket_silo["south"].minable = false
 	end,	
 	["ammo-turret"] = function(surface, entity, mirror_position)
+		if game.tick > 900 then return end
 		if not surface.can_place_entity({name = entity.name, position = mirror_position, force = "south"}) then return end
 		entity.clone({position = mirror_position, surface = surface, force="south"})
 	end,
 	["wall"] = function(surface, entity, mirror_position)
-		--if not surface.can_place_entity({name = entity.name, position = mirror_position, force = "south"}) then return end
+		if game.tick > 900 then return end
 		entity.clone({position = mirror_position, surface = surface, force="south"})
 	end,
 	["container"] = function(surface, entity, mirror_position)
-		--if not surface.can_place_entity({name = entity.name, position = mirror_position, force = "south"}) then return end
+		if game.tick > 900 then return end
 		entity.clone({position = mirror_position, surface = surface, force="south"})
 	end,
 	["fish"] = function(surface, entity, mirror_position)

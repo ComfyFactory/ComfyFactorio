@@ -3,6 +3,9 @@
 
 local Simplex = {}
 
+local bit32_band = bit32.band
+local math_floor = math.floor
+
 -- 2D simplex noise
 
 local grad3 = {
@@ -26,7 +29,7 @@ local  p = {151,160,137,91,90,15,
 	138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180}
 local perm = {}
 for i=0,511 do
-	perm[i+1] = p[bit32.band(i, 255) + 1]
+	perm[i+1] = p[bit32_band(i, 255) + 1]
 end
 
 -- special case of dot with 3 inputs
@@ -52,8 +55,8 @@ function Simplex.d2(xin, yin,seed)
 	local n0, n1, n2	-- Noise contributions from the three corners
 	-- Skew the input space to determine which simplex cell we're in
 	local s = (xin+yin)*F2; -- Hairy factor for 2D
-	local i = math.floor(xin+s)
-	local j = math.floor(yin+s)
+	local i = math_floor(xin+s)
+	local j = math_floor(yin+s)
 	local t = (i+j)*G2
 	local X0 = i-t -- Unskew the cell origin back to (x,y) space
 	local Y0 = j-t
@@ -78,8 +81,8 @@ function Simplex.d2(xin, yin,seed)
 	local y2 = y0 - 1 + 2 * G2
 
 	-- Work out the hashed gradient indices of the three simplex corners
-	local ii = bit32.band(i, 255)
-	local jj = bit32.band(j, 255)
+	local ii = bit32_band(i, 255)
+	local jj = bit32_band(j, 255)
 	local gi0 = perm[ii + perm[jj+1]+1] % 12
 	local gi1 = perm[ii + i1 + perm[jj + j1+1]+1] % 12
 	local gi2 = perm[ii + 1 + perm[jj + 1+1]+1] % 12

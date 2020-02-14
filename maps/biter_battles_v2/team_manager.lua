@@ -1,4 +1,5 @@
 local Public = {}
+local Server = require 'utils.server'
 
 local forces = {
 	{name = "north", color = {r = 0, g = 0, b = 200}},
@@ -81,6 +82,7 @@ local function switch_force(player_name, force_name)
 	player.force = game.forces[force_name]
 				
 	game.print(player_name .. " has been switched into team " .. force_name .. ".", {r=0.98, g=0.66, b=0.22})
+    Server.to_discord_bold(player_name .. " has joined team " .. force_name .. "!")
 	
 	leave_corpse(player)
 	

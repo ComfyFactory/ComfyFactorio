@@ -108,7 +108,7 @@ local tick_minute_functions = {
 	[300 * 7] = Game_over.restart_idle_map,
 }
 
-local function on_tick(event)
+local function on_tick()
 	Mirror_terrain.ticking_work()
 
 	local tick = game.tick
