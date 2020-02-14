@@ -66,6 +66,7 @@ require "modules.autostash"
 -----------------------------
 
 ---- enable maps here ---- (maps higher up in the list may be more actually playable)
+--require "maps.chronosphere.main"
 --require "maps.fish_defender.main"
 --require "maps.biter_battles_v2.main"
 --require "maps.mountain_fortress_v2.main"
