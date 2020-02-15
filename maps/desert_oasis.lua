@@ -73,6 +73,10 @@ local function on_chunk_generated(event)
 				if noise > water_start then
 					size_of_tiles = size_of_tiles + 1
 					tiles[size_of_tiles] = {name = "water", position = position}
+					if math_random(1, 64) == 1 then
+						size_of_entities = size_of_entities + 1
+						entities[size_of_entities] = {name = "fish", position = position}
+					end
 				else
 					size_of_tiles = size_of_tiles + 1
 					tiles[size_of_tiles] = {name = "grass-" .. math_floor(noise * 32) % 3 + 1, position = position}
@@ -80,20 +84,23 @@ local function on_chunk_generated(event)
 					for _, cliff in pairs(surface.find_entities_filtered({type = "cliff", position = position})) do
 						cliff.destroy()
 					end
-
-					if math_random(1, 48) == 1 then
-						size_of_entities = size_of_entities + 1
-						entities[size_of_entities] = {name = "tree-0" .. math_random(1, 4), position = position}
-					end
-					
+	
 					if noise > water_start - 0.07 then
 						size_of_entities = size_of_entities + 1
-						entities[size_of_entities] = {name = ores[math_floor(get_noise("small_caves", position, seed) * 4) % 4 + 1], position = position, amount = math_random(600, 800)}
+						local bonus = math_floor(math.sqrt(position.x ^ 2 + position.y ^ 2) * 0.35)
+						entities[size_of_entities] = {name = ores[math_floor(get_noise("small_caves", position, seed) * 4) % 4 + 1], position = position, amount = math_random(400 + bonus, 600 + bonus)}
 					else
 						if get_noise("n3", position, seed) > 0.68 then
 							if math_random(1, 128) == 1 then
 								size_of_entities = size_of_entities + 1
 								entities[size_of_entities] = {name = "crude-oil", position = position, amount = math_random(250000, 500000)}
+							end
+						end
+						
+						if math_random(1, 12) == 1 then
+							size_of_entities = size_of_entities + 1
+							if math_abs(get_noise("n3", position, seed)) > 0.30 then
+								entities[size_of_entities] = {name = "tree-0" .. math_floor(get_noise("n2", position, seed) * 9) % 9 + 1, position = position}
 							end
 						end
 					end
@@ -146,7 +153,7 @@ local function on_init()
 	for _ = 1, 1024 ^ 2, 1 do
 		seed = math_random(1, 999999999)
 		noise = get_noise("oasis", position, seed)
-		if noise > 0.82 then
+		if noise > water_start + 0.02 then
 			global.desert_oasis_seed = seed
 			break
 		end
