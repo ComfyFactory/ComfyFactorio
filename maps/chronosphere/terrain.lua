@@ -194,11 +194,11 @@ end
 
 local function process_river_position(p, seed, tiles, entities, treasure, planet)
   local biters = planet[1].name.biters
-  local richness = math_random(50 + 10 * global.objective.chronojumps, 100 + 10 * global.objective.chronojumps) * planet[1].ore_richness.factor^2
-  local iron_size = get_size_of_ore("iron-ore", planet)
-  local copper_size = get_size_of_ore("copper-ore", planet)
-  local stone_size = get_size_of_ore("stone", planet)
-  local coal_size = get_size_of_ore("coal", planet)
+  local richness = math_random(50 + 20 * global.objective.chronojumps, 100 + 20 * global.objective.chronojumps) * planet[1].ore_richness.factor
+  local iron_size = get_size_of_ore("iron-ore", planet) * 3
+  local copper_size = get_size_of_ore("copper-ore", planet) * 3
+  local stone_size = get_size_of_ore("stone", planet) * 3
+  local coal_size = get_size_of_ore("coal", planet) * 4
   if not biters then biters = 4 end
   local large_caves = get_noise("large_caves", p, seed)
 	local cave_rivers = get_noise("cave_rivers", p, seed)
@@ -223,7 +223,7 @@ local function process_river_position(p, seed, tiles, entities, treasure, planet
 		tiles[#tiles + 1] = {name = "water-green", position = p}
 		if math_random(1,128) == 1 then entities[#entities + 1] = {name="fish", position=p} end
 		return
-  elseif large_caves > -0.15 and large_caves < 0.15 and cave_rivers <0.35 then
+  elseif large_caves > -0.20 and large_caves < 0.20 and math_abs(cave_rivers) < 0.95 then
     if ores > -coal_size and ores < coal_size then
       entities[#entities + 1] = {name = "coal", position = p, amount = richness}
     end
@@ -266,15 +266,20 @@ local function process_biter_position(p, seed, tiles, entities, treasure, planet
   local large_caves = get_noise("large_caves", p, seed)
   local biters = planet[1].name.biters
   local ore_size = planet[1].ore_richness.factor
+  local handicap = 0
+  if global.objective.chronojumps < 5 then handicap = 150 end
   if scrapyard < -0.75 or scrapyard > 0.75 then
-    if math_random(1,52 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 200 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
+
+    if math_random(1,52 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 + handicap then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
 
   end
   if scrapyard > -0.05 - 0.01 * ore_size and scrapyard < 0.05 + 0.01 * ore_size  then
     if math_random(1,20) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
   end
-  if scrapyard + 0.5 > -0.05  - 0.1 * planet[1].name.moisture and scrapyard + 0.5 < 0.05 +  0.1 * planet[1].name.moisture  then
-    if math_random(1,100) > 42 then entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p} end
+  if scrapyard + 0.5 > -0.1  - 0.1 * planet[1].name.moisture and scrapyard + 0.5 < 0.1 +  0.1 * planet[1].name.moisture  then
+    local treetypes = tree_raffle[math_random(1, s_tree_raffle)]
+    if planet[1].name.name == "lava planet" then treetypes = dead_tree_raffle[math_random(1, 5)] end
+    if math_random(1,100) > 42 - handicap / 6 then entities[#entities + 1] = {name = treetypes , position = p} end
   end
 
 	if scrapyard > -0.10 and scrapyard < 0.10 then
@@ -282,11 +287,13 @@ local function process_biter_position(p, seed, tiles, entities, treasure, planet
       local jumps = global.objective.chronojumps * 5
       if global.objective.chronojumps > 20 then jumps = 100 end
       local roll = math_random(1,200 - jumps - biters)
-      if math_sqrt(p.x * p.x + p.y * p.y) > 300 then
+      if math_sqrt(p.x * p.x + p.y * p.y) > 200 + handicap then
   			if roll == 1 then
           entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
         elseif roll == 2 then
           entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}
+        elseif roll == 3 then
+          --if math_random(1, 1024) == 1 then treasure[#treasure + 1] = p end
         end
 			  return
       end
@@ -318,7 +325,7 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 		end
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		 if scrapyard < -0.55 or scrapyard > 0.55 then
-		 	if math_random(1,40) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 100 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
+		 	if math_random(1,40) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
 		 	return
 		 end
      if scrapyard + 0.5 > -0.05  - 0.1 * planet[1].name.moisture and scrapyard + 0.5 < 0.05 +  0.1 * planet[1].name.moisture  then
@@ -349,7 +356,7 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 			tiles[#tiles + 1] = {name = "dirt-7", position = p}
       local jumps = global.objective.chronojumps * 5
       if global.objective.chronojumps > 20 then jumps = 100 end
-			if math_random(1,200 - jumps) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 100 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
+			if math_random(1,200 - jumps) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
 			return
 		end
 	end
@@ -444,6 +451,11 @@ local function biter_chunk(surface, left_top, level, planet)
 			local p = {x = left_top.x + x, y = left_top.y + y}
 			process_level(p, seed, tiles, entities, treasure, planet)
 		end
+	end
+  for _, p in pairs(treasure) do
+		local name = "wooden-chest"
+		if math_random(1, 6) == 1 then name = "iron-chest" end
+		Treasure(surface, p, name)
 	end
   surface.set_tiles(tiles, true)
   for _, entity in pairs(entities) do
@@ -547,9 +559,11 @@ local function process_chunk(surface, left_top)
   elseif planet[1].name.name == "rocky planet" then
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 4, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 4, planet) return end
-  -- elseif planet[1].name.name == "lava planet" then
-  --   if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 4, planet) return end
-  --   if math_abs(left_top.y) > 31 and math_abs(left_top.x) > 31 then empty_chunk(surface, left_top, 4, planet) return end
+  elseif planet[1].name.name == "lava planet" then
+    if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 7, planet) end
+    if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then biter_chunk(surface, left_top, 7, planet) end
+    replace_water(surface, left_top)
+    return
   else
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 7, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then biter_chunk(surface, left_top, 7, planet) return end

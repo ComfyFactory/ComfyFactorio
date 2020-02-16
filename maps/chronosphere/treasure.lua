@@ -160,7 +160,7 @@ function Public.treasure_chest(surface, position, container_name)
 	}
   local jumps = 0
   if global.objective.chronojumps then jumps = global.objective.chronojumps end
-	local distance_to_center = math_sqrt(position.y * position.y + position.x * position.x) * (1 + jumps / 50) * 0.0002
+	local distance_to_center =  (jumps / 50) 
 	if distance_to_center > 1 then distance_to_center = 1 end
 
 	for _, t in pairs (chest_loot) do

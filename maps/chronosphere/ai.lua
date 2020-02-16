@@ -52,23 +52,23 @@ end
 
 local function is_biter_inactive(biter, unit_number)
 	if not biter.entity then
-		print("AI: active unit " .. unit_number .. " removed, possibly died.")
+		--print("AI: active unit " .. unit_number .. " removed, possibly died.")
 		return true
 	end
 	if not biter.entity.valid then
-		print("AI: active unit " .. unit_number .. " removed, biter invalid.")
+		--print("AI: active unit " .. unit_number .. " removed, biter invalid.")
 		return true
 	end
 	if not biter.entity.unit_group then
-		print("AI: active unit " .. unit_number .. "  at x" .. biter.entity.position.x .. " y" .. biter.entity.position.y .. " removed, had no unit group.")
+		--print("AI: active unit " .. unit_number .. "  at x" .. biter.entity.position.x .. " y" .. biter.entity.position.y .. " removed, had no unit group.")
 		return true
 	end
 	if not biter.entity.unit_group.valid then
-		print("AI: active unit " .. unit_number .. " removed, unit group invalid.")
+		--print("AI: active unit " .. unit_number .. " removed, unit group invalid.")
 		return true
 	end
 	if game.tick - biter.active_since > 162000 then
-		print("AI: " .. "enemy" .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since .. ".")
+		--print("AI: " .. "enemy" .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since .. ".")
 		biter.entity.destroy()
 		return true
 	end
@@ -189,9 +189,9 @@ Public.send_near_biters_to_objective = function()
   local random_target = targets[math_random(1, #targets)]
   local surface = random_target.surface
   local pollution = surface.get_pollution(random_target.position)
-  local success = false 
-  if pollution > 500 then
-    surface.pollute(random_target.position, -500)
+  local success = false
+  if pollution > 300 then
+    surface.pollute(random_target.position, -100)
     --game.print("sending objective wave")
   	success = true
   else
@@ -268,8 +268,8 @@ local function send_group(unit_group, nearest_player_unit)
   local target = targets[math_random(1, #targets)]
   local surface = target.surface
   local pollution = surface.get_pollution(target.position)
-  if pollution > 500 then
-    surface.pollute(target.position, -500)
+  if pollution > 300 then
+    surface.pollute(target.position, -100)
     --game.print("sending unit group attack")
 	   local commands = {}
 

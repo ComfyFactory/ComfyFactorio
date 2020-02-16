@@ -22,7 +22,6 @@ local chronobuble = require "maps.chronosphere.chronobubles"
 local level_depth = require "maps.chronosphere.terrain"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
-local WD = require "modules.wave_defense.table"
 local Locomotive = require "maps.chronosphere.locomotive"
 local Modifier = require "player_modifiers"
 local update_gui = require "maps.chronosphere.gui"
@@ -31,8 +30,9 @@ local math_floor = math.floor
 local math_sqrt = math.sqrt
 local chests = {}
 local Public = {}
-local acus = {}
+--local acus = {}
 global.objective = {}
+global.flame_boots = {}
 
 local choppy_entity_yield = {
 		["tree-01"] = {"iron-ore"},
@@ -42,25 +42,8 @@ local choppy_entity_yield = {
 	}
 
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16}
--- function roll_planet()
--- 	for i = 1, 100, 1 do
--- 		local planet = chronobuble.determine_planet()
--- 		log("Planet number " .. i .. " stats:")
--- 		log("Name: " .. planet[1].name.name)
--- 		log("Speed of day: " .. planet[1].day_speed.name)
--- 		log("Time of day: " .. planet[1].time)
--- 		log("Ore richness: " .. planet[1].ore_richness.name .. ", multiplier: " .. planet[1].ore_richness.factor)
--- 	end
--- end
---
--- function roll_planet2()
--- 	for i = 1, 100, 1 do
--- 		local planet = chronobuble.determine_planet()
--- 		log("#" .. i .. "#" .. planet[1].name.id .. "#" .. planet[1].day_speed.timer .. "#" .. planet[1].time .. "#" .. planet[1].ore_richness.factor)
--- 	end
--- end
-
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['grenade'] = 1, ['raw-fish'] = 4, ['rail'] = 16, ['wood'] = 16}
+local starting_cargo = {['firearm-magazine'] = 16, ['iron-plate'] = 16, ['wood'] = 16, ['burner-mining-drill'] = 8}
 
 function generate_overworld(surface, optplanet)
 	local planet = nil
@@ -73,6 +56,8 @@ function generate_overworld(surface, optplanet)
 	end
 	if planet[1].name.name == "choppy planet" then
 		game.print("Comfylatron: OwO what are those strange trees?!? They have ore fruits! WTF!", {r=0.98, g=0.66, b=0.22})
+	elseif planet[1].name.name == "lava planet" then
+		game.print("Comfylatron: OOF this one is a bit hot. And have seen those biters? They BATHE in fire!", {r=0.98, g=0.66, b=0.22})
 	end
 	surface.min_brightness = 0
 	surface.brightness_visual_weights = {1, 1, 1}
@@ -95,12 +80,17 @@ function generate_overworld(surface, optplanet)
 	end
 	if planet[1].name.name == "water planet" then
 		local mgs = surface.map_gen_settings
-		mgs.water = 0.6
+		mgs.water = 0.8
+		surface.map_gen_settings = mgs
+	end
+	if planet[1].name.name == "lava planet" then
+		local mgs = surface.map_gen_settings
+		mgs.water = 0
 		surface.map_gen_settings = mgs
 	end
 	if planet[1].name.name ~= "choppy planet" then
 		local mgs = surface.map_gen_settings
-		mgs.water = 0.6
+		mgs.water = 0.2
 		surface.map_gen_settings = mgs
 	end
 	--log(timer)
@@ -167,7 +157,6 @@ end
 
 
 function Public.reset_map()
-	local wave_defense_table = WD.get_table()
 	global.chunk_queue = {}
 	if game.surfaces["chronosphere"] then game.delete_surface(game.surfaces["chronosphere"]) end
 	if game.surfaces["cargo_wagon"] then game.delete_surface(game.surfaces["cargo_wagon"]) end
@@ -194,12 +183,21 @@ function Public.reset_map()
 	objective.hpupgradetier = 0
 	objective.acuupgradetier = 0
 	objective.filterupgradetier = 0
+	objective.pickupupgradetier = 0
+	objective.invupgradetier = 0
+	objective.toolsupgradetier = 0
+	objective.waterupgradetier = 0
+	objective.outupgradetier = 0
+	objective.boxupgradetier = 0
 	objective.chronojumps = 0
 	objective.chronotimer = 0
 	objective.chrononeeds = 2000
 	objective.active_biters = {}
 	objective.unit_groups = {}
 	objective.biter_raffle = {}
+	global.outchests = {}
+
+
 
 
 	game.difficulty_settings.technology_price_multiplier = 0.5
@@ -218,15 +216,10 @@ function Public.reset_map()
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({12, 10}, surface)
 
-	Locomotive.locomotive_spawn(surface, {x = 16, y = 10})
+	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, starting_cargo, starting_cargo)
 	render_train_hp()
-
-
-	WD.reset_wave_defense()
-	wave_defense_table.surface_index = global.active_surface_index
-	wave_defense_table.target = global.locomotive_cargo
-	wave_defense_table.nest_building_density = 32
-	wave_defense_table.game_lost = false
+	game.reset_time_played()
+	objective.game_lost = false
 
 
 
@@ -237,6 +230,8 @@ end
 local function on_player_joined_game(event)
 	local player_modifiers = Modifier.get_table()
 	local player = game.players[event.player_index]
+	global.flame_boots[event.player_index] = {fuel = 1}
+	if not global.flame_boots[event.player_index].steps then global.flame_boots[event.player_index].steps = {} end
 	--log(chronobuble.determine_planet())
 
 	--set_difficulty()
@@ -273,19 +268,311 @@ end
 local function repair_train()
 	local objective = global.objective
 	if not game.surfaces["cargo_wagon"] then return end
-	if WD.get_table().game_lost == true then return end
+	if objective.game_lost == true then return end
 	if objective.health < objective.max_health then
-		if global.repairchest.get_inventory(defines.inventory.chest).get_item_count("repair-pack") > 1 then
-			global.repairchest.get_inventory(defines.inventory.chest).remove({name = "repair-pack", count = 1})
+		local inv = global.repairchest.get_inventory(defines.inventory.chest)
+		local count = inv.get_item_count("repair-pack")
+		if count >= 5 and objective.toolsupgradetier == 4 and objective.health + 750 <= objective.max_health then
+			inv.remove({name = "repair-pack", count = 5})
+			set_objective_health(-750)
+		elseif count >= 4 and objective.toolsupgradetier == 3 and objective.health + 600 <= objective.max_health then
+			inv.remove({name = "repair-pack", count = 4})
+			set_objective_health(-600)
+		elseif count >= 3 and objective.toolsupgradetier == 2 and objective.health + 450 <= objective.max_health then
+			inv.remove({name = "repair-pack", count = 3})
+			set_objective_health(-450)
+		elseif count >= 2 and objective.toolsupgradetier == 1 and objective.health + 300 <= objective.max_health then
+			inv.remove({name = "repair-pack", count = 2})
 			set_objective_health(-300)
+		elseif count >= 1 then
+			inv.remove({name = "repair-pack", count = 1})
+			set_objective_health(-150)
 		end
 	end
 end
 
+local function check_upgrades()
+	local objective = global.objective
+	if not game.surfaces["cargo_wagon"] then return end
+	if objective.game_lost == true then return end
+	if global.hpchest and global.hpchest.valid then
+		local inv = global.hpchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("copper-plate")
+		if countcoins >= 2500 and count2 >= 3000 and objective.hpupgradetier < 18 then
+			inv.remove({name = "coin", count = 2500})
+			inv.remove({name = "copper-plate", count = 3000})
+			game.print("Comfylatron: Train's max HP was upgraded.", {r=0.98, g=0.66, b=0.22})
+			objective.hpupgradetier = objective.hpupgradetier + 1
+			objective.max_health = 10000 + 5000 * objective.hpupgradetier
+			rendering.set_text(global.objective.health_text, "HP: " .. global.objective.health .. " / " .. global.objective.max_health)
+		end
+	end
+	if global.filterchest and global.filterchest.valid then
+		local inv = global.filterchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("electronic-circuit")
+		if countcoins >= 4000 and count2 >= 1000 and objective.filterupgradetier < 9 then
+			inv.remove({name = "coin", count = 4000})
+			inv.remove({name = "electronic-circuit", count = 1000})
+			game.print("Comfylatron: Train's pollution filter was upgraded.", {r=0.98, g=0.66, b=0.22})
+			objective.filterupgradetier = objective.filterupgradetier + 1
+		end
+	end
+	if global.acuchest and global.acuchest.valid then
+		local inv = global.acuchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("battery")
+		if countcoins >= 2500 and count2 >= 200 and objective.acuupgradetier < 24 then
+			inv.remove({name = "coin", count = 2500})
+			inv.remove({name = "battery", count = 200})
+			game.print("Comfylatron: Train's acumulator capacity was upgraded.", {r=0.98, g=0.66, b=0.22})
+			objective.acuupgradetier = objective.acuupgradetier + 1
+			spawn_acumulators()
+		end
+	end
+	if global.playerchest and global.playerchest.valid then
+		local inv = global.playerchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("long-handed-inserter")
+		if countcoins >= 1000 and count2 >= 400 and objective.pickupupgradetier < 4 then
+			inv.remove({name = "coin", count = 1000})
+			inv.remove({name = "long-handed-inserter", count = 400})
+			game.print("Comfylatron: Players now have additional red inserter installed on shoulders, increasing their item pickup range.", {r=0.98, g=0.66, b=0.22})
+			objective.pickupupgradetier = objective.pickupupgradetier + 1
+			game.forces.player.character_item_pickup_distance_bonus = game.forces.player.character_item_pickup_distance_bonus + 1
+		end
+	end
+	if global.invchest and global.invchest.valid then
+		local inv = global.invchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local item = "computer"
+		if objective.invupgradetier == 0 then
+			item = "wooden-chest"
+		elseif objective.invupgradetier == 1 then
+			item = "iron-chest"
+		elseif objective.invupgradetier == 2 then
+			item = "steel-chest"
+		elseif objective.invupgradetier == 3 then
+			item = "logistic-chest-storage"
+		end
+		local count2 = inv.get_item_count(item)
+		if countcoins >= 2000 and count2 >= 250 and objective.invupgradetier < 4 and objective.chronojumps >= (objective.invupgradetier + 1) * 5 then
+			inv.remove({name = "coin", count = 2000})
+			inv.remove({name = item, count = 250})
+			game.print("Comfylatron: Players now can carry more trash in their unsorted inventories.", {r=0.98, g=0.66, b=0.22})
+			objective.invupgradetier = objective.invupgradetier + 1
+			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + 10
+		end
+	end
+
+	if global.toolschest and global.toolschest.valid then
+		local inv = global.toolschest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("repair-pack")
+		if countcoins >= 1000 and count2 >= 200 and objective.toolsupgradetier < 4 then
+			inv.remove({name = "coin", count = 1000})
+			inv.remove({name = "repair-pack", count = 200})
+			game.print("Comfylatron: Train now gets repaired with additional repair kit at once.", {r=0.98, g=0.66, b=0.22})
+			objective.toolsupgradetier = objective.toolsupgradetier + 1
+		end
+	end
+	if global.waterchest and global.waterchest.valid and game.surfaces["cargo_wagon"].valid then
+		local inv = global.waterchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("pipe")
+		if countcoins >= 2000 and count2 >= 500 and objective.waterupgradetier < 1 then
+			inv.remove({name = "coin", count = 2000})
+			inv.remove({name = "pipe", count = 500})
+			game.print("Comfylatron: Train now has piping system for additional water sources.", {r=0.98, g=0.66, b=0.22})
+			objective.waterupgradetier = objective.waterupgradetier + 1
+			local e1 = game.surfaces["cargo_wagon"].create_entity({name = "offshore-pump", position = {28,66}, force="player"})
+			local e2 = game.surfaces["cargo_wagon"].create_entity({name = "offshore-pump", position = {28,-62}, force = "player"})
+			local e3 = game.surfaces["cargo_wagon"].create_entity({name = "offshore-pump", position = {-29,66}, force = "player"})
+			local e4 = game.surfaces["cargo_wagon"].create_entity({name = "offshore-pump", position = {-29,-62}, force = "player"})
+			e1.destructible = false
+			e1.minable = false
+			e2.destructible = false
+			e2.minable = false
+			e3.destructible = false
+			e3.minable = false
+			e4.destructible = false
+			e4.minable = false
+		end
+	end
+	if global.outchest and global.outchest.valid and game.surfaces["cargo_wagon"].valid then
+		local inv = global.outchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("fast-inserter")
+		if countcoins >= 2000 and count2 >= 100 and objective.outupgradetier < 1 then
+			inv.remove({name = "coin", count = 2000})
+			inv.remove({name = "fast-inserter", count = 100})
+			game.print("Comfylatron: Train now has output chests.", {r=0.98, g=0.66, b=0.22})
+			objective.outupgradetier = objective.outupgradetier + 1
+			local e = {}
+			e[1] = game.surfaces["cargo_wagon"].create_entity({name="compilatron-chest", position= {-16,-62}, force = "player"})
+			e[2] = game.surfaces["cargo_wagon"].create_entity({name="compilatron-chest", position= {15,-62}, force = "player"})
+			e[3] = game.surfaces["cargo_wagon"].create_entity({name="compilatron-chest", position= {-16,66}, force = "player"})
+			e[4] = game.surfaces["cargo_wagon"].create_entity({name="compilatron-chest", position= {15,66}, force = "player"})
+
+			local out = {}
+			for i = 1, 4, 1 do
+				e[i].destructible = false
+				e[i].minable = false
+				global.outchests[i] = e[i]
+				out[i] = rendering.draw_text{
+					text = "Output",
+					surface = e[i].surface,
+					target = e[i],
+					target_offset = {0, -1.5},
+					color = global.locomotive.color,
+					scale = 0.80,
+					font = "default-game",
+					alignment = "center",
+					scale_with_zoom = false
+				}
+			end
+		end
+	end
+	if global.boxchest and global.boxchest.valid and game.surfaces["cargo_wagon"].valid then
+		local inv = global.boxchest.get_inventory(defines.inventory.chest)
+		local countcoins = inv.get_item_count("coin")
+		local item = "computer"
+		if objective.boxupgradetier == 0 then
+			item = "wooden-chest"
+		elseif objective.boxupgradetier == 1 then
+			item = "iron-chest"
+		elseif objective.boxupgradetier == 2 then
+			item = "steel-chest"
+		elseif objective.boxupgradetier == 3 then
+			item = "logistic-chest-storage"
+		end
+		local count2 = inv.get_item_count(item)
+		if countcoins >= 5000 and count2 >= 250 and objective.boxupgradetier < 4 and objective.chronojumps >= (objective.boxupgradetier + 1) * 5 then
+			inv.remove({name = "coin", count = 5000})
+			inv.remove({name = item, count = 250})
+			game.print("Comfylatron: Cargo wagons now have enlargened storage.", {r=0.98, g=0.66, b=0.22})
+			objective.boxupgradetier = objective.boxupgradetier + 1
+			local chests = {}
+			for i = 1, 58, 1 do
+				if objective.boxupgradetier == 1 then
+					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,-189 + i}, force = "player"}
+					chests[#chests + 1] = {name="wooden-chest", position= {32 ,-189 + i}, force = "player"}
+				elseif objective.boxupgradetier == 2 then
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 3 then
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 4 then
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				end
+			end
+			for i = 1, 58, 1 do
+				if objective.boxupgradetier == 1 then
+					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,-127 + i}, force = "player"}
+					chests[#chests + 1] = {name="wooden-chest", position= {32 ,-127 + i}, force = "player"}
+				elseif objective.boxupgradetier == 2 then
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 3 then
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 4 then
+					chests[#chests + 1] ={name="logistic-chest-storage", position= {-33 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] ={name="logistic-chest-storage", position= {32 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				end
+			end
+			for i = 1, 58, 1 do
+				if objective.boxupgradetier == 1 then
+					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,-61 + i}, force = "player"}
+					chests[#chests + 1] = {name="wooden-chest", position= {32 ,-61 + i}, force = "player"}
+				elseif objective.boxupgradetier == 2 then
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 3 then
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 4 then
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				end
+			end
+			for i = 1, 58, 1 do
+				if objective.boxupgradetier == 1 then
+					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,1 + i}, force = "player"}
+					chests[#chests + 1] = {name="wooden-chest", position= {32 ,1 + i}, force = "player"}
+				elseif objective.boxupgradetier == 2 then
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 3 then
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 4 then
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				end
+			end
+			for i = 1, 58, 1 do
+				if objective.boxupgradetier == 1 then
+					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,67 + i}, force = "player"}
+					chests[#chests + 1] = {name="wooden-chest", position= {32 ,67 + i}, force = "player"}
+				elseif objective.boxupgradetier == 2 then
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 3 then
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 4 then
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				end
+			end
+			for i = 1, 58, 1 do
+				if objective.boxupgradetier == 1 then
+					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,129 + i}, force = "player"}
+					chests[#chests + 1] = {name="wooden-chest", position= {32 ,129 + i}, force = "player"}
+				elseif objective.boxupgradetier == 2 then
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 3 then
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				elseif objective.boxupgradetier == 4 then
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+				end
+			end
+			local surface = game.surfaces["cargo_wagon"]
+			for i = 1, #chests, 1 do
+				surface.set_tiles({{name = "tutorial-grid", position = chests[i].position}})
+				local e = surface.create_entity(chests[i])
+				local old = nil
+				if e.name == "iron-chest" then old = surface.find_entity("wooden-chest", e.position)
+				elseif e.name == "steel-chest" then old = surface.find_entity("iron-chest", e.position)
+				elseif e.name == "logistic-chest-storage" then old = surface.find_entity("steel-chest", e.position)
+				end
+				if old then
+					local items = old.get_inventory(defines.inventory.chest).get_contents()
+					for item, count in pairs(items) do
+						e.insert({name = item, count = count})
+					end
+					old.destroy()
+				end
+				e.destructible = false
+				e.minable = false
+			end
+		end
+	end
+end
+
+
+
 local function move_items()
 	if not global.comfychests then return end
 	if not global.comfychests2 then return end
-	if WD.get_table().game_lost == true then return end
+	if global.objective.game_lost == true then return end
   local input = global.comfychests
   local output = global.comfychests2
 	for i = 1, 24, 1 do
@@ -312,10 +599,36 @@ local function move_items()
 	end
 end
 
+local function output_items()
+	if global.objective.game_lost == true then return end
+	if not global.outchests then return end
+	if not global.locomotive_cargo2 then return end
+	if not global.locomotive_cargo3 then return end
+	if global.objective.outupgradetier ~= 1 then return end
+	for i = 1, 4, 1 do
+		if not global.outchests[i].valid then return end
+		local inv = global.outchests[i].get_inventory(defines.inventory.chest)
+		inv.sort_and_merge()
+		local items = inv.get_contents()
+		for item, count in pairs(items) do
+			local inserted = nil
+			if i <= 2 then
+				inserted = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
+			else
+				inserted = global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
+			end
+			if inserted > 0 then
+				local removed = inv.remove({name = item, count = inserted})
+			end
+		end
+	end
+end
+
 function chronojump(choice)
 	local objective = global.objective
+	if objective.game_lost then return end
 	objective.chronojumps = objective.chronojumps + 1
-	objective.chrononeeds = objective.chrononeeds + 2000
+	objective.chrononeeds = 2000 + 800 * objective.chronojumps
 	objective.chronotimer = 0
 	game.print("Comfylatron: Wheeee! Time Jump Active! This is Jump number " .. global.objective.chronojumps, {r=0.98, g=0.66, b=0.22})
 	local oldsurface = game.surfaces[global.active_surface_index]
@@ -338,7 +651,9 @@ function chronojump(choice)
 	end
 	generate_overworld(surface, planet)
 	game.forces.player.set_spawn_position({12, 10}, surface)
-	Locomotive.locomotive_spawn(surface, {x = 16, y = 10})
+	local items = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).get_contents()
+	local items2 = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).get_contents()
+	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, items, items2)
 	render_train_hp()
 	game.delete_surface(oldsurface)
 	if objective.chronojumps <= 40 then
@@ -346,10 +661,7 @@ function chronojump(choice)
 	else
 		game.forces["enemy"].evolution_factor = 1
 	end
-	game.map_settings.enemy_evolution.time_factor = 4e-05 + 1e-06 * objective.chronojumps
-
-
-
+	game.map_settings.enemy_evolution.time_factor = 4e-05 + 2e-06 * objective.chronojumps
 end
 
 local function check_chronoprogress()
@@ -378,7 +690,7 @@ local function charge_chronosphere()
 	for i = 1, #acus, 1 do
 		if not acus[i].valid then return end
 		local energy = acus[i].energy
-		if energy > 3000000 and objective.chronotimer < objective.chrononeeds - 62 then
+		if energy > 3000000 and objective.chronotimer < objective.chrononeeds - 62 and objective.chronotimer > 130 then
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
 			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, 100 * (4 / (objective.filterupgradetier / 2 + 1)))
@@ -390,7 +702,7 @@ end
 local function transfer_pollution()
 	local surface = game.surfaces["cargo_wagon"]
 	if not surface then return end
-	local pollution = surface.get_total_pollution() * (4 / (global.objective.filterupgradetier / 2 + 1))
+	local pollution = surface.get_total_pollution() * (3 / (global.objective.filterupgradetier / 3 + 1))
 	game.surfaces[global.active_surface_index].pollute(global.locomotive.position, pollution)
 	surface.clear_pollution()
 end
@@ -401,7 +713,9 @@ local tick_minute_functions = {
 	[300 * 3 + 30 * 0] = Ai.pre_main_attack,		-- setup for main_attack
 	[300 * 3 + 30 * 1] = Ai.perform_main_attack,
 	[300 * 3 + 30 * 2] = Ai.perform_main_attack,
-	[300 * 3 + 30 * 3] = Ai.perform_main_attack,	-- call perform_main_attack 7 times on different ticks
+	[300 * 3 + 30 * 3] = Ai.perform_main_attack,
+	[300 * 3 + 30 * 4] = Ai.perform_main_attack,
+	[300 * 3 + 30 * 5] = Ai.perform_main_attack,	-- call perform_main_attack 7 times on different ticks
 	[300 * 4] = Ai.send_near_biters_to_objective,
 	[300 * 5] = Ai.wake_up_sleepy_groups
 
@@ -424,16 +738,7 @@ local function tick()
 		if tick % 1800 == 0 then
 			Locomotive.set_player_spawn_and_refill_fish()
 			repair_train()
-			--local surface = game.surfaces[global.active_surface_index]
-			--local last_position = global.map_collapse.last_position
-			--local position = surface.find_non_colliding_position("stone-furnace", {last_position.x, last_position.y - 32}, 128, 4)
-			--if position then
-			--	local wave_defense_table = WD.get_table()
-			--	wave_defense_table.spawn_position = position
-			--end
-			--if tick % 216000 == 0 then
-			--	Collapse.delete_out_of_map_chunks(surface)
-			--end
+			check_upgrades()
 		end
 		local key = tick % 3600
 		if tick_minute_functions[key] then tick_minute_functions[key]() end
@@ -443,6 +748,7 @@ local function tick()
 		end
 		if tick % 120 == 0 then
 			move_items()
+			output_items()
 		end
 		if global.game_reset_tick then
 			if global.game_reset_tick < tick then
@@ -463,7 +769,7 @@ local function on_init()
 	T.localised_category = "chronosphere"
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
-
+	global.objective.game_lost = true
 
 	--global.rocks_yield_ore_maximum_amount = 999
 	--global.rocks_yield_ore_base_amount = 50
@@ -478,8 +784,7 @@ function set_objective_health(final_damage_amount)
 	if objective.health > objective.max_health then objective.health = objective.max_health end
 
 	if objective.health <= 0 then
-		local wave_defense_table = WD.get_table()
-		if wave_defense_table.game_lost == true then return end
+		if objective.game_lost == true then return end
 		objective.health = 0
 		local surface = objective.surface
 		game.print("The chronotrain was destroyed!")
@@ -501,8 +806,7 @@ function set_objective_health(final_damage_amount)
 		global.ores_queue = {}
 		global.entities_queue = {}
 		global.acumulators = {}
-		wave_defense_table.game_lost = true
-		wave_defense_table.target = nil
+		objective.game_lost = true
 		global.game_reset_tick = game.tick + 1800
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
@@ -551,6 +855,17 @@ local function on_entity_damaged(event)
 	if not event.entity.valid then	return end
 	if not event.entity.health then return end
 	biters_chew_rocks_faster(event)
+	if global.objective.planet[1].name.name == "lava planet" and event.entity.force.name == "enemy" then
+		if event.damage_type.name == "fire" then
+			event.entity.health = event.entity.health + event.final_damage_amount
+			local fire = event.entity.stickers
+			if fire and #fire > 0 then
+				for i = 1, #fire, 1 do
+					if fire[i].sticked_to == event.entity and fire[i].name == "fire-sticker" then fire[i].destroy() break end
+				end
+			end
+		end
+	end
 
 end
 
@@ -561,8 +876,8 @@ local function trap(entity)
 end
 
 local function get_choppy_amount(entity)
-	local distance_to_center = math_sqrt(entity.position.x^2 + entity.position.y^2) + 50 * global.objective.chronojumps
-	local amount = (25 + distance_to_center * 0.1) * (1 + game.forces.player.mining_drill_productivity_bonus)
+	local distance_to_center = 20 * global.objective.chronojumps
+	local amount = (40 + distance_to_center ) * (1 + game.forces.player.mining_drill_productivity_bonus)
 	if amount > 1000 then amount = 1000 end
 	amount = math_random(math_floor(amount * 0.5), math_floor(amount * 1.5))
 	return amount
@@ -577,7 +892,7 @@ local function pre_player_mined_item(event)
 			trap(event.entity)
 			local rock_position = {x = event.entity.position.x, y = event.entity.position.y}
 			event.entity.destroy()
-			local tile_distance_to_center = math_sqrt(rock_position.x^2 + rock_position.y^2) + 50 * objective.chronojumps
+			local tile_distance_to_center = 40 + 40 * objective.chronojumps * (1 + game.forces.player.mining_drill_productivity_bonus)
 			if tile_distance_to_center > 1450 then tile_distance_to_center = 1450 end
 			surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(1,3)},true)
 			local bonus_amount = math_floor((tile_distance_to_center) + 1)
@@ -695,8 +1010,7 @@ local function on_entity_died(event)
 end
 
 local function on_research_finished(event)
-	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 100
-	refresh_gui()
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 100 + global.objective.invupgradetier * 5
 	if not event.research.force.technologies["steel-axe"].researched then return end
 	event.research.force.manual_mining_speed_modifier = 1 + game.forces.player.mining_drill_productivity_bonus * 4
 end
@@ -707,8 +1021,64 @@ local function on_player_driving_changed_state(event)
 	Locomotive.enter_cargo_wagon(player, vehicle)
 end
 
-local function on_market_item_purchased(event)
-	Locomotive.offer_purchased(event)
+-- function deny_building(event)
+-- 	local entity = event.created_entity
+-- 	if not entity.valid then return end
+-- 	local surface = event.created_entity.surface
+--
+-- 	if event.player_index then
+-- 		game.players[event.player_index].insert({name = entity.name, count = 1})
+-- 	else
+-- 		local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+-- 		inventory.insert({name = entity.name, count = 1})
+-- 	end
+--
+-- 	surface.create_entity({
+-- 		name = "flying-text",
+-- 		position = entity.position,
+-- 		text = "Private Comfylatron's area!",
+-- 		color = {r=0.98, g=0.66, b=0.22}
+-- 	})
+--
+-- 	entity.destroy()
+-- end
+
+-- local function on_built_entity(event)
+-- 	if event.surface.name == "cargo_wagon" and event.position.y < -190 then
+-- 		deny_building(event)
+-- 	end
+-- end
+--
+-- local function on_robot_built_entity(event)
+-- 	if event.surface.name == "cargo_wagon" and event.position.y < -190 then
+-- 		deny_building(event)
+-- 	end
+-- 	Terrain.deny_construction_bots(event)
+-- end
+-- local function on_market_item_purchased(event)
+-- 	Locomotive.offer_purchased(event)
+-- end
+
+local function on_player_changed_position(event)
+	if global.objective.planet[1].name.name ~= "lava planet" then return end
+	local player = game.players[event.player_index]
+	if not player.character then return end
+	if player.character.driving then return end
+	if player.surface.name == "cargo_wagon" then return end
+	if not global.flame_boots[player.index].steps then global.flame_boots[player.index].steps = {} end
+	local steps = global.flame_boots[player.index].steps
+
+	local elements = #steps
+
+	steps[elements + 1] = {x = player.position.x, y = player.position.y}
+
+	if elements > 10 then
+		player.surface.create_entity({name = "fire-flame", position = steps[elements - 1], })
+		for i = 1, elements, 1 do
+			steps[i] = steps[i+1]
+		end
+		steps[elements + 1] = nil
+	end
 end
 
 local event = require 'utils.event'
@@ -721,8 +1091,8 @@ event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_pre_player_mined_item, pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+--event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
-
+event.add(defines.events.on_player_changed_position, on_player_changed_position)
 
 return Public

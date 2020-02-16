@@ -4,21 +4,26 @@ local math_floor = math.floor
 local math_random = math.random
 
 
-function Public.locomotive_spawn(surface, position)
+function Public.locomotive_spawn(surface, position, items, items2)
 	for y = -10, 18, 2 do
+		local rail = {name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0}
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
 	end
 	global.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -6}, force = "player"})
 	global.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
 
 	global.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 0}, force = "player"})
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 1})
+	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 100})
 
 	global.locomotive_cargo2 = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 6}, force = "player"})
-	global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 1})
+	for item, count in pairs(items) do
+		global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
+	end
 
 	global.locomotive_cargo3 = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 13}, force = "player"})
-	global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 1})
+	for item, count in pairs(items) do
+		global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
+	end
 
 	if not global.comfychests then global.comfychests = {} end
 	if not global.acumulators then global.acumulators = {} end
@@ -113,7 +118,7 @@ local function remove_acceleration()
 	global.locomotive_driver = nil
 end
 ]]
-local function spawn_acumulators()
+function spawn_acumulators()
 	local x = -28
 	local y = -252
 	local yy = global.objective.acuupgradetier * 2
@@ -137,51 +142,13 @@ local market_offers = {
 	{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'stone', count = 50}},
 	{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'coal', count = 50}},
 	{price = {{"coin", 200}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
-	{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
+	{price = {{"coin", 25}, {"empty-barrel", 1}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
+	{price = {{"coin", 200}, {"steel-plate", 20}, {"electronic-circuit", 20}}, offer = {type = 'give-item', item = 'loader', count = 1}},
+	{price = {{"coin", 400}, {"steel-plate", 40}, {"advanced-circuit", 10}, {"loader", 1}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
+	{price = {{"coin", 600}, {"express-transport-belt", 10}, {"fast-loader", 1}}, offer = {type = 'give-item', item = 'express-loader', count = 1}},
+	--{price = {{"coin", 5}, {"stone", 100}}, offer = {type = 'give-item', item = 'landfill', count = 1}},
+	{price = {{"coin", 1}, {"steel-plate", 1}, {"explosives", 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}}
 }
-local market_offers2 = {
-	[1] = function ()
-		if global.objective.hpupgradetier >= 18 then return end
-		global.objective.max_health = global.objective.max_health + 5000
-		global.objective.hpupgradetier = global.objective.hpupgradetier + 1
-		rendering.set_text(global.objective.health_text, "HP: " .. global.objective.health .. " / " .. global.objective.max_health)
-	end,
-	[2] = function ()
-		if global.objective.acuupgradetier >= 24 then return end
-		global.objective.acuupgradetier = global.objective.acuupgradetier + 1
-		spawn_acumulators()
-	end,
-	[3] = function ()
-		if global.objective.filterupgradetier >= 14 then return end
-		global.objective.filterupgradetier = global.objective.filterupgradetier + 1
-	end,
-
-}
-local function setup_upgrade_shop(market2)
-	local special_offers = {}
-	if global.objective.hpupgradetier < 18 then
-		special_offers[1] = {{{"coin", 2500}}, "Upgrade Train's Health. Current max health: " .. global.objective.max_health }
-	else
-		special_offers[1] = {{{"computer", 1}}, "Maximum Health upgrades reached!"}
-	end
-	if global.objective.acuupgradetier < 24 then
-		special_offers[2] = {{{"coin", 2500}}, "Upgrade Acumulator capacity"}
-	else
-		special_offers[2] = {{{"computer", 1}}, "Maximum Acumulators reached!"}
-	end
-	if global.objective.filterupgradetier < 14 then
-		special_offers[3] = {{{"coin", 2500}}, "Upgrade Pollution filter. Actual pollution from train: " .. math_floor(400/(global.objective.filterupgradetier/2+1)) .. "%"}
-	else
-		special_offers[3] = {{{"computer", 1}}, "Best filter reached! Actual pollution from train: " .. math_floor(400/(global.objective.filterupgradetier/2+1)) .. "%"}
-	end
-
-	local market_items = {}
-	for _, offer in pairs(special_offers) do
-		table.insert(market_items, {price = offer[1], offer = {type = 'nothing', effect_description = offer[2]}})
-	end
-	for _, offer in pairs(market_items) do market2.add_market_item(offer) end
-end
-
 
 local function create_wagon_room()
 	local width = 64
@@ -190,7 +157,7 @@ local function create_wagon_room()
 	if not global.acumulators then global.acumulators = {} end
 	local map_gen_settings = {
 		["width"] = width,
-		["height"] = height,
+		["height"] = height + 128,
 		["water"] = 0,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -208,6 +175,12 @@ local function create_wagon_room()
 	surface.force_generate_chunk_requests()
 
 	for x = width * -0.5, width * 0.5 - 1, 1 do
+		for y = height * 0.5, height * 0.7, 1 do
+			surface.set_tiles({{name = "out-of-map", position = {x,y}}})
+		end
+		for y = height * -0.7, height * -0.5, 1 do
+			surface.set_tiles({{name = "out-of-map", position = {x,y}}})
+		end
 		for y = height * -0.5 + 3, height * 0.5 - 4, 1 do
 			surface.set_tiles({{name = "tutorial-grid", position = {x,y}}})
 		end
@@ -290,19 +263,51 @@ local function create_wagon_room()
 	powerpole.destructible = false
 
 	local market = surface.create_entity({name = "market", position = {-5, height * -0.5 + 13}, force="neutral", create_build_effect_smoke = false})
-	local market2 = surface.create_entity({name = "market", position = {4, height * -0.5 + 13}, force="neutral", create_build_effect_smoke = false})
 	local repairchest = surface.create_entity({name = "compilatron-chest", position = {0, height * -0.5 + 13}, force = "player"})
+	local hpchest = surface.create_entity({name = "compilatron-chest", position = {3, height * -0.5 + 12}, force = "player"})
+	local filterchest = surface.create_entity({name = "compilatron-chest", position = {4, height * -0.5 + 12}, force = "player"})
+	local acuchest = surface.create_entity({name = "compilatron-chest", position = {5, height * -0.5 + 12}, force = "player"})
+	local playerchest = surface.create_entity({name = "compilatron-chest", position = {3, height * -0.5 + 13}, force = "player"})
+	local invchest = surface.create_entity({name = "compilatron-chest", position = {4, height * -0.5 + 13}, force = "player"})
+	local toolschest = surface.create_entity({name = "compilatron-chest", position = {5, height * -0.5 + 13}, force = "player"})
+	local waterchest = surface.create_entity({name = "compilatron-chest", position = {3, height * -0.5 + 14}, force = "player"})
+	local outchest = surface.create_entity({name = "compilatron-chest", position = {4, height * -0.5 + 14}, force = "player"})
+	local boxchest = surface.create_entity({name = "compilatron-chest", position = {5, height * -0.5 + 14}, force = "player"})
 	repairchest.minable = false
 	repairchest.destructible = false
+	hpchest.minable = false
+	hpchest.destructible = false
+	filterchest.minable = false
+	filterchest.destructible = false
+	acuchest.minable = false
+	acuchest.destructible = false
+	playerchest.minable = false
+	playerchest.destructible = false
+	invchest.minable = false
+	invchest.destructible = false
+	toolschest.minable = false
+	toolschest.destructible = false
+	waterchest.minable = false
+	waterchest.destructible = false
+	outchest.minable = false
+	outchest.destructible = false
+	boxchest.minable = false
+	boxchest.destructible = false
 	market.minable = false
 	market.destructible = false
-	market2.minable = false
-	market2.destructible = false
-	global.upgrademarket = market2
 	global.repairchest = repairchest
+	global.hpchest = hpchest
+	global.filterchest = filterchest
+	global.acuchest = acuchest
+	global.playerchest = playerchest
+	global.invchest = invchest
+	global.toolschest = toolschest
+	global.waterchest = waterchest
+	global.outchest = outchest
+	global.boxchest = boxchest
 
 	local repair_text = rendering.draw_text{
-		text = "Insert repair tools to repair train",
+		text = "Repair chest",
 		surface = surface,
 		target = global.repairchest,
 		target_offset = {0, -2.5},
@@ -323,10 +328,10 @@ local function create_wagon_room()
 		alignment = "center",
 		scale_with_zoom = false
 	}
-	local market2_text = rendering.draw_text{
+	local upgrade_text = rendering.draw_text{
 		text = "Upgrades",
 		surface = surface,
-		target = market2,
+		target = filterchest,
 		target_offset = {0, -3.5},
 		color = global.locomotive.color,
 		scale = 1.00,
@@ -334,23 +339,91 @@ local function create_wagon_room()
 		alignment = "center",
 		scale_with_zoom = false
 	}
+	local upgrade_sub_text = rendering.draw_text{
+		text = "Click [Upgrades] on top of screen",
+		surface = surface,
+		target = filterchest,
+		target_offset = {0, -2.5},
+		color = global.locomotive.color,
+		scale = 0.80,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false
+	}
+	local upgrade1_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-1",
+		surface = surface,
+		target = hpchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade2_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-2",
+		surface = surface,
+		target = filterchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade3_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-3",
+		surface = surface,
+		target = acuchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade4_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-4",
+		surface = surface,
+		target = playerchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade5_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-5",
+		surface = surface,
+		target = invchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade6_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-6",
+		surface = surface,
+		target = toolschest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade7_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-7",
+		surface = surface,
+		target = waterchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade8_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-8",
+		surface = surface,
+		target = outchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
+	local upgrade9_text = rendering.draw_sprite{
+		sprite = "virtual-signal/signal-9",
+		surface = surface,
+		target = boxchest,
+		target_offset = {0, -0.1},
+		font = "default-game",
+		visible = true
+	}
 
-	-- for x = -6, 5, 1 do
-	-- 	for y = height * -0.5 + 11, height * -0.5 + 15, 4 do
-	-- 		local wall = surface.create_entity({name = "stone-wall", position = {x,y}, force="neutral", create_build_effect_smoke = false})
-	-- 		wall.minable = false
-	-- 		wall.destructible = false
-	-- 	end
-	-- end
-	-- for y = height * -0.5 + 11, height * -0.5 + 15, 1 do
-	-- 	for x = -7, 6, 13 do
-	-- 		local wall = surface.create_entity({name = "stone-wall", position = {x,y}, force="neutral", create_build_effect_smoke = false})
-	-- 		wall.minable = false
-	-- 		wall.destructible = false
-	-- 	end
-	-- end
 	for _, offer in pairs(market_offers) do market.add_market_item(offer) end
-	setup_upgrade_shop(market2)
 
 	--generate cars--
 	for _, x in pairs({width * -0.5 -0.5, width * 0.5 + 0.5}) do
@@ -374,11 +447,6 @@ local function create_wagon_room()
 		e.minable = false
 		e.operable = false
 	end
-
-	--local e = Public.spawn_comfylatron(surface.index, 0, height * -0.5 + 13)
-	--local e = surface.create_entity({name = "compilatron", position = {0, height * -0.5 + 13}, force = "player", create_build_effect_smoke = false})
-	--e.ai_settings.allow_destroy_when_commands_fail = false
-
 
 	--generate chests inside south wagon--
 	local positions = {}
@@ -507,6 +575,7 @@ function Public.enter_cargo_wagon(player, vehicle)
 		player.teleport(surface.find_non_colliding_position("character", position, 128, 0.5), surface)
 	end
 	if player.surface.name == "cargo_wagon" and vehicle.type == "car" then
+		global.flame_boots[player.index].steps = {}
 		local surface = global.locomotive_cargo.surface
 		local x_vector = (vehicle.position.x / math.abs(vehicle.position.x)) * 2
 		local y_vector = vehicle.position.y / 16
@@ -517,40 +586,40 @@ function Public.enter_cargo_wagon(player, vehicle)
 	end
 end
 
-local function clear_offers(market)
-	for i = 1, 256, 1 do
-		local a = market.remove_market_item(1)
-		if a == false then return end
-	end
-end
+-- local function clear_offers(market)
+-- 	for i = 1, 256, 1 do
+-- 		local a = market.remove_market_item(1)
+-- 		if a == false then return end
+-- 	end
+-- end
 
-function Public.refresh_offers(event)
+-- function Public.refresh_offers(event)
+--
+-- 	local market = event.entity or event.market
+-- 	if not market then return end
+-- 	if not market.valid then return end
+-- 	if market.name ~= "market" then return end
+-- 	if market ~= global.upgrademarket then return end
+-- 	clear_offers(market)
+-- 	setup_upgrade_shop(market)
+-- end
 
-	local market = event.entity or event.market
-	if not market then return end
-	if not market.valid then return end
-	if market.name ~= "market" then return end
-	if market ~= global.upgrademarket then return end
-	clear_offers(market)
-	setup_upgrade_shop(market)
-end
-
-function Public.offer_purchased(event)
-	local offer_index = event.offer_index
-	if not market_offers2[offer_index] then return end
-	local market = event.market
-	if not market.name == "market" then return end
-
-	market_offers2[offer_index]()
-
-	count = event.count
-	if count > 1 then
-		local offers = market.get_market_items()
-		local price = offers[offer_index].price[1].amount
-		game.players[event.player_index].insert({name = "coin", count = price * (count - 1)})
-	end
-	Public.refresh_offers(event)
-end
+-- function Public.offer_purchased(event)
+-- 	local offer_index = event.offer_index
+-- 	if not market_offers2[offer_index] then return end
+-- 	local market = event.market
+-- 	if not market.name == "market" then return end
+--
+-- 	market_offers2[offer_index]()
+--
+-- 	count = event.count
+-- 	if count > 1 then
+-- 		local offers = market.get_market_items()
+-- 		local price = offers[offer_index].price[1].amount
+-- 		game.players[event.player_index].insert({name = "coin", count = price * (count - 1)})
+-- 	end
+-- 	Public.refresh_offers(event)
+-- end
 
 
 

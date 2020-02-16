@@ -75,15 +75,15 @@ local function get_size_of_ore(ore, planet)
   local base_size = math_random(5, 10) + math_floor(planet[1].ore_richness.factor * 3)
   local final_size = 1
   if planet[1].name.name == "iron planet" and ore == "iron-ore" then
-    final_size = base_size * 2
+    final_size = math_floor(base_size * 1.5)
   elseif planet[1].name.name == "copper planet" and ore == "copper-ore" then
-    final_size = base_size * 2
+    final_size = math_floor(base_size * 1.5)
   elseif planet[1].name.name == "stone planet" and ore == "stone" then
-    final_size = base_size * 2
+    final_size = math_floor(base_size * 1.5)
   elseif planet[1].name.name == "coal planet" and ore == "coal" then
-    final_size = base_size * 2
+    final_size = math_floor(base_size * 1.5)
   elseif planet[1].name.name == "uranium planet" and ore == "uranium-ore" then
-    final_size = base_size * 2
+    final_size = math_floor(base_size * 1.5)
   elseif planet[1].name.name == "mixed planet" then
     final_size = base_size
   else
@@ -94,64 +94,13 @@ end
 
 local function get_oil_amount(pos, oil_w)
   local hundred_percent = 300000
-	return (hundred_percent / 50) * (1+global.objective.chronojumps) * oil_w
+	return (hundred_percent / 20) * (1+global.objective.chronojumps) * oil_w
 end
-
--- function spawn_ores(surface, planet)
---
--- 	--local r = 480
--- 	--local area = {{r * -1, r * -1}, {r, r}}
--- 	local ores = {}
---   if planet[1].name.name == "rocky planet" then return end
---   local oil_amount = planet[1].name.oil
---   if oil_amount > 0 then
---     for a = 1, oil_amount, 1 do
---       local poso = {x = math_random(-50,50) + math_random(250, 350) * math_random(-1,1), y = math_random(-50,50) + math_random(250, 350) * math_random(-1,1)}
---       for a=1, math_random(2, 3 + oil_amount * 2), 1 do
---         local posoo = {x = poso.x + math_random(-10,10), y = poso.y + math_random(-10,10)}
---         --if surface.can_place_entity{name = "crude-oil", position = posoo} then
---           --if not global.ores_queue[posoo.x] then global.ores_queue[posoo.x] = {} end
---           global.entities_queue[pos_to_key(posoo)] = {name = "crude-oil", position = posoo, amount = get_oil_amount(posoo) * oil_amount }
---         --end
---       end
---     end
---   end
---   if planet[1].name.name == "choppy planet" then return end
---   local uranium_amount = planet[1].name.uranium
---   if uranium_amount > 0 then
---     for a = 1, uranium_amount, 1 do
---       local posu = {x = 0 + math_random(350, 450) * math_random(-1,1), y = 0 + math_random(350, 450) * math_random(-1,1)}
---       if posu.x ~= 0 or posu.y ~= 0 then
---         --if surface.can_place_entity({name = "uranium-ore", position = posu, amount = 1}) then
---           draw_noise_ore_patch(posu, "uranium-ore", surface, get_size_of_ore("uranium-ore", planet), math_random(200, 300) * planet[1].ore_richness.factor)
---         --break
---         --end
---       end
---     end
---   end
--- 	ores["iron-ore"] = surface.count_entities_filtered({name = "iron-ore", area = area})
--- 	ores["copper-ore"] = surface.count_entities_filtered({name = "copper-ore", area = area})
--- 	ores["coal"] = surface.count_entities_filtered({name = "coal", area = area})
--- 	ores["stone"] = surface.count_entities_filtered({name = "stone", area = area})
--- 	for ore, ore_count in pairs(ores) do
--- 		if ore_count < 1000 or ore_count == nil then
--- 			local pos = {}
--- 			for a = 1, 8, 1 do
--- 				pos = {x = -300 + math_random(0, 600), y = -300 + math_random(0, 600)}
--- 				--if surface.can_place_entity({name = ore, position = pos, amount = 1}) then
---           draw_noise_ore_patch(pos, ore, surface, get_size_of_ore(ore, planet), math_random(400, 500) * planet[1].ore_richness.factor)
---           --break
--- 				--end
--- 			end
--- 			--draw_noise_ore_patch(pos, ore, surface, get_size_of_ore(ore, planet), math_random(400, 500) * planet[1].ore_richness.factor)
--- 		end
--- 	end
--- end
 
 function spawn_ore_vein(surface, pos, planet)
   local mixed = false
   if planet[1].name.name == "mixed planet" then mixed = true end
-  local richness = math_random(50 + 10 * global.objective.chronojumps, 100 + 10 * global.objective.chronojumps) * planet[1].ore_richness.factor
+  local richness = math_random(50 + 30 * global.objective.chronojumps, 100 + 30 * global.objective.chronojumps) * planet[1].ore_richness.factor
   local iron = {w = planet[1].name.iron, t = planet[1].name.iron}
   local copper = {w = planet[1].name.copper, t = iron.t + planet[1].name.copper}
   local stone = {w = planet[1].name.stone, t = copper.t + planet[1].name.stone}
