@@ -209,10 +209,10 @@ local function talks(nearby_characters)
 	return true
 end
 
-local function desync()
+local function desync(event)
 	if global.comfybubble then global.comfybubble.destroy() end
-	local m = 12
-	local m2 = m * 0.005
+	--local m = 12
+	--local m2 = m * 0.005
 	-- for i = 1, 32, 1 do
 	-- 	global.comfylatron.surface.create_entity({
 	-- 		name = "iron-ore-particle",
@@ -223,10 +223,20 @@ local function desync()
 	-- 		movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
 	-- 	})
 	-- end
-	global.comfylatron.surface.create_entity({name = "medium-explosion", position = global.comfylatron.position})
-	global.comfylatron.surface.create_entity({name = "flying-text", position = global.comfylatron.position, text = "desync", color = {r = 150, g = 0, b = 0}})
-	global.comfylatron.destroy()
-	global.comfylatron = nil
+	if math_random(1,4) == 1 then
+		global.comfylatron.surface.create_entity({name = "medium-explosion", position = global.comfylatron.position})
+		global.comfylatron.surface.create_entity({name = "flying-text", position = global.comfylatron.position, text = "desync", color = {r = 150, g = 0, b = 0}})
+		global.comfylatron.destroy()
+		global.comfylatron = nil
+	else
+		global.comfylatron.surface.create_entity({name = "flying-text", position = global.comfylatron.position, text = "desync evaded", color = {r = 0, g = 150, b = 0}})
+		if event.cause then
+			if event.cause.valid and event.cause.player then
+				game.print("Comfylatron: I got you this time! Back to work, " .. event.cause.player.name .. "!", {r = 200, g = 0, b = 0})
+				event.cause.die("player", global.comfylatron)
+			end
+		end
+	end
 end
 
 local function alone()
@@ -391,7 +401,7 @@ local function on_entity_damaged(event)
 	if not global.comfylatron then return end
 	if not event.entity.valid then return end
 	if event.entity ~= global.comfylatron then return end
-	desync()
+	desync(event)
 end
 
 local function on_tick()

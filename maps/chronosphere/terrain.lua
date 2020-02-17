@@ -321,7 +321,7 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 
 	if scrapyard < -0.25 or scrapyard > 0.25 then
 		if math_random(1, 256) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 50 then
-			entities[#entities + 1] = {name="gun-turret", position=p, force = "enemy"}
+			entities[#entities + 1] = {name="gun-turret", position=p, force = "scrapyard"}
 		end
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		 if scrapyard < -0.55 or scrapyard > 0.55 then
@@ -432,7 +432,7 @@ local function forest_chunk(surface, left_top, level, planet)
   for _, entity in pairs(entities) do
 		if surface.can_place_entity(entity) then
 			local e = surface.create_entity(entity)
-      if e.name == "biter-spawner" or e.name == "spitter-spawner" then
+      if e.name == "biter-spawner" or e.name == "spitter-spawner" or e.name == "small-worm-turret" or e.name == "medium-worm-turret" or e.name == "big-worm-turret" or e.name == "behemoth-worm-turret" then
         if math_abs(e.position.x) > 420 or math_abs(e.position.y) > 420 then e.destructible = false end
       end
 		end
@@ -461,7 +461,7 @@ local function biter_chunk(surface, left_top, level, planet)
   for _, entity in pairs(entities) do
 		if surface.can_place_entity(entity) then
 			local e = surface.create_entity(entity)
-      if e.name == "biter-spawner" or e.name == "spitter-spawner" then
+      if e.name == "biter-spawner" or e.name == "spitter-spawner" or e.name == "small-worm-turret" or e.name == "medium-worm-turret" or e.name == "big-worm-turret" or e.name == "behemoth-worm-turret" then
         if math_abs(e.position.x) > 420 or math_abs(e.position.y) > 420 then e.destructible = false end
       end
 		end
@@ -525,7 +525,7 @@ local function normal_chunk(surface, left_top, level, planet)
 		else
 			if surface.can_place_entity(entity) then
 				local e = surface.create_entity(entity)
-        if e.name == "biter-spawner" or e.name == "spitter-spawner" then
+        if e.name == "biter-spawner" or e.name == "spitter-spawner" or e.name == "small-worm-turret" or e.name == "medium-worm-turret" or e.name == "big-worm-turret" or e.name == "behemoth-worm-turret" then
           if math_abs(e.position.x) > 420 or math_abs(e.position.y) > 420 then e.destructible = false end
         end
 			end

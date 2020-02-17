@@ -173,7 +173,14 @@ local function create_wagon_room()
 	surface.daytime = 0.1
 	surface.request_to_generate_chunks({0,0}, 12)
 	surface.force_generate_chunk_requests()
-
+	local carfpos = {
+		[1]={x=-33,y=-127},[2]={x=-33,y=-128},[3]={x=-33,y=-129},[4]={x=-33,y=-130},[5]={x=32,y=-127},[6]={x=32,y=-128},[7]={x=32,y=-129},[8]={x=32,y=-130},
+		[9]={x=-33,y=-2},[10]={x=-33,y=-1},[11]={x=-33,y=0},[12]={x=-33,y=1},[13]={x=32,y=-2},[14]={x=32,y=-1},[15]={x=32,y=0},[16]={x=32,y=1},
+		[17]={x=-33,y=126},[18]={x=-33,y=127},[19]={x=-33,y=128},[20]={x=-33,y=129},[21]={x=32,y=126},[22]={x=32,y=127},[23]={x=32,y=128},[24]={x=32,y=129}
+	}
+	for i = 1, 24, 1 do
+		surface.set_tiles({{name = "tutorial-grid", position = {carfpos[i].x,carfpos[i].y}}})
+	end
 	for x = width * -0.5, width * 0.5 - 1, 1 do
 		for y = height * 0.5, height * 0.7, 1 do
 			surface.set_tiles({{name = "out-of-map", position = {x,y}}})

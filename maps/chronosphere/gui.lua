@@ -123,12 +123,12 @@ local function update_gui(player)
     [5] = {c = "--\n"}
   }
   local upgt = {
-    [1] = {t = "[1]: + 5000 Train Max HP. Current: " .. objective.max_health .. "\n    Cost : 2500 coins + 3000 copper plates\n"},
-    [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%,\n    Cost: 4000 coins + 1000 green circuits\n"},
+    [1] = {t = "[1]: + 5000 Train Max HP. Current: " .. objective.max_health .. "\n    Cost : " .. math_floor(2500 * (1 + objective.hpupgradetier /4)) .. " coins + 3000 copper plates\n"},
+    [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%\n    Buyable once per 3 jumps.\n    Cost: 5000 coins + 2000 green circuits\n"},
     [3] = {t = "[3]: Add additional row of Acumulators.\n    Cost: 2500 coins + 200 batteries\n"},
-    [4] = {t = "[4]: Add item pickup distance to players.Current: +" .. objective.pickupupgradetier .. ",\n    Cost: 1000 coins + 400 red inserters\n"},
-    [5] = {t = "[5]: Add +5 inventory slots. Buyable once per 5 jumps.\n    Cost: 2000 coins + " .. chests[objective.invupgradetier + 1].c},
-    [6] = {t = "[6]: Use up more repair tools on train at once. Current: +" .. objective.toolsupgradetier .. "\n    Cost: 1000 coins + 200 repair tools\n"},
+    [4] = {t = "[4]: Add item pickup distance to players.Current: +" .. objective.pickupupgradetier .. ",\n    Cost: " .. 1000 * (1 + objective.pickupupgradetier) .. " coins + 400 red inserters\n"},
+    [5] = {t = "[5]: Add +5 inventory slots. Buyable once per 5 jumps.\n    Cost: " .. 2000 * (1 + objective.invupgradetier) .." coins + " .. chests[objective.invupgradetier + 1].c},
+    [6] = {t = "[6]: Use up more repair tools on train at once. Current: +" .. objective.toolsupgradetier .. "\n    Cost: " .. 1000 * (1 + objective.toolsupgradetier) .. " coins + " .. 200 * (1 + objective.toolsupgradetier) .. " repair tools\n"},
     [7] = {t = "[7]: Add piping through wagon sides to create water sources for each wagon.\n    Cost: 2000 coins + 500 pipes\n"},
     [8] = {t = "[8]: Add comfylatron chests that output outside (into cargo wagon 2 and 3)\n    Cost: 2000 coins + 100 fast inserters\n"},
     [9] = {t = "[9]: Add storage chests to the sides of wagons.\n    Buyable once per 5 jumps.\n    Cost: 5000 coins + "  .. chests[objective.boxupgradetier + 1].c}
@@ -141,7 +141,7 @@ local function update_gui(player)
     [5] = {t = "[5]: Inventory maxed. Research Mining Productivity for more.\n"},
     [6] = {t = "[6]: Repairing at top speed of 5 packs.\n"},
     [7] = {t = "[7]: Piping created. Don't spill it!\n"},
-    [8] = {t = "[8]: Chests created.\n"},
+    [8] = {t = "[8]: Output chests created.\n"},
     [9] = {t = "[9]: Storage chests fully upgraded.\n"}
   }
   local tooltip = "Insert needed items into chest with upgrade number.\nUpgrading can take a minute.\n\n"

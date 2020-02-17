@@ -190,8 +190,8 @@ Public.send_near_biters_to_objective = function()
   local surface = random_target.surface
   local pollution = surface.get_pollution(random_target.position)
   local success = false
-  if pollution > 300 then
-    surface.pollute(random_target.position, -100)
+  if pollution > 200 then
+    surface.pollute(random_target.position, -50)
     --game.print("sending objective wave")
   	success = true
   else
@@ -268,8 +268,8 @@ local function send_group(unit_group, nearest_player_unit)
   local target = targets[math_random(1, #targets)]
   local surface = target.surface
   local pollution = surface.get_pollution(target.position)
-  if pollution > 300 then
-    surface.pollute(target.position, -100)
+  if pollution > 200 then
+    surface.pollute(target.position, -50)
     --game.print("sending unit group attack")
 	   local commands = {}
 

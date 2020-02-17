@@ -119,8 +119,8 @@ function Public.treasure_chest(surface, position, container_name)
 		{{name = "decider-combinator", count = math_random(4,8)}, weight = 2, d_min = 0.1, d_max = 1},
 		{{name = "power-switch", count = 1}, weight = 2, d_min = 0.1, d_max = 1},
 		{{name = "programmable-speaker", count = math_random(2,4)}, weight = 1, d_min = 0.1, d_max = 1},
-		{{name = "green-wire", count = math_random(50,99)}, weight = 4, d_min = 0.1, d_max = 1},
-		{{name = "red-wire", count = math_random(50,99)}, weight = 4, d_min = 0.1, d_max = 1},
+		{{name = "green-wire", count = math_random(10,29)}, weight = 4, d_min = 0.1, d_max = 1},
+		{{name = "red-wire", count = math_random(10,29)}, weight = 4, d_min = 0.1, d_max = 1},
 		{{name = "chemical-plant", count = math_random(1,3)}, weight = 3, d_min = 0.3, d_max = 1},
 		{{name = "burner-mining-drill", count = math_random(2,4)}, weight = 3, d_min = 0.0, d_max = 0.2},
 		{{name = "electric-mining-drill", count = math_random(2,4)}, weight = 3, d_min = 0.2, d_max = 1},
@@ -160,7 +160,7 @@ function Public.treasure_chest(surface, position, container_name)
 	}
   local jumps = 0
   if global.objective.chronojumps then jumps = global.objective.chronojumps end
-	local distance_to_center =  (jumps / 50) 
+	local distance_to_center =  (jumps / 50)
 	if distance_to_center > 1 then distance_to_center = 1 end
 
 	for _, t in pairs (chest_loot) do

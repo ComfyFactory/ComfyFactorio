@@ -14,6 +14,7 @@ require "maps.chronosphere.chronobubles"
 require "maps.chronosphere.ores"
 require "on_tick_schedule"
 require "modules.biter_noms_you"
+local Server = require 'utils.server'
 local Ai = require "maps.chronosphere.ai"
 local unearthing_worm = require "functions.unearthing_worm"
 local unearthing_biters = require "functions.unearthing_biters"
@@ -49,7 +50,9 @@ function generate_overworld(surface, optplanet)
 	local planet = nil
 	if not optplanet then
 		planet = chronobuble.determine_planet(nil)
-		game.print("Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name, {r=0.98, g=0.66, b=0.22})
+		local message = "Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name
+		game.print(message, {r=0.98, g=0.66, b=0.22})
+		Server.to_discord_embed(message)
 		global.objective.planet = planet
 	else
 		planet = optplanet
@@ -200,16 +203,24 @@ function Public.reset_map()
 
 
 
-	game.difficulty_settings.technology_price_multiplier = 0.5
-	game.map_settings.enemy_evolution.destroy_factor = 0.001
+	game.difficulty_settings.technology_price_multiplier = 0.6
+	game.map_settings.enemy_evolution.destroy_factor = 0.006
 	game.map_settings.enemy_evolution.pollution_factor = 0
-	game.map_settings.enemy_evolution.time_factor = 4e-05
+	game.map_settings.enemy_evolution.time_factor = 8e-05
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
 	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
 	game.map_settings.enemy_expansion.settler_group_max_size = 8
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.pollution.enabled = true
+	game.map_settings.pollution.pollution_restored_per_tree_damage = 0.1
+	game.map_settings.pollution.min_pollution_to_damage_trees = 1
+	game.map_settings.pollution.max_pollution_to_restore_trees = 0
+	game.map_settings.pollution.pollution_with_max_forest_damage = 10
+	game.map_settings.pollution.pollution_per_tree_damage = 0.5
+	game.map_settings.pollution.ageing = 0
+	game.map_settings.pollution.diffusion_ratio = 0.1
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.5
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
@@ -299,8 +310,9 @@ local function check_upgrades()
 		local inv = global.hpchest.get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("copper-plate")
-		if countcoins >= 2500 and count2 >= 3000 and objective.hpupgradetier < 18 then
-			inv.remove({name = "coin", count = 2500})
+		local coincost = math_floor(2500 * (1 + objective.hpupgradetier /4))
+		if countcoins >= coincost and count2 >= 3000 and objective.hpupgradetier < 18 then
+			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = "copper-plate", count = 3000})
 			game.print("Comfylatron: Train's max HP was upgraded.", {r=0.98, g=0.66, b=0.22})
 			objective.hpupgradetier = objective.hpupgradetier + 1
@@ -312,9 +324,9 @@ local function check_upgrades()
 		local inv = global.filterchest.get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("electronic-circuit")
-		if countcoins >= 4000 and count2 >= 1000 and objective.filterupgradetier < 9 then
-			inv.remove({name = "coin", count = 4000})
-			inv.remove({name = "electronic-circuit", count = 1000})
+		if countcoins >= 5000 and count2 >= 2000 and objective.filterupgradetier < 9 and objective.chronojumps >= (objective.filterupgradetier + 1) * 3 then
+			inv.remove({name = "coin", count = 5000})
+			inv.remove({name = "electronic-circuit", count = 2000})
 			game.print("Comfylatron: Train's pollution filter was upgraded.", {r=0.98, g=0.66, b=0.22})
 			objective.filterupgradetier = objective.filterupgradetier + 1
 		end
@@ -335,12 +347,13 @@ local function check_upgrades()
 		local inv = global.playerchest.get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("long-handed-inserter")
-		if countcoins >= 1000 and count2 >= 400 and objective.pickupupgradetier < 4 then
-			inv.remove({name = "coin", count = 1000})
+		local coincost = 1000 * (1 + objective.pickupupgradetier)
+		if countcoins >= coincost and count2 >= 400 and objective.pickupupgradetier < 4 then
+			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = "long-handed-inserter", count = 400})
 			game.print("Comfylatron: Players now have additional red inserter installed on shoulders, increasing their item pickup range.", {r=0.98, g=0.66, b=0.22})
 			objective.pickupupgradetier = objective.pickupupgradetier + 1
-			game.forces.player.character_item_pickup_distance_bonus = game.forces.player.character_item_pickup_distance_bonus + 1
+			game.forces.player.character_loot_pickup_distance_bonus = game.forces.player.character_loot_pickup_distance_bonus + 1
 		end
 	end
 	if global.invchest and global.invchest.valid then
@@ -357,8 +370,9 @@ local function check_upgrades()
 			item = "logistic-chest-storage"
 		end
 		local count2 = inv.get_item_count(item)
-		if countcoins >= 2000 and count2 >= 250 and objective.invupgradetier < 4 and objective.chronojumps >= (objective.invupgradetier + 1) * 5 then
-			inv.remove({name = "coin", count = 2000})
+		local coincost = 2000 * (1 + objective.invupgradetier)
+		if countcoins >= coincost and count2 >= 250 and objective.invupgradetier < 4 and objective.chronojumps >= (objective.invupgradetier + 1) * 5 then
+			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = item, count = 250})
 			game.print("Comfylatron: Players now can carry more trash in their unsorted inventories.", {r=0.98, g=0.66, b=0.22})
 			objective.invupgradetier = objective.invupgradetier + 1
@@ -370,9 +384,11 @@ local function check_upgrades()
 		local inv = global.toolschest.get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("repair-pack")
-		if countcoins >= 1000 and count2 >= 200 and objective.toolsupgradetier < 4 then
-			inv.remove({name = "coin", count = 1000})
-			inv.remove({name = "repair-pack", count = 200})
+		local coincost = 1000 * (1 + objective.toolsupgradetier)
+		local toolscost = 200 * (1 + objective.toolsupgradetier)
+		if countcoins >= coincost and count2 >= toolscost and objective.toolsupgradetier < 4 then
+			inv.remove({name = "coin", count = coincost})
+			inv.remove({name = "repair-pack", count = toolscost})
 			game.print("Comfylatron: Train now gets repaired with additional repair kit at once.", {r=0.98, g=0.66, b=0.22})
 			objective.toolsupgradetier = objective.toolsupgradetier + 1
 		end
@@ -459,14 +475,14 @@ local function check_upgrades()
 					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,-189 + i}, force = "player"}
 					chests[#chests + 1] = {name="wooden-chest", position= {32 ,-189 + i}, force = "player"}
 				elseif objective.boxupgradetier == 2 then
-					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="iron-chest", position= {32 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-189 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,-189 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 3 then
-					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="steel-chest", position= {32 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-189 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,-189 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 4 then
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,-189 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,-189 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,-189 + i}, force = "player", fast_replace = true}
 				end
 			end
 			for i = 1, 58, 1 do
@@ -474,14 +490,14 @@ local function check_upgrades()
 					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,-127 + i}, force = "player"}
 					chests[#chests + 1] = {name="wooden-chest", position= {32 ,-127 + i}, force = "player"}
 				elseif objective.boxupgradetier == 2 then
-					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="iron-chest", position= {32 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-127 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,-127 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 3 then
-					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="steel-chest", position= {32 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-127 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,-127 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 4 then
-					chests[#chests + 1] ={name="logistic-chest-storage", position= {-33 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] ={name="logistic-chest-storage", position= {32 ,-127 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] ={name="logistic-chest-storage", position= {-33 ,-127 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] ={name="logistic-chest-storage", position= {32 ,-127 + i}, force = "player", fast_replace = true}
 				end
 			end
 			for i = 1, 58, 1 do
@@ -489,14 +505,14 @@ local function check_upgrades()
 					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,-61 + i}, force = "player"}
 					chests[#chests + 1] = {name="wooden-chest", position= {32 ,-61 + i}, force = "player"}
 				elseif objective.boxupgradetier == 2 then
-					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="iron-chest", position= {32 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,-61 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,-61 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 3 then
-					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="steel-chest", position= {32 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,-61 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,-61 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 4 then
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,-61 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,-61 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,-61 + i}, force = "player", fast_replace = true}
 				end
 			end
 			for i = 1, 58, 1 do
@@ -504,14 +520,14 @@ local function check_upgrades()
 					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,1 + i}, force = "player"}
 					chests[#chests + 1] = {name="wooden-chest", position= {32 ,1 + i}, force = "player"}
 				elseif objective.boxupgradetier == 2 then
-					chests[#chests + 1] = {name="iron-chest", position= {-33 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="iron-chest", position= {32 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,1 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,1 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 3 then
-					chests[#chests + 1] = {name="steel-chest", position= {-33 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="steel-chest", position= {32 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,1 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,1 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 4 then
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,1 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,1 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,1 + i}, force = "player", fast_replace = true}
 				end
 			end
 			for i = 1, 58, 1 do
@@ -519,14 +535,14 @@ local function check_upgrades()
 					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,67 + i}, force = "player"}
 					chests[#chests + 1] = {name="wooden-chest", position= {32 ,67 + i}, force = "player"}
 				elseif objective.boxupgradetier == 2 then
-					chests[#chests + 1] = {name="iron-chest", position= {-33 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="iron-chest", position= {32 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,67 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,67 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 3 then
-					chests[#chests + 1] = {name="steel-chest", position= {-33 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="steel-chest", position= {32 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,67 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,67 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 4 then
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,67 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,67 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,67 + i}, force = "player", fast_replace = true}
 				end
 			end
 			for i = 1, 58, 1 do
@@ -534,14 +550,14 @@ local function check_upgrades()
 					chests[#chests + 1] = {name="wooden-chest", position= {-33 ,129 + i}, force = "player"}
 					chests[#chests + 1] = {name="wooden-chest", position= {32 ,129 + i}, force = "player"}
 				elseif objective.boxupgradetier == 2 then
-					chests[#chests + 1] = {name="iron-chest", position= {-33 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="iron-chest", position= {32 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="iron-chest", position= {-33 ,129 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="iron-chest", position= {32 ,129 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 3 then
-					chests[#chests + 1] = {name="steel-chest", position= {-33 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="steel-chest", position= {32 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="steel-chest", position= {-33 ,129 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="steel-chest", position= {32 ,129 + i}, force = "player", fast_replace = true}
 				elseif objective.boxupgradetier == 4 then
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
-					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,129 + i}, force = "player", fast_replace = true, player = "Hanakocz"}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {-33 ,129 + i}, force = "player", fast_replace = true}
+					chests[#chests + 1] = {name="logistic-chest-storage", position= {32 ,129 + i}, force = "player", fast_replace = true}
 				end
 			end
 			local surface = game.surfaces["cargo_wagon"]
@@ -646,8 +662,10 @@ function chronojump(choice)
 	local planet = nil
 	if choice then
 		planet = chronobuble.determine_planet(choice)
-		game.print("Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name, {r=0.98, g=0.66, b=0.22})
+		local message = "Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name
+		game.print(message, {r=0.98, g=0.66, b=0.22})
 		global.objective.planet = planet
+		Server.to_discord_embed(message)
 	end
 	generate_overworld(surface, planet)
 	game.forces.player.set_spawn_position({12, 10}, surface)
@@ -661,7 +679,10 @@ function chronojump(choice)
 	else
 		game.forces["enemy"].evolution_factor = 1
 	end
-	game.map_settings.enemy_evolution.time_factor = 4e-05 + 2e-06 * objective.chronojumps
+	game.map_settings.enemy_evolution.time_factor = 8e-05 + 4e-06 * objective.chronojumps
+	surface.pollute(global.locomotive.position, 200 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
+	game.forces.scrapyard.set_ammo_damage_modifier("bullet", objective.chronojumps / 20)
+	game.forces.scrapyard.set_turret_attack_modifier("gun-turret", objective.chronojumps / 20)
 end
 
 local function check_chronoprogress()
@@ -690,10 +711,10 @@ local function charge_chronosphere()
 	for i = 1, #acus, 1 do
 		if not acus[i].valid then return end
 		local energy = acus[i].energy
-		if energy > 3000000 and objective.chronotimer < objective.chrononeeds - 62 and objective.chronotimer > 130 then
+		if energy > 3000000 and objective.chronotimer < objective.chrononeeds - 182 and objective.chronotimer > 130 then
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
-			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, 100 * (4 / (objective.filterupgradetier / 2 + 1)))
+			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, 200 * (4 / (objective.filterupgradetier / 2 + 1)))
 			--log("energy charged from acu")
 		end
 	end
@@ -770,7 +791,9 @@ local function on_init()
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
 	global.objective.game_lost = true
-
+	game.create_force("scrapyard")
+	game.forces.scrapyard.set_friend('enemy', true)
+	game.forces.enemy.set_friend('scrapyard', true)
 	--global.rocks_yield_ore_maximum_amount = 999
 	--global.rocks_yield_ore_base_amount = 50
 	--global.rocks_yield_ore_distance_modifier = 0.025
