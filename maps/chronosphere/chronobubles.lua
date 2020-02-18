@@ -17,7 +17,7 @@ local variants = {
   [12] = {id = 12, name = "choppy planet", iron = 0, copper = 0, coal = 0, stone = 0, uranium = 0, oil = 1, biters = 6, moisture = 0.4, chance = 2, cumul_chance = 21},
   [13] = {id = 13, name = "river planet", iron = 1, copper = 1, coal = 3, stone = 1, uranium = 0, oil = 0, biters = 8, moisture = 0.5, chance = 2, cumul_chance = 23},
   [14] = {id = 14, name = "lava planet", iron = 1, copper = 1, coal = 1, stone = 1, uranium = 0, oil = 0, biters = 6, moisture = -0.5, chance = 1, cumul_chance = 24},
-  [15] = {id = 15, name = "start planet", iron = 3, copper = 3, coal = 3, stone = 3, uranium = 0, oil = 0, biters = 1, moisture = -0.3, chance = 0, cumul_chance = 24},
+  [15] = {id = 15, name = "start planet", iron = 3, copper = 3, coal = 3, stone = 3, uranium = 0, oil = 0, biters = 1, moisture = -0.3, chance = 0, cumul_chance = 24}
 
 }
 
@@ -58,24 +58,28 @@ end
 function Public.determine_planet(choice)
   local weight = variants[#variants].cumul_chance
   local planet_choice = nil
+  local ores = math_random(1, #richness)
+  if global.objective.game_lost then
+    choice = 15
+    ores = 2
+  end
   if not choice then
     planet_choice = roll(weight)
   else
-    planet_choice = variants[choice]
+    if variants[choice] then
+      planet_choice = variants[choice]
+    else
+      planet_choice = roll(weight)
+    end 
   end
   local planet = {
     [1] = {
       name = planet_choice,
       day_speed = time_speed_variants[math_random(1, #time_speed_variants)],
       time = math_random(1,100) / 100,
-      ore_richness = richness[math_random(1, #richness)],
+      ore_richness = richness[ores],
     }
   }
-  if global.objective.game_lost then
-    planet[1].name = variants[15]
-    planet[1].ore_richness = richness[2]
-  end
-  return planet
+  global.objective.planet = planet
 end
-
 return Public

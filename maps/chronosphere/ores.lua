@@ -1,13 +1,10 @@
+local Public_ores = {}
 local simplex_noise = require 'utils.simplex_noise'.d2
 local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
 local math_sqrt = math.sqrt
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}
-
-local function pos_to_key(position)
-    return tostring(position.x .. "_" .. position.y)
-end
 
 local function draw_noise_ore_patch(position, name, surface, radius, richness, mixed)
 	if not position then return end
@@ -41,35 +38,10 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness, m
 				if surface.can_place_entity(entity) then
           surface.create_entity(entity)
         end
-          --if not global.ores_queue[pos.x] then global.ores_queue[pos.x] = {} end
-
-          --global.ores_queue[pos_to_key(pos)] = {name = name, position = pos, amount = a}
-				--end
 			end
 		end
 	end
 end
-
--- function ores_are_mixed(surface)
---   local ore_raffle = {
--- 	"iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "coal", "stone"
---   }
---   local r = 480
--- 	local area = {{r * -1, r * -1}, {r, r}}
---   local ores = surface.find_entities_filtered({area = area, name = {"iron-ore", "copper-ore", "coal", "stone"}})
---   	if #ores == 0 then return end
---   	local seed = surface.map_gen_settings.seed
---
---   	for _, ore in pairs(ores) do
---   		local pos = ore.position
---   		local noise = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed) + simplex_noise(pos.x * 0.01, pos.y * 0.01, seed) * 0.3 + simplex_noise(pos.x * 0.05, pos.y * 0.05, seed) * 0.2
---
---   		local i = (math.floor(noise * 100) % 7) + 1
---       --if not global.ores_queue[pos.x] then global.ores_queue[pos.x] = {} end
---       --global.ores_queue[pos_to_key(pos)] = {name = ore_raffle[i], position = ore.position, amount = ore.amount}
---   		ore.destroy()
---   	end
---   end
 
 local function get_size_of_ore(ore, planet)
   local base_size = math_random(5, 10) + math_floor(planet[1].ore_richness.factor * 3)
@@ -94,7 +66,7 @@ end
 
 local function get_oil_amount(pos, oil_w)
   local hundred_percent = 300000
-	return (hundred_percent / 20) * (1+global.objective.chronojumps) * oil_w
+	return (hundred_percent / 40) * (1+global.objective.chronojumps) * oil_w
 end
 
 function spawn_ore_vein(surface, pos, planet)
@@ -135,12 +107,13 @@ function spawn_ore_vein(surface, pos, planet)
   --end
 end
 
-function prospect_ores(entity)
+function Public_ores.prospect_ores(entity)
   local planet = global.objective.planet
   local chance = 10
   if entity.name == "rock-huge" then chance = 40 end
   if math_random(chance + math_floor(10 * planet[1].ore_richness.factor) ,100 + chance) >= 100 then
     spawn_ore_vein(entity.surface, entity.position, planet)
-    --if planet[1].name.name == "mixed planet" then
   end
 end
+
+return Public_ores

@@ -1,4 +1,3 @@
-require "maps.chronosphere.comfylatron"
 local Public = {}
 local math_floor = math.floor
 local math_random = math.random
@@ -100,38 +99,6 @@ function Public.fish_tag()
 		position = global.locomotive_cargo.position,
 		text = " "
 	})
-end
---[[
-local function accelerate()
-	if not global.locomotive then return end
-	if not global.locomotive.valid then return end
-	if global.locomotive.get_driver() then return end
-	global.locomotive_driver = global.locomotive.surface.create_entity({name = "character", position = global.locomotive.position, force = "player"})
-	global.locomotive_driver.driving = true
-	global.locomotive_driver.riding_state = {acceleration = defines.riding.acceleration.accelerating, direction = defines.riding.direction.straight}
-end
-
-local function remove_acceleration()
-	if not global.locomotive then return end
-	if not global.locomotive.valid then return end
-	if global.locomotive_driver then global.locomotive_driver.destroy() end
-	global.locomotive_driver = nil
-end
-]]
-function spawn_acumulators()
-	local x = -28
-	local y = -252
-	local yy = global.objective.acuupgradetier * 2
-	local surface = game.surfaces["cargo_wagon"]
-	if yy > 8 then yy = yy + 2 end
-	if yy > 26 then yy = yy + 2 end
-	if yy > 44 then yy = yy + 2 end
-	for i = 1, 27, 1 do
-		local acumulator = surface.create_entity({name = "accumulator", position = {x + 2 * i, y + yy}, force="player", create_build_effect_smoke = false})
-		acumulator.minable = false
-		acumulator.destructible = false
-		table.insert(global.acumulators, acumulator)
-	end
 end
 
 local market_offers = {
@@ -433,21 +400,21 @@ local function create_wagon_room()
 	for _, offer in pairs(market_offers) do market.add_market_item(offer) end
 
 	--generate cars--
-	for _, x in pairs({width * -0.5 -0.5, width * 0.5 + 0.5}) do
+	for _, x in pairs({width * -0.5 -1.4, width * 0.5 + 1.4}) do
 		local e = surface.create_entity({name = "car", position = {x, 0}, force = "player", create_build_effect_smoke = false})
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
 		e.destructible = false
 		e.minable = false
 		e.operable = false
 	end
-	for _, x in pairs({width * -0.5 - 0.5, width * 0.5 + 0.5}) do
+	for _, x in pairs({width * -0.5 - 1.4, width * 0.5 + 1.4}) do
 		local e = surface.create_entity({name = "car", position = {x, -128}, force = "player", create_build_effect_smoke = false})
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
 		e.destructible = false
 		e.minable = false
 		e.operable = false
 	end
-	for _, x in pairs({width * -0.5 - 0.5, width * 0.5 + 0.5}) do
+	for _, x in pairs({width * -0.5 - 1.4, width * 0.5 + 1.4}) do
 		local e = surface.create_entity({name = "car", position = {x, 128}, force = "player", create_build_effect_smoke = false})
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
 		e.destructible = false
@@ -587,47 +554,10 @@ function Public.enter_cargo_wagon(player, vehicle)
 		local x_vector = (vehicle.position.x / math.abs(vehicle.position.x)) * 2
 		local y_vector = vehicle.position.y / 16
 		local position = {global.locomotive_cargo2.position.x + x_vector, global.locomotive_cargo2.position.y + y_vector}
-		local position = surface.find_non_colliding_position("character", position, 128, 0.5)
-		if not position then return end
-		player.teleport(position, surface)
+ 		local position2 = surface.find_non_colliding_position("character", position, 128, 0.5)
+		if not position2 then return end
+		player.teleport(position2, surface)
 	end
 end
-
--- local function clear_offers(market)
--- 	for i = 1, 256, 1 do
--- 		local a = market.remove_market_item(1)
--- 		if a == false then return end
--- 	end
--- end
-
--- function Public.refresh_offers(event)
---
--- 	local market = event.entity or event.market
--- 	if not market then return end
--- 	if not market.valid then return end
--- 	if market.name ~= "market" then return end
--- 	if market ~= global.upgrademarket then return end
--- 	clear_offers(market)
--- 	setup_upgrade_shop(market)
--- end
-
--- function Public.offer_purchased(event)
--- 	local offer_index = event.offer_index
--- 	if not market_offers2[offer_index] then return end
--- 	local market = event.market
--- 	if not market.name == "market" then return end
---
--- 	market_offers2[offer_index]()
---
--- 	count = event.count
--- 	if count > 1 then
--- 		local offers = market.get_market_items()
--- 		local price = offers[offer_index].price[1].amount
--- 		game.players[event.player_index].insert({name = "coin", count = price * (count - 1)})
--- 	end
--- 	Public.refresh_offers(event)
--- end
-
-
 
 return Public
