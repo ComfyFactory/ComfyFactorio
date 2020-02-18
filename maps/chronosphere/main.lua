@@ -393,9 +393,9 @@ end
 local function check_chronoprogress()
 	local objective = global.objective
 	--game.print(objective.chronotimer)
-	if objective.chronotimer >= objective.chrononeeds - 180 and objective.chronotimer < objective.chrononeeds - 59 then
+	if objective.chronotimer == objective.chrononeeds - 180  then
 		game.print("Comfylatron: Acumulator charging disabled, 180 seconds countdown to jump!", {r=0.98, g=0.66, b=0.22})
-	elseif objective.chronotimer >= objective.chrononeeds - 60 and objective.chronotimer < objective.chrononeeds - 59 then
+	elseif objective.chronotimer == objective.chrononeeds - 60  then
 		game.print("Comfylatron: ChronoTrain nearly charged! Grab what you can, we leaving in 60 seconds!", {r=0.98, g=0.66, b=0.22})
 	elseif objective.chronotimer == objective.chrononeeds - 30 then
 		game.print("Comfylatron: You better hurry up! 30 seconds remaining!", {r=0.98, g=0.66, b=0.22})

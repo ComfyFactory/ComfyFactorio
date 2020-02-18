@@ -187,7 +187,7 @@ Public.send_near_biters_to_objective = function()
   if not global.locomotive_cargo3 then return end
   local targets = {global.locomotive, global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
   local random_target = targets[math_random(1, #targets)]
-  if random_target.valid then return end
+  if not random_target.valid then return end
   local surface = random_target.surface
   local pollution = surface.get_pollution(random_target.position)
   local success = false
