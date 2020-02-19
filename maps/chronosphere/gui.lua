@@ -40,7 +40,7 @@ local function create_gui(player)
 	label.style.minimal_width = 10
 	label.style.font_color = {r = 150, g = 0, b = 255}
 
-  local label = frame.add({ type = "label", caption = " ", name = "timer_value"})
+  local label = frame.add({ type = "label", caption = " ", name = "timer_value", tooltip = " "})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
@@ -104,8 +104,13 @@ local function update_gui(player)
 
   gui.timer.caption = {"chronosphere.gui_3"}
 	gui.timer_value.caption = math_floor((objective.chrononeeds - objective.chronotimer) / 60) .. " min, " .. (objective.chrononeeds - objective.chronotimer) % 60 .. " s"
+	if objective.chronojumps > 5 then
+		gui.timer_value.tooltip = "If overstaying this, other planets can evolve: " ..math_floor((objective.chrononeeds * 0.75 - objective.chronotimer) / 60) .. " min, " .. (objective.chrononeeds * 0.75 - objective.chronotimer) % 60 .. " s"
+	else
+		gui.timer_value.tooltip = "After planet 5, biters will get additional permanent evolution for staying too long on each planet."
+	end
 
-  gui.planet.caption = "Planet: " .. objective.planet[1].name.name .. " Ores: " .. objective.planet[1].ore_richness.name
+	gui.planet.caption = "Planet: " .. objective.planet[1].name.name .. " Ores: " .. objective.planet[1].ore_richness.name
   local acus = 0
   if global.acumulators then acus = #global.acumulators else acus = 0 end
   local bestcase = math_floor((objective.chrononeeds - objective.chronotimer) / (1 + math_floor(acus/10)))

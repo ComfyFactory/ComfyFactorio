@@ -504,10 +504,10 @@ function Public.set_player_spawn_and_refill_fish()
 end
 
 function Public.enter_cargo_wagon(player, vehicle)
-	if not vehicle then return end
-	if not vehicle.valid then return end
-	if not global.locomotive_cargo then return end
-	if not global.locomotive_cargo.valid then return end
+	if not vehicle then log("no vehicle") return end
+	if not vehicle.valid then log("vehicle invalid") return end
+	if not global.locomotive_cargo then log("no cargo") return end
+	if not global.locomotive_cargo.valid then log("cargo invalid") return end
 	if vehicle == global.locomotive_cargo then
 		if not game.surfaces["cargo_wagon"] then create_wagon_room() end
 		local surface = game.surfaces["cargo_wagon"]

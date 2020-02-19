@@ -65,7 +65,7 @@ function Public.treasure_chest(surface, position, container_name)
 		{{name = "advanced-circuit", count = math_random(50,150)}, weight = 3, d_min = 0.3, d_max = 1},
 		{{name = "electronic-circuit", count = math_random(50,150)}, weight = 4, d_min = 0.0, d_max = 0.4},
 		{{name = "processing-unit", count = math_random(50,150)}, weight = 3, d_min = 0.7, d_max = 1},
-		{{name = "explosives", count = math_random(40,100)}, weight = 20, d_min = 0.0, d_max = 1},
+		{{name = "explosives", count = math_random(20,50)}, weight = 7, d_min = 0.0, d_max = 1},
 		{{name = "lubricant-barrel", count = math_random(4,10)}, weight = 1, d_min = 0.3, d_max = 0.5},
 		{{name = "rocket-fuel", count = math_random(4,10)}, weight = 2, d_min = 0.3, d_max = 0.7},
 		--{{name = "computer", count = 1}, weight = 2, d_min = 0, d_max = 1},
@@ -74,13 +74,13 @@ function Public.treasure_chest(surface, position, container_name)
 		{{name = "productivity-module", count = math_random(1,4)}, weight = 2, d_min = 0.1, d_max = 1},
 		{{name = "speed-module", count = math_random(1,4)}, weight = 2, d_min = 0.1, d_max = 1},
 
-		{{name = "automation-science-pack", count = math_random(16,64)}, weight = 3, d_min = 0.0, d_max = 0.2},
-		{{name = "logistic-science-pack", count = math_random(16,64)}, weight = 3, d_min = 0.1, d_max = 0.5},
-		{{name = "military-science-pack", count = math_random(16,64)}, weight = 3, d_min = 0.2, d_max = 1},
-		{{name = "chemical-science-pack", count = math_random(16,64)}, weight = 3, d_min = 0.3, d_max = 1},
-		{{name = "production-science-pack", count = math_random(16,64)}, weight = 3, d_min = 0.4, d_max = 1},
-		{{name = "utility-science-pack", count = math_random(16,64)}, weight = 3, d_min = 0.5, d_max = 1},
-		{{name = "space-science-pack", count = math_random(16,64)}, weight = 3, d_min = 0.9, d_max = 1},
+		{{name = "automation-science-pack", count = math_random(16,64)}, weight = 4, d_min = 0.0, d_max = 0.2},
+		{{name = "logistic-science-pack", count = math_random(16,64)}, weight = 4, d_min = 0.05, d_max = 0.5},
+		{{name = "military-science-pack", count = math_random(16,64)}, weight = 4, d_min = 0.15, d_max = 1},
+		{{name = "chemical-science-pack", count = math_random(16,64)}, weight = 4, d_min = 0.3, d_max = 1},
+		{{name = "production-science-pack", count = math_random(16,64)}, weight = 4, d_min = 0.4, d_max = 1},
+		{{name = "utility-science-pack", count = math_random(16,64)}, weight = 4, d_min = 0.5, d_max = 1},
+		{{name = "space-science-pack", count = math_random(16,64)}, weight = 4, d_min = 0.9, d_max = 1},
 
 		{{name = "steel-plate", count = math_random(25,75)}, weight = 2, d_min = 0.1, d_max = 0.3},
 		{{name = "nuclear-fuel", count = 1}, weight = 2, d_min = 0.7, d_max = 1},
@@ -160,7 +160,7 @@ function Public.treasure_chest(surface, position, container_name)
 	}
   local jumps = 0
   if global.objective.chronojumps then jumps = global.objective.chronojumps end
-	local distance_to_center =  (jumps / 50)
+	local distance_to_center =  (jumps / 40)
 	if distance_to_center > 1 then distance_to_center = 1 end
 
 	for _, t in pairs (chest_loot) do

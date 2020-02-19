@@ -187,7 +187,7 @@ Public.send_near_biters_to_objective = function()
   if not global.locomotive_cargo3 then return end
   local targets = {global.locomotive, global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
   local random_target = targets[math_random(1, #targets)]
-  if not random_target.valid then return end
+  if global.objective.game_lost then return end
   local surface = random_target.surface
   local pollution = surface.get_pollution(random_target.position)
   local success = false
@@ -206,7 +206,7 @@ Public.send_near_biters_to_objective = function()
         target=random_target,
         distraction=defines.distraction.none
         },
-      unit_count = 16 + math_random(1, math_floor(game.forces["enemy"].evolution_factor * 100)),
+      unit_count = 16 + math_random(1, math_floor(1 + game.forces["enemy"].evolution_factor * 100)),
       force = "enemy",
       unit_search_distance=128
     })
@@ -267,6 +267,7 @@ local function send_group(unit_group, nearest_player_unit)
 
   local targets = {global.locomotive, global.locomotive, nearest_player_unit, nearest_player_unit, nearest_player_unit, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
   local target = targets[math_random(1, #targets)]
+  if not target.valid then colonize(unit_group) return end
   local surface = target.surface
   local pollution = surface.get_pollution(target.position)
   if pollution > 200 then

@@ -223,7 +223,7 @@ local function desync(event)
 	-- 		movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
 	-- 	})
 	-- end
-	if math_random(1,4) == 1 then
+	if not event or math_random(1,4) == 1 then
 		global.comfylatron.surface.create_entity({name = "medium-explosion", position = global.comfylatron.position})
 		global.comfylatron.surface.create_entity({name = "flying-text", position = global.comfylatron.position, text = "desync", color = {r = 150, g = 0, b = 0}})
 		global.comfylatron.destroy()
@@ -244,7 +244,7 @@ local function alone()
 		if global.comfybubble then global.comfybubble.destroy() return true end
 	end
 	if math_random(1,128) == 1 then
-		desync()
+		desync(nil)
 		return true
 	end
 	set_comfy_speech_bubble(texts["alone"][math_random(1, #texts["alone"])])

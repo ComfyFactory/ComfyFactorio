@@ -71,8 +71,9 @@ end
 
 function spawn_ore_vein(surface, pos, planet)
   local mixed = false
-  if planet[1].name.name == "mixed planet" then mixed = true end
-  local richness = math_random(50 + 30 * global.objective.chronojumps, 100 + 30 * global.objective.chronojumps) * planet[1].ore_richness.factor
+  if planet[1].name.id == 6 then mixed = true end --mixed planet
+  local richness = math_random(50 + 10 * global.objective.chronojumps, 100 + 10 * global.objective.chronojumps) * planet[1].ore_richness.factor
+  if planet[1].name.id == 16 then richness = richness * 10 end --hedge maze
   local iron = {w = planet[1].name.iron, t = planet[1].name.iron}
   local copper = {w = planet[1].name.copper, t = iron.t + planet[1].name.copper}
   local stone = {w = planet[1].name.stone, t = copper.t + planet[1].name.stone}
@@ -107,12 +108,16 @@ function spawn_ore_vein(surface, pos, planet)
   --end
 end
 
-function Public_ores.prospect_ores(entity)
+function Public_ores.prospect_ores(entity, surface, pos)
   local planet = global.objective.planet
   local chance = 10
-  if entity.name == "rock-huge" then chance = 40 end
-  if math_random(chance + math_floor(10 * planet[1].ore_richness.factor) ,100 + chance) >= 100 then
-    spawn_ore_vein(entity.surface, entity.position, planet)
+  if entity then
+    if entity.name == "rock-huge" then chance = 40 end
+    if math_random(chance + math_floor(10 * planet[1].ore_richness.factor) ,100 + chance) >= 100 then
+      spawn_ore_vein(surface, pos, planet)
+    end
+  else
+    spawn_ore_vein(surface, pos, planet)
   end
 end
 

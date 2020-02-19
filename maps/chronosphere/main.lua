@@ -34,6 +34,7 @@ local chests = {}
 global.objective = {}
 global.flame_boots = {}
 global.comfylatron = nil
+global.lab_cells = {}
 
 local choppy_entity_yield = {
 		["tree-01"] = {"iron-ore"},
@@ -185,6 +186,8 @@ local function reset_map()
 	objective.boxupgradetier = 0
 	objective.chronojumps = 0
 	objective.chronotimer = 0
+	objective.passivetimer = 0
+	objective.passivejumps = 0
 	objective.chrononeeds = 2000
 	objective.active_biters = {}
 	objective.unit_groups = {}
@@ -204,14 +207,15 @@ local function reset_map()
 	game.map_settings.enemy_expansion.settler_group_max_size = 8
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.pollution.enabled = true
-	game.map_settings.pollution.pollution_restored_per_tree_damage = 0.1
+	game.map_settings.pollution.pollution_restored_per_tree_damage = 0.02
 	game.map_settings.pollution.min_pollution_to_damage_trees = 1
 	game.map_settings.pollution.max_pollution_to_restore_trees = 0
 	game.map_settings.pollution.pollution_with_max_forest_damage = 10
-	game.map_settings.pollution.pollution_per_tree_damage = 0.5
+	game.map_settings.pollution.pollution_per_tree_damage = 0.1
 	game.map_settings.pollution.ageing = 0.1
 	game.map_settings.pollution.diffusion_ratio = 0.1
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.75
+	game.forces["enemy"].evolution_factor = 0.0001
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
@@ -349,8 +353,14 @@ end
 local function chronojump(choice)
 	local objective = global.objective
 	if objective.game_lost then return end
+	local overstayed = false
+	if objective.passivetimer > objective.chrononeeds * 0.75 and objective.chronojumps > 5 then
+		overstayed = true
+		objective.passivejumps = objective.passivejumps + 1
+	end
 	objective.chronojumps = objective.chronojumps + 1
-	objective.chrononeeds = 2000 + 800 * objective.chronojumps
+	objective.chrononeeds = 2000 + 500 * objective.chronojumps
+	objective.passivetimer = 0
 	objective.chronotimer = 0
 	local message = "Comfylatron: Wheeee! Time Jump Active! This is Jump number " .. global.objective.chronojumps
 	game.print(message, {r=0.98, g=0.66, b=0.22})
@@ -360,11 +370,12 @@ local function chronojump(choice)
 	for _,player in pairs(game.players) do
 		if player.surface == oldsurface then
 			if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
-			Locomotive.enter_cargo_wagon(player, global.locomotive_cargo)
+			local wagons = {global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+			Locomotive.enter_cargo_wagon(player, wagons[math_random(1,3)])
 		end
 	end
 	local map_gen_settings = get_map_gen_settings()
-
+	global.lab_cells = {}
 	global.active_surface_index = game.create_surface("chronosphere" .. objective.chronojumps, map_gen_settings).index
 	local surface = game.surfaces[global.active_surface_index]
 	local planet = nil
@@ -373,21 +384,24 @@ local function chronojump(choice)
 		planet = global.objective.planet
 	end
 	generate_overworld(surface, planet)
+	if overstayed then game.print("Comfylatron: Looks like you stayed on previous planet for so long that enemies on other planets had additional time to evolve!", {r=0.98, g=0.66, b=0.22}) end
 	game.forces.player.set_spawn_position({12, 10}, surface)
 	local items = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).get_contents()
-	local items2 = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).get_contents()
+	local items2 = global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).get_contents()
 	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, items, items2)
 	render_train_hp()
 	game.delete_surface(oldsurface)
 	if objective.chronojumps <= 40 then
-		game.forces["enemy"].evolution_factor = 0 + 0.025 * objective.chronojumps
+		game.forces["enemy"].evolution_factor = 0 + 0.025 * (objective.chronojumps + objective.passivejumps)
 	else
 		game.forces["enemy"].evolution_factor = 1
 	end
-	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * objective.chronojumps
-	surface.pollute(global.locomotive.position, 200 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
-	game.forces.scrapyard.set_ammo_damage_modifier("bullet", objective.chronojumps / 20)
-	game.forces.scrapyard.set_turret_attack_modifier("gun-turret", objective.chronojumps / 20)
+	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * (objective.chronojumps + objective.passivejumps)
+	surface.pollute(global.locomotive.position, 150 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
+	game.forces.scrapyard.set_ammo_damage_modifier("bullet", 0.01 * objective.chronojumps)
+	game.forces.scrapyard.set_turret_attack_modifier("gun-turret", 0.01 * objective.chronojumps)
+	game.forces.enemy.set_ammo_damage_modifier("melee", 0.1 * objective.passivejumps)
+	game.forces.enemy.set_ammo_damage_modifier("biological", 0.1 * objective.passivejumps)
 end
 
 local function check_chronoprogress()
@@ -421,7 +435,7 @@ local function charge_chronosphere()
 		if energy > 3000000 and objective.chronotimer < objective.chrononeeds - 182 and objective.chronotimer > 130 then
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
-			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 5 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)))
+			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)))
 			--log("energy charged from acu")
 		end
 	end
@@ -472,6 +486,7 @@ local function tick()
 		if tick_minute_functions[key] then tick_minute_functions[key]() end
 		if tick % 60 == 0 then
 			global.objective.chronotimer = global.objective.chronotimer + 1
+			global.objective.passivetimer = global.objective.passivetimer + 1
 			check_chronoprogress()
 		end
 		if tick % 120 == 0 then
@@ -603,16 +618,21 @@ local function on_entity_damaged(event)
 
 end
 
-local function trap(entity)
+local function trap(entity, trap)
+	if trap then
+		tick_tack_trap(entity.surface, entity.position)
+		tick_tack_trap(entity.surface, {x = entity.position.x + math_random(-3,3), y = entity.position.y + math_random(-3,3)})
+		return
+	end
 	if math_random(1,256) == 1 then tick_tack_trap(entity.surface, entity.position) return end
 	if math_random(1,128) == 1 then unearthing_worm(entity.surface, entity.surface.find_non_colliding_position("big-worm-turret",entity.position,5,1)) end
 	if math_random(1,64) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end
 end
 
 local function get_ore_amount()
-	local scaling = 10 * global.objective.chronojumps
-	local amount = (40 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus) * global.objective.planet[1].ore_richness.factor
-	if amount > 800 then amount = 800 end
+	local scaling = 5 * global.objective.chronojumps
+	local amount = (30 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus) * global.objective.planet[1].ore_richness.factor
+	if amount > 600 then amount = 600 end
 	amount = math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
 	return amount
 end
@@ -623,7 +643,7 @@ local function pre_player_mined_item(event)
 	local objective = global.objective
 	if objective.planet[1].name.name == "rocky planet" then
 		if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then
-			trap(event.entity)
+			trap(event.entity, false)
 			event.entity.destroy()
 			surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(1,3)},true)
 			local amount = get_ore_amount()
@@ -649,7 +669,7 @@ local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if entity.type == "tree" and global.objective.planet[1].name.name == "choppy planet" then
-		trap(entity)
+		trap(entity, false)
 		if choppy_entity_yield[entity.name] then
 			if event.buffer then event.buffer.clear() end
 			if not event.player_index then return end
@@ -681,10 +701,10 @@ local function on_player_mined_entity(event)
 		end
 	end
 	if entity.name == "rock-huge" or entity.name == "rock-big" or entity.name == "sand-rock-big" then
-		if global.objective.planet[1].name.name ~= "rocky planet" then
-			Ores.prospect_ores(entity)
+		if global.objective.planet[1].name.id ~= 11 and global.objective.planet[1].name.id ~= 16 then --rocky and maze planet
+			Ores.prospect_ores(entity, entity.surface, entity.position)
 		elseif
-			global.objective.planet[1].name.name == "rocky planet" then event.buffer.clear()
+			global.objective.planet[1].name.id == 11 then event.buffer.clear() -- rocky planet
 		end
 	end
 end
@@ -708,7 +728,7 @@ local function on_entity_died(event)
 		if event.cause then
 			if event.cause.valid then
 				if event.cause.force.index ~= 2 then
-					trap(event.entity)
+					trap(event.entity, false)
 				end
 			end
 		end
@@ -722,6 +742,9 @@ local function on_entity_died(event)
 	if not entity.valid then return end
 	if entity.type == "unit" and entity.force == "enemy" then
 		global.objective.active_biters[entity.unit_number] = nil
+	end
+	if entity.force.name == "scrapyard" and entity.name == "gun-turret" and global.objective.planet[1].name.id == 16 then
+		trap(entity, true)
 	end
 	if entity.force.index == 3 then
 		if event.cause then
@@ -793,6 +816,11 @@ local function on_player_changed_position(event)
 	if not player.character then return end
 	if player.character.driving then return end
 	if player.surface.name == "cargo_wagon" then return end
+	local safe = {"stone-path", "concrete", "hazard-concrete-left", "hazard-concrete-right", "refined-concrete", "refined-hazard-concrete-left", "refined-hazard-concrete-right"}
+	local pavement = player.surface.get_tile(player.position.x, player.position.y)
+	for i = 1, 7, 1 do
+		if pavement.name == safe[i] then return end
+	end
 	if not global.flame_boots[player.index].steps then global.flame_boots[player.index].steps = {} end
 	local steps = global.flame_boots[player.index].steps
 

@@ -1,11 +1,13 @@
 
 --require "maps.chronosphere.ores"
-
+local Ores = require "maps.chronosphere.ores"
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 local math_sqrt = math.sqrt
 local level_depth = 960
+local lake_noise_value = -0.9
+local labyrinth_cell_size = 32 --valid values are 2, 4, 8, 16, 32
 local Treasure = require 'maps.chronosphere.treasure'
 local simplex_noise = require "utils.simplex_noise".d2
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
@@ -25,6 +27,7 @@ local scrap_entities = {"crash-site-assembling-machine-1-broken", "crash-site-as
  "medium-ship-wreck", "small-ship-wreck", "medium-ship-wreck", "small-ship-wreck", "medium-ship-wreck", "small-ship-wreck", "medium-ship-wreck", "small-ship-wreck",
  "crash-site-chest-1", "crash-site-chest-2", "crash-site-chest-1", "crash-site-chest-2", "crash-site-chest-1", "crash-site-chest-2"}
 local scrap_entities_index = #scrap_entities
+local maze_things_raffle = {"camp", "lab", "treasure", "crashsite"}
 local noises = {
 	["no_rocks"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
 	["no_rocks_2"] = {{modifier = 0.013, weight = 1}, {modifier = 0.1, weight = 0.1}},
@@ -39,7 +42,18 @@ local noises = {
 	["scrapyard"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}},
   ["forest_location"] = {{modifier = 0.006, weight = 1}, {modifier = 0.01, weight = 0.25}, {modifier = 0.05, weight = 0.15}, {modifier = 0.1, weight = 0.05}},
 	["forest_density"] = {{modifier = 0.01, weight = 1}, {modifier = 0.05, weight = 0.5}, {modifier = 0.1, weight = 0.025}},
-  ["ores"] = {{modifier = 0.05, weight = 1}, {modifier = 0.02, weight = 0.55}, {modifier = 0.05, weight = 0.05}}
+  ["ores"] = {{modifier = 0.05, weight = 1}, {modifier = 0.02, weight = 0.55}, {modifier = 0.05, weight = 0.05}},
+  ["hedgemaze"] = {{modifier = 0.001, weight = 1}}
+}
+
+local modifiers = {
+  {x = 0, y = -1},{x = -1, y = 0},{x = 1, y = 0},{x = 0, y = 1}
+}
+local modifiers_diagonal = {
+  {diagonal = {x = -1, y = 1}, connection_1 = {x = -1, y = 0}, connection_2 = {x = 0, y = 1}},
+  {diagonal = {x = 1, y = -1}, connection_1 = {x = 1, y = 0}, connection_2 = {x = 0, y = -1}},
+  {diagonal = {x = 1, y = 1}, connection_1 = {x = 1, y = 0}, connection_2 = {x = 0, y = 1}},
+  {diagonal = {x = -1, y = -1}, connection_1 = {x = -1, y = 0}, connection_2 = {x = 0, y = -1}}
 }
 
 local function pos_to_key(position)
@@ -79,6 +93,130 @@ local function get_size_of_ore(ore, planet)
   return final_size
 end
 
+local function get_path_connections_count(cell_pos)
+	local connections = 0
+	for _, m in pairs(modifiers) do
+		if global.lab_cells[tostring(cell_pos.x + m.x) .. "_" .. tostring(cell_pos.y + m.y)] then
+			connections = connections + 1
+		end
+	end
+	return connections
+end
+
+local function process_labyrinth_cell(pos, seed)
+	local cell_position = {x = pos.x / labyrinth_cell_size, y = pos.y / labyrinth_cell_size}
+  local mazenoise = get_noise("hedgemaze", cell_position, seed)
+
+  if mazenoise < lake_noise_value and math_sqrt((pos.x / 32)^2 + (pos.y / 32)^2) > 65 then return false end
+
+	global.lab_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = false
+
+	for _, modifier in pairs(modifiers_diagonal) do
+		if global.lab_cells[tostring(cell_position.x + modifier.diagonal.x) .. "_" .. tostring(cell_position.y + modifier.diagonal.y)] then
+			local connection_1 = global.lab_cells[tostring(cell_position.x + modifier.connection_1.x) .. "_" .. tostring(cell_position.y + modifier.connection_1.y)]
+			local connection_2 = global.lab_cells[tostring(cell_position.x + modifier.connection_2.x) .. "_" .. tostring(cell_position.y + modifier.connection_2.y)]
+			if not connection_1 and not connection_2 then
+				return false
+			end
+		end
+	end
+
+	for _, m in pairs(modifiers) do
+		if get_path_connections_count({x = cell_position.x + m.x, y = cell_position.y + m.y}) >= math_random(2, 3) then return false end
+	end
+
+	if get_path_connections_count(cell_position) >= math_random(2, 3) then return false end
+
+	global.lab_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = true
+	return true
+end
+
+local function process_hedgemaze_position(p, seed, tiles, entities, treasure, planet, cell, things)
+  --local labyrinth_cell_size = 16 --valid values are 2, 4, 8, 16, 32
+  local biters = planet[1].name.biters
+  local mazenoise = get_noise("hedgemaze", {x = p.x - p.x % labyrinth_cell_size, y = p.y - p.y % labyrinth_cell_size}, seed)
+
+  if mazenoise < lake_noise_value and math_sqrt((p.x - p.x % labyrinth_cell_size)^2 + (p.y - p.y % labyrinth_cell_size)^2) > 65 then
+	  tiles[#tiles + 1] = {name = "deepwater", position = p}
+    if math_random(1, 256) == 1 then entities[#entities + 1] = {name = "fish", position = p} end
+    return
+  elseif mazenoise > 0.7 then
+    if cell then --path
+      if things then
+        if things == "lake" and p.x % 32 > 8 and p.x % 32 < 24 and p.y % 32 > 8 and p.y % 32 < 24 then
+          tiles[#tiles + 1] = {name = "water", position = p}
+          return
+        elseif things == "prospect" then
+          if math_random(1,202 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 250 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
+        elseif things == "camp" then
+          if p.x % 32 > 12 and p.x % 32 < 20 and p.y % 32 > 12 and p.y % 32 < 20 and math_random(1,6) == 1 then
+            treasure[#treasure + 1] = p
+          end
+        elseif things == "crashsite" then
+          if math_random(1,10) == 1 then
+            entities[#entities + 1] = {name="mineable-wreckage", position=p}
+          end
+        elseif things == "treasure" then
+          local roll = math_random(1,128)
+          if roll == 1 then
+            treasure[#treasure + 1] = p
+          elseif roll == 2 then
+            entities[#entities + 1] = {name = "land-mine", position = p, force = "scrapyard"}
+          end
+        end
+      else
+        if math_random(1, 100) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then
+          entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}
+        end
+      end
+      tiles[#tiles + 1] = {name = "dirt-4", position = p}
+
+    else --wall
+      tiles[#tiles + 1] = {name = "dirt-6", position = p}
+      if math_random(1,3) == 1 then
+        entities[#entities + 1] = {name = "dead-tree-desert", position = p}
+      else
+        if math_random(1,4) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+      end
+    end
+  else
+    if cell then --path
+      if things then
+        if things == "lake" and p.x % 32 > 8 and p.x % 32 < 24 and p.y % 32 > 8 and p.y % 32 < 24 then
+          tiles[#tiles + 1] = {name = "water", position = p}
+          return
+        elseif things == "prospect" then
+          if math_random(1,202 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 250 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
+        elseif things == "camp" then
+          if p.x % 32 > 12 and p.x % 32 < 20 and p.y % 32 > 12 and p.y % 32 < 20 and math_random(1,6) == 1 then
+            treasure[#treasure + 1] = p
+          end
+        elseif things == "crashsite" then
+          if math_random(1,10) == 1 then
+            entities[#entities + 1] = {name="mineable-wreckage", position=p}
+          end
+        elseif things == "treasure" then
+          if math_random(1,128) == 1 then
+            treasure[#treasure + 1] = p
+          end
+        end
+      else
+        if math_random(1, 100) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then
+          entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}
+        end
+      end
+      tiles[#tiles + 1] = {name = "grass-1", position = p}
+    else --wall
+      tiles[#tiles + 1] = {name = "grass-2", position = p}
+      if math_random(1,3) == 1 then
+        entities[#entities + 1] = {name = "tree-04", position = p}
+      else
+        if math_random(1,4) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, #rock_raffle)], position = p} end
+      end
+    end
+	end
+
+end
 local function process_rocky_position(p, seed, tiles, entities, treasure, planet)
   local biters = planet[1].name.biters
   local noise_large_caves = get_noise("large_caves", p, seed)
@@ -101,7 +239,7 @@ local function process_rocky_position(p, seed, tiles, entities, treasure, planet
 		-- 	Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
 		-- 	entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"}
 		-- end
-    if math_random(1,102 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
+    if math_random(1,122 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
 		if math_random(1, 1024) == 1 then treasure[#treasure + 1] = p end
 		return
 	end
@@ -370,7 +508,7 @@ end
 local levels = {
 	process_level_1_position,
 	process_level_2_position,
-	process_level_3_position,
+	process_hedgemaze_position,
 	process_rocky_position,
 	process_forest_position,
 	process_river_position,
@@ -390,6 +528,20 @@ local entity_functions = {
 	["container"] = function(surface, entity)
 		Treasure(surface, entity.position, entity.name)
 	end,
+  ["lab"] = function(surface, entity)
+    local e = surface.create_entity(entity)
+    local evo = math_floor(1 + (game.forces.enemy.evolution_factor - 0.00001) * 5)
+    local research = {
+      {"automation-science-pack", "logistic-science-pack"},
+      {"automation-science-pack", "logistic-science-pack", "military-science-pack"},
+      {"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack"},
+      {"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack"},
+      {"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack", "utility-science-pack"}
+    }
+    for _,science in pairs(research[evo]) do
+      e.insert({name = science, count = math_random(32,64)})
+    end
+  end,
 }
 
 local function get_replacement_tile(surface, position)
@@ -480,7 +632,11 @@ local function empty_chunk(surface, left_top, level, planet)
 	for y = 0, 31, 1 do
 		for x = 0, 31, 1 do
 			local p = {x = left_top.x + x, y = left_top.y + y}
-			process_level(p, seed, tiles, entities, treasure, planet)
+      if planet[1].name.id == 16 then
+        process_level(p, seed, tiles, entities, treasure, planet, true, nil)
+      else
+			  process_level(p, seed, tiles, entities, treasure, planet)
+      end
 		end
 	end
 	surface.set_tiles(tiles, true)
@@ -493,16 +649,54 @@ local function normal_chunk(surface, left_top, level, planet)
 	--local markets = {}
 	local treasure = {}
 	local seed = surface.map_gen_settings.seed
-
-	--local level_index = math_floor((math_abs(left_top.y / level_depth)) % 10) + 1
-	local process_level = levels[level]
-
-	for y = 0, 31, 1 do
-		for x = 0, 31, 1 do
-			local p = {x = left_top.x + x, y = left_top.y + y}
-			process_level(p, seed, tiles, entities, treasure, planet)
+  local process_level = levels[level]
+  if planet[1].name.id == 16 then
+    local cell = false
+    local roll = math_random(1,20)
+    local things = nil
+    if roll == 1 then
+      things = maze_things_raffle[math_random(1, 4)]
+    elseif roll == 2 then
+      things = "lake"
+    elseif roll > 10 then
+      things = "prospect"
+    end
+		if process_labyrinth_cell(left_top, seed) then
+			cell = true
+      if things == "prospect" then
+        Ores.prospect_ores(nil, surface, {x = left_top.x + 16, y = left_top.y + 16})
+      elseif things == "camp" or things == "lab" then
+        local positions = {
+          {x = left_top.x + 9, y = left_top.y + 9},{x = left_top.x + 9, y = left_top.y + 16},{x = left_top.x + 9, y = left_top.y + 23},
+          {x = left_top.x + 16, y = left_top.y + 9},{x = left_top.x + 16, y = left_top.y + 23},
+          {x = left_top.x + 23, y = left_top.y + 9},{x = left_top.x + 23, y = left_top.y + 16},{x = left_top.x + 23, y = left_top.y + 23}
+        }
+        for i = 1, 8, 1 do
+          entities[#entities + 1] = {name = "gun-turret", position = positions[i], force = "scrapyard"}
+        end
+        if things == "lab" then
+          entities[#entities + 1] = {name = "lab", position = {x = left_top.x + 15, y = left_top.y + 15}, force = "neutral"}
+        end
+      end
 		end
-	end
+    for y = 0, 31, 1 do
+  		for x = 0, 31, 1 do
+  			local p = {x = left_top.x + x, y = left_top.y + y}
+  			process_level(p, seed, tiles, entities, treasure, planet, cell, things)
+  		end
+  	end
+  else
+    for y = 0, 31, 1 do
+  		for x = 0, 31, 1 do
+  			local p = {x = left_top.x + x, y = left_top.y + y}
+  			process_level(p, seed, tiles, entities, treasure, planet)
+  		end
+  	end
+  end
+	--local level_index = math_floor((math_abs(left_top.y / level_depth)) % 10) + 1
+
+
+
 	surface.set_tiles(tiles, true)
 
 	-- if #markets > 0 then
@@ -547,23 +741,27 @@ local function process_chunk(surface, left_top)
 	-- 	for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 10}}, type = "simple-entity"})) do	entity.destroy() end
 	-- end
   local planet = global.objective.planet
-  if planet[1].name.name == "scrapyard" then
+  local id = planet[1].name.id --from chronobubbles
+  if id == 10 then --scrapyard
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 8, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 8, planet) return end
-  elseif planet[1].name.name == "river planet" then
+  elseif id == 13 then --river planet
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 6, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 6, planet) return end
-  elseif planet[1].name.name == "choppy planet" then
+  elseif id == 12 then --choppy planet
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 5, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then forest_chunk(surface, left_top, 5, planet) return end
-  elseif planet[1].name.name == "rocky planet" then
+  elseif id == 11 then --rocky planet
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 4, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 4, planet) return end
-  elseif planet[1].name.name == "lava planet" then
+  elseif id == 14 then --lava planet
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 7, planet) end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then biter_chunk(surface, left_top, 7, planet) end
     replace_water(surface, left_top)
     return
+  elseif id == 16 then --hedge maze
+    if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 3, planet) return end
+    if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 3, planet) return end
   else
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 7, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then biter_chunk(surface, left_top, 7, planet) return end
