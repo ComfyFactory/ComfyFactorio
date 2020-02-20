@@ -3,6 +3,7 @@
 require "functions.soft_reset"
 require "player_modifiers"
 require "functions.basic_markets"
+require "modules.difficulty_vote"
 
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
@@ -35,6 +36,7 @@ global.objective = {}
 global.flame_boots = {}
 global.comfylatron = nil
 global.lab_cells = {}
+
 
 local choppy_entity_yield = {
 		["tree-01"] = {"iron-ore"},
@@ -184,6 +186,8 @@ local function reset_map()
 	objective.waterupgradetier = 0
 	objective.outupgradetier = 0
 	objective.boxupgradetier = 0
+	objective.poisondefense = 2
+	objective.poisontimeout = 0
 	objective.chronojumps = 0
 	objective.chronotimer = 0
 	objective.passivetimer = 0
@@ -193,6 +197,7 @@ local function reset_map()
 	objective.unit_groups = {}
 	objective.biter_raffle = {}
 	global.outchests = {}
+	global.upgradechest = {}
 
 
 
@@ -214,7 +219,7 @@ local function reset_map()
 	game.map_settings.pollution.pollution_per_tree_damage = 0.1
 	game.map_settings.pollution.ageing = 0.1
 	game.map_settings.pollution.diffusion_ratio = 0.1
-	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.75
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 5
 	game.forces["enemy"].evolution_factor = 0.0001
 
 	game.forces.player.technologies["land-mine"].enabled = false
@@ -225,10 +230,9 @@ local function reset_map()
 	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, starting_cargo, starting_cargo)
 	render_train_hp()
 	game.reset_time_played()
+	global.difficulty_poll_closing_timeout = game.tick + 54000
+	global.difficulty_player_votes = {}
 	objective.game_lost = false
-
-
-
 
 	--set_difficulty()
 end
@@ -274,7 +278,7 @@ local function repair_train()
 	if not game.surfaces["cargo_wagon"] then return end
 	if objective.game_lost == true then return end
 	if objective.health < objective.max_health then
-		local inv = global.repairchest.get_inventory(defines.inventory.chest)
+		local inv = global.upgradechest[1].get_inventory(defines.inventory.chest)
 		local count = inv.get_item_count("repair-pack")
 		if count >= 5 and objective.toolsupgradetier == 4 and objective.health + 750 <= objective.max_health then
 			inv.remove({name = "repair-pack", count = 5})
@@ -391,7 +395,7 @@ local function chronojump(choice)
 	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, items, items2)
 	render_train_hp()
 	game.delete_surface(oldsurface)
-	if objective.chronojumps <= 40 then
+	if objective.chronojumps + objective.passivejumps <= 40 then
 		game.forces["enemy"].evolution_factor = 0 + 0.025 * (objective.chronojumps + objective.passivejumps)
 	else
 		game.forces["enemy"].evolution_factor = 1
@@ -402,6 +406,7 @@ local function chronojump(choice)
 	game.forces.scrapyard.set_turret_attack_modifier("gun-turret", 0.01 * objective.chronojumps)
 	game.forces.enemy.set_ammo_damage_modifier("melee", 0.1 * objective.passivejumps)
 	game.forces.enemy.set_ammo_damage_modifier("biological", 0.1 * objective.passivejumps)
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.8
 end
 
 local function check_chronoprogress()
@@ -435,7 +440,7 @@ local function charge_chronosphere()
 		if energy > 3000000 and objective.chronotimer < objective.chrononeeds - 182 and objective.chronotimer > 130 then
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
-			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)))
+			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)) * global.difficulty_vote_value)
 			--log("energy charged from acu")
 		end
 	end
@@ -444,7 +449,7 @@ end
 local function transfer_pollution()
 	local surface = game.surfaces["cargo_wagon"]
 	if not surface then return end
-	local pollution = surface.get_total_pollution() * (3 / (global.objective.filterupgradetier / 3 + 1))
+	local pollution = surface.get_total_pollution() * (3 / (global.objective.filterupgradetier / 3 + 1)) * global.difficulty_vote_value
 	game.surfaces[global.active_surface_index].pollute(global.locomotive.position, pollution)
 	surface.clear_pollution()
 end
@@ -476,6 +481,9 @@ local function tick()
 		if tick % 600 == 0 then
 			charge_chronosphere()
 			transfer_pollution()
+			if global.objective.poisontimeout > 0 then
+				global.objective.poisontimeout = global.objective.poisontimeout - 1
+			end
 		end
 		if tick % 1800 == 0 then
 			Locomotive.set_player_spawn_and_refill_fish()
@@ -555,6 +563,20 @@ function set_objective_health(final_damage_amount)
 		global.game_reset_tick = game.tick + 1800
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
+		end
+		return
+	end
+	if objective.health < objective.max_health / 2 and final_damage_amount > 0 and objective.poisondefense > 0 and objective.poisontimeout == 0 then
+		objective.poisondefense = objective.poisondefense - 1
+		objective.poisontimeout = 120
+		local objs = {global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+		local surface = objective.surface
+		game.print("Comfylatron: Triggering poison defense. Let's kill everything!", {r=0.98, g=0.66, b=0.22})
+		for i = 1, 4, 1 do
+			surface.create_entity({name = "poison-capsule", position = objs[i].position, force = "player", target = objs[i], speed = 1 })
+		end
+		for i = 1 , #global.comfychests, 1 do
+			surface.create_entity({name = "poison-capsule", position = global.comfychests[i].position, force = "player", target = global.comfychests[i], speed = 1 })
 		end
 	end
 	rendering.set_text(objective.health_text, "HP: " .. objective.health .. " / " .. objective.max_health)

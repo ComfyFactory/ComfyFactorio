@@ -1,4 +1,5 @@
 local math_floor = math.floor
+local math_ceil = math.ceil
 local math_abs = math.abs
 local math_max = math.max
 local math_min = math.min
@@ -105,7 +106,7 @@ local function update_gui(player)
   gui.timer.caption = {"chronosphere.gui_3"}
 	gui.timer_value.caption = math_floor((objective.chrononeeds - objective.chronotimer) / 60) .. " min, " .. (objective.chrononeeds - objective.chronotimer) % 60 .. " s"
 	if objective.chronojumps > 5 then
-		gui.timer_value.tooltip = "If overstaying this, other planets can evolve: " ..math_floor((objective.chrononeeds * 0.75 - objective.chronotimer) / 60) .. " min, " .. (objective.chrononeeds * 0.75 - objective.chronotimer) % 60 .. " s"
+		gui.timer_value.tooltip = "If overstaying this, other planets can evolve: " ..math_floor((objective.chrononeeds * 0.75 - objective.passivetimer) / 60) .. " min, " .. (objective.chrononeeds * 0.75 - objective.passivetimer) % 60 .. " s"
 	else
 		gui.timer_value.tooltip = "After planet 5, biters will get additional permanent evolution for staying too long on each planet."
 	end
@@ -128,7 +129,7 @@ local function update_gui(player)
     [5] = {c = "--\n"}
   }
   local upgt = {
-    [1] = {t = "[1]: + 5000 Train Max HP. Current: " .. objective.max_health .. "\n    Cost : " .. math_floor(2000 * (1 + objective.hpupgradetier /4)) .. " coins + 3000 copper plates\n"},
+    [1] = {t = "[1]: + 2500 Train Max HP. Current: " .. objective.max_health .. "\n    Cost : " .. math_floor(500 * (1 + objective.hpupgradetier /2)) .. " coins + 1500 copper plates\n"},
     [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%\n    Buyable once per 3 jumps.\n    Cost: 5000 coins + 2000 green circuits\n"},
     [3] = {t = "[3]: Add additional row of Acumulators.\n    Cost : " .. math_floor(2000 * (1 + objective.acuupgradetier /4)) .. " coins + 200 batteries\n"},
     [4] = {t = "[4]: Add item pickup distance to players.Current: +" .. objective.pickupupgradetier .. ",\n    Cost: " .. 1000 * (1 + objective.pickupupgradetier) .. " coins + 400 red inserters\n"},
@@ -136,7 +137,8 @@ local function update_gui(player)
     [6] = {t = "[6]: Use up more repair tools on train at once. Current: +" .. objective.toolsupgradetier .. "\n    Cost: " .. 1000 * (1 + objective.toolsupgradetier) .. " coins + " .. 200 * (1 + objective.toolsupgradetier) .. " repair tools\n"},
     [7] = {t = "[7]: Add piping through wagon sides to create water sources for each wagon.\n    Cost: 2000 coins + 500 pipes\n"},
     [8] = {t = "[8]: Add comfylatron chests that output outside (into cargo wagon 2 and 3)\n    Cost: 2000 coins + 100 fast inserters\n"},
-    [9] = {t = "[9]: Add storage chests to the sides of wagons.\n    Buyable once per 5 jumps.\n    Cost: 5000 coins + "  .. chests[objective.boxupgradetier + 1].c}
+    [9] = {t = "[9]: Add storage chests to the sides of wagons.\n    Buyable once per 5 jumps.\n    Cost: 5000 coins + "  .. chests[objective.boxupgradetier + 1].c},
+		[10] = {t = "[P]: Poison defense. Triggers automatically when train has low HP.\n    Actual charges: " .. objective.poisondefense .. " / 4\n    Recharge timer for next use: " .. math_ceil(objective.poisontimeout /6) .. "min\n    Cost: 1000 coins + 50 poison capsules\n"}
   }
   local maxed = {
     [1] = {t = "[1]: Train HP maxed.\n"},
@@ -147,10 +149,10 @@ local function update_gui(player)
     [6] = {t = "[6]: Repairing at top speed of 5 packs.\n"},
     [7] = {t = "[7]: Piping created. Don't spill it!\n"},
     [8] = {t = "[8]: Output chests created.\n"},
-    [9] = {t = "[9]: Storage chests fully upgraded.\n"}
+    [9] = {t = "[9]: Storage chests fully upgraded.\n"},
   }
   local tooltip = "Insert needed items into chest with upgrade number.\nUpgrading can take a minute.\n\n"
-  if objective.hpupgradetier < 18 then tooltip = tooltip .. upgt[1].t else tooltip = tooltip .. maxed[1].t end
+  if objective.hpupgradetier < 36 then tooltip = tooltip .. upgt[1].t else tooltip = tooltip .. maxed[1].t end
   if objective.filterupgradetier < 9 then tooltip = tooltip .. upgt[2].t else tooltip = tooltip .. maxed[2].t end
   if objective.acuupgradetier < 24 then tooltip = tooltip .. upgt[3].t else tooltip = tooltip .. maxed[3].t end
   if objective.pickupupgradetier < 4 then tooltip = tooltip .. upgt[4].t else tooltip = tooltip .. maxed[4].t end
@@ -159,6 +161,7 @@ local function update_gui(player)
   if objective.waterupgradetier < 1 then tooltip = tooltip .. upgt[7].t else tooltip = tooltip .. maxed[7].t end
   if objective.outupgradetier < 1 then tooltip = tooltip .. upgt[8].t else tooltip = tooltip .. maxed[8].t end
   if objective.boxupgradetier < 4 then tooltip = tooltip .. upgt[9].t else tooltip = tooltip .. maxed[9].t end
+	tooltip = tooltip .. upgt[10].t
   gui.upgrades.tooltip =  tooltip
 
 

@@ -76,9 +76,9 @@ function Public.locomotive_spawn(surface, position, items, items2)
 	global.locomotive_cargo.minable = false
 	global.locomotive_cargo.operable = false
 	global.locomotive_cargo2.minable = false
-	global.locomotive_cargo2.operable = false
+	--global.locomotive_cargo2.operable = false
 	global.locomotive_cargo3.minable = false
-	global.locomotive_cargo3.operable = false
+	--global.locomotive_cargo3.operable = false
 end
 
 
@@ -148,6 +148,7 @@ local function create_wagon_room()
 	for i = 1, 24, 1 do
 		surface.set_tiles({{name = "tutorial-grid", position = {carfpos[i].x,carfpos[i].y}}})
 	end
+
 	for x = width * -0.5, width * 0.5 - 1, 1 do
 		for y = height * 0.5, height * 0.7, 1 do
 			surface.set_tiles({{name = "out-of-map", position = {x,y}}})
@@ -189,6 +190,12 @@ local function create_wagon_room()
 		end
 	end
 
+	for x = width * -0.5 - 6, width * -0.5 + 3, 1 do -- combinators
+		for y = -251, -241, 1 do
+			surface.set_tiles({{name = "tutorial-grid", position = {x,y}}})
+		end
+	end
+
 	for x = width * -0.4 + 6, width * 0.4 - 6, 1 do
 		for y = height * -0.5 + 7, height * -0.5 + 10, 1 do
 			local p = {x,y}
@@ -196,6 +203,54 @@ local function create_wagon_room()
 			if math.random(1, 3) == 1 then surface.create_entity({name = "fish", position = p}) end
 		end
 	end
+
+	local combinators = {}
+	for x = width * -0.5 - 6, width * -0.5 + 3, 1 do
+		for y = -250, -244, 2 do
+			combinators[#combinators + 1] = {name = "arithmetic-combinator", position = {x, y}, force = "player", create_build_effect_smoke = false}
+		end
+	end
+	local combimade = {}
+	for i = 1, #combinators, 1 do
+		combimade[i] = surface.create_entity(combinators[i])
+		combimade[i].minable = false
+		combimade[i].destructible = false
+		combimade[i].operable = false
+
+		if i > 1 then
+			combimade[i].connect_neighbour({wire = defines.wire_type.green, target_entity = combimade[i - 1], source_circuit_id =  2, target_circuit_id = 1})
+			local rule = combimade[i].get_or_create_control_behavior()
+			rule.parameters = {parameters = {first_signal = {type = "virtual", name = "signal-A"}, second_constant = 0, operation = "+", output_signal = {type = "virtual", name = "signal-A"}}}
+		else
+			local rule2 = combimade[i].get_or_create_control_behavior()
+			rule2.parameters =  {parameters = {first_signal = {type = "virtual", name = "signal-A"}, second_constant = 0, operation = "+", output_signal = {type = "virtual", name = "signal-B"}}}
+		end
+	end
+	local checker = surface.create_entity({name = "decider-combinator", position = {x = width * -0.5 - 6, y = -242}, force = "player", create_build_effect_smoke = false })
+		local rules3 = checker.get_or_create_control_behavior()
+		rules3.parameters = {parameters = {first_signal = {type = "virtual", name = "signal-A"}, second_signal = {type = "virtual", name = "signal-B"}, comparator = ">",
+		output_signal = {type = "virtual", name = "signal-C"}, copy_count_from_input = false }}
+	local combipower = surface.create_entity({name = "substation", position = {x = width * -0.5 - 4, y = -242}, force="player", create_build_effect_smoke = false})
+	combipower.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 1})
+	combipower.connect_neighbour({wire = defines.wire_type.green, target_entity = combimade[#combimade], target_circuit_id = 1})
+	combimade[1].connect_neighbour({wire = defines.wire_type.green, target_entity = checker, source_circuit_id =  2, target_circuit_id = 1})
+	local speaker = surface.create_entity({name = "programmable-speaker", position = {x = width * -0.5 - 6, y = -241}, force = "player", create_build_effect_smoke = false,
+		parameters = {playback_volume = 0.8, playback_globally = true, allow_polyphony = false},
+		alert_parameters = {show_alert = true, show_on_map = true, icon_signal_id = {type = "item", name = "accumulator"}, alert_message = "Train Is Charging!" }})
+	speaker.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 2})
+	local rules4 = speaker.get_or_create_control_behavior()
+	rules4.circuit_condition = {condition = {first_signal = {type = "virtual", name = "signal-C"}, second_constant = 0, comparator = ">"}}
+	local solar1 = surface.create_entity({name = "solar-panel", position = {x = width * -0.5 - 2, y = -242}, force="player", create_build_effect_smoke = false})
+	local solar2 = surface.create_entity({name = "solar-panel", position = {x = width * -0.5 + 1, y = -242}, force="player", create_build_effect_smoke = false})
+	solar1.destructible = false
+	solar1.minable = false
+	solar2.destructible = false
+	solar2.minable = false
+	combipower.destructible = false
+	combipower.minable = false
+	speaker.destructible = false
+	speaker.minable = false
+
 
 	for _, x in pairs({-1, 0}) do
 		for i = 1, 12, 1 do
@@ -213,11 +268,18 @@ local function create_wagon_room()
 		local y = -0.7 * height + 18 + 9 + 18 * ( math_floor((i - 1) / 3))
 		local x = -0.5 * width + 5 + 9 + 18 * ( i%3 )
 		local substation = surface.create_entity({name = "substation", position = {x,y}, force="player", create_build_effect_smoke = false})
+		if i == 3 then
+			substation.disconnect_neighbour(combipower)
+			substation.connect_neighbour({wire = defines.wire_type.green, target_entity = combipower})
+		end
 		substation.minable = false
 		substation.destructible = false
 		for j = 1, 4, 1 do
 			local xx = x - 2 * j
 			local acumulator = surface.create_entity({name = "accumulator", position = {xx,y}, force="player", create_build_effect_smoke = false})
+			if i == 3 and j == 1 then
+				acumulator.connect_neighbour({wire = defines.wire_type.green, target_entity = substation})
+			end
 			acumulator.minable = false
 			acumulator.destructible = false
 			table.insert(global.acumulators, acumulator)
@@ -237,60 +299,52 @@ local function create_wagon_room()
 	powerpole.destructible = false
 
 	local market = surface.create_entity({name = "market", position = {-5, height * -0.5 + 13}, force="neutral", create_build_effect_smoke = false})
-	local repairchest = surface.create_entity({name = "compilatron-chest", position = {0, height * -0.5 + 13}, force = "player"})
-	local hpchest = surface.create_entity({name = "compilatron-chest", position = {3, height * -0.5 + 12}, force = "player"})
-	local filterchest = surface.create_entity({name = "compilatron-chest", position = {4, height * -0.5 + 12}, force = "player"})
-	local acuchest = surface.create_entity({name = "compilatron-chest", position = {5, height * -0.5 + 12}, force = "player"})
-	local playerchest = surface.create_entity({name = "compilatron-chest", position = {3, height * -0.5 + 13}, force = "player"})
-	local invchest = surface.create_entity({name = "compilatron-chest", position = {4, height * -0.5 + 13}, force = "player"})
-	local toolschest = surface.create_entity({name = "compilatron-chest", position = {5, height * -0.5 + 13}, force = "player"})
-	local waterchest = surface.create_entity({name = "compilatron-chest", position = {3, height * -0.5 + 14}, force = "player"})
-	local outchest = surface.create_entity({name = "compilatron-chest", position = {4, height * -0.5 + 14}, force = "player"})
-	local boxchest = surface.create_entity({name = "compilatron-chest", position = {5, height * -0.5 + 14}, force = "player"})
-	repairchest.minable = false
-	repairchest.destructible = false
-	hpchest.minable = false
-	hpchest.destructible = false
-	filterchest.minable = false
-	filterchest.destructible = false
-	acuchest.minable = false
-	acuchest.destructible = false
-	playerchest.minable = false
-	playerchest.destructible = false
-	invchest.minable = false
-	invchest.destructible = false
-	toolschest.minable = false
-	toolschest.destructible = false
-	waterchest.minable = false
-	waterchest.destructible = false
-	outchest.minable = false
-	outchest.destructible = false
-	boxchest.minable = false
-	boxchest.destructible = false
 	market.minable = false
 	market.destructible = false
-	global.repairchest = repairchest
-	global.hpchest = hpchest
-	global.filterchest = filterchest
-	global.acuchest = acuchest
-	global.playerchest = playerchest
-	global.invchest = invchest
-	global.toolschest = toolschest
-	global.waterchest = waterchest
-	global.outchest = outchest
-	global.boxchest = boxchest
 
-	local repair_text = rendering.draw_text{
-		text = "Repair chest",
-		surface = surface,
-		target = global.repairchest,
-		target_offset = {0, -2.5},
-		color = global.locomotive.color,
-		scale = 1.00,
-		font = "default-game",
-		alignment = "center",
-		scale_with_zoom = false
+	local upgradechests = {
+		[1] = {name = "repairchest", entity = {name = "compilatron-chest", position = {0, height * -0.5 + 13}, force = "player"}, signal = nil},
+		[2] = {name = "hpchest", entity = {name = "compilatron-chest", position = {3, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-1"},
+		[3] = {name = "filterchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-2"},
+		[4] = {name = "acuchest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-3"},
+		[5] = {name = "reachchest", entity = {name = "compilatron-chest", position = {3, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-4"},
+		[6] = {name = "invchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-5"},
+		[7] = {name = "toolschest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-6"},
+		[8] = {name = "waterchest", entity = {name = "compilatron-chest", position = {3, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-7"},
+		[9] = {name = "outchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-8"},
+		[10] = {name = "boxchest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-9"},
+		[11] = {name = "poisonchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-P"}
 	}
+
+	for i = 1, #upgradechests, 1 do
+		local e = surface.create_entity(upgradechests[i].entity)
+		e.minable = false
+		e.destructible = false
+		global.upgradechest[i] = e
+		if i == 1 then
+			local repair_text = rendering.draw_text{
+				text = "Repair chest",
+				surface = surface,
+				target = e,
+				target_offset = {0, -2.5},
+				color = global.locomotive.color,
+				scale = 1.00,
+				font = "default-game",
+				alignment = "center",
+				scale_with_zoom = false
+			}
+		else
+			local upgrade_text = rendering.draw_sprite{
+				sprite = upgradechests[i].signal,
+				surface = surface,
+				target = e,
+				target_offset = {0, -0.1},
+				font = "default-game",
+				visible = true
+			}
+		end
+	end
+
 	local market1_text = rendering.draw_text{
 		text = "Resources",
 		surface = surface,
@@ -305,7 +359,7 @@ local function create_wagon_room()
 	local upgrade_text = rendering.draw_text{
 		text = "Upgrades",
 		surface = surface,
-		target = filterchest,
+		target = global.upgradechest[3],
 		target_offset = {0, -3.5},
 		color = global.locomotive.color,
 		scale = 1.00,
@@ -316,7 +370,7 @@ local function create_wagon_room()
 	local upgrade_sub_text = rendering.draw_text{
 		text = "Click [Upgrades] on top of screen",
 		surface = surface,
-		target = filterchest,
+		target = global.upgradechest[3],
 		target_offset = {0, -2.5},
 		color = global.locomotive.color,
 		scale = 0.80,
@@ -324,78 +378,7 @@ local function create_wagon_room()
 		alignment = "center",
 		scale_with_zoom = false
 	}
-	local upgrade1_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-1",
-		surface = surface,
-		target = hpchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade2_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-2",
-		surface = surface,
-		target = filterchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade3_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-3",
-		surface = surface,
-		target = acuchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade4_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-4",
-		surface = surface,
-		target = playerchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade5_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-5",
-		surface = surface,
-		target = invchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade6_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-6",
-		surface = surface,
-		target = toolschest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade7_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-7",
-		surface = surface,
-		target = waterchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade8_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-8",
-		surface = surface,
-		target = outchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
-	local upgrade9_text = rendering.draw_sprite{
-		sprite = "virtual-signal/signal-9",
-		surface = surface,
-		target = boxchest,
-		target_offset = {0, -0.1},
-		font = "default-game",
-		visible = true
-	}
+
 
 	for _, offer in pairs(market_offers) do market.add_market_item(offer) end
 

@@ -22,12 +22,12 @@ local function check_upgrade_hp()
   local objective = global.objective
 	if not game.surfaces["cargo_wagon"] then return end
 	if objective.game_lost == true then return end
-	if global.hpchest and global.hpchest.valid then
-		local inv = global.hpchest.get_inventory(defines.inventory.chest)
+	if global.upgradechest[2] and global.upgradechest[2].valid then
+		local inv = global.upgradechest[2].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("copper-plate")
-		local coincost = math_floor(2000 * (1 + objective.hpupgradetier /4))
-		if countcoins >= coincost and count2 >= 3000 and objective.hpupgradetier < 18 then
+		local coincost = math_floor(500 * (1 + objective.hpupgradetier /2))
+		if countcoins >= coincost and count2 >= 1500 and objective.hpupgradetier < 36 then
 			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = "copper-plate", count = 3000})
 			game.print("Comfylatron: Train's max HP was upgraded.", {r=0.98, g=0.66, b=0.22})
@@ -40,8 +40,8 @@ end
 
 local function check_upgrade_filter()
   local objective = global.objective
-  if global.filterchest and global.filterchest.valid then
-    local inv = global.filterchest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[3] and global.upgradechest[3].valid then
+    local inv = global.upgradechest[3].get_inventory(defines.inventory.chest)
     local countcoins = inv.get_item_count("coin")
     local count2 = inv.get_item_count("electronic-circuit")
     if countcoins >= 5000 and count2 >= 2000 and objective.filterupgradetier < 9 and objective.chronojumps >= (objective.filterupgradetier + 1) * 3 then
@@ -55,8 +55,8 @@ end
 
 local function check_upgrade_acu()
   local objective = global.objective
-  if global.acuchest and global.acuchest.valid then
-		local inv = global.acuchest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[4] and global.upgradechest[4].valid then
+		local inv = global.upgradechest[4].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("battery")
     local coincost = math_floor(2000 * (1 + objective.acuupgradetier /4))
@@ -72,8 +72,8 @@ end
 
 local function check_upgrade_pickup()
   local objective = global.objective
-  if global.playerchest and global.playerchest.valid then
-		local inv = global.playerchest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[5] and global.upgradechest[5].valid then
+		local inv = global.upgradechest[5].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("long-handed-inserter")
 		local coincost = 1000 * (1 + objective.pickupupgradetier)
@@ -89,8 +89,8 @@ end
 
 local function check_upgrade_inv()
   local objective = global.objective
-  if global.invchest and global.invchest.valid then
-		local inv = global.invchest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[6] and global.upgradechest[6].valid then
+		local inv = global.upgradechest[6].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local item = "computer"
 		if objective.invupgradetier == 0 then
@@ -116,8 +116,8 @@ end
 
 local function check_upgrade_tools()
   local objective = global.objective
-  if global.toolschest and global.toolschest.valid then
-		local inv = global.toolschest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[7] and global.upgradechest[7].valid then
+		local inv = global.upgradechest[7].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("repair-pack")
 		local coincost = 1000 * (1 + objective.toolsupgradetier)
@@ -133,8 +133,8 @@ end
 
 local function check_upgrade_water()
   local objective = global.objective
-  if global.waterchest and global.waterchest.valid and game.surfaces["cargo_wagon"].valid then
-		local inv = global.waterchest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[8] and global.upgradechest[8].valid and game.surfaces["cargo_wagon"].valid then
+		local inv = global.upgradechest[8].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("pipe")
 		if countcoins >= 2000 and count2 >= 500 and objective.waterupgradetier < 1 then
@@ -154,8 +154,8 @@ end
 
 local function check_upgrade_out()
   local objective = global.objective
-  if global.outchest and global.outchest.valid and game.surfaces["cargo_wagon"].valid then
-		local inv = global.outchest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[9] and global.upgradechest[9].valid and game.surfaces["cargo_wagon"].valid then
+		local inv = global.upgradechest[9].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local count2 = inv.get_item_count("fast-inserter")
 		if countcoins >= 2000 and count2 >= 100 and objective.outupgradetier < 1 then
@@ -188,8 +188,8 @@ end
 
 local function check_upgrade_box()
   local objective = global.objective
-  if global.boxchest and global.boxchest.valid and game.surfaces["cargo_wagon"].valid then
-		local inv = global.boxchest.get_inventory(defines.inventory.chest)
+  if global.upgradechest[10] and global.upgradechest[10].valid and game.surfaces["cargo_wagon"].valid then
+		local inv = global.upgradechest[10].get_inventory(defines.inventory.chest)
 		local countcoins = inv.get_item_count("coin")
 		local item = "computer"
 		if objective.boxupgradetier == 0 then
@@ -253,9 +253,26 @@ local function check_upgrade_box()
 	end
 end
 
+function check_poisondefense()
+  local objective = global.objective
+  if global.upgradechest[11] and global.upgradechest[11].valid then
+    local inv = global.upgradechest[11].get_inventory(defines.inventory.chest)
+    local countcoins = inv.get_item_count("coin")
+		local count2 = inv.get_item_count("poison-capsule")
+    if countcoins >= 1000 and count2 >= 50 and objective.poisondefense < 4 then
+			inv.remove({name = "coin", count = 1000})
+			inv.remove({name = "pipe", count = 50})
+			game.print("Comfylatron: I don't believe in your defense skills. I equipped train with poison defense.", {r=0.98, g=0.66, b=0.22})
+			objective.posiondefense = objective.posiondefense + 1
+		end
+  end
+end
+
+
 function Public.check_upgrades()
   local objective = global.objective
-  if objective.hpupgradetier < 18 then
+  if not global.upgradechest then return end
+  if objective.hpupgradetier < 36 then
     check_upgrade_hp()
   end
   if objective.filterupgradetier < 9 then
@@ -281,6 +298,9 @@ function Public.check_upgrades()
   end
   if objective.boxupgradetier < 4 and objective.chronojumps >= (objective.boxupgradetier + 1) * 5 then
     check_upgrade_box()
+  end
+  if objective.poisondefense < 1 then
+    check_poisondefense()
   end
 end
 

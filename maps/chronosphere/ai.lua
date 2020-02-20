@@ -191,13 +191,17 @@ Public.send_near_biters_to_objective = function()
   local surface = random_target.surface
   local pollution = surface.get_pollution(random_target.position)
   local success = false
-  if pollution > 200 then
-    surface.pollute(random_target.position, -50)
+  if pollution > 200 * (1 / global.difficulty_vote_value) then
+    surface.pollute(random_target.position, -50 * (1 / global.difficulty_vote_value))
     --game.print("sending objective wave")
   	success = true
   else
-    if math_random(1,50) == 1 then success = true end
-    --game.print("not enough pollution for objective attack")
+    if global.objective.chronojumps < 50 then
+      if math_random(1, 50 - global.objective.chronojumps) == 1 then success = true end
+      --game.print("not enough pollution for objective attack")
+    else
+      success = true
+    end
   end
   if success then
     game.surfaces[global.active_surface_index].set_multi_command({
@@ -206,7 +210,7 @@ Public.send_near_biters_to_objective = function()
         target=random_target,
         distraction=defines.distraction.none
         },
-      unit_count = 16 + math_random(1, math_floor(1 + game.forces["enemy"].evolution_factor * 100)),
+      unit_count = 16 + math_random(1, math_floor(1 + game.forces["enemy"].evolution_factor * 100)) * global.difficulty_vote_value,
       force = "enemy",
       unit_search_distance=128
     })
@@ -235,7 +239,7 @@ local function select_units_around_spawner(spawner)
   local objective = global.objective
 
 	local unit_count = 0
-	local max_unit_count =  128
+	local max_unit_count =  128 * global.difficulty_vote_value
 
 	for _, biter in pairs(biters) do
 		if unit_count >= max_unit_count then break end
@@ -270,8 +274,8 @@ local function send_group(unit_group, nearest_player_unit)
   if not target.valid then colonize(unit_group) return end
   local surface = target.surface
   local pollution = surface.get_pollution(target.position)
-  if pollution > 200 then
-    surface.pollute(target.position, -50)
+  if pollution > 200 * (1 / global.difficulty_vote_value) then
+    surface.pollute(target.position, -50 * (1 / global.difficulty_vote_value))
     --game.print("sending unit group attack")
 	   local commands = {}
 
