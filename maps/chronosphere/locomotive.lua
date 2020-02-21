@@ -3,7 +3,7 @@ local math_floor = math.floor
 local math_random = math.random
 
 
-function Public.locomotive_spawn(surface, position, items, items2)
+function Public.locomotive_spawn(surface, position, wagons)
 	for y = -10, 18, 2 do
 		local rail = {name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0}
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
@@ -15,13 +15,19 @@ function Public.locomotive_spawn(surface, position, items, items2)
 	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 100})
 
 	global.locomotive_cargo2 = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 6}, force = "player"})
-	for item, count in pairs(items) do
+	for item, count in pairs(wagons[1].inventory) do
 		global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
 	end
 
 	global.locomotive_cargo3 = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 13}, force = "player"})
-	for item, count in pairs(items) do
+	for item, count in pairs(wagons[2].inventory) do
 		global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
+	end
+	if wagons[1].bar > 0 then global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).set_bar(wagons[1].bar) end
+	if wagons[2].bar > 0 then global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).set_bar(wagons[2].bar) end
+	for i = 1, 40, 1 do
+		global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).set_filter(i, wagons[1].filters[i])
+		global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).set_filter(i, wagons[2].filters[i])
 	end
 
 	if not global.comfychests then global.comfychests = {} end
@@ -248,8 +254,14 @@ local function create_wagon_room()
 	solar2.minable = false
 	combipower.destructible = false
 	combipower.minable = false
+	combipower.operable = false
 	speaker.destructible = false
 	speaker.minable = false
+	speaker.operable = false
+	checker.destructible = false
+	checker.minable = false
+	checker.operable = false
+
 
 
 	for _, x in pairs({-1, 0}) do

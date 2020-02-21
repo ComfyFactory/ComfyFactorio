@@ -46,17 +46,17 @@ end
 local function get_size_of_ore(ore, planet)
   local base_size = math_random(5, 10) + math_floor(planet[1].ore_richness.factor * 3)
   local final_size = 1
-  if planet[1].name.name == "iron planet" and ore == "iron-ore" then
+  if planet[1].name.id == 1 and ore == "iron-ore" then --iron planet
     final_size = math_floor(base_size * 1.5)
-  elseif planet[1].name.name == "copper planet" and ore == "copper-ore" then
+  elseif planet[1].name.id == 2 and ore == "copper-ore" then --copper planet
     final_size = math_floor(base_size * 1.5)
-  elseif planet[1].name.name == "stone planet" and ore == "stone" then
+  elseif planet[1].name.id == 3 and ore == "stone" then --stone planet
     final_size = math_floor(base_size * 1.5)
-  elseif planet[1].name.name == "coal planet" and ore == "coal" then
+  elseif planet[1].name.id == 9 and ore == "coal" then --coal planet
     final_size = math_floor(base_size * 1.5)
-  elseif planet[1].name.name == "uranium planet" and ore == "uranium-ore" then
+  elseif planet[1].name.id == 5 and ore == "uranium-ore" then --uranium planet
     final_size = math_floor(base_size * 1.5)
-  elseif planet[1].name.name == "mixed planet" then
+  elseif planet[1].name.id == 6 then --mixed planet
     final_size = base_size
   else
     final_size = math_floor(base_size / 2)

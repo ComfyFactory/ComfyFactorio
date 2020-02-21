@@ -54,10 +54,10 @@ local function generate_overworld(surface, optplanet)
 	local message = "Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name
 	game.print(message, {r=0.98, g=0.66, b=0.22})
 	Server.to_discord_embed(message)
-	if planet[1].name.name == "choppy planet" then
+	if planet[1].name.id == 12 then
 		game.print("Comfylatron: OwO what are those strange trees?!? They have ore fruits! WTF!", {r=0.98, g=0.66, b=0.22})
-	elseif planet[1].name.name == "lava planet" then
-		game.print("Comfylatron: OOF this one is a bit hot. And have seen those biters? They BATHE in fire!", {r=0.98, g=0.66, b=0.22})
+	elseif planet[1].name.id == 14 then
+		game.print("Comfylatron: OOF this one is a bit hot. And have seen those biters? They BATHE in fire! Maybe try some bricks to protect from lava?", {r=0.98, g=0.66, b=0.22})
 	end
 	surface.min_brightness = 0
 	surface.brightness_visual_weights = {1, 1, 1}
@@ -78,17 +78,17 @@ local function generate_overworld(surface, optplanet)
 		mgs.property_expression_names["control-setting:moisture:bias"] = moisture
 		surface.map_gen_settings = mgs
 	end
-	if planet[1].name.name == "water planet" then
+	if planet[1].name.id == 8 then --water planet
 		local mgs = surface.map_gen_settings
 		mgs.water = 0.8
 		surface.map_gen_settings = mgs
 	end
-	if planet[1].name.name == "lava planet" then
+	if planet[1].name.id == 14 then --lava planet
 		local mgs = surface.map_gen_settings
 		mgs.water = 0
 		surface.map_gen_settings = mgs
 	end
-	if planet[1].name.name ~= "choppy planet" then
+	if planet[1].name.id ~= 12 then --choppy planet
 		local mgs = surface.map_gen_settings
 		mgs.water = 0.2
 		surface.map_gen_settings = mgs
@@ -226,8 +226,14 @@ local function reset_map()
 	game.forces.player.technologies["landfill"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.set_spawn_position({12, 10}, surface)
-
-	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, starting_cargo, starting_cargo)
+	local wagons = {}
+	wagons[1] = {inventory = starting_cargo, bar = 0, filters = {}}
+	wagons[2] = {inventory = starting_cargo, bar = 0, filters = {}}
+	for i = 1, 40, 1 do
+		wagons[1].filters[i] = nil
+		wagons[2].filters[i] = nil
+	end
+	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, wagons)
 	render_train_hp()
 	game.reset_time_played()
 	global.difficulty_poll_closing_timeout = game.tick + 54000
@@ -388,17 +394,27 @@ local function chronojump(choice)
 		planet = global.objective.planet
 	end
 	generate_overworld(surface, planet)
+	if objective.chronojumps == 6 then game.print("Comfylatron: Biters start to evolve faster! We need to charge forward or they will be stronger! (hover over timer to see evolve timer)", {r=0.98, g=0.66, b=0.22}) end
 	if overstayed then game.print("Comfylatron: Looks like you stayed on previous planet for so long that enemies on other planets had additional time to evolve!", {r=0.98, g=0.66, b=0.22}) end
 	game.forces.player.set_spawn_position({12, 10}, surface)
-	local items = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).get_contents()
-	local items2 = global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).get_contents()
-	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, items, items2)
+	local inventories = {one = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon), two = global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon)}
+	inventories.one.sort_and_merge()
+	inventories.two.sort_and_merge()
+	local wagons = {}
+	wagons[1] = {inventory = inventories.one.get_contents(), bar = inventories.one.get_bar(), filters = {}}
+	wagons[2] = {inventory = inventories.two.get_contents(), bar = inventories.two.get_bar(), filters = {}}
+	for i = 1, 40, 1 do
+		wagons[1].filters[i] = inventories.one.get_filter(i)
+		wagons[2].filters[i] = inventories.two.get_filter(i)
+	end
+	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, wagons)
 	render_train_hp()
 	game.delete_surface(oldsurface)
+	game.forces.enemy.reset_evolution()
 	if objective.chronojumps + objective.passivejumps <= 40 then
-		game.forces["enemy"].evolution_factor = 0 + 0.025 * (objective.chronojumps + objective.passivejumps)
+		game.forces.enemy.evolution_factor = 0 + 0.025 * (objective.chronojumps + objective.passivejumps)
 	else
-		game.forces["enemy"].evolution_factor = 1
+		game.forces.enemy.evolution_factor = 1
 	end
 	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * (objective.chronojumps + objective.passivejumps)
 	surface.pollute(global.locomotive.position, 150 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
@@ -626,7 +642,7 @@ local function on_entity_damaged(event)
 	if not event.entity.valid then	return end
 	if not event.entity.health then return end
 	biters_chew_rocks_faster(event)
-	if global.objective.planet[1].name.name == "lava planet" and event.entity.force.name == "enemy" then
+	if global.objective.planet[1].name.id == 14 and event.entity.force.name == "enemy" then --lava planet
 		if event.damage_type.name == "fire" then
 			event.entity.health = event.entity.health + event.final_damage_amount
 			local fire = event.entity.stickers
@@ -663,7 +679,7 @@ local function pre_player_mined_item(event)
 	local surface = game.surfaces[global.active_surface_index]
 	local player = game.players[event.player_index]
 	local objective = global.objective
-	if objective.planet[1].name.name == "rocky planet" then
+	if objective.planet[1].name.id == 11 then --rocky planet
 		if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then
 			trap(event.entity, false)
 			event.entity.destroy()
@@ -690,7 +706,7 @@ end
 local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
-	if entity.type == "tree" and global.objective.planet[1].name.name == "choppy planet" then
+	if entity.type == "tree" and global.objective.planet[1].name.id == 12 then --choppy planet
 		trap(entity, false)
 		if choppy_entity_yield[entity.name] then
 			if event.buffer then event.buffer.clear() end
@@ -746,7 +762,7 @@ end
 
 local function on_entity_died(event)
 
-	if event.entity.type == "tree" and global.objective.planet[1].name.name == "choppy planet" then
+	if event.entity.type == "tree" and global.objective.planet[1].name.id == 12 then --choppy planet
 		if event.cause then
 			if event.cause.valid then
 				if event.cause.force.index ~= 2 then
@@ -833,7 +849,7 @@ end
 -- end
 
 local function on_player_changed_position(event)
-	if global.objective.planet[1].name.name ~= "lava planet" then return end
+	if global.objective.planet[1].name.id ~= 14 then return end --lava planet
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if player.character.driving then return end
