@@ -24,7 +24,7 @@ local size_of_vectors = #attack_vectors
 
 -- these areas are for north
 local middle_spawner_area = {left_top = {-400,  -400}, right_bottom = {400,  400}}
-local whole_spawner_area  = {left_top = {-500, -500}, right_bottom = {500, 500}}
+local whole_spawner_area  = {left_top = {-1100, -500}, right_bottom = {1100, 500}}
 
 local function get_active_biter_count()
 	local count = 0
@@ -191,7 +191,7 @@ Public.send_near_biters_to_objective = function()
   local surface = random_target.surface
   local pollution = surface.get_pollution(random_target.position)
   local success = false
-  if pollution > 200 * (1 / global.difficulty_vote_value) then
+  if pollution > 200 * (1 / global.difficulty_vote_value) or global.objective.planet[1].name.id == 17 then
     surface.pollute(random_target.position, -50 * (1 / global.difficulty_vote_value))
     --game.print("sending objective wave")
   	success = true
@@ -274,7 +274,7 @@ local function send_group(unit_group, nearest_player_unit)
   if not target.valid then colonize(unit_group) return end
   local surface = target.surface
   local pollution = surface.get_pollution(target.position)
-  if pollution > 200 * (1 / global.difficulty_vote_value) then
+  if pollution > 200 * (1 / global.difficulty_vote_value) or global.objective.planet[1].name.id == 17 then
     surface.pollute(target.position, -50 * (1 / global.difficulty_vote_value))
     --game.print("sending unit group attack")
 	   local commands = {}

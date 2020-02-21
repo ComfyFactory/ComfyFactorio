@@ -1,6 +1,7 @@
 
 local Public = {}
 local math_floor = math.floor
+local Server = require 'utils.server'
 
 local function spawn_acumulators()
 	local x = -28
@@ -268,6 +269,87 @@ function check_poisondefense()
   end
 end
 
+local function check_upgrade_computer()
+  local objective = global.objective
+  if global.upgradechest[12] and global.upgradechest[12].valid then
+    local inv = global.upgradechest[12].get_inventory(defines.inventory.chest)
+    local countcoins = inv.get_item_count("coin")
+    local count2 = inv.get_item_count("advanced-circuit")
+    local count3 = inv.get_item_count("processing-unit")
+    local count4 = inv.get_item_count("low-density-structure")
+    local count5 = inv.get_item_count("rocket-control-unit")
+    local count6 = inv.get_item_count("uranium-fuel-cell")
+    local count7 = inv.get_item_count("nuclear-reactor")
+    local count8 = inv.get_item_count("copper-plate")
+    local count9 = inv.get_item_count("rocket-silo")
+    local count10 = inv.get_item_count("satellite")
+
+    if countcoins >= 5000 and count2 >= 1000 and count8 >= 2000 and objective.computerupgrade == 0 and objective.chronojumps >= 15 then
+      inv.remove({name = "coin", count = 5000})
+      inv.remove({name = "advanced-circuit", count = 1000})
+      inv.remove({name = "copper-plate", count = 2000})
+      game.print("Comfylatron: Thanks for fixing train navigation. I can now get us rid of very poor worlds. It will still need more work though.", {r=0.98, g=0.66, b=0.22})
+      objective.computerupgrade = objective.computerupgrade + 1
+    elseif countcoins >= 10000 and count3 >= 1000 and count7 >= 1 and objective.computerupgrade == 1 and objective.chronojumps >= 20 then
+      inv.remove({name = "coin", count = 10000})
+      inv.remove({name = "processing-unit", count = 1000})
+      inv.remove({name = "nuclear-reactor", count = 1})
+      objective.computerupgrade = objective.computerupgrade + 1
+      game.print("Comfylatron: Perfect! Now we have train reactor and even better destination precision. I will get to you later what still needs to be done.", {r=0.98, g=0.66, b=0.22})
+    elseif objective.computerupgrade == 2 and objective.chronojumps >= 25 then
+      if countcoins >= 2000 and count4 >= 100 and count5 >= 100 and count6 >= 50 and objective.computerparts < 10 then
+        inv.remove({name = "coin", count = 2000})
+        inv.remove({name = "low-density-structure", count = 100})
+        inv.remove({name = "rocket-control-unit", count = 100})
+        inv.remove({name = "uranium-fuel-cell", count = 50 })
+        objective.computerparts = objective.computerparts + 1
+        if objective.computerparts < 10 then
+          game.print("Comfylatron: That's another processor part done! I still need " .. 10 - objective.computerparts .. " more of those parts.", {r=0.98, g=0.66, b=0.22})
+        else
+          game.print("Comfylatron: And this was last part of cpu brain done. Now we just need to synchronize our time correctly and we are done! Bring me satellite and rocket silo.", {r=0.98, g=0.66, b=0.22})
+        end
+      elseif objective.computerparts == 10 and count9 >= 1 and count10 >= 1 then
+        inv.remove({name = "satellite", count = 1 })
+        inv.remove({name = "rocket-silo", count = 1 })
+        game.print("Comfylatron: Time synchronized. Calculating time and space destination. Success. Jump once more and let me deliver the fish finally. This trip is getting long.", {r=0.98, g=0.66, b=0.22})
+        objective.computerupgrade = objective.computerupgrade + 1
+      end
+    end
+  end
+end
+
+local function check_win()
+  local objective = global.objective
+  if global.fishchest then
+    if global.fishchest.valid then
+      local inv = global.fishchest.get_inventory(defines.inventory.chest)
+      local countfish = inv.get_item_count("raw-fish")
+      local enemies = game.surfaces[global.active_surface_index].count_entities_filtered{force = "enemy"}
+      if countfish > 0 then
+        inv.remove({name = "raw-fish", count = countfish})
+        objective.mainscore = objective.mainscore + countfish
+        if enemies > 0 then
+          game.print("Comfylatron: You delivered fish, but there is still " .. enemies .. " enemies left. Kill them all so fish are safe!", {r=0.98, g=0.66, b=0.22})
+        else
+          if not global.game_reset_tick then
+            global.game_reset_tick = game.tick + 18000
+            objective.game_won = true
+            objective.game_lost = true
+            objective.chronotimer = 200000000 - 300
+            for _, player in pairs(game.connected_players) do
+        			player.play_sound{path="utility/game_won", volume_modifier=0.85}
+        		end
+            local message = "Comfylatron: Thank you with helping me on this delivery. It was tough one. I hope, that now, when all biters are dead, fish will be safe here forever...after all, we delivered " .. objective.mainscore .. " of them fishies."
+            game.print(message, {r=0.98, g=0.66, b=0.22})
+            Server.to_discord_embed(message)
+          end
+        end
+      end
+    end
+  end
+end
+
+
 
 function Public.check_upgrades()
   local objective = global.objective
@@ -301,6 +383,14 @@ function Public.check_upgrades()
   end
   if objective.poisondefense < 1 then
     check_poisondefense()
+  end
+  if objective.computerupgrade < 3 and objective.chronojumps >= 15 then
+    check_upgrade_computer()
+  end
+  if objective.planet[1].name.id == 17 then
+    if global.fishchest then
+      check_win()
+    end
   end
 end
 

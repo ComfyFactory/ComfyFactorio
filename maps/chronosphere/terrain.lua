@@ -505,6 +505,85 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 	tiles[#tiles + 1] = {name = "stone-path", position = p}
 end
 
+local function process_fish_position(p, seed, tiles, entities, treasure, planet)
+  local body_radius = 1984 --3072
+  local body_square_radius = body_radius ^ 2
+  local body_center_position = {x = 0, y = 0}
+  local body_spacing = math_floor(body_radius * 0.82)
+  local body_circle_center_1 = {x = body_center_position.x, y = body_center_position.y - body_spacing}
+  local body_circle_center_2 = {x = body_center_position.x, y = body_center_position.y + body_spacing}
+
+  local fin_radius = 200
+  local square_fin_radius = fin_radius ^ 2
+  local fin_circle_center_1 = {x = -600, y = 0}
+  local fin_circle_center_2 = {x = -600 - 120, y = 0}
+
+	--if math_abs(p.y) > 480 and p.x <= 160 and p.x > body_center_position.x then return true end
+
+	--Main Fish Body
+	local distance_to_center_1 = ((p.x - body_circle_center_1.x)^2 + (p.y - body_circle_center_1.y)^2)
+	local distance_to_center_2 = ((p.x - body_circle_center_2.x)^2 + (p.y - body_circle_center_2.y)^2)
+  local distance_to_fin_1 = ((p.x - fin_circle_center_1.x)^2 + (p.y - fin_circle_center_1.y)^2)
+  local distance_to_fin_2 = ((p.x - fin_circle_center_2.x)^2 + (p.y - fin_circle_center_2.y)^2)
+  local eye_center = {x = -500, y = -150}
+
+
+	if distance_to_center_1 < body_square_radius and distance_to_center_2 < body_square_radius then
+    if p.x < -600 and p.x > -1090 and p.y < 64 and p.y > -64 then --mouth
+      local noise = simplex_noise(p.x * 0.006, 0, seed) * 20
+      if p.y <= 12 + noise and p.y >= -12 + noise then
+        tiles[#tiles + 1] = {name = "water", position = p}
+      else
+        tiles[#tiles + 1] = {name = "grass-1", position = p}
+        local roll = math_random(1,500)
+        if roll < 4 and p.x > -800 then
+          entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
+        elseif roll == 5 and p.x > -800 then
+          entities[#entities + 1] = {name = "behemoth-worm-turret", position = p}
+        elseif roll == 6 then
+          entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p}
+        end
+      end
+    else
+			local distance = math_sqrt(((eye_center.x - p.x) ^ 2) + ((eye_center.y - p.y) ^ 2))
+			if distance < 33 and distance >= 15 then --eye
+				tiles[#tiles + 1 ] = {name = "water-green", position = p}
+			elseif distance < 15 then --eye
+				tiles[#tiles + 1] = {name = "out-of-map", position = p}
+			else --rest
+        tiles[#tiles + 1 ] = {name = "grass-1", position = p}
+        local roll = math_random(1,500)
+        if roll < 4 and p.x > -800 then
+          entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
+        elseif roll == 5 and p.x > -800 then
+          entities[#entities + 1] = {name = "behemoth-worm-turret", position = p}
+        elseif roll == 6 then
+          entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p}
+        end
+      end
+    end
+
+  -- elseif distance_to_fin_2 < square_fin_radius and distance_to_fin_1 + math_abs(simplex_noise(0, p.y * 0.075, seed) * 32000) > square_fin_radius then
+  --   tiles[#tiles + 1 ] = {name = "dirt-7", position = p}
+  else
+    if p.x > 800 and math_abs(p.y) < p.x - 800 then --tail
+      tiles[#tiles + 1 ] = {name = "grass-1", position = p}
+      local roll = math_random(1,500)
+      if roll < 4 and p.x > -800 then
+        entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
+      elseif roll == 5 and p.x > -800 then
+        entities[#entities + 1] = {name = "behemoth-worm-turret", position = p}
+      elseif roll == 6 then
+        entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p}
+      end
+    else
+      tiles[#tiles + 1 ] = {name = "out-of-map", position = p}
+    end
+  end
+
+
+end
+
 local levels = {
 	process_level_1_position,
 	process_level_2_position,
@@ -515,7 +594,7 @@ local levels = {
 	process_biter_position,
 	process_scrapyard_position,
 	process_level_9_position,
-	process_level_10_position,
+	process_fish_position,
 }
 
 local entity_functions = {
@@ -643,6 +722,105 @@ local function empty_chunk(surface, left_top, level, planet)
   replace_water(surface, left_top)
 end
 
+local function fish_market(surface, left_top, level, planet)
+  local tiles = {}
+	local entities = {}
+	--local markets = {}
+  local seed = surface.map_gen_settings.seed
+  local process_level = levels[level]
+  for y = 0, 31, 1 do
+    for x = 0, 31, 1 do
+      local p = {x = left_top.x + x, y = left_top.y + y}
+      process_level(p, seed, tiles, entities, treasure, planet)
+    end
+  end
+  surface.set_tiles(tiles, true)
+  local market = surface.create_entity({name = "market", force = "player", position = {x = left_top.x + 16, y = left_top.y + 16}})
+  market.destructible = false
+  market.operable = false
+  market.minable = false
+  local repair_text = rendering.draw_text{
+    text = "Fish Market",
+    surface = surface,
+    target = market,
+    target_offset = {0, -2.5},
+    color = global.locomotive.color,
+    scale = 1.00,
+    font = "default-game",
+    alignment = "center",
+    scale_with_zoom = false
+  }
+  local fishchest = surface.create_entity({name = "compilatron-chest", force = "player", position = {x = left_top.x + 11, y = left_top.y + 16}})
+  fishchest.destructible = false
+  fishchest.minable = false
+  fishchest.operable = false
+  global.fishchest = fishchest
+  local repair_text = rendering.draw_text{
+    text = "Deposit fish here",
+    surface = surface,
+    target = fishchest,
+    target_offset = {0, -2.5},
+    color = global.locomotive.color,
+    scale = 0.75,
+    font = "default-game",
+    alignment = "center",
+    scale_with_zoom = false
+  }
+  local inserter = surface.create_entity({name = "fast-inserter", force = "player", position = {x = left_top.x + 10, y = left_top.y + 16}, direction = defines.direction.west})
+  inserter.destructible = false
+  inserter.minable = false
+  inserter.operable = false
+  inserter.rotatable = false
+  local track = surface.create_entity({name = "straight-rail", force = "player", position = {x = left_top.x + 8, y = left_top.y + 16}})
+  track.destructible = false
+  track.minable = false
+  -- for _, entity in pairs(entities) do
+	-- 	if entity_functions[game.entity_prototypes[entity.name].type] then
+	-- 		entity_functions[game.entity_prototypes[entity.name].type](surface, entity)
+	-- 	else
+	-- 		if surface.can_place_entity(entity) then
+	-- 			local e = surface.create_entity(entity)
+  --       -- if e.name == "biter-spawner" or e.name == "spitter-spawner" or e.name == "small-worm-turret" or e.name == "medium-worm-turret" or e.name == "big-worm-turret" or e.name == "behemoth-worm-turret" then
+  --       --   if math_abs(e.position.x) > 420 or math_abs(e.position.y) > 420 then e.destructible = false end
+  --       -- end
+	-- 		end
+	-- 	end
+	-- end
+end
+
+local function fish_chunk(surface, left_top, level, planet)
+  local tiles = {}
+	local entities = {}
+	--local markets = {}
+	local treasure = {}
+  local seed = surface.map_gen_settings.seed
+  local process_level = levels[level]
+  for y = 0, 31, 1 do
+    for x = 0, 31, 1 do
+      local p = {x = left_top.x + x, y = left_top.y + y}
+      process_level(p, seed, tiles, entities, treasure, planet)
+    end
+  end
+  surface.set_tiles(tiles, true)
+  for _, p in pairs(treasure) do
+		local name = "wooden-chest"
+		if math_random(1, 6) == 1 then name = "iron-chest" end
+		Treasure(surface, p, name)
+	end
+  for _, entity in pairs(entities) do
+		if entity_functions[game.entity_prototypes[entity.name].type] then
+			entity_functions[game.entity_prototypes[entity.name].type](surface, entity)
+		else
+			if surface.can_place_entity(entity) then
+				local e = surface.create_entity(entity)
+        -- if e.name == "biter-spawner" or e.name == "spitter-spawner" or e.name == "small-worm-turret" or e.name == "medium-worm-turret" or e.name == "big-worm-turret" or e.name == "behemoth-worm-turret" then
+        --   if math_abs(e.position.x) > 420 or math_abs(e.position.y) > 420 then e.destructible = false end
+        -- end
+			end
+		end
+	end
+end
+
 local function normal_chunk(surface, left_top, level, planet)
 	local tiles = {}
 	local entities = {}
@@ -730,8 +908,11 @@ end
 local function process_chunk(surface, left_top)
 	if not surface then return end
 	if not surface.valid then return end
-	if left_top.x >= level_depth * 0.5 or left_top.y >= level_depth * 0.5 then return end
-	if left_top.x < level_depth * -0.5 or left_top.y < level_depth * -0.5 then return end
+  local planet = global.objective.planet
+  if planet[1].name.id == 17 then level_depth = 2176 end
+  if left_top.x >= level_depth * 0.5 or left_top.y >= level_depth * 0.5 then return end
+  if left_top.x < level_depth * -0.5 or left_top.y < level_depth * -0.5 then return end
+
 
 
 	--if left_top.y >= 0 then replace_water(surface, left_top) end
@@ -740,7 +921,7 @@ local function process_chunk(surface, left_top)
 	-- 	local p = global.locomotive.position
 	-- 	for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 10}}, type = "simple-entity"})) do	entity.destroy() end
 	-- end
-  local planet = global.objective.planet
+
   local id = planet[1].name.id --from chronobubbles
   if id == 10 then --scrapyard
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 8, planet) return end
@@ -762,6 +943,11 @@ local function process_chunk(surface, left_top)
   elseif id == 16 then --hedge maze
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 3, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 3, planet) return end
+  elseif id == 17 then --fish market
+    --if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 3, planet) return end
+    --if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 3, planet) return end
+    if math_abs(left_top.y) <= 31 and math_abs(left_top.x - 864) <= 31 then fish_market(surface, left_top, 10, planet) return end
+    fish_chunk(surface, left_top, 10, planet)
   else
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 7, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then biter_chunk(surface, left_top, 7, planet) return end

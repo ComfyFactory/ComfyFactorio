@@ -18,7 +18,8 @@ local variants = {
   [13] = {id = 13, name = "river planet", iron = 1, copper = 1, coal = 3, stone = 1, uranium = 0, oil = 0, biters = 8, moisture = 0.5, chance = 2, cumul_chance = 23},
   [14] = {id = 14, name = "lava planet", iron = 2, copper = 2, coal = 2, stone = 2, uranium = 0, oil = 0, biters = 6, moisture = -0.5, chance = 1, cumul_chance = 24},
   [15] = {id = 15, name = "start planet", iron = 4, copper = 3, coal = 4, stone = 3, uranium = 0, oil = 0, biters = 1, moisture = -0.3, chance = 0, cumul_chance = 24},
-  [16] = {id = 16, name = "hedge maze", iron = 3, copper = 3, coal = 3, stone = 3, uranium = 1, oil = 2, biters = 16, moisture = -0.1, chance = 2, cumul_chance = 26}
+  [16] = {id = 16, name = "hedge maze", iron = 3, copper = 3, coal = 3, stone = 3, uranium = 1, oil = 2, biters = 16, moisture = -0.1, chance = 2, cumul_chance = 26},
+  [17] = {id = 17, name = "fish market", iron = 0, copper = 0, coal = 0, stone = 0, uranium = 0, oil = 0, biters = 100, moisture = 0, chance = 0, cumul_chance = 26}
 }
 
 local time_speed_variants = {
@@ -39,7 +40,8 @@ local richness = {
   [6] = {name = "normal", factor = 1},
   [7] = {name = "poor", factor = 0.6},
   [8] = {name = "poor", factor = 0.6},
-  [9] = {name = "very poor", factor = 0.3}
+  [9] = {name = "very poor", factor = 0.3},
+  [10] = {name = "none", factor = 0}
 }
 local function roll(weight)
   for i = 1, 100, 1 do
@@ -56,12 +58,17 @@ local function roll(weight)
 end
 
 function Public.determine_planet(choice)
+  local objective = global.objective
   local weight = variants[#variants].cumul_chance
   local planet_choice = nil
-  local ores = math_random(1, #richness)
-  if global.objective.game_lost then
+  local ores = math_random(1, 9)
+  if objective.game_lost then
     choice = 15
     ores = 2
+  end
+  if objective.computerupgrade == 3 then
+    choice = 17
+    ores = 10
   end
   if not choice then
     planet_choice = roll(weight)
@@ -72,6 +79,8 @@ function Public.determine_planet(choice)
       planet_choice = roll(weight)
     end
   end
+  if objective.computerupgrade >= 1 and ores == 9 then ores = 8 end
+  if objective.computerupgrade >= 2 and ores > 6 and ores ~= 10 then ores = 6 end
   local planet = {
     [1] = {
       name = planet_choice,
@@ -80,6 +89,6 @@ function Public.determine_planet(choice)
       ore_richness = richness[ores],
     }
   }
-  global.objective.planet = planet
+  objective.planet = planet
 end
 return Public

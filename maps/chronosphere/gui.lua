@@ -138,7 +138,11 @@ local function update_gui(player)
     [7] = {t = "[7]: Add piping through wagon sides to create water sources for each wagon.\n    Cost: 2000 coins + 500 pipes\n"},
     [8] = {t = "[8]: Add comfylatron chests that output outside (into cargo wagon 2 and 3)\n    Cost: 2000 coins + 100 fast inserters\n"},
     [9] = {t = "[9]: Add storage chests to the sides of wagons.\n    Buyable once per 5 jumps.\n    Cost: 5000 coins + "  .. chests[objective.boxupgradetier + 1].c},
-		[10] = {t = "[P]: Poison defense. Triggers automatically when train has low HP.\n    Actual charges: " .. objective.poisondefense .. " / 4\n    Recharge timer for next use: " .. math_ceil(objective.poisontimeout /6) .. "min\n    Cost: 1000 coins + 50 poison capsules\n"}
+		[10] = {t = "[P]: Poison defense. Triggers automatically when train has low HP.\n    Actual charges: " .. objective.poisondefense .. " / 4\n    Recharge timer for next use: " .. math_ceil(objective.poisontimeout /6) .. "min\n    Cost: 1000 coins + 50 poison capsules\n"},
+		[11] = {t = "[C]: Train computer fixing for Comfylatron. Finish this to fullfill the main objective.\n    Tier 1 costs: 5000 coins, 1000 advanced circuits, 2000 copper plates.\n    Discards very poor planets.\n"},
+		[12] = {t = "[C]: Train power and navigation fixing for Comfylatron. Finish this to fullfill the main objective.\n    Tier 2 costs: 10000 coins, 1000 processing units, 1 nuclear reactor.\n   Discards poor planets.\n"},
+		[13] = {t = "[C]: Train time machine processor fixing for Comfylatron. Finish this to fullfill the main objective.\n   Tier 3 costs per part: 2000 coins, 100 rocket control units, 100 low density structures, 50 uranium fuel cells.\n    Parts finished: " .. objective.computerparts .. " / 10\n"},
+		[14] = {t = "[C]: Train is repaired. Synchronize the time to unlock final map to finish the main objective.\n    Costs: 1 rocket silo, 1 satellite.\n    Warning: after buying this, the next jump destination is locked to final map,\n    that means 100% evolution and no resources.\n"}
   }
   local maxed = {
     [1] = {t = "[1]: Train HP maxed.\n"},
@@ -150,6 +154,7 @@ local function update_gui(player)
     [7] = {t = "[7]: Piping created. Don't spill it!\n"},
     [8] = {t = "[8]: Output chests created.\n"},
     [9] = {t = "[9]: Storage chests fully upgraded.\n"},
+		[10] = {t = "[C]: Train's next destination is Fish Market.\n"}
   }
   local tooltip = "Insert needed items into chest with upgrade number.\nUpgrading can take a minute.\n\n"
   if objective.hpupgradetier < 36 then tooltip = tooltip .. upgt[1].t else tooltip = tooltip .. maxed[1].t end
@@ -162,6 +167,19 @@ local function update_gui(player)
   if objective.outupgradetier < 1 then tooltip = tooltip .. upgt[8].t else tooltip = tooltip .. maxed[8].t end
   if objective.boxupgradetier < 4 then tooltip = tooltip .. upgt[9].t else tooltip = tooltip .. maxed[9].t end
 	tooltip = tooltip .. upgt[10].t
+	if objective.computerupgrade == 0 and objective.chronojumps >= 15 then
+		tooltip = tooltip .. upgt[11].t
+	elseif objective.computerupgrade == 1 and objective.chronojumps >= 20 then
+		tooltip = tooltip .. upgt[12].t
+	elseif objective.computerupgrade == 2 and objective.chronojumps >= 25 then
+		if objective.computerparts < 10 then
+			tooltip = tooltip .. upgt[13].t
+		elseif objective.computerparts == 10 then
+			tooltip = tooltip .. upgt[14].t
+		end
+	elseif objective.computerupgrade == 3 and objective.chronojumps >= 25 then
+		tooltip = tooltip .. maxed[10].t
+	end
   gui.upgrades.tooltip =  tooltip
 
 

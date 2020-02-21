@@ -4,6 +4,10 @@ local math_random = math.random
 
 
 function Public.locomotive_spawn(surface, position, wagons)
+	if global.objective.planet[1].name.id == 17 then
+		position.x = position.x - 960
+		position.y = position.y - 64
+	end
 	for y = -10, 18, 2 do
 		local rail = {name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0}
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
@@ -325,7 +329,8 @@ local function create_wagon_room()
 		[8] = {name = "waterchest", entity = {name = "compilatron-chest", position = {3, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-7"},
 		[9] = {name = "outchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-8"},
 		[10] = {name = "boxchest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-9"},
-		[11] = {name = "poisonchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-P"}
+		[11] = {name = "poisonchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-P"},
+		[12] = {name = "computerchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-C"}
 	}
 
 	for i = 1, #upgradechests, 1 do

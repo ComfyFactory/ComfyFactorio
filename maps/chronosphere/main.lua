@@ -30,7 +30,7 @@ local update_gui = require "maps.chronosphere.gui"
 local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
-local chests = {}
+--local chests = {}
 --local acus = {}
 global.objective = {}
 global.flame_boots = {}
@@ -58,6 +58,8 @@ local function generate_overworld(surface, optplanet)
 		game.print("Comfylatron: OwO what are those strange trees?!? They have ore fruits! WTF!", {r=0.98, g=0.66, b=0.22})
 	elseif planet[1].name.id == 14 then
 		game.print("Comfylatron: OOF this one is a bit hot. And have seen those biters? They BATHE in fire! Maybe try some bricks to protect from lava?", {r=0.98, g=0.66, b=0.22})
+	elseif planet[1].name.id == 17 then
+		game.print("Comfylatron: So here we are. Fish Market. When they ordered the fish, they said this location is perfectly safe. Looks like we will have to do it for them. I hope you have enough nukes.", {r=0.98, g=0.66, b=0.22})
 	end
 	surface.min_brightness = 0
 	surface.brightness_visual_weights = {1, 1, 1}
@@ -93,11 +95,21 @@ local function generate_overworld(surface, optplanet)
 		mgs.water = 0.2
 		surface.map_gen_settings = mgs
 	end
+	if planet[1].name.id == 17 then --fish market
+		local mgs = surface.map_gen_settings
+		mgs.width = 2176
+		surface.map_gen_settings = mgs
+		surface.request_to_generate_chunks({-960,-64}, 3)
+		--surface.request_to_generate_chunks({0,0}, 3)
+		surface.force_generate_chunk_requests()
+	else
+		surface.request_to_generate_chunks({0,0}, 3)
+		surface.force_generate_chunk_requests()
+	end
 	--log(timer)
 	--surface.solar_power_multiplier = 999
 
-	surface.request_to_generate_chunks({0,0}, 3)
-	surface.force_generate_chunk_requests()
+
 
 	-- for x = -352 + 32, 352 - 32, 32 do
 	-- 	surface.request_to_generate_chunks({x, 96}, 1)
@@ -157,10 +169,14 @@ end
 
 
 local function reset_map()
+
 	global.chunk_queue = {}
 	if game.surfaces["chronosphere"] then game.delete_surface(game.surfaces["chronosphere"]) end
 	if game.surfaces["cargo_wagon"] then game.delete_surface(game.surfaces["cargo_wagon"]) end
-	chests = {}
+	--chests = {}
+	local objective = global.objective
+	objective.computerupgrade = 0
+	objective.computerparts = 0
 	local map_gen_settings = get_map_gen_settings()
 	Planets.determine_planet(nil)
 	local planet = global.objective.planet
@@ -174,7 +190,7 @@ local function reset_map()
 	local surface = game.surfaces[global.active_surface_index]
 	generate_overworld(surface, planet)
 
-	local objective = global.objective
+
 	objective.max_health = 10000
 	objective.health = 10000
 	objective.hpupgradetier = 0
@@ -193,11 +209,13 @@ local function reset_map()
 	objective.passivetimer = 0
 	objective.passivejumps = 0
 	objective.chrononeeds = 2000
+	objective.mainscore = 0
 	objective.active_biters = {}
 	objective.unit_groups = {}
 	objective.biter_raffle = {}
 	global.outchests = {}
 	global.upgradechest = {}
+	global.fishchest = {}
 
 
 
@@ -238,7 +256,11 @@ local function reset_map()
 	game.reset_time_played()
 	global.difficulty_poll_closing_timeout = game.tick + 54000
 	global.difficulty_player_votes = {}
+	if objective.game_won then
+		game.print("Comfylatron: WAIT whaat? Looks like we did not fixed the train properly and it teleported us back in time...sigh...so let's do this again, and now properly.", {r=0.98, g=0.66, b=0.22})
+	end
 	objective.game_lost = false
+	objective.game_won = false
 
 	--set_difficulty()
 end
@@ -394,7 +416,15 @@ local function chronojump(choice)
 		planet = global.objective.planet
 	end
 	generate_overworld(surface, planet)
-	if objective.chronojumps == 6 then game.print("Comfylatron: Biters start to evolve faster! We need to charge forward or they will be stronger! (hover over timer to see evolve timer)", {r=0.98, g=0.66, b=0.22}) end
+	if objective.chronojumps == 6 then
+		game.print("Comfylatron: Biters start to evolve faster! We need to charge forward or they will be stronger! (hover over timer to see evolve timer)", {r=0.98, g=0.66, b=0.22})
+	elseif objective.chronojumps == 15 then
+		game.print("Comfylatron: You know...I have big quest. Deliver fish to fish market. But this train is broken. Please help me fix the train computer!", {r=0.98, g=0.66, b=0.22})
+	elseif objective.chronojumps == 20 then
+		game.print("Comfylatron: Ah, we need to give this machine more power and better navigation chipset. Please bring me some additional things.", {r=0.98, g=0.66, b=0.22})
+	elseif objective.chronojumps == 25 then
+		game.print("Comfylatron: Finally found the main issue. We will need to rebuild whole processor. Exactly what I feared of. Just a few more things...", {r=0.98, g=0.66, b=0.22})
+	end
 	if overstayed then game.print("Comfylatron: Looks like you stayed on previous planet for so long that enemies on other planets had additional time to evolve!", {r=0.98, g=0.66, b=0.22}) end
 	game.forces.player.set_spawn_position({12, 10}, surface)
 	local inventories = {one = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon), two = global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon)}
@@ -411,10 +441,13 @@ local function chronojump(choice)
 	render_train_hp()
 	game.delete_surface(oldsurface)
 	game.forces.enemy.reset_evolution()
-	if objective.chronojumps + objective.passivejumps <= 40 then
+	if objective.chronojumps + objective.passivejumps <= 40 and objective.planet[1].name.id ~= 17 then
 		game.forces.enemy.evolution_factor = 0 + 0.025 * (objective.chronojumps + objective.passivejumps)
 	else
 		game.forces.enemy.evolution_factor = 1
+	end
+	if objective.planet[1].name.id == 17 then
+		objective.chrononeeds = 200000000
 	end
 	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * (objective.chronojumps + objective.passivejumps)
 	surface.pollute(global.locomotive.position, 150 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
@@ -448,6 +481,7 @@ local function charge_chronosphere()
 	local objective = global.objective
 	if not objective.chronotimer then return end
 	if objective.chronotimer < 20 then return end
+	if objective.planet[1].name.id == 17 then return end
 	local acus = global.acumulators
 	if #acus < 1 then return end
 	for i = 1, #acus, 1 do
@@ -488,7 +522,11 @@ local function tick()
 	local tick = game.tick
 	if tick % 60 == 30 and global.objective.chronotimer < 64 then
 		local surface = game.surfaces[global.active_surface_index]
-		surface.request_to_generate_chunks({0,0}, 3 + math_floor(global.objective.chronotimer / 5))
+		if global.objective.planet[1].name.id == 17 then
+			surface.request_to_generate_chunks({-800,0}, 3 + math_floor(global.objective.chronotimer / 5))
+		else
+			surface.request_to_generate_chunks({0,0}, 3 + math_floor(global.objective.chronotimer / 5))
+		end
 		--surface.force_generate_chunk_requests()
 
 
@@ -508,7 +546,7 @@ local function tick()
 		end
 		local key = tick % 3600
 		if tick_minute_functions[key] then tick_minute_functions[key]() end
-		if tick % 60 == 0 then
+		if tick % 60 == 0 and global.objective.planet[1].name.id ~= 17 then
 			global.objective.chronotimer = global.objective.chronotimer + 1
 			global.objective.passivetimer = global.objective.passivetimer + 1
 			check_chronoprogress()
@@ -537,6 +575,7 @@ local function on_init()
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
 	global.objective.game_lost = true
+	global.objective.game_won = false
 	game.create_force("scrapyard")
 	game.forces.scrapyard.set_friend('enemy', true)
 	game.forces.enemy.set_friend('scrapyard', true)
@@ -659,7 +698,7 @@ end
 local function trap(entity, trap)
 	if trap then
 		tick_tack_trap(entity.surface, entity.position)
-		tick_tack_trap(entity.surface, {x = entity.position.x + math_random(-3,3), y = entity.position.y + math_random(-3,3)})
+		tick_tack_trap(entity.surface, {x = entity.position.x + math_random(-2,2), y = entity.position.y + math_random(-2,2)})
 		return
 	end
 	if math_random(1,256) == 1 then tick_tack_trap(entity.surface, entity.position) return end
