@@ -203,54 +203,6 @@ local function initial_worm_turret(surface)
 	end
 end
 
---[[local function spawn_one_unit(belt, food_item)
-	local surface = game.surfaces[global.active_surface_index]
-	local random_biter = math.random(0,9)
-	local i = math.random(0, 10)-5
-	if food_item == "automation-science-pack" or food_item == "logistic-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "small-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "small-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	if food_item == "military-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "medium-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "medium-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	if food_item == "chemical-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "big-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "big-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	if food_item == "production-science-pack" or food_item == "utility-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "behemoth-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "behemoth-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	--unit.ai_settings.allow_destroy_when_commands_fail = false
-	--unit.ai_settings.allow_try_return_to_spawner = false
-	--team.unit_count = team.unit_count + 1
-end]]
 
 local function get_belts(market)
 	local belts = market.surface.find_entities_filtered({
@@ -294,7 +246,6 @@ local function nom()
 		end
 		spawn_wave_from_belt(key)
 	end
-	for _, player in pairs(game.connected_players) do Gui.update_health_boost_buttons(player) end
 end
 
 local function get_units(force_name)
