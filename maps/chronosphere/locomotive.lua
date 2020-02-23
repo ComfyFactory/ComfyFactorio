@@ -549,7 +549,11 @@ function Public.enter_cargo_wagon(player, vehicle)
 		player.teleport(surface.find_non_colliding_position("character", position, 128, 0.5), surface)
 	end
 	if player.surface.name == "cargo_wagon" and vehicle.type == "car" then
-		global.flame_boots[player.index].steps = {}
+		if global.flame_boots then
+			if global.flame_boots[player.index] then
+				global.flame_boots[player.index].steps = {}
+			end
+		end
 		local surface = global.locomotive_cargo.surface
 		local x_vector = (vehicle.position.x / math.abs(vehicle.position.x)) * 2
 		local y_vector = vehicle.position.y / 16

@@ -22,13 +22,13 @@ local function create_gui(player)
   local label = frame.add({ type = "label", caption = " ", name = "charger"})
 	label.style.font = "default-bold"
 	label.style.left_padding = 4
-	label.style.font_color = {r = 150, g = 0, b = 255} --255 200 200 
+	label.style.font_color = {r = 255, g = 200, b = 200} --255 200 200 --150 0 255
 
   local label = frame.add({ type = "label", caption = " ", name = "charger_value"})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
-	label.style.font_color = {r = 150, g = 0, b = 255}
+	label.style.font_color = {r = 255, g = 200, b = 200}
 
 	local progressbar = frame.add({ type = "progressbar", name = "progressbar", value = 0})
 	progressbar.style.minimal_width = 96
@@ -57,7 +57,7 @@ local function create_gui(player)
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
-	label.style.font_color = {r = 0, g = 200, b = 0}
+	label.style.font_color = {r = 150, g = 0, b = 255}
 
   local line = frame.add({type = "line", direction = "vertical"})
 	line.style.left_padding = 4
@@ -106,12 +106,22 @@ local function update_gui(player)
   gui.timer.caption = {"chronosphere.gui_3"}
 	gui.timer_value.caption = math_floor((objective.chrononeeds - objective.chronotimer) / 60) .. " min, " .. (objective.chrononeeds - objective.chronotimer) % 60 .. " s"
 	if objective.chronojumps > 5 then
-		gui.timer_value.tooltip = "If overstaying this, other planets can evolve: " ..math_floor((objective.chrononeeds * 0.75 - objective.passivetimer) / 60) .. " min, " .. (objective.chrononeeds * 0.75 - objective.passivetimer) % 60 .. " s"
+		local overstay_timer_min = math_floor((objective.chrononeeds * 0.75 - objective.passivetimer) / 60)
+		local evo_timer_min = math_floor((objective.chrononeeds * 0.5 - objective.passivetimer) / 60)
+		local first_part = "If overstaying this, other planets can evolve: " .. overstay_timer_min .. " min, " .. (objective.chrononeeds * 0.75 - objective.passivetimer) % 60 .. " s"
+		if overstay_timer_min < 0 then
+			first_part = "If overstaying this, other planets can evolve: " .. overstay_timer_min .. " min, " .. 59 - ((objective.chrononeeds * 0.75 - objective.passivetimer) % 60) .. " s"
+		end
+		local second_part = "This planet gets additional evolution growth in: " ..evo_timer_min .. " min, " .. (objective.chrononeeds * 0.5 - objective.passivetimer) % 60 .. " s"
+		if evo_timer_min < 0 then
+			second_part = "This planet gets additional evolution growth in: " ..evo_timer_min .. " min, " .. 59 -((objective.chrononeeds * 0.5 - objective.passivetimer) % 60) .. " s"
+		end
+		gui.timer_value.tooltip = first_part .. "\n" .. second_part
 	else
 		gui.timer_value.tooltip = "After planet 5, biters will get additional permanent evolution for staying too long on each planet."
 	end
 
-	gui.planet.caption = "Planet: " .. objective.planet[1].name.name .. " Ores: " .. objective.planet[1].ore_richness.name
+	gui.planet.caption = "Planet: " .. objective.planet[1].name.name .. " | Ores: " .. objective.planet[1].ore_richness.name
   local acus = 0
   if global.acumulators then acus = #global.acumulators else acus = 0 end
   local bestcase = math_floor((objective.chrononeeds - objective.chronotimer) / (1 + math_floor(acus/10)))

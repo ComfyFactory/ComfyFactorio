@@ -511,6 +511,16 @@ local function transfer_pollution()
 	surface.clear_pollution()
 end
 
+local function boost_evolution()
+	local objective = global.objective
+	if objective.passivetimer > objective.chrononeeds * 0.50 and objective.chronojumps > 5 then
+		local evolution = game.forces.enemy.evolution_factor
+		evolution = evolution + (evolution / 2000) * global.difficulty_vote_value
+		if evolution > 1 then evolution = 1 end
+		game.forces.enemy.evolution_factor = evolution
+	end
+end
+
 local tick_minute_functions = {
 
 	[300 * 2] = Ai.destroy_inactive_biters,
@@ -550,6 +560,7 @@ local function tick()
 			Locomotive.set_player_spawn_and_refill_fish()
 			repair_train()
 			Upgrades.check_upgrades()
+			boost_evolution()
 		end
 		local key = tick % 3600
 		if tick_minute_functions[key] then tick_minute_functions[key]() end
