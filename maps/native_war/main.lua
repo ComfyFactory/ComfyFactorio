@@ -349,7 +349,7 @@ local function on_player_joined_game(event)
 		player.spectator = true
 		player.force = game.forces.spectator
 		if surface.is_chunk_generated({0,-190}) then
-			player.teleport(surface.find_non_colliding_position("character", {0,-190}, 3, 0.5), surface)
+			player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
 		else
 			player.teleport({0,-190}, surface)
 		end
