@@ -186,55 +186,6 @@ local function first_ore_generate(surface)
 	end
 end
 
-function Public.create_mirror_surface()
-	if game.surfaces["mirror_terrain"] then return end
-
-	local map_gen_settings = {}
-	map_gen_settings.seed = math_random(1, 99999999)
-	map_gen_settings.water = math.random(5, 10) * 0.025
-	map_gen_settings.starting_area = 1
-	map_gen_settings.terrain_segmentation = 8
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}
-	map_gen_settings.autoplace_controls = {
-
-		["coal"] = {frequency = 2.5, size = 0.65, richness = 0.5},
-		["stone"] = {frequency = 2.5, size = 0.65, richness = 0.5},
-		["copper-ore"] = {frequency = 2.5, size = 0.65, richness = 0.5},
-		["iron-ore"] = {frequency = 2.5, size = 0.65, richness = 0.5},
-		["uranium-ore"] = {frequency = 2, size = 1, richness = 1},
-		["crude-oil"] = {frequency = 3, size = 1, richness = 0.75},
-		["trees"] = {frequency = math_random(5, 12) * 0.1, size = math_random(5, 12) * 0.1, richness = math_random(1, 10) * 0.1},
-		["enemy-base"] = {frequency = 0, size = 0, richness = 0}
-	}
-	local surface = game.create_surface("mirror_terrain", map_gen_settings)
-
-	local x = hatchery_position.x - 16
-	local offset = 38
-
-	surface.request_to_generate_chunks({x, 0}, 5)
-	surface.force_generate_chunk_requests()
-
-	local positions = {{x = x, y = offset}, {x = x, y = offset * -1}, {x = x, y = offset * -2}, {x = x, y = offset * 2}}
-	table.shuffle_table(positions)
-
-	for key, ore in pairs({"copper-ore", "iron-ore", "coal", "stone"}) do
-		Map_functions.draw_smoothed_out_ore_circle(surface.find_non_colliding_position("coal", positions[key], 128, 1), ore, surface, 15, 2500)
-	end
-
-	local r = 32
-	for x = r * -1, r, 1 do
-		for y = r * -1, r, 1 do
-			local p = {x = hatchery_position.x + x, y = hatchery_position.y + y}
-			if math.sqrt(x ^ 2 + y ^ 2) < r then
-				local tile = surface.get_tile(p)
-				if tile.name == "water" or tile.name == "deepwater" then
-					surface.set_tiles({{name = "landfill", position = p}}, true)
-				end
-			end
-		end
-	end
-end
-
 local function mirror_chunk(event, source_surface, x_modifier)
 	local surface = event.surface
 	local left_top = event.area.left_top

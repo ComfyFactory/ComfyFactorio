@@ -45,13 +45,15 @@ local xp_yield = {
 }
 
 local function gain_xp(player, amount)
-	amount = math.round(amount, 2)
-	xp_t[player.index].xp = xp_t[player.index].xp + amount
-	xp_t[player.index].xp_since_last_floaty_text = xp_t[player.index].xp_since_last_floaty_text + amount
-	if xp_t[player.index].last_floaty_text > game.tick then return end
-	player.create_local_flying_text{text="+" .. xp_t[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color=xp_floating_text_color, time_to_live=120, speed=2}
-	xp_t[player.index].xp_since_last_floaty_text = 0
-	xp_t[player.index].last_floaty_text = game.tick + visuals_delay
+  if not player.force == "spectator" then
+  	amount = math.round(amount, 2)
+  	xp_t[player.index].xp = xp_t[player.index].xp + amount
+  	xp_t[player.index].xp_since_last_floaty_text = xp_t[player.index].xp_since_last_floaty_text + amount
+  	if xp_t[player.index].last_floaty_text > game.tick then return end
+  	player.create_local_flying_text{text="+" .. xp_t[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color=xp_floating_text_color, time_to_live=120, speed=2}
+  	xp_t[player.index].xp_since_last_floaty_text = 0
+  	xp_t[player.index].last_floaty_text = game.tick + visuals_delay
+  end
 end
 function Public.xp_reset_player(player)
 	if not player.character then

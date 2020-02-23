@@ -1,43 +1,22 @@
 require "modules.biter_reanimator"
+require "maps.native_war.share_chat"
+require "maps.native_war.mineable_wreckage_yields_scrap"
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local Map_score = require "modules.map_score"
 local Team = require "maps.native_war.team"
 local Terrain = require "maps.native_war.terrain"
 local Gui = require "maps.native_war.gui"
-require "maps.native_war.share_chat"
-require "maps.native_war.mineable_wreckage_yields_scrap"
+local Init = require "maps.native_war.init"
+local Settings = require "maps.native_war.settings"
 local Reset = require "functions.soft_reset"
-local Map = require "modules.map_info"
+local Map = require "maps.native_war.map_info"
+local Team_manager = require "maps.native_war.team_manager"
 local math_random = math.random
 local Public = {}
 
-local science_pack_name = {"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack", "utility-science-pack"}
-local map_gen_settings = {
-		["seed"] = 1,
-		["water"] = 1,
-		["starting_area"] = 1,
-		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
-		["default_enable_all_autoplace_controls"] = false,
-		["autoplace_settings"] = {
-			["entity"] = {treat_missing_as_default = false},
-			["tile"] = {treat_missing_as_default = false},
-			["decorative"] = {treat_missing_as_default = false},
-		},
-	}
-
-local m = 5
-local health_boost_food_values = {
-	["automation-science-pack"] =		0.000001 * m,
-	["logistic-science-pack"] = 			0.000003 * m,
-	["military-science-pack"] = 			0.00000822 * m,
-	["chemical-science-pack"] = 			0.00002271 * m,
-	["production-science-pack"] = 		0.00009786 * m,
-	["utility-science-pack"] =			 	0.00010634 * m,
-	["space-science-pack"] = 				0.00041828 * m,
-}
-
 local worm_turret_spawn_radius = 18
+
 local worm_turret_vectors = {}
 worm_turret_vectors.west = {}
 for x = 0, worm_turret_spawn_radius, 1 do
@@ -52,42 +31,6 @@ for x = worm_turret_spawn_radius * -1, 0, 1 do
 		local d = math.sqrt(x ^ 2 + y ^ 2)
 		if d <= worm_turret_spawn_radius and d > 3 then table.insert(worm_turret_vectors.east, {x, y}) end
 	end
-end
-
-function Public.reset_map()
-	Terrain.create_mirror_surface()
-
-	if not global.active_surface_index then
-		global.active_surface_index = game.create_surface("native_war", map_gen_settings).index
-	else
-		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, Team.starting_items).index
-	end
-
-	local surface = game.surfaces[global.active_surface_index]
-
-	surface.request_to_generate_chunks({0,0}, 8)
-	surface.force_generate_chunk_requests()
-	game.forces.spectator.set_spawn_position({0, -190}, surface)
-	game.forces.west.set_spawn_position({-205, 0}, surface)
-	game.forces.east.set_spawn_position({205, 0}, surface)
-
-	XP.xp_reset_all_players()
-
-	Team.set_force_attributes()
-	Team.assign_random_force_to_active_players()
-
-	for _, player in pairs(game.connected_players) do
-		Team.teleport_player_to_active_surface(player)
-	end
-
-	for _, player in pairs(game.forces.spectator.connected_players) do
-		player.character.destroy()
-		Team.set_player_to_spectator(player)
-	end
-	for _, player in pairs(game.forces.spectator.players) do
-		Gui.rejoin_question(player)
-	end
-	kill_entities_combat_zone(surface)
 end
 
 function create_beams(surface, energy, force)
@@ -203,55 +146,6 @@ local function initial_worm_turret(surface)
 	end
 end
 
---[[local function spawn_one_unit(belt, food_item)
-	local surface = game.surfaces[global.active_surface_index]
-	local random_biter = math.random(0,9)
-	local i = math.random(0, 10)-5
-	if food_item == "automation-science-pack" or food_item == "logistic-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "small-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "small-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	if food_item == "military-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "medium-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "medium-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	if food_item == "chemical-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "big-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "big-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	if food_item == "production-science-pack" or food_item == "utility-science-pack" then
-		if random_biter <= 5 then
-			local unit = surface.create_entity{name = "behemoth-biter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y} , force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		else
-			local unit = surface.create_entity{name = "behemoth-spitter", position = {global.map_forces[belt.force.name].spawn.x + i,global.map_forces[belt.force.name].spawn.y}, force = game.forces[belt.force.name]}
-			global.map_forces[belt.force.name].units[unit.unit_number] = unit
-		end
-		return
-	end
-	--unit.ai_settings.allow_destroy_when_commands_fail = false
-	--unit.ai_settings.allow_try_return_to_spawner = false
-	--team.unit_count = team.unit_count + 1
-end]]
-
 local function get_belts(market)
 	local belts = market.surface.find_entities_filtered({
 			type = "transport-belt",
@@ -264,7 +158,7 @@ end
 local function eat_food_from_belt(belt)
 	for i = 1, 2, 1 do
 		local line = belt.get_transport_line(i)
-		for _, science_name in pairs(science_pack_name) do
+		for _, science_name in pairs(Settings.science_pack_name) do
 			--if global.map_forces[belt.force.name].unit_count > global.map_forces[belt.force.name].max_unit_count then return end
 			local removed_item_count = line.remove_item({name = science_name, count = 8})
 			global.map_forces[belt.force.name].ate_buffer_potion[science_name] = global.map_forces[belt.force.name].ate_buffer_potion[science_name] + removed_item_count
@@ -273,7 +167,7 @@ local function eat_food_from_belt(belt)
 end
 
 local function spawn_wave_from_belt(force_name)
-	for _, science_name in pairs(science_pack_name) do
+	for _, science_name in pairs(Settings.science_pack_name) do
 		local nb_science = global.map_forces[force_name].ate_buffer_potion[science_name]
 		if nb_science >= Gui.wave_price[science_name].price then
 				Team.on_buy_wave("native_war", force_name, Gui.science_pack[science_name].short)
@@ -284,7 +178,7 @@ local function spawn_wave_from_belt(force_name)
 end
 
 local function nom()
-	local surface = game.surfaces[global.active_surface_index]
+	local surface = game.surfaces["native_war"]
 	for key, force in pairs(global.map_forces) do
 		if not force.hatchery then return end
 		force.hatchery.health = force.hatchery.health + 5
@@ -294,7 +188,6 @@ local function nom()
 		end
 		spawn_wave_from_belt(key)
 	end
-	for _, player in pairs(game.connected_players) do Gui.update_health_boost_buttons(player) end
 end
 
 local function get_units(force_name)
@@ -312,7 +205,7 @@ local function get_units(force_name)
 end
 
 local function send_unit_groups()
-	local surface = game.surfaces[global.active_surface_index]
+	local surface = game.surfaces["native_war"]
 	for key, force in pairs(global.map_forces) do
 		local units = get_units(key)
 		if #units > 0 then
@@ -347,14 +240,27 @@ local function send_unit_groups()
 		end
 	end
 end
+local function randomize_worms()
+	for k, pos in pairs(global.map_forces["west"].worm_turrets_positions) do
+		local vx=math.random(0, 8)-4
+		local vy=math.random(0, 8)-4
+		global.map_forces["west"].worm_turrets_positions[k].x = pos.x + vx
+		global.map_forces["west"].worm_turrets_positions[k].y = pos.y + vy
+		global.map_forces["east"].worm_turrets_positions[k].x = global.map_forces["east"].worm_turrets_positions[k].x - vx
+		global.map_forces["east"].worm_turrets_positions[k].y = global.map_forces["east"].worm_turrets_positions[k].y - vy
+	end
+end
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if player.position.y > -175 and player.position.y < -173 and player.position.x <= 15 and player.position.x >= -15 then
-		player.teleport({player.position.x , 175}, game.surfaces[global.active_surface_index])
+		player.teleport({player.position.x , 175}, game.surfaces["native_war"])
 	end
 	if player.position.y < 175 and player.position.y > 173 and player.position.x <= 15 and player.position.x >= -15 then
-		player.teleport({player.position.x , -175}, game.surfaces[global.active_surface_index])
+		player.teleport({player.position.x , -175}, game.surfaces["native_war"])
+	end
+	if math.abs(player.position.x) > 256 then
+		if player.gui.screen["market_frame"] then player.gui.screen["market_frame"].destroy() end
 	end
 end
 
@@ -373,7 +279,7 @@ local function on_entity_died(event)
 	if entity.type ~= "market" then return end
 
 	if entity.force.name == "east" then
-		game.print("East lost their Hatchery.", {100, 100, 100})
+		game.print("East lost their Market.", {100, 100, 100})
 		game.forces.east.play_sound{path="utility/game_lost", volume_modifier=0.85}
 
 		game.print(">>>> WEST TEAM HAS WON THE GAME!!! <<<<", {250, 120, 0})
@@ -385,7 +291,7 @@ local function on_entity_died(event)
 			end
 		end
 	else
-		game.print("West lost their Hatchery.", {100, 100, 100})
+		game.print("West lost their Market.", {100, 100, 100})
 		game.forces.west.play_sound{path="utility/game_lost", volume_modifier=0.85}
 
 		game.print(">>>> EAST TEAM HAS WON THE GAME!!! <<<<", {250, 120, 0})
@@ -410,6 +316,7 @@ local function on_entity_died(event)
 		Tabs.comfy_panel_call_tab(player, "Map Scores")
 	end
 end
+
 local function on_built_entity(event)
 	local player = game.players[event.player_index]
 	if event.created_entity.name == "radar" then
@@ -418,12 +325,14 @@ local function on_built_entity(event)
 		global.map_forces[player.force.name].radar[unit_number] = entity
 	end
 end
+
 local function on_player_mined_entity(event)
 	local player = game.players[event.player_index]
 	if event.entity.name == "radar" then
 		global.map_forces[player.force.name].radar[event.entity.unit_number] = nil
 	end
 end
+
 local function on_robot_mined_entity(event)
 	if event.entity.name == "radar" then
 		global.map_forces[event.robot.force.name].radar[event.entity.unit_number] = nil
@@ -431,23 +340,33 @@ local function on_robot_mined_entity(event)
 end
 
 local function on_player_joined_game(event)
+	local surface = game.surfaces["native_war"]
 	local player = game.players[event.player_index]
-	local surface = game.surfaces[global.active_surface_index]
 
-	--Gui.unit_health_buttons(player)
-	--Gui.spectate_button(player)
-	--Gui.update_health_boost_buttons(player)
-
-	if player.surface.index ~= global.active_surface_index then
-		if player.force.name == "spectator" then
-			Team.set_player_to_spectator(player)
-			Team.teleport_player_to_active_surface(player)
-			return
+	if player.online_time == 0 then
+		player.spectator = true
+		player.force = game.forces.spectator
+		if surface.is_chunk_generated({0,-190}) then
+			player.teleport(surface.find_non_colliding_position("character", {0,-190}, 3, 0.5), surface)
+		else
+			player.teleport({0,-190}, surface)
 		end
-		Team.assign_force_to_player(player)
-		Team.teleport_player_to_active_surface(player)
-		Team.put_player_into_random_team(player)
+
+		player.character.destructible = false
+		game.permissions.get_group("spectator").add_player(player)
 	end
+
+	Map.player_joined_game(player)
+	Team_manager.draw_top_toggle_button(player)
+end
+
+local function on_gui_click(event)
+	local player = game.players[event.player_index]
+	local element = event.element
+	if not element then return end
+	if not element.valid then return end
+	if Map.gui_click(player, element) then return end
+	Team_manager.gui_click(event)
 end
 
 local function reveal_map(surface, force_name)
@@ -485,32 +404,32 @@ end
 
 local function tick()
 	local game_tick = game.tick
-
 	if game_tick == 120 then
-		initial_worm_turret(game.surfaces[global.active_surface_index])
+		randomize_worms()
+		initial_worm_turret(game.surfaces["native_war"])
 	end
-
 	if game_tick % 240 == 0 then --400 ou 200
-		local surface = game.surfaces[global.active_surface_index]
+		local surface = game.surfaces["native_war"]
 		reset_operable_market(surface)
 		local area = {{-224, -150}, {224, 150}}
 		game.forces.west.chart(surface, area)
 		game.forces.east.chart(surface, area)
+		Team_manager.refresh()
 	end
 
 	if game_tick % 480 == 0 then -- was 600
-		local surface = game.surfaces[global.active_surface_index]
+		local surface = game.surfaces["native_war"]
 		reveal_map(surface, "east")
 	end
 	if (game_tick+240) % 480 == 0 then -- was +300 % 600
-		local surface = game.surfaces[global.active_surface_index]
+		local surface = game.surfaces["native_war"]
 		reveal_map(surface, "west")
 	end
 
 	if game_tick % 900 == 0 then
-		local surface = game.surfaces[global.active_surface_index]
+		local surface = game.surfaces["native_war"]
 		for _, force_name in pairs({"west", "east"}) do
-			local structs = game.surfaces[global.active_surface_index].find_entities_filtered{position = global.map_forces[force_name].eei, radius = 5, type = "electric-energy-interface"}
+			local structs = game.surfaces["native_war"].find_entities_filtered{position = global.map_forces[force_name].eei, radius = 5, type = "electric-energy-interface"}
 			local energy = structs[1].energy/100000
 			if energy < global.map_forces[force_name].energy then
 				local new_global_energy = global.map_forces[force_name].energy -6
@@ -522,9 +441,9 @@ local function tick()
 		end
 	end
 	if game_tick % 1800 == 0 then
-		local surface = game.surfaces[global.active_surface_index]
+		local surface = game.surfaces["native_war"]
 		for _, force_name in pairs({"west", "east"}) do
-			local structs = game.surfaces[global.active_surface_index].find_entities_filtered{position = global.map_forces[force_name].eei, radius = 5, type = "electric-energy-interface"}
+			local structs = game.surfaces["native_war"].find_entities_filtered{position = global.map_forces[force_name].eei, radius = 5, type = "electric-energy-interface"}
 			local energy = structs[1].energy/100000
 			if energy >= global.map_forces[force_name].energy + 6 then
 				local new_global_energy = global.map_forces[force_name].energy + 6
@@ -534,15 +453,6 @@ local function tick()
 				global.map_forces[force_name].energy = new_global_energy
 			end
 		end
-	end
-
-
-	if global.game_reset_tick then
-		if global.game_reset_tick < game_tick then
-			global.game_reset_tick = nil
-			Public.reset_map()
-		end
-		return
 	end
 end
 
@@ -616,40 +526,21 @@ local function show_color_force()
 end
 
 local function on_init()
-	game.difficulty_settings.technology_price_multiplier = 0.5
+	game.difficulty_settings.technology_price_multiplier = 1
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_expansion.enabled = false
 	game.map_settings.pollution.enabled = false
+
 	global.map_forces = {
 		["west"] = {},
 		["east"] = {},
 	}
-
-	local T = Map.Pop_info()
-	T.main_caption = "Native War"
-	T.sub_caption =  "..nibble nibble nom nom.."
-	T.text = table.concat({
-		"Defeat the enemy teams Market.\n",
-		"Buy wave of biters with science on the Market!\n",
-		"They will soon after swarm to the opposing teams Market!\n",
-		"\n",
-		"The path is stewn with worms.\n",
-		"Buy new worms and upgrade them to stem the opposing waves!\n",
-		"\n",
-		--"Player turrets are disabled.\n",
-		"Use your experience to improve damage and resistance of your biters.\n",
-		"Space science pack give extra life to your biters.\n",
-		"Construction robots may not build over the wall.\n",
-	})
-	T.main_caption_color = {r = 150, g = 0, b = 255}
-	T.sub_caption_color = {r = 0, g = 250, b = 150}
-
-	Team.create_forces()
-	Team.set_force_attributes()
-	Public.reset_map()
-
+	Init.settings()
+	Init.surface()
+	Init.forces()
+	kill_entities_combat_zone(surface)
 end
 
 
@@ -667,3 +558,4 @@ event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
+event.add(defines.events.on_gui_click, on_gui_click)
