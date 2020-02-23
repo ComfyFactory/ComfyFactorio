@@ -169,9 +169,9 @@ end
 local function spawn_wave_from_belt(force_name)
 	for _, science_name in pairs(Settings.science_pack_name) do
 		local nb_science = global.map_forces[force_name].ate_buffer_potion[science_name]
-		if nb_science >= Gui.wave_price[science_name].price then
-				Team.on_buy_wave("native_war", force_name, Gui.science_pack[science_name].short)
-				global.map_forces[force_name].ate_buffer_potion[science_name] = global.map_forces[force_name].ate_buffer_potion[science_name] - Gui.wave_price[science_name].price
+		if nb_science >= Settings.wave_price[science_name].price then
+				Team.on_buy_wave("native_war", force_name, Settings.science_pack[science_name].short)
+				global.map_forces[force_name].ate_buffer_potion[science_name] = global.map_forces[force_name].ate_buffer_potion[science_name] - Settings.wave_price[science_name].price
 				--if global.map_forces[belt.force.name].ate_buffer_potion[science_name] < 0 then global.map_forces[belt.force.name].ate_buffer_potion[science_name] =0	end
 		end
 	end
@@ -325,6 +325,8 @@ local function on_built_entity(event)
 		global.map_forces[player.force.name].radar[unit_number] = entity
 	end
 end
+-- on robot build radar is elsewhere EVL
+
 
 local function on_player_mined_entity(event)
 	local player = game.players[event.player_index]
