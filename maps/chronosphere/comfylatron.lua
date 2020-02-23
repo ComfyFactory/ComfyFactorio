@@ -363,7 +363,7 @@ local function go_to_some_location()
 	return true
 end
 
-function spawn_comfylatron(surface_index, x, y)
+local function spawn_comfylatron(surface_index, x, y)
 	local surface = game.surfaces[surface_index]
 	if surface == nil then return end
 	if global.comfylatron_disabled then return false end

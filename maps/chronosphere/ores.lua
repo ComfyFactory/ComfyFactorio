@@ -27,7 +27,7 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness, m
 			local distance_to_center = math.sqrt(x^2 + y^2)
 			local a = richness - richness_part * distance_to_center
 			if distance_to_center < radius - math.abs(noise * radius * 0.85) and a > 1 then
-        pos = surface.find_non_colliding_position(name, pos, 64, 1)
+        pos = surface.find_non_colliding_position(name, pos, 64, 1, true)
         if not pos then return end
         if mixed then
           local noise = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed) + simplex_noise(pos.x * 0.01, pos.y * 0.01, seed) * 0.3 + simplex_noise(pos.x * 0.05, pos.y * 0.05, seed) * 0.2
@@ -69,7 +69,7 @@ local function get_oil_amount(pos, oil_w)
 	return (hundred_percent / 40) * (1+global.objective.chronojumps) * oil_w
 end
 
-function spawn_ore_vein(surface, pos, planet)
+local function spawn_ore_vein(surface, pos, planet)
   local mixed = false
   if planet[1].name.id == 6 then mixed = true end --mixed planet
   local richness = math_random(50 + 10 * global.objective.chronojumps, 100 + 10 * global.objective.chronojumps) * planet[1].ore_richness.factor

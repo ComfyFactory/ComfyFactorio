@@ -33,7 +33,7 @@ local function check_upgrade_hp()
 			inv.remove({name = "copper-plate", count = 3000})
 			game.print("Comfylatron: Train's max HP was upgraded.", {r=0.98, g=0.66, b=0.22})
 			objective.hpupgradetier = objective.hpupgradetier + 1
-			objective.max_health = 10000 + 5000 * objective.hpupgradetier
+			objective.max_health = 10000 + 2500 * objective.hpupgradetier
 			rendering.set_text(global.objective.health_text, "HP: " .. global.objective.health .. " / " .. global.objective.max_health)
 		end
 	end
@@ -254,7 +254,7 @@ local function check_upgrade_box()
 	end
 end
 
-function check_poisondefense()
+local function check_poisondefense()
   local objective = global.objective
   if global.upgradechest[11] and global.upgradechest[11].valid then
     local inv = global.upgradechest[11].get_inventory(defines.inventory.chest)
@@ -262,7 +262,7 @@ function check_poisondefense()
 		local count2 = inv.get_item_count("poison-capsule")
     if countcoins >= 1000 and count2 >= 50 and objective.poisondefense < 4 then
 			inv.remove({name = "coin", count = 1000})
-			inv.remove({name = "pipe", count = 50})
+			inv.remove({name = "poison-capsule", count = 50})
 			game.print("Comfylatron: I don't believe in your defense skills. I equipped train with poison defense.", {r=0.98, g=0.66, b=0.22})
 			objective.posiondefense = objective.posiondefense + 1
 		end
@@ -381,7 +381,7 @@ function Public.check_upgrades()
   if objective.boxupgradetier < 4 and objective.chronojumps >= (objective.boxupgradetier + 1) * 5 then
     check_upgrade_box()
   end
-  if objective.poisondefense < 1 then
+  if objective.poisondefense < 4 then
     check_poisondefense()
   end
   if objective.computerupgrade < 3 and objective.chronojumps >= 15 then

@@ -1,7 +1,6 @@
 -- chronosphere --
 
 require "functions.soft_reset"
-require "player_modifiers"
 require "functions.basic_markets"
 require "modules.difficulty_vote"
 
@@ -59,7 +58,7 @@ local function generate_overworld(surface, optplanet)
 	elseif planet[1].name.id == 14 then
 		game.print("Comfylatron: OOF this one is a bit hot. And have seen those biters? They BATHE in fire! Maybe try some bricks to protect from lava?", {r=0.98, g=0.66, b=0.22})
 	elseif planet[1].name.id == 17 then
-		game.print("Comfylatron: So here we are. Fish Market. When they ordered the fish, they said this location is perfectly safe. Looks like we will have to do it for them. I hope you have enough nukes.", {r=0.98, g=0.66, b=0.22})
+		game.print("Comfylatron: So here we are. Fish Market. When they ordered the fish, they said this location is perfectly safe. Looks like we will have to do it for them. I hope you have enough nukes. Also, that satellite gave us some space knowledge.", {r=0.98, g=0.66, b=0.22})
 	end
 	surface.min_brightness = 0
 	surface.brightness_visual_weights = {1, 1, 1}
@@ -216,6 +215,12 @@ local function reset_map()
 	global.outchests = {}
 	global.upgradechest = {}
 	global.fishchest = {}
+	global.acumulators = {}
+	global.flame_boots = {}
+	global.friendly_fire_history = {}
+	global.landfill_history = {}
+	global.mining_history = {}
+	global.score = {}
 
 
 
@@ -447,8 +452,10 @@ local function chronojump(choice)
 		game.forces.enemy.evolution_factor = 1
 	end
 	if objective.planet[1].name.id == 17 then
+		global.comfychests[1].insert({name = "space-science-pack", count = 1000})
 		objective.chrononeeds = 200000000
 	end
+	global.flame_boots = {}
 	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * (objective.chronojumps + objective.passivejumps)
 	surface.pollute(global.locomotive.position, 150 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
 	game.forces.scrapyard.set_ammo_damage_modifier("bullet", 0.01 * objective.chronojumps)
@@ -586,7 +593,7 @@ local function on_init()
 	reset_map()
 end
 
-function set_objective_health(final_damage_amount)
+local function set_objective_health(final_damage_amount)
 	local objective = global.objective
 	objective.health = math_floor(objective.health - final_damage_amount)
 	if objective.health > objective.max_health then objective.health = objective.max_health end

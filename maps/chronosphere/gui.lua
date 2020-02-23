@@ -22,7 +22,7 @@ local function create_gui(player)
   local label = frame.add({ type = "label", caption = " ", name = "charger"})
 	label.style.font = "default-bold"
 	label.style.left_padding = 4
-	label.style.font_color = {r = 150, g = 0, b = 255}
+	label.style.font_color = {r = 150, g = 0, b = 255} --255 200 200 
 
   local label = frame.add({ type = "label", caption = " ", name = "charger_value"})
 	label.style.font = "default-bold"
