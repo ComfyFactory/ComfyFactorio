@@ -245,7 +245,7 @@ local function create_wagon_room()
 	combipower.connect_neighbour({wire = defines.wire_type.green, target_entity = combimade[#combimade], target_circuit_id = 1})
 	combimade[1].connect_neighbour({wire = defines.wire_type.green, target_entity = checker, source_circuit_id =  2, target_circuit_id = 1})
 	local speaker = surface.create_entity({name = "programmable-speaker", position = {x = width * -0.5 - 6, y = -241}, force = "player", create_build_effect_smoke = false,
-		parameters = {playback_volume = 0.8, playback_globally = true, allow_polyphony = false},
+		parameters = {playback_volume = 0.6, playback_globally = true, allow_polyphony = false},
 		alert_parameters = {show_alert = true, show_on_map = true, icon_signal_id = {type = "item", name = "accumulator"}, alert_message = "Train Is Charging!" }})
 	speaker.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 2})
 	local rules4 = speaker.get_or_create_control_behavior()
@@ -550,9 +550,7 @@ function Public.enter_cargo_wagon(player, vehicle)
 	end
 	if player.surface.name == "cargo_wagon" and vehicle.type == "car" then
 		if global.flame_boots then
-			if global.flame_boots[player.index] then
-				global.flame_boots[player.index].steps = {}
-			end
+			global.flame_boots[player.index] = {fuel = 1, steps = {}}
 		end
 		local surface = global.locomotive_cargo.surface
 		local x_vector = (vehicle.position.x / math.abs(vehicle.position.x)) * 2

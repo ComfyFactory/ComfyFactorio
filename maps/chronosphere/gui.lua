@@ -39,13 +39,13 @@ local function create_gui(player)
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
-	label.style.font_color = {r = 150, g = 0, b = 255}
+	label.style.font_color = {r = 255, g = 200, b = 200}
 
   local label = frame.add({ type = "label", caption = " ", name = "timer_value", tooltip = " "})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
-	label.style.font_color = {r = 150, g = 0, b = 255}
+	label.style.font_color = {r = 255, g = 200, b = 200}
 
   local label = frame.add({ type = "label", caption = " ", name = "timer2"})
 	label.style.font = "default-bold"
@@ -57,7 +57,7 @@ local function create_gui(player)
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
-	label.style.font_color = {r = 150, g = 0, b = 255}
+	label.style.font_color = {r = 0, g = 200, b = 0}
 
   local line = frame.add({type = "line", direction = "vertical"})
 	line.style.left_padding = 4
@@ -132,15 +132,15 @@ local function update_gui(player)
   gui.evo.caption = {"chronosphere.gui_4"}
   gui.evo_value.caption = math_floor(evolution * 100) .. "%"
   local chests = {
-    [1] = {c = "250 wooden chests\n"},
-    [2] = {c = "250 iron chests\n"},
-    [3] = {c = "250 steel chests\n"},
-    [4] = {c = "250 storage chests\n"},
+    [1] = {c = "250 wooden chests + Jump number 5\n"},
+    [2] = {c = "250 iron chests + Jump number 10\n"},
+    [3] = {c = "250 steel chests + Jump number 15\n"},
+    [4] = {c = "250 storage chests + Jump number 20\n"},
     [5] = {c = "--\n"}
   }
   local upgt = {
     [1] = {t = "[1]: + 2500 Train Max HP. Current: " .. objective.max_health .. "\n    Cost : " .. math_floor(500 * (1 + objective.hpupgradetier /2)) .. " coins + 1500 copper plates\n"},
-    [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%\n    Buyable once per 3 jumps.\n    Cost: 5000 coins + 2000 green circuits\n"},
+    [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%\n    Buyable once per 3 jumps.\n    Cost: 5000 coins + 2000 green circuits + Jump number " .. objective.filterupgradetier * 3 .. "\n"},
     [3] = {t = "[3]: Add additional row of Acumulators.\n    Cost : " .. math_floor(2000 * (1 + objective.acuupgradetier /4)) .. " coins + 200 batteries\n"},
     [4] = {t = "[4]: Add item pickup distance to players.Current: +" .. objective.pickupupgradetier .. ",\n    Cost: " .. 1000 * (1 + objective.pickupupgradetier) .. " coins + 400 red inserters\n"},
     [5] = {t = "[5]: Add +5 inventory slots. Buyable once per 5 jumps.\n    Cost: " .. 2000 * (1 + objective.invupgradetier) .." coins + " .. chests[objective.invupgradetier + 1].c},

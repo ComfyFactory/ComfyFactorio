@@ -264,7 +264,7 @@ local function check_poisondefense()
 			inv.remove({name = "coin", count = 1000})
 			inv.remove({name = "poison-capsule", count = 50})
 			game.print("Comfylatron: I don't believe in your defense skills. I equipped train with poison defense.", {r=0.98, g=0.66, b=0.22})
-			objective.posiondefense = objective.posiondefense + 1
+			objective.poisondefense = objective.poisondefense + 1
 		end
   end
 end
@@ -390,6 +390,24 @@ function Public.check_upgrades()
   if objective.planet[1].name.id == 17 then
     if global.fishchest then
       check_win()
+    end
+  end
+end
+
+function Public.trigger_poison()
+  local objective = global.objective
+  if objective.poisondefense > 0 and objective.poisontimeout == 0 then
+    local objective = global.objective
+    objective.poisondefense = objective.poisondefense - 1
+    objective.poisontimeout = 120
+    local objs = {global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+    local surface = objective.surface
+    game.print("Comfylatron: Triggering poison defense. Let's kill everything!", {r=0.98, g=0.66, b=0.22})
+    for i = 1, 4, 1 do
+      surface.create_entity({name = "poison-capsule", position = objs[i].position, force = "player", target = objs[i], speed = 1 })
+    end
+    for i = 1 , #global.comfychests, 1 do
+      surface.create_entity({name = "poison-capsule", position = global.comfychests[i].position, force = "player", target = global.comfychests[i], speed = 1 })
     end
   end
 end
