@@ -1,4 +1,5 @@
 local Basic_markets = require "functions.basic_markets"
+local Biter_pets = require "modules.biter_pets"
 local get_noise = require 'maps.stone_maze.noise' 
 
 local room = {}
@@ -306,6 +307,24 @@ room.maze = function(surface, cell_left_top, direction)
 	surface.spill_item_stack({x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, get_loot_item_stack(), true, nil, true)
 end
 
+room.mr_nibbles = function(surface, cell_left_top, direction)
+	local left_top = {x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size}		
+	local nibbler
+	
+	local str = "biter"
+	if math.random(1, 2) == 1 then
+		str = "spitter"
+	end
+	
+	if global.maze_depth > 250 then
+		nibbler = surface.create_entity({name = "behemoth-" .. str, position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, force = "enemy"})
+	else
+		nibbler = surface.create_entity({name = "big-" .. str, position = {left_top.x + grid_size * 0.5, left_top.y + grid_size * 0.5}, force = "enemy"})
+	end
+	
+	Biter_pets.tame_unit_for_closest_player(nibbler)
+end
+
 local room_weights = {		
 	{func = room.worms, weight = 12},
 	{func = room.nests, weight = 8},
@@ -314,7 +333,9 @@ local room_weights = {
 	
 	{func = room.tons_of_rocks, weight = 35},	
 	{func = room.quad_rocks, weight = 7},
-	{func = room.three_rocks, weight = 300},
+	{func = room.three_rocks, weight = 4},
+	{func = room.mr_nibbles, weight = 3},
+	
 	{func = room.single_rock, weight = 8},
 	
 	{func = room.checkerboard_ore, weight = 7},
