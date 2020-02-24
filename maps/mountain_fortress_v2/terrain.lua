@@ -911,33 +911,12 @@ local function process_chunk(surface, left_top)
 	if left_top.y >= 0 then border_chunk(surface, left_top) return end
 end
 
---[[
-local function process_chunk_queue()
-	for k, chunk in pairs(global.chunk_queue) do		
-		process_chunk(game.surfaces[chunk.surface_index], chunk.left_top)		
-		global.chunk_queue[k] = nil
-		return
-	end
-end
-
-
-local function process_chunk_queue()
-	local chunk = global.chunk_queue[#global.chunk_queue]
-	if not chunk then return end
-	process_chunk(game.surfaces[chunk.surface_index], chunk.left_top)		
-	global.chunk_queue[#global.chunk_queue] = nil
-end
-]]
-
-
 local function on_chunk_generated(event)
 	if string.sub(event.surface.name, 0, 8) ~= "mountain" then return end
 	process_chunk(event.surface, event.area.left_top)
-	--global.chunk_queue[#global.chunk_queue + 1] = {left_top = {x = event.area.left_top.x, y = event.area.left_top.y}, surface_index = event.surface.index}
 end
 
 local event = require 'utils.event'
---event.on_nth_tick(4, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
 
 return level_depth
