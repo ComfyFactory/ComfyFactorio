@@ -1,3 +1,4 @@
+local Basic_markets = require "functions.basic_markets"
 local get_noise = require 'maps.stone_maze.noise' 
 
 local room = {}
@@ -197,7 +198,7 @@ room.three_rocks = function(surface, cell_left_top, direction)
 	
 	if math.random(1,2) == 1 then
 		local position = surface.find_non_colliding_position("market", {x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, grid_size * 0.5, 1)
-		if position then	super_market(surface, position, math.floor(global.maze_depth * 0.01) + 1) end
+		if position then	Basic_markets.super_market(surface, position, math.floor(global.maze_depth * 0.01) + 1) end
 	end
 	
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.2, left_top.y + grid_size * 0.8}, force = "neutral"})
@@ -211,7 +212,7 @@ room.quad_rocks = function(surface, cell_left_top, direction)
 	
 	if math.random(1,2) == 1 then
 		local position = surface.find_non_colliding_position("market", {x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5}, grid_size * 0.5, 1)
-		if position then	super_market(surface, position, math.floor(global.maze_depth * 0.01) + 1) end
+		if position then	Basic_markets.super_market(surface, position, math.floor(global.maze_depth * 0.01) + 1) end
 	end
 	
 	surface.create_entity({name = rock_raffle[math.random(1, #rock_raffle)], position = {left_top.x + grid_size * 0.15, left_top.y + grid_size * 0.15}, force = "neutral"})
@@ -313,7 +314,7 @@ local room_weights = {
 	
 	{func = room.tons_of_rocks, weight = 35},	
 	{func = room.quad_rocks, weight = 7},
-	{func = room.three_rocks, weight = 3},
+	{func = room.three_rocks, weight = 300},
 	{func = room.single_rock, weight = 8},
 	
 	{func = room.checkerboard_ore, weight = 7},
