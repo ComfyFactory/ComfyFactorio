@@ -19,7 +19,8 @@ local variants = {
   [14] = {id = 14, name = "lava planet", iron = 2, copper = 2, coal = 2, stone = 2, uranium = 0, oil = 0, biters = 6, moisture = -0.5, chance = 1, cumul_chance = 24},
   [15] = {id = 15, name = "start planet", iron = 4, copper = 3, coal = 4, stone = 3, uranium = 0, oil = 0, biters = 1, moisture = -0.3, chance = 0, cumul_chance = 24},
   [16] = {id = 16, name = "hedge maze", iron = 3, copper = 3, coal = 3, stone = 3, uranium = 1, oil = 2, biters = 16, moisture = -0.1, chance = 2, cumul_chance = 26},
-  [17] = {id = 17, name = "fish market", iron = 0, copper = 0, coal = 0, stone = 0, uranium = 0, oil = 0, biters = 100, moisture = 0, chance = 0, cumul_chance = 26}
+  [17] = {id = 17, name = "fish market", iron = 0, copper = 0, coal = 0, stone = 0, uranium = 0, oil = 0, biters = 100, moisture = 0, chance = 0, cumul_chance = 26},
+  [18] = {id = 18, name = "swamp planet", iron = 1, copper = 0, coal = 4, stone = 0, uranium = 0, oil = 2, biters = 16, moisture = 0.5, chance = 2, cumul_chance = 28}
 }
 
 local time_speed_variants = {

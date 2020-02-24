@@ -15,9 +15,6 @@ require "on_tick_schedule"
 require "modules.biter_noms_you"
 local Server = require 'utils.server'
 local Ai = require "maps.chronosphere.ai"
-local unearthing_worm = require "functions.unearthing_worm"
-local unearthing_biters = require "functions.unearthing_biters"
-
 local Planets = require "maps.chronosphere.chronobubles"
 local Ores =require "maps.chronosphere.ores"
 local Reset = require "functions.soft_reset"
@@ -292,7 +289,7 @@ local function set_objective_health(final_damage_amount)
 	if objective.health > objective.max_health then objective.health = objective.max_health end
 
 	if objective.health <= 0 then
-		Objective.objective_died()
+		Chrono.objective_died()
 	end
 	if objective.health < objective.max_health / 2 and final_damage_amount > 0 then
 		Upgrades.trigger_poison()
@@ -359,6 +356,12 @@ local function tick()
 		end
 		--surface.force_generate_chunk_requests()
 
+	end
+	if tick % 10 == 0 and global.objective.planet[1].name.id == 18 then
+		Tick_functions.spawn_poison()
+		Tick_functions.spawn_poison()
+		Tick_functions.spawn_poison()
+		Tick_functions.spawn_poison()
 	end
 	if tick % 30 == 0 then
 		if tick % 600 == 0 then
@@ -446,6 +449,11 @@ local function on_entity_damaged(event)
 			end
 		end
 	end
+	if global.objective.planet[1].name.id == 18 and event.entity.force.name == "enemy" then --swamp planet
+		if event.damage_type.name == "poison" then
+			event.entity.health = event.entity.health + event.final_damage_amount
+		end
+	end
 end
 
 local function pre_player_mined_item(event)
@@ -497,6 +505,10 @@ local function on_entity_died(event)
 	end
 	if entity.force.name == "scrapyard" and entity.name == "gun-turret" and global.objective.planet[1].name.id == 16 then
 		Event_functions.trap(entity, true)
+	end
+	if entity.force.name == "enemy" and entity.type == "unit-spawner" and global.objective.planet[1].name.id == 18 then
+		Ores.prospect_ores(event.entity, event.entity.surface, event.entity.position)
+		--Event_functions.swamp_loot(event)
 	end
 	if entity.force.index == 3 then
 		if event.cause then

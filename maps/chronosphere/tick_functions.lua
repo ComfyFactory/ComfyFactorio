@@ -1,5 +1,7 @@
 local Public = {}
 
+local math_random = math.random
+
 function Public.check_chronoprogress()
 	local objective = global.objective
 	--game.print(objective.chronotimer)
@@ -130,6 +132,21 @@ function Public.repair_train()
 		end
 	end
   return 0
+end
+
+function Public.spawn_poison()
+  local surface = game.surfaces[global.active_surface_index]
+  local random_x = math_random(-460,460)
+  local random_y = math_random(-460,460)
+  local tile = surface.get_tile(random_x, random_y)
+  if not tile.valid then return end
+  if tile.name == "water-shallow" or tile.name == "water-mud" then
+    surface.create_entity({name = "poison-cloud", position = {x = random_x, y = random_y}})
+    surface.create_entity({name = "poison-cloud", position = {x = random_x + 2, y = random_y + 2}})
+    surface.create_entity({name = "poison-cloud", position = {x = random_x - 2, y = random_y - 2}})
+    surface.create_entity({name = "poison-cloud", position = {x = random_x + 2, y = random_y - 2}})
+    surface.create_entity({name = "poison-cloud", position = {x = random_x - 2, y = random_y + 2}})
+  end
 end
 
 return Public
