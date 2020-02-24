@@ -17,7 +17,7 @@ require "modules.trees_randomly_die"
 
 require "maps.overgrowth_map_info"
 
-require "functions.soft_reset"
+local Reset = require "functions.soft_reset"
 local rpg_t = require 'modules.rpg'
 local kaboom = require "functions.omegakaboom"
 
@@ -52,7 +52,7 @@ local starting_items = {
 	["pistol"] = 1,
 	["firearm-magazine"] = 8
 }
-
+--[[
 local function create_particles(surface, name, position, amount, cause_position)
 	local math_random = math.random
 	
@@ -80,8 +80,8 @@ local function create_particles(surface, name, position, amount, cause_position)
 			}
 		})
 	end	
-end
-
+end 
+]]
 local function spawn_market(surface, position)
 	local market = surface.create_entity({name = "market", position = position, force = "neutral"})
 	--market.destructible = false
@@ -139,7 +139,7 @@ function reset_map()
 	global.trees_grow_chunks_charted = {}
 	global.trees_grow_chunks_charted_counter = 0
 
-	global.current_surface = soft_reset_map(global.current_surface, get_surface_settings(), starting_items)
+	global.current_surface = Reset.soft_reset_map(global.current_surface, get_surface_settings(), starting_items)
 	
 	reset_difficulty_poll()
 	
@@ -150,7 +150,7 @@ function reset_map()
 	
 	game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[4]
 	
-	if rpg then rpg_reset_all_players() end
+	if rpg then rpg_t.rpg_reset_all_players() end
 end
 
 local function on_player_joined_game(event)
@@ -195,12 +195,12 @@ local function on_player_mined_entity(event)
 	trap(entity)
 	
 	if event.player_index then
-		create_particles(entity.surface, "wooden-particle", entity.position, 128, game.players[event.player_index].position)
+		--create_particles(entity.surface, "wooden-particle", entity.position, 128, game.players[event.player_index].position)
 		game.players[event.player_index].insert({name = "coin", count = 1})
 		return
 	end
 	
-	create_particles(entity.surface, "wooden-particle", entity.position, 128)
+	--create_particles(entity.surface, "wooden-particle", entity.position, 128)
 	
 	if event.cause then
 		if event.cause.force.name == "enemy" then return end
