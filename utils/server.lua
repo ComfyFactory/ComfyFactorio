@@ -41,6 +41,7 @@ local discord_embed_raw_tag = '[DISCORD-EMBED-RAW]'
 local discord_admin_embed_tag = '[DISCORD-ADMIN-EMBED]'
 local discord_admin_embed_raw_tag = '[DISCORD-ADMIN-EMBED-RAW]'
 local start_scenario_tag = '[START-SCENARIO]'
+local stop_scenario_tag = '[STOP-SCENARIO]'
 local ping_tag = '[PING]'
 local data_set_tag = '[DATA-SET]'
 local data_get_tag = '[DATA-GET]'
@@ -151,6 +152,16 @@ function Public.start_scenario(scenario_name)
     end
 
     local message = start_scenario_tag .. scenario_name
+
+    raw_print(message)
+end
+
+--- Stops and saves the factorio server.
+-- @usage
+-- local Server = require 'utils.server'
+-- Server.stop_scenario()
+function Public.stop_scenario()
+    local message = stop_scenario_tag
 
     raw_print(message)
 end
