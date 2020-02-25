@@ -344,7 +344,7 @@ local tick_minute_functions = {
 	[300 * 3 + 30 * 5] = Ai.perform_main_attack,	-- call perform_main_attack 7 times on different ticks
 	[300 * 4] = Ai.send_near_biters_to_objective,
 	[300 * 5] = Ai.wake_up_sleepy_groups,
-	[300] = Ai.rogue_group
+	--[300] = Ai.rogue_group
 
 }
 
