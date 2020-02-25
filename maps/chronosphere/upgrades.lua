@@ -284,19 +284,21 @@ local function check_upgrade_computer()
     local count9 = inv.get_item_count("rocket-silo")
     local count10 = inv.get_item_count("satellite")
 
-    if countcoins >= 5000 and count2 >= 1000 and count8 >= 2000 and objective.computerupgrade == 0 and objective.chronojumps >= 15 then
+    if countcoins >= 5000 and count2 >= 1000 and count8 >= 2000 and objective.computerupgrade == 0 and objective.chronojumps >= 15 and objective.computermessage == 1 then
       inv.remove({name = "coin", count = 5000})
       inv.remove({name = "advanced-circuit", count = 1000})
       inv.remove({name = "copper-plate", count = 2000})
       game.print("Comfylatron: Thanks for fixing train navigation. I can now get us rid of very poor worlds. It will still need more work though.", {r=0.98, g=0.66, b=0.22})
+      objective.computermessage = 2
       objective.computerupgrade = objective.computerupgrade + 1
-    elseif countcoins >= 10000 and count3 >= 1000 and count7 >= 1 and objective.computerupgrade == 1 and objective.chronojumps >= 20 then
+    elseif countcoins >= 10000 and count3 >= 1000 and count7 >= 1 and objective.computerupgrade == 1 and objective.chronojumps >= 20 and objective.computermessage == 3 then
       inv.remove({name = "coin", count = 10000})
       inv.remove({name = "processing-unit", count = 1000})
       inv.remove({name = "nuclear-reactor", count = 1})
+      objective.computermessage = 4
       objective.computerupgrade = objective.computerupgrade + 1
       game.print("Comfylatron: Perfect! Now we have train reactor and even better destination precision. I will get to you later what still needs to be done.", {r=0.98, g=0.66, b=0.22})
-    elseif objective.computerupgrade == 2 and objective.chronojumps >= 25 then
+    elseif objective.computerupgrade == 2 and objective.chronojumps >= 25 and objective.computermessage == 5 then
       if countcoins >= 2000 and count4 >= 100 and count5 >= 100 and count6 >= 50 and objective.computerparts < 10 then
         inv.remove({name = "coin", count = 2000})
         inv.remove({name = "low-density-structure", count = 100})
@@ -312,6 +314,7 @@ local function check_upgrade_computer()
         inv.remove({name = "satellite", count = 1 })
         inv.remove({name = "rocket-silo", count = 1 })
         game.print("Comfylatron: Time synchronized. Calculating time and space destination. Success. Jump once more and let me deliver the fish finally. This trip is getting long.", {r=0.98, g=0.66, b=0.22})
+        objective.computermessage = 6
         objective.computerupgrade = objective.computerupgrade + 1
       end
     end

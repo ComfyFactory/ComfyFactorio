@@ -1,8 +1,8 @@
-local Public = {}
+local Public_chrono = {}
 
 local Server = require 'utils.server'
 
-function Public.objective_died()
+function Public_chrono.objective_died()
   local objective = global.objective
   if objective.game_lost == true then return end
   objective.health = 0
@@ -40,7 +40,7 @@ local function overstayed()
   return false
 end
 
-function Public.process_jump(choice)
+function Public_chrono.process_jump(choice)
 	local objective = global.objective
 	local overstayed = overstayed()
 	objective.chronojumps = objective.chronojumps + 1
@@ -53,19 +53,22 @@ function Public.process_jump(choice)
 
 	if objective.chronojumps == 6 then
 		game.print("Comfylatron: Biters start to evolve faster! We need to charge forward or they will be stronger! (hover over timer to see evolve timer)", {r=0.98, g=0.66, b=0.22})
-	elseif objective.chronojumps == 15 then
+	elseif objective.chronojumps >= 15 and objective.computermessage == 0 then
 		game.print("Comfylatron: You know...I have big quest. Deliver fish to fish market. But this train is broken. Please help me fix the train computer!", {r=0.98, g=0.66, b=0.22})
-	elseif objective.chronojumps == 20 then
+    objective.computermessage = 1
+	elseif objective.chronojumps >= 20 and objective.computermessage == 2 then
 		game.print("Comfylatron: Ah, we need to give this machine more power and better navigation chipset. Please bring me some additional things.", {r=0.98, g=0.66, b=0.22})
-	elseif objective.chronojumps == 25 then
+    objective.computermessage = 3
+	elseif objective.chronojumps >= 25 and objective.computermessage == 4 then
 		game.print("Comfylatron: Finally found the main issue. We will need to rebuild whole processor. Exactly what I feared of. Just a few more things...", {r=0.98, g=0.66, b=0.22})
+    objective.computermessage = 5
 	end
 	if overstayed then
     game.print("Comfylatron: Looks like you stayed on previous planet for so long that enemies on other planets had additional time to evolve!", {r=0.98, g=0.66, b=0.22})
   end
 end
 
-function Public.get_wagons()
+function Public_chrono.get_wagons()
   local inventories = {one = global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon), two = global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon)}
 	inventories.one.sort_and_merge()
 	inventories.two.sort_and_merge()
@@ -79,7 +82,7 @@ function Public.get_wagons()
   return wagons
 end
 
-function Public.post_jump()
+function Public_chrono.post_jump()
   local objective = global.objective
   game.forces.enemy.reset_evolution()
 	if objective.chronojumps + objective.passivejumps <= 40 and objective.planet[1].name.id ~= 17 then
@@ -102,4 +105,4 @@ function Public.post_jump()
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.8
 end
 
-return Public
+return Public_chrono

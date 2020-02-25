@@ -1,4 +1,4 @@
-local Public = {}
+local Public_event = {}
 
 local tick_tack_trap = require "functions.tick_tack_trap"
 local unearthing_worm = require "functions.unearthing_worm"
@@ -38,7 +38,7 @@ local function reward_ores(amount, mined_loot, surface, player)
 	end
 end
 
-function Public.biters_chew_rocks_faster(event)
+function Public_event.biters_chew_rocks_faster(event)
 	if event.entity.force.index ~= 3 then return end --Neutral Force
 	if not event.cause then return end
 	if not event.cause.valid then return end
@@ -46,7 +46,7 @@ function Public.biters_chew_rocks_faster(event)
 	event.entity.health = event.entity.health - event.final_damage_amount * 5
 end
 
-function Public.isprotected(entity)
+function Public_event.isprotected(entity)
 	if entity.surface.name == "cargo_wagon" then return true end
 	local protected = {global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
 	for i = 1, #global.comfychests,1 do
@@ -60,7 +60,7 @@ function Public.isprotected(entity)
 	return false
 end
 
-function Public.trap(entity, trap)
+function Public_event.trap(entity, trap)
 	if trap then
 		tick_tack_trap(entity.surface, entity.position)
 		tick_tack_trap(entity.surface, {x = entity.position.x + math_random(-2,2), y = entity.position.y + math_random(-2,2)})
@@ -71,7 +71,7 @@ function Public.trap(entity, trap)
 	if math_random(1,64) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end
 end
 
-function Public.lava_planet(event)
+function Public_event.lava_planet(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if player.character.driving then return end
@@ -97,7 +97,7 @@ function Public.lava_planet(event)
 	end
 end
 
-function Public.shred_simple_entities(entity)
+function Public_event.shred_simple_entities(entity)
 	--game.print(entity.name)
 	if game.forces["enemy"].evolution_factor < 0.25 then return end
 	local simple_entities = entity.surface.find_entities_filtered({type = {"simple-entity", "tree"}, area = {{entity.position.x - 3, entity.position.y - 3},{entity.position.x + 3, entity.position.y + 3}}})
@@ -110,7 +110,7 @@ function Public.shred_simple_entities(entity)
 	end
 end
 
-function Public.choppy_loot(event)
+function Public_event.choppy_loot(event)
 	local entity = event.entity
 	if choppy_entity_yield[entity.name] then
 		if event.buffer then event.buffer.clear() end
@@ -138,7 +138,7 @@ function Public.choppy_loot(event)
 	end
 end
 
-function Public.rocky_loot(event)
+function Public_event.rocky_loot(event)
 	local surface = game.surfaces[global.active_surface_index]
 	local player = game.players[event.player_index]
 	surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(1,3)},true)
@@ -171,16 +171,67 @@ local ore_yield = {
 	["spitter-spawner"] = 16,
 }
 
-function Public.swamp_loot(event)
+function Public_event.swamp_loot(event)
 	local surface = game.surfaces[global.active_surface_index]
 	local amount = get_ore_amount() / 10
 	if ore_yield[event.entity.name] then
 		amount = get_ore_amount() / 10 * ore_yield[event.entity.name]
 	end
 	game.print(amount)
-	local rock_mining = {"iron-ore", "coal", "coal", "coal", "coal"}
+	local rock_mining = {"iron-ore", "iron-ore", "coal", "coal", "coal"}
 	local mined_loot = rock_mining[math_random(1,#rock_mining)]
 	surface.spill_item_stack(event.entity.position,{name = mined_loot, count = amount}, true)
 end
 
-return Public
+function Public_event.biter_immunities(event)
+	local planet = global.objective.planet[1].name.id
+	local objective = global.objective
+	if event.damage_type.name == "fire" then
+		if planet == 14 then --lava planet
+			event.entity.health = event.entity.health + event.final_damage_amount
+			local fire = event.entity.stickers
+			if fire and #fire > 0 then
+				for i = 1, #fire, 1 do
+					if fire[i].sticked_to == event.entity and fire[i].name == "fire-sticker" then fire[i].destroy() break end
+				end
+			end
+		-- else -- other planets
+		-- 	event.entity.health = math_floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * global.difficulty_vote_value * objective.chronojumps)))
+		end
+	elseif event.damage_type.name == "poison" then
+		if planet == 18 then --swamp planet
+			event.entity.health = event.entity.health + event.final_damage_amount
+		end
+	end
+end
+
+function Public_event.flamer_nerfs()
+	local objective = global.objective
+	local flamer_power = 0
+	local difficulty = global.difficulty_vote_value
+	if difficulty > 1 then
+		difficulty = 1 + ((difficulty - 1) / 2)
+	elseif difficulty < 1 then
+		difficulty = 1 - ((1 - difficulty) / 2)
+	end
+	local flame_researches = {
+		[1] = {name = "refined-flammables-1", bonus = 0.2},
+		[2] = {name = "refined-flammables-2", bonus = 0.2},
+		[3] = {name = "refined-flammables-3", bonus = 0.2},
+		[4] = {name = "refined-flammables-4", bonus = 0.3},
+		[5] = {name = "refined-flammables-5", bonus = 0.3},
+		[6] = {name = "refined-flammables-6", bonus = 0.4},
+		[7] = {name = "refined-flammables-7", bonus = 0.2}
+	}
+	for i = 1, 6, 1 do
+		if game.forces.player.technologies[flame_researches[i].name].researched then
+			flamer_power = flamer_power + flame_researches[i].bonus
+		end
+	end
+	flamer_power = flamer_power + (game.forces.player.technologies[flame_researches[7].name].level - 7) * 0.2
+	game.forces.player.set_ammo_damage_modifier("flamethrower", flamer_power - 0.02 * difficulty * objective.chronojumps)
+	game.forces.player.set_turret_attack_modifier("flamethrower-turret", flamer_power - 0.02 * difficulty * objective.chronojumps)
+end
+
+
+return Public_event

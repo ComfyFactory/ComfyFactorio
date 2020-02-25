@@ -64,9 +64,9 @@ local function get_size_of_ore(ore, planet)
   return final_size
 end
 
-local function get_oil_amount(pos, oil_w)
+local function get_oil_amount(pos, oil_w, richness)
   local hundred_percent = 300000
-	return (hundred_percent / 40) * (1+global.objective.chronojumps) * oil_w
+	return (hundred_percent / 50) * (1+global.objective.chronojumps) * oil_w * richness
 end
 
 local function spawn_ore_vein(surface, pos, planet)
@@ -101,7 +101,7 @@ local function spawn_ore_vein(surface, pos, planet)
 
   --if surface.can_place_entity({name = choice, position = pos, amount = 1}) then
     if choice == "crude-oil" then
-      surface.create_entity({name = "crude-oil", position = pos, amount = get_oil_amount(pos, oil.w) })
+      surface.create_entity({name = "crude-oil", position = pos, amount = get_oil_amount(pos, oil.w, planet[1].ore_richness.factor) })
     else
       draw_noise_ore_patch(pos, choice, surface, get_size_of_ore(choice, planet), richness, mixed)
     end

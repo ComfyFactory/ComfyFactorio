@@ -1,8 +1,8 @@
-local Public = {}
+local Public_tick = {}
 
 local math_random = math.random
 
-function Public.check_chronoprogress()
+function Public_tick.check_chronoprogress()
 	local objective = global.objective
 	--game.print(objective.chronotimer)
 	if objective.chronotimer == objective.chrononeeds - 180  then
@@ -20,7 +20,7 @@ function Public.check_chronoprogress()
   return false
 end
 
-function Public.charge_chronosphere()
+function Public_tick.charge_chronosphere()
 	if not global.acumulators then return end
 	local objective = global.objective
 	if not objective.chronotimer then return end
@@ -40,7 +40,7 @@ function Public.charge_chronosphere()
 	end
 end
 
-function Public.transfer_pollution()
+function Public_tick.transfer_pollution()
 	local surface = game.surfaces["cargo_wagon"]
 	if not surface then return end
 	local pollution = surface.get_total_pollution() * (3 / (global.objective.filterupgradetier / 3 + 1)) * global.difficulty_vote_value
@@ -48,17 +48,17 @@ function Public.transfer_pollution()
 	surface.clear_pollution()
 end
 
-function Public.boost_evolution()
+function Public_tick.boost_evolution()
 	local objective = global.objective
 	if objective.passivetimer > objective.chrononeeds * 0.50 and objective.chronojumps > 5 then
 		local evolution = game.forces.enemy.evolution_factor
-		evolution = evolution + (evolution / 2000) * global.difficulty_vote_value
+		evolution = evolution + (evolution / 500) * global.difficulty_vote_value
 		if evolution > 1 then evolution = 1 end
 		game.forces.enemy.evolution_factor = evolution
 	end
 end
 
-function Public.move_items()
+function Public_tick.move_items()
 	if not global.comfychests then return end
 	if not global.comfychests2 then return end
 	if global.objective.game_lost == true then return end
@@ -82,7 +82,7 @@ function Public.move_items()
 	end
 end
 
-function Public.output_items()
+function Public_tick.output_items()
 	if global.objective.game_lost == true then return end
 	if not global.outchests then return end
 	if not global.locomotive_cargo2 then return end
@@ -107,7 +107,7 @@ function Public.output_items()
 	end
 end
 
-function Public.repair_train()
+function Public_tick.repair_train()
 	local objective = global.objective
 	if not game.surfaces["cargo_wagon"] then return 0 end
 	if objective.game_lost == true then return 0 end
@@ -134,7 +134,7 @@ function Public.repair_train()
   return 0
 end
 
-function Public.spawn_poison()
+function Public_tick.spawn_poison()
   local surface = game.surfaces[global.active_surface_index]
   local random_x = math_random(-460,460)
   local random_y = math_random(-460,460)
@@ -149,4 +149,4 @@ function Public.spawn_poison()
   end
 end
 
-return Public
+return Public_tick

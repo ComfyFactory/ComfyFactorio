@@ -20,16 +20,16 @@ local variants = {
   [15] = {id = 15, name = "start planet", iron = 4, copper = 3, coal = 4, stone = 3, uranium = 0, oil = 0, biters = 1, moisture = -0.3, chance = 0, cumul_chance = 24},
   [16] = {id = 16, name = "hedge maze", iron = 3, copper = 3, coal = 3, stone = 3, uranium = 1, oil = 2, biters = 16, moisture = -0.1, chance = 2, cumul_chance = 26},
   [17] = {id = 17, name = "fish market", iron = 0, copper = 0, coal = 0, stone = 0, uranium = 0, oil = 0, biters = 100, moisture = 0, chance = 0, cumul_chance = 26},
-  [18] = {id = 18, name = "swamp planet", iron = 1, copper = 0, coal = 4, stone = 0, uranium = 0, oil = 2, biters = 16, moisture = 0.5, chance = 2, cumul_chance = 28}
+  [18] = {id = 18, name = "swamp planet", iron = 2, copper = 0, coal = 3, stone = 0, uranium = 0, oil = 2, biters = 16, moisture = 0.5, chance = 2, cumul_chance = 28}
 }
 
 local time_speed_variants = {
   [1] = {name = "static", timer = 0},
   [2] = {name = "normal", timer = 100},
-  [3] = {name = "slow", timer = 50},
-  [4] = {name = "superslow", timer = 25},
-  [5] = {name = "fast", timer = 200},
-  [6] = {name = "superfast", timer = 400}
+  [3] = {name = "slow", timer = 200},
+  [4] = {name = "superslow", timer = 400},
+  [5] = {name = "fast", timer = 50},
+  [6] = {name = "superfast", timer = 25}
 }
 
 local richness = {

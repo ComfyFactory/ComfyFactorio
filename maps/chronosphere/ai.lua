@@ -373,6 +373,30 @@ local function create_attack_group(surface)
 
 end
 
+Public.rogue_group = function()
+  if global.objective.chronotimer < 100 then return end
+  if not global.locomotive then return end
+  local surface = game.surfaces[global.active_surface_index]
+  local spawner = get_random_close_spawner(surface)
+	if not spawner then
+		return false
+	end
+  local position = {x = ((spawner.position.x + global.locomotive.position.x) * 0.5) , y = ((spawner.position.y + global.locomotive.position.y) * 0.5)}
+  local pos = surface.find_non_colliding_position("rocket-silo", position, 30, 1, true)
+  if not pos then return end
+  surface.set_multi_command({
+    command={
+      type=defines.command.build_base,
+      destination=pos,
+      distraction=defines.distraction.none,
+      ignore_planner = true
+      },
+    unit_count = 16,
+    force = "enemy",
+    unit_search_distance=128
+  })
+end
+
 Public.pre_main_attack = function()
   if global.objective.chronotimer < 100 then return end
 	local surface = game.surfaces[global.active_surface_index]

@@ -154,6 +154,7 @@ local function reset_map()
 	local objective = global.objective
 	objective.computerupgrade = 0
 	objective.computerparts = 0
+	objective.computermessage = 0
 	local map_gen_settings = get_map_gen_settings()
 	Planets.determine_planet(nil)
 	local planet = global.objective.planet
@@ -328,6 +329,7 @@ local function chronojump(choice)
 	render_train_hp()
 	game.delete_surface(oldsurface)
 	Chrono.post_jump()
+	Event_functions.flamer_nerfs()
 	surface.pollute(global.locomotive.position, 150 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
 end
 
@@ -341,34 +343,36 @@ local tick_minute_functions = {
 	[300 * 3 + 30 * 4] = Ai.perform_main_attack,
 	[300 * 3 + 30 * 5] = Ai.perform_main_attack,	-- call perform_main_attack 7 times on different ticks
 	[300 * 4] = Ai.send_near_biters_to_objective,
-	[300 * 5] = Ai.wake_up_sleepy_groups
+	[300 * 5] = Ai.wake_up_sleepy_groups,
+	[300] = Ai.rogue_group
 
 }
 
 local function tick()
+	local objective = global.objective
 	local tick = game.tick
-	if tick % 60 == 30 and global.objective.chronotimer < 64 then
+	if tick % 60 == 30 and objective.chronotimer < 64 then
 		local surface = game.surfaces[global.active_surface_index]
-		if global.objective.planet[1].name.id == 17 then
-			surface.request_to_generate_chunks({-800,0}, 3 + math_floor(global.objective.chronotimer / 5))
+		if objective.planet[1].name.id == 17 then
+			surface.request_to_generate_chunks({-800,0}, 3 + math_floor(objective.chronotimer / 5))
 		else
-			surface.request_to_generate_chunks({0,0}, 3 + math_floor(global.objective.chronotimer / 5))
+			surface.request_to_generate_chunks({0,0}, 3 + math_floor(objective.chronotimer / 5))
 		end
 		--surface.force_generate_chunk_requests()
 
 	end
-	if tick % 10 == 0 and global.objective.planet[1].name.id == 18 then
+	if tick % 10 == 0 and objective.planet[1].name.id == 18 then
 		Tick_functions.spawn_poison()
 		Tick_functions.spawn_poison()
-		Tick_functions.spawn_poison()
-		Tick_functions.spawn_poison()
+		--Tick_functions.spawn_poison()
+		--Tick_functions.spawn_poison()
 	end
 	if tick % 30 == 0 then
 		if tick % 600 == 0 then
 			Tick_functions.charge_chronosphere()
 			Tick_functions.transfer_pollution()
-			if global.objective.poisontimeout > 0 then
-				global.objective.poisontimeout = global.objective.poisontimeout - 1
+			if objective.poisontimeout > 0 then
+				objective.poisontimeout = objective.poisontimeout - 1
 			end
 		end
 		if tick % 1800 == 0 then
@@ -379,9 +383,12 @@ local function tick()
 		end
 		local key = tick % 3600
 		if tick_minute_functions[key] then tick_minute_functions[key]() end
-		if tick % 60 == 0 and global.objective.planet[1].name.id ~= 17 then
-			global.objective.chronotimer = global.objective.chronotimer + 1
-			global.objective.passivetimer = global.objective.passivetimer + 1
+		if tick % 60 == 0 and objective.planet[1].name.id ~= 17 then
+			objective.chronotimer = objective.chronotimer + 1
+			objective.passivetimer = objective.passivetimer + 1
+			if objective.chronojumps > 0 then
+				game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (0.5 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)) * global.difficulty_vote_value)
+			end
 			if Tick_functions.check_chronoprogress() then chronojump(nil) end
 		end
 		if tick % 120 == 0 then
@@ -438,21 +445,8 @@ local function on_entity_damaged(event)
 	if not event.entity.valid then	return end
 	if not event.entity.health then return end
 	Event_functions.biters_chew_rocks_faster(event)
-	if global.objective.planet[1].name.id == 14 and event.entity.force.name == "enemy" then --lava planet
-		if event.damage_type.name == "fire" then
-			event.entity.health = event.entity.health + event.final_damage_amount
-			local fire = event.entity.stickers
-			if fire and #fire > 0 then
-				for i = 1, #fire, 1 do
-					if fire[i].sticked_to == event.entity and fire[i].name == "fire-sticker" then fire[i].destroy() break end
-				end
-			end
-		end
-	end
-	if global.objective.planet[1].name.id == 18 and event.entity.force.name == "enemy" then --swamp planet
-		if event.damage_type.name == "poison" then
-			event.entity.health = event.entity.health + event.final_damage_amount
-		end
+	if event.entity.force.name == "enemy" then
+		Event_functions.biter_immunities(event)
 	end
 end
 
@@ -527,6 +521,7 @@ end
 
 local function on_research_finished(event)
 	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 100 + global.objective.invupgradetier * 5
+	Event_functions.flamer_nerfs()
 	if not event.research.force.technologies["steel-axe"].researched then return end
 	event.research.force.manual_mining_speed_modifier = 1 + game.forces.player.mining_drill_productivity_bonus * 4
 end
