@@ -1,4 +1,5 @@
 require "modules.satellite_score"
+require "modules.thirst"
 
 local Map_info = require "modules.map_info"
 
