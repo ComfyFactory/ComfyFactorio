@@ -31,7 +31,12 @@ local function reanimate(entity)
 	local revived_entity = entity.clone({position = entity.position, surface = entity.surface, force = entity.force})	
 	revived_entity.health = revived_entity.prototype.max_health
 	register_unit(revived_entity, extra_lifes - 1, unit_group)
-	if unit_group then unit_group.add_member(revived_entity) end
+	
+	if unit_group then
+		if unit_group.valid then
+			unit_group.add_member(revived_entity)
+		end
+	end
 	
 	global.biter_reanimator.units[entity.unit_number] = nil
 	entity.destroy()

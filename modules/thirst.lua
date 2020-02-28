@@ -55,7 +55,7 @@ end
 
 local function sip(player)
 	if not global.hydration[player.index] then return end
-	if math_random(1, 3) == 1 then global.hydration[player.index] = global.hydration[player.index] - 1 end
+	if math_random(1, 4) == 1 then global.hydration[player.index] = global.hydration[player.index] - 1 end
 	if global.hydration[player.index] == 100 then return end
 	
 	if player.surface.count_tiles_filtered({name = {"water", "deepwater"}, area = {{player.position.x - 1, player.position.y - 1}, {player.position.x + 1, player.position.y + 1}}}) > 0 then
@@ -88,6 +88,11 @@ local function on_player_changed_position(event)
 	global.hydration[player.index] = global.hydration[player.index] - 1
 end
 
+local function on_player_died(event)
+	if not global.hydration[event.player_index] then return end
+	global.hydration[event.player_index] = 100
+end
+
 local function tick()
 	for _, player in pairs(game.connected_players) do
 		if player.character then
@@ -106,5 +111,6 @@ end
 
 local Event = require 'utils.event' 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_died, on_player_died)
 Event.on_nth_tick(120, tick)
 Event.on_init(on_init)
