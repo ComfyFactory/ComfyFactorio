@@ -1,14 +1,14 @@
 -- Cave Miner -- mewmew made this --
 
 require "modules.rocks_broken_paint_tiles"
-require "maps.cave_miner_kaboomsticks"
+require "modules.explosives"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
 require "modules.biter_noms_you"
 require "modules.rpg"
 require "modules.hunger"
 
-local enable_fishbank_terminal = false
+local enable_fishbank_terminal = true
 local simplex_noise = require 'utils.simplex_noise'
 local Event = require 'utils.event' 
 local market_items = require "maps.cave_miner_market_items"
@@ -750,7 +750,14 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position(p,surface)
 		player.teleport(p)
 		surface.daytime = 0.5
-		surface.freeze_daytime = 1
+		surface.freeze_daytime = 1	
+		surface.min_brightness = 0.3
+		surface.brightness_visual_weights = {1, 1, 1}
+		
+		global.explosion_cells_destructible_tiles = {
+			["out-of-map"] = 2500,
+		}
+		
 		game.forces["player"].technologies["landfill"].enabled = false
 		game.forces["player"].technologies["night-vision-equipment"].enabled = false
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false			

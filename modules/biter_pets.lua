@@ -95,7 +95,10 @@ function Public.tame_unit_for_closest_player(unit)
 end
 
 local function command_unit(entity, player)
-	if (player.position.x - entity.position.x) ^ 2 + (player.position.y - entity.position.y) ^ 2 < 256 then
+	local square_distance = (player.position.x - entity.position.x) ^ 2 + (player.position.y - entity.position.y) ^ 2
+	
+	--Pet will follow, if the player is between a distance of 8 to 160 tiles away from it.
+	if square_distance < 64 or square_distance > 25600 then
 		entity.set_command({type = defines.command.wander, distraction = defines.distraction.by_enemy})
 	else
 		entity.set_command({type = defines.command.go_to_location, destination_entity = player.character, radius = 4, distraction = defines.distraction.by_damage})
