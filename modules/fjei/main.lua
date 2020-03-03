@@ -5,6 +5,7 @@ A comfy recipe browser - MewMew
 
 local Gui = require "modules.fjei.gui"
 local Functions = require "modules.fjei.functions"
+local recipe_window_position = "center"
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
@@ -46,7 +47,7 @@ local function on_gui_click(event)
 	local player = game.players[event.player_index]	
 	if Gui.gui_click_actions(element, player, event.button) then return end
 	
-	if element.type ~= "sprite" then return end
+	if element.type ~= "sprite" and element.type ~= "choose-elem-button" then return end
 	local parent = element.parent
 	for _ = 1, 4, 1 do
 		if not parent then return end
@@ -75,7 +76,7 @@ local function on_configuration_changed()
 	Functions.build_tables()
 	for _, player in pairs(game.players) do
 		if player.gui.left["fjei_main_window"] then player.gui.left["fjei_main_window"].destroy() end
-		if player.gui.center["fjei_recipe_window"] then player.gui.center["fjei_recipe_window"].destroy() end
+		if player.gui[recipe_window_position]["fjei_recipe_window"] then player.gui[recipe_window_position]["fjei_recipe_window"].destroy() end
 	end
 end
 
