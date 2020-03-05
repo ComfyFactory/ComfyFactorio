@@ -32,6 +32,7 @@ local math_sqrt = math.sqrt
 --local chests = {}
 --local acus = {}
 global.objective = {}
+global.objective.config = {}
 global.flame_boots = {}
 global.comfylatron = nil
 global.lab_cells = {}
@@ -100,8 +101,9 @@ local function generate_overworld(surface, optplanet)
 end
 
 local function get_map_gen_settings()
+	local seed = math_random(1, 1000000)
 	local map_gen_settings = {
-		["seed"] = math_random(1, 1000000),
+		["seed"] = seed,
 		["width"] = 960,
 		["height"] = 960,
 		["water"] = 0.1,
@@ -146,7 +148,9 @@ end
 
 
 local function reset_map()
-
+	for _,player in pairs(game.players) do
+		if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
+	end
 	global.chunk_queue = {}
 	if game.surfaces["chronosphere"] then game.delete_surface(game.surfaces["chronosphere"]) end
 	if game.surfaces["cargo_wagon"] then game.delete_surface(game.surfaces["cargo_wagon"]) end
@@ -191,10 +195,16 @@ local function reset_map()
 	objective.active_biters = {}
 	objective.unit_groups = {}
 	objective.biter_raffle = {}
+	objective.dangertimer = 1200
+	objective.dangers = {}
+	objective.looted_nukes = 0
 	global.outchests = {}
 	global.upgradechest = {}
 	global.fishchest = {}
 	global.acumulators = {}
+	global.comfychests = {}
+	global.comfychests2 = {}
+	global.locomotive_cargo = {}
 	for _, player in pairs(game.connected_players) do
 		global.flame_boots[player.index] = {fuel = 1, steps = {}}
 	end
@@ -224,22 +234,30 @@ local function reset_map()
 	game.map_settings.pollution.ageing = 0.1
 	game.map_settings.pollution.diffusion_ratio = 0.1
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 5
-	game.forces["enemy"].evolution_factor = 0.0001
+	game.forces.enemy.evolution_factor = 0.0001
+	game.forces.scrapyard.set_friend('enemy', true)
+	game.forces.enemy.set_friend('scrapyard', true)
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
+	game.forces.player.technologies["fusion-reactor-equipment"].enabled = false
+	game.forces.player.technologies["power-armor-mk2"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
+	game.forces.player.recipes["pistol"].enabled = false
+
 	game.forces.player.set_spawn_position({12, 10}, surface)
 	local wagons = {}
-	wagons[1] = {inventory = starting_cargo, bar = 0, filters = {}}
+	wagons[1] = {inventory = {["raw-fish"] = 100}, bar = 0, filters = {}}
 	wagons[2] = {inventory = starting_cargo, bar = 0, filters = {}}
+	wagons[3] = {inventory = starting_cargo, bar = 0, filters = {}}
 	for i = 1, 40, 1 do
-		wagons[1].filters[i] = nil
 		wagons[2].filters[i] = nil
+		wagons[3].filters[i] = nil
 	end
 	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, wagons)
 	render_train_hp()
 	game.reset_time_played()
+	Locomotive.create_wagon_room()
 	global.difficulty_poll_closing_timeout = game.tick + 54000
 	global.difficulty_player_votes = {}
 	if objective.game_won then
@@ -283,6 +301,20 @@ local function on_player_joined_game(event)
 	end
 end
 
+local function on_player_left_game(event)
+	local player = game.players[event.player_index]
+
+end
+
+local function on_pre_player_left_game(event)
+	local player = game.players[event.player_index]
+	if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
+	if player.character then
+		global.objective.offline_players[#global.objective.offline_players + 1] = {index = event.player_index, tick = game.tick}
+	end
+end
+
+
 local function set_objective_health(final_damage_amount)
 	if final_damage_amount == 0 then return end
 	local objective = global.objective
@@ -308,7 +340,7 @@ local function chronojump(choice)
 	for _,player in pairs(game.players) do
 		if player.surface == oldsurface then
 			if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
-			local wagons = {global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+			local wagons = {global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
 			Locomotive.enter_cargo_wagon(player, wagons[math_random(1,3)])
 		end
 	end
@@ -351,21 +383,18 @@ local tick_minute_functions = {
 local function tick()
 	local objective = global.objective
 	local tick = game.tick
-	if tick % 60 == 30 and objective.chronotimer < 64 then
+	if tick % 60 == 30 and objective.passivetimer < 64 then
 		local surface = game.surfaces[global.active_surface_index]
 		if objective.planet[1].name.id == 17 then
-			surface.request_to_generate_chunks({-800,0}, 3 + math_floor(objective.chronotimer / 5))
+			surface.request_to_generate_chunks({-800,0}, 3 + math_floor(objective.passivetimer / 5))
 		else
-			surface.request_to_generate_chunks({0,0}, 3 + math_floor(objective.chronotimer / 5))
+			surface.request_to_generate_chunks({0,0}, 3 + math_floor(objective.passivetimer / 5))
 		end
 		--surface.force_generate_chunk_requests()
 
 	end
 	if tick % 10 == 0 and objective.planet[1].name.id == 18 then
 		Tick_functions.spawn_poison()
-		Tick_functions.spawn_poison()
-		--Tick_functions.spawn_poison()
-		--Tick_functions.spawn_poison()
 	end
 	if tick % 30 == 0 then
 		if tick % 600 == 0 then
@@ -380,6 +409,9 @@ local function tick()
 			set_objective_health(Tick_functions.repair_train())
 			Upgrades.check_upgrades()
 			Tick_functions.boost_evolution()
+			if objective.config.offline_loot then
+				Tick_functions.offline_players()
+			end
 		end
 		local key = tick % 3600
 		if tick_minute_functions[key] then tick_minute_functions[key]() end
@@ -388,6 +420,9 @@ local function tick()
 			objective.passivetimer = objective.passivetimer + 1
 			if objective.chronojumps > 0 then
 				game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (0.5 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)) * global.difficulty_vote_value)
+			end
+			if objective.planet[1].name.id == 19 then
+				Tick_functions.dangertimer()
 			end
 			if Tick_functions.check_chronoprogress() then chronojump(nil) end
 		end
@@ -414,9 +449,16 @@ local function on_init()
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
 	global.objective.game_lost = true
 	global.objective.game_won = false
+	global.objective.offline_players = {}
+
+	global.objective.config.offline_loot = true
+	global.objective.config.jumpfailure = true
 	game.create_force("scrapyard")
-	game.forces.scrapyard.set_friend('enemy', true)
-	game.forces.enemy.set_friend('scrapyard', true)
+	local mgs = game.surfaces["nauvis"].map_gen_settings
+	mgs.width = 16
+	mgs.height = 16
+	game.surfaces["nauvis"].map_gen_settings = mgs
+	game.surfaces["nauvis"].clear()
 	reset_map()
 	--if game.surfaces["nauvis"] then game.delete_surface(game.surfaces["nauvis"]) end
 end
@@ -428,16 +470,16 @@ local function protect_entity(event)
 			if event.cause == global.comfylatron or event.entity == global.comfylatron then
 				return
 			end
-			if event.cause.force.index == 2 then
+			if event.cause.force.index == 2 or event.cause.force.name == "scrapyard" then
 					set_objective_health(event.final_damage_amount)
 			end
+		elseif global.objective.planet[1].name.id == 19 then
+			set_objective_health(event.final_damage_amount)
 		end
 		if not event.entity.valid then return end
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
 end
-
-
 
 local function on_entity_damaged(event)
 	if not event.entity.valid then	return end
@@ -497,12 +539,25 @@ local function on_entity_died(event)
 	if entity.type == "unit" and entity.force == "enemy" then
 		global.objective.active_biters[entity.unit_number] = nil
 	end
-	if entity.force.name == "scrapyard" and entity.name == "gun-turret" and global.objective.planet[1].name.id == 16 then
-		Event_functions.trap(entity, true)
+	if entity.type == "rocket-silo" and entity.force.name == "enemy" then
+		Event_functions.danger_silo(entity)
 	end
-	if entity.force.name == "enemy" and entity.type == "unit-spawner" and global.objective.planet[1].name.id == 18 then
-		Ores.prospect_ores(event.entity, event.entity.surface, event.entity.position)
-		--Event_functions.swamp_loot(event)
+	if entity.force.name == "scrapyard" and entity.name == "gun-turret" then
+		if global.objective.planet[1].name.id == 19 or global.objective.planet[1].name.id == 16 then --danger + hedge maze
+			Event_functions.trap(entity, true)
+		end
+	end
+	if entity.force.name == "enemy" then
+		if entity.type == "unit-spawner" then
+			Event_functions.spawner_loot(entity.surface, entity.position)
+			if global.objective.planet[1].name.id == 18 then
+				Ores.prospect_ores(entity, entity.surface, entity.position)
+			end
+		else
+			if global.objective.planet[1].name.id == 18 then
+				Event_functions.swamp_loot(event)
+			end
+		end
 	end
 	if entity.force.index == 3 then
 		if event.cause then
@@ -582,7 +637,8 @@ event.on_nth_tick(2, tick)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
---event.add(defines.events.on_player_left_game, on_player_left_game)
+event.add(defines.events.on_player_left_game, on_player_left_game)
+event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 event.add(defines.events.on_pre_player_mined_item, pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
@@ -619,3 +675,15 @@ if _DEBUG then
 	        chronojump(param)
 	end)
 end
+--Time for the debug code.  If any (not global.) globals are written to at this point, an error will be thrown.
+--eg, x = 2 will throw an error because it's not global.x or local x
+setmetatable(_G, {
+    __newindex = function(_, n, v)
+        log("Desync warning: attempt to write to undeclared var " .. n)
+        -- game.print("Attempt to write to undeclared var " .. n)
+        global[n] = v;
+    end,
+    __index = function(_, n)
+        return global[n];
+    end
+})

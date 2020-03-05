@@ -1,10 +1,12 @@
 local Public = {}
 local math_floor = math.floor
 local math_random = math.random
-
+local function math_sgn(x)
+  return (x<0 and -1) or 1
+end
 
 function Public.locomotive_spawn(surface, position, wagons)
-	if global.objective.planet[1].name.id == 17 then
+	if global.objective.planet[1].name.id == 17 then --fish market
 		position.x = position.x - 960
 		position.y = position.y - 64
 	end
@@ -14,29 +16,24 @@ function Public.locomotive_spawn(surface, position, wagons)
 	end
 	global.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -6}, force = "player"})
 	global.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
-
-	global.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 0}, force = "player"})
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 100})
-
-	global.locomotive_cargo2 = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 6}, force = "player"})
-	for item, count in pairs(wagons[1].inventory) do
-		global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
+	for i = 1, 3, 1 do
+		global.locomotive_cargo[i] = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + math_floor((i - 1) * 6.5)}, force = "player"})
+		local inv = global.locomotive_cargo[i].get_inventory(defines.inventory.cargo_wagon)
+		for item, count in pairs(wagons[i].inventory) do
+			inv.insert({name = item, count = count})
+			if wagons[i].bar > 0 then inv.set_bar(wagons[i].bar) end
+			for ii = 1, 40, 1 do
+				inv.set_filter(ii, wagons[i].filters[ii])
+			end
+		end
+		global.locomotive_cargo[i].minable = false
 	end
+	global.locomotive_cargo[1].operable = false
+	global.locomotive.color = {0, 255, 0}
+	global.locomotive.minable = false
 
-	global.locomotive_cargo3 = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 13}, force = "player"})
-	for item, count in pairs(wagons[2].inventory) do
-		global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
-	end
-	if wagons[1].bar > 0 then global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).set_bar(wagons[1].bar) end
-	if wagons[2].bar > 0 then global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).set_bar(wagons[2].bar) end
-	for i = 1, 40, 1 do
-		global.locomotive_cargo2.get_inventory(defines.inventory.cargo_wagon).set_filter(i, wagons[1].filters[i])
-		global.locomotive_cargo3.get_inventory(defines.inventory.cargo_wagon).set_filter(i, wagons[2].filters[i])
-	end
-
-	if not global.comfychests then global.comfychests = {} end
-	if not global.acumulators then global.acumulators = {} end
-
+	-- if not global.comfychests then global.comfychests = {} end
+	-- if not global.acumulators then global.acumulators = {} end
 	for i = 1, 24, 1 do
 		local yi = 0
 		local xi = 5
@@ -77,36 +74,30 @@ function Public.locomotive_spawn(surface, position, wagons)
 
 	rendering.draw_light({
 		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
-		oriented = true, color = {255,255,255}, target = global.locomotive_cargo,
+		oriented = true, color = {255,255,255}, target = global.locomotive_cargo[3],
 		surface = surface, visible = true, only_in_alt_mode = false,
 	})
 
-	global.locomotive.color = {0, 255, 0}
-	global.locomotive.minable = false
-	global.locomotive_cargo.minable = false
-	global.locomotive_cargo.operable = false
-	global.locomotive_cargo2.minable = false
-	--global.locomotive_cargo2.operable = false
-	global.locomotive_cargo3.minable = false
-	--global.locomotive_cargo3.operable = false
+
 end
 
 
 function Public.fish_tag()
-	if not global.locomotive_cargo then return end
-	if not global.locomotive_cargo.valid then return end
-	if not global.locomotive_cargo.surface then return end
-	if not global.locomotive_cargo.surface.valid then return end
+	if not global.locomotive_cargo[1] then return end
+	local cargo = global.locomotive_cargo[1]
+	if not cargo.valid then return end
+	if not cargo.surface then return end
+	if not cargo.surface.valid then return end
 	if global.locomotive_tag then
 		if global.locomotive_tag.valid then
-			if global.locomotive_tag.position.x == global.locomotive_cargo.position.x and global.locomotive_tag.position.y == global.locomotive_cargo.position.y then return end
+			if global.locomotive_tag.position.x == cargo.position.x and global.locomotive_tag.position.y == cargo.position.y then return end
 			global.locomotive_tag.destroy()
 		end
 	end
-	global.locomotive_tag = global.locomotive_cargo.force.add_chart_tag(
-		global.locomotive_cargo.surface,
+	global.locomotive_tag = cargo.force.add_chart_tag(
+		cargo.surface,
 		{icon = {type = 'item', name = 'raw-fish'},
-		position = global.locomotive_cargo.position,
+		position = cargo.position,
 		text = " "
 	})
 end
@@ -124,13 +115,14 @@ local market_offers = {
 	{price = {{"coin", 400}, {"steel-plate", 40}, {"advanced-circuit", 10}, {"loader", 1}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
 	{price = {{"coin", 600}, {"express-transport-belt", 10}, {"fast-loader", 1}}, offer = {type = 'give-item', item = 'express-loader', count = 1}},
 	--{price = {{"coin", 5}, {"stone", 100}}, offer = {type = 'give-item', item = 'landfill', count = 1}},
-	{price = {{"coin", 1}, {"steel-plate", 1}, {"explosives", 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}}
+	{price = {{"coin", 1}, {"steel-plate", 1}, {"explosives", 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
+	{price = {{"pistol", 1}}, offer = {type = "give-item", item = "iron-plate", count = 100}}
 }
 
-local function create_wagon_room()
+function Public.create_wagon_room()
 	local width = 64
 	local height = 384
-	global.comfychests2 = {}
+	--global.comfychests2 = {}
 	if not global.acumulators then global.acumulators = {} end
 	local map_gen_settings = {
 		["width"] = width,
@@ -145,7 +137,8 @@ local function create_wagon_room()
 			["decorative"] = {treat_missing_as_default = false},
 		},
 	}
-	local surface = 	game.create_surface("cargo_wagon", map_gen_settings)
+	if not game.surfaces["cargo_wagon"] then game.create_surface("cargo_wagon", map_gen_settings) end
+	local surface = game.surfaces["cargo_wagon"]
 	surface.freeze_daytime = true
 	surface.daytime = 0.1
 	surface.request_to_generate_chunks({0,0}, 12)
@@ -210,7 +203,7 @@ local function create_wagon_room()
 		for y = height * -0.5 + 7, height * -0.5 + 10, 1 do
 			local p = {x,y}
 			surface.set_tiles({{name = "water", position = p}})
-			if math.random(1, 3) == 1 then surface.create_entity({name = "fish", position = p}) end
+			if math_random(1, 3) == 1 then surface.create_entity({name = "fish", position = p}) end
 		end
 	end
 
@@ -250,6 +243,7 @@ local function create_wagon_room()
 	speaker.connect_neighbour({wire = defines.wire_type.green, target_entity = checker, target_circuit_id = 2})
 	local rules4 = speaker.get_or_create_control_behavior()
 	rules4.circuit_condition = {condition = {first_signal = {type = "virtual", name = "signal-C"}, second_constant = 0, comparator = ">"}}
+	rules4.circuit_parameters = {signal_value_is_pitch = false, instrument_id = 8, note_id = 5}
 	local solar1 = surface.create_entity({name = "solar-panel", position = {x = width * -0.5 - 2, y = -242}, force="player", create_build_effect_smoke = false})
 	local solar2 = surface.create_entity({name = "solar-panel", position = {x = width * -0.5 + 1, y = -242}, force="player", create_build_effect_smoke = false})
 	solar1.destructible = false
@@ -271,7 +265,7 @@ local function create_wagon_room()
 	for _, x in pairs({-1, 0}) do
 		for i = 1, 12, 1 do
 			local step = math_floor((i-1)/4)
-			y = -131 + i + step * 128 - step * 4
+			local y = -131 + i + step * 128 - step * 4
 			local e = surface.create_entity({name = "compilatron-chest", position = {x,y}, force = "player", create_build_effect_smoke = false})
 			e.destructible = false
 			e.minable = false
@@ -330,7 +324,9 @@ local function create_wagon_room()
 		[9] = {name = "outchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-8"},
 		[10] = {name = "boxchest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-9"},
 		[11] = {name = "poisonchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-P"},
-		[12] = {name = "computerchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-C"}
+		[12] = {name = "computerchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-C"},
+		[13] = {name = "armorchest", entity = {name = "compilatron-chest", position = {7, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-A"},
+		[14] = {name = "reactorchest", entity = {name = "compilatron-chest", position = {7, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-R"}
 	}
 
 	for i = 1, #upgradechests, 1 do
@@ -400,26 +396,22 @@ local function create_wagon_room()
 	for _, offer in pairs(market_offers) do market.add_market_item(offer) end
 
 	--generate cars--
-	for _, x in pairs({width * -0.5 -1.4, width * 0.5 + 1.4}) do
-		local e = surface.create_entity({name = "car", position = {x, 0}, force = "player", create_build_effect_smoke = false})
+	local car_pos = {
+		{x = width * -0.5 - 1.4, y = -128},
+		{x = width * -0.5 - 1.4, y = 0},
+		{x = width * -0.5 - 1.4, y = 128},
+		{x = width * 0.5 + 1.4, y = -128},
+		{x = width * 0.5 + 1.4, y = 0},
+		{x = width * 0.5 + 1.4, y = 128}
+	}
+	global.car_exits = {}
+	for i = 1, 6, 1 do
+		local e = surface.create_entity({name = "car", position = car_pos[i], force = "player", create_build_effect_smoke = false})
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
 		e.destructible = false
 		e.minable = false
 		e.operable = false
-	end
-	for _, x in pairs({width * -0.5 - 1.4, width * 0.5 + 1.4}) do
-		local e = surface.create_entity({name = "car", position = {x, -128}, force = "player", create_build_effect_smoke = false})
-		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
-		e.destructible = false
-		e.minable = false
-		e.operable = false
-	end
-	for _, x in pairs({width * -0.5 - 1.4, width * 0.5 + 1.4}) do
-		local e = surface.create_entity({name = "car", position = {x, 128}, force = "player", create_build_effect_smoke = false})
-		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
-		e.destructible = false
-		e.minable = false
-		e.operable = false
+		global.car_exits[i] = e
 	end
 
 	--generate chests inside south wagon--
@@ -494,68 +486,48 @@ local function create_wagon_room()
 end
 
 function Public.set_player_spawn_and_refill_fish()
-	if not global.locomotive_cargo then return end
-	if not global.locomotive_cargo.valid then return end
-	global.locomotive_cargo.health = global.locomotive_cargo.health + 6
-	global.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math_random(1, 2)})
-	local position = global.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", global.locomotive_cargo.position, 16, 2)
+	if not global.locomotive_cargo[1] then return end
+	local cargo = global.locomotive_cargo[1]
+	if not cargo.valid then return end
+	cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math_random(1, 2)})
+	local position = cargo.surface.find_non_colliding_position("stone-furnace", cargo.position, 16, 2)
 	if not position then return end
-	game.forces.player.set_spawn_position({x = position.x, y = position.y}, global.locomotive_cargo.surface)
+	game.forces.player.set_spawn_position({x = position.x, y = position.y}, cargo.surface)
 end
 
 function Public.enter_cargo_wagon(player, vehicle)
 	if not vehicle then log("no vehicle") return end
 	if not vehicle.valid then log("vehicle invalid") return end
-	if not global.locomotive_cargo then log("no cargo") return end
-	if not global.locomotive_cargo.valid then log("cargo invalid") return end
-	if vehicle == global.locomotive_cargo then
-		if not game.surfaces["cargo_wagon"] then create_wagon_room() end
-		local surface = game.surfaces["cargo_wagon"]
-		local x_vector = vehicle.position.x - player.position.x
-		local position
-		if x_vector > 0 then
-			position = {surface.map_gen_settings.width * -0.5, -128}
-		else
-			position = {surface.map_gen_settings.width * 0.5, -128}
+	if not game.surfaces["cargo_wagon"] then Public.create_wagon_room() end
+	local wagon_surface = game.surfaces["cargo_wagon"]
+	for i = 1, 3, 1 do
+		if not global.locomotive_cargo[i] then log("no cargo") return end
+		if not global.locomotive_cargo[i].valid then log("cargo invalid") return end
+		if vehicle == global.locomotive_cargo[i] then
+			local x_vector = vehicle.position.x - player.position.x
+			local position
+			if x_vector > 0 then
+				position = {wagon_surface.map_gen_settings.width * -0.5, -128 + 128 * (i - 1)}
+			else
+				position = {wagon_surface.map_gen_settings.width * 0.5, -128 + 128 * (i - 1)}
+			end
+			player.teleport(wagon_surface.find_non_colliding_position("character", position, 128, 0.5), wagon_surface)
+			break
 		end
-		player.teleport(surface.find_non_colliding_position("character", position, 128, 0.5), surface)
-	end
-	if not global.locomotive_cargo2 then return end
-	if not global.locomotive_cargo2.valid then return end
-	if vehicle == global.locomotive_cargo2 then
-		if not game.surfaces["cargo_wagon"] then create_wagon_room() end
-		local surface = game.surfaces["cargo_wagon"]
-		local x_vector = vehicle.position.x - player.position.x
-		local position
-		if x_vector > 0 then
-			position = {surface.map_gen_settings.width * -0.5, 0}
-		else
-			position = {surface.map_gen_settings.width * 0.5, 0}
-		end
-		player.teleport(surface.find_non_colliding_position("character", position, 128, 0.5), surface)
-	end
-	if not global.locomotive_cargo3 then return end
-	if not global.locomotive_cargo3.valid then return end
-	if vehicle == global.locomotive_cargo3 then
-		if not game.surfaces["cargo_wagon"] then create_wagon_room() end
-		local surface = game.surfaces["cargo_wagon"]
-		local x_vector = vehicle.position.x - player.position.x
-		local position
-		if x_vector > 0 then
-			position = {surface.map_gen_settings.width * -0.5, 128}
-		else
-			position = {surface.map_gen_settings.width * 0.5, 128}
-		end
-		player.teleport(surface.find_non_colliding_position("character", position, 128, 0.5), surface)
 	end
 	if player.surface.name == "cargo_wagon" and vehicle.type == "car" then
 		if global.flame_boots then
 			global.flame_boots[player.index] = {fuel = 1, steps = {}}
 		end
-		local surface = global.locomotive_cargo.surface
-		local x_vector = (vehicle.position.x / math.abs(vehicle.position.x)) * 2
-		local y_vector = vehicle.position.y / 16
-		local position = {global.locomotive_cargo2.position.x + x_vector, global.locomotive_cargo2.position.y + y_vector}
+		local used_exit = 0
+		for i = 1, 6, 1 do
+			if vehicle == global.car_exits[i] then
+				used_exit = i
+				break
+			end
+		end
+		local surface = global.locomotive_cargo[1].surface
+		local position = {x = global.locomotive_cargo[((used_exit - 1) % 3) + 1].position.x + math_sgn(used_exit - 3.5) * 2, y = global.locomotive_cargo[((used_exit - 1) % 3) + 1].position.y}
  		local position2 = surface.find_non_colliding_position("character", position, 128, 0.5)
 		if not position2 then return end
 		player.teleport(position2, surface)

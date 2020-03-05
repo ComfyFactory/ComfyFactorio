@@ -182,10 +182,10 @@ end
 Public.send_near_biters_to_objective = function()
 	if game.tick < 36000 then return end
 	if not global.locomotive then return end
-	if not global.locomotive_cargo then return end
-  if not global.locomotive_cargo2 then return end
-  if not global.locomotive_cargo3 then return end
-  local targets = {global.locomotive, global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+	if not global.locomotive_cargo[1] then return end
+  if not global.locomotive_cargo[2] then return end
+  if not global.locomotive_cargo[3] then return end
+  local targets = {global.locomotive, global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
   local random_target = targets[math_random(1, #targets)]
   if global.objective.game_lost then return end
   local surface = random_target.surface
@@ -269,7 +269,7 @@ end
 
 local function send_group(unit_group, nearest_player_unit)
 
-  local targets = {global.locomotive, global.locomotive, nearest_player_unit, nearest_player_unit, nearest_player_unit, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+  local targets = {global.locomotive, global.locomotive, nearest_player_unit, nearest_player_unit, nearest_player_unit, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
   local target = targets[math_random(1, #targets)]
   if not target.valid then colonize(unit_group) return end
   local surface = target.surface

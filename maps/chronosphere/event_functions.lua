@@ -48,7 +48,7 @@ end
 
 function Public_event.isprotected(entity)
 	if entity.surface.name == "cargo_wagon" then return true end
-	local protected = {global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+	local protected = {global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
 	for i = 1, #global.comfychests,1 do
 		table.insert(protected, global.comfychests[i])
 	end
@@ -107,6 +107,13 @@ function Public_event.shred_simple_entities(entity)
 		if simple_entities[i].valid then
 			simple_entities[i].die("enemy", simple_entities[i])
 		end
+	end
+end
+
+function Public_event.spawner_loot(surface, position)
+	local objective = global.objective
+	if math_random(1,20) == 1 then
+		surface.spill_item_stack(position, {name = "railgun-dart", count = math_random(1, 1 + objective.chronojumps)}, true)
 	end
 end
 
@@ -177,10 +184,33 @@ function Public_event.swamp_loot(event)
 	if ore_yield[event.entity.name] then
 		amount = get_ore_amount() / 10 * ore_yield[event.entity.name]
 	end
-	game.print(amount)
 	local rock_mining = {"iron-ore", "iron-ore", "coal", "coal", "coal"}
 	local mined_loot = rock_mining[math_random(1,#rock_mining)]
 	surface.spill_item_stack(event.entity.position,{name = mined_loot, count = amount}, true)
+end
+
+function Public_event.danger_silo(entity)
+	local objective = global.objective
+	if objective.planet[1].name.id == 19 then
+		if objective.dangers and #objective.dangers > 1 then
+	    for i = 1, #objective.dangers, 1 do
+	      if entity == objective.dangers[i].silo then
+					game.print("Nuclear silo destroyed. You managed to loot 5 atomic bombs. Comfylatron seized them for your own safety.", {r=0.98, g=0.66, b=0.22})
+					objective.dangers[i].destroyed = true
+					objective.dangers[i].silo = nil
+					objective.dangers[i].speaker.destroy()
+					objective.dangers[i].combinator.destroy()
+					objective.dangers[i].solar.destroy()
+					objective.dangers[i].acu.destroy()
+					objective.dangers[i].pole.destroy()
+					rendering.destroy(objective.dangers[i].text)
+					rendering.destroy(objective.dangers[i].timer)
+					objective.dangers[i].text = -1
+					objective.dangers[i].timer = -1
+				end
+	    end
+	  end
+	end
 end
 
 function Public_event.biter_immunities(event)

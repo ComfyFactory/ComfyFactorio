@@ -352,7 +352,39 @@ local function check_win()
   end
 end
 
+local function check_mk2_buy()
+  local objective = global.objective
+  if global.upgradechest[13] and global.upgradechest[13].valid then
+    local inv = global.upgradechest[13].get_inventory(defines.inventory.chest)
+    local count = inv.get_item_count("low-density-structure")
+		local count2 = inv.get_item_count("railgun-dart")
+    local count3 = inv.get_item_count("power-armor")
+    if count >= 100 and count2 >= 300 and count3 >= 1 and objective.chronojumps >= 24 then
+			inv.remove({name = "low-density-structure", count = 100})
+			inv.remove({name = "railgun-dart", count = 300})
+      inv.remove({name = "power-armor", count = 1})
+      inv.insert({name = "power-armor-mk2", count = 1})
+			game.print("Comfylatron: I upgraded one armor to mk2.", {r=0.98, g=0.66, b=0.22})
+		end
+  end
+end
 
+local function check_fusion_buy()
+  local objective = global.objective
+  if global.upgradechest[14] and global.upgradechest[14].valid then
+    local inv = global.upgradechest[14].get_inventory(defines.inventory.chest)
+    local count = inv.get_item_count("low-density-structure")
+    local count2 = inv.get_item_count("railgun-dart")
+    local count3 = inv.get_item_count("solar-panel-equipment")
+    if count >= 100 and count2 >= 200 and count3 >= 16 and objective.chronojumps >= 24 then
+      inv.remove({name = "low-density-structure", count = 100})
+      inv.remove({name = "railgun-dart", count = 200})
+      inv.remove({name = "solar-panel-equipment", count = 16})
+      inv.insert({name = "fusion-reactor-equipment", count = 1})
+      game.print("Comfylatron: One personal fusion reactor ready.", {r=0.98, g=0.66, b=0.22})
+    end
+  end
+end
 
 function Public.check_upgrades()
   local objective = global.objective
@@ -360,7 +392,7 @@ function Public.check_upgrades()
   if objective.hpupgradetier < 36 then
     check_upgrade_hp()
   end
-  if objective.filterupgradetier < 9 then
+  if objective.filterupgradetier < 9 and objective.chronojumps >= (objective.filterupgradetier + 1) * 3 then
     check_upgrade_filter()
   end
   if objective.acuupgradetier < 24 then
@@ -369,7 +401,7 @@ function Public.check_upgrades()
   if objective.pickupupgradetier < 4 then
     check_upgrade_pickup()
   end
-  if objective.invupgradetier < 4 then
+  if objective.invupgradetier < 4 and objective.chronojumps >= (objective.invupgradetier + 1) * 5 then
     check_upgrade_inv()
   end
   if objective.toolsupgradetier < 4 then
@@ -390,6 +422,10 @@ function Public.check_upgrades()
   if objective.computerupgrade < 3 and objective.chronojumps >= 15 then
     check_upgrade_computer()
   end
+  if objective.chronojumps >= 24 then
+    check_mk2_buy()
+    check_fusion_buy()
+  end
   if objective.planet[1].name.id == 17 then
     if global.fishchest then
       check_win()
@@ -399,11 +435,12 @@ end
 
 function Public.trigger_poison()
   local objective = global.objective
+  if objective.game_lost then return end
   if objective.poisondefense > 0 and objective.poisontimeout == 0 then
     local objective = global.objective
     objective.poisondefense = objective.poisondefense - 1
     objective.poisontimeout = 120
-    local objs = {global.locomotive, global.locomotive_cargo, global.locomotive_cargo2, global.locomotive_cargo3}
+    local objs = {global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
     local surface = objective.surface
     game.print("Comfylatron: Triggering poison defense. Let's kill everything!", {r=0.98, g=0.66, b=0.22})
     for i = 1, 4, 1 do

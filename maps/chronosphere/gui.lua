@@ -125,8 +125,19 @@ local function update_gui(player)
   local acus = 0
   if global.acumulators then acus = #global.acumulators else acus = 0 end
   local bestcase = math_floor((objective.chrononeeds - objective.chronotimer) / (1 + math_floor(acus/10)))
-  gui.timer2.caption = {"chronosphere.gui_3_1"}
-	gui.timer_value2.caption = math_floor(bestcase / 60) .. " min, " .. bestcase % 60 .. " s (when using " .. acus * 0.3 .. "MW)"
+	local nukecase = objective.dangertimer
+	if objective.planet[1].name.id == 19 and objective.passivetimer > 31 then
+		gui.timer2.caption = {"chronosphere.gui_3_2"}
+		gui.timer_value2.caption = math_floor(nukecase / 60) .. " min, " .. nukecase % 60 .. " s"
+		gui.timer2.style.font_color = {r=0.98, g=0, b=0}
+		gui.timer_value2.style.font_color = {r=0.98, g=0, b=0}
+	else
+		gui.timer2.caption = {"chronosphere.gui_3_1"}
+		gui.timer_value2.caption = math_floor(bestcase / 60) .. " min, " .. bestcase % 60 .. " s (when using " .. acus * 0.3 .. "MW)"
+		gui.timer2.style.font_color = {r = 0, g = 200, b = 0}
+		gui.timer_value2.style.font_color = {r = 0, g = 200, b = 0}
+	end
+
 
   local evolution = game.forces["enemy"].evolution_factor
   gui.evo.caption = {"chronosphere.gui_4"}
@@ -140,7 +151,7 @@ local function update_gui(player)
   }
   local upgt = {
     [1] = {t = "[1]: + 2500 Train Max HP. Current: " .. objective.max_health .. "\n    Cost : " .. math_floor(500 * (1 + objective.hpupgradetier /2)) .. " coins + 1500 copper plates\n"},
-    [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%\n    Buyable once per 3 jumps.\n    Cost: 5000 coins + 2000 green circuits + Jump number " .. objective.filterupgradetier * 3 .. "\n"},
+    [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%\n    Buyable once per 3 jumps.\n    Cost: 5000 coins + 2000 green circuits + Jump number " .. (objective.filterupgradetier + 1) * 3 .. "\n"},
     [3] = {t = "[3]: Add additional row of Acumulators.\n    Cost : " .. math_floor(2000 * (1 + objective.acuupgradetier /4)) .. " coins + 200 batteries\n"},
     [4] = {t = "[4]: Add item pickup distance to players.Current: +" .. objective.pickupupgradetier .. ",\n    Cost: " .. 1000 * (1 + objective.pickupupgradetier) .. " coins + 400 red inserters\n"},
     [5] = {t = "[5]: Add +5 inventory slots. Buyable once per 5 jumps.\n    Cost: " .. 2000 * (1 + objective.invupgradetier) .." coins + " .. chests[objective.invupgradetier + 1].c},
@@ -149,10 +160,12 @@ local function update_gui(player)
     [8] = {t = "[8]: Add comfylatron chests that output outside (into cargo wagon 2 and 3)\n    Cost: 2000 coins + 100 fast inserters\n"},
     [9] = {t = "[9]: Add storage chests to the sides of wagons.\n    Buyable once per 5 jumps.\n    Cost: 5000 coins + "  .. chests[objective.boxupgradetier + 1].c},
 		[10] = {t = "[P]: Poison defense. Triggers automatically when train has low HP.\n    Actual charges: " .. objective.poisondefense .. " / 4\n    Recharge timer for next use: " .. math_ceil(objective.poisontimeout /6) .. "min\n    Cost: 1000 coins + 50 poison capsules\n"},
-		[11] = {t = "[C]: Train computer fixing for Comfylatron. Finish this to fullfill the main objective.\n    Tier 1 costs: 5000 coins, 1000 advanced circuits, 2000 copper plates.\n    Discards very poor planets.\n"},
-		[12] = {t = "[C]: Train power and navigation fixing for Comfylatron. Finish this to fullfill the main objective.\n    Tier 2 costs: 10000 coins, 1000 processing units, 1 nuclear reactor.\n   Discards poor planets.\n"},
-		[13] = {t = "[C]: Train time machine processor fixing for Comfylatron. Finish this to fullfill the main objective.\n   Tier 3 costs per part: 2000 coins, 100 rocket control units, 100 low density structures, 50 uranium fuel cells.\n    Parts finished: " .. objective.computerparts .. " / 10\n"},
-		[14] = {t = "[C]: Train is repaired. Synchronize the time to unlock final map to finish the main objective.\n    Costs: 1 rocket silo, 1 satellite.\n    Warning: after buying this, the next jump destination is locked to final map,\n    that means 100% evolution and no resources.\n"}
+		[11] = {t = "[A]: 1x mk1 armor + 300 railgun darts + 100 low density structures -> 1x mk2 armor\n"},
+		[12] = {t = "[R]: 16x personal solar + 200 railgun darts + 100 low density structures -> 1x fusion reactor\n"},
+		[13] = {t = "[C]: Train computer fixing for Comfylatron. Finish this to fullfill the main objective.\n    Tier 1 costs: 5000 coins, 1000 advanced circuits, 2000 copper plates.\n    Discards very poor planets.\n"},
+		[14] = {t = "[C]: Train power and navigation fixing for Comfylatron. Finish this to fullfill the main objective.\n    Tier 2 costs: 10000 coins, 1000 processing units, 1 nuclear reactor.\n   Discards poor planets.\n"},
+		[15] = {t = "[C]: Train time machine processor fixing for Comfylatron. Finish this to fullfill the main objective.\n   Tier 3 costs per part: 2000 coins, 100 rocket control units, 100 low density structures, 50 uranium fuel cells.\n    Parts finished: " .. objective.computerparts .. " / 10\n"},
+		[16] = {t = "[C]: Train is repaired. Synchronize the time to unlock final map to finish the main objective.\n    Costs: 1 rocket silo, 1 satellite.\n    Warning: after buying this, the next jump destination is locked to final map,\n    that means 100% evolution and no resources.\n"}
   }
   local maxed = {
     [1] = {t = "[1]: Train HP maxed.\n"},
@@ -177,15 +190,20 @@ local function update_gui(player)
   if objective.outupgradetier < 1 then tooltip = tooltip .. upgt[8].t else tooltip = tooltip .. maxed[8].t end
   if objective.boxupgradetier < 4 then tooltip = tooltip .. upgt[9].t else tooltip = tooltip .. maxed[9].t end
 	tooltip = tooltip .. upgt[10].t
-	if objective.computerupgrade == 0 and objective.chronojumps >= 15 then
-		tooltip = tooltip .. upgt[11].t
-	elseif objective.computerupgrade == 1 and objective.chronojumps >= 20 then
-		tooltip = tooltip .. upgt[12].t
-	elseif objective.computerupgrade == 2 and objective.chronojumps >= 25 then
+	if objective.chronojumps >= 24 then
+		tooltip = tooltip .. upgt[11].t .. upgt[12].t
+	else
+		tooltip = tooltip .. "Armor and reactor can be bought since jump 24 (for railgun darts).\n"
+	end
+	if objective.computerupgrade == 0 and objective.chronojumps >= 15 and objective.computermessage == 1 then
+		tooltip = tooltip .. upgt[13].t
+	elseif objective.computerupgrade == 1 and objective.chronojumps >= 20 and objective.computermessage == 3 then
+		tooltip = tooltip .. upgt[14].t
+	elseif objective.computerupgrade == 2 and objective.chronojumps >= 25 and objective.computermessage == 5 then
 		if objective.computerparts < 10 then
-			tooltip = tooltip .. upgt[13].t
+			tooltip = tooltip .. upgt[15].t
 		elseif objective.computerparts == 10 then
-			tooltip = tooltip .. upgt[14].t
+			tooltip = tooltip .. upgt[16].t
 		end
 	elseif objective.computerupgrade == 3 and objective.chronojumps >= 25 then
 		tooltip = tooltip .. maxed[10].t

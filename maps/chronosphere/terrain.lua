@@ -1,6 +1,7 @@
 
 --require "maps.chronosphere.ores"
 local Ores = require "maps.chronosphere.ores"
+local Specials = require "maps.chronosphere.terrain_specials"
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
@@ -131,6 +132,52 @@ local function process_labyrinth_cell(pos, seed)
 	return true
 end
 
+local function process_dangerevent_position(p, seed, tiles, entities, treasure, planet)
+	local scrapyard = get_noise("scrapyard", p, seed)
+	--Chasms
+	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
+	local small_caves = get_noise("small_caves", p, seed)
+	if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
+		if small_caves > 0.35 then
+			tiles[#tiles + 1] = {name = "out-of-map", position = p}
+			return
+		end
+		if small_caves < -0.35 then
+			tiles[#tiles + 1] = {name = "out-of-map", position = p}
+			return
+		end
+	end
+
+	if scrapyard < -0.20 or scrapyard > 0.20 then
+		if math_random(1, 128) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 50 then
+			entities[#entities + 1] = {name="gun-turret", position=p, force = "scrapyard"}
+		end
+		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		if scrapyard < -0.38 or scrapyard > 0.38 then
+			if math_random(1,36) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end
+			if math_random(1,6) == 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
+			return
+		end
+		return
+	end
+
+	local cave_ponds = get_noise("cave_ponds", p, seed)
+	if cave_ponds < -0.6 and scrapyard > -0.2 and scrapyard < 0.2 then
+		tiles[#tiles + 1] = {name = "deepwater-green", position = p}
+		if math_random(1,128) == 1 then entities[#entities + 1] = {name="fish", position=p} end
+		return
+	end
+
+	local large_caves = get_noise("large_caves", p, seed)
+	if scrapyard > -0.15 and scrapyard < 0.15 then
+		if math_floor(large_caves * 10) % 4 < 3 then
+			tiles[#tiles + 1] = {name = "dirt-7", position = p}
+			return
+		end
+	end
+	tiles[#tiles + 1] = {name = "stone-path", position = p}
+end
+
 local function process_hedgemaze_position(p, seed, tiles, entities, treasure, planet, cell, things)
   --local labyrinth_cell_size = 16 --valid values are 2, 4, 8, 16, 32
   local biters = planet[1].name.biters
@@ -230,15 +277,9 @@ local function process_rocky_position(p, seed, tiles, entities, treasure, planet
 	end
 	if math_abs(noise_large_caves) > 0.6 then
 		if math_random(1,16) == 1 then entities[#entities + 1] = {name="tree-02", position=p} end
-		--if math_random(1,32) == 1 then markets[#markets + 1] = p end
 	end
 	if math_abs(noise_large_caves) > 0.5 then
 		tiles[#tiles + 1] = {name = "grass-2", position = p}
-		--if math_random(1,620) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
-		-- if math_random(1,384) == 1 then
-		-- 	Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
-		-- 	entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"}
-		-- end
     if math_random(1,122 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
 		if math_random(1, 1024) == 1 then treasure[#treasure + 1] = p end
 		return
@@ -298,17 +339,12 @@ end
 local function process_forest_position(p, seed, tiles, entities, treasure, planet)
   local biters = planet[1].name.biters
 	local noise_forest_location = get_noise("forest_location", p, seed)
-	--local r = math.ceil(math.abs(get_noise("forest_density", pos, seed + 4096)) * 10)
-	--local r = 5 - math.ceil(math.abs(noise_forest_location) * 3)
-	--r = 2
-
 	if noise_forest_location > 0.095 then
 		if noise_forest_location > 0.6 then
 			if math_random(1,100) > 42 then entities[#entities + 1] = {name = "tree-08-brown", position = p} end
 		else
 			if math_random(1,100) > 42 then entities[#entities + 1] = {name = "tree-01", position = p} end
 		end
-		--surface.create_decoratives({check_collision=false, decoratives={{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}})
 		return
   else
     if math_random(1,152 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 250 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
@@ -320,14 +356,10 @@ local function process_forest_position(p, seed, tiles, entities, treasure, plane
 		else
 			if math_random(1,100) > 42 then entities[#entities + 1] = {name = "tree-02-red", position = p} end
 		end
-		--surface.create_decoratives({check_collision=false, decoratives={{name = decos_inside_forest[math_random(1, #decos_inside_forest)], position = pos, amount = math_random(1, 2)}}})
 		return
   else
     if math_random(1,152 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 250 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
   end
-
-
-	--surface.create_decoratives({check_collision=false, decoratives={{name = decos[math_random(1, #decos)], position = pos, amount = math_random(1, 2)}}})
 end
 
 local function process_river_position(p, seed, tiles, entities, treasure, planet)
@@ -417,7 +449,13 @@ local function process_biter_position(p, seed, tiles, entities, treasure, planet
   if scrapyard + 0.5 > -0.1  - 0.1 * planet[1].name.moisture and scrapyard + 0.5 < 0.1 +  0.1 * planet[1].name.moisture  then
     local treetypes = tree_raffle[math_random(1, s_tree_raffle)]
     if planet[1].name.id == 14 then treetypes = dead_tree_raffle[math_random(1, 5)] end --lava planet
-    if math_random(1,100) > 42 - handicap / 6 then entities[#entities + 1] = {name = treetypes , position = p} end
+    if math_random(1,100) > 42 - handicap / 6 then
+      if math_random(1,800) == 1 then
+        treasure[#treasure + 1] = p
+      else
+        entities[#entities + 1] = {name = treetypes , position = p}
+      end
+    end
   end
 
 	if scrapyard > -0.10 and scrapyard < 0.10 then
@@ -445,7 +483,6 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 	--Chasms
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 	local small_caves = get_noise("small_caves", p, seed)
-  local noise_forest_location = get_noise("forest_location", p, seed)
 	if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
 		if small_caves > 0.35 then
 			tiles[#tiles + 1] = {name = "out-of-map", position = p}
@@ -470,10 +507,6 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
        if math_random(1,100) > 42 then entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p} end
      end
 		if scrapyard < -0.28 or scrapyard > 0.28 then
-			-- if math_random(1,128) == 1 then
-			-- 	Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
-			-- 	entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"}
-			-- end
 			if math_random(1,96) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end
 			if math_random(1,5) > 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
 			return
@@ -498,10 +531,6 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 			return
 		end
 	end
-
-
-	--if math_random(1,64) == 1 and cave_ponds > 0.6 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
-
 	tiles[#tiles + 1] = {name = "stone-path", position = p}
 end
 
@@ -511,38 +540,34 @@ local function process_swamp_position(p, seed, tiles, entities, treasure, planet
 
   if scrapyard < -0.70 or scrapyard > 0.70 then
     tiles[#tiles + 1] = {name = "grass-3", position = p}
-    if math_random(1,50) == 1 then treasure[#treasure + 1] = p end
+    if math_random(1,40) == 1 then treasure[#treasure + 1] = p end
     return
   end
 
-  if scrapyard < -0.60 or scrapyard > 0.60 then
+  if scrapyard < -0.65 or scrapyard > 0.65 then
     tiles[#tiles + 1] = {name = "water-green", position = p}
     return
   end
-  if math_abs(scrapyard) > 0.40 and  math_abs(scrapyard) < 0.60 then
-    if math_random(1,40) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 120 then entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}end
+  if math_abs(scrapyard) > 0.50 and  math_abs(scrapyard) < 0.65 then
+    if math_random(1,70) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 140 then entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}end
     tiles[#tiles + 1] = {name = "water-mud", position = p}
     return
   end
-  if math_abs(scrapyard) > 0.25 and  math_abs(scrapyard) < 0.40 then
-    if math_random(1,80) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 120 then entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}end
+  if math_abs(scrapyard) > 0.35 and  math_abs(scrapyard) < 0.50 then
+    if math_random(1,140) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 140 then entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}end
     tiles[#tiles + 1] = {name = "water-shallow", position = p}
     return
   end
-  if scrapyard > -0.02 and scrapyard < 0.02 then
-    tiles[#tiles + 1] = {name = "water-green", position = p}
-    return
-  end
-  if scrapyard > -0.05 and scrapyard < 0.05 then
-    if math_random(1,100) > 42 then
+  if scrapyard > -0.15 and scrapyard < 0.15 then
+    if math_random(1,100) > 58 then
       entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p}
     else
-      if math_random(1,20) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
+      if math_random(1,8) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
     end
     tiles[#tiles + 1] = {name = "grass-1", position = p}
     return
   end
-	if math_random(1, 120) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then
+	if math_random(1, 160) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then
 		entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
 	end
 	tiles[#tiles + 1] = {name = "grass-2", position = p}
@@ -623,13 +648,11 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
       tiles[#tiles + 1 ] = {name = "out-of-map", position = p}
     end
   end
-
-
 end
 
 local levels = {
 	process_level_1_position,
-	process_level_2_position,
+	process_dangerevent_position,
 	process_hedgemaze_position,
 	process_rocky_position,
 	process_forest_position,
@@ -675,6 +698,7 @@ local function get_replacement_tile(surface, position)
 			if not tile.collides_with("resource-layer") then return tile.name end
 		end
 	end
+  if global.objective.planet[1].name.id == 18 then return "grass-2" end
 	return "grass-1"
 end
 
@@ -692,7 +716,6 @@ end
 local function forest_chunk(surface, left_top, level, planet)
   local tiles = {}
 	local entities = {}
-	--local markets = {}
 	local treasure = {}
 	local seed = surface.map_gen_settings.seed
 	local process_level = levels[level]
@@ -716,7 +739,6 @@ end
 local function biter_chunk(surface, left_top, level, planet)
   local tiles = {}
 	local entities = {}
-	--local markets = {}
 	local treasure = {}
 	local seed = surface.map_gen_settings.seed
 	local process_level = levels[level]
@@ -746,7 +768,6 @@ end
 local function empty_chunk(surface, left_top, level, planet)
 	local tiles = {}
 	local entities = {}
-	--local markets = {}
 	local treasure = {}
 	local seed = surface.map_gen_settings.seed
 	local process_level = levels[level]
@@ -763,12 +784,37 @@ local function empty_chunk(surface, left_top, level, planet)
 	end
 	surface.set_tiles(tiles, true)
   replace_water(surface, left_top)
+  if planet[1].name.id == 18 and left_top.y > 31 and left_top.x > 31 then
+    for x = 1, 5, 1 do
+      for y = 1, 5, 1 do
+        local pos = {x = left_top.x + x, y = left_top.y + y}
+        surface.set_tiles({{name = "deepwater-green", position = pos}})
+      end
+    end
+  end
+end
+
+local function danger_chunk(surface, left_top, level, planet)
+	local tiles = {}
+	local entities = {}
+	local treasure = {}
+	local seed = surface.map_gen_settings.seed
+	local process_level = levels[level]
+
+	for y = 0, 31, 1 do
+		for x = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}
+			process_level(p, seed, tiles, entities, treasure, planet)
+		end
+	end
+	surface.set_tiles(tiles, true)
+  replace_water(surface, left_top)
+  Specials.danger_event(surface, left_top)
 end
 
 local function fish_market(surface, left_top, level, planet)
   local tiles = {}
 	local entities = {}
-	--local markets = {}
   local seed = surface.map_gen_settings.seed
   local process_level = levels[level]
   for y = 0, 31, 1 do
@@ -778,63 +824,12 @@ local function fish_market(surface, left_top, level, planet)
     end
   end
   surface.set_tiles(tiles, true)
-  local market = surface.create_entity({name = "market", force = "player", position = {x = left_top.x + 16, y = left_top.y + 16}})
-  market.destructible = false
-  market.operable = false
-  market.minable = false
-  local repair_text = rendering.draw_text{
-    text = "Fish Market",
-    surface = surface,
-    target = market,
-    target_offset = {0, -2.5},
-    color = global.locomotive.color,
-    scale = 1.00,
-    font = "default-game",
-    alignment = "center",
-    scale_with_zoom = false
-  }
-  local fishchest = surface.create_entity({name = "compilatron-chest", force = "player", position = {x = left_top.x + 11, y = left_top.y + 16}})
-  fishchest.destructible = false
-  fishchest.minable = false
-  fishchest.operable = false
-  global.fishchest = fishchest
-  local repair_text = rendering.draw_text{
-    text = "Deposit fish here",
-    surface = surface,
-    target = fishchest,
-    target_offset = {0, -2.5},
-    color = global.locomotive.color,
-    scale = 0.75,
-    font = "default-game",
-    alignment = "center",
-    scale_with_zoom = false
-  }
-  local inserter = surface.create_entity({name = "fast-inserter", force = "player", position = {x = left_top.x + 10, y = left_top.y + 16}, direction = defines.direction.west})
-  inserter.destructible = false
-  inserter.minable = false
-  inserter.operable = false
-  inserter.rotatable = false
-  local track = surface.create_entity({name = "straight-rail", force = "player", position = {x = left_top.x + 8, y = left_top.y + 16}})
-  track.destructible = false
-  track.minable = false
-  -- for _, entity in pairs(entities) do
-	-- 	if entity_functions[game.entity_prototypes[entity.name].type] then
-	-- 		entity_functions[game.entity_prototypes[entity.name].type](surface, entity)
-	-- 	else
-	-- 		if surface.can_place_entity(entity) then
-	-- 			local e = surface.create_entity(entity)
-  --       -- if e.name == "biter-spawner" or e.name == "spitter-spawner" or e.name == "small-worm-turret" or e.name == "medium-worm-turret" or e.name == "big-worm-turret" or e.name == "behemoth-worm-turret" then
-  --       --   if math_abs(e.position.x) > 420 or math_abs(e.position.y) > 420 then e.destructible = false end
-  --       -- end
-	-- 		end
-	-- 	end
-	-- end
+  Specials.fish_market(surface, left_top)
 end
 
 local function fish_chunk(surface, left_top, level, planet)
   local tiles = {}
 	local entities = {}
-	--local markets = {}
 	local treasure = {}
   local seed = surface.map_gen_settings.seed
   local process_level = levels[level]
@@ -856,9 +851,6 @@ local function fish_chunk(surface, left_top, level, planet)
 		else
 			if surface.can_place_entity(entity) then
 				local e = surface.create_entity(entity)
-        -- if e.name == "biter-spawner" or e.name == "spitter-spawner" or e.name == "small-worm-turret" or e.name == "medium-worm-turret" or e.name == "big-worm-turret" or e.name == "behemoth-worm-turret" then
-        --   if math_abs(e.position.x) > 420 or math_abs(e.position.y) > 420 then e.destructible = false end
-        -- end
 			end
 		end
 	end
@@ -867,7 +859,6 @@ end
 local function normal_chunk(surface, left_top, level, planet)
 	local tiles = {}
 	local entities = {}
-	--local markets = {}
 	local treasure = {}
 	local seed = surface.map_gen_settings.seed
   local process_level = levels[level]
@@ -914,19 +905,7 @@ local function normal_chunk(surface, left_top, level, planet)
   		end
   	end
   end
-	--local level_index = math_floor((math_abs(left_top.y / level_depth)) % 10) + 1
-
-
-
 	surface.set_tiles(tiles, true)
-
-	-- if #markets > 0 then
-	-- 	local position = markets[math_random(1, #markets)]
-	-- 	if surface.count_entities_filtered{area = {{position.x - 96, position.y - 96}, {position.x + 96, position.y + 96}}, name = "market", limit = 1} == 0 then
-	-- 		local market = Market.mountain_market(surface, position, math_abs(position.y) * 0.004)
-	-- 		market.destructible = false
-	-- 	end
-	-- end
 
 	for _, p in pairs(treasure) do
 		local name = "wooden-chest"
@@ -987,13 +966,15 @@ local function process_chunk(surface, left_top)
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 3, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 3, planet) return end
   elseif id == 17 then --fish market
-    --if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 3, planet) return end
-    --if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 3, planet) return end
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x - 864) <= 31 then fish_market(surface, left_top, 10, planet) return end
     fish_chunk(surface, left_top, 10, planet)
   elseif id == 18 then --swamp planet
-    if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 9, planet) return end
-    if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then normal_chunk(surface, left_top, 9, planet) return end
+    if math_abs(left_top.y) <= 63 and math_abs(left_top.x) <= 63 then empty_chunk(surface, left_top, 9, planet) return end
+    if math_abs(left_top.y) > 63 or math_abs(left_top.x) > 63 then normal_chunk(surface, left_top, 9, planet) return end
+  elseif id == 19 then --danger event
+    if math_abs(left_top.y) <= 63 and math_abs(left_top.x) <= 63 then empty_chunk(surface, left_top, 2, planet) return end
+    if math_abs(left_top.y) == 448 and math_abs(left_top.x) == 448 then danger_chunk(surface, left_top, 2, planet) return end
+    if math_abs(left_top.y) > 63 or math_abs(left_top.x) > 63 then normal_chunk(surface, left_top, 2, planet) return end
   else
     if math_abs(left_top.y) <= 31 and math_abs(left_top.x) <= 31 then empty_chunk(surface, left_top, 7, planet) return end
     if math_abs(left_top.y) > 31 or math_abs(left_top.x) > 31 then biter_chunk(surface, left_top, 7, planet) return end
