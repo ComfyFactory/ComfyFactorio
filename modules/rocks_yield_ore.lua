@@ -108,6 +108,7 @@ local function on_player_mined_entity(event)
 	count = math_floor(count * (1 + player.force.mining_drill_productivity_bonus))
 	
 	global.rocks_yield_ore["ores_mined"] = global.rocks_yield_ore["ores_mined"] + count
+	global.rocks_yield_ore["rocks_broken"] = global.rocks_yield_ore["rocks_broken"] + 1
 	
 	local position = {x = entity.position.x, y = entity.position.y}
 	
@@ -171,7 +172,9 @@ local function on_entity_died(event)
 	
 	local count = math_random(1,3)
 	global.rocks_yield_ore["ores_mined"] = global.rocks_yield_ore["ores_mined"] + count	
-	surface.spill_item_stack(pos,{name = "stone", count = math_random(1,3)}, true)	
+	surface.spill_item_stack(pos,{name = "stone", count = math_random(1,3)}, true)
+	
+	global.rocks_yield_ore["rocks_broken"] = global.rocks_yield_ore["rocks_broken"] + 1
 end
 
 local function on_init()

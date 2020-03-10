@@ -761,10 +761,6 @@ local function on_player_joined_game(event)
 		surface.min_brightness = 0.3
 		surface.brightness_visual_weights = {1, 1, 1}
 		
-		global.explosion_cells_destructible_tiles = {
-			["out-of-map"] = 2500,
-		}
-		
 		game.forces["player"].technologies["landfill"].enabled = false
 		game.forces["player"].technologies["night-vision-equipment"].enabled = false
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false			
@@ -988,7 +984,7 @@ local function on_tick(event)
 			end								
 		end
 		
-		if game.tick % 900 == 0 then
+		if game.tick % 300 == 0 then
 			refresh_gui()
 		end
 	end		
@@ -1187,12 +1183,14 @@ local function on_player_mined_entity(event)
 end
 
 local function biters_chew_rocks_slower(event)
-	if event.entity.force.index ~= 3 then return end --Neutral Force
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.force.index ~= 3 then return end --Neutral Force
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if event.cause.force.index ~= 2 then return end --Enemy Force
 	if math_random(1, 8) == 1 then return end
-	event.entity.health = event.entity.health + event.final_damage_amount
+	entity.health = entity.health + event.final_damage_amount
 end
 
 local function on_entity_damaged(event)
@@ -1312,6 +1310,10 @@ local function on_init()
 	global.rocks_yield_ore_maximum_amount = 250
 	global.rocks_yield_ore_base_amount = 35
 	global.rocks_yield_ore_distance_modifier = 0.1
+	
+	global.explosion_cells_destructible_tiles = {
+		["out-of-map"] = 1000,
+	}
 end
 
 local Event = require 'utils.event'

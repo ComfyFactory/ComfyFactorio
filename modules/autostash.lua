@@ -4,6 +4,14 @@
 local math_floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
 
+local ore_names = {
+		["coal"] = true,
+		["stone"] = true,
+		["iron-ore"] = true,
+		["copper-ore"] = true,
+		["uranium-ore"] = true
+	}
+
 local function create_floaty_text(surface, position, name, count, height_offset)
 	if global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y] then
 		global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y] = global.autostash_floating_text_y_offsets[position.x .. "_" .. position.y] - 0.5
@@ -228,19 +236,11 @@ local function auto_stash(player, event)
 			hotbar_items[prototype.name] = true
 		end
 	end
-
-	local ore_types = {
-    ["coal"] = true,
-    ["stone"] = true,
-    ["iron-ore"] = true,
-    ["copper-ore"] = true,
-    ["uranium-ore"] = true
-}
-
+	
 	for name, count in pairs(inventory.get_contents()) do
 		if not inventory.find_item_stack(name).grid and not hotbar_items[name] then
 			if button == defines.mouse_button_type.right then
-				if ore_types[name] then
+				if game.entity_prototypes[name] and game.entity_prototypes[name].type == "resource" or ore_names[name] then
 					insert_item_into_chest(inventory, chests, filtered_chests, name, count)
 				end
 			elseif button == defines.mouse_button_type.left then
