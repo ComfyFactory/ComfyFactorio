@@ -1,6 +1,7 @@
 --this adds a button that stashes/sorts your inventory into nearby chests in some kind of intelligent way - mewmew
 -- modified by gerkiz
 
+local math_floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
 
 local function create_floaty_text(surface, position, name, count, height_offset)
@@ -62,26 +63,78 @@ local function chest_is_valid(chest)
 	return true
 end
 
+local function sort_entities_by_distance(position, entities)
+	local t = {}
+	local distance
+	local index
+	local size_of_entities = #entities
+	if size_of_entities < 2 then return end
+	
+	for _, entity in pairs(entities) do
+		distance = (entity.position.x - position.x) ^ 2 + (entity.position.y - position.y) ^ 2
+		index = math_floor(distance) + 1
+		if not t[index] then t[index] = {} end
+		table.insert(t[index], entity)
+	end
+	
+	local i = 0
+	for _, range in pairs(t) do
+		for _, entity in pairs(range) do
+			i = i + 1
+			entities[i] = entity
+		end
+	end	
+end
+
 local function get_nearby_chests(player)
 	local r = player.force.character_reach_distance_bonus + 10
 	local r_square = r * r
 	local chests = {}
+	local size_of_chests = 0
 	local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
+	
+	local containers = {}
+	local i = 0
 	for _, e in pairs(player.surface.find_entities_filtered({type = "container", area = area})) do
 		if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-			chests[#chests + 1] = e
+			i = i + 1
+			containers[i] = e
 		end
 	end
+	sort_entities_by_distance(player.position, containers)	
+	for _, entity in pairs(containers) do
+		size_of_chests = size_of_chests + 1
+		chests[size_of_chests] = entity
+	end
+	
+	local containers = {}
+	local i = 0
 	for _, e in pairs(player.surface.find_entities_filtered({name = "logistic-chest-storage", area = area})) do
 		if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-			chests[#chests + 1] = e
+			i = i + 1
+			containers[i] = e
 		end
 	end
+	sort_entities_by_distance(player.position, containers)	
+	for _, entity in pairs(containers) do
+		size_of_chests = size_of_chests + 1
+		chests[size_of_chests] = entity
+	end
+	
+	local containers = {}
+	local i = 0
 	for _, e in pairs(player.surface.find_entities_filtered({name = "logistic-chest-passive-provider", area = area})) do
 		if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-			chests[#chests + 1] = e
+			i = i + 1
+			containers[i] = e
 		end
 	end
+	sort_entities_by_distance(player.position, containers)	
+	for _, entity in pairs(containers) do
+		size_of_chests = size_of_chests + 1
+		chests[size_of_chests] = entity
+	end
+
 	return chests
 end
 
