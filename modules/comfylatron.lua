@@ -198,7 +198,7 @@ local function desync()
 	local m = 12
 	local m2 = m * 0.005
 	for i = 1, 32, 1 do 
-		global.comfylatron.surface.create_entity({
+		global.comfylatron.surface.create_particle({
 			name = "iron-ore-particle",
 			position = global.comfylatron.position,
 			frame_speed = 0.1,
