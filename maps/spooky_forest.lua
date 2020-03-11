@@ -257,7 +257,7 @@ end
 
 local function regenerate_decoratives_for_chunk(surface, position)
 	local chunk = get_chunk_position(position)
-	surface.destroy_decoratives({{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}})
+	surface.destroy_decoratives({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}})
 	local decorative_names = {}
 	for k,v in pairs(game.decorative_prototypes) do
 		if v.autoplace_specification then
