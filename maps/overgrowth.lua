@@ -17,7 +17,7 @@ require "modules.trees_randomly_die"
 
 require "maps.overgrowth_map_info"
 
-require "functions.soft_reset"
+local Reset = require "functions.soft_reset"
 local rpg_t = require 'modules.rpg'
 local kaboom = require "functions.omegakaboom"
 
@@ -25,7 +25,7 @@ require "modules.difficulty_vote"
 
 local unearthing_biters = require "functions.unearthing_biters"
 
-local event = require 'utils.event' 
+local event = require 'utils.event'
 local math_random = math.random
 
 local difficulties_votes = {
@@ -55,20 +55,20 @@ local starting_items = {
 
 local function create_particles(surface, name, position, amount, cause_position)
 	local math_random = math.random
-	
+
 	local direction_mod = (-100 + math_random(0,200)) * 0.0004
 	local direction_mod_2 = (-100 + math_random(0,200)) * 0.0004
-	
+
 	if cause_position then
 		direction_mod = (cause_position.x - position.x) * 0.021
 		direction_mod_2 = (cause_position.y - position.y) * 0.021
 	end
-	
-	for i = 1, amount, 1 do 
+
+	for i = 1, amount, 1 do
 		local m = math_random(4, 10)
 		local m2 = m * 0.005
-		
-		surface.create_entity({
+
+		surface.create_particle({
 			name = name,
 			position = position,
 			frame_speed = 1,
@@ -79,7 +79,7 @@ local function create_particles(surface, name, position, amount, cause_position)
 				(m2 - (math_random(0, m) * 0.01)) + direction_mod_2
 			}
 		})
-	end	
+	end
 end
 
 local function spawn_market(surface, position)
@@ -91,7 +91,7 @@ local function spawn_market(surface, position)
 	market.add_market_item({price = {{"coin", 3}}, offer = {type = 'give-item', item = 'stone', count = 50}})
 	market.add_market_item({price = {{"coin", 3}}, offer = {type = 'give-item', item = 'coal', count = 50}})
 	market.add_market_item({price = {{"coin", 5}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}})
-	
+
 	market.add_market_item({price = {{'coin', 2}}, offer = {type = 'give-item', item = "raw-fish", count = 1}})
 	market.add_market_item({price = {{'coin', 8}}, offer = {type = 'give-item', item = "grenade", count = 1}})
 	market.add_market_item({price = {{'coin', 1}}, offer = {type = 'give-item', item = "firearm-magazine", count = 1}})
@@ -117,7 +117,7 @@ local function get_surface_settings()
 	map_gen_settings.seed = math_random(1, 1000000)
 	map_gen_settings.water = math_random(15, 30) * 0.1
 	map_gen_settings.starting_area = 1
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = math_random(4, 48), cliff_elevation_0 = math_random(4, 48)}	
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = math_random(4, 48), cliff_elevation_0 = math_random(4, 48)}
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "2", size = "1", richness = "1"},
 		["stone"] = {frequency = "2", size = "1", richness = "1"},
@@ -126,7 +126,7 @@ local function get_surface_settings()
 		["uranium-ore"] = {frequency = "2", size = "1", richness = "1"},
 		["crude-oil"] = {frequency = "3", size = "1", richness = "1.5"},
 		["trees"] = {frequency = "2", size = "1", richness = "0.75"},
-		["enemy-base"] = {frequency = "4", size = "1.25", richness = "1"}	
+		["enemy-base"] = {frequency = "4", size = "1.25", richness = "1"}
 	}
 	return map_gen_settings
 end
@@ -139,18 +139,18 @@ function reset_map()
 	global.trees_grow_chunks_charted = {}
 	global.trees_grow_chunks_charted_counter = 0
 
-	global.current_surface = soft_reset_map(global.current_surface, get_surface_settings(), starting_items)
-	
+	global.current_surface = Reset.soft_reset_map(global.current_surface, get_surface_settings(), starting_items)
+
 	reset_difficulty_poll()
-	
+
 	global.trees_defeated = 0
 	tree_gui()
-	
+
 	global.market = spawn_market(global.current_surface, {x = 0, y = -8})
-	
+
 	game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[4]
-	
-	if rpg then rpg_reset_all_players() end
+
+	if rpg then rpg_t.rpg_reset_all_players() end
 end
 
 local function on_player_joined_game(event)
@@ -158,55 +158,55 @@ local function on_player_joined_game(event)
 	if player.online_time == 0 then
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
-		end	
-	end	
-	
+		end
+	end
+
 	if global.current_surface then
 		if player.surface.name ~= global.current_surface.name then
-			local pos = global.current_surface.find_non_colliding_position("character", {x = 0, y = 0}, 1, 0.5)
+			local pos = global.current_surface.find_non_colliding_position("character", {x = 0, y = 0}, 16, 0.5)
 			player.teleport(pos, global.current_surface)
 		end
 	end
-	
+
 	if not global.market and game.tick == 0 then
 		global.current_surface = game.create_surface("overgrowth", get_surface_settings())
 		game.forces["player"].set_spawn_position({x = 0, y = 0}, global.current_surface)
 		player.teleport({0,0}, global.current_surface)
 		reset_map()
 	end
-	
+
 	tree_gui()
-end	
+end
 
 local function trap(entity)
 	local r = 8
 	if global.difficulty_vote_index then r = difficulties_votes[global.difficulty_vote_index] end
-	if math_random(1,r) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end	
+	if math_random(1,r) == 1 then unearthing_biters(entity.surface, entity.position, math_random(4,8)) end
 end
 
 local function on_player_mined_entity(event)
 	local entity = event.entity
-	if not entity.valid then return end	
+	if not entity.valid then return end
 	if entity.type ~= "tree" then return end
-	
+
 	global.trees_defeated = global.trees_defeated + 1
 	tree_gui()
-	
+
 	trap(entity)
-	
+
 	if event.player_index then
 		create_particles(entity.surface, "wooden-particle", entity.position, 128, game.players[event.player_index].position)
 		game.players[event.player_index].insert({name = "coin", count = 1})
 		return
 	end
-	
+
 	create_particles(entity.surface, "wooden-particle", entity.position, 128)
-	
+
 	if event.cause then
 		if event.cause.force.name == "enemy" then return end
-	end	
-	
-	entity.surface.spill_item_stack(entity.position,{name = "coin", count = 1}, true)	
+	end
+
+	entity.surface.spill_item_stack(entity.position,{name = "coin", count = 1}, true)
 end
 
 local function on_entity_died(event)
@@ -224,8 +224,8 @@ local function attack_market()
 	local c = 8
 	if global.difficulty_vote_index then
 		c = global.difficulty_vote_index * 2
-		game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[global.difficulty_vote_index] 
-	end	
+		game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[global.difficulty_vote_index]
+	end
 	global.current_surface.set_multi_command({
 		command={
 			type=defines.command.attack,
@@ -253,15 +253,15 @@ local function tick()
 		if math_random(1, 60) == 1 then
 			attack_market()
 		end
-		return 
-	end	
+		return
+	end
 	if not global.map_reset_timeout then return end
 	if game.tick < global.map_reset_timeout then return end
 	reset_map()
 	global.map_reset_timeout = nil
 end
 
-event.on_nth_tick(60, tick)	
+event.on_nth_tick(60, tick)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
