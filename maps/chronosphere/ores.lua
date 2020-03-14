@@ -103,7 +103,7 @@ local function spawn_ore_vein(surface, pos, planet)
     if choice == "crude-oil" then
       surface.create_entity({name = "crude-oil", position = pos, amount = get_oil_amount(pos, oil.w, planet[1].ore_richness.factor) })
     else
-      draw_noise_ore_patch(pos, choice, surface, get_size_of_ore(choice, planet), richness, mixed)
+      draw_noise_ore_patch(pos, choice, surface, get_size_of_ore(choice, planet), richness / 2, mixed)
     end
   --end
 end

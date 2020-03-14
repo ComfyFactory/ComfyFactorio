@@ -32,8 +32,8 @@ function Public.locomotive_spawn(surface, position, wagons)
 	global.locomotive.color = {0, 255, 0}
 	global.locomotive.minable = false
 
-	-- if not global.comfychests then global.comfychests = {} end
-	-- if not global.acumulators then global.acumulators = {} end
+	--if not global.comfychests then global.comfychests = {} end
+	--if not global.acumulators then global.acumulators = {} end
 	for i = 1, 24, 1 do
 		local yi = 0
 		local xi = 5
@@ -122,8 +122,8 @@ local market_offers = {
 function Public.create_wagon_room()
 	local width = 64
 	local height = 384
-	--global.comfychests2 = {}
-	if not global.acumulators then global.acumulators = {} end
+	global.comfychests2 = {}
+	global.acumulators = {}
 	local map_gen_settings = {
 		["width"] = width,
 		["height"] = height + 128,

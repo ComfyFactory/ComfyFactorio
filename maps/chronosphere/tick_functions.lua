@@ -5,23 +5,24 @@ local math_floor = math.floor
 
 function Public_tick.check_chronoprogress()
 	local objective = global.objective
+  local map_gen_settings = Public_tick.get_map_gen_settings()
 	--game.print(objective.chronotimer)
   if objective.planet[1].name.id == 19 then
     if objective.passivetimer == 10 then
-      game.print("Comfylatron: We have a problem! We got disrupted in mid-jump, only part of energy got used, and here we landed. It might have been a trap!", {r=0.98, g=0.66, b=0.22})
-      game.print("Comfylatron: My analysis says that charging needs full energy reset to work again, so we are stuck there until next full jump.", {r=0.98, g=0.66, b=0.22})
+      game.print({"chronosphere.message_danger1"}, {r=0.98, g=0.66, b=0.22})
+      game.print({"chronosphere.message_danger2"}, {r=0.98, g=0.66, b=0.22})
     elseif objective.passivetimer == 25 then
-      game.print("Robot voice: INTRUDER ALERT! Lifeforms detected! Must eliminate!", {r=0.98, g=0, b=0})
+      game.print({"chronosphere.message_danger3"}, {r=0.98, g=0, b=0})
     elseif objective.passivetimer == 30 then
-      game.print("Robot voice: Nuclear missiles armed, launch countdown enabled.", {r=0.98, g=0, b=0})
+      game.print({"chronosphere.message_danger4"}, {r=0.98, g=0, b=0})
     end
   end
 	if objective.chronotimer == objective.chrononeeds - 180  then
-		game.print("Comfylatron: Acumulator charging disabled, 180 seconds countdown to jump!", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_jump180"}, {r=0.98, g=0.66, b=0.22})
 	elseif objective.chronotimer == objective.chrononeeds - 60  then
-		game.print("Comfylatron: ChronoTrain nearly charged! Grab what you can, we leaving in 60 seconds!", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_jump60"}, {r=0.98, g=0.66, b=0.22})
 	elseif objective.chronotimer == objective.chrononeeds - 30 then
-		game.print("Comfylatron: You better hurry up! 30 seconds remaining!", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_jump30"}, {r=0.98, g=0.66, b=0.22})
 	elseif objective.chronotimer >= objective.chrononeeds - 10 and objective.chrononeeds - objective.chronotimer > 0 then
 		game.print("Comfylatron: Jump in " .. objective.chrononeeds - objective.chronotimer .. " seconds!", {r=0.98, g=0.66, b=0.22})
 	end
@@ -85,11 +86,19 @@ function Public_tick.move_items()
 		local items = input_inventory.get_contents()
 
 		for item, count in pairs(items) do
-			local inserted = output_inventory.insert({name = item, count = count})
-			if inserted > 0 then
-				local removed = input_inventory.remove({name = item, count = inserted})
-			end
+      if item == "modular-armor" or item == "power-armor" or item == "power-armor-mk2" then
+        --log("can't move armors")
+      else
+    		local inserted = output_inventory.insert({name = item, count = count})
+    		if inserted > 0 then
+    			local removed = input_inventory.remove({name = item, count = inserted})
+    		end
+      end
 		end
+    -- local items = {}
+    -- for ii = 1, #input_inventory, 1 do
+    --   items[#items + 1] = input_inventory[ii]
+    -- end
 	end
 end
 
@@ -105,15 +114,19 @@ function Public_tick.output_items()
 		inv.sort_and_merge()
 		local items = inv.get_contents()
 		for item, count in pairs(items) do
-			local inserted = nil
-			if i <= 2 then
-				inserted = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
-			else
-				inserted = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
-			end
-			if inserted > 0 then
-				local removed = inv.remove({name = item, count = inserted})
-			end
+      if item == "modular-armor" or item == "power-armor" or item == "power-armor-mk2" then
+        --log("can't move armors")
+      else
+  			local inserted = nil
+  			if i <= 2 then
+  				inserted = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count, grid = item.grid})
+  			else
+  				inserted = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count, grid = item.grid})
+  			end
+  			if inserted > 0 then
+  				local removed = inv.remove({name = item, count = inserted})
+  			end
+      end
 		end
 	end
 end
@@ -168,7 +181,7 @@ local function launch_nukes()
       if objective.dangers[i].destroyed == false then
         local fake_shooter = surface.create_entity({name = "character", position = objective.dangers[i].silo.position, force = "enemy"})
         surface.create_entity({name = "atomic-rocket", position = objective.dangers[i].silo.position, force = "enemy", speed = 1, max_range = 800, target = global.locomotive, source = fake_shooter})
-        game.print("Warning: Nuclear missile launched.", {r=0.98, g=0, b=0})
+        game.print({"chronosphere.message_nuke"}, {r=0.98, g=0, b=0})
       end
     end
   end
@@ -205,7 +218,7 @@ end
 
 function Public_tick.offline_players()
   local objective = global.objective
-  if objective.chronotimer > objective.chrononeeds - 182 then return end
+  if objective.chronotimer > objective.chrononeeds - 182 or objective.passivetimer < 30 then return end
   local current_tick = game.tick
   local players = objective.offline_players
   local surface = game.surfaces[global.active_surface_index]
@@ -217,30 +230,40 @@ function Public_tick.offline_players()
         --game.print("deleting already online character from list")
         players[i] = nil
       else
-        if players[i] and players[i].tick < game.tick - 54000 then
+        if players[i] and players[i].tick < game.tick - 540 then
           --log("spawning corpse")
           local player_inv = {}
+          local items = {}
           player_inv[1] = game.players[players[i].index].get_inventory(defines.inventory.character_main)
           player_inv[2] = game.players[players[i].index].get_inventory(defines.inventory.character_armor)
           player_inv[3] = game.players[players[i].index].get_inventory(defines.inventory.character_guns)
           player_inv[4] = game.players[players[i].index].get_inventory(defines.inventory.character_ammo)
           player_inv[5] = game.players[players[i].index].get_inventory(defines.inventory.character_trash)
-          game.print("Comfylatron: Offline player had an accident, and dropped his items on ground around locomotive.")
-          local e = surface.create_entity({name = "character", position = game.forces.player.get_spawn_position(surface), force = "player"})
+          game.print({"chronosphere.message_accident"}, {r=0.98, g=0.66, b=0.22})
+          local e = surface.create_entity({name = "character", position = game.forces.player.get_spawn_position(surface), force = "neutral"})
           local inv = e.get_inventory(defines.inventory.character_main)
-          for i = 1, 5, 1 do
-            if player_inv[i].valid then
-              local items = player_inv[i].get_contents()
-              for item, count in pairs(items) do
-          			inv.insert({name = item, count = count})
-                player_inv[i].remove({name = item, count = count})
+          for ii = 1, 5, 1 do
+            if player_inv[ii].valid then
+              for iii = 1, #player_inv[ii], 1 do
+                if player_inv[ii][iii].valid then
+                  items[#items + 1] = player_inv[ii][iii]
+                end
               end
-            else
-              --log("invalid")
-              --game.print("invalid")
+            end
+          end
+          if #items > 0 then
+            for item = 1, #items, 1 do
+              if items[item].valid then
+      			     inv.insert(items[item])
+              end
             end
           end
           e.die("neutral")
+          for ii = 1, 5, 1 do
+            if player_inv[ii].valid then
+              player_inv[ii].clear()
+            end
+          end
           players[i] = nil
         else
           --game.print("keeping player in list")

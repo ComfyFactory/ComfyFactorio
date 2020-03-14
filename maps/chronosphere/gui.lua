@@ -154,7 +154,7 @@ local function update_gui(player)
     [2] = {t = "[2]: Pollution Filter. Actual value of pollution made: " .. math_floor(300/(objective.filterupgradetier/3+1)) .. "%\n    Buyable once per 3 jumps.\n    Cost: 5000 coins + 2000 green circuits + Jump number " .. (objective.filterupgradetier + 1) * 3 .. "\n"},
     [3] = {t = "[3]: Add additional row of Acumulators.\n    Cost : " .. math_floor(2000 * (1 + objective.acuupgradetier /4)) .. " coins + 200 batteries\n"},
     [4] = {t = "[4]: Add item pickup distance to players.Current: +" .. objective.pickupupgradetier .. ",\n    Cost: " .. 1000 * (1 + objective.pickupupgradetier) .. " coins + 400 red inserters\n"},
-    [5] = {t = "[5]: Add +5 inventory slots. Buyable once per 5 jumps.\n    Cost: " .. 2000 * (1 + objective.invupgradetier) .." coins + " .. chests[objective.invupgradetier + 1].c},
+    [5] = {t = "[5]: Add +10 inventory slots. Buyable once per 5 jumps.\n    Cost: " .. 2000 * (1 + objective.invupgradetier) .." coins + " .. chests[objective.invupgradetier + 1].c},
     [6] = {t = "[6]: Use up more repair tools on train at once. Current: +" .. objective.toolsupgradetier .. "\n    Cost: " .. 1000 * (1 + objective.toolsupgradetier) .. " coins + " .. 200 * (1 + objective.toolsupgradetier) .. " repair tools\n"},
     [7] = {t = "[7]: Add piping through wagon sides to create water sources for each wagon.\n    Cost: 2000 coins + 500 pipes\n"},
     [8] = {t = "[8]: Add comfylatron chests that output outside (into cargo wagon 2 and 3)\n    Cost: 2000 coins + 100 fast inserters\n"},

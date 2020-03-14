@@ -99,7 +99,7 @@ function Public.determine_planet(choice)
       name = planet_choice,
       day_speed = dayspeed,
       time = daytime,
-      ore_richness = richness[ores],
+      ore_richness = richness[ores]
     }
   }
   objective.planet = planet

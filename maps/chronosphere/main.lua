@@ -47,11 +47,12 @@ local function generate_overworld(surface, optplanet)
 	game.print(message, {r=0.98, g=0.66, b=0.22})
 	Server.to_discord_embed(message)
 	if planet[1].name.id == 12 then
-		game.print("Comfylatron: OwO what are those strange trees?!? They have ore fruits! WTF!", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_choppy"}, {r=0.98, g=0.66, b=0.22})
 	elseif planet[1].name.id == 14 then
-		game.print("Comfylatron: OOF this one is a bit hot. And have seen those biters? They BATHE in fire! Maybe try some bricks to protect from lava?", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_lava"}, {r=0.98, g=0.66, b=0.22})
 	elseif planet[1].name.id == 17 then
-		game.print("Comfylatron: So here we are. Fish Market. When they ordered the fish, they said this location is perfectly safe. Looks like we will have to do it for them. I hope you have enough nukes. Also, that satellite gave us some space knowledge.", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_fishmarket1"}, {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_fishmarket2"}, {r=0.98, g=0.66, b=0.22})
 	end
 	surface.min_brightness = 0
 	surface.brightness_visual_weights = {1, 1, 1}
@@ -100,25 +101,6 @@ local function generate_overworld(surface, optplanet)
 	end
 end
 
-local function get_map_gen_settings()
-	local seed = math_random(1, 1000000)
-	local map_gen_settings = {
-		["seed"] = seed,
-		["width"] = 960,
-		["height"] = 960,
-		["water"] = 0.1,
-		["starting_area"] = 1,
-		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
-		["default_enable_all_autoplace_controls"] = true,
-		["autoplace_settings"] = {
-			["entity"] = {treat_missing_as_default = false},
-			["tile"] = {treat_missing_as_default = true},
-			["decorative"] = {treat_missing_as_default = true},
-		},
-	}
-	return map_gen_settings
-end
-
 local function render_train_hp()
 	local surface = game.surfaces[global.active_surface_index]
 	local objective = global.objective
@@ -159,11 +141,11 @@ local function reset_map()
 	objective.computerupgrade = 0
 	objective.computerparts = 0
 	objective.computermessage = 0
-	local map_gen_settings = get_map_gen_settings()
+	objective.chronojumps = 0
 	Planets.determine_planet(nil)
 	local planet = global.objective.planet
 	if not global.active_surface_index then
-		global.active_surface_index = game.create_surface("chronosphere", map_gen_settings).index
+		global.active_surface_index = game.create_surface("chronosphere", Chrono.get_map_gen_settings()).index
 	else
 		game.forces.player.set_spawn_position({12, 10}, game.surfaces[global.active_surface_index])
 		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
@@ -171,79 +153,7 @@ local function reset_map()
 
 	local surface = game.surfaces[global.active_surface_index]
 	generate_overworld(surface, planet)
-
-
-	objective.max_health = 10000
-	objective.health = 10000
-	objective.hpupgradetier = 0
-	objective.acuupgradetier = 0
-	objective.filterupgradetier = 0
-	objective.pickupupgradetier = 0
-	objective.invupgradetier = 0
-	objective.toolsupgradetier = 0
-	objective.waterupgradetier = 0
-	objective.outupgradetier = 0
-	objective.boxupgradetier = 0
-	objective.poisondefense = 2
-	objective.poisontimeout = 0
-	objective.chronojumps = 0
-	objective.chronotimer = 0
-	objective.passivetimer = 0
-	objective.passivejumps = 0
-	objective.chrononeeds = 2000
-	objective.mainscore = 0
-	objective.active_biters = {}
-	objective.unit_groups = {}
-	objective.biter_raffle = {}
-	objective.dangertimer = 1200
-	objective.dangers = {}
-	objective.looted_nukes = 0
-	global.outchests = {}
-	global.upgradechest = {}
-	global.fishchest = {}
-	global.acumulators = {}
-	global.comfychests = {}
-	global.comfychests2 = {}
-	global.locomotive_cargo = {}
-	for _, player in pairs(game.connected_players) do
-		global.flame_boots[player.index] = {fuel = 1, steps = {}}
-	end
-	global.friendly_fire_history = {}
-	global.landfill_history = {}
-	global.mining_history = {}
-	global.score = {}
-
-
-
-
-	game.difficulty_settings.technology_price_multiplier = 0.6
-	game.map_settings.enemy_evolution.destroy_factor = 0.005
-	game.map_settings.enemy_evolution.pollution_factor = 0
-	game.map_settings.enemy_evolution.time_factor = 7e-05
-	game.map_settings.enemy_expansion.enabled = true
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
-	game.map_settings.enemy_expansion.settler_group_max_size = 8
-	game.map_settings.enemy_expansion.settler_group_min_size = 16
-	game.map_settings.pollution.enabled = true
-	game.map_settings.pollution.pollution_restored_per_tree_damage = 0.02
-	game.map_settings.pollution.min_pollution_to_damage_trees = 1
-	game.map_settings.pollution.max_pollution_to_restore_trees = 0
-	game.map_settings.pollution.pollution_with_max_forest_damage = 10
-	game.map_settings.pollution.pollution_per_tree_damage = 0.1
-	game.map_settings.pollution.ageing = 0.1
-	game.map_settings.pollution.diffusion_ratio = 0.1
-	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 5
-	game.forces.enemy.evolution_factor = 0.0001
-	game.forces.scrapyard.set_friend('enemy', true)
-	game.forces.enemy.set_friend('scrapyard', true)
-
-	game.forces.player.technologies["land-mine"].enabled = false
-	game.forces.player.technologies["landfill"].enabled = false
-	game.forces.player.technologies["fusion-reactor-equipment"].enabled = false
-	game.forces.player.technologies["power-armor-mk2"].enabled = false
-	game.forces.player.technologies["railway"].researched = true
-	game.forces.player.recipes["pistol"].enabled = false
+	Chrono.restart_settings()
 
 	game.forces.player.set_spawn_position({12, 10}, surface)
 	local wagons = {}
@@ -258,10 +168,9 @@ local function reset_map()
 	render_train_hp()
 	game.reset_time_played()
 	Locomotive.create_wagon_room()
-	global.difficulty_poll_closing_timeout = game.tick + 54000
-	global.difficulty_player_votes = {}
+	Event_functions.mining_buffs()
 	if objective.game_won then
-		game.print("Comfylatron: WAIT whaat? Looks like we did not fixed the train properly and it teleported us back in time...sigh...so let's do this again, and now properly.", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_game_won_restart"}, {r=0.98, g=0.66, b=0.22})
 	end
 	objective.game_lost = false
 	objective.game_won = false
@@ -299,11 +208,6 @@ local function on_player_joined_game(event)
 			player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
 		end
 	end
-end
-
-local function on_player_left_game(event)
-	local player = game.players[event.player_index]
-
 end
 
 local function on_pre_player_left_game(event)
@@ -344,13 +248,12 @@ local function chronojump(choice)
 			Locomotive.enter_cargo_wagon(player, wagons[math_random(1,3)])
 		end
 	end
-	local map_gen_settings = get_map_gen_settings()
 	global.lab_cells = {}
-	global.active_surface_index = game.create_surface("chronosphere" .. objective.chronojumps, map_gen_settings).index
+	global.active_surface_index = game.create_surface("chronosphere" .. objective.chronojumps, Chrono.get_map_gen_settings()).index
 	local surface = game.surfaces[global.active_surface_index]
 	local planet = nil
 	if choice then
-		Planets.determine_planet(choice)
+		Planets.determine_planet(choice, 1)
 		planet = global.objective.planet
 	end
 	generate_overworld(surface, planet)
@@ -570,15 +473,9 @@ local function on_entity_died(event)
 	end
 end
 
-	--on_player_mined_entity(event)
-	--if not event.entity.valid then return end
-	--end
-
 local function on_research_finished(event)
-	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 100 + global.objective.invupgradetier * 5
 	Event_functions.flamer_nerfs()
-	if not event.research.force.technologies["steel-axe"].researched then return end
-	event.research.force.manual_mining_speed_modifier = 1 + game.forces.player.mining_drill_productivity_bonus * 4
+	Event_functions.mining_buffs()
 end
 
 local function on_player_driving_changed_state(event)
@@ -642,7 +539,6 @@ event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 event.add(defines.events.on_pre_player_mined_item, pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
---event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 

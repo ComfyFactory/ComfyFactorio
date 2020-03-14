@@ -23,8 +23,8 @@ local function get_ore_amount()
 end
 
 local function reward_ores(amount, mined_loot, surface, player)
-	local i = player.insert {name = mined_loot, count = amount}
-	amount = amount - i
+	local a = player.insert {name = mined_loot, count = amount}
+	amount = amount - a
 	if amount > 0 then
 		if amount >= 50 then
 			for i = 1, math_floor(amount / 50), 1 do
@@ -180,9 +180,9 @@ local ore_yield = {
 
 function Public_event.swamp_loot(event)
 	local surface = game.surfaces[global.active_surface_index]
-	local amount = get_ore_amount() / 10
+	local amount = get_ore_amount() / 12
 	if ore_yield[event.entity.name] then
-		amount = get_ore_amount() / 10 * ore_yield[event.entity.name]
+		amount = get_ore_amount() / 12 * ore_yield[event.entity.name]
 	end
 	local rock_mining = {"iron-ore", "iron-ore", "coal", "coal", "coal"}
 	local mined_loot = rock_mining[math_random(1,#rock_mining)]
@@ -195,7 +195,7 @@ function Public_event.danger_silo(entity)
 		if objective.dangers and #objective.dangers > 1 then
 	    for i = 1, #objective.dangers, 1 do
 	      if entity == objective.dangers[i].silo then
-					game.print("Nuclear silo destroyed. You managed to loot 5 atomic bombs. Comfylatron seized them for your own safety.", {r=0.98, g=0.66, b=0.22})
+					game.print({"chronosphere.message_silo"}, {r=0.98, g=0.66, b=0.22})
 					objective.dangers[i].destroyed = true
 					objective.dangers[i].silo = nil
 					objective.dangers[i].speaker.destroy()
@@ -263,5 +263,27 @@ function Public_event.flamer_nerfs()
 	game.forces.player.set_turret_attack_modifier("flamethrower-turret", flamer_power - 0.02 * difficulty * objective.chronojumps)
 end
 
+function Public_event.mining_buffs()
+	local mining_power = 0
+	local mining_researches = {
+		[1] = {name = "mining-productivity-1", bonus = 0.2},
+		[2] = {name = "mining-productivity-2", bonus = 0.2},
+		[3] = {name = "mining-productivity-3", bonus = 0.2},
+		[4] = {name = "mining-productivity-4", bonus = 0.2}
+	}
+	for i = 1, 3, 1 do
+		if game.forces.player.technologies[mining_researches[i].name].researched then
+			mining_power = mining_power + mining_researches[i].bonus
+		end
+	end
+	mining_power = mining_power + (game.forces.player.technologies[mining_researches[4].name].level - 4) * 0.2
+	game.forces.player.mining_drill_productivity_bonus = 1 + mining_power
+	local bonusinv = 0
+	if game.forces.player.technologies["toolbelt"].researched then bonusinv = 10 end
+	game.forces.player.character_inventory_slots_bonus = mining_power * 50 + global.objective.invupgradetier * 10 + bonusinv
+	if game.forces.player.technologies["steel-axe"].researched then
+		game.forces.player.manual_mining_speed_modifier = 1 + mining_power * 2
+	end
+end
 
 return Public_event

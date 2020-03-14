@@ -364,7 +364,7 @@ end
 
 local function process_river_position(p, seed, tiles, entities, treasure, planet)
   local biters = planet[1].name.biters
-  local richness = math_random(50 + 20 * global.objective.chronojumps, 100 + 20 * global.objective.chronojumps) * planet[1].ore_richness.factor
+  local richness = math_random(50 + 20 * global.objective.chronojumps, 100 + 20 * global.objective.chronojumps) * planet[1].ore_richness.factor * 0.5
   local iron_size = get_size_of_ore("iron-ore", planet) * 3
   local copper_size = get_size_of_ore("copper-ore", planet) * 3
   local stone_size = get_size_of_ore("stone", planet) * 3
@@ -988,6 +988,7 @@ end
 
 local function on_chunk_generated(event)
 	if string.sub(event.surface.name, 0, 12) ~= "chronosphere" then return end
+  if event.surface.index == global.objective.nextsurface then return end
 	process_chunk(event.surface, event.area.left_top)
 	--global.chunk_queue[#global.chunk_queue + 1] = {left_top = {x = event.area.left_top.x, y = event.area.left_top.y}, surface_index = event.surface.index}
 end

@@ -30,8 +30,8 @@ local function check_upgrade_hp()
 		local coincost = math_floor(500 * (1 + objective.hpupgradetier /2))
 		if countcoins >= coincost and count2 >= 1500 and objective.hpupgradetier < 36 then
 			inv.remove({name = "coin", count = coincost})
-			inv.remove({name = "copper-plate", count = 3000})
-			game.print("Comfylatron: Train's max HP was upgraded.", {r=0.98, g=0.66, b=0.22})
+			inv.remove({name = "copper-plate", count = 1500})
+			game.print({"chronosphere.message_upgrade_hp"}, {r=0.98, g=0.66, b=0.22})
 			objective.hpupgradetier = objective.hpupgradetier + 1
 			objective.max_health = 10000 + 2500 * objective.hpupgradetier
 			rendering.set_text(global.objective.health_text, "HP: " .. global.objective.health .. " / " .. global.objective.max_health)
@@ -48,7 +48,7 @@ local function check_upgrade_filter()
     if countcoins >= 5000 and count2 >= 2000 and objective.filterupgradetier < 9 and objective.chronojumps >= (objective.filterupgradetier + 1) * 3 then
       inv.remove({name = "coin", count = 5000})
       inv.remove({name = "electronic-circuit", count = 2000})
-      game.print("Comfylatron: Train's pollution filter was upgraded.", {r=0.98, g=0.66, b=0.22})
+      game.print({"chronosphere.message_upgrade_filter"}, {r=0.98, g=0.66, b=0.22})
       objective.filterupgradetier = objective.filterupgradetier + 1
     end
   end
@@ -64,7 +64,7 @@ local function check_upgrade_acu()
 		if countcoins >= coincost and count2 >= 200 and objective.acuupgradetier < 24 then
 			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = "battery", count = 200})
-			game.print("Comfylatron: Train's acumulator capacity was upgraded.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_acu"}, {r=0.98, g=0.66, b=0.22})
 			objective.acuupgradetier = objective.acuupgradetier + 1
 			spawn_acumulators()
 		end
@@ -81,7 +81,7 @@ local function check_upgrade_pickup()
 		if countcoins >= coincost and count2 >= 400 and objective.pickupupgradetier < 4 then
 			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = "long-handed-inserter", count = 400})
-			game.print("Comfylatron: Players now have additional red inserter installed on shoulders, increasing their item pickup range.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_pickup"}, {r=0.98, g=0.66, b=0.22})
 			objective.pickupupgradetier = objective.pickupupgradetier + 1
 			game.forces.player.character_loot_pickup_distance_bonus = game.forces.player.character_loot_pickup_distance_bonus + 1
 		end
@@ -108,7 +108,7 @@ local function check_upgrade_inv()
 		if countcoins >= coincost and count2 >= 250 and objective.invupgradetier < 4 and objective.chronojumps >= (objective.invupgradetier + 1) * 5 then
 			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = item, count = 250})
-			game.print("Comfylatron: Players now can carry more trash in their unsorted inventories.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_inventory"}, {r=0.98, g=0.66, b=0.22})
 			objective.invupgradetier = objective.invupgradetier + 1
 			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + 10
 		end
@@ -126,7 +126,7 @@ local function check_upgrade_tools()
 		if countcoins >= coincost and count2 >= toolscost and objective.toolsupgradetier < 4 then
 			inv.remove({name = "coin", count = coincost})
 			inv.remove({name = "repair-pack", count = toolscost})
-			game.print("Comfylatron: Train now gets repaired with additional repair kit at once.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_repair"}, {r=0.98, g=0.66, b=0.22})
 			objective.toolsupgradetier = objective.toolsupgradetier + 1
 		end
 	end
@@ -141,7 +141,7 @@ local function check_upgrade_water()
 		if countcoins >= 2000 and count2 >= 500 and objective.waterupgradetier < 1 then
 			inv.remove({name = "coin", count = 2000})
 			inv.remove({name = "pipe", count = 500})
-			game.print("Comfylatron: Train now has piping system for additional water sources.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_water"}, {r=0.98, g=0.66, b=0.22})
 			objective.waterupgradetier = objective.waterupgradetier + 1
       local positions = {{28,66},{28,-62},{-29,66},{-29,-62}}
       for i = 1, 4, 1 do
@@ -162,7 +162,7 @@ local function check_upgrade_out()
 		if countcoins >= 2000 and count2 >= 100 and objective.outupgradetier < 1 then
 			inv.remove({name = "coin", count = 2000})
 			inv.remove({name = "fast-inserter", count = 100})
-			game.print("Comfylatron: Train now has output chests.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_out"}, {r=0.98, g=0.66, b=0.22})
 			objective.outupgradetier = objective.outupgradetier + 1
       local positions = {{-16,-62},{15,-62},{-16,66},{15,66}}
 			local out = {}
@@ -206,47 +206,43 @@ local function check_upgrade_box()
 		if countcoins >= 5000 and count2 >= 250 and objective.boxupgradetier < 4 and objective.chronojumps >= (objective.boxupgradetier + 1) * 5 then
 			inv.remove({name = "coin", count = 5000})
 			inv.remove({name = item, count = 250})
-			game.print("Comfylatron: Cargo wagons now have enlargened storage.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_storage"}, {r=0.98, g=0.66, b=0.22})
 			objective.boxupgradetier = objective.boxupgradetier + 1
 			local chests = {}
-      local positions = {
-        [1] = {x = {-33, 32}, y = {-189, -127, -61, 1, 67, 129}}
-      }
+      local positions = {x = {-33, 32}, y = {-189, -127, -61, 1, 67, 129}}
       for i = 1, 58, 1 do
         for ii = 1, 6, 1 do
           if objective.boxupgradetier == 1 then
-            chests[#chests + 1] = {name = "wooden-chest", position = {x = positions[1].x[1] ,y = positions[1].y[ii] + i}, force = "player"}
-            chests[#chests + 1] = {name = "wooden-chest", position = {x = positions[1].x[2] ,y = positions[1].y[ii] + i}, force = "player"}
+            chests[#chests + 1] = {entity = {name = "wooden-chest", position = {x = positions.x[1] ,y = positions.y[ii] + i}, force = "player"}, old = "none"}
+            chests[#chests + 1] = {entity = {name = "wooden-chest", position = {x = positions.x[2] ,y = positions.y[ii] + i}, force = "player"}, old = "none"}
           elseif objective.boxupgradetier == 2 then
-            chests[#chests + 1] = {name = "iron-chest", position = {x = positions[1].x[1] ,y = positions[1].y[ii] + i}, force = "player"}
-            chests[#chests + 1] = {name = "iron-chest", position = {x = positions[1].x[2] ,y = positions[1].y[ii] + i}, force = "player"}
+            chests[#chests + 1] = {entity = {name = "iron-chest", position = {x = positions.x[1] ,y = positions.y[ii] + i}, force = "player", fast_replace = true, spill = false}, old = "wood"}
+            chests[#chests + 1] = {entity = {name = "iron-chest", position = {x = positions.x[2] ,y = positions.y[ii] + i}, force = "player", fast_replace = true, spill = false}, old = "wood"}
           elseif objective.boxupgradetier == 3 then
-            chests[#chests + 1] = {name = "steel-chest", position = {x = positions[1].x[1] ,y = positions[1].y[ii] + i}, force = "player"}
-            chests[#chests + 1] = {name = "steel-chest", position = {x = positions[1].x[2] ,y = positions[1].y[ii] + i}, force = "player"}
+            chests[#chests + 1] = {entity = {name = "steel-chest", position = {x = positions.x[1] ,y = positions.y[ii] + i}, force = "player", fast_replace = true, spill = false}, old = "iron"}
+            chests[#chests + 1] = {entity = {name = "steel-chest", position = {x = positions.x[2] ,y = positions.y[ii] + i}, force = "player", fast_replace = true, spill = false}, old = "iron"}
           elseif objective.boxupgradetier == 4 then
-            chests[#chests + 1] = {name = "logistic-chest-storage", position = {x = positions[1].x[1] ,y = positions[1].y[ii] + i}, force = "player"}
-            chests[#chests + 1] = {name = "logistic-chest-storage", position = {x = positions[1].x[2] ,y = positions[1].y[ii] + i}, force = "player"}
+            chests[#chests + 1] = {entity = {name = "logistic-chest-storage", position = {x = positions.x[1] ,y = positions.y[ii] + i}, force = "player", fast_replace = true, spill = false}, old = "steel"}
+            chests[#chests + 1] = {entity = {name = "logistic-chest-storage", position = {x = positions.x[2] ,y = positions.y[ii] + i}, force = "player", fast_replace = true, spill = false}, old = "steel"}
           end
         end
       end
 			local surface = game.surfaces["cargo_wagon"]
 			for i = 1, #chests, 1 do
         if objective.boxupgradetier == 1 then
-          surface.set_tiles({{name = "tutorial-grid", position = chests[i].position}})
+          surface.set_tiles({{name = "tutorial-grid", position = chests[i].entity.position}})
         end
-				local e = surface.create_entity(chests[i])
 				local old = nil
-				if e.name == "iron-chest" then old = surface.find_entity("wooden-chest", e.position)
-				elseif e.name == "steel-chest" then old = surface.find_entity("iron-chest", e.position)
-				elseif e.name == "logistic-chest-storage" then old = surface.find_entity("steel-chest", e.position)
+        local oldpos = {x = chests[i].entity.position.x + 0.5, y = chests[i].entity.position.y + 0.5}
+				if chests[i].old == "wood" then old = surface.find_entity("wooden-chest", oldpos)
+				elseif chests[i].old == "iron" then old = surface.find_entity("iron-chest", oldpos)
+				elseif chests[i].old == "steel" then old = surface.find_entity("steel-chest", oldpos)
 				end
 				if old then
-					local items = old.get_inventory(defines.inventory.chest).get_contents()
-					for item, count in pairs(items) do
-						e.insert({name = item, count = count})
-					end
-					old.destroy()
+          old.minable = true
+          old.destructible = true
 				end
+        local e = surface.create_entity(chests[i].entity)
 				e.destructible = false
 				e.minable = false
 			end
@@ -263,7 +259,7 @@ local function check_poisondefense()
     if countcoins >= 1000 and count2 >= 50 and objective.poisondefense < 4 then
 			inv.remove({name = "coin", count = 1000})
 			inv.remove({name = "poison-capsule", count = 50})
-			game.print("Comfylatron: I don't believe in your defense skills. I equipped train with poison defense.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_poison"}, {r=0.98, g=0.66, b=0.22})
 			objective.poisondefense = objective.poisondefense + 1
 		end
   end
@@ -288,7 +284,7 @@ local function check_upgrade_computer()
       inv.remove({name = "coin", count = 5000})
       inv.remove({name = "advanced-circuit", count = 1000})
       inv.remove({name = "copper-plate", count = 2000})
-      game.print("Comfylatron: Thanks for fixing train navigation. I can now get us rid of very poor worlds. It will still need more work though.", {r=0.98, g=0.66, b=0.22})
+      game.print({"chronosphere.message_quest2"}, {r=0.98, g=0.66, b=0.22})
       objective.computermessage = 2
       objective.computerupgrade = objective.computerupgrade + 1
     elseif countcoins >= 10000 and count3 >= 1000 and count7 >= 1 and objective.computerupgrade == 1 and objective.chronojumps >= 20 and objective.computermessage == 3 then
@@ -297,7 +293,7 @@ local function check_upgrade_computer()
       inv.remove({name = "nuclear-reactor", count = 1})
       objective.computermessage = 4
       objective.computerupgrade = objective.computerupgrade + 1
-      game.print("Comfylatron: Perfect! Now we have train reactor and even better destination precision. I will get to you later what still needs to be done.", {r=0.98, g=0.66, b=0.22})
+      game.print({"chronosphere.message_quest4"}, {r=0.98, g=0.66, b=0.22})
     elseif objective.computerupgrade == 2 and objective.chronojumps >= 25 and objective.computermessage == 5 then
       if countcoins >= 2000 and count4 >= 100 and count5 >= 100 and count6 >= 50 and objective.computerparts < 10 then
         inv.remove({name = "coin", count = 2000})
@@ -308,12 +304,12 @@ local function check_upgrade_computer()
         if objective.computerparts < 10 then
           game.print("Comfylatron: That's another processor part done! I still need " .. 10 - objective.computerparts .. " more of those parts.", {r=0.98, g=0.66, b=0.22})
         else
-          game.print("Comfylatron: And this was last part of cpu brain done. Now we just need to synchronize our time correctly and we are done! Bring me satellite and rocket silo.", {r=0.98, g=0.66, b=0.22})
+          game.print({"chronosphere.message_quest6"}, {r=0.98, g=0.66, b=0.22})
         end
       elseif objective.computerparts == 10 and count9 >= 1 and count10 >= 1 then
         inv.remove({name = "satellite", count = 1 })
         inv.remove({name = "rocket-silo", count = 1 })
-        game.print("Comfylatron: Time synchronized. Calculating time and space destination. Success. Jump once more and let me deliver the fish finally. This trip is getting long.", {r=0.98, g=0.66, b=0.22})
+        game.print({"chronosphere.message_quest7"}, {r=0.98, g=0.66, b=0.22})
         objective.computermessage = 6
         objective.computerupgrade = objective.computerupgrade + 1
       end
@@ -342,7 +338,7 @@ local function check_win()
             for _, player in pairs(game.connected_players) do
         			player.play_sound{path="utility/game_won", volume_modifier=0.85}
         		end
-            local message = "Comfylatron: Thank you with helping me on this delivery. It was tough one. I hope, that now, when all biters are dead, fish will be safe here forever...after all, we delivered " .. objective.mainscore .. " of them fishies."
+            local message = {"chronosphere.message_game_won1"} .. "after all, we delivered " .. objective.mainscore .. " of them fishies."
             game.print(message, {r=0.98, g=0.66, b=0.22})
             Server.to_discord_embed(message)
           end
@@ -364,7 +360,7 @@ local function check_mk2_buy()
 			inv.remove({name = "railgun-dart", count = 300})
       inv.remove({name = "power-armor", count = 1})
       inv.insert({name = "power-armor-mk2", count = 1})
-			game.print("Comfylatron: I upgraded one armor to mk2.", {r=0.98, g=0.66, b=0.22})
+			game.print({"chronosphere.message_upgrade_mk2"}, {r=0.98, g=0.66, b=0.22})
 		end
   end
 end
@@ -381,7 +377,7 @@ local function check_fusion_buy()
       inv.remove({name = "railgun-dart", count = 200})
       inv.remove({name = "solar-panel-equipment", count = 16})
       inv.insert({name = "fusion-reactor-equipment", count = 1})
-      game.print("Comfylatron: One personal fusion reactor ready.", {r=0.98, g=0.66, b=0.22})
+      game.print({"chronosphere.message_upgrade_fusion"}, {r=0.98, g=0.66, b=0.22})
     end
   end
 end
@@ -442,7 +438,7 @@ function Public.trigger_poison()
     objective.poisontimeout = 120
     local objs = {global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
     local surface = objective.surface
-    game.print("Comfylatron: Triggering poison defense. Let's kill everything!", {r=0.98, g=0.66, b=0.22})
+    game.print({"chronosphere.message_poison_defense"}, {r=0.98, g=0.66, b=0.22})
     for i = 1, 4, 1 do
       surface.create_entity({name = "poison-capsule", position = objs[i].position, force = "player", target = objs[i], speed = 1 })
     end

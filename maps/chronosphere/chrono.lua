@@ -1,14 +1,111 @@
 local Public_chrono = {}
 
 local Server = require 'utils.server'
+local math_random = math.random
+
+function Public_chrono.get_map_gen_settings()
+	local seed = math_random(1, 1000000)
+	local map_gen_settings = {
+		["seed"] = seed,
+		["width"] = 960,
+		["height"] = 960,
+		["water"] = 0.1,
+		["starting_area"] = 1,
+		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+		["default_enable_all_autoplace_controls"] = true,
+		["autoplace_settings"] = {
+			["entity"] = {treat_missing_as_default = false},
+			["tile"] = {treat_missing_as_default = true},
+			["decorative"] = {treat_missing_as_default = true},
+		},
+	}
+	return map_gen_settings
+end
+
+function Public_chrono.restart_settings()
+  local objective = global.objective
+  objective.max_health = 10000
+	objective.health = 10000
+	objective.hpupgradetier = 0
+	objective.acuupgradetier = 0
+	objective.filterupgradetier = 0
+	objective.pickupupgradetier = 0
+	objective.invupgradetier = 0
+	objective.toolsupgradetier = 0
+	objective.waterupgradetier = 0
+	objective.outupgradetier = 0
+	objective.boxupgradetier = 0
+	objective.poisondefense = 2
+	objective.poisontimeout = 0
+	objective.chronotimer = 0
+	objective.passivetimer = 0
+	objective.passivejumps = 0
+	objective.chrononeeds = 2000
+	objective.mainscore = 0
+	objective.active_biters = {}
+	objective.unit_groups = {}
+	objective.biter_raffle = {}
+	objective.dangertimer = 1200
+	objective.dangers = {}
+	objective.looted_nukes = 0
+	objective.offline_players = {}
+  objective.nextsurface = nil
+	global.outchests = {}
+	global.upgradechest = {}
+	global.fishchest = {}
+	global.acumulators = {}
+	global.comfychests = {}
+	global.comfychests2 = {}
+	global.locomotive_cargo = {}
+	for _, player in pairs(game.connected_players) do
+		global.flame_boots[player.index] = {fuel = 1, steps = {}}
+	end
+	global.friendly_fire_history = {}
+	global.landfill_history = {}
+	global.mining_history = {}
+	global.score = {}
+  global.difficulty_poll_closing_timeout = game.tick + 90000
+  global.difficulty_player_votes = {}
+
+	game.difficulty_settings.technology_price_multiplier = 0.6
+	game.map_settings.enemy_evolution.destroy_factor = 0.005
+	game.map_settings.enemy_evolution.pollution_factor = 0
+	game.map_settings.enemy_evolution.time_factor = 7e-05
+	game.map_settings.enemy_expansion.enabled = true
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
+	game.map_settings.enemy_expansion.settler_group_max_size = 8
+	game.map_settings.enemy_expansion.settler_group_min_size = 16
+	game.map_settings.pollution.enabled = true
+	game.map_settings.pollution.pollution_restored_per_tree_damage = 0.02
+	game.map_settings.pollution.min_pollution_to_damage_trees = 1
+	game.map_settings.pollution.max_pollution_to_restore_trees = 0
+	game.map_settings.pollution.pollution_with_max_forest_damage = 10
+	game.map_settings.pollution.pollution_per_tree_damage = 0.1
+	game.map_settings.pollution.ageing = 0.1
+	game.map_settings.pollution.diffusion_ratio = 0.1
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 5
+	game.forces.neutral.character_inventory_slots_bonus = 500
+	game.forces.enemy.evolution_factor = 0.0001
+	game.forces.scrapyard.set_friend('enemy', true)
+	game.forces.enemy.set_friend('scrapyard', true)
+
+	game.forces.player.technologies["land-mine"].enabled = false
+	game.forces.player.technologies["landfill"].enabled = false
+	game.forces.player.technologies["fusion-reactor-equipment"].enabled = false
+	game.forces.player.technologies["power-armor-mk2"].enabled = false
+	game.forces.player.technologies["railway"].researched = true
+	game.forces.player.recipes["pistol"].enabled = false
+end
+
 
 function Public_chrono.objective_died()
   local objective = global.objective
   if objective.game_lost == true then return end
   objective.health = 0
   local surface = objective.surface
-  game.print("The chronotrain was destroyed!")
-  game.print("Comfylatron is going to kill you for that...he has time machine after all!")
+  game.print({"chronosphere.message_game_lost1"})
+  game.print({"chronosphere.message_game_lost2"})
   for i = 1, 3, 1 do
     surface.create_entity({name = "big-artillery-explosion", position = global.locomotive_cargo[i].position})
     global.locomotive_cargo[i].destroy()
@@ -56,24 +153,25 @@ function Public_chrono.process_jump(choice)
 	objective.chrononeeds = 2000 + 400 * objective.chronojumps
 	objective.passivetimer = 0
 	objective.chronotimer = 0
+  objective.danegrtimer = 1200
 	local message = "Comfylatron: Wheeee! Time Jump Active! This is Jump number " .. global.objective.chronojumps
 	game.print(message, {r=0.98, g=0.66, b=0.22})
 	Server.to_discord_embed(message)
 
 	if objective.chronojumps == 6 then
-		game.print("Comfylatron: Biters start to evolve faster! We need to charge forward or they will be stronger! (hover over timer to see evolve timer)", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_evolve"}, {r=0.98, g=0.66, b=0.22})
 	elseif objective.chronojumps >= 15 and objective.computermessage == 0 then
-		game.print("Comfylatron: You know...I have big quest. Deliver fish to fish market. But this train is broken. Please help me fix the train computer!", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_quest1"}, {r=0.98, g=0.66, b=0.22})
     objective.computermessage = 1
 	elseif objective.chronojumps >= 20 and objective.computermessage == 2 then
-		game.print("Comfylatron: Ah, we need to give this machine more power and better navigation chipset. Please bring me some additional things.", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_quest3"}, {r=0.98, g=0.66, b=0.22})
     objective.computermessage = 3
 	elseif objective.chronojumps >= 25 and objective.computermessage == 4 then
-		game.print("Comfylatron: Finally found the main issue. We will need to rebuild whole processor. Exactly what I feared of. Just a few more things...", {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_quest5"}, {r=0.98, g=0.66, b=0.22})
     objective.computermessage = 5
 	end
 	if overstayed then
-    game.print("Comfylatron: Looks like you stayed on previous planet for so long that enemies on other planets had additional time to evolve!", {r=0.98, g=0.66, b=0.22})
+    game.print({"chronosphere.message_overstay"}, {r=0.98, g=0.66, b=0.22})
   end
   if objective.planet[1].name.id == 19 then
     check_nuke_silos()
@@ -87,7 +185,7 @@ function Public_chrono.get_wagons()
     three = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
   }
 	inventories.one.sort_and_merge()
-	inventories.two.sort_and_merge()
+	--inventories.two.sort_and_merge()
 	local wagons = {}
 	wagons[1] = {inventory = inventories.one.get_contents(), bar = inventories.one.get_bar(), filters = {}}
 	wagons[2] = {inventory = inventories.two.get_contents(), bar = inventories.two.get_bar(), filters = {}}
@@ -112,16 +210,16 @@ function Public_chrono.post_jump()
 		global.comfychests[1].insert({name = "space-science-pack", count = 1000})
     if objective.looted_nukes > 0 then
       global.comfychests[1].insert({name = "atomic-bomb", count = objective.looted_nukes})
-      game.print("Comfylatron: Luckily we looted some nukes before, take them.", {r=0.98, g=0.66, b=0.22})
+      game.print({"chronosphere.message_fishmarket3"}, {r=0.98, g=0.66, b=0.22})
     end
 		objective.chrononeeds = 200000000
   elseif objective.planet[1].name.id == 19 then
-    objective.chronotimer = objective.chrononeeds - 1500
+    objective.chronotimer = objective.chrononeeds - 1800
 	end
 	for _, player in pairs(game.connected_players) do
 		global.flame_boots[player.index] = {fuel = 1, steps = {}}
 	end
-  objective.danegrtimer = 1200
+
 	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * (objective.chronojumps + objective.passivejumps)
 	game.forces.scrapyard.set_ammo_damage_modifier("bullet", 0.01 * objective.chronojumps)
 	game.forces.scrapyard.set_turret_attack_modifier("gun-turret", 0.01 * objective.chronojumps)
