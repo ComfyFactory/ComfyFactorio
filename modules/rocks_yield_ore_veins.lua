@@ -1,4 +1,3 @@
-local event = require 'utils.event'
 local math_random = math.random
 
 local valid_entities = {
@@ -8,24 +7,6 @@ local valid_entities = {
 	["mineable-wreckage"] = true	
 }
 
-local rock_mining_chance_weights = {
-	{"iron-ore", 25},
-	{"copper-ore",18},
-	{"mixed",15},
-	{"coal",14},
-	{"stone",8},
-	{"uranium-ore",3}
-}
-
-local ore_raffle = {}				
-for _, t in pairs (rock_mining_chance_weights) do
-	for x = 1, t[2], 1 do
-		table.insert(ore_raffle, t[1])
-	end			
-end
-
-local mixed_ores = {"iron-ore", "copper-ore", "stone", "coal"}
-
 local size_raffle = {
 		{"giant", 65, 96},
 		{"huge", 33, 64},
@@ -34,15 +15,43 @@ local size_raffle = {
 		{"tiny", 4, 8},
 	}
 
-local ore_prints = {
-		["coal"] = {"dark", "coal", "[img=entity/coal]"},
-		["iron-ore"] = {"shiny", "iron", "[img=entity/iron-ore]"},
-		["copper-ore"] = {"glimmering", "copper", "[img=entity/copper-ore]"}, 
-		["uranium-ore"] = {"glowing", "uranium", "[img=entity/uranium-ore]"},
-		["stone"] = {"solid", "stone", "[img=entity/stone]"},
-		["mixed"] = {"glitter", "mixed ore", " "},
-	}
+local function get_chances()
+	local chances = {}
+	
+	if game.entity_prototypes["angels-ore1"] then
+		for i = 1, 6, 1 do
+			table.insert(chances, {"angels-ore" .. i, 1})
+		end
+		table.insert(chances, {"coal", 2})
+		table.insert(chances, {"mixed", 2})
+		return chances
+	end
 
+	table.insert(chances, {"iron-ore", 25})
+	table.insert(chances, {"copper-ore", 18})
+	table.insert(chances, {"mixed", 15})
+	table.insert(chances, {"coal", 14})
+	table.insert(chances, {"stone", 8})
+	table.insert(chances, {"uranium-ore", 3})
+
+	return chances
+end
+
+local function set_raffle()
+	global.rocks_yield_ore_veins.raffle = {}
+	for _, t in pairs(get_chances()) do
+		for x = 1, t[2], 1 do
+			table.insert(global.rocks_yield_ore_veins.raffle, t[1])
+		end			
+	end
+	
+	if game.entity_prototypes["angels-ore1"] then
+		global.rocks_yield_ore_veins.mixed_ores = {"angels-ore1", "angels-ore2", "angels-ore3", "angels-ore4", "angels-ore5", "angels-ore6", "coal"}
+		return 
+	end
+	
+	global.rocks_yield_ore_veins.mixed_ores = {"iron-ore", "copper-ore", "stone", "coal"}
+end
 
 local function get_amount(position)
 	local distance_to_center = math.sqrt(position.x^2 + position.y^2) * 4 + 1500	
@@ -64,7 +73,7 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
 					position.y = p.y
 					ore_positions[p.x .. "_" .. p.y] = true
 					local name = ore
-					if ore == "mixed" then name = mixed_ores[math_random(1, #mixed_ores)] end
+					if ore == "mixed" then name = global.rocks_yield_ore_veins.mixed_ores[math_random(1, #global.rocks_yield_ore_veins.mixed_ores)] end
 					ore_entities[#ore_entities + 1] = {name = name, position = p, amount = get_amount(position)}
 					break
 				end
@@ -76,8 +85,14 @@ end
 local function ore_vein(event)
 	local surface = event.entity.surface
 	local size = size_raffle[math_random(1, #size_raffle)]	
-	local ore = ore_raffle[math_random(1, #ore_raffle)]
-	
+	local ore = global.rocks_yield_ore_veins.raffle[math_random(1, #global.rocks_yield_ore_veins.raffle)]
+	local icon
+	if game.entity_prototypes[ore] then
+		icon = "[img=entity/" .. ore .. "]"
+	else
+		icon = " "
+	end
+		
 	local player = game.players[event.player_index]
 	for _, p in pairs(game.connected_players) do
 		if p.index == player.index then			
@@ -86,7 +101,7 @@ local function ore_vein(event)
 					{"rocks_yield_ore_veins_colors." .. ore},
 					{"rocks_yield_ore_veins." .. size[1]},
 					{"rocks_yield_ore_veins." .. ore},
-					ore_prints[ore][3]
+					icon
 				},
 				{r=0.80, g=0.80, b=0.80}
 			)
@@ -96,7 +111,7 @@ local function ore_vein(event)
 					"[color=" .. player.chat_color.r .. "," .. player.chat_color.g .. "," .. player.chat_color.b .. "]" .. player.name .. "[/color]",
 					{"rocks_yield_ore_veins." .. size[1]},
 					{"rocks_yield_ore_veins." .. ore},
-					ore_prints[ore][3]
+					icon
 				},
 				{r=0.80, g=0.80, b=0.80}
 			)
@@ -105,7 +120,7 @@ local function ore_vein(event)
 	
 	local ore_entities = {{name = ore, position = {x = event.entity.position.x, y = event.entity.position.y}, amount = get_amount(event.entity.position)}}
 	if ore == "mixed" then
-		ore_entities = {{name = mixed_ores[math_random(1, #mixed_ores)], position = {x = event.entity.position.x, y = event.entity.position.y}, amount = get_amount(event.entity.position)}} 
+		ore_entities = {{name = global.rocks_yield_ore_veins.mixed_ores[math_random(1, #global.rocks_yield_ore_veins.mixed_ores)], position = {x = event.entity.position.x, y = event.entity.position.y}, amount = get_amount(event.entity.position)}} 
 	end
 	
 	local ore_positions = {[event.entity.position.x .. "_" .. event.entity.position.y] = true}
@@ -130,8 +145,18 @@ end
 local function on_player_mined_entity(event)
 	if not event.entity.valid then return end
 	if not valid_entities[event.entity.name] then return end
-	if math_random(1,768) ~= 1 then return end	
+	if math_random(1, global.rocks_yield_ore_veins.chance) ~= 1 then return end	
 	ore_vein(event)
 end
 
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+local function on_init()
+	global.rocks_yield_ore_veins = {}
+	global.rocks_yield_ore_veins.raffle = {}
+	global.rocks_yield_ore_veins.mixed_ores = {}
+	global.rocks_yield_ore_veins.chance = 768
+	set_raffle()
+end
+
+local Event = require 'utils.event'
+Event.on_init(on_init)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

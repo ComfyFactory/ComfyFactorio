@@ -1,7 +1,9 @@
 -- Cave Miner -- mewmew made this --
 
+require "modules.rocks_heal_over_time"
 require "modules.rocks_broken_paint_tiles"
-require "maps.cave_miner_kaboomsticks"
+require "modules.rocks_yield_ore_veins"
+require "modules.explosives"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
 require "modules.biter_noms_you"
@@ -10,11 +12,10 @@ require "modules.hunger"
 
 local enable_fishbank_terminal = false
 local simplex_noise = require 'utils.simplex_noise'
-local Event = require 'utils.event' 
 local market_items = require "maps.cave_miner_market_items"
 local math_random = math.random
 
-local spawn_dome_size = 7000
+local spawn_dome_size = 10000
 
 local darkness_messages = {
 		"Something is lurking in the dark...",
@@ -28,6 +29,12 @@ local darkness_messages = {
 		"The shadows are moving...",
 		"You feel like, something is watching you...",		
 		}
+
+local rocks = {
+	["rock-big"] = true,
+	["rock-huge"] = true,
+	["sand-rock-big"] = true,
+}
 
 local rock_inhabitants = {
 		[1] = {"small-biter"},
@@ -133,12 +140,12 @@ local function create_cave_miner_stats_gui(player)
 	
 	global.total_ores_mined = global.stats_ores_found + game.forces.player.item_production_statistics.get_input_count("coal") + game.forces.player.item_production_statistics.get_input_count("iron-ore") + game.forces.player.item_production_statistics.get_input_count("copper-ore") + game.forces.player.item_production_statistics.get_input_count("uranium-ore")	
 	
-	stat_numbers[1] = t.add { type = "label", caption = global.total_ores_mined }
+	stat_numbers[1] = t.add { type = "label", caption = global.rocks_yield_ore["ores_mined"]}
 			
 	separators[1] = t.add { type = "label", caption = "|"}
 	
 	captions[2] = t.add { type = "label", caption = "Rocks broken:" }
-	stat_numbers[2] = t.add { type = "label", caption = global.stats_rocks_broken }
+	stat_numbers[2] = t.add { type = "label", caption = global.rocks_yield_ore["rocks_broken"]}
 							
 	separators[2] = t.add { type = "label", caption = "|"}
 	
@@ -176,8 +183,8 @@ local function create_cave_miner_stats_gui(player)
 			l.style[s[1]] = s[2]
 		end
 	end
-	stat_numbers[1].style.minimal_width = 9 * string.len(tostring(global.stats_ores_found))
-	stat_numbers[2].style.minimal_width = 9 * string.len(tostring(global.stats_rocks_broken))
+	stat_numbers[1].style.minimal_width = 9 * string.len(tostring(global.rocks_yield_ore["ores_mined"]))
+	stat_numbers[2].style.minimal_width = 9 * string.len(tostring(global.rocks_yield_ore["rocks_broken"]))
 end
 
 local function refresh_gui()
@@ -345,11 +352,11 @@ local function treasure_chest(position, distance_to_center)
 			end
 		end			
 	end
-	--game.print(distance_to_center)
+	
 	local n = "wooden-chest"
 	if distance_to_center > 750 then n = "iron-chest" end
 	if distance_to_center > 1250 then n = "steel-chest" end
-	local e = game.surfaces[1].create_entity({name=n, position=position, force="player"})	
+	local e = game.surfaces[1].create_entity({name = n, position = position, force = "neutral"})	
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
 	for x = 1, math_random(3,5), 1 do
@@ -750,7 +757,10 @@ local function on_player_joined_game(event)
 		game.forces["player"].set_spawn_position(p,surface)
 		player.teleport(p)
 		surface.daytime = 0.5
-		surface.freeze_daytime = 1
+		surface.freeze_daytime = 1	
+		surface.min_brightness = 0.3
+		surface.brightness_visual_weights = {1, 1, 1}
+		
 		game.forces["player"].technologies["landfill"].enabled = false
 		game.forces["player"].technologies["night-vision-equipment"].enabled = false
 		game.forces["player"].technologies["artillery-shell-range-1"].enabled = false			
@@ -776,8 +786,6 @@ All they need is a container and a well aimed shot.
 Darkness is a hazard in the mines, stay near your lamps..
 ]]
 					
-		global.damaged_rocks = {}
-		
 		global.biter_spawn_amount_weights = {}				
 		global.biter_spawn_amount_weights[1] = {64, 1}
 		global.biter_spawn_amount_weights[2] = {32, 4}
@@ -799,8 +807,6 @@ Darkness is a hazard in the mines, stay near your lamps..
 		
 		global.biter_spawn_schedule = {}										
 		
-		global.ore_spill_cap = 60
-		global.stats_rocks_broken = 0
 		global.stats_ores_found = 0
 		global.total_ores_mined = 0
 		
@@ -963,24 +969,6 @@ local function darkness_checks()
 	end
 end
 
-local healing_amount = {
-		["rock-big"] = 4,
-		["sand-rock-big"] = 4,
-		["rock-huge"] = 16
-	}
-local function heal_rocks()
-	for key, rock in pairs(global.damaged_rocks) do
-		if rock.last_damage + 300 < game.tick then
-			if rock.entity.valid then
-				rock.entity.health = rock.entity.health + healing_amount[rock.entity.name]
-				if rock.entity.prototype.max_health == rock.entity.health then global.damaged_rocks[key] = nil end
-			else
-				global.damaged_rocks[key] = nil
-			end
-		end
-	end
-end
-
 local function on_tick(event)		
 	if game.tick % 30 == 0 then
 		if global.biter_spawn_schedule then										
@@ -995,7 +983,7 @@ local function on_tick(event)
 			end								
 		end
 		
-		if game.tick % 900 == 0 then
+		if game.tick % 300 == 0 then
 			refresh_gui()
 		end
 	end		
@@ -1003,7 +991,6 @@ local function on_tick(event)
 	if game.tick % 240 == 0 then
 		darkness_checks()	
 		darkness_events()
-		heal_rocks()
 	end		
 	
 	if game.tick % 5400 == 2700 then		
@@ -1049,16 +1036,8 @@ local treasure_chest_messages = {
 		"You find a chest underneath the broken rocks. It's filled with goodies!",
 		"We has found the precious!"		
 	}
-
-local ore_floaty_texts = {
-	["iron-ore"] = {"Iron ore", {r = 200, g = 200, b = 180}},
-	["copper-ore"] = {"Copper ore", {r = 221, g = 133, b = 6}},
-	["uranium-ore"] = {"Uranium ore", {r= 50, g= 250, b= 50}},
-	["coal"] = {"Coal", {r = 0, g = 0, b = 0}},
-	["stone"] = {"Stone", {r = 200, g = 160, b = 30}},
-}	
 	
-local function pre_player_mined_item(event)
+local function on_pre_player_mined_item(event)
 	local surface = game.surfaces[1]
 	local player = game.players[event.player_index]
 	
@@ -1074,8 +1053,7 @@ local function pre_player_mined_item(event)
 	
 	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then		
 		local rock_position = {x = event.entity.position.x, y = event.entity.position.y}
-		event.entity.destroy()
-		
+
 		local distance_to_center = rock_position.x ^ 2 + rock_position.y ^ 2
 		if math_random(1, 250) == 1 then
 			treasure_chest(rock_position, distance_to_center)
@@ -1087,90 +1065,10 @@ local function pre_player_mined_item(event)
 		if math_random(1,3) == 1 then hunger_update(player, -1) end
 		
 		surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(1,3)},true)
-		local bonus_amount = math.floor((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.115) + 1
-		if bonus_amount < 0 then bonus_amount = 0 end		
-		local amount = math_random(25,45) + bonus_amount
-		if amount > 500 then amount = 500 end
-		amount = amount * (1+game.forces.player.mining_drill_productivity_bonus)		
-		
-		amount = math.round(amount, 0)
-		local amount_of_stone = math.round(amount * 0.15,0)		
-		
-		global.stats_ores_found = global.stats_ores_found + amount + amount_of_stone
-		
-		local mined_loot = global.rock_mining_raffle_table[math_random(1,#global.rock_mining_raffle_table)]
-		
-		surface.create_entity({
-			name = "flying-text",
-			position = rock_position,
-			text = "+" .. amount .. " [img=item/" .. mined_loot .. "]",
-			color = {r=0.98, g=0.66, b=0.22}
-		})
-		--surface.create_entity({name = "flying-text", position = rock_position, text = amount .. " " .. ore_floaty_texts[mined_loot][1], color = ore_floaty_texts[mined_loot][2]})
-		
-		if amount > global.ore_spill_cap then
-			surface.spill_item_stack(rock_position,{name = mined_loot, count = global.ore_spill_cap},true)
-			amount = amount - global.ore_spill_cap
-			local i = player.insert {name = mined_loot, count = amount}
-			amount = amount - i
-			if amount > 0 then
-				surface.spill_item_stack(rock_position,{name = mined_loot, count = amount},true)
-			end
-		else
-			surface.spill_item_stack(rock_position,{name = mined_loot, count = amount},true)
-		end
-		
-		if amount_of_stone > global.ore_spill_cap then
-			surface.spill_item_stack(rock_position,{name = "stone", count = global.ore_spill_cap},true)
-			amount_of_stone = amount_of_stone - global.ore_spill_cap
-			local i = player.insert {name = "stone", count = amount_of_stone}
-			amount_of_stone = amount_of_stone - i
-			if amount_of_stone > 0 then
-				surface.spill_item_stack(rock_position,{name = "stone", count = amount_of_stone},true)
-			end
-		else
-			surface.spill_item_stack(rock_position,{name = "stone", count = amount_of_stone},true)
-		end
-		
-		global.stats_rocks_broken = global.stats_rocks_broken + 1		
-		refresh_gui()
-		
-		if math_random(1,32) == 1 then				
-			local p = {x = rock_position.x, y = rock_position.y}
-			local tile_distance_to_center = p.x^2 + p.y^2
-			if	tile_distance_to_center > spawn_dome_size + 100 then
-				local radius = 32
-				if surface.count_entities_filtered{area={{p.x - radius,p.y - radius},{p.x + radius,p.y + radius}}, type="resource", limit=1} == 0 then
-					local size_raffle = {{"huge", 33, 42},{"big", 17, 32},{"", 8, 16},{"tiny", 3, 7}}
-					local size = size_raffle[math_random(1,#size_raffle)]
-					local ore_prints = {coal = {"dark", "Coal"}, ["iron-ore"] = {"shiny", "Iron"}, ["copper-ore"] = {"glimmering", "Copper"}, ["uranium-ore"] = {"glowing", "Uranium"}}
-					player.print("You notice something " .. ore_prints[mined_loot][1] .. " underneath the rubble covered floor. It's a " .. size[1] .. " vein of " ..  ore_prints[mined_loot][2] .. "!!", { r=0.98, g=0.66, b=0.22})
-					tile_distance_to_center = math.sqrt(tile_distance_to_center)
-					local ore_entities_placed = 0
-					local modifier_raffle = {{0,-1},{-1,0},{1,0},{0,1}}
-					while ore_entities_placed < math_random(size[2],size[3]) do						
-						local a = math.ceil((math_random(tile_distance_to_center*4, tile_distance_to_center*5)) / 1 + ore_entities_placed * 0.5, 0)						
-						for x = 1, 150, 1 do
-							local m = modifier_raffle[math_random(1,#modifier_raffle)]
-							local pos = {x = p.x + m[1], y = p.y + m[2]}
-							if surface.can_place_entity({name=mined_loot, position=pos, amount=a}) then
-								surface.create_entity {name=mined_loot, position=pos, amount=a}
-								p = pos
-								break
-							end
-						end
-						ore_entities_placed = ore_entities_placed + 1
-					end
-				end
-			end
-		end		
 	end
 end
 
 local function on_player_mined_entity(event)
-	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then
-		event.buffer.clear()
-	end
 	if event.entity.name == "fish" then
 		if math_random(1,2) == 1 then
 			local player = game.players[event.player_index]	
@@ -1190,48 +1088,27 @@ local function on_player_mined_entity(event)
 	end	
 end
 
+local function biters_chew_rocks_slower(event)
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.force.index ~= 3 then return end --Neutral Force
+	if not event.cause then return end
+	if not event.cause.valid then return end
+	if event.cause.force.index ~= 2 then return end --Enemy Force
+	if math_random(1, 32) == 1 then return end
+	entity.health = entity.health + event.final_damage_amount
+end
+
 local function on_entity_damaged(event)
-	if not event.entity.valid then return end
-	if event.entity.name == "rock-huge" or event.entity.name == "rock-big" or event.entity.name == "sand-rock-big" then
-		local rock_is_alive = true
-		if event.force.name == "enemy" then 
-			event.entity.health = event.entity.health + (event.final_damage_amount - 0.2)
-			if event.entity.health <= event.final_damage_amount then				
-				rock_is_alive = false
-			end			
-		end
-		if event.force.name == "player" then 
-			event.entity.health = event.entity.health + (event.final_damage_amount * 0.8)
-			if event.entity.health <= event.final_damage_amount then				
-				rock_is_alive = false
-			end			
-		end		
-		if event.entity.health <= 0 then rock_is_alive = false end		
-		if rock_is_alive then
-			global.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] = {last_damage = game.tick, entity = event.entity}
-		else
-			global.damaged_rocks[tostring(event.entity.position.x) .. tostring(event.entity.position.y)] = nil
-			if event.force.name == "player" then	
-				if math_random(1,12) == 1 then								
-					for x = 1, math_random(6,10), 1 do
-						table.insert(global.biter_spawn_schedule, {game.tick + 20*x, event.entity.position})		
-					end						
-				end
-			end
-			local p = {x = event.entity.position.x, y = event.entity.position.y}
-			local drop_amount = math_random(4, 8)
-			event.entity.destroy()			
-			game.surfaces[1].spill_item_stack(p,{name = "stone", count = drop_amount},true)
-			
-			local drop_amount_ore = math_random(16, 32)
-			local ore = global.rock_mining_raffle_table[math_random(1, #global.rock_mining_raffle_table)]
-			game.surfaces[1].spill_item_stack(p,{name = ore, count = drop_amount_ore},true)
-			
-			global.stats_rocks_broken = global.stats_rocks_broken + 1
-			global.stats_ores_found = global.stats_ores_found + drop_amount + drop_amount_ore
-			--refresh_gui()						
-		end
-	end	
+	biters_chew_rocks_slower(event)
+end
+
+local function on_entity_died(event)
+	if not rocks[event.entity.name] then return end
+	if math_random(1, 8) ~= 1 then return end	
+	for x = 1, math_random(6, 12), 1 do
+		table.insert(global.biter_spawn_schedule, {game.tick + 20 * x, event.entity.position})		
+	end							
 end
 
 local function on_player_respawned(event)
@@ -1314,6 +1191,7 @@ local function on_market_item_purchased(event)
 		end			
 		local fish_withdrawn = player.insert({name = "raw-fish", count = requested_withdraw_amount})
 		if fish_withdrawn ~= requested_withdraw_amount then
+			if fish_withdrawn <= 0 then return end
 			player.remove_item({name = "raw-fish", count = fish_withdrawn})
 			return
 		end								
@@ -1334,6 +1212,20 @@ local function on_player_used_capsule(event)
 	end
 end
 
+local function on_init()
+	global.rocks_yield_ore_maximum_amount = 512
+	global.rocks_yield_ore_base_amount = 35
+	global.rocks_yield_ore_distance_modifier = 0.1
+	
+	global.explosion_cells_destructible_tiles = {
+		["out-of-map"] = 1000,
+	}
+	
+	global.rocks_yield_ore_veins.chance = 512
+end
+
+local Event = require 'utils.event'
+Event.on_init(on_init)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
@@ -1341,8 +1233,11 @@ Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.add(defines.events.on_pre_player_mined_item, pre_player_mined_item)
+Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_tick, on_tick)	
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_entity_died, on_entity_died)
+
+require "modules.rocks_yield_ore" 

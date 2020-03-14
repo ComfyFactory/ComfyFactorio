@@ -1,5 +1,5 @@
 --destroying and mining rocks yields ore -- load as last module
-local max_spill = 40
+local max_spill = 60
 local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
@@ -10,35 +10,47 @@ local rock_yield = {
 	["sand-rock-big"] = 1	
 }
 
-local rock_mining_chance_weights = {
-	{"iron-ore", 25},
-	{"copper-ore",17},
-	{"coal",13},
-	{"stone",10},
-	{"uranium-ore",2}
-}
-
-local texts = {
-	["iron-ore"] = {"Iron ore", {r = 200, g = 200, b = 180}},
-	["copper-ore"] = {"Copper ore", {r = 221, g = 133, b = 6}},
-	["uranium-ore"] = {"Uranium ore", {r= 50, g= 250, b= 50}},
-	["coal"] = {"Coal", {r = 0, g = 0, b = 0}},
-	["stone"] = {"Stone", {r = 200, g = 160, b = 30}},
-}
-
 local particles = {
 	["iron-ore"] = "iron-ore-particle",
 	["copper-ore"] = "copper-ore-particle",
 	["uranium-ore"] = "coal-particle",
 	["coal"] = "coal-particle",
-	["stone"] = "stone-particle"
-}
-		
-local ore_raffle = {}				
-for _, t in pairs (rock_mining_chance_weights) do
-	for x = 1, t[2], 1 do
-		table.insert(ore_raffle, t[1])
-	end			
+	["stone"] = "stone-particle",
+	["angels-ore1"] = "iron-ore-particle",
+	["angels-ore2"] = "copper-ore-particle",
+	["angels-ore3"] = "coal-particle",
+	["angels-ore4"] = "iron-ore-particle",
+	["angels-ore5"] = "iron-ore-particle",
+	["angels-ore6"] = "iron-ore-particle",
+}	
+
+local function get_chances()
+	local chances = {}
+	
+	if game.entity_prototypes["angels-ore1"] then
+		for i = 1, 6, 1 do
+			table.insert(chances, {"angels-ore" .. i, 1})
+		end
+		table.insert(chances, {"coal", 2})
+		return chances
+	end
+	
+	table.insert(chances, {"iron-ore", 25})
+	table.insert(chances, {"copper-ore",17})
+	table.insert(chances, {"coal",13})
+	table.insert(chances, {"uranium-ore",2})
+
+	return chances
+end
+
+local function set_raffle()
+	global.rocks_yield_ore["raffle"] = {}
+	for _, t in pairs(get_chances()) do
+		for x = 1, t[2], 1 do
+			table.insert(global.rocks_yield_ore["raffle"], t[1])
+		end			
+	end
+	global.rocks_yield_ore["size_of_raffle"] = #global.rocks_yield_ore["raffle"]
 end
 
 local function create_particles(surface, name, position, amount, cause_position)	
@@ -71,15 +83,8 @@ end
 local function get_amount(entity)
 	local distance_to_center = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
 	
-	local distance_modifier = 0.25
-	local base_amount = 35
-	local maximum_amount = 100
-	if global.rocks_yield_ore_distance_modifier then distance_modifier = global.rocks_yield_ore_distance_modifier end
-	if global.rocks_yield_ore_base_amount then base_amount = global.rocks_yield_ore_base_amount end
-	if global.rocks_yield_ore_maximum_amount then maximum_amount = global.rocks_yield_ore_maximum_amount end
-	
-	local amount = base_amount + (distance_to_center * distance_modifier)
-	if amount > maximum_amount then amount = maximum_amount end
+	local amount = global.rocks_yield_ore_base_amount + (distance_to_center * global.rocks_yield_ore_distance_modifier)
+	if amount > global.rocks_yield_ore_maximum_amount then amount = global.rocks_yield_ore_maximum_amount end
 	
 	local m = (70 + math_random(0, 60)) * 0.01
 	
@@ -96,36 +101,48 @@ local function on_player_mined_entity(event)
 	
 	event.buffer.clear()
 	
-	local ore = ore_raffle[math_random(1, #ore_raffle)]	
+	local ore = global.rocks_yield_ore["raffle"][math_random(1, global.rocks_yield_ore["size_of_raffle"])]
 	local player = game.players[event.player_index]
-	--[[
-	local inventory = player.get_inventory(defines.inventory.character_main)
-	if not inventory.can_insert({name = ore, count = 1}) then
-		local e = entity.surface.create_entity({name = entity.name, position = entity.position})
-		e.health = entity.health
-		player.print("Inventory full.", {200, 200, 200})
-		return
-	end
-	]]		
+
 	local count = get_amount(entity)
+	count = math_floor(count * (1 + player.force.mining_drill_productivity_bonus))
+	
+	global.rocks_yield_ore["ores_mined"] = global.rocks_yield_ore["ores_mined"] + count
+	global.rocks_yield_ore["rocks_broken"] = global.rocks_yield_ore["rocks_broken"] + 1
+	
 	local position = {x = entity.position.x, y = entity.position.y}
 	
-	player.surface.create_entity({name = "flying-text", position = position, text = "+" .. count .. " [img=item/" .. ore .. "]", color = {r = 200, g = 160, b = 30}})
+	local ore_amount = math_floor(count * 0.85) + 1
+	local stone_amount = math_floor(count * 0.15) + 1
+	
+	player.surface.create_entity({name = "flying-text", position = position, text = "+" .. ore_amount .. " [img=item/" .. ore .. "]", color = {r = 200, g = 160, b = 30}})
 	create_particles(player.surface, particles[ore], position, 64, {x = player.position.x, y = player.position.y})
 	
 	entity.destroy()
 	
-	if count > max_spill then
+	if ore_amount > max_spill then
 		player.surface.spill_item_stack(position,{name = ore, count = max_spill}, true)
-		count = count - max_spill
-		local inserted_count = player.insert({name = ore, count = count})
-		count = count - inserted_count
-		if count > 0 then
-			player.surface.spill_item_stack(position,{name = ore, count = count}, true)
+		ore_amount = ore_amount - max_spill
+		local inserted_count = player.insert({name = ore, count = ore_amount})
+		ore_amount = ore_amount - inserted_count
+		if ore_amount > 0 then
+			player.surface.spill_item_stack(position,{name = ore, count = ore_amount}, true)
 		end
 	else			
-		player.surface.spill_item_stack(position,{name = ore, count = count}, true)
-	end	
+		player.surface.spill_item_stack(position,{name = ore, count = ore_amount}, true)
+	end
+	
+	if stone_amount > max_spill then
+		player.surface.spill_item_stack(position,{name = "stone", count = max_spill}, true)
+		stone_amount = stone_amount - max_spill
+		local inserted_count = player.insert({name = "stone", count = stone_amount})
+		stone_amount = stone_amount - inserted_count
+		if stone_amount > 0 then
+			player.surface.spill_item_stack(position, {name = "stone", count = stone_amount}, true)
+		end
+	else			
+		player.surface.spill_item_stack(position, {name = "stone", count = stone_amount}, true)
+	end
 end
 
 local function on_entity_died(event)	
@@ -134,7 +151,7 @@ local function on_entity_died(event)
 	if not rock_yield[entity.name] then return end
 	
 	local surface = entity.surface
-	local ore = ore_raffle[math_random(1, #ore_raffle)]
+	local ore = global.rocks_yield_ore["raffle"][math_random(1, global.rocks_yield_ore["size_of_raffle"])]
 	local pos = {entity.position.x, entity.position.y}		
 	create_particles(surface, particles[ore], pos, 16, false)
 	
@@ -147,13 +164,31 @@ local function on_entity_died(event)
 		end
 	end		
 		
-	--local amount = get_amount(entity)
-	--amount = math.ceil(amount * 0.1)
-	--if amount > 12 then amount = 12 end
-	entity.destroy()		
-	surface.spill_item_stack(pos,{name = ore, count = math_random(8,12)}, true)
+	entity.destroy()
+	
+	local count = math_random(6,9)
+	global.rocks_yield_ore["ores_mined"] = global.rocks_yield_ore["ores_mined"] + count	
+	surface.spill_item_stack(pos,{name = ore, count = count}, true)
+	
+	local count = math_random(1,3)
+	global.rocks_yield_ore["ores_mined"] = global.rocks_yield_ore["ores_mined"] + count	
+	surface.spill_item_stack(pos,{name = "stone", count = math_random(1,3)}, true)
+	
+	global.rocks_yield_ore["rocks_broken"] = global.rocks_yield_ore["rocks_broken"] + 1
 end
 
-local event = require 'utils.event'
-event.add(defines.events.on_entity_died, on_entity_died)	
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+local function on_init()
+	global.rocks_yield_ore = {}
+	global.rocks_yield_ore["rocks_broken"] = 0
+	global.rocks_yield_ore["ores_mined"] = 0
+	set_raffle()
+	
+	if not global.rocks_yield_ore_distance_modifier then global.rocks_yield_ore_distance_modifier = 0.25 end
+	if not global.rocks_yield_ore_base_amount then global.rocks_yield_ore_base_amount = 35 end
+	if not global.rocks_yield_ore_maximum_amount then global.rocks_yield_ore_maximum_amount = 150 end
+end
+
+local Event = require 'utils.event'
+Event.on_init(on_init)
+Event.add(defines.events.on_entity_died, on_entity_died)	
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
