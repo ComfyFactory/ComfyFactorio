@@ -253,7 +253,7 @@ local function chronojump(choice)
 	local surface = game.surfaces[global.active_surface_index]
 	local planet = nil
 	if choice then
-		Planets.determine_planet(choice, 1)
+		Planets.determine_planet(choice)
 		planet = global.objective.planet
 	end
 	generate_overworld(surface, planet)
