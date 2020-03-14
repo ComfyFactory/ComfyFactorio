@@ -2,6 +2,8 @@ local Public_tick = {}
 
 local math_random = math.random
 local math_floor = math.floor
+local math_ceil = math.ceil
+local math_min = math.min
 
 function Public_tick.check_chronoprogress()
 	local objective = global.objective
@@ -135,27 +137,13 @@ function Public_tick.repair_train()
 	local objective = global.objective
 	if not game.surfaces["cargo_wagon"] then return 0 end
 	if objective.game_lost == true then return 0 end
+	local count = 0
 	if objective.health < objective.max_health then
-		local inv = global.upgradechest[1].get_inventory(defines.inventory.chest)
-		local count = inv.get_item_count("repair-pack")
-		if count >= 5 and objective.toolsupgradetier == 4 and objective.health + 750 <= objective.max_health then
-			inv.remove({name = "repair-pack", count = 5})
-			return -750
-		elseif count >= 4 and objective.toolsupgradetier == 3 and objective.health + 600 <= objective.max_health then
-			inv.remove({name = "repair-pack", count = 4})
-			return -600
-		elseif count >= 3 and objective.toolsupgradetier == 2 and objective.health + 450 <= objective.max_health then
-			inv.remove({name = "repair-pack", count = 3})
-			return -450
-		elseif count >= 2 and objective.toolsupgradetier == 1 and objective.health + 300 <= objective.max_health then
-			inv.remove({name = "repair-pack", count = 2})
-			return -300
-		elseif count >= 1 then
-			inv.remove({name = "repair-pack", count = 1})
-			return -150
-		end
+		count = global.upgradechest[1].get_inventory(defines.inventory.chest).get_item_count("repair-pack")
+		count = math_min(count, objective.toolsupgradetier + 1, math_ceil((objective.max_health - objective.health) / 150))
+		if count > 0 then inv.remove({name = "repair-pack", count = count}) end
 	end
-  return 0
+  return count * -150
 end
 
 function Public_tick.spawn_poison()
