@@ -7,8 +7,6 @@ local math_min = math.min
 
 function Public_tick.check_chronoprogress()
 	local objective = global.objective
-  local map_gen_settings = Public_tick.get_map_gen_settings()
-	--game.print(objective.chronotimer)
   if objective.planet[1].name.id == 19 then
     if objective.passivetimer == 10 then
       game.print({"chronosphere.message_danger1"}, {r=0.98, g=0.66, b=0.22})
@@ -49,7 +47,6 @@ function Public_tick.charge_chronosphere()
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
 			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)) * global.difficulty_vote_value)
-			--log("energy charged from acu")
 		end
 	end
 end
@@ -85,22 +82,13 @@ function Public_tick.move_items()
 		local input_inventory = input[i].get_inventory(defines.inventory.chest)
 		local output_inventory = output[i].get_inventory(defines.inventory.chest)
 		input_inventory.sort_and_merge()
-		local items = input_inventory.get_contents()
-
-		for item, count in pairs(items) do
-      if item == "modular-armor" or item == "power-armor" or item == "power-armor-mk2" then
-        --log("can't move armors")
-      else
-    		local inserted = output_inventory.insert({name = item, count = count})
-    		if inserted > 0 then
-    			local removed = input_inventory.remove({name = item, count = inserted})
-    		end
-      end
+		output_inventory.sort_and_merge()
+		for ii = 1, #input_inventory, 1 do
+			if input_inventory[ii].valid_for_read then
+				local count = output_inventory.insert(input_inventory[ii])
+				input_inventory[ii].count = input_inventory[ii].count - count
+			end
 		end
-    -- local items = {}
-    -- for ii = 1, #input_inventory, 1 do
-    --   items[#items + 1] = input_inventory[ii]
-    -- end
 	end
 end
 
@@ -110,25 +98,19 @@ function Public_tick.output_items()
 	if not global.locomotive_cargo[2] then return end
 	if not global.locomotive_cargo[3] then return end
 	if global.objective.outupgradetier ~= 1 then return end
+	local wagon = {
+		[1] = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
+		[2] = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
+	}
 	for i = 1, 4, 1 do
 		if not global.outchests[i].valid then return end
 		local inv = global.outchests[i].get_inventory(defines.inventory.chest)
 		inv.sort_and_merge()
-		local items = inv.get_contents()
-		for item, count in pairs(items) do
-      if item == "modular-armor" or item == "power-armor" or item == "power-armor-mk2" then
-        --log("can't move armors")
-      else
-  			local inserted = nil
-  			if i <= 2 then
-  				inserted = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count, grid = item.grid})
-  			else
-  				inserted = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count, grid = item.grid})
-  			end
-  			if inserted > 0 then
-  				local removed = inv.remove({name = item, count = inserted})
-  			end
-      end
+		for ii = 1, #inv, 1 do
+			if inv[ii].valid_for_read then
+				local count = wagon[math_ceil(i/2)].insert(inv[ii])
+				inv[ii].count = inv[ii].count - count
+			end
 		end
 	end
 end
@@ -254,7 +236,6 @@ function Public_tick.offline_players()
           end
           players[i] = nil
         else
-          --game.print("keeping player in list")
           later[#later + 1] = players[i]
         end
       end

@@ -19,12 +19,12 @@ function Public.locomotive_spawn(surface, position, wagons)
 	for i = 1, 3, 1 do
 		global.locomotive_cargo[i] = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + math_floor((i - 1) * 6.5)}, force = "player"})
 		local inv = global.locomotive_cargo[i].get_inventory(defines.inventory.cargo_wagon)
-		for item, count in pairs(wagons[i].inventory) do
-			inv.insert({name = item, count = count})
-			if wagons[i].bar > 0 then inv.set_bar(wagons[i].bar) end
-			for ii = 1, 40, 1 do
-				inv.set_filter(ii, wagons[i].filters[ii])
-			end
+		if wagons[i].bar > 0 then inv.set_bar(wagons[i].bar) end
+		for ii = 1, 40, 1 do
+			inv.set_filter(ii, wagons[i].filters[ii])
+      if wagons[i].inventory[ii] then
+        inv.insert(wagons[i].inventory[ii])
+      end
 		end
 		global.locomotive_cargo[i].minable = false
 	end

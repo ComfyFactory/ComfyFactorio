@@ -178,22 +178,39 @@ function Public_chrono.process_jump(choice)
   end
 end
 
-function Public_chrono.get_wagons()
-  local inventories = {
-    one = global.locomotive_cargo[1].get_inventory(defines.inventory.cargo_wagon),
-    two = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
-    three = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
-  }
-	inventories.one.sort_and_merge()
-	--inventories.two.sort_and_merge()
+function Public_chrono.get_wagons(start)
 	local wagons = {}
-	wagons[1] = {inventory = inventories.one.get_contents(), bar = inventories.one.get_bar(), filters = {}}
-	wagons[2] = {inventory = inventories.two.get_contents(), bar = inventories.two.get_bar(), filters = {}}
-  wagons[3] = {inventory = inventories.three.get_contents(), bar = inventories.three.get_bar(), filters = {}}
-	for i = 1, 40, 1 do
-		wagons[1].filters[i] = inventories.one.get_filter(i)
-		wagons[2].filters[i] = inventories.two.get_filter(i)
-    wagons[3].filters[i] = inventories.three.get_filter(i)
+	wagons[1] = {inventory = {}, bar = 0, filters = {}}
+	wagons[2] = {inventory = {}, bar = 0, filters = {}}
+	wagons[3] = {inventory = {}, bar = 0, filters = {}}
+	if start then
+		wagons[1].inventory[1] = {name = "raw-fish", count = 100}
+		for i = 2, 3, 1 do
+			wagons[i].inventory[1] = {name = 'firearm-magazine', count = 16}
+			wagons[i].inventory[2] = {name = 'iron-plate', count = 16}
+			wagons[i].inventory[3] = {name = 'wood', count = 16}
+			wagons[i].inventory[4] = {name = 'burner-mining-drill', count = 8}
+		end			
+	else
+		local inventories = {
+	    one = global.locomotive_cargo[1].get_inventory(defines.inventory.cargo_wagon),
+	    two = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
+	    three = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
+	  }
+		inventories.one.sort_and_merge()
+		--inventories.two.sort_and_merge()
+
+		wagons[1].bar = inventories.one.get_bar()
+		wagons[2].bar = inventories.two.get_bar()
+	  wagons[3].bar = inventories.three.get_bar()
+		for i = 1, 40, 1 do
+			wagons[1].filters[i] = inventories.one.get_filter(i)
+			wagons[1].inventory[i] = inventories.one[i]
+			wagons[2].filters[i] = inventories.two.get_filter(i)
+			wagons[2].inventory[i] = inventories.two[i]
+	    wagons[3].filters[i] = inventories.three.get_filter(i)
+			wagons[3].inventory[i] = inventories.three[i]
+		end
 	end
   return wagons
 end

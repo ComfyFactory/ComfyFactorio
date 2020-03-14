@@ -38,7 +38,6 @@ global.comfylatron = nil
 global.lab_cells = {}
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 4, ['raw-fish'] = 4, ['rail'] = 16, ['wood'] = 16}
-local starting_cargo = {['firearm-magazine'] = 16, ['iron-plate'] = 16, ['wood'] = 16, ['burner-mining-drill'] = 8}
 
 local function generate_overworld(surface, optplanet)
 	Planets.determine_planet(optplanet)
@@ -156,15 +155,7 @@ local function reset_map()
 	Chrono.restart_settings()
 
 	game.forces.player.set_spawn_position({12, 10}, surface)
-	local wagons = {}
-	wagons[1] = {inventory = {["raw-fish"] = 100}, bar = 0, filters = {}}
-	wagons[2] = {inventory = starting_cargo, bar = 0, filters = {}}
-	wagons[3] = {inventory = starting_cargo, bar = 0, filters = {}}
-	for i = 1, 40, 1 do
-		wagons[2].filters[i] = nil
-		wagons[3].filters[i] = nil
-	end
-	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, wagons)
+	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, Chrono.get_wagons(true))
 	render_train_hp()
 	game.reset_time_played()
 	Locomotive.create_wagon_room()
@@ -260,7 +251,7 @@ local function chronojump(choice)
 
 	game.forces.player.set_spawn_position({12, 10}, surface)
 
-	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, Chrono.get_wagons())
+	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, Chrono.get_wagons(false))
 	render_train_hp()
 	game.delete_surface(oldsurface)
 	Chrono.post_jump()
