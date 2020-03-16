@@ -1,9 +1,6 @@
 -- chronosphere --
 
-require "functions.soft_reset"
-require "functions.basic_markets"
 require "modules.difficulty_vote"
-
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
 --require "modules.no_solar"
@@ -24,13 +21,10 @@ local Tick_functions = require "maps.chronosphere.tick_functions"
 local Event_functions = require "maps.chronosphere.event_functions"
 local Chrono = require "maps.chronosphere.chrono"
 local Locomotive = require "maps.chronosphere.locomotive"
---local Modifier = require "player_modifiers"
 local update_gui = require "maps.chronosphere.gui"
 local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
---local chests = {}
---local acus = {}
 global.objective = {}
 global.objective.config = {}
 global.flame_boots = {}
@@ -132,7 +126,6 @@ local function reset_map()
 	for _,player in pairs(game.players) do
 		if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
 	end
-	global.chunk_queue = {}
 	if game.surfaces["chronosphere"] then game.delete_surface(game.surfaces["chronosphere"]) end
 	if game.surfaces["cargo_wagon"] then game.delete_surface(game.surfaces["cargo_wagon"]) end
 	--chests = {}
@@ -525,7 +518,6 @@ event.on_nth_tick(2, tick)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 event.add(defines.events.on_pre_player_mined_item, pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

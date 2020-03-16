@@ -990,9 +990,7 @@ local function on_chunk_generated(event)
 	if string.sub(event.surface.name, 0, 12) ~= "chronosphere" then return end
   if event.surface.index == global.objective.nextsurface then return end
 	process_chunk(event.surface, event.area.left_top)
-	--global.chunk_queue[#global.chunk_queue + 1] = {left_top = {x = event.area.left_top.x, y = event.area.left_top.y}, surface_index = event.surface.index}
 end
 
 local event = require 'utils.event'
---event.on_nth_tick(4, process_chunk_queue)
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
