@@ -120,8 +120,9 @@ function Public_tick.repair_train()
 	if not game.surfaces["cargo_wagon"] then return 0 end
 	if objective.game_lost == true then return 0 end
 	local count = 0
+	local inv = global.upgradechest[1].get_inventory(defines.inventory.chest)
 	if objective.health < objective.max_health then
-		count = global.upgradechest[1].get_inventory(defines.inventory.chest).get_item_count("repair-pack")
+		count = inv.get_item_count("repair-pack")
 		count = math_min(count, objective.toolsupgradetier + 1, math_ceil((objective.max_health - objective.health) / 150))
 		if count > 0 then inv.remove({name = "repair-pack", count = count}) end
 	end
