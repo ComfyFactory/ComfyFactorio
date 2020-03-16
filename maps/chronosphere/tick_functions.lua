@@ -200,7 +200,7 @@ function Public_tick.offline_players()
         --game.print("deleting already online character from list")
         players[i] = nil
       else
-        if players[i] and players[i].tick < game.tick - 540 then
+        if players[i] and players[i].tick < game.tick - 54000 then
           --log("spawning corpse")
           local player_inv = {}
           local items = {}
