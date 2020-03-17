@@ -30,6 +30,7 @@ global.objective.config = {}
 global.flame_boots = {}
 global.comfylatron = nil
 global.lab_cells = {}
+require "maps.chronosphere.config_tab"
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 4, ['raw-fish'] = 4, ['rail'] = 16, ['wood'] = 16}
 

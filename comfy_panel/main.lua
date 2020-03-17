@@ -3,7 +3,8 @@ Comfy Panel
 
 To add a tab, insert into the "comfy_panel_tabs" table.
 
-Example: comfy_panel_tabs["mapscores"] = draw_map_scores
+Example: comfy_panel_tabs["mapscores"] = {gui = draw_map_scores, admin = false}
+if admin = true, then tab is visible only for admins (usable for map-specific settings)
 
 draw_map_scores would be a function with the player and the frame as arguments
 
@@ -62,7 +63,7 @@ local function main_frame(player)
 	local tabbed_pane = frame.add({type = "tabbed-pane", name = "tabbed_pane"})
 
 	for name, func in pairs(tabs) do
-		if name == "Admin" then
+		if func.admin == true then
 			if player.admin then
 				local tab = tabbed_pane.add({type = "tab", caption = name})
 				local frame = tabbed_pane.add({type = "frame", name = name, direction = "vertical"})
