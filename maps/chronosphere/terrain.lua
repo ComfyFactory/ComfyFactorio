@@ -286,7 +286,7 @@ local function process_rocky_position(p, seed, tiles, entities, treasure, planet
 	end
 	if math_abs(noise_large_caves) > 0.375 then
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
-		if math_random(1,6) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
+		if math_random(1,5) > 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
 		return
 	end
@@ -306,9 +306,9 @@ local function process_rocky_position(p, seed, tiles, entities, treasure, planet
 	if small_caves > -0.25 and small_caves < 0.25 then
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
     local roll = math_random(1,1000)
-    if roll > 800 then
+    if roll > 830 then
       entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p}
-    elseif roll > 790 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then
+    elseif roll > 820 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then
       entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}
     else
 
@@ -329,7 +329,7 @@ local function process_rocky_position(p, seed, tiles, entities, treasure, planet
 
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
-		if math_random(1,100) > 40 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
+		if math_random(1,100) > 50 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
 		return
 	end
 

@@ -210,7 +210,6 @@ function Public_tick.offline_players()
           player_inv[3] = game.players[players[i].index].get_inventory(defines.inventory.character_guns)
           player_inv[4] = game.players[players[i].index].get_inventory(defines.inventory.character_ammo)
           player_inv[5] = game.players[players[i].index].get_inventory(defines.inventory.character_trash)
-          game.print({"chronosphere.message_accident"}, {r=0.98, g=0.66, b=0.22})
           local e = surface.create_entity({name = "character", position = game.forces.player.get_spawn_position(surface), force = "neutral"})
           local inv = e.get_inventory(defines.inventory.character_main)
           for ii = 1, 5, 1 do
@@ -228,8 +227,12 @@ function Public_tick.offline_players()
       			     inv.insert(items[item])
               end
             end
+						game.print({"chronosphere.message_accident"}, {r=0.98, g=0.66, b=0.22})
+						e.die("neutral")
+					else
+						e.destroy()
           end
-          e.die("neutral")
+
           for ii = 1, 5, 1 do
             if player_inv[ii].valid then
               player_inv[ii].clear()
@@ -247,6 +250,7 @@ function Public_tick.offline_players()
         players[#players + 1] = later[i]
       end
     end
+		objective.offline_players = players
   end
 end
 

@@ -141,7 +141,7 @@ local function reset_map()
 		global.active_surface_index = game.create_surface("chronosphere", Chrono.get_map_gen_settings()).index
 	else
 		game.forces.player.set_spawn_position({12, 10}, game.surfaces[global.active_surface_index])
-		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
+		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], Chrono.get_map_gen_settings(), starting_items).index
 	end
 
 	local surface = game.surfaces[global.active_surface_index]

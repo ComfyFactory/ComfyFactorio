@@ -36,13 +36,13 @@ end
 function Public.comfy_panel_get_active_frame(player)
 	if not player.gui.left.comfy_panel then return false end
 	if not player.gui.left.comfy_panel.tabbed_pane.selected_tab_index then return player.gui.left.comfy_panel.tabbed_pane.tabs[1].content end
-	return player.gui.left.comfy_panel.tabbed_pane.tabs[player.gui.left.comfy_panel.tabbed_pane.selected_tab_index].content 
+	return player.gui.left.comfy_panel.tabbed_pane.tabs[player.gui.left.comfy_panel.tabbed_pane.selected_tab_index].content
 end
 
 function Public.comfy_panel_refresh_active_tab(player)
 	local frame = Public.comfy_panel_get_active_frame(player)
 	if not frame then return end
-	comfy_panel_tabs[frame.name](player, frame)
+	comfy_panel_tabs[frame.name].gui(player, frame)
 end
 
 local function top_button(player)
