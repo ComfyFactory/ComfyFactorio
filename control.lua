@@ -104,7 +104,6 @@ require "modules.autostash"
 --require "maps.tank_battles"
 --require "maps.spiral_troopers"
 --require "maps.refactor-io"
---require "maps.pitch_black.main"
 --require "maps.desert_oasis"
 --require "maps.lost_desert"
 --require "maps.stoneblock"
@@ -115,6 +114,7 @@ require "modules.autostash"
 --require "maps.blue_beach"
 --require "maps.deep_jungle"
 --require "maps.rainbow_road"
+--require "maps.pitch_black.main"
 --require "maps.cube"
 --require "maps.forest_circle"
 -----------------------------
@@ -125,10 +125,11 @@ require "modules.autostash"
 --require "modules.trees_grow"
 --require "modules.trees_randomly_die"
 
---require "terrain_layouts.scrap_01"  
 --require "terrain_layouts.caves" 
 --require "terrain_layouts.cone_to_east"
 --require "terrain_layouts.biters_and_resources_east"
+--require "terrain_layouts.scrap_01"
+require "terrain_layouts.watery_world"
 ------
 
 if _DUMP_ENV then

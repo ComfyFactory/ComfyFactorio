@@ -12,6 +12,7 @@ local noises = {
 	["n2"] = {{modifier = 0.001, weight = 1}},
 	["n3"] = {{modifier = 0.01, weight = 1}},
 	["n4"] = {{modifier = 0.1, weight = 1}},
+	["watery_world"] = {{modifier = 0.0007, weight = 1}, {modifier = 0.01, weight = 0.02}, {modifier = 0.1, weight = 0.005}},
 	["no_rocks"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
 	["no_rocks_2"] = {{modifier = 0.013, weight = 1}, {modifier = 0.1, weight = 0.1}},
 	["oasis"] = {{modifier = 0.0015, weight = 1}, {modifier = 0.0025, weight = 0.5}, {modifier = 0.01, weight = 0.15}, {modifier = 0.1, weight = 0.017}},
