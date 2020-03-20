@@ -81,7 +81,12 @@ local texts = {
 		"Ha! I bet this time we will finally get into the right year!",
 		"One zero zero zero one zero one zero one zero one zero one... two.",
 		"I remember that once we jumped into time where I had park with blackjack and hookers...",
-		"I was having the most wonderful dream. We used the time machine to kill ourselves before we launched the machine! How terrible..."
+		"I was having the most wonderful dream. We used the time machine to kill ourselves before we launched the machine! How terrible...",
+		"Train full of timedrug addicts...what do we do?",
+		"They just wanted to deliver some fish so I pressed that button and then this happened",
+		"Maybe it was just a cat walking on my keyboard who caused this time travel fiasco",
+		"3...2...1...jump time! errr...I mean...desync time!",
+		"Just let me deliver the fish. They start to smell a bit. Luckily I don't have a nose"	
 	},
 	["alone"] = {
 		"comfy ^.^",

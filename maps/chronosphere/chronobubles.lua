@@ -10,7 +10,7 @@ local variants = {
   [5] = {id = 5, name = "uranium planet", iron = 1, copper = 1, coal = 1, stone = 1, uranium = 6, oil = 1, biters = 16, moisture = -0.2, chance = 1, cumul_chance = 5},
   [6] = {id = 6, name = "mixed planet", iron = 2, copper = 2, coal = 2, stone = 2, uranium = 0, oil = 2, biters = 10, moisture = 0, chance = 3, cumul_chance = 8},
   [7] = {id = 7, name = "biter planet", iron = 2, copper = 2, coal = 2, stone = 2, uranium = 4, oil = 3, biters = 40, moisture = 0.2, chance = 4, cumul_chance = 12},
-  [8] = {id = 8, name = "water planet", iron = 1, copper = 1, coal = 1, stone = 1, uranium = 0, oil = 0, biters = 6, moisture = 0.5, chance = 1, cumul_chance = 13},
+  [8] = {id = 8, name = "poor planet", iron = 1, copper = 1, coal = 1, stone = 1, uranium = 0, oil = 0, biters = 16, moisture = 0.1, chance = 1, cumul_chance = 13},
   [9] = {id = 9, name = "coal planet", iron = 1, copper = 1, coal = 6, stone = 1, uranium = 0, oil = 1, biters = 16, moisture = 0, chance = 1, cumul_chance = 14},
   [10] = {id = 10, name = "scrapyard", iron = 0, copper = 0, coal = 0, stone = 0, uranium = 0, oil = 0, biters = 0, moisture = -0.2, chance = 3, cumul_chance = 17},
   [11] = {id = 11, name = "rocky planet", iron = 0, copper = 0, coal = 0, stone = 0, uranium = 0, oil = 0, biters = 6, moisture = -0.2, chance = 2, cumul_chance = 19},

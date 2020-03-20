@@ -338,9 +338,12 @@ local function check_win()
             for _, player in pairs(game.connected_players) do
         			player.play_sound{path="utility/game_won", volume_modifier=0.85}
         		end
-            local message = {"chronosphere.message_game_won1"} .. "after all, we delivered " .. objective.mainscore .. " of them fishies."
+            local message = {"chronosphere.message_game_won1"}
+						local message2 = "Number of delivered fish: " .. objective.mainscore
             game.print(message, {r=0.98, g=0.66, b=0.22})
+						game.print(message2, {r=0.98, g=0.66, b=0.22})
             Server.to_discord_embed(message)
+						Server.to_discord_embed(message2)
           end
         end
       end

@@ -67,11 +67,6 @@ local function generate_overworld(surface, optplanet)
 		mgs.property_expression_names["control-setting:moisture:bias"] = moisture
 		surface.map_gen_settings = mgs
 	end
-	if planet[1].name.id == 8 then --water planet
-		local mgs = surface.map_gen_settings
-		mgs.water = 0.8
-		surface.map_gen_settings = mgs
-	end
 	if planet[1].name.id == 14 then --lava planet
 		local mgs = surface.map_gen_settings
 		mgs.water = 0
@@ -153,7 +148,6 @@ local function reset_map()
 	render_train_hp()
 	game.reset_time_played()
 	Locomotive.create_wagon_room()
-	Event_functions.mining_buffs()
 	if objective.game_won then
 		game.print({"chronosphere.message_game_won_restart"}, {r=0.98, g=0.66, b=0.22})
 	end
@@ -250,7 +244,7 @@ local function chronojump(choice)
 	game.delete_surface(oldsurface)
 	Chrono.post_jump()
 	Event_functions.flamer_nerfs()
-	surface.pollute(global.locomotive.position, 150 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps))
+	surface.pollute(global.locomotive.position, 150 * (4 / (objective.filterupgradetier / 2 + 1)) * (1 + global.objective.chronojumps) * global.difficulty_vote_value)
 end
 
 local tick_minute_functions = {
@@ -348,6 +342,8 @@ local function on_init()
 	game.surfaces["nauvis"].map_gen_settings = mgs
 	game.surfaces["nauvis"].clear()
 	reset_map()
+	Chrono.init_setup()
+	Event_functions.mining_buffs()
 	--if game.surfaces["nauvis"] then game.delete_surface(game.surfaces["nauvis"]) end
 end
 

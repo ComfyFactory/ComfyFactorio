@@ -2,6 +2,7 @@ local Public_chrono = {}
 
 local Server = require 'utils.server'
 local math_random = math.random
+local math_max = math.max
 
 function Public_chrono.get_map_gen_settings()
 	local seed = math_random(1, 1000000)
@@ -92,12 +93,17 @@ function Public_chrono.restart_settings()
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
+	game.forces.player.technologies["cliff-explosives"].enabled = false
 	game.forces.player.technologies["fusion-reactor-equipment"].enabled = false
 	game.forces.player.technologies["power-armor-mk2"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
-	game.forces.player.recipes["pistol"].enabled = false
+
+	global.objective = objective
 end
 
+function Public_chrono.init_setup()
+	game.forces.player.recipes["pistol"].enabled = false
+end
 
 function Public_chrono.objective_died()
   local objective = global.objective
@@ -150,11 +156,11 @@ function Public_chrono.process_jump(choice)
 	local objective = global.objective
 	local overstayed = overstayed()
 	objective.chronojumps = objective.chronojumps + 1
-	objective.chrononeeds = 2000 + 400 * objective.chronojumps
+	objective.chrononeeds = 2000 + 300 * objective.chronojumps
 	objective.passivetimer = 0
 	objective.chronotimer = 0
-  objective.danegrtimer = 1200
-	local message = "Comfylatron: Wheeee! Time Jump Active! This is Jump number " .. global.objective.chronojumps
+  objective.dangertimer = 1200
+	local message = "Comfylatron: Wheeee! Time Jump Active! This is Jump number " .. objective.chronojumps
 	game.print(message, {r=0.98, g=0.66, b=0.22})
 	Server.to_discord_embed(message)
 
@@ -176,6 +182,7 @@ function Public_chrono.process_jump(choice)
   if objective.planet[1].name.id == 19 then
     check_nuke_silos()
   end
+	global.objective = objective
 end
 
 function Public_chrono.get_wagons(start)
@@ -190,7 +197,7 @@ function Public_chrono.get_wagons(start)
 			wagons[i].inventory[2] = {name = 'iron-plate', count = 16}
 			wagons[i].inventory[3] = {name = 'wood', count = 16}
 			wagons[i].inventory[4] = {name = 'burner-mining-drill', count = 8}
-		end			
+		end
 	else
 		local inventories = {
 	    one = global.locomotive_cargo[1].get_inventory(defines.inventory.cargo_wagon),
@@ -231,15 +238,15 @@ function Public_chrono.post_jump()
     end
 		objective.chrononeeds = 200000000
   elseif objective.planet[1].name.id == 19 then
-    objective.chronotimer = objective.chrononeeds - 1800
+    objective.chronotimer = objective.chrononeeds - 1500
 	end
 	for _, player in pairs(game.connected_players) do
 		global.flame_boots[player.index] = {fuel = 1, steps = {}}
 	end
 
 	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * (objective.chronojumps + objective.passivejumps)
-	game.forces.scrapyard.set_ammo_damage_modifier("bullet", 0.01 * objective.chronojumps)
-	game.forces.scrapyard.set_turret_attack_modifier("gun-turret", 0.01 * objective.chronojumps)
+	game.forces.scrapyard.set_ammo_damage_modifier("bullet", 0.01 * objective.chronojumps + 0.02 * math_max(0, objective.chronojumps - 20))
+	game.forces.scrapyard.set_turret_attack_modifier("gun-turret", 0.01 * objective.chronojumps + 0.02 * math_max(0, objective.chronojumps - 20))
 	game.forces.enemy.set_ammo_damage_modifier("melee", 0.1 * objective.passivejumps)
 	game.forces.enemy.set_ammo_damage_modifier("biological", 0.1 * objective.passivejumps)
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.8
@@ -249,6 +256,7 @@ function Public_chrono.post_jump()
       game.forces.player.technologies["power-armor-mk2"].enabled = true
     end
   end
+	global.objective = objective
 end
 
 return Public_chrono

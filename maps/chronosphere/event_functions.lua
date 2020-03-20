@@ -16,24 +16,25 @@ local choppy_entity_yield = {
 
 local function get_ore_amount()
 	local scaling = 5 * global.objective.chronojumps
-	local amount = (30 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus) * global.objective.planet[1].ore_richness.factor
+	local amount = (30 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus / 2) * global.objective.planet[1].ore_richness.factor
 	if amount > 600 then amount = 600 end
 	amount = math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
 	return amount
 end
 
-local function reward_ores(amount, mined_loot, surface, player)
-	local a = player.insert {name = mined_loot, count = amount}
+local function reward_ores(amount, mined_loot, surface, player, entity)
+	local a = 0
+	if player then a = player.insert {name = mined_loot, count = amount} end
 	amount = amount - a
 	if amount > 0 then
 		if amount >= 50 then
 			for i = 1, math_floor(amount / 50), 1 do
-				surface.create_entity{name = "item-on-ground", position = player.position, stack = {name = mined_loot, count = 50}}
+				surface.create_entity{name = "item-on-ground", position = entity.position, stack = {name = mined_loot, count = 50}}
 				amount = amount - 50
 			end
 		end
 		if amount > 0 then
-			surface.spill_item_stack(player.position, {name = mined_loot, count = amount},true)
+			surface.spill_item_stack(entity.position, {name = mined_loot, count = amount},true)
 		end
 	end
 end
@@ -135,7 +136,7 @@ function Public_event.choppy_loot(event)
 		})
 
 		local player = game.players[event.player_index]
-		reward_ores(amount, main_item, entity.surface, player)
+		reward_ores(amount, main_item, entity.surface, player, player)
 
 		local inserted_count = player.insert({name = second_item, count = second_item_amount})
 		second_item_amount = second_item_amount - inserted_count
@@ -158,35 +159,43 @@ function Public_event.rocky_loot(event)
 		text = "+" .. amount .. " [img=item/" .. mined_loot .. "]",
 		color = {r=0.98, g=0.66, b=0.22}
 	})
-	reward_ores(amount, mined_loot, surface, player)
+	reward_ores(amount, mined_loot, surface, player, player)
 end
 
 local ore_yield = {
 	["behemoth-biter"] = 5,
 	["behemoth-spitter"] = 5,
-	["behemoth-worm-turret"] = 9,
+	["behemoth-worm-turret"] = 6,
 	["big-biter"] = 3,
 	["big-spitter"] = 3,
-	["big-worm-turret"] = 7,
-	["biter-spawner"] = 16,
+	["big-worm-turret"] = 4,
+	["biter-spawner"] = 10,
 	["medium-biter"] = 2,
 	["medium-spitter"] = 2,
-	["medium-worm-turret"] = 5,
+	["medium-worm-turret"] = 3,
 	["small-biter"] = 1,
 	["small-spitter"] = 1,
-	["small-worm-turret"] = 3,
-	["spitter-spawner"] = 16,
+	["small-worm-turret"] = 2,
+	["spitter-spawner"] = 10,
 }
 
 function Public_event.swamp_loot(event)
 	local surface = game.surfaces[global.active_surface_index]
-	local amount = get_ore_amount() / 12
+	local amount = get_ore_amount() / 20
 	if ore_yield[event.entity.name] then
-		amount = get_ore_amount() / 12 * ore_yield[event.entity.name]
+		amount = (get_ore_amount() * ore_yield[event.entity.name]) / 20
 	end
-	local rock_mining = {"iron-ore", "iron-ore", "coal", "coal", "coal"}
+	if amount > 50 then amount = 50 end
+
+	local rock_mining = {"iron-ore", "iron-ore", "coal"}
 	local mined_loot = rock_mining[math_random(1,#rock_mining)]
-	surface.spill_item_stack(event.entity.position,{name = mined_loot, count = amount}, true)
+	--reward_ores(amount, mined_loot, surface, nil, event.entity)
+	if amount < 5 then
+		surface.spill_item_stack(event.entity.position,{name = mined_loot, count = amount}, true)
+	else
+		surface.create_entity{name = "item-on-ground", position = event.entity.position, stack = {name = mined_loot, count = amount}}
+	end
+	--surface.spill_item_stack(event.entity.position,{name = mined_loot, count = amount}, true)
 end
 
 function Public_event.danger_silo(entity)
