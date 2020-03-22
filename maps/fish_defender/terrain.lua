@@ -63,7 +63,10 @@ local function is_body(p)
 	--Main Fish Body			
 	local distance_to_center_1 = ((p.x - body_circle_center_1.x)^2 + (p.y - body_circle_center_1.y)^2)
 	local distance_to_center_2 = ((p.x - body_circle_center_2.x)^2 + (p.y - body_circle_center_2.y)^2)	
-	if distance_to_center_1 < body_square_radius and distance_to_center_2 < body_square_radius then return true end
+	--if distance_to_center_1 < body_square_radius and distance_to_center_2 < body_square_radius then return true end
+	if distance_to_center_1 < body_square_radius then 
+		if distance_to_center_2 < body_square_radius then return true end 
+	end
 	
 	--Fish Fins
 	local distance_to_center_1 = ((p.x - fin_circle_center_1.x)^2 + (p.y - fin_circle_center_1.y)^2)
@@ -153,8 +156,10 @@ local function generate_spawn_area(surface)
 	for x = -20, 20, 1 do
 		for y = -20, 20, 1 do
 			local pos = {x = global.market.position.x + x, y = global.market.position.y + y}
-			local distance_to_center = math_sqrt(x^2 + y^2)
-			if distance_to_center > 8 and distance_to_center < 15 then
+			--local distance_to_center = math_sqrt(x^2 + y^2)
+			--if distance_to_center > 8 and distance_to_center < 15 then
+			local distance_to_center = x^2 + y^2
+			if distance_to_center > 64 and distance_to_center < 225 then
 				if math_random(1,3) == 1 and surface.can_place_entity({name = "wooden-chest", position = pos, force = "player"}) then
 					local chest = surface.create_entity({name = "wooden-chest", position = pos, force = "player"})
 				end
@@ -261,13 +266,23 @@ function fish_eye(surface, position)
 	for x = -48, 48, 1 do
 		for y = -48, 48, 1 do
 			local p = {x = position.x + x, y = position.y + y}
-			local distance = math_sqrt(((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2))
-			if distance < 44 then
-				surface.set_tiles({{name = "water-green", position = p}}, true)
+			--local distance = math_sqrt(((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2))
+			--if distance < 44 then
+			--	surface.set_tiles({{name = "water-green", position = p}}, true)
+			--end
+			--if distance < 22 then
+			--	surface.set_tiles({{name = "out-of-map", position = p}}, true)
+			--end
+
+			local distance = ((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2)
+			if distance < 1936 then
+				if distance < 484 then
+					surface.set_tiles({{name = "out-of-map", position = p}}, true)
+				else
+					surface.set_tiles({{name = "water-green", position = p}}, true)
+				end
 			end
-			if distance < 22 then
-				surface.set_tiles({{name = "out-of-map", position = p}}, true)
-			end
+			
 		end
 	end
 end
@@ -277,35 +292,37 @@ local ores = {"coal", "iron-ore", "copper-ore", "stone"}
 local function plankton_territory(surface, position, seed)		
 	local noise = simplex_noise(position.x * 0.009, position.y * 0.009, seed)	
 	local d = 196
-	if position.x + position.y > (d * -1) - (math_abs(noise) * d * 3) and position.x > position.y - (d + (math_abs(noise) * d * 3)) then return false end
+	local tile_to_set = "out-of-map"
+	if position.x + position.y > (d * -1) - (math_abs(noise) * d * 3) and position.x > position.y - (d + (math_abs(noise) * d * 3)) then return "out-of-map" end
 	
 	local noise_2 = simplex_noise(position.x * 0.0075, position.y * 0.0075, seed + 10000)
-	if noise_2 > 0.87 then surface.set_tiles({{name = "deepwater-green", position = position}}, true) return true end
+	--if noise_2 > 0.87 then surface.set_tiles({{name = "deepwater-green", position = position}}, true) return true end
+	if noise_2 > 0.87 then return "deepwater-green" end
 	if noise_2 > 0.75 then
 		local i = math_floor(noise * 6) % 4 + 1
-		surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
+		--surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
 		surface.create_entity({name = ores[i], position = position, amount = 1 + 2500 * math_abs(noise_2 * 3)})	
-		return true 
+		return ("grass-" .. i)  
 	end	
 	if noise_2 < -0.76 then
 		local i = math_floor(noise * 6) % 4 + 1
-		surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
-		if noise_2 < -0.86 then surface.create_entity({name = "uranium-ore", position = position, amount = 1 + 1000 * math_abs(noise_2 * 2)}) return true end
+		--surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
+		if noise_2 < -0.86 then surface.create_entity({name = "uranium-ore", position = position, amount = 1 + 1000 * math_abs(noise_2 * 2)}) return ("grass-" .. i) end
 		if math_random(1, 3) ~= 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position}) end
-		return true 
+		return ("grass-" .. i) 
 	end
 	
 	if noise < 0.12 and noise > -0.12 then
 		local i = math_floor(noise * 32) % 4 + 1
-		surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
+		--surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
 		if math_random(1, 5) == 1 then surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position}) end
-		return true
+		return ("grass-" .. i)
 	end
 		
-	surface.set_tiles({{name = "water", position = position}}, true)
+	--surface.set_tiles({{name = "water", position = position}}, true)
 	if math_random(1, 128) == 1 then surface.create_entity({name = "fish", position = position}) end
 	
-	return true	
+	return "water"	
 end
 
 local function process_chunk(left_top)
@@ -316,14 +333,21 @@ local function process_chunk(left_top)
 	enemy_territory(surface, left_top)
 	fish_mouth(surface, left_top)
 	
+	local tiles = {}
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top.x + x, y = left_top.y + y}
 			if is_out_of_map_tile(pos) then	
-				if not plankton_territory(surface, pos, seed) then surface.set_tiles({{name = "out-of-map", position = pos}}, true) end
+				--if not plankton_territory(surface, pos, seed) then surface.set_tiles({{name = "out-of-map", position = pos}}, true) end
+				local tile_to_set = plankton_territory(surface, pos, seed)
+				--local tile_to_set = "out-of-map"
+				table.insert(tiles, {name = tile_to_set, position = pos})	
 			end
 		end
 	end
+	
+	surface.set_tiles(tiles,true)
 	
 	--if game.tick == 0 then return end
 	--if game.forces.player.is_chunk_charted(surface, {left_top.x / 32, left_top.y / 32}) then
