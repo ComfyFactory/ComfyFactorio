@@ -507,8 +507,8 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
        if math_random(1,100) > 42 then entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p} end
      end
 		if scrapyard < -0.28 or scrapyard > 0.28 then
-			if math_random(1,96) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end
-			if math_random(1,5) > 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
+			if math_random(1,48) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end
+			if math_random(1,3) == 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
 			return
 		end
 		return
