@@ -25,12 +25,14 @@ local drop_values = {
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32}
 
 local drop_raffle = {}
-for _ = 1, 32, 1 do table_insert(drop_raffle, "iron-ore") end
-for _ = 1, 24, 1 do table_insert(drop_raffle, "copper-ore") end
-for _ = 1, 16, 1 do table_insert(drop_raffle, "stone") end
-for _ = 1, 16, 1 do table_insert(drop_raffle, "coal") end
-for _ = 1, 1, 1 do table_insert(drop_raffle, "uranium-ore") end
-for _ = 1, 4, 1 do table_insert(drop_raffle, "wood") end
+for _ = 1, 64, 1 do table_insert(drop_raffle, "iron-ore") end
+for _ = 1, 40, 1 do table_insert(drop_raffle, "copper-ore") end
+for _ = 1, 32, 1 do table_insert(drop_raffle, "stone") end
+for _ = 1, 32, 1 do table_insert(drop_raffle, "coal") end
+for _ = 1, 6, 1 do table_insert(drop_raffle, "wood") end
+for _ = 1, 4, 1 do table_insert(drop_raffle, "landfill") end
+for _ = 1, 3, 1 do table_insert(drop_raffle, "uranium-ore") end
+for _ = 1, 1, 1 do table_insert(drop_raffle, "raw-fish") end
 local size_of_drop_raffle = #drop_raffle
 
 local drop_vectors = {}
@@ -57,7 +59,7 @@ local function on_entity_died(event)
 	if not entity.valid then return end
 	
 	if entity.type == "unit" and entity.spawner then
-		entity.spawner.damage(20, game.forces[1])
+		entity.spawner.damage(18, game.forces[1])
 	end	
 	
 	if not drop_values[entity.name] then return end	
@@ -100,7 +102,9 @@ local type_whitelist = {
 	["cargo-wagon"] = true,
 	["construction-robot"] = true,
 	["entity-ghost"] = true,
+	["tile-ghost"] = true,
 	["fluid-wagon"] = true,
+	["curved-rail"] = true,
 	["heat-pipe"] = true,
 	["locomotive"] = true,
 	["logistic-robot"] = true,
@@ -112,6 +116,7 @@ local type_whitelist = {
 	["splitter"] = true,
 	["container"] = true,
 	["inserter"] = true,
+	--["lamp"] = true,
 	["underground-belt"] = true,
 }
 
@@ -177,10 +182,11 @@ local function on_init()
 	game.map_settings.enemy_evolution.pollution_factor = 0	
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_expansion.enabled = true
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
-	game.map_settings.enemy_expansion.settler_group_max_size = 32
-	game.map_settings.enemy_expansion.settler_group_min_size = 16
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 900
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 900
+	game.map_settings.enemy_expansion.settler_group_max_size = 128
+	game.map_settings.enemy_expansion.settler_group_min_size = 32
+	game.map_settings.enemy_expansion.max_expansion_distance = 16
 	
 	local map_gen_settings = {
 		["height"] = 196,
@@ -194,7 +200,7 @@ local function on_init()
 			["iron-ore"] = {frequency = 0, size = 0.65, richness = 0.5},
 			["uranium-ore"] = {frequency = 0, size = 1, richness = 1},
 			["crude-oil"] = {frequency = 0, size = 1, richness = 0.75},
-			["trees"] = {frequency = 4, size = 0.5, richness = 1},
+			["trees"] = {frequency = 2, size = 0.15, richness = 1},
 			["enemy-base"] = {frequency = 256, size = 2, richness = 1},
 		},
 	}
