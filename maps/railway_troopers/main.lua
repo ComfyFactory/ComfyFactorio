@@ -84,26 +84,14 @@ end
 
 local function on_entity_spawned(event)
 	global.on_entity_spawned_counter = global.on_entity_spawned_counter + 1
-	
-	if global.on_entity_spawned_counter % 16384 == 8192 then
-		send_wave(event.spawner, 512)
-		return
-	end
-	
-	if global.on_entity_spawned_counter % 2048 == 1024 then
-		send_wave(event.spawner, 256)
-		return
-	end
-	
-	if global.on_entity_spawned_counter % 512 == 256 then
-		send_wave(event.spawner, 128)
-		return
-	end
-	
-	if global.on_entity_spawned_counter % 128 == 64 then
-		send_wave(event.spawner, 16)
-		return
-	end
+	if global.on_entity_spawned_counter % 2 == 1 then return end
+	for a = 14, 4, -2 do
+		local b = 2 ^ a
+		if global.on_entity_spawned_counter % b == 0 then
+			send_wave(event.spawner, a ^ 2)
+			return
+		end
+	end		
 end
 
 local function on_entity_died(event)
@@ -255,9 +243,9 @@ local function send_tick_wave()
 	
 	local search_radius = 4
 	for _, player in pairs(game.connected_players) do
-		if player.position.x > search_radius then search_radius = math_floor(player.position.x) end
+		if player.position.x * 0.5 > search_radius then search_radius = math_floor(player.position.x * 0.5) end
 	end
-	if search_radius > 512 then search_radius = 512 end
+	if search_radius > 256 then search_radius = 256 end
 	
 	send_wave(spawners[math_random(1, #spawners)], search_radius)
 end
