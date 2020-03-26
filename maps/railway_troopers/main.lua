@@ -50,20 +50,36 @@ local function on_player_joined_game(event)
 end
 
 local function on_entity_spawned(event)
-	if global.clean_up_wave_countdown <= 0 then
+	global.on_entity_spawned_counter = global.on_entity_spawned_counter + 1
+	
+	if global.on_entity_spawned_counter % 128 == 0 then
 		local biter = event.entity
 		local position = biter.surface.find_non_colliding_position("small-biter", {-32, biter.position.y}, 128, 8)
-		if not position then return end
-		biter.release_from_spawner()	
-		biter.set_command({
-			type = defines.command.attack_area,
-			destination = position,
-			radius = 8,
-			distraction = defines.distraction.by_anything,
-		})		
-		global.clean_up_wave_countdown = 128
-	else
-		global.clean_up_wave_countdown = global.clean_up_wave_countdown - 1
+		if position then
+			biter.release_from_spawner()	
+			biter.set_command({
+				type = defines.command.attack_area,
+				destination = position,
+				radius = 8,
+				distraction = defines.distraction.by_anything,
+			})
+		end		
+	end
+	
+	if global.on_entity_spawned_counter % 1024 == 512 then
+		local spawner = event.spawner
+		local biters = spawner.surface.find_enemy_units(spawner.position, 64, "player")	
+		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
+		if position and biters[1] then
+			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
+			for _, unit in pairs(biters) do unit_group.add_member(unit) end
+			unit_group.set_command({
+				type = defines.command.attack_area,
+				destination = position,
+				radius = 8,
+				distraction = defines.distraction.by_anything,
+			})
+		end		
 	end
 end
 
@@ -232,7 +248,7 @@ end
 
 local function on_init()
 	global.drop_schedule = {}
-	global.clean_up_wave_countdown = 0
+	global.on_entity_spawned_counter = 0
 
 	game.map_settings.enemy_evolution.destroy_factor = 0.001
 	game.map_settings.enemy_evolution.pollution_factor = 0	
