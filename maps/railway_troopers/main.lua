@@ -73,54 +73,35 @@ local function set_commands(unit_group)
 	})
 end
 
+local function send_wave(spawner, search_radius)
+	local biters = spawner.surface.find_enemy_units(spawner.position, search_radius, "player")	
+	if biters[1] then
+		local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
+		for _, unit in pairs(biters) do unit_group.add_member(unit) end
+		set_commands(unit_group)
+	end
+end
+
 local function on_entity_spawned(event)
 	global.on_entity_spawned_counter = global.on_entity_spawned_counter + 1
 	
 	if global.on_entity_spawned_counter % 16384 == 8192 then
-		local spawner = event.spawner
-		local biters = spawner.surface.find_enemy_units(spawner.position, 512, "player")	
-		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
-		if position and biters[1] then
-			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
-			for _, unit in pairs(biters) do unit_group.add_member(unit) end
-			set_commands(unit_group)
-		end
+		send_wave(event.spawner, 512)
 		return
 	end
 	
-	if global.on_entity_spawned_counter % 4096 == 2048 then
-		local spawner = event.spawner
-		local biters = spawner.surface.find_enemy_units(spawner.position, 256, "player")	
-		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
-		if position and biters[1] then
-			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
-			for _, unit in pairs(biters) do unit_group.add_member(unit) end
-			set_commands(unit_group)
-		end
+	if global.on_entity_spawned_counter % 2048 == 1024 then
+		send_wave(event.spawner, 256)
 		return
 	end
 	
-	if global.on_entity_spawned_counter % 1024 == 512 then
-		local spawner = event.spawner
-		local biters = spawner.surface.find_enemy_units(spawner.position, 128, "player")	
-		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
-		if position and biters[1] then
-			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
-			for _, unit in pairs(biters) do unit_group.add_member(unit) end
-			set_commands(unit_group)
-		end
+	if global.on_entity_spawned_counter % 512 == 256 then
+		send_wave(event.spawner, 128)
 		return
 	end
 	
-	if global.on_entity_spawned_counter % 128 == 0 then
-		local spawner = event.spawner
-		local biters = spawner.surface.find_enemy_units(spawner.position, 8, "player")	
-		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
-		if position and biters[1] then
-			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
-			for _, unit in pairs(biters) do unit_group.add_member(unit) end
-			set_commands(unit_group)
-		end
+	if global.on_entity_spawned_counter % 128 == 64 then
+		send_wave(event.spawner, 16)
 		return
 	end
 end
@@ -266,7 +247,19 @@ local function on_robot_built_entity(event)
 	deny_building(event)
 end
 
-local function drop_loot()
+local function send_tick_wave()
+	if game.tick % 54000 ~= 3600 then return end
+	local surface = game.surfaces["railway_troopers"]
+	local spawners = surface.find_entities_filtered({type = "unit-spawner"})
+	if not spawners[1] then return end
+	
+	local search_radius = 4
+	for _, player in pairs(game.connected_players) do
+		if player.position.x > search_radius then search_radius = math_floor(player.position.x) end
+	end
+	if search_radius > 512 then search_radius = 512 end
+	
+	send_wave(spawners[math_random(1, #spawners)], search_radius)
 end
 
 local function drop_schedule()
@@ -286,6 +279,7 @@ end
 
 local function on_tick()
 	drop_schedule()
+	send_tick_wave()
 end
 
 local function on_init()
