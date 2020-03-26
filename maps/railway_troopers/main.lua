@@ -55,12 +55,21 @@ local function set_commands(unit_group)
 	local commands = {}
 	for x = position.x, -8196, -32 do
 		if surface.is_chunk_generated({math_floor(x / 32), math_floor(position.y / 32)}) then
-			commands[#commands + 1] = {
-				type = defines.command.attack_area,
-				destination = {x = x, y = position.y},
-				radius = 16,
-				distraction = defines.distraction.by_anything
-			}
+			if math_random(1, 2) == 1 then
+				commands[#commands + 1] = {
+					type = defines.command.build_base,
+					destination = {x = x, y = position.y},
+					distraction = defines.distraction.by_anything,
+					ignore_planner = true,
+				}
+			else
+				commands[#commands + 1] = {
+					type = defines.command.attack_area,
+					destination = {x = x, y = position.y},
+					radius = 16,
+					distraction = defines.distraction.by_anything
+				}
+			end
 		else
 			break
 		end
@@ -85,10 +94,10 @@ end
 local function on_entity_spawned(event)
 	global.on_entity_spawned_counter = global.on_entity_spawned_counter + 1
 	if global.on_entity_spawned_counter % 2 == 1 then return end
-	for a = 14, 4, -2 do
+	for a = 14, 6, -2 do
 		local b = 2 ^ a
 		if global.on_entity_spawned_counter % b == 0 then
-			send_wave(event.spawner, a ^ 2)
+			send_wave(event.spawner, a ^ 2 - 16)
 			return
 		end
 	end		
@@ -274,7 +283,7 @@ local function on_init()
 	global.drop_schedule = {}
 	global.on_entity_spawned_counter = 0
 
-	game.map_settings.enemy_evolution.destroy_factor = 0.001
+	game.map_settings.enemy_evolution.destroy_factor = 0.002
 	game.map_settings.enemy_evolution.pollution_factor = 0	
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_expansion.enabled = true
