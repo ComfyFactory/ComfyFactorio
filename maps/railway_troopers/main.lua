@@ -49,37 +49,79 @@ local function on_player_joined_game(event)
 	end
 end
 
+local function set_commands(unit_group)
+	local surface = unit_group.surface
+	local position = unit_group.position
+	local commands = {}
+	for x = position.x, -8196, -32 do
+		if surface.is_chunk_generated({math_floor(x / 32), math_floor(position.y / 32)}) then
+			commands[#commands + 1] = {
+				type = defines.command.attack_area,
+				destination = {x = x, y = position.y},
+				radius = 16,
+				distraction = defines.distraction.by_anything
+			}
+		else
+			break
+		end
+	end
+	
+	unit_group.set_command({
+		type = defines.command.compound,
+		structure_type = defines.compound_command.return_last,
+		commands = commands
+	})
+end
+
 local function on_entity_spawned(event)
 	global.on_entity_spawned_counter = global.on_entity_spawned_counter + 1
 	
-	if global.on_entity_spawned_counter % 128 == 0 then
-		local biter = event.entity
-		local position = biter.surface.find_non_colliding_position("small-biter", {-32, biter.position.y}, 128, 8)
-		if position then
-			biter.release_from_spawner()	
-			biter.set_command({
-				type = defines.command.attack_area,
-				destination = position,
-				radius = 8,
-				distraction = defines.distraction.by_anything,
-			})
-		end		
-	end
-	
-	if global.on_entity_spawned_counter % 1024 == 512 then
+	if global.on_entity_spawned_counter % 16384 == 8192 then
 		local spawner = event.spawner
-		local biters = spawner.surface.find_enemy_units(spawner.position, 64, "player")	
+		local biters = spawner.surface.find_enemy_units(spawner.position, 512, "player")	
 		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
 		if position and biters[1] then
 			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
 			for _, unit in pairs(biters) do unit_group.add_member(unit) end
-			unit_group.set_command({
-				type = defines.command.attack_area,
-				destination = position,
-				radius = 8,
-				distraction = defines.distraction.by_anything,
-			})
-		end		
+			set_commands(unit_group)
+		end
+		return
+	end
+	
+	if global.on_entity_spawned_counter % 4096 == 2048 then
+		local spawner = event.spawner
+		local biters = spawner.surface.find_enemy_units(spawner.position, 256, "player")	
+		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
+		if position and biters[1] then
+			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
+			for _, unit in pairs(biters) do unit_group.add_member(unit) end
+			set_commands(unit_group)
+		end
+		return
+	end
+	
+	if global.on_entity_spawned_counter % 1024 == 512 then
+		local spawner = event.spawner
+		local biters = spawner.surface.find_enemy_units(spawner.position, 128, "player")	
+		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
+		if position and biters[1] then
+			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
+			for _, unit in pairs(biters) do unit_group.add_member(unit) end
+			set_commands(unit_group)
+		end
+		return
+	end
+	
+	if global.on_entity_spawned_counter % 128 == 0 then
+		local spawner = event.spawner
+		local biters = spawner.surface.find_enemy_units(spawner.position, 8, "player")	
+		local position = spawner.surface.find_non_colliding_position("small-biter", {-32, spawner.position.y}, 128, 8)
+		if position and biters[1] then
+			local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
+			for _, unit in pairs(biters) do unit_group.add_member(unit) end
+			set_commands(unit_group)
+		end
+		return
 	end
 end
 
@@ -259,6 +301,7 @@ local function on_init()
 	game.map_settings.enemy_expansion.settler_group_max_size = 128
 	game.map_settings.enemy_expansion.settler_group_min_size = 32
 	game.map_settings.enemy_expansion.max_expansion_distance = 16
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.25
 	
 	local map_gen_settings = {
 		["height"] = 128,
