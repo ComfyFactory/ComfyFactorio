@@ -55,7 +55,7 @@ local function set_commands(unit_group)
 	local commands = {}
 	for x = position.x, -8196, -32 do
 		if surface.is_chunk_generated({math_floor(x / 32), math_floor(position.y / 32)}) then
-			if math_random(1, 2) == 1 then
+			if math_random(1, 4) == 1 then
 				commands[#commands + 1] = {
 					type = defines.command.build_base,
 					destination = {x = x, y = position.y},
@@ -244,6 +244,11 @@ local function on_robot_built_entity(event)
 	deny_building(event)
 end
 
+local function on_research_finished(event)
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 500
+	event.research.force.character_item_pickup_distance_bonus = game.forces.player.mining_drill_productivity_bonus * 20
+end
+
 local function send_tick_wave()
 	if game.tick % 54000 ~= 3600 then return end
 	local surface = game.surfaces["railway_troopers"]
@@ -340,6 +345,7 @@ end
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
+Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
