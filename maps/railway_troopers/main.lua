@@ -22,7 +22,6 @@ local drop_values = {
 	["biter-spawner"] = 640,
 	["spitter-spawner"] = 640
 }
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32}
 
 local drop_raffle = {}
 for _ = 1, 64, 1 do table_insert(drop_raffle, "iron-ore") end
@@ -32,7 +31,6 @@ for _ = 1, 32, 1 do table_insert(drop_raffle, "coal") end
 for _ = 1, 6, 1 do table_insert(drop_raffle, "wood") end
 for _ = 1, 4, 1 do table_insert(drop_raffle, "landfill") end
 for _ = 1, 3, 1 do table_insert(drop_raffle, "uranium-ore") end
-for _ = 1, 1, 1 do table_insert(drop_raffle, "raw-fish") end
 local size_of_drop_raffle = #drop_raffle
 
 local drop_vectors = {}
@@ -48,9 +46,6 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
-		for item, amount in pairs(starting_items) do
-			player.insert({name = item, count = amount})
-		end
 	end
 end
 
@@ -66,23 +61,42 @@ local function on_entity_died(event)
 	table_insert(global.drop_schedule, {{entity.position.x, entity.position.y}, drop_values[entity.name]})
 end
 
+local refined_concretes = {"black", "blue", "cyan", "green", "purple"}
+
 local function draw_west_side(surface, left_top)	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local position = {left_top.x + x, left_top.y + y}
 			surface.set_tiles({{name = "deepwater-green", position = position}}, true)
-			if math_random(1, 256) == 1 then surface.create_entity({name = "fish", position = position}) end
+			if math_random(1, 64) == 1 then surface.create_entity({name = "fish", position = position}) end
 		end
 	end
 	
 	if math_random(1, 8) == 1 then
-		surface.create_entity({name = "crude-oil", position = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}, amount = 100000 + math_abs(left_top.x * 250)})
+		surface.create_entity({name = "crude-oil", position = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}, amount = 200000 + math_abs(left_top.x * 500)})
+	end
+	
+	if math_random(1, 16) == 1 and left_top.x < -96 then
+		local p = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}
+		local tile_name = refined_concretes[math_random(1, #refined_concretes)] .. "-refined-concrete"
+		local y_count = math_random(8, 24)
+		for x = 0, math_random(8, 24), 1 do
+			for y = 0, y_count, 1 do
+				local position = {p[1] + x, p[2] + y}
+				if position[2] < surface.map_gen_settings.height * 0.5 then
+					surface.set_tiles({{name = tile_name, position = position}}, true)
+				end
+			end
+		end
 	end
 end
 
 local function on_chunk_generated(event)
 	local surface = event.surface
 	local left_top = event.area.left_top
+	
+	if left_top.y >= surface.map_gen_settings.height * 0.5 then return end
+	if left_top.y < surface.map_gen_settings.height * -0.5 then return end
 	
 	if left_top.x < -32 then
 		draw_west_side(surface, left_top)
@@ -92,6 +106,15 @@ local function on_chunk_generated(event)
 	if left_top.y == 0 then
 		for x = 0, 30, 2 do
 			surface.create_entity({name = "straight-rail", position = {left_top.x + x, 0}, direction = 2, force = "player"})
+		end
+		if left_top.x == -32 then
+			local entity = surface.create_entity({name = "cargo-wagon", position = {-24, 0}, force = "player", direction = 2})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "firearm-magazine", count = 128})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun", count = 1})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun-shell", count = 16})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "light-armor", count = 2})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "grenade", count = 3})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "pistol", count = 5})
 		end
 	end
 end
@@ -116,7 +139,8 @@ local type_whitelist = {
 	["splitter"] = true,
 	["container"] = true,
 	["inserter"] = true,
-	--["lamp"] = true,
+	["lamp"] = true,
+	["electric-pole"] = true,
 	["underground-belt"] = true,
 }
 
@@ -189,7 +213,7 @@ local function on_init()
 	game.map_settings.enemy_expansion.max_expansion_distance = 16
 	
 	local map_gen_settings = {
-		["height"] = 196,
+		["height"] = 128,
 		["water"] = 0.1,
 		["starting_area"] = 0.60,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -206,14 +230,30 @@ local function on_init()
 	}
 	
 	local surface = game.create_surface("railway_troopers", map_gen_settings)
-	surface.request_to_generate_chunks({0,0}, 2)
+	surface.request_to_generate_chunks({0,0}, 4)
 	surface.force_generate_chunk_requests()
 	
-	game.forces.player.set_spawn_position({0, 0}, surface)	
+	local force = game.forces.player
 	
-	game.forces["player"].technologies["landfill"].researched = true
-	game.forces["player"].technologies["railway"].researched = true
-	game.forces["player"].technologies["engine"].researched = true
+	force.set_spawn_position({0, 0}, surface)	
+	
+	force.technologies["landfill"].researched = true
+	force.technologies["railway"].researched = true
+	force.technologies["engine"].researched = true
+	
+	local types_to_disable = {
+		["ammo"] = true,
+		["armor"] = true,
+		["car"] = true,
+		["gun"] = true,
+		["capsule"] = true,
+	}
+	
+	for _, recipe in pairs(game.recipe_prototypes) do
+		if types_to_disable[recipe.subgroup.name] then
+			force.set_hand_crafting_disabled_for_recipe(recipe.name, true)
+		end
+	end
 end
 
 local Event = require 'utils.event'
