@@ -29,7 +29,8 @@ local function reward_ores(amount, mined_loot, surface, player, entity)
 	if amount > 0 then
 		if amount >= 50 then
 			for i = 1, math_floor(amount / 50), 1 do
-				surface.create_entity{name = "item-on-ground", position = entity.position, stack = {name = mined_loot, count = 50}}
+				local e = surface.create_entity{name = "item-on-ground", position = entity.position, stack = {name = mined_loot, count = 50}}
+				e.to_be_looted = true
 				amount = amount - 50
 			end
 		end

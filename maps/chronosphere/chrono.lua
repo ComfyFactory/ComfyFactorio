@@ -97,6 +97,7 @@ function Public_chrono.restart_settings()
 	game.forces.player.technologies["fusion-reactor-equipment"].enabled = false
 	game.forces.player.technologies["power-armor-mk2"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
+	game.forces.player.recipes["pistol"].enabled = false
 
 	global.objective = objective
 end

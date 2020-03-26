@@ -347,6 +347,10 @@ local function on_init()
 	--if game.surfaces["nauvis"] then game.delete_surface(game.surfaces["nauvis"]) end
 end
 
+local function on_load()
+	Chrono.init_setup()
+end
+
 local function protect_entity(event)
 	if event.entity.force.index ~= 1 then return end --Player Force
 	if Event_functions.isprotected(event.entity) then
@@ -511,6 +515,7 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
+event.on_load(on_load)
 event.on_nth_tick(2, tick)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
