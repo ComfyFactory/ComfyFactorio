@@ -49,12 +49,30 @@ local function on_player_joined_game(event)
 	end
 end
 
+local function on_entity_spawned(event)
+	if global.clean_up_wave_countdown <= 0 then
+		local biter = event.entity
+		local position = biter.surface.find_non_colliding_position("small-biter", {-32, biter.position.y}, 128, 8)
+		if not position then return end
+		biter.release_from_spawner()	
+		biter.set_command({
+			type = defines.command.attack_area,
+			destination = position,
+			radius = 8,
+			distraction = defines.distraction.by_anything,
+		})		
+		global.clean_up_wave_countdown = 128
+	else
+		global.clean_up_wave_countdown = global.clean_up_wave_countdown - 1
+	end
+end
+
 local function on_entity_died(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	
 	if entity.type == "unit" and entity.spawner then
-		entity.spawner.damage(18, game.forces[1])
+		entity.spawner.damage(20, game.forces[1])
 	end	
 	
 	if not drop_values[entity.name] then return end	
@@ -91,6 +109,8 @@ local function draw_west_side(surface, left_top)
 	end
 end
 
+local infini_ores = {"iron-ore", "iron-ore", "copper-ore", "coal", "stone"}
+
 local function on_chunk_generated(event)
 	local surface = event.surface
 	local left_top = event.area.left_top
@@ -103,7 +123,7 @@ local function on_chunk_generated(event)
 		return
 	end
 	
-	if left_top.y == 0 then
+	if left_top.y == 0 and left_top.x < 64 then
 		for x = 0, 30, 2 do
 			surface.create_entity({name = "straight-rail", position = {left_top.x + x, 0}, direction = 2, force = "player"})
 		end
@@ -117,6 +137,17 @@ local function on_chunk_generated(event)
 			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "pistol", count = 5})
 		end
 	end
+	
+	if math_random(1, 10) == 1 and left_top.x > 0 then
+		local position = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}
+		surface.create_entity({name = infini_ores[math_random(1, #infini_ores)], position = position, amount = 9999999})
+		local direction = 0
+		if left_top.y < 0 then direction = 4 end
+		local e = surface.create_entity({name = "burner-mining-drill", position = position, force = "neutral", direction = direction})
+		e.minable = false
+		e.destructible = false
+		e.insert({name = "coal", count = math_random(8, 36)})
+	end
 end
 
 local type_whitelist = {
@@ -124,23 +155,23 @@ local type_whitelist = {
 	["car"] = true,
 	["cargo-wagon"] = true,
 	["construction-robot"] = true,
-	["entity-ghost"] = true,
-	["tile-ghost"] = true,
-	["fluid-wagon"] = true,
+	["container"] = true,
 	["curved-rail"] = true,
+	["electric-pole"] = true,
+	["entity-ghost"] = true,
+	["fluid-wagon"] = true,
 	["heat-pipe"] = true,
+	["inserter"] = true,
+	["lamp"] = true,
 	["locomotive"] = true,
 	["logistic-robot"] = true,
 	["rail-chain-signal"] = true,
 	["rail-signal"] = true,
+	["splitter"] = true,
 	["straight-rail"] = true,
+	["tile-ghost"] = true,
 	["train-stop"] = true,	
 	["transport-belt"] = true,
-	["splitter"] = true,
-	["container"] = true,
-	["inserter"] = true,
-	["lamp"] = true,
-	["electric-pole"] = true,
 	["underground-belt"] = true,
 }
 
@@ -201,6 +232,7 @@ end
 
 local function on_init()
 	global.drop_schedule = {}
+	global.clean_up_wave_countdown = 0
 
 	game.map_settings.enemy_evolution.destroy_factor = 0.001
 	game.map_settings.enemy_evolution.pollution_factor = 0	
