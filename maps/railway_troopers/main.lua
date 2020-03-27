@@ -1,3 +1,6 @@
+require "modules.sticky_landfill"
+require "modules.dynamic_player_spawn"
+
 local math_random = math.random
 local math_floor = math.floor
 local table_insert = table.insert
@@ -79,6 +82,8 @@ local function set_commands(unit_group)
 			break
 		end
 	end
+	
+	if #commands == 0 then return end
 	
 	unit_group.set_command({
 		type = defines.command.compound,
@@ -172,12 +177,12 @@ local function draw_east_side(surface, left_top)
 		end
 		if left_top.x == -32 then
 			local entity = surface.create_entity({name = "cargo-wagon", position = {-24, 0}, force = "player", direction = 2})
-			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "firearm-magazine", count = 128})
-			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun", count = 1})
-			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun-shell", count = 16})
-			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "light-armor", count = 2})
-			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "grenade", count = 3})
-			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "pistol", count = 5})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "firearm-magazine", count = 600})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun", count = 2})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun-shell", count = 64})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "light-armor", count = 5})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "grenade", count = 32})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "pistol", count = 10})
 		end
 	end
 	
@@ -356,7 +361,7 @@ local function on_init()
 	
 	local force = game.forces.player
 	
-	force.set_spawn_position({0, 0}, surface)	
+	force.set_spawn_position({-30, 0}, surface)	
 	
 	force.technologies["landfill"].researched = true
 	force.technologies["railway"].researched = true

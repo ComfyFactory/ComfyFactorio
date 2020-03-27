@@ -38,16 +38,28 @@ end
 	
 local function sticky(surface, tiles, tile_name)
 	local revert_tiles = {}
+	local revert_entities = {}
 	local i = 1
+	local i2 = 1
 	for _, placed_tile in pairs(tiles) do
 		revert_tiles[i] = {name = placed_tile.old_tile.name, position = placed_tile.position}
+		local resources = surface.find_entities_filtered({type = "resource", area = {{placed_tile.position.x - 1, placed_tile.position.y - 1}, {placed_tile.position.x + 1, placed_tile.position.y + 1}}})
+		for _, resource in pairs(resources) do
+			revert_entities[i2] = {name = resource.name, position = resource.position, amount = resource.amount}
+			resource.destroy()
+			i2 = i2 + 1		
+		end
 		i = i + 1	
 	end
 	surface.set_tiles(revert_tiles, true)
 	
 	for _, placed_tile in pairs(tiles) do
 		move_tile(surface, tile_name, placed_tile.position)
-	end		
+	end
+	
+	for _, entity in pairs(revert_entities) do
+		surface.create_entity(entity)
+	end
 end
 
 local function on_player_built_tile(event)
