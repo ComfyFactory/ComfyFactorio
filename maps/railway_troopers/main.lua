@@ -6,6 +6,8 @@ local math_sqrt = math.sqrt
 local math_round = math.round
 local math_abs = math.abs
 
+local map_height = 96
+
 local drop_values = {
 	["small-spitter"] = 8,
 	["small-biter"] = 8,
@@ -41,6 +43,9 @@ for x = -2, 2, 0.1 do
 end
 local size_of_drop_vectors = #drop_vectors
 
+local infini_ores = {"iron-ore", "iron-ore", "copper-ore", "coal", "stone"}
+local refined_concretes = {"black", "blue", "cyan", "green", "purple"}
+
 local function on_player_joined_game(event)
 	local surface = game.surfaces["railway_troopers"]
 	local player = game.players[event.player_index]
@@ -55,7 +60,7 @@ local function set_commands(unit_group)
 	local commands = {}
 	for x = position.x, -8196, -32 do
 		if surface.is_chunk_generated({math_floor(x / 32), math_floor(position.y / 32)}) then
-			if math_random(1, 4) == 1 then
+			if math_random(1, 16) == 1 then
 				commands[#commands + 1] = {
 					type = defines.command.build_base,
 					destination = {x = x, y = position.y},
@@ -85,7 +90,7 @@ end
 local function send_wave(spawner, search_radius)
 	local biters = spawner.surface.find_enemy_units(spawner.position, search_radius, "player")	
 	if biters[1] then
-		local unit_group = spawner.surface.create_unit_group({position = spawner.position, force = "enemy"})
+		local unit_group = spawner.surface.create_unit_group({position = {x = spawner.position.x, y = -42 + math_random(0, 84)}, force = "enemy"})
 		for _, unit in pairs(biters) do unit_group.add_member(unit) end
 		set_commands(unit_group)
 	end
@@ -97,7 +102,7 @@ local function on_entity_spawned(event)
 	for a = 14, 6, -2 do
 		local b = 2 ^ a
 		if global.on_entity_spawned_counter % b == 0 then
-			send_wave(event.spawner, a ^ 2 - 16)
+			send_wave(event.spawner, a ^ 2 - 28)
 			return
 		end
 	end		
@@ -115,49 +120,51 @@ local function on_entity_died(event)
 	table_insert(global.drop_schedule, {{entity.position.x, entity.position.y}, drop_values[entity.name]})
 end
 
-local refined_concretes = {"black", "blue", "cyan", "green", "purple"}
+local function is_out_of_map(p)
+	local a = p.x + 3250
+	local b = math_abs(p.y)
+	if a * 0.015 >= b then return end
+	if a * -0.015 > b then return end
+	return true
+end
 
-local function draw_west_side(surface, left_top)	
+local function draw_west_side(surface, left_top)
+	local entities = {}
+	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
-			local position = {left_top.x + x, left_top.y + y}
-			surface.set_tiles({{name = "deepwater-green", position = position}}, true)
-			if math_random(1, 64) == 1 then surface.create_entity({name = "fish", position = position}) end
+			local position = {x = left_top.x + x, y = left_top.y + y}
+			if math_abs(position.y) > map_height * 0.5 then
+				surface.set_tiles({{name = "out-of-map", position = position}}, true)
+			else
+				surface.set_tiles({{name = "deepwater-green", position = position}}, true)
+				if math_random(1, 64) == 1 then table_insert(entities, {name = "fish", position = position}) end
+				if math_random(1, 8196) == 1 and position.x < -64 then table_insert(entities, {name = "crude-oil", position = position, amount = 200000 + math_abs(left_top.x * 500)}) end			
+			end		
 		end
 	end
 	
-	if math_random(1, 8) == 1 then
-		surface.create_entity({name = "crude-oil", position = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}, amount = 200000 + math_abs(left_top.x * 500)})
-	end
-	
-	if math_random(1, 16) == 1 and left_top.x < -96 then
+	if math_random(1, 12) == 1 and left_top.x < -64 then
 		local p = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}
 		local tile_name = refined_concretes[math_random(1, #refined_concretes)] .. "-refined-concrete"
-		local y_count = math_random(8, 24)
-		for x = 0, math_random(8, 24), 1 do
+		local y_count = math_random(8, 16)
+		for x = 0, math_random(8, 16), 1 do
 			for y = 0, y_count, 1 do
 				local position = {p[1] + x, p[2] + y}
-				if position[2] < surface.map_gen_settings.height * 0.5 then
+				if math_abs(position[2]) < map_height * 0.5 then
 					surface.set_tiles({{name = tile_name, position = position}}, true)
 				end
 			end
 		end
 	end
+	
+	for _, entity in pairs(entities) do
+		surface.create_entity(entity)
+	end
 end
 
-local infini_ores = {"iron-ore", "iron-ore", "copper-ore", "coal", "stone"}
-
-local function on_chunk_generated(event)
-	local surface = event.surface
-	local left_top = event.area.left_top
-	
-	if left_top.y >= surface.map_gen_settings.height * 0.5 then return end
-	if left_top.y < surface.map_gen_settings.height * -0.5 then return end
-	
-	if left_top.x < -32 then
-		draw_west_side(surface, left_top)
-		return
-	end
+local function draw_east_side(surface, left_top)
+	local entities = {}
 	
 	if left_top.y == 0 and left_top.x < 64 then
 		for x = 0, 30, 2 do
@@ -174,15 +181,43 @@ local function on_chunk_generated(event)
 		end
 	end
 	
-	if math_random(1, 10) == 1 and left_top.x > 0 then
-		local position = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}
-		surface.create_entity({name = infini_ores[math_random(1, #infini_ores)], position = position, amount = 9999999})
-		local direction = 0
-		if left_top.y < 0 then direction = 4 end
-		local e = surface.create_entity({name = "burner-mining-drill", position = position, force = "neutral", direction = direction})
-		e.minable = false
-		e.destructible = false
-		e.insert({name = "coal", count = math_random(8, 36)})
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local position = {x = left_top.x + x, y = left_top.y + y}
+			if is_out_of_map(position) then
+				surface.set_tiles({{name = "out-of-map", position = position}}, true)
+			else
+				if math_random(1, 8196) == 1 and left_top.x > 0 then
+					table_insert(entities, {name = infini_ores[math_random(1, #infini_ores)], position = position, amount = 9999999})
+					table_insert(entities, {name = "burner-mining-drill", position = position, force = "neutral"})				
+				end
+			end		
+		end
+	end
+	
+	for _, entity in pairs(entities) do
+		local e = surface.create_entity(entity)
+		if e.name == "burner-mining-drill" then
+			if e.position.y < 0 then
+				e.direction = 4
+			else
+				e.direction = 0
+			end
+			e.minable = false
+			e.destructible = false
+			e.insert({name = "coal", count = math_random(8, 36)})
+		end
+	end
+end
+
+local function on_chunk_generated(event)
+	local surface = event.surface
+	local left_top = event.area.left_top
+
+	if left_top.x < -32 then
+		draw_west_side(surface, left_top)
+	else
+		draw_east_side(surface, left_top)
 	end
 end
 
@@ -245,8 +280,8 @@ local function on_robot_built_entity(event)
 end
 
 local function on_research_finished(event)
-	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 500
-	event.research.force.character_item_pickup_distance_bonus = game.forces.player.mining_drill_productivity_bonus * 20
+	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 200
+	event.research.force.character_item_pickup_distance_bonus = game.forces.player.mining_drill_productivity_bonus * 10
 end
 
 local function send_tick_wave()
@@ -255,7 +290,7 @@ local function send_tick_wave()
 	local spawners = surface.find_entities_filtered({type = "unit-spawner"})
 	if not spawners[1] then return end
 	
-	local search_radius = 4
+	local search_radius = 16
 	for _, player in pairs(game.connected_players) do
 		if player.position.x * 0.5 > search_radius then search_radius = math_floor(player.position.x * 0.5) end
 	end
@@ -300,8 +335,7 @@ local function on_init()
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.25
 	
 	local map_gen_settings = {
-		["height"] = 128,
-		["water"] = 0.1,
+		["water"] = 0,
 		["starting_area"] = 0.60,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
 		["autoplace_controls"] = {
