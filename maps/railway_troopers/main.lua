@@ -102,11 +102,12 @@ local function send_wave(spawner, search_radius)
 end
 
 local function on_entity_spawned(event)
-	global.on_entity_spawned_counter = global.on_entity_spawned_counter + 1
-	if global.on_entity_spawned_counter % 2 == 1 then return end
+	global.on_entity_spawned_counter = global.on_entity_spawned_counter + 1	
+	local c = global.on_entity_spawned_counter * 0.5	
+	if c % 2 ~= 0 then return end
 	for a = 14, 6, -2 do
 		local b = 2 ^ a
-		if global.on_entity_spawned_counter % b == 0 then
+		if c % b == 0 then
 			send_wave(event.spawner, a ^ 2 - 28)
 			return
 		end
@@ -148,7 +149,7 @@ local function draw_west_side(surface, left_top)
 			end		
 		end
 	end
-	
+	--[[
 	if math_random(1, 12) == 1 and left_top.x < -64 then
 		local p = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}
 		local tile_name = refined_concretes[math_random(1, #refined_concretes)] .. "-refined-concrete"
@@ -162,7 +163,7 @@ local function draw_west_side(surface, left_top)
 			end
 		end
 	end
-	
+	]]
 	for _, entity in pairs(entities) do
 		surface.create_entity(entity)
 	end
@@ -192,8 +193,8 @@ local function draw_east_side(surface, left_top)
 			if is_out_of_map(position) then
 				surface.set_tiles({{name = "out-of-map", position = position}}, true)
 			else
-				if math_random(1, 8196) == 1 and left_top.x > 0 then
-					table_insert(entities, {name = infini_ores[math_random(1, #infini_ores)], position = position, amount = 9999999})
+				if math_random(1, 4096) == 1 and left_top.x > 0 then
+					table_insert(entities, {name = infini_ores[math_random(1, #infini_ores)], position = position, amount = 99999999})
 					table_insert(entities, {name = "burner-mining-drill", position = position, force = "neutral"})				
 				end
 			end		
@@ -249,6 +250,7 @@ local type_whitelist = {
 	["train-stop"] = true,	
 	["transport-belt"] = true,
 	["underground-belt"] = true,
+	["wall"] = true,
 }
 
 local function deny_building(event)
@@ -328,9 +330,9 @@ local function on_init()
 	global.drop_schedule = {}
 	global.on_entity_spawned_counter = 0
 
-	game.map_settings.enemy_evolution.destroy_factor = 0.002
-	game.map_settings.enemy_evolution.pollution_factor = 0	
-	game.map_settings.enemy_evolution.time_factor = 0
+	game.map_settings.enemy_evolution.destroy_factor = 0.001
+	--game.map_settings.enemy_evolution.pollution_factor = 0	
+	--game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 900
 	game.map_settings.enemy_expansion.min_expansion_cooldown = 900
