@@ -47,7 +47,6 @@ end
 local size_of_drop_vectors = #drop_vectors
 
 local infini_ores = {"iron-ore", "iron-ore", "copper-ore", "coal", "stone"}
-local refined_concretes = {"black", "blue", "cyan", "green", "purple"}
 
 local function on_player_joined_game(event)
 	local surface = game.surfaces["railway_troopers"]
@@ -135,8 +134,7 @@ local function is_out_of_map(p)
 end
 
 local function draw_west_side(surface, left_top)
-	local entities = {}
-	
+	local entities = {}	
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local position = {x = left_top.x + x, y = left_top.y + y}
@@ -149,21 +147,6 @@ local function draw_west_side(surface, left_top)
 			end		
 		end
 	end
-	--[[
-	if math_random(1, 12) == 1 and left_top.x < -64 then
-		local p = {left_top.x + math_random(0, 31), left_top.y + math_random(0, 31)}
-		local tile_name = refined_concretes[math_random(1, #refined_concretes)] .. "-refined-concrete"
-		local y_count = math_random(8, 16)
-		for x = 0, math_random(8, 16), 1 do
-			for y = 0, y_count, 1 do
-				local position = {p[1] + x, p[2] + y}
-				if math_abs(position[2]) < map_height * 0.5 then
-					surface.set_tiles({{name = tile_name, position = position}}, true)
-				end
-			end
-		end
-	end
-	]]
 	for _, entity in pairs(entities) do
 		surface.create_entity(entity)
 	end
@@ -184,6 +167,9 @@ local function draw_east_side(surface, left_top)
 			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "light-armor", count = 5})
 			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "grenade", count = 32})
 			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "pistol", count = 10})
+			entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "rail", count = 100})
+			local entity = surface.create_entity({name = "locomotive", position = {-18, 0}, force = "player", direction = 2})			
+			entity.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 25})
 		end
 	end
 	
@@ -193,7 +179,7 @@ local function draw_east_side(surface, left_top)
 			if is_out_of_map(position) then
 				surface.set_tiles({{name = "out-of-map", position = position}}, true)
 			else
-				if math_random(1, 4096) == 1 and left_top.x > 0 then
+				if math_random(1, 5000) == 1 and left_top.x > 0 then
 					table_insert(entities, {name = infini_ores[math_random(1, #infini_ores)], position = position, amount = 99999999})
 					table_insert(entities, {name = "burner-mining-drill", position = position, force = "neutral"})				
 				end
