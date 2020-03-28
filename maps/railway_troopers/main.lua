@@ -126,10 +126,10 @@ local function on_entity_died(event)
 end
 
 local function is_out_of_map(p)
-	local a = p.x + 3250
+	local a = p.x + 1960
 	local b = math_abs(p.y)
-	if a * 0.015 >= b then return end
-	if a * -0.015 > b then return end
+	if a * 0.025 >= b then return end
+	if a * -0.025 > b then return end
 	return true
 end
 
