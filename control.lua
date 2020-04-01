@@ -27,6 +27,7 @@ require "comfy_panel.config"
 require "modules.autostash"
 
 ---- enable modules here ----
+require "modules.admins_operate_biters"
 --require "modules.the_floor_is_lava"
 --require "modules.biters_landfill_on_death"
 --require "modules.autodecon_when_depleted"
@@ -130,7 +131,7 @@ require "maps.chronosphere.main"
 --require "terrain_layouts.cone_to_east"
 --require "terrain_layouts.biters_and_resources_east"
 --require "terrain_layouts.scrap_01"
-require "terrain_layouts.watery_world"
+--require "terrain_layouts.watery_world"
 ------
 
 if _DUMP_ENV then

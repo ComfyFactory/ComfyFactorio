@@ -230,6 +230,7 @@ local function chronojump(choice)
 	global.lab_cells = {}
 	global.active_surface_index = game.create_surface("chronosphere" .. objective.chronojumps, Chrono.get_map_gen_settings()).index
 	local surface = game.surfaces[global.active_surface_index]
+	log("seed of new surface: " .. surface.map_gen_settings.seed)
 	local planet = nil
 	if choice then
 		Planets.determine_planet(choice)

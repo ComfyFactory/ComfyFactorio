@@ -4,6 +4,7 @@ local Ores = require "maps.chronosphere.ores"
 local Specials = require "maps.chronosphere.terrain_specials"
 local math_random = math.random
 local math_floor = math.floor
+local math_min = math.min
 local math_abs = math.abs
 local math_sqrt = math.sqrt
 local level_depth = 960
@@ -175,7 +176,8 @@ local function process_dangerevent_position(p, seed, tiles, entities, treasure, 
 			return
 		end
 	end
-	tiles[#tiles + 1] = {name = "stone-path", position = p}
+	tiles[#tiles + 1] = {name = "dirt-7", position = p}
+  tiles[#tiles + 1] = {name = "stone-path", position = p}
 end
 
 local function process_hedgemaze_position(p, seed, tiles, entities, treasure, planet, cell, things)
@@ -531,7 +533,8 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 			return
 		end
 	end
-	tiles[#tiles + 1] = {name = "stone-path", position = p}
+	tiles[#tiles + 1] = {name = "dirt-7", position = p}
+  tiles[#tiles + 1] = {name = "stone-path", position = p}
 end
 
 local function process_swamp_position(p, seed, tiles, entities, treasure, planet)
@@ -675,7 +678,7 @@ local entity_functions = {
 	end,
   ["lab"] = function(surface, entity)
     local e = surface.create_entity(entity)
-    local evo = math_floor(1 + (game.forces.enemy.evolution_factor - 0.00001) * 5)
+    local evo = 1 + math_min(math_floor(global.objective.chronojumps / 4), 4)
     local research = {
       {"automation-science-pack", "logistic-science-pack"},
       {"automation-science-pack", "logistic-science-pack", "military-science-pack"},
@@ -684,7 +687,7 @@ local entity_functions = {
       {"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack", "utility-science-pack"}
     }
     for _,science in pairs(research[evo]) do
-      e.insert({name = science, count = math_random(32,64)})
+      e.insert({name = science, count = math_random(math_min(32 + global.objective.chronojumps, 100), math_min(64 + global.objective.chronojumps, 200))})
     end
   end,
 }
