@@ -2,7 +2,7 @@
 
  --enable / disable collapsing of the map
 local collapse_enabled = false
-local darkness = true
+local darkness = false
 
 require "player_modifiers"
 require "functions.soft_reset"
