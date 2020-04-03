@@ -7,6 +7,7 @@ local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local table_remove = table.remove
 local math_random = math.random
+local math_abs = math.abs
 
 local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone","uranium-ore"}
 local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree"}
@@ -92,6 +93,31 @@ local function expand(surface, room)
 	end
 end
 
+local function on_chunk_generated(event)
+	local surface = event.surface
+	local left_top = event.area.left_top
+	
+	local tiles = {}
+	local i = 1
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local position = {x = left_top.x + x, y = left_top.y + y}
+			if math_abs(position.x) > 2 or math_abs(position.y) > 2 then
+				tiles[i] = {name = "out-of-map", position = position}
+				i = i + 1
+			end
+		end
+	end
+	surface.set_tiles(tiles, true)
+	
+	if left_top.x == 32 and left_top.y == 32 then	
+		surface.create_entity({name = "rock-big", position = {0, -2}})
+		surface.create_entity({name = "rock-big", position = {0, 2}})
+		surface.create_entity({name = "rock-big", position = {-2, 0}})
+		surface.create_entity({name = "rock-big", position = {2, 0}})
+	end
+end
+
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces["dungeons"]
@@ -122,14 +148,21 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_init()
-	local map_gen_settings = {}	
-	map_gen_settings.height = 3
-	map_gen_settings.width = 3
+	local map_gen_settings = {
+		["water"] = 0,
+		["starting_area"] = 1,
+		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+		["default_enable_all_autoplace_controls"] = false,
+		["autoplace_settings"] = {
+			["entity"] = {treat_missing_as_default = false},
+			["tile"] = {treat_missing_as_default = false},
+			["decorative"] = {treat_missing_as_default = false},
+		},
+	}
 	local surface = game.create_surface("dungeons", map_gen_settings)
 	
 	surface.request_to_generate_chunks({0,0}, 2)
 	surface.force_generate_chunk_requests()
-	surface.create_entity({name = "rock-big", position = {0, -1}})
 	
 	local surface = game.surfaces[1]
 	local map_gen_settings = surface.map_gen_settings
