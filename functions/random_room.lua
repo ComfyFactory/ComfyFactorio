@@ -39,6 +39,8 @@ local function build_room(surface, position, vector, room_center_position, room_
 	table_insert(t, surface.get_tile({left_top.x + room_radius * 2, left_top.y + room_radius * 2}))
 	table_insert(t, surface.get_tile({right_bottom.x - (room_radius * 2), right_bottom.y - (room_radius * 2)}))
 	
+	room.center = room_center_position
+	
 	return room
 end
 
@@ -92,6 +94,28 @@ local function get_room_tiles(surface, position, room_radius)
 	end
 end
 
+local function is_bridge_valid(surface, vector, room)
+	local bridge_tiles = room.path_tiles
+	local scan_vector
+	if vector[1] == 0 then
+		scan_vector = {1, 0}
+	else
+		scan_vector = {0, 1}
+	end
+	
+	for _, tile in pairs(bridge_tiles) do
+		for d = -5, 5, 1 do
+			local p = {tile.position.x + scan_vector[1] * d, tile.position.y + scan_vector[2] * d}
+			local tile = surface.get_tile(p)
+			if not tile.collides_with("resource-layer") then		
+				return
+			end
+		end
+	end
+	
+	return true
+end
+
 local function build_bridge(surface, position)
 	local vectors = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}}
 	table_shuffle_table(vectors)
@@ -101,9 +125,9 @@ local function build_bridge(surface, position)
 	room.room_border_tiles = {}
 	room.room_tiles = {}
 	
-	local a = room_spacing * 2
-	
-	for _, v in pairs(vectors) do
+	local a = room_spacing * 3
+
+	for _, v in pairs(vectors) do		
 		for d = 1, a, 1 do
 			local p = {position.x + v[1] * d, position.y + v[2] * d}
 			local tile = surface.get_tile(p)
@@ -113,19 +137,26 @@ local function build_bridge(surface, position)
 			table_insert(room.path_tiles, tile)
 			if d == a then room.path_tiles = {} end
 		end
-		if room.path_tiles[1] then return room end
-	end	
+		if room.path_tiles[1] then
+			if is_bridge_valid(surface, v, room) then
+				return room
+			else
+				room.path_tiles = {}
+			end
+		end
+	end
+
 end
 
 function Public.get_room(surface, position)
 	local room_sizes = {}
-	for i = 1, 13, 1 do
+	for i = 1, 9, 1 do
 		room_sizes[i] = i + 1
 	end
 	table_shuffle_table(room_sizes)
 	
 	local last_size = room_sizes[1]
-	for i = 1, 13, 1 do
+	for i = 1, #room_sizes, 1 do
 		if room_sizes[i] <= last_size then
 			last_size = room_sizes[i]
 			local room = get_room_tiles(surface, position, last_size)
@@ -134,9 +165,7 @@ function Public.get_room(surface, position)
 			end
 		end	
 	end
-	
-	if math_random(1, 2) == 1 then return end
-	
+
 	local room = build_bridge(surface, position)
 	if room then return room end
 end
@@ -151,7 +180,7 @@ function Public.draw_random_room(surface, position)
 	
 	for _, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "dirt-7", position = tile.position}}, true)
-		if math_random(1, 8) == 1 then
+		if math_random(1, 2) == 1 then
 			surface.create_entity({name = "rock-big", position = tile.position})
 		end
 	end

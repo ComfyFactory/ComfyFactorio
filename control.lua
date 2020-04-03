@@ -63,7 +63,6 @@ require "modules.autostash"
 --require "modules.biter_reanimator"
 --require "modules.wave_defense.main"
 --require "modules.fjei.main"
---require "utils.one_dimensional_noise"
 -----------------------------
 
 ---- enable maps here ---- (maps higher up in the list may be more actually playable)
@@ -106,6 +105,7 @@ require "modules.autostash"
 --require "maps.spiral_troopers"
 --require "maps.refactor-io"
 --require "maps.desert_oasis"
+--require "maps.dungeons"
 --require "maps.lost_desert"
 --require "maps.stoneblock"
 --require "maps.wave_defense"
@@ -131,6 +131,7 @@ require "modules.autostash"
 --require "terrain_layouts.biters_and_resources_east"
 --require "terrain_layouts.scrap_01"
 --require "terrain_layouts.watery_world"
+--require "terrain_layouts.tree_01"
 ------
 
 if _DUMP_ENV then
