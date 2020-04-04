@@ -58,6 +58,9 @@ local function dirtlands(surface, room)
 		if math_random(1, 256) == 1 then
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end
+		if math_random(1, 256) == 1 then
+			Functions.common_loot_crate(surface, tile.position)
+		end
 	end
 	
 	if room.center then

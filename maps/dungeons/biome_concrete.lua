@@ -26,6 +26,9 @@ local function concrete(surface, room)
 	table_shuffle_table(room.room_tiles)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "stone-path", position = tile.position}}, true)
+		if math_random(1, 256) == 1 then
+			Functions.common_loot_crate(surface, tile.position)
+		end
 	end
 	
 	if room.center then

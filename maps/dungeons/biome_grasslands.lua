@@ -54,6 +54,9 @@ local function grasslands(surface, room)
 		end
 		if math_random(1, 1024) == 1 then
 			surface.create_entity({name = "rock-huge", position = tile.position})
+		end		
+		if math_random(1, 256) == 1 then
+			Functions.common_loot_crate(surface, tile.position)
 		end
 	end
 	

@@ -1,6 +1,7 @@
 local Public = {}
 
 local BiterRaffle = require "functions.biter_raffle"
+local LootRaffle = require "functions.loot_raffle"
 
 local table_insert = table.insert
 local table_remove = table.remove
@@ -21,6 +22,14 @@ end
 
 function Public.get_crude_oil_amount()
 	return math_random(200000, 400000) + global.dungeons.depth * 500
+end
+
+function Public.common_loot_crate(surface, position)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 2 + 8, 16)
+	local container = surface.create_entity({name = "wooden-chest", position = position, force = "neutral"})
+	for _, item_stack in pairs(item_stacks) do
+		container.insert(item_stack)
+	end
 end
 
 return Public
