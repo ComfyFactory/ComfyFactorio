@@ -56,7 +56,7 @@ local function red_desert(surface, room)
 	if #room.room_border_tiles > 1 then table_shuffle_table(room.room_border_tiles) end
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "red-desert-1", position = tile.position}}, true)
-		if key < 9 then
+		if key % 8 == 1 then
 			surface.create_entity({name = "rock-big", position = tile.position})
 		else
 			if math_random(1, 3) > 1 then

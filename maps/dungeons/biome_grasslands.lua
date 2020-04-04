@@ -42,7 +42,7 @@ local function grasslands(surface, room)
 	table_shuffle_table(room.room_tiles)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "grass-2", position = tile.position}}, true)
-		if math_random(1, 64) == 1 then
+		if math_random(1, 48) == 1 then
 			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
 		else
 			if math_random(1, 12) == 1 then
@@ -81,10 +81,6 @@ local function grasslands(surface, room)
 		surface.set_tiles({{name = "grass-3", position = tile.position}}, true)
 		if key % 8 == 1 then
 			surface.create_entity({name = "rock-big", position = tile.position})
-		else
-			if math_random(1, 8) == 1 then
-				--surface.create_entity({name = tree_name, position = tile.position})
-			end
 		end
 	end
 	

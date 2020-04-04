@@ -16,7 +16,7 @@ local function concrete(surface, room)
 	table_shuffle_table(room.room_border_tiles)
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "refined-concrete", position = tile.position}}, true)
-		if key < 8 then
+		if key % 8 == 1 then
 			surface.create_entity({name = "rock-big", position = tile.position})
 		else
 			surface.create_entity({name = "stone-wall", position = tile.position})
