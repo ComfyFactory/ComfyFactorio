@@ -11,12 +11,6 @@ local math_floor = math.floor
 local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone","uranium-ore"}
 local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree"}
 local size_of_trees = #trees
-local worms = {}
-for _ = 1, 64, 1 do table_insert(worms, "small") end
-for _ = 1, 8, 1 do table_insert(worms, "medium") end
-for _ = 1, 4, 1 do table_insert(worms, "big") end
-for _ = 1, 1, 1 do table_insert(worms, "behemoth") end
-local size_of_worms = #worms
 
 local function red_desert(surface, room)
 	for _, tile in pairs(room.path_tiles) do
@@ -37,8 +31,7 @@ local function red_desert(surface, room)
 			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"})
 		end
 		if math_random(1, 256) == 1 then
-			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"
-			surface.create_entity({name = turret_name, position = tile.position, force = "enemy"})
+			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position, force = "enemy"})
 		end
 		if math_random(1, 32) == 1 then			
 			surface.create_entity({name = "rock-huge", position = tile.position})

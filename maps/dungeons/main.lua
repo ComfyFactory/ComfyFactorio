@@ -2,13 +2,12 @@
 
 require "modules.mineable_wreckage_yields_scrap"
 require "modules.biters_yield_ore"
-require "modules.rpg"
 require "modules.explosives"
 
 local MapInfo = require "modules.map_info"
 local Room_generator = require "functions.room_generator"
+local RPG = require "modules.rpg"
 local BiterHealthBooster = require "modules.biter_health_booster"
-local BiterRaffle = require "functions.biter_raffle"
 
 local Biomes = {}
 Biomes.dirtlands = require "maps.dungeons.biome_dirtlands"
@@ -42,7 +41,7 @@ local function get_biome(position)
 	
 	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.59 then return "glitch" end
 	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.48 then return "doom" end
-	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.21 then return "grasslands" end
+	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.20 then return "grasslands" end
 	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.35 then return "red_desert" end
 	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.25 then return "desert" end
 	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.75 then return "concrete" end	
@@ -208,7 +207,7 @@ local function on_init()
 		surface.delete_chunk({chunk.x, chunk.y})		
 	end
 	
-	--game.forces.player.manual_mining_speed_modifier = 0
+	game.forces.player.manual_mining_speed_modifier = 0
 	
 	global.dungeons = {}
 	global.dungeons.depth = 0

@@ -6,14 +6,6 @@ local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
 
-local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal", "stone", "stone","uranium-ore"}
-local worms = {}
-for _ = 1, 64, 1 do table_insert(worms, "small") end
-for _ = 1, 8, 1 do table_insert(worms, "medium") end
-for _ = 1, 4, 1 do table_insert(worms, "big") end
-for _ = 1, 1, 1 do table_insert(worms, "behemoth") end
-local size_of_worms = #worms
-
 local function concrete(surface, room)
 	for _, tile in pairs(room.path_tiles) do		
 		surface.set_tiles({{name = "concrete", position = tile.position}}, true)	

@@ -6,15 +6,9 @@ local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
 
-local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone","uranium-ore"}
+local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone"}
 local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree"}
 local size_of_trees = #trees
-local worms = {}
-for _ = 1, 64, 1 do table_insert(worms, "small") end
-for _ = 1, 8, 1 do table_insert(worms, "medium") end
-for _ = 1, 4, 1 do table_insert(worms, "big") end
-for _ = 1, 1, 1 do table_insert(worms, "behemoth") end
-local size_of_worms = #worms
 
 local function dirtlands(surface, room)
 	local path_tile = "dirt-" .. math_random(1, 3)
@@ -44,8 +38,7 @@ local function dirtlands(surface, room)
 			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"})
 		end
 		if math_random(1, 320) == 1 then
-			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"
-			surface.create_entity({name = turret_name, position = tile.position, force = "enemy"})
+			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position, force = "enemy"})
 		end
 		if math_random(1, 512) == 1 then
 			surface.create_entity({name = "mineable-wreckage", position = tile.position})
@@ -68,7 +61,7 @@ local function dirtlands(surface, room)
 			end
 		else
 			if math_random(1, 24) == 1 then
-				surface.create_entity({name = "crude-oil", position = room.center, amount = math_random(200000, 400000)})
+				surface.create_entity({name = "crude-oil", position = room.center, amount = Functions.get_crude_oil_amount()})
 			end
 			if math_random(1, 2) == 1 then
 				surface.create_entity({name = Functions.roll_spawner_name(), position = room.center})
