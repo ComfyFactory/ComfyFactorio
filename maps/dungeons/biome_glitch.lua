@@ -1,3 +1,5 @@
+local Functions = require "maps.dungeons.functions"
+
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local table_remove = table.remove
@@ -31,7 +33,7 @@ local function glitch(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "lab-dark-1", position = tile.position}}, true)
 		if math_random(1, 4) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 750) + global.dungeons.depth * 5})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 750) + global.dungeons.depth * 10})
 		end
 		if math_random(1, 16) == 1 then
 			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"

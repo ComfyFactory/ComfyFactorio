@@ -3,9 +3,12 @@
 require "modules.mineable_wreckage_yields_scrap"
 require "modules.biters_yield_ore"
 require "modules.rpg"
+require "modules.explosives"
 
+local MapInfo = require "modules.map_info"
 local Room_generator = require "functions.room_generator"
 local BiterHealthBooster = require "modules.biter_health_booster"
+local BiterRaffle = require "functions.biter_raffle"
 
 local Biomes = {}
 Biomes.dirtlands = require "maps.dungeons.biome_dirtlands"
@@ -50,7 +53,7 @@ end
 local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
-		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "Depth: " .. global.dungeons.depth, tooltip = "Delve deep and face increased dangers."})
+		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "Depth: " .. global.dungeons.depth, tooltip = "Delve deep and face increased dangers.\nIncreases whenever a new room is discovered."})
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38
@@ -166,8 +169,11 @@ local function on_entity_died(event)
 	if not entity.valid then return end
 	
 	if entity.type == "unit" and entity.spawner then
-		entity.spawner.damage(16, game.forces[1])
+		entity.spawner.damage(20, game.forces[1])
 	end
+	
+	if entity.name ~= "rock-big" then return end
+	expand(entity.surface, entity.position)
 end
 
 local function on_marked_for_deconstruction(event)	
@@ -202,7 +208,7 @@ local function on_init()
 		surface.delete_chunk({chunk.x, chunk.y})		
 	end
 	
-	game.forces.player.manual_mining_speed_modifier = 20
+	--game.forces.player.manual_mining_speed_modifier = 0
 	
 	global.dungeons = {}
 	global.dungeons.depth = 0
@@ -210,6 +216,15 @@ local function on_init()
 	
 	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.001
+	
+	global.explosion_cells_destructible_tiles = {
+		["out-of-map"] = 2500,	
+	}
+	
+	local T = MapInfo.Pop_info()
+	T.localised_category = "dungeons"
+	T.main_caption_color = {r = 0, g = 0, b = 0}
+	T.sub_caption_color = {r = 75, g = 0, b = 0}
 end
 
 local Event = require 'utils.event' 

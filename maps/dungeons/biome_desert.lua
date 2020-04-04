@@ -1,3 +1,5 @@
+local Functions = require "maps.dungeons.functions"
+
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local table_remove = table.remove
@@ -35,14 +37,14 @@ local function desert(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "sand-3", position = tile.position}}, true)
 		if math_random(1, 64) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 3})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
 		else
 			if math_random(1, 128) == 1 then
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
 			end
 		end
 		if key % 128 == 0 and math_random(1, 3) == 1 then
-			surface.create_entity({name = "biter-spawner", position = tile.position, force = "enemy"})
+			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"})
 		end
 		if math_random(1, 128) == 1 then
 			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"
@@ -72,7 +74,7 @@ local function desert(surface, room)
 				surface.create_entity({name = "crude-oil", position = room.center, amount = math_random(200000, 400000)})
 			end
 			if math_random(1, 2) == 1 then
-				surface.create_entity({name = "biter-spawner", position = room.center})
+				surface.create_entity({name = Functions.roll_spawner_name(), position = room.center})
 			end
 		end	
 	end

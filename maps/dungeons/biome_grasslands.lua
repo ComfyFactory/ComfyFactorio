@@ -1,3 +1,5 @@
+local Functions = require "maps.dungeons.functions"
+
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local table_remove = table.remove
@@ -25,7 +27,7 @@ local function grasslands(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "grass-2", position = tile.position}}, true)
 		if math_random(1, 64) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 3})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
 		else
 			if math_random(1, 24) == 1 then
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
@@ -41,7 +43,7 @@ local function grasslands(surface, room)
 	end
 	
 	if room.center then
-		if math_random(1, 3) == 1 then
+		if math_random(1, 4) == 1 then
 			local r = math_floor(math_sqrt(#room.room_tiles) * 0.25) + 1
 			for x = r * -1, r, 1 do
 				for y = r * -1, r, 1 do
@@ -54,7 +56,7 @@ local function grasslands(surface, room)
 			end
 		else
 			if math_random(1, 3) == 1 then
-				surface.create_entity({name = "biter-spawner", position = room.center})
+				surface.create_entity({name = Functions.roll_spawner_name(), position = room.center})
 			end
 		end	
 	end

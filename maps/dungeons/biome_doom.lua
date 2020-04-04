@@ -1,3 +1,5 @@
+local Functions = require "maps.dungeons.functions"
+
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local table_remove = table.remove
@@ -25,12 +27,12 @@ local function doom(surface, room)
 		if math_random(1, 480) == 1 then
 			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = 99999999})
 		end
-		if math_random(1, 32) == 1 then
+		if math_random(1, 16) == 1 then
 			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"
 			surface.create_entity({name = turret_name, position = tile.position})
 		end		
-		if key % 16 == 0 and math_random(1, 2) == 1 then
-			surface.create_entity({name = "biter-spawner", position = tile.position})
+		if key % 10 == 0 and math_random(1, 2) == 1 then
+			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position})
 		end
 	end
 	
