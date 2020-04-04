@@ -135,9 +135,7 @@ function Public.roll(entity_type, evolution_factor)
 	if not type_functions[entity_type] then return end
 	local evo = evolution_factor
 	if not evo then evo = game.forces.enemy.evolution_factor end
-	
-	local name = type_functions[entity_type](evo)
-	game.print(name)
+	return type_functions[entity_type](evo)
 end
 
 return Public
