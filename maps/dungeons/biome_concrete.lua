@@ -12,34 +12,26 @@ for _ = 1, 4, 1 do table_insert(worms, "big") end
 for _ = 1, 1, 1 do table_insert(worms, "behemoth") end
 local size_of_worms = #worms
 
-local function glitch(surface, room)
+local function concrete(surface, room)
 	for _, tile in pairs(room.path_tiles) do		
-		surface.set_tiles({{name = "lab-white", position = tile.position}}, true)	
+		surface.set_tiles({{name = "concrete", position = tile.position}}, true)	
 	end
 	
 	if not room.room_border_tiles[1] then return end
 	
 	table_shuffle_table(room.room_border_tiles)
 	for key, tile in pairs(room.room_border_tiles) do
-		surface.set_tiles({{name = "lab-dark-2", position = tile.position}}, true)
-		if key < 7 then
+		surface.set_tiles({{name = "refined-concrete", position = tile.position}}, true)
+		if key < 8 then
 			surface.create_entity({name = "rock-big", position = tile.position})
+		else
+			surface.create_entity({name = "stone-wall", position = tile.position})
 		end
 	end
 	
 	table_shuffle_table(room.room_tiles)
 	for key, tile in pairs(room.room_tiles) do
-		surface.set_tiles({{name = "lab-dark-1", position = tile.position}}, true)
-		if math_random(1, 4) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 750) + global.dungeons.depth * 5})
-		end
-		if math_random(1, 16) == 1 then
-			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"
-			surface.create_entity({name = turret_name, position = tile.position})
-		end
-		if math_random(1, 2048) == 1 then
-			surface.create_entity({name = "rock-huge", position = tile.position})
-		end
+		surface.set_tiles({{name = "stone-path", position = tile.position}}, true)
 	end
 	
 	if room.center then
@@ -47,20 +39,22 @@ local function glitch(surface, room)
 			for x = -1, 1, 1 do
 				for y = -1, 1, 1 do
 					local p = {room.center.x + x, room.center.y + y}
-					local tile = "water"
-					if math_random(1,2) == 1 then tile = "deepwater" end
-					surface.set_tiles({{name = tile, position = p}})
+					surface.set_tiles({{name = "water", position = p}})
 					if math_random(1, 4) == 1 then
 						surface.create_entity({name = "fish", position = p})
 					end
 				end
 			end
-		else
-			if math_random(1, 4) == 1 then
-				surface.create_entity({name = "crude-oil", position = room.center, amount = math_random(200000, 400000)})
-			end
 		end	
+	end
+	
+	if room.entrance_tile then
+		local p = room.entrance_tile.position
+		local area = {{p.x - 1, p.y - 1}, {p.x + 1.5, p.y + 1.5}}
+		for _, entity in pairs(surface.find_entities_filtered({area = area})) do
+			entity.destroy()
+		end
 	end
 end
 
-return glitch
+return concrete

@@ -6,7 +6,11 @@ local Room_generator = require "functions.room_generator"
 
 local Biomes = {}
 Biomes.dirtlands = require "maps.dungeons.biome_dirtlands"
+Biomes.desert = require "maps.dungeons.biome_desert"
+Biomes.red_desert = require "maps.dungeons.biome_red_desert"
 Biomes.grasslands = require "maps.dungeons.biome_grasslands"
+Biomes.concrete = require "maps.dungeons.biome_concrete"
+Biomes.doom = require "maps.dungeons.biome_doom"
 Biomes.glitch = require "maps.dungeons.biome_glitch"
 
 local Get_noise = require "utils.get_noise"
@@ -16,13 +20,6 @@ local table_insert = table.insert
 local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
-
-local tile_sets = {
-	
-	{"red-desert-1", "red-desert-3", "red-desert-2"},
-	{"sand-2", "sand-1", "sand-3"},
-	{"concrete", "refined-concrete", "stone-path"},
-}
 
 local disabled_for_deconstruction = {
 		["fish"] = true,
@@ -34,12 +31,33 @@ local disabled_for_deconstruction = {
 
 local function get_biome(position)
 	local seed = game.surfaces[1].map_gen_settings.seed
-	local seed_addition = 100000
+	local seed_addition = 100000	
 	
-	if Get_noise("cave_ponds", position, seed + seed_addition) > 0.25 then return "grasslands" end
-	if Get_noise("cave_ponds", position, seed + seed_addition * 2) > 0.5 then return "glitch" end
+	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.59 then return "glitch" end
+	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.48 then return "doom" end
+	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.35 then return "red_desert" end		
+	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.21 then return "grasslands" end	
+	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.25 then return "desert" end
+	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.60 then return "concrete" end	
 	
 	return "dirtlands"
+end
+
+local function draw_depth_gui()
+	for _, player in pairs(game.connected_players) do
+		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
+		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "Depth: " .. global.dungeons.depth, tooltip = "Delve deep and face increased dangers."})
+		local style = element.style
+		style.minimal_height = 38
+		style.maximal_height = 38
+		style.minimal_width = 146
+		style.top_padding = 2
+		style.left_padding = 4
+		style.right_padding = 4
+		style.bottom_padding = 2
+		style.font_color = {r = 125, g = 75, b = 25}
+		style.font = "default-large-bold"
+	end
 end
 
 local function expand(surface, position)
@@ -50,6 +68,7 @@ local function expand(surface, position)
 	
 	if not room.room_tiles[1] then return end
 	global.dungeons.depth = global.dungeons.depth + 1
+	draw_depth_gui()
 end
 
 local function on_chunk_generated(event)
@@ -91,7 +110,8 @@ local function on_player_joined_game(event)
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 0.5), surface)
 		player.insert({name = "raw-fish", count = 10})
-	end	
+	end
+	draw_depth_gui()
 end
 
 local function on_player_mined_entity(event)
