@@ -32,18 +32,18 @@ local function dirtlands(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "dirt-7", position = tile.position}}, true)
 		if math_random(1, 64) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 2})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 3})
 		else
 			if math_random(1, 128) == 1 then
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
 			end
 		end
 		if key % 128 == 0 and math_random(1, 2) == 1 then
-			surface.create_entity({name = "biter-spawner", position = tile.position})
+			surface.create_entity({name = "biter-spawner", position = tile.position, force = "enemy"})
 		end
-		if math_random(1, 256) == 1 then
+		if math_random(1, 320) == 1 then
 			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"
-			surface.create_entity({name = turret_name, position = tile.position})
+			surface.create_entity({name = turret_name, position = tile.position, force = "enemy"})
 		end
 		if math_random(1, 512) == 1 then
 			surface.create_entity({name = "mineable-wreckage", position = tile.position})

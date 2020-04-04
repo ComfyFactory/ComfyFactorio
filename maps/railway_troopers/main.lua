@@ -1,5 +1,6 @@
 require "modules.sticky_landfill"
 require "modules.dynamic_player_spawn"
+require "modules.biters_yield_ore"
 
 local math_random = math.random
 local math_floor = math.floor
@@ -10,41 +11,6 @@ local math_round = math.round
 local math_abs = math.abs
 
 local map_height = 96
-
-local drop_values = {
-	["small-spitter"] = 8,
-	["small-biter"] = 8,
-	["medium-spitter"] = 16,
-	["medium-biter"] = 16,
-	["big-spitter"] = 32,
-	["big-biter"] = 32,
-	["behemoth-spitter"] = 96,
-	["behemoth-biter"] = 96,
-	["small-worm-turret"] = 128,
-	["medium-worm-turret"] = 160,
-	["big-worm-turret"] = 196,
-	["behemoth-worm-turret"] = 256,
-	["biter-spawner"] = 640,
-	["spitter-spawner"] = 640
-}
-
-local drop_raffle = {}
-for _ = 1, 64, 1 do table_insert(drop_raffle, "iron-ore") end
-for _ = 1, 40, 1 do table_insert(drop_raffle, "copper-ore") end
-for _ = 1, 32, 1 do table_insert(drop_raffle, "stone") end
-for _ = 1, 32, 1 do table_insert(drop_raffle, "coal") end
-for _ = 1, 6, 1 do table_insert(drop_raffle, "wood") end
-for _ = 1, 4, 1 do table_insert(drop_raffle, "landfill") end
-for _ = 1, 3, 1 do table_insert(drop_raffle, "uranium-ore") end
-local size_of_drop_raffle = #drop_raffle
-
-local drop_vectors = {}
-for x = -2, 2, 0.1 do
-	for y = -2, 2, 0.1 do
-		table_insert(drop_vectors, {x, y})
-	end
-end
-local size_of_drop_vectors = #drop_vectors
 
 local infini_ores = {"iron-ore", "iron-ore", "copper-ore", "coal", "stone"}
 
@@ -119,10 +85,7 @@ local function on_entity_died(event)
 	
 	if entity.type == "unit" and entity.spawner then
 		entity.spawner.damage(20, game.forces[1])
-	end	
-	
-	if not drop_values[entity.name] then return end	
-	table_insert(global.drop_schedule, {{entity.position.x, entity.position.y}, drop_values[entity.name]})
+	end
 end
 
 local function is_out_of_map(p)
@@ -294,23 +257,7 @@ local function send_tick_wave()
 	send_wave(spawners[math_random(1, #spawners)], search_radius)
 end
 
-local function drop_schedule()
-	local surface = game.surfaces["railway_troopers"]
-	for key, entry in pairs(global.drop_schedule) do
-		for _ = 1, 3, 1 do
-			local vector = drop_vectors[math_random(1, size_of_drop_vectors)]
-			surface.spill_item_stack({entry[1][1] + vector[1], entry[1][2] + vector[2]}, {name = drop_raffle[math_random(1, size_of_drop_raffle)], count = 1}, true)		
-			global.drop_schedule[key][2] = global.drop_schedule[key][2] - 1
-			if global.drop_schedule[key][2] <= 0 then
-				table_remove(global.drop_schedule, key)
-				break
-			end
-		end
-	end
-end
-
 local function on_tick()
-	drop_schedule()
 	send_tick_wave()
 end
 

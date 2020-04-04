@@ -31,11 +31,14 @@ local function red_desert(surface, room)
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
 			end
 		end
+		if key % 16 == 0 and math_random(1, 32) == 1 then
+			surface.create_entity({name = "biter-spawner", position = tile.position, force = "enemy"})
+		end
 		if math_random(1, 256) == 1 then
 			local turret_name = worms[math_random(1, size_of_worms)] .. "-worm-turret"
-			surface.create_entity({name = turret_name, position = tile.position})
+			surface.create_entity({name = turret_name, position = tile.position, force = "enemy"})
 		end
-		if math_random(1, 5) == 1 then
+		if math_random(1, 32) == 1 then			
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end
 	end
@@ -61,9 +64,17 @@ local function red_desert(surface, room)
 		if key < 9 then
 			surface.create_entity({name = "rock-big", position = tile.position})
 		else
-			if math_random(1, 8) == 1 then
-				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
+			if math_random(1, 3) > 1 then
+				surface.create_entity({name = "rock-huge", position = tile.position})
 			end
+		end
+	end
+	
+	if room.entrance_tile then
+		local p = room.entrance_tile.position
+		local area = {{p.x - 0.5, p.y - 0.5}, {p.x + 0.5, p.y + 0.5}}
+		for _, entity in pairs(surface.find_entities_filtered({area = area})) do
+			entity.destroy()
 		end
 	end
 end

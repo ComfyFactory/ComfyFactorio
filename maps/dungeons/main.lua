@@ -1,8 +1,11 @@
 -- Deep dark dungeons by mewmew --
 
 require "modules.mineable_wreckage_yields_scrap"
+require "modules.biters_yield_ore"
+require "modules.rpg"
 
 local Room_generator = require "functions.room_generator"
+local BiterHealthBooster = require "modules.biter_health_booster"
 
 local Biomes = {}
 Biomes.dirtlands = require "maps.dungeons.biome_dirtlands"
@@ -20,6 +23,7 @@ local table_insert = table.insert
 local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
+local math_floor = math.floor
 
 local disabled_for_deconstruction = {
 		["fish"] = true,
@@ -35,10 +39,10 @@ local function get_biome(position)
 	
 	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.59 then return "glitch" end
 	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.48 then return "doom" end
-	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.35 then return "red_desert" end		
-	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.21 then return "grasslands" end	
+	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.21 then return "grasslands" end
+	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.35 then return "red_desert" end
 	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.25 then return "desert" end
-	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.60 then return "concrete" end	
+	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.75 then return "concrete" end	
 	
 	return "dirtlands"
 end
@@ -104,6 +108,42 @@ local function on_chunk_generated(event)
 	end
 end
 
+local function on_entity_spawned(event)
+	local spawner = event.spawner
+	local unit = event.entity
+	local unit_2 = spawner.surface.create_entity({name = unit.name, position = unit.position, force = "enemy"})
+	unit_2.ai_settings.allow_try_return_to_spawner = true
+	unit_2.ai_settings.allow_destroy_when_commands_fail = false
+	
+	local spawner_tier = global.dungeons.spawner_tier
+	if not spawner_tier[spawner.unit_number] then
+		local tier = math_floor(global.dungeons.depth * 0.05 - math_random(1, 4))
+		if tier < 1 then tier = 1 end		
+		spawner_tier[spawner.unit_number] = tier
+		
+		rendering.draw_text{
+			text = "-Tier " .. tier .. "-",
+			surface = spawner.surface,
+			target = spawner,
+			target_offset = {0, -3.25},
+			color = {25, 0, 100, 255},
+			scale = 1.50,
+			font = "default-game",
+			alignment = "center",
+			scale_with_zoom = false
+		}
+	end
+	
+	local health_multiplier = (spawner_tier[spawner.unit_number] + 4) * 0.25
+	
+	if math_random(1, 32) == 1 then
+		BiterHealthBooster.add_boss_unit(unit, health_multiplier * 8, 0.25)
+	else
+		BiterHealthBooster.add_unit(unit, health_multiplier)
+	end
+	BiterHealthBooster.add_unit(unit_2, health_multiplier)
+end
+
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces["dungeons"]
@@ -119,6 +159,15 @@ local function on_player_mined_entity(event)
 	if not entity.valid then return end	
 	if entity.name ~= "rock-big" then return end
 	expand(entity.surface, entity.position)
+end
+
+local function on_entity_died(event)
+	local entity = event.entity
+	if not entity.valid then return end
+	
+	if entity.type == "unit" and entity.spawner then
+		entity.spawner.damage(16, game.forces[1])
+	end
 end
 
 local function on_marked_for_deconstruction(event)	
@@ -157,6 +206,10 @@ local function on_init()
 	
 	global.dungeons = {}
 	global.dungeons.depth = 0
+	global.dungeons.spawner_tier = {}
+	
+	global.rocks_yield_ore_base_amount = 50
+	global.rocks_yield_ore_distance_modifier = 0.001
 end
 
 local Event = require 'utils.event' 
@@ -166,3 +219,7 @@ Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruct
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_entity_spawned, on_entity_spawned)
+Event.add(defines.events.on_entity_died, on_entity_died)
+
+require "modules.rocks_yield_ore"

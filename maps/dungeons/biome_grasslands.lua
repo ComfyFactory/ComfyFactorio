@@ -25,7 +25,7 @@ local function grasslands(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "grass-2", position = tile.position}}, true)
 		if math_random(1, 64) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 2})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 3})
 		else
 			if math_random(1, 24) == 1 then
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
