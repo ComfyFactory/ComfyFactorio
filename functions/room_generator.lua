@@ -150,7 +150,7 @@ end
 
 function Public.get_room(surface, position)
 	local room_sizes = {}
-	for i = 1, 9, 1 do
+	for i = 1, 11, 1 do
 		room_sizes[i] = i + 1
 	end
 	table_shuffle_table(room_sizes)
