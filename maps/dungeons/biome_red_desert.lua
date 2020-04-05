@@ -33,6 +33,9 @@ local function red_desert(surface, room)
 		if math_random(1, 256) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position, force = "enemy"})
 		end
+		if math_random(1, 32) == 1 then
+			Functions.spawn_random_biter(surface, tile.position)
+		end
 		if math_random(1, 32) == 1 then			
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end

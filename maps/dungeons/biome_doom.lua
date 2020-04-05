@@ -24,6 +24,9 @@ local function doom(surface, room)
 		if math_random(1, 16) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
 		end
+		if math_random(1, 32) == 1 then
+			Functions.spawn_random_biter(surface, tile.position)
+		end
 		if math_random(1, 512) == 1 then
 			Functions.rare_loot_crate(surface, tile.position)
 		else

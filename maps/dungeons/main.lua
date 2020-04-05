@@ -18,6 +18,7 @@ Biomes.grasslands = require "maps.dungeons.biome_grasslands"
 Biomes.concrete = require "maps.dungeons.biome_concrete"
 Biomes.doom = require "maps.dungeons.biome_doom"
 Biomes.glitch = require "maps.dungeons.biome_glitch"
+Biomes.acid_zone = require "maps.dungeons.biome_acid_zone"
 
 local Get_noise = require "utils.get_noise"
 
@@ -37,16 +38,19 @@ local disabled_for_deconstruction = {
 	}
 
 local function get_biome(position)
+	if position.x ^ 2 + position.y ^ 2 < 1024 then return "dirtlands" end
+
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local seed_addition = 100000	
 	
-	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.59 then return "glitch" end
-	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.50 then return "doom" end
-	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.24 then return "grasslands" end
-	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.35 then return "red_desert" end
-	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.25 then return "desert" end
-	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.75 then return "concrete" end	
-	
+	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.60 then return "glitch" end
+	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.51 then return "doom" end
+	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.62 then return "acid_zone" end
+	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.60 then return "concrete" end
+	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.23 then return "grasslands" end
+	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.34 then return "red_desert" end
+	if Get_noise("dungeons", position, seed + seed_addition * 7) > 0.25 then return "desert" end
+		
 	return "dirtlands"
 end
 
@@ -164,15 +168,19 @@ local function on_player_joined_game(event)
 	draw_depth_gui()
 end
 
+local function mining_events(entity)
+	if math_random(1, 8) == 1 then Functions.spawn_random_biter(entity.surface, entity.position) return end
+	if math_random(1, 16) == 1 then Functions.common_loot_crate(entity.surface, entity.position) return end
+	if math_random(1, 64) == 1 then Functions.uncommon_loot_crate(entity.surface, entity.position) return end
+	if math_random(1, 256) == 1 then Functions.rare_loot_crate(entity.surface, entity.position) return end
+	if math_random(1, 1024) == 1 then Functions.epic_loot_crate(entity.surface, entity.position) return end
+end
+
 local function on_player_mined_entity(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if entity.type == "simple-entity" then
-		if math_random(1, 8) == 1 then Functions.spawn_random_biter(entity.surface, entity.position) return end
-		if math_random(1, 16) == 1 then Functions.common_loot_crate(entity.surface, entity.position) return end
-		if math_random(1, 64) == 1 then Functions.uncommon_loot_crate(entity.surface, entity.position) return end
-		if math_random(1, 256) == 1 then Functions.rare_loot_crate(entity.surface, entity.position) return end
-		if math_random(1, 1024) == 1 then Functions.epic_loot_crate(entity.surface, entity.position) return end
+		mining_events(entity)
 	end
 	if entity.name ~= "rock-big" then return end
 	expand(entity.surface, entity.position)
@@ -222,7 +230,7 @@ local function on_init()
 		surface.delete_chunk({chunk.x, chunk.y})		
 	end
 	
-	game.forces.player.manual_mining_speed_modifier = 0
+	game.forces.player.manual_mining_speed_modifier = 0.5
 	
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0

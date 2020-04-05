@@ -1,4 +1,5 @@
 local Functions = require "maps.dungeons.functions"
+local Get_noise = require "utils.get_noise"
 
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
@@ -6,16 +7,35 @@ local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
 
+local decoratives = {"green-pita", "green-pita-mini"}
 local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone"}
 local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree"}
 local size_of_trees = #trees
+
+local function draw_deco(surface, position, decorative_name, seed)
+	if surface.get_tile(position).name == "water" then return end
+	local noise = Get_noise("decoratives", position, seed)
+	if math_abs(noise) > 0.30 then
+		surface.create_decoratives{check_collision = false, decoratives = {{name = decorative_name, position = position, amount = math.floor(math.abs(noise * 3)) + 1}}}
+	end
+end
+
+local function draw_room_decoratives(surface, room)
+	local seed = game.surfaces[1].map_gen_settings.seed + math_random(1, 1000000)
+	local decorative_name = decoratives[math_random(1, #decoratives)]
+	for _, tile in pairs(room.path_tiles) do draw_deco(surface, tile.position, decorative_name, seed) end
+	for _, tile in pairs(room.room_border_tiles) do draw_deco(surface, tile.position, decorative_name, seed) end
+	for _, tile in pairs(room.room_tiles) do draw_deco(surface, tile.position, decorative_name, seed) end
+end
 
 local function desert(surface, room)
 	for _, tile in pairs(room.path_tiles) do
 		surface.set_tiles({{name = "sand-2", position = tile.position}}, true)
 	end
 	
-	if #room.room_border_tiles > 1 then table_shuffle_table(room.room_border_tiles) end
+	if not room.room_tiles[1] then draw_room_decoratives(surface, room) return end
+	
+	table_shuffle_table(room.room_border_tiles)
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "sand-1", position = tile.position}}, true)
 		if key % 8 == 1 then
@@ -27,7 +47,7 @@ local function desert(surface, room)
 		end
 	end
 	
-	if #room.room_tiles > 1 then table_shuffle_table(room.room_tiles) end
+	table_shuffle_table(room.room_tiles)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "sand-3", position = tile.position}}, true)
 		if math_random(1, 64) == 1 then
@@ -42,6 +62,9 @@ local function desert(surface, room)
 		end
 		if math_random(1, 128) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position, force = "enemy"})
+		end
+		if math_random(1, 32) == 1 then
+			Functions.spawn_random_biter(surface, tile.position)
 		end
 		if math_random(1, 16) == 1 then
 			surface.create_entity({name = "mineable-wreckage", position = tile.position})
@@ -82,6 +105,8 @@ local function desert(surface, room)
 			end
 		end	
 	end
+	
+	draw_room_decoratives(surface, room)
 end
 
 return desert

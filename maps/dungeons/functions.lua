@@ -41,7 +41,7 @@ function Public.uncommon_loot_crate(surface, position)
 end
 
 function Public.rare_loot_crate(surface, position)
-	local item_stacks = LootRaffle.roll(global.dungeons.depth * 8 + math_random(128, 256), 24)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 8 + math_random(128, 256), 32)
 	local container = surface.create_entity({name = "iron-chest", position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
@@ -49,8 +49,16 @@ function Public.rare_loot_crate(surface, position)
 end
 
 function Public.epic_loot_crate(surface, position)
-	local item_stacks = LootRaffle.roll(global.dungeons.depth * 16 + math_random(512, 1024), 24)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 16 + math_random(512, 1024), 48)
 	local container = surface.create_entity({name = "steel-chest", position = position, force = "neutral"})
+	for _, item_stack in pairs(item_stacks) do
+		container.insert(item_stack)
+	end
+end
+
+function Public.crash_site_chest(surface, position)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 6 + math_random(160, 320), 48)
+	local container = surface.create_entity({name = "crash-site-chest-" .. math_random(1, 2), position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
