@@ -25,11 +25,40 @@ function Public.get_crude_oil_amount()
 end
 
 function Public.common_loot_crate(surface, position)
-	local item_stacks = LootRaffle.roll(global.dungeons.depth * 2 + 8, 16)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 2 + math_random(8, 16), 16)
 	local container = surface.create_entity({name = "wooden-chest", position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
+end
+
+function Public.uncommon_loot_crate(surface, position)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 4 + math_random(32, 64), 16)
+	local container = surface.create_entity({name = "wooden-chest", position = position, force = "neutral"})
+	for _, item_stack in pairs(item_stacks) do
+		container.insert(item_stack)
+	end
+end
+
+function Public.rare_loot_crate(surface, position)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 8 + math_random(128, 256), 24)
+	local container = surface.create_entity({name = "iron-chest", position = position, force = "neutral"})
+	for _, item_stack in pairs(item_stacks) do
+		container.insert(item_stack)
+	end
+end
+
+function Public.epic_loot_crate(surface, position)
+	local item_stacks = LootRaffle.roll(global.dungeons.depth * 16 + math_random(512, 1024), 24)
+	local container = surface.create_entity({name = "steel-chest", position = position, force = "neutral"})
+	for _, item_stack in pairs(item_stacks) do
+		container.insert(item_stack)
+	end
+end
+
+function Public.spawn_random_biter(surface, position)
+	local name = BiterRaffle.roll("mixed", global.dungeons.depth * 0.001)
+	local unit = surface.create_entity({name = name, position = position, force = "enemy"})
 end
 
 return Public

@@ -23,7 +23,14 @@ local function doom(surface, room)
 		end
 		if math_random(1, 16) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
-		end		
+		end
+		if math_random(1, 512) == 1 then
+			Functions.rare_loot_crate(surface, tile.position)
+		else
+			if math_random(1, 1024) == 1 then
+				Functions.epic_loot_crate(surface, tile.position)
+			end
+		end	
 		if key % 10 == 0 and math_random(1, 2) == 1 then
 			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position})
 		end

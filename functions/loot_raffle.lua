@@ -216,11 +216,7 @@ local function get_raffle_keys()
 	return raffle_keys
 end
 
-local function roll_item(value)
-	
-end
-
-local function roll_item_stack(remaining_budget)
+function Public.roll_item_stack(remaining_budget)
 	if remaining_budget <= 0 then return end
 	local raffle_keys = get_raffle_keys()
 	local item_name = false
@@ -243,19 +239,46 @@ local function roll_item_stack(remaining_budget)
 			break
 		end
 	end
-	
-	remaining_budget = remaining_budget - item_count * item_worth
-	
+
 	return {name = item_name, count = item_count}
 end
 
-function roll_item_stacks(value, max_slots)
-	if not value then return end
+local function roll_item_stacks(remaining_budget, max_slots)
+	local item_stack_set = {}
+	local item_stack_set_worth = 0
+	
+	for i = 1, max_slots, 1 do
+		if remaining_budget <= 0 then break end
+		local item_stack = Public.roll_item_stack(remaining_budget)
+		item_stack_set[i] = item_stack
+		remaining_budget = remaining_budget - item_stack.count * item_worths[item_stack.name]
+		item_stack_set_worth = item_stack_set_worth + item_stack.count * item_worths[item_stack.name]
+	end
+	
+	return item_stack_set, item_stack_set_worth	
+end
+
+function Public.roll(budget, max_slots)
+	if not budget then return end
 	if not max_slots then return end
 	
-	local remaining_budget = value
+	local final_stack_set
+	local final_stack_set_worth = 0
 	
-	local item_stack = roll_item_stack(remaining_budget)
-	
-	game.print(item_stack.name .. "_" .. item_stack.count)
+	for attempt = 1, 5, 1 do
+		local item_stack_set, item_stack_set_worth = roll_item_stacks(budget, max_slots)
+		if item_stack_set_worth > final_stack_set_worth or item_stack_set_worth == budget then
+			final_stack_set = item_stack_set
+			final_stack_set_worth = item_stack_set_worth
+		end
+	end
+	--[[
+	for k, item_stack in pairs(final_stack_set) do
+		game.print(item_stack.count .. "x " .. item_stack.name)
+	end
+	game.print(final_stack_set_worth)
+	]]
+	return final_stack_set
 end
+
+return Public

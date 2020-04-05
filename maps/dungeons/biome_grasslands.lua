@@ -57,7 +57,11 @@ local function grasslands(surface, room)
 		end		
 		if math_random(1, 256) == 1 then
 			Functions.common_loot_crate(surface, tile.position)
-		end
+		else
+			if math_random(1, 512) == 1 then
+				Functions.uncommon_loot_crate(surface, tile.position)
+			end
+		end	
 	end
 	
 	if room.center then

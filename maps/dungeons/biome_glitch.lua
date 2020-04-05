@@ -21,12 +21,16 @@ local function glitch(surface, room)
 		if math_random(1, 3) == 1 then
 			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
 		end
-		if math_random(1, 16) == 1 then
+		if math_random(1, 12) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
 		end
-		if math_random(1, 2048) == 1 then
-			surface.create_entity({name = "rock-huge", position = tile.position})
-		end
+		if math_random(1, 32) == 1 then
+			Functions.common_loot_crate(surface, tile.position)
+		else
+			if math_random(1, 32) == 1 then
+				Functions.uncommon_loot_crate(surface, tile.position)
+			end
+		end	
 	end
 	
 	if room.center then

@@ -60,6 +60,10 @@ local function dirtlands(surface, room)
 		end
 		if math_random(1, 256) == 1 then
 			Functions.common_loot_crate(surface, tile.position)
+		else
+			if math_random(1, 512) == 1 then
+				Functions.uncommon_loot_crate(surface, tile.position)
+			end
 		end
 	end
 	

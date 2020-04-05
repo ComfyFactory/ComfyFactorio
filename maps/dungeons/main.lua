@@ -8,6 +8,7 @@ local MapInfo = require "modules.map_info"
 local Room_generator = require "functions.room_generator"
 local RPG = require "modules.rpg"
 local BiterHealthBooster = require "modules.biter_health_booster"
+local Functions = require "maps.dungeons.functions"
 
 local Biomes = {}
 Biomes.dirtlands = require "maps.dungeons.biome_dirtlands"
@@ -40,8 +41,8 @@ local function get_biome(position)
 	local seed_addition = 100000	
 	
 	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.59 then return "glitch" end
-	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.48 then return "doom" end
-	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.20 then return "grasslands" end
+	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.50 then return "doom" end
+	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.24 then return "grasslands" end
 	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.35 then return "red_desert" end
 	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.25 then return "desert" end
 	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.75 then return "concrete" end	
@@ -52,7 +53,7 @@ end
 local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
-		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "Depth: " .. global.dungeons.depth, tooltip = "Delve deep and face increased dangers.\nIncreases whenever a new room is discovered."})
+		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "Depth: " .. global.dungeons.depth, tooltip = "Increases whenever a new room is discovered."})
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38
@@ -111,15 +112,15 @@ local function on_chunk_generated(event)
 end
 
 local function on_entity_spawned(event)
+	game.forces.enemy.evolution_factor = global.dungeons.depth * 0.0005
+	global.biter_health_boost = 1 + global.dungeons.depth * 0.0005
+	
 	local spawner = event.spawner
 	local unit = event.entity
-	local unit_2 = spawner.surface.create_entity({name = unit.name, position = unit.position, force = "enemy"})
-	unit_2.ai_settings.allow_try_return_to_spawner = true
-	unit_2.ai_settings.allow_destroy_when_commands_fail = false
-	
+
 	local spawner_tier = global.dungeons.spawner_tier
 	if not spawner_tier[spawner.unit_number] then
-		local tier = math_floor(global.dungeons.depth * 0.05 - math_random(1, 4))
+		local tier = math_floor(global.dungeons.depth * 0.015 - math_random(0, 15))
 		if tier < 1 then tier = 1 end		
 		spawner_tier[spawner.unit_number] = tier
 		
@@ -136,14 +137,21 @@ local function on_entity_spawned(event)
 		}
 	end
 	
-	local health_multiplier = (spawner_tier[spawner.unit_number] + 4) * 0.25
+	local health_multiplier = (spawner_tier[spawner.unit_number] + 4) * 0.20
 	
 	if math_random(1, 32) == 1 then
 		BiterHealthBooster.add_boss_unit(unit, health_multiplier * 8, 0.25)
 	else
 		BiterHealthBooster.add_unit(unit, health_multiplier)
 	end
-	BiterHealthBooster.add_unit(unit_2, health_multiplier)
+	
+	local r = math_floor(spawner_tier[spawner.unit_number] * 0.1) + 2
+	for _ = 1, math_random(1, r), 1 do
+		local unit_2 = spawner.surface.create_entity({name = unit.name, position = unit.position, force = "enemy"})
+		unit_2.ai_settings.allow_try_return_to_spawner = true
+		unit_2.ai_settings.allow_destroy_when_commands_fail = false
+		BiterHealthBooster.add_unit(unit_2, health_multiplier)
+	end
 end
 
 local function on_player_joined_game(event)
@@ -158,7 +166,14 @@ end
 
 local function on_player_mined_entity(event)
 	local entity = event.entity
-	if not entity.valid then return end	
+	if not entity.valid then return end
+	if entity.type == "simple-entity" then
+		if math_random(1, 8) == 1 then Functions.spawn_random_biter(entity.surface, entity.position) return end
+		if math_random(1, 16) == 1 then Functions.common_loot_crate(entity.surface, entity.position) return end
+		if math_random(1, 64) == 1 then Functions.uncommon_loot_crate(entity.surface, entity.position) return end
+		if math_random(1, 256) == 1 then Functions.rare_loot_crate(entity.surface, entity.position) return end
+		if math_random(1, 1024) == 1 then Functions.epic_loot_crate(entity.surface, entity.position) return end
+	end
 	if entity.name ~= "rock-big" then return end
 	expand(entity.surface, entity.position)
 end
@@ -208,6 +223,10 @@ local function on_init()
 	end
 	
 	game.forces.player.manual_mining_speed_modifier = 0
+	
+	game.map_settings.enemy_evolution.destroy_factor = 0
+	game.map_settings.enemy_evolution.pollution_factor = 0
+	game.map_settings.enemy_evolution.time_factor = 0
 	
 	global.dungeons = {}
 	global.dungeons.depth = 0
