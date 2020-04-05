@@ -700,7 +700,7 @@ function Public.query_online_players()
 end
 
 --- The command 'cc' is only used by the server so it can communicate through the webpanel api to the instances that it starts.
--- Doing this, enables achivements and the webpanel can communicate without any interruptions. 
+-- Doing this, enables achivements and the webpanel can communicate without any interruptions.
 commands.add_command(
     'cc',
     'Evaluate command',
@@ -713,7 +713,7 @@ commands.add_command(
 
         local func, err = loadstring(param)
         if not func then raw_print(err) return end
-        _, err2 = pcall(func)
+        local _, err2 = pcall(func)
         if err2 then raw_print(err2) return end
 end)
 
