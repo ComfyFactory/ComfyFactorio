@@ -2,7 +2,6 @@
 
 require "modules.mineable_wreckage_yields_scrap"
 require "modules.biters_yield_ore"
-require "modules.explosives"
 
 local MapInfo = require "modules.map_info"
 local Room_generator = require "functions.room_generator"
@@ -242,10 +241,6 @@ local function on_init()
 	
 	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.001
-	
-	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 2500,	
-	}
 	
 	local T = MapInfo.Pop_info()
 	T.localised_category = "dungeons"

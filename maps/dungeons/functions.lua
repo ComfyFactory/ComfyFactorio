@@ -66,7 +66,12 @@ end
 
 function Public.spawn_random_biter(surface, position)
 	local name = BiterRaffle.roll("mixed", global.dungeons.depth * 0.001)
-	local unit = surface.create_entity({name = name, position = position, force = "enemy"})
+	local non_colliding_position = surface.find_non_colliding_position(name, position, 16, 1)
+	if non_colliding_position then
+		local unit = surface.create_entity({name = name, position = non_colliding_position, force = "enemy"})
+	else
+		local unit = surface.create_entity({name = name, position = position, force = "enemy"})
+	end	
 end
 
 return Public
