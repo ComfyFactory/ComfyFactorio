@@ -12,6 +12,11 @@ local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "cop
 local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree"}
 local size_of_trees = #trees
 
+local function add_enemy_units(surface, room)
+	for _, tile in pairs(room.room_border_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+	for _, tile in pairs(room.room_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+end
+
 local function red_desert(surface, room)
 	for _, tile in pairs(room.path_tiles) do
 		surface.set_tiles({{name = "red-desert-0", position = tile.position}}, true)
@@ -21,21 +26,18 @@ local function red_desert(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "dry-dirt", position = tile.position}}, true)
 		if math_random(1, 32) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount()})
 		else
-			if math_random(1, 8) == 1 and surface.can_place_entity({name = trees[math_random(1, size_of_trees)], position = tile.position}) then			
+			if math_random(1, 4) == 1 and surface.can_place_entity({name = trees[math_random(1, size_of_trees)], position = tile.position}) then			
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
 			end
 		end
 		if key % 16 == 0 and math_random(1, 32) == 1 then
-			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"})
+			Functions.set_spawner_tier(surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"}))
 		end
 		if math_random(1, 256) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position, force = "enemy"})
-		end
-		if math_random(1, 32) == 1 then
-			Functions.spawn_random_biter(surface, tile.position)
-		end
+		end		
 		if math_random(1, 32) == 1 then			
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end
@@ -86,6 +88,8 @@ local function red_desert(surface, room)
 			entity.destroy()
 		end
 	end
+	
+	add_enemy_units(surface, room)
 end
 
 return red_desert

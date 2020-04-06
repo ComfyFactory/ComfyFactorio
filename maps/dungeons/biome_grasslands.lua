@@ -30,6 +30,11 @@ local function draw_room_decoratives(surface, room)
 	for _, tile in pairs(room.room_tiles) do draw_deco(surface, tile.position, decorative_name, seed) end
 end
 
+local function add_enemy_units(surface, room)
+	for _, tile in pairs(room.room_border_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+	for _, tile in pairs(room.room_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+end
+
 local function grasslands(surface, room)
 	for _, tile in pairs(room.path_tiles) do
 		surface.set_tiles({{name = "grass-1", position = tile.position}}, true)
@@ -43,18 +48,18 @@ local function grasslands(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "grass-2", position = tile.position}}, true)
 		if math_random(1, 48) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount()})
 		else
 			if math_random(1, 12) == 1 then
 				surface.create_entity({name = tree_name, position = tile.position})
 			end
 		end
-		if math_random(1, 256) == 1 then
+		if key % 128 == 1 and math_random(1, 3) == 1 then
+			Functions.set_spawner_tier(surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"}))
+		end
+		if math_random(1, 320) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
-		end
-		if math_random(1, 32) == 1 then
-			Functions.spawn_random_biter(surface, tile.position)
-		end
+		end		
 		if math_random(1, 1024) == 1 then
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end		
@@ -64,7 +69,7 @@ local function grasslands(surface, room)
 			if math_random(1, 512) == 1 then
 				Functions.uncommon_loot_crate(surface, tile.position)
 			end
-		end	
+		end
 	end
 	
 	if room.center then
@@ -79,10 +84,6 @@ local function grasslands(surface, room)
 					end
 				end
 			end
-		else
-			if math_random(1, 3) == 1 then
-				surface.create_entity({name = Functions.roll_spawner_name(), position = room.center})
-			end
 		end	
 	end
 	
@@ -95,6 +96,8 @@ local function grasslands(surface, room)
 	end
 	
 	draw_room_decoratives(surface, room)
+	draw_room_decoratives(surface, room)
+	add_enemy_units(surface, room)
 end
 
 return grasslands

@@ -1,12 +1,12 @@
 -- Deep dark dungeons by mewmew --
 
 require "modules.mineable_wreckage_yields_scrap"
-require "modules.biters_yield_ore"
 
 local MapInfo = require "modules.map_info"
 local Room_generator = require "functions.room_generator"
 local RPG = require "modules.rpg"
 local BiterHealthBooster = require "modules.biter_health_booster"
+local BiterRaffle = require "functions.biter_raffle"
 local Functions = require "maps.dungeons.functions"
 
 local Biomes = {}
@@ -43,11 +43,11 @@ local function get_biome(position)
 	local seed_addition = 100000	
 	
 	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.60 then return "glitch" end
-	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.51 then return "doom" end
+	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.52 then return "doom" end
 	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.62 then return "acid_zone" end
 	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.60 then return "concrete" end
-	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.23 then return "grasslands" end
-	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.34 then return "red_desert" end
+	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.27 then return "grasslands" end
+	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.31 then return "red_desert" end
 	if Get_noise("dungeons", position, seed + seed_addition * 7) > 0.25 then return "desert" end
 		
 	return "dirtlands"
@@ -120,40 +120,33 @@ local function on_entity_spawned(event)
 	
 	local spawner = event.spawner
 	local unit = event.entity
+	local surface = spawner.surface
 
 	local spawner_tier = global.dungeons.spawner_tier
 	if not spawner_tier[spawner.unit_number] then
-		local tier = math_floor(global.dungeons.depth * 0.015 - math_random(0, 15))
-		if tier < 1 then tier = 1 end		
-		spawner_tier[spawner.unit_number] = tier
+		Functions.set_spawner_tier(spawner)
+	end
+
+	local e = global.dungeons.depth * 0.0005
+	for _ = 1, spawner_tier[spawner.unit_number], 1 do
+		local name = BiterRaffle.roll("mixed", e)
+		local non_colliding_position = surface.find_non_colliding_position(name, unit.position, 16, 1)
+		local bonus_unit
+		if non_colliding_position then
+			bonus_unit = surface.create_entity({name = name, position = non_colliding_position, force = "enemy"})
+		else
+			bonus_unit = surface.create_entity({name = name, position = unit.position, force = "enemy"})
+		end	
+		bonus_unit.ai_settings.allow_try_return_to_spawner = true
+		bonus_unit.ai_settings.allow_destroy_when_commands_fail = true
 		
-		rendering.draw_text{
-			text = "-Tier " .. tier .. "-",
-			surface = spawner.surface,
-			target = spawner,
-			target_offset = {0, -3.25},
-			color = {25, 0, 100, 255},
-			scale = 1.50,
-			font = "default-game",
-			alignment = "center",
-			scale_with_zoom = false
-		}
+		if math_random(1, 256) == 1 then
+			BiterHealthBooster.add_boss_unit(bonus_unit, global.biter_health_boost * 8, 0.25)
+		end
 	end
 	
-	local health_multiplier = (spawner_tier[spawner.unit_number] + 4) * 0.20
-	
-	if math_random(1, 32) == 1 then
-		BiterHealthBooster.add_boss_unit(unit, health_multiplier * 8, 0.25)
-	else
-		BiterHealthBooster.add_unit(unit, health_multiplier)
-	end
-	
-	local r = math_floor(spawner_tier[spawner.unit_number] * 0.1) + 2
-	for _ = 1, math_random(1, r), 1 do
-		local unit_2 = spawner.surface.create_entity({name = unit.name, position = unit.position, force = "enemy"})
-		unit_2.ai_settings.allow_try_return_to_spawner = true
-		unit_2.ai_settings.allow_destroy_when_commands_fail = false
-		BiterHealthBooster.add_unit(unit_2, health_multiplier)
+	if math_random(1, 256) == 1 then
+		BiterHealthBooster.add_boss_unit(unit, global.biter_health_boost * 8, 0.25)
 	end
 end
 
@@ -162,9 +155,29 @@ local function on_player_joined_game(event)
 	local surface = game.surfaces["dungeons"]
 	if player.online_time == 0 then
 		player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 0.5), surface)
-		player.insert({name = "raw-fish", count = 10})
+		player.insert({name = "raw-fish", count = 8})
+		
+		player.set_quick_bar_slot(1, "raw-fish")
+		
+		player.insert({name = "pistol", count = 1})
+		player.insert({name = "firearm-magazine", count = 16})
 	end
 	draw_depth_gui()
+end
+
+local function spawner_death(entity)
+	local tier = global.dungeons.spawner_tier[entity.unit_number]
+	
+	if not tier then
+		Functions.set_spawner_tier(entity)
+		tier = global.dungeons.spawner_tier[entity.unit_number]
+	end
+	
+	for _ = 1, tier * 2, 1 do
+		Functions.spawn_random_biter(entity.surface, entity.position)
+	end
+	
+	global.dungeons.spawner_tier[entity.unit_number] = nil
 end
 
 local function mining_events(entity)
@@ -187,12 +200,10 @@ end
 
 local function on_entity_died(event)
 	local entity = event.entity
-	if not entity.valid then return end
-	
-	if entity.type == "unit" and entity.spawner then
-		entity.spawner.damage(20, game.forces[1])
+	if not entity.valid then return end	
+	if entity.type == "unit-spawner" then
+		spawner_death(entity)
 	end
-	
 	if entity.name ~= "rock-big" then return end
 	expand(entity.surface, entity.position)
 end
@@ -239,7 +250,7 @@ local function on_init()
 	global.dungeons.depth = 0
 	global.dungeons.spawner_tier = {}
 	
-	global.rocks_yield_ore_base_amount = 50
+	global.rocks_yield_ore_base_amount = 100
 	global.rocks_yield_ore_distance_modifier = 0.001
 	
 	local T = MapInfo.Pop_info()

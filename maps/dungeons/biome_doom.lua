@@ -10,6 +10,11 @@ local math_floor = math.floor
 
 local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone"}
 
+local function add_enemy_units(surface, room)
+	for _, tile in pairs(room.room_border_tiles) do if math_random(1, 24) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+	for _, tile in pairs(room.room_tiles) do if math_random(1, 24) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+end
+
 local function doom(surface, room)
 	for _, tile in pairs(room.path_tiles) do
 		surface.set_tiles({{name = "refined-concrete", position = tile.position}}, true)
@@ -18,14 +23,11 @@ local function doom(surface, room)
 	if #room.room_tiles > 1 then table_shuffle_table(room.room_tiles) end
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "red-refined-concrete", position = tile.position}}, true)
-		if math_random(1, 512) == 1 then
+		if math_random(1, 768) == 1 then
 			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = 99999999})
 		end
 		if math_random(1, 16) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
-		end
-		if math_random(1, 32) == 1 then
-			Functions.spawn_random_biter(surface, tile.position)
 		end
 		if math_random(1, 512) == 1 then
 			Functions.rare_loot_crate(surface, tile.position)
@@ -34,8 +36,8 @@ local function doom(surface, room)
 				Functions.epic_loot_crate(surface, tile.position)
 			end
 		end	
-		if key % 10 == 0 and math_random(1, 2) == 1 then
-			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position})
+		if key % 12 == 1 and math_random(1, 2) == 1 then
+			Functions.set_spawner_tier(surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"}))
 		end
 	end
 	
@@ -61,6 +63,8 @@ local function doom(surface, room)
 			surface.create_entity({name = "rock-big", position = tile.position})
 		end
 	end
+	
+	add_enemy_units(surface, room)
 end
 
 return doom

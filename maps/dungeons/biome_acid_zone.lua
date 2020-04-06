@@ -9,6 +9,21 @@ local math_abs = math.abs
 local math_sqrt = math.sqrt
 local math_floor = math.floor
 
+local function add_enemy_units(surface, room)
+	for _, tile in pairs(room.room_border_tiles) do 
+		if math_random(1, 2) == 1 then
+			local name = BiterRaffle.roll("spitter", global.dungeons.depth * 0.001)
+			local unit = surface.create_entity({name = name, position = tile.position, force = "enemy"})
+		end
+	end
+	for _, tile in pairs(room.room_tiles) do
+		if math_random(1, 2) == 1 then
+			local name = BiterRaffle.roll("spitter", global.dungeons.depth * 0.001)
+			local unit = surface.create_entity({name = name, position = tile.position, force = "enemy"})
+		end
+	end	
+end
+
 local function acid_zone(surface, room)
 	for _, tile in pairs(room.path_tiles) do
 		surface.set_tiles({{name = "concrete", position = tile.position}}, true)
@@ -20,20 +35,16 @@ local function acid_zone(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "green-refined-concrete", position = tile.position}}, true)
 		if math_random(1, 16) == 1 then
-			surface.create_entity({name = "uranium-ore", position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
+			surface.create_entity({name = "uranium-ore", position = tile.position, amount = Functions.get_common_resource_amount()})
 		end
 		if math_random(1, 96) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
-		end
-		if math_random(1, 2) == 1 then
-			local name = BiterRaffle.roll("spitter", global.dungeons.depth * 0.002)
-			local unit = surface.create_entity({name = name, position = tile.position, force = "enemy"})
 		end
 		if math_random(1, 128) == 1 then
 			Functions.crash_site_chest(surface, tile.position)
 		end	
 		if key % 128 == 1 and math_random(1, 3) == 1 then
-			surface.create_entity({name = "spitter-spawner", position = tile.position})
+			Functions.set_spawner_tier(surface.create_entity({name = "spitter-spawner", position = tile.position, force = "enemy"}))
 		end
 	end
 	
@@ -59,6 +70,8 @@ local function acid_zone(surface, room)
 			surface.create_entity({name = "rock-big", position = tile.position})
 		end
 	end
+	
+	add_enemy_units(surface, room)
 end
 
 return acid_zone

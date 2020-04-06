@@ -19,7 +19,7 @@ local function glitch(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "lab-dark-1", position = tile.position}}, true)
 		if math_random(1, 3) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount()})
 		end
 		if math_random(1, 12) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})

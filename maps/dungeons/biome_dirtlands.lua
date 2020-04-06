@@ -28,6 +28,11 @@ local function draw_room_decoratives(surface, room)
 	for _, tile in pairs(room.room_tiles) do draw_deco(surface, tile.position, decorative_name, seed) end
 end
 
+local function add_enemy_units(surface, room)
+	for _, tile in pairs(room.room_border_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+	for _, tile in pairs(room.room_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+end
+
 local function dirtlands(surface, room)
 	local path_tile = "dirt-" .. math_random(1, 3)
 	for _, tile in pairs(room.path_tiles) do
@@ -40,20 +45,17 @@ local function dirtlands(surface, room)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "dirt-7", position = tile.position}}, true)
 		if math_random(1, 64) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = math_random(250, 500) + global.dungeons.depth * 10})
+			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount()})
 		else
 			if math_random(1, 128) == 1 then
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
 			end
 		end
-		if key % 128 == 0 and math_random(1, 2) == 1 then
-			surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"})
+		if key % 128 == 1 and math_random(1, 2) == 1 and global.dungeons.depth > 8 then
+			Functions.set_spawner_tier(surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"}))
 		end
-		if math_random(1, 320) == 1 then
+		if math_random(1, 320) == 1 and global.dungeons.depth > 8 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position, force = "enemy"})
-		end
-		if math_random(1, 32) == 1 then
-			Functions.spawn_random_biter(surface, tile.position)
 		end
 		if math_random(1, 512) == 1 then
 			surface.create_entity({name = "mineable-wreckage", position = tile.position})
@@ -85,9 +87,6 @@ local function dirtlands(surface, room)
 			if math_random(1, 24) == 1 then
 				surface.create_entity({name = "crude-oil", position = room.center, amount = Functions.get_crude_oil_amount()})
 			end
-			if math_random(1, 2) == 1 then
-				surface.create_entity({name = Functions.roll_spawner_name(), position = room.center})
-			end
 		end	
 	end
 	
@@ -100,6 +99,7 @@ local function dirtlands(surface, room)
 	end
 	
 	draw_room_decoratives(surface, room)
+	add_enemy_units(surface, room)
 end
 
 return dirtlands
