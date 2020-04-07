@@ -30,6 +30,7 @@ local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
+local math_round = math.round
 
 local disabled_for_deconstruction = {
 		["fish"] = true,
@@ -59,7 +60,10 @@ end
 local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
-		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "Depth: " .. global.dungeons.depth, tooltip = "Increases whenever a new room is discovered."})
+		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "~ Depth " .. global.dungeons.depth .. " ~"})
+		
+		element.tooltip = "Evolution: " .. game.forces.enemy.evolution_factor * 100 .. "%\nEnemy Health: " .. global.biter_health_boost * 100 .. "%"
+
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38
@@ -68,7 +72,7 @@ local function draw_depth_gui()
 		style.left_padding = 4
 		style.right_padding = 4
 		style.bottom_padding = 2
-		style.font_color = {r = 125, g = 75, b = 25}
+		style.font_color = {r = 0, g = 0, b = 0}
 		style.font = "default-large-bold"
 	end
 end
@@ -80,7 +84,20 @@ local function expand(surface, position)
 	Biomes[name](surface, room)
 	
 	if not room.room_tiles[1] then return end
+	
+	local a = 2000
+	local m = 1 / a
+	
 	global.dungeons.depth = global.dungeons.depth + 1
+	game.forces.enemy.evolution_factor = global.dungeons.depth * m
+	
+	global.biter_health_boost = 1 + global.dungeons.depth * m
+	
+	if game.forces.enemy.evolution_factor == 1 then
+		global.biter_health_boost = 2 + (global.dungeons.depth - a) * 0.001
+		global.biter_health_boost = math_round(global.biter_health_boost, 2)
+	end
+	
 	draw_depth_gui()
 end
 
@@ -249,9 +266,6 @@ local function on_chunk_generated(event)
 end
 
 local function on_entity_spawned(event)
-	game.forces.enemy.evolution_factor = global.dungeons.depth * 0.0005
-	global.biter_health_boost = 1 + global.dungeons.depth * 0.0005
-	
 	local spawner = event.spawner
 	local unit = event.entity
 	local surface = spawner.surface
@@ -349,6 +363,10 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_init()
+	local force = game.create_force("dungeon")
+	force.set_friend("enemy", false)
+	force.set_friend("player", false)
+
 	local map_gen_settings = {
 		["water"] = 0,
 		["starting_area"] = 1,
@@ -364,6 +382,7 @@ local function on_init()
 	
 	surface.request_to_generate_chunks({0,0}, 8)
 	surface.force_generate_chunk_requests()
+	surface.daytime = 0.30
 	
 	local surface = game.surfaces[1]
 	local map_gen_settings = surface.map_gen_settings
@@ -390,7 +409,7 @@ local function on_init()
 	local T = MapInfo.Pop_info()
 	T.localised_category = "dungeons"
 	T.main_caption_color = {r = 0, g = 0, b = 0}
-	T.sub_caption_color = {r = 75, g = 0, b = 0}
+	T.sub_caption_color = {r = 150, g = 0, b = 20}
 end
 
 local Event = require 'utils.event' 

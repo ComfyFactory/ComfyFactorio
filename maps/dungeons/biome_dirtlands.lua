@@ -13,9 +13,10 @@ local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dr
 local size_of_trees = #trees
 
 local function draw_deco(surface, position, decorative_name, seed)
+	if math_random(1, 3) == 1 then return end
 	if surface.get_tile(position).name == "water" then return end
 	local noise = Get_noise("decoratives", position, seed)
-	if math_abs(noise) > 0.35 then
+	if math_abs(noise) > 0.38 then
 		surface.create_decoratives{check_collision = false, decoratives = {{name = decorative_name, position = position, amount = math.floor(math.abs(noise * 3)) + 1}}}
 	end
 end
@@ -101,6 +102,7 @@ local function dirtlands(surface, room)
 		end
 	end
 	
+	draw_room_decoratives(surface, room)
 	draw_room_decoratives(surface, room)
 	add_enemy_units(surface, room)
 end

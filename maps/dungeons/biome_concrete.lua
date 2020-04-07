@@ -57,7 +57,7 @@ local function concrete(surface, room)
 		if key % 8 == 1 then
 			Functions.place_border_rock(surface, tile.position)
 		else
-			surface.create_entity({name = "stone-wall", position = tile.position})
+			surface.create_entity({name = "stone-wall", position = tile.position, force = "dungeon"})
 		end
 	end
 	
