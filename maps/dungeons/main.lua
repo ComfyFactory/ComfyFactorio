@@ -101,6 +101,25 @@ local function expand(surface, position)
 	draw_depth_gui()
 end
 
+local function init_player(player)
+	if player.character then
+		player.disassociate_character(player.character)
+		player.character.destroy()
+	end
+
+	player.set_controller({type=defines.controllers.god})
+	player.create_character()
+	
+	local surface = game.surfaces["dungeons"]
+	player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 0.5), surface)
+	player.insert({name = "raw-fish", count = 8})	
+	player.set_quick_bar_slot(1, "raw-fish")
+	player.insert({name = "pistol", count = 1})
+	player.insert({name = "firearm-magazine", count = 16})
+	
+	draw_depth_gui()
+end
+
 local function draw_spawn_decoratives(surface)	
 	local decoratives = {"brown-hairy-grass", "brown-asterisk", "brown-fluff", "brown-fluff-dry", "brown-asterisk", "brown-fluff", "brown-fluff-dry"}
 	local a = spawn_size * -1 + 1
@@ -122,6 +141,10 @@ local function draw_spawn_decoratives(surface)
 end
 
 local function draw_spawn(surface)
+	for _, e in pairs(surface.find_entities({{spawn_size * -1, spawn_size * -1}, {spawn_size, spawn_size}})) do
+		e.destroy()
+	end
+	
 	local tiles = {}
 	local i = 1
 	for x = spawn_size * -1, spawn_size, 1 do
@@ -129,6 +152,9 @@ local function draw_spawn(surface)
 			local position = {x = x, y = y}
 			if math_abs(position.x) < 2 or math_abs(position.y) < 2 then
 				tiles[i] = {name = "stone-path", position = position}
+				i = i + 1
+			else	
+				tiles[i] = {name = "dirt-7", position = position}
 				i = i + 1
 			end		
 		end
@@ -224,44 +250,65 @@ local function draw_spawn(surface)
 		end
 	end
 	surface.set_tiles(tiles, true)
+	
+	for _, p in pairs(game.connected_players) do
+		init_player(p)
+	end
 end
 
 local function on_chunk_generated(event)
 	local surface = event.surface
+	if surface.name ~= "dungeons" then return end
+	
 	local left_top = event.area.left_top
-	
-	if math_abs(left_top.x) > 256 or math_abs(left_top.y) > 256 then
-		local tiles = {}
-		local i = 1
-		for x = 0, 31, 1 do
-			for y = 0, 31, 1 do
-				local position = {x = left_top.x + x, y = left_top.y + y}			
-				tiles[i] = {name = "out-of-map", position = position}
-				i = i + 1			
-			end
-		end
-		surface.set_tiles(tiles, true)
-		return
-	end
-	
+
 	local tiles = {}
 	local i = 1
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
-			local position = {x = left_top.x + x, y = left_top.y + y}
-			if position.x > spawn_size or position.y > spawn_size or position.x < spawn_size * -1 or position.y < spawn_size * -1 then
-				tiles[i] = {name = "out-of-map", position = position}
-				i = i + 1
-			else	
-				tiles[i] = {name = "dirt-7", position = position}
-				i = i + 1
-			end
+			local position = {x = left_top.x + x, y = left_top.y + y}				
+			tiles[i] = {name = "out-of-map", position = position}
+			i = i + 1
 		end
 	end
 	surface.set_tiles(tiles, true)
-	
+
+	local rock_positions = {}
+	local set_tiles = surface.set_tiles
+	local nauvis_seed = game.surfaces[1].map_gen_settings.seed
+	local s = math_floor(nauvis_seed * 0.1) + 50
+	for a = 1, 3, 1 do
+		local b = a * s
+		local c = a * 0.0077
+		local d = c * 0.5
+		local seed = nauvis_seed + b
+		if math_abs(Get_noise("dungeon_sewer", {x = left_top.x + 16, y = left_top.y + 16}, seed)) < 0.08 then
+			for x = 0, 31, 1 do
+				for y = 0, 31, 1 do
+					local position = {x = left_top.x + x, y = left_top.y + y}
+					local noise = math_abs(Get_noise("dungeon_sewer", position, seed))
+					if noise < c then
+						local tile_name = surface.get_tile(position).name
+						if noise > d and tile_name ~= "deepwater-green" then
+							set_tiles({{name = "water-green", position = position}}, true)
+							if math_random(1, 1024) == 1 then table_insert(rock_positions, position) end
+						else
+							set_tiles({{name = "deepwater-green", position = position}}, true)
+							if math_random(1, 64) == 1 then
+								surface.create_entity({name = "fish", position = position})
+							end
+						end		
+					end
+				end
+			end			
+		end		
+	end
+
+	for _, p in pairs(rock_positions) do Functions.place_border_rock(surface, p) end
+
 	if left_top.x == 160 and left_top.y == 160 then		
 		draw_spawn(surface)
+		game.forces.player.chart(surface, {{-256, -256}, {256, 256}})
 	end
 end
 
@@ -299,18 +346,11 @@ local function on_entity_spawned(event)
 end
 
 local function on_player_joined_game(event)
+	if game.tick == 0 then return end
 	local player = game.players[event.player_index]
-	local surface = game.surfaces["dungeons"]
 	if player.online_time == 0 then
-		player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 0.5), surface)
-		player.insert({name = "raw-fish", count = 8})
-		
-		player.set_quick_bar_slot(1, "raw-fish")
-		
-		player.insert({name = "pistol", count = 1})
-		player.insert({name = "firearm-magazine", count = 16})
+		init_player(player)
 	end
-	draw_depth_gui()
 end
 
 local function spawner_death(entity)
@@ -329,7 +369,7 @@ local function spawner_death(entity)
 end
 
 local function mining_events(entity)
-	if math_random(1, 8) == 1 then Functions.spawn_random_biter(entity.surface, entity.position) return end
+	if math_random(1, 16) == 1 then Functions.spawn_random_biter(entity.surface, entity.position) return end
 	if math_random(1, 32) == 1 then Functions.common_loot_crate(entity.surface, entity.position) return end
 	if math_random(1, 128) == 1 then Functions.uncommon_loot_crate(entity.surface, entity.position) return end
 	if math_random(1, 512) == 1 then Functions.rare_loot_crate(entity.surface, entity.position) return end
@@ -410,6 +450,8 @@ local function on_init()
 	T.localised_category = "dungeons"
 	T.main_caption_color = {r = 0, g = 0, b = 0}
 	T.sub_caption_color = {r = 150, g = 0, b = 20}
+	
+	
 end
 
 local Event = require 'utils.event' 

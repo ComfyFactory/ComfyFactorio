@@ -9,6 +9,7 @@ local noises = {
 	["cave_rivers_4"] = {{modifier = 0.001, weight = 1}, {modifier = 0.01, weight = 0.11}, {modifier = 0.05, weight = 0.01}},
 	["decoratives"] = {{modifier = 0.03, weight = 1}, {modifier = 0.05, weight = 0.25}, {modifier = 0.1, weight = 0.05}},
 	["dungeons"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.25}},
+	["dungeon_sewer"] = {{modifier = 0.0005, weight = 1}, {modifier = 0.005, weight = 0.025}, {modifier = 0.025, weight = 0.0025}},
 	["large_caves"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},	
 	["n1"] = {{modifier = 0.0001, weight = 1}},
 	["n2"] = {{modifier = 0.001, weight = 1}},
