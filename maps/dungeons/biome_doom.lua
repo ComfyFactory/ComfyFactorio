@@ -59,8 +59,11 @@ local function doom(surface, room)
 	if #room.room_border_tiles > 1 then table_shuffle_table(room.room_border_tiles) end
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "black-refined-concrete", position = tile.position}}, true)
+	end
+	
+	for key, tile in pairs(room.room_border_tiles) do
 		if key % 8 == 1 then
-			surface.create_entity({name = "rock-big", position = tile.position})
+			Functions.place_border_rock(surface, tile.position)
 		end
 	end
 	

@@ -56,8 +56,11 @@ local function glitch(surface, room)
 	table_shuffle_table(room.room_border_tiles)
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "lab-dark-2", position = tile.position}}, true)
+	end
+	
+	for key, tile in pairs(room.room_border_tiles) do
 		if key % 8 == 1 then
-			surface.create_entity({name = "rock-big", position = tile.position})
+			Functions.place_border_rock(surface, tile.position)
 		end
 	end
 end

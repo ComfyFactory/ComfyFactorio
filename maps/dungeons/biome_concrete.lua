@@ -44,15 +44,18 @@ local function concrete(surface, room)
 			Functions.set_spawner_tier(surface.create_entity({name = "biter-spawner", position = tile.position, force = "enemy"}))
 		end
 		if math_random(1, 256) == 1 then
-			surface.create_entity({name = "crude-oil", position = room.center, amount = Functions.get_crude_oil_amount()})
+			surface.create_entity({name = "crude-oil", position = tile.position, amount = Functions.get_crude_oil_amount()})
 		end
 	end
 	
 	table_shuffle_table(room.room_border_tiles)
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "refined-concrete", position = tile.position}}, true)
+	end
+	
+	for key, tile in pairs(room.room_border_tiles) do
 		if key % 8 == 1 then
-			surface.create_entity({name = "rock-big", position = tile.position})
+			Functions.place_border_rock(surface, tile.position)
 		else
 			surface.create_entity({name = "stone-wall", position = tile.position})
 		end

@@ -125,7 +125,7 @@ local function build_bridge(surface, position)
 	room.room_border_tiles = {}
 	room.room_tiles = {}
 	
-	local a = room_spacing * 3
+	local a = room_spacing * 4
 
 	for _, v in pairs(vectors) do		
 		for d = 1, a, 1 do

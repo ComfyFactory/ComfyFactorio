@@ -3,6 +3,7 @@ local Public = {}
 local BiterRaffle = require "functions.biter_raffle"
 local LootRaffle = require "functions.loot_raffle"
 
+local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local table_remove = table.remove
 local math_random = math.random
@@ -98,6 +99,25 @@ function Public.spawn_random_biter(surface, position)
 	end	
 	unit.ai_settings.allow_try_return_to_spawner = false
 	unit.ai_settings.allow_destroy_when_commands_fail = false
+end
+
+function Public.place_border_rock(surface, position)
+	local vectors = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}}
+	table_shuffle_table(vectors)
+	
+	local key = false
+	for k, v in pairs(vectors) do
+		local tile = surface.get_tile({position.x + v[1], position.y + v[2]})
+		if tile.name == "out-of-map" then
+			key = k
+			break
+		end
+	end	
+	if not key then return end
+	
+	local pos = {x = position.x + 0.5, y = position.y + 0.5}
+	pos = {pos.x + vectors[key][1] * 0.45, pos.y + vectors[key][2] * 0.45}
+	surface.create_entity({name = "rock-big", position = pos})
 end
 
 return Public

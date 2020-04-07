@@ -1,5 +1,7 @@
 -- Deep dark dungeons by mewmew --
 
+local spawn_size = 46
+
 require "modules.mineable_wreckage_yields_scrap"
 
 local MapInfo = require "modules.map_info"
@@ -8,6 +10,7 @@ local RPG = require "modules.rpg"
 local BiterHealthBooster = require "modules.biter_health_booster"
 local BiterRaffle = require "functions.biter_raffle"
 local Functions = require "maps.dungeons.functions"
+local Get_noise = require "utils.get_noise"
 
 local Biomes = {}
 Biomes.dirtlands = require "maps.dungeons.biome_dirtlands"
@@ -37,17 +40,17 @@ local disabled_for_deconstruction = {
 	}
 
 local function get_biome(position)
-	if position.x ^ 2 + position.y ^ 2 < 1024 then return "dirtlands" end
+	if position.x ^ 2 + position.y ^ 2 < 6400 then return "dirtlands" end
 
 	local seed = game.surfaces[1].map_gen_settings.seed
 	local seed_addition = 100000	
 	
-	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.60 then return "glitch" end
+	if Get_noise("dungeons", position, seed + seed_addition * 1) > 0.62 then return "glitch" end
 	if Get_noise("dungeons", position, seed + seed_addition * 2) > 0.52 then return "doom" end
 	if Get_noise("dungeons", position, seed + seed_addition * 3) > 0.62 then return "acid_zone" end
 	if Get_noise("dungeons", position, seed + seed_addition * 4) > 0.60 then return "concrete" end
-	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.27 then return "grasslands" end
-	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.31 then return "red_desert" end
+	if Get_noise("dungeons", position, seed + seed_addition * 5) > 0.26 then return "grasslands" end
+	if Get_noise("dungeons", position, seed + seed_addition * 6) > 0.30 then return "red_desert" end
 	if Get_noise("dungeons", position, seed + seed_addition * 7) > 0.25 then return "desert" end
 		
 	return "dirtlands"
@@ -81,36 +84,167 @@ local function expand(surface, position)
 	draw_depth_gui()
 end
 
+local function draw_spawn_decoratives(surface)	
+	local decoratives = {"brown-hairy-grass", "brown-asterisk", "brown-fluff", "brown-fluff-dry", "brown-asterisk", "brown-fluff", "brown-fluff-dry"}
+	local a = spawn_size * -1 + 1
+	local b = spawn_size - 1
+	for _, decorative_name in pairs(decoratives) do
+		local seed = game.surfaces[1].map_gen_settings.seed + math_random(1, 1000000)
+		for x = a, b, 1 do
+			for y = a, b, 1 do
+				local position = {x = x + 0.5, y = y + 0.5}
+				if surface.get_tile(position).name == "dirt-7" or math_random(1, 5) == 1 then 
+					local noise = Get_noise("decoratives", position, seed)
+					if math_abs(noise) > 0.37 then
+						surface.create_decoratives{check_collision = false, decoratives = {{name = decorative_name, position = position, amount = math.floor(math.abs(noise * 3)) + 1}}}
+					end	
+				end
+			end
+		end
+	end
+end
+
+local function draw_spawn(surface)
+	local tiles = {}
+	local i = 1
+	for x = spawn_size * -1, spawn_size, 1 do
+		for y = spawn_size * -1, spawn_size, 1 do
+			local position = {x = x, y = y}
+			if math_abs(position.x) < 2 or math_abs(position.y) < 2 then
+				tiles[i] = {name = "stone-path", position = position}
+				i = i + 1
+			end		
+		end
+	end
+	surface.set_tiles(tiles, true)
+
+	local tiles = {}
+	local i = 1
+	for x = -2, 2, 1 do
+		for y = -2, 2, 1 do
+			local position = {x = x, y = y}
+			if math_abs(position.x) > 1 or math_abs(position.y) > 1 then
+				tiles[i] = {name = "black-refined-concrete", position = position}
+				i = i + 1
+			else
+				tiles[i] = {name = "purple-refined-concrete", position = position}
+				i = i + 1
+			end		
+		end
+	end
+	surface.set_tiles(tiles, true)
+	
+	local tiles = {}
+	local i = 1
+	for x = spawn_size * -1, spawn_size, 1 do
+		for y = spawn_size * -1, spawn_size, 1 do
+			local position = {x = x, y = y}
+			local r = math.sqrt(position.x ^ 2 + position.y ^ 2)	
+			if r < 2 then
+				tiles[i] = {name = "purple-refined-concrete", position = position}
+				i = i + 1
+			else
+				if r < 2.5 then
+					tiles[i] = {name = "black-refined-concrete", position = position}
+					i = i + 1
+				else
+					if r < 4.5 then
+						tiles[i] = {name = "concrete", position = position}
+						i = i + 1
+					end
+				end
+			end		
+		end
+	end
+	surface.set_tiles(tiles, true)
+	
+	draw_spawn_decoratives(surface)
+	
+	local entities = {}
+	local i = 1
+	for x = spawn_size * -1 - 16, spawn_size + 16, 1 do
+		for y = spawn_size * -1 - 16, spawn_size + 16, 1 do
+			local position = {x = x, y = y}
+			if position.x <= spawn_size and position.y <= spawn_size and position.x >= spawn_size * -1 and position.y >= spawn_size * -1 then
+				if position.x == spawn_size then
+					entities[i] = {name = "rock-big", position = {position.x + 0.95, position.y}}
+					i = i + 1
+				end
+				if position.y == spawn_size then
+					entities[i] = {name = "rock-big", position = {position.x, position.y + 0.95}}
+					i = i + 1
+				end
+				if position.x == spawn_size * -1 or position.y == spawn_size * -1 then
+					entities[i] = {name = "rock-big", position = position}
+					i = i + 1
+				end
+			end
+		end
+	end
+	
+	for k, e in pairs(entities) do
+		if k % 3 > 0 then surface.create_entity(e) end
+	end
+	
+	local trees = { "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree", "tree-04"}
+	local size_of_trees = #trees
+	local r = 4
+	for x = spawn_size * -1, spawn_size, 1 do
+		for y = spawn_size * -1, spawn_size, 1 do
+			local position = {x = x + 0.5, y = y + 0.5}
+			if position.x > 5 and position.y > 5 and math_random(1, r) == 1 then
+				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = position})
+			end
+			if position.x <= -4 and position.y <= -4 and math_random(1, r) == 1 then
+				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = position})
+			end	
+			if position.x > 5 and position.y <= -4 and math_random(1, r) == 1 then
+				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = position})
+			end	
+			if position.x <= -4 and position.y > 5 and math_random(1, r) == 1 then
+				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = position})
+			end				
+		end
+	end
+	surface.set_tiles(tiles, true)
+end
+
 local function on_chunk_generated(event)
 	local surface = event.surface
 	local left_top = event.area.left_top
+	
+	if math_abs(left_top.x) > 256 or math_abs(left_top.y) > 256 then
+		local tiles = {}
+		local i = 1
+		for x = 0, 31, 1 do
+			for y = 0, 31, 1 do
+				local position = {x = left_top.x + x, y = left_top.y + y}			
+				tiles[i] = {name = "out-of-map", position = position}
+				i = i + 1			
+			end
+		end
+		surface.set_tiles(tiles, true)
+		return
+	end
 	
 	local tiles = {}
 	local i = 1
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local position = {x = left_top.x + x, y = left_top.y + y}
-			if math_abs(position.x) > 2 or math_abs(position.y) > 2 then
+			if position.x > spawn_size or position.y > spawn_size or position.x < spawn_size * -1 or position.y < spawn_size * -1 then
 				tiles[i] = {name = "out-of-map", position = position}
 				i = i + 1
-			else
-				if math_abs(position.x) > 1 or math_abs(position.y) > 1 then
-					tiles[i] = {name = "black-refined-concrete", position = position}
-					i = i + 1
-				else
-					tiles[i] = {name = "purple-refined-concrete", position = position}
-					i = i + 1
-				end
+			else	
+				tiles[i] = {name = "dirt-7", position = position}
+				i = i + 1
 			end
 		end
 	end
 	surface.set_tiles(tiles, true)
 	
-	if left_top.x == 32 and left_top.y == 32 then	
-		surface.create_entity({name = "rock-big", position = {0, -2}})
-		surface.create_entity({name = "rock-big", position = {0, 2}})
-		surface.create_entity({name = "rock-big", position = {-2, 0}})
-		surface.create_entity({name = "rock-big", position = {2, 0}})
+	if left_top.x == 160 and left_top.y == 160 then		
+		draw_spawn(surface)
 	end
 end
 
@@ -182,9 +316,9 @@ end
 
 local function mining_events(entity)
 	if math_random(1, 8) == 1 then Functions.spawn_random_biter(entity.surface, entity.position) return end
-	if math_random(1, 16) == 1 then Functions.common_loot_crate(entity.surface, entity.position) return end
-	if math_random(1, 64) == 1 then Functions.uncommon_loot_crate(entity.surface, entity.position) return end
-	if math_random(1, 256) == 1 then Functions.rare_loot_crate(entity.surface, entity.position) return end
+	if math_random(1, 32) == 1 then Functions.common_loot_crate(entity.surface, entity.position) return end
+	if math_random(1, 128) == 1 then Functions.uncommon_loot_crate(entity.surface, entity.position) return end
+	if math_random(1, 512) == 1 then Functions.rare_loot_crate(entity.surface, entity.position) return end
 	if math_random(1, 1024) == 1 then Functions.epic_loot_crate(entity.surface, entity.position) return end
 end
 
@@ -228,7 +362,7 @@ local function on_init()
 	}
 	local surface = game.create_surface("dungeons", map_gen_settings)
 	
-	surface.request_to_generate_chunks({0,0}, 2)
+	surface.request_to_generate_chunks({0,0}, 8)
 	surface.force_generate_chunk_requests()
 	
 	local surface = game.surfaces[1]

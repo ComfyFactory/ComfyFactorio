@@ -13,6 +13,7 @@ local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dr
 local size_of_trees = #trees
 
 local function draw_deco(surface, position, decorative_name, seed)
+	if math_random(1, 3) == 1 then return end
 	if surface.get_tile(position).name == "water" then return end
 	local noise = Get_noise("decoratives", position, seed)
 	if math_abs(noise) > 0.32 then
@@ -43,13 +44,6 @@ local function desert(surface, room)
 	table_shuffle_table(room.room_border_tiles)
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "sand-1", position = tile.position}}, true)
-		if key % 8 == 1 then
-			surface.create_entity({name = "rock-big", position = tile.position})
-		else
-			if math_random(1, 9) == 1 then
-				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
-			end
-		end
 	end
 	
 	table_shuffle_table(room.room_tiles)
@@ -103,6 +97,16 @@ local function desert(surface, room)
 				surface.create_entity({name = "crude-oil", position = room.center, amount = Functions.get_crude_oil_amount()})
 			end
 		end	
+	end
+	
+	for key, tile in pairs(room.room_border_tiles) do
+		if key % 8 == 1 then
+			Functions.place_border_rock(surface, tile.position)
+		else
+			if math_random(1, 9) == 1 then
+				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
+			end
+		end
 	end
 	
 	draw_room_decoratives(surface, room)
