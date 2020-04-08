@@ -1,7 +1,8 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
  --enable / disable collapsing of the map
-local collapse_enabled = false
+global.collapse_enabled = true
+global.offline_loot = true
 local darkness = false
 
 require "player_modifiers"
@@ -59,8 +60,12 @@ local function set_difficulty()
 end
 
 function Public.reset_map()
+	for _,player in pairs(game.players) do
+		if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
+	end
 	local wave_defense_table = WD.get_table()
 	global.chunk_queue = {}
+	global.offline_players = {}
 
 	if game.surfaces["cargo_wagon"] then game.delete_surface(game.surfaces["cargo_wagon"]) end
 
@@ -117,7 +122,10 @@ function Public.reset_map()
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
+	game.forces.player.recipes["pistol"].enabled = false
 	game.forces.player.set_spawn_position({-2, 16}, surface)
+	game.forces.enemy.set_ammo_damage_modifier("bullet", 1)
+	game.forces.enemy.set_turret_attack_modifier("gun-turret", 1)
 
 	Locomotive.locomotive_spawn(surface, {x = 0, y = 16})
 
@@ -151,13 +159,13 @@ local function biters_chew_rocks_faster(event)
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if event.cause.force.index ~= 2 then return end --Enemy Force
-	event.entity.health = event.entity.health - event.final_damage_amount * 2.5
+	event.entity.health = event.entity.health - event.final_damage_amount * 5
 end
 
 local function hidden_biter(entity)
 	local d = math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)
 
-	BiterRolls.wave_defense_set_unit_raffle(d * 0.25)
+	BiterRolls.wave_defense_set_unit_raffle(d * 0.20)
 
 	local unit
 	if math_random(1,3) == 1 then
@@ -177,13 +185,13 @@ local function hidden_biter(entity)
 end
 
 local function hidden_worm(entity)
-	BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.25)
+	BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.20)
 	entity.surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position})
 end
 
 local function hidden_biter_pet(event)
 	if math_random(1, 2048) ~= 1 then return end
-	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
+	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.20)
 	local unit
 	if math_random(1,3) == 1 then
 		unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position})
@@ -249,6 +257,14 @@ local function on_player_mined_entity(event)
 	end
 
 	angry_tree(event.entity, game.players[event.player_index].character)
+end
+
+local function on_pre_player_left_game(event)
+	local player = game.players[event.player_index]
+	if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
+	if player.character then
+		global.offline_players[#global.offline_players + 1] = {index = event.player_index, tick = game.tick}
+	end
 end
 
 local function on_entity_died(event)
@@ -341,6 +357,71 @@ local function on_player_left_game(event)
 	set_difficulty()
 end
 
+local function offline_players()
+  local current_tick = game.tick
+  local players = global.offline_players
+  local surface = game.surfaces[global.active_surface_index]
+  if #players > 0 then
+    --log("nonzero offline players")
+    local later = {}
+    for i = 1, #players, 1 do
+      if players[i] and game.players[players[i].index] and game.players[players[i].index].connected then
+        --game.print("deleting already online character from list")
+        players[i] = nil
+      else
+        if players[i] and players[i].tick < game.tick - 54000 then
+          --log("spawning corpse")
+          local player_inv = {}
+          local items = {}
+          player_inv[1] = game.players[players[i].index].get_inventory(defines.inventory.character_main)
+          player_inv[2] = game.players[players[i].index].get_inventory(defines.inventory.character_armor)
+          player_inv[3] = game.players[players[i].index].get_inventory(defines.inventory.character_guns)
+          player_inv[4] = game.players[players[i].index].get_inventory(defines.inventory.character_ammo)
+          player_inv[5] = game.players[players[i].index].get_inventory(defines.inventory.character_trash)
+          local e = surface.create_entity({name = "character", position = game.forces.player.get_spawn_position(surface), force = "neutral"})
+          local inv = e.get_inventory(defines.inventory.character_main)
+          for ii = 1, 5, 1 do
+            if player_inv[ii].valid then
+              for iii = 1, #player_inv[ii], 1 do
+                if player_inv[ii][iii].valid then
+                  items[#items + 1] = player_inv[ii][iii]
+                end
+              end
+            end
+          end
+          if #items > 0 then
+            for item = 1, #items, 1 do
+              if items[item].valid then
+      			     inv.insert(items[item])
+              end
+            end
+						game.print({"chronosphere.message_accident"}, {r=0.98, g=0.66, b=0.22})
+						e.die("neutral")
+					else
+						e.destroy()
+          end
+
+          for ii = 1, 5, 1 do
+            if player_inv[ii].valid then
+              player_inv[ii].clear()
+            end
+          end
+          players[i] = nil
+        else
+          later[#later + 1] = players[i]
+        end
+      end
+    end
+    players = {}
+    if #later > 0 then
+      for i = 1, #later, 1 do
+        players[#players + 1] = later[i]
+      end
+    end
+		global.offline_players = players
+  end
+end
+
 local function tick()
 	local tick = game.tick
 	if tick % 30 == 0 then
@@ -356,6 +437,9 @@ local function tick()
 			--if tick % 216000 == 0 then
 			--	Collapse.delete_out_of_map_chunks(surface)
 			--end
+			if global.offline_loot then
+				offline_players()
+			end
 		end
 		if global.game_reset_tick then
 			if global.game_reset_tick < tick then
@@ -366,7 +450,7 @@ local function tick()
 		end
 		Locomotive.fish_tag()
 	end
-	if not collapse_enabled then return end
+	if not global.collapse_enabled then return end
 	Collapse.process()
 end
 
@@ -404,6 +488,7 @@ event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
 event.add(defines.events.on_player_left_game, on_player_left_game)
+event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
