@@ -177,7 +177,7 @@ local function hidden_biter(entity)
 	local m = 1 / level_depth
 	m = m * d
 
-	if math_random(1, 256) == 1 then
+	if math_random(1, 64) == 1 then
 		BiterHealthBooster.add_boss_unit(unit, m * 15 + 1, 0.38)
 	else
 		BiterHealthBooster.add_unit(unit, m * 2.5 + 1)
