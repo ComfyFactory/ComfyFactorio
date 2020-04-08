@@ -72,7 +72,6 @@ local function on_entity_damaged(event)
 	local biter = event.entity
 	if not (biter and biter.valid) then return end
 	if biter.type ~= "unit" then return end
-  if event.final_damage_amount == 0 then return end
 
 	local biter_health_boost_units = global.biter_health_boost_units
 
@@ -98,12 +97,9 @@ local function on_entity_damaged(event)
 		end
 	end
 
-  --Calculate current actual health, accounting for regeneration
-  local current_health = biter.health * (1 / health_pool[2])
-
 	--Reduce health pool
-	health_pool[1] = current_health - event.final_damage_amount
-
+	health_pool[1] = health_pool[1] - event.final_damage_amount
+	
 	--Set entity health relative to health pool
 	biter.health = health_pool[1] * health_pool[2]
 

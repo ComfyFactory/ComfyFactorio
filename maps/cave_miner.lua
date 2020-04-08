@@ -3,7 +3,7 @@
 require "modules.rocks_heal_over_time"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_yield_ore_veins"
-require "modules.explosives"
+require "maps.cave_miner_kaboomsticks"
 require "modules.satellite_score"
 require "modules.spawners_contain_biters"
 require "modules.biter_noms_you"
@@ -1216,11 +1216,7 @@ local function on_init()
 	global.rocks_yield_ore_maximum_amount = 512
 	global.rocks_yield_ore_base_amount = 35
 	global.rocks_yield_ore_distance_modifier = 0.1
-	
-	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 1000,
-	}
-	
+
 	global.rocks_yield_ore_veins.chance = 512
 end
 

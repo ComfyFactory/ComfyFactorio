@@ -1,3 +1,21 @@
+--[[
+Exchange Strings:
+
+for "terrain_layouts.scrap_01"
+>>>eNpjYBBiEGQAgwYHBgYHBw6W5PzEHAaGA0Begz2I5krOLyhIL
+dLNL0pFFuZMLipNSdXNz0RVnJqXmlupm5RYnAoRgmCOzKL8PHQTW
+ItL8vNQRUqKUlOLQazVq1bZgUS5S4sS8zJLc9H1MjCeOHC8uKFFj
+gGE/9czKPz/D8JA1gOgX0CYgbEB7ClGoBgMsCbnZKalMTAoODIwF
+DiDFTEyVousc39YNcWeEaJGzwHK+AAVOZAEE/GEMfwccEqpwBgmD
+oz/weC+PaMxGHxGYkAsLQFaAVXO4YBgQCRbQJKMjL1vty74fuyCH
+eOflR8v+SYl2DMauoq8+2C0zg4oyQ7yAhOcmDUTBHbCvMIAM/OBP
+VTqpj3j2TMg8MaekQukwwhETKgDEg+WAq0T4AOyFvQACQUZBpjT7
+GDGiDgwpoHBN5hPHsMYl+3R/QEMCBuQ4XIg4gSIYGWAGwl0GSOE6
+dDvwOggD5OVRCgB6jdiQHZDCsKHJ2HWHkayH80hyBGB6Q80ERUHL
+NEADqAUOPGCGe4aYHheYIfxHOY7MDKDGCBVX4BiEB5IBmYUhBZwY
+GZAAGDyOnLntR4A3uWt/A==<<<
+]]
+
 local Biters = require "modules.towny.biters"
 local Combat_balance = require "modules.towny.combat_balance"
 local Building = require "modules.towny.building"

@@ -2,7 +2,7 @@
 
 local event = require 'utils.event'
 
-local valid_types = {"boiler", "container", "furnace", "generator", "logistic-container", "offshore-pump", "lab", "assembling-machine"}
+local valid_types = {"boiler", "furnace", "generator", "offshore-pump", "lab", "assembling-machine"}
 
 local function on_built_entity(event)
 	if not event.created_entity.valid then return end
