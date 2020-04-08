@@ -126,7 +126,7 @@ require "modules.autostash"
 --require "modules.trees_grow"
 --require "modules.trees_randomly_die"
 
---require "terrain_layouts.caves"
+--require "terrain_layouts.caves" 
 --require "terrain_layouts.cone_to_east"
 --require "terrain_layouts.biters_and_resources_east"
 --require "terrain_layouts.scrap_01"
