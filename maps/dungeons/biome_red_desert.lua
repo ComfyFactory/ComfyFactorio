@@ -8,13 +8,13 @@ local math_abs = math.abs
 local math_sqrt = math.sqrt
 local math_floor = math.floor
 
-local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone","uranium-ore"}
 local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree"}
+local ores = {"stone", "stone", "stone", "coal"}
 local size_of_trees = #trees
 
 local function add_enemy_units(surface, room)
-	for _, tile in pairs(room.room_border_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
-	for _, tile in pairs(room.room_tiles) do if math_random(1, 32) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+	for _, tile in pairs(room.room_border_tiles) do if math_random(1, 24) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
+	for _, tile in pairs(room.room_tiles) do if math_random(1, 24) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
 end
 
 local function red_desert(surface, room)
@@ -41,10 +41,10 @@ local function red_desert(surface, room)
 		if math_random(1, 32) == 1 then			
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end
-		if math_random(1, 256) == 1 then
+		if math_random(1, 320) == 1 then
 			Functions.common_loot_crate(surface, tile.position)
 		else
-			if math_random(1, 512) == 1 then
+			if math_random(1, 640) == 1 then
 				Functions.uncommon_loot_crate(surface, tile.position)
 			else
 				if math_random(1, 2048) == 1 then

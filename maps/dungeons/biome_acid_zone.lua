@@ -12,13 +12,13 @@ local math_floor = math.floor
 local function add_enemy_units(surface, room)
 	for _, tile in pairs(room.room_border_tiles) do 
 		if math_random(1, 2) == 1 then
-			local name = BiterRaffle.roll("spitter", global.dungeons.depth * 0.001)
+			local name = BiterRaffle.roll("spitter", Functions.get_dungeon_evolution_factor() * 1.5)
 			local unit = surface.create_entity({name = name, position = tile.position, force = "enemy"})
 		end
 	end
 	for _, tile in pairs(room.room_tiles) do
 		if math_random(1, 2) == 1 then
-			local name = BiterRaffle.roll("spitter", global.dungeons.depth * 0.001)
+			local name = BiterRaffle.roll("spitter", Functions.get_dungeon_evolution_factor() * 1.5)
 			local unit = surface.create_entity({name = name, position = tile.position, force = "enemy"})
 		end
 	end	
@@ -49,13 +49,13 @@ local function acid_zone(surface, room)
 	end
 	
 	if room.center then
-		if math_random(1, 5) == 1 then
+		if math_random(1, 4) == 1 then
 			local r = math_floor(math_sqrt(#room.room_tiles) * 0.125) + 1
 			for x = r * -1, r, 1 do
 				for y = r * -1, r, 1 do
 					local p = {room.center.x + x, room.center.y + y}
 					surface.set_tiles({{name = "water-green", position = p}})
-					if math_random(1, 16) == 1 then
+					if math_random(1, 12) == 1 then
 						surface.create_entity({name = "fish", position = p})
 					end
 				end

@@ -24,10 +24,10 @@ local function glitch(surface, room)
 		if math_random(1, 12) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
 		end
-		if math_random(1, 64) == 1 then
+		if math_random(1, 96) == 1 then
 			Functions.common_loot_crate(surface, tile.position)
 		else
-			if math_random(1, 64) == 1 then
+			if math_random(1, 160) == 1 then
 				Functions.uncommon_loot_crate(surface, tile.position)
 			end
 		end	

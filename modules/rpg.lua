@@ -667,7 +667,7 @@ local function one_punch(character, target, damage)
 				for _, e in pairs(character.surface.find_entities({{p[1] - a, p[2] - a},{p[1] + a, p[2] + a}})) do
 					if e.valid then
 						if e.health then
-							if e.destructible and e.minable then
+							if e.destructible and e.minable and e.force.index ~= 3 then
 								if e.force.index ~= character.force.index then
 									e.health = e.health - damage * 0.05
 									if e.health <= 0 then

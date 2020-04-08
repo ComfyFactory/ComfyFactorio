@@ -10,7 +10,7 @@ local math_sqrt = math.sqrt
 local math_floor = math.floor
 
 local decoratives = {"green-asterisk", "green-bush-mini", "green-carpet-grass", "green-hairy-grass",  "green-small-grass"}
-local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal", "stone", "stone"}
+local ores = {"iron-ore", "iron-ore", "coal"}
 local trees = {"tree-01", "tree-02", "tree-03", "tree-04", "tree-05"}
 local size_of_trees = #trees
 
@@ -47,7 +47,7 @@ local function grasslands(surface, room)
 	table_shuffle_table(room.room_tiles)
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "grass-2", position = tile.position}}, true)
-		if math_random(1, 48) == 1 then
+		if math_random(1, 40) == 1 then
 			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount()})
 		else
 			if math_random(1, 12) == 1 then
@@ -74,7 +74,7 @@ local function grasslands(surface, room)
 	
 	if room.center then
 		if math_random(1, 4) == 1 then
-			local r = math_floor(math_sqrt(#room.room_tiles) * 0.25) + 1
+			local r = math_floor(math_sqrt(#room.room_tiles) * 0.225) + 1
 			for x = r * -1, r, 1 do
 				for y = r * -1, r, 1 do
 					local p = {room.center.x + x, room.center.y + y}

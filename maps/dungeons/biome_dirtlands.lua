@@ -48,10 +48,13 @@ local function dirtlands(surface, room)
 		if math_random(1, 64) == 1 then
 			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount()})
 		else
+			if math_random(1, 1024) == 1 then
+				surface.create_entity({name = "crude-oil", position = tile.position, amount = Functions.get_crude_oil_amount()})
+			end
 			if math_random(1, 128) == 1 then
 				surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
 			end
-		end
+		end	
 		if key % 128 == 1 and math_random(1, 2) == 1 and global.dungeons.depth > 8 then
 			Functions.set_spawner_tier(surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"}))
 		end
@@ -83,10 +86,6 @@ local function dirtlands(surface, room)
 						surface.create_entity({name = "fish", position = p})
 					end
 				end
-			end
-		else
-			if math_random(1, 24) == 1 then
-				surface.create_entity({name = "crude-oil", position = room.center, amount = Functions.get_crude_oil_amount()})
 			end
 		end	
 	end
