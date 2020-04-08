@@ -348,9 +348,9 @@ local function on_init()
 	--if game.surfaces["nauvis"] then game.delete_surface(game.surfaces["nauvis"]) end
 end
 
-local function on_load()
-	Chrono.init_setup()
-end
+-- local function on_load()
+-- 	Chrono.init_setup()
+-- end
 
 local function protect_entity(event)
 	if event.entity.force.index ~= 1 then return end --Player Force
@@ -378,6 +378,7 @@ local function on_entity_damaged(event)
 	Event_functions.biters_chew_rocks_faster(event)
 	if event.entity.force.name == "enemy" then
 		Event_functions.biter_immunities(event)
+		Event_functions.pistol_buffs(event)
 	end
 end
 

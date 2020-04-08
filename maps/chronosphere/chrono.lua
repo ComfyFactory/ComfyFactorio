@@ -36,6 +36,7 @@ function Public_chrono.restart_settings()
 	objective.waterupgradetier = 0
 	objective.outupgradetier = 0
 	objective.boxupgradetier = 0
+	objective.pistolupgradetier = 0
 	objective.poisondefense = 2
 	objective.poisontimeout = 0
 	objective.chronotimer = 0

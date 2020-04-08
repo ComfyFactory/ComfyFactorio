@@ -73,7 +73,7 @@ end
 
 local function on_entity_damaged(event)	
 	if not event.cause then return end
-	if event.cause.name ~= "player" then return end
+	if event.cause.name ~= "character" then return end
 	if event.damage_type.name ~= "physical" then return end
 	if event.original_damage_amount ~= 100 then return end
 	

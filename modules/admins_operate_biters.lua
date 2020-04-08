@@ -3,6 +3,8 @@ local math_random = math.random
 local math_floor = math.floor
 global.biter_command = {}
 global.biter_command.active_unit_groups = {}
+global.biter_command.enabled = true
+global.biter_command.whitelist = {}
 global.biter_command.admin_mode = true --if only admins can see and use the panel
 global.biter_command.teleporting = false --if teleporting is allowed for non-admins
 
@@ -105,7 +107,8 @@ local function move_to(position, distraction)
   local command = {
     type = defines.command.go_to_location,
     destination = position,
-    distraction = distraction
+    distraction = distraction,
+    pathfind_flags = {allow_destroy_friendly_entities = true}
   }
   return command
 end
@@ -364,12 +367,23 @@ end
 ----------------------------gui-----------------------
 
 local function top_button(player)
-	if player.gui.top["biter_commands"] then return end
+	if player.gui.top["biter_commands"] then
+    if global.biter_command.enabled or global.biter_command.whitelist[player.name] == true then
+      player.gui.top["biter_commands"].visible = true
+      return
+    else
+      --player.gui.top["biter_commands"].destroy()
+      player.gui.top["biter_commands"].visible = false
+      return
+    end
+  end
   if player.admin or not global.biter_command.admin_mode then
-  	local button = player.gui.top.add({type = "sprite-button", name = "biter_commands", sprite = "entity/medium-spitter"})
-  	button.style.minimal_height = 38
-  	button.style.minimal_width = 38
-  	button.style.padding = -2
+    if global.biter_command.enabled or global.biter_command.whitelist[player.name] == true then
+    	local button = player.gui.top.add({type = "sprite-button", name = "biter_commands", sprite = "entity/medium-spitter"})
+    	button.style.minimal_height = 38
+    	button.style.minimal_width = 38
+    	button.style.padding = -2
+    end
   end
 end
 
@@ -540,8 +554,18 @@ local function on_gui_click(event)
 	if not event.element.valid then return end
 	local player = game.players[event.element.player_index]
 	if event.element.name == "biter_commands" then --top button press
-		biter_panel(player)
-		return
+    if global.biter_command.enabled or global.biter_command.whitelist[player.name] == true then
+      biter_panel(player)
+		  return
+    else
+      top_button(player)
+      player.print("Biter commander module is disabled.")
+      return
+    end
+  else
+    if global.biter_command.enabled or global.biter_command.whitelist[player.name] == true then
+      top_button(player)
+    end
 	end
 	if event.element.type ~= "button" and event.element.type ~= "sprite-button" then return end
 	--if event.frame.name ~= "biter_panel" then return end
