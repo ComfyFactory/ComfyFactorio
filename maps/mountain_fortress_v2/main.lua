@@ -180,7 +180,7 @@ local function hidden_biter(entity)
 	if math_random(1, 64) == 1 then
 		BiterHealthBooster.add_boss_unit(unit, m * 15 + 1, 0.38)
 	else
-		BiterHealthBooster.add_unit(unit, m * 2.5 + 1)
+		BiterHealthBooster.add_unit(unit, m * 0.5 + 1)
 	end
 end
 
@@ -191,7 +191,7 @@ end
 
 local function hidden_biter_pet(event)
 	if math_random(1, 2048) ~= 1 then return end
-	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.20)
+	BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
 	local unit
 	if math_random(1,3) == 1 then
 		unit = event.entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position})
@@ -434,9 +434,9 @@ local function tick()
 				local wave_defense_table = WD.get_table()
 				wave_defense_table.spawn_position = position
 			end
-			--if tick % 216000 == 0 then
-			--	Collapse.delete_out_of_map_chunks(surface)
-			--end
+			-- if tick % 216000 == 0 then
+			-- 	Collapse.delete_out_of_map_chunks(surface)
+			-- end
 			if global.offline_loot then
 				offline_players()
 			end

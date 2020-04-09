@@ -302,7 +302,7 @@ local function addunits(group, source_player)
 end
 
 local function forcemove(group, source_player)
-  group.force_move()
+  group.start_moving()
   flying_text(nil, 1, group.position, source_player)
 end
 
