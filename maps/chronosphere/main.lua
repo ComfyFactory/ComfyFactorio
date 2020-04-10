@@ -515,6 +515,10 @@ local function on_player_changed_position(event)
 	end
 end
 
+local function on_technology_effects_reset(event)
+	Event_functions.on_technology_effects_reset(event)
+end
+
 local event = require 'utils.event'
 event.on_init(on_init)
 event.on_load(on_load)
@@ -528,6 +532,7 @@ event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
+event.add(defines.events.on_technology_effects_reset, on_technology_effects_reset)
 
 if _DEBUG then
 	local Session = require 'utils.session_data'

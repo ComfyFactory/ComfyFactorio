@@ -283,14 +283,10 @@ local mining_researches = {
 
 function Public_event.mining_buffs(event)
 	if event == nil then
-		-- initialization call
-		if game.forces.player.mining_drill_productivity_bonus <= 1 then
-			game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + 1
-		end
-
-		if game.forces.player.manual_mining_speed_modifier <= 1 then
-			game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 1
-		end
+		-- initialization/reset call
+		game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + 1
+		game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 1
+		return
 	end
 
 	if mining_researches[event.technology.name] == nil then return end
@@ -337,5 +333,21 @@ function Public_event.pistol_buffs(event)
 	event.entity.damage(event.final_damage_amount * 4, player.force, "physical", player)
 end
 
+function Public_event.on_technology_effects_reset(event)
+	if event.force.name == "player" then
+		game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + global.objective.invupgradetier * 10
+		game.forces.player.character_loot_pickup_distance_bonus = game.forces.player.character_loot_pickup_distance_bonus + global.objective.pickupupgradetier
+
+		local fake_event = {}
+		Public_event.mining_buffs(nil)
+		for tech in pairs(mining_researches) do
+			tech = game.forces.player.technologies[tech]
+			if tech.researched == true then
+				fake_event.technology = tech
+				Public_Event.mining_buffs(fake_event)
+			end
+		end
+	end
+end
 
 return Public_event
