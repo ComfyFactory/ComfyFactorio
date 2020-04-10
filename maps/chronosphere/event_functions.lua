@@ -289,8 +289,8 @@ function Public_event.mining_buffs(event)
 		return
 	end
 
-	if mining_researches[event.technology.name] == nil then return end
-	local tech = mining_researches[event.technology.name]
+	if mining_researches[event.research.name] == nil then return end
+	local tech = mining_researches[event.research.name]
 
 	if tech.bonus_productivity then
 		if tech.infinite then
@@ -343,7 +343,7 @@ function Public_event.on_technology_effects_reset(event)
 		for tech in pairs(mining_researches) do
 			tech = game.forces.player.technologies[tech]
 			if tech.researched == true then
-				fake_event.technology = tech
+				fake_event.research = tech
 				Public_Event.mining_buffs(fake_event)
 			end
 		end
