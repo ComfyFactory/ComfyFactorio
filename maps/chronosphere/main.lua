@@ -344,7 +344,7 @@ local function on_init()
 	game.surfaces["nauvis"].clear()
 	reset_map()
 	Chrono.init_setup()
-	Event_functions.mining_buffs()
+	Event_functions.mining_buffs(nil)
 	--if game.surfaces["nauvis"] then game.delete_surface(game.surfaces["nauvis"]) end
 end
 
@@ -462,7 +462,7 @@ end
 
 local function on_research_finished(event)
 	Event_functions.flamer_nerfs()
-	Event_functions.mining_buffs()
+	Event_functions.mining_buffs(event)
 end
 
 local function on_player_driving_changed_state(event)
