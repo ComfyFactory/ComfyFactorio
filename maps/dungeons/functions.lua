@@ -85,10 +85,10 @@ function Public.add_room_loot_crates(surface, room)
 				Public.uncommon_loot_crate(surface, tile.position)
 			else
 				if math_random(1, 4096) == 1 then
-					Functions.rare_loot_crate(surface, tile.position)
+					Public.rare_loot_crate(surface, tile.position)
 				else
 					if math_random(1, 16384) == 1 then
-						Functions.epic_loot_crate(surface, tile.position)
+						Public.epic_loot_crate(surface, tile.position)
 					end
 				end
 			end
@@ -97,7 +97,7 @@ function Public.add_room_loot_crates(surface, room)
 end
 
 function Public.set_spawner_tier(spawner)
-	local tier = math_floor(Public.get_dungeon_evolution_factor() - math_random(0, 5)) + 1
+	local tier = math_floor(Public.get_dungeon_evolution_factor() * 8 - math_random(0, 8)) + 1
 	if tier < 1 then tier = 1 end		
 	global.dungeons.spawner_tier[spawner.unit_number] = tier
 	--[[

@@ -1,6 +1,7 @@
 -- Deep dark dungeons by mewmew --
 
 require "modules.mineable_wreckage_yields_scrap"
+require "modules.sticky_landfill"
 
 local MapInfo = require "modules.map_info"
 local Room_generator = require "functions.room_generator"
@@ -51,13 +52,13 @@ local function get_biome(position)
 	a = a + 1
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.60 then return "doom" end
 	a = a + 1
-	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.60 then return "acid_zone" end
+	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.62 then return "acid_zone" end
 	a = a + 1
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.60 then return "concrete" end
 	a = a + 1
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.71 then return "rainbow" end
 	a = a + 1
-	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.50 then return "deepblue" end
+	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.53 then return "deepblue" end
 	a = a + 1
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.22 then return "grasslands" end
 	a = a + 1
@@ -190,7 +191,7 @@ local function on_chunk_generated(event)
 		local c = 0.0035 + a * 0.0035
 		local d = c * 0.5
 		local seed = nauvis_seed + b
-		if math_abs(Get_noise("dungeon_sewer", {x = left_top.x + 16, y = left_top.y + 16}, seed)) < 0.10 then
+		if math_abs(Get_noise("dungeon_sewer", {x = left_top.x + 16, y = left_top.y + 16}, seed)) < 0.12 then
 			for x = 0, 31, 1 do
 				for y = 0, 31, 1 do
 					local position = {x = left_top.x + x, y = left_top.y + y}
