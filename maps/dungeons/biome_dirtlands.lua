@@ -48,7 +48,7 @@ local function dirtlands(surface, room)
 		if math_random(1, 64) == 1 then
 			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount()})
 		else
-			if math_random(1, 1024) == 1 then
+			if math_random(1, 2048) == 1 then
 				surface.create_entity({name = "crude-oil", position = tile.position, amount = Functions.get_crude_oil_amount()})
 			end
 			if math_random(1, 128) == 1 then
@@ -67,14 +67,9 @@ local function dirtlands(surface, room)
 		if math_random(1, 256) == 1 then
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end
-		if math_random(1, 320) == 1 then
-			Functions.common_loot_crate(surface, tile.position)
-		else
-			if math_random(1, 640) == 1 then
-				Functions.uncommon_loot_crate(surface, tile.position)
-			end
-		end
 	end
+	
+	Functions.add_room_loot_crates(surface, room)
 	
 	if room.center then
 		if math_random(1, 16) == 1 then

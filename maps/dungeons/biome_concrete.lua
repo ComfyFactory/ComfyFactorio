@@ -37,9 +37,6 @@ local function concrete(surface, room)
 		if key % 128 == 1 and math_random(1, 3) == 1 then
 			Functions.set_spawner_tier(surface.create_entity({name = "biter-spawner", position = tile.position, force = "enemy"}))
 		end
-		if math_random(1, 256) == 1 then
-			surface.create_entity({name = "crude-oil", position = tile.position, amount = Functions.get_crude_oil_amount()})
-		end
 	end
 	
 	table_shuffle_table(room.room_border_tiles)

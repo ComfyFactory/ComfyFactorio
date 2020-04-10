@@ -132,7 +132,7 @@ local function squares(surface, room)
 	for _, tile in pairs(room.room_border_tiles) do table_insert(tiles, tile) end
 	for _, tile in pairs(room.room_tiles) do table_insert(tiles, tile) end
 		
-	for _ = 1, math_random(1, 7), 1 do
+	for _ = 1, math_random(1, 6), 1 do
 		local a = math_random(r_min, r_max)
 		local b = math_random(r_min, r_max)
 		local square_left_top = tiles[math_random(1, #tiles)].position	
@@ -188,7 +188,7 @@ local function biome(surface, room)
 			if math_random(1, 10) == 1 then
 				surface.create_entity({name = "stone", position = tile.position, amount = Functions.get_common_resource_amount()})
 			end
-			if math_random(1, 128) == 1 then
+			if math_random(1, 320) == 1 then
 				Functions.crash_site_chest(surface, tile.position)
 			end	
 			if key % 64 == 1 and math_random(1, 2) == 1 then

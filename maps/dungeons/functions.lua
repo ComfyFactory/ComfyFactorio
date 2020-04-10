@@ -32,7 +32,7 @@ function Public.get_crude_oil_amount()
 end
 
 function Public.get_common_resource_amount()
-	return math_random(300, 600) + global.dungeons.depth * 12
+	return math_random(350, 700) + global.dungeons.depth * 8
 end
 
 function Public.common_loot_crate(surface, position)
@@ -73,6 +73,27 @@ function Public.crash_site_chest(surface, position)
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
+end
+
+function Public.add_room_loot_crates(surface, room)
+	if not room.room_border_tiles[1] then return end
+	for key, tile in pairs(room.room_tiles) do
+		if math_random(1, 384) == 1 then
+			Public.common_loot_crate(surface, tile.position)
+		else
+			if math_random(1, 1024) == 1 then
+				Public.uncommon_loot_crate(surface, tile.position)
+			else
+				if math_random(1, 4096) == 1 then
+					Functions.rare_loot_crate(surface, tile.position)
+				else
+					if math_random(1, 16384) == 1 then
+						Functions.epic_loot_crate(surface, tile.position)
+					end
+				end
+			end
+		end		
+	end		
 end
 
 function Public.set_spawner_tier(spawner)

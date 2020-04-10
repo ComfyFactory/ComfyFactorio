@@ -9,7 +9,7 @@ local math_sqrt = math.sqrt
 local math_floor = math.floor
 
 local trees = {"dead-dry-hairy-tree", "dead-grey-trunk", "dead-tree-desert", "dry-hairy-tree", "dry-tree"}
-local ores = {"stone", "stone", "stone", "coal"}
+local ores = {"stone", "stone", "coal"}
 local size_of_trees = #trees
 
 local function add_enemy_units(surface, room)
@@ -41,18 +41,9 @@ local function red_desert(surface, room)
 		if math_random(1, 32) == 1 then			
 			surface.create_entity({name = "rock-huge", position = tile.position})
 		end
-		if math_random(1, 320) == 1 then
-			Functions.common_loot_crate(surface, tile.position)
-		else
-			if math_random(1, 640) == 1 then
-				Functions.uncommon_loot_crate(surface, tile.position)
-			else
-				if math_random(1, 2048) == 1 then
-					Functions.rare_loot_crate(surface, tile.position)
-				end
-			end
-		end
 	end
+	
+	Functions.add_room_loot_crates(surface, room)
 	
 	if room.center then
 		if math_random(1, 8) == 1 then

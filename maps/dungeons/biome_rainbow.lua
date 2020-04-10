@@ -55,8 +55,6 @@ local function rainbow(surface, room)
 			Functions.place_border_rock(surface, tile.position)
 		end
 	end
-	
-	add_enemy_units(surface, room)
 end
 
 return rainbow
