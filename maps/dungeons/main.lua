@@ -40,7 +40,7 @@ local disabled_for_deconstruction = {
 	}
 
 local function get_biome(position)
-	--if not a then return "grasslands" end
+	--if not a then return "concrete" end
 	if position.x ^ 2 + position.y ^ 2 < 6400 then return "dirtlands" end
 
 	local seed = game.surfaces[1].map_gen_settings.seed
@@ -128,8 +128,6 @@ local function init_player(player)
 	player.set_quick_bar_slot(1, "raw-fish")
 	player.insert({name = "pistol", count = 1})
 	player.insert({name = "firearm-magazine", count = 16})
-	
-	draw_depth_gui()
 end
 
 local function on_entity_spawned(event)
@@ -223,11 +221,12 @@ local function on_chunk_generated(event)
 end
 
 local function on_player_joined_game(event)
+	draw_depth_gui()
 	if game.tick == 0 then return end
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
 		init_player(player)
-	end
+	end	
 end
 
 local function spawner_death(entity)
@@ -343,7 +342,7 @@ local function on_init()
 end
 --[[
 local function on_tick()
-	if game.tick % 8 ~= 0 then return end
+	if game.tick % 4 ~= 0 then return end
 	
 	local surface = game.surfaces["dungeons"]
 	

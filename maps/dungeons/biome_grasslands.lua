@@ -11,7 +11,7 @@ local math_floor = math.floor
 
 local decoratives = {"green-asterisk", "green-bush-mini", "green-carpet-grass", "green-hairy-grass",  "green-small-grass"}
 local ores = {"iron-ore", "iron-ore", "coal"}
-local trees = {"tree-01", "tree-02", "tree-03", "tree-04", "tree-05"}
+local trees = {"tree-01", "tree-02", "tree-04", "tree-05", "tree-06", "tree-07", "tree-08"}
 local size_of_trees = #trees
 
 local function draw_deco(surface, position, decorative_name, seed)
@@ -69,20 +69,21 @@ local function grasslands(surface, room)
 	
 	Functions.add_room_loot_crates(surface, room)
 	
-	if room.center then
-		if math_random(1, 4) == 1 then
-			local r = math_floor(math_sqrt(#room.room_tiles) * 0.225) + 1
-			for x = r * -1, r, 1 do
-				for y = r * -1, r, 1 do
-					local p = {room.center.x + x, room.center.y + y}
-					surface.set_tiles({{name = "water", position = p}})
-					if math_random(1, 8) == 1 then
-						surface.create_entity({name = "fish", position = p})
-					end
+	
+	if math_random(1, 4) == 1 then
+		local r_max = math_floor(room.radius * 0.75)
+		local r = math_random(1, r_max)
+		for x = r * -1, r, 1 do
+			for y = r * -1, r, 1 do
+				local p = {room.center.x + x, room.center.y + y}
+				surface.set_tiles({{name = "water", position = p}})
+				if math_random(1, 8) == 1 then
+					surface.create_entity({name = "fish", position = p})
 				end
 			end
-		end	
-	end
+		end
+	end	
+	
 	
 	table_shuffle_table(room.room_border_tiles)
 	for key, tile in pairs(room.room_border_tiles) do
