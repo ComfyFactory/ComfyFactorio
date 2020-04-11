@@ -51,8 +51,8 @@ local function set_difficulty()
 	-- threat gain / wave
 	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
 
-	--1 additional map collapse tile / 8 players in game
-	global.map_collapse.speed = math.floor(player_count * 0.125) + 1
+	--1 additional map collapse tile / 8 players in game, with too high threat, the collapse speeds up.
+	global.map_collapse.speed = math.floor(player_count * 0.125) + 1 + math.floor(wave_defense_table.threat / 100000)
 
 	--20 Players for fastest wave_interval
 	wave_defense_table.wave_interval = 3600 - player_count * 90
@@ -134,6 +134,7 @@ function Public.reset_map()
 	wave_defense_table.target = global.locomotive_cargo
 	wave_defense_table.nest_building_density = 32
 	wave_defense_table.game_lost = false
+	game.reset_time_played()
 
 	Collapse.init()
 
@@ -144,7 +145,7 @@ end
 
 local function protect_train(event)
 	if event.entity.force.index ~= 1 then return end --Player Force
-	if event.entity == global.locomotive_cargo then
+	if event.entity == global.locomotive_cargo or event.entity.surface.name == "cargo_wagon" then
 		if event.cause then
 			if event.cause.force.index == 2 then
 				return
@@ -178,9 +179,9 @@ local function hidden_biter(entity)
 	m = m * d
 
 	if math_random(1, 64) == 1 then
-		BiterHealthBooster.add_boss_unit(unit, m * 15 + 1, 0.38)
+		BiterHealthBooster.add_boss_unit(unit, m * 10 + 1, 0.38)
 	else
-		BiterHealthBooster.add_unit(unit, m * 0.5 + 1)
+		BiterHealthBooster.add_unit(unit, m * 0.2 + 1)
 	end
 end
 

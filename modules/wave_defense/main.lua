@@ -159,15 +159,6 @@ local function set_enemy_evolution()
 	--game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
 	--game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
 	game.forces.enemy.evolution_factor = evolution_factor
-
-	if global.biter_health_boost then
-		for _, player in pairs(game.connected_players) do
-			--player.gui.top.wave_defense.threat.tooltip = "High threat may empower biters.\nBiter health " .. biter_health_boost * 100 .. "% | damage " .. (damage_increase + 1) * 100 .. "%"
-			if player.gui.top.wave_defense then
-				player.gui.top.wave_defense.threat.tooltip = "High threat may empower biters.\nBiter health " .. biter_health_boost * 100 .. "%"
-			end
-		end
-	end
 end
 
 local function can_units_spawn()
