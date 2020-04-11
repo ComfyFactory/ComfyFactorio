@@ -74,8 +74,10 @@ local function draw_depth_gui()
 		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
 		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "~ Depth " .. global.dungeons.depth .. " ~"})
 		
-		element.tooltip = "Evolution: " .. Functions.get_dungeon_evolution_factor() * 100 .. "%\nEnemy Health: " .. global.biter_health_boost * 100 .. "%"
-
+		element.tooltip = "Evolution: " .. Functions.get_dungeon_evolution_factor() * 100 .. "%"
+		element.tooltip = element.tooltip .. "\nEnemy Health: " .. global.biter_health_boost * 100 .. "%"
+		element.tooltip = element.tooltip .. "\nEnemy Damage: " .. math_round(game.forces.enemy.get_ammo_damage_modifier("melee") * 100 + 100, 1) .. "%"
+		
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38
@@ -98,17 +100,27 @@ local function expand(surface, position)
 	if not room.room_tiles[1] then return end
 	
 	local a = 2000
-	local m = 1 / a
 	
 	global.dungeons.depth = global.dungeons.depth + 1
-	game.forces.enemy.evolution_factor = global.dungeons.depth * m
 	
-	global.biter_health_boost = 1 + global.dungeons.depth * m
+	local evo = Functions.get_dungeon_evolution_factor()
 	
-	if game.forces.enemy.evolution_factor == 1 then
-		global.biter_health_boost = 2 + (global.dungeons.depth - a) * 0.001
-		global.biter_health_boost = math_round(global.biter_health_boost, 2)
+	local force = game.forces.enemy
+	force.evolution_factor = evo
+	
+	if evo > 1 then
+		global.biter_health_boost = 2 + ((evo - 1) * 2)
+		local damage_mod = (evo - 1) * 0.35		
+		force.set_ammo_damage_modifier("melee", damage_mod)
+		force.set_ammo_damage_modifier("biological", damage_mod)
+		force.set_ammo_damage_modifier("artillery-shell", damage_mod)
+		force.set_ammo_damage_modifier("flamethrower", damage_mod)
+		force.set_ammo_damage_modifier("laser-turret", damage_mod)
+	else
+		global.biter_health_boost = 1 + evo
 	end
+	
+	global.biter_health_boost = math_round(global.biter_health_boost, 2)
 	
 	draw_depth_gui()
 end
