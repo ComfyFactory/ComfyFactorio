@@ -273,26 +273,47 @@ function Public_event.flamer_nerfs()
 	game.forces.player.set_turret_attack_modifier("flamethrower-turret", flamer_power - 0.02 * difficulty * objective.chronojumps)
 end
 
-function Public_event.mining_buffs()
-	local mining_power = 0
-	local mining_researches = {
-		[1] = {name = "mining-productivity-1", bonus = 0.2},
-		[2] = {name = "mining-productivity-2", bonus = 0.2},
-		[3] = {name = "mining-productivity-3", bonus = 0.2},
-		[4] = {name = "mining-productivity-4", bonus = 0.2}
-	}
-	for i = 1, 3, 1 do
-		if game.forces.player.technologies[mining_researches[i].name].researched then
-			mining_power = mining_power + mining_researches[i].bonus
+local mining_researches = {
+	-- these already give .1 productivity so we're only adding .1 to get to 20%
+	["mining-productivity-1"] = {bonus_productivity = .1, bonus_mining_speed = .2, bonus_inventory = 10},
+	["mining-productivity-2"] = {bonus_productivity = .1, bonus_mining_speed = .2, bonus_inventory = 10},
+	["mining-productivity-3"] = {bonus_productivity = .1, bonus_mining_speed = .2, bonus_inventory = 10},
+	["mining-productivity-4"] = {bonus_productivity = .1, bonus_mining_speed = .2, bonus_inventory = 10, infinite = true, infinite_level = 4},
+}
+
+function Public_event.mining_buffs(event)
+	if event == nil then
+		-- initialization/reset call
+		game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + 1
+		game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 1
+		return
+	end
+
+	if mining_researches[event.research.name] == nil then return end
+	local tech = mining_researches[event.research.name]
+
+	if tech.bonus_productivity then
+		if tech.infinite then
+			game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity * (event.technology.level - tech.infinite_level)
+		else
+			game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity
 		end
 	end
-	mining_power = mining_power + (game.forces.player.technologies[mining_researches[4].name].level - 4) * 0.2
-	game.forces.player.mining_drill_productivity_bonus = 1 + mining_power
-	local bonusinv = 0
-	if game.forces.player.technologies["toolbelt"].researched then bonusinv = 10 end
-	game.forces.player.character_inventory_slots_bonus = mining_power * 50 + global.objective.invupgradetier * 10 + bonusinv
-	if game.forces.player.technologies["steel-axe"].researched then
-		game.forces.player.manual_mining_speed_modifier = 1 + mining_power * 2
+
+	if tech.bonus_mining_speed then
+		if tech.infinite then
+			game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed * (event.technology.level - tech.infinite_level)
+		else
+			game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed
+		end
+	end
+
+	if tech.bonus_inventory then
+		if tech.infinite then
+			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory * (event.technology.level - tech.infinite_level)
+		else
+			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory
+		end
 	end
 end
 
@@ -312,5 +333,21 @@ function Public_event.pistol_buffs(event)
 	event.entity.damage(event.final_damage_amount * 4, player.force, "physical", player)
 end
 
+function Public_event.on_technology_effects_reset(event)
+	if event.force.name == "player" then
+		game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + global.objective.invupgradetier * 10
+		game.forces.player.character_loot_pickup_distance_bonus = game.forces.player.character_loot_pickup_distance_bonus + global.objective.pickupupgradetier
+
+		local fake_event = {}
+		Public_event.mining_buffs(nil)
+		for tech in pairs(mining_researches) do
+			tech = game.forces.player.technologies[tech]
+			if tech.researched == true then
+				fake_event.research = tech
+				Public_event.mining_buffs(fake_event)
+			end
+		end
+	end
+end
 
 return Public_event
