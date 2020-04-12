@@ -21,7 +21,7 @@ local Tick_functions = require "maps.chronosphere.tick_functions"
 local Event_functions = require "maps.chronosphere.event_functions"
 local Chrono = require "maps.chronosphere.chrono"
 local Locomotive = require "maps.chronosphere.locomotive"
-local update_gui = require "maps.chronosphere.gui"
+local Gui = require "maps.chronosphere.gui"
 local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
@@ -37,9 +37,9 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] =
 local function generate_overworld(surface, optplanet)
 	Planets.determine_planet(optplanet)
 	local planet = global.objective.planet
-	local message = "Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name
-	game.print(message, {r=0.98, g=0.66, b=0.22})
-	Server.to_discord_embed(message)
+	--local message = "Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name
+	--game.print(message, {r=0.98, g=0.66, b=0.22})
+	--Server.to_discord_embed(message)
 	if planet[1].name.id == 12 then
 		game.print({"chronosphere.message_choppy"}, {r=0.98, g=0.66, b=0.22})
 	elseif planet[1].name.id == 14 then
@@ -322,7 +322,7 @@ local function tick()
 		end
 		Locomotive.fish_tag()
 	end
-	for _, player in pairs(game.connected_players) do update_gui(player) end
+	for _, player in pairs(game.connected_players) do Gui.update_gui(player) end
 end
 
 local function on_init()
@@ -533,6 +533,7 @@ event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 event.add(defines.events.on_technology_effects_reset, on_technology_effects_reset)
+event.add(defines.events.on_gui_click, Gui.on_gui_click)
 
 if _DEBUG then
 	local Session = require 'utils.session_data'

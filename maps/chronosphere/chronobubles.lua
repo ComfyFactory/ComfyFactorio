@@ -25,25 +25,25 @@ local variants = {
 }
 
 local time_speed_variants = {
-  [1] = {name = "static", timer = 0},
-  [2] = {name = "normal", timer = 100},
-  [3] = {name = "slow", timer = 200},
-  [4] = {name = "superslow", timer = 400},
-  [5] = {name = "fast", timer = 50},
-  [6] = {name = "superfast", timer = 25}
+  [1] = {name = {"chronosphere.daynight_static"}, timer = 0},
+  [2] = {name = {"chronosphere.daynight_normal"}, timer = 100},
+  [3] = {name = {"chronosphere.daynight_slow"}, timer = 200},
+  [4] = {name = {"chronosphere.daynight_superslow"}, timer = 400},
+  [5] = {name = {"chronosphere.daynight_fast"}, timer = 50},
+  [6] = {name = {"chronosphere.daynight_superfast"}, timer = 25}
 }
 
 local richness = {
-  [1] = {name = "very rich", factor = 3},
-  [2] = {name = "rich", factor = 2},
-  [3] = {name = "rich", factor = 2},
-  [4] = {name = "normal", factor = 1},
-  [5] = {name = "normal", factor = 1},
-  [6] = {name = "normal", factor = 1},
-  [7] = {name = "poor", factor = 0.6},
-  [8] = {name = "poor", factor = 0.6},
-  [9] = {name = "very poor", factor = 0.3},
-  [10] = {name = "none", factor = 0}
+  [1] = {name = {"chronosphere.ore_richness_very_rich"}, factor = 3},
+  [2] = {name = {"chronosphere.ore_richness_rich"}, factor = 2},
+  [3] = {name = {"chronosphere.ore_richness_rich"}, factor = 2},
+  [4] = {name = {"chronosphere.ore_richness_normal"}, factor = 1},
+  [5] = {name = {"chronosphere.ore_richness_normal"}, factor = 1},
+  [6] = {name = {"chronosphere.ore_richness_normal"}, factor = 1},
+  [7] = {name = {"chronosphere.ore_richness_poor"}, factor = 0.6},
+  [8] = {name = {"chronosphere.ore_richness_poor"}, factor = 0.6},
+  [9] = {name = {"chronosphere.ore_richness_very_poor"}, factor = 0.3},
+  [10] = {name = {"chronosphere.ore_richness_none"}, factor = 0}
 }
 local function roll(weight)
   for i = 1, 100, 1 do

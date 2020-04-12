@@ -1,3 +1,5 @@
+local Public_gui = {}
+
 local math_floor = math.floor
 local math_ceil = math.ceil
 local math_abs = math.abs
@@ -59,38 +61,76 @@ local function create_gui(player)
 	label.style.minimal_width = 10
 	label.style.font_color = {r = 0, g = 200, b = 0}
 
-  local line = frame.add({type = "line", direction = "vertical"})
-	line.style.left_padding = 4
-	line.style.right_padding = 8
+  -- local line = frame.add({type = "line", direction = "vertical"})
+	-- line.style.left_padding = 4
+	-- line.style.right_padding = 8
 
-  local label = frame.add({ type = "label", caption = " ", name = "evo"})
-	label.style.font = "default-bold"
-	label.style.right_padding = 1
-	label.style.minimal_width = 10
-	label.style.font_color = {r = 150, g = 0, b = 255}
+	local button = frame.add({type = "button", caption = " ", name = "planet_button"})
+	button.style.font = "default-bold"
+	button.style.font_color = { r=0.99, g=0.99, b=0.99}
+	button.style.minimal_width = 75
 
-  local label = frame.add({ type = "label", caption = " ", name = "evo_value"})
-	label.style.font = "default-bold"
-	label.style.right_padding = 1
-	label.style.minimal_width = 10
-	label.style.font_color = {r = 150, g = 0, b = 255}
+	local button = frame.add({type = "button", caption = " ", name = "upgrades_button"})
+	button.style.font = "default-bold"
+	button.style.font_color = { r=0.99, g=0.99, b=0.99}
+	button.style.minimal_width = 75
 
-  local label = frame.add({ type = "label", caption = " ", name = "planet"})
-	label.style.font = "default-bold"
-	label.style.right_padding = 1
-	label.style.minimal_width = 10
-	label.style.font_color = {r = 0, g = 100, b = 200}
+  -- local label = frame.add({ type = "label", caption = " ", name = "evo"})
+	-- label.style.font = "default-bold"
+	-- label.style.right_padding = 1
+	-- label.style.minimal_width = 10
+	-- label.style.font_color = {r = 150, g = 0, b = 255}
 
-  local label = frame.add({ type = "label", caption = "[Upgrades]", name = "upgrades", tooltip = " "})
-	label.style.font = "default-bold"
-	label.style.right_padding = 1
-	label.style.minimal_width = 10
-	label.style.font_color = {r=0.33, g=0.66, b=0.9}
+  -- local label = frame.add({ type = "label", caption = " ", name = "evo_value"})
+	-- label.style.font = "default-bold"
+	-- label.style.right_padding = 1
+	-- label.style.minimal_width = 10
+	-- label.style.font_color = {r = 150, g = 0, b = 255}
+
+  -- local label = frame.add({ type = "label", caption = " ", name = "planet"})
+	-- label.style.font = "default-bold"
+	-- label.style.right_padding = 1
+	-- label.style.minimal_width = 10
+	-- label.style.font_color = {r = 0, g = 100, b = 200}
+
+  -- local label = frame.add({ type = "label", caption = "[Upgrades]", name = "upgrades", tooltip = " "})
+	-- label.style.font = "default-bold"
+	-- label.style.right_padding = 1
+	-- label.style.minimal_width = 10
+	-- label.style.font_color = {r=0.33, g=0.66, b=0.9}
 
 end
 
-local function update_gui(player)
+local function update_planet_gui(player)
+	if not player.gui.screen["gui_planet"] then return end
+	local planet = global.objective.planet[1]
+	local evolution = game.forces["enemy"].evolution_factor
+	local evo_color = {
+    r = math_floor(255 * 1 * math_max(0, math_min(1, 1.2 - evolution * 2))),
+    g = math_floor(255 * 1 * math_max(math_abs(0.5 - evolution * 1.5), 1 - evolution * 4)),
+    b = math_floor(255 * 4 * math_max(0, 0.25 - math_abs(0.5 - evolution)))
+  }
+	local frame = player.gui.screen["gui_planet"]
+
+	frame["planet_name"].caption = {"chronosphere.gui_planet_0", planet.name.name}
+	frame["planet_ores"]["iron-ore"].number = planet.name.iron
+	frame["planet_ores"]["copper-ore"].number = planet.name.copper
+	frame["planet_ores"]["coal"].number = planet.name.coal
+	frame["planet_ores"]["stone"].number = planet.name.stone
+	frame["planet_ores"]["uranium-ore"].number = planet.name.uranium
+	frame["planet_ores"]["oil"].number = planet.name.oil
+	frame["richness"].caption = {"chronosphere.gui_planet_2", planet.ore_richness.name}
+	frame["planet_biters"].caption = {"chronosphere.gui_planet_3", math_floor(evolution * 1000) / 10}
+	frame["planet_biters"].style.font_color = evo_color
+
+	frame["planet_biters3"].caption = {"chronosphere.gui_planet_4_1", global.objective.passivejumps * 2.5, global.objective.passivejumps * 10}
+	frame["planet_time"].caption = {"chronosphere.gui_planet_5", planet.day_speed.name}
+
+end
+
+function Public_gui.update_gui(player)
   local objective = global.objective
+	update_planet_gui(player)
 	if not player.gui.top.chronosphere then create_gui(player) end
 	local gui = player.gui.top.chronosphere
 
@@ -121,7 +161,10 @@ local function update_gui(player)
 		gui.timer_value.tooltip = "After planet 5, biters will get additional permanent evolution for staying too long on each planet."
 	end
 
-	gui.planet.caption = "Planet: " .. objective.planet[1].name.name .. " | Ores: " .. objective.planet[1].ore_richness.name
+	gui.planet_button.caption = {"chronosphere.gui_planet_button"}
+	gui.upgrades_button.caption = {"chronosphere.gui_upgrades_button"}
+
+	--gui.planet.caption = "Planet: " .. objective.planet[1].name.name .. " | Ores: " .. objective.planet[1].ore_richness.name
   local acus = 0
   if global.acumulators then acus = #global.acumulators else acus = 0 end
   local bestcase = math_floor((objective.chrononeeds - objective.chronotimer) / (1 + math_floor(acus/10)))
@@ -140,8 +183,8 @@ local function update_gui(player)
 
 
   local evolution = game.forces["enemy"].evolution_factor
-  gui.evo.caption = {"chronosphere.gui_4"}
-  gui.evo_value.caption = math_floor(evolution * 100) .. "%"
+  --gui.evo.caption = {"chronosphere.gui_4"}
+  --gui.evo_value.caption = math_floor(evolution * 100) .. "%"
   local chests = {
     [1] = {c = "250 wooden chests + Jump number 5\n"},
     [2] = {c = "250 iron chests + Jump number 10\n"},
@@ -208,7 +251,7 @@ local function update_gui(player)
 	elseif objective.computerupgrade == 3 and objective.chronojumps >= 25 then
 		tooltip = tooltip .. maxed[10].t
 	end
-  gui.upgrades.tooltip =  tooltip
+  --gui.upgrades.tooltip =  tooltip
 
 
   -- if evolution < 10 then
@@ -220,12 +263,82 @@ local function update_gui(player)
   -- else
   --   gui.evo.style.font_color = {r = 0, g = 255, b = 0}
   -- end
-  gui.evo.style.font_color = {
-    r = math_floor(255 * 1 * math_max(0, math_min(1, 1.2 - evolution * 2))),
-    g = math_floor(255 * 1 * math_max(math_abs(0.5 - evolution * 1.5), 1 - evolution * 4)),
-    b = math_floor(255 * 4 * math_max(0, 0.25 - math_abs(0.5 - evolution)))
-  }
-  gui.evo_value.style.font_color = gui.evo.style.font_color
+  -- gui.evo.style.font_color = {
+  --   r = math_floor(255 * 1 * math_max(0, math_min(1, 1.2 - evolution * 2))),
+  --   g = math_floor(255 * 1 * math_max(math_abs(0.5 - evolution * 1.5), 1 - evolution * 4)),
+  --   b = math_floor(255 * 4 * math_max(0, 0.25 - math_abs(0.5 - evolution)))
+  -- }
+  -- gui.evo_value.style.font_color = gui.evo.style.font_color
 end
 
-return update_gui
+local function upgrades_gui(player)
+	if player.gui.screen["gui_upgrades"] then player.gui.screen["gui_upgrades"].destroy() return end
+	local frame = player.gui.screen.add{type = "frame", name = "gui_upgrades", caption = "ChronoTrain Upgrades", direction = "vertical"}
+  frame.location = {x = 350, y = 45}
+  frame.style.minimal_height = 300
+  frame.style.maximal_height = 300
+  frame.style.minimal_width = 330
+  frame.style.maximal_width = 630
+  frame.add({type = "label", caption = {"chronosphere.gui_upgrades_1"}})
+  frame.add({type = "button", name = "close_upgrades", caption = "Close"})
+end
+
+local function planet_gui(player)
+	if player.gui.screen["gui_planet"] then player.gui.screen["gui_planet"].destroy() return end
+	local planet = global.objective.planet[1]
+	local evolution = game.forces["enemy"].evolution_factor
+  --gui.evo.caption = {"chronosphere.gui_4"}
+  --gui.evo_value.caption = math_floor(evolution * 100) .. "%"
+	local frame = player.gui.screen.add{type = "frame", name = "gui_planet", caption = "Planet Info", direction = "vertical"}
+  frame.location = {x = 650, y = 45}
+  frame.style.minimal_height = 300
+  frame.style.maximal_height = 500
+  frame.style.minimal_width = 200
+  frame.style.maximal_width = 400
+	local l = {}
+	l[1] = frame.add({type = "label", name = "planet_name", caption = {"chronosphere.gui_planet_0", planet.name.name}})
+  l[2] = frame.add({type = "label", caption = {"chronosphere.gui_planet_1"}})
+	local table0 = frame.add({type = "table", name = "planet_ores", column_count = 3})
+	table0.add({type = "sprite-button", name = "iron-ore", sprite = "item/iron-ore", enabled = false, number = planet.name.iron})
+	table0.add({type = "sprite-button", name = "copper-ore", sprite = "item/copper-ore", enabled = false, number = planet.name.copper})
+	table0.add({type = "sprite-button", name = "coal", sprite = "item/coal", enabled = false, number = planet.name.coal})
+	table0.add({type = "sprite-button", name = "stone", sprite = "item/stone", enabled = false, number = planet.name.stone})
+	table0.add({type = "sprite-button", name = "uranium-ore", sprite = "item/uranium-ore", enabled = false, number = planet.name.uranium})
+	table0.add({type = "sprite-button", name = "oil", sprite = "fluid/crude-oil", enabled = false, number = planet.name.oil})
+	l[3] = frame.add({type = "label", name = "richness", caption = {"chronosphere.gui_planet_2", planet.ore_richness.name}})
+	frame.add({type = "line"})
+	frame.add({type = "label", name = "planet_biters", caption = {"chronosphere.gui_planet_3", math_floor(evolution * 1000) / 10}})
+	frame.add({type = "label", name = "planet_biters2", caption = {"chronosphere.gui_planet_4"}})
+	frame.add({type = "label", name = "planet_biters3", caption = {"chronosphere.gui_planet_4_1", global.objective.passivejumps * 2.5, global.objective.passivejumps * 10}})
+	frame.add({type = "line"})
+	frame.add({type = "label", name = "planet_time", caption = {"chronosphere.gui_planet_5", planet.day_speed.name}})
+	frame.add({type = "line"})
+  local close = frame.add({type = "button", name = "close_planet", caption = "Close"})
+	close.style.horizontal_align = "center"
+	-- for i = 1, 3, 1 do
+	-- 	l[i].style.font = "default-game"
+	-- end
+end
+
+function Public_gui.on_gui_click(event)
+	if not event then return end
+	if not event.element then return end
+	if not event.element.valid then return end
+	local player = game.players[event.element.player_index]
+	if event.element.name == "upgrades_button" then
+		upgrades_gui(player)
+		return
+	elseif event.element.name == "planet_button" then
+		planet_gui(player)
+		return
+	end
+
+	if event.element.type ~= "button" and event.element.type ~= "sprite-button" then return end
+	local name = event.element.name
+	if name == "close_upgrades" then upgrades_gui(player) return end
+  if name == "close_planet" then planet_gui(player) return end
+end
+
+
+
+return Public_gui
