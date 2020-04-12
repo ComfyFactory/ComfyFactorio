@@ -344,7 +344,7 @@ function Public_event.on_technology_effects_reset(event)
 			tech = game.forces.player.technologies[tech]
 			if tech.researched == true then
 				fake_event.research = tech
-				Public_Event.mining_buffs(fake_event)
+				Public_event.mining_buffs(fake_event)
 			end
 		end
 	end
