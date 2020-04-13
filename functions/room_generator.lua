@@ -1,9 +1,10 @@
 local Public = {}
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
+local table_remove = table.remove
 local math_random = math.random
 
-local room_spacing = 3
+local room_spacing = 4
 
 local function build_room(surface, position, vector, room_center_position, room_radius)
 	local room = {}
@@ -40,6 +41,7 @@ local function build_room(surface, position, vector, room_center_position, room_
 	table_insert(t, surface.get_tile({right_bottom.x - (room_radius * 2), right_bottom.y - (room_radius * 2)}))
 	
 	room.center = room_center_position
+	room.radius = room_radius
 	
 	return room
 end
@@ -94,6 +96,72 @@ local function get_room_tiles(surface, position, room_radius)
 	end
 end
 
+local function expand_path_tiles_width(surface, room)
+	if not room then return end
+	
+	local max_expansion_count = 0
+	if math_random(1, 3) == 1 then max_expansion_count = 1 end
+	if math_random(1, 9) == 1 then max_expansion_count = 2 end
+	if max_expansion_count == 0 then return end
+	
+	local path_tiles = room.path_tiles
+	local vectors = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}}
+	
+	local entrance_tile
+	local exit_tile
+	
+	local position = path_tiles[1].position
+	local expansion_vectors = {}
+	for _, v in pairs(vectors) do
+		local tile = surface.get_tile({position.x + v[1], position.y + v[2]})
+		if not tile.collides_with("resource-layer") then		
+			entrance_tile = tile
+			exit_tile = surface.get_tile({path_tiles[#path_tiles].position.x + v[1] * -1, path_tiles[#path_tiles].position.y + v[2] * -1})
+			if v[1] == 0 then
+				expansion_vectors = {{1, 0}, {-1, 0}}
+			else
+				expansion_vectors = {{0, 1}, {0, -1}}
+			end
+			break
+		end
+	end
+	
+	if not entrance_tile then return end
+	local position = entrance_tile.position
+	for k, v in pairs(expansion_vectors) do
+		local tile = surface.get_tile({position.x + v[1], position.y + v[2]})
+		if tile.collides_with("resource-layer") then		
+			table_remove(expansion_vectors, k)
+		end
+	end
+	if #expansion_vectors == 0 then return end
+	
+	if not exit_tile.collides_with("resource-layer") then
+		local position = exit_tile.position
+		for k, v in pairs(expansion_vectors) do
+			local tile = surface.get_tile({position.x + v[1], position.y + v[2]})
+			if tile.collides_with("resource-layer") then		
+				table_remove(expansion_vectors, k)
+			end
+		end
+	end	
+	if #expansion_vectors == 0 then return end
+	if #expansion_vectors > 1 then table_shuffle_table(expansion_vectors) end
+	
+	local tiles = {}
+	for k, v in pairs(expansion_vectors) do
+		if k > max_expansion_count then break end
+		for k2, path_tile in pairs(path_tiles) do
+			local tile = surface.get_tile({path_tile.position.x + v[1], path_tile.position.y + v[2]})
+			if tile.collides_with("resource-layer") then		
+				table_insert(tiles, tile)
+			end
+		end		
+	end
+
+	for k, tile in pairs(tiles) do table_insert(path_tiles, tile) end
+end
+
 local function is_bridge_valid(surface, vector, room)
 	local bridge_tiles = room.path_tiles
 	local scan_vector
@@ -117,6 +185,8 @@ local function is_bridge_valid(surface, vector, room)
 end
 
 local function build_bridge(surface, position)
+	if math_random(1, 8) == 1 then return end
+	
 	local vectors = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}}
 	table_shuffle_table(vectors)
 
@@ -150,7 +220,7 @@ end
 
 function Public.get_room(surface, position)
 	local room_sizes = {}
-	for i = 1, 13, 1 do
+	for i = 1, 14, 1 do
 		room_sizes[i] = i + 1
 	end
 	table_shuffle_table(room_sizes)
@@ -160,13 +230,15 @@ function Public.get_room(surface, position)
 		if room_sizes[i] <= last_size then
 			last_size = room_sizes[i]
 			local room = get_room_tiles(surface, position, last_size)
+			expand_path_tiles_width(surface, room)
 			if room then 
 				return room 			
 			end
 		end	
 	end
-
+	
 	local room = build_bridge(surface, position)
+	expand_path_tiles_width(surface, room)
 	if room then return room end
 end
 

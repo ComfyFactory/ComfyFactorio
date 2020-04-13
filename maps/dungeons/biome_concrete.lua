@@ -10,15 +10,9 @@ local math_sqrt = math.sqrt
 local math_floor = math.floor
 
 local function add_enemy_units(surface, room)
-	for _, tile in pairs(room.room_border_tiles) do 
-		if math_random(1, 2) == 1 then
-			local name = BiterRaffle.roll("biter", global.dungeons.depth * 0.001)
-			local unit = surface.create_entity({name = name, position = tile.position, force = "enemy"})
-		end
-	end
 	for _, tile in pairs(room.room_tiles) do
 		if math_random(1, 2) == 1 then
-			local name = BiterRaffle.roll("biter", global.dungeons.depth * 0.001)
+			local name = BiterRaffle.roll("biter", Functions.get_dungeon_evolution_factor() * 1.5)
 			local unit = surface.create_entity({name = name, position = tile.position, force = "enemy"})
 		end
 	end	
@@ -42,9 +36,6 @@ local function concrete(surface, room)
 		end
 		if key % 128 == 1 and math_random(1, 3) == 1 then
 			Functions.set_spawner_tier(surface.create_entity({name = "biter-spawner", position = tile.position, force = "enemy"}))
-		end
-		if math_random(1, 256) == 1 then
-			surface.create_entity({name = "crude-oil", position = tile.position, amount = Functions.get_crude_oil_amount()})
 		end
 	end
 	

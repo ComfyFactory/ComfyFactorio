@@ -8,8 +8,6 @@ local math_abs = math.abs
 local math_sqrt = math.sqrt
 local math_floor = math.floor
 
-local ores = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore","coal", "coal","stone", "stone"}
-
 local function add_enemy_units(surface, room)
 	for _, tile in pairs(room.room_border_tiles) do if math_random(1, 24) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
 	for _, tile in pairs(room.room_tiles) do if math_random(1, 24) == 1 then Functions.spawn_random_biter(surface, tile.position) end end
@@ -23,16 +21,16 @@ local function doom(surface, room)
 	if #room.room_tiles > 1 then table_shuffle_table(room.room_tiles) end
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "red-refined-concrete", position = tile.position}}, true)
-		if math_random(1, 768) == 1 then
-			surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = 99999999})
+		if math_random(1, 16) == 1 then
+			surface.create_entity({name = "copper-ore", position = tile.position, amount = Functions.get_common_resource_amount()})
 		end
 		if math_random(1, 16) == 1 then
 			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
 		end
-		if math_random(1, 512) == 1 then
+		if math_random(1, 320) == 1 then
 			Functions.rare_loot_crate(surface, tile.position)
 		else
-			if math_random(1, 1024) == 1 then
+			if math_random(1, 640) == 1 then
 				Functions.epic_loot_crate(surface, tile.position)
 			end
 		end	

@@ -1,10 +1,16 @@
--- Biters and Spitters gain additional health / resistance -- mewmew
+-- Biters, Spawners and Worms gain additional health / resistance -- mewmew
 -- Use global.biter_health_boost or global.biter_health_boost_forces to modify their health.
 -- 1 = vanilla health, 2 = 200% vanilla health
 -- do not use values below 1
 local math_floor = math.floor
 local math_round = math.round
 local Public = {}
+
+local entity_types = {
+	["unit"] = true,
+	["turret"] = true,
+	["unit-spawner"] = true,
+}
 
 local function clean_table()
 	--Perform a table cleanup every 1000 boosts
@@ -71,8 +77,8 @@ end
 local function on_entity_damaged(event)
 	local biter = event.entity
 	if not (biter and biter.valid) then return end
-	if biter.type ~= "unit" then return end
-
+	if not entity_types[biter.type] then return end
+	
 	local biter_health_boost_units = global.biter_health_boost_units
 
 	local unit_number = biter.unit_number

@@ -160,21 +160,13 @@ local function mirror_chunk(surface, chunk)
 	end
 end
 
-local function on_chunk_generated(event)
-	if event.area.left_top.y < 0 then return end
-	if event.surface.name ~= "biter_battles" then return end
-
-	clear_chunk(event.surface, event.area)
-
-	local x = ((event.area.left_top.x + 16) * -1) - 16
-	local y = ((event.area.left_top.y + 16) * -1) - 16
-
-	local delay = 30
-	if not global.chunks_to_mirror[game.tick + delay] then global.chunks_to_mirror[game.tick + delay] = {} end
-	global.chunks_to_mirror[game.tick + delay][#global.chunks_to_mirror[game.tick + delay] + 1] = {x = x / 32, y = y / 32}
+local function is_chunk_already_mirrored(chunk)	
+	local index = chunk[1] .. "_" .. chunk[2]
+	if not global.chunks_mirrored[index] then global.chunks_mirrored[index] = true return false end
+	return true
 end
 
-local function add_work(work) 
+local function add_work(work)
 	if not global.ctp then global.ctp = { continue = 1, last = 0 } end
 	local idx = global.ctp.last + 1
 	global.ctp[idx] = work 
@@ -182,20 +174,31 @@ local function add_work(work)
 end
 
 function Public.add_chunks(event)
-	if event.area.left_top.y < 0 then return end
-	if event.surface.name ~= "biter_battles" then return end
-
-	event.surface.destroy_decoratives{ area = event.area }
+	local surface = event.surface
+	if surface.name ~= "biter_battles" then return end
+	
+	if event.area.left_top.y < 0 then
+		if game.tick == 0 then return end
+		local x = event.area.left_top.x / 32
+		local y = event.area.left_top.y / 32
+		
+		if is_chunk_already_mirrored({x, y}) then return end
+		add_work({x = x, y = y, state = 1})
+		return 
+	end
+	
+	surface.destroy_decoratives{ area = event.area }
 	-- Destroy biters here before they get active and attack other biters;
 	-- prevents threat decrease
-	for _, e in pairs(event.surface.find_entities_filtered{ area = event.area, force = "enemy" }) do
+	for _, e in pairs(surface.find_entities_filtered{ area = event.area, force = "enemy" }) do
 		if e.valid then e.destroy() end
 	end
 
-	local x = ((event.area.left_top.x + 16) * -1) - 16
-	local y = ((event.area.left_top.y + 16) * -1) - 16
-	add_work({x = x / 32, y = y / 32, state = 1})
-
+	local x = (((event.area.left_top.x + 16) * -1) - 16) / 32
+	local y = (((event.area.left_top.y + 16) * -1) - 16) / 32
+	
+	if is_chunk_already_mirrored({x, y}) then return end
+	add_work({x = x, y = y, state = 1})
 end
 
 function Public.ticking_work()
