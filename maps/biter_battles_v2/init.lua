@@ -30,7 +30,7 @@ function Public.surface()
 		["iron-ore"] = {frequency = 3.5, size = 0.65, richness = 0.5},
 		["uranium-ore"] = {frequency = 2, size = 1, richness = 1},
 		["crude-oil"] = {frequency = 3, size = 1, richness = 0.75},
-		["trees"] = {frequency = math.random(8, 16) * 0.1, size = math.random(8, 16) * 0.1, richness = math.random(2, 10) * 0.1},
+		["trees"] = {frequency = math.random(8, 24) * 0.1, size = math.random(8, 24) * 0.1, richness = math.random(1, 10) * 0.1},
 		["enemy-base"] = {frequency = 0, size = 0, richness = 0}
 	}
 	game.create_surface("biter_battles", map_gen_settings)
@@ -152,7 +152,7 @@ function Public.forces()
 	global.bb_evolution = {}
 	global.bb_threat_income = {}
 	global.bb_threat = {}
-	global.chunks_to_mirror = {}
+	global.chunks_mirrored = {}
 	global.map_pregen_message_counter = {}
 
 	for _, force in pairs(game.forces) do
@@ -167,6 +167,7 @@ function Public.forces()
 		global.bb_evolution[force.name] = 0
 		global.bb_threat_income[force.name] = 0
 		global.bb_threat[force.name] = 0
+		global.biter_health_boost_forces[force.index] = 1
 	end
 end
 

@@ -2,8 +2,7 @@ local Public = {}
 local bb_config = require "maps.biter_battles_v2.config"
 local math_random = math.random
 
---[[
-local vector_radius = 360
+local vector_radius = 256
 local attack_vectors = {}
 attack_vectors.north = {}
 attack_vectors.south = {}
@@ -17,7 +16,7 @@ for x = vector_radius * -1, vector_radius, 1 do
 	end
 end
 local size_of_vectors = #attack_vectors.north
-]]
+
 
 local threat_values = {
 	["small-spitter"] = 1.5,
@@ -102,23 +101,23 @@ end
 
 local function is_biter_inactive(biter, unit_number, biter_force_name)
 	if not biter.entity then 
-		print("BiterBattles: active unit " .. unit_number .. " removed, possibly died.")
+		if global.bb_debug then print("BiterBattles: active unit " .. unit_number .. " removed, possibly died.") end
 		return true 
 	end	
 	if not biter.entity.valid then 
-		print("BiterBattles: active unit " .. unit_number .. " removed, biter invalid.")
+		if global.bb_debug then print("BiterBattles: active unit " .. unit_number .. " removed, biter invalid.") end
 		return true 
 	end	
 	if not biter.entity.unit_group then
-		print("BiterBattles: active unit " .. unit_number .. "  at x" .. biter.entity.position.x .. " y" .. biter.entity.position.y .. " removed, had no unit group.")
+		if global.bb_debug then print("BiterBattles: active unit " .. unit_number .. "  at x" .. biter.entity.position.x .. " y" .. biter.entity.position.y .. " removed, had no unit group.") end
 		return true 
 	end	
 	if not biter.entity.unit_group.valid then
-		print("BiterBattles: active unit " .. unit_number .. " removed, unit group invalid.")
+		if global.bb_debug then print("BiterBattles: active unit " .. unit_number .. " removed, unit group invalid.") end
 		return true 
 	end
 	if game.tick - biter.active_since > bb_config.biter_timeout then
-		print("BiterBattles: " .. biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since .. ".")
+		if global.bb_debug then print("BiterBattles: " .. biter_force_name .. " unit " .. unit_number .. " timed out at tick age " .. game.tick - biter.active_since .. ".") end
 		biter.entity.destroy()
 		return true 
 	end
@@ -258,7 +257,6 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 	
 	local commands = {}
 	
-	--[[
 	local vector = attack_vectors[force_name][math_random(1, size_of_vectors)]
 	local position = {target.x + vector[1], target.y + vector[2]}
 	position = unit_group.surface.find_non_colliding_position("stone-furnace", position, 96, 1)
@@ -272,7 +270,6 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 			}
 		end
 	end
-	]]
 	
 	commands[#commands + 1] = {
 		type = defines.command.attack_area,

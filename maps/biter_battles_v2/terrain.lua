@@ -1,4 +1,5 @@
 local Public = {}
+local BiterRaffle = require "functions.biter_raffle"
 local bb_config = require "maps.biter_battles_v2.config"
 local math_floor = math.floor
 local math_random = math.random
@@ -45,9 +46,9 @@ local function get_noise(name, pos)
 	end
 
 	if name == 3 then
-		local noise = simplex_noise(pos.x * 0.02, pos.y * 0.02, seed)
-		seed = seed + noise_seed_add
-		noise = noise + simplex_noise(pos.x * 0.08, pos.y * 0.08, seed) * 0.1
+		local noise = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed)
+		noise = noise + simplex_noise(pos.x * 0.02, pos.y * 0.02, seed) * 0.3
+		noise = noise + simplex_noise(pos.x * 0.15, pos.y * 0.15, seed) * 0.025
 		return noise
 	end
 end
@@ -226,6 +227,14 @@ local function generate_starting_area(pos, distance_to_center, surface)
 	--
 	-- => We never do anything for (distance_to_center + min_noise - spawn_wall_radius) > 4.5
 
+	if distance_from_spawn_wall < 0 then
+		if math_random(1, 100) > 23 then
+			for _, tree in pairs(surface.find_entities_filtered({type = "tree", area = {{pos.x, pos.y}, {pos.x + 1, pos.y + 1}}})) do
+				tree.destroy()
+			end
+		end
+	end
+
 	if distance_from_spawn_wall < -10 and not is_horizontal_border_river(pos) then
 		local tile_name = surface.get_tile(pos).name
 		if tile_name == "water" or tile_name == "deepwater" then
@@ -360,16 +369,6 @@ local function generate_potential_spawn_ore(surface)
 	end
 end
 
-local worm_turrets = {
-	[1] = "small-worm-turret",
-	[2] = "medium-worm-turret",
-	[3] = "big-worm-turret",
-	[4] = "behemoth-worm-turret"
-}
-
-local worm_distance_multiplicator = 4
-
-
 local scrap_vectors = {}
 for x = -5, 5, 1 do
 	for y = -5, 5, 1 do
@@ -382,12 +381,9 @@ local size_of_scrap_vectors = #scrap_vectors
 
 local function generate_extra_worm_turrets(surface, left_top)
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-	if bb_config.bitera_area_distance * worm_distance_multiplicator > chunk_distance_to_center then return end
+	if bb_config.bitera_area_distance > chunk_distance_to_center then return end
 	
-	local highest_worm_tier = math.floor((chunk_distance_to_center - bb_config.bitera_area_distance * worm_distance_multiplicator) * 0.00125) + 1
-	if highest_worm_tier > 4 then highest_worm_tier = 4 end
-	
-	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance * worm_distance_multiplicator) * 0.00025
+	local amount = (chunk_distance_to_center - bb_config.bitera_area_distance) * 0.0005
 	if amount < 0 then return end
 	local floor_amount = math.floor(amount)
 	local r = math.round(amount - floor_amount, 3) * 1000
@@ -396,7 +392,7 @@ local function generate_extra_worm_turrets(surface, left_top)
 	if floor_amount > 64 then floor_amount = 64 end
 	
 	for _ = 1, floor_amount, 1 do	
-		local worm_turret_name = worm_turrets[math_random(1, highest_worm_tier)]
+		local worm_turret_name = BiterRaffle.roll("worm", chunk_distance_to_center * 0.0001)
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
 		local position = surface.find_non_colliding_position(worm_turret_name, {left_top.x + v[1], left_top.y + v[2]}, 8, 1)
 		if position then
@@ -418,10 +414,14 @@ local function generate_extra_worm_turrets(surface, left_top)
 end
 
 local bitera_area_distance = bb_config.bitera_area_distance * -1
+local biter_area_angle = 0.45
+
 local function is_biter_area(position)
-	if position.y - 48 > bitera_area_distance - (math_abs(position.x) * 1.10) then return false end
+	if position.y - 96 > bitera_area_distance - (math_abs(position.x) * biter_area_angle) then return false end
+	if position.y + 96 < bitera_area_distance - (math_abs(position.x) * biter_area_angle) then return true end
 	
-	if position.y + (get_noise(3, position) * 16) > bitera_area_distance - (math_abs(position.x) * 1.10) then return false end
+	
+	if position.y + (get_noise(3, position) * 64) > bitera_area_distance - (math_abs(position.x) * biter_area_angle) then return false end
 	return true
 end
 
@@ -462,19 +462,18 @@ local function draw_biter_area(surface, left_top)
 			end
 		end
 	end
-	
-	local highest_worm_tier = math_floor((math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.01) + 2
-	if highest_worm_tier > 4 then highest_worm_tier = 4 end
-	for _ = 1, 8, 1 do
+
+	local e = (math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.0005	
+	for _ = 1, math_random(3, 6), 1 do
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
 		local position = {x = left_top_x + v[1], y = left_top_y + v[2]}
-		if is_biter_area(position) and surface.can_place_entity({name = "medium-worm-turret", position = position}) then
-			local worm_turret_name = worm_turrets[math_random(1, highest_worm_tier)]		
+		local worm_turret_name = BiterRaffle.roll("worm", e)
+		if is_biter_area(position) and surface.can_place_entity({name = worm_turret_name, position = position}) then			
 			surface.create_entity({name = worm_turret_name, position = position, force = "north_biters"})			
 		end
 	end
 	
-	for _ = 1, 16, 1 do
+	for _ = 1, math_random(8, 16), 1 do
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
 		local position = {x = left_top_x + v[1], y = left_top_y + v[2]}
 		if is_biter_area(position) and surface.can_place_entity({name = "mineable-wreckage", position = position}) then
@@ -512,36 +511,7 @@ local function mixed_ore(event)
 		end
 	end
 end
---[[
-local cliff_vectors = {} 
-local cliff_brush_radius = 3.5
-for x = cliff_brush_radius * -1, cliff_brush_radius, 0.5 do
-	for y = cliff_brush_radius * -1, cliff_brush_radius, 0.5 do
-		if math.sqrt(x^2 + y^2) < cliff_brush_radius then
-			cliff_vectors[#cliff_vectors + 1] = {x,y}
-		end
-	end
-end
 
-local function replace_cliff(surface, entity)
-	if surface.get_tile(entity.position).collides_with("resource-layer") then return end
-	for _, vector in pairs(cliff_vectors) do
-		if math_random(0, (math_abs(vector[1]) + math_abs(vector[2])) * 0.75) == 0 then
-			local position = {entity.position.x + vector[1], entity.position.y + vector[2]}
-			if surface.count_entities_filtered({type = "simple-entity", position = position}) == 0 then
-				surface.create_entity({name = rocks[math_random(1, 7)], position = position})
-			end
-		end
-	end	
-end
-
-local function replace_cliffs_with_rocks(surface, area)
-	for _, cliff in pairs(surface.find_entities_filtered({area = area, type = "cliff"})) do
-		replace_cliff(surface, cliff)
-		cliff.destroy()
-	end
-end
-]]
 function Public.generate(event)
 	if event.area.left_top.y >= 0 then return end
 	local surface = event.surface
@@ -552,8 +522,6 @@ function Public.generate(event)
 		surface.create_entity({name = e.name, position = e.position, force = "north_biters", direction = e.direction})
 		e.destroy()
 	end
-
-	--replace_cliffs_with_rocks(surface, event.area)
 	
 	mixed_ore(event)
 	generate_river(event)

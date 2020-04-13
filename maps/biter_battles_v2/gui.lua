@@ -16,11 +16,11 @@ require "maps.biter_battles_v2.spec_spy"
 
 local gui_values = {
 		["north"] = {force = "north", biter_force = "north_biters", c1 = bb_config.north_side_team_name, c2 = "JOIN ", n1 = "join_north_button",
-		t1 = "Evolution of the North side biters. Can go beyond 100% for endgame modifiers.",
+		t1 = "Evolution of north side biters.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.55, g = 0.55, b = 0.99}, color2 = {r = 0.66, g = 0.66, b = 0.99},
 		tech_spy = "spy-north-tech", prod_spy = "spy-north-prod"},
 		["south"] = {force = "south", biter_force = "south_biters", c1 = bb_config.south_side_team_name, c2 = "JOIN ", n1 = "join_south_button",
-		t1 = "Evolution of the South side biters. Can go beyond 100% for endgame modifiers.",
+		t1 = "Evolution of south side biters.",
 		t2 = "Threat causes biters to attack. Reduces when biters are slain.", color1 = {r = 0.99, g = 0.33, b = 0.33}, color2 = {r = 0.99, g = 0.44, b = 0.44},
 		tech_spy = "spy-south-tech", prod_spy = "spy-south-prod"}
 	}
@@ -93,6 +93,7 @@ local function add_tech_button(elem, gui_value)
 	}
 	tech_button.style.height = 25
 	tech_button.style.width = 25
+	tech_button.style.left_margin = 3
 end
 
 local function add_prod_button(elem, gui_value)
@@ -136,7 +137,7 @@ local function create_main_gui(player)
 	end
 
 	local first_team = true
-	for _, gui_value in pairs(gui_values) do
+	for k, gui_value in pairs(gui_values) do
 		-- Line separator
 		if not first_team then
 			frame.add { type = "line", caption = "this line", direction = "horizontal" }
@@ -145,7 +146,7 @@ local function create_main_gui(player)
 		end
 
 		-- Team name & Player count
-		local t = frame.add { type = "table", column_count = 3 }
+		local t = frame.add { type = "table", column_count = 4 }
 
 		-- Team name
 		local c = gui_value.c1
@@ -154,7 +155,6 @@ local function create_main_gui(player)
 		l.style.font = "default-bold"
 		l.style.font_color = gui_value.color1
 		l.style.single_line = false
-		--l.style.minimal_width = 100
 		l.style.maximal_width = 102
 
 		-- Number of players
@@ -164,6 +164,12 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = c}
 		l.style.font = "default"
 		l.style.font_color = { r=0.22, g=0.88, b=0.22}
+		
+		-- Tech button
+		if is_spec then
+			add_tech_button(t, gui_value)
+			-- add_prod_button(t, gui_value)
+		end
 
 		-- Player list
 		if global.bb_view_players[player.name] == true then
@@ -175,18 +181,22 @@ local function create_main_gui(player)
 		end
 
 		-- Statistics
-		local t = frame.add { type = "table", name = "stats_" .. gui_value.force, column_count = 6 }
+		local t = frame.add { type = "table", name = "stats_" .. gui_value.force, column_count = 5 }
 
 		-- Evolution
 		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
-		l.tooltip = gui_value.t1
+		local biter_force = game.forces[gui_value.biter_force]
+		local tooltip = gui_value.t1 .. "\nHealth: " .. global.biter_health_boost_forces[biter_force.index] * 100 .. "%" .. "\nDamage: " .. (biter_force.get_ammo_damage_modifier("melee") + 1) * 100 .. "%"
+		
+		l.tooltip = tooltip		
+		
 		local evo = math.floor(1000 * global.bb_evolution[gui_value.biter_force]) * 0.1
 		local l = t.add  {type = "label", caption = evo .. "%"}
-		l.style.minimal_width = 38
+		l.style.minimal_width = 40
 		l.style.font_color = gui_value.color2
 		l.style.font = "default-bold"
-		l.tooltip = gui_value.t1
+		l.tooltip = tooltip
 
 		-- Threat
 		local l = t.add  {type = "label", caption = "Threat: "}
@@ -197,12 +207,6 @@ local function create_main_gui(player)
 		l.style.font = "default-bold"
 		l.style.width = 50
 		l.tooltip = gui_value.t2
-
-		-- Tech button
-		if is_spec then
-			add_tech_button(t, gui_value)
-			-- add_prod_button(t, gui_value)
-		end
 	end
 
 	-- Action frame

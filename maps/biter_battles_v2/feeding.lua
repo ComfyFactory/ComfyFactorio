@@ -20,16 +20,16 @@ end
 
 local function set_biter_endgame_modifiers(force)
 	if force.evolution_factor ~= 1 then return end
-	local damage_mod = global.bb_evolution[force.name] - 1
-	local extra_lifes = math.round((global.bb_evolution[force.name] - 1) * 4, 4)
-	
+	local damage_mod = math.round((global.bb_evolution[force.name] - 1) * 0.5, 3)
+	local health_factor = math.round((global.bb_evolution[force.name] - 1) * 3.5, 3) + 1
+
 	force.set_ammo_damage_modifier("melee", damage_mod)
 	force.set_ammo_damage_modifier("biological", damage_mod)
 	force.set_ammo_damage_modifier("artillery-shell", damage_mod)
 	force.set_ammo_damage_modifier("flamethrower", damage_mod)
 	force.set_ammo_damage_modifier("laser-turret", damage_mod)
 	
-	global.biter_reanimator.forces[force.index] = extra_lifes
+	global.biter_health_boost_forces[force.index] = health_factor
 end
 
 local function get_enemy_team_of(team)
