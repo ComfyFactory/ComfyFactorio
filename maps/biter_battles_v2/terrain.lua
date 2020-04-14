@@ -5,7 +5,7 @@ local math_floor = math.floor
 local math_random = math.random
 local math_abs = math.abs
 local simplex_noise = require 'utils.simplex_noise'.d2
-local spawn_circle_size = 40
+local spawn_circle_size = 39
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 local rocks = {"sand-rock-big","sand-rock-big","rock-big","rock-big","rock-big","rock-big", "rock-huge"}
 
@@ -392,7 +392,7 @@ local function generate_extra_worm_turrets(surface, left_top)
 	if floor_amount > 64 then floor_amount = 64 end
 	
 	for _ = 1, floor_amount, 1 do	
-		local worm_turret_name = BiterRaffle.roll("worm", chunk_distance_to_center * 0.0001)
+		local worm_turret_name = BiterRaffle.roll("worm", chunk_distance_to_center * 0.00015)
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
 		local position = surface.find_non_colliding_position(worm_turret_name, {left_top.x + v[1], left_top.y + v[2]}, 8, 1)
 		if position then
