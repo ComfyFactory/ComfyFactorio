@@ -223,11 +223,12 @@ function Public.ticking_work()
 	if not surface.is_chunk_generated(c) then
 		--game.print("Chunk not generated yet, requesting..")
 		surface.request_to_generate_chunks({x = area.left_top.x + 16, y = area.left_top.y + 16}, 0)
+		surface.force_generate_chunk_requests()
 		-- requeue
-		add_work(c)
-		global.ctp.continue = i+1
-		global.ctp[i] = nil 
-		return
+		--add_work(c)
+		--global.ctp.continue = i+1
+		--global.ctp[i] = nil 
+		--return
 	end
 
 	local tasks = {
