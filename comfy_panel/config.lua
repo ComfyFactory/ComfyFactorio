@@ -18,6 +18,17 @@ local functions = {
 			global.auto_hotbar_enabled[event.player_index] = false
 		end
 	end,
+	["map_settings_blueprint_toggle"] = function(event)
+		if event.element.switch_state == "left" then
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, true)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, true)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, true)
+		else
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, false)
+		end
+	end,	
 }
 
 local function add_switch(element, switch_state, name, description_main, description)
@@ -47,30 +58,62 @@ local function add_switch(element, switch_state, name, description_main, descrip
 	label.style.single_line = false
 	label.style.font = "heading-3"
 	label.style.font_color = {0.85, 0.85, 0.85}
+	
+	return switch
 end
 
 local build_config_gui = (function (player, frame)		
 	frame.clear()
 	
-	local line_elements = {}
-	local switch_label_elements = {}
-	local label_elements = {}
+	local admin = player.admin
 	
-	line_elements[#line_elements + 1] = frame.add({type = "line"})
+	local label = frame.add({type = "label", caption = "Player Settings"})
+	label.style.font = "default-bold"
+	label.style.padding = 0
+	label.style.left_padding = 10
+	label.style.horizontal_align = "left"
+	label.style.vertical_align = "bottom"
+	label.style.font_color = {0.55, 0.55, 0.99}
+	
+	frame.add({type = "line"})
 	
 	local switch_state = "right"
 	if player.spectator then switch_state = "left" end
-	add_switch(frame, switch_state, "comfy_panel_spectator_switch", "SpectatorMode", "Disables zoom-to-world view noise effect.\nEnvironmental sounds will be based on map view.")
+	add_switch(frame, switch_state, "comfy_panel_spectator_switch", "SpectatorMode", "Toggles zoom-to-world view noise effect.\nEnvironmental sounds will be based on map view.")
 		
-	line_elements[#line_elements + 1] = frame.add({type = "line"})
+	frame.add({type = "line"})
 	
 	if global.auto_hotbar_enabled then
 		local switch_state = "right"
 		if global.auto_hotbar_enabled[player.index] then switch_state = "left" end
 		add_switch(frame, switch_state, "comfy_panel_auto_hotbar_switch", "AutoHotbar", "Automatically fills your hotbar with placeable items.")
-		line_elements[#line_elements + 1] = frame.add({type = "line"})
+		frame.add({type = "line"})
 	end
+
+	local label = frame.add({type = "label", caption = "Admin Settings"})
+	label.style.font = "default-bold"
+	label.style.padding = 0
+	label.style.left_padding = 10
+	label.style.top_padding = 10
+	label.style.horizontal_align = "left"
+	label.style.vertical_align = "bottom"
+	label.style.font_color = {0.77, 0.11, 0.11}
 	
+	frame.add({type = "line"})
+	
+	local switch_state = "right"
+	if game.permissions.get_group("Default").allows_action(defines.input_action.import_blueprint) then switch_state = "left" end
+	local switch = add_switch(frame, switch_state, "map_settings_blueprint_toggle", "Blueprint Library", "Toggles the usage of blueprint strings and the library.")
+	if not admin then switch.ignored_by_interaction = true end
+	
+	frame.add({type = "line"})
+	
+	for _, e in pairs(frame.children) do
+		if e.type == "line" then
+			e.style.padding = 0
+			e.style.margin = 0
+		end
+	end
 end)
 
 local function on_gui_click(event)
