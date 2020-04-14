@@ -70,12 +70,12 @@ function Public.determine_planet(choice)
     choice = 15
     ores = 2
   end
-  if objective.computerupgrade == 3 then
+  if objective.upgrades[16] == 1 then
     choice = 17
     ores = 10
   end
   if objective.config.jumpfailure == true and objective.game_lost == false then
-    if objective.chronojumps == 21 or objective.chronojumps == 29 or chronojumps == 36 then
+    if objective.chronojumps == 21 or objective.chronojumps == 29 or chronojumps == 36 or chronojumps == 42 then
       choice = 19
       ores = 10
       dayspeed = time_speed_variants[1]
@@ -92,8 +92,8 @@ function Public.determine_planet(choice)
     end
   end
   if planet_choice.id == 10 then ores = 10 end
-  if objective.computerupgrade >= 1 and ores == 9 then ores = 8 end
-  if objective.computerupgrade >= 2 and ores > 6 and ores ~= 10 then ores = 6 end
+  if objective.upgrades[13] == 1 and ores == 9 then ores = 8 end
+  if objective.upgrades[14] == 1 and ores > 6 and ores ~= 10 then ores = 6 end
   local planet = {
     [1] = {
       name = planet_choice,

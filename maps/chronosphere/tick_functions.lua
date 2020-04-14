@@ -46,7 +46,7 @@ function Public_tick.charge_chronosphere()
 		if energy > 3010000 and objective.chronotimer < objective.chrononeeds - 182 and objective.chronotimer > 130 then
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
-			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.filterupgradetier / 2 + 1)) * global.difficulty_vote_value)
+			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.upgrades[2] / 2 + 1)) * global.difficulty_vote_value)
 		end
 	end
 end
@@ -54,7 +54,7 @@ end
 function Public_tick.transfer_pollution()
 	local surface = game.surfaces["cargo_wagon"]
 	if not surface then return end
-	local pollution = surface.get_total_pollution() * (3 / (global.objective.filterupgradetier / 3 + 1)) * global.difficulty_vote_value
+	local pollution = surface.get_total_pollution() * (3 / (global.objective.upgrades[2] / 3 + 1)) * global.difficulty_vote_value
 	game.surfaces[global.active_surface_index].pollute(global.locomotive.position, pollution)
 	surface.clear_pollution()
 end
@@ -97,7 +97,7 @@ function Public_tick.output_items()
 	if not global.outchests then return end
 	if not global.locomotive_cargo[2] then return end
 	if not global.locomotive_cargo[3] then return end
-	if global.objective.outupgradetier ~= 1 then return end
+	if global.objective.upgrades[8] ~= 1 then return end
 	local wagon = {
 		[1] = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
 		[2] = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
@@ -120,10 +120,10 @@ function Public_tick.repair_train()
 	if not game.surfaces["cargo_wagon"] then return 0 end
 	if objective.game_lost == true then return 0 end
 	local count = 0
-	local inv = global.upgradechest[1].get_inventory(defines.inventory.chest)
+	local inv = global.upgradechest[0].get_inventory(defines.inventory.chest)
 	if objective.health < objective.max_health then
 		count = inv.get_item_count("repair-pack")
-		count = math_min(count, objective.toolsupgradetier + 1, math_ceil((objective.max_health - objective.health) / 150))
+		count = math_min(count, objective.upgrades[6] + 1, math_ceil((objective.max_health - objective.health) / 150))
 		if count > 0 then inv.remove({name = "repair-pack", count = count}) end
 	end
   return count * -150

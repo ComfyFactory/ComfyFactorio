@@ -1,4 +1,5 @@
 local Public = {}
+local Upgrades = require "maps.chronosphere.upgrade_list"
 local math_floor = math.floor
 local math_random = math.random
 local function math_sgn(x)
@@ -308,55 +309,39 @@ function Public.create_wagon_room()
 	powerpole.minable = false
 	powerpole.destructible = false
 
-	local market = surface.create_entity({name = "market", position = {-5, height * -0.5 + 13}, force="neutral", create_build_effect_smoke = false})
+	local market = surface.create_entity({name = "market", position = {-30, height * -0.5 + 4}, force="neutral", create_build_effect_smoke = false})
 	market.minable = false
 	market.destructible = false
-
-	local upgradechests = {
-		[1] = {name = "repairchest", entity = {name = "compilatron-chest", position = {0, height * -0.5 + 13}, force = "player"}, signal = nil},
-		[2] = {name = "hpchest", entity = {name = "compilatron-chest", position = {3, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-1"},
-		[3] = {name = "filterchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-2"},
-		[4] = {name = "acuchest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-3"},
-		[5] = {name = "reachchest", entity = {name = "compilatron-chest", position = {3, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-4"},
-		[6] = {name = "invchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-5"},
-		[7] = {name = "toolschest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-6"},
-		[8] = {name = "waterchest", entity = {name = "compilatron-chest", position = {3, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-7"},
-		[9] = {name = "outchest", entity = {name = "compilatron-chest", position = {4, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-8"},
-		[10] = {name = "boxchest", entity = {name = "compilatron-chest", position = {5, height * -0.5 + 14}, force = "player"}, signal = "virtual-signal/signal-9"},
-		[11] = {name = "poisonchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-P"},
-		[12] = {name = "computerchest", entity = {name = "compilatron-chest", position = {6, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-C"},
-		[13] = {name = "armorchest", entity = {name = "compilatron-chest", position = {7, height * -0.5 + 12}, force = "player"}, signal = "virtual-signal/signal-A"},
-		[14] = {name = "reactorchest", entity = {name = "compilatron-chest", position = {7, height * -0.5 + 13}, force = "player"}, signal = "virtual-signal/signal-R"}
-	}
-
-	for i = 1, #upgradechests, 1 do
-		local e = surface.create_entity(upgradechests[i].entity)
-		e.minable = false
-		e.destructible = false
-		global.upgradechest[i] = e
-		if i == 1 then
-			local repair_text = rendering.draw_text{
-				text = "Repair chest",
-				surface = surface,
-				target = e,
-				target_offset = {0, -2.5},
-				color = global.locomotive.color,
-				scale = 1.00,
-				font = "default-game",
-				alignment = "center",
-				scale_with_zoom = false
-			}
-		else
-			local upgrade_text = rendering.draw_sprite{
-				sprite = upgradechests[i].signal,
-				surface = surface,
-				target = e,
-				target_offset = {0, -0.1},
-				font = "default-game",
-				visible = true
-			}
-		end
-	end
+  local repairchest = surface.create_entity({name = "compilatron-chest", position = {-24, height * -0.5 + 3}, force = "player"})
+  repairchest.minable = false
+  repairchest.destructible = false
+  global.upgradechest[0] = repairchest
+  rendering.draw_text{
+    text = "Repair chest",
+    surface = surface,
+    target = repairchest,
+    target_offset = {0, -2.5},
+    color = global.locomotive.color,
+    scale = 1.00,
+    font = "default-game",
+    alignment = "center",
+    scale_with_zoom = false
+  }
+  local upgrades = Upgrades.upgrades()
+  for i = 1, #upgrades, 1 do
+    local e = surface.create_entity({name = "compilatron-chest", position = {-21 + i, height * -0.5 + 3}, force = "player"})
+    e.minable = false
+    e.destructible = false
+    global.upgradechest[i] = e
+    rendering.draw_sprite{
+      sprite = upgrades[i].sprite,
+      surface = surface,
+      target = e,
+      target_offset = {0, -1.3},
+      font = "default-game",
+      visible = true
+    }
+  end
 
 	local market1_text = rendering.draw_text{
 		text = "Resources",
@@ -372,7 +357,7 @@ function Public.create_wagon_room()
 	local upgrade_text = rendering.draw_text{
 		text = "Upgrades",
 		surface = surface,
-		target = global.upgradechest[3],
+		target = global.upgradechest[8],
 		target_offset = {0, -3.5},
 		color = global.locomotive.color,
 		scale = 1.00,
@@ -383,7 +368,7 @@ function Public.create_wagon_room()
 	local upgrade_sub_text = rendering.draw_text{
 		text = "Click [Upgrades] on top of screen",
 		surface = surface,
-		target = global.upgradechest[3],
+		target = global.upgradechest[8],
 		target_offset = {0, -2.5},
 		color = global.locomotive.color,
 		scale = 0.80,

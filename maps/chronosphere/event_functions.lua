@@ -317,22 +317,6 @@ function Public_event.mining_buffs(event)
 	end
 end
 
-function Public_event.pistol_buffs(event)
-	if global.objective.pistolupgradetier == 0 then return end
-	if not event.cause then return end
-	if event.cause.name ~= "player" then return end
-	if event.damage_type.name ~= "physical" then return end
-	local player = event.cause
-	if player.shooting_state.state == defines.shooting.not_shooting then return end
-	local weapon = event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].name
-	local ammo = event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].name
-	game.print(ammo)
-	game.print(wapon)
-	if weapon ~= "pistol" then return end
-	if ammo ~= "firearm-magazine" and ammo ~= "piercing-rounds-magazine" and ammo ~= "uranium-rounds-magazine" then return end
-	event.entity.damage(event.final_damage_amount * 4, player.force, "physical", player)
-end
-
 function Public_event.on_technology_effects_reset(event)
 	if event.force.name == "player" then
 		game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + global.objective.invupgradetier * 10

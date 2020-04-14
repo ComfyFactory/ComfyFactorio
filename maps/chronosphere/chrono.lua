@@ -27,17 +27,6 @@ function Public_chrono.restart_settings()
   local objective = global.objective
   objective.max_health = 10000
 	objective.health = 10000
-	objective.hpupgradetier = 0
-	objective.acuupgradetier = 0
-	objective.filterupgradetier = 0
-	objective.pickupupgradetier = 0
-	objective.invupgradetier = 0
-	objective.toolsupgradetier = 0
-	objective.waterupgradetier = 0
-	objective.outupgradetier = 0
-	objective.boxupgradetier = 0
-	objective.pistolupgradetier = 0
-	objective.poisondefense = 2
 	objective.poisontimeout = 0
 	objective.chronotimer = 0
 	objective.passivetimer = 0
@@ -52,6 +41,10 @@ function Public_chrono.restart_settings()
 	objective.looted_nukes = 0
 	objective.offline_players = {}
   objective.nextsurface = nil
+	for i = 1, 16, 1 do
+		objective.upgrades[i] = 0
+	end
+	objective.upgrades[10] = 2 --poison
 	global.outchests = {}
 	global.upgradechest = {}
 	global.fishchest = {}
