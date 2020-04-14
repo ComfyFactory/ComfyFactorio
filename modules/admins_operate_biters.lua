@@ -446,7 +446,7 @@ local function biter_panel(player)
 	drop_down.style.right_padding = 12
 	drop_down.style.left_padding = 12
   t0.add({type = "sprite-button", name = "info", sprite = "virtual-signal/signal-info"})
-  t0.add({type = "sprite-button", name = "close", sprite = "virtual-signal/signal-X"})
+  t0.add({type = "sprite-button", name = "close_biters", sprite = "virtual-signal/signal-X"})
 
   local l1 = frame.add({type = "label", caption = "Camera"})
   local t1 = frame.add({type = "table", name = "camera", column_count = 2})
@@ -570,7 +570,7 @@ local function on_gui_click(event)
 	if event.element.type ~= "button" and event.element.type ~= "sprite-button" then return end
 	--if event.frame.name ~= "biter_panel" then return end
   local name = event.element.name
-	if name == "close" then biter_panel(player) return end
+	if name == "close_biters" then biter_panel(player) return end
   if name == "info" then show_info(player) return end
   if name == "close_info" then show_info(player) return end
   if comm_functions[name] then

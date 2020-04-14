@@ -1,6 +1,7 @@
 -- chronosphere --
 
 global.objective = {}
+global.objective.upgrades = {}
 require "modules.difficulty_vote"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
@@ -37,9 +38,10 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] =
 local function generate_overworld(surface, optplanet)
 	Planets.determine_planet(optplanet)
 	local planet = global.objective.planet
-	--local message = "Planet info: " .. planet[1].name.name .. ", Ore richness: " .. planet[1].ore_richness.name .. ", Speed of day: " .. planet[1].day_speed.name
-	--game.print(message, {r=0.98, g=0.66, b=0.22})
-	--Server.to_discord_embed(message)
+	local message = {"chronosphere.planet_jump", planet[1].name.name, planet[1].ore_richness.name, planet[1].day_speed.name}
+	game.print(message, {r=0.98, g=0.66, b=0.22})
+	local discordmessage = "Destination: "..planet[1].name.dname..", Ore Richness: "..planet[1].ore_richness.dname..", Daynight cycle: "..planet[1].day_speed.dname
+	Server.to_discord_embed(discordmessage)
 	if planet[1].name.id == 12 then
 		game.print({"chronosphere.message_choppy"}, {r=0.98, g=0.66, b=0.22})
 	elseif planet[1].name.id == 14 then

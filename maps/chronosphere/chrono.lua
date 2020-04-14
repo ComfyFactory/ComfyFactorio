@@ -160,19 +160,19 @@ function Public_chrono.process_jump(choice)
 	Server.to_discord_embed(message)
 
 	if objective.chronojumps == 6 then
-		game.print({"chronosphere.message_evolve"}, {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_evolve"}, {r=0.98, g=0.36, b=0.22})
 	elseif objective.chronojumps >= 15 and objective.computermessage == 0 then
-		game.print({"chronosphere.message_quest1"}, {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_quest1"}, {r=0.98, g=0.36, b=0.22})
     objective.computermessage = 1
 	elseif objective.chronojumps >= 20 and objective.computermessage == 2 then
-		game.print({"chronosphere.message_quest3"}, {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_quest3"}, {r=0.98, g=0.36, b=0.22})
     objective.computermessage = 3
 	elseif objective.chronojumps >= 25 and objective.computermessage == 4 then
-		game.print({"chronosphere.message_quest5"}, {r=0.98, g=0.66, b=0.22})
+		game.print({"chronosphere.message_quest5"}, {r=0.98, g=0.36, b=0.22})
     objective.computermessage = 5
 	end
 	if overstayed then
-    game.print({"chronosphere.message_overstay"}, {r=0.98, g=0.66, b=0.22})
+    game.print({"chronosphere.message_overstay"}, {r=0.98, g=0.36, b=0.22})
   end
   if objective.planet[1].name.id == 19 then
     check_nuke_silos()

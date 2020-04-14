@@ -181,8 +181,8 @@ local function process_upgrade(index)
 		global.objective.computermessage = 2
 	elseif index == 14 then
 		global.objective.computermessage = 4
-	elseif index = 15 then
-		if gobal.objective.upgrades[15] == 10 then
+	elseif index == 15 then
+		if global.objective.upgrades[15] == 10 then
 			game.print({"chronosphere.message_quest6"}, {r=0.98, g=0.66, b=0.22})
 		end
 	end
@@ -191,6 +191,13 @@ end
 local function check_single_upgrade(index)
 	local upgrades = Upgrades.upgrades()
 	if global.upgradechest[index] and global.upgradechest[index].valid then
+		if index == 14 and (global.objective.upgrades[13] ~= 1 or global.objective.computermessage ~= 3) then
+			return
+		elseif index == 15 and (global.objective.upgrades[14] ~= 1 or global.objective.computermessage ~= 5) then
+			return
+		elseif index == 16 and global.objective.upgrades[15] ~= 10 then
+			return
+		end
 		local inv = global.upgradechest[index].get_inventory(defines.inventory.chest)
 		if global.objective.upgrades[index] < upgrades[index].max_level and global.objective.chronojumps >= upgrades[index].jump_limit then
 			for _, item in pairs(upgrades[index].cost) do
@@ -199,13 +206,14 @@ local function check_single_upgrade(index)
 		else
 			return
 		end
+
 		for _, item in pairs(upgrades[index].cost) do
 			if item.count > 0 then
 				inv.remove({name = item.name, count = item.count})
 			end
 		end
-		game.print(upgrades[index].message, {r=0.98, g=0.66, b=0.22})
 		global.objective.upgrades[index] = global.objective.upgrades[index] + 1
+		game.print(upgrades[index].message, {r=0.98, g=0.66, b=0.22})
 		process_upgrade(index)
 	end
 end
@@ -232,9 +240,9 @@ end
 function Public.trigger_poison()
   local objective = global.objective
   if objective.game_lost then return end
-  if objective.poisondefense > 0 and objective.poisontimeout == 0 then
+  if objective.upgrades[10] > 0 and objective.poisontimeout == 0 then
     local objective = global.objective
-    objective.poisondefense = objective.poisondefense - 1
+    objective.upgrades[10] = objective.upgrades[10] - 1
     objective.poisontimeout = 120
     local objs = {global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
     local surface = objective.surface

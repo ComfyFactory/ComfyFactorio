@@ -309,7 +309,7 @@ function Public.create_wagon_room()
 	powerpole.minable = false
 	powerpole.destructible = false
 
-	local market = surface.create_entity({name = "market", position = {-30, height * -0.5 + 4}, force="neutral", create_build_effect_smoke = false})
+	local market = surface.create_entity({name = "market", position = {-29, height * -0.5 + 4}, force="neutral", create_build_effect_smoke = false})
 	market.minable = false
 	market.destructible = false
   local repairchest = surface.create_entity({name = "compilatron-chest", position = {-24, height * -0.5 + 3}, force = "player"})

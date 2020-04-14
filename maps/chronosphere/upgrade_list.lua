@@ -209,7 +209,7 @@ function Public.upgrades()
       name = {"chronosphere.upgrade_computer3"},
       sprite = "item/rocket-control-unit",
       max_level = 10,
-      message = {"chronosphere.upgrade_computer3_message", global.objective.upgrades[15]},
+      message = {"chronosphere.upgrade_computer3_message", global.objective.upgrades[15] + 1},
       tooltip = {"chronosphere.upgrade_computer3_tooltip"},
       jump_limit = 25,
       cost = {
