@@ -176,9 +176,9 @@ local function on_init()
 	surface.request_to_generate_chunks({x = 0, y = -256}, 8)
 	surface.force_generate_chunk_requests()
 	
-	Terrain.draw_spawn_area(surface)	
-	Terrain.generate_silo(surface)
+	Terrain.draw_spawn_area(surface)		
 	Terrain.generate_additional_spawn_ore(surface)
+	Terrain.generate_silo(surface)
 	Terrain.draw_spawn_circle(surface)	
 end
 

@@ -225,8 +225,8 @@ local function generate_starting_area(pos, distance_to_center, surface)
 
 	if surface.can_place_entity({name = "wooden-chest", position = pos}) and surface.can_place_entity({name = "coal", position = pos}) then
 		local noise_2 = get_noise(3, pos)
-		if noise_2 < 0.25 then
-			if noise_2 > -0.5 then
+		if noise_2 < 0.35 then
+			if noise_2 > -0.45 then
 				if distance_from_spawn_wall > -1.75 and distance_from_spawn_wall < 0 then				
 					local e = surface.create_entity({name = "stone-wall", position = pos, force = "neutral"})
 					e.active = false
@@ -253,7 +253,7 @@ local function generate_starting_area(pos, distance_to_center, surface)
 							e.active = false
 						end
 					else
-						if math_random(1, 16) == 1 then
+						if math_random(1, 24) == 1 then
 							if surface.can_place_entity({name = "gun-turret", position = pos}) then
 								surface.create_entity({name = "gun-turret-remnants", position = pos, force = "neutral"})
 							end
@@ -409,7 +409,7 @@ local function mixed_ore(surface, left_top_x, left_top_y)
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = get_noise(1, pos)
-				if noise > 0.81 then
+				if noise > 0.82 then
 					local amount = math_random(1250, 1500) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 1.1
 					local m = (noise - 0.75) * 16
 					amount = amount * m
