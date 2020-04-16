@@ -433,17 +433,28 @@ function Public.generate(event)
 	local left_top_y = left_top.y
 	
 	if surface.name == "biter_battles" then
-		if math_abs(left_top.x) > 128 then
-			if left_top.y == 0 or left_top.y == -32 then
+		if math_abs(left_top.x) > 64 then
+			if left_top.y == 0 then
 				local tiles = {}
 				local i = 1
 				for x = 0, 31, 1 do
-					for y = 0, 31, 1 do
+					for y = 0, 1, 1 do
 						tiles[i] = {name = "deepwater", position = {x = left_top.x + x, y = left_top.y + y}}
 						i = i + 1
 					end
 				end
-				surface.set_tiles(tiles, true)
+				surface.set_tiles(tiles, false)
+			end
+			if left_top.y == -32 then
+				local tiles = {}
+				local i = 1
+				for x = 0, 31, 1 do
+					for y = 30, 31, 1 do
+						tiles[i] = {name = "deepwater", position = {x = left_top.x + x, y = left_top.y + y}}
+						i = i + 1
+					end
+				end
+				surface.set_tiles(tiles, false)
 			end
 		end
 		return
