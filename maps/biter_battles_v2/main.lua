@@ -179,7 +179,7 @@ local function on_init()
 	Terrain.draw_spawn_area(surface)		
 	Terrain.generate_additional_spawn_ore(surface)
 	Terrain.generate_silo(surface)
-	Terrain.draw_spawn_circle(surface)	
+	Terrain.draw_spawn_circle(surface)
 end
 
 local Event = require 'utils.event'

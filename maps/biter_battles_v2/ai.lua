@@ -212,10 +212,10 @@ local function select_units_around_spawner(spawner, force_name, biter_force_name
 	if not biters[1] then return false end
 	local valid_biters = {}
 	
-	local threat = global.bb_threat[biter_force_name] * math_random(11,22) * 0.01
+	local threat = global.bb_threat[biter_force_name] * math_random(8, 32) * 0.01
 	
 	local unit_count = 0
-	local max_unit_count = math.ceil(global.bb_threat[biter_force_name] * 0.25) + math_random(6,12)
+	local max_unit_count = math.floor(global.bb_threat[biter_force_name] * 0.25) + math_random(6,12)
 	if max_unit_count > bb_config.max_group_size then max_unit_count = bb_config.max_group_size end
 	
 	for _, biter in pairs(biters) do

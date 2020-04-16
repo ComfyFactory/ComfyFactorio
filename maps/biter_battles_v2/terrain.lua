@@ -502,7 +502,7 @@ function Public.draw_spawn_area(surface)
 	local r = chunk_r * 32	
 	
 	for x = r * -1, r, 1 do
-		for y = r * -1, -32, 1 do
+		for y = r * -1, -4, 1 do
 			local pos = {x = x, y = y}
 			local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
 			generate_starting_area(pos, distance_to_center, surface)
