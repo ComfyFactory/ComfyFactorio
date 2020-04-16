@@ -32,7 +32,7 @@ function Public.surface()
 		["iron-ore"] = {frequency = 3.5, size = 0.65, richness = 0.5},
 		["uranium-ore"] = {frequency = 2, size = 1, richness = 1},
 		["crude-oil"] = {frequency = 3, size = 1, richness = 0.75},
-		["trees"] = {frequency = math.random(8, 24) * 0.1, size = math.random(8, 24) * 0.1, richness = math.random(1, 10) * 0.1},
+		["trees"] = {frequency = math.random(7, 22) * 0.1, size = math.random(7, 22) * 0.1, richness = math.random(1, 10) * 0.1},
 		["enemy-base"] = {frequency = 0, size = 0, richness = 0}
 	}
 	game.create_surface("bb_source", map_gen_settings)

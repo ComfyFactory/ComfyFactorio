@@ -76,17 +76,25 @@ local entity_copy_functions = {
 		global.rocket_silo[force_name].minable = false
 	end,	
 	["ammo-turret"] = function(surface, entity, target_position, force_name)
-		if not surface.can_place_entity({name = entity.name, position = target_position, force = force_name}) then return end
-		entity.clone({position = target_position, surface = surface, force = force_name})
+		local direction = 0
+		if force_name == "south" then direction = 4 end
+		local mirror_entity = {name = entity.name, position = target_position, force = force_name, direction = direction}
+		if not surface.can_place_entity(mirror_entity) then return end
+		local e = surface.create_entity(mirror_entity)
+		local inventory = entity.get_inventory(defines.inventory.turret_ammo)
+		if inventory.is_empty() then return end
+		for name, count in pairs(inventory.get_contents()) do e.insert({name = name, count = count}) end	
 	end,
 	["wall"] = function(surface, entity, target_position, force_name)
-		entity.clone({position = target_position, surface = surface, force = force_name})
+		local e = entity.clone({position = target_position, surface = surface, force = force_name})
+		e.active = true
 	end,
 	["container"] = function(surface, entity, target_position, force_name)
-		entity.clone({position = target_position, surface = surface, force = force_name})
+		local e = entity.clone({position = target_position, surface = surface, force = force_name})
+		e.active = true
 	end,
 	["fish"] = function(surface, entity, target_position, force_name)
-		local mirror_entity = {name = entity.name, position = target_position, direction = direction_translation[entity.direction]}
+		local mirror_entity = {name = entity.name, position = target_position}
 		if not surface.can_place_entity(mirror_entity) then return end
 		local e = surface.create_entity(mirror_entity)
 	end,
