@@ -18,7 +18,9 @@ function Public.settings()
 end
 
 function Public.surface()
+	--Terrain Source Surface
 	local map_gen_settings = {}
+	map_gen_settings.seed = math.random(1, 99999999)
 	map_gen_settings.water = math.random(15, 65) * 0.01
 	map_gen_settings.starting_area = 2.5
 	map_gen_settings.terrain_segmentation = math.random(30, 40) * 0.1
@@ -33,13 +35,49 @@ function Public.surface()
 		["trees"] = {frequency = math.random(8, 24) * 0.1, size = math.random(8, 24) * 0.1, richness = math.random(1, 10) * 0.1},
 		["enemy-base"] = {frequency = 0, size = 0, richness = 0}
 	}
-	game.create_surface("biter_battles", map_gen_settings)
+	game.create_surface("bb_source", map_gen_settings)
 
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
 	game.map_settings.pollution.enabled = false
 	game.map_settings.enemy_expansion.enabled = false
+	
+	--Playground Surface
+	local map_gen_settings = {
+		["water"] = 0,
+		["starting_area"] = 1,
+		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+		["default_enable_all_autoplace_controls"] = false,
+		["autoplace_settings"] = {
+			["entity"] = {treat_missing_as_default = false},
+			["tile"] = {treat_missing_as_default = false},
+			["decorative"] = {treat_missing_as_default = false},
+		},
+		autoplace_controls = {
+			["coal"] = {frequency = 0, size = 0, richness = 0},
+			["stone"] = {frequency = 0, size = 0, richness = 0},
+			["copper-ore"] = {frequency = 0, size = 0, richness = 0},
+			["iron-ore"] = {frequency = 0, size = 0, richness = 0},
+			["uranium-ore"] = {frequency = 0, size = 0, richness = 0},
+			["crude-oil"] = {frequency = 0, size = 0, richness = 0},
+			["trees"] = {frequency = 0, size = 0, richness = 0},
+			["enemy-base"] = {frequency = 0, size = 0, richness = 0}
+		},
+	}
+	local surface = game.create_surface("biter_battles", map_gen_settings)	
+	surface.request_to_generate_chunks({0,0}, 2)
+	surface.force_generate_chunk_requests()
+	
+	--Disable Nauvis
+	local surface = game.surfaces[1]
+	local map_gen_settings = surface.map_gen_settings
+	map_gen_settings.height = 3
+	map_gen_settings.width = 3
+	surface.map_gen_settings = map_gen_settings
+	for chunk in surface.get_chunks() do		
+		surface.delete_chunk({chunk.x, chunk.y})		
+	end
 end
 
 function Public.forces()
@@ -152,7 +190,14 @@ function Public.forces()
 	global.bb_evolution = {}
 	global.bb_threat_income = {}
 	global.bb_threat = {}
-	global.chunks_mirrored = {}
+	
+	global.terrain_gen = {}
+	global.terrain_gen.counter = 0
+	global.terrain_gen.chunk_mirror = {}
+	global.terrain_gen.size_of_chunk_mirror = 0
+	global.terrain_gen.chunk_copy = {}
+	global.terrain_gen.size_of_chunk_copy = 0
+	
 	global.map_pregen_message_counter = {}
 
 	for _, force in pairs(game.forces) do

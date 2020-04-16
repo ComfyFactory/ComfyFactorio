@@ -152,7 +152,7 @@ end
 
 local function on_chunk_generated(event)
 	Terrain.generate(event)
-	Mirror_terrain.add_chunks(event)
+	Mirror_terrain.add_chunk(event)
 end
 
 local function on_init()
@@ -162,9 +162,24 @@ local function on_init()
 	Team_manager.init()
 	
 	local surface = game.surfaces["biter_battles"]
+	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
+	surface.force_generate_chunk_requests()
+	
+	for y = -576, 576, 32 do
+		surface.request_to_generate_chunks({x = 16, y = y + 16}, 0)
+		surface.request_to_generate_chunks({x = -16, y = y - 16}, 0)
+	end	
+	
+	local surface = game.surfaces["bb_source"]
+	surface.request_to_generate_chunks({x = 0, y = 0}, 2)
+	surface.force_generate_chunk_requests()
 	surface.request_to_generate_chunks({x = 0, y = -256}, 8)
 	surface.force_generate_chunk_requests()
-	Terrain.generate_north_silo(surface)
+	
+	Terrain.draw_spawn_area(surface)	
+	Terrain.generate_silo(surface)
+	Terrain.generate_additional_spawn_ore(surface)
+	Terrain.draw_spawn_circle(surface)	
 end
 
 local Event = require 'utils.event'
