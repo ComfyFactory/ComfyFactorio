@@ -1,8 +1,24 @@
-local math_random = math.random
-
 local Public = {}
 
+local math_random = math.random
+local math_floor = math.floor
+local math_abs = math.abs
+
+local LootRaffle = require "functions.loot_raffle"
+
 function Public.treasure_chest(surface, position, container_name)
+	local budget = 32 + math_abs(position.y) * 6
+	budget = budget * math_random(25, 175) * 0.01
+	budget = math_floor(budget) + 1
+	local item_stacks = LootRaffle.roll(budget, 16)
+	local container = surface.create_entity({name = container_name, position = position, force = "neutral"})
+	for _, item_stack in pairs(item_stacks) do
+		container.insert(item_stack)
+	end	
+	container.minable = false
+end
+
+function Public.treasure_chest_old(surface, position, container_name)
 	
 	local chest_raffle = {}
 	local chest_loot = {			

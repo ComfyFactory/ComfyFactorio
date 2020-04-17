@@ -41,6 +41,7 @@ function Public.common_loot_crate(surface, position)
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
+	container.minable = false
 end
 
 function Public.uncommon_loot_crate(surface, position)
@@ -49,6 +50,7 @@ function Public.uncommon_loot_crate(surface, position)
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
+	container.minable = false
 end
 
 function Public.rare_loot_crate(surface, position)
@@ -57,6 +59,7 @@ function Public.rare_loot_crate(surface, position)
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
+	container.minable = false
 end
 
 function Public.epic_loot_crate(surface, position)
@@ -65,6 +68,7 @@ function Public.epic_loot_crate(surface, position)
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
+	container.minable = false
 end
 
 function Public.crash_site_chest(surface, position)
