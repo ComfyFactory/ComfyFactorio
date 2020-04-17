@@ -231,38 +231,8 @@ function Public.add_chunk(event)
 	end
 end
 
-function Public.ticking_work()
-	local terrain_gen = global.terrain_gen
-	
-	local tick = game.tick
-	
-	if tick < 60 then return end
-	
-	if tick % 4 == 0 then
-		for k, chunk in pairs(terrain_gen.chunk_copy) do		
-			if copy_chunk(chunk) then
-				reveal_chunk(chunk)
-				table_remove(terrain_gen.chunk_copy, k)
-				terrain_gen.size_of_chunk_copy = terrain_gen.size_of_chunk_copy - 1
-				terrain_gen.counter = terrain_gen.counter + 1
-			end
-			break			
-		end
-	end
-	
-	if tick % 4 == 2 then
-		for k, chunk in pairs(terrain_gen.chunk_mirror) do			
-			if mirror_chunk(chunk) then
-				reveal_chunk(chunk)
-				table_remove(terrain_gen.chunk_mirror, k)
-				terrain_gen.size_of_chunk_mirror = terrain_gen.size_of_chunk_mirror - 1
-				terrain_gen.counter = terrain_gen.counter + 1
-			end			
-			break
-		end
-	end
-	
-	if terrain_gen.counter % 512 == 511 then
+local function clear_source_surface(terrain_gen)
+	if terrain_gen.counter % 1024 == 1023 then
 		terrain_gen.counter = terrain_gen.counter + 1
 		local surface = game.surfaces.bb_source
 		local c = 0
@@ -272,6 +242,45 @@ function Public.ticking_work()
 		end
 		print("Deleted " .. c .. " source surface chunks.")
 	end
+end
+
+local function north_work()
+	local terrain_gen = global.terrain_gen
+	for k, chunk in pairs(terrain_gen.chunk_copy) do		
+		if copy_chunk(chunk) then
+			reveal_chunk(chunk)
+			table_remove(terrain_gen.chunk_copy, k)
+			terrain_gen.size_of_chunk_copy = terrain_gen.size_of_chunk_copy - 1
+			terrain_gen.counter = terrain_gen.counter + 1
+		end
+		break			
+	end
+	clear_source_surface(terrain_gen)
+end
+
+local function south_work()
+	local terrain_gen = global.terrain_gen
+	for k, chunk in pairs(terrain_gen.chunk_mirror) do			
+		if mirror_chunk(chunk) then
+			reveal_chunk(chunk)
+			table_remove(terrain_gen.chunk_mirror, k)
+			terrain_gen.size_of_chunk_mirror = terrain_gen.size_of_chunk_mirror - 1
+			terrain_gen.counter = terrain_gen.counter + 1
+		end			
+		break
+	end
+	clear_source_surface(terrain_gen)
+end
+
+local works = {
+	[1] = north_work,
+	[3] = south_work,
+}
+
+function Public.ticking_work()
+	local work = works[game.tick % 4]
+	if not work then return end
+	work()
 end
 
 return Public

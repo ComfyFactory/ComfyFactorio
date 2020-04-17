@@ -8,6 +8,7 @@ local math_random = math.random
 local math_abs = math.abs
 local math_sqrt = math.sqrt
 
+local GetNoise = require "utils.get_noise"
 local simplex_noise = require 'utils.simplex_noise'.d2
 local spawn_circle_size = 39
 local ores = {"copper-ore", "iron-ore", "stone", "coal"}
@@ -338,17 +339,18 @@ local bitera_area_distance = bb_config.bitera_area_distance * -1
 local biter_area_angle = 0.45
 
 local function is_biter_area(position)
-	if position.y - 96 > bitera_area_distance - (math_abs(position.x) * biter_area_angle) then return false end
-	if position.y + 96 < bitera_area_distance - (math_abs(position.x) * biter_area_angle) then return true end
-	
-	
-	if position.y + (get_noise(3, position) * 64) > bitera_area_distance - (math_abs(position.x) * biter_area_angle) then return false end
+	local a = bitera_area_distance - (math_abs(position.x) * biter_area_angle)	
+	if position.y - 70 > a then return false end
+	if position.y + 70 < a then return true end	
+	if position.y + (get_noise(3, position) * 64) > a then return false end
 	return true
 end
 
 local function draw_biter_area(surface, left_top_x, left_top_y)
-	if left_top_y > bb_config.bitera_area_distance * -1 + 32 then return end
+	if not is_biter_area({x = left_top_x, y = left_top_y - 96}) then return end
 	
+	local seed = game.surfaces[1].map_gen_settings.seed
+		
 	local out_of_map = {}
 	local tiles = {}
 	local i = 1
@@ -357,10 +359,9 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
 		for y = 0, 31, 1 do
 			local position = {x = left_top_x + x, y = left_top_y + y}
 			if is_biter_area(position) then
-				local noise_index = math_floor(math_abs(get_noise(3, position)) * 7) + 1
-				if noise_index > 7 then noise_index = 7 end
+				local index = math_floor(GetNoise("bb_biterland", position, seed) * 48) % 7 + 1
 				out_of_map[i] = {name = "out-of-map", position = position}
-				tiles[i] = {name = "dirt-" .. noise_index, position = position}
+				tiles[i] = {name = "dirt-" .. index, position = position}
 				i = i + 1			
 			end
 		end
@@ -403,24 +404,25 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
 end
 
 local function mixed_ore(surface, left_top_x, left_top_y)
+	local seed = game.surfaces[1].map_gen_settings.seed
+	
+	local noise = GetNoise("bb_ore", {x = left_top_x + 16, y = left_top_y + 16}, seed)
+
 	--Draw noise text values to determine which chunks are valid for mixed ore.
-	--rendering.draw_text{text = get_noise(1, {x = left_top_x + 16, y = left_top_y + 16}), surface = surface, target = {x = left_top_x + 16, y = left_top_y + 16}, color = {255, 255, 255}, time_to_live = 3600, scale = 2, font = "default-game"}
+	--rendering.draw_text{text = noise, surface = game.surfaces.biter_battles, target = {x = left_top_x + 16, y = left_top_y + 16}, color = {255, 255, 255}, scale = 2, font = "default-game"}
 
 	--Skip chunks that are too far off the ore noise value.
-	if get_noise(1, {x = left_top_x + 16, y = left_top_y + 16}) < 0.52 then return end
+	if noise < 0.45 then return end
 
 	--Draw the mixed ore patches.
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
-				local noise = get_noise(1, pos)
-				if noise > 0.82 then
-					local amount = math_random(1250, 1500) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 1.1
-					local m = (noise - 0.75) * 16
-					amount = amount * m
-					local i = math_floor(math_abs(noise * 35)) % 4 + 1
-					if i == 0 then i = 4 end
+				local noise = GetNoise("bb_ore", pos, seed)
+				if noise > 0.75 then
+					local amount = math_random(1250, 1500) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 2
+					local i = math_floor(noise * 50) % 4 + 1
 					surface.create_entity({name = ores[i], position = pos, amount = amount})
 				end
 			end
