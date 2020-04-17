@@ -415,7 +415,9 @@ local function build_groups(player)
           table.insert(groups, tostring(g.id))
         end
       end
-		end
+		else
+      g = nil
+    end
 	end
 	table.insert(groups, "Select Group")
   return groups

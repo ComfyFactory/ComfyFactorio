@@ -139,7 +139,7 @@ local function setup_next_collapse()
 	end
 
 	if not map_collapse.positions then
-		if math_random(1, 64) == 1 then map_collapse.last_position = {x = 0, y = 128} end
+		--if math_random(1, 64) == 1 then map_collapse.last_position = {x = 0, y = 128} end
 		set_positions(surface)
 		return
 	end
