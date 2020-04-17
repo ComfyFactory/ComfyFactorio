@@ -2,6 +2,7 @@ local Public = {}
 local BiterRaffle = require "functions.biter_raffle"
 local bb_config = require "maps.biter_battles_v2.config"
 
+local table_insert = table.insert
 local math_floor = math.floor
 local math_random = math.random
 local math_abs = math.abs
@@ -19,6 +20,11 @@ for x = 0, 31, 1 do
 	end
 end
 local size_of_chunk_tile_vectors = #chunk_tile_vectors
+
+local loading_chunk_vectors = {}
+for k, v in pairs(chunk_tile_vectors) do
+	if v[1] == 0 or v[1] == 31 or v[2] == 0 or v[2] == 31 then table_insert(loading_chunk_vectors, v) end
+end
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -238,8 +244,8 @@ local function generate_starting_area(pos, distance_to_center, surface)
 
 				elseif distance_from_spawn_wall > 0 and distance_from_spawn_wall < 4.5 then
 						local name = "wooden-chest"
-					local r_max = math_floor(math.abs(distance_from_spawn_wall)) + 2
-						if math_random(1,3) == 1 then name = name .. "-remnants" end
+						local r_max = math_floor(math.abs(distance_from_spawn_wall)) + 2
+						if math_random(1,3) == 1 and not is_horizontal_border_river(pos) then name = name .. "-remnants" end
 						if math_random(1,r_max) == 1 then 
 							local e = surface.create_entity({name = name, position = pos, force = "neutral"})
 							e.active = false
@@ -253,7 +259,7 @@ local function generate_starting_area(pos, distance_to_center, surface)
 							e.active = false
 						end
 					else
-						if math_random(1, 24) == 1 then
+						if math_random(1, 24) == 1 and not is_horizontal_border_river(pos) then
 							if surface.can_place_entity({name = "gun-turret", position = pos}) then
 								surface.create_entity({name = "gun-turret-remnants", position = pos, force = "neutral"})
 							end
@@ -271,7 +277,7 @@ local function generate_river(surface, left_top_x, left_top_y)
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
-			if is_horizontal_border_river(pos) and not is_within_spawn_circle(pos) then
+			if is_horizontal_border_river(pos) and distance_to_center > spawn_circle_size - 2 then
 				surface.set_tiles({{name = "deepwater", position = pos}})
 				if math_random(1, 64) == 1 then 
 					local e = surface.create_entity({name = "fish", position = pos}) 
@@ -433,6 +439,12 @@ function Public.generate(event)
 	local left_top_y = left_top.y
 	
 	if surface.name == "biter_battles" then
+		local tiles = {}
+		if math_abs(left_top_x) > 64 or math_abs(left_top_y) > 64 then
+			for k, v in pairs(loading_chunk_vectors) do tiles[k] = {name = "out-of-map", position = {left_top_x + v[1], left_top_y + v[2]}} end
+		end
+		surface.set_tiles(tiles, false)
+		--[[
 		if math_abs(left_top.x) > 64 then
 			if left_top.y == 0 then
 				local tiles = {}
@@ -457,6 +469,7 @@ function Public.generate(event)
 				surface.set_tiles(tiles, false)
 			end
 		end
+		]]
 		return
 	end
 
@@ -474,24 +487,37 @@ function Public.generate(event)
 end
 
 function Public.draw_spawn_circle(surface)
-	for x = spawn_circle_size * -1, spawn_circle_size, 1 do
-		for y = spawn_circle_size * -1, 0, 1 do
+	local tiles = {}
+	for x = spawn_circle_size * -1, -1, 1 do
+		for y = spawn_circle_size * -1, -1, 1 do
 			local pos = {x = x, y = y}
 			local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
 			if distance_to_center <= spawn_circle_size then
-				surface.set_tiles({{name = "deepwater", position = pos}}, true)
-					
+				table_insert(tiles, {name = "deepwater", position = pos})
+
 				if distance_to_center < 9.5 then 
-					surface.set_tiles({{name = "refined-concrete", position = pos}}, true)
+					table_insert(tiles, {name = "refined-concrete", position = pos})
 					if distance_to_center < 7 then 
-						surface.set_tiles({{name = "sand-1", position = pos}}, true)
+						table_insert(tiles, {name = "sand-1", position = pos})
 					end
-				else
-					if math_random(1, 48) == 1 then 
-						local e = surface.create_entity({name = "fish", position = pos})
-						e.active = false
-					end
+			--	else
+					--
 				end			
+			end
+		end
+	end
+	
+	for i = 1, #tiles, 1 do
+		table_insert(tiles, {name = tiles[i].name, position = {tiles[i].position.x * -1 - 1, tiles[i].position.y}})
+	end
+	
+	surface.set_tiles(tiles, true)
+	
+	for i = 1, #tiles, 1 do
+		if tiles[i].name == "deepwater" then
+			if math_random(1, 48) == 1 then 
+				local e = surface.create_entity({name = "fish", position = tiles[i].position})
+				e.active = false
 			end
 		end
 	end

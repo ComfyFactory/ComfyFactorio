@@ -181,7 +181,7 @@ local function mirror_chunk(chunk)
 
 	if chunk[2] == 1 then
 		for _, tile in pairs(source_surface.find_tiles_filtered({area = source_area})) do
-			target_surface.set_tiles({{name = tile.name, position = {x = tile.position.x * -1, y = (tile.position.y * -1) - 1}}}, true)
+			target_surface.set_tiles({{name = tile.name, position = {x = tile.position.x * -1 - 1 , y = (tile.position.y * -1) - 1}}}, true)
 		end
 		chunk[2] = chunk[2] + 1
 		return
@@ -198,7 +198,7 @@ local function mirror_chunk(chunk)
 	for _, decorative in pairs(source_surface.find_decoratives_filtered{area = source_area}) do
 		target_surface.create_decoratives{
 			check_collision = false,
-			decoratives = {{name = decorative.decorative.name, position = {x = decorative.position.x * -1, y = (decorative.position.y * -1) - 1}, amount = decorative.amount}}
+			decoratives = {{name = decorative.decorative.name, position = {x = (decorative.position.x * -1) - 1, y = (decorative.position.y * -1) - 1}, amount = decorative.amount}}
 		}
 	end
 	
@@ -238,7 +238,7 @@ function Public.ticking_work()
 	
 	if tick < 60 then return end
 	
-	if game.tick % 2 == 1 then
+	if tick % 4 == 0 then
 		for k, chunk in pairs(terrain_gen.chunk_copy) do		
 			if copy_chunk(chunk) then
 				reveal_chunk(chunk)
@@ -248,7 +248,9 @@ function Public.ticking_work()
 			end
 			break			
 		end
-	else
+	end
+	
+	if tick % 4 == 2 then
 		for k, chunk in pairs(terrain_gen.chunk_mirror) do			
 			if mirror_chunk(chunk) then
 				reveal_chunk(chunk)

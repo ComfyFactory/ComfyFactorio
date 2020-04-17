@@ -166,8 +166,12 @@ local function on_init()
 	surface.force_generate_chunk_requests()
 	
 	for y = -576, 576, 32 do
+		surface.request_to_generate_chunks({x = 80, y = y + 16}, 0)
+		surface.request_to_generate_chunks({x = 48, y = y + 16}, 0)
 		surface.request_to_generate_chunks({x = 16, y = y + 16}, 0)
 		surface.request_to_generate_chunks({x = -16, y = y - 16}, 0)
+		surface.request_to_generate_chunks({x = -48, y = y - 16}, 0)
+		surface.request_to_generate_chunks({x = -80, y = y - 16}, 0)
 	end	
 	
 	local surface = game.surfaces["bb_source"]
