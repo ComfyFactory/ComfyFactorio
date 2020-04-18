@@ -293,27 +293,15 @@ function Public_event.mining_buffs(event)
 	local tech = mining_researches[event.research.name]
 
 	if tech.bonus_productivity then
-		if tech.infinite then
-			game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity * (event.technology.level - tech.infinite_level)
-		else
-			game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity
-		end
+		game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity
 	end
 
 	if tech.bonus_mining_speed then
-		if tech.infinite then
-			game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed * (event.technology.level - tech.infinite_level)
-		else
-			game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed
-		end
+		game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed
 	end
 
 	if tech.bonus_inventory then
-		if tech.infinite then
-			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory * (event.technology.level - tech.infinite_level)
-		else
-			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory
-		end
+		game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory
 	end
 end
 
@@ -324,11 +312,17 @@ function Public_event.on_technology_effects_reset(event)
 
 		local fake_event = {}
 		Public_event.mining_buffs(nil)
-		for tech in pairs(mining_researches) do
+		for tech, bonuses in pairs(mining_researches) do
 			tech = game.forces.player.technologies[tech]
-			if tech.researched == true then
+			if tech.researched == true or bonuses.infinite == true then
 				fake_event.research = tech
-				Public_event.mining_buffs(fake_event)
+				if bonuses.infinite and bonuses.infinite_level and tech.level > bonuses.infinite_level then
+					for i = bonuses.infinite_level, tech.level - 1 do
+						Public_event.mining_buffs(fake_event)
+					end
+				else
+					Public_event.mining_buffs(fake_event)					
+				end
 			end
 		end
 	end
