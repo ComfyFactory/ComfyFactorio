@@ -2,7 +2,7 @@ local Public = {}
 local bb_config = require "maps.biter_battles_v2.config"
 local math_random = math.random
 
-local vector_radius = 256
+local vector_radius = 512
 local attack_vectors = {}
 attack_vectors.north = {}
 attack_vectors.south = {}
@@ -258,14 +258,16 @@ local function send_group(unit_group, force_name, nearest_player_unit)
 	local commands = {}
 	
 	local vector = attack_vectors[force_name][math_random(1, size_of_vectors)]
-	local position = {target.x + vector[1], target.y + vector[2]}
+	local distance_modifier = math_random(25, 100) * 0.01
+	
+	local position = {target.x + (vector[1] * distance_modifier), target.y + (vector[2] * distance_modifier)}
 	position = unit_group.surface.find_non_colliding_position("stone-furnace", position, 96, 1)
 	if position then
 		if math.abs(position.y) < math.abs(unit_group.position.y) then
 			commands[#commands + 1] = {
 				type = defines.command.attack_area,
 				destination = position,
-				radius = 24,
+				radius = 16,
 				distraction = defines.distraction.by_enemy
 			}
 		end
