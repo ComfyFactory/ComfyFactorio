@@ -268,18 +268,24 @@ local function send_group(unit_group, force_name, side_target)
 	
 	unit_group.set_command({
 		type = defines.command.compound,
-		structure_type = defines.compound_command.return_last,
+		structure_type = defines.compound_command.logical_and,
 		commands = commands
 	})
 	return true
 end
 
 local function get_unit_group_position(spawner)
-	local p = spawner.surface.find_non_colliding_position("electric-furnace", spawner.position, 512, 1)
+	local p	
+	if spawner.force.name == "north_biters" then
+		p = {x = spawner.position.x, y = spawner.position.y + 4}
+	else
+		p = {x = spawner.position.x, y = spawner.position.y - 4}
+	end
+	p = spawner.surface.find_non_colliding_position("electric-furnace", p, 512, 1)
 	if not p then
 		if global.bb_debug then game.print("No unit_group_position found for team " .. spawner.force.name) end
 		return 
-	end	
+	end
 	return p
 end
 
