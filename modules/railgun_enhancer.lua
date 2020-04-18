@@ -56,7 +56,7 @@ local function do_splash_damage_around_entity(source_entity, player)
 		}
 	local entities = source_entity.surface.find_entities_filtered({area = splash_area})
 	for _, entity in pairs(entities) do
-		if entity.health and entity ~= source_entity and entity ~= player then
+		if entity.valid and entity.health and entity ~= source_entity and entity ~= player then
 			if additional_visual_effects then
 				local surface = entity.surface
 				surface.create_entity({name = "railgun-beam", position = source_entity.position, source = source_entity.position, target = entity.position})

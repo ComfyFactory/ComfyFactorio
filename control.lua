@@ -27,7 +27,7 @@ require "comfy_panel.config"
 require "modules.autostash"
 
 ---- enable modules here ----
-require "modules.admins_operate_biters"
+--require "modules.admins_operate_biters"
 --require "modules.the_floor_is_lava"
 --require "modules.biters_landfill_on_death"
 --require "modules.autodecon_when_depleted"
@@ -46,7 +46,7 @@ require "modules.admins_operate_biters"
 --require "modules.fluids_are_explosive"
 --require "modules.hunger"
 --require "modules.hunger_games"
-require "modules.pistol_buffs"
+--require "modules.pistol_buffs"
 --require "modules.players_trample_paths"
 --require "modules.railgun_enhancer"
 --require "modules.restrictive_fluid_mining"
@@ -68,7 +68,7 @@ require "modules.pistol_buffs"
 -----------------------------
 
 ---- enable maps here ---- (maps higher up in the list may be more actually playable)
-require "maps.chronosphere.main"
+--require "maps.chronosphere.main"
 --require "maps.fish_defender.main"
 --require "maps.biter_battles_v2.main"
 --require "maps.native_war.main"

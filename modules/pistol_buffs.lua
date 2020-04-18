@@ -15,6 +15,7 @@ local function on_entity_damaged(event)
   if not weapon.valid_for_read or not ammo.valid_for_read then return end
 	if weapon.name ~= "pistol" then return end
 	if ammo.name ~= "firearm-magazine" and ammo.name ~= "piercing-rounds-magazine" and ammo.name ~= "uranium-rounds-magazine" then return end
+  if not event.entity.valid then return end 
 	event.entity.damage(event.final_damage_amount * 4, player.force, "impact", player)
 end
 
