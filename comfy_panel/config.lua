@@ -82,7 +82,7 @@ local function on_gui_click(event)
 	end
 end
 
-comfy_panel_tabs["Config"] = {gui = build_config_gui, admin = false}
+comfy_panel_tabs["Config"] = build_config_gui
 
 
 local event = require 'utils.event'
