@@ -181,7 +181,7 @@ local function hidden_biter(entity)
 	if math_random(1, 64) == 1 then
 		BiterHealthBooster.add_boss_unit(unit, m * 10 + 1, 0.38)
 	else
-		BiterHealthBooster.add_unit(unit, m * 0.2 + 1)
+		BiterHealthBooster.add_unit(unit, m * 0.1 + 1)
 	end
 end
 
@@ -290,6 +290,7 @@ local function on_entity_died(event)
 	end
 
 	if event.entity.force.index == 3 then
+		if event.entity.name == "character" then return end
 		--local r_max = 15 - math.floor(math.abs(event.entity.position.y) / (level_depth * 0.5))
 		--if r_max < 3 then r_max = 3 end
 		if math_random(1,8) == 1 then

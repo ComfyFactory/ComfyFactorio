@@ -7,16 +7,20 @@ local math_abs = math.abs
 local LootRaffle = require "functions.loot_raffle"
 
 function Public.treasure_chest(surface, position, container_name)
-	local budget = 32 + math_abs(position.y) * 5
+	local budget = 32 + math_abs(position.y) * 2
 	budget = budget * math_random(25, 175) * 0.01
-	if math_random(1,200) == 1 then budget = budget * 5 end
+	if math_random(1,200) == 1 then 
+		budget = budget * 10
+		container_name = "compilatron-chest"
+	end
 	budget = math_floor(budget) + 1
 
-	local item_stacks = LootRaffle.roll(budget, 16)
+	local item_stacks = LootRaffle.roll(budget, 8)
 	local container = surface.create_entity({name = container_name, position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
 	end
+	container.minable = false
 end
 
 function Public.treasure_chest_old(surface, position, container_name)

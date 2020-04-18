@@ -199,6 +199,7 @@ local function process_level_8_position(p, seed, tiles, entities, markets, treas
 			end
 			if math_random(1,96) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end
 			if math_random(1,5) > 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
+			if math_random(1,256) == 1 then entities[#entities + 1] = {name ="land-mine", position = p, force = "enemy"} end
 			return
 		end
 		return
@@ -215,7 +216,7 @@ local function process_level_8_position(p, seed, tiles, entities, markets, treas
 	if scrapyard > -0.15 and scrapyard < 0.15 then
 		if math_floor(large_caves * 10) % 4 < 3 then
 			tiles[#tiles + 1] = {name = "dirt-7", position = p}
-			if math_random(1,2) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
+			if math_random(1,2) == 1 then entities[#entities +  1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
 			return
 		end
 	end
@@ -223,6 +224,7 @@ local function process_level_8_position(p, seed, tiles, entities, markets, treas
 	if math_random(1,64) == 1 and cave_ponds > 0.6 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
 
 	tiles[#tiles + 1] = {name = "stone-path", position = p}
+	if math_random(1,256) == 1 then entities[#entities +1] = {name ="land-mine", position = p, force = "enemy"} end
 end
 
 local function process_level_7_position(p, seed, tiles, entities, markets, treasure)
