@@ -3,15 +3,11 @@
 require "on_tick_schedule"
 local Biter_health_booster = require "modules.biter_health_booster"
 local Ai = require "maps.biter_battles_v2.ai"
-local Biters_landfill = require "maps.biter_battles_v2.biters_landfill"
-local Chat = require "maps.biter_battles_v2.chat"
-local Combat_balance = require "maps.biter_battles_v2.combat_balance"
+local Functions = require "maps.biter_battles_v2.functions"
 local Game_over = require "maps.biter_battles_v2.game_over"
 local Gui = require "maps.biter_battles_v2.gui"
 local Init = require "maps.biter_battles_v2.init"
-local Map_info = require "maps.biter_battles_v2.map_info"
 local Mirror_terrain = require "maps.biter_battles_v2.mirror_terrain"
-local No_turret_creep = require "maps.biter_battles_v2.no_turret_creep"
 local Team_manager = require "maps.biter_battles_v2.team_manager"
 local Terrain = require "maps.biter_battles_v2.terrain"
 
@@ -37,7 +33,7 @@ local function on_player_joined_game(event)
 		game.permissions.get_group("spectator").add_player(player)
 	end
 
-	Map_info.player_joined_game(player)
+	Functions.create_map_intro_button(player)
 	Team_manager.draw_top_toggle_button(player)
 end
 
@@ -47,24 +43,24 @@ local function on_gui_click(event)
 	if not element then return end
 	if not element.valid then return end
 
-	if Map_info.gui_click(player, element) then return end
+	if Functions.map_intro_click(player, element) then return end
 	Team_manager.gui_click(event)
 end
 
 local function on_research_finished(event)
-	Combat_balance.research_finished(event)
+	Functions.combat_balance(event)
 end
 
 local function on_console_chat(event)
-	Chat.share(event)
+	Functions.share_chat(event)
 end
 
 local function on_built_entity(event)
-	No_turret_creep.deny_building(event)
+	Functions.no_turret_creep(event)
 end
 
 local function on_robot_built_entity(event)
-	No_turret_creep.deny_building(event)
+	Functions.no_turret_creep(event)
 	Terrain.deny_construction_bots(event)
 end
 
@@ -72,7 +68,7 @@ local function on_entity_died(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if Ai.subtract_threat(entity) then Gui.refresh_threat() end
-	if Biters_landfill.entity_died(entity) then return end
+	if Functions.biters_landfill(entity) then return end
 	Game_over.silo_death(event)
 end
 
