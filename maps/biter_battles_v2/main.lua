@@ -57,11 +57,13 @@ end
 
 local function on_built_entity(event)
 	Functions.no_turret_creep(event)
+	Functions.add_target_entity(event.created_entity)
 end
 
 local function on_robot_built_entity(event)
 	Functions.no_turret_creep(event)
 	Terrain.deny_construction_bots(event)
+	Functions.add_target_entity(event.created_entity)
 end
 
 local function on_entity_died(event)
@@ -161,14 +163,21 @@ local function on_init()
 	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
 	surface.force_generate_chunk_requests()
 	
-	for y = -576, 576, 32 do
+	for y = 0, 576, 32 do
 		surface.request_to_generate_chunks({x = 80, y = y + 16}, 0)
 		surface.request_to_generate_chunks({x = 48, y = y + 16}, 0)
 		surface.request_to_generate_chunks({x = 16, y = y + 16}, 0)
 		surface.request_to_generate_chunks({x = -16, y = y - 16}, 0)
 		surface.request_to_generate_chunks({x = -48, y = y - 16}, 0)
 		surface.request_to_generate_chunks({x = -80, y = y - 16}, 0)
-	end	
+		
+		surface.request_to_generate_chunks({x = 80, y = y * -1 + 16}, 0)
+		surface.request_to_generate_chunks({x = 48, y = y * -1 + 16}, 0)
+		surface.request_to_generate_chunks({x = 16, y = y * -1 + 16}, 0)
+		surface.request_to_generate_chunks({x = -16, y = y * -1 - 16}, 0)
+		surface.request_to_generate_chunks({x = -48, y = y * -1 - 16}, 0)
+		surface.request_to_generate_chunks({x = -80, y = y * -1 - 16}, 0)
+	end		
 	
 	local surface = game.surfaces["bb_source"]
 	surface.request_to_generate_chunks({x = 0, y = 0}, 2)

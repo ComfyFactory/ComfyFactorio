@@ -174,6 +174,7 @@ function Public.forces()
 	
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end
 
+	global.target_entities = {}
 	global.rocket_silo = {}
 	global.spectator_rejoin_delay = {}
 	global.spy_fish_timeout = {}
@@ -183,7 +184,6 @@ function Public.forces()
 	global.unit_spawners.south_biters = {}
 	global.active_biters = {}
 	global.unit_groups = {}
-	global.biter_raffle = {}
 	global.evo_raise_counter = 1
 	global.next_attack = "north"
 	if math.random(1,2) == 1 then global.next_attack = "south" end
@@ -206,9 +206,9 @@ function Public.forces()
 		game.forces[force.name].technologies["artillery-shell-speed-1"].enabled = false
 		game.forces[force.name].technologies["atomic-bomb"].enabled = false
 		game.forces[force.name].research_queue_enabled = true
+		global.target_entities[force.index] = {}
 		global.spy_fish_timeout[force.name] = 0
 		global.active_biters[force.name] = {}
-		global.biter_raffle[force.name] = {}
 		global.bb_evolution[force.name] = 0
 		global.bb_threat_income[force.name] = 0
 		global.bb_threat[force.name] = 0

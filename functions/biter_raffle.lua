@@ -13,7 +13,7 @@ local math_floor = math.floor
 local function get_biter_raffle_table(level)
 	local raffle = {
 		["small-biter"] = 1000 - level * 1.75,		
-		["medium-biter"] = level,		
+		["medium-biter"] = -250 + level * 1.5,		
 		["big-biter"] = 0,		
 		["behemoth-biter"] = 0,
 	}
@@ -48,7 +48,7 @@ end
 local function get_spitter_raffle_table(level)
 	local raffle = {
 		["small-spitter"] = 1000 - level * 1.75,		
-		["medium-spitter"] = level,		
+		["medium-spitter"] = -250 + level * 1.5,
 		["big-spitter"] = 0,		
 		["behemoth-spitter"] = 0,
 	}

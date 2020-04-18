@@ -1,5 +1,6 @@
 local Public = {}
 
+local Functions = require "maps.biter_battles_v2.functions"
 local table_remove = table.remove
 local table_insert = table.insert
 
@@ -74,6 +75,7 @@ local entity_copy_functions = {
 		if surface.count_entities_filtered({name = "rocket-silo", area = {{target_position.x - 8, target_position.y - 8},{target_position.x + 8, target_position.y + 8}}}) > 0 then return end
 		global.rocket_silo[force_name] = surface.create_entity({name = entity.name, position = target_position, direction = direction_translation[entity.direction], force = force_name})
 		global.rocket_silo[force_name].minable = false
+		Functions.add_target_entity(global.rocket_silo[force_name])
 	end,	
 	["ammo-turret"] = function(surface, entity, target_position, force_name)
 		local direction = 0
@@ -81,6 +83,7 @@ local entity_copy_functions = {
 		local mirror_entity = {name = entity.name, position = target_position, force = force_name, direction = direction}
 		if not surface.can_place_entity(mirror_entity) then return end
 		local e = surface.create_entity(mirror_entity)
+		Functions.add_target_entity(e)
 		local inventory = entity.get_inventory(defines.inventory.turret_ammo)
 		if inventory.is_empty() then return end
 		for name, count in pairs(inventory.get_contents()) do e.insert({name = name, count = count}) end	
