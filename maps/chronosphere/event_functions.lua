@@ -293,44 +293,16 @@ function Public_event.mining_buffs(event)
 	local tech = mining_researches[event.research.name]
 
 	if tech.bonus_productivity then
-		if tech.infinite then
-			game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity * (event.technology.level - tech.infinite_level)
-		else
-			game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity
-		end
+		game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + tech.bonus_productivity
 	end
 
 	if tech.bonus_mining_speed then
-		if tech.infinite then
-			game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed * (event.technology.level - tech.infinite_level)
-		else
-			game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed
-		end
+		game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + tech.bonus_mining_speed
 	end
 
 	if tech.bonus_inventory then
-		if tech.infinite then
-			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory * (event.technology.level - tech.infinite_level)
-		else
-			game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory
-		end
+		game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + tech.bonus_inventory
 	end
-end
-
-function Public_event.pistol_buffs(event)
-	if global.objective.pistolupgradetier == 0 then return end
-	if not event.cause then return end
-	if event.cause.name ~= "player" then return end
-	if event.damage_type.name ~= "physical" then return end
-	local player = event.cause
-	if player.shooting_state.state == defines.shooting.not_shooting then return end
-	local weapon = event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].name
-	local ammo = event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].name
-	game.print(ammo)
-	game.print(wapon)
-	if weapon ~= "pistol" then return end
-	if ammo ~= "firearm-magazine" and ammo ~= "piercing-rounds-magazine" and ammo ~= "uranium-rounds-magazine" then return end
-	event.entity.damage(event.final_damage_amount * 4, player.force, "physical", player)
 end
 
 function Public_event.on_technology_effects_reset(event)
@@ -340,11 +312,17 @@ function Public_event.on_technology_effects_reset(event)
 
 		local fake_event = {}
 		Public_event.mining_buffs(nil)
-		for tech in pairs(mining_researches) do
+		for tech, bonuses in pairs(mining_researches) do
 			tech = game.forces.player.technologies[tech]
-			if tech.researched == true then
+			if tech.researched == true or bonuses.infinite == true then
 				fake_event.research = tech
-				Public_event.mining_buffs(fake_event)
+				if bonuses.infinite and bonuses.infinite_level and tech.level > bonuses.infinite_level then
+					for i = bonuses.infinite_level, tech.level - 1 do
+						Public_event.mining_buffs(fake_event)
+					end
+				else
+					Public_event.mining_buffs(fake_event)					
+				end
 			end
 		end
 	end
