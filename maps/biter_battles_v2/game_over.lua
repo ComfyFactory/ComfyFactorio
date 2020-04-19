@@ -336,6 +336,11 @@ local function set_victory_time()
 	global.victory_time = global.victory_time .. " minutes"
 end
 
+local function freeze_all_biters(surface)
+	for _, e in pairs(surface.find_entities_filtered({force = "north_biters"})) do e.active = false end
+	for _, e in pairs(surface.find_entities_filtered({force = "south_biters"})) do e.active = false end
+end
+
 function Public.silo_death(event)
 	if not event.entity.valid then return end
 	if event.entity.name ~= "rocket-silo" then return end
@@ -351,11 +356,7 @@ function Public.silo_death(event)
 			create_victory_gui(player)
 			show_mvps(player)
 		end
-		
-		game.forces["north_biters"].set_friend("north", true)
-		game.forces["north"].set_friend("north_biters", true)
-		game.forces["south_biters"].set_friend("south", true)
-		game.forces["south"].set_friend("south_biters", true)
+
 		global.spy_fish_timeout["north"] = game.tick + 999999
 		global.spy_fish_timeout["south"] = game.tick + 999999
 		global.server_restart_timer = 180			
@@ -368,6 +369,8 @@ function Public.silo_death(event)
 		
 		fireworks(event.entity.surface)
 		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)
+		
+		freeze_all_biters(event.entity.surface)
 	end
 end
 
