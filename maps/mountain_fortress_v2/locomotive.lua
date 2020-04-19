@@ -66,14 +66,14 @@ end
 ]]
 
 local market_offers = {
-	{price = {{'coin', 25}}, offer = {type = 'give-item', item = "raw-fish"}},
-	{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'wood', count = 50}},
-	{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
-	{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
-	{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'stone', count = 50}},
-	{price = {{"coin", 50}}, offer = {type = 'give-item', item = 'coal', count = 50}},
-	{price = {{"coin", 80}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
-	{price = {{"coin", 25}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
+	{price = {{'coin', 5}}, offer = {type = 'give-item', item = "raw-fish"}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'wood', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'stone', count = 50}},
+	{price = {{"coin", 10}}, offer = {type = 'give-item', item = 'coal', count = 50}},
+	{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},	
+	{price = {{"coin", 5}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
 }
 
 local function create_wagon_room()
