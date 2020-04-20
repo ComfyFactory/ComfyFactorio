@@ -1,7 +1,8 @@
 --[[
-roll(budget, max_slots) returns a table with item-stacks
+roll(budget, max_slots, blacklist) returns a table with item-stacks
 budget		-	the total value of the item stacks combined
 max_slots	-	the maximum amount of item stacks to return
+blacklist		-	optional list of item names that can not be rolled. example: {["substation"] = true, ["roboport"] = true,}
 ]]
 
 local Public = {}
@@ -223,7 +224,7 @@ local function get_raffle_keys()
 	return raffle_keys
 end
 
-function Public.roll_item_stack(remaining_budget)
+function Public.roll_item_stack(remaining_budget, blacklist)
 	if remaining_budget <= 0 then return end
 	local raffle_keys = get_raffle_keys()
 	local item_name = false
@@ -231,7 +232,7 @@ function Public.roll_item_stack(remaining_budget)
 	for _, index in pairs(raffle_keys) do
 		item_name = item_names[index]
 		item_worth = item_worths[item_name]
-		if item_worth <= remaining_budget then break end
+		if not blacklist[item_name] and item_worth <= remaining_budget then break end
 	end
 	
 	local stack_size = game.item_prototypes[item_name].stack_size
@@ -250,13 +251,13 @@ function Public.roll_item_stack(remaining_budget)
 	return {name = item_name, count = item_count}
 end
 
-local function roll_item_stacks(remaining_budget, max_slots)
+local function roll_item_stacks(remaining_budget, max_slots, blacklist)
 	local item_stack_set = {}
 	local item_stack_set_worth = 0
 	
 	for i = 1, max_slots, 1 do
 		if remaining_budget <= 0 then break end
-		local item_stack = Public.roll_item_stack(remaining_budget)
+		local item_stack = Public.roll_item_stack(remaining_budget, blacklist)
 		item_stack_set[i] = item_stack
 		remaining_budget = remaining_budget - item_stack.count * item_worths[item_stack.name]
 		item_stack_set_worth = item_stack_set_worth + item_stack.count * item_worths[item_stack.name]
@@ -265,9 +266,16 @@ local function roll_item_stacks(remaining_budget, max_slots)
 	return item_stack_set, item_stack_set_worth	
 end
 
-function Public.roll(budget, max_slots)
+function Public.roll(budget, max_slots, blacklist)
 	if not budget then return end
 	if not max_slots then return end
+	
+	local b
+	if not blacklist then
+		b = {}
+	else
+		b = blacklist
+	end
 	
 	budget = math_floor(budget)	
 	if budget == 0 then return end
@@ -276,7 +284,7 @@ function Public.roll(budget, max_slots)
 	local final_stack_set_worth = 0
 	
 	for attempt = 1, 5, 1 do
-		local item_stack_set, item_stack_set_worth = roll_item_stacks(budget, max_slots)
+		local item_stack_set, item_stack_set_worth = roll_item_stacks(budget, max_slots, b)
 		if item_stack_set_worth > final_stack_set_worth or item_stack_set_worth == budget then
 			final_stack_set = item_stack_set
 			final_stack_set_worth = item_stack_set_worth
