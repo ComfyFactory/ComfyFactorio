@@ -91,7 +91,7 @@ local function on_gui_switch_state_changed(event)
 	end
 end
 
-comfy_panel_tabs["MapSettings"] = build_config_gui
+comfy_panel_tabs["MapSettings"] = {gui = build_config_gui, admin = true}
 
 
 local event = require 'utils.event'
