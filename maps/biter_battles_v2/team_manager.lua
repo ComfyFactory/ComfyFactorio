@@ -364,8 +364,4 @@ function Public.gui_click(event)
 	end	
 end
 
-function Public.init()
-	global.tm_custom_name = {}
-end
-
 return Public

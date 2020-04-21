@@ -106,7 +106,7 @@ local function add_prod_button(elem, gui_value)
 	prod_button.style.width = 25
 end
 
-local function create_main_gui(player)
+function Public.create_main_gui(player)
 	local is_spec = player.force.name == "spectator"
 	if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
 
@@ -187,7 +187,7 @@ local function create_main_gui(player)
 		local l = t.add  { type = "label", caption = "Evo:"}
 		--l.style.minimal_width = 25
 		local biter_force = game.forces[gui_value.biter_force]
-		local tooltip = gui_value.t1 .. "\nHealth: " .. global.biter_health_boost_forces[biter_force.index] * 100 .. "%" .. "\nDamage: " .. (biter_force.get_ammo_damage_modifier("melee") + 1) * 100 .. "%"
+		local tooltip = gui_value.t1 .. "\nHealth: " .. Functions.get_health_modifier(biter_force) * 100 .. "%" .. "\nDamage: " .. (biter_force.get_ammo_damage_modifier("melee") + 1) * 100 .. "%"
 		
 		l.tooltip = tooltip		
 		
@@ -244,7 +244,7 @@ end
 function Public.refresh()
 	for _, player in pairs(game.connected_players) do
 		if player.gui.left["bb_main_gui"] then
-			create_main_gui(player)
+			Public.create_main_gui(player)
 		end
 	end
 	global.gui_refresh_delay = game.tick + 5
@@ -347,7 +347,7 @@ function spectate(player, forced_join)
 	end
 	game.permissions.get_group("spectator").add_player(player)
 	global.spectator_rejoin_delay[player.name] = game.tick
-	create_main_gui(player)
+	Public.create_main_gui(player)
 	player.spectator = true
 end
 
@@ -396,7 +396,7 @@ local function on_gui_click(event)
 		if player.gui.left["bb_main_gui"] then
 			player.gui.left["bb_main_gui"].destroy()
 		else
-			create_main_gui(player)
+			Public.create_main_gui(player)
 		end
 		return
 	end
@@ -421,11 +421,11 @@ local function on_gui_click(event)
 
 	if name == "bb_hide_players" then
 		global.bb_view_players[player.name] = false
-		create_main_gui(player)
+		Public.create_main_gui(player)
 	end
 	if name == "bb_view_players" then
 		global.bb_view_players[player.name] = true
-		create_main_gui(player)
+		Public.create_main_gui(player)
 	end
 end
 
@@ -452,7 +452,7 @@ local function on_player_joined_game(event)
 	--end
 
 	create_sprite_button(player)
-	create_main_gui(player)
+	Public.create_main_gui(player)
 end
 
 event.add(defines.events.on_gui_click, on_gui_click)

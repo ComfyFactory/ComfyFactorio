@@ -1,5 +1,11 @@
-local Public = {}
+local Functions = require "maps.biter_battles_v2.functions"
+local Gui = require "maps.biter_battles_v2.gui"
+local Init = require "maps.biter_battles_v2.init"
 local Server = require 'utils.server'
+
+local math_random = math.random
+
+local Public = {}
 
 local gui_values = {
 		["north"] = {c1 = "Team North", color1 = {r = 0.55, g = 0.55, b = 0.99}},
@@ -34,77 +40,7 @@ local function create_victory_gui(player)
 	l.style.font = "heading-2"
 	l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 end
-
-local function destroy_entity(e)
-	if not e.valid then return end
-	local names = {"big-artillery-explosion", "big-explosion", "big-explosion", "big-explosion", "fire-flame", "massive-explosion"}
-	e.surface.create_entity({name = names[math.random(1,#names)], position = e.position})
-	e.die()
-end
-
-local function create_kaboom(surface, pos)	
-	surface.create_entity({	
-		name = "explosive-cannon-projectile",
-		position = pos,
-		force = "enemy",
-		target = pos,
-		speed = 1
-	})	
-end
-
-local function annihilate_base_v2(center_pos, surface, force_name)		
-	local positions = {}
-	for x = -80, 80, 1 do
-		for y = -80, 80, 1 do
-			local pos = {x = center_pos.x + x, y = center_pos.y + y}
-			local distance_to_center = math.ceil(math.sqrt((pos.x - center_pos.x)^2 + (pos.y - center_pos.y)^2))
-			if distance_to_center < 35 and math.random(1,7) == 1 then
-				if not positions[distance_to_center] then positions[distance_to_center] = {} end
-				positions[distance_to_center][#positions[distance_to_center] + 1] = pos
-			end
-		end
-	end		
-	if #positions == 0 then return end	
-	local t = 1
-	for i1, pos_list in pairs(positions) do
-		for i2, pos in pairs(pos_list) do
-			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
-			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-				func = create_kaboom,
-				args = {surface, pos}
-			}			
-		end
-		t = t + 4
-	end
-end
-
-local function annihilate_base(center_pos, surface, force_name)	
-	local entities = {}
-	for _, e in pairs(surface.find_entities_filtered({force = force_name, area = {{center_pos.x - 64, center_pos.y - 64},{center_pos.x + 64, center_pos.y + 64}}})) do
-		if e.name ~= "character" then
-			if e.valid then
-				local distance_to_center = math.ceil(math.sqrt((e.position.x - center_pos.x)^2 + (e.position.y - center_pos.y)^2))
-				if not entities[distance_to_center] then entities[distance_to_center] = {} end
-				entities[distance_to_center][#entities[distance_to_center] + 1] = e
-			end
-		end
-	end
-	
-	if #entities == 0 then return end
-	
-	local t = 1
-	for i1, entity_list in pairs(entities) do
-		for i2, e in pairs(entity_list) do
-			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end			
-			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-				func = destroy_entity,
-				args = {e}
-			}
-			t = t + 3
-		end
-	end
-end
-
+--[[
 local function create_fireworks_rocket(surface, position)
 	local particles = {"coal-particle", "copper-ore-particle", "iron-ore-particle", "stone-particle"}
 	local particle = particles[math.random(1, #particles)]
@@ -153,6 +89,45 @@ local function fireworks(surface)
 					{x = pos.x, y = pos.y}
 				}
 			}
+		end
+	end
+end
+]]
+local function silo_kaboom(entity)
+	local surface = entity.surface
+	local center_position = entity.position
+	local force = entity.force
+	local r = 46
+	local square_distance = r ^ 2
+	local shells_square_distance = square_distance * 0.75
+	local kabooms = {"explosive-cannon-projectile", "explosive-cannon-projectile", "artillery-projectile"}
+	local size_of_kabooms = #kabooms
+	for x = r * -1, r, 0.5 do
+		for y = r * -1, r, 0.5 do
+			local position = {x = center_position.x + x, y = center_position.y + y}
+			local square_distance_to_center_position = (position.x - center_position.x) ^ 2 + (position.y - center_position.y) ^ 2
+			if square_distance_to_center_position < shells_square_distance and math_random(1, 16) == 1 then
+				surface.create_entity({	
+					name = kabooms[math_random(1, size_of_kabooms)],
+					position = center_position,
+					force = force,
+					source = center_position,
+					target = position,
+					max_range = r, 
+					speed = 0.1
+				})	
+			end
+			if square_distance_to_center_position < square_distance and math_random(1, 16) == 1 then
+				surface.create_entity({	
+					name = "rocket",
+					position = center_position,
+					force = force,
+					source = center_position,
+					target = position,
+					max_range = r, 
+					speed = 0.01
+				})	
+			end
 		end
 	end
 end
@@ -302,32 +277,37 @@ local enemy_team_of = {
 function Public.server_restart()
 	if not global.server_restart_timer then return end
 	global.server_restart_timer = global.server_restart_timer - 5
-	if global.server_restart_timer == 180 then return end
+	if global.server_restart_timer == 150 then return end
+	if global.server_restart_timer == 10 then game.delete_surface(game.surfaces.bb_source) return end
+	if global.server_restart_timer == 5 then Init.source_surface() return end
+	
 	if global.server_restart_timer == 0 then
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		Server.start_scenario('Biter_Battles')
+		--Server.start_scenario('Biter_Battles')	
+		Init.tables()
+		Init.forces()
+		Init.load_spawn()		
+		for _, player in pairs(game.players) do
+			Functions.init_player(player)
+			for _, e in pairs(player.gui.left.children) do e.destroy() end		
+			Gui.create_main_gui(player)
+		end
+		game.surfaces.biter_battles.clear(true)
+		game.reset_time_played()
 		global.server_restart_timer = nil
 		return
 	end
 	if global.server_restart_timer % 30 == 0 then
-		game.print("Map will restart in " .. global.server_restart_timer .. " seconds!", {r=0.22, g=0.88, b=0.22})		
+		game.print("Map will restart in " .. global.server_restart_timer .. " seconds!", {r=0.22, g=0.88, b=0.22})
 	end
 end
 
-function Public.restart_idle_map()
-	if game.tick < 432000 then return end
-	if #game.connected_players ~= 0 then global.restart_idle_map_countdown = 2 return end
-	if not global.restart_idle_map_countdown then global.restart_idle_map_countdown = 2 end
-	global.restart_idle_map_countdown = global.restart_idle_map_countdown - 1
-	if global.restart_idle_map_countdown ~= 0 then return end
-	Server.start_scenario('Biter_Battles')
-end
-
 local function set_victory_time()
-	local minutes = game.tick % 216000
-	local hours = game.tick - minutes
+	local tick = game.ticks_played
+	local minutes = tick % 216000
+	local hours = tick - minutes
 	minutes = math.floor(minutes / 3600)
 	hours = math.floor(hours / 216000)
 	if hours > 0 then hours = hours .. " hours and " else hours = "" end
@@ -352,14 +332,14 @@ function Public.silo_death(event)
 		
 		for _, player in pairs(game.connected_players) do
 			player.play_sound{path="utility/game_won", volume_modifier=1}
-			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].destroy() end
+			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].visible = false end
 			create_victory_gui(player)
 			show_mvps(player)
 		end
 
 		global.spy_fish_timeout["north"] = game.tick + 999999
 		global.spy_fish_timeout["south"] = game.tick + 999999
-		global.server_restart_timer = 180			
+		global.server_restart_timer = 150			
 		
 		local c = gui_values[global.bb_game_won_by_team].c1
 		if global.tm_custom_name[global.bb_game_won_by_team] then c = global.tm_custom_name[global.bb_game_won_by_team] end
@@ -367,8 +347,7 @@ function Public.silo_death(event)
 		Server.to_discord_embed(c .. " has won!")
 		Server.to_discord_embed(global.victory_time)
 		
-		fireworks(event.entity.surface)
-		annihilate_base_v2(event.entity.position, event.entity.surface, event.entity.force.name)
+		silo_kaboom(event.entity)
 		
 		freeze_all_biters(event.entity.surface)
 	end

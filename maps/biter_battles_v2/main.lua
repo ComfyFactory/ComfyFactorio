@@ -1,7 +1,5 @@
 -- Biter Battles v2 -- by MewMew
 
-require "on_tick_schedule"
-local Biter_health_booster = require "modules.biter_health_booster"
 local Ai = require "maps.biter_battles_v2.ai"
 local Functions = require "maps.biter_battles_v2.functions"
 local Game_over = require "maps.biter_battles_v2.game_over"
@@ -20,19 +18,9 @@ require "modules.custom_death_messages"
 local function on_player_joined_game(event)
 	local surface = game.surfaces["biter_battles"]
 	local player = game.players[event.player_index]
-
 	if player.online_time == 0 then
-		player.spectator = true
-		player.force = game.forces.spectator
-		if surface.is_chunk_generated({0,0}) then
-			player.teleport(surface.find_non_colliding_position("character", {0,0}, 3, 0.5), surface)
-		else
-			player.teleport({0,0}, surface)
-		end
-		player.character.destructible = false
-		game.permissions.get_group("spectator").add_player(player)
+		Functions.init_player(player)
 	end
-
 	Functions.create_map_intro_button(player)
 	Team_manager.draw_top_toggle_button(player)
 end
@@ -74,21 +62,6 @@ local function on_entity_died(event)
 	Game_over.silo_death(event)
 end
 
---Prevent Players from damaging Rocket Silos
-local function on_entity_damaged(event)
-	local entity = event.entity
-	if not entity.valid then return end
-	if entity.force.index > 5 then return end
-
-	local cause = event.cause
-	if cause then
-		if cause.type == "unit" then return end
-	end
-
-	if entity.name ~= "rocket-silo" then return end
-	entity.health = entity.health + event.final_damage_amount
-end
-
 local tick_minute_functions = {
 	[300 * 1] = Ai.raise_evo,
 	[300 * 2] = Ai.destroy_inactive_biters,
@@ -103,7 +76,6 @@ local tick_minute_functions = {
 	[300 * 3 + 30 * 8] = Ai.post_main_attack,
 	[300 * 4] = Ai.send_near_biters_to_silo,
 	[300 * 5] = Ai.wake_up_sleepy_groups,
-	[300 * 7] = Game_over.restart_idle_map,
 }
 
 local function on_tick()
@@ -154,48 +126,17 @@ local function on_chunk_generated(event)
 end
 
 local function on_init()
-	Init.settings()
-	Init.surface()
-	Init.forces()
-	Team_manager.init()
-	
-	local surface = game.surfaces["biter_battles"]
-	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
-	surface.force_generate_chunk_requests()
-	
-	for y = 0, 576, 32 do
-		surface.request_to_generate_chunks({x = 80, y = y + 16}, 0)
-		surface.request_to_generate_chunks({x = 48, y = y + 16}, 0)
-		surface.request_to_generate_chunks({x = 16, y = y + 16}, 0)
-		surface.request_to_generate_chunks({x = -16, y = y - 16}, 0)
-		surface.request_to_generate_chunks({x = -48, y = y - 16}, 0)
-		surface.request_to_generate_chunks({x = -80, y = y - 16}, 0)
-		
-		surface.request_to_generate_chunks({x = 80, y = y * -1 + 16}, 0)
-		surface.request_to_generate_chunks({x = 48, y = y * -1 + 16}, 0)
-		surface.request_to_generate_chunks({x = 16, y = y * -1 + 16}, 0)
-		surface.request_to_generate_chunks({x = -16, y = y * -1 - 16}, 0)
-		surface.request_to_generate_chunks({x = -48, y = y * -1 - 16}, 0)
-		surface.request_to_generate_chunks({x = -80, y = y * -1 - 16}, 0)
-	end		
-	
-	local surface = game.surfaces["bb_source"]
-	surface.request_to_generate_chunks({x = 0, y = 0}, 2)
-	surface.force_generate_chunk_requests()
-	surface.request_to_generate_chunks({x = 0, y = -256}, 8)
-	surface.force_generate_chunk_requests()
-	
-	Terrain.draw_spawn_area(surface)		
-	Terrain.generate_additional_spawn_ore(surface)
-	Terrain.generate_silo(surface)
-	Terrain.draw_spawn_circle(surface)
+	Init.tables()
+	Init.initial_setup()
+	Init.forces()	
+	Init.source_surface()
+	Init.load_spawn()
 end
 
 local Event = require 'utils.event'
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_console_chat, on_console_chat)
-Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
@@ -207,7 +148,6 @@ Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
-Event.add_event_filter(defines.events.on_entity_damaged, {filter = "name", name = "rocket-silo"})
 Event.add_event_filter(defines.events.on_entity_damaged, {filter = "type", type = "unit"})
 Event.add_event_filter(defines.events.on_entity_damaged, {filter = "type", type = "unit-spawner"})
 Event.add_event_filter(defines.events.on_entity_damaged, {filter = "type", type = "turret"})

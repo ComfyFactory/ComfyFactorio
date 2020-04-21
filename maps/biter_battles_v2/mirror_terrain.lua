@@ -159,12 +159,11 @@ local function copy_chunk(chunk)
 		return
 	end
 	
-	for _, decorative in pairs(source_surface.find_decoratives_filtered{area = source_area}) do
-		target_surface.create_decoratives{
-			check_collision = false,
-			decoratives = {{name = decorative.decorative.name, position = decorative.position, amount = decorative.amount}}
-		}
+	local decoratives = {}
+	for k, decorative in pairs(source_surface.find_decoratives_filtered{area = source_area}) do 
+		decoratives[k] = {name = decorative.decorative.name, position = {decorative.position.x, decorative.position.y}, amount = decorative.amount}
 	end
+	target_surface.create_decoratives({check_collision = false, decoratives = decoratives})
 	
 	return true
 end
@@ -183,9 +182,11 @@ local function mirror_chunk(chunk)
 	end
 
 	if chunk[2] == 1 then
-		for _, tile in pairs(source_surface.find_tiles_filtered({area = source_area})) do
-			target_surface.set_tiles({{name = tile.name, position = {x = tile.position.x * -1 - 1 , y = (tile.position.y * -1) - 1}}}, true)
+		local tiles = {}
+		for k, tile in pairs(source_surface.find_tiles_filtered({area = source_area})) do
+			tiles[k] = {name = tile.name, position = {tile.position.x * -1 - 1 , tile.position.y * -1 - 1}}			
 		end
+		target_surface.set_tiles(tiles, true)
 		chunk[2] = chunk[2] + 1
 		return
 	end
@@ -197,13 +198,12 @@ local function mirror_chunk(chunk)
 		chunk[2] = chunk[2] + 1
 		return
 	end
-		
-	for _, decorative in pairs(source_surface.find_decoratives_filtered{area = source_area}) do
-		target_surface.create_decoratives{
-			check_collision = false,
-			decoratives = {{name = decorative.decorative.name, position = {x = (decorative.position.x * -1) - 1, y = (decorative.position.y * -1) - 1}, amount = decorative.amount}}
-		}
+	
+	local decoratives = {}
+	for k, decorative in pairs(source_surface.find_decoratives_filtered{area = source_area}) do 
+		decoratives[k] = {name = decorative.decorative.name, position = {(decorative.position.x * -1) - 1, (decorative.position.y * -1) - 1}, amount = decorative.amount}
 	end
+	target_surface.create_decoratives({check_collision = false, decoratives = decoratives})
 	
 	return true
 end
@@ -277,12 +277,13 @@ end
 
 local works = {
 	[1] = north_work,
-	[3] = south_work,
+	[2] = south_work,
 }
 
 function Public.ticking_work()
-	local work = works[game.tick % 4]
+	local work = works[game.ticks_played % 2 + 1]
 	if not work then return end
+	if global.server_restart_timer then return end
 	work()
 end
 

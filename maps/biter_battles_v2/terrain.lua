@@ -1,4 +1,5 @@
 local Public = {}
+local LootRaffle = require "functions.loot_raffle"
 local BiterRaffle = require "functions.biter_raffle"
 local bb_config = require "maps.biter_battles_v2.config"
 
@@ -37,7 +38,7 @@ local function shuffle(tbl)
 end
 
 local function get_noise(name, pos)
-	local seed = game.surfaces[1].map_gen_settings.seed
+	local seed = game.surfaces["bb_source"].map_gen_settings.seed
 	local noise_seed_add = 25000
 	if name == 1 then
 		local noise = simplex_noise(pos.x * 0.0042, pos.y * 0.0042, seed)
@@ -115,39 +116,13 @@ local function get_replacement_tile(surface, position)
 	return "grass-1"
 end
 
-local function get_chunk_position(position)
-	local chunk_position = {}
-	position.x = math_floor(position.x, 0)
-	position.y = math_floor(position.y, 0)
-	for x = 0, 31, 1 do
-		if (position.x - x) % 32 == 0 then chunk_position.x = (position.x - x)  / 32 end
-	end
-	for y = 0, 31, 1 do
-		if (position.y - y) % 32 == 0 then chunk_position.y = (position.y - y)  / 32 end
-	end
-	return chunk_position
-end
-
-local function regenerate_decoratives(surface, position)
-	local chunk = get_chunk_position(position)
-	if not chunk then return end
-	surface.destroy_decoratives({area = {{chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}})
-	local decorative_names = {}
-	for k,v in pairs(game.decorative_prototypes) do
-		if v.autoplace_specification then
-			decorative_names[#decorative_names+1] = k
-		end
-	end
-	surface.regenerate_decorative(decorative_names, {chunk})
-end
-
 local function draw_noise_ore_patch(position, name, surface, radius, richness)
 	if not position then return end
 	if not name then return end
 	if not surface then return end
 	if not radius then return end
 	if not richness then return end
-	local seed = game.surfaces[1].map_gen_settings.seed
+	local seed = game.surfaces["bb_source"].map_gen_settings.seed
 	local noise_seed_add = 25000
 	local richness_part = richness / radius
 	for y = radius * -3, radius * 3, 1 do
@@ -232,8 +207,8 @@ local function generate_starting_area(pos, distance_to_center, surface)
 
 	if surface.can_place_entity({name = "wooden-chest", position = pos}) and surface.can_place_entity({name = "coal", position = pos}) then
 		local noise_2 = get_noise(3, pos)
-		if noise_2 < 0.35 then
-			if noise_2 > -0.45 then
+		if noise_2 < 0.40 then
+			if noise_2 > -0.40 then
 				if distance_from_spawn_wall > -1.75 and distance_from_spawn_wall < 0 then				
 					local e = surface.create_entity({name = "stone-wall", position = pos, force = "neutral"})
 					e.active = false
@@ -273,7 +248,7 @@ local function generate_starting_area(pos, distance_to_center, surface)
 end
 
 local function generate_river(surface, left_top_x, left_top_y)
-	if left_top_y < -32 then return end
+	if left_top_y ~= -32 then return end
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local pos = {x = left_top_x + x, y = left_top_y + y}
@@ -286,7 +261,7 @@ local function generate_river(surface, left_top_x, left_top_y)
 				end
 			end
 		end
-	end
+	end	
 end
 
 local scrap_vectors = {}
@@ -349,7 +324,7 @@ end
 local function draw_biter_area(surface, left_top_x, left_top_y)
 	if not is_biter_area({x = left_top_x, y = left_top_y - 96}) then return end
 	
-	local seed = game.surfaces[1].map_gen_settings.seed
+	local seed = game.surfaces["bb_source"].map_gen_settings.seed
 		
 	local out_of_map = {}
 	local tiles = {}
@@ -404,7 +379,7 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
 end
 
 local function mixed_ore(surface, left_top_x, left_top_y)
-	local seed = game.surfaces[1].map_gen_settings.seed
+	local seed = game.surfaces["bb_source"].map_gen_settings.seed
 	
 	local noise = GetNoise("bb_ore", {x = left_top_x + 16, y = left_top_y + 16}, seed)
 
@@ -412,7 +387,7 @@ local function mixed_ore(surface, left_top_x, left_top_y)
 	--rendering.draw_text{text = noise, surface = game.surfaces.biter_battles, target = {x = left_top_x + 16, y = left_top_y + 16}, color = {255, 255, 255}, scale = 2, font = "default-game"}
 
 	--Skip chunks that are too far off the ore noise value.
-	if noise < 0.45 then return end
+	if noise < 0.42 then return end
 
 	--Draw the mixed ore patches.
 	for x = 0, 31, 1 do
@@ -420,9 +395,9 @@ local function mixed_ore(surface, left_top_x, left_top_y)
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = GetNoise("bb_ore", pos, seed)
-				if noise > 0.75 then
+				if noise > 0.71 then
 					local amount = math_random(1250, 1500) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 2
-					local i = math_floor(noise * 50) % 4 + 1
+					local i = math_floor(noise * 20 + math_abs(pos.x) * 0.05) % 4 + 1
 					surface.create_entity({name = ores[i], position = pos, amount = amount})
 				end
 			end
@@ -446,41 +421,25 @@ function Public.generate(event)
 			for k, v in pairs(loading_chunk_vectors) do tiles[k] = {name = "out-of-map", position = {left_top_x + v[1], left_top_y + v[2]}} end
 		end
 		surface.set_tiles(tiles, false)
-		--[[
-		if math_abs(left_top.x) > 64 then
-			if left_top.y == 0 then
-				local tiles = {}
-				local i = 1
-				for x = 0, 31, 1 do
-					for y = 0, 1, 1 do
-						tiles[i] = {name = "deepwater", position = {x = left_top.x + x, y = left_top.y + y}}
-						i = i + 1
-					end
-				end
-				surface.set_tiles(tiles, false)
-			end
-			if left_top.y == -32 then
-				local tiles = {}
-				local i = 1
-				for x = 0, 31, 1 do
-					for y = 30, 31, 1 do
-						tiles[i] = {name = "deepwater", position = {x = left_top.x + x, y = left_top.y + y}}
-						i = i + 1
-					end
-				end
-				surface.set_tiles(tiles, false)
-			end
-		end
-		]]
 		return
 	end
 
 	if surface.name ~= "bb_source" then return end
 
-	if left_top_y >= 0 then
-		surface.destroy_decoratives({area = event.area}) 
+	if left_top_y == 0 then
+		local tiles = {}
+		local i = 0
+		for x = 0, 31, 1 do
+			for y = 0, 31, 1 do
+				i = i + 1
+				tiles[i] = {name = "out-of-map", position = {left_top_x + x, left_top_y + y}}
+			end
+		end
+		surface.set_tiles(tiles, false)
 		return 
 	end
+	
+	if left_top_y > 0 then return end
 	
 	mixed_ore(surface, left_top_x, left_top_y)
 	generate_river(surface, left_top_x, left_top_y)
@@ -590,6 +549,34 @@ function Public.generate_silo(surface)
 	for _, entity in pairs(surface.find_entities({{p.x - 4, p.y - 4}, {p.x + 4, p.y + 4}})) do
 		if entity.type == "simple-entity" or entity.type == "tree" or entity.type == "resource" then
 			entity.destroy()
+		end
+	end
+end
+
+function Public.generate_spawn_goodies(surface)
+	local tiles = surface.find_tiles_filtered({name = "stone-path"})
+	table.shuffle_table(tiles)
+	local budget = 1500
+	local min_roll = 30
+	local max_roll = 600
+	local blacklist = {
+		["automation-science-pack"] = true,
+		["logistic-science-pack"] = true,
+		["military-science-pack"] = true,
+		["chemical-science-pack"] = true,
+		["production-science-pack"] = true,
+		["utility-science-pack"] = true,
+		["space-science-pack"] = true,
+	}
+	local container_names = {"wooden-chest", "wooden-chest", "iron-chest"}
+	for k, tile in pairs(tiles) do
+		if budget <= 0 then return end
+		if surface.can_place_entity({name = "wooden-chest", position = tile.position, force = "neutral"}) then
+			local v = math_random(min_roll, max_roll)
+			local item_stacks = LootRaffle.roll(v, 4, blacklist)		
+			local container = surface.create_entity({name = container_names[math_random(1, 3)], position = tile.position, force = "neutral"})
+			for _, item_stack in pairs(item_stacks) do container.insert(item_stack)	end
+			budget = budget - v
 		end
 	end
 end

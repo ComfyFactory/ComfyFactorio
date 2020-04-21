@@ -353,14 +353,9 @@ local function on_built_entity(event)
 	local score = global.score[player.force.name].players[player.name]
 	score.built_entities = 1 + (score.built_entities or 0)
 end
---[[
-local function tick(event)	
-	refresh_score_full()	
-end
-]]
+
 comfy_panel_tabs["Scoreboard"] = {gui = show_score, admin = false}
 
---event.on_nth_tick(300, tick)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_player_died, on_player_died)
 event.add(defines.events.on_built_entity, on_built_entity)

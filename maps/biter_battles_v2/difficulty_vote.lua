@@ -33,9 +33,10 @@ local function poll_difficulty(player)
 		if not player.admin then return end
 	end
 	
-	if game.tick > timeout then
+	local tick = game.ticks_played
+	if tick > timeout then
 		if player.online_time ~= 0 then
-			local t = math.abs(math.floor((timeout - game.tick) / 3600))
+			local t = math.abs(math.floor((timeout - tick) / 3600))
 			local str = "Votes have closed " .. t
 			str = str .. " minute"
 			if t > 1 then str = str .. "s" end
@@ -53,7 +54,7 @@ local function poll_difficulty(player)
 		b.style.minimal_width = 180
 	end
 	local b = frame.add({type = "label", caption = "- - - - - - - - - - - - - - - - - - - -"})
-	local b = frame.add({type = "button", name = "close", caption = "Close (" .. math.floor((timeout - game.tick) / 3600) .. " minutes left)"})
+	local b = frame.add({type = "button", name = "close", caption = "Close (" .. math.floor((timeout - tick) / 3600) .. " minutes left)"})
 	b.style.font_color = {r=0.66, g=0.0, b=0.66}
 	b.style.font = "heading-3"
 	b.style.minimal_width = 96
@@ -84,7 +85,7 @@ local function on_player_joined_game(event)
 	if not global.difficulty_player_votes then global.difficulty_player_votes = {} end
 	
 	local player = game.players[event.player_index]
-	if game.tick < timeout then
+	if game.ticks_played < timeout then
 		if not global.difficulty_player_votes[player.name] then
 			if global.bb_settings.only_admins_vote or global.tournament_mode then
 				if player.admin then poll_difficulty(player) end
@@ -100,7 +101,7 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_left_game(event)
-	if game.tick > timeout then return end
+	if game.ticks_played > timeout then return end
 	local player = game.players[event.player_index]
 	if not global.difficulty_player_votes[player.name] then return end
 	global.difficulty_player_votes[player.name] = nil
@@ -119,7 +120,7 @@ local function on_gui_click(event)
 	if event.element.type ~= "button" then return end
 	if event.element.parent.name ~= "difficulty_poll" then return end
 	if event.element.name == "close" then event.element.parent.destroy() return end
-	if game.tick > timeout then event.element.parent.destroy() return end
+	if game.ticks_played > timeout then event.element.parent.destroy() return end
 	local i = tonumber(event.element.name)
 	
 	if global.bb_settings.only_admins_vote or global.tournament_mode then

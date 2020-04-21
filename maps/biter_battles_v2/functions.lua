@@ -1,5 +1,6 @@
 local string_sub = string.sub
 local math_random = math.random
+local math_round = math.round
 local math_abs = math.abs
 local table_insert = table.insert
 local table_remove = table.remove
@@ -89,6 +90,11 @@ function Public.get_random_target_entity(force_index)
 	end
 end
 
+function Public.get_health_modifier(force)
+	if global.bb_evolution[force.name] < 1 then return 1 end
+	return math_round((global.bb_evolution[force.name] - 1) * 3, 3) + 1
+end
+
 function Public.biters_landfill(entity)
 	if not landfill_biters[entity.name] then return end	
 	local position = entity.position
@@ -126,6 +132,26 @@ function Public.combat_balance(event)
 			return
 		end
 	end
+end
+
+function Public.init_player(player)
+	local surface = game.surfaces.biter_battles
+	if player.crafting_queue then
+		for i = 1, #player.crafting_queue, 1 do
+			if player.crafting_queue_size == 0 then break end
+			player.cancel_crafting({index = 1, count = 65535})
+		end
+	end
+	player.clear_items_inside()
+	player.spectator = true
+	player.force = game.forces.spectator
+	if surface.is_chunk_generated({0,0}) then
+		player.teleport(surface.find_non_colliding_position("character", {0,0}, 3, 0.5), surface)
+	else
+		player.teleport({0,0}, surface)
+	end
+	if player.character and player.character.valid then player.character.destructible = false end
+	game.permissions.get_group("spectator").add_player(player)
 end
 
 function Public.no_turret_creep(event)

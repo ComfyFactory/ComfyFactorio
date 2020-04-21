@@ -20,13 +20,13 @@ Global.register(
 
 function Public.set_health_modifier(force_index, modifier)
 	if not game.forces[force_index] then return end
-	if not modifier then return end	
-	if not fhb[force_index] then fhb[force_index] = {} end	
+	if not modifier then return end
+	if not fhb[force_index] then fhb[force_index] = {} end
 	fhb[force_index].m = math_round(1 / modifier, 4)
 end
 
 function Public.reset_tables()
-	fhb = {}
+	for k, v in pairs(fhb) do fhb[k] = nil end
 end
 
 local function on_entity_damaged(event)
@@ -34,11 +34,11 @@ local function on_entity_damaged(event)
 	if not entity and not entity.valid then return end
 	local unit_number = entity.unit_number
 	if not unit_number then return end
-	
+
 	local boost = fhb[entity.force.index]
-	if not boost then return end	
+	if not boost then return end
 	if not boost[unit_number] then boost[unit_number] = entity.prototype.max_health end
-	
+
 	local new_health = boost[unit_number] - event.final_damage_amount * boost.m
 	boost[unit_number] = new_health
 	entity.health = new_health
@@ -68,7 +68,6 @@ local function on_init()
 	Public.reset_tables()
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)

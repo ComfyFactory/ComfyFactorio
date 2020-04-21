@@ -52,7 +52,7 @@ local function get_target_entity(force_name)
 	local force_index = game.forces[force_name].index	
 	local target_entity = Functions.get_random_target_entity(force_index)
 	if not target_entity then print("Unable to get target entity for " .. force_name .. ".") return end	
-	for _ = 1, 3, 1 do
+	for _ = 1, 2, 1 do
 		local e = Functions.get_random_target_entity(force_index)
 		if math_abs(e.position.x) < math_abs(target_entity.position.x) then
 			target_entity = e

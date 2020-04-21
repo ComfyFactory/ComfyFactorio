@@ -1,4 +1,6 @@
 local bb_config = require "maps.biter_battles_v2.config"
+local Force_health_booster = require "modules.force_health_booster"
+local Functions = require "maps.biter_battles_v2.functions"
 local Server = require 'utils.server'
 
 local tables = require "maps.biter_battles_v2.tables"
@@ -20,16 +22,14 @@ end
 
 local function set_biter_endgame_modifiers(force)
 	if force.evolution_factor ~= 1 then return end
-	local damage_mod = math.round((global.bb_evolution[force.name] - 1) * 0.5, 3)
-	local health_factor = math.round((global.bb_evolution[force.name] - 1) * 3.5, 3) + 1
-
+	local damage_mod = math.round((global.bb_evolution[force.name] - 1) * 0.25, 3)
 	force.set_ammo_damage_modifier("melee", damage_mod)
 	force.set_ammo_damage_modifier("biological", damage_mod)
 	force.set_ammo_damage_modifier("artillery-shell", damage_mod)
 	force.set_ammo_damage_modifier("flamethrower", damage_mod)
 	force.set_ammo_damage_modifier("laser-turret", damage_mod)
 	
-	global.biter_health_boost_forces[force.index] = health_factor
+	Force_health_booster.set_health_modifier(force.index, Functions.get_health_modifier(force))
 end
 
 local function get_enemy_team_of(team)
@@ -86,8 +86,9 @@ local function add_stats(player, food, flask_amount,biter_force_name,evo_before_
 		["south"] = table.concat({"[color=255, 65, 65]", s, "[/color]"})
 	}
 	if flask_amount > 1 then
-		local feed_time = math.round(game.tick,0)
-		local feed_time_mins = math.round(game.tick / (60*60),0)
+		local tick = game.ticks_played
+		local feed_time = math.round(tick, 0)
+		local feed_time_mins = math.round(tick / (60*60), 0)
 		local minute_unit = ""
 		if feed_time_mins <= 1 then
 			minute_unit = "min"
