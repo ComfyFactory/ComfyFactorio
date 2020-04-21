@@ -18,7 +18,7 @@ Global.register(
     end
 )
 
-function set_health_modifier(force_index, modifier)
+function Public.set_health_modifier(force_index, modifier)
 	if not game.forces[force_index] then return end
 	if not modifier then return end	
 	if not fhb[force_index] then fhb[force_index] = {} end	
@@ -73,3 +73,5 @@ Event.on_init(on_init)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
+
+return Public
