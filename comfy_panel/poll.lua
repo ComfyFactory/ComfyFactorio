@@ -878,6 +878,7 @@ Gui.on_click(
     function(event)
         local player = event.player
         local screen = player.gui.screen
+        local data = screen[main_frame_name]
         local frame = screen[create_poll_frame_name]
 
         if frame and frame.valid then
@@ -890,7 +891,7 @@ Gui.on_click(
         local poll = polls[frame_data.poll_index]
 
         poll.edit_mode = true
-        draw_create_poll_frame(screen, player, poll)
+        draw_create_poll_frame(screen, player, poll, data)
     end
 )
 
