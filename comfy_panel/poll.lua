@@ -1,10 +1,11 @@
 local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local Server = require 'utils.server'
 local Game = require 'utils.game'
+local Server = require 'utils.server'
 local session = require 'utils.session_data'
-local Tabs = require 'comfy_panel.main'
+local m_gui = require "mod-gui"
+local mod = m_gui.get_frame_flow
 
 local insert = table.insert
 
@@ -21,7 +22,7 @@ local inv_tick_duration_step = 1 / tick_duration_step
 
 local polls = {}
 local polls_counter = {0}
-local block_notify = {}
+local no_notify_players = {}
 local player_poll_index = {}
 local player_create_poll_data = {}
 
@@ -29,14 +30,14 @@ Global.register(
     {
         polls = polls,
         polls_counter = polls_counter,
-        block_notify = block_notify,
+        no_notify_players = no_notify_players,
         player_poll_index = player_poll_index,
         player_create_poll_data = player_create_poll_data
     },
     function(tbl)
         polls = tbl.polls
         polls_counter = tbl.polls_counter
-        block_notify = tbl.block_notify
+        no_notify_players = tbl.no_notify_players
         player_poll_index = tbl.player_poll_index
         player_create_poll_data = tbl.player_create_poll_data
     end
@@ -154,6 +155,7 @@ local function send_poll_result_to_discord(poll)
 end
 
 local function redraw_poll_viewer_content(data)
+    local trusted = session.get_trusted_table()
     local poll_viewer_content = data.poll_viewer_content
     local remaining_time_label = data.remaining_time_label
     local poll_index = data.poll_index
@@ -223,17 +225,31 @@ local function redraw_poll_viewer_content(data)
 
     local question_flow = poll_viewer_content.add {type = 'table', column_count = 2}
 
+    if trusted[player.name] or player.admin then
+        local edit_button =
+            question_flow.add {
+            type = 'sprite-button',
+            name = poll_view_edit_name,
+            sprite = 'utility/rename_icon_normal',
+            tooltip = 'Edit Poll.'
+        }
+
+        local edit_button_style = edit_button.style
+        edit_button_style.width = 26
+        edit_button_style.height = 26
+    end
+
     local question_label = question_flow.add {type = 'label', caption = poll.question}
     question_label.style.minimal_height = 32
-	question_label.style.single_line = false
+    question_label.style.single_line = false
     --question_label.style.font_color = focus_color
     --question_label.style.font = 'default-listbox'
-	question_label.style.font = 'heading-2'
-	question_label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
-	question_label.style.top_padding = 4
-	question_label.style.left_padding = 4
-	question_label.style.right_padding = 4
-	question_label.style.bottom_padding = 4
+    question_label.style.font = 'heading-2'
+    question_label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+    question_label.style.top_padding = 4
+    question_label.style.left_padding = 4
+    question_label.style.right_padding = 4
+    question_label.style.bottom_padding = 4
 
     local grid = poll_viewer_content.add {type = 'table', column_count = 2}
 
@@ -272,14 +288,14 @@ local function redraw_poll_viewer_content(data)
         vote_buttons[i] = vote_button
 
         local label = grid.add {type = 'label', caption = a.text}
-		label.style.single_line = false
+        label.style.single_line = false
         label.style.minimal_height = 24
-		label.style.font = 'heading-3'
-		label.style.font_color = {r = 0.95, g = 0.95, b = 0.95}
-		--label.style.top_padding = 2
-		label.style.left_padding = 4
-		label.style.right_padding = 4
-		label.style.bottom_padding = 4
+        label.style.font = 'heading-3'
+        label.style.font_color = {r = 0.95, g = 0.95, b = 0.95}
+        --label.style.top_padding = 2
+        label.style.left_padding = 4
+        label.style.right_padding = 4
+        label.style.bottom_padding = 4
     end
 
     data.vote_buttons = vote_buttons
@@ -311,12 +327,9 @@ local function update_poll_viewer(data)
     redraw_poll_viewer_content(data)
 end
 
-local function draw_main_frame(player, left)
+local function draw_main_frame(left, player)
     local trusted = session.get_trusted_table()
-
-    left.clear()
-
-    local frame = left.add {type = 'table', name = main_frame_name, direction = 'vertical', column_count = 1}
+    local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Polls', direction = 'vertical'}
     --frame.style.maximal_width = 640
 
     local poll_viewer_top_flow = frame.add {type = 'table', column_count = 5}
@@ -337,9 +350,9 @@ local function draw_main_frame(player, left)
     local remaining_time_label = poll_viewer_top_flow.add {type = 'label'}
 
     local poll_viewer_content = frame.add {type = 'scroll-pane'}
-    poll_viewer_content.style.maximal_height = 300
+    poll_viewer_content.style.maximal_height = 480
     poll_viewer_content.style.width = 360
-	--poll_viewer_content.style.minimal_height = 480
+    --poll_viewer_content.style.minimal_height = 480
     --poll_viewer_content.style.minimal_width = 480
 
     local poll_index = player_poll_index[player.index] or #polls
@@ -363,22 +376,21 @@ local function draw_main_frame(player, left)
         type = 'checkbox',
         name = notify_checkbox_name,
         caption = 'Notify me about polls.',
-        state = not block_notify[player.index],
+        state = not no_notify_players[player.index],
         tooltip = 'Receive a message when new polls are created and popup the poll.'
     }
+
     local bottom_flow = frame.add {type = 'flow', direction = 'horizontal'}
 
     local left_flow = bottom_flow.add {type = 'flow'}
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
-    left_flow.style.vertical_align = 'bottom'
 
-    --local close_button = left_flow.add {type = 'button', name = main_button_name, caption = 'Close'}
-    --apply_button_style(close_button)
+    local close_button = left_flow.add {type = 'button', name = main_button_name, caption = 'Close'}
+    apply_button_style(close_button)
 
-    local right_flow = left.add {type = 'flow', directon = 'vertical'}
+    local right_flow = bottom_flow.add {type = 'flow'}
     right_flow.style.horizontal_align = 'right'
-    right_flow.style.vertical_align = 'bottom'
 
     if trusted[player.name] or player.admin then
         local create_poll_button =
@@ -421,13 +433,13 @@ local function remove_main_frame(main_frame, left, player)
 end
 
 local function toggle(event)
-    local left = event.player.gui.left.comfy_panel.tabbed_pane.Polls
+    local left = event.player.gui.left
     local main_frame = left[main_frame_name]
 
     if main_frame then
         remove_main_frame(main_frame, left, event.player)
     else
-        Tabs.comfy_panel_call_tab(p, "Polls")
+        draw_main_frame(left, event.player)
     end
 end
 
@@ -501,7 +513,7 @@ local function redraw_create_poll_content(data)
                 delete_flow.add {
                 type = 'sprite-button',
                 name = create_poll_delete_answer_name,
-                sprite = 'virtual-signal/signal-X',
+                sprite = 'utility/trash',
                 tooltip = 'Delete answer field.'
             }
             delete_button.style.height = 26
@@ -533,7 +545,7 @@ local function redraw_create_poll_content(data)
     end
 end
 
-local function draw_create_poll_frame(player, parent, previous_data)
+local function draw_create_poll_frame(parent, player, previous_data)
     previous_data = previous_data or player_create_poll_data[player.index]
 
     local edit_mode
@@ -636,18 +648,23 @@ local function show_new_poll(poll_data)
         table.concat {poll_data.created_by.name, ' has created a new Poll #', poll_data.id, ': ', poll_data.question}
 
     for _, p in pairs(game.connected_players) do
-        if block_notify[p.index] then
-          p.print(message)
+        local left = p.gui.left
+        local frame = left[main_frame_name]
+        if no_notify_players[p.index] then
+            if frame and frame.valid then
+                local data = Gui.get_data(frame)
+                update_poll_viewer(data)
+            end
         else
-          local frame = Tabs.comfy_panel_call_tab(p, "Polls")
-          p.print(message)
+            p.print(message)
+
             if frame and frame.valid then
                 local data = Gui.get_data(frame)
                 data.poll_index = #polls
                 update_poll_viewer(data)
             else
                 player_poll_index[p.index] = nil
-                Tabs.comfy_panel_call_tab(p, "Polls")
+                draw_main_frame(left, p)
             end
         end
     end
@@ -708,7 +725,7 @@ local function create_poll(event)
     show_new_poll(poll_data)
     send_poll_result_to_discord(poll_data)
 
-    --Gui.remove_data_recursively(frame)
+    Gui.remove_data_recursively(frame)
     frame.destroy()
 end
 
@@ -758,8 +775,7 @@ local function vote(event)
     local vote_button_count, vote_button_tooltip = update_vote(voters, answer, 1)
 
     for _, p in pairs(game.connected_players) do
-      if p.gui.left.comfy_panel ~= nil then
-        local frame = p.gui.left.comfy_panel.tabbed_pane.Polls[main_frame_name]
+        local frame = p.gui.left[main_frame_name]
         if frame and frame.valid then
             local data = Gui.get_data(frame)
 
@@ -780,14 +796,13 @@ local function vote(event)
                 local vote_button = vote_buttons[vote_index]
                 vote_button.caption = vote_button_count
                 vote_button.tooltip = vote_button_tooltip
-                -- if p.index == player_index then -- block commented to avoid desync risk
-                --     local vote_button_style = vote_button.style
-                --     vote_button_style.font_color = focus_color
-                --     vote_button_style.disabled_font_color = focus_color
+                -- if p.index == player_index then -- block commented to avoid desync risk      
+                --     local vote_button_style = vote_button.style      
+                --     vote_button_style.font_color = focus_color       
+                --     vote_button_style.disabled_font_color = focus_color      
                 -- end
             end
         end
-      end
     end
 end
 
@@ -797,31 +812,33 @@ local function player_joined(event)
         return
     end
 
-      if not block_notify[player.index] then block_notify[player.index] = true end
+    if mod(player)[main_button_name] ~= nil then
+        local frame = mod(player)[main_frame_name]
+        if frame and frame.valid then
+            local data = Gui.get_data(frame)
+            update_poll_viewer(data)
+        end
+    else
+        player.gui.top.add{type = 'sprite-button', name = main_button_name, sprite = 'item/programmable-speaker', tooltip = "Let your question be heard!"}
+    end
 end
 
 local function tick()
     for _, p in pairs(game.connected_players) do
-      if p.gui.left.comfy_panel ~= nil then
-        if p.gui.left.comfy_panel.tabbed_pane ~= nil then
-            if p.gui.left.comfy_panel.tabbed_pane.Polls ~= nil then
-                local frame = p.gui.left.comfy_panel.tabbed_pane.Polls[main_frame_name]
-                if frame and frame.valid then
-                    local data = Gui.get_data(frame)
-                    local poll = polls[data.poll_index]
-                    if poll then
-                        local poll_enabled = do_remaining_time(poll, data.remaining_time_label)
+        local frame = p.gui.left[main_frame_name]
+        if frame and frame.valid then
+            local data = Gui.get_data(frame)
+            local poll = polls[data.poll_index]
+            if poll then
+                local poll_enabled = do_remaining_time(poll, data.remaining_time_label)
 
-                        if not poll_enabled then
-                            for _, v in pairs(data.vote_buttons) do
-                                v.enabled = poll_enabled
-                            end
-                        end
+                if not poll_enabled then
+                    for _, v in pairs(data.vote_buttons) do
+                        v.enabled = poll_enabled
                     end
                 end
             end
         end
-      end
     end
 end
 
@@ -839,8 +856,7 @@ Gui.on_click(
         if frame and frame.valid then
             remove_create_poll_frame(frame, player.index)
         else
-            if player.gui.left.comfy_panel then player.gui.left.comfy_panel.destroy() end
-            draw_create_poll_frame(player, left)
+            draw_create_poll_frame(left, player)
         end
     end
 )
@@ -862,7 +878,7 @@ Gui.on_click(
         local poll = polls[frame_data.poll_index]
 
         poll.edit_mode = true
-        draw_create_poll_frame(player, left, poll)
+        draw_create_poll_frame(left, player, poll)
     end
 )
 
@@ -981,20 +997,20 @@ Gui.on_click(
         local message = table.concat {player.name, ' has deleted Poll #', poll.id, ': ', poll.question}
 
         for _, p in pairs(game.connected_players) do
-            if not block_notify[p.index] then
+            if not no_notify_players[p.index] then
                 p.print(message)
+            end
 
-                local main_frame = p.gui.left.comfy_panel.tabbed_pane.Polls[main_frame_name]
-                if main_frame and main_frame.valid then
-                  local main_frame_data = Gui.get_data(main_frame)
-                  local poll_index = main_frame_data.poll_index
+            local main_frame = p.gui.left[main_frame_name]
+            if main_frame and main_frame.valid then
+                local main_frame_data = Gui.get_data(main_frame)
+                local poll_index = main_frame_data.poll_index
 
-                  if removed_index < poll_index then
-                      main_frame_data.poll_index = poll_index - 1
-                    end
-
-                    update_poll_viewer(main_frame_data)
+                if removed_index < poll_index then
+                    main_frame_data.poll_index = poll_index - 1
                 end
+
+                update_poll_viewer(main_frame_data)
             end
         end
     end
@@ -1089,10 +1105,13 @@ Gui.on_click(
         local message = table.concat {player.name, ' has edited Poll #', poll.id, ': ', poll.question}
 
         for _, p in pairs(game.connected_players) do
-            local main_frame = p.gui.left.comfy_panel.tabbed_pane.Polls[main_frame_name]
+            local main_frame = p.gui.left[main_frame_name]
 
-            if block_notify[p.index] then
-              p.print(message)
+            if no_notify_players[p.index] then
+                if main_frame and main_frame.valid then
+                    local main_frame_data = Gui.get_data(main_frame)
+                    update_poll_viewer(main_frame_data)
+                end
             else
                 p.print(message)
                 if main_frame and main_frame.valid then
@@ -1100,7 +1119,7 @@ Gui.on_click(
                     main_frame_data.poll_index = poll_index
                     update_poll_viewer(main_frame_data)
                 else
-                    Tabs.comfy_panel_call_tab(p, "Polls")
+                    draw_main_frame(p.gui.left, p)
                 end
             end
         end
@@ -1120,7 +1139,7 @@ Gui.on_checked_state_changed(
             new_state = true
         end
 
-        block_notify[player_index] = new_state
+        no_notify_players[player_index] = new_state
     end
 )
 
@@ -1296,7 +1315,5 @@ function Class.send_poll_result_to_discord(id)
     local message = table.concat {'poll #', id, ' not found'}
     Server.to_discord_embed(message)
 end
-
-comfy_panel_tabs["Polls"] = {gui = draw_main_frame, admin = false}
 
 return Class
