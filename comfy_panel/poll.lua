@@ -3,6 +3,7 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Game = require 'utils.game'
 local Server = require 'utils.server'
+local Tabs = require 'comfy_panel.main'
 local session = require 'utils.session_data'
 local m_gui = require "mod-gui"
 local mod = m_gui.get_frame_flow
@@ -330,7 +331,6 @@ end
 local function draw_main_frame(left, player)
     local trusted = session.get_trusted_table()
     local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Polls', direction = 'vertical'}
-    frame.location = {x = 1, y = 41}
     --frame.style.maximal_width = 640
 
     local poll_viewer_top_flow = frame.add {type = 'table', column_count = 5}
@@ -364,8 +364,7 @@ local function draw_main_frame(left, player)
         poll_index_label = poll_index_label,
         poll_viewer_content = poll_viewer_content,
         remaining_time_label = remaining_time_label,
-        poll_index = poll_index,
-        location = frame.location
+        poll_index = poll_index
     }
 
     Gui.set_data(frame, data)
@@ -435,13 +434,14 @@ local function remove_main_frame(main_frame, left, player)
 end
 
 local function toggle(event)
-    local screen = event.player.gui.screen
-    local main_frame = screen[main_frame_name]
+    local left = event.player.gui.left
+    local main_frame = left[main_frame_name]
 
     if main_frame then
-        remove_main_frame(main_frame, screen, event.player)
+        remove_main_frame(main_frame, left, event.player)
     else
-        draw_main_frame(screen, event.player)
+        Tabs.comfy_panel_clear_left_gui(event.player)
+        draw_main_frame(left, event.player)
     end
 end
 
@@ -547,7 +547,7 @@ local function redraw_create_poll_content(data)
     end
 end
 
-local function draw_create_poll_frame(parent, player, previous_data, parent_data)
+local function draw_create_poll_frame(parent, player, previous_data)
     previous_data = previous_data or player_create_poll_data[player.index]
 
     local edit_mode
@@ -584,16 +584,8 @@ local function draw_create_poll_frame(parent, player, previous_data, parent_data
         confirm_name = create_poll_confirm_name
     end
 
-    local parent_frame = Gui.get_data(parent)
-
     local frame =
         parent.add {type = 'frame', name = create_poll_frame_name, caption = title_text, direction = 'vertical'}
-        if #polls >= 1 then
-            frame.location = {x = parent_data.location.x, y = parent_data.location.y + 290}
-            --frame.location = {x = 1, y = 335}
-        else
-            frame.location = {x = parent_data.location.x, y = parent_data.location.y + 130}
-        end
     frame.style.maximal_width = 320
 
     local scroll_pane = frame.add {type = 'scroll-pane', vertical_scroll_policy = 'always'}
@@ -658,7 +650,7 @@ local function show_new_poll(poll_data)
         table.concat {poll_data.created_by.name, ' has created a new Poll #', poll_data.id, ': ', poll_data.question}
 
     for _, p in pairs(game.connected_players) do
-        local left = p.gui.screen
+        local left = p.gui.left
         local frame = left[main_frame_name]
         if no_notify_players[p.index] then
             if frame and frame.valid then
@@ -785,7 +777,7 @@ local function vote(event)
     local vote_button_count, vote_button_tooltip = update_vote(voters, answer, 1)
 
     for _, p in pairs(game.connected_players) do
-        local frame = p.gui.screen[main_frame_name]
+        local frame = p.gui.left[main_frame_name]
         if frame and frame.valid then
             local data = Gui.get_data(frame)
 
@@ -835,7 +827,7 @@ end
 
 local function tick()
     for _, p in pairs(game.connected_players) do
-        local frame = p.gui.screen[main_frame_name]
+        local frame = p.gui.left[main_frame_name]
         if frame and frame.valid then
             local data = Gui.get_data(frame)
             local poll = polls[data.poll_index]
@@ -861,14 +853,12 @@ Gui.on_click(
     create_poll_button_name,
     function(event)
         local player = event.player
-        local screen = player.gui.screen
-        local data = screen[main_frame_name]
-        local frame = screen[create_poll_frame_name]
-        local parent = Gui.get_data(data)
+        local left = player.gui.left
+        local frame = left[create_poll_frame_name]
         if frame and frame.valid then
             remove_create_poll_frame(frame, player.index)
         else
-            draw_create_poll_frame(screen, player, nil, data)
+            draw_create_poll_frame(left, player)
         end
     end
 )
@@ -877,21 +867,20 @@ Gui.on_click(
     poll_view_edit_name,
     function(event)
         local player = event.player
-        local screen = player.gui.screen
-        local data = screen[main_frame_name]
-        local frame = screen[create_poll_frame_name]
+        local left = player.gui.left
+        local frame = left[create_poll_frame_name]
 
         if frame and frame.valid then
             Gui.remove_data_recursively(frame)
             frame.destroy()
         end
 
-        local main_frame = screen[main_frame_name]
+        local main_frame = left[main_frame_name]
         local frame_data = Gui.get_data(main_frame)
         local poll = polls[frame_data.poll_index]
 
         poll.edit_mode = true
-        draw_create_poll_frame(screen, player, poll, data)
+        draw_create_poll_frame(left, player, poll)
     end
 )
 
@@ -1014,7 +1003,7 @@ Gui.on_click(
                 p.print(message)
             end
 
-            local main_frame = p.gui.screen[main_frame_name]
+            local main_frame = p.gui.left[main_frame_name]
             if main_frame and main_frame.valid then
                 local main_frame_data = Gui.get_data(main_frame)
                 local poll_index = main_frame_data.poll_index
@@ -1118,7 +1107,7 @@ Gui.on_click(
         local message = table.concat {player.name, ' has edited Poll #', poll.id, ': ', poll.question}
 
         for _, p in pairs(game.connected_players) do
-            local main_frame = p.gui.screen[main_frame_name]
+            local main_frame = p.gui.left[main_frame_name]
 
             if no_notify_players[p.index] then
                 if main_frame and main_frame.valid then
@@ -1132,7 +1121,7 @@ Gui.on_click(
                     main_frame_data.poll_index = poll_index
                     update_poll_viewer(main_frame_data)
                 else
-                    draw_main_frame(p.gui.screen, p)
+                    draw_main_frame(p.gui.left, p)
                 end
             end
         end
