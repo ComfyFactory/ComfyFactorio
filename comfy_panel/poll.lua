@@ -5,8 +5,6 @@ local Game = require 'utils.game'
 local Server = require 'utils.server'
 local Tabs = require 'comfy_panel.main'
 local session = require 'utils.session_data'
-local m_gui = require "mod-gui"
-local mod = m_gui.get_frame_flow
 
 local insert = table.insert
 
@@ -814,8 +812,8 @@ local function player_joined(event)
         return
     end
 
-    if mod(player)[main_button_name] ~= nil then
-        local frame = mod(player)[main_frame_name]
+    if player.gui.top[main_button_name] ~= nil then
+        local frame = player.gui.top[main_frame_name]
         if frame and frame.valid then
             local data = Gui.get_data(frame)
             update_poll_viewer(data)
