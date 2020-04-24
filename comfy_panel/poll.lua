@@ -350,7 +350,7 @@ local function draw_main_frame(left, player)
 
     local poll_viewer_content = frame.add {type = 'scroll-pane'}
     poll_viewer_content.style.maximal_height = 480
-    poll_viewer_content.style.width = 360
+    poll_viewer_content.style.width = 295
     --poll_viewer_content.style.minimal_height = 480
     --poll_viewer_content.style.minimal_width = 480
 
@@ -498,7 +498,7 @@ local function redraw_create_poll_content(data)
 
     local question_textfield =
         grid.add({type = 'flow'}).add {type = 'textfield', name = create_poll_question_name, text = data.question}
-    question_textfield.style.width = 180
+    question_textfield.style.width = 170
 
     Gui.set_data(question_label, question_textfield)
     Gui.set_data(question_textfield, data)
@@ -534,7 +534,7 @@ local function redraw_create_poll_content(data)
         local textfield_flow = grid.add {type = 'flow'}
 
         local textfield = textfield_flow.add {type = 'textfield', name = create_poll_answer_name, text = answer.text}
-        textfield.style.width = 180
+        textfield.style.width = 170
         Gui.set_data(textfield, {answers = answers, count = count})
 
         if delete_button then
