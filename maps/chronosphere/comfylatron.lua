@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local event = require 'utils.event'
 local math_random = math.random
 
@@ -111,36 +112,40 @@ local texts = {
 }
 
 local function set_comfy_speech_bubble(text)
-	if global.comfybubble then global.comfybubble.destroy() end
-	global.comfybubble = global.comfylatron.surface.create_entity({
+	local objective = Chrono_table.get_table()
+	if objective.comfybubble then objective.comfybubble.destroy() end
+	objective.comfybubble = objective.comfylatron.surface.create_entity({
 		name = "compi-speech-bubble",
-		position = global.comfylatron.position,
-		source = global.comfylatron,
+		position = objective.comfylatron.position,
+		source = objective.comfylatron,
 		text = text
 	})
 end
 
 local function is_target_inside_habitat(pos, surface)
+	local objective = Chrono_table.get_table()
 	if surface.name ~= "cargo_wagon" then return false end
-	if pos.x < global.comfylatron_habitat.left_top.x then return false end
-	if pos.x > global.comfylatron_habitat.right_bottom.x then return false end
-	if pos.y < global.comfylatron_habitat.left_top.y then return false end
-	if pos.y > global.comfylatron_habitat.right_bottom.y then return false end
+	if pos.x < objective.comfylatron_habitat.left_top.x then return false end
+	if pos.x > objective.comfylatron_habitat.right_bottom.x then return false end
+	if pos.y < objective.comfylatron_habitat.left_top.y then return false end
+	if pos.y > objective.comfylatron_habitat.right_bottom.y then return false end
 	return true
 end
 
 local function get_nearby_players()
-	local players = global.comfylatron.surface.find_entities_filtered({
+	local objective = Chrono_table.get_table()
+	local players = objective.comfylatron.surface.find_entities_filtered({
 		name = "character",
-		area = {{global.comfylatron.position.x - 9, global.comfylatron.position.y - 9}, {global.comfylatron.position.x + 9, global.comfylatron.position.y + 9}}
+		area = {{objective.comfylatron.position.x - 9, objective.comfylatron.position.y - 9}, {objective.comfylatron.position.x + 9, objective.comfylatron.position.y + 9}}
 	})
 	if not players[1] then return false end
 	return players
 end
 
 local function visit_player()
-	if global.comfylatron_last_player_visit > game.tick then return false end
-	global.comfylatron_last_player_visit = game.tick + math_random(7200, 10800)
+	local objective = Chrono_table.get_table()
+	if objective.comfylatron_last_player_visit > game.tick then return false end
+	objective.comfylatron_last_player_visit = game.tick + math_random(7200, 10800)
 
 	local players = {}
 	for _, p in pairs(game.connected_players) do
@@ -151,7 +156,7 @@ local function visit_player()
 	if #players == 0 then return false end
 	local player = players[math_random(1, #players)]
 
-	global.comfylatron.set_command({
+	objective.comfylatron.set_command({
 		type = defines.command.go_to_location,
 		destination_entity = player.character,
 		radius = 3,
@@ -167,22 +172,23 @@ local function visit_player()
 	str = str .. symbols[math_random(1, #symbols)]
 	set_comfy_speech_bubble(str)
 
-	global.comfylatron_greet_player_index = player.index
+	objective.comfylatron_greet_player_index = player.index
 
 	return true
 end
 
 local function greet_player(nearby_characters)
+	local objective = Chrono_table.get_table()
 	if not nearby_characters then return false end
-	if not global.comfylatron_greet_player_index then return false end
+	if not objective.comfylatron_greet_player_index then return false end
 	for _, c in pairs(nearby_characters) do
-		if c.player.index == global.comfylatron_greet_player_index then
+		if c.player.index == objective.comfylatron_greet_player_index then
 			local str = texts["greetings"][math_random(1, #texts["greetings"])] .. " "
 			str = str .. c.player.name
 			local symbols = {". ", "! ", ". ", "! ", "? ", "... "}
 			str = str .. symbols[math_random(1, 6)]
 			set_comfy_speech_bubble(str)
-			global.comfylatron_greet_player_index = false
+			objective.comfylatron_greet_player_index = false
 			return true
 		end
 	end
@@ -190,9 +196,10 @@ local function greet_player(nearby_characters)
 end
 
 local function talks(nearby_characters)
+	local objective = Chrono_table.get_table()
 	if not nearby_characters then return false end
 	if math_random(1,3) == 1 then
-		if global.comfybubble then global.comfybubble.destroy() return false end
+		if objective.comfybubble then objective.comfybubble.destroy() return false end
 	end
 	local str
 	if #nearby_characters == 1 then
@@ -215,13 +222,14 @@ local function talks(nearby_characters)
 end
 
 local function desync(event)
-	if global.comfybubble then global.comfybubble.destroy() end
+	local objective = Chrono_table.get_table()
+	if objective.comfybubble then objective.comfybubble.destroy() end
 	local m = 12
 	local m2 = m * 0.005
 	for i = 1, 32, 1 do
-		global.comfylatron.surface.create_particle({
+		objective.comfylatron.surface.create_particle({
 			name = "iron-ore-particle",
-			position = global.comfylatron.position,
+			position = objective.comfylatron.position,
 			frame_speed = 0.1,
 			vertical_speed = 0.1,
 			height = 0.1,
@@ -229,24 +237,25 @@ local function desync(event)
 		})
 	end
 	if not event or math_random(1,4) == 1 then
-		global.comfylatron.surface.create_entity({name = "medium-explosion", position = global.comfylatron.position})
-		global.comfylatron.surface.create_entity({name = "flying-text", position = global.comfylatron.position, text = "desync", color = {r = 150, g = 0, b = 0}})
-		global.comfylatron.destroy()
-		global.comfylatron = nil
+		objective.comfylatron.surface.create_entity({name = "medium-explosion", position = objective.comfylatron.position})
+		objective.comfylatron.surface.create_entity({name = "flying-text", position = objective.comfylatron.position, text = "desync", color = {r = 150, g = 0, b = 0}})
+		objective.comfylatron.destroy()
+		objective.comfylatron = nil
 	else
-		global.comfylatron.surface.create_entity({name = "flying-text", position = global.comfylatron.position, text = "desync evaded", color = {r = 0, g = 150, b = 0}})
+		objective.comfylatron.surface.create_entity({name = "flying-text", position = objective.comfylatron.position, text = "desync evaded", color = {r = 0, g = 150, b = 0}})
 		if event.cause then
 			if event.cause.valid and event.cause.player then
 				game.print("Comfylatron: I got you this time! Back to work, " .. event.cause.player.name .. "!", {r = 200, g = 0, b = 0})
-				event.cause.die("player", global.comfylatron)
+				event.cause.die("player", objective.comfylatron)
 			end
 		end
 	end
 end
 
 local function alone()
+	local objective = Chrono_table.get_table()
 	if math_random(1,3) == 1 then
-		if global.comfybubble then global.comfybubble.destroy() return true end
+		if objective.comfybubble then objective.comfybubble.destroy() return true end
 	end
 	if math_random(1,128) == 1 then
 		desync(nil)
@@ -267,10 +276,11 @@ local analyze_blacklist = {
 }
 
 local function analyze_random_nearby_entity()
+	local objective = Chrono_table.get_table()
 	if math_random(1,3) ~= 1 then return false end
 
-	local entities = global.comfylatron.surface.find_entities_filtered({
-		area = {{global.comfylatron.position.x - 4, global.comfylatron.position.y - 4}, {global.comfylatron.position.x + 4, global.comfylatron.position.y + 4}}
+	local entities = objective.comfylatron.surface.find_entities_filtered({
+		area = {{objective.comfylatron.position.x - 4, objective.comfylatron.position.y - 4}, {objective.comfylatron.position.x + 4, objective.comfylatron.position.y + 4}}
 	})
 	if not entities[1] then return false end
 	entities = shuffle(entities)
@@ -298,8 +308,8 @@ local function analyze_random_nearby_entity()
 	end
 	set_comfy_speech_bubble(str)
 
-	if not global.comfylatron_greet_player_index then
-		global.comfylatron.set_command({
+	if not objective.comfylatron_greet_player_index then
+		objective.comfylatron.set_command({
 			type = defines.command.go_to_location,
 			destination_entity = entity,
 			radius = 1,
@@ -315,23 +325,24 @@ local function analyze_random_nearby_entity()
 end
 
 local function go_to_some_location()
+	local objective = Chrono_table.get_table()
 	if math_random(1,4) ~= 1 then return false end
 
-	if global.comfylatron_greet_player_index then
-		local player = game.players[global.comfylatron_greet_player_index]
+	if objective.comfylatron_greet_player_index then
+		local player = game.players[objective.comfylatron_greet_player_index]
 		if not player.character then
-			global.comfylatron_greet_player_index = nil
+			objective.comfylatron_greet_player_index = nil
 			return false
 		end
 		if not player.character.valid then
-			global.comfylatron_greet_player_index = nil
+			objective.comfylatron_greet_player_index = nil
 			return false
 		end
 		if not is_target_inside_habitat(player.position, player.surface) then
-			global.comfylatron_greet_player_index = nil
+			objective.comfylatron_greet_player_index = nil
 			return false
 		end
-		global.comfylatron.set_command({
+		objective.comfylatron.set_command({
 			type = defines.command.go_to_location,
 			destination_entity = player.character,
 			radius = 3,
@@ -343,11 +354,11 @@ local function go_to_some_location()
 			}
 		})
 	else
-		local p = {x = global.comfylatron.position.x + (-96 + math_random(0, 192)), y = global.comfylatron.position.y + (-96 + math_random(0, 192))}
-		local target = global.comfylatron.surface.find_non_colliding_position("compilatron", p, 8, 1)
+		local p = {x = objective.comfylatron.position.x + (-96 + math_random(0, 192)), y = objective.comfylatron.position.y + (-96 + math_random(0, 192))}
+		local target = objective.comfylatron.surface.find_non_colliding_position("compilatron", p, 8, 1)
 		if not target then return false end
-		if not is_target_inside_habitat(target, global.comfylatron.surface) then return false end
-		global.comfylatron.set_command({
+		if not is_target_inside_habitat(target, objective.comfylatron.surface) then return false end
+		objective.comfylatron.set_command({
 			type = defines.command.go_to_location,
 			destination = target,
 			radius = 2,
@@ -369,17 +380,18 @@ local function go_to_some_location()
 end
 
 local function spawn_comfylatron(surface_index, x, y)
+	local objective = Chrono_table.get_table()
 	local surface = game.surfaces[surface_index]
 	if surface == nil then return end
-	if global.comfylatron_disabled then return false end
-	if not global.comfylatron_last_player_visit then global.comfylatron_last_player_visit = 0 end
-	if not global.comfylatron_habitat then
-		global.comfylatron_habitat = {
+	if objective.comfylatron_disabled then return false end
+	if not objective.comfylatron_last_player_visit then objective.comfylatron_last_player_visit = 0 end
+	if not objective.comfylatron_habitat then
+		objective.comfylatron_habitat = {
 			left_top = {x = -32, y = -192},
 			right_bottom = {x = 32, y = 192}
 		}
 	end
-	global.comfylatron = surface.create_entity({
+	objective.comfylatron = surface.create_entity({
 		name = "compilatron",
 	 	position = {x,y + math_random(0,256)},
 		force = "player",
@@ -388,11 +400,12 @@ local function spawn_comfylatron(surface_index, x, y)
 end
 
 local function heartbeat()
+	local objective = Chrono_table.get_table()
 	if not game.surfaces["cargo_wagon"] then return end
 	local surface = game.surfaces["cargo_wagon"].index
 	if surface == nil then return end
-	if not global.comfylatron then if math_random(1,4) == 1 then spawn_comfylatron(game.surfaces["cargo_wagon"].index, 0, -128) end return end
-	if not global.comfylatron.valid then global.comfylatron = nil return end
+	if not objective.comfylatron then if math_random(1,4) == 1 then spawn_comfylatron(game.surfaces["cargo_wagon"].index, 0, -128) end return end
+	if not objective.comfylatron.valid then objective.comfylatron = nil return end
 	if visit_player() then return end
 	local nearby_players = get_nearby_players()
 	if greet_player(nearby_players) then return end
@@ -403,9 +416,10 @@ local function heartbeat()
 end
 
 local function on_entity_damaged(event)
-	if not global.comfylatron then return end
+	local objective = Chrono_table.get_table()
+	if not objective.comfylatron then return end
 	if not event.entity.valid then return end
-	if event.entity ~= global.comfylatron then return end
+	if event.entity ~= objective.comfylatron then return end
 	desync(event)
 end
 

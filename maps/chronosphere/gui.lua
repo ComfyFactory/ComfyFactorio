@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public_gui = {}
 
 local math_floor = math.floor
@@ -78,17 +79,18 @@ local function create_gui(player)
 end
 
 local function update_upgrades_gui(player)
+	local objective = Chrono_table.get_table()
 	if not player.gui.screen["gui_upgrades"] then return end
 	local upgrades = Upgrades.upgrades()
 	local frame = player.gui.screen["gui_upgrades"]
 
 	for i = 1, #upgrades, 1 do
 		local t = frame["upgrades_table" .. i]
-		t["upgrade" .. i].number = global.objective.upgrades[i]
+		t["upgrade" .. i].number = objective.upgrades[i]
 		t["upgrade" .. i].tooltip = upgrades[i].tooltip
 		t["upgrade_label" .. i].tooltip = upgrades[i].tooltip
 
-		if global.objective.upgrades[i] == upgrades[i].max_level then
+		if objective.upgrades[i] == upgrades[i].max_level then
 			t["maxed" .. i].visible = true
 			t["jump_req" .. i].visible = false
 			for index,_ in pairs(upgrades[i].cost) do
@@ -107,8 +109,9 @@ local function update_upgrades_gui(player)
 end
 
 local function update_planet_gui(player)
+	local objective = Chrono_table.get_table()
 	if not player.gui.screen["gui_planet"] then return end
-	local planet = global.objective.planet[1]
+	local planet = objective.planet[1]
 	local evolution = game.forces["enemy"].evolution_factor
 	local evo_color = {
     r = math_floor(255 * 1 * math_max(0, math_min(1, 1.2 - evolution * 2))),
@@ -128,13 +131,13 @@ local function update_planet_gui(player)
 	frame["planet_biters"].caption = {"chronosphere.gui_planet_3", math_floor(evolution * 1000) / 10}
 	frame["planet_biters"].style.font_color = evo_color
 
-	frame["planet_biters3"].caption = {"chronosphere.gui_planet_4_1", global.objective.passivejumps * 2.5, global.objective.passivejumps * 10}
+	frame["planet_biters3"].caption = {"chronosphere.gui_planet_4_1", objective.passivejumps * 2.5, objective.passivejumps * 10}
 	frame["planet_time"].caption = {"chronosphere.gui_planet_5", planet.day_speed.name}
 
 end
 
 function Public_gui.update_gui(player)
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
 	update_planet_gui(player)
 	update_upgrades_gui(player)
 	if not player.gui.top.chronosphere then create_gui(player) end
@@ -171,7 +174,7 @@ function Public_gui.update_gui(player)
 	gui.upgrades_button.caption = {"chronosphere.gui_upgrades_button"}
 
   local acus = 0
-  if global.acumulators then acus = #global.acumulators end
+  if objective.acumulators then acus = #objective.acumulators end
   local bestcase = math_floor((objective.chrononeeds - objective.chronotimer) / (1 + math_floor(acus/10)))
 	local nukecase = objective.dangertimer
 	if objective.planet[1].name.id == 19 and objective.passivetimer > 31 then
@@ -189,7 +192,7 @@ end
 
 local function upgrades_gui(player)
 	if player.gui.screen["gui_upgrades"] then player.gui.screen["gui_upgrades"].destroy() return end
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
 	local upgrades = Upgrades.upgrades()
 	local frame = player.gui.screen.add{type = "frame", name = "gui_upgrades", caption = "ChronoTrain Upgrades", direction = "vertical"}
   frame.location = {x = 350, y = 45}
@@ -202,7 +205,7 @@ local function upgrades_gui(player)
 
 	for i = 1, #upgrades, 1 do
 		local upg_table = frame.add({type = "table", name = "upgrades_table" .. i, column_count = 10})
-		upg_table.add({type = "sprite-button", name = "upgrade" .. i, enabled = false, sprite = upgrades[i].sprite, number = global.objective.upgrades[i], tooltip = upgrades[i].tooltip})
+		upg_table.add({type = "sprite-button", name = "upgrade" .. i, enabled = false, sprite = upgrades[i].sprite, number = objective.upgrades[i], tooltip = upgrades[i].tooltip})
 		local name = upg_table.add({type = "label", name ="upgrade_label" .. i, caption = upgrades[i].name, tooltip = upgrades[i].tooltip})
 		name.style.width = 200
 
@@ -212,7 +215,7 @@ local function upgrades_gui(player)
 		for index,item in pairs(upgrades[i].cost) do
 			costs[index] = upg_table.add({type = "sprite-button", name = index .. "-" .. i, number = item.count, sprite = item.sprite, enabled = false, tooltip = {item.tt .. "." .. item.name}, visible = true})
 		end
-		if global.objective.upgrades[i] == upgrades[i].max_level then
+		if objective.upgrades[i] == upgrades[i].max_level then
 			maxed.visible = true
 			jumps.visible = false
 			for index,_ in pairs(upgrades[i].cost) do
@@ -230,8 +233,9 @@ local function upgrades_gui(player)
 end
 
 local function planet_gui(player)
+	local objective = Chrono_table.get_table()
 	if player.gui.screen["gui_planet"] then player.gui.screen["gui_planet"].destroy() return end
-	local planet = global.objective.planet[1]
+	local planet = objective.planet[1]
 	local evolution = game.forces["enemy"].evolution_factor
 	local frame = player.gui.screen.add{type = "frame", name = "gui_planet", caption = "Planet Info", direction = "vertical"}
   frame.location = {x = 650, y = 45}
@@ -253,7 +257,7 @@ local function planet_gui(player)
 	frame.add({type = "line"})
 	frame.add({type = "label", name = "planet_biters", caption = {"chronosphere.gui_planet_3", math_floor(evolution * 1000) / 10}})
 	frame.add({type = "label", name = "planet_biters2", caption = {"chronosphere.gui_planet_4"}})
-	frame.add({type = "label", name = "planet_biters3", caption = {"chronosphere.gui_planet_4_1", global.objective.passivejumps * 2.5, global.objective.passivejumps * 10}})
+	frame.add({type = "label", name = "planet_biters3", caption = {"chronosphere.gui_planet_4_1", objective.passivejumps * 2.5, objective.passivejumps * 10}})
 	frame.add({type = "line"})
 	frame.add({type = "label", name = "planet_time", caption = {"chronosphere.gui_planet_5", planet.day_speed.name}})
 	frame.add({type = "line"})

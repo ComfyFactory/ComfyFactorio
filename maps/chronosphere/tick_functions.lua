@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public_tick = {}
 
 local math_random = math.random
@@ -6,7 +7,7 @@ local math_ceil = math.ceil
 local math_min = math.min
 
 function Public_tick.check_chronoprogress()
-	local objective = global.objective
+  local objective = Chrono_table.get_table()
   if objective.planet[1].name.id == 19 then
     if objective.passivetimer == 10 then
       game.print({"chronosphere.message_danger1"}, {r=0.98, g=0.66, b=0.22})
@@ -33,12 +34,12 @@ function Public_tick.check_chronoprogress()
 end
 
 function Public_tick.charge_chronosphere()
-	if not global.acumulators then return end
-	local objective = global.objective
+  local objective = Chrono_table.get_table()
+	if not objective.acumulators then return end
 	if not objective.chronotimer then return end
 	if objective.chronotimer < 20 then return end
 	if objective.planet[1].name.id == 17 or objective.planet[1].name.id == 19 then return end
-	local acus = global.acumulators
+	local acus = objective.acumulators
 	if #acus < 1 then return end
 	for i = 1, #acus, 1 do
 		if not acus[i].valid then return end
@@ -46,35 +47,37 @@ function Public_tick.charge_chronosphere()
 		if energy > 3010000 and objective.chronotimer < objective.chrononeeds - 182 and objective.chronotimer > 130 then
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
-			game.surfaces[global.active_surface_index].pollute(global.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.upgrades[2] / 2 + 1)) * global.difficulty_vote_value)
+			game.surfaces[objective.active_surface_index].pollute(objective.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.upgrades[2] / 2 + 1)) * objective.difficulty_vote_value)
 		end
 	end
 end
 
 function Public_tick.transfer_pollution()
+  local objective = Chrono_table.get_table()
 	local surface = game.surfaces["cargo_wagon"]
 	if not surface then return end
-	local pollution = surface.get_total_pollution() * (3 / (global.objective.upgrades[2] / 3 + 1)) * global.difficulty_vote_value
-	game.surfaces[global.active_surface_index].pollute(global.locomotive.position, pollution)
+	local pollution = surface.get_total_pollution() * (3 / (objective.upgrades[2] / 3 + 1)) * objective.difficulty_vote_value
+	game.surfaces[objective.active_surface_index].pollute(objective.locomotive.position, pollution)
 	surface.clear_pollution()
 end
 
 function Public_tick.boost_evolution()
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
 	if objective.passivetimer > objective.chrononeeds * 0.50 and objective.chronojumps > 5 then
 		local evolution = game.forces.enemy.evolution_factor
-		evolution = evolution + (evolution / 500) * global.difficulty_vote_value
+		evolution = evolution + (evolution / 500) * objective.difficulty_vote_value
 		if evolution > 1 then evolution = 1 end
 		game.forces.enemy.evolution_factor = evolution
 	end
 end
 
 function Public_tick.move_items()
-	if not global.comfychests then return end
-	if not global.comfychests2 then return end
-	if global.objective.game_lost == true then return end
-  local input = global.comfychests
-  local output = global.comfychests2
+  local objective = Chrono_table.get_table()
+	if not objective.comfychests then return end
+	if not objective.comfychests2 then return end
+	if objective.game_lost == true then return end
+  local input = objective.comfychests
+  local output = objective.comfychests2
 	for i = 1, 24, 1 do
 		if not input[i].valid then return end
 		if not output[i].valid then  return end
@@ -93,18 +96,19 @@ function Public_tick.move_items()
 end
 
 function Public_tick.output_items()
-	if global.objective.game_lost == true then return end
-	if not global.outchests then return end
-	if not global.locomotive_cargo[2] then return end
-	if not global.locomotive_cargo[3] then return end
-	if global.objective.upgrades[8] ~= 1 then return end
+  local objective = Chrono_table.get_table()
+	if objective.game_lost == true then return end
+	if not objective.outchests then return end
+	if not objective.locomotive_cargo[2] then return end
+	if not objective.locomotive_cargo[3] then return end
+	if objective.upgrades[8] ~= 1 then return end
 	local wagon = {
-		[1] = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
-		[2] = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
+		[1] = objective.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
+		[2] = objective.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
 	}
 	for i = 1, 4, 1 do
-		if not global.outchests[i].valid then return end
-		local inv = global.outchests[i].get_inventory(defines.inventory.chest)
+		if not objective.outchests[i].valid then return end
+		local inv = objective.outchests[i].get_inventory(defines.inventory.chest)
 		inv.sort_and_merge()
 		for ii = 1, #inv, 1 do
 			if inv[ii].valid_for_read then
@@ -116,11 +120,11 @@ function Public_tick.output_items()
 end
 
 function Public_tick.repair_train()
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
 	if not game.surfaces["cargo_wagon"] then return 0 end
 	if objective.game_lost == true then return 0 end
 	local count = 0
-	local inv = global.upgradechest[0].get_inventory(defines.inventory.chest)
+	local inv = objective.upgradechest[0].get_inventory(defines.inventory.chest)
 	if objective.health < objective.max_health then
 		count = inv.get_item_count("repair-pack")
 		count = math_min(count, objective.upgrades[6] + 1, math_ceil((objective.max_health - objective.health) / 150))
@@ -130,7 +134,8 @@ function Public_tick.repair_train()
 end
 
 function Public_tick.spawn_poison()
-  local surface = game.surfaces[global.active_surface_index]
+  local objective = Chrono_table.get_table()
+  local surface = game.surfaces[objective.active_surface_index]
   local random_x = math_random(-460,460)
   local random_y = math_random(-460,460)
   local tile = surface.get_tile(random_x, random_y)
@@ -145,13 +150,13 @@ function Public_tick.spawn_poison()
 end
 
 local function launch_nukes()
-  local surface = game.surfaces[global.active_surface_index]
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
+  local surface = game.surfaces[objective.active_surface_index]
   if objective.dangers and #objective.dangers > 1 then
     for i = 1, #objective.dangers, 1 do
       if objective.dangers[i].destroyed == false then
         local fake_shooter = surface.create_entity({name = "character", position = objective.dangers[i].silo.position, force = "enemy"})
-        surface.create_entity({name = "atomic-rocket", position = objective.dangers[i].silo.position, force = "enemy", speed = 1, max_range = 800, target = global.locomotive, source = fake_shooter})
+        surface.create_entity({name = "atomic-rocket", position = objective.dangers[i].silo.position, force = "enemy", speed = 1, max_range = 800, target = objective.locomotive, source = fake_shooter})
         game.print({"chronosphere.message_nuke"}, {r=0.98, g=0, b=0})
       end
     end
@@ -159,7 +164,7 @@ local function launch_nukes()
 end
 
 function Public_tick.dangertimer()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   local timer = objective.dangertimer
   if timer == 0 then return end
   if objective.planet[1].name.id == 19 then
@@ -188,11 +193,11 @@ function Public_tick.dangertimer()
 end
 
 function Public_tick.offline_players()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   if objective.chronotimer > objective.chrononeeds - 182 or objective.passivetimer < 30 then return end
   local current_tick = game.tick
   local players = objective.offline_players
-  local surface = game.surfaces[global.active_surface_index]
+  local surface = game.surfaces[objective.active_surface_index]
   if #players > 0 then
     --log("nonzero offline players")
     local later = {}

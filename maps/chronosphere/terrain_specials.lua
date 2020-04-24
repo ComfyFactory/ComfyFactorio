@@ -1,6 +1,9 @@
+local Chrono_table = require 'maps.chronosphere.table'
+
 local Public_terrain = {}
 
 function Public_terrain.danger_event(surface, left_top)
+  local objective = Chrono_table.get_table()
   local silo = surface.create_entity({name = "rocket-silo", force = "enemy", position = {x = left_top.x + 16, y = left_top.y + 16}})
   local pole = surface.create_entity({name = "medium-electric-pole", position = {x = left_top.x + 12, y = left_top.y + 11}, force = "scrapyard", create_build_effect_smoke = false})
   local silo_text = rendering.draw_text{
@@ -52,10 +55,11 @@ function Public_terrain.danger_event(surface, left_top)
   pole.destructible = false
   acu.destructible = false
 
-  global.objective.dangers[#global.objective.dangers + 1] = {silo = silo, speaker = speaker, combinator = combinator, solar = solar,acu = acu, pole = pole, destroyed = false, text = silo_text, timer = countdown_text}
+  objective.dangers[#objective.dangers + 1] = {silo = silo, speaker = speaker, combinator = combinator, solar = solar,acu = acu, pole = pole, destroyed = false, text = silo_text, timer = countdown_text}
 end
 
 function Public_terrain.fish_market(surface, left_top)
+  local objective = Chrono_table.get_table()
   local market = surface.create_entity({name = "market", force = "player", position = {x = left_top.x + 16, y = left_top.y + 16}})
   market.destructible = false
   market.operable = false
@@ -65,7 +69,7 @@ function Public_terrain.fish_market(surface, left_top)
     surface = surface,
     target = market,
     target_offset = {0, -2.5},
-    color = global.locomotive.color,
+    color = objective.locomotive.color,
     scale = 1.00,
     font = "default-game",
     alignment = "center",
@@ -75,13 +79,13 @@ function Public_terrain.fish_market(surface, left_top)
   fishchest.destructible = false
   fishchest.minable = false
   fishchest.operable = false
-  global.fishchest = fishchest
+  objective.fishchest = fishchest
   local repair_text = rendering.draw_text{
     text = "Deposit fish here",
     surface = surface,
     target = fishchest,
     target_offset = {0, -2.5},
-    color = global.locomotive.color,
+    color = objective.locomotive.color,
     scale = 0.75,
     font = "default-game",
     alignment = "center",

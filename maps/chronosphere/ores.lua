@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public_ores = {}
 local simplex_noise = require 'utils.simplex_noise'.d2
 local math_random = math.random
@@ -65,14 +66,16 @@ local function get_size_of_ore(ore, planet)
 end
 
 local function get_oil_amount(pos, oil_w, richness)
+  local objective = Chrono_table.get_table()
   local hundred_percent = 300000
-	return (hundred_percent / 50) * (1+global.objective.chronojumps) * oil_w * richness
+	return (hundred_percent / 50) * (1+objective.chronojumps) * oil_w * richness
 end
 
 local function spawn_ore_vein(surface, pos, planet)
+  local objective = Chrono_table.get_table()
   local mixed = false
   if planet[1].name.id == 6 then mixed = true end --mixed planet
-  local richness = math_random(50 + 10 * global.objective.chronojumps, 100 + 10 * global.objective.chronojumps) * planet[1].ore_richness.factor
+  local richness = math_random(50 + 10 * objective.chronojumps, 100 + 10 * objective.chronojumps) * planet[1].ore_richness.factor
   if planet[1].name.id == 16 then richness = richness * 10 end --hedge maze
   local iron = {w = planet[1].name.iron, t = planet[1].name.iron}
   local copper = {w = planet[1].name.copper, t = iron.t + planet[1].name.copper}
@@ -109,7 +112,8 @@ local function spawn_ore_vein(surface, pos, planet)
 end
 
 function Public_ores.prospect_ores(entity, surface, pos)
-  local planet = global.objective.planet
+  local objective = Chrono_table.get_table()
+  local planet = objective.planet
   local chance = 10
   if entity then
     if entity.name == "rock-huge" then chance = 40 end

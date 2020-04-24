@@ -1,14 +1,16 @@
 -- config tab for chronotrain--
 
 local Tabs = require 'comfy_panel.main'
+local Chrono_table = require 'maps.chronosphere.table'
 
 local functions = {
  	["comfy_panel_offline_accidents"] = function(event)
+ 	local objective = Chrono_table.get_table()
     if game.players[event.player_index].admin then
   		if event.element.switch_state == "left" then
-  			global.objective.config.offline_loot = true
+  			objective.config.offline_loot = true
   		else
-  			global.objective.config.offline_loot = false
+  			objective.config.offline_loot = false
   		end
     else
       game.players[event.player_index].print("You are not admin!")
@@ -16,11 +18,12 @@ local functions = {
 	end,
 
 	["comfy_panel_danger_events"] = function(event)
+	local objective = Chrono_table.get_table()
     if game.players[event.player_index].admin then
       if event.element.switch_state == "left" then
-  			global.objective.config.jumpfailure = true
+  			objective.config.jumpfailure = true
   		else
-  			global.objective.config.jumpfailure = false
+  			objective.config.jumpfailure = false
   		end
     else
       game.players[event.player_index].print("You are not admin!")
@@ -58,6 +61,7 @@ local function add_switch(element, switch_state, name, description_main, descrip
 end
 
 local build_config_gui = (function (player, frame)
+	local objective = Chrono_table.get_table()
 	frame.clear()
 
 	local line_elements = {}
@@ -67,14 +71,14 @@ local build_config_gui = (function (player, frame)
 	line_elements[#line_elements + 1] = frame.add({type = "line"})
 
 	local switch_state = "right"
-	if global.objective.config.offline_loot then switch_state = "left" end
+	if objective.config.offline_loot then switch_state = "left" end
 	add_switch(frame, switch_state, "comfy_panel_offline_accidents", "Offline Accidents", "Disablesr enables dropping of inventory when player goes offline.\nTimer is 15 minutes.")
 
 	line_elements[#line_elements + 1] = frame.add({type = "line"})
 
-	if global.auto_hotbar_enabled then
+	if objective.auto_hotbar_enabled then
 		local switch_state = "right"
-		if global.objective.config.jumpfailure then switch_state = "left" end
+		if objective.config.jumpfailure then switch_state = "left" end
 		add_switch(frame, switch_state, "comfy_panel_danger_events", "Dangerous Events", "Disables or enables dangerous event maps\n(they require at least 2-4 capable players to survive)")
 		line_elements[#line_elements + 1] = frame.add({type = "line"})
 	end

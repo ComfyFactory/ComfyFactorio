@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public = {}
 
 local math_random = math.random
@@ -25,20 +26,22 @@ local size_of_vectors = #attack_vectors
 
 
 local function get_active_biter_count()
+  local objective = Chrono_table.get_table()
 	local count = 0
-	for _, biter in pairs(global.objective.active_biters) do
+	for _, biter in pairs(objective.active_biters) do
 		count = count + 1
 	end
 	return count
 end
 
 local function set_biter_raffle_table(surface)
+  local objective = Chrono_table.get_table()
 	-- It's fine to only sample the middle
 	local area = {left_top = {-400,  -400}, right_bottom = {400,  400}}
 
 	local biters = surface.find_entities_filtered({type = "unit", force = "enemy", area = area})
 	if not biters[1] then return end
-	local raffle = global.objective.biter_raffle
+	local raffle = objective.biter_raffle
 	local i = 1
 	for key, e in pairs(biters) do
 		if key % 5 == 0 then
@@ -73,8 +76,9 @@ local function is_biter_inactive(biter, unit_number)
 end
 
 local function set_active_biters(group)
+  local objective = Chrono_table.get_table()
 	if not group.valid then return end
-	local active_biters = global.objective.active_biters
+	local active_biters = objective.active_biters
 
 	for _, unit in pairs(group.members) do
 		if not active_biters[unit.unit_number] then
@@ -84,7 +88,7 @@ local function set_active_biters(group)
 end
 
 Public.destroy_inactive_biters = function()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   if objective.chronotimer < 100 then return end
   for _, group in pairs(objective.unit_groups) do
 		set_active_biters(group)
@@ -178,37 +182,38 @@ local function colonize(unit_group)
 end
 
 Public.send_near_biters_to_objective = function()
+  local objective = Chrono_table.get_table()
 	if game.tick < 36000 then return end
-	if not global.locomotive then return end
-	if not global.locomotive_cargo[1] then return end
-  if not global.locomotive_cargo[2] then return end
-  if not global.locomotive_cargo[3] then return end
-  local targets = {global.locomotive, global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
+	if not objective.locomotive then return end
+	if not objective.locomotive_cargo[1] then return end
+  if not objective.locomotive_cargo[2] then return end
+  if not objective.locomotive_cargo[3] then return end
+  local targets = {objective.locomotive, objective.locomotive, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
   local random_target = targets[math_random(1, #targets)]
-  if global.objective.game_lost then return end
+  if objective.game_lost then return end
   local surface = random_target.surface
   local pollution = surface.get_pollution(random_target.position)
   local success = false
-  if pollution > 200 * (1 / global.difficulty_vote_value) or global.objective.planet[1].name.id == 17 then
-    surface.pollute(random_target.position, -50 * (1 / global.difficulty_vote_value))
+  if pollution > 200 * (1 / objective.difficulty_vote_value) or objective.planet[1].name.id == 17 then
+    surface.pollute(random_target.position, -50 * (1 / objective.difficulty_vote_value))
     --game.print("sending objective wave")
   	success = true
   else
-    if global.objective.chronojumps < 50 then
-      if math_random(1, 50 - global.objective.chronojumps) == 1 then success = true end
+    if objective.chronojumps < 50 then
+      if math_random(1, 50 - objective.chronojumps) == 1 then success = true end
       --game.print("not enough pollution for objective attack")
     else
       success = true
     end
   end
   if success then
-    game.surfaces[global.active_surface_index].set_multi_command({
+    game.surfaces[objective.active_surface_index].set_multi_command({
       command={
         type=defines.command.attack,
         target=random_target,
         distraction=defines.distraction.none
         },
-      unit_count = 16 + math_random(1, math_floor(1 + game.forces["enemy"].evolution_factor * 100)) * global.difficulty_vote_value,
+      unit_count = 16 + math_random(1, math_floor(1 + game.forces["enemy"].evolution_factor * 100)) * objective.difficulty_vote_value,
       force = "enemy",
       unit_search_distance=128
     })
@@ -234,10 +239,10 @@ local function select_units_around_spawner(spawner)
 	local biters = spawner.surface.find_enemy_units(spawner.position, 160, "player")
 	if not biters[1] then return false end
 	local valid_biters = {}
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
 
 	local unit_count = 0
-	local max_unit_count =  128 * global.difficulty_vote_value
+	local max_unit_count =  128 * objective.difficulty_vote_value
 
 	for _, biter in pairs(biters) do
 		if unit_count >= max_unit_count then break end
@@ -266,14 +271,15 @@ local function select_units_around_spawner(spawner)
 end
 
 local function send_group(unit_group, nearest_player_unit)
+  local objective = Chrono_table.get_table()
 
-  local targets = {global.locomotive, global.locomotive, nearest_player_unit, nearest_player_unit, nearest_player_unit, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
+  local targets = {objective.locomotive, objective.locomotive, nearest_player_unit, nearest_player_unit, nearest_player_unit, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
   local target = targets[math_random(1, #targets)]
   if not target.valid then colonize(unit_group) return end
   local surface = target.surface
   local pollution = surface.get_pollution(target.position)
-  if pollution > 200 * (1 / global.difficulty_vote_value) or global.objective.planet[1].name.id == 17 then
-    surface.pollute(target.position, -50 * (1 / global.difficulty_vote_value))
+  if pollution > 200 * (1 / objective.difficulty_vote_value) or objective.planet[1].name.id == 17 then
+    surface.pollute(target.position, -50 * (1 / objective.difficulty_vote_value))
     --game.print("sending unit group attack")
 	   local commands = {}
 
@@ -352,6 +358,7 @@ local function get_unit_group_position(surface, nearest_player_unit, spawner)
 end
 
 local function create_attack_group(surface)
+  local objective = Chrono_table.get_table()
 	if 256 - get_active_biter_count() < 256 then
 		return false
 	end
@@ -360,26 +367,27 @@ local function create_attack_group(surface)
 		return false
 	end
 	local nearest_player_unit = surface.find_nearest_enemy({position = spawner.position, max_distance = 1024, force = "enemy"})
-	if not nearest_player_unit then nearest_player_unit = global.locomotive end
+	if not nearest_player_unit then nearest_player_unit = objective.locomotive end
 	local unit_group_position = get_unit_group_position(surface, nearest_player_unit, spawner)
 	local units = select_units_around_spawner(spawner)
 	if not units then return false end
 	local unit_group = surface.create_unit_group({position = unit_group_position, force = "enemy"})
 	for _, unit in pairs(units) do unit_group.add_member(unit) end
 	send_group(unit_group, nearest_player_unit)
-  global.objective.unit_groups[unit_group.group_number] = unit_group
+  objective.unit_groups[unit_group.group_number] = unit_group
 
 end
 
 -- Public.rogue_group = function()
---   if global.objective.chronotimer < 100 then return end
---   if not global.locomotive then return end
---   local surface = game.surfaces[global.active_surface_index]
+--   local objective = Chrono_table.get_table()
+--   if objective.chronotimer < 100 then return end
+--   if not objective.locomotive then return end
+--   local surface = game.surfaces[objective.active_surface_index]
 --   local spawner = get_random_close_spawner(surface)
 -- 	if not spawner then
 -- 		return false
 -- 	end
---   local position = {x = ((spawner.position.x + global.locomotive.position.x) * 0.5) , y = ((spawner.position.y + global.locomotive.position.y) * 0.5)}
+--   local position = {x = ((spawner.position.x + objective.locomotive.position.x) * 0.5) , y = ((spawner.position.y + objective.locomotive.position.y) * 0.5)}
 --   local pos = surface.find_non_colliding_position("rocket-silo", position, 30, 1, true)
 --   if not pos then return end
 --   surface.set_multi_command({
@@ -396,22 +404,25 @@ end
 -- end
 
 Public.pre_main_attack = function()
-  if global.objective.chronotimer < 100 then return end
-	local surface = game.surfaces[global.active_surface_index]
+  local objective = Chrono_table.get_table()
+  if objective.chronotimer < 100 then return end
+	local surface = game.surfaces[objective.active_surface_index]
   set_biter_raffle_table(surface)
 end
 
 Public.perform_main_attack = function()
-    if global.objective.chronotimer < 100 then return end
-		local surface = game.surfaces[global.active_surface_index]
-		create_attack_group(surface)
+  local objective = Chrono_table.get_table()
+  if objective.chronotimer < 100 then return end
+	local surface = game.surfaces[objective.active_surface_index]
+	create_attack_group(surface)
 end
 
 Public.wake_up_sleepy_groups = function()
-  if global.objective.chronotimer < 100 then return end
+  local objective = Chrono_table.get_table()
+  if objective.chronotimer < 100 then return end
   local entity
 	local unit_group
-	for unit_number, biter in pairs(global.objective.active_biters) do
+	for unit_number, biter in pairs(objective.active_biters) do
 		entity = biter.entity
 		if entity then
 			if entity.valid then
@@ -420,7 +431,7 @@ Public.wake_up_sleepy_groups = function()
 					if unit_group.valid then
 						if unit_group.state == defines.group_state.finished then
 							local nearest_player_unit = entity.surface.find_nearest_enemy({position = entity.position, max_distance = 2048, force = "enemy"})
-							if not nearest_player_unit then nearest_player_unit = global.locomotive end
+							if not nearest_player_unit then nearest_player_unit = objective.locomotive end
               local destination = unit_group.surface.find_non_colliding_position("rocket-silo", unit_group.position, 32, 1)
               if not destination then destination = {x = unit_group.position.x + math_random(-10,10), y = unit_group.position.y + math_random(-10,10)} end
               unit_group.set_command({
@@ -439,7 +450,7 @@ Public.wake_up_sleepy_groups = function()
                 distraction = defines.distraction.by_enemy
               })
               -- local nearest_player_unit = entity.surface.find_nearest_enemy({position = entity.position, max_distance = 2048, force = "enemy"})
-							-- if not nearest_player_unit then nearest_player_unit = global.locomotive end
+							-- if not nearest_player_unit then nearest_player_unit = objective.locomotive end
 							-- send_group(unit_group, nearest_player_unit)
 							return
             end

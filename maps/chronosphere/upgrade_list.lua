@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public = {}
 
 local math_floor = math.floor
@@ -7,14 +8,14 @@ local math_abs = math.abs
 local math_ceil = math.ceil
 
 function Public.upgrades()
-  if not global.objective then global.objective = {} end
-  if not global.objective.upgrades then
-    global.objective.upgrades = {}
+  local objective = Chrono_table.get_table()
+  if not objective.upgrades then
+    objective.upgrades = {}
     for i = 1, 16, 1 do
-      global.objective.upgrades[i] = 0
+      objective.upgrades[i] = 0
     end
   end
-  if not global.difficulty_vote_value then global.difficulty_vote_value = 1 end
+  if not objective.difficulty_vote_value then objective.difficulty_vote_value = 1 end
 
   --Each upgrade is automatically added into gui.
   --name : visible name in gui (best if localized)
@@ -29,10 +30,10 @@ function Public.upgrades()
       sprite = "recipe/locomotive",
       max_level = 36,
       message = {"chronosphere.upgrade_train_armor_message"},
-      tooltip = {"chronosphere.upgrade_train_armor_tooltip", 36, global.objective.max_health},
-      jump_limit = global.objective.upgrades[1],
+      tooltip = {"chronosphere.upgrade_train_armor_tooltip", 36, objective.max_health},
+      jump_limit = objective.upgrades[1],
       cost = {
-        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 500 * (1 + global.objective.upgrades[1])},
+        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 500 * (1 + objective.upgrades[1])},
         item2 = {name = "copper-plate", tt = "item-name", sprite = "item/copper-plate", count = 1500},
       }
     },
@@ -41,13 +42,13 @@ function Public.upgrades()
       sprite = "recipe/effectivity-module",
       max_level = 9,
       message = {"chronosphere.upgrade_filter_message"},
-      tooltip = {"chronosphere.upgrade_filter_tooltip", math_floor(300/(global.objective.upgrades[2]/3+1) * global.difficulty_vote_value)},
-      jump_limit = (1 + global.objective.upgrades[2]) * 3 or 0,
+      tooltip = {"chronosphere.upgrade_filter_tooltip", math_floor(300/(objective.upgrades[2]/3+1) * objective.difficulty_vote_value)},
+      jump_limit = (1 + objective.upgrades[2]) * 3 or 0,
       cost = {
         item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 5000},
-        item2 = {name = "electronic-circuit", tt = "item-name", sprite = "item/electronic-circuit", count = math_min(1 + global.objective.upgrades[2], 3) * 500 + 500},
-        item3 = {name = "advanced-circuit", tt = "item-name", sprite = "item/advanced-circuit", count = math_max(math_min(1 + global.objective.upgrades[2], 6) - 3, 0) * 500},
-        item4 = {name = "processing-unit", tt = "item-name", sprite = "item/processing-unit", count = math_max(math_min(1 + global.objective.upgrades[2], 9) - 6, 0) * 500}
+        item2 = {name = "electronic-circuit", tt = "item-name", sprite = "item/electronic-circuit", count = math_min(1 + objective.upgrades[2], 3) * 500 + 500},
+        item3 = {name = "advanced-circuit", tt = "item-name", sprite = "item/advanced-circuit", count = math_max(math_min(1 + objective.upgrades[2], 6) - 3, 0) * 500},
+        item4 = {name = "processing-unit", tt = "item-name", sprite = "item/processing-unit", count = math_max(math_min(1 + objective.upgrades[2], 9) - 6, 0) * 500}
       }
     },
     [3] = {
@@ -56,10 +57,10 @@ function Public.upgrades()
       max_level = 24,
       message = {"chronosphere.upgrade_accumulators_message"},
       tooltip = {"chronosphere.upgrade_accumulators_tooltip"},
-      jump_limit = global.objective.upgrades[3],
+      jump_limit = objective.upgrades[3],
       cost = {
-        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 2000 * (1 + global.objective.upgrades[3] / 4)},
-        item2 = {name = "battery", tt = "item-name", sprite = "item/battery", count = 100 * (1 + global.objective.upgrades[3])}
+        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 2000 * (1 + objective.upgrades[3] / 4)},
+        item2 = {name = "battery", tt = "item-name", sprite = "item/battery", count = 100 * (1 + objective.upgrades[3])}
       }
     },
     [4] = {
@@ -67,10 +68,10 @@ function Public.upgrades()
       sprite = "recipe/long-handed-inserter",
       max_level = 4,
       message = {"chronosphere.upgrade_loot_pickup_message"},
-      tooltip = {"chronosphere.upgrade_loot_pickup_tooltip", global.objective.upgrades[4]},
+      tooltip = {"chronosphere.upgrade_loot_pickup_tooltip", objective.upgrades[4]},
       jump_limit = 0,
       cost = {
-        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 1000 * (1 + global.objective.upgrades[4])},
+        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 1000 * (1 + objective.upgrades[4])},
         item2 = {name = "long-handed-inserter", tt = "entity-name", sprite = "recipe/long-handed-inserter", count = 400}
       }
     },
@@ -80,13 +81,13 @@ function Public.upgrades()
       max_level = 4,
       message = {"chronosphere.upgrade_inventory_size_message"},
       tooltip = {"chronosphere.upgrade_inventory_size_tooltip"},
-      jump_limit = (1 + global.objective.upgrades[5]) * 5,
+      jump_limit = (1 + objective.upgrades[5]) * 5,
       cost = {
-        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 2500 * (1 + global.objective.upgrades[5])},
-        item2 = {name = "wooden-chest", tt = "entity-name", sprite = "item/wooden-chest", count = math_max(0, 250 - math_abs(global.objective.upgrades[5]) * 250)},
-        item3 = {name = "iron-chest", tt = "entity-name", sprite = "item/iron-chest", count = math_max(0, 250 - math_abs(global.objective.upgrades[5] - 1) * 250)},
-        item4 = {name = "steel-chest", tt = "entity-name", sprite = "item/steel-chest", count = math_max(0, 250 - math_abs(global.objective.upgrades[5] - 2) * 250)},
-        item5 = {name = "logistic-chest-storage", tt = "entity-name", sprite = "item/logistic-chest-storage", count = math_max(0, 250 - math_abs(global.objective.upgrades[5] - 3) * 250)}
+        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 2500 * (1 + objective.upgrades[5])},
+        item2 = {name = "wooden-chest", tt = "entity-name", sprite = "item/wooden-chest", count = math_max(0, 250 - math_abs(objective.upgrades[5]) * 250)},
+        item3 = {name = "iron-chest", tt = "entity-name", sprite = "item/iron-chest", count = math_max(0, 250 - math_abs(objective.upgrades[5] - 1) * 250)},
+        item4 = {name = "steel-chest", tt = "entity-name", sprite = "item/steel-chest", count = math_max(0, 250 - math_abs(objective.upgrades[5] - 2) * 250)},
+        item5 = {name = "logistic-chest-storage", tt = "entity-name", sprite = "item/logistic-chest-storage", count = math_max(0, 250 - math_abs(objective.upgrades[5] - 3) * 250)}
       }
     },
     [6] = {
@@ -94,11 +95,11 @@ function Public.upgrades()
       sprite = "recipe/repair-pack",
       max_level = 4,
       message = {"chronosphere.upgrade_repair_message"},
-      tooltip = {"chronosphere.upgrade_repair_tooltip", global.objective.upgrades[6]},
+      tooltip = {"chronosphere.upgrade_repair_tooltip", objective.upgrades[6]},
       jump_limit = 0,
       cost = {
-        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 1000 * (1 + global.objective.upgrades[6])},
-        item2 = {name = "repair-pack", tt = "item-name", sprite = "recipe/repair-pack", count = 200 * (1 + global.objective.upgrades[6])}
+        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 1000 * (1 + objective.upgrades[6])},
+        item2 = {name = "repair-pack", tt = "item-name", sprite = "recipe/repair-pack", count = 200 * (1 + objective.upgrades[6])}
       }
     },
     [7] = {
@@ -132,13 +133,13 @@ function Public.upgrades()
       max_level = 4,
       message = {"chronosphere.upgrade_storage_message"},
       tooltip = {"chronosphere.upgrade_storage_tooltip"},
-      jump_limit = (1 + global.objective.upgrades[9]) * 5,
+      jump_limit = (1 + objective.upgrades[9]) * 5,
       cost = {
-        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 2500 * (1 + global.objective.upgrades[9])},
-        item2 = {name = "wooden-chest", tt = "entity-name", sprite = "item/wooden-chest", count = math_max(0, 250 - math_abs(global.objective.upgrades[9]) * 250)},
-        item3 = {name = "iron-chest", tt = "entity-name", sprite = "item/iron-chest", count = math_max(0, 250 - math_abs(global.objective.upgrades[9] - 1) * 250)},
-        item4 = {name = "steel-chest", tt = "entity-name", sprite = "item/steel-chest", count = math_max(0, 250 - math_abs(global.objective.upgrades[9] - 2) * 250)},
-        item5 = {name = "logistic-chest-storage", tt = "entity-name", sprite = "item/logistic-chest-storage", count = math_max(0, 250 - math_abs(global.objective.upgrades[9] - 3) * 250)}
+        item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 2500 * (1 + objective.upgrades[9])},
+        item2 = {name = "wooden-chest", tt = "entity-name", sprite = "item/wooden-chest", count = math_max(0, 250 - math_abs(objective.upgrades[9]) * 250)},
+        item3 = {name = "iron-chest", tt = "entity-name", sprite = "item/iron-chest", count = math_max(0, 250 - math_abs(objective.upgrades[9] - 1) * 250)},
+        item4 = {name = "steel-chest", tt = "entity-name", sprite = "item/steel-chest", count = math_max(0, 250 - math_abs(objective.upgrades[9] - 2) * 250)},
+        item5 = {name = "logistic-chest-storage", tt = "entity-name", sprite = "item/logistic-chest-storage", count = math_max(0, 250 - math_abs(objective.upgrades[9] - 3) * 250)}
       }
     },
     [10] = {
@@ -146,7 +147,7 @@ function Public.upgrades()
       sprite = "recipe/poison-capsule",
       max_level = 4,
       message = {"chronosphere.upgrade_poison_message"},
-      tooltip = {"chronosphere.upgrade_poison_tooltip", math_ceil(global.objective.poisontimeout /6)},
+      tooltip = {"chronosphere.upgrade_poison_tooltip", math_ceil(objective.poisontimeout /6)},
       jump_limit = 0,
       cost = {
         item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 1000},
@@ -209,7 +210,7 @@ function Public.upgrades()
       name = {"chronosphere.upgrade_computer3"},
       sprite = "item/rocket-control-unit",
       max_level = 10,
-      message = {"chronosphere.upgrade_computer3_message", global.objective.upgrades[15] + 1},
+      message = {"chronosphere.upgrade_computer3_message", objective.upgrades[15] + 1},
       tooltip = {"chronosphere.upgrade_computer3_tooltip"},
       jump_limit = 25,
       cost = {

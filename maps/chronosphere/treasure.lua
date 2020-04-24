@@ -1,9 +1,11 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local math_random = math.random
 local math_sqrt = math.sqrt
 
 local Public = {}
 
 function Public.treasure_chest(surface, position, container_name)
+	local objective = Chrono_table.get_table()
 
 	local chest_raffle = {}
 	local chest_loot = {
@@ -164,7 +166,7 @@ function Public.treasure_chest(surface, position, container_name)
 		{{name = "gun-turret", count = math_random(2,4)}, weight = 3, d_min = 0.2, d_max = 0.9},
 	}
   local jumps = 0
-  if global.objective.chronojumps then jumps = global.objective.chronojumps end
+  if objective.chronojumps then jumps = objective.chronojumps end
 	local distance_to_center =  (jumps / 40)
 	if distance_to_center > 1 then distance_to_center = 1 end
 

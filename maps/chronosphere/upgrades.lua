@@ -1,24 +1,24 @@
-
+local Chrono_table = require 'maps.chronosphere.table'
 local Public = {}
 local math_floor = math.floor
 local Server = require 'utils.server'
 local Upgrades = require "maps.chronosphere.upgrade_list"
 
 local function check_win()
-  local objective = global.objective
-  if global.fishchest then
-    if global.fishchest.valid then
-      local inv = global.fishchest.get_inventory(defines.inventory.chest)
+  local objective = Chrono_table.get_table()
+  if objective.fishchest then
+    if objective.fishchest.valid then
+      local inv = objective.fishchest.get_inventory(defines.inventory.chest)
       local countfish = inv.get_item_count("raw-fish")
-      local enemies = game.surfaces[global.active_surface_index].count_entities_filtered{force = "enemy"}
+      local enemies = game.surfaces[objective.active_surface_index].count_entities_filtered{force = "enemy"}
       if countfish > 0 then
         inv.remove({name = "raw-fish", count = countfish})
         objective.mainscore = objective.mainscore + countfish
         if enemies > 0 then
           game.print("Comfylatron: You delivered fish, but there is still " .. enemies .. " enemies left. Kill them all so fish are safe!", {r=0.98, g=0.66, b=0.22})
         else
-          if not global.game_reset_tick then
-            global.game_reset_tick = game.tick + 18000
+          if not objective.game_reset_tick then
+            objective.game_reset_tick = game.tick + 18000
             objective.game_won = true
             objective.game_lost = true
             objective.chronotimer = 200000000 - 300
@@ -39,14 +39,16 @@ local function check_win()
 end
 
 local function upgrade_hp()
-	global.objective.max_health = 10000 + 2500 * global.objective.upgrades[1]
-	rendering.set_text(global.objective.health_text, "HP: " .. global.objective.health .. " / " .. global.objective.max_health)
+	local objective = Chrono_table.get_table()
+	objective.max_health = 10000 + 2500 * objective.upgrades[1]
+	rendering.set_text(objective.health_text, "HP: " .. objective.health .. " / " .. objective.max_health)
 end
 
 local function spawn_acumulators()
+	local objective = Chrono_table.get_table()
 	local x = -28
 	local y = -252
-	local yy = global.objective.upgrades[3] * 2
+	local yy = objective.upgrades[3] * 2
 	local surface = game.surfaces["cargo_wagon"]
 	if yy > 8 then yy = yy + 2 end
 	if yy > 26 then yy = yy + 2 end
@@ -55,7 +57,7 @@ local function spawn_acumulators()
 		local acumulator = surface.create_entity({name = "accumulator", position = {x + 2 * i, y + yy}, force="player", create_build_effect_smoke = false})
 		acumulator.minable = false
 		acumulator.destructible = false
-		table.insert(global.acumulators, acumulator)
+		table.insert(objective.acumulators, acumulator)
 	end
 end
 
@@ -78,20 +80,21 @@ local function upgrade_water()
 end
 
 local function upgrade_out()
+	local objective = Chrono_table.get_table()
 	if not game.surfaces["cargo_wagon"] then return end
-  local positions = {{-16,-62},{15,-62},{-16,66},{15,66}}
+  	local positions = {{-16,-62},{15,-62},{-16,66},{15,66}}
 	local out = {}
 	for i = 1, 4, 1 do
     local e = game.surfaces["cargo_wagon"].create_entity({name = "steel-chest", position = positions[i], force = "player"})
 		e.destructible = false
 		e.minable = false
-		global.outchests[i] = e
+		objective.outchests[i] = e
 		out[i] = rendering.draw_text{
 			text = "Output",
 			surface = e.surface,
 			target = e,
 			target_offset = {0, -1.5},
-			color = global.locomotive.color,
+			color = objective.locomotive.color,
 			scale = 0.80,
 			font = "default-game",
 			alignment = "center",
@@ -101,7 +104,7 @@ local function upgrade_out()
 end
 
 local function upgrade_storage()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   if not game.surfaces["cargo_wagon"] then return end
 	local chests = {}
   local positions = {x = {-33, 32}, y = {-189, -127, -61, 1, 67, 129}}
@@ -144,21 +147,22 @@ local function upgrade_storage()
 end
 
 local function fusion_buy()
-  local objective = global.objective
-  if global.upgradechest[11] and global.upgradechest[11].valid then
-    local inv = global.upgradechest[14].get_inventory(defines.inventory.chest)
+  local objective = Chrono_table.get_table()
+  if objective.upgradechest[11] and objective.upgradechest[11].valid then
+    local inv = objective.upgradechest[14].get_inventory(defines.inventory.chest)
     inv.insert({name = "fusion-reactor-equipment", count = 1})
   end
 end
 
 local function mk2_buy()
-  local objective = global.objective
-  if global.upgradechest[13] and global.upgradechest[13].valid then
+  local objective = Chrono_table.get_table()
+  if objective.upgradechest[13] and objective.upgradechest[13].valid then
     inv.insert({name = "power-armor-mk2", count = 1})
   end
 end
 
 local function process_upgrade(index)
+	local objective = Chrono_table.get_table()
 	if index == 1 then
 		upgrade_hp()
 	elseif index == 3 then
@@ -178,28 +182,29 @@ local function process_upgrade(index)
 	elseif index == 12 then
 		mk2_buy()
 	elseif index == 13 then
-		global.objective.computermessage = 2
+		objective.computermessage = 2
 	elseif index == 14 then
-		global.objective.computermessage = 4
+		objective.computermessage = 4
 	elseif index == 15 then
-		if global.objective.upgrades[15] == 10 then
+		if objective.upgrades[15] == 10 then
 			game.print({"chronosphere.message_quest6"}, {r=0.98, g=0.66, b=0.22})
 		end
 	end
 end
 
 local function check_single_upgrade(index)
+	local objective = Chrono_table.get_table()
 	local upgrades = Upgrades.upgrades()
-	if global.upgradechest[index] and global.upgradechest[index].valid then
-		if index == 14 and (global.objective.upgrades[13] ~= 1 or global.objective.computermessage ~= 3) then
+	if objective.upgradechest[index] and objective.upgradechest[index].valid then
+		if index == 14 and (objective.upgrades[13] ~= 1 or objective.computermessage ~= 3) then
 			return
-		elseif index == 15 and (global.objective.upgrades[14] ~= 1 or global.objective.computermessage ~= 5) then
+		elseif index == 15 and (objective.upgrades[14] ~= 1 or objective.computermessage ~= 5) then
 			return
-		elseif index == 16 and global.objective.upgrades[15] ~= 10 then
+		elseif index == 16 and objective.upgrades[15] ~= 10 then
 			return
 		end
-		local inv = global.upgradechest[index].get_inventory(defines.inventory.chest)
-		if global.objective.upgrades[index] < upgrades[index].max_level and global.objective.chronojumps >= upgrades[index].jump_limit then
+		local inv = objective.upgradechest[index].get_inventory(defines.inventory.chest)
+		if objective.upgrades[index] < upgrades[index].max_level and objective.chronojumps >= upgrades[index].jump_limit then
 			for _, item in pairs(upgrades[index].cost) do
 				if inv.get_item_count(item.name) < item.count then return end
 			end
@@ -212,7 +217,7 @@ local function check_single_upgrade(index)
 				inv.remove({name = item.name, count = item.count})
 			end
 		end
-		global.objective.upgrades[index] = global.objective.upgrades[index] + 1
+		objective.upgrades[index] = objective.upgrades[index] + 1
 		game.print(upgrades[index].message, {r=0.98, g=0.66, b=0.22})
 		process_upgrade(index)
 	end
@@ -226,32 +231,31 @@ local function check_all_upgrades()
 end
 
 function Public.check_upgrades()
-  local objective = global.objective
-  if not global.upgradechest then return end
+  local objective = Chrono_table.get_table()
+  if not objective.upgradechest then return end
 	if objective.game_lost == true then return end
 	check_all_upgrades()
   if objective.planet[1].name.id == 17 then
-    if global.fishchest then
+    if objective.fishchest then
       check_win()
     end
   end
 end
 
 function Public.trigger_poison()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   if objective.game_lost then return end
   if objective.upgrades[10] > 0 and objective.poisontimeout == 0 then
-    local objective = global.objective
     objective.upgrades[10] = objective.upgrades[10] - 1
     objective.poisontimeout = 120
-    local objs = {global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
+    local objs = {objective.locomotive, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
     local surface = objective.surface
     game.print({"chronosphere.message_poison_defense"}, {r=0.98, g=0.66, b=0.22})
     for i = 1, 4, 1 do
       surface.create_entity({name = "poison-capsule", position = objs[i].position, force = "player", target = objs[i], speed = 1 })
     end
-    for i = 1 , #global.comfychests, 1 do
-      surface.create_entity({name = "poison-capsule", position = global.comfychests[i].position, force = "player", target = global.comfychests[i], speed = 1 })
+    for i = 1 , #objective.comfychests, 1 do
+      surface.create_entity({name = "poison-capsule", position = objective.comfychests[i].position, force = "player", target = objective.comfychests[i], speed = 1 })
     end
   end
 end

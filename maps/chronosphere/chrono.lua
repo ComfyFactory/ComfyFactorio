@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public_chrono = {}
 
 local Server = require 'utils.server'
@@ -24,8 +25,8 @@ function Public_chrono.get_map_gen_settings()
 end
 
 function Public_chrono.restart_settings()
-  local objective = global.objective
-  objective.max_health = 10000
+  	local objective = Chrono_table.get_table()
+    objective.max_health = 10000
 	objective.health = 10000
 	objective.poisontimeout = 0
 	objective.chronotimer = 0
@@ -40,27 +41,27 @@ function Public_chrono.restart_settings()
 	objective.dangers = {}
 	objective.looted_nukes = 0
 	objective.offline_players = {}
-  objective.nextsurface = nil
+  	objective.nextsurface = nil
 	for i = 1, 16, 1 do
 		objective.upgrades[i] = 0
 	end
 	objective.upgrades[10] = 2 --poison
-	global.outchests = {}
-	global.upgradechest = {}
-	global.fishchest = {}
-	global.acumulators = {}
-	global.comfychests = {}
-	global.comfychests2 = {}
-	global.locomotive_cargo = {}
+	objective.outchests = {}
+	objective.upgradechest = {}
+	objective.fishchest = {}
+	objective.acumulators = {}
+	objective.comfychests = {}
+	objective.comfychests2 = {}
+	objective.locomotive_cargo = {}
 	for _, player in pairs(game.connected_players) do
-		global.flame_boots[player.index] = {fuel = 1, steps = {}}
+		objective.flame_boots[player.index] = {fuel = 1, steps = {}}
 	end
 	global.friendly_fire_history = {}
 	global.landfill_history = {}
 	global.mining_history = {}
 	global.score = {}
-  global.difficulty_poll_closing_timeout = game.tick + 90000
-  global.difficulty_player_votes = {}
+  	global.difficulty_poll_closing_timeout = game.tick + 90000
+  	global.difficulty_player_votes = {}
 
 	game.difficulty_settings.technology_price_multiplier = 0.6
 	game.map_settings.enemy_evolution.destroy_factor = 0.005
@@ -92,8 +93,6 @@ function Public_chrono.restart_settings()
 	game.forces.player.technologies["power-armor-mk2"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.recipes["pistol"].enabled = false
-
-	global.objective = objective
 end
 
 function Public_chrono.init_setup()
@@ -101,34 +100,34 @@ function Public_chrono.init_setup()
 end
 
 function Public_chrono.objective_died()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   if objective.game_lost == true then return end
   objective.health = 0
   local surface = objective.surface
   game.print({"chronosphere.message_game_lost1"})
   game.print({"chronosphere.message_game_lost2"})
   for i = 1, 3, 1 do
-    surface.create_entity({name = "big-artillery-explosion", position = global.locomotive_cargo[i].position})
-    global.locomotive_cargo[i].destroy()
+    surface.create_entity({name = "big-artillery-explosion", position = objective.locomotive_cargo[i].position})
+    objective.locomotive_cargo[i].destroy()
   end
-  for i = 1, #global.comfychests,1 do
-    --surface.create_entity({name = "big-artillery-explosion", position = global.comfychests[i].position})
-    global.comfychests[i].destroy()
+  for i = 1, #objective.comfychests,1 do
+    --surface.create_entity({name = "big-artillery-explosion", position = objective.comfychests[i].position})
+    objective.comfychests[i].destroy()
 
-    if global.comfychests2 then global.comfychests2[i].destroy() end
+    if objective.comfychests2 then objective.comfychests2[i].destroy() end
 
-    --global.comfychests = {}
+    --objective.comfychests = {}
   end
-  global.acumulators = {}
+  objective.acumulators = {}
   objective.game_lost = true
-  global.game_reset_tick = game.tick + 1800
+  objective.game_reset_tick = game.tick + 1800
   for _, player in pairs(game.connected_players) do
     player.play_sound{path="utility/game_lost", volume_modifier=0.75}
   end
 end
 
 local function overstayed()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
 	if objective.passivetimer > objective.chrononeeds * 0.75 and objective.chronojumps > 5 then
 		objective.passivejumps = objective.passivejumps + 1
     return true
@@ -137,7 +136,7 @@ local function overstayed()
 end
 
 local function check_nuke_silos()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   if objective.dangers and #objective.dangers > 1 then
     for i = 1, #objective.dangers, 1 do
       if objective.dangers[i].destroyed == true then
@@ -148,7 +147,7 @@ local function check_nuke_silos()
 end
 
 function Public_chrono.process_jump(choice)
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
 	local overstayed = overstayed()
 	objective.chronojumps = objective.chronojumps + 1
 	objective.chrononeeds = 2000 + 300 * objective.chronojumps
@@ -180,10 +179,10 @@ function Public_chrono.process_jump(choice)
   if objective.planet[1].name.id == 19 then
     check_nuke_silos()
   end
-	global.objective = objective
 end
 
 function Public_chrono.get_wagons(start)
+	local objective = Chrono_table.get_table()
 	local wagons = {}
 	wagons[1] = {inventory = {}, bar = 0, filters = {}}
 	wagons[2] = {inventory = {}, bar = 0, filters = {}}
@@ -198,9 +197,9 @@ function Public_chrono.get_wagons(start)
 		end
 	else
 		local inventories = {
-	    one = global.locomotive_cargo[1].get_inventory(defines.inventory.cargo_wagon),
-	    two = global.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
-	    three = global.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
+	    one = objective.locomotive_cargo[1].get_inventory(defines.inventory.cargo_wagon),
+	    two = objective.locomotive_cargo[2].get_inventory(defines.inventory.cargo_wagon),
+	    three = objective.locomotive_cargo[3].get_inventory(defines.inventory.cargo_wagon)
 	  }
 		inventories.one.sort_and_merge()
 		--inventories.two.sort_and_merge()
@@ -221,7 +220,7 @@ function Public_chrono.get_wagons(start)
 end
 
 function Public_chrono.post_jump()
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   game.forces.enemy.reset_evolution()
 	if objective.chronojumps + objective.passivejumps <= 40 and objective.planet[1].name.id ~= 17 then
 		game.forces.enemy.evolution_factor = 0 + 0.025 * (objective.chronojumps + objective.passivejumps)
@@ -229,9 +228,9 @@ function Public_chrono.post_jump()
 		game.forces.enemy.evolution_factor = 1
 	end
 	if objective.planet[1].name.id == 17 then
-		global.comfychests[1].insert({name = "space-science-pack", count = 1000})
+		objective.comfychests[1].insert({name = "space-science-pack", count = 1000})
     if objective.looted_nukes > 0 then
-      global.comfychests[1].insert({name = "atomic-bomb", count = objective.looted_nukes})
+      objective.comfychests[1].insert({name = "atomic-bomb", count = objective.looted_nukes})
       game.print({"chronosphere.message_fishmarket3"}, {r=0.98, g=0.66, b=0.22})
     end
 		objective.chrononeeds = 200000000
@@ -239,7 +238,7 @@ function Public_chrono.post_jump()
     objective.chronotimer = objective.chrononeeds - 1500
 	end
 	for _, player in pairs(game.connected_players) do
-		global.flame_boots[player.index] = {fuel = 1, steps = {}}
+		objective.flame_boots[player.index] = {fuel = 1, steps = {}}
 	end
 
 	game.map_settings.enemy_evolution.time_factor = 7e-05 + 3e-06 * (objective.chronojumps + objective.passivejumps)
@@ -249,12 +248,11 @@ function Public_chrono.post_jump()
 	game.forces.enemy.set_ammo_damage_modifier("biological", 0.1 * objective.passivejumps)
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.8
   if objective.chronojumps == 1 then
-    if global.difficulty_vote_value < 1 then
+    if objective.difficulty_vote_value < 1 then
       game.forces.player.technologies["fusion-reactor-equipment"].enabled = true
       game.forces.player.technologies["power-armor-mk2"].enabled = true
     end
   end
-	global.objective = objective
 end
 
 return Public_chrono

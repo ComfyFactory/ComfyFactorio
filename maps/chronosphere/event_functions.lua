@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public_event = {}
 
 local tick_tack_trap = require "functions.tick_tack_trap"
@@ -8,8 +9,9 @@ local math_random = math.random
 local math_floor = math.floor
 
 local function get_ore_amount()
-	local scaling = 5 * global.objective.chronojumps
-	local amount = (30 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus / 2) * global.objective.planet[1].ore_richness.factor
+	local objective = Chrono_table.get_table()
+	local scaling = 5 * objective.chronojumps
+	local amount = (30 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus / 2) * objective.planet[1].ore_richness.factor
 	if amount > 600 then amount = 600 end
 	amount = math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
 	return amount
@@ -42,10 +44,11 @@ function Public_event.biters_chew_rocks_faster(event)
 end
 
 function Public_event.isprotected(entity)
+	local objective = Chrono_table.get_table()
 	if entity.surface.name == "cargo_wagon" then return true end
-	local protected = {global.locomotive, global.locomotive_cargo[1], global.locomotive_cargo[2], global.locomotive_cargo[3]}
-	for i = 1, #global.comfychests,1 do
-		table.insert(protected, global.comfychests[i])
+	local protected = {objective.locomotive, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
+	for i = 1, #objective.comfychests,1 do
+		table.insert(protected, objective.comfychests[i])
 	end
 	for i = 1, #protected do
     if protected[i] == entity then
@@ -67,6 +70,7 @@ function Public_event.trap(entity, trap)
 end
 
 function Public_event.lava_planet(event)
+	local objective = Chrono_table.get_table()
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if player.character.driving then return end
@@ -76,8 +80,8 @@ function Public_event.lava_planet(event)
 	for i = 1, 7, 1 do
 		if pavement.name == safe[i] then return end
 	end
-	if not global.flame_boots[player.index].steps then global.flame_boots[player.index].steps = {} end
-	local steps = global.flame_boots[player.index].steps
+	if not objective.flame_boots[player.index].steps then objective.flame_boots[player.index].steps = {} end
+	local steps = objective.flame_boots[player.index].steps
 
 	local elements = #steps
 
@@ -106,7 +110,7 @@ function Public_event.shred_simple_entities(entity)
 end
 
 function Public_event.spawner_loot(surface, position)
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
 	if math_random(1,20) == 1 then
 		surface.spill_item_stack(position, {name = "railgun-dart", count = math_random(1, 1 + objective.chronojumps)}, true)
 	end
@@ -147,7 +151,8 @@ function Public_event.choppy_loot(event)
 end
 
 function Public_event.rocky_loot(event)
-	local surface = game.surfaces[global.active_surface_index]
+	local objective = Chrono_table.get_table()
+	local surface = game.surfaces[objective.active_surface_index]
 	local player = game.players[event.player_index]
 	surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(1,3)},true)
 	local amount = get_ore_amount()
@@ -163,6 +168,7 @@ function Public_event.rocky_loot(event)
 end
 
 function Public_event.swamp_loot(event)
+	local objective = Chrono_table.get_table()
 	local ore_yield = {
 		["behemoth-biter"] = 5,
 		["behemoth-spitter"] = 5,
@@ -179,7 +185,7 @@ function Public_event.swamp_loot(event)
 		["small-worm-turret"] = 2,
 		["spitter-spawner"] = 10,
 	}
-	local surface = game.surfaces[global.active_surface_index]
+	local surface = game.surfaces[objective.active_surface_index]
 	local amount = get_ore_amount() / 20
 	if ore_yield[event.entity.name] then
 		amount = (get_ore_amount() * ore_yield[event.entity.name]) / 20
@@ -198,7 +204,7 @@ function Public_event.swamp_loot(event)
 end
 
 function Public_event.danger_silo(entity)
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
 	if objective.planet[1].name.id == 19 then
 		if objective.dangers and #objective.dangers > 1 then
 	    for i = 1, #objective.dangers, 1 do
@@ -222,8 +228,8 @@ function Public_event.danger_silo(entity)
 end
 
 function Public_event.biter_immunities(event)
-	local planet = global.objective.planet[1].name.id
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
+	local planet = objective.planet[1].name.id
 	if event.damage_type.name == "fire" then
 		if planet == 14 then --lava planet
 			event.entity.health = event.entity.health + event.final_damage_amount
@@ -234,7 +240,7 @@ function Public_event.biter_immunities(event)
 				end
 			end
 		-- else -- other planets
-		-- 	event.entity.health = math_floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * global.difficulty_vote_value * objective.chronojumps)))
+		-- 	event.entity.health = math_floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * objective.difficulty_vote_value * objective.chronojumps)))
 		end
 	elseif event.damage_type.name == "poison" then
 		if planet == 18 then --swamp planet
@@ -244,9 +250,9 @@ function Public_event.biter_immunities(event)
 end
 
 function Public_event.flamer_nerfs()
-	local objective = global.objective
+	local objective = Chrono_table.get_table()
 	local flamer_power = 0
-	local difficulty = global.difficulty_vote_value
+	local difficulty = objective.difficulty_vote_value
 	if difficulty > 1 then
 		difficulty = 1 + ((difficulty - 1) / 2)
 	elseif difficulty < 1 then
@@ -304,9 +310,10 @@ function Public_event.mining_buffs(event)
 end
 
 function Public_event.on_technology_effects_reset(event)
+	local objective = Chrono_table.get_table()
 	if event.force.name == "player" then
-		game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + global.objective.invupgradetier * 10
-		game.forces.player.character_loot_pickup_distance_bonus = game.forces.player.character_loot_pickup_distance_bonus + global.objective.pickupupgradetier
+		game.forces.player.character_inventory_slots_bonus = game.forces.player.character_inventory_slots_bonus + objective.invupgradetier * 10
+		game.forces.player.character_loot_pickup_distance_bonus = game.forces.player.character_loot_pickup_distance_bonus + objective.pickupupgradetier
 
 		local fake_event = {}
 		Public_event.mining_buffs(nil)

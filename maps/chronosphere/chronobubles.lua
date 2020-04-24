@@ -1,3 +1,5 @@
+local Chrono_table = require 'maps.chronosphere.table'
+
 local Public = {}
 local math_random = math.random
 --cumul_chance must be sum of this and all previous chances, add new planets at the end only, or recalculate
@@ -60,7 +62,7 @@ local function roll(weight)
 end
 
 function Public.determine_planet(choice)
-  local objective = global.objective
+  local objective = Chrono_table.get_table()
   local weight = variants[#variants].cumul_chance
   local planet_choice = nil
   local ores = math_random(1, 9)

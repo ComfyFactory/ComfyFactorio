@@ -1,3 +1,4 @@
+local Chrono_table = require 'maps.chronosphere.table'
 local Public = {}
 local Upgrades = require "maps.chronosphere.upgrade_list"
 local math_floor = math.floor
@@ -7,7 +8,8 @@ local function math_sgn(x)
 end
 
 function Public.locomotive_spawn(surface, position, wagons)
-	if global.objective.planet[1].name.id == 17 then --fish market
+	local objective = Chrono_table.get_table()
+	if objective.planet[1].name.id == 17 then --fish market
 		position.x = position.x - 960
 		position.y = position.y - 64
 	end
@@ -15,11 +17,11 @@ function Public.locomotive_spawn(surface, position, wagons)
 		local rail = {name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0}
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
 	end
-	global.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -6}, force = "player"})
-	global.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
+	objective.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -6}, force = "player"})
+	objective.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
 	for i = 1, 3, 1 do
-		global.locomotive_cargo[i] = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + math_floor((i - 1) * 6.5)}, force = "player"})
-		local inv = global.locomotive_cargo[i].get_inventory(defines.inventory.cargo_wagon)
+		objective.locomotive_cargo[i] = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + math_floor((i - 1) * 6.5)}, force = "player"})
+		local inv = objective.locomotive_cargo[i].get_inventory(defines.inventory.cargo_wagon)
 		if wagons[i].bar > 0 then inv.set_bar(wagons[i].bar) end
 		for ii = 1, 40, 1 do
 			inv.set_filter(ii, wagons[i].filters[ii])
@@ -27,14 +29,14 @@ function Public.locomotive_spawn(surface, position, wagons)
         inv.insert(wagons[i].inventory[ii])
       end
 		end
-		global.locomotive_cargo[i].minable = false
+		objective.locomotive_cargo[i].minable = false
 	end
-	global.locomotive_cargo[1].operable = false
-	global.locomotive.color = {0, 255, 0}
-	global.locomotive.minable = false
+	objective.locomotive_cargo[1].operable = false
+	objective.locomotive.color = {0, 255, 0}
+	objective.locomotive.minable = false
 
-	--if not global.comfychests then global.comfychests = {} end
-	--if not global.acumulators then global.acumulators = {} end
+	--if not objective.comfychests then objective.comfychests = {} end
+	--if not objective.acumulators then objective.acumulators = {} end
 	for i = 1, 24, 1 do
 		local yi = 0
 		local xi = 5
@@ -61,21 +63,21 @@ function Public.locomotive_spawn(surface, position, wagons)
 		local comfychest = surface.create_entity({name = "steel-chest", position = {position.x - 2 + xi, position.y - 2 + yi + i}, force = "player"})
 		comfychest.minable = false
 		--comfychest.destructible = false
-		if not global.comfychests[i] then
-			table.insert(global.comfychests, comfychest)
+		if not objective.comfychests[i] then
+			table.insert(objective.comfychests, comfychest)
 		else
-			global.comfychests[i] = comfychest
+			objective.comfychests[i] = comfychest
 		end
 	end
 	rendering.draw_light({
 		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
-		oriented = true, color = {255,255,255}, target = global.locomotive,
+		oriented = true, color = {255,255,255}, target = objective.locomotive,
 		surface = surface, visible = true, only_in_alt_mode = false,
 	})
 
 	rendering.draw_light({
 		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
-		oriented = true, color = {255,255,255}, target = global.locomotive_cargo[3],
+		oriented = true, color = {255,255,255}, target = objective.locomotive_cargo[3],
 		surface = surface, visible = true, only_in_alt_mode = false,
 	})
 
@@ -84,18 +86,19 @@ end
 
 
 function Public.fish_tag()
-	if not global.locomotive_cargo[1] then return end
-	local cargo = global.locomotive_cargo[1]
+	local objective = Chrono_table.get_table()
+	if not objective.locomotive_cargo[1] then return end
+	local cargo = objective.locomotive_cargo[1]
 	if not cargo.valid then return end
 	if not cargo.surface then return end
 	if not cargo.surface.valid then return end
-	if global.locomotive_tag then
-		if global.locomotive_tag.valid then
-			if global.locomotive_tag.position.x == cargo.position.x and global.locomotive_tag.position.y == cargo.position.y then return end
-			global.locomotive_tag.destroy()
+	if objective.locomotive_tag then
+		if objective.locomotive_tag.valid then
+			if objective.locomotive_tag.position.x == cargo.position.x and objective.locomotive_tag.position.y == cargo.position.y then return end
+			objective.locomotive_tag.destroy()
 		end
 	end
-	global.locomotive_tag = cargo.force.add_chart_tag(
+	objective.locomotive_tag = cargo.force.add_chart_tag(
 		cargo.surface,
 		{icon = {type = 'item', name = 'raw-fish'},
 		position = cargo.position,
@@ -121,10 +124,11 @@ local market_offers = {
 }
 
 function Public.create_wagon_room()
+	local objective = Chrono_table.get_table()
 	local width = 64
 	local height = 384
-	global.comfychests2 = {}
-	global.acumulators = {}
+	objective.comfychests2 = {}
+	objective.acumulators = {}
 	local map_gen_settings = {
 		["width"] = width,
 		["height"] = height + 128,
@@ -270,7 +274,7 @@ function Public.create_wagon_room()
 			local e = surface.create_entity({name = "steel-chest", position = {x,y}, force = "player", create_build_effect_smoke = false})
 			e.destructible = false
 			e.minable = false
-			table.insert(global.comfychests2, e)
+			table.insert(objective.comfychests2, e)
 		end
 
 	end
@@ -293,14 +297,14 @@ function Public.create_wagon_room()
 			end
 			acumulator.minable = false
 			acumulator.destructible = false
-			table.insert(global.acumulators, acumulator)
+			table.insert(objective.acumulators, acumulator)
 		end
 		for k = 1, 4, 1 do
 			local xx = x + 2 * k
 			local acumulator = surface.create_entity({name = "accumulator", position = {xx,y}, force="player", create_build_effect_smoke = false})
 			acumulator.minable = false
 			acumulator.destructible = false
-			table.insert(global.acumulators, acumulator)
+			table.insert(objective.acumulators, acumulator)
 		end
 
 	end
@@ -315,13 +319,13 @@ function Public.create_wagon_room()
   local repairchest = surface.create_entity({name = "steel-chest", position = {-24, height * -0.5 + 3}, force = "player"})
   repairchest.minable = false
   repairchest.destructible = false
-  global.upgradechest[0] = repairchest
+  objective.upgradechest[0] = repairchest
   rendering.draw_text{
     text = "Repair chest",
     surface = surface,
     target = repairchest,
     target_offset = {0, -2.5},
-    color = global.locomotive.color,
+    color = objective.locomotive.color,
     scale = 1.00,
     font = "default-game",
     alignment = "center",
@@ -332,7 +336,7 @@ function Public.create_wagon_room()
     local e = surface.create_entity({name = "steel-chest", position = {-21 + i, height * -0.5 + 3}, force = "player"})
     e.minable = false
     e.destructible = false
-    global.upgradechest[i] = e
+    objective.upgradechest[i] = e
     rendering.draw_sprite{
       sprite = upgrades[i].sprite,
       surface = surface,
@@ -348,7 +352,7 @@ function Public.create_wagon_room()
 		surface = surface,
 		target = market,
 		target_offset = {0, -3.5},
-		color = global.locomotive.color,
+		color = objective.locomotive.color,
 		scale = 1.00,
 		font = "default-game",
 		alignment = "center",
@@ -357,9 +361,9 @@ function Public.create_wagon_room()
 	local upgrade_text = rendering.draw_text{
 		text = "Upgrades",
 		surface = surface,
-		target = global.upgradechest[8],
+		target = objective.upgradechest[8],
 		target_offset = {0, -3.5},
-		color = global.locomotive.color,
+		color = objective.locomotive.color,
 		scale = 1.00,
 		font = "default-game",
 		alignment = "center",
@@ -368,9 +372,9 @@ function Public.create_wagon_room()
 	local upgrade_sub_text = rendering.draw_text{
 		text = "Click [Upgrades] on top of screen",
 		surface = surface,
-		target = global.upgradechest[8],
+		target = objective.upgradechest[8],
 		target_offset = {0, -2.5},
-		color = global.locomotive.color,
+		color = objective.locomotive.color,
 		scale = 0.80,
 		font = "default-game",
 		alignment = "center",
@@ -389,14 +393,14 @@ function Public.create_wagon_room()
 		{x = width * 0.5 + 1.4, y = 0},
 		{x = width * 0.5 + 1.4, y = 128}
 	}
-	global.car_exits = {}
+	objective.car_exits = {}
 	for i = 1, 6, 1 do
 		local e = surface.create_entity({name = "car", position = car_pos[i], force = "player", create_build_effect_smoke = false})
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 16})
 		e.destructible = false
 		e.minable = false
 		e.operable = false
-		global.car_exits[i] = e
+		objective.car_exits[i] = e
 	end
 
 	--generate chests inside south wagon--
@@ -471,8 +475,9 @@ function Public.create_wagon_room()
 end
 
 function Public.set_player_spawn_and_refill_fish()
-	if not global.locomotive_cargo[1] then return end
-	local cargo = global.locomotive_cargo[1]
+	local objective = Chrono_table.get_table()
+	if not objective.locomotive_cargo[1] then return end
+	local cargo = objective.locomotive_cargo[1]
 	if not cargo.valid then return end
 	cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math_random(1, 2)})
 	local position = cargo.surface.find_non_colliding_position("stone-furnace", cargo.position, 16, 2)
@@ -481,14 +486,15 @@ function Public.set_player_spawn_and_refill_fish()
 end
 
 function Public.enter_cargo_wagon(player, vehicle)
+	local objective = Chrono_table.get_table()
 	if not vehicle then log("no vehicle") return end
 	if not vehicle.valid then log("vehicle invalid") return end
 	if not game.surfaces["cargo_wagon"] then Public.create_wagon_room() end
 	local wagon_surface = game.surfaces["cargo_wagon"]
 	for i = 1, 3, 1 do
-		if not global.locomotive_cargo[i] then log("no cargo") return end
-		if not global.locomotive_cargo[i].valid then log("cargo invalid") return end
-		if vehicle == global.locomotive_cargo[i] then
+		if not objective.locomotive_cargo[i] then log("no cargo") return end
+		if not objective.locomotive_cargo[i].valid then log("cargo invalid") return end
+		if vehicle == objective.locomotive_cargo[i] then
 			local x_vector = vehicle.position.x - player.position.x
 			local position
 			if x_vector > 0 then
@@ -501,18 +507,18 @@ function Public.enter_cargo_wagon(player, vehicle)
 		end
 	end
 	if player.surface.name == "cargo_wagon" and vehicle.type == "car" then
-		if global.flame_boots then
-			global.flame_boots[player.index] = {fuel = 1, steps = {}}
+		if objective.flame_boots then
+			objective.flame_boots[player.index] = {fuel = 1, steps = {}}
 		end
 		local used_exit = 0
 		for i = 1, 6, 1 do
-			if vehicle == global.car_exits[i] then
+			if vehicle == objective.car_exits[i] then
 				used_exit = i
 				break
 			end
 		end
-		local surface = global.locomotive_cargo[1].surface
-		local position = {x = global.locomotive_cargo[((used_exit - 1) % 3) + 1].position.x + math_sgn(used_exit - 3.5) * 2, y = global.locomotive_cargo[((used_exit - 1) % 3) + 1].position.y}
+		local surface = objective.locomotive_cargo[1].surface
+		local position = {x = objective.locomotive_cargo[((used_exit - 1) % 3) + 1].position.x + math_sgn(used_exit - 3.5) * 2, y = objective.locomotive_cargo[((used_exit - 1) % 3) + 1].position.y}
  		local position2 = surface.find_non_colliding_position("character", position, 128, 0.5)
 		if not position2 then return end
 		player.teleport(position2, surface)

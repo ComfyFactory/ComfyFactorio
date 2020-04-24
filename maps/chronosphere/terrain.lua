@@ -1,5 +1,6 @@
 
 --require "maps.chronosphere.ores"
+local Chrono_table = require 'maps.chronosphere.table'
 local Ores = require "maps.chronosphere.ores"
 local Specials = require "maps.chronosphere.terrain_specials"
 local math_random = math.random
@@ -96,9 +97,10 @@ local function get_size_of_ore(ore, planet)
 end
 
 local function get_path_connections_count(cell_pos)
+	local objective = Chrono_table.get_table()
 	local connections = 0
 	for _, m in pairs(modifiers) do
-		if global.lab_cells[tostring(cell_pos.x + m.x) .. "_" .. tostring(cell_pos.y + m.y)] then
+		if objective.lab_cells[tostring(cell_pos.x + m.x) .. "_" .. tostring(cell_pos.y + m.y)] then
 			connections = connections + 1
 		end
 	end
@@ -106,17 +108,18 @@ local function get_path_connections_count(cell_pos)
 end
 
 local function process_labyrinth_cell(pos, seed)
-	local cell_position = {x = pos.x / labyrinth_cell_size, y = pos.y / labyrinth_cell_size}
+  local objective = Chrono_table.get_table()
+  local cell_position = {x = pos.x / labyrinth_cell_size, y = pos.y / labyrinth_cell_size}
   local mazenoise = get_noise("hedgemaze", cell_position, seed)
 
   if mazenoise < lake_noise_value and math_sqrt((pos.x / 32)^2 + (pos.y / 32)^2) > 65 then return false end
 
-	global.lab_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = false
+	objective.lab_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = false
 
 	for _, modifier in pairs(modifiers_diagonal) do
-		if global.lab_cells[tostring(cell_position.x + modifier.diagonal.x) .. "_" .. tostring(cell_position.y + modifier.diagonal.y)] then
-			local connection_1 = global.lab_cells[tostring(cell_position.x + modifier.connection_1.x) .. "_" .. tostring(cell_position.y + modifier.connection_1.y)]
-			local connection_2 = global.lab_cells[tostring(cell_position.x + modifier.connection_2.x) .. "_" .. tostring(cell_position.y + modifier.connection_2.y)]
+		if objective.lab_cells[tostring(cell_position.x + modifier.diagonal.x) .. "_" .. tostring(cell_position.y + modifier.diagonal.y)] then
+			local connection_1 = objective.lab_cells[tostring(cell_position.x + modifier.connection_1.x) .. "_" .. tostring(cell_position.y + modifier.connection_1.y)]
+			local connection_2 = objective.lab_cells[tostring(cell_position.x + modifier.connection_2.x) .. "_" .. tostring(cell_position.y + modifier.connection_2.y)]
 			if not connection_1 and not connection_2 then
 				return false
 			end
@@ -129,7 +132,7 @@ local function process_labyrinth_cell(pos, seed)
 
 	if get_path_connections_count(cell_position) >= math_random(2, 3) then return false end
 
-	global.lab_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = true
+	objective.lab_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = true
 	return true
 end
 
@@ -365,8 +368,9 @@ local function process_forest_position(p, seed, tiles, entities, treasure, plane
 end
 
 local function process_river_position(p, seed, tiles, entities, treasure, planet)
+  local objective = Chrono_table.get_table()
   local biters = planet[1].name.biters
-  local richness = math_random(50 + 20 * global.objective.chronojumps, 100 + 20 * global.objective.chronojumps) * planet[1].ore_richness.factor * 0.5
+  local richness = math_random(50 + 20 * objective.chronojumps, 100 + 20 * objective.chronojumps) * planet[1].ore_richness.factor * 0.5
   local iron_size = get_size_of_ore("iron-ore", planet) * 3
   local copper_size = get_size_of_ore("copper-ore", planet) * 3
   local stone_size = get_size_of_ore("stone", planet) * 3
@@ -433,13 +437,14 @@ local function process_river_position(p, seed, tiles, entities, treasure, planet
 end
 
 local function process_biter_position(p, seed, tiles, entities, treasure, planet)
+  local objective = Chrono_table.get_table()
   local scrapyard = get_noise("scrapyard", p, seed)
   local noise_forest_location = get_noise("forest_location", p, seed)
   local large_caves = get_noise("large_caves", p, seed)
   local biters = planet[1].name.biters
   local ore_size = planet[1].ore_richness.factor
   local handicap = 0
-  if global.objective.chronojumps < 5 then handicap = 150 end
+  if objective.chronojumps < 5 then handicap = 150 end
   if scrapyard < -0.75 or scrapyard > 0.75 then
 
     if math_random(1,52 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 + handicap then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
@@ -462,8 +467,8 @@ local function process_biter_position(p, seed, tiles, entities, treasure, planet
 
 	if scrapyard > -0.10 and scrapyard < 0.10 then
 		if math_floor(large_caves * 10) % 4 < 3 then
-      local jumps = global.objective.chronojumps * 5
-      if global.objective.chronojumps > 20 then jumps = 100 end
+      local jumps = objective.chronojumps * 5
+      if objective.chronojumps > 20 then jumps = 100 end
       local roll = math_random(1,200 - jumps - biters)
       if math_sqrt(p.x * p.x + p.y * p.y) > 200 + handicap then
   			if roll == 1 then
@@ -480,7 +485,8 @@ local function process_biter_position(p, seed, tiles, entities, treasure, planet
 end
 
 local function process_scrapyard_position(p, seed, tiles, entities, treasure, planet)
-	local scrapyard = get_noise("scrapyard", p, seed)
+  local objective = Chrono_table.get_table()
+  local scrapyard = get_noise("scrapyard", p, seed)
   local biters = planet[1].name.biters
 	--Chasms
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
@@ -527,8 +533,8 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 	if scrapyard > -0.15 and scrapyard < 0.15 then
 		if math_floor(large_caves * 10) % 4 < 3 then
 			tiles[#tiles + 1] = {name = "dirt-7", position = p}
-      local jumps = global.objective.chronojumps * 5
-      if global.objective.chronojumps > 20 then jumps = 100 end
+      local jumps = objective.chronojumps * 5
+      if objective.chronojumps > 20 then jumps = 100 end
 			if math_random(1,200 - jumps) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
 			return
 		end
@@ -677,8 +683,9 @@ local entity_functions = {
 		Treasure(surface, entity.position, entity.name)
 	end,
   ["lab"] = function(surface, entity)
+  	local objective = Chrono_table.get_table()
     local e = surface.create_entity(entity)
-    local evo = 1 + math_min(math_floor(global.objective.chronojumps / 4), 4)
+    local evo = 1 + math_min(math_floor(objective.chronojumps / 4), 4)
     local research = {
       {"automation-science-pack", "logistic-science-pack"},
       {"automation-science-pack", "logistic-science-pack", "military-science-pack"},
@@ -687,12 +694,13 @@ local entity_functions = {
       {"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack", "utility-science-pack"}
     }
     for _,science in pairs(research[evo]) do
-      e.insert({name = science, count = math_random(math_min(32 + global.objective.chronojumps, 100), math_min(64 + global.objective.chronojumps, 200))})
+      e.insert({name = science, count = math_random(math_min(32 + objective.chronojumps, 100), math_min(64 + objective.chronojumps, 200))})
     end
   end,
 }
 
 local function get_replacement_tile(surface, position)
+	local objective = Chrono_table.get_table()
 	for i = 1, 128, 1 do
 		local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
 		table.shuffle_table(vectors)
@@ -701,7 +709,7 @@ local function get_replacement_tile(surface, position)
 			if not tile.collides_with("resource-layer") then return tile.name end
 		end
 	end
-  if global.objective.planet[1].name.id == 18 then return "grass-2" end
+  if objective.planet[1].name.id == 18 then return "grass-2" end
 	return "grass-1"
 end
 
@@ -931,9 +939,10 @@ local function normal_chunk(surface, left_top, level, planet)
 end
 
 local function process_chunk(surface, left_top)
-	if not surface then return end
-	if not surface.valid then return end
-  local planet = global.objective.planet
+  local objective = Chrono_table.get_table()
+  if not surface then return end
+  if not surface.valid then return end
+  local planet = objective.planet
   if planet[1].name.id == 17 then level_depth = 2176 end
   if left_top.x >= level_depth * 0.5 or left_top.y >= level_depth * 0.5 then return end
   if left_top.x < level_depth * -0.5 or left_top.y < level_depth * -0.5 then return end
@@ -943,7 +952,7 @@ local function process_chunk(surface, left_top)
 	--if left_top.y >= 0 then replace_water(surface, left_top) end
 	--if left_top.y > 32 then game.forces.player.chart(surface, {{left_top.x, left_top.y},{left_top.x + 31, left_top.y + 31}}) end
 	-- if left_top.y == -128 and left_top.x == -128 then
-	-- 	local p = global.locomotive.position
+	-- 	local p = objective.locomotive.position
 	-- 	for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 10}}, type = "simple-entity"})) do	entity.destroy() end
 	-- end
 
