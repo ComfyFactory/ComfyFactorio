@@ -248,7 +248,7 @@ local function chronojump(choice)
 	game.delete_surface(oldsurface)
 	Chrono.post_jump()
 	Event_functions.flamer_nerfs()
-	surface.pollute(objective.locomotive.position, 150 * (4 / (objective.upgrades[2] / 2 + 1)) * (1 + objective.chronojumps) * objective.difficulty_vote_value)
+	surface.pollute(objective.locomotive.position, 150 * (4 / (objective.upgrades[2] / 2 + 1)) * (1 + objective.chronojumps) * global.difficulty_vote_value)
 end
 
 local tick_minute_functions = {
@@ -305,7 +305,7 @@ local function tick()
 			objective.chronotimer = objective.chronotimer + 1
 			objective.passivetimer = objective.passivetimer + 1
 			if objective.chronojumps > 0 then
-				game.surfaces[objective.active_surface_index].pollute(objective.locomotive.position, (0.5 * objective.chronojumps) * (4 / (objective.upgrades[2] / 2 + 1)) * objective.difficulty_vote_value)
+				game.surfaces[objective.active_surface_index].pollute(objective.locomotive.position, (0.5 * objective.chronojumps) * (4 / (objective.upgrades[2] / 2 + 1)) * global.difficulty_vote_value)
 			end
 			if objective.planet[1].name.id == 19 then
 				Tick_functions.dangertimer()

@@ -248,7 +248,7 @@ function Public_chrono.post_jump()
 	game.forces.enemy.set_ammo_damage_modifier("biological", 0.1 * objective.passivejumps)
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.8
   if objective.chronojumps == 1 then
-    if objective.difficulty_vote_value < 1 then
+    if global.difficulty_vote_value < 1 then
       game.forces.player.technologies["fusion-reactor-equipment"].enabled = true
       game.forces.player.technologies["power-armor-mk2"].enabled = true
     end

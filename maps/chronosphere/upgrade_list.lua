@@ -15,7 +15,7 @@ function Public.upgrades()
       objective.upgrades[i] = 0
     end
   end
-  if not objective.difficulty_vote_value then objective.difficulty_vote_value = 1 end
+  if not global.difficulty_vote_value then global.difficulty_vote_value = 1 end
 
   --Each upgrade is automatically added into gui.
   --name : visible name in gui (best if localized)
@@ -42,7 +42,7 @@ function Public.upgrades()
       sprite = "recipe/effectivity-module",
       max_level = 9,
       message = {"chronosphere.upgrade_filter_message"},
-      tooltip = {"chronosphere.upgrade_filter_tooltip", math_floor(300/(objective.upgrades[2]/3+1) * objective.difficulty_vote_value)},
+      tooltip = {"chronosphere.upgrade_filter_tooltip", math_floor(300/(objective.upgrades[2]/3+1) * global.difficulty_vote_value)},
       jump_limit = (1 + objective.upgrades[2]) * 3 or 0,
       cost = {
         item1 = {name = "coin", tt = "item-name", sprite = "item/coin", count = 5000},
