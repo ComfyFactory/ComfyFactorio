@@ -9,6 +9,17 @@ local function request_reconstruction(icw)
 	icw.rebuild_tick = game.tick + 15
 end
 
+local function delete_empty_surfaces(icw)
+	for unit_number, wagon in pairs(icw.wagons) do
+		if not icw.trains[unit_number] then
+			local surface = game.surfaces[tostring(unit_number)]
+			if surface then
+				game.delete_surface(surface)
+			end
+		end
+	end
+end	
+
 local function get_wagon_for_entity(icw, entity)
 	local train = icw.trains[tonumber(entity.surface.name)]
 	if not train then return end
@@ -67,8 +78,8 @@ end
 function Public.create_room_surface(unit_number)
 	if game.surfaces[tostring(unit_number)] then return game.surfaces[tostring(unit_number)] end
 	local map_gen_settings = {
-		["width"] = 1,
-		["height"] = 1,
+		["width"] = 2,
+		["height"] = 2,
 		["water"] = 0,
 		["starting_area"] = 1,
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -80,23 +91,24 @@ function Public.create_room_surface(unit_number)
 		},
 	}
 	local surface = game.create_surface(unit_number, map_gen_settings)
+	surface.freeze_daytime = true
+	surface.daytime = 0.1
+	surface.request_to_generate_chunks({16, 16}, 1)
+	surface.force_generate_chunk_requests()
+	for _, tile in pairs(surface.find_tiles_filtered({area = {{-2, -2}, {2, 2}}})) do
+		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
+	end
 	return surface
 end
 
 function Public.create_wagon_room(icw, wagon)
 	local surface = wagon.surface
-	surface.freeze_daytime = true
-	surface.daytime = 0.1
-	surface.request_to_generate_chunks({16, 16}, 0)
-	surface.force_generate_chunk_requests()
-
 	local area = wagon.area
 	for x = area.left_top.x, area.right_bottom.x - 1, 1 do
 		for y = area.left_top.y, area.right_bottom.y - 1, 1 do
 			surface.set_tiles({{name = "tutorial-grid", position = {x,y}}})
 		end
 	end
-
 	construct_wagon_doors(icw, wagon)
 end
 
@@ -233,6 +245,7 @@ function Public.reconstruct_all_trains(icw)
 		local carriages = wagon.entity.train.carriages
 		Public.construct_train(icw, carriages)
 	end
+	delete_empty_surfaces(icw)
 end
 
 return Public
