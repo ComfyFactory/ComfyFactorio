@@ -24,13 +24,14 @@ function Public.open_dubug(player)
         end
     end
 
-    local center = player.gui.center
-    local frame = center[main_frame_name]
+    local screen = player.gui.screen
+    local frame = screen[main_frame_name]
     if frame then
         return
     end
 
-    frame = center.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3002', direction = 'vertical'}
+    frame = screen.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3002', direction = 'vertical'}
+    frame.auto_center = true
     local frame_style = frame.style
     frame_style.height = 600
     frame_style.width = 900
@@ -93,7 +94,7 @@ Gui.on_click(
 Gui.on_click(
     close_name,
     function(event)
-        local frame = event.player.gui.center[main_frame_name]
+        local frame = event.player.gui.screen[main_frame_name]
         if frame then
             Gui.destroy(frame)
         end
