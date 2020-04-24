@@ -240,7 +240,7 @@ function Public_event.biter_immunities(event)
 				end
 			end
 		-- else -- other planets
-		-- 	event.entity.health = math_floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * objective.difficulty_vote_value * objective.chronojumps)))
+		-- 	event.entity.health = math_floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * global.difficulty_vote_value * objective.chronojumps)))
 		end
 	elseif event.damage_type.name == "poison" then
 		if planet == 18 then --swamp planet
@@ -252,7 +252,7 @@ end
 function Public_event.flamer_nerfs()
 	local objective = Chrono_table.get_table()
 	local flamer_power = 0
-	local difficulty = objective.difficulty_vote_value
+	local difficulty = global.difficulty_vote_value
 	if difficulty > 1 then
 		difficulty = 1 + ((difficulty - 1) / 2)
 	elseif difficulty < 1 then
