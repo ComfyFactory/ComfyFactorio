@@ -20,11 +20,9 @@ for x = vector_radius * -1, vector_radius, 1 do
 		end
 	end
 end
+
 local size_of_vectors = #attack_vectors
 
--- these areas are for north
-local middle_spawner_area = {left_top = {-400,  -400}, right_bottom = {400,  400}}
-local whole_spawner_area  = {left_top = {-1100, -500}, right_bottom = {1100, 500}}
 
 local function get_active_biter_count()
 	local count = 0
@@ -36,7 +34,7 @@ end
 
 local function set_biter_raffle_table(surface)
 	-- It's fine to only sample the middle
-	local area = middle_spawner_area
+	local area = {left_top = {-400,  -400}, right_bottom = {400,  400}}
 
 	local biters = surface.find_entities_filtered({type = "unit", force = "enemy", area = area})
 	if not biters[1] then return end
@@ -218,7 +216,7 @@ Public.send_near_biters_to_objective = function()
 end
 
 local function get_random_close_spawner(surface)
-	local area = whole_spawner_area
+	local area = {left_top = {-1100, -500}, right_bottom = {1100, 500}}
 
 	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = "enemy", area = area})
 	if not spawners[1] then return false end

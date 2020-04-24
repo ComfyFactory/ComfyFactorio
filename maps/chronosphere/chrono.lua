@@ -152,6 +152,9 @@ function Public_chrono.process_jump(choice)
 	local overstayed = overstayed()
 	objective.chronojumps = objective.chronojumps + 1
 	objective.chrononeeds = 2000 + 300 * objective.chronojumps
+	objective.active_biters = {}
+	objective.unit_groups = {}
+	objective.biter_raffle = {}
 	objective.passivetimer = 0
 	objective.chronotimer = 0
   objective.dangertimer = 1200
