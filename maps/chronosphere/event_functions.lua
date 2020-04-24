@@ -7,13 +7,6 @@ local unearthing_biters = require "functions.unearthing_biters"
 local math_random = math.random
 local math_floor = math.floor
 
-local choppy_entity_yield = {
-		["tree-01"] = {"iron-ore"},
-		["tree-02-red"] = {"copper-ore"},
-		["tree-04"] = {"coal"},
-		["tree-08-brown"] = {"stone"}
-	}
-
 local function get_ore_amount()
 	local scaling = 5 * global.objective.chronojumps
 	local amount = (30 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus / 2) * global.objective.planet[1].ore_richness.factor
@@ -121,6 +114,12 @@ end
 
 function Public_event.choppy_loot(event)
 	local entity = event.entity
+	local choppy_entity_yield = {
+			["tree-01"] = {"iron-ore"},
+			["tree-02-red"] = {"copper-ore"},
+			["tree-04"] = {"coal"},
+			["tree-08-brown"] = {"stone"}
+		}
 	if choppy_entity_yield[entity.name] then
 		if event.buffer then event.buffer.clear() end
 		if not event.player_index then return end
@@ -163,24 +162,23 @@ function Public_event.rocky_loot(event)
 	reward_ores(amount, mined_loot, surface, player, player)
 end
 
-local ore_yield = {
-	["behemoth-biter"] = 5,
-	["behemoth-spitter"] = 5,
-	["behemoth-worm-turret"] = 6,
-	["big-biter"] = 3,
-	["big-spitter"] = 3,
-	["big-worm-turret"] = 4,
-	["biter-spawner"] = 10,
-	["medium-biter"] = 2,
-	["medium-spitter"] = 2,
-	["medium-worm-turret"] = 3,
-	["small-biter"] = 1,
-	["small-spitter"] = 1,
-	["small-worm-turret"] = 2,
-	["spitter-spawner"] = 10,
-}
-
 function Public_event.swamp_loot(event)
+	local ore_yield = {
+		["behemoth-biter"] = 5,
+		["behemoth-spitter"] = 5,
+		["behemoth-worm-turret"] = 6,
+		["big-biter"] = 3,
+		["big-spitter"] = 3,
+		["big-worm-turret"] = 4,
+		["biter-spawner"] = 10,
+		["medium-biter"] = 2,
+		["medium-spitter"] = 2,
+		["medium-worm-turret"] = 3,
+		["small-biter"] = 1,
+		["small-spitter"] = 1,
+		["small-worm-turret"] = 2,
+		["spitter-spawner"] = 10,
+	}
 	local surface = game.surfaces[global.active_surface_index]
 	local amount = get_ore_amount() / 20
 	if ore_yield[event.entity.name] then
@@ -321,7 +319,7 @@ function Public_event.on_technology_effects_reset(event)
 						Public_event.mining_buffs(fake_event)
 					end
 				else
-					Public_event.mining_buffs(fake_event)					
+					Public_event.mining_buffs(fake_event)
 				end
 			end
 		end
