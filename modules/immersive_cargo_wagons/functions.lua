@@ -3,6 +3,7 @@ local Public = {}
 local Constants = require "modules.immersive_cargo_wagons.constants"
 
 local table_insert = table.insert
+local table_remove = table.remove
 local math_round = math.round
 
 local function request_reconstruction(icw)
@@ -10,12 +11,10 @@ local function request_reconstruction(icw)
 end
 
 local function delete_empty_surfaces(icw)
-	for unit_number, wagon in pairs(icw.wagons) do
-		if not icw.trains[unit_number] then
-			local surface = game.surfaces[tostring(unit_number)]
-			if surface then
-				game.delete_surface(surface)
-			end
+	for k, surface in pairs(icw.surfaces) do
+		if not icw.trains[tonumber(surface.name)] then
+			game.delete_surface(surface)
+			table_remove(icw.surfaces, k)
 		end
 	end
 end	
@@ -47,11 +46,11 @@ local function construct_wagon_doors(icw, wagon)
 	local area = wagon.area
 	local surface = wagon.surface
 	
-	for _, x in pairs({area.left_top.x, area.right_bottom.x}) do
+	for _, x in pairs({area.left_top.x - 0.55, area.right_bottom.x + 0.55}) do
 		local e = surface.create_entity({
 			name = "car",
 			position = {x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)},
-			force = wagon.entity.force,
+			force = "neutral",
 			create_build_effect_smoke = false
 		})
 		e.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 1})
@@ -68,6 +67,7 @@ function Public.kill_wagon(icw, entity)
 	local wagon = icw.wagons[entity.unit_number]	
 	local surface = wagon.surface
 	kill_wagon_doors(icw, wagon)
+	for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do e.die() end
 	for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
 		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
@@ -75,7 +75,7 @@ function Public.kill_wagon(icw, entity)
 	request_reconstruction(icw)
 end
 
-function Public.create_room_surface(unit_number)
+function Public.create_room_surface(icw, unit_number)
 	if game.surfaces[tostring(unit_number)] then return game.surfaces[tostring(unit_number)] end
 	local map_gen_settings = {
 		["width"] = 2,
@@ -93,33 +93,51 @@ function Public.create_room_surface(unit_number)
 	local surface = game.create_surface(unit_number, map_gen_settings)
 	surface.freeze_daytime = true
 	surface.daytime = 0.1
-	surface.request_to_generate_chunks({16, 16}, 1)
+	surface.request_to_generate_chunks({16, 16}, 2)
 	surface.force_generate_chunk_requests()
 	for _, tile in pairs(surface.find_tiles_filtered({area = {{-2, -2}, {2, 2}}})) do
 		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
+	table_insert(icw.surfaces, surface)
 	return surface
 end
 
 function Public.create_wagon_room(icw, wagon)
 	local surface = wagon.surface
 	local area = wagon.area
+	
+	local tiles = {}	
+	for x = -3, 2, 1 do
+		table_insert(tiles, {name = "hazard-concrete-right", position = {x, area.left_top.y}}) 
+		table_insert(tiles, {name = "hazard-concrete-right", position = {x, area.right_bottom.y - 1}}) 
+	end		
 	for x = area.left_top.x, area.right_bottom.x - 1, 1 do
-		for y = area.left_top.y, area.right_bottom.y - 1, 1 do
-			surface.set_tiles({{name = "tutorial-grid", position = {x,y}}})
+		for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
+			table_insert(tiles, {name = "concrete", position = {x, y}}) 
 		end
 	end
+	for x = -3, 2, 1 do
+		for y = 1, 3, 1 do
+			table_insert(tiles, {name = "concrete", position = {x,y}}) 
+		end
+		for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
+			table_insert(tiles, {name = "concrete", position = {x,y}}) 
+		end
+	end
+	surface.set_tiles(tiles, true)
+	
 	construct_wagon_doors(icw, wagon)
 end
 
 function Public.create_wagon(icw, created_entity)
 	if not created_entity.unit_number then return end
 	if not Constants.wagon_types[created_entity.type] then return end
+	local wagon_area = Constants.wagon_areas[created_entity.type]
 
 	icw.wagons[created_entity.unit_number] = {
 		entity = created_entity,
-		area = {left_top = {x = -12, y = 0}, right_bottom = {x = 12, y = 32}},
-		surface = Public.create_room_surface(created_entity.unit_number),
+		area = {left_top = {x = wagon_area.left_top.x, y = wagon_area.left_top.y}, right_bottom = {x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y}},
+		surface = Public.create_room_surface(icw, created_entity.unit_number),
 		doors = {},
 		entity_count = 0,
 	}		
@@ -231,7 +249,7 @@ function Public.construct_train(icw, carriages)
 	
 	if icw.trains[unit_number] then return end
 	
-	local train = {surface = Public.create_room_surface(unit_number), wagons = {}, top_y = 0}
+	local train = {surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0}
 	icw.trains[unit_number] = train
 	
 	for k, carriage in pairs(carriages) do

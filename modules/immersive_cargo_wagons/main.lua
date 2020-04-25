@@ -19,6 +19,7 @@ function Public.reset_tables()
 	icw.wagons = {}
 	icw.trains = {}
 	icw.players = {}
+	icw.surfaces = {}
 end
 
 local function on_entity_died(event)
