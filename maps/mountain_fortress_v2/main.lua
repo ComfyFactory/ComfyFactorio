@@ -20,6 +20,7 @@ require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 local level_depth = require "maps.mountain_fortress_v2.terrain"
+local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
 local Collapse = require "maps.mountain_fortress_v2.collapse"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
@@ -59,6 +60,8 @@ local function set_difficulty()
 end
 
 function Public.reset_map()
+	Immersive_cargo_wagons.reset()
+
 	for _,player in pairs(game.players) do
 		if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
 	end
@@ -476,12 +479,6 @@ local function on_init()
 	Public.reset_map()
 end
 
-local function on_player_driving_changed_state(event)
-	local player = game.players[event.player_index]
-	local vehicle = event.entity
-	Locomotive.enter_cargo_wagon(player, vehicle)
-end
-
 local event = require 'utils.event'
 event.on_init(on_init)
 event.on_nth_tick(2, tick)
@@ -492,7 +489,6 @@ event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 
 require "modules.rocks_yield_ore"
 

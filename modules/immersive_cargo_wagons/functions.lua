@@ -265,7 +265,7 @@ function Public.create_wagon_room(icw, wagon)
 		local vectors = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
 		local v = vectors[math_random(1, 4)]
 		local position = {math_random(area.left_top.x + 4, area.right_bottom.x - 4), math_random(area.left_top.y + 6, area.right_bottom.y - 6)}
-				
+		
 		local e = surface.create_entity({
 			name = "logistic-chest-buffer",
 			position = position,

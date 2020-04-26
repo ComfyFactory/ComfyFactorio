@@ -11,7 +11,7 @@ function Public.treasure_chest(surface, position, container_name)
 	budget = budget * math_random(25, 175) * 0.01
 	if math_random(1,200) == 1 then 
 		budget = budget * 10
-		container_name = "compilatron-chest"
+		container_name = "crash-site-chest-" .. math_random(1, 2)
 	end
 	budget = math_floor(budget) + 1
 

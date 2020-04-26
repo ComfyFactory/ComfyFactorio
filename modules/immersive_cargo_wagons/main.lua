@@ -100,7 +100,7 @@ end
 local function on_tick()
 	local tick = game.tick
 	if tick % 60 == 0 then Functions.item_transfer(icw) end
-	if tick % 300 == 0 then Functions.update_minimap(icw) end
+	if tick % 240 == 0 then Functions.update_minimap(icw) end
 	
 	if not icw.rebuild_tick then return end
 	if icw.rebuild_tick ~= tick then return end
