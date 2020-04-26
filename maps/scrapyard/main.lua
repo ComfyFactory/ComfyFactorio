@@ -12,8 +12,8 @@ require "modules.biters_yield_coins"
 require "modules.biter_noms_you"
 require "modules.explosives"
 require "modules.wave_defense.main"
-local ICW = require "modules.immersive_cargo_wagons.main"
 
+local ICW = require "modules.immersive_cargo_wagons.main"
 local WD = require "modules.wave_defense.table"
 local Map = require 'modules.map_info'
 local RPG = require 'modules.rpg'
@@ -27,13 +27,13 @@ local Modifier = require "player_modifiers"
 local tick_tack_trap = require "functions.tick_tack_trap"
 local Terrain = require 'maps.scrapyard.terrain'
 local Event = require 'utils.event'
-local math_random = math.random
-local math_floor = math.floor
-
+local Scrap_table = require "maps.scrapyard.table"
 local Locomotive = require "maps.scrapyard.locomotive".locomotive_spawn
 local render_train_hp = require "maps.scrapyard.locomotive".render_train_hp
 
 local Public = {}
+local math_random = math.random
+local math_floor = math.floor
 
 local disabled_for_deconstruction = {["fish"] = true, ["rock-huge"] = true,	["rock-big"] = true, ["sand-rock-big"] = true, ["mineable-wreckage"] = true}
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
@@ -54,16 +54,19 @@ local function shuffle(tbl)
 end
 
 local function set_objective_health(final_damage_amount)
+	local this = Scrap_table.get_table()
 	if final_damage_amount == 0 then return end
-	global.locomotive_health = math_floor(global.locomotive_health - final_damage_amount)
-	if global.locomotive_health > global.locomotive_max_health then global.locomotive_health = global.locomotive_max_health end
-	if global.locomotive_health <= 0 then
+	this.locomotive_health = math_floor(this.locomotive_health - final_damage_amount)
+	if this.locomotive_health > this.locomotive_max_health then this.locomotive_health = this.locomotive_max_health end
+	if this.locomotive_health <= 0 then
 		Public.loco_died()
 	end
-	rendering.set_text(global.health_text, "HP: " .. global.locomotive_health .. " / " .. global.locomotive_max_health)
+	rendering.set_text(this.health_text, "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health)
 end
 
 function Public.reset_map()
+	local this = Scrap_table.get_table()
+	Scrap_table.reset_table()
 	ICW.reset()
 	local wave_defense_table = WD.get_table()
 	wave_defense_table.math = 8
@@ -81,14 +84,14 @@ function Public.reset_map()
 		},
 	}
 
-	if not global.active_surface_index then
-		global.active_surface_index = game.create_surface("scrapyard", map_gen_settings).index
+	if not this.active_surface_index then
+		this.active_surface_index = game.create_surface("scrapyard", map_gen_settings).index
 	else
-		game.forces.player.set_spawn_position({0,21}, game.surfaces[global.active_surface_index])
-		global.active_surface_index = Reset.soft_reset_map(game.surfaces[global.active_surface_index], map_gen_settings, starting_items).index
+		game.forces.player.set_spawn_position({0,21}, game.surfaces[this.active_surface_index])
+		this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
 	end
 
-	local surface = game.surfaces[global.active_surface_index]
+	local surface = game.surfaces[this.active_surface_index]
 
 	surface.request_to_generate_chunks({0,0}, 0.5)
 	surface.force_generate_chunk_requests()
@@ -112,8 +115,8 @@ function Public.reset_map()
 	surface.ticks_per_day = surface.ticks_per_day * 2
 	surface.min_brightness = 0.08
 	surface.daytime = 0.7
-	global.locomotive_health = 10000
-	global.locomotive_max_health = 10000
+	this.locomotive_health = 10000
+	this.locomotive_max_health = 10000
 
 	Locomotive(surface, {x = -18, y = 10})
 	render_train_hp()
@@ -221,8 +224,8 @@ function Public.reset_map()
 		}
 
 	WD.reset_wave_defense()
-	wave_defense_table.surface_index = global.active_surface_index
-	wave_defense_table.target = global.locomotive_cargo
+	wave_defense_table.surface_index = this.active_surface_index
+	wave_defense_table.target = this.locomotive_cargo
 	wave_defense_table.nest_building_density = 32
 	wave_defense_table.game_lost = false
 	wave_defense_table.spawn_position = {x=0,y=220}
@@ -249,11 +252,12 @@ local function set_difficulty()
 end
 
 local function protect_train(event)
+	local this = Scrap_table.get_table()
 	if event.entity.force.index ~= 1 then return end --Player Force
-	if event.entity == global.locomotive_cargo or event.entity == global.locomotive then
+	if event.entity == this.locomotive_cargo or event.entity == this.locomotive then
 		if event.cause then
 			if event.cause.force.index == 2 or event.cause.force.name == "scrap_defense" then
-			if global.locomotive_health <= 0 then goto continue end
+			if this.locomotive_health <= 0 then goto continue end
 				set_objective_health(event.final_damage_amount)
 			end
 		end
@@ -264,10 +268,11 @@ local function protect_train(event)
 end
 
 local function on_player_changed_position(event)
+	local this = Scrap_table.get_table()
 	local player = game.players[event.player_index]
 	if string.sub(player.surface.name, 0, 9) ~= "scrapyard" then return end
 	local position = player.position
-	local surface = game.surfaces[global.active_surface_index]
+	local surface = game.surfaces[this.active_surface_index]
 	if position.x >= 960 * 0.5 then return end
 	if position.x < 960 * -0.5 then return end
 	if position.y < 5 then Terrain.reveal(player) end
@@ -293,13 +298,14 @@ local function on_player_left_game(event)
 end
 
 local function on_player_joined_game(event)
+	local this = Scrap_table.get_table()
 	local player_modifiers = Modifier.get_table()
-	local surface = game.surfaces[global.active_surface_index]
+	local surface = game.surfaces[this.active_surface_index]
 	local player = game.players[event.player_index]
 
 	set_difficulty(event)
 
-	if player.surface.index ~= global.active_surface_index then
+	if player.surface.index ~= this.active_surface_index then
 		player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 3, 0,5), surface)
 		for item, amount in pairs(starting_items) do
 			player.insert({name = item, count = amount})
@@ -308,9 +314,9 @@ local function on_player_joined_game(event)
 
 	player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0
 	Modifier.update_player_modifiers(player)
-	if global.first_load then return end
-	Public.reset_map()
-	global.first_load = true
+	if this.first_load then return end
+	--Public.reset_map()
+	this.first_load = true
 end
 
 local function hidden_biter(entity)
@@ -423,23 +429,25 @@ local function on_entity_damaged(event)
 end
 
 function Public.loco_died()
-  local surface = game.surfaces[global.active_surface_index]
+  local this = Scrap_table.get_table()
+  local surface = game.surfaces[this.active_surface_index]
   local wave_defense_table = WD.get_table()
-  if global.game_lost == true then return end
-  global.locomotive_health = 0
+  if this.game_lost == true then return end
+  this.locomotive_health = 0
   wave_defense_table.game_lost = true
   wave_defense_table.target = nil
   game.print("The scrapyard train was destroyed!")
   for i = 1, 6, 1 do
-    surface.create_entity({name = "big-artillery-explosion", position = global.locomotive_cargo.position})
+    surface.create_entity({name = "big-artillery-explosion", position = this.locomotive_cargo.position})
   end
-  surface.spill_item_stack(global.locomotive.position,{name = "raw-fish", count = 512}, false)
-  surface.spill_item_stack(global.locomotive_cargo.position,{name = "raw-fish", count = 512}, false)
-  global.game_lost = true
-  global.game_reset_tick = game.tick + 1800
+  surface.spill_item_stack(this.locomotive.position,{name = "raw-fish", count = 512}, false)
+  surface.spill_item_stack(this.locomotive_cargo.position,{name = "raw-fish", count = 512}, false)
+  this.game_lost = true
+  this.game_reset_tick = game.tick + 1800
   for _, player in pairs(game.connected_players) do
     player.play_sound{path="utility/game_lost", volume_modifier=0.75}
   end
+
 end
 
 local function on_entity_died(event)
@@ -542,6 +550,7 @@ local function on_research_finished(event)
 end
 
 local on_init = function()
+	local this = Scrap_table.get_table()
 	game.create_force("scrap")
 	game.create_force("scrap_defense")
 	game.forces.player.set_friend('scrap', true)
@@ -576,7 +585,6 @@ local on_init = function()
 		["deepwater"] = 1000,
 		["water-shallow"] = 1000,
 	}
-
 end
 
 Event.on_init(on_init)

@@ -6,6 +6,7 @@ local create_entity_chain = require "functions.create_entity_chain"
 local create_tile_chain = require "functions.create_tile_chain"
 local noise_v1 = require 'utils.simplex_noise'.d2
 local map_functions = require "tools.map_functions"
+local Scrap_table = require "maps.scrapyard.table"
 local shapes = require "tools.shapes"
 local Loot = require 'maps.scrapyard.loot'
 local insert = table.insert
@@ -559,8 +560,9 @@ local levels = {
 }
 
 function Public.reveal_area(x, y, surface, max_radius)
+	local this = Scrap_table.get_table()
 	local wave_defense_table = WD.get_table()
-	local seed = game.surfaces[global.active_surface_index].map_gen_settings.seed
+	local seed = game.surfaces[this.active_surface_index].map_gen_settings.seed
 	local circles = shapes.circles
 	local r_area = {}
 	local tiles = {}
@@ -615,7 +617,8 @@ end
 
 
 function Public.reveal(player)
-	local seed = game.surfaces[global.active_surface_index].map_gen_settings.seed
+	local this = Scrap_table.get_table()
+	local seed = game.surfaces[this.active_surface_index].map_gen_settings.seed
 	local position = player.position
 	local surface = player.surface
 	local circles = shapes.circles
