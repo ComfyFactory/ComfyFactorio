@@ -101,8 +101,8 @@ local function output_cargo(wagon, passive_chest)
 	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)	
 	local free_slots = 0
 	for i = 1, wagon_inventory.get_bar() - 1, 1 do
-		if not wagon_inventory[i].valid_for_read then free_slots = free_slots + 1 end
-	end	
+		if not wagon_inventory[i].valid_for_read and not wagon_inventory.get_filter(i) then free_slots = free_slots + 1 end
+	end
 	for i = 1, passive_chest_inventory.get_bar() - 1, 1 do
 		if free_slots <= 0 then return end
 		if passive_chest_inventory[i].valid_for_read then
