@@ -1,5 +1,8 @@
 require "on_tick_schedule"
 require "modules.dynamic_landfill"
+require "modules.difficulty_vote"
+require "modules.shotgun_buff"
+require "modules.burden"
 require "modules.rocks_heal_over_time"
 require "modules.mineable_wreckage_yields_scrap"
 require "maps.scrapyard.flamethrower_nerf"
@@ -9,6 +12,7 @@ require "modules.biters_yield_coins"
 require "modules.biter_noms_you"
 require "modules.explosives"
 require "modules.wave_defense.main"
+local ICW = require "modules.immersive_cargo_wagons.main"
 
 local WD = require "modules.wave_defense.table"
 local Map = require 'modules.map_info'
@@ -24,8 +28,10 @@ local tick_tack_trap = require "functions.tick_tack_trap"
 local Terrain = require 'maps.scrapyard.terrain'
 local Event = require 'utils.event'
 local math_random = math.random
+local math_floor = math.floor
 
 local Locomotive = require "maps.scrapyard.locomotive".locomotive_spawn
+local render_train_hp = require "maps.scrapyard.locomotive".render_train_hp
 
 local Public = {}
 
@@ -47,7 +53,18 @@ local function shuffle(tbl)
 	return tbl
 end
 
+local function set_objective_health(final_damage_amount)
+	if final_damage_amount == 0 then return end
+	global.locomotive_health = math_floor(global.locomotive_health - final_damage_amount)
+	if global.locomotive_health > global.locomotive_max_health then global.locomotive_health = global.locomotive_max_health end
+	if global.locomotive_health <= 0 then
+		Public.loco_died()
+	end
+	rendering.set_text(global.health_text, "HP: " .. global.locomotive_health .. " / " .. global.locomotive_max_health)
+end
+
 function Public.reset_map()
+	ICW.reset()
 	local wave_defense_table = WD.get_table()
 	wave_defense_table.math = 8
 
@@ -58,9 +75,9 @@ function Public.reset_map()
 		["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
 		["default_enable_all_autoplace_controls"] = true,
 		["autoplace_settings"] = {
-			["entity"] = {treat_missing_as_default = false},
-			["tile"] = {treat_missing_as_default = true},
-			["decorative"] = {treat_missing_as_default = true},
+		["entity"] = {treat_missing_as_default = false},
+		["tile"] = {treat_missing_as_default = true},
+		["decorative"] = {treat_missing_as_default = true},
 		},
 	}
 
@@ -73,7 +90,7 @@ function Public.reset_map()
 
 	local surface = game.surfaces[global.active_surface_index]
 
-	surface.request_to_generate_chunks({0,0}, 2)
+	surface.request_to_generate_chunks({0,0}, 0.5)
 	surface.force_generate_chunk_requests()
 
 	local p = surface.find_non_colliding_position("character-corpse", {2,21}, 2, 2)
@@ -83,11 +100,23 @@ function Public.reset_map()
 	game.forces.player.technologies["optics"].researched = true
 	game.forces.player.set_spawn_position({0, 21}, surface)
 
+	global.friendly_fire_history = {}
+	global.landfill_history = {}
+	global.mining_history = {}
+	global.score = {}
+	global.difficulty_poll_closing_timeout = game.tick + 90000
+	global.difficulty_player_votes = {}
+
+	game.difficulty_settings.technology_price_multiplier = 0.6
+
 	surface.ticks_per_day = surface.ticks_per_day * 2
 	surface.min_brightness = 0.08
 	surface.daytime = 0.7
+	global.locomotive_health = 10000
+	global.locomotive_max_health = 10000
 
 	Locomotive(surface, {x = -18, y = 10})
+	render_train_hp()
 
 	rendering.draw_text{
 		text = "Welcome to Scrapyard!",
@@ -221,18 +250,22 @@ end
 
 local function protect_train(event)
 	if event.entity.force.index ~= 1 then return end --Player Force
-	if event.entity == global.locomotive_cargo then
+	if event.entity == global.locomotive_cargo or event.entity == global.locomotive then
 		if event.cause then
-			if event.cause.force.index == 2 then
-				return
+			if event.cause.force.index == 2 or event.cause.force.name == "scrap_defense" then
+			if global.locomotive_health <= 0 then goto continue end
+				set_objective_health(event.final_damage_amount)
 			end
 		end
+		::continue::
+		if not event.entity.valid then return end
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
 end
 
 local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
+	if string.sub(player.surface.name, 0, 9) ~= "scrapyard" then return end
 	local position = player.position
 	local surface = game.surfaces[global.active_surface_index]
 	if position.x >= 960 * 0.5 then return end
@@ -382,31 +415,38 @@ local function on_player_mined_entity(event)
 end
 
 local function on_entity_damaged(event)
-	if not event.entity.valid then	return end
-	protect_train(event)
+	if not event.entity then return end
+	if not event.entity.valid then return end
 	if not event.entity.health then return end
+	protect_train(event)
 	biters_chew_rocks_faster(event)
 end
 
+function Public.loco_died()
+  local surface = game.surfaces[global.active_surface_index]
+  local wave_defense_table = WD.get_table()
+  if global.game_lost == true then return end
+  global.locomotive_health = 0
+  wave_defense_table.game_lost = true
+  wave_defense_table.target = nil
+  game.print("The scrapyard train was destroyed!")
+  for i = 1, 6, 1 do
+    surface.create_entity({name = "big-artillery-explosion", position = global.locomotive_cargo.position})
+  end
+  surface.spill_item_stack(global.locomotive.position,{name = "raw-fish", count = 512}, false)
+  surface.spill_item_stack(global.locomotive_cargo.position,{name = "raw-fish", count = 512}, false)
+  global.game_lost = true
+  global.game_reset_tick = game.tick + 1800
+  for _, player in pairs(game.connected_players) do
+    player.play_sound{path="utility/game_lost", volume_modifier=0.75}
+  end
+end
+
 local function on_entity_died(event)
-	local wave_defense_table = WD.get_table()
 	local entity = event.entity
 	if not entity.valid then
 		return
 	end
-
-	if event.entity == global.locomotive_cargo then
-		game.print("The cargo was destroyed!")
-		wave_defense_table.game_lost = true
-		wave_defense_table.target = nil
-		global.game_reset_tick = game.tick + 1800
-		for _, player in pairs(game.connected_players) do
-			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
-		end
-		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
-		return
-	end
-
 	if entity.type == "unit" or entity.type == "unit-spawner" then
 		if math_random(1,160) == 1 then
 			tick_tack_trap(entity.surface, entity.position)

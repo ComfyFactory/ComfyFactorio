@@ -1,10 +1,37 @@
 local Public = {}
+local ICW = require "modules.immersive_cargo_wagons.main"
+
+function Public.render_train_hp()
+	local surface = game.surfaces[global.active_surface_index]
+	global.health_text = rendering.draw_text{
+		text = "HP: " .. global.locomotive_health .. " / " .. global.locomotive_max_health,
+		surface = surface,
+		target = global.locomotive,
+		target_offset = {0, -2.5},
+		color = global.locomotive.color,
+		scale = 1.40,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false
+	}
+	global.caption = rendering.draw_text{
+		text = "Scrapyard Train",
+		surface = surface,
+		target = global.locomotive,
+		target_offset = {0, -4.25},
+		color = global.locomotive.color,
+		scale = 1.80,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false
+	}
+end
 
 function Public.locomotive_spawn(surface, position)
 	for y = -6, 6, 2 do
 		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
 	end
-	global.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -3}, force = "player"})
+	global.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -3}, force = "player",})
 	global.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
 
 	global.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 3}, force = "player"})
@@ -19,7 +46,10 @@ function Public.locomotive_spawn(surface, position)
 	global.locomotive.color = {0, 255, 0}
 	global.locomotive.minable = false
 	global.locomotive_cargo.minable = false
-	global.locomotive_cargo.operable = false
+	global.locomotive_cargo.operable = true
+
+	ICW.register_wagon(global.locomotive)
+	ICW.register_wagon(global.locomotive_cargo)
 end
 
 

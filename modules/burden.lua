@@ -1,4 +1,16 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
+local Modifier = require "player_modifiers"
+local Color = require 'utils.color_presets'
+
+local function validate_player(player)
+  if not player then return false end
+  if not player.valid then return false end
+  if not player.character then return false end
+  if not player.connected then return false end
+  if not game.players[player.name] then return false end
+  return true
+end
+
 local function compute_fullness(player)
     local inv = player.get_inventory(defines.inventory.character_main)
     local max_stacks = #inv
@@ -18,9 +30,18 @@ local function compute_fullness(player)
 end
 
 local function check_burden(event)
+    local player_modifiers = Modifier.get_table()
     local player = game.players[event.player_index]
+    validate_player(player)
     local fullness = compute_fullness(player)
-    player.character_running_speed_modifier = 0.5 - fullness
+    player_modifiers[player.index].character_running_speed_modifier["scrapyard"] = 0.5 - fullness
+    player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0.5 - fullness
+    Modifier.update_player_modifiers(player)
+    if fullness >= 0.5 and fullness <= 0.51 then
+        player.print("You feel all of a sudden burden.", Color.yellow)
+    elseif fullness >= 0.9 and fullness <= 0.91 then
+         player.print("Maybe you should drop some of that inventory to lessen the burden.", Color.red)
+    end
 end
 
 
@@ -32,5 +53,5 @@ local function on_load(event)
     script.on_event(defines.events.on_player_main_inventory_changed, check_burden)
 end
 
-event.on_init(on_init)
-event.on_load(on_load)
+Event.on_init(on_init)
+Event.on_load(on_load)
