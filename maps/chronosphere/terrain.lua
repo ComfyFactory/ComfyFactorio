@@ -59,10 +59,6 @@ local modifiers_diagonal = {
   {diagonal = {x = -1, y = -1}, connection_1 = {x = -1, y = 0}, connection_2 = {x = 0, y = -1}}
 }
 
-local function pos_to_key(position)
-    return tostring(position.x .. "_" .. position.y)
-end
-
 local function get_noise(name, pos, seed)
 	local noise = 0
 	local d = 0
@@ -77,7 +73,7 @@ end
 
 local function get_size_of_ore(ore, planet)
   local base_size = 0.04 + 0.04 * planet[1].ore_richness.factor
-  local final_size = 1
+  local final_size
   if planet[1].name.id == 1 and ore == "iron-ore" then --iron planet
     final_size = base_size * 5
   elseif planet[1].name.id == 2 and ore == "copper-ore" then --copper planet
@@ -136,7 +132,7 @@ local function process_labyrinth_cell(pos, seed)
 	return true
 end
 
-local function process_dangerevent_position(p, seed, tiles, entities, treasure, planet)
+local function process_dangerevent_position(p, seed, tiles, entities)
 	local scrapyard = get_noise("scrapyard", p, seed)
 	--Chasms
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
@@ -316,9 +312,8 @@ local function process_rocky_position(p, seed, tiles, entities, treasure, planet
     elseif roll > 820 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then
       entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}
     else
-
     end
-		if math_random(1, 1024) == 1 then treasure[#treasure + 1] = p end
+	if math_random(1, 1024) == 1 then treasure[#treasure + 1] = p end
 		return
 	end
 
@@ -425,7 +420,6 @@ local function process_river_position(p, seed, tiles, entities, treasure, planet
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
 	end
   if noise_forest_location > 0.9 then
-    local tree = tree_raffle[math_random(1, s_tree_raffle)]
 		if math_random(1,100) > 42 then entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p} end
 		return
   end
@@ -439,7 +433,6 @@ end
 local function process_biter_position(p, seed, tiles, entities, treasure, planet)
   local objective = Chrono_table.get_table()
   local scrapyard = get_noise("scrapyard", p, seed)
-  local noise_forest_location = get_noise("forest_location", p, seed)
   local large_caves = get_noise("large_caves", p, seed)
   local biters = planet[1].name.biters
   local ore_size = planet[1].ore_richness.factor
@@ -471,7 +464,7 @@ local function process_biter_position(p, seed, tiles, entities, treasure, planet
       if objective.chronojumps > 20 then jumps = 100 end
       local roll = math_random(1,200 - jumps - biters)
       if math_sqrt(p.x * p.x + p.y * p.y) > 200 + handicap then
-  			if roll == 1 then
+			if roll == 1 then
           entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
         elseif roll == 2 then
           entities[#entities + 1] = {name = worm_raffle[math_random(1 + math_floor(game.forces["enemy"].evolution_factor * 8), math_floor(1 + game.forces["enemy"].evolution_factor * 16))], position = p}
@@ -487,7 +480,7 @@ end
 local function process_scrapyard_position(p, seed, tiles, entities, treasure, planet)
   local objective = Chrono_table.get_table()
   local scrapyard = get_noise("scrapyard", p, seed)
-  local biters = planet[1].name.biters
+  --local biters = planet[1].name.biters
 	--Chasms
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 	local small_caves = get_noise("small_caves", p, seed)
@@ -508,8 +501,8 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
 		end
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		 if scrapyard < -0.55 or scrapyard > 0.55 then
-		 	if math_random(1,40) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
-		 	return
+			if math_random(1,40) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
+			return
 		 end
      if scrapyard + 0.5 > -0.05  - 0.1 * planet[1].name.moisture and scrapyard + 0.5 < 0.05 +  0.1 * planet[1].name.moisture  then
        if math_random(1,100) > 42 then entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p} end
@@ -545,7 +538,7 @@ end
 
 local function process_swamp_position(p, seed, tiles, entities, treasure, planet)
   local scrapyard = get_noise("scrapyard", p, seed)
-  local biters = planet[1].name.biters
+  --local biters = planet[1].name.biters
 
   if scrapyard < -0.70 or scrapyard > 0.70 then
     tiles[#tiles + 1] = {name = "grass-3", position = p}
@@ -590,18 +583,18 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
   local body_circle_center_1 = {x = body_center_position.x, y = body_center_position.y - body_spacing}
   local body_circle_center_2 = {x = body_center_position.x, y = body_center_position.y + body_spacing}
 
-  local fin_radius = 200
-  local square_fin_radius = fin_radius ^ 2
-  local fin_circle_center_1 = {x = -600, y = 0}
-  local fin_circle_center_2 = {x = -600 - 120, y = 0}
+  --local fin_radius = 200
+  --local square_fin_radius = fin_radius ^ 2
+  --local fin_circle_center_1 = {x = -600, y = 0}
+  --local fin_circle_center_2 = {x = -600 - 120, y = 0}
 
 	--if math_abs(p.y) > 480 and p.x <= 160 and p.x > body_center_position.x then return true end
 
 	--Main Fish Body
 	local distance_to_center_1 = ((p.x - body_circle_center_1.x)^2 + (p.y - body_circle_center_1.y)^2)
 	local distance_to_center_2 = ((p.x - body_circle_center_2.x)^2 + (p.y - body_circle_center_2.y)^2)
-  local distance_to_fin_1 = ((p.x - fin_circle_center_1.x)^2 + (p.y - fin_circle_center_1.y)^2)
-  local distance_to_fin_2 = ((p.x - fin_circle_center_2.x)^2 + (p.y - fin_circle_center_2.y)^2)
+  --local distance_to_fin_1 = ((p.x - fin_circle_center_1.x)^2 + (p.y - fin_circle_center_1.y)^2)
+  --local distance_to_fin_2 = ((p.x - fin_circle_center_2.x)^2 + (p.y - fin_circle_center_2.y)^2)
   local eye_center = {x = -500, y = -150}
 
 
@@ -660,7 +653,7 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
 end
 
 local levels = {
-	process_level_1_position,
+	--process_level_1_position,
 	process_dangerevent_position,
 	process_hedgemaze_position,
 	process_rocky_position,
@@ -683,7 +676,7 @@ local entity_functions = {
 		Treasure(surface, entity.position, entity.name)
 	end,
   ["lab"] = function(surface, entity)
-  	local objective = Chrono_table.get_table()
+	local objective = Chrono_table.get_table()
     local e = surface.create_entity(entity)
     local evo = 1 + math_min(math_floor(objective.chronojumps / 4), 4)
     local research = {
@@ -861,7 +854,7 @@ local function fish_chunk(surface, left_top, level, planet)
 			entity_functions[game.entity_prototypes[entity.name].type](surface, entity)
 		else
 			if surface.can_place_entity(entity) then
-				local e = surface.create_entity(entity)
+				surface.create_entity(entity)
 			end
 		end
 	end
@@ -903,18 +896,18 @@ local function normal_chunk(surface, left_top, level, planet)
       end
 		end
     for y = 0, 31, 1 do
-  		for x = 0, 31, 1 do
-  			local p = {x = left_top.x + x, y = left_top.y + y}
-  			process_level(p, seed, tiles, entities, treasure, planet, cell, things)
-  		end
-  	end
+		for x = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}
+			process_level(p, seed, tiles, entities, treasure, planet, cell, things)
+		end
+	end
   else
     for y = 0, 31, 1 do
-  		for x = 0, 31, 1 do
-  			local p = {x = left_top.x + x, y = left_top.y + y}
-  			process_level(p, seed, tiles, entities, treasure, planet)
-  		end
-  	end
+		for x = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}
+			process_level(p, seed, tiles, entities, treasure, planet)
+		end
+	end
   end
 	surface.set_tiles(tiles, true)
 

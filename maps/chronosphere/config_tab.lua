@@ -1,17 +1,16 @@
 -- config tab for chronotrain--
 
-local Tabs = require 'comfy_panel.main'
 local Chrono_table = require 'maps.chronosphere.table'
 
 local functions = {
- 	["comfy_panel_offline_accidents"] = function(event)
- 	local objective = Chrono_table.get_table()
+	["comfy_panel_offline_accidents"] = function(event)
+	local objective = Chrono_table.get_table()
     if game.players[event.player_index].admin then
-  		if event.element.switch_state == "left" then
-  			objective.config.offline_loot = true
-  		else
-  			objective.config.offline_loot = false
-  		end
+		if event.element.switch_state == "left" then
+			objective.config.offline_loot = true
+		else
+			objective.config.offline_loot = false
+		end
     else
       game.players[event.player_index].print("You are not admin!")
     end
@@ -21,10 +20,10 @@ local functions = {
 	local objective = Chrono_table.get_table()
     if game.players[event.player_index].admin then
       if event.element.switch_state == "left" then
-  			objective.config.jumpfailure = true
-  		else
-  			objective.config.jumpfailure = false
-  		end
+			objective.config.jumpfailure = true
+		else
+			objective.config.jumpfailure = false
+		end
     else
       game.players[event.player_index].print("You are not admin!")
     end
@@ -33,7 +32,8 @@ local functions = {
 
 local function add_switch(element, switch_state, name, description_main, description)
 	local t = element.add({type = "table", column_count = 5})
-	local label = t.add({type = "label", caption = "ON"})
+	local label
+	label = t.add({type = "label", caption = "ON"})
 	label.style.padding = 0
 	label.style.left_padding= 10
 	label.style.font_color = {0.77, 0.77, 0.77}
@@ -41,18 +41,18 @@ local function add_switch(element, switch_state, name, description_main, descrip
 	switch.switch_state = switch_state
 	switch.style.padding = 0
 	switch.style.margin = 0
-	local label = t.add({type = "label", caption = "OFF"})
+	label = t.add({type = "label", caption = "OFF"})
 	label.style.padding = 0
 	label.style.font_color = {0.70, 0.70, 0.70}
 
-	local label = t.add({type = "label", caption = description_main})
+	label = t.add({type = "label", caption = description_main})
 	label.style.padding = 2
 	label.style.left_padding= 10
 	label.style.minimal_width = 120
 	label.style.font = "heading-2"
 	label.style.font_color = {0.88, 0.88, 0.99}
 
-	local label = t.add({type = "label", caption = description})
+	label = t.add({type = "label", caption = description})
 	label.style.padding = 2
 	label.style.left_padding= 10
 	label.style.single_line = false
@@ -60,24 +60,23 @@ local function add_switch(element, switch_state, name, description_main, descrip
 	label.style.font_color = {0.85, 0.85, 0.85}
 end
 
-local build_config_gui = (function (player, frame)
+local build_config_gui = (function (frame)
 	local objective = Chrono_table.get_table()
+	local switch_state
 	frame.clear()
 
 	local line_elements = {}
-	local switch_label_elements = {}
-	local label_elements = {}
 
 	line_elements[#line_elements + 1] = frame.add({type = "line"})
 
-	local switch_state = "right"
+	switch_state = "right"
 	if objective.config.offline_loot then switch_state = "left" end
 	add_switch(frame, switch_state, "comfy_panel_offline_accidents", "Offline Accidents", "Disablesr enables dropping of inventory when player goes offline.\nTimer is 15 minutes.")
 
 	line_elements[#line_elements + 1] = frame.add({type = "line"})
 
 	if objective.auto_hotbar_enabled then
-		local switch_state = "right"
+		switch_state = "right"
 		if objective.config.jumpfailure then switch_state = "left" end
 		add_switch(frame, switch_state, "comfy_panel_danger_events", "Dangerous Events", "Disables or enables dangerous event maps\n(they require at least 2-4 capable players to survive)")
 		line_elements[#line_elements + 1] = frame.add({type = "line"})

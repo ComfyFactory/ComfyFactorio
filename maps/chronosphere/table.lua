@@ -13,8 +13,8 @@ Global.register(
 )
 
 function Public.reset_table()
-    for k, v in pairs(chronosphere) do 
-      chronosphere[k] = nil 
+    for k, _ in pairs(chronosphere) do
+      chronosphere[k] = nil
     end
 	chronosphere.computermessage = 0
 	chronosphere.config = {}
@@ -38,7 +38,7 @@ function Public.reset_table()
 	chronosphere.dangers = {}
 	chronosphere.looted_nukes = 0
 	chronosphere.offline_players = {}
-  	chronosphere.nextsurface = nil
+	chronosphere.nextsurface = nil
 	chronosphere.upgrades = {}
 	chronosphere.outchests = {}
 	chronosphere.upgradechest = {}

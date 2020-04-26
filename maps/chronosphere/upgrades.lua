@@ -1,6 +1,5 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Public = {}
-local math_floor = math.floor
 local Server = require 'utils.server'
 local Upgrades = require "maps.chronosphere.upgrade_list"
 
@@ -23,8 +22,8 @@ local function check_win()
             objective.game_lost = true
             objective.chronotimer = 200000000 - 300
             for _, player in pairs(game.connected_players) do
-        			player.play_sound{path="utility/game_won", volume_modifier=0.85}
-        		end
+					player.play_sound{path="utility/game_won", volume_modifier=0.85}
+				end
             local message = {"chronosphere.message_game_won1"}
 						local message2 = "Number of delivered fish: " .. objective.mainscore
             game.print(message, {r=0.98, g=0.66, b=0.22})
@@ -82,7 +81,7 @@ end
 local function upgrade_out()
 	local objective = Chrono_table.get_table()
 	if not game.surfaces["cargo_wagon"] then return end
-  	local positions = {{-16,-62},{15,-62},{-16,66},{15,66}}
+	local positions = {{-16,-62},{15,-62},{-16,66},{15,66}}
 	local out = {}
 	for i = 1, 4, 1 do
     local e = game.surfaces["cargo_wagon"].create_entity({name = "steel-chest", position = positions[i], force = "player"})
@@ -101,6 +100,7 @@ local function upgrade_out()
 			scale_with_zoom = false
 		}
 	end
+	return out
 end
 
 local function upgrade_storage()
@@ -157,6 +157,7 @@ end
 local function mk2_buy()
   local objective = Chrono_table.get_table()
   if objective.upgradechest[13] and objective.upgradechest[13].valid then
+	local inv = objective.upgradechest[14].get_inventory(defines.inventory.chest)
     inv.insert({name = "power-armor-mk2", count = 1})
   end
 end

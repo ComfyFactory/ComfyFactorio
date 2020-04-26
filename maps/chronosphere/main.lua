@@ -28,6 +28,8 @@ local math_floor = math.floor
 local math_sqrt = math.sqrt
 require "maps.chronosphere.config_tab"
 
+local Public = {}
+
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 4, ['raw-fish'] = 4, ['rail'] = 16, ['wood'] = 16}
 
 local function generate_overworld(surface, optplanet)
@@ -79,12 +81,6 @@ local function generate_overworld(surface, optplanet)
 		local mgs = surface.map_gen_settings
 		mgs.width = 2176
 		surface.map_gen_settings = mgs
-		surface.request_to_generate_chunks({-960,-64}, 3)
-		--surface.request_to_generate_chunks({0,0}, 3)
-		surface.force_generate_chunk_requests()
-	else
-		surface.request_to_generate_chunks({0,0}, 3)
-		surface.force_generate_chunk_requests()
 	end
 end
 
@@ -216,9 +212,9 @@ local function set_objective_health(final_damage_amount)
 	rendering.set_text(objective.health_text, "HP: " .. objective.health .. " / " .. objective.max_health)
 end
 
-local function chronojump(choice)
+function Public.chronojump(choice)
 	local objective = Chrono_table.get_table()
-	if objective.game_lost then return end
+	if objective.game_lost then goto continue end
 	Chrono.process_jump()
 
 	local oldsurface = game.surfaces[objective.active_surface_index]
@@ -227,28 +223,29 @@ local function chronojump(choice)
 		if player.surface == oldsurface then
 			if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
 			local wagons = {objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
-			Locomotive.enter_cargo_wagon(player, wagons[math_random(1,3)])
+			Locomotive.enter_cargo_wagon(player, wagons[math.random(1,3)])
 		end
 	end
 	objective.lab_cells = {}
 	objective.active_surface_index = game.create_surface("chronosphere" .. objective.chronojumps, Chrono.get_map_gen_settings()).index
 	local surface = game.surfaces[objective.active_surface_index]
 	log("seed of new surface: " .. surface.map_gen_settings.seed)
-	local planet = nil
+	local planet = objective.planet
 	if choice then
 		Planets.determine_planet(choice)
-		planet = objective.planet
 	end
 	generate_overworld(surface, planet)
 
 	game.forces.player.set_spawn_position({12, 10}, surface)
 
 	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, Chrono.get_wagons(false))
+	--if objective.locomotive == nil then Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, Chrono.get_wagons(false)) end
 	render_train_hp()
 	game.delete_surface(oldsurface)
 	Chrono.post_jump()
 	Event_functions.flamer_nerfs()
 	surface.pollute(objective.locomotive.position, 150 * (4 / (objective.upgrades[2] / 2 + 1)) * (1 + objective.chronojumps) * global.difficulty_vote_value)
+	::continue::
 end
 
 local tick_minute_functions = {
@@ -305,12 +302,24 @@ local function tick()
 			objective.chronotimer = objective.chronotimer + 1
 			objective.passivetimer = objective.passivetimer + 1
 			if objective.chronojumps > 0 then
-				game.surfaces[objective.active_surface_index].pollute(objective.locomotive.position, (0.5 * objective.chronojumps) * (4 / (objective.upgrades[2] / 2 + 1)) * global.difficulty_vote_value)
+				if objective.locomotive ~= nil then 
+					local surface = game.surfaces[objective.active_surface_index]
+					local pos = objective.locomotive.position or {x=0,y=0}
+					if surface and surface.valid then
+						game.surfaces[objective.active_surface_index].pollute(
+							pos, 
+							(0.5 * objective.chronojumps) * 
+							(4 / (objective.upgrades[2] / 2 + 1)) * 
+							global.difficulty_vote_value)
+					end
+				end
 			end
 			if objective.planet[1].name.id == 19 then
 				Tick_functions.dangertimer()
 			end
-			if Tick_functions.check_chronoprogress() then chronojump(nil) end
+			if Tick_functions.check_chronoprogress() then 
+				Public.chronojump(nil) 
+			end
 		end
 		if tick % 120 == 0 then
 			Tick_functions.move_items()
@@ -568,7 +577,7 @@ if _DEBUG then
 	                p = log
 	            end
 	        end
-	        chronojump(param)
+	        Public.chronojump(param)
 	end)
 end
 --Time for the debug code.  If any (not global.) globals are written to at this point, an error will be thrown.
@@ -583,3 +592,5 @@ end
 --        return global[n];
 --    end
 --})
+
+return Public

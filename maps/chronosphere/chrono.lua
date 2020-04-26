@@ -25,7 +25,7 @@ function Public_chrono.get_map_gen_settings()
 end
 
 function Public_chrono.restart_settings()
-  	local objective = Chrono_table.get_table()
+	local objective = Chrono_table.get_table()
     objective.max_health = 10000
 	objective.health = 10000
 	objective.poisontimeout = 0
@@ -41,7 +41,7 @@ function Public_chrono.restart_settings()
 	objective.dangers = {}
 	objective.looted_nukes = 0
 	objective.offline_players = {}
-  	objective.nextsurface = nil
+	objective.nextsurface = nil
 	for i = 1, 16, 1 do
 		objective.upgrades[i] = 0
 	end
@@ -60,8 +60,8 @@ function Public_chrono.restart_settings()
 	global.landfill_history = {}
 	global.mining_history = {}
 	global.score = {}
-  	global.difficulty_poll_closing_timeout = game.tick + 90000
-  	global.difficulty_player_votes = {}
+	global.difficulty_poll_closing_timeout = game.tick + 90000
+	global.difficulty_player_votes = {}
 
 	game.difficulty_settings.technology_price_multiplier = 0.6
 	game.map_settings.enemy_evolution.destroy_factor = 0.005
@@ -146,9 +146,9 @@ local function check_nuke_silos()
   end
 end
 
-function Public_chrono.process_jump(choice)
+function Public_chrono.process_jump()
 	local objective = Chrono_table.get_table()
-	local overstayed = overstayed()
+	local _overstayed = overstayed()
 	objective.chronojumps = objective.chronojumps + 1
 	objective.chrononeeds = 2000 + 300 * objective.chronojumps
 	objective.active_biters = {}
@@ -156,7 +156,7 @@ function Public_chrono.process_jump(choice)
 	objective.biter_raffle = {}
 	objective.passivetimer = 0
 	objective.chronotimer = 0
-  objective.dangertimer = 1200
+  	objective.dangertimer = 1200
 	local message = "Comfylatron: Wheeee! Time Jump Active! This is Jump number " .. objective.chronojumps
 	game.print(message, {r=0.98, g=0.66, b=0.22})
 	Server.to_discord_embed(message)
@@ -173,7 +173,7 @@ function Public_chrono.process_jump(choice)
 		game.print({"chronosphere.message_quest5"}, {r=0.98, g=0.36, b=0.22})
     objective.computermessage = 5
 	end
-	if overstayed then
+	if _overstayed then
     game.print({"chronosphere.message_overstay"}, {r=0.98, g=0.36, b=0.22})
   end
   if objective.planet[1].name.id == 19 then

@@ -64,10 +64,10 @@ end
 function Public.determine_planet(choice)
   local objective = Chrono_table.get_table()
   local weight = variants[#variants].cumul_chance
-  local planet_choice = nil
   local ores = math_random(1, 9)
   local dayspeed = time_speed_variants[math_random(1, #time_speed_variants)]
   local daytime = math_random(1,100) / 100
+  local planet_choice
   if objective.game_lost then
     choice = 15
     ores = 2
@@ -77,7 +77,7 @@ function Public.determine_planet(choice)
     ores = 10
   end
   if objective.config.jumpfailure == true and objective.game_lost == false then
-    if objective.chronojumps == 21 or objective.chronojumps == 29 or chronojumps == 36 or chronojumps == 42 then
+    if objective.chronojumps == 21 or objective.chronojumps == 29 or objective.chronojumps == 36 or objective.chronojumps == 42 then
       choice = 19
       ores = 10
       dayspeed = time_speed_variants[1]

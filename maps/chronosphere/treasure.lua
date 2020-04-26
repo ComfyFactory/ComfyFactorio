@@ -1,6 +1,5 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local math_random = math.random
-local math_sqrt = math.sqrt
 
 local Public = {}
 
@@ -171,7 +170,7 @@ function Public.treasure_chest(surface, position, container_name)
 	if distance_to_center > 1 then distance_to_center = 1 end
 
 	for _, t in pairs (chest_loot) do
-		for x = 1, t.weight, 1 do
+		for _ = 1, t.weight, 1 do
       --if math_random(1,50) == 1 then log(distance_to_center) end
 			if t.d_min <= distance_to_center and t.d_max >= distance_to_center then
 				table.insert(chest_raffle, t[1])
@@ -182,7 +181,7 @@ function Public.treasure_chest(surface, position, container_name)
 	local e = surface.create_entity({name = container_name, position=position, force="neutral", create_build_effect_smoke = false})
 	e.minable = false
 	local i = e.get_inventory(defines.inventory.chest)
-	for x = 1, math_random(2,6), 1 do
+	for _ = 1, math_random(2,6), 1 do
 		local loot = chest_raffle[math_random(1,#chest_raffle)]
 		i.insert(loot)
 	end

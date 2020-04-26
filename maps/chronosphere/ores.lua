@@ -2,10 +2,7 @@ local Chrono_table = require 'maps.chronosphere.table'
 local Public_ores = {}
 local simplex_noise = require 'utils.simplex_noise'.d2
 local math_random = math.random
-local math_abs = math.abs
 local math_floor = math.floor
-local math_sqrt = math.sqrt
-local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 
 local function draw_noise_ore_patch(position, name, surface, radius, richness, mixed)
 	if not position then return end
@@ -13,26 +10,26 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness, m
 	if not surface then return end
 	if not radius then return end
 	if not richness then return end
+  local noise
   local ore_raffle = {
 	"iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "coal", "stone"
   }
 	local seed = surface.map_gen_settings.seed
-	local noise_seed_add = 25000
 	local richness_part = richness / radius
 	for y = radius * -3, radius * 3, 1 do
 		for x = radius * -3, radius * 3, 1 do
 			local pos = {x = x + position.x + 0.5, y = y + position.y + 0.5}
 			local noise_1 = simplex_noise(pos.x * 0.0125, pos.y * 0.0125, seed)
 			local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed + 25000)
-			local noise = noise_1 + noise_2 * 0.12
+			noise = noise_1 + noise_2 * 0.12
 			local distance_to_center = math.sqrt(x^2 + y^2)
 			local a = richness - richness_part * distance_to_center
 			if distance_to_center < radius - math.abs(noise * radius * 0.85) and a > 1 then
         pos = surface.find_non_colliding_position(name, pos, 64, 1, true)
         if not pos then return end
         if mixed then
-          local noise = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed) + simplex_noise(pos.x * 0.01, pos.y * 0.01, seed) * 0.3 + simplex_noise(pos.x * 0.05, pos.y * 0.05, seed) * 0.2
-      		local i = (math_floor(noise * 100) % 7) + 1
+          noise = simplex_noise(pos.x * 0.005, pos.y * 0.005, seed) + simplex_noise(pos.x * 0.01, pos.y * 0.01, seed) * 0.3 + simplex_noise(pos.x * 0.05, pos.y * 0.05, seed) * 0.2
+          local i = (math_floor(noise * 100) % 7) + 1
           name = ore_raffle[i]
         end
         local entity = {name = name, position = pos, amount = a}
@@ -46,7 +43,7 @@ end
 
 local function get_size_of_ore(ore, planet)
   local base_size = math_random(5, 10) + math_floor(planet[1].ore_richness.factor * 3)
-  local final_size = 1
+  local final_size
   if planet[1].name.id == 1 and ore == "iron-ore" then --iron planet
     final_size = math_floor(base_size * 1.5)
   elseif planet[1].name.id == 2 and ore == "copper-ore" then --copper planet
@@ -84,7 +81,6 @@ local function spawn_ore_vein(surface, pos, planet)
   local uranium = {w = planet[1].name.uranium, t = coal.t + planet[1].name.uranium}
   local oil = {w = planet[1].name.oil, t = uranium.t + planet[1].name.oil}
 
-  local total = iron.w + copper.w + stone.w + coal.w + uranium.w + oil.w
   local roll = math_random (0, oil.t)
   if roll == 0 then return end
   local choice = nil

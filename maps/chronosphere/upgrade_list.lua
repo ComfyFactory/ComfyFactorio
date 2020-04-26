@@ -25,7 +25,7 @@ function Public.upgrades()
   --First additional parameter for tooltip should match the max_level
   --still need to map upgrade effects in upgrades.lua / process_upgrade() if it should do more than increase level of upgrade
   local upgrades = {
-  	[1] = {
+    [1] = {
       name = {"chronosphere.upgrade_train_armor"},
       sprite = "recipe/locomotive",
       max_level = 36,

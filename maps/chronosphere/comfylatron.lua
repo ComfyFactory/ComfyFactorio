@@ -1,5 +1,5 @@
 local Chrono_table = require 'maps.chronosphere.table'
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 
 
@@ -87,7 +87,7 @@ local texts = {
 		"They just wanted to deliver some fish so I pressed that button and then this happened",
 		"Maybe it was just a cat walking on my keyboard who caused this time travel fiasco",
 		"3...2...1...jump time! errr...I mean...desync time!",
-		"Just let me deliver the fish. They start to smell a bit. Luckily I don't have a nose"	
+		"Just let me deliver the fish. They start to smell a bit. Luckily I don't have a nose"
 	},
 	["alone"] = {
 		"comfy ^.^",
@@ -393,7 +393,7 @@ local function spawn_comfylatron(surface_index, x, y)
 	end
 	objective.comfylatron = surface.create_entity({
 		name = "compilatron",
-	 	position = {x,y + math_random(0,256)},
+		position = {x,y + math_random(0,256)},
 		force = "player",
 		create_build_effect_smoke = false
 	})
@@ -429,5 +429,5 @@ local function on_tick()
 	end
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_tick, on_tick)

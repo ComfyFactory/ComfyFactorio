@@ -2,7 +2,6 @@ local Chrono_table = require 'maps.chronosphere.table'
 local Public_gui = {}
 
 local math_floor = math.floor
-local math_ceil = math.ceil
 local math_abs = math.abs
 local math_max = math.max
 local math_min = math.min
@@ -11,24 +10,26 @@ local Upgrades = require "maps.chronosphere.upgrade_list"
 local function create_gui(player)
 	local frame = player.gui.top.add({ type = "frame", name = "chronosphere"})
 	frame.style.maximal_height = 38
+	local label
+	local button
 
-	local label = frame.add({ type = "label", caption = " ", name = "label"})
+	label = frame.add({ type = "label", caption = " ", name = "label"})
 	label.style.font_color = {r=0.88, g=0.88, b=0.88}
 	label.style.font = "default-bold"
 	label.style.font_color = {r=0.33, g=0.66, b=0.9}
 
-	local label = frame.add({ type = "label", caption = " ", name = "jump_number"})
+	label = frame.add({ type = "label", caption = " ", name = "jump_number"})
 	label.style.font_color = {r=0.88, g=0.88, b=0.88}
 	label.style.font = "default-bold"
 	label.style.right_padding = 4
 	label.style.font_color = {r=0.33, g=0.66, b=0.9}
 
-  local label = frame.add({ type = "label", caption = " ", name = "charger"})
+  label = frame.add({ type = "label", caption = " ", name = "charger"})
 	label.style.font = "default-bold"
 	label.style.left_padding = 4
 	label.style.font_color = {r = 255, g = 200, b = 200} --255 200 200 --150 0 255
 
-  local label = frame.add({ type = "label", caption = " ", name = "charger_value"})
+  label = frame.add({ type = "label", caption = " ", name = "charger_value"})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
@@ -39,25 +40,25 @@ local function create_gui(player)
 	progressbar.style.maximal_width = 96
 	progressbar.style.top_padding = 10
 
-  local label = frame.add({ type = "label", caption = " ", name = "timer"})
+  label = frame.add({ type = "label", caption = " ", name = "timer"})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
 	label.style.font_color = {r = 255, g = 200, b = 200}
 
-  local label = frame.add({ type = "label", caption = " ", name = "timer_value", tooltip = " "})
+  label = frame.add({ type = "label", caption = " ", name = "timer_value", tooltip = " "})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
 	label.style.font_color = {r = 255, g = 200, b = 200}
 
-  local label = frame.add({ type = "label", caption = " ", name = "timer2"})
+  label = frame.add({ type = "label", caption = " ", name = "timer2"})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
 	label.style.font_color = {r = 0, g = 200, b = 0}
 
-  local label = frame.add({ type = "label", caption = " ", name = "timer_value2"})
+  label = frame.add({ type = "label", caption = " ", name = "timer_value2"})
 	label.style.font = "default-bold"
 	label.style.right_padding = 1
 	label.style.minimal_width = 10
@@ -67,12 +68,12 @@ local function create_gui(player)
 	-- line.style.left_padding = 4
 	-- line.style.right_padding = 8
 
-	local button = frame.add({type = "button", caption = " ", name = "planet_button"})
+	button = frame.add({type = "button", caption = " ", name = "planet_button"})
 	button.style.font = "default-bold"
 	button.style.font_color = { r=0.99, g=0.99, b=0.99}
 	button.style.minimal_width = 75
 
-	local button = frame.add({type = "button", caption = " ", name = "upgrades_button"})
+	button = frame.add({type = "button", caption = " ", name = "upgrades_button"})
 	button.style.font = "default-bold"
 	button.style.font_color = { r=0.99, g=0.99, b=0.99}
 	button.style.minimal_width = 75
@@ -193,6 +194,7 @@ end
 local function upgrades_gui(player)
 	if player.gui.screen["gui_upgrades"] then player.gui.screen["gui_upgrades"].destroy() return end
 	local objective = Chrono_table.get_table()
+	local costs = {}
 	local upgrades = Upgrades.upgrades()
 	local frame = player.gui.screen.add{type = "frame", name = "gui_upgrades", caption = "ChronoTrain Upgrades", direction = "vertical"}
   frame.location = {x = 350, y = 45}
@@ -211,7 +213,7 @@ local function upgrades_gui(player)
 
 		local maxed = upg_table.add({type = "sprite-button", name = "maxed" .. i, enabled = false, sprite = "virtual-signal/signal-check", tooltip = "Upgrade maxed!", visible = false})
 		local jumps = upg_table.add({type = "sprite-button", name = "jump_req" .. i, enabled = false, sprite = "virtual-signal/signal-J", number = upgrades[i].jump_limit, tooltip = "Required jump number", visible = true})
-		local costs = {}
+
 		for index,item in pairs(upgrades[i].cost) do
 			costs[index] = upg_table.add({type = "sprite-button", name = index .. "-" .. i, number = item.count, sprite = item.sprite, enabled = false, tooltip = {item.tt .. "." .. item.name}, visible = true})
 		end
@@ -230,6 +232,7 @@ local function upgrades_gui(player)
 		end
 	end
   frame.add({type = "button", name = "close_upgrades", caption = "Close"})
+  return costs
 end
 
 local function planet_gui(player)
@@ -245,7 +248,7 @@ local function planet_gui(player)
   frame.style.maximal_width = 400
 	local l = {}
 	l[1] = frame.add({type = "label", name = "planet_name", caption = {"chronosphere.gui_planet_0", planet.name.name}})
-  l[2] = frame.add({type = "label", caption = {"chronosphere.gui_planet_1"}})
+	l[2] = frame.add({type = "label", caption = {"chronosphere.gui_planet_1"}})
 	local table0 = frame.add({type = "table", name = "planet_ores", column_count = 3})
 	table0.add({type = "sprite-button", name = "iron-ore", sprite = "item/iron-ore", enabled = false, number = planet.name.iron})
 	table0.add({type = "sprite-button", name = "copper-ore", sprite = "item/copper-ore", enabled = false, number = planet.name.copper})
@@ -266,6 +269,7 @@ local function planet_gui(player)
 	-- for i = 1, 3, 1 do
 	-- 	l[i].style.font = "default-game"
 	-- end
+	return l
 end
 
 function Public_gui.on_gui_click(event)

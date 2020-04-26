@@ -195,7 +195,7 @@ end
 function Public_tick.offline_players()
   local objective = Chrono_table.get_table()
   if objective.chronotimer > objective.chrononeeds - 182 or objective.passivetimer < 30 then return end
-  local current_tick = game.tick
+  --local current_tick = game.tick
   local players = objective.offline_players
   local surface = game.surfaces[objective.active_surface_index]
   if #players > 0 then
@@ -229,7 +229,7 @@ function Public_tick.offline_players()
           if #items > 0 then
             for item = 1, #items, 1 do
               if items[item].valid then
-      			     inv.insert(items[item])
+                  inv.insert(items[item])
               end
             end
 						game.print({"chronosphere.message_accident"}, {r=0.98, g=0.66, b=0.22})

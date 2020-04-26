@@ -64,7 +64,7 @@ function Public_terrain.fish_market(surface, left_top)
   market.destructible = false
   market.operable = false
   market.minable = false
-  local repair_text = rendering.draw_text{
+  rendering.draw_text{
     text = "Fish Market",
     surface = surface,
     target = market,
@@ -80,7 +80,7 @@ function Public_terrain.fish_market(surface, left_top)
   fishchest.minable = false
   fishchest.operable = false
   objective.fishchest = fishchest
-  local repair_text = rendering.draw_text{
+  rendering.draw_text{
     text = "Deposit fish here",
     surface = surface,
     target = fishchest,
