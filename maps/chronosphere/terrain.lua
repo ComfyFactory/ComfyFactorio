@@ -59,6 +59,10 @@ local modifiers_diagonal = {
   {diagonal = {x = -1, y = -1}, connection_1 = {x = -1, y = 0}, connection_2 = {x = 0, y = -1}}
 }
 
+local function pos_to_key(position)
+    return tostring(position.x .. "_" .. position.y)
+end
+
 local function get_noise(name, pos, seed)
 	local noise = 0
 	local d = 0
@@ -73,7 +77,7 @@ end
 
 local function get_size_of_ore(ore, planet)
   local base_size = 0.04 + 0.04 * planet[1].ore_richness.factor
-  local final_size
+  local final_size = 1
   if planet[1].name.id == 1 and ore == "iron-ore" then --iron planet
     final_size = base_size * 5
   elseif planet[1].name.id == 2 and ore == "copper-ore" then --copper planet
@@ -132,7 +136,7 @@ local function process_labyrinth_cell(pos, seed)
 	return true
 end
 
-local function process_dangerevent_position(p, seed, tiles, entities)
+local function process_dangerevent_position(p, seed, tiles, entities, treasure, planet)
 	local scrapyard = get_noise("scrapyard", p, seed)
 	--Chasms
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
@@ -480,7 +484,7 @@ end
 local function process_scrapyard_position(p, seed, tiles, entities, treasure, planet)
   local objective = Chrono_table.get_table()
   local scrapyard = get_noise("scrapyard", p, seed)
-  --local biters = planet[1].name.biters
+  local biters = planet[1].name.biters
 	--Chasms
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 	local small_caves = get_noise("small_caves", p, seed)
@@ -538,7 +542,7 @@ end
 
 local function process_swamp_position(p, seed, tiles, entities, treasure, planet)
   local scrapyard = get_noise("scrapyard", p, seed)
-  --local biters = planet[1].name.biters
+  local biters = planet[1].name.biters
 
   if scrapyard < -0.70 or scrapyard > 0.70 then
     tiles[#tiles + 1] = {name = "grass-3", position = p}
@@ -653,7 +657,7 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
 end
 
 local levels = {
-	--process_level_1_position,
+	process_level_1_position,
 	process_dangerevent_position,
 	process_hedgemaze_position,
 	process_rocky_position,
