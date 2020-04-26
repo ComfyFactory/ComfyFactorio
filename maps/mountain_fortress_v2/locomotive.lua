@@ -35,7 +35,6 @@ function Public.locomotive_spawn(surface, position)
 	})
 
 	global.locomotive.color = {0, 255, 0}
-	global.locomotive.minable = false
 	global.locomotive_cargo.minable = false
 	
 	for y = -1, 0, 0.05 do
@@ -45,6 +44,7 @@ function Public.locomotive_spawn(surface, position)
 	
 	Immersive_cargo_wagons.register_wagon(global.locomotive)
 	local wagon = Immersive_cargo_wagons.register_wagon(global.locomotive_cargo)	
+	wagon.entity_count = 999
 	
 	local surface = wagon.surface
 	local center_position = {x = wagon.area.left_top.x + (wagon.area.right_bottom.x - wagon.area.left_top.x) * 0.5, y = wagon.area.left_top.y + (wagon.area.right_bottom.y - wagon.area.left_top.y) * 0.5}

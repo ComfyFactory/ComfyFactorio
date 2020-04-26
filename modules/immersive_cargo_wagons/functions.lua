@@ -7,7 +7,7 @@ local table_remove = table.remove
 local math_round = math.round
 local math_random = math.random
 
-local function request_reconstruction(icw)
+function Public.request_reconstruction(icw)
 	icw.rebuild_tick = game.tick + 30
 end
 
@@ -162,7 +162,7 @@ function Public.kill_wagon(icw, entity)
 		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
 	icw.wagons[entity.unit_number] = nil
-	request_reconstruction(icw)
+	Public.request_reconstruction(icw)
 end
 
 function Public.create_room_surface(icw, unit_number)
@@ -304,7 +304,7 @@ function Public.create_wagon(icw, created_entity)
 		entity_count = 0,
 	}		
 	Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
-	request_reconstruction(icw)
+	Public.request_reconstruction(icw)
 	return icw.wagons[created_entity.unit_number]
 end
 

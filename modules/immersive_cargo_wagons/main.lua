@@ -80,6 +80,8 @@ local function on_gui_closed(event)
 	local entity = event.entity 
 	if not entity then return end
 	if not entity.valid then return end
+	if not entity.unit_number then return end
+	if not icw.wagons[entity.unit_number] then return end
 	Functions.kill_minimap(game.players[event.player_index])
 end
 
@@ -95,6 +97,10 @@ end
 
 local function on_player_died(event)
 	Functions.kill_minimap(game.players[event.player_index])
+end
+
+local function on_train_created(event)
+	Functions.request_reconstruction(icw)
 end
 
 local function on_tick()
@@ -125,6 +131,7 @@ Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_train_created, on_train_created)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_player_died, on_player_died)
 --Event.add(defines.events.on_player_created, on_player_created)
