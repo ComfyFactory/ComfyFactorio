@@ -70,9 +70,11 @@ local function on_player_created(event)
 end
 
 local function on_tick()
-	Functions.item_transfer(icw)
+	local tick = game.tick
+	if tick % 60 == 0 then Functions.item_transfer(icw) end
+	
 	if not icw.rebuild_tick then return end
-	if icw.rebuild_tick ~= game.tick then return end
+	if icw.rebuild_tick ~= tick then return end
 	Functions.reconstruct_all_trains(icw)
 	icw.rebuild_tick = nil
 end

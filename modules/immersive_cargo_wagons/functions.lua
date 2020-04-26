@@ -5,6 +5,7 @@ local Constants = require "modules.immersive_cargo_wagons.constants"
 local table_insert = table.insert
 local table_remove = table.remove
 local math_round = math.round
+local math_random = math.random
 
 local function request_reconstruction(icw)
 	icw.rebuild_tick = game.tick + 30
@@ -46,6 +47,43 @@ local function divide_fluid(wagon, storage_tank)
 	
 	wagon_fluidbox[1] = {name = n, amount = a, temperature = t}
 	tank_fluidbox[1] = {name = n, amount = a, temperature = t}
+end
+
+local function input_cargo(wagon, chest)
+	if chest.get_request_slot(1) then return end
+	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
+	if wagon_inventory.is_empty() then return end
+	local buffer_chest_inventory = chest.get_inventory(defines.inventory.chest)	
+	local free_slots = 0
+	for i = 1, #buffer_chest_inventory, 1 do
+		if not buffer_chest_inventory[i].valid_for_read then free_slots = free_slots + 1 end
+	end	
+	for i = 1, #wagon_inventory, 1 do
+		if free_slots <= 0 then return end
+		if wagon_inventory[i].valid_for_read then
+			buffer_chest_inventory.insert(wagon_inventory[i])
+			wagon_inventory[i].clear()
+			free_slots = free_slots - 1
+		end		
+	end
+end
+
+local function output_cargo(wagon, passive_chest)
+	local passive_chest_inventory = passive_chest.get_inventory(defines.inventory.cargo_wagon)
+	if passive_chest_inventory.is_empty() then return end
+	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)	
+	local free_slots = 0
+	for i = 1, #wagon_inventory, 1 do
+		if not wagon_inventory[i].valid_for_read then free_slots = free_slots + 1 end
+	end	
+	for i = 1, #passive_chest_inventory, 1 do
+		if free_slots <= 0 then return end
+		if passive_chest_inventory[i].valid_for_read then
+			wagon_inventory.insert(passive_chest_inventory[i])
+			passive_chest_inventory[i].clear()
+			free_slots = free_slots - 1
+		end		
+	end
 end
 
 local transfer_functions = {
@@ -185,14 +223,42 @@ function Public.create_wagon_room(icw, wagon)
 		
 		local e = surface.create_entity({
 			name = "storage-tank",
-			position = positions[math.random(1, 4)],
+			position = positions[math_random(1, 4)],
 			force = "neutral",
 			create_build_effect_smoke = false
 		})
 		e.destructible = false
 		e.minable = false
-		e.operable = false
 		wagon.transfer_entities = {e}
+		return
+	end
+	
+	if wagon.entity.type == "cargo-wagon" then
+		local vectors = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
+		local v = vectors[math_random(1, 4)]
+		local position = {math_random(area.left_top.x + 4, area.right_bottom.x - 4), math_random(area.left_top.y + 6, area.right_bottom.y - 6)}
+				
+		local e = surface.create_entity({
+			name = "logistic-chest-buffer",
+			position = position,
+			force = "neutral",
+			create_build_effect_smoke = false
+		})
+		e.set_request_slot({name = "small-plane", count = 1}, 1)
+		e.destructible = false
+		e.minable = false
+		
+		e2 = surface.create_entity({
+			name = "logistic-chest-passive-provider",
+			position = {position[1] + v[1], position[2] + v[2]},
+			force = "neutral",
+			create_build_effect_smoke = false
+		})
+		e2.destructible = false
+		e2.minable = false
+		
+		wagon.transfer_entities = {e, e2}
+		return
 	end
 end
 
