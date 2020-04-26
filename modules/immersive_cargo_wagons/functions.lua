@@ -7,7 +7,7 @@ local table_remove = table.remove
 local math_round = math.round
 
 local function request_reconstruction(icw)
-	icw.rebuild_tick = game.tick + 15
+	icw.rebuild_tick = game.tick + 30
 end
 
 local function delete_empty_surfaces(icw)
@@ -18,6 +18,41 @@ local function delete_empty_surfaces(icw)
 		end
 	end
 end	
+
+local function divide_fluid(wagon, storage_tank)
+	local wagon_fluidbox = wagon.entity.fluidbox
+	local fluid_wagon = wagon.entity
+	local wagon_fluid = wagon_fluidbox[1]
+	local tank_fluidbox = storage_tank.fluidbox
+	local tank_fluid = tank_fluidbox[1]
+	if not wagon_fluid and not tank_fluid then return end
+	if wagon_fluid and tank_fluid then
+		if wagon_fluid.name ~= tank_fluid.name then return end
+	end
+	if not wagon_fluid then
+		wagon_fluidbox[1] = {name = tank_fluid.name, amount = tank_fluid.amount * 0.5, temperature = tank_fluid.temperature}
+		storage_tank.remove_fluid({name = tank_fluid.name, amount = tank_fluid.amount * 0.5})
+		return
+	end
+	if not tank_fluid then
+		tank_fluidbox[1] = {name = wagon_fluid.name, amount = wagon_fluid.amount * 0.5, temperature = wagon_fluid.temperature}
+		fluid_wagon.remove_fluid({name = wagon_fluid.name, amount = wagon_fluid.amount * 0.5})
+		return
+	end
+	
+	local a = (wagon_fluid.amount + tank_fluid.amount) * 0.5
+	local n = wagon_fluid.name
+	local t = wagon_fluid.temperature
+	
+	wagon_fluidbox[1] = {name = n, amount = a, temperature = t}
+	tank_fluidbox[1] = {name = n, amount = a, temperature = t}
+end
+
+local transfer_functions = {
+	["storage-tank"] = divide_fluid,
+	["logistic-chest-buffer"] = input_cargo,
+	["logistic-chest-passive-provider"] = output_cargo,
+}
 
 local function get_wagon_for_entity(icw, entity)
 	local train = icw.trains[tonumber(entity.surface.name)]
@@ -67,7 +102,18 @@ function Public.kill_wagon(icw, entity)
 	local wagon = icw.wagons[entity.unit_number]	
 	local surface = wagon.surface
 	kill_wagon_doors(icw, wagon)
-	for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do e.die() end
+	for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
+		if e.name == "character" and e.player then
+			local p = wagon.entity.surface.find_non_colliding_position("character", wagon.entity.position, 128, 0.5)
+			if p then 
+				e.player.teleport(p, wagon.entity.surface)
+			else
+				e.player.teleport(wagon.entity.position, wagon.entity.surface)
+			end
+		else
+			e.die() 
+		end	
+	end
 	for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
 		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
@@ -127,10 +173,32 @@ function Public.create_wagon_room(icw, wagon)
 	surface.set_tiles(tiles, true)
 	
 	construct_wagon_doors(icw, wagon)
+	
+	if wagon.entity.type == "fluid-wagon" then
+		local height = area.right_bottom.y - area.left_top.y
+		local positions = {
+			{area.right_bottom.x, area.left_top.y + height * 0.25},
+			{area.right_bottom.x, area.left_top.y + height * 0.75},
+			{area.left_top.x - 1, area.left_top.y + height * 0.25},
+			{area.left_top.x - 1, area.left_top.y + height * 0.75},	
+		}
+		
+		local e = surface.create_entity({
+			name = "storage-tank",
+			position = positions[math.random(1, 4)],
+			force = "neutral",
+			create_build_effect_smoke = false
+		})
+		e.destructible = false
+		e.minable = false
+		e.operable = false
+		wagon.transfer_entities = {e}
+	end
 end
 
 function Public.create_wagon(icw, created_entity)
 	if not created_entity.unit_number then return end
+	if icw.trains[tonumber(created_entity.surface.name)] or icw.wagons[tonumber(created_entity.surface.name)] then return end
 	if not Constants.wagon_types[created_entity.type] then return end
 	local wagon_area = Constants.wagon_areas[created_entity.type]
 
@@ -240,8 +308,15 @@ function Public.move_room_to_train(icw, train, wagon)
 	end
 	
 	wagon.surface = train.surface
-	wagon.area = destination_area	
+	wagon.area = destination_area
+	wagon.transfer_entities = {}
 	construct_wagon_doors(icw, wagon)
+	
+	for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area, force = "neutral"})) do
+		if transfer_functions[e.name] then
+			table_insert(wagon.transfer_entities, e)
+		end
+	end
 end
 
 function Public.construct_train(icw, carriages)
@@ -264,6 +339,16 @@ function Public.reconstruct_all_trains(icw)
 		Public.construct_train(icw, carriages)
 	end
 	delete_empty_surfaces(icw)
+end
+
+function Public.item_transfer(icw)
+	for _, wagon in pairs(icw.wagons) do
+		if wagon.transfer_entities then
+			for k, e in pairs(wagon.transfer_entities) do
+				transfer_functions[e.name](wagon, e)
+			end
+		end
+	end
 end
 
 return Public
