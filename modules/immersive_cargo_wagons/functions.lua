@@ -135,6 +135,11 @@ local function construct_wagon_doors(icw, wagon)
 	end
 end
 
+function Public.kill_minimap(player)
+	local element = player.gui.left.icw_map
+	if element then element.destroy() end
+end
+
 function Public.kill_wagon(icw, entity)
 	if not Constants.wagon_types[entity.type] then return end
 	local wagon = icw.wagons[entity.unit_number]	
@@ -148,6 +153,7 @@ function Public.kill_wagon(icw, entity)
 			else
 				e.player.teleport(wagon.entity.position, wagon.entity.surface)
 			end
+			Public.kill_minimap(e.player)
 		else
 			e.die() 
 		end	
@@ -223,7 +229,8 @@ function Public.create_wagon_room(icw, wagon)
 				table_insert(vectors, {x, y}) 
 			end
 		end
-		local position = {x = area.right_bottom.x * 0.5 + (-1 + math_random(0, 2)), y = area.right_bottom.y * 0.5 + (-4 + math_random(0, 8))}
+		local position = {x = area.left_top.x + (area.right_bottom.x - area.left_top.x) * 0.5, y = area.left_top.y + (area.right_bottom.y - area.left_top.y) * 0.5}
+		position = {x = position.x + (-1 + math_random(0, 2)), y = position.y + (-4 + math_random(0, 8))}
 		for _, v in pairs(vectors) do
 			table_insert(tiles, {name = "water", position = {position.x + v[1], position.y + v[2]}}) 
 		end	
@@ -298,6 +305,7 @@ function Public.create_wagon(icw, created_entity)
 	}		
 	Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
 	request_reconstruction(icw)
+	return icw.wagons[created_entity.unit_number]
 end
 
 function Public.add_wagon_entity_count(icw, added_entity)
@@ -343,6 +351,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
 		player.teleport(position, surface)
 		icw.players[player.index] = 2
 		player.driving = true
+		Public.kill_minimap(player)
 	else
 		local surface = wagon.surface
 		local area = wagon.area
@@ -447,6 +456,37 @@ function Public.item_transfer(icw)
 		if wagon.transfer_entities then
 			for k, e in pairs(wagon.transfer_entities) do
 				transfer_functions[e.name](wagon, e)
+			end
+		end
+	end
+end
+
+function Public.draw_minimap(player, surface, position)
+	local element = player.gui.left.icw_map
+	if not element then
+		element = player.gui.left.add({
+			type = "camera",
+			name = "icw_map",
+			position = position,
+			surface_index = surface.index,
+			zoom = 0.30,
+		})
+		element.style.margin = 2
+		element.style.minimal_height = 360
+		element.style.minimal_width = 360
+		return
+	end
+	
+	element.position = position
+	element.surface_index = surface.index
+end
+
+function Public.update_minimap(icw)
+	for k, player in pairs(game.connected_players) do
+		if player.character and player.character.valid then
+			local wagon = get_wagon_for_entity(icw, player.character)
+			if wagon then
+				Public.draw_minimap(player, wagon.entity.surface, wagon.entity.position)
 			end
 		end
 	end
