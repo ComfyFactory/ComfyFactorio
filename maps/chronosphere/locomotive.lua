@@ -8,7 +8,7 @@ local function math_sgn(x)
 end
 
 function Public.locomotive_spawn(surface, position, wagons)
-	surface.request_to_generate_chunks({0,0}, 0.5)
+	surface.request_to_generate_chunks(position, 0.5)
 	surface.force_generate_chunk_requests()
 	local objective = Chrono_table.get_table()
 	if objective.planet[1].name.id == 17 then --fish market

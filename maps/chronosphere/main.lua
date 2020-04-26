@@ -81,6 +81,8 @@ local function generate_overworld(surface, optplanet)
 		local mgs = surface.map_gen_settings
 		mgs.width = 2176
 		surface.map_gen_settings = mgs
+		surface.request_to_generate_chunks({-960,-64}, 0,5)
+		surface.force_generate_chunk_requests()
 	end
 end
 
