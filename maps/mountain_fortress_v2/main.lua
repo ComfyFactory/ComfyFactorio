@@ -1,7 +1,7 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
  --enable / disable collapsing of the map
-global.collapse_enabled = true
+global.collapse_enabled = false
 global.offline_loot = true
 local darkness = false
 
@@ -68,8 +68,6 @@ function Public.reset_map()
 	local wave_defense_table = WD.get_table()
 	global.chunk_queue = {}
 	global.offline_players = {}
-
-	if game.surfaces["cargo_wagon"] then game.delete_surface(game.surfaces["cargo_wagon"]) end
 
 	local map_gen_settings = {
 		["seed"] = math_random(1, 1000000),
@@ -147,7 +145,7 @@ end
 
 local function protect_train(event)
 	if event.entity.force.index ~= 1 then return end --Player Force
-	if event.entity == global.locomotive_cargo or event.entity.surface.name == "cargo_wagon" then
+	if event.entity == global.locomotive_cargo then
 		if event.cause then
 			if event.cause.force.index == 2 then
 				return
@@ -335,8 +333,9 @@ local function on_player_joined_game(event)
 			player.insert({name = item, count = amount})
 		end
 	end
-
-	if player.surface.index ~= global.active_surface_index and player.surface.name ~= "cargo_wagon" then
+	
+	local icw = Immersive_cargo_wagons.get_table()
+	if player.surface.index ~= global.active_surface_index and not icw.trains[tonumber(player.surface.name)] then
 		player.character = nil
 		player.set_controller({type=defines.controllers.god})
 		player.create_character()

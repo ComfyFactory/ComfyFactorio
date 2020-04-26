@@ -53,15 +53,15 @@ local function input_cargo(wagon, chest)
 	if chest.get_request_slot(1) then return end
 	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
 	if wagon_inventory.is_empty() then return end
-	local buffer_chest_inventory = chest.get_inventory(defines.inventory.chest)	
+	local chest_inventory = chest.get_inventory(defines.inventory.chest)	
 	local free_slots = 0
-	for i = 1, #buffer_chest_inventory, 1 do
-		if not buffer_chest_inventory[i].valid_for_read then free_slots = free_slots + 1 end
+	for i = 1, chest_inventory.get_bar() - 1, 1 do
+		if not chest_inventory[i].valid_for_read then free_slots = free_slots + 1 end
 	end	
-	for i = 1, #wagon_inventory, 1 do
+	for i = 1, wagon_inventory.get_bar() - 1, 1 do
 		if free_slots <= 0 then return end
 		if wagon_inventory[i].valid_for_read then
-			buffer_chest_inventory.insert(wagon_inventory[i])
+			chest_inventory.insert(wagon_inventory[i])
 			wagon_inventory[i].clear()
 			free_slots = free_slots - 1
 		end		
@@ -73,10 +73,10 @@ local function output_cargo(wagon, passive_chest)
 	if passive_chest_inventory.is_empty() then return end
 	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)	
 	local free_slots = 0
-	for i = 1, #wagon_inventory, 1 do
+	for i = 1, wagon_inventory.get_bar() - 1, 1 do
 		if not wagon_inventory[i].valid_for_read then free_slots = free_slots + 1 end
 	end	
-	for i = 1, #passive_chest_inventory, 1 do
+	for i = 1, passive_chest_inventory.get_bar() - 1, 1 do
 		if free_slots <= 0 then return end
 		if passive_chest_inventory[i].valid_for_read then
 			wagon_inventory.insert(passive_chest_inventory[i])
