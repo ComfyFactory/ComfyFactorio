@@ -8,10 +8,10 @@ Public.wagon_types = {
 }
 
 Public.wagon_areas = {
-	["cargo-wagon"] = {left_top = {x = -10, y = 0}, right_bottom = {x = 10, y = 36}},
-	["artillery-wagon"] = {left_top = {x = -10, y = 0}, right_bottom = {x = 10, y = 36}},
-	["fluid-wagon"] = {left_top = {x = -10, y = 0}, right_bottom = {x = 10, y = 36}},
-	["locomotive"] = {left_top = {x = -10, y = 0}, right_bottom = {x = 10, y = 36}},
+	["cargo-wagon"] = {left_top = {x = -11, y = 0}, right_bottom = {x = 11, y = 40}},
+	["artillery-wagon"] = {left_top = {x = -11, y = 0}, right_bottom = {x = 11, y = 40}},
+	["fluid-wagon"] = {left_top = {x = -11, y = 0}, right_bottom = {x = 11, y = 40}},
+	["locomotive"] = {left_top = {x = -11, y = 0}, right_bottom = {x = 11, y = 40}},
 }
 
 return Public

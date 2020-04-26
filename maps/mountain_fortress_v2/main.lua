@@ -1,7 +1,7 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
  --enable / disable collapsing of the map
-global.collapse_enabled = false
+global.collapse_enabled = true
 global.offline_loot = true
 local darkness = false
 

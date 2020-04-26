@@ -49,15 +49,42 @@ local function divide_fluid(wagon, storage_tank)
 	tank_fluidbox[1] = {name = n, amount = a, temperature = t}
 end
 
+local function input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
+	local request_stacks = {}
+	local prototypes = game.item_prototypes
+	for slot_index = 1, 4, 1 do
+		local stack = chest.get_request_slot(slot_index)
+		if stack then
+			request_stacks[stack.name] = 10 * prototypes[stack.name].stack_size
+		end
+	end
+	for i = 1, wagon_inventory.get_bar() - 1, 1 do
+		if free_slots <= 0 then return end
+		local stack = wagon_inventory[i]
+		if stack.valid_for_read then
+			local request_stack = request_stacks[stack.name]
+			if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then			
+				chest_inventory.insert(stack)
+				stack.clear()
+				free_slots = free_slots - 1
+			end
+		end		
+	end
+end
+
 local function input_cargo(wagon, chest)
-	if chest.get_request_slot(1) then return end
 	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
 	if wagon_inventory.is_empty() then return end
+	if not chest.request_from_buffers then return end
+	 	
 	local chest_inventory = chest.get_inventory(defines.inventory.chest)	
 	local free_slots = 0
 	for i = 1, chest_inventory.get_bar() - 1, 1 do
 		if not chest_inventory[i].valid_for_read then free_slots = free_slots + 1 end
 	end	
+	
+	if chest.get_request_slot(1) then input_filtered(wagon_inventory, chest, chest_inventory, free_slots) return end
+	
 	for i = 1, wagon_inventory.get_bar() - 1, 1 do
 		if free_slots <= 0 then return end
 		if wagon_inventory[i].valid_for_read then
@@ -88,7 +115,7 @@ end
 
 local transfer_functions = {
 	["storage-tank"] = divide_fluid,
-	["logistic-chest-buffer"] = input_cargo,
+	["logistic-chest-requester"] = input_cargo,
 	["logistic-chest-passive-provider"] = output_cargo,
 }
 
@@ -230,7 +257,7 @@ function Public.create_wagon_room(icw, wagon)
 			end
 		end
 		local position = {x = area.left_top.x + (area.right_bottom.x - area.left_top.x) * 0.5, y = area.left_top.y + (area.right_bottom.y - area.left_top.y) * 0.5}
-		position = {x = position.x + (-1 + math_random(0, 2)), y = position.y + (-4 + math_random(0, 8))}
+		position = {x = position.x + (-4 + math_random(0, 8)), y = position.y + (-6 + math_random(0, 12))}
 		for _, v in pairs(vectors) do
 			table_insert(tiles, {name = "water", position = {position.x + v[1], position.y + v[2]}}) 
 		end	
@@ -267,7 +294,7 @@ function Public.create_wagon_room(icw, wagon)
 		local position = {math_random(area.left_top.x + 4, area.right_bottom.x - 4), math_random(area.left_top.y + 6, area.right_bottom.y - 6)}
 		
 		local e = surface.create_entity({
-			name = "logistic-chest-buffer",
+			name = "logistic-chest-requester",
 			position = position,
 			force = "neutral",
 			create_build_effect_smoke = false
