@@ -236,6 +236,27 @@ local function set_next_wave()
 	wave_defense_table.next_wave = game.tick + wave_defense_table.wave_interval
 end
 
+local function reform_group(group)
+	local wave_defense_table = WD.get_table()
+	local group_position = {x = group.position.x, y = group.position.y}
+	local step_length = wave_defense_table.unit_group_command_step_length
+	local position = group.surface.find_non_colliding_position("biter-spawner", group_position, step_length, 4)
+	if position then
+		local new_group = group.surface.create_unit_group{position = position, force = group.force}
+		for key, biter in pairs(group.members) do
+			new_group.add_member(biter)
+		end
+		debug_print("Creating new unit group, because old one was stuck.")
+		table_insert(wave_defense_table.unit_groups, new_group)
+		return new_group
+	else
+		debug_print("Destroying stuck group.")
+		--table.remove(wave_defense_table.unit_groups, group) --need group id instead to work, so as of now, groups are removed only by regular remove checks :( !
+		group.destroy()
+	end
+	return nil
+end
+
 local function get_commmands(group)
 	local wave_defense_table = WD.get_table()
 	local commands = {}
@@ -374,6 +395,11 @@ local function command_unit_group(group)
 	if wave_defense_table.unit_group_last_command[group.group_number] then
 		if wave_defense_table.unit_group_last_command[group.group_number] + wave_defense_table.unit_group_command_delay > game.tick then return end
 	end
+	local tile = group.surface.get_tile(group.position)
+	if tile.valid and tile.collides_with("player-layer") then
+		group = reform_group(group)
+	end
+	if not group then return end
 
 	group.set_command({
 		type = defines.command.compound,
