@@ -174,6 +174,7 @@ local build_config_gui = (function (player, frame)
 		local switch_state = "right"
 		if not poll_table[player.index] then switch_state = "left" end
 		local switch = add_switch(frame, switch_state, "comfy_panel_poll_no_notify_toggle", "Notify on polls", "Receive a message when new polls are created and popup the poll.")
+		frame.add({type = "line"})
 	end
 
 	local label = frame.add({type = "label", caption = "Admin Settings"})
@@ -200,6 +201,7 @@ local build_config_gui = (function (player, frame)
 	if not admin then switch.ignored_by_interaction = true end
 
 	if package.loaded['comfy_panel.poll'] then
+		frame.add({type = "line"})
 		local switch_state = "right"
 		if global.comfy_panel_config.poll_trusted then switch_state = "left" end
 		local switch = add_switch(frame, switch_state, "comfy_panel_poll_trusted_toggle", "Poll mode", "Disables non-trusted plebs to create polls.")

@@ -32,6 +32,7 @@ local Scrap_table = require "maps.scrapyard.table"
 local Locomotive = require "maps.scrapyard.locomotive".locomotive_spawn
 local render_train_hp = require "maps.scrapyard.locomotive".render_train_hp
 local Score = require "comfy_panel.score"
+local Poll = require "comfy_panel.poll"
 
 local Public = {}
 local math_random = math.random
@@ -61,7 +62,6 @@ local function set_objective_health(final_damage_amount)
 	this.locomotive_health = math_floor(this.locomotive_health - final_damage_amount)
 	if this.locomotive_health > this.locomotive_max_health then this.locomotive_health = this.locomotive_max_health end
 	if this.locomotive_health <= 0 then
-		log("train died")
 		Public.loco_died()
 	end
 	rendering.set_text(this.health_text, "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health)
@@ -71,6 +71,7 @@ function Public.reset_map()
 	local this = Scrap_table.get_table()
 	local wave_defense_table = WD.get_table()
 	local get_score = Score.get_table()
+	Poll.reset()
 	ICW.reset()
 	game.reset_time_played()
 	Scrap_table.reset_table()
@@ -259,7 +260,7 @@ end
 
 local function protect_this(entity)
 	local this = Scrap_table.get_table()
-	if entity.surface.name ~= "scrapyard" then log("true")return true end
+	if entity.surface.name ~= "scrapyard" then return true end
 	local protected = {this.locomotive, this.locomotive_cargo}
 	for i = 1, #protected do
     if protected[i] == entity then
