@@ -157,7 +157,7 @@ end
 local function mk2_buy()
   local objective = Chrono_table.get_table()
   if objective.upgradechest[13] and objective.upgradechest[13].valid then
-	local inv = objective.upgradechest[14].get_inventory(defines.inventory.chest)
+	local inv = objective.upgradechest[13].get_inventory(defines.inventory.chest)
     inv.insert({name = "power-armor-mk2", count = 1})
   end
 end
