@@ -1,6 +1,7 @@
 -- Biter Battles -- mewmew made this --
 
 local Server = require 'utils.server'
+local Score = require "comfy_panel.score"
 require "on_tick_schedule"
 require "modules.splice_double"
 require "modules.explosive_biters"
@@ -80,8 +81,9 @@ local function get_sorted_list(column_name, score_list)
 end
 
 local function get_mvps(force)
-	if not global.score[force] then return false end
-	local score = global.score[force]
+	local get_score = Score.get_table().score_table
+	if not get_score[force] then return false end
+	local score = get_score[force]
 	local score_list = {}
 	for _, p in pairs(game.players) do
 		if score.players[p.name] then
@@ -107,7 +109,8 @@ local function get_mvps(force)
 end
 
 local function show_mvps(player)
-	if not global.score then return end
+	local get_score = Score.get_table().score_table
+	if not get_score then return end
 	if player.gui.left["mvps"] then return end
 	local frame = player.gui.left.add({type = "frame", name = "mvps", direction = "vertical"})
 	local l = frame.add({type = "label", caption = "MVPs - North:"})

@@ -8,6 +8,7 @@ local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'.d2
 local event = require 'utils.event'
 local unique_rooms = require "maps.labyrinth_unique_rooms"
+local Score = require "comfy_panel.score"
 
 local labyrinth_difficulty_curve = 333  --- How much size the labyrinth needs to have the highest difficulty.
 
@@ -941,6 +942,7 @@ end
 local inserters = {"inserter", "long-handed-inserter", "burner-inserter", "fast-inserter", "filter-inserter", "stack-filter-inserter", "stack-inserter"}
 local loaders = {"loader", "fast-loader", "express-loader"}
 local function on_built_entity(event)
+	local get_score = Score.get_table().score_table
 	for _, e in pairs(inserters) do
 		if e == event.created_entity.name then			
 			local surface = event.created_entity.surface
@@ -998,10 +1000,10 @@ local function on_built_entity(event)
 				local player = game.players[event.player_index]
 				player.insert({name = name, count = 1})
 				event.created_entity.destroy()
-				if global.score then
-					if global.score[player.force.name] then
-						if global.score[player.force.name].players[player.name] then
-							global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+				if get_score then
+					if get_score[player.force.name] then
+						if get_score[player.force.name].players[player.name] then
+							get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
 						end
 					end
 				end
@@ -1030,10 +1032,10 @@ local function on_built_entity(event)
 			player.insert({name = name, count = 1})
 			event.created_entity.destroy()
 			player.print("Their nests aura seems to deny the placement of any close turrets.", { r=0.75, g=0.0, b=0.0})
-			if global.score then
-				if global.score[player.force.name] then
-					if global.score[player.force.name].players[player.name] then
-						global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+			if get_score then
+				if get_score[player.force.name] then
+					if get_score[player.force.name].players[player.name] then
+						get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
 					end
 				end
 			end					

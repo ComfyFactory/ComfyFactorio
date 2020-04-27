@@ -31,6 +31,7 @@ local Event = require 'utils.event'
 local Scrap_table = require "maps.scrapyard.table"
 local Locomotive = require "maps.scrapyard.locomotive".locomotive_spawn
 local render_train_hp = require "maps.scrapyard.locomotive".render_train_hp
+local Score = require "comfy_panel.score"
 
 local Public = {}
 local math_random = math.random
@@ -69,6 +70,7 @@ end
 function Public.reset_map()
 	local this = Scrap_table.get_table()
 	local wave_defense_table = WD.get_table()
+	local get_score = Score.get_table()
 	ICW.reset()
 	game.reset_time_played()
 	Scrap_table.reset_table()
@@ -110,7 +112,7 @@ function Public.reset_map()
 	global.friendly_fire_history = {}
 	global.landfill_history = {}
 	global.mining_history = {}
-	global.score = {}
+	get_score.score_table = {}
 	global.difficulty_poll_closing_timeout = game.tick + 90000
 	global.difficulty_player_votes = {}
 
