@@ -202,7 +202,7 @@ local build_config_gui = (function (player, frame)
 	if package.loaded['comfy_panel.poll'] then
 		local switch_state = "right"
 		if global.comfy_panel_config.poll_trusted then switch_state = "left" end
-		local switch = add_switch(frame, switch_state, "comfy_panel_poll_trusted_toggle", "Poll trusted mode", "Disables non-trusted plebs to create polls.")
+		local switch = add_switch(frame, switch_state, "comfy_panel_poll_trusted_toggle", "Poll mode", "Disables non-trusted plebs to create polls.")
 		if not admin then switch.ignored_by_interaction = true end
 	end
 
