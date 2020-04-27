@@ -1,13 +1,12 @@
-require "modules.dynamic_player_spawn"
 require "modules.biters_yield_ore"
 require "modules.difficulty_vote"
 
 local difficulties_votes = {
-	[1] = 16,
-	[2] = 8,
-	[3] = 6,
-	[4] = 4,
-	[5] = 3,
+	[1] = 32,
+	[2] = 16,
+	[3] = 8,
+	[4] = 6,
+	[5] = 4,
 	[6] = 2,
 	[7] = 1
 }
@@ -31,13 +30,14 @@ local function place_spawn_entities(surface)
 	end
 
 	local entity = surface.create_entity({name = "cargo-wagon", position = {-24, 1}, force = "player", direction = 2})
+	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "submachine-gun", count = 3})
 	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "firearm-magazine", count = 600})
 	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun", count = 2})
-	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun-shell", count = 64})
+	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "shotgun-shell", count = 128})
 	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "light-armor", count = 5})
 	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "grenade", count = 32})
 	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "pistol", count = 10})
-	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "rail", count = 100})
+	entity.get_inventory(defines.inventory.cargo_wagon).insert({name = "rail", count = 200})
 	Immersive_cargo_wagons.register_wagon(entity)
 	
 	local entity = surface.create_entity({name = "locomotive", position = {-18, 0}, force = "player", direction = 2})
@@ -94,14 +94,15 @@ local function map_reset()
 	global.collapse_tiles = {}
 	
 	reset_difficulty_poll()
-	global.difficulty_poll_closing_timeout = game.tick + 3600
+	global.difficulty_poll_closing_timeout = game.tick + 7200
 	
+	game.difficulty_settings.technology_price_multiplier = 0.5
 	game.map_settings.enemy_evolution.destroy_factor = 0.001
 	game.map_settings.enemy_evolution.pollution_factor = 0	
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_expansion.enabled = true
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 900
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 900
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
 	game.map_settings.enemy_expansion.settler_group_max_size = 128
 	game.map_settings.enemy_expansion.settler_group_min_size = 32
 	game.map_settings.enemy_expansion.max_expansion_distance = 16
@@ -124,6 +125,7 @@ local function map_reset()
 	force.set_spawn_position({-30, 0}, surface)		
 	force.technologies["railway"].researched = true
 	force.technologies["engine"].researched = true
+	force.technologies["fluid-wagon"].researched = true
 	
 	local types_to_disable = {
 		["ammo"] = true,
@@ -162,11 +164,6 @@ local function draw_east_side(surface, left_top)
 			end		
 		end
 	end
-end
-
-local function on_player_died(event)
-	local player = game.players[event.player_index]
-	player.force.set_spawn_position({global.collapse_x + 32, 0}, game.surfaces.railway_troopers)	
 end
 
 local function on_chunk_generated(event)
@@ -220,27 +217,35 @@ local function on_tick()
 			end
 			return
 		end
-		if surface.count_entities_filtered({name = {"rail", "locomotive", "cargo-wagon"}, limit = 1}) == 0 then
-			game.print("All the rails have have been destroyed! Game Over!")
+		
+		local wagons = surface.find_entities_filtered({name = {"locomotive", "cargo-wagon", "fluid-wagon", "artillery-wagon"}, limit = 1})		
+		if not wagons[1] then
+			game.print("All the choos have have been destroyed! Game Over!")
 			global.reset_railway_troopers = 1
 			return
+		else
+			game.forces.player.set_spawn_position(wagons[1].position, game.surfaces.railway_troopers)
 		end
 	end
 	
 	local speed = difficulties_votes[global.difficulty_vote_index]
 	if tick % speed ~= 0 then return end	
 	if not global.collapse_tiles then
-		global.collapse_tiles = surface.find_tiles_filtered({area = {{global.collapse_x - 1, negative_map_height}, {global.collapse_x, map_height + 1}}})
+		local area = {{global.collapse_x - 1, negative_map_height}, {global.collapse_x, map_height + 1}}
+		game.forces.player.chart(surface, area)
+		global.collapse_tiles = surface.find_tiles_filtered({area = area})
 		global.size_of_collapse_tiles = #global.collapse_tiles
 		global.collapse_x = global.collapse_x + 1
 		if global.size_of_collapse_tiles == 0 then global.collapse_tiles = nil return end
 		table.shuffle_table(global.collapse_tiles)		
 	end
-	local tile = global.collapse_tiles[global.size_of_collapse_tiles]
-	if not tile then global.collapse_tiles = nil return end
-	global.size_of_collapse_tiles = global.size_of_collapse_tiles - 1
-	for _, e in pairs(surface.find_entities_filtered({position = {tile.position.x + 1.5, tile.position.y + 0.5}})) do e.die() end
-	surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
+	for _ = 1, 2, 1 do
+		local tile = global.collapse_tiles[global.size_of_collapse_tiles]
+		if not tile then global.collapse_tiles = nil return end
+		global.size_of_collapse_tiles = global.size_of_collapse_tiles - 1
+		for _, e in pairs(surface.find_entities_filtered({position = {tile.position.x + 1.5, tile.position.y + 0.5}})) do e.die() end
+		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
+	end
 end
 
 local function on_init()
@@ -279,7 +284,6 @@ end
 local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
-Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)
