@@ -11,6 +11,7 @@ local difficulties_votes = {
 	[7] = 1
 }
 
+local Get_noise = require "utils.get_noise"
 local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
 local LootRaffle = require "functions.loot_raffle"
 
@@ -103,8 +104,8 @@ local function map_reset()
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
 	game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
-	game.map_settings.enemy_expansion.settler_group_max_size = 128
-	game.map_settings.enemy_expansion.settler_group_min_size = 32
+	game.map_settings.enemy_expansion.settler_group_max_size = 96
+	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.enemy_expansion.max_expansion_distance = 16
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.25
 	
@@ -133,8 +134,7 @@ local function map_reset()
 		["car"] = true,
 		["gun"] = true,
 		["capsule"] = true,
-	}
-	
+	}	
 	for _, recipe in pairs(game.recipe_prototypes) do
 		if types_to_disable[recipe.subgroup.name] then
 			force.set_hand_crafting_disabled_for_recipe(recipe.name, true)
@@ -161,6 +161,9 @@ local function draw_east_side(surface, left_top)
 				if math_random(1, 256) == 1 and surface.can_place_entity({name = "wooden-chest", position = position}) then
 					treasure_chest(surface, position)
 				end
+				if math_random(1, 4096) == 1 and surface.can_place_entity({name = "wooden-chest", position = position}) then
+					surface.create_entity({name = "crude-oil", position = position, amount = math_abs(position.x) * 10000 + 1000000})
+				end
 			end		
 		end
 	end
@@ -175,6 +178,12 @@ local function on_chunk_generated(event)
 		for _, e in pairs(surface.find_entities_filtered({force = "enemy", area = event.area})) do
 			e.destroy()
 		end
+	else
+		local seed = game.surfaces["railway_troopers"].map_gen_settings.seed
+		for _, e in pairs(surface.find_entities_filtered({force = "enemy", area = event.area})) do
+			local noise = Get_noise("n3", e.position, seed)
+			if noise > 0 then e.destroy() end
+		end	
 	end
 
 	if left_top.x < -96 then
@@ -220,7 +229,7 @@ local function on_tick()
 		
 		local wagons = surface.find_entities_filtered({name = {"locomotive", "cargo-wagon", "fluid-wagon", "artillery-wagon"}, limit = 1})		
 		if not wagons[1] then
-			game.print("All the choos have have been destroyed! Game Over!")
+			game.print("All the choos have have been destroyed! Game Over!", {200, 0, 0})
 			global.reset_railway_troopers = 1
 			return
 		else
@@ -243,7 +252,8 @@ local function on_tick()
 		local tile = global.collapse_tiles[global.size_of_collapse_tiles]
 		if not tile then global.collapse_tiles = nil return end
 		global.size_of_collapse_tiles = global.size_of_collapse_tiles - 1
-		for _, e in pairs(surface.find_entities_filtered({position = {tile.position.x + 1.5, tile.position.y + 0.5}})) do e.die() end
+		local position = tile.position
+		for _, e in pairs(surface.find_entities_filtered({area = {{position.x, position.y - 1}, {position.x + 2, position.y + 1}}})) do e.die() end
 		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
 end
@@ -264,13 +274,13 @@ local function on_init()
 	terrain_segmentation = 20,
 	["cliff_settings"] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
 		["autoplace_controls"] = {
-			["coal"] = {frequency = 2, size = 0.1, richness = 0.1},
-			["stone"] = {frequency = 2, size = 0.1, richness = 0.1},
-			["copper-ore"] = {frequency = 2, size = 0.1, richness = 0.1},
-			["iron-ore"] = {frequency = 2, size = 0.1, richness = 0.1},
-			["uranium-ore"] = {frequency = 2, size = 0.1, richness = 0.1},
-			["crude-oil"] = {frequency = 2, size = 1, richness = 0.1},
-			["trees"] = {frequency = 4, size = 0.25, richness = 1},
+			["coal"] = {frequency = 15, size = 0.20, richness = 0.25},
+			["stone"] = {frequency = 15, size = 0.20, richness = 0.25},
+			["copper-ore"] = {frequency = 15, size = 0.20, richness = 0.25},
+			["iron-ore"] = {frequency = 15, size = 0.20, richness = 0.25},
+			["uranium-ore"] = {frequency = 15, size = 0.20, richness = 0.25},
+			["crude-oil"] = {frequency = 15, size = 0.20, richness = 10},
+			["trees"] = {frequency = 5, size = 0.30, richness = 1},
 			["enemy-base"] = {frequency = 256, size = 2, richness = 1},
 		},
 	}
