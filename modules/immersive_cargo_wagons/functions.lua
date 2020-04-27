@@ -73,9 +73,9 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
 end
 
 local function input_cargo(wagon, chest)
-	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
-	if wagon_inventory.is_empty() then return end
 	if not chest.request_from_buffers then return end
+	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
+	if wagon_inventory.is_empty() then return end	
 	 	
 	local chest_inventory = chest.get_inventory(defines.inventory.chest)	
 	local free_slots = 0
@@ -125,10 +125,12 @@ local function get_wagon_for_entity(icw, entity)
 	local position = entity.position
 	for k, unit_number in pairs(train.wagons) do
 		local wagon = icw.wagons[unit_number]
-		local left_top = wagon.area.left_top
-		local right_bottom = wagon.area.right_bottom
-		if position.x >= left_top.x and position.y >= left_top.y and position.x <= right_bottom.x and position.y <= right_bottom.y then
-			return wagon
+		if wagon then
+			local left_top = wagon.area.left_top
+			local right_bottom = wagon.area.right_bottom
+			if position.x >= left_top.x and position.y >= left_top.y and position.x <= right_bottom.x and position.y <= right_bottom.y then
+				return wagon
+			end
 		end
 	end
 	return false
@@ -162,6 +164,17 @@ local function construct_wagon_doors(icw, wagon)
 	end
 end
 
+local function get_player_data(icw, player)
+	local player_data = icw.players[player.index]
+	if icw.players[player.index] then return player_data end
+	
+	icw.players[player.index] = {
+		zoom = 0.30,
+		map_size = 360,
+	}
+	return icw.players[player.index]
+end
+
 function Public.kill_minimap(player)
 	local element = player.gui.left.icw_map
 	if element then element.destroy() end
@@ -188,6 +201,7 @@ function Public.kill_wagon(icw, entity)
 	for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
 		surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
+	wagon.entity.force.chart(surface, wagon.area)
 	icw.wagons[entity.unit_number] = nil
 	Public.request_reconstruction(icw)
 end
@@ -350,11 +364,12 @@ function Public.subtract_wagon_entity_count(icw, removed_entity)
 	wagon.entity.minable = true
 end
 
-function Public.use_cargo_wagon_door(icw, player, door)
-	if icw.players[player.index] then
-		icw.players[player.index] = icw.players[player.index] - 1
-		if icw.players[player.index] == 0 then
-			icw.players[player.index] = nil
+function Public.use_cargo_wagon_door(icw, player, door)	
+	local player_data = get_player_data(icw, player)
+	if player_data.state then
+		player_data.state = player_data.state - 1
+		if player_data.state == 0 then
+			player_data.state = nil
 		end
 		return
 	end
@@ -376,7 +391,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
 		local position = surface.find_non_colliding_position("character", position, 128, 0.5)
 		if not position then return end
 		player.teleport(position, surface)
-		icw.players[player.index] = 2
+		player_data.state = 2
 		player.driving = true
 		Public.kill_minimap(player)
 	else
@@ -443,6 +458,7 @@ function Public.move_room_to_train(icw, train, wagon)
 	for _, tile in pairs(wagon.surface.find_tiles_filtered({area = wagon.area})) do
 		wagon.surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
+	wagon.entity.force.chart(wagon.surface, wagon.area)
 	
 	wagon.surface = train.surface
 	wagon.area = destination_area
@@ -488,24 +504,23 @@ function Public.item_transfer(icw)
 	end
 end
 
-function Public.draw_minimap(player, surface, position)
+function Public.draw_minimap(icw, player, surface, position)
 	local element = player.gui.left.icw_map
 	if not element then
+		local player_data = get_player_data(icw, player)
 		element = player.gui.left.add({
 			type = "camera",
 			name = "icw_map",
 			position = position,
 			surface_index = surface.index,
-			zoom = 0.30,
+			zoom = player_data.zoom,
 		})
-		element.style.margin = 2
-		element.style.minimal_height = 360
-		element.style.minimal_width = 360
+		element.style.margin = 1
+		element.style.minimal_height = player_data.map_size
+		element.style.minimal_width = player_data.map_size
 		return
-	end
-	
+	end	
 	element.position = position
-	element.surface_index = surface.index
 end
 
 function Public.update_minimap(icw)
@@ -513,9 +528,39 @@ function Public.update_minimap(icw)
 		if player.character and player.character.valid then
 			local wagon = get_wagon_for_entity(icw, player.character)
 			if wagon then
-				Public.draw_minimap(player, wagon.entity.surface, wagon.entity.position)
+				Public.draw_minimap(icw, player, wagon.entity.surface, wagon.entity.position)
 			end
 		end
+	end
+end
+
+function Public.toggle_minimap(icw, event)
+	local element = event.element
+	if not element then return end
+	if not element.valid then return end
+	if element.name ~= "icw_map" then return end
+	local player = game.players[event.player_index]
+	local player_data = get_player_data(icw, player)
+	if event.button == defines.mouse_button_type.right then
+		player_data.zoom = player_data.zoom - 0.07
+		if player_data.zoom < 0.07 then player_data.zoom = 0.07 end
+		element.zoom = player_data.zoom
+		return
+	end
+	if event.button == defines.mouse_button_type.left then
+		player_data.zoom = player_data.zoom + 0.07
+		if player_data.zoom > 2 then player_data.zoom = 2 end
+		element.zoom = player_data.zoom
+		return
+	end
+	if event.button == defines.mouse_button_type.middle then
+		player_data.map_size = player_data.map_size + 60
+		if player_data.map_size > 600 then player_data.map_size = 300 end
+		element.style.minimal_height = player_data.map_size
+		element.style.minimal_width = player_data.map_size
+		element.style.maximal_height = player_data.map_size
+		element.style.maximal_width = player_data.map_size
+		return
 	end
 end
 

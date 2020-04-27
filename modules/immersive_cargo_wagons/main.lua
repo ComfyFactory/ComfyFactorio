@@ -92,7 +92,7 @@ local function on_gui_opened(event)
 	if not entity.unit_number then return end
 	local wagon = icw.wagons[entity.unit_number]
 	if not wagon then return end
-	Functions.draw_minimap(game.players[event.player_index], wagon.surface, {wagon.area.left_top.x + (wagon.area.right_bottom.x - wagon.area.left_top.x) * 0.5, wagon.area.left_top.y + (wagon.area.right_bottom.y - wagon.area.left_top.y) * 0.5})
+	Functions.draw_minimap(icw, game.players[event.player_index], wagon.surface, {wagon.area.left_top.x + (wagon.area.right_bottom.x - wagon.area.left_top.x) * 0.5, wagon.area.left_top.y + (wagon.area.right_bottom.y - wagon.area.left_top.y) * 0.5})
 end
 
 local function on_player_died(event)
@@ -101,6 +101,10 @@ end
 
 local function on_train_created(event)
 	Functions.request_reconstruction(icw)
+end
+
+local function on_gui_click(event)
+	Functions.toggle_minimap(icw, event)	
 end
 
 local function on_tick()
@@ -135,6 +139,7 @@ Event.add(defines.events.on_train_created, on_train_created)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_player_died, on_player_died)
 --Event.add(defines.events.on_player_created, on_player_created)
+Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
