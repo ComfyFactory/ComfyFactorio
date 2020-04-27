@@ -6,6 +6,8 @@ local Server = require 'utils.server'
 local Tabs = require 'comfy_panel.main'
 local session = require 'utils.session_data'
 
+local Class = {}
+
 local insert = table.insert
 
 local default_poll_duration = 300 * 60 -- in ticks
@@ -223,7 +225,6 @@ local function redraw_poll_viewer_content(data)
     local poll_enabled = do_remaining_time(poll, remaining_time_label)
 
     local question_flow = poll_viewer_content.add {type = 'table', column_count = 2}
-
     if trusted[player.name] or player.admin then
         local edit_button =
             question_flow.add {
@@ -371,6 +372,7 @@ local function draw_main_frame(left, player)
 
     update_poll_viewer(data)
 
+    --[[
     frame.add {
         type = 'checkbox',
         name = notify_checkbox_name,
@@ -378,6 +380,7 @@ local function draw_main_frame(left, player)
         state = not no_notify_players[player.index],
         tooltip = 'Receive a message when new polls are created and popup the poll.'
     }
+    ]]--
 
     local bottom_flow = frame.add {type = 'flow', direction = 'horizontal'}
 
@@ -391,7 +394,7 @@ local function draw_main_frame(left, player)
     local right_flow = bottom_flow.add {type = 'flow'}
     right_flow.style.horizontal_align = 'right'
 
-    if trusted[player.name] or player.admin then
+    if (trusted[player.name] or player.admin) or global.comfy_panel_config.poll_trusted == false then
         local create_poll_button =
             right_flow.add {type = 'button', name = create_poll_button_name, caption = 'Create Poll'}
         apply_button_style(create_poll_button)
@@ -825,6 +828,11 @@ local function player_joined(event)
 end
 
 local function tick()
+    for _, v in pairs(polls) do 
+        if game.tick >= v.end_tick then 
+            return 
+        end 
+    end
     for _, p in pairs(game.connected_players) do
         local frame = p.gui.left[main_frame_name]
         if frame and frame.valid then
@@ -1012,6 +1020,7 @@ Gui.on_click(
                 end
 
                 update_poll_viewer(main_frame_data)
+                toggle(event)
             end
         end
     end
@@ -1182,7 +1191,31 @@ Gui.on_click(poll_view_vote_name, vote)
 
 Gui.allow_player_to_toggle_top_element_visibility(main_button_name)
 
-local Class = {}
+function Class.reset()
+    for k, _ in pairs(polls) do
+      polls[k] = nil
+    end
+    for k, _ in pairs(player_poll_index) do
+      player_poll_index[k] = nil
+    end
+    for k, _ in pairs(player_create_poll_data) do
+      player_create_poll_data[k] = nil
+    end
+    for _, p in pairs(game.connected_players) do
+        local main_frame = p.gui.left[main_frame_name]
+        if main_frame and main_frame.valid then
+            local main_frame_data = Gui.get_data(main_frame)
+            local poll_index = main_frame_data.poll_index
+            update_poll_viewer(main_frame_data)
+            remove_main_frame(main_frame, p.gui.left, p)
+        end
+    end
+end
+
+function Class.get_no_notify_players()
+    log(serpent.block(no_notify_players))
+    return no_notify_players
+end
 
 function Class.validate(data)
     if type(data) ~= 'table' then
