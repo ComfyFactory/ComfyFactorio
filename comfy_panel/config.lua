@@ -224,7 +224,6 @@ local function on_gui_switch_state_changed(event)
 		return
 	elseif package.loaded['comfy_panel.poll'] then
 		if poll_function[event.element.name] then
-			log("here")
 			poll_function[event.element.name](event)
 			return
 		end
