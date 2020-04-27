@@ -20,6 +20,21 @@ local function delete_empty_surfaces(icw)
 	end
 end	
 
+local function connect_power_pole(entity, wagon_area_left_top_y)
+	local surface = entity.surface
+	local max_wire_distance = entity.prototype.max_wire_distance
+	local area = {
+		{entity.position.x - max_wire_distance, entity.position.y - max_wire_distance},
+		{entity.position.x + max_wire_distance, entity.position.y - 1},
+	}
+	for _, pole in pairs(surface.find_entities_filtered({area = area, name = entity.name})) do
+		if pole.position.y < wagon_area_left_top_y then
+			entity.connect_neighbour(pole)
+			return
+		end
+	end	
+end
+
 local function divide_fluid(wagon, storage_tank)
 	local wagon_fluidbox = wagon.entity.fluidbox
 	local fluid_wagon = wagon.entity
@@ -313,7 +328,6 @@ function Public.create_wagon_room(icw, wagon)
 			force = "neutral",
 			create_build_effect_smoke = false
 		})
-		e.set_request_slot({name = "small-plane", count = 1}, 1)
 		e.destructible = false
 		e.minable = false
 		
@@ -465,6 +479,11 @@ function Public.move_room_to_train(icw, train, wagon)
 	wagon.transfer_entities = {}
 	construct_wagon_doors(icw, wagon)
 	
+	local left_top_y = wagon.area.left_top.y
+	for _, e in pairs(wagon.surface.find_entities_filtered({type = "electric-pole", area = wagon.area})) do
+		connect_power_pole(e, left_top_y)
+	end
+	
 	for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area, force = "neutral"})) do
 		if transfer_functions[e.name] then
 			table_insert(wagon.transfer_entities, e)
@@ -514,6 +533,7 @@ function Public.draw_minimap(icw, player, surface, position)
 			position = position,
 			surface_index = surface.index,
 			zoom = player_data.zoom,
+			tooltip = "LMB: Increase zoom level.\nRMB: Decrease zoom level.\nMMB: Toggle camera size."
 		})
 		element.style.margin = 1
 		element.style.minimal_height = player_data.map_size
@@ -555,7 +575,7 @@ function Public.toggle_minimap(icw, event)
 	end
 	if event.button == defines.mouse_button_type.middle then
 		player_data.map_size = player_data.map_size + 60
-		if player_data.map_size > 600 then player_data.map_size = 300 end
+		if player_data.map_size > 720 then player_data.map_size = 300 end
 		element.style.minimal_height = player_data.map_size
 		element.style.minimal_width = player_data.map_size
 		element.style.maximal_height = player_data.map_size
