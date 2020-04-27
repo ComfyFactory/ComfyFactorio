@@ -40,7 +40,7 @@ function Public.locomotive_spawn(surface, position)
 	this.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -3}, force = "player"})
 	this.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
 
-	--this.power_source = surface.create_entity {name = 'hidden-electric-energy-interface', position = {position.x, position.y + -3, force = "player"}}
+	--this.power_source = surface.create_entity {name = 'hidden-hidden-electric-energy-interface', position = {position.x, position.y + -3, force = "player"}}
     --this.ow_energy.electric_buffer_size = 2400000
 	--this.ow_energy.power_production = 40000
 
@@ -118,7 +118,7 @@ function Public.on_teleported_player()
 			create_build_effect_smoke = false, 
 			force = game.forces.neutral
 		}
-	
+
 		rendering.draw_text{
 		  text = "Power",
 		  surface = loco_surface,
@@ -185,22 +185,14 @@ local function set_player_spawn_and_refill_fish()
 end
 
 local function tick()
-	local this = Scrap_table.get_table()
+	Public.power_source()
 	if game.tick % 30 == 0 then
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()
 		end
-		if this.game_reset_tick then
-			if this.game_reset_tick < game.tick then
-				this.game_reset_tick = nil
-				require "maps.scrapyard.main".reset_map()
-			end
-			return
-		end
 		fish_tag()
-		Public.power_source()
 		--accelerate()
-	else
+	--else
 		--remove_acceleration()
 	end
 end

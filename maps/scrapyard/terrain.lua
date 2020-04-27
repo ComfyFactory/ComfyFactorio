@@ -575,6 +575,7 @@ function Public.reveal_area(x, y, surface, max_radius)
 	for r = 1, max_radius, 1 do
 		for _, v in pairs(circles[r]) do
 			local pos = {x = x + v.x, y = y + v.y}
+			if not surface.get_tile(pos) then return end
 			local t_name = surface.get_tile(pos).name == "out-of-map"
 			if t_name then
 				process_level(surface, pos, seed, tiles, entities, fishes, r_area, markets, treasure)
@@ -828,6 +829,7 @@ local function out_of_map(surface, left_top)
 end
 
 local function on_chunk_generated(event)
+	local this = Scrap_table.get_table()
 	if string.sub(event.surface.name, 0, 9) ~= "scrapyard" then return end
 	local surface = event.surface
 	local left_top = event.area.left_top
@@ -835,13 +837,28 @@ local function on_chunk_generated(event)
 	if left_top.x < level_depth * -0.5 then out_of_map(surface, left_top) return end
 	if surface.name ~= event.surface.name then return end
 
+	if this.revealed_spawn > game.tick then
+		for i = 80, -80, -10 do
+			Public.reveal_area(0, i, surface, 4)
+			Public.reveal_area(0, i, surface, 4)
+			Public.reveal_area(0, i, surface, 4)
+			Public.reveal_area(0, i, surface, 4)
+		end
+
+		for v = 80, -80, -10 do
+			Public.reveal_area(v, 0, surface, 4)
+			Public.reveal_area(v, 0, surface, 4)
+			Public.reveal_area(v, 0, surface, 4)
+			Public.reveal_area(v, 0, surface, 4)
+		end
+	end
 
 	if left_top.y % level_depth == 0 and left_top.y < 0 and left_top.y > level_depth * -10 then wall(surface, left_top, surface.map_gen_settings.seed) return end
 
 	if left_top.y > 268 then out_of_map(surface, left_top) return end
 	if left_top.y >= 0 then replace_water(surface, left_top) end
 	if left_top.y > 210 then biter_chunk(surface, left_top) end
-	if left_top.y >= 0 then border_chunk(surface, left_top) end
+	if left_top.y >= 10 then border_chunk(surface, left_top) end
 	if left_top.y < 0 then process(surface, left_top) end
 	out_of_map_area(event)
 	generate_spawn_area(surface, left_top)
