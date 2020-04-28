@@ -45,6 +45,7 @@ local treasure_chest_messages = {
 local function set_difficulty()
 	local wave_defense_table = WD.get_table()
 	local player_count = #game.connected_players
+	if player_count > 24 then player_count = 24 end
 
 	wave_defense_table.max_active_biters = 1024
 
@@ -52,7 +53,9 @@ local function set_difficulty()
 	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
 
 	--1 additional map collapse tile / 8 players in game, with too high threat, the collapse speeds up.
-	global.map_collapse.speed = math.floor(player_count * 0.125) + 1 + math.floor(wave_defense_table.threat / 100000)
+	local speed = 1 + math.floor(player_count * 0.125) + math.floor(wave_defense_table.threat / 100000)
+	if speed > 10 then speed = 10 end	
+	global.map_collapse.speed = speed
 
 	--20 Players for fastest wave_interval
 	wave_defense_table.wave_interval = 3600 - player_count * 90

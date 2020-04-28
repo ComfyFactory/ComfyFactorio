@@ -16,6 +16,8 @@ Modified by Gerkiz *-*
 require "player_modifiers"
 
 local math_random = math.random
+local math_sqrt = math.sqrt
+local math_floor = math.floor
 local Global = require 'utils.global'
 local Tabs = require "comfy_panel.main"
 local P = require "player_modifiers"
@@ -793,12 +795,16 @@ local function on_pre_player_mined_item(event)
 	rpg_t[player.index].last_mined_entity_position.x = entity.position.x
 	rpg_t[player.index].last_mined_entity_position.y = entity.position.y
 	
-	if entity.type == "resource" then gain_xp(player, 0.5) return end
-	--if entity.force.index == 3 then 
-		gain_xp(player, 1.5 + event.entity.prototype.max_health * 0.0035)
-		--return 
-	--end
-	--gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
+	local distance_multiplier = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
+	
+	local xp_amount	
+	if entity.type == "resource" then
+		xp_amount = 0.5 * distance_multiplier
+	else
+		xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
+	end
+	
+	gain_xp(player, xp_amount)
 end
 
 local function on_player_crafted_item(event)
