@@ -35,33 +35,30 @@ local function connect_power_pole(entity, wagon_area_left_top_y)
 	end	
 end
 
+local function equal_fluid(source_tank, target_tank)
+	local source_fluid = source_tank.fluidbox[1]
+	if not source_fluid then return end
+		
+	local target_fluid = target_tank.fluidbox[1]
+	local source_fluid_amount = source_fluid.amount
+	
+	local amount	
+	if target_fluid then 
+		amount = source_fluid_amount - ((target_fluid.amount + source_fluid_amount) * 0.5)
+	else
+		amount = source_fluid.amount * 0.5
+	end
+	
+	if amount <= 0 then return end
+	
+	local inserted_amount = target_tank.insert_fluid({name = source_fluid.name, amount = amount, temperature = source_fluid.temperature})
+	if inserted_amount > 0 then source_tank.remove_fluid({name = source_fluid.name, amount = inserted_amount}) end	
+end
+
 local function divide_fluid(wagon, storage_tank)
-	local wagon_fluidbox = wagon.entity.fluidbox
-	local fluid_wagon = wagon.entity
-	local wagon_fluid = wagon_fluidbox[1]
-	local tank_fluidbox = storage_tank.fluidbox
-	local tank_fluid = tank_fluidbox[1]
-	if not wagon_fluid and not tank_fluid then return end
-	if wagon_fluid and tank_fluid then
-		if wagon_fluid.name ~= tank_fluid.name then return end
-	end
-	if not wagon_fluid then
-		wagon_fluidbox[1] = {name = tank_fluid.name, amount = tank_fluid.amount * 0.5, temperature = tank_fluid.temperature}
-		storage_tank.remove_fluid({name = tank_fluid.name, amount = tank_fluid.amount * 0.5})
-		return
-	end
-	if not tank_fluid then
-		tank_fluidbox[1] = {name = wagon_fluid.name, amount = wagon_fluid.amount * 0.5, temperature = wagon_fluid.temperature}
-		fluid_wagon.remove_fluid({name = wagon_fluid.name, amount = wagon_fluid.amount * 0.5})
-		return
-	end
-	
-	local a = (wagon_fluid.amount + tank_fluid.amount) * 0.5
-	local n = wagon_fluid.name
-	local t = wagon_fluid.temperature
-	
-	wagon_fluidbox[1] = {name = n, amount = a, temperature = t}
-	tank_fluidbox[1] = {name = n, amount = a, temperature = t}
+	local fluid_wagon = wagon.entity	
+	equal_fluid(fluid_wagon, storage_tank)
+	equal_fluid(storage_tank, fluid_wagon)
 end
 
 local function input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
