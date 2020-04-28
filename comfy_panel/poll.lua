@@ -104,8 +104,8 @@ local function do_remaining_time(poll, remaining_time_label)
 
     local ticks = end_tick - game.tick
     if ticks < 0 then
-        polls.active = false
         remaining_time_label.caption = 'Poll Finished.'
+        polls.running = false
         return false
     else
         local time = math.ceil(ticks / 60)
@@ -727,7 +727,7 @@ local function create_poll(event)
 
     insert(polls, poll_data)
 
-    polls.active = true
+    polls.running = true
 
     show_new_poll(poll_data)
     send_poll_result_to_discord(poll_data)
@@ -831,7 +831,7 @@ local function player_joined(event)
 end
 
 local function tick()
-    if not polls.active then 
+    if not polls.running then 
         return 
     end 
     for _, p in pairs(game.connected_players) do
