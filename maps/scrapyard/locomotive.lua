@@ -1,6 +1,6 @@
 local Event = require 'utils.event'
 local Power = require "maps.scrapyard.power"
-local ICW = require "modules.immersive_cargo_wagons.main"
+local ICW = require "maps.scrapyard.icw.main"
 local Scrap_table = require "maps.scrapyard.table"
 
 local Public = {}
@@ -20,7 +20,7 @@ function Public.render_train_hp()
 		scale_with_zoom = false
 	}
 	this.caption = rendering.draw_text{
-		text = "Scrapyard Train",
+		text = "Grandmasters Train",
 		surface = surface,
 		target = this.locomotive,
 		target_offset = {0, -4.25},
@@ -40,10 +40,6 @@ function Public.locomotive_spawn(surface, position)
 	this.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -3}, force = "player"})
 	this.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
 
-	--this.power_source = surface.create_entity {name = 'hidden-hidden-electric-energy-interface', position = {position.x, position.y + -3, force = "player"}}
-    --this.ow_energy.electric_buffer_size = 2400000
-	--this.ow_energy.power_production = 40000
-
 	this.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 3}, force = "player"})
 	this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 8})
 
@@ -62,6 +58,19 @@ function Public.locomotive_spawn(surface, position)
 	ICW.register_wagon(this.locomotive_cargo)
 end
 
+function Public.inside(pos, area)
+    local lt = area.left_top
+    local rb = area.right_bottom
+
+    return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+end
+function Public.contains_positions(pos, area)
+    if Public.inside(pos, area) then
+        return true
+    end
+    return false
+end
+
 function Public.power_source()
 	local this = Scrap_table.get_table()
 	local surface = game.surfaces[this.active_surface_index]
@@ -71,7 +80,12 @@ function Public.power_source()
 	if not this.locomotive.surface.valid then return end
 	if this.ow_energy then
 		if this.ow_energy.valid then
-			if this.ow_energy.position.x == this.locomotive.position.x and this.ow_energy.position.y == this.locomotive.position.y+2 then return end
+			local position = this.ow_energy.position
+			local area = {
+	            left_top = {x = position.x - 2, y = position.y - 2},
+	            right_bottom = {x = position.x + 2, y = position.y + 2}
+	            }
+			if Public.contains_positions(this.locomotive.position, area) then return end
 			this.old_ow_energy = this.ow_energy.energy
 			this.ow_energy.destroy() 
 			this.energy["scrapyard"] = nil
@@ -81,7 +95,7 @@ function Public.power_source()
 		name = "electric-energy-interface", 
 		position = {
 			x=this.locomotive.position.x,
-			y=this.locomotive.position.y+2
+			y=this.locomotive.position.y+1
 		},
 		create_build_effect_smoke = false, 
 		force = game.forces.neutral
@@ -110,7 +124,7 @@ function Public.on_teleported_player()
 	local this = Scrap_table.get_table()
 	local unit_surface = this.locomotive.unit_number
 	local loco_surface = game.surfaces[tostring(unit_surface)]
-	local pos = {x=-9, y=3}
+	local pos = {x=-17, y=3}
 	if not this.lo_energy then
 		this.lo_energy = loco_surface.create_entity{ 
 			name = "electric-energy-interface", 

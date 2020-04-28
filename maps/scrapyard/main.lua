@@ -2,9 +2,10 @@ require "on_tick_schedule"
 require "modules.dynamic_landfill"
 require "modules.difficulty_vote"
 require "modules.shotgun_buff"
-require "modules.burden"
+require "maps.scrapyard.burden"
 require "modules.rocks_heal_over_time"
-require "modules.mineable_wreckage_yields_scrap"
+require "modules.no_deconstruction_of_neutral_entities"
+require "maps.scrapyard.mineable_wreckage_yields_scrap"
 require "maps.scrapyard.flamethrower_nerf"
 require "modules.rocks_yield_ore_veins"
 require "modules.spawners_contain_biters"
@@ -13,11 +14,12 @@ require "modules.biter_noms_you"
 require "modules.explosives"
 require "modules.wave_defense.main"
 require "maps.scrapyard.comfylatron"
+require "modules.rocks_broken_paint_tiles"
 
-local ICW = require "modules.immersive_cargo_wagons.main"
+local ICW = require "maps.scrapyard.icw.main"
 local WD = require "modules.wave_defense.table"
 local Map = require 'modules.map_info'
-local RPG = require 'modules.rpg'
+local RPG = require 'maps.scrapyard.rpg'
 local Reset = require "functions.soft_reset"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
 local unearthing_worm = require "functions.unearthing_worm"
@@ -38,7 +40,6 @@ local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 
-local disabled_for_deconstruction = {["fish"] = true, ["rock-huge"] = true,	["rock-big"] = true, ["sand-rock-big"] = true, ["mineable-wreckage"] = true}
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
 local disabled_entities = {"gun-turret", "laser-turret", "flamethrower-turret", "land-mine"}
 local treasure_chest_messages = {
@@ -56,13 +57,23 @@ local function shuffle(tbl)
 	return tbl
 end
 
-local function set_objective_health(final_damage_amount)
+local function set_objective_health(entity, final_damage_amount)
 	local this = Scrap_table.get_table()
 	if final_damage_amount == 0 then return end
 	this.locomotive_health = math_floor(this.locomotive_health - final_damage_amount)
+	this.cargo_health = math_floor(this.cargo_health - final_damage_amount)
 	if this.locomotive_health > this.locomotive_max_health then this.locomotive_health = this.locomotive_max_health end
+	if this.cargo_health > this.cargo_max_health then this.cargo_health = this.cargo_max_health end
 	if this.locomotive_health <= 0 then
 		Public.loco_died()
+	end
+	local m
+	if entity == this.locomotive then
+		m = this.locomotive_health / this.locomotive_max_health
+		entity.health = 1000 * m
+	elseif entity == this.locomotive_cargo then
+		m = this.cargo_health / this.cargo_max_health
+		entity.health = 600 * m
 	end
 	rendering.set_text(this.health_text, "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health)
 end
@@ -124,6 +135,8 @@ function Public.reset_map()
 	surface.daytime = 0.7
 	this.locomotive_health = 10000
 	this.locomotive_max_health = 10000
+	this.cargo_health = 10000
+	this.cargo_max_health = 10000	
 
 	Locomotive(surface, {x = -18, y = 10})
 	render_train_hp()
@@ -260,7 +273,7 @@ end
 
 local function protect_this(entity)
 	local this = Scrap_table.get_table()
-	if entity.surface.name ~= "scrapyard" then return true end
+	if string.sub(entity.surface.name, 0, 9) ~= "scrapyard" then return true end
 	local protected = {this.locomotive, this.locomotive_cargo}
 	for i = 1, #protected do
     if protected[i] == entity then
@@ -278,7 +291,7 @@ local function protect_train(event)
 			if event.cause then
 				if event.cause.force.index == 2 or event.cause.force.name == "scrap_defense" or event.cause.force.name == "scrap" then
 				if this.locomotive_health <= 0 then goto continue end
-					set_objective_health(event.final_damage_amount)
+					set_objective_health(event.entity, event.final_damage_amount)
 				end
 			end
 			::continue::
@@ -286,6 +299,11 @@ local function protect_train(event)
 		if not event.entity.valid then return end
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
+end
+
+local function change_tile(surface,pos)
+	local colors = {"black", "orange", "red", "yellow", "acid", "brown", "green", "blue"}
+    surface.set_tiles{{name = colors[math_random(1, #colors)].. "-refined-concrete", position=pos}}
 end
 
 local function on_player_changed_position(event)
@@ -296,6 +314,13 @@ local function on_player_changed_position(event)
 	local surface = game.surfaces[this.active_surface_index]
 	if position.x >= 960 * 0.5 then return end
 	if position.x < 960 * -0.5 then return end
+	if position.y < 5 then 
+	local shallow = surface.get_tile(position).name == "water-shallow"
+	local deepwater = surface.get_tile(position).name == "deepwater-green"
+		if shallow or deepwater then goto continue end 
+		change_tile(surface, position) 
+	end
+	::continue::
 	if position.y < 5 then Terrain.reveal(player) end
 	if position.y >= 190 then
 		player.teleport({position.x, position.y - 1}, surface)
@@ -305,12 +330,6 @@ local function on_player_changed_position(event)
 			player.character.surface.create_entity({name = "water-splash", position = position})
 			if player.character.health <= 0 then player.character.die("enemy") end
 		end
-	end
-end
-
-local function on_marked_for_deconstruction(event)
-	if disabled_for_deconstruction[event.entity.name] then
-		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 	end
 end
 
@@ -449,20 +468,42 @@ local function on_entity_damaged(event)
 	biters_chew_rocks_faster(event)
 end
 
+local function on_player_repaired_entity(event)
+	local this = Scrap_table.get_table()
+	if not event.entity then return end
+	if not event.entity.valid then return end
+	if not event.entity.health then return end
+	local entity = event.entity
+	if entity == this.locomotive_cargo or entity == this.locomotive then
+		set_objective_health(entity, -4)
+	end
+end
+
 function Public.loco_died()
   local this = Scrap_table.get_table()
   local surface = game.surfaces[this.active_surface_index]
   local wave_defense_table = WD.get_table()
   this.locomotive_health = 0
+  this.locomotive.color = {0.49, 0, 255, 1}
+  rendering.set_text(this.health_text, "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health)
   wave_defense_table.game_lost = true
   wave_defense_table.target = nil
-  game.print("[color=blue]Grandmaster:[/color] Oh noooeeeew!", {r = 1, g = 0.5, b = 0.1})
-  game.print("[color=blue]Grandmaster:[/color] The scrapyard train was destroyed! Better luck next time.", {r = 1, g = 0.5, b = 0.1})
-  for i = 1, 6, 1 do
+  game.print("[color=blue]Grandmaster:[/color] Oh noooeeeew, they destroyed my train!", {r = 1, g = 0.5, b = 0.1})
+  game.print("[color=blue]Grandmaster:[/color] Better luck next time.", {r = 1, g = 0.5, b = 0.1})
+  for i = 1, 12, 1 do
+    surface.create_entity({name = "big-artillery-explosion", position = this.locomotive.position})
+  end
+  for i = 1, 12, 1 do
     surface.create_entity({name = "big-artillery-explosion", position = this.locomotive_cargo.position})
   end
-  surface.spill_item_stack(this.locomotive.position,{name = "raw-fish", count = 512}, false)
-  surface.spill_item_stack(this.locomotive_cargo.position,{name = "raw-fish", count = 512}, false)
+  for i = 1, 12, 1 do
+    surface.create_entity({name = "big-artillery-explosion", position = this.locomotive_cargo.position})
+  end
+  for i = 1, 12, 1 do
+    surface.create_entity({name = "big-artillery-explosion", position = this.locomotive_cargo.position})
+  end
+  surface.spill_item_stack(this.locomotive.position,{name = "coin", count = 512}, false)
+  surface.spill_item_stack(this.locomotive_cargo.position,{name = "coin", count = 512}, false)
   this.game_reset_tick = game.tick + 1800
   for _, player in pairs(game.connected_players) do
     player.play_sound{path="utility/game_lost", volume_modifier=0.75}
@@ -518,6 +559,7 @@ end
 
 
 local function on_built_entity(event)
+	if string.sub(event.created_entity.surface.name, 0, 9) ~= "scrapyard" then return end
 	local player = game.players[event.player_index]
 	local y = event.created_entity.position.y
 	local ent = event.created_entity
@@ -541,6 +583,7 @@ local function on_built_entity(event)
 end
 
 local function on_robot_built_entity(event)
+	if string.sub(event.created_entity.surface.name, 0, 9) ~= "scrapyard" then return end
 	local y = event.created_entity.position.y
 	local ent = event.created_entity
 	if y >= 150 then
@@ -578,9 +621,12 @@ local on_init = function()
 	game.forces.scrap.set_friend('player', true)
 	game.forces.scrap.set_friend('enemy', true)
 	game.forces.scrap.share_chart = false
+	global.rocks_yield_ore_maximum_amount = 999
+	global.rocks_yield_ore_base_amount = 50
+	global.rocks_yield_ore_distance_modifier = 0.025
 	Public.reset_map()
 	local T = Map.Pop_info()
-		T.main_caption = "S c r a p y a r d"
+		T.main_caption = "R a i n b o w   S c r a p y a r d"
 		T.sub_caption =  "    ---defend the choo---"
 		T.text = table.concat({
 		"The biters have catched the scent of fish in the cargo wagon.\n",
@@ -640,13 +686,15 @@ Event.on_nth_tick(5, on_tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+
+require "modules.rocks_yield_ore"
 
 return Public
