@@ -13,13 +13,14 @@ Global.register(
 )
 
 function Public.reset_table()
-    for k, _ in pairs(this) do
-      this[k] = nil
-    end
-	this.game_lost = true
+    --for k, _ in pairs(this) do
+    --  this[k] = nil
+    --end
+	this.game_lost = false
 	this.game_won = false
-	this.max_health = 10000
-	this.health = 10000
+	this.locomotive_health = 10000
+	this.locomotive_max_health = 10000
+	this.revealed_spawn = 0
 end
 
 function Public.get_table()

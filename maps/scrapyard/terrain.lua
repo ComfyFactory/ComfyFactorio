@@ -21,6 +21,7 @@ local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","roc
 local scrap_buildings = {"nuclear-reactor", "centrifuge", "beacon", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine"}
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local trees = {"dead-grey-trunk", "dead-grey-trunk", "dry-tree"}
+local colors = {"black", "orange", "red", "yellow"}
 
 local noises = {
 	["no_rocks"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
@@ -498,7 +499,8 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 	end
 
 	if noise_cave_ponds > 0.76 then
-		tiles[#tiles + 1] = {name = "dirt-" .. math_random(4, 6), position = p}
+		tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
+		--tiles[#tiles + 1] = {name = "dirt-" .. math_random(4, 6), position = p}
 		return
 	end
 
@@ -518,7 +520,8 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 		if no_rocks < 0.08 and no_rocks > -0.08 then
 			if small_caves > 0.35 then
 				insert(r_area, {x = p.x, y = p.y})
-				tiles[#tiles + 1] = {name = "dirt-" .. math_floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+				tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
+				--tiles[#tiles + 1] = {name = "dirt-" .. math_floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 				if math_random(1,450) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
 				if math_random(1,96) == 1 then
 					Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
@@ -534,14 +537,16 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 	--Main Terrain
 	local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
 	if no_rocks_2 > 0.70 or no_rocks_2 < -0.70 then
-		tiles[#tiles + 1] = {name = "dirt-" .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
+		tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
+		--tiles[#tiles + 1] = {name = "dirt-" .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
 		if math_random(1,32) == 1 then entities[#entities + 1] = {name = trees[math_random(1, #trees)], position=p} end
 		if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 		return
 	end
 
 	if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
-	tiles[#tiles + 1] = {name = "dirt-7", position = p}
+	tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
+	--	tiles[#tiles + 1] = {name = "dirt-7", position = p}
 	if math_random(1,2048) == 1 then place_random_scrap_entity(surface, p) end
 	if math_random(1,100) > 30 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 end
@@ -575,6 +580,7 @@ function Public.reveal_area(x, y, surface, max_radius)
 	for r = 1, max_radius, 1 do
 		for _, v in pairs(circles[r]) do
 			local pos = {x = x + v.x, y = y + v.y}
+			if not surface.get_tile(pos) then return end
 			local t_name = surface.get_tile(pos).name == "out-of-map"
 			if t_name then
 				process_level(surface, pos, seed, tiles, entities, fishes, r_area, markets, treasure)
@@ -679,14 +685,31 @@ local function generate_spawn_area(surface, position_left_top)
 
 	for r = 1, 12 do
 		for k, v in pairs(circles[r]) do
-			local t_insert = false
 			local pos = {x = position_left_top.x + v.x, y = position_left_top.y+20 + v.y}
 			if pos.x > -15 and pos.x < 15 and pos.y < 40 then
-				t_insert = "stone-path"
+				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
 			end
-			if t_insert then
-				insert(tiles, {name = t_insert, position = pos})
+			if pos.x > -30 and pos.x < 30 and pos.y < 40 then
+				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
 			end
+			if pos.x > -60 and pos.x < 60 and pos.y < 40 then
+				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+			end
+			if pos.x > -90 and pos.x < 90 and pos.y < 40 then
+				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+			end
+			if pos.x > -120 and pos.x < 120 and pos.y < 40 then
+				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+			end
+			if pos.x > -150 and pos.x < 150 and pos.y < 40 then
+				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+			end
+			if pos.x > -180 and pos.x < 180 and pos.y < 40 then
+				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+			end
+			--if t_insert then
+			--	insert(tiles, {name = t_insert, position = pos})
+			--end
 		end
 	end
 	surface.set_tiles(tiles, true)
@@ -828,6 +851,7 @@ local function out_of_map(surface, left_top)
 end
 
 local function on_chunk_generated(event)
+	local this = Scrap_table.get_table()
 	if string.sub(event.surface.name, 0, 9) ~= "scrapyard" then return end
 	local surface = event.surface
 	local left_top = event.area.left_top
@@ -835,13 +859,28 @@ local function on_chunk_generated(event)
 	if left_top.x < level_depth * -0.5 then out_of_map(surface, left_top) return end
 	if surface.name ~= event.surface.name then return end
 
+	if this.revealed_spawn > game.tick then
+		for i = 80, -80, -10 do
+			Public.reveal_area(0, i, surface, 4)
+			Public.reveal_area(0, i, surface, 4)
+			Public.reveal_area(0, i, surface, 4)
+			Public.reveal_area(0, i, surface, 4)
+		end
+
+		for v = 80, -80, -10 do
+			Public.reveal_area(v, 0, surface, 4)
+			Public.reveal_area(v, 0, surface, 4)
+			Public.reveal_area(v, 0, surface, 4)
+			Public.reveal_area(v, 0, surface, 4)
+		end
+	end
 
 	if left_top.y % level_depth == 0 and left_top.y < 0 and left_top.y > level_depth * -10 then wall(surface, left_top, surface.map_gen_settings.seed) return end
 
 	if left_top.y > 268 then out_of_map(surface, left_top) return end
 	if left_top.y >= 0 then replace_water(surface, left_top) end
 	if left_top.y > 210 then biter_chunk(surface, left_top) end
-	if left_top.y >= 0 then border_chunk(surface, left_top) end
+	if left_top.y >= 10 then border_chunk(surface, left_top) end
 	if left_top.y < 0 then process(surface, left_top) end
 	out_of_map_area(event)
 	generate_spawn_area(surface, left_top)

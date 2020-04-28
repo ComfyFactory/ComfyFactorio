@@ -89,7 +89,14 @@ end
 
 local function input_cargo(wagon, chest)
 	if not chest.request_from_buffers then return end
-	local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
+	
+	local wagon_entity = wagon.entity
+	if not wagon_entity.valid then 
+		wagon.transfer_entities =  nil 
+		return 
+	end
+	
+	local wagon_inventory = wagon_entity.get_inventory(defines.inventory.cargo_wagon)
 	if wagon_inventory.is_empty() then return end	
 	 	
 	local chest_inventory = chest.get_inventory(defines.inventory.chest)	
@@ -507,8 +514,10 @@ end
 function Public.reconstruct_all_trains(icw)
 	icw.trains = {}
 	for unit_number, wagon in pairs(icw.wagons) do
-		local carriages = wagon.entity.train.carriages
-		Public.construct_train(icw, carriages)
+		if wagon.entity and wagon.entity.valid then
+			local carriages = wagon.entity.train.carriages
+			Public.construct_train(icw, carriages)
+		end
 	end
 	delete_empty_surfaces(icw)
 end
@@ -574,8 +583,8 @@ function Public.toggle_minimap(icw, event)
 		return
 	end
 	if event.button == defines.mouse_button_type.middle then
-		player_data.map_size = player_data.map_size + 60
-		if player_data.map_size > 720 then player_data.map_size = 300 end
+		player_data.map_size = player_data.map_size + 50
+		if player_data.map_size > 650 then player_data.map_size = 250 end
 		element.style.minimal_height = player_data.map_size
 		element.style.minimal_width = player_data.map_size
 		element.style.maximal_height = player_data.map_size

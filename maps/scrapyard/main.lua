@@ -12,6 +12,7 @@ require "modules.biters_yield_coins"
 require "modules.biter_noms_you"
 require "modules.explosives"
 require "modules.wave_defense.main"
+require "maps.scrapyard.comfylatron"
 
 local ICW = require "modules.immersive_cargo_wagons.main"
 local WD = require "modules.wave_defense.table"
@@ -30,6 +31,8 @@ local Event = require 'utils.event'
 local Scrap_table = require "maps.scrapyard.table"
 local Locomotive = require "maps.scrapyard.locomotive".locomotive_spawn
 local render_train_hp = require "maps.scrapyard.locomotive".render_train_hp
+local Score = require "comfy_panel.score"
+local Poll = require "comfy_panel.poll"
 
 local Public = {}
 local math_random = math.random
@@ -66,10 +69,14 @@ end
 
 function Public.reset_map()
 	local this = Scrap_table.get_table()
-	Scrap_table.reset_table()
-	ICW.reset()
 	local wave_defense_table = WD.get_table()
+	local get_score = Score.get_table()
+	Poll.reset()
+	ICW.reset()
+	game.reset_time_played()
+	Scrap_table.reset_table()
 	wave_defense_table.math = 8
+	this.revealed_spawn = game.tick + 100
 
 	local map_gen_settings = {
 		["seed"] = math_random(1, 1000000),
@@ -106,7 +113,7 @@ function Public.reset_map()
 	global.friendly_fire_history = {}
 	global.landfill_history = {}
 	global.mining_history = {}
-	global.score = {}
+	get_score.score_table = {}
 	global.difficulty_poll_closing_timeout = game.tick + 90000
 	global.difficulty_player_votes = {}
 
@@ -251,17 +258,31 @@ local function set_difficulty()
 	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
 end
 
+local function protect_this(entity)
+	local this = Scrap_table.get_table()
+	if entity.surface.name ~= "scrapyard" then return true end
+	local protected = {this.locomotive, this.locomotive_cargo}
+	for i = 1, #protected do
+    if protected[i] == entity then
+      return true
+    end
+  end
+	return false
+end
+
 local function protect_train(event)
 	local this = Scrap_table.get_table()
 	if event.entity.force.index ~= 1 then return end --Player Force
-	if event.entity == this.locomotive_cargo or event.entity == this.locomotive then
-		if event.cause then
-			if event.cause.force.index == 2 or event.cause.force.name == "scrap_defense" then
-			if this.locomotive_health <= 0 then goto continue end
-				set_objective_health(event.final_damage_amount)
+	if protect_this(event.entity) then
+		if event.entity == this.locomotive_cargo or event.entity == this.locomotive then
+			if event.cause then
+				if event.cause.force.index == 2 or event.cause.force.name == "scrap_defense" or event.cause.force.name == "scrap" then
+				if this.locomotive_health <= 0 then goto continue end
+					set_objective_health(event.final_damage_amount)
+				end
 			end
+			::continue::
 		end
-		::continue::
 		if not event.entity.valid then return end
 		event.entity.health = event.entity.health + event.final_damage_amount
 	end
@@ -432,17 +453,16 @@ function Public.loco_died()
   local this = Scrap_table.get_table()
   local surface = game.surfaces[this.active_surface_index]
   local wave_defense_table = WD.get_table()
-  if this.game_lost == true then return end
   this.locomotive_health = 0
   wave_defense_table.game_lost = true
   wave_defense_table.target = nil
-  game.print("The scrapyard train was destroyed!")
+  game.print("[color=blue]Grandmaster:[/color] Oh noooeeeew!", {r = 1, g = 0.5, b = 0.1})
+  game.print("[color=blue]Grandmaster:[/color] The scrapyard train was destroyed! Better luck next time.", {r = 1, g = 0.5, b = 0.1})
   for i = 1, 6, 1 do
     surface.create_entity({name = "big-artillery-explosion", position = this.locomotive_cargo.position})
   end
   surface.spill_item_stack(this.locomotive.position,{name = "raw-fish", count = 512}, false)
   surface.spill_item_stack(this.locomotive_cargo.position,{name = "raw-fish", count = 512}, false)
-  this.game_lost = true
   this.game_reset_tick = game.tick + 1800
   for _, player in pairs(game.connected_players) do
     player.play_sound{path="utility/game_lost", volume_modifier=0.75}
@@ -502,7 +522,7 @@ local function on_built_entity(event)
 	local y = event.created_entity.position.y
 	local ent = event.created_entity
 	if y >= 150 then
-		player.print("The scrapyard grandmaster does not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
+		player.print("[color=blue]Grandmaster:[/color] I do not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
 		ent.die()
 		return
 	else
@@ -511,7 +531,7 @@ local function on_built_entity(event)
 				if y >= 0 then
 					ent.active = false
 					if event.player_index then
-						player.print("The scrapyard grandmaster disabled your " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
+						player.print("[color=blue]Grandmaster:[/color] Can't build here. I disabled your " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
 						return
 					end
 				end
@@ -524,7 +544,7 @@ local function on_robot_built_entity(event)
 	local y = event.created_entity.position.y
 	local ent = event.created_entity
 	if y >= 150 then
-		game.print("The scrapyard grandmaster does not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] I do not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
 		ent.die()
 		return
 	else
@@ -533,7 +553,7 @@ local function on_robot_built_entity(event)
 				if y >= 0 then
 					ent.active = false
 					if event.player_index then
-						game.print("The scrapyard grandmaster disabled " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
+						game.print("[color=blue]Grandmaster:[/color] Can't build here. I disabled your " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
 						return
 					end
 				end
@@ -587,6 +607,36 @@ local on_init = function()
 	}
 end
 
+local on_tick = function()
+	local this = Scrap_table.get_table()
+	if this.game_reset_tick then
+		if this.game_reset_tick < game.tick then
+			this.game_reset_tick = nil
+			Public.reset_map()
+		end
+		return
+	end
+end
+
+if _DEBUG then
+	commands.add_command(
+	    'reset_game',
+	    'Debug only, reset the game!',
+	    function()
+	        local player = game.player
+
+	        if player then
+	            if player ~= nil then
+                    if not player.admin then
+                        return
+                    end
+	            end
+	        end
+	        Public.reset_map()
+	end)
+end
+
+Event.on_nth_tick(5, on_tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)

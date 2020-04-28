@@ -16,7 +16,7 @@ local function tick()
     this.energy["scrapyard"] = this.ow_energy
   end
 
-  if not this.energy["loco"] then 
+  if not this.energy["loco"] then
     this.energy["loco"] = this.lo_energy
   end
 

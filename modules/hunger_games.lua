@@ -6,6 +6,7 @@
 require "modules.custom_death_messages"
 require "maps.hunger_games_map_intro"
 require "modules.dynamic_player_spawn"
+local Score = require "comfy_panel.score"
 --require "maps.modules.hunger_games_balance"
 
 local event = require 'utils.event'
@@ -444,6 +445,7 @@ local function on_player_respawned(event)
 end
 
 local function on_built_entity(event)
+	local get_score = Score.get_table().score_table
 	local entity = event.created_entity
 	if not entity.valid then return end
 	local distance_to_center = math.sqrt(entity.position.x^2 + entity.position.y^2)
@@ -452,10 +454,10 @@ local function on_built_entity(event)
 	surface.create_entity({name = "flying-text", position = entity.position, text = "Spawn is protected from building.", color = {r=0.88, g=0.1, b=0.1}})					 
 	local player = game.players[event.player_index]			
 	player.insert({name = entity.name, count = 1})
-	if global.score then
-		if global.score[player.force.name] then
-			if global.score[player.force.name].players[player.name] then
-				global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+	if get_score then
+		if get_score[player.force.name] then
+			if get_score[player.force.name].players[player.name] then
+				get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
 			end
 		end
 	end		

@@ -90,6 +90,25 @@ local functions = {
 	end,
 }
 
+local poll_function = {
+	["comfy_panel_poll_trusted_toggle"] = function(event)
+		if event.element.switch_state == "left" then
+			global.comfy_panel_config.poll_trusted = true
+		else
+			global.comfy_panel_config.poll_trusted = false
+		end
+	end,
+	["comfy_panel_poll_no_notify_toggle"] = function(event)
+		local poll = package.loaded['comfy_panel.poll']
+		local poll_table = poll.get_no_notify_players()
+		if event.element.switch_state == "left" then
+			poll_table[event.player_index] = false
+		else
+			poll_table[event.player_index] = true
+		end
+	end,
+}
+
 local function add_switch(element, switch_state, name, description_main, description)
 	local t = element.add({type = "table", column_count = 5})
 	local label = t.add({type = "label", caption = "ON"})
@@ -149,6 +168,15 @@ local build_config_gui = (function (player, frame)
 		frame.add({type = "line"})
 	end
 
+	if package.loaded['comfy_panel.poll'] then
+		local poll = package.loaded['comfy_panel.poll']
+		local poll_table = poll.get_no_notify_players()
+		local switch_state = "right"
+		if not poll_table[player.index] then switch_state = "left" end
+		local switch = add_switch(frame, switch_state, "comfy_panel_poll_no_notify_toggle", "Notify on polls", "Receive a message when new polls are created and popup the poll.")
+		frame.add({type = "line"})
+	end
+
 	local label = frame.add({type = "label", caption = "Admin Settings"})
 	label.style.font = "default-bold"
 	label.style.padding = 0
@@ -172,6 +200,14 @@ local build_config_gui = (function (player, frame)
 	local switch = add_switch(frame, switch_state, "comfy_panel_spaghett_toggle", "Spaghett Mode", "Disables the Logistic System research.\nRequester, buffer or active-provider containers can not be built.")
 	if not admin then switch.ignored_by_interaction = true end
 
+	if package.loaded['comfy_panel.poll'] then
+		frame.add({type = "line"})
+		local switch_state = "right"
+		if global.comfy_panel_config.poll_trusted then switch_state = "left" end
+		local switch = add_switch(frame, switch_state, "comfy_panel_poll_trusted_toggle", "Poll mode", "Disables non-trusted plebs to create polls.")
+		if not admin then switch.ignored_by_interaction = true end
+	end
+
 	frame.add({type = "line"})
 
 	for _, e in pairs(frame.children) do
@@ -188,6 +224,11 @@ local function on_gui_switch_state_changed(event)
 	if functions[event.element.name] then
 		functions[event.element.name](event)
 		return
+	elseif package.loaded['comfy_panel.poll'] then
+		if poll_function[event.element.name] then
+			poll_function[event.element.name](event)
+			return
+		end
 	end
 end
 
@@ -207,6 +248,7 @@ local function on_init()
 	global.comfy_panel_config = {}
 	global.comfy_panel_config.spaghett = {}
 	global.comfy_panel_config.spaghett.undo = {}
+	global.comfy_panel_config.poll_trusted = false
 end
 
 comfy_panel_tabs["Config"] = {gui = build_config_gui, admin = false}

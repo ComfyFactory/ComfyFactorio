@@ -1,4 +1,5 @@
 local Chrono_table = require 'maps.chronosphere.table'
+local Score = require "comfy_panel.score"
 local Public_chrono = {}
 
 local Server = require 'utils.server'
@@ -25,6 +26,7 @@ function Public_chrono.get_map_gen_settings()
 end
 
 function Public_chrono.restart_settings()
+	local get_score = Score.get_table()
 	local objective = Chrono_table.get_table()
     objective.max_health = 10000
 	objective.health = 10000
@@ -59,7 +61,7 @@ function Public_chrono.restart_settings()
 	global.friendly_fire_history = {}
 	global.landfill_history = {}
 	global.mining_history = {}
-	global.score = {}
+	get_score.score_table = {}
 	global.difficulty_poll_closing_timeout = game.tick + 90000
 	global.difficulty_player_votes = {}
 

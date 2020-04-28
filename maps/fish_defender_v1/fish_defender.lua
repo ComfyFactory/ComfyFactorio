@@ -16,6 +16,7 @@ require "modules.biter_evasion_hp_increaser"
 local event = require 'utils.event'
 local Server = require 'utils.server'
 local boss_biter = require "maps.fish_defender.boss_biters"
+local Score = require "comfy_panel.score"
 require "functions.boss_unit"
 local map_functions = require "tools.map_functions"
 local math_random = math.random
@@ -759,8 +760,9 @@ local function get_sorted_list(column_name, score_list)
 end
 
 local function get_mvps()
-	if not global.score["player"] then return false end
-	local score = global.score["player"]
+	local get_score = Score.get_table().score_table
+	if not get_score["player"] then return false end
+	local score = get_score["player"]
 	local score_list = {}
 	for _, p in pairs(game.players) do
 		local killscore = 0
@@ -1294,6 +1296,7 @@ local function on_chunk_generated(event)
 end
 
 local function on_built_entity(event)
+	local get_score = Score.get_table().score_table
 	local entity = event.created_entity
 	if not entity.valid then return end
 	if global.entity_limits[entity.name] then
@@ -1309,10 +1312,10 @@ local function on_built_entity(event)
 			surface.create_entity({name = "flying-text", position = entity.position, text = global.entity_limits[entity.name].str .. " limit reached.", color = {r=0.82, g=0.11, b=0.11}})
 			local player = game.players[event.player_index]
 			player.insert({name = entity.name, count = 1})
-			if global.score then
-				if global.score[player.force.name] then
-					if global.score[player.force.name].players[player.name] then
-						global.score[player.force.name].players[player.name].built_entities = global.score[player.force.name].players[player.name].built_entities - 1
+			if get_score then
+				if get_score[player.force.name] then
+					if get_score[player.force.name].players[player.name] then
+						get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
 					end
 				end
 			end
