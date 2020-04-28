@@ -1213,7 +1213,6 @@ function Class.reset()
 end
 
 function Class.get_no_notify_players()
-    log(serpent.block(no_notify_players))
     return no_notify_players
 end
 
