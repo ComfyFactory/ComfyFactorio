@@ -40,6 +40,17 @@ local treasure_chest_messages = {
 	"We has found the precious!",
 }
 
+local function game_over()
+	game.print("The Fish Wagon was destroyed!!")
+	local wave_defense_table = WD.get_table()
+	wave_defense_table.game_lost = true
+	wave_defense_table.target = nil
+	global.game_reset_tick = game.tick + 1800
+	for _, player in pairs(game.connected_players) do
+		player.play_sound{path="utility/game_lost", volume_modifier=0.80}
+	end
+end
+
 local function set_difficulty()
 	local wave_defense_table = WD.get_table()
 	local player_count = #game.connected_players
@@ -274,17 +285,10 @@ local function on_pre_player_left_game(event)
 	end
 end
 
-local function on_entity_died(event)
-	local wave_defense_table = WD.get_table()
-	if not event.entity.valid then	return end
+local function on_entity_died(event)	
+	if not event.entity.valid then return end
 	if event.entity == global.locomotive_cargo then
-		game.print("The cargo was destroyed!")
-		wave_defense_table.game_lost = true
-		wave_defense_table.target = nil
-		global.game_reset_tick = game.tick + 1800
-		for _, player in pairs(game.connected_players) do
-			player.play_sound{path="utility/game_lost", volume_modifier=0.75}
-		end
+		game_over()
 		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
 		return
 	end
@@ -435,7 +439,7 @@ local function tick()
 	local tick = game.tick
 	if tick % 30 == 0 then
 		if tick % 1800 == 0 then
-			Locomotive.set_player_spawn_and_refill_fish()
+			if not Locomotive.set_player_spawn_and_refill_fish() and not global.game_reset_tick then game_over() end
 			local surface = game.surfaces[global.active_surface_index]
 			local position = surface.find_non_colliding_position("stone-furnace", Collapse.get_position(), 128, 1)
 			if position then

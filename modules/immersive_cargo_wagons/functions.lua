@@ -511,10 +511,13 @@ end
 function Public.reconstruct_all_trains(icw)
 	icw.trains = {}
 	for unit_number, wagon in pairs(icw.wagons) do
-		if wagon.entity and wagon.entity.valid then
-			local carriages = wagon.entity.train.carriages
-			Public.construct_train(icw, carriages)
+		if not wagon.entity or not wagon.entity.valid then
+			icw.wagons[unit_number] = nil
+			Public.request_reconstruction(icw)
+			return
 		end
+		local carriages = wagon.entity.train.carriages
+		Public.construct_train(icw, carriages)
 	end
 	delete_empty_surfaces(icw)
 end
