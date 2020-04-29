@@ -22,13 +22,15 @@ local scrap_buildings = {"nuclear-reactor", "centrifuge", "beacon", "chemical-pl
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local trees = {"dead-grey-trunk", "dead-grey-trunk", "dry-tree"}
 local colors = {"black", "orange", "red", "yellow"}
+local more_colors = {"acid", "brown", "green", "blue"}
 
 local noises = {
-	["no_rocks"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
+	["no_rocks"] = {{modifier = 0.0044, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
 	["no_rocks_2"] = {{modifier = 0.013, weight = 1}, {modifier = 0.1, weight = 0.1}},
-	["large_caves"] = {{modifier = 0.0033, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
+	["large_caves"] = {{modifier = 0.0044, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
 	["small_caves"] = {{modifier = 0.008, weight = 1}, {modifier = 0.03, weight = 0.15}, {modifier = 0.25, weight = 0.05}},
 	["small_caves_2"] = {{modifier = 0.009, weight = 1}, {modifier = 0.05, weight = 0.25}, {modifier = 0.25, weight = 0.05}},
+	["cave_worms"] = {{modifier = 0.001, weight = 1}, {modifier = 0.1, weight = 0.06}},
 	["cave_ponds"] = {{modifier = 0.01, weight = 1}, {modifier = 0.1, weight = 0.06}},
 	["cave_rivers"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.25}, {modifier = 0.05, weight = 0.01}},
 	["cave_rivers_2"] = {{modifier = 0.003, weight = 1}, {modifier = 0.01, weight = 0.21}, {modifier = 0.05, weight = 0.01}},
@@ -175,12 +177,55 @@ local function wall(surface, left_top, seed)
 	end
 end
 
+local function process_level_6_position(surface, p, seed, tiles, entities, fishes, r_area, markets, treasure)
+	local large_caves = get_noise("large_caves", p, seed)
+	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
+
+	if large_caves > -0.14 and large_caves < 0.14 then
+		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
+		if math_random(1,768) == 1 then treasure[#treasure + 1] = p end
+		if math_random(1,3) > 1 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
+		return
+	end
+
+	if large_caves < -0.47 or large_caves > 0.47 then
+		insert(r_area, {x = p.x, y = p.y})
+		tiles[#tiles + 1] = {name = "deepwater-green", position = p}
+		if math_random(1,128) == 1 then entities[#entities + 1] = {name="fish", position=p} end
+		if math_random(1,128) == 1 then
+			Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
+			create_inner_content(surface, p, noise_cave_ponds)
+			entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = "enemy"}
+		end
+		return
+	end
+
+	if large_caves > -0.30 and large_caves < 0.30 then
+		if noise_cave_ponds > 0.35 then
+			tiles[#tiles + 1] = {name = "dirt-" .. math_random(1, 4), position = p}
+			--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
+			if math_random(1,256) == 1 then treasure[#treasure + 1] = p end
+			if math_random(1,256) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
+			return
+		end
+		if noise_cave_ponds > 0.25 then
+			tiles[#tiles + 1] = {name = "dirt-7", position = p}
+			--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
+			if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
+			if math_random(1,2) > 1 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
+			return
+		end
+	end
+end
+
 local function process_level_5_position(surface, p, seed, tiles, entities, fishes, r_area, markets, treasure)
 	local small_caves = get_noise("small_caves", p, seed)
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 
 	if small_caves > -0.14 and small_caves < 0.14 then
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 		if math_random(1,768) == 1 then treasure[#treasure + 1] = p end
 		if math_random(1,3) > 1 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 		return
@@ -201,12 +246,14 @@ local function process_level_5_position(surface, p, seed, tiles, entities, fishe
 	if small_caves > -0.30 and small_caves < 0.30 then
 		if noise_cave_ponds > 0.35 then
 			tiles[#tiles + 1] = {name = "dirt-" .. math_random(1, 4), position = p}
+			--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
 			if math_random(1,256) == 1 then treasure[#treasure + 1] = p end
 			if math_random(1,256) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
 			return
 		end
 		if noise_cave_ponds > 0.25 then
 			tiles[#tiles + 1] = {name = "dirt-7", position = p}
+			--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 			if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 			if math_random(1,2) > 1 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 			return
@@ -243,6 +290,7 @@ local function process_level_4_position(surface, p, seed, tiles, entities, fishe
 	end
 	if math_abs(noise_large_caves) > 0.475 then
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 		if math_random(1,3) > 1 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
 		return
@@ -262,6 +310,7 @@ local function process_level_4_position(surface, p, seed, tiles, entities, fishe
 
 	if small_caves > -0.15 and small_caves < 0.15 then
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
 		if math_random(1,5) > 1 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 		if math_random(1, 1024) == 1 then treasure[#treasure + 1] = p end
 		return
@@ -272,6 +321,7 @@ local function process_level_4_position(surface, p, seed, tiles, entities, fishe
 		--Main Terrain
 		local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
 		if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
+			--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 			tiles[#tiles + 1] = {name = "dirt-" .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
 			if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 			return
@@ -279,6 +329,7 @@ local function process_level_4_position(surface, p, seed, tiles, entities, fishe
 
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 		if math_random(1,100) > 30 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 		return
 	end
@@ -294,6 +345,7 @@ local function process_level_3_position(surface, p, seed, tiles, entities, fishe
 	if noise_cave_ponds < -0.77 then
 		if noise_cave_ponds > -0.79 then
 			tiles[#tiles + 1] = {name = "dirt-7", position = p}
+			--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 			entities[#entities + 1] = {name = "mineable-wreckage", position = p}
 		else
 			tiles[#tiles + 1] = {name = "grass-" .. math_floor(noise_cave_ponds * 32) % 3 + 1, position = p}
@@ -343,6 +395,7 @@ local function process_level_3_position(surface, p, seed, tiles, entities, fishe
 
 		if noise_cave_ponds > 0.775 then
 			tiles[#tiles + 1] = {name = "dirt-" .. math_random(4, 6), position = p}
+			--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
 			return
 		end
 
@@ -351,6 +404,7 @@ local function process_level_3_position(surface, p, seed, tiles, entities, fishe
 		if no_rocks < 0.15 and no_rocks > -0.15 then
 			if small_caves > 0.35 then
 				insert(r_area, {x = p.x, y = p.y})
+				--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 				tiles[#tiles + 1] = {name = "dirt-" .. math_floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 				if math_random(1,320) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
 				if math_random(1,50) == 1 then
@@ -368,12 +422,14 @@ local function process_level_3_position(surface, p, seed, tiles, entities, fishe
 		local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
 		if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
 			tiles[#tiles + 1] = {name = "dirt-" .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
+			--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
 			if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 			return 
 		end
 
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
+		--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 		if math_random(1,2048) == 1 then place_random_scrap_entity(surface, p) end
 		if math_random(1,100) > 30 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 		return
@@ -420,6 +476,7 @@ local function process_level_2_position(surface, p, seed, tiles, entities, fishe
 
 		if noise_cave_ponds > 0.76 then
 			tiles[#tiles + 1] = {name = "dirt-" .. math_random(4, 6), position = p}
+			--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 			return
 		end
 
@@ -439,6 +496,7 @@ local function process_level_2_position(surface, p, seed, tiles, entities, fishe
 			if small_caves > 0.35 then
 				insert(r_area, {x = p.x, y = p.y})
 				tiles[#tiles + 1] = {name = "dirt-" .. math_floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+				--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
 				if math_random(1,450) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
 				if math_random(1,64) == 1 then
 					Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
@@ -454,11 +512,13 @@ local function process_level_2_position(surface, p, seed, tiles, entities, fishe
 		local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
 		if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
 			tiles[#tiles + 1] = {name = "dirt-" .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
+			--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 			if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 			return
 		end
 
 		if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
+		--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 	if math_random(1,2048) == 1 then place_random_scrap_entity(surface, p) end
 		if math_random(1,100) > 30 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
@@ -472,7 +532,9 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 
 	local noise_cave_ponds = get_noise("cave_ponds", p, seed)
 
-	if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
+	local cave_worms = get_noise("cave_worms", p, seed)
+
+	if cave_worms < 0.12 and cave_worms > -0.12 then
 		if small_caves > 0.55 then
 			tiles[#tiles + 1] = {name = "water-shallow", position = p}
 			return
@@ -499,8 +561,8 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 	end
 
 	if noise_cave_ponds > 0.76 then
-		tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
-		--tiles[#tiles + 1] = {name = "dirt-" .. math_random(4, 6), position = p}
+		--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
+		tiles[#tiles + 1] = {name = "dirt-" .. math_random(4, 6), position = p}
 		return
 	end
 
@@ -520,8 +582,8 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 		if no_rocks < 0.08 and no_rocks > -0.08 then
 			if small_caves > 0.35 then
 				insert(r_area, {x = p.x, y = p.y})
-				tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
-				--tiles[#tiles + 1] = {name = "dirt-" .. math_floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+				--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
+				tiles[#tiles + 1] = {name = "dirt-" .. math_floor(noise_cave_ponds * 32) % 7 + 1, position = p}
 				if math_random(1,450) == 1 then entities[#entities + 1] = {name = "crude-oil", position = p, amount = get_oil_amount(p)} end
 				if math_random(1,96) == 1 then
 					Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
@@ -537,17 +599,17 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 	--Main Terrain
 	local no_rocks_2 = get_noise("no_rocks_2", p, seed + 75000)
 	if no_rocks_2 > 0.70 or no_rocks_2 < -0.70 then
-		tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
-		--tiles[#tiles + 1] = {name = "dirt-" .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
+		--tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
+		tiles[#tiles + 1] = {name = "dirt-" .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
 		if math_random(1,32) == 1 then entities[#entities + 1] = {name = trees[math_random(1, #trees)], position=p} end
 		if math_random(1,512) == 1 then treasure[#treasure + 1] = p end
 		return
 	end
 
 	if math_random(1,2048) == 1 then treasure[#treasure + 1] = p end
-	tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
-	--	tiles[#tiles + 1] = {name = "dirt-7", position = p}
-	if math_random(1,2048) == 1 then place_random_scrap_entity(surface, p) end
+	--tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
+	tiles[#tiles + 1] = {name = "dirt-7", position = p}
+	if math_random(1,4028) == 1 then place_random_scrap_entity(surface, p) end
 	if math_random(1,100) > 30 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 end
 
@@ -687,25 +749,25 @@ local function generate_spawn_area(surface, position_left_top)
 		for k, v in pairs(circles[r]) do
 			local pos = {x = position_left_top.x + v.x, y = position_left_top.y+20 + v.y}
 			if pos.x > -15 and pos.x < 15 and pos.y < 40 then
-				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+				insert(tiles, {name = "black-refined-concrete", position = pos})
 			end
 			if pos.x > -30 and pos.x < 30 and pos.y < 40 then
-				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+				insert(tiles, {name = "black-refined-concrete", position = pos})
 			end
 			if pos.x > -60 and pos.x < 60 and pos.y < 40 then
-				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+				insert(tiles, {name = "black-refined-concrete", position = pos})
 			end
 			if pos.x > -90 and pos.x < 90 and pos.y < 40 then
-				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+				insert(tiles, {name = "black-refined-concrete", position = pos})
 			end
 			if pos.x > -120 and pos.x < 120 and pos.y < 40 then
-				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+				insert(tiles, {name = "black-refined-concrete", position = pos})
 			end
 			if pos.x > -150 and pos.x < 150 and pos.y < 40 then
-				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+				insert(tiles, {name = "black-refined-concrete", position = pos})
 			end
 			if pos.x > -180 and pos.x < 180 and pos.y < 40 then
-				insert(tiles, {name = colors[math_random(1, #colors)].. "-refined-concrete", position = pos})
+				insert(tiles, {name = "black-refined-concrete", position = pos})
 			end
 			--if t_insert then
 			--	insert(tiles, {name = t_insert, position = pos})

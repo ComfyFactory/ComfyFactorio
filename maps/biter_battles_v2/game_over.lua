@@ -98,7 +98,7 @@ local function silo_kaboom(entity)
 	local surface = entity.surface
 	local center_position = entity.position
 	local force = entity.force
-	local r = 46
+	local r = 32
 	local square_distance = r ^ 2
 	local shells_square_distance = square_distance * 0.75
 	local kabooms = {"explosive-cannon-projectile", "explosive-cannon-projectile", "artillery-projectile"}

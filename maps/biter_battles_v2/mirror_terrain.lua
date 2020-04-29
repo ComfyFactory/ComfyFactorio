@@ -281,8 +281,9 @@ local works = {
 }
 
 function Public.ticking_work()
-	local work = works[game.ticks_played % 2 + 1]
-	if not work then return end
+	local tick = game.ticks_played
+	if tick < 4 then return end
+	local work = works[tick % 2 + 1]	
 	if global.server_restart_timer then return end
 	work()
 end

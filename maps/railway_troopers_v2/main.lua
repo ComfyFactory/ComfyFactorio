@@ -1,5 +1,6 @@
 require "modules.biters_yield_ore"
 require "modules.difficulty_vote"
+require "modules.satellite_score"
 
 local difficulties_votes = {
 	[1] = 32,
@@ -182,7 +183,7 @@ local function on_chunk_generated(event)
 		local seed = game.surfaces["railway_troopers"].map_gen_settings.seed
 		for _, e in pairs(surface.find_entities_filtered({force = "enemy", area = event.area})) do
 			local noise = Get_noise("n3", e.position, seed)
-			if noise > 0 then e.destroy() end
+			if noise > 0.05 then e.destroy() end
 		end	
 	end
 

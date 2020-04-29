@@ -34,8 +34,8 @@ local function check_burden(event)
     local player = game.players[event.player_index]
     validate_player(player)
     local fullness = compute_fullness(player)
-    player_modifiers[player.index].character_running_speed_modifier["overworld"] = 0.5 - fullness
-    player_modifiers[player.index].character_mining_speed_modifier["overworld"] = 0.5 - fullness
+    player_modifiers[player.index].character_running_speed_modifier["scrapyard"] = 0.3  - fullness
+    player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0.3 - fullness
     Modifier.update_player_modifiers(player)
     if fullness >= 0.5 and fullness <= 0.51 then
         player.print("You feel all of a sudden burden.", Color.yellow)

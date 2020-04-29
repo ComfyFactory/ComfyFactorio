@@ -1,6 +1,6 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local Functions = require "modules.immersive_cargo_wagons.functions"
+local Functions = require "maps.scrapyard.icw.functions"
 local Public = {}
 
 local math_round = math.round
@@ -66,11 +66,16 @@ local function on_player_driving_changed_state(event)
 	local player = game.players[event.player_index]
 	Functions.use_cargo_wagon_door(icw, player, event.entity)
 end
-
-local function on_player_left_game(event)
-	Functions.kill_minimap(game.players[event.player_index])
+--[[
+local function on_player_created(event)
+	local player = game.players[event.player_index]
+	player.insert({name = "cargo-wagon", count = 5})
+	player.insert({name = "artillery-wagon", count = 5})
+	player.insert({name = "fluid-wagon", count = 5})
+	player.insert({name = "locomotive", count = 5})
+	player.insert({name = "rail", count = 100})
 end
-
+]]
 local function on_gui_closed(event)
 	local entity = event.entity 
 	if not entity then return end
@@ -133,7 +138,7 @@ Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_train_created, on_train_created)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_player_died, on_player_died)
-Event.add(defines.events.on_player_left_game, on_player_left_game)
+--Event.add(defines.events.on_player_created, on_player_created)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)

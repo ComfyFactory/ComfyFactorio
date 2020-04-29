@@ -1,6 +1,6 @@
 local Public = {}
 
-local Constants = require "modules.immersive_cargo_wagons.constants"
+local Constants = require "maps.scrapyard.icw.constants"
 
 local table_insert = table.insert
 local table_remove = table.remove
@@ -256,10 +256,10 @@ function Public.create_wagon_room(icw, wagon)
 	local surface = wagon.surface
 	local area = wagon.area
 	
-	local main_tile_name = "concrete"
-	if wagon.entity.type == "locomotive" then
-		main_tile_name = "black-refined-concrete"
-	end
+	local main_tile_name = "tutorial-grid"
+	--if wagon.entity.type == "locomotive" then
+	--	main_tile_name = "lab-dark-2"
+	--end
 	
 	local tiles = {}	
 	for x = -3, 2, 1 do
@@ -281,18 +281,10 @@ function Public.create_wagon_room(icw, wagon)
 	end
 	
 	if wagon.entity.type == "locomotive" then
-		local vectors = {}
-		local r1 = math_random(1, 2) * -1
-		local r2 = math_random(1, 2)
-		for x = math_random(1, 2) * -1, math_random(1, 2), 1 do
-			for y = r1, r2, 1 do
-				table_insert(vectors, {x, y}) 
+		for x = -3, 2, 1 do
+			for y = 10, 12, 1 do
+				table_insert(tiles, {name = "water", position = {x, y}}) 
 			end
-		end
-		local position = {x = area.left_top.x + (area.right_bottom.x - area.left_top.x) * 0.5, y = area.left_top.y + (area.right_bottom.y - area.left_top.y) * 0.5}
-		position = {x = position.x + (-4 + math_random(0, 8)), y = position.y + (-6 + math_random(0, 12))}
-		for _, v in pairs(vectors) do
-			table_insert(tiles, {name = "water", position = {position.x + v[1], position.y + v[2]}}) 
 		end	
 	end
 	
@@ -324,7 +316,7 @@ function Public.create_wagon_room(icw, wagon)
 	if wagon.entity.type == "cargo-wagon" then
 		local vectors = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
 		local v = vectors[math_random(1, 4)]
-		local position = {math_random(area.left_top.x + 2, area.right_bottom.x - 3), math_random(area.left_top.y + 5, area.right_bottom.y - 6)}
+		local position = {math_random(area.left_top.x + 4, area.right_bottom.x - 4), math_random(area.left_top.y + 6, area.right_bottom.y - 6)}
 		
 		local e = surface.create_entity({
 			name = "logistic-chest-requester",
@@ -411,7 +403,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
 		player.teleport(position, surface)
 		player_data.state = 2
 		player.driving = true
-		Public.kill_minimap(player)
+		Public.kill_minimap(player)	
 	else
 		local surface = wagon.surface
 		local area = wagon.area
@@ -431,7 +423,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
 	end
 end
 
-local function move_room_to_train(icw, train, wagon)
+function Public.move_room_to_train(icw, train, wagon)
 	if not wagon then return end		
 	
 	table_insert(train.wagons, wagon.entity.unit_number)
@@ -504,7 +496,7 @@ function Public.construct_train(icw, carriages)
 	icw.trains[unit_number] = train
 	
 	for k, carriage in pairs(carriages) do
-		move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
+		Public.move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
 	end
 end
 

@@ -21,10 +21,10 @@ local texts = {
 		"psk psk psk, over here",
 		"on my way",
 		"i need to leave",
-		"comfylatron seeking target",
+		"grandmaster seeking target",
 		"gotta go fast",
 		"gas gas gas",
-		"comfylatron coming through"
+		"grandmaster coming through"
 	},
 	["greetings"] = {
 		"=^_^=",
@@ -46,7 +46,8 @@ local texts = {
 		"Hello everyone",
 		"Hey engineers",
 		"Hey",
-		"Hi"
+		"Hi",
+		"... nerds!"
 	},
 	["talks"] = {
 		"We’re making beer. I’m the brewery!",
@@ -54,6 +55,7 @@ local texts = {
 		"Hey sexy mama. Wanna kill all humans?",
 		"My story is a lot like yours, only more interesting ‘cause it involves robots.",
 		"I'm 40% zinc!",
+		"Is this the right way to the junkyard?",
 		"There was nothing wrong with that food. The salt level was 10% less than a lethal dose.",
 		"One zero zero zero one zero one zero one zero one zero one... two.",
 		"My place is two cubic meters, and we only take up 1.5 cubic meters. We've got room for a whole 'nother two thirds of a person!",
@@ -64,6 +66,7 @@ local texts = {
 		"Never discuss infinity with me. I can go on about it forever >.<",
 		"I realised the decimals have a point.",
 		"Do you want a piece of pi?",
+		"Oh boy, we're soon home!",
 		"I have 13 children, i know how to multiply ^.^",
 		"I am a weapon of math disruption!",
 		"My grandma makes the best square roots :3",
@@ -92,6 +95,7 @@ local texts = {
 		"*_*",
 		"I came here with a simple dream... a dream of killing all humans. And this is how it must end?",
 		"Bot-on-bot violence? Where will it end?",
+		"Will no one assist the grandmaster?",
 		"Thanks to you, I went on a soul-searching journey. I hate those!",
 		"From now on, you guys'll do all the work while I sit on the couch and do nothing."
 	}
@@ -358,8 +362,8 @@ local function spawn_comfylatron(surface, x, y)
 	if not this.comfylatron_last_player_visit then this.comfylatron_last_player_visit = 0 end
 	if not this.comfylatron_habitat then
 		this.comfylatron_habitat = {
-			left_top = {x = -9, y = -6},
-			right_bottom = {x = 10, y = 38}
+			left_top = {x = -18, y = 3},
+			right_bottom = {x = 17, y = 67}
 		}
 	end
 	this.comfylatron = surface.create_entity({

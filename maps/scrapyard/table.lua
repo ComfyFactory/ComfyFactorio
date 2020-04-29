@@ -16,10 +16,16 @@ function Public.reset_table()
     --for k, _ in pairs(this) do
     --  this[k] = nil
     --end
+    this.lo_energy = nil
+    this.ow_energy = nil
 	this.game_lost = false
 	this.game_won = false
+    this.energy = {}
+    this.wave_counter = 0
 	this.locomotive_health = 10000
 	this.locomotive_max_health = 10000
+    this.cargo_health = 10000
+    this.cargo_max_health = 10000
 	this.revealed_spawn = 0
 end
 

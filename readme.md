@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://getcomfy.eu/">
-    <img alt="logo" src="https://wiki.factorio.com/images/thumb/So-long-and-thanks-for-all-the-fish-achievement.png/120px-So-long-and-thanks-for-all-the-fish-achievement.png" width="120">
+    <img alt="logo" src="https://cdn.discordapp.com/icons/433039858794233858/a_ca6daa1189d44955478d0e0ba6e2effb.gif?size=128" width="120">
   </a>
   <br>
   <a href="https://github.com/M3wM3w/ComfyFactorio/tags">

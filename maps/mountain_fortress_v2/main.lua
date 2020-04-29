@@ -1,7 +1,5 @@
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
- --enable / disable collapsing of the map
-global.collapse_enabled = true
 global.offline_loot = true
 local darkness = false
 
@@ -9,6 +7,7 @@ require "player_modifiers"
 require "functions.soft_reset"
 require "functions.basic_markets"
 
+local Collapse = require "modules.collapse"
 local RPG = require "modules.rpg"
 require "modules.wave_defense.main"
 require "modules.biters_yield_coins"
@@ -21,7 +20,6 @@ require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 local level_depth = require "maps.mountain_fortress_v2.terrain"
 local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
-local Collapse = require "maps.mountain_fortress_v2.collapse"
 require "maps.mountain_fortress_v2.flamethrower_nerf"
 local BiterRolls = require "modules.wave_defense.biter_rolls"
 local BiterHealthBooster = require "modules.biter_health_booster"
@@ -45,14 +43,16 @@ local treasure_chest_messages = {
 local function set_difficulty()
 	local wave_defense_table = WD.get_table()
 	local player_count = #game.connected_players
-
+	
 	wave_defense_table.max_active_biters = 1024
 
 	-- threat gain / wave
 	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
 
-	--1 additional map collapse tile / 8 players in game, with too high threat, the collapse speeds up.
-	global.map_collapse.speed = math.floor(player_count * 0.125) + 1 + math.floor(wave_defense_table.threat / 100000)
+	local amount = player_count * 0.25 + 21
+	amount = math.floor(amount)
+	if amount > 10 then amount = 10 end	
+	Collapse.set_amount(amount)
 
 	--20 Players for fastest wave_interval
 	wave_defense_table.wave_interval = 3600 - player_count * 90
@@ -61,7 +61,7 @@ end
 
 function Public.reset_map()
 	Immersive_cargo_wagons.reset()
-
+	
 	for _,player in pairs(game.players) do
 		if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
 	end
@@ -135,8 +135,14 @@ function Public.reset_map()
 	wave_defense_table.nest_building_density = 32
 	wave_defense_table.game_lost = false
 	game.reset_time_played()
-
-	Collapse.init()
+	
+	Collapse.set_kill_entities(false)
+	Collapse.set_speed(2)
+	Collapse.set_amount(1)
+	Collapse.set_max_line_size(level_depth)
+	Collapse.set_surface(surface)
+	Collapse.set_position({0, 130})
+	Collapse.set_direction("north")
 
 	RPG.rpg_reset_all_players()
 
@@ -431,15 +437,11 @@ local function tick()
 		if tick % 1800 == 0 then
 			Locomotive.set_player_spawn_and_refill_fish()
 			local surface = game.surfaces[global.active_surface_index]
-			local last_position = global.map_collapse.last_position
-			local position = surface.find_non_colliding_position("stone-furnace", {last_position.x, last_position.y - 32}, 128, 4)
+			local position = surface.find_non_colliding_position("stone-furnace", Collapse.get_position(), 128, 1)
 			if position then
 				local wave_defense_table = WD.get_table()
 				wave_defense_table.spawn_position = position
 			end
-			-- if tick % 216000 == 0 then
-			-- 	Collapse.delete_out_of_map_chunks(surface)
-			-- end
 			if global.offline_loot then
 				offline_players()
 			end
@@ -453,8 +455,6 @@ local function tick()
 		end
 		Locomotive.fish_tag()
 	end
-	if not global.collapse_enabled then return end
-	Collapse.process()
 end
 
 local function on_init()

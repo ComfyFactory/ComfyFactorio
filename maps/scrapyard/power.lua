@@ -9,9 +9,6 @@ end
 
 local function tick()
   local this = Scrap_table.get_table()
-  if not this.energy then
-    this.energy = {}
-  end
   if not this.energy["scrapyard"] then
     this.energy["scrapyard"] = this.ow_energy
   end
