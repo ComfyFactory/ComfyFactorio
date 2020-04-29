@@ -47,9 +47,9 @@ local function print_debug(a)
 	print("Collapse error #" .. a)
 end
 
-local function set_collapse_tiles()
-	game.forces.player.chart(collapse.surface, collapse.area)
-	collapse.tiles = collapse.surface.find_tiles_filtered({area = collapse.area})
+local function set_collapse_tiles(surface)
+	game.forces.player.chart(surface, collapse.area)
+	collapse.tiles = surface.find_tiles_filtered({area = collapse.area})
 	if not collapse.tiles then return end
 	collapse.size_of_tiles = #collapse.tiles
 	if collapse.size_of_tiles > 0 then table_shuffle_table(collapse.tiles) end
@@ -57,21 +57,24 @@ local function set_collapse_tiles()
 	local v = collapse.vector
 	local area = collapse.area
 	collapse.area = {{area[1][1] + v[1], area[1][2] + v[2]}, {area[2][1] + v[1], area[2][2] + v[2]}}
+	game.forces.player.chart(surface, collapse.area)
 end
 
 local function progress()
+	local surface = collapse.surface
+	
 	local tiles = collapse.tiles
 	if not tiles then 
-		set_collapse_tiles()
+		set_collapse_tiles(surface)
 		tiles = collapse.tiles
 	end
 	if not tiles then return end
 	
-	local surface = collapse.surface
 	for _ = 1, collapse.amount, 1 do
 		local tile = tiles[collapse.size_of_tiles]
 		if not tile then collapse.tiles = nil return end
 		collapse.size_of_tiles = collapse.size_of_tiles - 1
+		if not tile.valid then return end
 		if collapse.kill then
 			local position = {tile.position.x + 0.5, tile.position.y + 0.5}
 			for _, e in pairs(surface.find_entities_filtered({area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}})) do
