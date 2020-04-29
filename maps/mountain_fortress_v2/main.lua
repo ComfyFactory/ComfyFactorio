@@ -466,9 +466,9 @@ local function on_init()
 	T.localised_category = "mountain_fortress"
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
-	global.rocks_yield_ore_maximum_amount = 999
+	global.rocks_yield_ore_maximum_amount = 500
 	global.rocks_yield_ore_base_amount = 50
-	global.rocks_yield_ore_distance_modifier = 0.025
+	global.rocks_yield_ore_distance_modifier = 0.020
 
 	global.explosion_cells_destructible_tiles = {
 		["out-of-map"] = 1500,
