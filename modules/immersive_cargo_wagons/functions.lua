@@ -324,7 +324,7 @@ function Public.create_wagon_room(icw, wagon)
 	if wagon.entity.type == "cargo-wagon" then
 		local vectors = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
 		local v = vectors[math_random(1, 4)]
-		local position = {math_random(area.left_top.x + 4, area.right_bottom.x - 4), math_random(area.left_top.y + 6, area.right_bottom.y - 6)}
+		local position = {math_random(area.left_top.x + 2, area.right_bottom.x - 3), math_random(area.left_top.y + 5, area.right_bottom.y - 6)}
 		
 		local e = surface.create_entity({
 			name = "logistic-chest-requester",
@@ -431,7 +431,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
 	end
 end
 
-function Public.move_room_to_train(icw, train, wagon)
+local function move_room_to_train(icw, train, wagon)
 	if not wagon then return end		
 	
 	table_insert(train.wagons, wagon.entity.unit_number)
@@ -504,7 +504,7 @@ function Public.construct_train(icw, carriages)
 	icw.trains[unit_number] = train
 	
 	for k, carriage in pairs(carriages) do
-		Public.move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
+		move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
 	end
 end
 
