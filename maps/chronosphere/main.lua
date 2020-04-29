@@ -144,6 +144,7 @@ local function reset_map()
 	render_train_hp()
 	game.reset_time_played()
 	Locomotive.create_wagon_room()
+	Event_functions.mining_buffs(nil)
 	if objective.game_won then
 		game.print({"chronosphere.message_game_won_restart"}, {r=0.98, g=0.66, b=0.22})
 	end
@@ -359,7 +360,6 @@ local function on_init()
 	game.surfaces["nauvis"].clear()
 	reset_map()
 	Chrono.init_setup()
-	Event_functions.mining_buffs(nil)
 	--if game.surfaces["nauvis"] then game.delete_surface(game.surfaces["nauvis"]) end
 end
 
