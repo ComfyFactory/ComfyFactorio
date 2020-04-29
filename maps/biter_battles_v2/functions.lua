@@ -136,7 +136,7 @@ end
 
 function Public.init_player(player)
 	local surface = game.surfaces.biter_battles
-	if player.crafting_queue then
+	if player.crafting_queue_size and player.crafting_queue_size > 0 then
 		for i = 1, #player.crafting_queue, 1 do
 			if player.crafting_queue_size == 0 then break end
 			player.cancel_crafting({index = 1, count = 65535})

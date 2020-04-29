@@ -567,6 +567,9 @@ function Public.generate_spawn_goodies(surface)
 		["production-science-pack"] = true,
 		["utility-science-pack"] = true,
 		["space-science-pack"] = true,
+		["loader"] = true,
+		["fast-loader"] = true,
+		["express-loader"] = true,		
 	}
 	local container_names = {"wooden-chest", "wooden-chest", "iron-chest"}
 	for k, tile in pairs(tiles) do
