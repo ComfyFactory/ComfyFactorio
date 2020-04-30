@@ -37,9 +37,9 @@ local function check_burden(event)
     player_modifiers[player.index].character_running_speed_modifier["scrapyard"] = 0.3  - fullness
     player_modifiers[player.index].character_mining_speed_modifier["scrapyard"] = 0.3 - fullness
     Modifier.update_player_modifiers(player)
-    if fullness >= 0.5 and fullness <= 0.51 then
+    if fullness >= 0.3 and fullness <= 0.301 then
         player.print("You feel all of a sudden burden.", Color.yellow)
-    elseif fullness >= 0.9 and fullness <= 0.91 then
+    elseif fullness >= 0.5 and fullness <= 0.501 then
          player.print("Maybe you should drop some of that inventory to lessen the burden.", Color.red)
     end
 end

@@ -22,7 +22,7 @@ local scrap_buildings = {"nuclear-reactor", "centrifuge", "beacon", "chemical-pl
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local trees = {"dead-grey-trunk", "dead-grey-trunk", "dry-tree"}
 local colors = {"black", "orange", "red", "yellow"}
-local more_colors = {"acid", "brown", "green", "blue"}
+local more_colors = {"black-refined-concrete", "brown-refined-concrete", "red-refined-concrete", "blue-refined-concrete"}
 
 local noises = {
 	["no_rocks"] = {{modifier = 0.0044, weight = 1}, {modifier = 0.01, weight = 0.22}, {modifier = 0.05, weight = 0.05}, {modifier = 0.1, weight = 0.04}},
@@ -130,7 +130,7 @@ local function wall(surface, left_top, seed)
 						if math_random(1, 2) == 1 then
 							Loot.add(surface, p, "wooden-chest")
 						else
-							Loot.add(surface, p, "crash-site-chest-2")
+							Loot.add(surface, p, "steel-chest")
 						end
 					else
 
@@ -667,8 +667,7 @@ function Public.reveal_area(x, y, surface, max_radius)
 		end
 	end
 	for _, p in pairs(treasure) do
-		local name = "crash-site-chest-1"
-		if math_random(1, 6) == 1 then name = "crash-site-chest-2" end
+		local name = "steel-chest"
 		Loot.add(surface, p, name)
 		if math_random(1,wave_defense_table.math) == 1 then
 			local distance_to_center = math.sqrt(p.x^2 + p.y^2)
@@ -730,8 +729,7 @@ function Public.reveal(player)
 		end
 	end
 	for _, p in pairs(treasure) do
-		local name = "crash-site-chest-1"
-		if math_random(1, 6) == 1 then name = "crash-site-chest-2" end
+		local name = "steel-chest"
 		Loot.add(surface, p, name)
 	end
 	for _, fish in pairs(fishes) do
@@ -749,25 +747,25 @@ local function generate_spawn_area(surface, position_left_top)
 		for k, v in pairs(circles[r]) do
 			local pos = {x = position_left_top.x + v.x, y = position_left_top.y+20 + v.y}
 			if pos.x > -15 and pos.x < 15 and pos.y < 40 then
-				insert(tiles, {name = "black-refined-concrete", position = pos})
+				insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
 			end
 			if pos.x > -30 and pos.x < 30 and pos.y < 40 then
-				insert(tiles, {name = "black-refined-concrete", position = pos})
+				insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
 			end
 			if pos.x > -60 and pos.x < 60 and pos.y < 40 then
-				insert(tiles, {name = "black-refined-concrete", position = pos})
+				insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
 			end
 			if pos.x > -90 and pos.x < 90 and pos.y < 40 then
-				insert(tiles, {name = "black-refined-concrete", position = pos})
+				insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
 			end
 			if pos.x > -120 and pos.x < 120 and pos.y < 40 then
-				insert(tiles, {name = "black-refined-concrete", position = pos})
+				insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
 			end
 			if pos.x > -150 and pos.x < 150 and pos.y < 40 then
-				insert(tiles, {name = "black-refined-concrete", position = pos})
+				insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
 			end
 			if pos.x > -180 and pos.x < 180 and pos.y < 40 then
-				insert(tiles, {name = "black-refined-concrete", position = pos})
+				insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
 			end
 			--if t_insert then
 			--	insert(tiles, {name = t_insert, position = pos})

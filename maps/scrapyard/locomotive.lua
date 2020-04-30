@@ -71,9 +71,9 @@ function Public.contains_positions(pos, area)
     return false
 end
 
-function Public.power_source()
-	local this = Scrap_table.get_table()
-	local surface = game.surfaces[this.active_surface_index]
+local function rebuild_energy_overworld(data)
+	local this = data.this
+	local surface = data.surface
 	if not this.locomotive then return end
 	if not this.locomotive.valid then return end
 	if not this.locomotive.surface then return end
@@ -87,17 +87,17 @@ function Public.power_source()
 	            }
 			if Public.contains_positions(this.locomotive.position, area) then return end
 			this.old_ow_energy = this.ow_energy.energy
-			this.ow_energy.destroy() 
+			this.ow_energy.destroy()
 			this.energy["scrapyard"] = nil
 		end
 	end
-	this.ow_energy = surface.create_entity{ 
-		name = "electric-energy-interface", 
+	this.ow_energy = surface.create_entity{
+		name = "electric-energy-interface",
 		position = {
 			x=this.locomotive.position.x,
 			y=this.locomotive.position.y+1
 		},
-		create_build_effect_smoke = false, 
+		create_build_effect_smoke = false,
 		force = game.forces.neutral
 	}
 
@@ -120,33 +120,72 @@ function Public.power_source()
 	end
 end
 
-function Public.on_teleported_player()
-	local this = Scrap_table.get_table()
+local function rebuild_energy_loco(data, destroy)
+	local this = data.this
+	local icw_table = data.icw_table
 	local unit_surface = this.locomotive.unit_number
-	local loco_surface = game.surfaces[tostring(unit_surface)]
-	local pos = {x=-17, y=3}
+	local loco_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
+	local pos = {x=-19, y=3}
+
+	if destroy then
+		local radius = 1024
+		local area = {{x = -radius, y = -radius}, {x = radius, y = radius}}
+		for _, entity in pairs(loco_surface.find_entities_filtered{area = area, name = "electric-energy-interface"}) do
+			entity.destroy()
+		end
+		this.energy.loco = nil
+		this.lo_energy = nil
+	end
+
+	this.lo_energy = loco_surface.create_entity{
+		name = "electric-energy-interface",
+		position = pos,
+		create_build_effect_smoke = false,
+		force = game.forces.neutral
+	}
+
+	rendering.draw_text{
+	  text = "Power",
+	  surface = loco_surface,
+	  target = this.lo_energy,
+	  target_offset = {0, -1.5},
+	  color = { r = 0, g = 1, b = 0},
+	  alignment = "center"
+	}
+
+	this.lo_energy.minable = false
+	this.lo_energy.destructible = false
+	this.lo_energy.operable = false
+	this.lo_energy.power_production = 0
+	this.lo_energy.electric_buffer_size = 10000000
+end
+
+function Public.power_source_overworld()
+	local this = Scrap_table.get_table()
+	local surface = game.surfaces[this.active_surface_index]
+
+	local data = {
+		this = this,
+		surface = surface
+	}
+
+	rebuild_energy_overworld(data)
+end
+
+function Public.power_source_locomotive()
+	local this = Scrap_table.get_table()
+	local icw_table = ICW.get_table()
+
+	local data = {
+		this = this,
+		icw_table = icw_table
+	}
+
 	if not this.lo_energy then
-		this.lo_energy = loco_surface.create_entity{ 
-			name = "electric-energy-interface", 
-			position = pos,
-			create_build_effect_smoke = false, 
-			force = game.forces.neutral
-		}
+		rebuild_energy_loco(data)
 
-		rendering.draw_text{
-		  text = "Power",
-		  surface = loco_surface,
-		  target = this.lo_energy,
-		  target_offset = {0, -1.5},
-		  color = { r = 0, g = 1, b = 0},
-		  alignment = "center"
-		}
-
-		this.lo_energy.minable = false
-		this.lo_energy.destructible = false
-		this.lo_energy.operable = false
-		this.lo_energy.power_production = 0
-		this.lo_energy.electric_buffer_size = 10000000
+	elseif not this.lo_energy.valid then
+		rebuild_energy_loco(data, true)
 	end
 end
 
@@ -159,7 +198,7 @@ local function fish_tag()
 	if this.locomotive_tag then
 		if this.locomotive_tag.valid then
 			if this.locomotive_tag.position.x == this.locomotive_cargo.position.x and this.locomotive_tag.position.y == this.locomotive_cargo.position.y then return end
-			this.locomotive_tag.destroy() 
+			this.locomotive_tag.destroy()
 		end
 	end
 	this.locomotive_tag = this.locomotive_cargo.force.add_chart_tag(
@@ -169,29 +208,11 @@ local function fish_tag()
 		text = " "
 	})
 end
---[[
-local function accelerate()
-	local this = Scrap_table.get_table()
-	if not this.locomotive then return end
-	if not this.locomotive.valid then return end
-	if this.locomotive.get_driver() then return end
-	this.locomotive_driver = this.locomotive.surface.create_entity({name = "character", position = this.locomotive.position, force = "player"})
-	this.locomotive_driver.driving = true
-	this.locomotive_driver.riding_state = {acceleration = defines.riding.acceleration.accelerating, direction = defines.riding.direction.straight}
-end
 
-local function remove_acceleration()
-	if not this.locomotive then return end
-	if not this.locomotive.valid then return end
-	if this.locomotive_driver then this.locomotive_driver.destroy() end
-	this.locomotive_driver = nil
-end
-]]
 local function set_player_spawn_and_refill_fish()
 	local this = Scrap_table.get_table()
 	if not this.locomotive_cargo then return end
 	if not this.locomotive_cargo.valid then return end
-	this.locomotive_cargo.health = this.locomotive_cargo.health + 6
 	this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = math.random(2, 5)})
 	local position = this.locomotive_cargo.surface.find_non_colliding_position("stone-furnace", this.locomotive_cargo.position, 16, 2)
 	if not position then return end
@@ -199,20 +220,16 @@ local function set_player_spawn_and_refill_fish()
 end
 
 local function tick()
-	Public.power_source()
+	Public.power_source_overworld()
+	Public.power_source_locomotive()
 	if game.tick % 30 == 0 then
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()
 		end
 		fish_tag()
-		--accelerate()
-	--else
-		--remove_acceleration()
 	end
 end
 
 Event.on_nth_tick(5, tick)
-Event.add(defines.events.on_player_driving_changed_state, Public.on_teleported_player)
-
 
 return Public

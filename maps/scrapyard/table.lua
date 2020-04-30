@@ -27,6 +27,9 @@ function Public.reset_table()
     this.cargo_health = 10000
     this.cargo_max_health = 10000
 	this.revealed_spawn = 0
+    this.steps = {}
+    this.scrap_enabled = true
+    this.first_join = {}
 end
 
 function Public.get_table()

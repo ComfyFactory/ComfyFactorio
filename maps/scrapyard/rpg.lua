@@ -27,6 +27,8 @@ for a = 1, 9999, 1 do
 	experience_levels[#experience_levels + 1] = experience_levels[#experience_levels] + a * 8
 end
 local gain_info_tooltip = "XP gain from mining, moving, crafting, repairing and combat."
+local reset_tooltip = "ONE-TIME reset if you picked the wrong path (this will keep your points)"
+local reset_not_available = "Available after level 20."
 
 local rpg_t = {}
 local rpg_frame_icons = {
@@ -223,15 +225,26 @@ local function draw_gui(player, forced)
 	t.style.cell_padding = 1
 	
 	add_gui_description(t, "LEVEL", 80)
-	add_gui_stat(t, rpg_t[player.index].level, 80)
+	local e = add_gui_stat(t, rpg_t[player.index].level, 80)
+	e.tooltip = gain_info_tooltip
 
 	add_gui_description(t, "EXPERIENCE", 100)
 	local e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
 	e.tooltip = gain_info_tooltip
-	
-	add_gui_description(t, " ", 75)
-	add_gui_description(t, " ", 75)
-	
+
+	if not rpg_t[player.index].reset then
+		add_gui_description(t, "RESET", 80)
+		local e = add_gui_stat(t, rpg_t[player.index].reset, 80)
+		if rpg_t[player.index].level <= 19 then
+			e.tooltip = reset_not_available
+		else
+			e.tooltip = reset_tooltip
+		end
+	else
+		add_gui_description(t, " ", 75)
+		add_gui_description(t, " ", 75)
+	end
+
 	add_gui_description(t, "NEXT LEVEL", 100)
 	local e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
 	e.tooltip = gain_info_tooltip
@@ -425,7 +438,7 @@ local function level_up(player)
 	for i = rpg_t[player.index].level + 1, #experience_levels, 1 do
 		if rpg_t[player.index].xp > experience_levels[i] then
 			rpg_t[player.index].level = i
-			distribute_points_gain = distribute_points_gain + 5
+			distribute_points_gain = distribute_points_gain + 3
 		else
 			break
 		end
@@ -455,17 +468,31 @@ local function gain_xp(player, amount)
 	rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
 end
 
-function Public.rpg_reset_player(player)
+function Public.rpg_reset_player(player, one_time_reset)
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
 	if not player.character then
 		player.set_controller({type=defines.controllers.god})
-		player.create_character() 
+		player.create_character()
 	end
-	rpg_t[player.index] = {
-		level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
-		last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0,
-		rotated_entity_delay = 0, gui_refresh_delay = 0, last_mined_entity_position = {x = 0, y = 0},
-	}	
+	if one_time_reset then
+		local total = rpg_t[player.index].total
+		local old_level = rpg_t[player.index].level
+		local old_xp = rpg_t[player.index].xp
+		rpg_t[player.index] = {
+			level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
+			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0, reset = true,
+			rotated_entity_delay = 0, gui_refresh_delay = 0, last_mined_entity_position = {x = 0, y = 0},
+		}
+		rpg_t[player.index].points_to_distribute = total
+		rpg_t[player.index].xp = old_xp
+		rpg_t[player.index].level = old_level
+	else
+		rpg_t[player.index] = {
+			level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
+			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0, reset = false, total = 0,
+			rotated_entity_delay = 0, gui_refresh_delay = 0, last_mined_entity_position = {x = 0, y = 0},
+		}
+	end
 	draw_gui_char_button(player)
 	draw_level_text(player)
 	update_char_button(player)
@@ -485,12 +512,12 @@ local function on_gui_click(event)
 	if not event.element then return end
 	if not event.element.valid then return end
 	local element = event.element
+	local player = game.players[event.player_index]
 	
 	if element.type ~= "sprite-button" then return end
 	
 	if element.caption == "CHAR" then
 		if element.name == "rpg" then
-			local player = game.players[event.player_index]
 			if player.gui.left.rpg then
 				player.gui.left.rpg.destroy()
 				return
@@ -498,18 +525,27 @@ local function on_gui_click(event)
 			draw_gui(player, true)
 		end
 	end
+
+	if element.caption == "false" then
+		if rpg_t[player.index].level <= 19 then return end
+		rpg_t[player.index].reset = true
+		Public.rpg_reset_player(player, true)
+		return
+	end
 	
 	if element.caption ~= "✚" then return end
 	if element.sprite ~= "virtual-signal/signal-red" then return end
 	
 	local index = element.name
-	local player = game.players[event.player_index]
 	if not rpg_t[player.index][index] then return end
 	if not player.character then return end
 	
 	if event.button == defines.mouse_button_type.right then
 		for a = 1, 5, 1 do
 			if rpg_t[player.index].points_to_distribute <= 0 then draw_gui(player, true) return end
+				if not rpg_t[player.index].reset then
+					rpg_t[player.index].total = rpg_t[player.index].total + 1
+				end
 			rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
 			rpg_t[player.index][index] = rpg_t[player.index][index] + 1
 			update_player_stats(player)
@@ -519,6 +555,9 @@ local function on_gui_click(event)
 	end
 	
 	if rpg_t[player.index].points_to_distribute <= 0 then draw_gui(player, true) return end
+		if not rpg_t[player.index].reset then
+			rpg_t[player.index].total = rpg_t[player.index].total + 1
+		end
 	rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
 	rpg_t[player.index][index] = rpg_t[player.index][index] + 1
 	update_player_stats(player)

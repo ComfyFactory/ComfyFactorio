@@ -369,7 +369,7 @@ local function spawn_comfylatron(surface, x, y)
 	this.comfylatron = surface.create_entity({
 		name = "compilatron",
 		position = {x,y + math_random(0,26)},
-		force = "player",
+		force = "neutral",
 		create_build_effect_smoke = false
 	})
 end
