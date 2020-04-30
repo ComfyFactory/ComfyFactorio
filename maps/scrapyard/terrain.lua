@@ -9,12 +9,15 @@ local map_functions = require "tools.map_functions"
 local Scrap_table = require "maps.scrapyard.table"
 local shapes = require "tools.shapes"
 local Loot = require 'maps.scrapyard.loot'
+
+local Public = {}
+
 local insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 local uncover_radius = 10
-local level_depth = 960
+Public.level_depth = 960
 local worm_level_modifier = 0.18
 
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
@@ -39,7 +42,7 @@ local noises = {
 	["scrapyard"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}},
 }
 
-local Public = {}
+
 
 local function get_noise(name, pos, seed)
 	local noise = 0
@@ -68,7 +71,7 @@ local function place_random_scrap_entity(surface, position)
 	end
 	if r < 75 then
 		local e = surface.create_entity({name = "gun-turret", position = position, force = "scrap_defense"})
-		if math_abs(position.y) < level_depth * 2.5 then
+		if math_abs(position.y) < Public.level_depth * 2.5 then
 			e.insert({name = "piercing-rounds-magazine", count = math_random(64, 128)})
 		else
 			e.insert({name = "uranium-rounds-magazine", count = math_random(64, 128)})
@@ -165,7 +168,7 @@ local function wall(surface, left_top, seed)
 				if math_random(1, 32) == 1 then
 					if surface.can_place_entity({name = "gun-turret", position = p, force = "enemy"}) then
 						local e = surface.create_entity({name = "gun-turret", position = p, force = "enemy"})
-						if math_abs(p.y) < level_depth * 2.5 then
+						if math_abs(p.y) < Public.level_depth * 2.5 then
 							e.insert({name = "piercing-rounds-magazine", count = math_random(64, 128)})
 						else
 							e.insert({name = "uranium-rounds-magazine", count = math_random(64, 128)})
@@ -613,7 +616,7 @@ local function process_level_1_position(surface, p, seed, tiles, entities, fishe
 	if math_random(1,100) > 30 then entities[#entities + 1] = {name = "mineable-wreckage", position = p} end
 end
 
-local levels = {
+Public.levels = {
 	process_level_1_position,
 	process_level_2_position,
 	process_level_3_position,
@@ -637,8 +640,8 @@ function Public.reveal_area(x, y, surface, max_radius)
 	local entities = {}
 	local markets = {}
 	local treasure = {}
-	local process_level = levels[math_floor(math_abs(y) / level_depth) + 1]
-	if not process_level then process_level = levels[#levels] end
+	local process_level = Public.levels[math_floor(math_abs(y) / Public.level_depth) + 1]
+	if not process_level then process_level = Public.levels[#Public.levels] end
 	for r = 1, max_radius, 1 do
 		for _, v in pairs(circles[r]) do
 			local pos = {x = x + v.x, y = y + v.y}
@@ -695,8 +698,8 @@ function Public.reveal(player)
 	local entities = {}
 	local markets = {}
 	local treasure = {}
-	local process_level = levels[math_floor(math_abs(position.y) / level_depth) + 1]
-	if not process_level then process_level = levels[#levels] end
+	local process_level = Public.levels[math_floor(math_abs(position.y) / Public.level_depth) + 1]
+	if not process_level then process_level = Public.levels[#Public.levels] end
 	for r = 1, uncover_radius, 1 do
 		for _, v in pairs(circles[r]) do
 			local pos = {x = position.x + v.x, y = position.y + v.y}
@@ -915,8 +918,8 @@ local function on_chunk_generated(event)
 	if string.sub(event.surface.name, 0, 9) ~= "scrapyard" then return end
 	local surface = event.surface
 	local left_top = event.area.left_top
-	if left_top.x >= level_depth * 0.5 then out_of_map(surface, left_top) return end
-	if left_top.x < level_depth * -0.5 then out_of_map(surface, left_top) return end
+	if left_top.x >= Public.level_depth * 0.5 then out_of_map(surface, left_top) return end
+	if left_top.x < Public.level_depth * -0.5 then out_of_map(surface, left_top) return end
 	if surface.name ~= event.surface.name then return end
 
 	if this.revealed_spawn > game.tick then
@@ -935,7 +938,11 @@ local function on_chunk_generated(event)
 		end
 	end
 
-	if left_top.y % level_depth == 0 and left_top.y < 0 and left_top.y > level_depth * -10 then wall(surface, left_top, surface.map_gen_settings.seed) return end
+	if left_top.y % Public.level_depth == 0 and left_top.y < 0 and left_top.y > Public.level_depth * -10 then
+		this.left_top = event.area.left_top
+		wall(surface, left_top, surface.map_gen_settings.seed)
+		return
+	end
 
 	if left_top.y > 268 then out_of_map(surface, left_top) return end
 	if left_top.y >= 0 then replace_water(surface, left_top) end

@@ -123,6 +123,7 @@ end
 local function rebuild_energy_loco(data, destroy)
 	local this = data.this
 	local icw_table = data.icw_table
+	if not this.locomotive.valid then return end
 	local unit_surface = this.locomotive.unit_number
 	local loco_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
 	local pos = {x=-19, y=3}

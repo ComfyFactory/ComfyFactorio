@@ -16,7 +16,15 @@ local this = {
     scrap_enabled = true,
     rocks_yield_ore_maximum_amount = 500,
     rocks_yield_ore_base_amount = 50,
-    rocks_yield_ore_distance_modifier = 0.020
+    rocks_yield_ore_distance_modifier = 0.020,
+    left_top = {
+        x = 0,
+        y = 0
+    },
+    o_left_top = {
+        x = 0,
+        y = 0
+    }
 }
 local Public = {}
 
@@ -43,6 +51,14 @@ function Public.reset_table()
     this.cargo_max_health = 10000
 	this.revealed_spawn = 0
     this.scrap_enabled = true
+    this.left_top = {
+        x = 0,
+        y = 0
+    }
+    this.o_left_top = {
+        x = 0,
+        y = 0
+    }
 end
 
 function Public.get_table()

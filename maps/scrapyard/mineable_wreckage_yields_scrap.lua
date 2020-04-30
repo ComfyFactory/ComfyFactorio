@@ -34,10 +34,6 @@ end
 
 local function mining_chances_scrap()
 	local data = {
-		{name = "iron-ore", chance = 570},
-		{name = "copper-ore", chance = 570},
-		{name = "stone", chance = 550},
-		{name = "coal", chance = 500},
 		{name = "iron-plate", chance = 400},
 		{name = "iron-gear-wheel", chance = 390},
 		{name = "copper-plate", chance = 400},
@@ -107,10 +103,6 @@ end
 
 local function scrap_yield_amounts()
 	local data = {
-		["iron-ore"] = 10,
-		["copper-ore"] = 10,
-		["stone"] = 8,
-		["coal"] = 9,
 		["iron-plate"] = 12,
 		["iron-gear-wheel"] = 12,
 		["iron-stick"] = 12,
@@ -160,7 +152,6 @@ local function scrap_yield_amounts()
 		["defender-capsule"] = 2,
 		["destroyer-capsule"] = 0.3,
 		["distractor-capsule"] = 0.3,
-		["uranium-ore"] = 1,
 		["mineable-wreckage"] = 1,
 	}
 	return data
@@ -188,6 +179,7 @@ local function get_amount(data)
 	local entity = data.entity
 	local this = data.this
 	local scrap = data.scrap
+	local scrap_amount = scrap_yield_amounts()
 	local distance_to_center = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
 
 	local distance_modifier = 0.25
@@ -203,8 +195,8 @@ local function get_amount(data)
 	local m = (70 + math_random(0, 60)) * 0.01
 	if this.scrap_enabled then
 		local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
-		local r1 = math.ceil(scrap_yield_amounts()[scrap] * (0.3 + (amount_bonus * 0.3)))
-		local r2 = math.ceil(scrap_yield_amounts()[scrap] * (1.7 + (amount_bonus * 1.7)))
+		local r1 = math.ceil(scrap_amount[scrap] * (0.3 + (amount_bonus * 0.3)))
+		local r2 = math.ceil(scrap_amount[scrap] * (1.7 + (amount_bonus * 1.7)))
 		if not r1 or not r2 then return end
 		amount = math.random(r1, r2)
 	else
@@ -219,6 +211,7 @@ local function scrap_randomness(data)
 	local entity = data.entity
 	local this = data.this
 	local player = data.player
+	local scrap
 
 	--if this.scrap_enabled[player.index] then
 	--	scrap = scrap_raffle_scrap[math.random(1, size_of_scrap_raffle)]

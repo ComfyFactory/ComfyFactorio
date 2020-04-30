@@ -18,6 +18,7 @@ require "player_modifiers"
 local math_random = math.random
 local Global = require 'utils.global'
 local Tabs = require "comfy_panel.main"
+local Color = require 'utils.color_presets'
 local P = require "player_modifiers"
 local visuals_delay = 1800
 local level_up_floating_text_color = {0, 205, 0}
@@ -37,6 +38,10 @@ local rpg_frame_icons = {
 	"entity/medium-spitter", "entity/big-biter", "entity/big-biter", "entity/big-spitter", "entity/behemoth-biter", "entity/behemoth-biter",
 	"entity/behemoth-spitter"
 }
+
+local math_sqrt = math.sqrt
+local math_floor = math.floor
+local math_random = math.random
 
 Global.register(
     {rpg_t=rpg_t, rpg_frame_icons=rpg_frame_icons},
@@ -109,7 +114,7 @@ local function update_player_stats(player)
 	player_modifiers[player.index].character_mining_speed_modifier["rpg"] = math.round(strength * 0.008, 3)
 	
 	local magic = rpg_t[player.index].magic - 10
-	local v = magic * 0.15
+	local v = magic * 0.22
 	player_modifiers[player.index].character_build_distance_bonus["rpg"] = math.round(v, 3)
 	player_modifiers[player.index].character_item_drop_distance_bonus["rpg"] = math.round(v, 3)
 	player_modifiers[player.index].character_reach_distance_bonus["rpg"] = math.round(v, 3)
@@ -453,7 +458,14 @@ local function level_up(player)
 end
 
 local function gain_xp(player, amount)
-	amount = math.round(amount, 2)
+	local fee
+	if rpg_t[player.index].xp > 50 then
+		fee = math.ceil(rpg_t[player.index].xp * 0.01, 0) / 6
+	else
+		fee = 0
+	end
+	amount = math.round(amount, 2) - fee
+	rpg_t.global_pool = rpg_t.global_pool + fee
 	rpg_t[player.index].xp = rpg_t[player.index].xp + amount
 	rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
 	if player.gui.left.rpg then draw_gui(player, false) end
@@ -466,6 +478,25 @@ local function gain_xp(player, amount)
 	player.create_local_flying_text{text="+" .. rpg_t[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color=xp_floating_text_color, time_to_live=120, speed=2}
 	rpg_t[player.index].xp_since_last_floaty_text = 0
 	rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
+end
+
+function global_pool()
+	local pool = rpg_t.global_pool
+	local player_count = #game.connected_players
+	local share = pool / player_count
+	rpg_t.global_pool = 0
+	for _, p in pairs(game.connected_players) do
+		if rpg_t[p.index].level < 10 and p.online_time < 50000 then
+			local s = share * 2
+			p.create_local_flying_text{text="+" .. s .. " xp", position=p.position, color=xp_floating_text_color, time_to_live=240, speed=1}
+	    	gain_xp(p, s * 2)
+	    else
+			p.create_local_flying_text{text="+" .. share .. " xp", position=p.position, color=xp_floating_text_color, time_to_live=240, speed=1}
+			rpg_t[p.index].xp_since_last_floaty_text = 0
+	    	gain_xp(p, share)
+	    end
+	end
+	return
 end
 
 function Public.rpg_reset_player(player, one_time_reset)
@@ -541,7 +572,7 @@ local function on_gui_click(event)
 	if not player.character then return end
 	
 	if event.button == defines.mouse_button_type.right then
-		for a = 1, 5, 1 do
+		for a = 1, 3, 1 do
 			if rpg_t[player.index].points_to_distribute <= 0 then draw_gui(player, true) return end
 				if not rpg_t[player.index].reset then
 					rpg_t[player.index].total = rpg_t[player.index].total + 1
@@ -843,7 +874,9 @@ end
 local function on_player_crafted_item(event)
 	if not event.recipe.energy then return end
 	local player = game.players[event.player_index]
-	gain_xp(player, event.recipe.energy * 0.20)
+	if not player.valid then return end
+	local amount = math_floor(math_random(0.40, 4))
+	gain_xp(player, event.recipe.energy * amount)
 end
 
 local function on_player_respawned(event)
@@ -855,7 +888,7 @@ end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if not rpg_t[player.index] then Public.rpg_reset_player(player) end	
+	if not rpg_t[player.index] then Public.rpg_reset_player(player) end
 	for _, p in pairs(game.connected_players) do
 		draw_level_text(p)
 	end
@@ -865,6 +898,7 @@ local function on_player_joined_game(event)
 end
 
 local function on_init(event)
+	if not rpg_t.global_pool then rpg_t.global_pool = 0 end
 	table.shuffle_table(rpg_frame_icons)
 end
 
