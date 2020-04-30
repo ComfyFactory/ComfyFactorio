@@ -146,6 +146,8 @@ local function visit_player()
 	if #players == 0 then return false end
 	local player = players[math_random(1, #players)]
 
+	if player.surface ~= surface then return end
+
 	this.comfylatron.set_command({
 		type = defines.command.go_to_location,
 		destination_entity = player.character,
