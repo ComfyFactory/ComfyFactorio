@@ -3,6 +3,7 @@ local Scrap_table = require "maps.scrapyard.table"
 local max_spill = 60
 local math_random = math.random
 local math_floor = math.floor
+local math_sqrt = math.sqrt
 
 local function create_particles(surface, name, position, amount, cause_position)
 	local direction_mod = (-100 + math_random(0,200)) * 0.0004
@@ -62,15 +63,8 @@ local function mining_chances_scrap()
 		{name = "nuclear-fuel", chance = 1},
 		{name = "pipe-to-ground", chance = 10},
 		{name = "plastic-bar", chance = 5},
-		{name = "processing-unit", chance = 2},
-		{name = "used-up-uranium-fuel-cell", chance = 1},
-		{name = "uranium-fuel-cell", chance = 1},
 		{name = "rocket-fuel", chance = 3},
-		{name = "rocket-control-unit", chance = 1},
-		{name = "low-density-structure", chance = 1},
-		{name = "heat-pipe", chance = 1},
 		{name = "engine-unit", chance = 4},
-		{name = "electric-engine-unit", chance = 2},
 		{name = "logistic-robot", chance = 1},
 		{name = "construction-robot", chance = 1},
 		{name = "land-mine", chance = 3},
@@ -79,7 +73,6 @@ local function mining_chances_scrap()
 		{name = "explosive-rocket", chance = 3},
 		{name = "cannon-shell", chance = 2},
 		{name = "explosive-cannon-shell", chance = 2},
-		{name = "uranium-cannon-shell", chance = 1},
 		{name = "explosive-uranium-cannon-shell", chance = 1},
 		{name = "artillery-shell", chance = 1},
 		{name = "cluster-grenade", chance = 2},
@@ -102,10 +95,10 @@ end
 
 local function scrap_yield_amounts()
 	local data = {
-		["iron-ore"] = 10,
-		["copper-ore"] = 10,
-		["stone"] = 8,
-		["coal"] = 6,
+		["iron-ore"] = 28,
+		["copper-ore"] = 28,
+		["stone"] = 20,
+		["coal"] = 28,
 		["iron-plate"] = 4,
 		["iron-gear-wheel"] = 6,
 		["iron-stick"] = 6,
@@ -155,7 +148,8 @@ local function scrap_yield_amounts()
 		["defender-capsule"] = 2,
 		["destroyer-capsule"] = 0.3,
 		["distractor-capsule"] = 0.3,
-		["uranium-ore"] = 1
+		["uranium-ore"] = 1,
+		["mineable-wreckage"] = 1,
 	}
 	return data
 end
@@ -178,6 +172,29 @@ end
 
 local size_of_ore_raffle = #scrap_raffle_ores
 
+local function get_amount(data)
+	local entity = data.entity
+	local this = data.this
+	local distance_to_center = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
+
+	local distance_modifier = 0.25
+	local base_amount = 35
+	local maximum_amount = 100
+	if this.rocks_yield_ore_distance_modifier then distance_modifier = this.rocks_yield_ore_distance_modifier end
+	if this.rocks_yield_ore_base_amount then base_amount = this.rocks_yield_ore_base_amount end
+	if this.rocks_yield_ore_maximum_amount then maximum_amount = this.rocks_yield_ore_maximum_amount end
+
+	local amount = base_amount + (distance_to_center * distance_modifier)
+	if amount > maximum_amount then amount = maximum_amount end
+
+	local m = (70 + math_random(0, 60)) * 0.01
+
+	amount = math_floor(amount * scrap_yield_amounts()[entity.name] * m)
+	if amount < 1 then amount = 1 end
+
+	return amount
+end
+
 local function scrap_randomness(data)
 	local entity = data.entity
 	local this = data.this
@@ -196,11 +213,7 @@ local function scrap_randomness(data)
 		scrap = scrap_raffle_ores[math.random(1, size_of_ore_raffle)]
 	end
 
-	local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
-	local r1 = math.ceil(scrap_yield_amounts()[scrap] * (0.3 + (amount_bonus * 0.3)))
-	local r2 = math.ceil(scrap_yield_amounts()[scrap] * (1.7 + (amount_bonus * 1.7)))
-	if not r1 or not r2 then return end
-	local amount = math.random(r1, r2)
+	local amount = get_amount(data)
 
 	local position = {x = entity.position.x, y = entity.position.y}
 

@@ -178,11 +178,11 @@ local function add_gui_increase_stat(element, name, player, width)
 	e.style.minimal_width = 38
 	e.style.font = "default-large-semibold"
 	e.style.font_color = {0,0,0}
-	e.style.horizontal_align = "center"	
-	e.style.vertical_align = "center"	
+	e.style.horizontal_align = "center"
+	e.style.vertical_align = "center"
 	e.style.padding = 0
-	e.style.margin = 0	
-	e.tooltip = "Rightclick to allocate 5 points."
+	e.style.margin = 0
+	e.tooltip = "Right-click to allocate 3 points."
 	
 	return e
 end

@@ -14,6 +14,7 @@ require "modules.wave_defense.main"
 require "maps.scrapyard.comfylatron"
 require "modules.explosives"
 
+local Color = require 'utils.color_presets'
 local ICW = require "maps.scrapyard.icw.main"
 local WD = require "modules.wave_defense.table"
 local Map = require 'modules.map_info'
@@ -74,6 +75,21 @@ local function set_objective_health(entity, final_damage_amount)
 		entity.health = 600 * m
 	end
 	rendering.set_text(this.health_text, "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health)
+end
+
+local function set_difficulty()
+	local wave_defense_table = WD.get_table()
+	local player_count = #game.connected_players
+
+	wave_defense_table.max_active_biters = 1024
+
+	-- threat gain / wave
+	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
+
+
+	--20 Players for fastest wave_interval
+	wave_defense_table.wave_interval = 3600 - player_count * 90
+	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
 end
 
 function Public.reset_map()
@@ -261,21 +277,8 @@ function Public.reset_map()
 	surface.create_entity({name = "electric-beam", position = {-196, 190}, source = {-196, 190}, target = {196,190}})
 
 	RPG.rpg_reset_all_players()
-end
 
-local function set_difficulty()
-	local wave_defense_table = WD.get_table()
-	local player_count = #game.connected_players
-	
-	wave_defense_table.max_active_biters = 1024
-
-	-- threat gain / wave
-	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
-
-
-	--20 Players for fastest wave_interval
-	wave_defense_table.wave_interval = 3600 - player_count * 90
-	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
+	set_difficulty()
 end
 
 local function is_protected(entity)
@@ -327,14 +330,15 @@ local function on_player_changed_position(event)
 	if position.x >= 960 * 0.5 then return end
 	if position.x < 960 * -0.5 then return end
 	if position.y < 5 then
+		if not this.players[player.index].tiles_enabled then goto continue end
 		for x = -1,1 do
 			for y = -1,1 do
 		    local _pos = {position.x+x,position.y+y}
-			local steps = this.steps[player.index]
+			local steps = this.players[player.index].steps
 			local shallow, deepwater = surface.get_tile(_pos).name == "water-shallow", surface.get_tile(_pos).name == "deepwater-green"
 			if shallow or deepwater then goto continue end
 			change_tile(surface, _pos, steps)
-			this.steps[player.index] = this.steps[player.index] + 1
+			this.players[player.index].steps = this.players[player.index].steps + 1
 			end
 		end
 	end
@@ -360,16 +364,21 @@ local function on_player_joined_game(event)
 	local surface = game.surfaces[this.active_surface_index]
 	local player = game.players[event.player_index]
 
-	if not this.steps[player.index] then this.steps[player.index] = 0 end
-	--if not this.scrap_enabled[player.index] then this.scrap_enabled[player.index] = true end
-
 	set_difficulty(event)
 
-	if not this.first_join[player.index] then
-		 player.print("[color=blue]Grandmaster:[/color] Greetings, newly joined [color=yellow]" .. player.name .. "[/color]!", {r = 1, g = 0.5, b = 0.1})
-		 player.print("[color=blue]Grandmaster:[/color] Do read the map info.", {r = 1, g = 0.5, b = 0.1})
+	if not this.players[player.index] then this.players[player.index] = {
+		tiles_enabled = true,
+		steps = 0,
+		first_join = false
+		}
+	end
+
+	if not this.players[player.index].first_join then
+		 player.print("[color=blue]Grandmaster:[/color] Greetings, newly joined " .. player.name .. "!", {r = 1, g = 0.5, b = 0.1})
+		 player.print("[color=blue]Grandmaster:[/color] Please read the map info.", {r = 1, g = 0.5, b = 0.1})
 		 player.print("[color=blue]Grandmaster:[/color] Guide the choo through the black mist.", {r = 1, g = 0.5, b = 0.1})
-		this.first_join[player.index] = true
+		 player.print("[color=blue]Grandmaster:[/color] To disable rainbow mode, type in console: /rainbow_mode", Color.info)
+		this.players[player.index].first_join = true
 	end
 
 	if player.surface.index ~= this.active_surface_index then
@@ -511,6 +520,7 @@ function Public.loco_died()
   wave_defense_table.target = nil
   game.print("[color=blue]Grandmaster:[/color] Oh noooeeeew, they destroyed my train!", {r = 1, g = 0.5, b = 0.1})
   game.print("[color=blue]Grandmaster:[/color] Better luck next time.", {r = 1, g = 0.5, b = 0.1})
+  game.print("[color=blue]Grandmaster:[/color] Game will soft-reset shortly.", {r = 1, g = 0.5, b = 0.1})
   for i = 1, 12, 1 do
     surface.create_entity({name = "big-artillery-explosion", position = this.locomotive.position})
   end
@@ -658,6 +668,12 @@ local on_init = function()
 		"Mining productivity research, will overhaul your mining equipment,\n",
 		"reinforcing your pickaxe as well as increasing the size of your backpack.\n",
 		"\n",
+		"Scrap randomness seems to occur frequently, sometimes mining scrap\n",
+		"does not output scrap, weird...\n",
+		"\n",
+		"We've also noticed that solar eclipse occuring, \n",
+		"we have yet to solve this mystery\n",
+		"\n",
 		"Good luck, over and out!"
 		})
 		T.main_caption_color = {r = 150, g = 150, b = 0}
@@ -684,7 +700,8 @@ local function darkness(this)
 	local surface = game.surfaces[this.active_surface_index]
 	if rnd(1, 64) == 1 then
 		if surface.freeze_daytime then return end
-		game.print("[color=blue]Grandmaster:[/color] A solar eclipse has occured!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] darkness has surrounded us!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] builds some lamps!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 0.10
 		surface.brightness_visual_weights = {0.90, 0.90, 0.90}
 		surface.daytime = 0.42
@@ -693,10 +710,10 @@ local function darkness(this)
 		return
 	elseif rnd(1, 32) == 1 then
 		if not surface.freeze_daytime then return end
-		game.print("[color=blue]Grandmaster:[/color] Sunlight, finally!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] sunlight, finally!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 1
 		surface.brightness_visual_weights = {1, 0, 0, 0}
-		surface.daytime = 0.5
+		surface.daytime = 0.7
 		surface.freeze_daytime = false
 		surface.solar_power_multiplier = 1
 		return
@@ -709,14 +726,14 @@ local function scrap_randomness(this)
 	if rnd(1, 32) == 1 then
 		if not this.scrap_enabled then return end
 		this.scrap_enabled = false
-		game.print("[color=blue]Grandmaster:[/color] It seems that the scrap is temporarily gone.", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] Output from scrap is now only ores.", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] it seems that the scrap is temporarily gone.", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] output from scrap is now only ores.", {r = 1, g = 0.5, b = 0.1})
 		return
 	elseif rnd(1, 32) == 1 then
 		if this.scrap_enabled then return end
 		this.scrap_enabled = true
-		game.print("[color=blue]Grandmaster:[/color] Scrap is back!", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] Output from scrap is now randomized.", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] scrap is back!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] output from scrap is now randomized.", {r = 1, g = 0.5, b = 0.1})
 		return
 	end
 end
@@ -738,6 +755,26 @@ local on_tick = function()
 	end
 end
 
+commands.add_command(
+    'rainbow_mode',
+    'This will prevent new tiles from spawning when walking',
+    function(cmd)
+    local player = game.player
+    local this = Scrap_table.get_table()
+    if player and player.valid then
+    	if this.players[player.index].tiles_enabled == false then
+    		this.players[player.index].tiles_enabled = true
+    		player.print("Rainbow mode: ON", Color.green)
+    		return
+    	end
+    	if this.players[player.index].tiles_enabled == true then
+    		this.players[player.index].tiles_enabled = false
+    		player.print("Rainbow mode: OFF", Color.warning)
+    		return
+    	end
+	end
+end)
+
 if _DEBUG then
 commands.add_command(
     'reset_game',
@@ -756,7 +793,7 @@ commands.add_command(
 	end)
 end
 
-Event.on_nth_tick(5, on_tick)
+Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

@@ -2,7 +2,22 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
-local this = {}
+local this = {
+    players = {},
+    game_lost = false,
+    game_won = false,
+    energy = {},
+    wave_counter = 0,
+    locomotive_health = 10000,
+    locomotive_max_health = 10000,
+    cargo_health = 10000,
+    cargo_max_health = 10000,
+    revealed_spawn = 0,
+    scrap_enabled = true,
+    rocks_yield_ore_maximum_amount = 999,
+    rocks_yield_ore_base_amount = 50,
+    rocks_yield_ore_distance_modifier = 0.025
+}
 local Public = {}
 
 Global.register(
@@ -27,9 +42,7 @@ function Public.reset_table()
     this.cargo_health = 10000
     this.cargo_max_health = 10000
 	this.revealed_spawn = 0
-    this.steps = {}
     this.scrap_enabled = true
-    this.first_join = {}
 end
 
 function Public.get_table()
