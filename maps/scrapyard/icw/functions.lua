@@ -400,10 +400,15 @@ function Public.use_cargo_wagon_door(icw, player, door)
 		local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
 		local position = surface.find_non_colliding_position("character", position, 128, 0.5)
 		if not position then return end
-		player.teleport(position, surface)
-		player_data.state = 2
-		player.driving = true
-		Public.kill_minimap(player)	
+		if wagon.entity.type == "locomotive" then
+			player.teleport(position, surface)
+			player_data.state = 2
+			player.driving = true
+			Public.kill_minimap(player)	
+		else
+			player.teleport(position, surface)
+			Public.kill_minimap(player)	
+		end
 	else
 		local surface = wagon.surface
 		local area = wagon.area

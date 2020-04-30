@@ -93,21 +93,33 @@ local function mining_chances_ores()
 	return data
 end
 
-local function scrap_yield_amounts()
+local function ore_yield_amounts()
 	local data = {
 		["iron-ore"] = 28,
 		["copper-ore"] = 28,
 		["stone"] = 20,
 		["coal"] = 28,
-		["iron-plate"] = 4,
-		["iron-gear-wheel"] = 6,
-		["iron-stick"] = 6,
-		["copper-plate"] = 4,
-		["copper-cable"] = 6,
-		["electronic-circuit"] = 2,
-		["steel-plate"] = 2,
+		["uranium-ore"] = 1,
+		["mineable-wreckage"] = 1,
+	}
+	return data
+end
+
+local function scrap_yield_amounts()
+	local data = {
+		["iron-ore"] = 10,
+		["copper-ore"] = 10,
+		["stone"] = 8,
+		["coal"] = 9,
+		["iron-plate"] = 12,
+		["iron-gear-wheel"] = 12,
+		["iron-stick"] = 12,
+		["copper-plate"] = 12,
+		["copper-cable"] = 12,
+		["electronic-circuit"] = 4,
+		["steel-plate"] = 4,
 		["pipe"] = 5,
-		["solid-fuel"] = 4,
+		["solid-fuel"] = 6,
 		["empty-barrel"] = 3,
 		["crude-oil-barrel"] = 3,
 		["lubricant-barrel"] = 3,
@@ -175,6 +187,7 @@ local size_of_ore_raffle = #scrap_raffle_ores
 local function get_amount(data)
 	local entity = data.entity
 	local this = data.this
+	local scrap = data.scrap
 	local distance_to_center = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
 
 	local distance_modifier = 0.25
@@ -188,8 +201,15 @@ local function get_amount(data)
 	if amount > maximum_amount then amount = maximum_amount end
 
 	local m = (70 + math_random(0, 60)) * 0.01
-
-	amount = math_floor(amount * scrap_yield_amounts()[entity.name] * m)
+	if this.scrap_enabled then
+		local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
+		local r1 = math.ceil(scrap_yield_amounts()[scrap] * (0.3 + (amount_bonus * 0.3)))
+		local r2 = math.ceil(scrap_yield_amounts()[scrap] * (1.7 + (amount_bonus * 1.7)))
+		if not r1 or not r2 then return end
+		amount = math.random(r1, r2)
+	else
+		amount = math_floor(amount * ore_yield_amounts()[entity.name] * m)
+	end
 	if amount < 1 then amount = 1 end
 
 	return amount
@@ -199,7 +219,6 @@ local function scrap_randomness(data)
 	local entity = data.entity
 	local this = data.this
 	local player = data.player
-	local scrap
 
 	--if this.scrap_enabled[player.index] then
 	--	scrap = scrap_raffle_scrap[math.random(1, size_of_scrap_raffle)]
@@ -213,13 +232,15 @@ local function scrap_randomness(data)
 		scrap = scrap_raffle_ores[math.random(1, size_of_ore_raffle)]
 	end
 
-	local amount = get_amount(data)
+	data.scrap = scrap
+
+	local scrap_amount = get_amount(data)
 
 	local position = {x = entity.position.x, y = entity.position.y}
 
 	entity.destroy()
 
-	local scrap_amount = math_floor(amount * 0.85) + 1
+	--local scrap_amount = math_floor(amount * 0.85) + 1
 
 	if scrap_amount > max_spill then
 		player.surface.spill_item_stack(position,{name = scrap, count = max_spill}, true)

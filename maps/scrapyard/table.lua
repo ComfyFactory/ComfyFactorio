@@ -14,9 +14,9 @@ local this = {
     cargo_max_health = 10000,
     revealed_spawn = 0,
     scrap_enabled = true,
-    rocks_yield_ore_maximum_amount = 999,
+    rocks_yield_ore_maximum_amount = 500,
     rocks_yield_ore_base_amount = 50,
-    rocks_yield_ore_distance_modifier = 0.025
+    rocks_yield_ore_distance_modifier = 0.020
 }
 local Public = {}
 

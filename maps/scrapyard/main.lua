@@ -40,7 +40,7 @@ local math_floor = math.floor
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
 local disabled_entities = {"gun-turret", "laser-turret", "flamethrower-turret", "land-mine"}
-local colors = {"black-refined-concrete", "orange-refined-concrete", "red-refined-concrete", "yellow-refined-concrete", "acid-refined-concrete", "brown-refined-concrete", "blue-refined-concrete"}
+local colors = {"green-refined-concrete", "black-refined-concrete", "orange-refined-concrete", "red-refined-concrete", "yellow-refined-concrete", "brown-refined-concrete", "blue-refined-concrete"}
 local treasure_chest_messages = {
 	"You notice an old crate within the rubble. It's filled with treasure!",
 	"You find a chest underneath the broken rocks. It's filled with goodies!",
@@ -338,6 +338,9 @@ local function on_player_changed_position(event)
 			local shallow, deepwater = surface.get_tile(_pos).name == "water-shallow", surface.get_tile(_pos).name == "deepwater-green"
 			if shallow or deepwater then goto continue end
 			change_tile(surface, _pos, steps)
+			if this.players[player.index].steps > 5000 then 
+				this.players[player.index].steps = 0
+			end
 			this.players[player.index].steps = this.players[player.index].steps + 1
 			end
 		end
@@ -346,7 +349,7 @@ local function on_player_changed_position(event)
 	if position.y < 5 then Terrain.reveal(player) end
 	if position.y >= 190 then
 		player.teleport({position.x, position.y - 1}, surface)
-		player.print("[color=blue]Grandmaster:[/color] forcefield does not approve.",{r=0.98, g=0.66, b=0.22})
+		player.print("[color=blue]Grandmaster:[/color] Forcefield does not approve.",{r=0.98, g=0.66, b=0.22})
 		if player.character then
 			player.character.health = player.character.health - 5
 			player.character.surface.create_entity({name = "water-splash", position = position})
@@ -700,17 +703,17 @@ local function darkness(this)
 	local surface = game.surfaces[this.active_surface_index]
 	if rnd(1, 64) == 1 then
 		if surface.freeze_daytime then return end
-		game.print("[color=blue]Grandmaster:[/color] darkness has surrounded us!", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] builds some lamps!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] Darkness has surrounded us!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] Builds some lamps!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 0.10
 		surface.brightness_visual_weights = {0.90, 0.90, 0.90}
 		surface.daytime = 0.42
 		surface.freeze_daytime = true
-		surface.solar_power_multiplier = 999
+		surface.solar_power_multiplier = 1
 		return
 	elseif rnd(1, 32) == 1 then
 		if not surface.freeze_daytime then return end
-		game.print("[color=blue]Grandmaster:[/color] sunlight, finally!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] Sunlight, finally!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 1
 		surface.brightness_visual_weights = {1, 0, 0, 0}
 		surface.daytime = 0.7
@@ -723,17 +726,17 @@ end
 
 local function scrap_randomness(this)
 	local rnd = math.random
-	if rnd(1, 32) == 1 then
+	if rnd(1, 64) == 1 then
 		if not this.scrap_enabled then return end
 		this.scrap_enabled = false
-		game.print("[color=blue]Grandmaster:[/color] it seems that the scrap is temporarily gone.", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] output from scrap is now only ores.", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] It seems that the scrap is temporarily gone.", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] Output from scrap is now only ores.", {r = 1, g = 0.5, b = 0.1})
 		return
 	elseif rnd(1, 32) == 1 then
 		if this.scrap_enabled then return end
 		this.scrap_enabled = true
-		game.print("[color=blue]Grandmaster:[/color] scrap is back!", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] output from scrap is now randomized.", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] Scrap is back!", {r = 1, g = 0.5, b = 0.1})
+		game.print("[color=blue]Grandmaster:[/color] Output from scrap is now randomized.", {r = 1, g = 0.5, b = 0.1})
 		return
 	end
 end

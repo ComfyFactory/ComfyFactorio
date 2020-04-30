@@ -102,7 +102,7 @@ local function rebuild_energy_overworld(data)
 	}
 
 	rendering.draw_text{
-	  text = "Power",
+	  text = "Power to locomotive",
 	  surface = surface,
 	  target = this.ow_energy,
 	  target_offset = {0, -1.5},
@@ -145,7 +145,7 @@ local function rebuild_energy_loco(data, destroy)
 	}
 
 	rendering.draw_text{
-	  text = "Power",
+	  text = "Power to overworld",
 	  surface = loco_surface,
 	  target = this.lo_energy,
 	  target_offset = {0, -1.5},
