@@ -60,9 +60,9 @@ local function set_difficulty()
 	-- threat gain / wave
 	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
 
-	local amount = player_count * 0.25 + 21
+	local amount = player_count * 0.25 + 2
 	amount = math.floor(amount)
-	if amount > 10 then amount = 10 end	
+	if amount > 8 then amount = 8 end
 	Collapse.set_amount(amount)
 
 	--20 Players for fastest wave_interval
@@ -148,7 +148,7 @@ function Public.reset_map()
 	game.reset_time_played()
 	
 	Collapse.set_kill_entities(false)
-	Collapse.set_speed(2)
+	Collapse.set_speed(8)
 	Collapse.set_amount(1)
 	Collapse.set_max_line_size(level_depth)
 	Collapse.set_surface(surface)
