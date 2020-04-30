@@ -7,6 +7,7 @@ global.biter_command.enabled = true
 global.biter_command.whitelist = {}
 global.biter_command.admin_mode = true --if only admins can see and use the panel
 global.biter_command.teleporting = false --if teleporting is allowed for non-admins
+global.biter_command.buildings = true ---if player can trigger building nests and worms
 
 local worm_raffle = {
   "small-worm-turret", "small-worm-turret", "medium-worm-turret", "small-worm-turret",
@@ -45,6 +46,7 @@ local function get_evo(force)
 end
 
 local function place_nest_near_unit_group(group)
+  if not global.biter_command.buildings then return false end
   if not group.members then return false end
 	if #group.members < 5 then return false end
   local units = group.members
@@ -66,6 +68,7 @@ local function place_nest_near_unit_group(group)
 end
 
 local function build_worm(group)
+  if not global.biter_command.buildings then return false end
 	if not group.members then return false end
 	if #group.members < 5 then return false end
   local units = group.members
@@ -227,7 +230,7 @@ local function settle(group, source_player)
     flying_text(nil, 1, group.position, source_player)
   else
     flying_text(nil, 2, group.position, source_player)
-    source_player.print("Settling new nest failed. Check if group has enough members(5+) and there is empty space.")
+    source_player.print("Settling new nest failed. Check if group has enough members(5+) and there is empty space (or nests are disabled).")
   end
 end
 
@@ -237,7 +240,7 @@ local function siege(group, source_player)
     flying_text(nil, 1, group.position, source_player)
   else
     flying_text(nil, 2, group.position, source_player)
-    source_player.print("Making worm failed. Check if group has enough members(5+) and there is empty space.")
+    source_player.print("Making worm failed. Check if group has enough members(5+) and there is empty space (or worms are disabled).")
   end
 end
 

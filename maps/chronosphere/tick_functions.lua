@@ -47,7 +47,7 @@ function Public_tick.charge_chronosphere()
 		if energy > 3010000 and objective.chronotimer < objective.chrononeeds - 182 and objective.chronotimer > 130 then
 			acus[i].energy = acus[i].energy - 3000000
 			objective.chronotimer = objective.chronotimer + 1
-			game.surfaces[objective.active_surface_index].pollute(objective.locomotive.position, (10 + 2 * objective.chronojumps) * (4 / (objective.upgrades[2] / 2 + 1)) * global.difficulty_vote_value)
+			game.surfaces[objective.active_surface_index].pollute(objective.locomotive.position, (10 + 2 * objective.chronojumps) * (3 / (objective.upgrades[2] / 3 + 1)) * global.difficulty_vote_value)
 		end
 	end
 end

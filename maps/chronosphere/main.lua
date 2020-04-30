@@ -232,7 +232,7 @@ function Public.chronojump(choice)
 	objective.lab_cells = {}
 	objective.active_surface_index = game.create_surface("chronosphere" .. objective.chronojumps, Chrono.get_map_gen_settings()).index
 	local surface = game.surfaces[objective.active_surface_index]
-	log("seed of new surface: " .. surface.map_gen_settings.seed)
+	--log("seed of new surface: " .. surface.map_gen_settings.seed)
 	local planet = objective.planet
 	if choice then
 		Planets.determine_planet(choice)
@@ -247,7 +247,7 @@ function Public.chronojump(choice)
 	game.delete_surface(oldsurface)
 	Chrono.post_jump()
 	Event_functions.flamer_nerfs()
-	surface.pollute(objective.locomotive.position, 150 * (4 / (objective.upgrades[2] / 2 + 1)) * (1 + objective.chronojumps) * global.difficulty_vote_value)
+	surface.pollute(objective.locomotive.position, 150 * (3 / (objective.upgrades[2] / 3 + 1)) * (1 + objective.chronojumps) * global.difficulty_vote_value)
 	::continue::
 end
 
@@ -305,14 +305,14 @@ local function tick()
 			objective.chronotimer = objective.chronotimer + 1
 			objective.passivetimer = objective.passivetimer + 1
 			if objective.chronojumps > 0 then
-				if objective.locomotive ~= nil then 
+				if objective.locomotive ~= nil then
 					local surface = game.surfaces[objective.active_surface_index]
 					local pos = objective.locomotive.position or {x=0,y=0}
 					if surface and surface.valid then
 						game.surfaces[objective.active_surface_index].pollute(
-							pos, 
-							(0.5 * objective.chronojumps) * 
-							(4 / (objective.upgrades[2] / 2 + 1)) * 
+							pos,
+							(0.5 * objective.chronojumps) *
+							(3 / (objective.upgrades[2] / 3 + 1)) *
 							global.difficulty_vote_value)
 					end
 				end
@@ -320,8 +320,8 @@ local function tick()
 			if objective.planet[1].name.id == 19 then
 				Tick_functions.dangertimer()
 			end
-			if Tick_functions.check_chronoprogress() then 
-				Public.chronojump(nil) 
+			if Tick_functions.check_chronoprogress() then
+				Public.chronojump(nil)
 			end
 		end
 		if tick % 120 == 0 then
