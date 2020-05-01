@@ -356,7 +356,7 @@ local function go_to_some_location()
 	return true
 end
 
-local function spawn_comfylatron(surface, x, y)
+local function spawn_comfylatron(surface)
 	local this = Scrap_table.get_table()
 	if surface == nil then return end
 	if not this.comfylatron_last_player_visit then this.comfylatron_last_player_visit = 0 end
@@ -375,9 +375,9 @@ local function spawn_comfylatron(surface, x, y)
 	if #players == 0 then return false end
 	local player = players[math_random(1, #players)]
 
-	local position = player.surface.find_non_colliding_position("compilatron", player.position, 16, 1)
+	local position = surface.find_non_colliding_position("compilatron", player.position, 16, 1)
 	if not position then return false end
-	this.comfylatron = player.surface.create_entity({
+	this.comfylatron = surface.create_entity({
 		name = "compilatron",
 		position = position,
 		force = "neutral"
@@ -400,7 +400,7 @@ local function heartbeat()
 	local surface = game.surfaces[this.active_surface_index]
 	if not surface then return end
 	if surface == nil then return end
-	if not this.comfylatron then if math_random(1,4) == 1 then spawn_comfylatron(surface, 0, 26) end return end
+	if not this.comfylatron then if math_random(1,4) == 1 then spawn_comfylatron(surface) end return end
 	if not this.comfylatron.valid then this.comfylatron = nil return end
 	if visit_player() then return end
 	local nearby_players = get_nearby_players()

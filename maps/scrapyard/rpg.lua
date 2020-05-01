@@ -15,11 +15,14 @@ Modified by Gerkiz *-*
 
 require "player_modifiers"
 
-local math_random = math.random
 local Global = require 'utils.global'
 local Tabs = require "comfy_panel.main"
-local Color = require 'utils.color_presets'
 local P = require "player_modifiers"
+
+local math_floor = math.floor
+local math_random = math.random
+local math_sqrt = math.sqrt
+local nth_tick = 18001
 local visuals_delay = 1800
 local level_up_floating_text_color = {0, 205, 0}
 local xp_floating_text_color = {157, 157, 157}
@@ -39,9 +42,7 @@ local rpg_frame_icons = {
 	"entity/behemoth-spitter"
 }
 
-local math_sqrt = math.sqrt
-local math_floor = math.floor
-local math_random = math.random
+
 
 Global.register(
     {rpg_t=rpg_t, rpg_frame_icons=rpg_frame_icons},
@@ -480,8 +481,9 @@ local function gain_xp(player, amount)
 	rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
 end
 
-function global_pool()
+local function global_pool()
 	local pool = rpg_t.global_pool
+	if pool <= 5000 then return end
 	local player_count = #game.connected_players
 	local share = pool / player_count
 	rpg_t.global_pool = 0
@@ -489,11 +491,11 @@ function global_pool()
 		if rpg_t[p.index].level < 10 and p.online_time < 50000 then
 			local s = share * 2
 			p.create_local_flying_text{text="+" .. s .. " xp", position=p.position, color=xp_floating_text_color, time_to_live=240, speed=1}
-	    	gain_xp(p, s * 2)
+			gain_xp(p, s * 2)
 	    else
 			p.create_local_flying_text{text="+" .. share .. " xp", position=p.position, color=xp_floating_text_color, time_to_live=240, speed=1}
 			rpg_t[p.index].xp_since_last_floaty_text = 0
-	    	gain_xp(p, share)
+			gain_xp(p, share)
 	    end
 	end
 	return
@@ -511,7 +513,7 @@ function Public.rpg_reset_player(player, one_time_reset)
 		local old_xp = rpg_t[player.index].xp
 		rpg_t[player.index] = {
 			level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
-			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0, reset = true,
+			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0, reset = true, bonus = 1,
 			rotated_entity_delay = 0, gui_refresh_delay = 0, last_mined_entity_position = {x = 0, y = 0},
 		}
 		rpg_t[player.index].points_to_distribute = total
@@ -520,7 +522,7 @@ function Public.rpg_reset_player(player, one_time_reset)
 	else
 		rpg_t[player.index] = {
 			level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
-			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0, reset = false, total = 0,
+			last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0, reset = false, total = 0, bonus = 1,
 			rotated_entity_delay = 0, gui_refresh_delay = 0, last_mined_entity_position = {x = 0, y = 0},
 		}
 	end
@@ -838,12 +840,30 @@ local function on_player_rotated_entity(event)
 	gain_xp(player, 0.20)
 end
 
+local function distance(player)
+	local distance_to_center = math_floor(math_sqrt(player.position.x ^ 2 + player.position.y ^ 2))
+	local location = distance_to_center
+	if location < 950 then return end
+	local min = 960 * rpg_t[player.index].bonus
+	local max = 965 * rpg_t[player.index].bonus
+	local min_times = location >= min
+	local max_times = location <= max
+	if min_times and max_times then
+		rpg_t[player.index].bonus = rpg_t[player.index].bonus + 1
+		player.print("[color=blue]Grandmaster:[/color] Survivor! Well done.")
+		gain_xp(player, 300 * rpg_t[player.index].bonus)
+		return
+	end
+end
+
 local function on_player_changed_position(event)
-	if math_random(1, 64) ~= 1 then return end
 	local player = game.players[event.player_index]
+	if string.sub(player.surface.name, 0, 9) ~= "scrapyard" then return end
+	distance(player)
+	if math_random(1, 64) ~= 1 then return end
 	if not player.character then return end
 	if player.character.driving then return end
-	gain_xp(player, 1.0)	
+	gain_xp(player, 1.0)
 end
 
 local building_and_mining_blacklist = {
@@ -902,6 +922,10 @@ local function on_init(event)
 	table.shuffle_table(rpg_frame_icons)
 end
 
+local function tick()
+    global_pool()
+end
+
 local event = require 'utils.event'
 event.on_init(on_init)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
@@ -914,5 +938,6 @@ event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
 event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
+event.on_nth_tick(nth_tick, tick)
 
 return Public

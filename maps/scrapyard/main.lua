@@ -784,7 +784,7 @@ local function transfer_pollution(data)
 end
 
 local tick_minute_functions = {
-	[300 * 2] = scrap_randomness,
+	[300 * 2 + 30 * 2] = scrap_randomness,
 	[300 * 3 + 30 * 0] = darkness,
 	[300 * 3 + 30 * 1] = transfer_pollution,
 }
@@ -805,7 +805,6 @@ local on_tick = function()
 	if Collapse.start_now() == true then goto continue end
 	if this.left_top.y % Terrain.level_depth == 0 and this.left_top.y < 0 and this.left_top.y > Terrain.level_depth * -10 then
 		if not Collapse.start_now() then
-			this.o_left_top = this.left_top
 			Collapse.start_now(true)
 		end
 	end

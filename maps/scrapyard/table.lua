@@ -21,10 +21,7 @@ local this = {
         x = 0,
         y = 0
     },
-    o_left_top = {
-        x = 0,
-        y = 0
-    }
+    vendor = {}
 }
 local Public = {}
 
@@ -55,10 +52,8 @@ function Public.reset_table()
         x = 0,
         y = 0
     }
-    this.o_left_top = {
-        x = 0,
-        y = 0
-    }
+    this.train_upgrades = 0
+    this.energy_purchased = false
 end
 
 function Public.get_table()
