@@ -307,6 +307,7 @@ local function go_to_some_location()
 
 	if this.comfylatron_greet_player_index then
 		local player = game.players[this.comfylatron_greet_player_index]
+		if player.surface ~= this.comfylatron.surface then return end
 		if not player.character then
 			this.comfylatron_greet_player_index = nil
 			return false
@@ -359,11 +360,14 @@ end
 local function spawn_comfylatron(surface)
 	local this = Scrap_table.get_table()
 	if surface == nil then return end
+	if not this.locomotive then return end
+	if not this.locomotive.valid then return end
 	if not this.comfylatron_last_player_visit then this.comfylatron_last_player_visit = 0 end
 	if not this.comfylatron_habitat then
+		local pos = this.locomotive.position
 		this.comfylatron_habitat = {
-			left_top = {x = -512, y = -512},
-			right_bottom = {x = 512, y = 512}
+			left_top = {x = pos.x-256, y = pos.y-256},
+			right_bottom = {x = pos.x+256, y = pos.y+256}
 		}
 	end
 	local players = {}

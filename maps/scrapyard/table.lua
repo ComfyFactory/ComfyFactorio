@@ -54,6 +54,7 @@ function Public.reset_table()
     }
     this.train_upgrades = 0
     this.energy_purchased = false
+    this.freeze_daytime = false
 end
 
 function Public.get_table()

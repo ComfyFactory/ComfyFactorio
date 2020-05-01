@@ -22,6 +22,7 @@ local P = require "player_modifiers"
 local math_floor = math.floor
 local math_random = math.random
 local math_sqrt = math.sqrt
+local math_round = math.round
 local nth_tick = 18001
 local visuals_delay = 1800
 local level_up_floating_text_color = {0, 205, 0}
@@ -326,17 +327,17 @@ local function draw_gui(player, forced)
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "MINING\nSPEED", w1)
-	local value = (player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100 .. "%"
+	local value = math_round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) .. "%"
 	add_gui_stat(tt, value, w2)
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "SLOT\nBONUS", w1)
-	local value = "+ " .. player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus
+	local value = "+ " .. math_round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
 	add_gui_stat(tt, value, w2)
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "MELEE\nDAMAGE", w1)
-	local value = 100 * (1 + get_melee_modifier(player)) .. "%"
+	local value = math_round(100 * (1 + get_melee_modifier(player))) .. "%"
 	local e = add_gui_stat(tt, value, w2)
 	e.tooltip = "Life on-hit: " .. get_life_on_hit(player) .. "\nOne punch chance: " .. get_one_punch_chance(player) .. "%"
 	
@@ -370,12 +371,12 @@ local function draw_gui(player, forced)
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "CRAFTING\nSPEED", w1)
-	local value = (player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100 .. "%"
+	local value = math_round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) .. "%"
 	add_gui_stat(tt, value, w2)
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "RUNNING\nSPEED", w1)
-	local value = (player.force.character_running_speed_modifier  + player.character_running_speed_modifier + 1) * 100 .. "%"
+	local value = math_round((player.force.character_running_speed_modifier  + player.character_running_speed_modifier + 1) * 100) .. "%"
 	add_gui_stat(tt, value, w2)
 	
 	local e = add_gui_description(tt, "", w0)
@@ -387,7 +388,7 @@ local function draw_gui(player, forced)
 	
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "HEALTH\nBONUS", w1)
-	local value = "+ " .. (player.force.character_health_bonus + player.character_health_bonus)
+	local value = "+ " .. math_round((player.force.character_health_bonus + player.character_health_bonus))
 	add_gui_stat(tt, value, w2)
 	
 	add_separator(frame, 400)
@@ -458,15 +459,15 @@ local function level_up(player)
 	level_up_effects(player)
 end
 
-local function gain_xp(player, amount)
+function Public.gain_xp(player, amount)
 	local fee
 	if rpg_t[player.index].xp > 50 then
 		fee = math.ceil(rpg_t[player.index].xp * 0.01, 0) / 6
 	else
 		fee = 0
 	end
-	amount = math.round(amount, 2) - fee
-	rpg_t.global_pool = rpg_t.global_pool + fee
+	amount = math_round(amount, 2) - fee
+	rpg_t.global_pool = rpg_t.global_pool + math_round(fee)	
 	rpg_t[player.index].xp = rpg_t[player.index].xp + amount
 	rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
 	if player.gui.left.rpg then draw_gui(player, false) end
@@ -476,7 +477,7 @@ local function gain_xp(player, amount)
 		return
 	end
 	if rpg_t[player.index].last_floaty_text > game.tick then return end
-	player.create_local_flying_text{text="+" .. rpg_t[player.index].xp_since_last_floaty_text .. " xp", position=player.position, color=xp_floating_text_color, time_to_live=120, speed=2}
+	player.create_local_flying_text{text="+" .. math_round(rpg_t[player.index].xp_since_last_floaty_text) .. " xp", position=player.position, color=xp_floating_text_color, time_to_live=120, speed=2}
 	rpg_t[player.index].xp_since_last_floaty_text = 0
 	rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
 end
@@ -486,16 +487,19 @@ local function global_pool()
 	if pool <= 5000 then return end
 	local player_count = #game.connected_players
 	local share = pool / player_count
+	if player_count <= 20 then
+		share = share / 3
+	end
 	rpg_t.global_pool = 0
 	for _, p in pairs(game.connected_players) do
 		if rpg_t[p.index].level < 10 and p.online_time < 50000 then
 			local s = share * 2
 			p.create_local_flying_text{text="+" .. s .. " xp", position=p.position, color=xp_floating_text_color, time_to_live=240, speed=1}
-			gain_xp(p, s * 2)
+			Public.gain_xp(p, s * 2)
 	    else
 			p.create_local_flying_text{text="+" .. share .. " xp", position=p.position, color=xp_floating_text_color, time_to_live=240, speed=1}
 			rpg_t[p.index].xp_since_last_floaty_text = 0
-			gain_xp(p, share)
+			Public.gain_xp(p, share)
 	    end
 	end
 	return
@@ -666,7 +670,7 @@ local function on_entity_died(event)
 					if event.cause.force.index == event.entity.force.index then return end
 				end
 			end
-			gain_xp(event.entity.last_user, 1)
+			Public.gain_xp(event.entity.last_user, 1)
 			return
 		end
 	end
@@ -685,9 +689,9 @@ local function on_entity_died(event)
 		if event.entity.type == "unit" then
 			for _, player in pairs(players) do
 				if xp_yield[event.entity.name] then
-					gain_xp(player, xp_yield[event.entity.name] * global.biter_health_boost)
+					Public.gain_xp(player, xp_yield[event.entity.name] * global.biter_health_boost)
 				else
-					gain_xp(player, 0.5 * global.biter_health_boost)
+					Public.gain_xp(player, 0.5 * global.biter_health_boost)
 				end
 			end
 			return
@@ -697,9 +701,9 @@ local function on_entity_died(event)
 	--Grant normal XP
 	for _, player in pairs(players) do
 		if xp_yield[event.entity.name] then
-			gain_xp(player, xp_yield[event.entity.name])
+			Public.gain_xp(player, xp_yield[event.entity.name])
 		else
-			gain_xp(player, 0.5)
+			Public.gain_xp(player, 0.5)
 		end
 	end
 end
@@ -829,7 +833,7 @@ local function on_player_repaired_entity(event)
 	if math_random(1, 4) ~= 1 then return end
 	local player = game.players[event.player_index]
 	if not player.character then return end
-	gain_xp(player, 0.40)
+	Public.gain_xp(player, 0.40)
 end
 
 local function on_player_rotated_entity(event)
@@ -837,7 +841,7 @@ local function on_player_rotated_entity(event)
 	if not player.character then return end
 	if rpg_t[player.index].rotated_entity_delay > game.tick then return end
 	rpg_t[player.index].rotated_entity_delay = game.tick + 20
-	gain_xp(player, 0.20)
+	Public.gain_xp(player, 0.20)
 end
 
 local function distance(player)
@@ -851,7 +855,7 @@ local function distance(player)
 	if min_times and max_times then
 		rpg_t[player.index].bonus = rpg_t[player.index].bonus + 1
 		player.print("[color=blue]Grandmaster:[/color] Survivor! Well done.")
-		gain_xp(player, 300 * rpg_t[player.index].bonus)
+		Public.gain_xp(player, 300 * rpg_t[player.index].bonus)
 		return
 	end
 end
@@ -863,7 +867,7 @@ local function on_player_changed_position(event)
 	if math_random(1, 64) ~= 1 then return end
 	if not player.character then return end
 	if player.character.driving then return end
-	gain_xp(player, 1.0)
+	Public.gain_xp(player, 1.0)
 end
 
 local building_and_mining_blacklist = {
@@ -883,12 +887,12 @@ local function on_pre_player_mined_item(event)
 	rpg_t[player.index].last_mined_entity_position.x = entity.position.x
 	rpg_t[player.index].last_mined_entity_position.y = entity.position.y
 	
-	if entity.type == "resource" then gain_xp(player, 0.5) return end
+	if entity.type == "resource" then Public.gain_xp(player, 0.5) return end
 	--if entity.force.index == 3 then 
-		gain_xp(player, 0.75 + event.entity.prototype.max_health * 0.0013)
+		Public.gain_xp(player, 0.75 + event.entity.prototype.max_health * 0.0013)
 		--return 
 	--end
-	--gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
+	--Public.gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
 end
 
 local function on_player_crafted_item(event)
@@ -896,7 +900,7 @@ local function on_player_crafted_item(event)
 	local player = game.players[event.player_index]
 	if not player.valid then return end
 	local amount = math_floor(math_random(0.40, 4))
-	gain_xp(player, event.recipe.energy * amount)
+	Public.gain_xp(player, event.recipe.energy * amount)
 end
 
 local function on_player_respawned(event)

@@ -75,12 +75,12 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
 		local stack = wagon_inventory[i]
 		if stack.valid_for_read then
 			local request_stack = request_stacks[stack.name]
-			if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then			
+			if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then
 				chest_inventory.insert(stack)
 				stack.clear()
 				free_slots = free_slots - 1
 			end
-		end		
+		end
 	end
 end
 

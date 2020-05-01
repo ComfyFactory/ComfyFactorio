@@ -247,10 +247,12 @@ local function scrap_randomness(data)
 		player.surface.spill_item_stack(position,{name = scrap, count = scrap_amount}, true)
 	end
 
+	if scrap_amount <= 0 then scrap_amount = math_random(1,10) end
+
 	player.surface.create_entity({
 		name = "flying-text",
 		position = position,
-		text = "+" .. scrap_amount .. " [img=item/" .. scrap .. "]", 
+		text = "+" .. scrap_amount .. " [img=item/" .. scrap .. "]",
 		color = {r = 200, g = 160, b = 30}
 	})
 

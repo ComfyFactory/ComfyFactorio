@@ -3,6 +3,7 @@ local Power = require "maps.scrapyard.power"
 local ICW = require "maps.scrapyard.icw.main"
 local WD = require "modules.wave_defense.table"
 local Scrap_table = require "maps.scrapyard.table"
+local RPG = require 'maps.scrapyard.rpg'
 
 local Public = {}
 
@@ -13,72 +14,6 @@ local desc = {
 }
 
 local energy_upgrade = 50000000
-
-function Public.render_train_hp()
-	local this = Scrap_table.get_table()
-	local surface = game.surfaces[this.active_surface_index]
-	this.health_text = rendering.draw_text{
-		text = "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health,
-		surface = surface,
-		target = this.locomotive,
-		target_offset = {0, -2.5},
-		color = this.locomotive.color,
-		scale = 1.40,
-		font = "default-game",
-		alignment = "center",
-		scale_with_zoom = false
-	}
-	this.caption = rendering.draw_text{
-		text = "Grandmasters Train",
-		surface = surface,
-		target = this.locomotive,
-		target_offset = {0, -4.25},
-		color = this.locomotive.color,
-		scale = 1.80,
-		font = "default-game",
-		alignment = "center",
-		scale_with_zoom = false
-	}
-end
-
-function Public.locomotive_spawn(surface, position)
-	local this = Scrap_table.get_table()
-	for y = -6, 6, 2 do
-		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
-	end
-	this.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -3}, force = "player"})
-	this.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
-
-	this.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 3}, force = "player"})
-	this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 8})
-
-	rendering.draw_light({
-		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
-		oriented = true, color = {255,255,255}, target = this.locomotive,
-		surface = surface, visible = true, only_in_alt_mode = false,
-	})
-
-	this.locomotive.color = {0, 255, 0}
-	this.locomotive.minable = false
-	this.locomotive_cargo.minable = false
-	this.locomotive_cargo.operable = true
-
-	ICW.register_wagon(this.locomotive)
-	ICW.register_wagon(this.locomotive_cargo)
-end
-
-function Public.inside(pos, area)
-    local lt = area.left_top
-    local rb = area.right_bottom
-
-    return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
-end
-function Public.contains_positions(pos, area)
-    if Public.inside(pos, area) then
-        return true
-    end
-    return false
-end
 
 local function rebuild_energy_overworld(data)
 	local this = data.this
@@ -309,7 +244,110 @@ local function on_gui_opened(event)
 	if event.entity.name == "market" then refresh_market(data) return end
 end
 
+local function property_boost(data)
+	local surface = data.surface
+	local rng = math.random
+	local xp_floating_text_color = {r = rng(0,128), g = 128, b = 0}
+	local visuals_delay = 1800
+	local this = data.this
+	local rpg = data.rpg
+	local loco = this.locomotive.position
+	local area = {
+        left_top = {x = loco.x - 40, y = loco.y - 40},
+        right_bottom = {x = loco.x + 40, y = loco.y + 40}
+        }
+	for _, player in pairs(game.connected_players) do
+		if player.surface ~= surface then return end
+		if Public.contains_positions(player.position, area) then
+			local pos = player.position
+			RPG.gain_xp(player, 0.2)
+			player.create_local_flying_text{text="+" .. "", position={x=pos.x, y=pos.y-2}, color=xp_floating_text_color, time_to_live=120, speed=2}
+			rpg[player.index].xp_since_last_floaty_text = 0
+			rpg[player.index].last_floaty_text = game.tick + visuals_delay
+		end
+	end
+end
 
+function Public.boost_players_around_train()
+	local rpg = RPG.get_table()
+	local this = Scrap_table.get_table()
+	local surface = game.surfaces[this.active_surface_index]
+	if not this.locomotive then return end
+	if not this.locomotive.valid then return end
+
+	local data = {
+		this = this,
+		surface = surface,
+		rpg = rpg
+	}
+	property_boost(data)
+end
+
+function Public.render_train_hp()
+	local this = Scrap_table.get_table()
+	local surface = game.surfaces[this.active_surface_index]
+	this.health_text = rendering.draw_text{
+		text = "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health,
+		surface = surface,
+		target = this.locomotive,
+		target_offset = {0, -2.5},
+		color = this.locomotive.color,
+		scale = 1.40,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false
+	}
+	this.caption = rendering.draw_text{
+		text = "Grandmasters Train",
+		surface = surface,
+		target = this.locomotive,
+		target_offset = {0, -4.25},
+		color = this.locomotive.color,
+		scale = 1.80,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false
+	}
+end
+
+function Public.locomotive_spawn(surface, position)
+	local this = Scrap_table.get_table()
+	for y = -6, 6, 2 do
+		surface.create_entity({name = "straight-rail", position = {position.x, position.y + y}, force = "player", direction = 0})
+	end
+	this.locomotive = surface.create_entity({name = "locomotive", position = {position.x, position.y + -3}, force = "player"})
+	this.locomotive.get_inventory(defines.inventory.fuel).insert({name = "wood", count = 100})
+
+	this.locomotive_cargo = surface.create_entity({name = "cargo-wagon", position = {position.x, position.y + 3}, force = "player"})
+	this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = "raw-fish", count = 8})
+
+	rendering.draw_light({
+		sprite = "utility/light_medium", scale = 5.5, intensity = 1, minimum_darkness = 0,
+		oriented = true, color = {255,255,255}, target = this.locomotive,
+		surface = surface, visible = true, only_in_alt_mode = false,
+	})
+
+	this.locomotive.color = {0, 255, 0}
+	this.locomotive.minable = false
+	this.locomotive_cargo.minable = false
+	this.locomotive_cargo.operable = true
+
+	ICW.register_wagon(this.locomotive)
+	ICW.register_wagon(this.locomotive_cargo)
+end
+
+function Public.inside(pos, area)
+    local lt = area.left_top
+    local rb = area.right_bottom
+
+    return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+end
+function Public.contains_positions(pos, area)
+    if Public.inside(pos, area) then
+        return true
+    end
+    return false
+end
 
 function Public.place_market()
 	local this = Scrap_table.get_table()
@@ -401,6 +439,9 @@ local function tick()
 	Public.power_source_overworld()
 	Public.power_source_locomotive()
 	Public.place_market()
+	if game.tick % 90 == 0 then
+		Public.boost_players_around_train()
+	end
 	if game.tick % 30 == 0 then
 		if game.tick % 1800 == 0 then
 			set_player_spawn_and_refill_fish()

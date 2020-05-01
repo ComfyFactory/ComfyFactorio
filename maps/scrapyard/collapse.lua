@@ -131,9 +131,9 @@ function Public.get_position()
 end
 
 function Public.start_now(status)
-	if status == "start" then
+	if status == true then
 		collapse.start_now = true
-	elseif status == "stop" then
+	elseif status == false then
 		collapse.start_now = false
 	end
 	return collapse.start_now

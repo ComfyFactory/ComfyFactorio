@@ -709,7 +709,22 @@ local on_init = function()
 		"We've also noticed that solar eclipse occuring, \n",
 		"we have yet to solve this mystery\n",
 		"\n",
-		"Good luck, over and out!"
+		"Good luck, over and out!",
+		"\n",
+		"\n",
+		"\n",
+		"Fixes:\n",
+		"Collapse activates after reaching first breach wall\n",
+		"Crafting grants more xp\n",
+		"Magic is tweaked\n",
+		"Loot chests are affected by magic\n",
+		"Scrap turrets are boosted in dmg\n",
+		"Disable out-of-map tile placing\n",
+		"RPG levels are now visible in the player list\n",
+		"Moved comfylatron to overworld, 'lil bugger was causing issues\n",
+		"RPG now has a global XP pool\n",
+		"Locomotive has now market upgrades\n",
+		"XP is granted after each breached wall\n"
 		})
 		T.main_caption_color = {r = 150, g = 150, b = 0}
 		T.sub_caption_color = {r = 0, g = 150, b = 0}
@@ -732,9 +747,10 @@ end
 
 local function darkness(data)
 	local rnd = math.random
+	local this = data.this
 	local surface = data.surface
 	if rnd(1, 64) == 1 then
-		if surface.freeze_daytime then return end
+		if this.freeze_daytime then return end
 		game.print("[color=blue]Grandmaster:[/color] Darkness has surrounded us!", {r = 1, g = 0.5, b = 0.1})
 		game.print("[color=blue]Grandmaster:[/color] Builds some lamps!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 0
@@ -742,15 +758,17 @@ local function darkness(data)
 		surface.daytime = 0.42
 		surface.freeze_daytime = true
 		surface.solar_power_multiplier = 0
+		this.freeze_daytime = true
 		return
 	elseif rnd(1, 32) == 1 then
-		if not surface.freeze_daytime then return end
+		if not this.freeze_daytime then return end
 		game.print("[color=blue]Grandmaster:[/color] Sunlight, finally!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 1
 		surface.brightness_visual_weights = {1, 0, 0, 0}
 		surface.daytime = 0.7
 		surface.freeze_daytime = false
 		surface.solar_power_multiplier = 1
+		this.freeze_daytime = false
 		return
 	end
 end
@@ -785,7 +803,7 @@ end
 
 local tick_minute_functions = {
 	[300 * 2 + 30 * 2] = scrap_randomness,
-	[300 * 3 + 30 * 0] = darkness,
+	[300 * 3 + 30 * 3] = darkness,
 	[300 * 3 + 30 * 1] = transfer_pollution,
 }
 
@@ -794,6 +812,7 @@ local on_tick = function()
 	local surface = game.surfaces[this.active_surface_index]
 	local wave_defense_table = WD.get_table()
 	local tick = game.tick
+	local status = Collapse.start_now()
 	local key = tick % 3600
 	local data = {
 		this = this,
@@ -802,7 +821,7 @@ local on_tick = function()
 	if not this.locomotive.valid then
 		Public.loco_died()
 	end
-	if Collapse.start_now() == true then goto continue end
+	if status == true then goto continue end
 	if this.left_top.y % Terrain.level_depth == 0 and this.left_top.y < 0 and this.left_top.y > Terrain.level_depth * -10 then
 		if not Collapse.start_now() then
 			Collapse.start_now(true)
