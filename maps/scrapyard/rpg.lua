@@ -462,12 +462,12 @@ end
 function Public.gain_xp(player, amount)
 	local fee
 	if rpg_t[player.index].xp > 50 then
-		fee = math.ceil(rpg_t[player.index].xp * 0.01, 0) / 6
+		fee = amount * 0.3
 	else
 		fee = 0
 	end
 	amount = math_round(amount, 2) - fee
-	rpg_t.global_pool = rpg_t.global_pool + math_round(fee)	
+	rpg_t.global_pool = rpg_t.global_pool + fee
 	rpg_t[player.index].xp = rpg_t[player.index].xp + amount
 	rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
 	if player.gui.left.rpg then draw_gui(player, false) end

@@ -57,10 +57,12 @@ local treasure_chest_messages = {
 }
 
 local rare_treasure_chest_messages = {
-	"Your magic improves. You have found a chest that is filled with rare treasure!",
+	"Your magic improves. You have found a chest that is filled with rare treasures!",
 	"Oh wonderful magic. You found a chest underneath the broken rocks. It's filled with rare goodies!",
 	"You're a wizard Harry! We has found the rare precious!",
 }
+
+local grandmaster = "[color=blue]Grandmaster:[/color]"
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -373,7 +375,7 @@ local function on_player_changed_position(event)
 	if position.y < 5 then Terrain.reveal(player) end
 	if position.y >= 190 then
 		player.teleport({position.x, position.y - 1}, surface)
-		player.print("[color=blue]Grandmaster:[/color] Forcefield does not approve.",{r=0.98, g=0.66, b=0.22})
+		player.print(grandmaster .. " Forcefield does not approve.",{r=0.98, g=0.66, b=0.22})
 		if player.character then
 			player.character.health = player.character.health - 5
 			player.character.surface.create_entity({name = "water-splash", position = position})
@@ -401,10 +403,10 @@ local function on_player_joined_game(event)
 	end
 
 	if not this.players[player.index].first_join then
-		 player.print("[color=blue]Grandmaster:[/color] Greetings, newly joined " .. player.name .. "!", {r = 1, g = 0.5, b = 0.1})
-		 player.print("[color=blue]Grandmaster:[/color] Please read the map info.", {r = 1, g = 0.5, b = 0.1})
-		 player.print("[color=blue]Grandmaster:[/color] Guide the choo through the black mist.", {r = 1, g = 0.5, b = 0.1})
-		 player.print("[color=blue]Grandmaster:[/color] To disable rainbow mode, type in console: /rainbow_mode", Color.info)
+		 player.print(grandmaster .. " Greetings, newly joined " .. player.name .. "!", {r = 1, g = 0.5, b = 0.1})
+		 player.print(grandmaster .. " Please read the map info.", {r = 1, g = 0.5, b = 0.1})
+		 player.print(grandmaster .. " Guide the choo through the black mist.", {r = 1, g = 0.5, b = 0.1})
+		 player.print(grandmaster .. " To disable rainbow mode, type in console: /rainbow_mode", Color.info)
 		this.players[player.index].first_join = true
 	end
 
@@ -540,7 +542,7 @@ local function on_player_repaired_entity(event)
 	if not event.entity.health then return end
 	local entity = event.entity
 	if entity == this.locomotive_cargo or entity == this.locomotive then
-		set_objective_health(entity, -4)
+		set_objective_health(entity, -1)
 	end
 end
 
@@ -551,8 +553,8 @@ function Public.loco_died()
   if not this.locomotive.valid then
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
-    game.print("[color=blue]Grandmaster:[/color] Oh noooeeeew, the void destroyed my train!", {r = 1, g = 0.5, b = 0.1})
-    game.print("[color=blue]Grandmaster:[/color] Better luck next time.", {r = 1, g = 0.5, b = 0.1})
+    game.print(grandmaster .. " Oh noooeeeew, the void destroyed my train!", {r = 1, g = 0.5, b = 0.1})
+    game.print(grandmaster .. " Better luck next time.", {r = 1, g = 0.5, b = 0.1})
     Public.reset_map()
     return
   end
@@ -561,9 +563,9 @@ function Public.loco_died()
   rendering.set_text(this.health_text, "HP: " .. this.locomotive_health .. " / " .. this.locomotive_max_health)
   wave_defense_table.game_lost = true
   wave_defense_table.target = nil
-  game.print("[color=blue]Grandmaster:[/color] Oh noooeeeew, they destroyed my train!", {r = 1, g = 0.5, b = 0.1})
-  game.print("[color=blue]Grandmaster:[/color] Better luck next time.", {r = 1, g = 0.5, b = 0.1})
-  game.print("[color=blue]Grandmaster:[/color] Game will soft-reset shortly.", {r = 1, g = 0.5, b = 0.1})
+  game.print(grandmaster .. " Oh noooeeeew, they destroyed my train!", {r = 1, g = 0.5, b = 0.1})
+  game.print(grandmaster .. " Better luck next time.", {r = 1, g = 0.5, b = 0.1})
+  game.print(grandmaster .. " Game will soft-reset shortly.", {r = 1, g = 0.5, b = 0.1})
 
   local fake_shooter = surface.create_entity({name = "character", position = this.locomotive.position, force = "enemy"})
   surface.create_entity({name = "atomic-rocket", position = this.locomotive.position, force = "enemy", speed = 1, max_range = 800, target = this.locomotive, source = fake_shooter})
@@ -630,7 +632,7 @@ local function on_built_entity(event)
 	local y = event.created_entity.position.y
 	local ent = event.created_entity
 	if y >= 150 then
-		player.print("[color=blue]Grandmaster:[/color] I do not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
+		player.print(grandmaster .. " I do not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
 		ent.die()
 		return
 	else
@@ -639,7 +641,7 @@ local function on_built_entity(event)
 				if y >= 0 then
 					ent.active = false
 					if event.player_index then
-						player.print("[color=blue]Grandmaster:[/color] Can't build here. I disabled your " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
+						player.print(grandmaster .. " Can't build here. I disabled your " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
 						return
 					end
 				end
@@ -660,7 +662,7 @@ local function on_robot_built_entity(event)
 	local y = event.created_entity.position.y
 	local ent = event.created_entity
 	if y >= 150 then
-		game.print("[color=blue]Grandmaster:[/color] I do not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " I do not approve, " .. ent.name .. " was obliterated.", {r = 1, g = 0.5, b = 0.1})
 		ent.die()
 		return
 	else
@@ -669,7 +671,7 @@ local function on_robot_built_entity(event)
 				if y >= 0 then
 					ent.active = false
 					if event.player_index then
-						game.print("[color=blue]Grandmaster:[/color] Can't build here. I disabled your " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
+						game.print(grandmaster .. " Can't build here. I disabled your " .. ent.name ..".", {r = 1, g = 0.5, b = 0.1})
 						return
 					end
 				end
@@ -685,8 +687,9 @@ local on_init = function()
 	game.forces.enemy.set_friend('scrap', true)
 	game.forces.scrap.set_friend('player', true)
 	game.forces.scrap.set_friend('enemy', true)
+	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.scrap.share_chart = false
-	global.rocks_yield_ore_maximum_amount = 999
+	global.rocks_yield_ore_maximum_amount = 500
 	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.025
 	Public.reset_map()
@@ -724,7 +727,9 @@ local on_init = function()
 		"Moved comfylatron to overworld, 'lil bugger was causing issues\n",
 		"RPG now has a global XP pool\n",
 		"Locomotive has now market upgrades\n",
-		"XP is granted after each breached wall\n"
+		"XP is granted after each breached wall\n",
+		"Train now has a XP aura, stay near it!\n",
+		"Aura increases after each breach wall"
 		})
 		T.main_caption_color = {r = 150, g = 150, b = 0}
 		T.sub_caption_color = {r = 0, g = 150, b = 0}
@@ -751,8 +756,8 @@ local function darkness(data)
 	local surface = data.surface
 	if rnd(1, 64) == 1 then
 		if this.freeze_daytime then return end
-		game.print("[color=blue]Grandmaster:[/color] Darkness has surrounded us!", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] Builds some lamps!", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " Darkness has surrounded us!", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " Builds some lamps!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 0
 		surface.brightness_visual_weights = {0.90, 0.90, 0.90}
 		surface.daytime = 0.42
@@ -762,7 +767,7 @@ local function darkness(data)
 		return
 	elseif rnd(1, 32) == 1 then
 		if not this.freeze_daytime then return end
-		game.print("[color=blue]Grandmaster:[/color] Sunlight, finally!", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " Sunlight, finally!", {r = 1, g = 0.5, b = 0.1})
 		surface.min_brightness = 1
 		surface.brightness_visual_weights = {1, 0, 0, 0}
 		surface.daytime = 0.7
@@ -780,14 +785,14 @@ local function scrap_randomness(data)
 	if rnd(1, 64) == 1 then
 		if not this.scrap_enabled then return end
 		this.scrap_enabled = false
-		game.print("[color=blue]Grandmaster:[/color] It seems that the scrap is temporarily gone.", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] Output from scrap is now only ores.", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " It seems that the scrap is temporarily gone.", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " Output from scrap is now only ores.", {r = 1, g = 0.5, b = 0.1})
 		return
 	elseif rnd(1, 32) == 1 then
 		if this.scrap_enabled then return end
 		this.scrap_enabled = true
-		game.print("[color=blue]Grandmaster:[/color] Scrap is back!", {r = 1, g = 0.5, b = 0.1})
-		game.print("[color=blue]Grandmaster:[/color] Output from scrap is now randomized.", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " Scrap is back!", {r = 1, g = 0.5, b = 0.1})
+		game.print(grandmaster .. " Output from scrap is now randomized.", {r = 1, g = 0.5, b = 0.1})
 		return
 	end
 end

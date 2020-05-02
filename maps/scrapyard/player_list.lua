@@ -183,7 +183,7 @@ local function player_list_show(player, frame, sort_by)
 
 	-- Header management
 	local t = frame.add { type = "table", name = "player_list_panel_header_table", column_count = 6 }
-	local column_widths = {tonumber(40), tonumber(150), tonumber(150), tonumber(150), tonumber(150), tonumber(100)}
+	local column_widths = {tonumber(60), tonumber(150), tonumber(125), tonumber(150), tonumber(150), tonumber(100)}
 	for _, w in ipairs(column_widths) do
 		local label = t.add { type = "label", caption = "" }
 		label.style.minimal_width = w

@@ -244,6 +244,26 @@ local function on_gui_opened(event)
 	if event.entity.name == "market" then refresh_market(data) return end
 end
 
+--local function distance(data)
+--	local sqrt = math.sqrt
+--	local floor = math.floor
+--	local player = data.player
+--	local rpg = data.rpg
+--	local distance_to_center = floor(sqrt(player.position.x ^ 2 + player.position.y ^ 2))
+--	local location = distance_to_center
+--	if location < 950 then return end
+--	local min = 960 * rpg[player.index].bonus
+--	local max = 965 * rpg[player.index].bonus
+--	local min_times = location >= min
+--	local max_times = location <= max
+--	if min_times and max_times then
+--		rpg[player.index].bonus = rpg[player.index].bonus + 1
+--		player.print("[color=blue]Grandmaster:[/color] Survivor! Well done.")
+--		Public.gain_xp(player, 300 * rpg[player.index].bonus)
+--		return
+--	end
+--end
+
 local function property_boost(data)
 	local surface = data.surface
 	local rng = math.random
@@ -260,7 +280,7 @@ local function property_boost(data)
 		if player.surface ~= surface then return end
 		if Public.contains_positions(player.position, area) then
 			local pos = player.position
-			RPG.gain_xp(player, 0.2)
+			RPG.gain_xp(player, 0.2 * rpg[player.index].bonus)
 			player.create_local_flying_text{text="+" .. "", position={x=pos.x, y=pos.y-2}, color=xp_floating_text_color, time_to_live=120, speed=2}
 			rpg[player.index].xp_since_last_floaty_text = 0
 			rpg[player.index].last_floaty_text = game.tick + visuals_delay
@@ -439,7 +459,7 @@ local function tick()
 	Public.power_source_overworld()
 	Public.power_source_locomotive()
 	Public.place_market()
-	if game.tick % 90 == 0 then
+	if game.tick % 120 == 0 then
 		Public.boost_players_around_train()
 	end
 	if game.tick % 30 == 0 then
