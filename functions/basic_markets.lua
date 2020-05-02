@@ -9,7 +9,7 @@ market.weapons = {
 	["combat-shotgun"] = {value = 400, rarity = 5},
 	["rocket-launcher"] = {value = 250, rarity = 4},
 	["flamethrower"] = {value = 750, rarity = 6},
-	["land-mine"] = {value = 5, rarity = 5},
+	["land-mine"] = {value = 3, rarity = 5},
 }
 
 market.ammo = {
@@ -227,6 +227,7 @@ function Public.mountain_market(surface, position, rarity)
 		["locomotive"] = true,
 		["artillery-wagon"] = true,
 		["fluid-wagon"] = true,
+		["land-mine"] = true,
 	}
 	
 	for i = 1, math.random(5, 10), 1 do

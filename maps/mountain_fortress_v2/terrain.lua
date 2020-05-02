@@ -7,7 +7,7 @@ local math_floor = math.floor
 local math_abs = math.abs
 local simplex_noise = require "utils.simplex_noise".d2
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
-local wagon_raffle = {"cargo-wagon", "cargo-wagon", "cargo-wagon", "cargo-wagon", "cargo-wagon", "locomotive", "fluid-wagon"}
+local wagon_raffle = {"cargo-wagon", "cargo-wagon", "cargo-wagon", "locomotive", "fluid-wagon"}
 local size_of_rock_raffle = #rock_raffle
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local noises = {
@@ -23,8 +23,13 @@ local noises = {
 	["cave_rivers_4"] = {{modifier = 0.001, weight = 1}, {modifier = 0.01, weight = 0.11}, {modifier = 0.05, weight = 0.01}},
 	["scrapyard"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}},
 }
+
 local level_depth = 704
 local worm_level_modifier = 0.18
+
+local average_number_of_wagons_per_level = 2
+local chunks_per_level = ((level_depth - 32) / 32) ^ 2
+local chance_for_wagon_spawn = math_floor(chunks_per_level / average_number_of_wagons_per_level)
 
 local function get_noise(name, pos, seed)
 	local noise = 0
@@ -984,7 +989,7 @@ local function process_chunk(surface, left_top)
 	end
 	if left_top.y < 0 then
 		rock_chunk(surface, left_top)
-		if math_random(1, 160) == 1 then place_wagon(surface, left_top) end
+		if math_random(1, chance_for_wagon_spawn) == 1 then place_wagon(surface, left_top) end
 		return 
 	end
 	if left_top.y > 96 then out_of_map(surface, left_top) return end
