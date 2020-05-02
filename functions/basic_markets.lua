@@ -9,7 +9,7 @@ market.weapons = {
 	["combat-shotgun"] = {value = 400, rarity = 5},
 	["rocket-launcher"] = {value = 250, rarity = 4},
 	["flamethrower"] = {value = 750, rarity = 6},
-	["land-mine"] = {value = 3, rarity = 5},
+	["land-mine"] = {value = 5, rarity = 5},
 }
 
 market.ammo = {
@@ -221,9 +221,18 @@ function Public.mountain_market(surface, position, rarity)
 	if not items then return end
 	if #items > 0 then table.shuffle_table(items) end
 	local market = surface.create_entity({name = "market", position = position, force="neutral"})
+	
+	local blacklist = {
+		["cargo-wagon"] = true,
+		["locomotive"] = true,
+		["artillery-wagon"] = true,
+		["fluid-wagon"] = true,
+	}
+	
 	for i = 1, math.random(5, 10), 1 do
-		if not items[i] then break end
-		market.add_market_item(items[i])
+		local item = items[i]
+		if not item then break end
+		if not blacklist[item.offer.item] then market.add_market_item(items[i]) end
 	end
 	
 	local sells = get_resource_market_sells()

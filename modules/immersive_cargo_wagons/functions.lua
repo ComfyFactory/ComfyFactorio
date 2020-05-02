@@ -349,22 +349,27 @@ function Public.create_wagon_room(icw, wagon)
 	end
 end
 
-function Public.create_wagon(icw, created_entity)
+function Public.create_wagon(icw, created_entity, delay_surface)
 	if not created_entity.unit_number then return end
 	if icw.trains[tonumber(created_entity.surface.name)] or icw.wagons[tonumber(created_entity.surface.name)] then return end
 	if not Constants.wagon_types[created_entity.type] then return end
 	local wagon_area = Constants.wagon_areas[created_entity.type]
-
+	
 	icw.wagons[created_entity.unit_number] = {
-		entity = created_entity,
-		area = {left_top = {x = wagon_area.left_top.x, y = wagon_area.left_top.y}, right_bottom = {x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y}},
-		surface = Public.create_room_surface(icw, created_entity.unit_number),
-		doors = {},
-		entity_count = 0,
-	}		
-	Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
+			entity = created_entity,
+			area = {left_top = {x = wagon_area.left_top.x, y = wagon_area.left_top.y}, right_bottom = {x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y}},			
+			doors = {},
+			entity_count = 0,
+		}		
+	local wagon = icw.wagons[created_entity.unit_number]
+	
+	if not delay_surface then
+		wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
+		Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])		
+	end
+	
 	Public.request_reconstruction(icw)
-	return icw.wagons[created_entity.unit_number]
+	return wagon
 end
 
 function Public.add_wagon_entity_count(icw, added_entity)
@@ -516,6 +521,12 @@ function Public.reconstruct_all_trains(icw)
 			Public.request_reconstruction(icw)
 			return
 		end
+		
+		if not wagon.surface then
+			wagon.surface = Public.create_room_surface(icw, unit_number)
+			Public.create_wagon_room(icw, wagon)
+		end
+		
 		local carriages = wagon.entity.train.carriages
 		Public.construct_train(icw, carriages)
 	end

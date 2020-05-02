@@ -51,6 +51,15 @@ local function game_over()
 	end
 end
 
+local function disable_recipes()
+	local force = game.forces.player
+	force.recipes["cargo-wagon"].enabled = false
+	force.recipes["fluid-wagon"].enabled = false
+	force.recipes["artillery-wagon"].enabled = false
+	force.recipes["locomotive"].enabled = false
+	force.recipes["pistol"].enabled = false
+end
+
 local function set_difficulty()
 	local wave_defense_table = WD.get_table()
 	local player_count = #game.connected_players
@@ -132,8 +141,10 @@ function Public.reset_map()
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
+	game.forces.player.technologies["fluid-wagon"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
-	game.forces.player.recipes["pistol"].enabled = false
+	disable_recipes()
+	
 	game.forces.player.set_spawn_position({-2, 16}, surface)
 	game.forces.enemy.set_ammo_damage_modifier("bullet", 1)
 	game.forces.enemy.set_turret_attack_modifier("gun-turret", 1)
@@ -323,6 +334,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_research_finished(event)
+	disable_recipes()
 	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
 	local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
 	if event.research.force.technologies["steel-axe"].researched then mining_speed_bonus = mining_speed_bonus + 0.5 end -- +50% speed for steel-axe research

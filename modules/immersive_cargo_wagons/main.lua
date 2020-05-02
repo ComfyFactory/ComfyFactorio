@@ -121,8 +121,9 @@ function Public.get_table()
 	return icw
 end
 
-function Public.register_wagon(wagon_entity)
-	return Functions.create_wagon(icw, wagon_entity)
+--Set delay_surface to true when using on_chunk_generated event, to prevent issues.
+function Public.register_wagon(wagon_entity, delay_surface)
+	return Functions.create_wagon(icw, wagon_entity, delay_surface)
 end
 
 Event.on_init(on_init)
