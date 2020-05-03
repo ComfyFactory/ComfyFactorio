@@ -7,6 +7,8 @@ require "player_modifiers"
 require "functions.soft_reset"
 require "functions.basic_markets"
 
+local ComfyPanel = require "comfy_panel.main"
+local Map_score = require "comfy_panel.map_score"
 local Collapse = require "modules.collapse"
 local RPG = require "modules.rpg"
 require "modules.wave_defense.main"
@@ -30,7 +32,11 @@ local WD = require "modules.wave_defense.table"
 local Treasure = require "maps.mountain_fortress_v2.treasure"
 local Locomotive = require "maps.mountain_fortress_v2.locomotive"
 local Modifier = require "player_modifiers"
+
 local math_random = math.random
+local math_abs = math.abs
+local math_floor = math.floor
+
 local Public = {}
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -48,7 +54,18 @@ local function game_over()
 	global.game_reset_tick = game.tick + 1800
 	for _, player in pairs(game.connected_players) do
 		player.play_sound{path="utility/game_lost", volume_modifier=0.80}
+		ComfyPanel.comfy_panel_call_tab(player, "Map Scores")
 	end
+end
+
+local function set_scores()
+	local fish_wagon = global.locomotive_cargo
+	if not fish_wagon then return end
+	if not fish_wagon.valid then return end
+	local score = math_floor(fish_wagon.position.y * -1)
+	for _, player in pairs(game.connected_players) do
+		if score > Map_score.get_score(player) then Map_score.set_score(player, score) end
+	end	
 end
 
 local function disable_recipes()
@@ -299,8 +316,9 @@ end
 local function on_entity_died(event)	
 	if not event.entity.valid then return end
 	if event.entity == global.locomotive_cargo then
+		set_scores()
 		game_over()
-		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
+		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)	
 		return
 	end
 
@@ -461,6 +479,7 @@ local function tick()
 			if global.offline_loot then
 				offline_players()
 			end
+			set_scores()
 		end
 		if global.game_reset_tick then
 			if global.game_reset_tick < tick then
@@ -490,6 +509,8 @@ local function on_init()
 		["deepwater"] = 1000,
 		["water-shallow"] = 1000,
 	}
+
+	Map_score.set_score_description("Wagon depth reached:")
 
 	Public.reset_map()
 end
