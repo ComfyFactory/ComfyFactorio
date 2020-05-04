@@ -84,15 +84,14 @@ local function set_difficulty()
 	wave_defense_table.max_active_biters = 1024
 
 	-- threat gain / wave
-	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
+	wave_defense_table.threat_gain_multiplier = 1.9 + player_count * 0.1
 
 	local amount = player_count * 0.25 + 2
 	amount = math.floor(amount)
-	if amount > 8 then amount = 8 end
+	if amount > 6 then amount = 6 end
 	Collapse.set_amount(amount)
 
-	--20 Players for fastest wave_interval
-	wave_defense_table.wave_interval = 3600 - player_count * 90
+	wave_defense_table.wave_interval = 3600 - player_count * 60
 	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
 end
 
@@ -510,7 +509,7 @@ local function on_init()
 		["water-shallow"] = 1000,
 	}
 
-	Map_score.set_score_description("Wagon depth reached:")
+	Map_score.set_score_description("Wagon distance reached:")
 
 	Public.reset_map()
 end

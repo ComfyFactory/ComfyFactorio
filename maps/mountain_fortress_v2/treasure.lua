@@ -14,15 +14,15 @@ local blacklist = {
 	}
 
 function Public.treasure_chest(surface, position, container_name)
-	local budget = 48 + math_abs(position.y) * 2
+	local budget = 48 + math_abs(position.y) * 1.75
 	budget = budget * math_random(25, 175) * 0.01
 	
 	if math_random(1, 128) == 1 then 
-		budget = budget * 5
+		budget = budget * 4
 		container_name = "crash-site-chest-" .. math_random(1, 2)
 	end
 	if math_random(1, 256) == 1 then 
-		budget = budget * 10
+		budget = budget * 4
 		container_name = "crash-site-chest-" .. math_random(1, 2)
 	end
 	
