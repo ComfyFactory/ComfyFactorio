@@ -32,8 +32,16 @@ function Public.treasure_chest(surface, position, container_name)
 	local container = surface.create_entity({name = container_name, position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do
 		container.insert(item_stack)
-	end
+	end	
 	container.minable = false
+		
+	for _ = 1, 2, 1 do
+		if math_random(1, 4) == 1 then
+			container.insert({name = "explosives", count = math_random(20, 50)})
+		else
+			break
+		end
+	end
 end
 
 function Public.treasure_chest_old(surface, position, container_name)

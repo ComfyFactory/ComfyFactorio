@@ -15,7 +15,7 @@ require "modules.wave_defense.main"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.shotgun_buff"
-require "modules.explosives"
+local Explosives = require "modules.explosives"
 require "modules.mineable_wreckage_yields_scrap"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
@@ -500,14 +500,12 @@ local function on_init()
 	global.rocks_yield_ore_base_amount = 40
 	global.rocks_yield_ore_distance_modifier = 0.020
 
-	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 1500,
-		["water"] = 1000,
-		["water-green"] = 1000,
-		["deepwater-green"] = 1000,
-		["deepwater"] = 1000,
-		["water-shallow"] = 1000,
-	}
+	Explosives.set_destructible_tile("out-of-map", 1500)
+	Explosives.set_destructible_tile("water", 1000)
+	Explosives.set_destructible_tile("water-green", 1000)
+	Explosives.set_destructible_tile("deepwater-green", 1000)
+	Explosives.set_destructible_tile("deepwater", 1000)
+	Explosives.set_destructible_tile("water-shallow", 1000)
 
 	Map_score.set_score_description("Wagon distance reached:")
 
