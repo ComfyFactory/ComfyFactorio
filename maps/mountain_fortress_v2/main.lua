@@ -127,7 +127,9 @@ function Public.reset_map()
 	end
 
 	local surface = game.surfaces[global.active_surface_index]
-
+	
+	Explosives.set_surface_whitelist({[surface.name] = true})
+	
 	if darkness then
 		surface.min_brightness = 0.10
 		surface.brightness_visual_weights = {0.90, 0.90, 0.90}
@@ -506,6 +508,7 @@ local function on_init()
 	Explosives.set_destructible_tile("deepwater-green", 1000)
 	Explosives.set_destructible_tile("deepwater", 1000)
 	Explosives.set_destructible_tile("water-shallow", 1000)
+	Explosives.set_destructible_tile("water-mud", 1000)
 
 	Map_score.set_score_description("Wagon distance reached:")
 

@@ -160,6 +160,11 @@ local function on_entity_died(event)
 	local entity = event.entity
 	if not entity.valid then return end
 	if not valid_container_types[entity.type] then return end
+	if explosives.surface_whitelist then
+		if not explosives.surface_whitelist[entity.surface.name] then
+			return
+		end
+	end
 	
 	local inventory = defines.inventory.chest
 	if entity.type == "car" then inventory = defines.inventory.car_trunk end
@@ -183,6 +188,10 @@ end
 
 function Public.set_destructible_tile(tile_name, health)
 	explosives.destructible_tiles[tile_name] = health
+end
+
+function Public.set_surface_whitelist(list)
+	explosives.surface_whitelist = list
 end
 
 function Public.get_table()
