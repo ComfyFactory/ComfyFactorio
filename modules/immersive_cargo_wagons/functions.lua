@@ -20,6 +20,17 @@ local function delete_empty_surfaces(icw)
 	end
 end	
 
+local function kick_players_out_of_vehicles(wagon)
+	for _, player in pairs(game.connected_players) do
+		local character = player.character
+		if character and character.valid and character.driving then
+			if wagon.surface == player.surface then
+				character.driving = false
+			end			
+		end
+	end
+end
+
 local function connect_power_pole(entity, wagon_area_left_top_y)
 	local surface = entity.surface
 	local max_wire_distance = entity.prototype.max_wire_distance
@@ -202,7 +213,8 @@ end
 function Public.kill_wagon(icw, entity)
 	if not Constants.wagon_types[entity.type] then return end
 	local wagon = icw.wagons[entity.unit_number]	
-	local surface = wagon.surface
+	local surface = wagon.surface	
+	kick_players_out_of_vehicles(wagon)	
 	kill_wagon_doors(icw, wagon)
 	for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
 		if e.name == "character" and e.player then
@@ -448,11 +460,10 @@ local function move_room_to_train(icw, train, wagon)
 	
 	train.top_y = destination_area.right_bottom.y
 	
-	if destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and wagon.surface.name == train.surface.name then return end
+	if destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and wagon.surface.name == train.surface.name then return end	
 	
-	kill_wagon_doors(icw, wagon)
-	
-	local player_positions = {}
+	kick_players_out_of_vehicles(wagon)
+	local player_positions = {}	
 	for _, e in pairs(wagon.surface.find_entities_filtered({name = "character", area = wagon.area})) do
 		local player = e.player
 		if player then
@@ -460,6 +471,8 @@ local function move_room_to_train(icw, train, wagon)
 			player.teleport({0,0}, game.surfaces.nauvis)
 		end	
 	end
+	
+	kill_wagon_doors(icw, wagon)
 	
 	wagon.surface.clone_area({
 		source_area = wagon.area,

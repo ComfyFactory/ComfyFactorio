@@ -35,9 +35,9 @@ function Public.treasure_chest(surface, position, container_name)
 	end	
 	container.minable = false
 		
-	for _ = 1, 2, 1 do
-		if math_random(1, 4) == 1 then
-			container.insert({name = "explosives", count = math_random(20, 50)})
+	for _ = 1, 3, 1 do
+		if math_random(1, 8) == 1 then
+			container.insert({name = "explosives", count = math_random(25, 50)})
 		else
 			break
 		end
