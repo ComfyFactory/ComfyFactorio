@@ -119,8 +119,6 @@ local function enemy_ammo_evolution_modifiers()
     return data
 end
 
-
-
 local function init_player_weapon_damage(force)
     for k, v in pairs(player_ammo_starting_modifiers()) do
         force.set_ammo_damage_modifier(k, v)
@@ -132,7 +130,7 @@ local function init_player_weapon_damage(force)
 end
 
 local function init_enemy_weapon_damage()
-    local e, s, sd = game.forces["enemy"], game.forces["scrap"], game.forces["scrap_defense"]
+    local e, s, sd = game.forces['enemy'], game.forces['scrap'], game.forces['scrap_defense']
 
     for k, v in pairs(enemy_ammo_starting_modifiers()) do
         e.set_ammo_damage_modifier(k, v)
@@ -193,7 +191,6 @@ local function research_finished(event)
         end
     end
 end
-
 
 Event.on_init(init_enemy_weapon_damage)
 Event.on_nth_tick(18000, enemy_weapon_damage)
