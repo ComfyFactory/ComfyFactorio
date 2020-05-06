@@ -18,12 +18,12 @@ local function init_surface()
 	map_gen_settings.starting_area = "1"
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}		
 	map_gen_settings.autoplace_controls = {
-		["coal"] = {frequency = "0.5", size = "1", richness = "0.25"},
-		["stone"] = {frequency = "0.5", size = "1", richness = "0.25"},
-		["iron-ore"] = {frequency = "0.5", size = "1", richness = "0.25"},
-		["copper-ore"] = {frequency = "0.5", size = "1", richness = "0.25"},
-		["uranium-ore"] = {frequency = "0.5", size = "1", richness = "0.25"},		
-		["crude-oil"] = {frequency = "0.5", size = "1", richness = "1"},
+		["coal"] = {frequency = "0.55", size = "1", richness = "0.25"},
+		["stone"] = {frequency = "0.55", size = "1", richness = "0.25"},
+		["iron-ore"] = {frequency = "0.55", size = "1", richness = "0.25"},
+		["copper-ore"] = {frequency = "0.55", size = "1", richness = "0.25"},
+		["uranium-ore"] = {frequency = "0.55", size = "1", richness = "0.25"},		
+		["crude-oil"] = {frequency = "0.75", size = "1", richness = "1"},
 		["trees"] = {frequency = "1", size = "0.5", richness = "1"},
 		["enemy-base"] = {frequency = "3", size = "2", richness = "1"}
 	}
@@ -55,7 +55,7 @@ local function place_scrap(surface, position)
 		end
 	end
 
-	if math_random(1, 128) == 1 then
+	if math_random(1, 196) == 1 then
 		local item_stacks = LootRaffle.roll(math_sqrt(position.x ^ 2 + position.y ^ 2) * 2 + 1, 3)		
 		local container = surface.create_entity({name = loot_containers[math_random(1, size_of_loot_containers)], position = position, force = "neutral"})
 		local inventory = container.get_inventory(defines.inventory.chest)

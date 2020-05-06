@@ -114,7 +114,6 @@ end
 
 local function is_target_inside_habitat(pos, surface)
 	local this = Scrap_table.get_table()
-	if surface.name ~= surface then return false end
 	if pos.x < this.comfylatron_habitat.left_top.x then return false end
 	if pos.x > this.comfylatron_habitat.right_bottom.x then return false end
 	if pos.y < this.comfylatron_habitat.left_top.y then return false end
@@ -134,8 +133,7 @@ end
 
 local function visit_player()
 	local this = Scrap_table.get_table()
-	local unit_number = this.locomotive.unit_number
-	local surface = game.surfaces[tostring(unit_number)]
+	local surface = game.surfaces[this.active_surface_index]
 	if this.comfylatron_last_player_visit > game.tick then return false end
 	this.comfylatron_last_player_visit = game.tick + math_random(7200, 10800)
 
@@ -147,6 +145,8 @@ local function visit_player()
 	end
 	if #players == 0 then return false end
 	local player = players[math_random(1, #players)]
+
+	if player.surface ~= surface then return end
 
 	this.comfylatron.set_command({
 		type = defines.command.go_to_location,
@@ -307,6 +307,7 @@ local function go_to_some_location()
 
 	if this.comfylatron_greet_player_index then
 		local player = game.players[this.comfylatron_greet_player_index]
+		if player.surface ~= this.comfylatron.surface then return end
 		if not player.character then
 			this.comfylatron_greet_player_index = nil
 			return false
@@ -356,31 +357,54 @@ local function go_to_some_location()
 	return true
 end
 
-local function spawn_comfylatron(surface, x, y)
+local function spawn_comfylatron(surface)
 	local this = Scrap_table.get_table()
 	if surface == nil then return end
+	if not this.locomotive then return end
+	if not this.locomotive.valid then return end
 	if not this.comfylatron_last_player_visit then this.comfylatron_last_player_visit = 0 end
 	if not this.comfylatron_habitat then
+		local pos = this.locomotive.position
 		this.comfylatron_habitat = {
-			left_top = {x = -18, y = 3},
-			right_bottom = {x = 17, y = 67}
+			left_top = {x = pos.x-256, y = pos.y-256},
+			right_bottom = {x = pos.x+256, y = pos.y+256}
 		}
 	end
+	local players = {}
+	for _, p in pairs(game.connected_players) do
+		if is_target_inside_habitat(p.position) and p.character then
+			if p.character.valid then players[#players + 1] = p end
+		end
+	end
+	if #players == 0 then return false end
+	local player = players[math_random(1, #players)]
+
+	local position = surface.find_non_colliding_position("compilatron", player.position, 16, 1)
+	if not position then return false end
 	this.comfylatron = surface.create_entity({
 		name = "compilatron",
-		position = {x,y + math_random(0,26)},
-		force = "player",
-		create_build_effect_smoke = false
+		position = position,
+		force = "neutral"
 	})
+	for x = -3, 3, 1 do
+		for y = -3, 3, 1 do
+			if math_random(1, 3) == 1 then
+				player.surface.create_trivial_smoke({name="smoke-fast", position={position.x + (x * 0.35), position.y + (y * 0.35)}})
+			end
+			if math_random(1, 5) == 1 then
+				player.surface.create_trivial_smoke({name="train-smoke", position={position.x + (x * 0.35), position.y + (y * 0.35)}})
+			end
+		end
+	end
 end
 
 local function heartbeat()
 	local this = Scrap_table.get_table()
-	local unit_number = this.locomotive.unit_number
-	local surface = game.surfaces[tostring(unit_number)]
+	if not this.locomotive.valid then return end
+	local surface = game.surfaces[this.active_surface_index]
 	if not surface then return end
 	if surface == nil then return end
-	if not this.comfylatron then if math_random(1,4) == 1 then spawn_comfylatron(surface, 0, 26) end return end
+	if not this.comfylatron then if math_random(1,4) == 1 then spawn_comfylatron(surface) end return end
 	if not this.comfylatron.valid then this.comfylatron = nil return end
 	if visit_player() then return end
 	local nearby_players = get_nearby_players()
@@ -398,6 +422,19 @@ local function on_entity_damaged(event)
 	desync(event)
 end
 
+local function on_entity_died(event)
+	local this = Scrap_table.get_table()
+	if not this.comfylatron then return end
+	if not event.entity.valid then return end
+	if event.entity ~= this.comfylatron then return end
+	if this.comfybubble then this.comfybubble.destroy() end
+	if this.comfylatron then this.comfylatron.die() end
+	this.comfybubble = nil
+	this.comfylatron = nil
+	this.comfylatron_habitat = nil
+	this.comfylatron_last_player_visit = nil
+end
+
 local function on_tick()
 	if game.tick % 1200 == 600 then
 		heartbeat()
@@ -405,4 +442,5 @@ local function on_tick()
 end
 
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_tick, on_tick)

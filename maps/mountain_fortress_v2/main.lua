@@ -7,13 +7,15 @@ require "player_modifiers"
 require "functions.soft_reset"
 require "functions.basic_markets"
 
+local ComfyPanel = require "comfy_panel.main"
+local Map_score = require "comfy_panel.map_score"
 local Collapse = require "modules.collapse"
 local RPG = require "modules.rpg"
 require "modules.wave_defense.main"
 require "modules.biters_yield_coins"
 require "modules.no_deconstruction_of_neutral_entities"
 require "modules.shotgun_buff"
-require "modules.explosives"
+local Explosives = require "modules.explosives"
 require "modules.mineable_wreckage_yields_scrap"
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
@@ -30,7 +32,11 @@ local WD = require "modules.wave_defense.table"
 local Treasure = require "maps.mountain_fortress_v2.treasure"
 local Locomotive = require "maps.mountain_fortress_v2.locomotive"
 local Modifier = require "player_modifiers"
+
 local math_random = math.random
+local math_abs = math.abs
+local math_floor = math.floor
+
 local Public = {}
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -48,7 +54,27 @@ local function game_over()
 	global.game_reset_tick = game.tick + 1800
 	for _, player in pairs(game.connected_players) do
 		player.play_sound{path="utility/game_lost", volume_modifier=0.80}
+		ComfyPanel.comfy_panel_call_tab(player, "Map Scores")
 	end
+end
+
+local function set_scores()
+	local fish_wagon = global.locomotive_cargo
+	if not fish_wagon then return end
+	if not fish_wagon.valid then return end
+	local score = math_floor(fish_wagon.position.y * -1)
+	for _, player in pairs(game.connected_players) do
+		if score > Map_score.get_score(player) then Map_score.set_score(player, score) end
+	end	
+end
+
+local function disable_recipes()
+	local force = game.forces.player
+	force.recipes["cargo-wagon"].enabled = false
+	force.recipes["fluid-wagon"].enabled = false
+	force.recipes["artillery-wagon"].enabled = false
+	force.recipes["locomotive"].enabled = false
+	force.recipes["pistol"].enabled = false
 end
 
 local function set_difficulty()
@@ -58,15 +84,14 @@ local function set_difficulty()
 	wave_defense_table.max_active_biters = 1024
 
 	-- threat gain / wave
-	wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
+	wave_defense_table.threat_gain_multiplier = 1.9 + player_count * 0.1
 
 	local amount = player_count * 0.25 + 2
 	amount = math.floor(amount)
-	if amount > 8 then amount = 8 end
+	if amount > 6 then amount = 6 end
 	Collapse.set_amount(amount)
 
-	--20 Players for fastest wave_interval
-	wave_defense_table.wave_interval = 3600 - player_count * 90
+	wave_defense_table.wave_interval = 3600 - player_count * 60
 	if wave_defense_table.wave_interval < 1800 then wave_defense_table.wave_interval = 1800 end
 end
 
@@ -102,7 +127,9 @@ function Public.reset_map()
 	end
 
 	local surface = game.surfaces[global.active_surface_index]
-
+	
+	Explosives.set_surface_whitelist({[surface.name] = true})
+	
 	if darkness then
 		surface.min_brightness = 0.10
 		surface.brightness_visual_weights = {0.90, 0.90, 0.90}
@@ -132,8 +159,10 @@ function Public.reset_map()
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
+	game.forces.player.technologies["fluid-wagon"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
-	game.forces.player.recipes["pistol"].enabled = false
+	disable_recipes()
+	
 	game.forces.player.set_spawn_position({-2, 16}, surface)
 	game.forces.enemy.set_ammo_damage_modifier("bullet", 1)
 	game.forces.enemy.set_turret_attack_modifier("gun-turret", 1)
@@ -288,8 +317,9 @@ end
 local function on_entity_died(event)	
 	if not event.entity.valid then return end
 	if event.entity == global.locomotive_cargo then
+		set_scores()
 		game_over()
-		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)
+		event.entity.surface.spill_item_stack(event.entity.position,{name = "raw-fish", count = 512}, false)	
 		return
 	end
 
@@ -323,6 +353,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_research_finished(event)
+	disable_recipes()
 	event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
 	local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
 	if event.research.force.technologies["steel-axe"].researched then mining_speed_bonus = mining_speed_bonus + 0.5 end -- +50% speed for steel-axe research
@@ -449,6 +480,7 @@ local function tick()
 			if global.offline_loot then
 				offline_players()
 			end
+			set_scores()
 		end
 		if global.game_reset_tick then
 			if global.game_reset_tick < tick then
@@ -467,17 +499,18 @@ local function on_init()
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
 	global.rocks_yield_ore_maximum_amount = 500
-	global.rocks_yield_ore_base_amount = 50
+	global.rocks_yield_ore_base_amount = 40
 	global.rocks_yield_ore_distance_modifier = 0.020
 
-	global.explosion_cells_destructible_tiles = {
-		["out-of-map"] = 1500,
-		["water"] = 1000,
-		["water-green"] = 1000,
-		["deepwater-green"] = 1000,
-		["deepwater"] = 1000,
-		["water-shallow"] = 1000,
-	}
+	Explosives.set_destructible_tile("out-of-map", 1500)
+	Explosives.set_destructible_tile("water", 1000)
+	Explosives.set_destructible_tile("water-green", 1000)
+	Explosives.set_destructible_tile("deepwater-green", 1000)
+	Explosives.set_destructible_tile("deepwater", 1000)
+	Explosives.set_destructible_tile("water-shallow", 1000)
+	Explosives.set_destructible_tile("water-mud", 1000)
+
+	Map_score.set_score_description("Wagon distance reached:")
 
 	Public.reset_map()
 end

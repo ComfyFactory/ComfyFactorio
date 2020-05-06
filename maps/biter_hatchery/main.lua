@@ -2,7 +2,7 @@ require "modules.no_turrets"
 --require "maps.biter_hatchery.flamethrower_nerf"
 local RPG = require "modules.rpg"
 local Tabs = require 'comfy_panel.main'
-local Map_score = require "modules.map_score"
+local Map_score = require "comfy_panel.map_score"
 local Unit_health_booster = require "modules.biter_health_booster"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local Terrain = require "maps.biter_hatchery.terrain"

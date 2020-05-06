@@ -4,7 +4,6 @@ local Constants = require "maps.scrapyard.icw.constants"
 
 local table_insert = table.insert
 local table_remove = table.remove
-local math_round = math.round
 local math_random = math.random
 
 function Public.request_reconstruction(icw)
@@ -75,12 +74,12 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
 		local stack = wagon_inventory[i]
 		if stack.valid_for_read then
 			local request_stack = request_stacks[stack.name]
-			if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then			
+			if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then
 				chest_inventory.insert(stack)
 				stack.clear()
 				free_slots = free_slots - 1
 			end
-		end		
+		end
 	end
 end
 
@@ -327,7 +326,7 @@ function Public.create_wagon_room(icw, wagon)
 		e.destructible = false
 		e.minable = false
 		
-		e2 = surface.create_entity({
+		local e2 = surface.create_entity({
 			name = "logistic-chest-passive-provider",
 			position = {position[1] + v[1], position[2] + v[2]},
 			force = "neutral",
@@ -341,27 +340,32 @@ function Public.create_wagon_room(icw, wagon)
 	end
 end
 
-function Public.create_wagon(icw, created_entity)
+function Public.create_wagon(icw, created_entity, delay_surface)
 	if not created_entity.unit_number then return end
 	if icw.trains[tonumber(created_entity.surface.name)] or icw.wagons[tonumber(created_entity.surface.name)] then return end
 	if not Constants.wagon_types[created_entity.type] then return end
 	local wagon_area = Constants.wagon_areas[created_entity.type]
-
+	
 	icw.wagons[created_entity.unit_number] = {
-		entity = created_entity,
-		area = {left_top = {x = wagon_area.left_top.x, y = wagon_area.left_top.y}, right_bottom = {x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y}},
-		surface = Public.create_room_surface(icw, created_entity.unit_number),
-		doors = {},
-		entity_count = 0,
-	}		
-	Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])
+			entity = created_entity,
+			area = {left_top = {x = wagon_area.left_top.x, y = wagon_area.left_top.y}, right_bottom = {x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y}},			
+			doors = {},
+			entity_count = 0,
+		}		
+	local wagon = icw.wagons[created_entity.unit_number]
+	
+	if not delay_surface then
+		wagon.surface = Public.create_room_surface(icw, created_entity.unit_number)
+		Public.create_wagon_room(icw, icw.wagons[created_entity.unit_number])		
+	end
+	
 	Public.request_reconstruction(icw)
-	return icw.wagons[created_entity.unit_number]
+	return wagon
 end
 
 function Public.add_wagon_entity_count(icw, added_entity)
 	local wagon = get_wagon_for_entity(icw, added_entity)
-	if not wagon then return end	
+	if not wagon then return end
 	wagon.entity_count = wagon.entity_count + 1
 	wagon.entity.minable = false
 end
@@ -400,16 +404,21 @@ function Public.use_cargo_wagon_door(icw, player, door)
 		local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
 		local position = surface.find_non_colliding_position("character", position, 128, 0.5)
 		if not position then return end
-		player.teleport(position, surface)
-		player_data.state = 2
-		player.driving = true
-		Public.kill_minimap(player)	
+		if wagon.entity.type == "locomotive" then
+			player.teleport(position, surface)
+			player_data.state = 2
+			player.driving = true
+			Public.kill_minimap(player)
+		else
+			player.teleport(position, surface)
+			Public.kill_minimap(player)
+		end
 	else
 		local surface = wagon.surface
 		local area = wagon.area
 		local x_vector = door.position.x - player.position.x
 		local position
-		if x_vector > 0 then			
+		if x_vector > 0 then
 			position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
 		else
 			position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
@@ -423,31 +432,31 @@ function Public.use_cargo_wagon_door(icw, player, door)
 	end
 end
 
-function Public.move_room_to_train(icw, train, wagon)
+local function move_room_to_train(icw, train, wagon)
 	if not wagon then return end		
 	
 	table_insert(train.wagons, wagon.entity.unit_number)
-	
+
 	local destination_area = {
 		left_top = {x = wagon.area.left_top.x, y = train.top_y},
 		right_bottom = {x = wagon.area.right_bottom.x, y = train.top_y + (wagon.area.right_bottom.y - wagon.area.left_top.y)}
 	}
-	
+
 	train.top_y = destination_area.right_bottom.y
-	
+
 	if destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and wagon.surface.name == train.surface.name then return end
-	
+
 	kill_wagon_doors(icw, wagon)
-	
+
 	local player_positions = {}
 	for _, e in pairs(wagon.surface.find_entities_filtered({name = "character", area = wagon.area})) do
 		local player = e.player
 		if player then
 			player_positions[player.index] = {player.position.x, player.position.y + (destination_area.left_top.y - wagon.area.left_top.y)}
 			player.teleport({0,0}, game.surfaces.nauvis)
-		end	
+		end
 	end
-	
+
 	wagon.surface.clone_area({
 		source_area = wagon.area,
 		destination_area = destination_area,
@@ -459,27 +468,27 @@ function Public.move_room_to_train(icw, train, wagon)
 		clear_destination_decoratives = true,
 		expand_map = true,
 	})
-	
+
 	for player_index, position in pairs(player_positions) do
 		local player = game.players[player_index]
-		player.teleport(position, train.surface)			
+		player.teleport(position, train.surface)
 	end
-	
+
 	for _, tile in pairs(wagon.surface.find_tiles_filtered({area = wagon.area})) do
 		wagon.surface.set_tiles({{name = "out-of-map", position = tile.position}}, true)
 	end
 	wagon.entity.force.chart(wagon.surface, wagon.area)
-	
+
 	wagon.surface = train.surface
 	wagon.area = destination_area
 	wagon.transfer_entities = {}
 	construct_wagon_doors(icw, wagon)
-	
+
 	local left_top_y = wagon.area.left_top.y
 	for _, e in pairs(wagon.surface.find_entities_filtered({type = "electric-pole", area = wagon.area})) do
 		connect_power_pole(e, left_top_y)
 	end
-	
+
 	for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area, force = "neutral"})) do
 		if transfer_functions[e.name] then
 			table_insert(wagon.transfer_entities, e)
@@ -489,30 +498,40 @@ end
 
 function Public.construct_train(icw, carriages)
 	local unit_number = carriages[1].unit_number
-	
+
 	if icw.trains[unit_number] then return end
-	
+
 	local train = {surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0}
 	icw.trains[unit_number] = train
-	
+
 	for k, carriage in pairs(carriages) do
-		Public.move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
+		move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
 	end
 end
 
 function Public.reconstruct_all_trains(icw)
 	icw.trains = {}
 	for unit_number, wagon in pairs(icw.wagons) do
-		if wagon.entity and wagon.entity.valid then
-			local carriages = wagon.entity.train.carriages
-			Public.construct_train(icw, carriages)
+		if not wagon.entity or not wagon.entity.valid then
+			icw.wagons[unit_number] = nil
+			Public.request_reconstruction(icw)
+			return
 		end
+		
+		if not wagon.surface then
+			wagon.surface = Public.create_room_surface(icw, unit_number)
+			Public.create_wagon_room(icw, wagon)
+		end
+		
+		local carriages = wagon.entity.train.carriages
+		Public.construct_train(icw, carriages)
 	end
 	delete_empty_surfaces(icw)
 end
 
 function Public.item_transfer(icw)
 	for _, wagon in pairs(icw.wagons) do
+		if not wagon and not wagon.valid then return end
 		if wagon.transfer_entities then
 			for k, e in pairs(wagon.transfer_entities) do
 				transfer_functions[e.name](wagon, e)

@@ -161,9 +161,10 @@ end
 local function on_entity_died(event)
 	local wave_defense_table = WD.get_table()
 	local entity = event.entity
-	if not entity.valid then	return end
+	if not entity.valid then return end
 	
 	if entity.type == "unit" then
+		if not threat_values[entity.name] then return end
 		wave_defense_table.threat = math.round(wave_defense_table.threat - threat_values[entity.name] * global.biter_health_boost, 2)
 		remove_unit(entity)
 		--acid_nova(entity)
@@ -171,9 +172,8 @@ local function on_entity_died(event)
 		if entity.force.index == 2 then	
 			if entity.health then
 				if threat_values[entity.name] then
-					wave_defense_table.threat = wave_defense_table.threat - threat_values[entity.name]
-				end
-				
+					wave_defense_table.threat = math.round(wave_defense_table.threat - threat_values[entity.name] * global.biter_health_boost, 2)
+				end				
 				spawn_unit_spawner_inhabitants(wave_defense_table, entity)
 			end
 		end

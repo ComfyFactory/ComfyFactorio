@@ -1,4 +1,5 @@
 local Biters = require 'modules.wave_defense.biter_rolls'
+local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
 local Treasure = require 'maps.mountain_fortress_v2.treasure'
 local Market = require 'functions.basic_markets'
 local math_random = math.random
@@ -6,6 +7,7 @@ local math_floor = math.floor
 local math_abs = math.abs
 local simplex_noise = require "utils.simplex_noise".d2
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
+local wagon_raffle = {"cargo-wagon", "cargo-wagon", "cargo-wagon", "locomotive", "fluid-wagon"}
 local size_of_rock_raffle = #rock_raffle
 local spawner_raffle = {"biter-spawner", "biter-spawner", "biter-spawner", "spitter-spawner"}
 local noises = {
@@ -21,8 +23,13 @@ local noises = {
 	["cave_rivers_4"] = {{modifier = 0.001, weight = 1}, {modifier = 0.01, weight = 0.11}, {modifier = 0.05, weight = 0.01}},
 	["scrapyard"] = {{modifier = 0.005, weight = 1}, {modifier = 0.01, weight = 0.35}, {modifier = 0.05, weight = 0.23}, {modifier = 0.1, weight = 0.11}},
 }
+
 local level_depth = 704
 local worm_level_modifier = 0.18
+
+local average_number_of_wagons_per_level = 2
+local chunks_per_level = ((level_depth - 32) / 32) ^ 2
+local chance_for_wagon_spawn = math_floor(chunks_per_level / average_number_of_wagons_per_level)
 
 local function get_noise(name, pos, seed)
 	local noise = 0
@@ -42,10 +49,39 @@ local function get_replacement_tile(surface, position)
 		table.shuffle_table(vectors)
 		for k, v in pairs(vectors) do
 			local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-			if not tile.collides_with("resource-layer") then return tile.name end
+			if tile.valid and not tile.collides_with("resource-layer") then return tile.name end
 		end
 	end
 	return "grass-1"
+end
+
+local function place_wagon(surface, left_top)
+	local position = {x = left_top.x + math_random(4, 12) * 2, y = left_top.y + math_random(4, 12) * 2}	
+	
+	local direction
+	local tiles
+	local r1 = math_random(2, 4) * 2
+	local r2 = math_random(2, 4) * 2
+	
+	if math_random(1, 2) == 1 then
+		tiles = surface.find_tiles_filtered({area = {{position.x, position.y - r1}, {position.x + 2, position.y + r2}}})
+		direction = 0
+	else
+		tiles = surface.find_tiles_filtered({area = {{position.x - r1, position.y}, {position.x + r2, position.y + 2}}})
+		direction = 2
+	end	
+	
+	for k, tile in pairs(tiles) do
+		if tile.collides_with("resource-layer") then surface.set_tiles({{name = "landfill", position = tile.position}}, true) end
+		for _, e in pairs(surface.find_entities_filtered({position = tile.position, force = {"neutral", "enemy"}})) do e.destroy() end
+		if tile.position.y % 2 == 0 and tile.position.x % 2 == 0 then surface.create_entity({name = "straight-rail", position = tile.position, force = "player", direction = direction}) end
+	end	
+	
+	local entity = surface.create_entity({name = wagon_raffle[math_random(1, #wagon_raffle)], position = position, force = "player"})
+	entity.minable = false
+	
+	local wagon = Immersive_cargo_wagons.register_wagon(entity, true)	
+	wagon.entity_count = 999	
 end
 
 local function get_oil_amount(p)
@@ -951,7 +987,11 @@ local function process_chunk(surface, left_top)
 		local p = global.locomotive.position
 		for _, entity in pairs(surface.find_entities_filtered({area = {{p.x - 3, p.y - 4},{p.x + 3, p.y + 10}}, type = "simple-entity"})) do	entity.destroy() end
 	end
-	if left_top.y < 0 then rock_chunk(surface, left_top) return end
+	if left_top.y < 0 then
+		rock_chunk(surface, left_top)
+		if math_random(1, chance_for_wagon_spawn) == 1 then place_wagon(surface, left_top) end
+		return 
+	end
 	if left_top.y > 96 then out_of_map(surface, left_top) return end
 	if left_top.y > 64 then biter_chunk(surface, left_top) return end
 	if left_top.y >= 0 then border_chunk(surface, left_top) return end

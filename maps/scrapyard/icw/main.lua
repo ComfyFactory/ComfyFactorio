@@ -1,6 +1,7 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Functions = require "maps.scrapyard.icw.functions"
+local Constants = require "maps.scrapyard.icw.constants"
 local Public = {}
 
 local math_round = math.round
@@ -32,6 +33,7 @@ end
 local function on_entity_died(event)
 	local entity = event.entity
 	if not entity and not entity.valid then return end
+	if not Constants.wagon_types[entity.type] then return end
 	Functions.subtract_wagon_entity_count(icw, entity)
 	Functions.kill_wagon(icw, entity)
 end

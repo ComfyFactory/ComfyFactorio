@@ -3,13 +3,14 @@ local Public = {}
 
 local market_offers = {
 	{price = {{'coin', 4}}, offer = {type = 'give-item', item = "raw-fish"}},
-	{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'wood', count = 50}},
-	{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
-	{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
-	{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'stone', count = 50}},
-	{price = {{"coin", 16}}, offer = {type = 'give-item', item = 'coal', count = 50}},
-	{price = {{"coin", 24}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},	
+	{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'wood', count = 50}},
+	{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
+	{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
+	{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'stone', count = 50}},
+	{price = {{"coin", 12}}, offer = {type = 'give-item', item = 'coal', count = 50}},
+	{price = {{"coin", 20}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},	
 	{price = {{"coin", 8}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}},
+	{price = {{"explosives", 5}, {"steel-plate", 1}, {"coin", 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
 }
 
 function Public.locomotive_spawn(surface, position)
@@ -65,6 +66,15 @@ function Public.locomotive_spawn(surface, position)
 			if math.random(1, 2) == 1 then
 				surface.spill_item_stack({x + math.random(0, 9) * 0.1, y + math.random(0, 9) * 0.1},{name = "raw-fish", count = 1}, false)
 			end
+			surface.set_tiles({{name = "blue-refined-concrete", position = {x, y}}}, true)
+		end
+	end
+	for x = center_position.x - 3, center_position.x + 3, 1 do
+		for y = center_position.y - 3, center_position.y + 3, 1 do
+			if math.random(1, 2) == 1 then
+				surface.spill_item_stack({x + math.random(0, 9) * 0.1, y + math.random(0, 9) * 0.1},{name = "raw-fish", count = 1}, false)
+			end
+			surface.set_tiles({{name = "cyan-refined-concrete", position = {x, y}}}, true)
 		end
 	end
 end
