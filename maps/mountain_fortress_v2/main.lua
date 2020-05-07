@@ -210,24 +210,26 @@ local function biters_chew_rocks_faster(event)
 end
 
 local function hidden_biter(entity)
-	local d = math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)
-
-	BiterRolls.wave_defense_set_unit_raffle(d * 0.20)
-
-	local unit
-	if math_random(1,3) == 1 then
-		unit = entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = entity.position})
-	else
-		unit = entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = entity.position})
-	end
-
+	local surface = entity.surface
+	local h = math_floor(math_abs(entity.position.y))
 	local m = 1 / level_depth
-	m = m * d
+	local count = math_floor(math_random(0, h + level_depth) * m) + 1
+	local position = surface.find_non_colliding_position("small-biter", entity.position, 16, 0.5)
+	if not position then position = entity.position end
+	
+	BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
 
-	if math_random(1, 64) == 1 then
-		BiterHealthBooster.add_boss_unit(unit, m * 10 + 1, 0.38)
-	else
-		BiterHealthBooster.add_unit(unit, m * 0.1 + 1)
+	for _ = 1, count, 1 do
+		local unit
+		if math_random(1,3) == 1 then
+			unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
+		else
+			unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
+		end
+
+		if math_random(1, 64) == 1 then
+			BiterHealthBooster.add_boss_unit(unit, m * h * 5 + 1, 0.38)
+		end
 	end
 end
 
@@ -275,8 +277,8 @@ local function angry_tree(entity, cause)
 		force = "neutral",
 		source = entity.position,
 		target = position,
-		max_range = 64,
-		speed = 0.10
+		max_range = 16,
+		speed = 0.01
 	})
 end
 
@@ -291,7 +293,7 @@ local function on_player_mined_entity(event)
 	if event.entity.type == "simple-entity" then
 		give_coin(game.players[event.player_index])
 
-		if math_random(1,32) == 1 then
+		if math_random(1, 30) == 1 then
 			hidden_biter(event.entity)
 			return
 		end
