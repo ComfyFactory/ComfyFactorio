@@ -77,8 +77,8 @@ end
 
 local function enemy_ammo_starting_modifiers()
     local data = {
-        ['artillery-shell'] = 3,
-        ['biological'] = 3,
+        ['artillery-shell'] = 0,
+        ['biological'] = 0,
         ['bullet'] = 2,
         ['cannon-shell'] = 0,
         ['capsule'] = 0,
@@ -88,8 +88,8 @@ local function enemy_ammo_starting_modifiers()
         ['flamethrower'] = 0,
         ['grenade'] = 0,
         ['landmine'] = 0,
-        ['laser-turret'] = 3,
-        ['melee'] = 1,
+        ['laser-turret'] = 0,
+        ['melee'] = 0.5,
         ['railgun'] = 0,
         ['rocket'] = 0,
         ['shotgun-shell'] = 0
@@ -142,12 +142,16 @@ end
 local function enemy_weapon_damage()
     local e, s, sd = game.forces.enemy, game.forces.scrap, game.forces.scrap_defense
 
+    if not global.difficulty_vote_value then
+        global.difficulty_vote_value = 1
+    end
+
     local ef = e.evolution_factor
 
     for k, v in pairs(enemy_ammo_evolution_modifiers()) do
         local base = enemy_ammo_starting_modifiers()[k]
 
-        local new = base + v * ef
+        local new = base + v * ef * global.difficulty_vote_value
         e.set_ammo_damage_modifier(k, new)
         s.set_ammo_damage_modifier(k, new)
         sd.set_ammo_damage_modifier(k, new)

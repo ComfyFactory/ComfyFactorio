@@ -44,6 +44,7 @@ local function mining_chances_scrap()
         {name = 'steel-plate', chance = 120},
         {name = 'solid-fuel', chance = 89},
         {name = 'pipe', chance = 75},
+        {name = 'stone', chance = 50},
         {name = 'iron-stick', chance = 50},
         {name = 'battery', chance = 20},
         {name = 'empty-barrel', chance = 10},
@@ -108,6 +109,7 @@ local function scrap_yield_amounts()
         ['iron-plate'] = 12,
         ['iron-gear-wheel'] = 12,
         ['iron-stick'] = 12,
+        ['stone'] = 5,
         ['copper-plate'] = 12,
         ['copper-cable'] = 12,
         ['electronic-circuit'] = 4,
@@ -283,7 +285,7 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    if entity.name ~= 'mineable-wreckage' then
+    if entity.type ~= 'simple-entity' then
         return
     end
     local player = game.players[event.player_index]

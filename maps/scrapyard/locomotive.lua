@@ -150,7 +150,8 @@ local function refresh_market(data)
         },
         {price = {{'coin', 5}}, offer = {type = 'give-item', item = 'small-lamp'}},
         {price = {{'coin', 5}}, offer = {type = 'give-item', item = 'firearm-magazine'}},
-        {price = {{'wood', 25}}, offer = {type = 'give-item', item = 'raw-fish', count = 2}}
+        {price = {{'wood', 25}}, offer = {type = 'give-item', item = 'raw-fish', count = 2}},
+        {price = {{'coin', 25}}, offer = {type = 'give-item', item = 'land-mine', count = 1}}
     }
 
     for _, item in pairs(items) do
@@ -330,9 +331,9 @@ local function property_boost(data)
         right_bottom = {x = loco.x + 40, y = loco.y + 40}
     }
     for _, player in pairs(game.connected_players) do
-        if player.surface ~= surface then
-            return
-        end
+        --if player.surface ~= surface then
+        --    return -- players get xp inside train
+        --end
         if Public.contains_positions(player.position, area) then
             local pos = player.position
             RPG.gain_xp(player, 0.2 * rpg[player.index].bonus)
@@ -375,6 +376,24 @@ local function reveal_train_area()
     if not this.locomotive.valid then
         return
     end
+    if this.revealed_spawn > game.tick then
+        goto continue
+    end
+    if this.ow_energy then
+        if this.ow_energy.valid then
+            local position = this.ow_energy.position
+            local area = {
+                left_top = {x = position.x - 2, y = position.y - 2},
+                right_bottom = {x = position.x + 2, y = position.y + 2}
+            }
+            if Public.contains_positions(this.locomotive.position, area) then
+                return
+            end
+        end
+    end
+    this.revealed_spawn = game.tick + 500
+
+    ::continue::
     local position = this.locomotive.position
     local surface = game.surfaces[this.active_surface_index]
     local seed = game.surfaces[this.active_surface_index].map_gen_settings.seed
@@ -386,6 +405,91 @@ local function reveal_train_area()
         reveal = 23
     }
     Terrain.reveal_train(data)
+end
+
+local function fish_tag()
+    local this = Scrap_table.get_table()
+    if not this.locomotive_cargo then
+        return
+    end
+    if not this.locomotive_cargo.valid then
+        return
+    end
+    if not this.locomotive_cargo.surface then
+        return
+    end
+    if not this.locomotive_cargo.surface.valid then
+        return
+    end
+    if this.locomotive_tag then
+        if this.locomotive_tag.valid then
+            if
+                this.locomotive_tag.position.x == this.locomotive_cargo.position.x and
+                    this.locomotive_tag.position.y == this.locomotive_cargo.position.y
+             then
+                return
+            end
+            this.locomotive_tag.destroy()
+        end
+    end
+    this.locomotive_tag =
+        this.locomotive_cargo.force.add_chart_tag(
+        this.locomotive_cargo.surface,
+        {
+            icon = {type = 'item', name = 'raw-fish'},
+            position = this.locomotive_cargo.position,
+            text = ' '
+        }
+    )
+end
+
+local function set_player_spawn_and_refill_fish()
+    local this = Scrap_table.get_table()
+    if not this.locomotive_cargo then
+        return
+    end
+    if not this.locomotive_cargo.valid then
+        return
+    end
+    this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert(
+        {name = 'raw-fish', count = math.random(2, 5)}
+    )
+    local position =
+        this.locomotive_cargo.surface.find_non_colliding_position(
+        'stone-furnace',
+        this.locomotive_cargo.position,
+        16,
+        2
+    )
+    if not position then
+        return
+    end
+    game.forces.player.set_spawn_position({x = position.x, y = position.y}, this.locomotive_cargo.surface)
+end
+
+local function tick()
+    local this = Scrap_table.get_table()
+    Public.power_source_overworld()
+    Public.power_source_locomotive()
+    Public.place_market()
+    if game.tick % 120 == 0 then
+        Public.boost_players_around_train()
+    end
+    --if game.tick % 80 == 0 then
+    --    train_rainbow()
+    --end
+    if this.train_reveal then
+        if game.tick % 10 == 0 then
+            reveal_train_area()
+        end
+    end
+
+    if game.tick % 30 == 0 then
+        if game.tick % 1800 == 0 then
+            set_player_spawn_and_refill_fish()
+        end
+        fish_tag()
+    end
 end
 
 function Public.boost_players_around_train()
@@ -433,6 +537,15 @@ function Public.render_train_hp()
         font = 'default-game',
         alignment = 'center',
         scale_with_zoom = false
+    }
+
+    this.circle =
+        rendering.draw_circle {
+        surface = surface,  
+        target = this.locomotive,
+        color = this.locomotive.color,
+        filled = false,
+        radius = 40
     }
 end
 
@@ -570,89 +683,6 @@ function Public.power_source_locomotive()
         rebuild_energy_loco(data)
     elseif not this.lo_energy.valid then
         rebuild_energy_loco(data, true)
-    end
-end
-
-local function fish_tag()
-    local this = Scrap_table.get_table()
-    if not this.locomotive_cargo then
-        return
-    end
-    if not this.locomotive_cargo.valid then
-        return
-    end
-    if not this.locomotive_cargo.surface then
-        return
-    end
-    if not this.locomotive_cargo.surface.valid then
-        return
-    end
-    if this.locomotive_tag then
-        if this.locomotive_tag.valid then
-            if
-                this.locomotive_tag.position.x == this.locomotive_cargo.position.x and
-                    this.locomotive_tag.position.y == this.locomotive_cargo.position.y
-             then
-                return
-            end
-            this.locomotive_tag.destroy()
-        end
-    end
-    this.locomotive_tag =
-        this.locomotive_cargo.force.add_chart_tag(
-        this.locomotive_cargo.surface,
-        {
-            icon = {type = 'item', name = 'raw-fish'},
-            position = this.locomotive_cargo.position,
-            text = ' '
-        }
-    )
-end
-
-local function set_player_spawn_and_refill_fish()
-    local this = Scrap_table.get_table()
-    if not this.locomotive_cargo then
-        return
-    end
-    if not this.locomotive_cargo.valid then
-        return
-    end
-    this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert(
-        {name = 'raw-fish', count = math.random(2, 5)}
-    )
-    local position =
-        this.locomotive_cargo.surface.find_non_colliding_position(
-        'stone-furnace',
-        this.locomotive_cargo.position,
-        16,
-        2
-    )
-    if not position then
-        return
-    end
-    game.forces.player.set_spawn_position({x = position.x, y = position.y}, this.locomotive_cargo.surface)
-end
-
-local function tick()
-    local this = Scrap_table.get_table()
-    Public.power_source_overworld()
-    Public.power_source_locomotive()
-    Public.place_market()
-    if game.tick % 120 == 0 then
-        Public.boost_players_around_train()
-    end
-    if this.revealed_spawn > game.tick then
-        reveal_train_area()
-    end
-    if game.tick % 80 == 0 then
-        reveal_train_area()
-        train_rainbow()
-    end
-    if game.tick % 30 == 0 then
-        if game.tick % 1800 == 0 then
-            set_player_spawn_and_refill_fish()
-        end
-        fish_tag()
     end
 end
 

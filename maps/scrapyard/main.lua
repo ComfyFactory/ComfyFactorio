@@ -1,3 +1,7 @@
+if package.loaded['comfy_panel.player_list'] then
+    package.unload = 'comfy_panel.player_list'
+end
+require 'maps.scrapyard.player_list'
 require 'on_tick_schedule'
 require 'modules.dynamic_landfill'
 require 'modules.difficulty_vote'
@@ -12,10 +16,13 @@ require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.wave_defense.main'
 require 'maps.scrapyard.comfylatron'
+require 'modules.admins_operate_biters'
+require 'modules.pistol_buffs'
 
 local Map_score = require 'comfy_panel.map_score'
 local Explosives = require 'modules.explosives'
 local Color = require 'utils.color_presets'
+local update_gui = require 'maps.scrapyard.gui'
 local ICW = require 'maps.scrapyard.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
@@ -40,21 +47,13 @@ local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 
-function Public.print(msg)
-    if _DEBUG then
-        game.print(serpent.block(msg))
-    end
-end
+Scrap_table.init({train_reveal = true})
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
 local disabled_entities = {'gun-turret', 'laser-turret', 'flamethrower-turret', 'land-mine'}
 local colors = {
     'green-refined-concrete',
-    'black-refined-concrete',
-    'orange-refined-concrete',
     'red-refined-concrete',
-    'yellow-refined-concrete',
-    'brown-refined-concrete',
     'blue-refined-concrete'
 }
 local treasure_chest_messages = {
@@ -82,14 +81,14 @@ end
 
 local function set_scores()
     local this = Scrap_table.get_table()
-    local fish_wagon = this.locomotive_cargo
-    if not fish_wagon then
+    local wagon = this.locomotive_cargo
+    if not wagon then
         return
     end
-    if not fish_wagon.valid then
+    if not wagon.valid then
         return
     end
-    local score = math_floor(fish_wagon.position.y * -1)
+    local score = math_floor(wagon.position.y * -1)
     for _, player in pairs(game.connected_players) do
         if score > Map_score.get_score(player) then
             Map_score.set_score(player, score)
@@ -156,8 +155,9 @@ function Public.reset_map()
     game.reset_time_played()
     Scrap_table.reset_table()
     wave_defense_table.math = 8
-    --this.revealed_spawn = game.tick + 100
-    this.revealed_spawn = game.tick + 500
+    if not this.train_reveal then
+        this.revealed_spawn = game.tick + 100
+    end
 
     local map_gen_settings = {
         ['seed'] = math_random(1, 1000000),
@@ -175,7 +175,7 @@ function Public.reset_map()
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('scrapyard', map_gen_settings).index
     else
-        game.forces.player.set_spawn_position({0, 21}, game.surfaces[this.active_surface_index])
+        game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
         this.active_surface_index =
             Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
@@ -195,6 +195,7 @@ function Public.reset_map()
     game.forces.player.recipes['artillery-wagon'].enabled = false
     game.forces.player.recipes['locomotive'].enabled = false
     game.forces.player.recipes['pistol'].enabled = false
+    game.forces.player.technologies['land-mine'].enabled = false
     game.forces.player.set_spawn_position({0, 21}, surface)
 
     global.friendly_fire_history = {}
@@ -219,7 +220,7 @@ function Public.reset_map()
     surface.min_brightness = 0.08
     surface.daytime = 0.7
     surface.brightness_visual_weights = {1, 0, 0, 0}
-    surface.freeze_daytime = false
+    surface.freeze_daytime = true
     surface.solar_power_multiplier = 1
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
@@ -394,7 +395,7 @@ local function protect_train(event)
 end
 
 local function change_tile(surface, pos, steps)
-    return surface.set_tiles {{name = colors[math_floor(steps * 0.5) % 7 + 1], position = {x = pos.x, y = pos.y + 1}}}
+    return surface.set_tiles {{name = colors[math_floor(steps * 0.5) % 3 + 1], position = {x = pos.x, y = pos.y + 1}}}
 end
 
 local function on_player_changed_position(event)
@@ -435,7 +436,11 @@ local function on_player_changed_position(event)
     --end
     end
     ::continue::
-    --if position.y < 5 then Terrain.reveal(player) end
+    if not this.train_reveal then
+        if position.y < 5 then
+            Terrain.reveal(player)
+        end
+    end
     if position.y >= 190 then
         player.teleport({position.x, position.y - 1}, surface)
         player.print(grandmaster .. ' Forcefield does not approve.', {r = 0.98, g = 0.66, b = 0.22})
@@ -566,6 +571,8 @@ local function give_coin(player)
 end
 
 local function on_player_mined_entity(event)
+    local this = Scrap_table.get_table()
+
     local entity = event.entity
     local player = game.players[event.player_index]
     if not player.valid then
@@ -587,6 +594,7 @@ local function on_player_mined_entity(event)
     end
 
     if entity.name == 'mineable-wreckage' then
+        this.mined_scrap = this.mined_scrap + 1
         give_coin(player)
 
         if math.random(1, 32) == 1 then
@@ -772,11 +780,14 @@ function Public.loco_died()
 end
 
 local function on_entity_died(event)
+    local this = Scrap_table.get_table()
+
     local entity = event.entity
     if not entity.valid then
         return
     end
     if entity.type == 'unit' or entity.type == 'unit-spawner' then
+        this.biters_killed = this.biters_killed + 1
         if math_random(1, 160) == 1 then
             tick_tack_trap(entity.surface, entity.position)
             return
@@ -891,13 +902,13 @@ local function on_robot_built_entity(event)
 end
 
 local on_init = function()
+    global.custom_highscore.description = 'Depth reached: '
     game.create_force('scrap')
     game.create_force('scrap_defense')
     game.forces.player.set_friend('scrap', true)
     game.forces.enemy.set_friend('scrap', true)
     game.forces.scrap.set_friend('player', true)
     game.forces.scrap.set_friend('enemy', true)
-    game.forces.player.technologies['land-mine'].enabled = false
     game.forces.scrap.share_chart = false
     global.rocks_yield_ore_maximum_amount = 500
     global.rocks_yield_ore_base_amount = 50
@@ -941,7 +952,9 @@ local on_init = function()
             'Locomotive has now market upgrades\n',
             'XP is granted after each breached wall\n',
             'Train now has a XP aura, stay near it!\n',
-            'Aura increases after each breach wall'
+            'Aura increases after each breach wall\n',
+            'Players cannot reveal path, only the train can.\n',
+            'Follow the train and defend it.'
         }
     )
     T.main_caption_color = {r = 150, g = 150, b = 0}
@@ -965,7 +978,19 @@ local function darkness(data)
     local rnd = math.random
     local this = data.this
     local surface = data.surface
-    if rnd(1, 64) == 1 then
+    if rnd(1, 32) == 1 then
+        if not this.freeze_daytime then
+            return
+        end
+        game.print(grandmaster .. ' Sunlight, finally!', {r = 1, g = 0.5, b = 0.1})
+        surface.min_brightness = 1
+        surface.brightness_visual_weights = {1, 0, 0, 0}
+        surface.daytime = 0.7
+        surface.freeze_daytime = true
+        surface.solar_power_multiplier = 1
+        this.freeze_daytime = false
+        return
+    elseif rnd(1, 64) == 1 then
         if this.freeze_daytime then
             return
         end
@@ -978,39 +1003,27 @@ local function darkness(data)
         surface.solar_power_multiplier = 0
         this.freeze_daytime = true
         return
-    elseif rnd(1, 32) == 1 then
-        if not this.freeze_daytime then
-            return
-        end
-        game.print(grandmaster .. ' Sunlight, finally!', {r = 1, g = 0.5, b = 0.1})
-        surface.min_brightness = 1
-        surface.brightness_visual_weights = {1, 0, 0, 0}
-        surface.daytime = 0.7
-        surface.freeze_daytime = false
-        surface.solar_power_multiplier = 1
-        this.freeze_daytime = false
-        return
     end
 end
 
 local function scrap_randomness(data)
     local this = data.this
     local rnd = math.random
-    if rnd(1, 64) == 1 then
-        if not this.scrap_enabled then
-            return
-        end
-        this.scrap_enabled = false
-        game.print(grandmaster .. ' It seems that the scrap is temporarily gone.', {r = 1, g = 0.5, b = 0.1})
-        game.print(grandmaster .. ' Output from scrap is now only ores.', {r = 1, g = 0.5, b = 0.1})
-        return
-    elseif rnd(1, 32) == 1 then
+    if rnd(1, 32) == 1 then
         if this.scrap_enabled then
             return
         end
         this.scrap_enabled = true
         game.print(grandmaster .. ' Scrap is back!', {r = 1, g = 0.5, b = 0.1})
         game.print(grandmaster .. ' Output from scrap is now randomized.', {r = 1, g = 0.5, b = 0.1})
+        return
+    elseif rnd(1, 64) == 1 then
+        if not this.scrap_enabled then
+            return
+        end
+        this.scrap_enabled = false
+        game.print(grandmaster .. ' It seems that the scrap is temporarily gone.', {r = 1, g = 0.5, b = 0.1})
+        game.print(grandmaster .. ' Output from scrap is now only ores.', {r = 1, g = 0.5, b = 0.1})
         return
     end
 end
@@ -1039,8 +1052,8 @@ end
 
 local tick_minute_functions = {
     [300 * 2 + 30 * 2] = scrap_randomness,
-    [300 * 3 + 30 * 3] = darkness,
-    [300 * 3 + 30 * 1] = transfer_pollution
+    [300 * 3 + 30 * 1] = darkness,
+    [300 * 3 + 30 * 0] = transfer_pollution
 }
 
 local on_tick = function()
@@ -1070,6 +1083,10 @@ local on_tick = function()
     end
     ::continue::
     if game.tick % 30 == 0 then
+        for _, player in pairs(game.connected_players) do
+            update_gui(player)
+        end
+
         if game.tick % 1800 == 0 then
             local position = surface.find_non_colliding_position('stone-furnace', Collapse.get_position(), 128, 1)
             if position then
@@ -1082,13 +1099,13 @@ local on_tick = function()
     if tick_minute_functions[key] then
         tick_minute_functions[key](data)
     end
-    if this.randomness_tick then
-        if this.randomness_tick < game.tick then
-            this.randomness_tick = game.tick + 1800
-            scrap_randomness(this)
-            darkness(this)
-        end
-    end
+    --if this.randomness_tick then
+    --    if this.randomness_tick < game.tick then
+    --        this.randomness_tick = game.tick + 1800
+    --        scrap_randomness(this)
+    --        darkness(this)
+    --    end
+    --end
 
     if this.game_reset_tick then
         if this.game_reset_tick < game.tick then

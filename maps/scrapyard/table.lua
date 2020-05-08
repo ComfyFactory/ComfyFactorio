@@ -2,7 +2,9 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
-local this = {}
+local this = {
+    train_reveal = true
+}
 local Public = {}
 
 Global.register(
@@ -18,15 +20,15 @@ function Public.reset_table()
     --end
     this.lo_energy = nil
     this.ow_energy = nil
-	this.game_lost = false
-	this.game_won = false
+    this.game_lost = false
+    this.game_won = false
     this.energy = {}
     this.wave_counter = 0
-	this.locomotive_health = 10000
-	this.locomotive_max_health = 10000
+    this.locomotive_health = 10000
+    this.locomotive_max_health = 10000
     this.cargo_health = 10000
     this.cargo_max_health = 10000
-	this.revealed_spawn = 0
+    this.revealed_spawn = 0
     this.scrap_enabled = true
     this.left_top = {
         x = 0,
@@ -36,13 +38,21 @@ function Public.reset_table()
     this.energy_purchased = false
     this.freeze_daytime = false
     this.offline_players = {}
+    this.mined_scrap = 0
+    this.biters_killed = 0
 end
 
 function Public.get_table()
     return this
 end
 
-local on_init = function ()
+function Public.init(args)
+    if args then
+        this.train_reveal = args.train_reveal
+    end
+end
+
+local on_init = function()
     Public.reset_table()
 end
 
