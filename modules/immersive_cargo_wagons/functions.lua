@@ -47,6 +47,9 @@ local function connect_power_pole(entity, wagon_area_left_top_y)
 end
 
 local function equal_fluid(source_tank, target_tank)
+	if not source_tank.valid then return end
+	if not target_tank.valid then return end
+	
 	local source_fluid = source_tank.fluidbox[1]
 	if not source_fluid then return end
 		
@@ -199,6 +202,8 @@ local function get_player_data(icw, player)
 	if icw.players[player.index] then return player_data end
 	
 	icw.players[player.index] = {
+		surface = 1,
+		fallback_surface = 1,
 		zoom = 0.30,
 		map_size = 360,
 	}
@@ -419,6 +424,9 @@ function Public.use_cargo_wagon_door(icw, player, door)
 	if wagons[door.unit_number] then wagon = wagons[door.unit_number] end 
 	if not wagon then return end
 
+	player_data.fallback_surface = wagon.entity.surface.index
+	player_data.fallback_position = {wagon.entity.position.x, wagon.entity.position.y}
+
 	if wagon.entity.surface.name ~= player.surface.name then
 		local surface = wagon.entity.surface
 		local x_vector = (door.position.x / math.abs(door.position.x)) * 2
@@ -429,6 +437,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
 		player_data.state = 2
 		player.driving = true
 		Public.kill_minimap(player)
+		player_data.surface = surface.index
 	else
 		local surface = wagon.surface
 		local area = wagon.area
@@ -445,6 +454,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
 		else
 			player.teleport(position, surface)
 		end
+		player_data.surface = surface.index
 	end
 end
 
