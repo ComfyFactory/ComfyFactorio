@@ -530,7 +530,7 @@ function Public.gain_xp(player, amount)
     else
         fee = 0
     end
-    amount = math_round(amount, 2) - fee
+    amount = math_floor(amount, 2) - fee
     rpg_t.global_pool = rpg_t.global_pool + fee
     rpg_t[player.index].xp = rpg_t[player.index].xp + amount
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
@@ -548,7 +548,7 @@ function Public.gain_xp(player, amount)
         return
     end
     player.create_local_flying_text {
-        text = '+' .. math_round(rpg_t[player.index].xp_since_last_floaty_text) .. ' xp',
+        text = '+' .. math_floor(rpg_t[player.index].xp_since_last_floaty_text) .. ' xp',
         position = player.position,
         color = xp_floating_text_color,
         time_to_live = 120,
@@ -573,7 +573,7 @@ local function global_pool()
         if rpg_t[p.index].level < 10 and p.online_time < 50000 then
             local s = share * 2
             p.create_local_flying_text {
-                text = '+' .. s .. ' xp',
+                text = '+' .. math_floor(s) .. ' xp',
                 position = p.position,
                 color = xp_floating_text_color,
                 time_to_live = 240,
@@ -582,7 +582,7 @@ local function global_pool()
             Public.gain_xp(p, s * 2)
         else
             p.create_local_flying_text {
-                text = '+' .. share .. ' xp',
+                text = '+' .. math_floor(share) .. ' xp',
                 position = p.position,
                 color = xp_floating_text_color,
                 time_to_live = 240,

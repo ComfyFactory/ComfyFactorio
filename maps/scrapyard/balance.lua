@@ -1,5 +1,5 @@
---Hunger games balance things by Gerkiz --
 local Event = require 'utils.event'
+local Public = {}
 
 local function player_ammo_starting_modifiers()
     local data = {
@@ -89,7 +89,7 @@ local function enemy_ammo_starting_modifiers()
         ['grenade'] = 0,
         ['landmine'] = 0,
         ['laser-turret'] = 0,
-        ['melee'] = 0.5,
+        ['melee'] = 0,
         ['railgun'] = 0,
         ['rocket'] = 0,
         ['shotgun-shell'] = 0
@@ -100,18 +100,18 @@ end
 local function enemy_ammo_evolution_modifiers()
     local data = {
         ['artillery-shell'] = 1,
-        ['biological'] = 2,
+        ['biological'] = 1,
         ['bullet'] = 1,
         --['cannon-shell'] = 1,
         ['capsule'] = 1,
         ['combat-robot-beam'] = 1,
         ['combat-robot-laser'] = 1,
         ['electric'] = 1,
-        ['flamethrower'] = 2,
+        ['flamethrower'] = 1,
         --['grenade'] = 1,
         --['landmine'] = 1,
-        ['laser-turret'] = 2,
-        ['melee'] = 2
+        ['laser-turret'] = 1,
+        ['melee'] = 1
         --['railgun'] = 1,
         --['rocket'] = 1,
         --['shotgun-shell'] = 1
@@ -129,7 +129,7 @@ local function init_player_weapon_damage(force)
     end
 end
 
-local function init_enemy_weapon_damage()
+function Public.init_enemy_weapon_damage()
     local e, s, sd = game.forces['enemy'], game.forces['scrap'], game.forces['scrap_defense']
 
     for k, v in pairs(enemy_ammo_starting_modifiers()) do
@@ -196,6 +196,7 @@ local function research_finished(event)
     end
 end
 
-Event.on_init(init_enemy_weapon_damage)
 Event.on_nth_tick(18000, enemy_weapon_damage)
 --Event.add(defines.events.on_research_finished, research_finished)
+
+return Public

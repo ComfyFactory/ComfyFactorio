@@ -6,10 +6,10 @@ require 'on_tick_schedule'
 require 'modules.dynamic_landfill'
 require 'modules.difficulty_vote'
 require 'modules.shotgun_buff'
-require 'maps.scrapyard.burden'
+require 'modules.burden'
 require 'modules.rocks_heal_over_time'
 require 'modules.no_deconstruction_of_neutral_entities'
-require 'maps.scrapyard.flamethrower_nerf'
+require 'modules.flamethrower_nerf'
 require 'modules.rocks_yield_ore_veins'
 require 'modules.spawners_contain_biters'
 require 'modules.biters_yield_coins'
@@ -41,13 +41,14 @@ local Locomotive = require 'maps.scrapyard.locomotive'.locomotive_spawn
 local render_train_hp = require 'maps.scrapyard.locomotive'.render_train_hp
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
-local Collapse = require 'maps.scrapyard.collapse'
+local Collapse = require 'modules.collapse'
+local Balance = require 'maps.scrapyard.balance'
 
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 
-Scrap_table.init({train_reveal = true})
+Scrap_table.init({train_reveal = true, energy_shared = true})
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
 local disabled_entities = {'gun-turret', 'laser-turret', 'flamethrower-turret', 'land-mine'}
@@ -55,6 +56,14 @@ local colors = {
     'green-refined-concrete',
     'red-refined-concrete',
     'blue-refined-concrete'
+}
+local disabled_tiles = {
+    ['water-shallow'] = true,
+    ['deepwater-green'] = true,
+    ['out-of-map'] = true,
+    ['green-refined-concrete'] = true,
+    ['red-refined-concrete'] = true,
+    ['blue-refined-concrete'] = true
 }
 local treasure_chest_messages = {
     "You notice an old crate within the rubble. It's filled with treasure!",
@@ -141,8 +150,8 @@ local function set_difficulty()
 
     --20 Players for fastest wave_interval
     wave_defense_table.wave_interval = 3600 - player_count * 90
-    if wave_defense_table.wave_interval < 1800 then
-        wave_defense_table.wave_interval = 1800
+    if wave_defense_table.wave_interval < 2000 then
+        wave_defense_table.wave_interval = 2000
     end
 end
 
@@ -152,6 +161,7 @@ function Public.reset_map()
     local get_score = Score.get_table()
     Poll.reset()
     ICW.reset()
+    Balance.init_enemy_weapon_damage()
     game.reset_time_played()
     Scrap_table.reset_table()
     wave_defense_table.math = 8
@@ -178,6 +188,7 @@ function Public.reset_map()
         game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
         this.active_surface_index =
             Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface = game.surfaces[this.active_surface_index]
     end
 
     local surface = game.surfaces[this.active_surface_index]
@@ -217,8 +228,7 @@ function Public.reset_map()
     Collapse.start_now(false)
 
     surface.ticks_per_day = surface.ticks_per_day * 2
-    surface.min_brightness = 0.08
-    surface.daytime = 0.7
+    surface.daytime = 1
     surface.brightness_visual_weights = {1, 0, 0, 0}
     surface.freeze_daytime = true
     surface.solar_power_multiplier = 1
@@ -395,7 +405,7 @@ local function protect_train(event)
 end
 
 local function change_tile(surface, pos, steps)
-    return surface.set_tiles {{name = colors[math_floor(steps * 0.5) % 3 + 1], position = {x = pos.x, y = pos.y + 1}}}
+    return surface.set_tiles {{name = colors[math_floor(steps * 0.5) % 3 + 1], position = {x = pos.x, y = pos.y}}}
 end
 
 local function on_player_changed_position(event)
@@ -420,11 +430,9 @@ local function on_player_changed_position(event)
         --for y = -1,1 do
         --local _pos = {position.x+x,position.y+y}
         local steps = this.players[player.index].steps
-        local shallow, deepwater, oom =
-            surface.get_tile(position).name == 'water-shallow',
-            surface.get_tile(position).name == 'deepwater-green',
-            surface.get_tile(position).name == 'out-of-map'
-        if shallow or deepwater or oom then
+        local tile = surface.get_tile(position).name
+        local disabled = disabled_tiles[tile]
+        if disabled then
             goto continue
         end
         change_tile(surface, position, steps)
@@ -436,7 +444,7 @@ local function on_player_changed_position(event)
     --end
     end
     ::continue::
-    if not this.train_reveal then
+    if not this.train_reveal or this.players[player.index].reveal - game.tick > 0 then
         if position.y < 5 then
             Terrain.reveal(player)
         end
@@ -473,7 +481,9 @@ local function on_player_joined_game(event)
         this.players[player.index] = {
             tiles_enabled = true,
             steps = 0,
-            first_join = false
+            first_join = false,
+            reveal = 0,
+            data = {}
         }
     end
 
@@ -938,23 +948,7 @@ local on_init = function()
             'Good luck, over and out!',
             '\n',
             '\n',
-            '\n',
-            'Fixes:\n',
-            'Collapse activates after reaching first breach wall\n',
-            'Crafting grants more xp\n',
-            'Magic is tweaked\n',
-            'Loot chests are affected by magic\n',
-            'Scrap turrets are boosted in dmg\n',
-            'Disable out-of-map tile placing\n',
-            'RPG levels are now visible in the player list\n',
-            "Moved comfylatron to overworld, 'lil bugger was causing issues\n",
-            'RPG now has a global XP pool\n',
-            'Locomotive has now market upgrades\n',
-            'XP is granted after each breached wall\n',
-            'Train now has a XP aura, stay near it!\n',
-            'Aura increases after each breach wall\n',
-            'Players cannot reveal path, only the train can.\n',
-            'Follow the train and defend it.'
+            '\n'
         }
     )
     T.main_caption_color = {r = 150, g = 150, b = 0}
@@ -985,7 +979,7 @@ local function darkness(data)
         game.print(grandmaster .. ' Sunlight, finally!', {r = 1, g = 0.5, b = 0.1})
         surface.min_brightness = 1
         surface.brightness_visual_weights = {1, 0, 0, 0}
-        surface.daytime = 0.7
+        surface.daytime = 1
         surface.freeze_daytime = true
         surface.solar_power_multiplier = 1
         this.freeze_daytime = false

@@ -3,7 +3,8 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 
 local this = {
-    train_reveal = true
+    train_reveal = true,
+    energy_shared = true
 }
 local Public = {}
 
@@ -20,6 +21,7 @@ function Public.reset_table()
     --end
     this.lo_energy = nil
     this.ow_energy = nil
+    this.dummy = nil
     this.game_lost = false
     this.game_won = false
     this.energy = {}
@@ -40,6 +42,7 @@ function Public.reset_table()
     this.offline_players = {}
     this.mined_scrap = 0
     this.biters_killed = 0
+    this.locomotive_xp_aura = 40
 end
 
 function Public.get_table()
@@ -49,6 +52,9 @@ end
 function Public.init(args)
     if args then
         this.train_reveal = args.train_reveal
+        this.energy_shared = args.energy_shared
+    else
+        return error('Not a valid init argument', 2)
     end
 end
 

@@ -106,11 +106,11 @@ local function set_comfy_speech_bubble(text)
         this.comfybubble.destroy()
     end
     this.comfybubble =
-        this.comfylatron.surface.create_entity(
+        this.grandmaster.surface.create_entity(
         {
             name = 'compi-speech-bubble',
-            position = this.comfylatron.position,
-            source = this.comfylatron,
+            position = this.grandmaster.position,
+            source = this.grandmaster,
             text = text
         }
     )
@@ -118,16 +118,16 @@ end
 
 local function is_target_inside_habitat(pos, surface)
     local this = Scrap_table.get_table()
-    if pos.x < this.comfylatron_habitat.left_top.x then
+    if pos.x < this.grandmaster_habitat.left_top.x then
         return false
     end
-    if pos.x > this.comfylatron_habitat.right_bottom.x then
+    if pos.x > this.grandmaster_habitat.right_bottom.x then
         return false
     end
-    if pos.y < this.comfylatron_habitat.left_top.y then
+    if pos.y < this.grandmaster_habitat.left_top.y then
         return false
     end
-    if pos.y > this.comfylatron_habitat.right_bottom.y then
+    if pos.y > this.grandmaster_habitat.right_bottom.y then
         return false
     end
     return true
@@ -136,12 +136,12 @@ end
 local function get_nearby_players()
     local this = Scrap_table.get_table()
     local players =
-        this.comfylatron.surface.find_entities_filtered(
+        this.grandmaster.surface.find_entities_filtered(
         {
             name = 'character',
             area = {
-                {this.comfylatron.position.x - 9, this.comfylatron.position.y - 9},
-                {this.comfylatron.position.x + 9, this.comfylatron.position.y + 9}
+                {this.grandmaster.position.x - 9, this.grandmaster.position.y - 9},
+                {this.grandmaster.position.x + 9, this.grandmaster.position.y + 9}
             }
         }
     )
@@ -154,10 +154,10 @@ end
 local function visit_player()
     local this = Scrap_table.get_table()
     local surface = game.surfaces[this.active_surface_index]
-    if this.comfylatron_last_player_visit > game.tick then
+    if this.grandmaster_last_player_visit > game.tick then
         return false
     end
-    this.comfylatron_last_player_visit = game.tick + math_random(7200, 10800)
+    this.grandmaster_last_player_visit = game.tick + math_random(7200, 10800)
 
     local players = {}
     for _, p in pairs(game.connected_players) do
@@ -176,7 +176,7 @@ local function visit_player()
         return
     end
 
-    this.comfylatron.set_command(
+    this.grandmaster.set_command(
         {
             type = defines.command.go_to_location,
             destination_entity = player.character,
@@ -194,7 +194,7 @@ local function visit_player()
     str = str .. symbols[math_random(1, #symbols)]
     set_comfy_speech_bubble(str)
 
-    this.comfylatron_greet_player_index = player.index
+    this.grandmaster_greet_player_index = player.index
 
     return true
 end
@@ -204,17 +204,17 @@ local function greet_player(nearby_characters)
     if not nearby_characters then
         return false
     end
-    if not this.comfylatron_greet_player_index then
+    if not this.grandmaster_greet_player_index then
         return false
     end
     for _, c in pairs(nearby_characters) do
-        if c.player.index == this.comfylatron_greet_player_index then
+        if c.player.index == this.grandmaster_greet_player_index then
             local str = texts['greetings'][math_random(1, #texts['greetings'])] .. ' '
             str = str .. c.player.name
             local symbols = {'. ', '! ', '. ', '! ', '? ', '... '}
             str = str .. symbols[math_random(1, 6)]
             set_comfy_speech_bubble(str)
-            this.comfylatron_greet_player_index = false
+            this.grandmaster_greet_player_index = false
             return true
         end
     end
@@ -258,10 +258,10 @@ local function desync(event)
     local m = 12
     local m2 = m * 0.005
     for i = 1, 32, 1 do
-        this.comfylatron.surface.create_particle(
+        this.grandmaster.surface.create_particle(
             {
                 name = 'iron-ore-particle',
-                position = this.comfylatron.position,
+                position = this.grandmaster.position,
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
@@ -270,26 +270,36 @@ local function desync(event)
         )
     end
     if not event or math_random(1, 4) == 1 then
-        this.comfylatron.surface.create_entity({name = 'medium-explosion', position = this.comfylatron.position})
-        this.comfylatron.surface.create_entity(
+        this.grandmaster.surface.create_entity({name = 'medium-explosion', position = this.grandmaster.position})
+        this.grandmaster.surface.create_entity(
             {
                 name = 'flying-text',
-                position = this.comfylatron.position,
+                position = this.grandmaster.position,
                 text = 'desync',
                 color = {r = 150, g = 0, b = 0}
             }
         )
-        this.comfylatron.destroy()
-        this.comfylatron = nil
+        this.grandmaster.destroy()
+        this.grandmaster = nil
     else
-        this.comfylatron.surface.create_entity(
+        this.grandmaster.surface.create_entity(
             {
                 name = 'flying-text',
-                position = this.comfylatron.position,
+                position = this.grandmaster.position,
                 text = 'desync evaded',
                 color = {r = 0, g = 150, b = 0}
             }
         )
+        if event.cause then
+            if event.cause.valid and event.cause.player then
+                game.print(
+                    '[color=blue]Grandmaster:[/color]: I got you this time! Back to work, ' ..
+                        event.cause.player.name .. '!',
+                    {r = 200, g = 0, b = 0}
+                )
+                event.cause.die('player', this.grandmaster)
+            end
+        end
     end
 end
 
@@ -310,11 +320,11 @@ local function analyze_random_nearby_entity()
     end
 
     local entities =
-        this.comfylatron.surface.find_entities_filtered(
+        this.grandmaster.surface.find_entities_filtered(
         {
             area = {
-                {this.comfylatron.position.x - 4, this.comfylatron.position.y - 4},
-                {this.comfylatron.position.x + 4, this.comfylatron.position.y + 4}
+                {this.grandmaster.position.x - 4, this.grandmaster.position.y - 4},
+                {this.grandmaster.position.x + 4, this.grandmaster.position.y + 4}
             }
         }
     )
@@ -348,8 +358,8 @@ local function analyze_random_nearby_entity()
     end
     set_comfy_speech_bubble(str)
 
-    if not this.comfylatron_greet_player_index then
-        this.comfylatron.set_command(
+    if not this.grandmaster_greet_player_index then
+        this.grandmaster.set_command(
             {
                 type = defines.command.go_to_location,
                 destination_entity = entity,
@@ -372,24 +382,24 @@ local function go_to_some_location()
         return false
     end
 
-    if this.comfylatron_greet_player_index then
-        local player = game.players[this.comfylatron_greet_player_index]
-        if player.surface ~= this.comfylatron.surface then
+    if this.grandmaster_greet_player_index then
+        local player = game.players[this.grandmaster_greet_player_index]
+        if player.surface ~= this.grandmaster.surface then
             return
         end
         if not player.character then
-            this.comfylatron_greet_player_index = nil
+            this.grandmaster_greet_player_index = nil
             return false
         end
         if not player.character.valid then
-            this.comfylatron_greet_player_index = nil
+            this.grandmaster_greet_player_index = nil
             return false
         end
         if not is_target_inside_habitat(player.position, player.surface) then
-            this.comfylatron_greet_player_index = nil
+            this.grandmaster_greet_player_index = nil
             return false
         end
-        this.comfylatron.set_command(
+        this.grandmaster.set_command(
             {
                 type = defines.command.go_to_location,
                 destination_entity = player.character,
@@ -404,17 +414,17 @@ local function go_to_some_location()
         )
     else
         local p = {
-            x = this.comfylatron.position.x + (-96 + math_random(0, 192)),
-            y = this.comfylatron.position.y + (-96 + math_random(0, 192))
+            x = this.grandmaster.position.x + (-96 + math_random(0, 192)),
+            y = this.grandmaster.position.y + (-96 + math_random(0, 192))
         }
-        local target = this.comfylatron.surface.find_non_colliding_position('compilatron', p, 8, 1)
+        local target = this.grandmaster.surface.find_non_colliding_position('compilatron', p, 8, 1)
         if not target then
             return false
         end
-        if not is_target_inside_habitat(target, this.comfylatron.surface) then
+        if not is_target_inside_habitat(target, this.grandmaster.surface) then
             return false
         end
-        this.comfylatron.set_command(
+        this.grandmaster.set_command(
             {
                 type = defines.command.go_to_location,
                 destination = target,
@@ -437,7 +447,7 @@ local function go_to_some_location()
     return true
 end
 
-local function spawn_comfylatron(surface)
+local function spawn_grandmaster(surface)
     local this = Scrap_table.get_table()
     if surface == nil then
         return
@@ -448,12 +458,12 @@ local function spawn_comfylatron(surface)
     if not this.locomotive.valid then
         return
     end
-    if not this.comfylatron_last_player_visit then
-        this.comfylatron_last_player_visit = 0
+    if not this.grandmaster_last_player_visit then
+        this.grandmaster_last_player_visit = 0
     end
-    if not this.comfylatron_habitat then
+    if not this.grandmaster_habitat then
         local pos = this.locomotive.position
-        this.comfylatron_habitat = {
+        this.grandmaster_habitat = {
             left_top = {x = pos.x - 256, y = pos.y - 256},
             right_bottom = {x = pos.x + 256, y = pos.y + 256}
         }
@@ -475,7 +485,7 @@ local function spawn_comfylatron(surface)
     if not position then
         return false
     end
-    this.comfylatron =
+    this.grandmaster =
         surface.create_entity(
         {
             name = 'compilatron',
@@ -511,14 +521,14 @@ local function heartbeat()
     if surface == nil then
         return
     end
-    if not this.comfylatron then
+    if not this.grandmaster then
         if math_random(1, 4) == 1 then
-            spawn_comfylatron(surface)
+            spawn_grandmaster(surface)
         end
         return
     end
-    if not this.comfylatron.valid then
-        this.comfylatron = nil
+    if not this.grandmaster.valid then
+        this.grandmaster = nil
         return
     end
     if visit_player() then
@@ -541,13 +551,13 @@ end
 
 local function on_entity_damaged(event)
     local this = Scrap_table.get_table()
-    if not this.comfylatron then
+    if not this.grandmaster then
         return
     end
     if not event.entity.valid then
         return
     end
-    if event.entity ~= this.comfylatron then
+    if event.entity ~= this.grandmaster then
         return
     end
     desync(event)
@@ -555,25 +565,25 @@ end
 
 local function on_entity_died(event)
     local this = Scrap_table.get_table()
-    if not this.comfylatron then
+    if not this.grandmaster then
         return
     end
     if not event.entity.valid then
         return
     end
-    if event.entity ~= this.comfylatron then
+    if event.entity ~= this.grandmaster then
         return
     end
     if this.comfybubble then
         this.comfybubble.destroy()
     end
-    if this.comfylatron then
-        this.comfylatron.die()
+    if this.grandmaster then
+        this.grandmaster.die()
     end
     this.comfybubble = nil
-    this.comfylatron = nil
-    this.comfylatron_habitat = nil
-    this.comfylatron_last_player_visit = nil
+    this.grandmaster = nil
+    this.grandmaster_habitat = nil
+    this.grandmaster_last_player_visit = nil
 end
 
 local function on_tick()

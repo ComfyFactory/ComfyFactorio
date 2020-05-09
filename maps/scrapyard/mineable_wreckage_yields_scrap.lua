@@ -208,7 +208,7 @@ local function get_amount(data)
     if this.scrap_enabled then
         local amount_bonus =
             (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
-        local r1 = math.ceil(scrap_amount[scrap] * (0.3 + (amount_bonus * 0.3)))
+        local r1 = math.ceil(scrap_amount[scrap] * (1.3 + (amount_bonus * 1.3)))
         local r2 = math.ceil(scrap_amount[scrap] * (1.7 + (amount_bonus * 1.7)))
         if not r1 or not r2 then
             return
@@ -229,12 +229,6 @@ local function scrap_randomness(data)
     local this = data.this
     local player = data.player
     local scrap
-
-    --if this.scrap_enabled[player.index] then
-    --	scrap = scrap_raffle_scrap[math.random(1, size_of_scrap_raffle)]
-    --else
-    --	scrap = scrap_raffle_ores[math.random(1, size_of_ore_raffle)]
-    --end
 
     if this.scrap_enabled then
         scrap = scrap_raffle_scrap[math.random(1, size_of_scrap_raffle)]
