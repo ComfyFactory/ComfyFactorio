@@ -1,85 +1,11 @@
 local Event = require 'utils.event'
 local Public = {}
 
-local function player_ammo_starting_modifiers()
-    local data = {
-        ['artillery-shell'] = -0.75,
-        ['biological'] = -0.5,
-        ['bullet'] = -0.25,
-        ['cannon-shell'] = -0.75,
-        ['capsule'] = -0.5,
-        ['combat-robot-beam'] = -0.5,
-        ['combat-robot-laser'] = -0.5,
-        ['electric'] = -0.5,
-        ['flamethrower'] = -0.75,
-        ['grenade'] = -0.5,
-        ['landmine'] = -0.33,
-        ['laser-turret'] = -0.75,
-        ['melee'] = 2,
-        ['railgun'] = 1,
-        ['rocket'] = -0.75,
-        ['shotgun-shell'] = -0.20
-    }
-    return data
-end
-
-local function player_gun_speed_modifiers()
-    local data = {
-        ['artillery-shell'] = -0.75,
-        ['biological'] = -0.5,
-        ['bullet'] = -0.55,
-        ['cannon-shell'] = -0.75,
-        ['capsule'] = -0.5,
-        ['combat-robot-beam'] = -0.5,
-        ['combat-robot-laser'] = -0.5,
-        ['electric'] = -0.5,
-        ['flamethrower'] = -0.75,
-        ['grenade'] = -0.5,
-        ['landmine'] = -0.33,
-        ['laser-turret'] = -0.75,
-        ['melee'] = 1,
-        ['railgun'] = 0,
-        ['rocket'] = -0.75,
-        ['shotgun-shell'] = -0.50
-    }
-    return data
-end
-local function player_ammo_research_modifiers()
-    local data = {
-        ['artillery-shell'] = -0.75,
-        ['biological'] = -0.5,
-        ['bullet'] = -0.5,
-        ['cannon-shell'] = -0.85,
-        ['capsule'] = -0.5,
-        ['combat-robot-beam'] = -0.5,
-        ['combat-robot-laser'] = -0.5,
-        ['electric'] = -0.6,
-        ['flamethrower'] = -0.75,
-        ['grenade'] = -0.5,
-        ['landmine'] = -0.5,
-        ['laser-turret'] = -0.75,
-        ['melee'] = -0.5,
-        ['railgun'] = -0.5,
-        ['rocket'] = -0.5,
-        ['shotgun-shell'] = -0.20
-    }
-    return data
-end
-
-local function player_turrets_research_modifiers()
-    local data = {
-        ['gun-turret'] = -0.75,
-        ['laser-turret'] = -0.75,
-        ['flamethrower-turret'] = -0.75
-    }
-    return data
-end
-
-local function enemy_ammo_starting_modifiers()
+function Public.init_enemy_weapon_damage()
     local data = {
         ['artillery-shell'] = 0,
-        ['biological'] = 0,
-        ['bullet'] = 2,
+        ['biological'] = 0.1,
+        ['bullet'] = 4,
         ['cannon-shell'] = 0,
         ['capsule'] = 0,
         ['combat-robot-beam'] = 0,
@@ -89,50 +15,15 @@ local function enemy_ammo_starting_modifiers()
         ['grenade'] = 0,
         ['landmine'] = 0,
         ['laser-turret'] = 0,
-        ['melee'] = 0,
+        ['melee'] = 0.5,
         ['railgun'] = 0,
         ['rocket'] = 0,
         ['shotgun-shell'] = 0
     }
-    return data
-end
 
-local function enemy_ammo_evolution_modifiers()
-    local data = {
-        ['artillery-shell'] = 1,
-        ['biological'] = 1,
-        ['bullet'] = 1,
-        --['cannon-shell'] = 1,
-        ['capsule'] = 1,
-        ['combat-robot-beam'] = 1,
-        ['combat-robot-laser'] = 1,
-        ['electric'] = 1,
-        ['flamethrower'] = 1,
-        --['grenade'] = 1,
-        --['landmine'] = 1,
-        ['laser-turret'] = 1,
-        ['melee'] = 1
-        --['railgun'] = 1,
-        --['rocket'] = 1,
-        --['shotgun-shell'] = 1
-    }
-    return data
-end
+    local e, s, sd = game.forces.enemy, game.forces.scrap, game.forces.scrap_defense
 
-local function init_player_weapon_damage(force)
-    for k, v in pairs(player_ammo_starting_modifiers()) do
-        force.set_ammo_damage_modifier(k, v)
-    end
-
-    for k, v in pairs(player_gun_speed_modifiers()) do
-        force.set_gun_speed_modifier(k, v)
-    end
-end
-
-function Public.init_enemy_weapon_damage()
-    local e, s, sd = game.forces['enemy'], game.forces['scrap'], game.forces['scrap_defense']
-
-    for k, v in pairs(enemy_ammo_starting_modifiers()) do
+    for k, v in pairs(data) do
         e.set_ammo_damage_modifier(k, v)
         s.set_ammo_damage_modifier(k, v)
         sd.set_ammo_damage_modifier(k, v)
@@ -140,63 +31,43 @@ function Public.init_enemy_weapon_damage()
 end
 
 local function enemy_weapon_damage()
+    if game.tick < 100 then
+        goto rtn
+    end
     local e, s, sd = game.forces.enemy, game.forces.scrap, game.forces.scrap_defense
 
-    if not global.difficulty_vote_value then
-        global.difficulty_vote_value = 1
-    end
+    local data = {
+        ['artillery-shell'] = 0.5,
+        ['biological'] = 0.5,
+        ['bullet'] = 0.5,
+        ['capsule'] = 0.5,
+        ['combat-robot-beam'] = 0.5,
+        ['combat-robot-laser'] = 0.5,
+        ['electric'] = 0.5,
+        ['flamethrower'] = 0.5,
+        --['grenade'] = 0.5,
+        --['landmine'] = 0.5,
+        ['laser-turret'] = 0.5,
+        ['melee'] = 0.5
+        --['railgun'] = 0.5,
+        --['rocket'] = 0.5,
+        --['shotgun-shell'] = 0.5
+    }
 
-    local ef = e.evolution_factor
-
-    for k, v in pairs(enemy_ammo_evolution_modifiers()) do
-        local base = enemy_ammo_starting_modifiers()[k]
-
-        local new = base + v * ef * global.difficulty_vote_value
+    for k, v in pairs(data) do
+        local new = global.difficulty_vote_value * v
+        if new > global.difficulty_vote_value then
+            new = global.difficulty_vote_value / 2
+            print('Ammo modifier is now: ' .. new)
+        end
         e.set_ammo_damage_modifier(k, new)
         s.set_ammo_damage_modifier(k, new)
         sd.set_ammo_damage_modifier(k, new)
     end
+
+    ::rtn::
 end
 
-local function research_finished(event)
-    local r = event.research
-    local p_force = r.force
-
-    for _, e in ipairs(r.effects) do
-        local t = e.type
-
-        if t == 'ammo-damage' then
-            local category = e.ammo_category
-            local factor = player_ammo_research_modifiers()[category]
-
-            if factor then
-                local current_m = p_force.get_ammo_damage_modifier(category)
-                local m = e.modifier
-                p_force.set_ammo_damage_modifier(category, current_m + factor * m)
-            end
-        elseif t == 'turret-attack' then
-            local category = e.turret_id
-            local factor = player_turrets_research_modifiers()[category]
-
-            if factor then
-                local current_m = p_force.get_turret_attack_modifier(category)
-                local m = e.modifier
-                p_force.set_turret_attack_modifier(category, current_m + factor * m)
-            end
-        elseif t == 'gun-speed' then
-            local category = e.ammo_category
-            local factor = player_gun_speed_modifiers()[category]
-
-            if factor then
-                local current_m = p_force.get_gun_speed_modifier(category)
-                local m = e.modifier
-                p_force.set_gun_speed_modifier(category, current_m + factor * m)
-            end
-        end
-    end
-end
-
-Event.on_nth_tick(18000, enemy_weapon_damage)
---Event.add(defines.events.on_research_finished, research_finished)
+Event.on_nth_tick(30, enemy_weapon_damage)
 
 return Public

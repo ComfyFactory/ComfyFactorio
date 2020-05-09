@@ -506,7 +506,6 @@ local function gui_click(event)
 
         this.players[player.index].reveal = this.players[player.index].reveal + duration_per_charge
 
-        this.players[player.index].reveal = duration_per_charge
         player.print(
             grandmaster ..
                 ' ' .. player.name .. ' a fine choice! You can now reveal terrain when going through the black mist!',

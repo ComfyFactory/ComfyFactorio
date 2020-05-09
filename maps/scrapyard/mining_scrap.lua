@@ -1,5 +1,7 @@
 local Scrap_table = require 'maps.scrapyard.table'
 
+local Public = {}
+
 local max_spill = 60
 local math_random = math.random
 local math_floor = math.floor
@@ -213,7 +215,7 @@ local function get_amount(data)
         if not r1 or not r2 then
             return
         end
-        amount = math.random(r1, r2)
+        amount = math_random(r1, r2)
     else
         amount = math_floor(amount * ore_yield_amounts()[entity.name] * m)
     end
@@ -241,10 +243,6 @@ local function scrap_randomness(data)
     local scrap_amount = get_amount(data)
 
     local position = {x = entity.position.x, y = entity.position.y}
-
-    entity.destroy()
-
-    --local scrap_amount = math_floor(amount * 0.85) + 1
 
     if scrap_amount > max_spill then
         player.surface.spill_item_stack(position, {name = scrap, count = max_spill}, true)
@@ -274,7 +272,7 @@ local function scrap_randomness(data)
     create_particles(player.surface, 'shell-particle', position, 64, {x = player.position.x, y = player.position.y})
 end
 
-local function on_player_mined_entity(event)
+function Public.on_player_mined_entity(event)
     local entity = event.entity
     if not entity.valid then
         return
@@ -299,5 +297,4 @@ local function on_player_mined_entity(event)
     scrap_randomness(data)
 end
 
-local Event = require 'utils.event'
-Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+return Public

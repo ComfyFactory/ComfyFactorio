@@ -10,6 +10,25 @@ local Public = {}
 
 local energy_upgrade = 50000000
 
+local function validate_player(player)
+    if not player then
+        return false
+    end
+    if not player.valid then
+        return false
+    end
+    if not player.character then
+        return false
+    end
+    if not player.connected then
+        return false
+    end
+    if not game.players[player.index] then
+        return false
+    end
+    return true
+end
+
 local function rebuild_energy_overworld(data)
     local this = data.this
     local surface = data.surface
@@ -36,7 +55,7 @@ local function rebuild_energy_overworld(data)
             y = this.locomotive.position.y + 2
         },
         create_build_effect_smoke = false,
-        force = game.forces.neutral
+        force = game.forces.enemy
     }
 
     this.ow_energy.destructible = false
@@ -111,6 +130,9 @@ local function property_boost(data)
     end
 
     for _, player in pairs(game.connected_players) do
+        if not validate_player(player) then
+            return
+        end
         if Public.contains_positions(player.position, area) then
             local pos = player.position
             RPG.gain_xp(player, 0.2 * rpg[player.index].bonus)
