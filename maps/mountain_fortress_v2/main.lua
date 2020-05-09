@@ -189,9 +189,17 @@ function Public.reset_map()
 	set_difficulty()
 end
 
+local wagon_types = {
+	["cargo-wagon"] = true,
+	["artillery-wagon"] = true,
+	["fluid-wagon"] = true,
+	["locomotive"] = true,
+}
+
 local function protect_train(event)
-	if event.entity.force.index ~= 1 then return end --Player Force
-	if event.entity == global.locomotive_cargo then
+	local entity = event.entity
+	if entity.force.index ~= 1 then return end --Player Force
+	if wagon_types[entity.type] then
 		if event.cause then
 			if event.cause.force.index == 2 then
 				return
