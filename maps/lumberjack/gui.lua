@@ -70,8 +70,8 @@ local function update_gui(player)
         gui.global_pool.tooltip = 'Get this number over 5k to get some of this mad XP! \\o/'
     end
 
-    gui.scrap_mined.caption = ' [img=entity.tree-01]: ' .. format_number(st.mined_scrap, true)
-    gui.scrap_mined.tooltip = 'Amount of trees harvested.'
+    gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(st.mined_scrap, true)
+    gui.scrap_mined.tooltip = 'Amount of trees/rocks harvested.'
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(st.biters_killed, true)
     gui.biters_killed.tooltip = 'Amount of biters killed.'

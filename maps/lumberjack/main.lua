@@ -28,7 +28,7 @@ local ICW = require 'maps.lumberjack.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG = require 'maps.lumberjack.rpg'
-local Reset = require 'functions.soft_reset'
+local Reset = require 'maps.lumberjack.soft_reset'
 local Terrain = require 'maps.lumberjack.terrain'
 local Event = require 'utils.event'
 local WPT = require 'maps.lumberjack.table'
@@ -38,12 +38,15 @@ local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Balance = require 'maps.lumberjack.balance'
+local shape = require 'maps.lumberjack.terrain'.heavy_functions
+local Generate = require 'maps.lumberjack.generate'
+local Task = require 'utils.task'
 
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 
-WPT.init({train_reveal = true, energy_shared = true})
+WPT.init({train_reveal = false, energy_shared = true, reveal_normally = true})
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
 local colors = {
@@ -63,9 +66,15 @@ local disabled_tiles = {
 local grandmaster = '[color=blue]Grandmaster:[/color]'
 
 local function create_forces_and_disable_tech()
-    game.create_force('defenders')
-    game.create_force('lumber_defense')
+    if not game.forces.defenders then
+        game.create_force('defenders')
+    end
+    if not game.forces.lumber_defense then
+        game.create_force('lumber_defense')
+    end
+    game.forces.defenders.share_chart = false
     game.forces.player.set_friend('defenders', true)
+    game.forces.lumber_defense.set_friend('player', false)
     game.forces.enemy.set_friend('defenders', true)
     game.forces.enemy.set_friend('lumber_defense', true)
     game.forces.defenders.set_friend('player', true)
@@ -117,12 +126,12 @@ function Public.reset_map()
     create_forces_and_disable_tech()
     WPT.reset_table()
     wave_defense_table.math = 8
-    if not this.train_reveal then
+    if not this.train_reveal and not this.reveal_normally then
         this.revealed_spawn = game.tick + 100
     end
 
     local map_gen_settings = {
-        ['seed'] = math_random(1, 1000000),
+        ['seed'] = math_random(10000, 99999),
         ['water'] = 0.001,
         ['starting_area'] = 1,
         ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -305,6 +314,17 @@ function Public.reset_map()
         alignment = 'center',
         scale_with_zoom = false
     }
+
+    local surfaces = {
+        [surface.name] = shape
+    }
+    Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
+    Task.reset_queue()
+    Task.reset_primitives()
+    Task.start_queue()
+    Task.set_queue_speed(10)
+
+    this.chunk_load_tick = game.tick + 500
 end
 
 local function change_tile(surface, pos, steps)
@@ -344,7 +364,7 @@ local function on_player_changed_position(event)
     end
     ::continue::
     if
-        not this.train_reveal or
+        not this.train_reveal and not this.reveal_normally or
             this.players[player.index].start_tick and game.tick - this.players[player.index].start_tick < 6400
      then
         if position.y < 5 then
@@ -385,9 +405,9 @@ local function on_player_joined_game(event)
     end
 
     if not this.players[player.index].first_join then
-        player.print(grandmaster .. ' Greetings, newly joined ' .. player.name .. '!', {r = 1, g = 0.5, b = 0.1})
-        player.print(grandmaster .. ' Please read the map info.', {r = 1, g = 0.5, b = 0.1})
-        player.print(grandmaster .. ' Guide the choo through the black mist.', {r = 1, g = 0.5, b = 0.1})
+        player.print(grandmaster .. ' Greetings, newly joined ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
+        player.print(grandmaster .. ' Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
+        player.print(grandmaster .. ' Guide the choo through the black mist.', {r = 0.98, g = 0.66, b = 0.22})
         player.print(grandmaster .. ' To disable rainbow mode, type in console: /rainbow_mode', Color.info)
         this.players[player.index].first_join = true
     end
@@ -499,15 +519,15 @@ local function darkness(data)
     local rnd = math.random
     local this = data.this
     local surface = data.surface
-    if rnd(1, 32) == 1 then
+    if rnd(1, 24) == 1 then
         if not this.freeze_daytime then
             return
         end
-        game.print(grandmaster .. ' Sunlight, finally!', {r = 1, g = 0.5, b = 0.1})
+        game.print(grandmaster .. ' Sunlight, finally!', {r = 0.98, g = 0.66, b = 0.22})
         surface.min_brightness = 1
         surface.brightness_visual_weights = {1, 0, 0, 0}
         surface.daytime = 1
-        surface.freeze_daytime = true
+        surface.freeze_daytime = false
         surface.solar_power_multiplier = 1
         this.freeze_daytime = false
         return
@@ -515,8 +535,8 @@ local function darkness(data)
         if this.freeze_daytime then
             return
         end
-        game.print(grandmaster .. ' Darkness has surrounded us!', {r = 1, g = 0.5, b = 0.1})
-        game.print(grandmaster .. ' Builds some lamps!', {r = 1, g = 0.5, b = 0.1})
+        game.print(grandmaster .. ' Darkness has surrounded us!', {r = 0.98, g = 0.66, b = 0.22})
+        game.print(grandmaster .. ' Builds some lamps!', {r = 0.98, g = 0.66, b = 0.22})
         surface.min_brightness = 0
         surface.brightness_visual_weights = {0.90, 0.90, 0.90}
         surface.daytime = 0.42
@@ -528,7 +548,7 @@ local function darkness(data)
 end
 
 local function transfer_pollution(data)
-    local surface = data.surface
+    local surface = data.loco_surface
     local this = data.this
     if not surface then
         return
@@ -539,8 +559,8 @@ local function transfer_pollution(data)
 end
 
 local tick_minute_functions = {
-    [300 * 3 + 30 * 1] = darkness,
-    [300 * 3 + 30 * 0] = transfer_pollution
+    [300 * 3 + 30 * 6] = darkness,
+    [300 * 3 + 30 * 6] = transfer_pollution
 }
 
 local on_tick = function()
@@ -550,13 +570,17 @@ local on_tick = function()
     local tick = game.tick
     local status = Collapse.start_now()
     local key = tick % 3600
-    local data = {
-        this = this,
-        surface = surface
-    }
+    local unit_surface = this.locomotive.unit_number
+    local icw_table = ICW.get_table()
     if not this.locomotive.valid then
         Entities.loco_died()
     end
+    local data = {
+        this = this,
+        surface = surface,
+        loco_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
+    }
+
     if status == true then
         goto continue
     end
@@ -594,6 +618,13 @@ local on_tick = function()
         end
         return
     end
+
+    if this.chunk_load_tick then
+        if this.chunk_load_tick < game.tick then
+            this.chunk_load_tick = nil
+            Task.set_queue_speed(1)
+        end
+    end
 end
 
 local on_init = function()
@@ -601,7 +632,6 @@ local on_init = function()
 
     global.custom_highscore.description = 'Wagon distance reached:'
 
-    game.forces.defenders.share_chart = false
     global.rocks_yield_ore_maximum_amount = 500
     global.rocks_yield_ore_base_amount = 50
     global.rocks_yield_ore_distance_modifier = 0.025
@@ -644,6 +674,8 @@ local on_init = function()
     Explosives.set_destructible_tile('deepwater-green', 1000)
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
+
+    Generate.register()
 end
 
 Event.on_nth_tick(10, on_tick)

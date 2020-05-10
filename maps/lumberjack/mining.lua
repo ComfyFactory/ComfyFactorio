@@ -62,10 +62,8 @@ local function ore_yield_amounts()
         ['tree-04'] = 1,
         ['tree-05'] = 1,
         ['tree-06'] = 1,
-        ['tree-06-brown'] = 1,
         ['tree-07'] = 1,
         ['tree-08'] = 1,
-        ['tree-08-brown'] = 1,
         ['tree-08-red'] = 1,
         ['tree-09'] = 1,
         ['tree-09-brown'] = 1,
@@ -76,7 +74,7 @@ end
 
 local tree_raffle_ores = {}
 for _, t in pairs(mining_chances_ores()) do
-    for x = 1, t.chance, 1 do
+    for _ = 1, t.chance, 1 do
         table.insert(tree_raffle_ores, t.name)
     end
 end
@@ -120,16 +118,30 @@ local function tree_randomness(data)
     local entity = data.entity
     local player = data.player
     local tree
+    local tree_amount
+
+    if not ore_yield_amounts()[entity.name] then
+        tree = 'wood'
+        data.tree = tree
+        tree_amount = 2
+
+        goto continue
+    end
 
     tree = tree_raffle_ores[math.random(1, size_of_ore_raffle)]
 
     data.tree = tree
 
-    local tree_amount = get_amount(data)
+    tree_amount = get_amount(data)
+    ::continue::
 
     local position = {x = entity.position.x, y = entity.position.y}
 
     if tree_amount > max_spill then
+        if tree == 'tree' then
+            tree = 'wood'
+        end
+
         player.surface.spill_item_stack(position, {name = tree, count = max_spill}, true)
         tree_amount = tree_amount - max_spill
         local inserted_count = player.insert({name = tree, count = tree_amount})

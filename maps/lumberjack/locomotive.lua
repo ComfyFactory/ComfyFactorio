@@ -422,10 +422,10 @@ function Public.locomotive_spawn(surface, position)
     this.locomotive_cargo.minable = false
     this.locomotive_cargo.operable = true
 
-    local t = ICW.register_wagon(this.locomotive)
-    local c = ICW.register_wagon(this.locomotive_cargo)
-    t.entity_count = 999
-    c.entity_count = 999
+    local locomotive = ICW.register_wagon(this.locomotive)
+    local wagon = ICW.register_wagon(this.locomotive_cargo)
+    locomotive.entity_count = 999
+    wagon.entity_count = 999
 end
 
 function Public.inside(pos, area)

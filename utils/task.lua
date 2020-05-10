@@ -149,6 +149,29 @@ function Task.set_queue_speed(value)
     primitives.task_queue_speed = value
 end
 
+function Task.start_queue()
+    if task_queue._tail == 0 then
+        task_queue._tail = 1
+    end
+end
+
+function Task.reset_queue()
+    if #task_queue > 50 then
+        task_queue = {
+            _head = 1,
+            _tail = 0
+        }
+    end
+end
+
+function Task.reset_primitives()
+    primitives = {
+        next_async_callback_time = -1,
+        total_task_weight = 0,
+        task_queue_speed = 1,
+        task_per_tick = 1
+    }
+end
 Event.add(defines.events.on_tick, on_tick)
 
 return Task

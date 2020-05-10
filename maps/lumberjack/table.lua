@@ -4,7 +4,8 @@ local Event = require 'utils.event'
 
 local this = {
     train_reveal = true,
-    energy_shared = true
+    energy_shared = true,
+    reveal_normally = false
 }
 local Public = {}
 
@@ -42,6 +43,7 @@ function Public.reset_table()
     this.mined_scrap = 0
     this.biters_killed = 0
     this.locomotive_xp_aura = 40
+    this.randomness = 0
 end
 
 function Public.get_table()
@@ -52,6 +54,7 @@ function Public.init(args)
     if args then
         this.train_reveal = args.train_reveal
         this.energy_shared = args.energy_shared
+        this.reveal_normally = args.reveal_normally
     else
         return error('Not a valid init argument', 2)
     end

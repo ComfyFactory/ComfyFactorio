@@ -23,10 +23,10 @@ end
 function Public.get_items()
     local this = WPT.get_table()
 
-    local threat_cost = 50000 * (1 + this.train_upgrades)
-    local energy_cost = 50000 * (1 + this.train_upgrades)
-    local health_cost = 50000 * (1 + this.train_upgrades)
-    local aura_cost = 50000 * (1 + this.train_upgrades)
+    local threat_cost = 15000 * (1 + this.train_upgrades)
+    local energy_cost = 15000 * (1 + this.train_upgrades)
+    local health_cost = 15000 * (1 + this.train_upgrades)
+    local aura_cost = 15000 * (1 + this.train_upgrades)
 
     local items = {
         ['clear_threat_level'] = {
@@ -67,14 +67,29 @@ function Public.get_items()
             price = 250,
             tooltip = '[Terrain Reveal]:\nAllows the player to reveal terrain for a short amount of time.',
             sprite = 'item/computer',
+            enabled = false
+        },
+        ['purge_darkness'] = {
+            stack = 1,
+            value = 'coin',
+            price = 1550,
+            tooltip = "[Darkness]:\nPay the Sun Gods some coins and they'll reward you handsomely.",
+            sprite = 'item/computer',
             enabled = true
         },
-        ['small-lamp'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Small Lamp'},
-        ['land-mine'] = {stack = 1, value = 'coin', price = 25, tooltip = 'Land Mine'},
-        ['raw-fish'] = {stack = 2, value = 'coin', price = 25, tooltip = 'Raw Fish'},
-        ['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Magazine'},
-        ['loader'] = {stack = 1, value = 'coin', price = 150, tooltip = 'Loader'},
-        ['fast-loader'] = {stack = 1, value = 'coin', price = 300, tooltip = 'Fast Loader'}
+        ['small-lamp'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Small Sunlight'},
+        ['wood'] = {stack = 50, value = 'coin', price = 12, tooltip = 'Some fine Wood'},
+        ['land-mine'] = {stack = 1, value = 'coin', price = 25, tooltip = 'Land Boom Danger'},
+        ['raw-fish'] = {stack = 1, value = 'coin', price = 4, tooltip = 'Flappy Fish'},
+        ['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Pew'},
+        ['crude-oil-barrel'] = {stack = 1, value = 'coin', price = 8, tooltip = 'Crude Oil Flame'},
+        ['loader'] = {stack = 1, value = 'coin', price = 150, tooltip = 'Ground Inserter.'},
+        ['fast-loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 300,
+            tooltip = 'Ground Fast Inserter'
+        }
     }
 
     return items
@@ -529,6 +544,35 @@ local function gui_click(event)
                 {r = 0.98, g = 0.66, b = 0.22}
             )
         end
+
+        player.remove_item({name = item.value, count = cost})
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
+    if name == 'purge_darkness' then
+        if not this.freeze_daytime then
+            return player.print(
+                grandmaster .. ' ' .. player.name .. ", it's already sunlight!",
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+        end
+        game.print(
+            grandmaster .. ' ' .. player.name .. ' has paid the Sun Gods some coins for sunlight!',
+            {r = 0.98, g = 0.66, b = 0.22}
+        )
+
+        local surface = game.surfaces[this.active_surface_index]
+        game.print(grandmaster .. ' Sunlight, finally!', {r = 0.98, g = 0.66, b = 0.22})
+        surface.min_brightness = 1
+        surface.brightness_visual_weights = {1, 0, 0, 0}
+        surface.daytime = 1
+        surface.freeze_daytime = false
+        surface.solar_power_multiplier = 1
+        this.freeze_daytime = false
 
         player.remove_item({name = item.value, count = cost})
 

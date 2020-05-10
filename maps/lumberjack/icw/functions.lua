@@ -4,6 +4,7 @@ local Constants = require 'maps.lumberjack.icw.constants'
 
 local table_insert = table.insert
 local table_remove = table.remove
+local math_round = math.round
 local math_random = math.random
 
 function Public.request_reconstruction(icw)
@@ -15,6 +16,17 @@ local function delete_empty_surfaces(icw)
         if not icw.trains[tonumber(surface.name)] then
             game.delete_surface(surface)
             table_remove(icw.surfaces, k)
+        end
+    end
+end
+
+local function kick_players_out_of_vehicles(wagon)
+    for _, player in pairs(game.connected_players) do
+        local character = player.character
+        if character and character.valid and character.driving then
+            if wagon.surface == player.surface then
+                character.driving = false
+            end
         end
     end
 end
@@ -35,6 +47,13 @@ local function connect_power_pole(entity, wagon_area_left_top_y)
 end
 
 local function equal_fluid(source_tank, target_tank)
+    if not source_tank.valid then
+        return
+    end
+    if not target_tank.valid then
+        return
+    end
+
     local source_fluid = source_tank.fluidbox[1]
     if not source_fluid then
         return
@@ -223,6 +242,8 @@ local function get_player_data(icw, player)
     end
 
     icw.players[player.index] = {
+        surface = 1,
+        fallback_surface = 1,
         zoom = 0.30,
         map_size = 360
     }
@@ -242,6 +263,7 @@ function Public.kill_wagon(icw, entity)
     end
     local wagon = icw.wagons[entity.unit_number]
     local surface = wagon.surface
+    kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
     for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
         if e.name == 'character' and e.player then
@@ -298,9 +320,9 @@ function Public.create_wagon_room(icw, wagon)
     local area = wagon.area
 
     local main_tile_name = 'tutorial-grid'
-    --if wagon.entity.type == "locomotive" then
-    --	main_tile_name = "lab-dark-2"
-    --end
+    if wagon.entity.type == 'locomotive' then
+        main_tile_name = 'black-refined-concrete'
+    end
 
     local tiles = {}
     for x = -3, 2, 1 do
@@ -321,15 +343,22 @@ function Public.create_wagon_room(icw, wagon)
         end
     end
 
+    local fishes = {}
+
     if wagon.entity.type == 'locomotive' then
         for x = -3, 2, 1 do
             for y = 10, 12, 1 do
                 table_insert(tiles, {name = 'water', position = {x, y}})
+                table_insert(fishes, {name = 'fish', position = {x, y}})
             end
         end
     end
 
     surface.set_tiles(tiles, true)
+
+    for _, fish in pairs(fishes) do
+        surface.create_entity(fish)
+    end
 
     construct_wagon_doors(icw, wagon)
 
@@ -477,6 +506,9 @@ function Public.use_cargo_wagon_door(icw, player, door)
         return
     end
 
+    player_data.fallback_surface = wagon.entity.surface.index
+    player_data.fallback_position = {wagon.entity.position.x, wagon.entity.position.y}
+
     if wagon.entity.surface.name ~= player.surface.name then
         local surface = wagon.entity.surface
         local x_vector = (door.position.x / math.abs(door.position.x)) * 2
@@ -494,6 +526,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
             player.teleport(position, surface)
             Public.kill_minimap(player)
         end
+        player_data.surface = surface.index
     else
         local surface = wagon.surface
         local area = wagon.area
@@ -510,6 +543,7 @@ function Public.use_cargo_wagon_door(icw, player, door)
         else
             player.teleport(position, surface)
         end
+        player_data.surface = surface.index
     end
 end
 
@@ -537,8 +571,7 @@ local function move_room_to_train(icw, train, wagon)
         return
     end
 
-    kill_wagon_doors(icw, wagon)
-
+    kick_players_out_of_vehicles(wagon)
     local player_positions = {}
     for _, e in pairs(wagon.surface.find_entities_filtered({name = 'character', area = wagon.area})) do
         local player = e.player
@@ -550,6 +583,8 @@ local function move_room_to_train(icw, train, wagon)
             player.teleport({0, 0}, game.surfaces.nauvis)
         end
     end
+
+    kill_wagon_doors(icw, wagon)
 
     wagon.surface.clone_area(
         {
