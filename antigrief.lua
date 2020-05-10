@@ -75,6 +75,7 @@ local function on_player_ammo_inventory_changed(event)
 			player.surface.spill_item_stack(player.position, {name = "atomic-bomb", count = nukes}, false)
 			player.print("You have not grown accustomed to this technology yet.", {r=0.22, g=0.99, b=0.99})
 			Server.to_discord_bold(table.concat{'[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.'})
+			game.print('[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.', {r=0.22, g=0.99, b=0.99})
 			player.character.health = 0
 		end
 	end
@@ -107,7 +108,9 @@ local function on_player_built_tile(event)
 	--landfill history--
 	if not global.landfill_history then global.landfill_history = {} end
 	if #global.landfill_history > 999 then global.landfill_history = {} end
-	local str = player.name .. " at X:"
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " at X:"
 	str = str .. placed_tiles[1].position.x
 	str = str .. " Y:"
 	str = str .. placed_tiles[1].position.y
@@ -162,7 +165,9 @@ local function on_player_used_capsule(event)
 	
 	if not global.artillery_history then global.artillery_history = {} end
 	if #global.artillery_history > 999 then global.artillery_history = {} end
-	local str = player.name .. " at X:"
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " at X:"
 	str = str .. math.floor(position.x)
 	str = str .. " Y:"
 	str = str .. math.floor(position.y)
@@ -190,8 +195,11 @@ local function on_entity_died(event)
 	local player = event.cause.player		
 	if not global.friendly_fire_history then global.friendly_fire_history = {} end
 	if #global.friendly_fire_history > 999 then global.friendly_fire_history = {} end
-	if not player then return end
-	local str = player.name .. " destroyed "
+	if not player then return end	
+	
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " destroyed "
 	str = str .. event.entity.name
 	str = str .. " at X:"	
 	str = str .. math.floor(event.entity.position.x)
@@ -212,7 +220,9 @@ local function on_player_mined_entity(event)
 	if not global.mining_history then global.mining_history = {} end
 	if #global.mining_history > 999 then global.mining_history = {} end
 	
-	local str = player.name .. " mined "
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " mined "
 	str = str .. event.entity.name
 	str = str .. " at X:"	
 	str = str .. math.floor(event.entity.position.x)
