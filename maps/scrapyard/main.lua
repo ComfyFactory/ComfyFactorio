@@ -31,7 +31,7 @@ local RPG = require 'maps.scrapyard.rpg'
 local Reset = require 'functions.soft_reset'
 local Terrain = require 'maps.scrapyard.terrain'
 local Event = require 'utils.event'
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 local Locomotive = require 'maps.scrapyard.locomotive'.locomotive_spawn
 local render_train_hp = require 'maps.scrapyard.locomotive'.render_train_hp
 local Score = require 'comfy_panel.score'
@@ -43,7 +43,7 @@ local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 
-Scrap_table.init({train_reveal = true, energy_shared = true})
+WPT.init({train_reveal = true, energy_shared = true})
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
 local colors = {
@@ -67,6 +67,7 @@ local function create_forces_and_disable_tech()
     game.create_force('scrap_defense')
     game.forces.player.set_friend('scrap', true)
     game.forces.enemy.set_friend('scrap', true)
+    game.forces.enemy.set_friend('scrap_defense', true)
     game.forces.scrap.set_friend('player', true)
     game.forces.scrap.set_friend('enemy', true)
     game.forces.scrap.share_chart = false
@@ -83,11 +84,14 @@ end
 local function set_difficulty()
     local wave_defense_table = WD.get_table()
     local player_count = #game.connected_players
+    if not global.difficulty_vote_value then
+        global.difficulty_vote_value = 0.1
+    end
 
-    wave_defense_table.max_active_biters = 1024
+    wave_defense_table.max_active_biters = 768 + player_count * (90 * global.difficulty_vote_value)
 
     -- threat gain / wave
-    wave_defense_table.threat_gain_multiplier = 2 + player_count * 0.1
+    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * global.difficulty_vote_value * 0.1
 
     local amount = player_count * 0.25 + 2
     amount = math.floor(amount)
@@ -104,13 +108,14 @@ local function set_difficulty()
 end
 
 function Public.reset_map()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local wave_defense_table = WD.get_table()
     local get_score = Score.get_table()
     Poll.reset()
     ICW.reset()
     game.reset_time_played()
-    Scrap_table.reset_table()
+    create_forces_and_disable_tech()
+    WPT.reset_table()
     wave_defense_table.math = 8
     if not this.train_reveal then
         this.revealed_spawn = game.tick + 100
@@ -167,9 +172,9 @@ function Public.reset_map()
     Collapse.start_now(false)
 
     surface.ticks_per_day = surface.ticks_per_day * 2
-    surface.daytime = 1
+    surface.daytime = 0.71
     surface.brightness_visual_weights = {1, 0, 0, 0}
-    surface.freeze_daytime = true
+    surface.freeze_daytime = false
     surface.solar_power_multiplier = 1
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
@@ -307,7 +312,7 @@ local function change_tile(surface, pos, steps)
 end
 
 local function on_player_changed_position(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local player = game.players[event.player_index]
     if string.sub(player.surface.name, 0, 9) ~= 'scrapyard' then
         return
@@ -338,9 +343,12 @@ local function on_player_changed_position(event)
         this.players[player.index].steps = this.players[player.index].steps + 1
     end
     ::continue::
-    if not this.train_reveal or this.players[player.index].reveal - game.tick > 0 then
+    if
+        not this.train_reveal or
+            this.players[player.index].start_tick and game.tick - this.players[player.index].start_tick < 6400
+     then
         if position.y < 5 then
-            Terrain.reveal(player)
+            Terrain.reveal_player(player)
         end
     end
     if position.y >= 190 then
@@ -357,7 +365,7 @@ local function on_player_changed_position(event)
 end
 
 local function on_player_joined_game(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local surface = game.surfaces[this.active_surface_index]
     local player = game.players[event.player_index]
 
@@ -372,7 +380,6 @@ local function on_player_joined_game(event)
             tiles_enabled = true,
             steps = 0,
             first_join = false,
-            reveal = 0,
             data = {}
         }
     end
@@ -401,7 +408,7 @@ local function on_player_left_game()
 end
 
 local function on_pre_player_left_game(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local player = game.players[event.player_index]
     if player.controller_type == defines.controllers.editor then
         player.toggle_map_editor()
@@ -412,7 +419,7 @@ local function on_pre_player_left_game(event)
 end
 
 local function offline_players()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local players = this.offline_players
     local surface = game.surfaces[this.active_surface_index]
     if #players > 0 then
@@ -560,7 +567,7 @@ local tick_minute_functions = {
 }
 
 local on_tick = function()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local surface = game.surfaces[this.active_surface_index]
     local wave_defense_table = WD.get_table()
     local tick = game.tick
@@ -613,16 +620,17 @@ local on_tick = function()
 end
 
 local on_init = function()
-    global.custom_highscore.description = 'Depth reached: '
-    create_forces_and_disable_tech()
+    Public.reset_map()
+
+    global.custom_highscore.description = 'Wagon distance reached:'
 
     game.forces.scrap.share_chart = false
     global.rocks_yield_ore_maximum_amount = 500
     global.rocks_yield_ore_base_amount = 50
     global.rocks_yield_ore_distance_modifier = 0.025
-    Public.reset_map()
+
     local T = Map.Pop_info()
-    T.main_caption = 'R a i n b o w   S c r a p y a r d'
+    T.main_caption = 'S c r a p y a r d '
     T.sub_caption = '    ---defend the choo---'
     T.text =
         table.concat(

@@ -1,4 +1,4 @@
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 
 local Public = {}
 
@@ -281,7 +281,7 @@ function Public.on_player_mined_entity(event)
         return
     end
     local player = game.players[event.player_index]
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not player then
         return
     end

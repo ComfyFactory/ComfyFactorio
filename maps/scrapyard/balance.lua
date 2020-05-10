@@ -5,7 +5,7 @@ function Public.init_enemy_weapon_damage()
     local data = {
         ['artillery-shell'] = 0,
         ['biological'] = 0.1,
-        ['bullet'] = 4,
+        ['bullet'] = 2.5,
         ['cannon-shell'] = 0,
         ['capsule'] = 0,
         ['combat-robot-beam'] = 0,
@@ -56,10 +56,7 @@ local function enemy_weapon_damage()
 
     for k, v in pairs(data) do
         local new = global.difficulty_vote_value * v
-        if new > global.difficulty_vote_value then
-            new = global.difficulty_vote_value / 2
-            print('Ammo modifier is now: ' .. new)
-        end
+
         e.set_ammo_damage_modifier(k, new)
         s.set_ammo_damage_modifier(k, new)
         sd.set_ammo_damage_modifier(k, new)
@@ -68,6 +65,6 @@ local function enemy_weapon_damage()
     ::rtn::
 end
 
-Event.on_nth_tick(30, enemy_weapon_damage)
+Event.on_nth_tick(18000, enemy_weapon_damage)
 
 return Public

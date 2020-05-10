@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 
 local function balance(t)
     local g = 0
@@ -19,7 +19,7 @@ local function balance(t)
 end
 
 local function tick()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.energy['scrapyard'] then
         this.energy['scrapyard'] = this.ow_energy
     end

@@ -1,4 +1,4 @@
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 local Event = require 'utils.event'
 local math_random = math.random
 
@@ -101,7 +101,7 @@ local texts = {
 }
 
 local function set_comfy_speech_bubble(text)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if this.comfybubble then
         this.comfybubble.destroy()
     end
@@ -117,7 +117,7 @@ local function set_comfy_speech_bubble(text)
 end
 
 local function is_target_inside_habitat(pos, surface)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if pos.x < this.grandmaster_habitat.left_top.x then
         return false
     end
@@ -134,7 +134,7 @@ local function is_target_inside_habitat(pos, surface)
 end
 
 local function get_nearby_players()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local players =
         this.grandmaster.surface.find_entities_filtered(
         {
@@ -152,7 +152,7 @@ local function get_nearby_players()
 end
 
 local function visit_player()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local surface = game.surfaces[this.active_surface_index]
     if this.grandmaster_last_player_visit > game.tick then
         return false
@@ -200,7 +200,7 @@ local function visit_player()
 end
 
 local function greet_player(nearby_characters)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not nearby_characters then
         return false
     end
@@ -222,7 +222,7 @@ local function greet_player(nearby_characters)
 end
 
 local function talks(nearby_characters)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not nearby_characters then
         return false
     end
@@ -251,7 +251,7 @@ local function talks(nearby_characters)
 end
 
 local function desync(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if this.comfybubble then
         this.comfybubble.destroy()
     end
@@ -314,7 +314,7 @@ local analyze_blacklist = {
 }
 
 local function analyze_random_nearby_entity()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if math_random(1, 3) ~= 1 then
         return false
     end
@@ -377,7 +377,7 @@ local function analyze_random_nearby_entity()
 end
 
 local function go_to_some_location()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if math_random(1, 4) ~= 1 then
         return false
     end
@@ -448,7 +448,7 @@ local function go_to_some_location()
 end
 
 local function spawn_grandmaster(surface)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if surface == nil then
         return
     end
@@ -510,7 +510,7 @@ local function spawn_grandmaster(surface)
 end
 
 local function heartbeat()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.locomotive.valid then
         return
     end
@@ -550,7 +550,7 @@ local function heartbeat()
 end
 
 local function on_entity_damaged(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.grandmaster then
         return
     end
@@ -564,7 +564,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_entity_died(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.grandmaster then
         return
     end

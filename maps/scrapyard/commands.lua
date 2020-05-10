@@ -1,12 +1,12 @@
 local Color = require 'utils.color_presets'
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 
 commands.add_command(
     'rainbow_mode',
     'This will prevent new tiles from spawning when walking',
     function()
         local player = game.player
-        local this = Scrap_table.get_table()
+        local this = WPT.get_table()
         if player and player.valid then
             if this.players[player.index].tiles_enabled == false then
                 this.players[player.index].tiles_enabled = true

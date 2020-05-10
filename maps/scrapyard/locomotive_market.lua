@@ -1,14 +1,15 @@
 local Event = require 'utils.event'
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 local WD = require 'modules.wave_defense.table'
 local ICW = require 'maps.scrapyard.icw.main'
 local format_number = require 'util'.format_number
 
 local grandmaster = '[color=blue]Grandmaster:[/color]'
-local duration_per_charge = 2700
 
 local energy_upgrade = 50000000
 local random = math.random
+
+local Public = {}
 
 local function shuffle(tbl)
     local size = #tbl
@@ -19,54 +20,65 @@ local function shuffle(tbl)
     return tbl
 end
 
-local items = {
-    ['clear_threat_level'] = {
-        stack = 1,
-        value = 'coin',
-        price = 50000,
-        tooltip = '[Wave Defense]:\nClears the current threat to 0\nUsable if threat level is too high.\nCan be purchased multiple times.',
-        sprite = 'item/computer',
-        enabled = true
-    },
-    ['energy_upgrade'] = {
-        stack = 1,
-        value = 'coin',
-        price = 50000,
-        tooltip = '[Linked Power]:\nUpgrades the buffer size of the energy interface\nUsable if the power dies easily.\nCan be purchased multiple times.',
-        sprite = 'item/computer',
-        enabled = true
-    },
-    ['locomotive_max_health'] = {
-        stack = 1,
-        value = 'coin',
-        price = 50000,
-        tooltip = '[Locomotive Health]:\nUpgrades the train health.\nCan be purchased multiple times.',
-        sprite = 'item/computer',
-        enabled = true
-    },
-    ['locomotive_xp_aura'] = {
-        stack = 1,
-        value = 'coin',
-        price = 50000,
-        tooltip = '[XP Aura]:\nUpgrades the aura that is around the train.\nNote! Reaching breach walls gives more XP.',
-        sprite = 'item/computer',
-        enabled = true
-    },
-    ['player_terrain_reveal'] = {
-        stack = 1,
-        value = 'coin',
-        price = 5000,
-        tooltip = '[Terrain Reveal]:\nAllows the player to reveal terrain for a short amount of time.',
-        sprite = 'item/computer',
-        enabled = true
-    },
-    ['small-lamp'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Small Lamp'},
-    ['land-mine'] = {stack = 1, value = 'coin', price = 25, tooltip = 'Land Mine'},
-    ['raw-fish'] = {stack = 2, value = 'coin', price = 25, tooltip = 'Raw Fish'},
-    ['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Magazine'},
-    ['loader'] = {stack = 1, value = 'coin', price = 150, tooltip = 'Loader'},
-    ['fast-loader'] = {stack = 1, value = 'coin', price = 300, tooltip = 'Fast Loader'}
-}
+function Public.get_items()
+    local this = WPT.get_table()
+
+    local threat_cost = 50000 * (1 + this.train_upgrades)
+    local energy_cost = 50000 * (1 + this.train_upgrades)
+    local health_cost = 50000 * (1 + this.train_upgrades)
+    local aura_cost = 50000 * (1 + this.train_upgrades)
+
+    local items = {
+        ['clear_threat_level'] = {
+            stack = 1,
+            value = 'coin',
+            price = threat_cost,
+            tooltip = '[Wave Defense]:\nClears the current threat to 0\nUsable if threat level is too high.\nCan be purchased multiple times.',
+            sprite = 'item/computer',
+            enabled = true
+        },
+        ['energy_upgrade'] = {
+            stack = 1,
+            value = 'coin',
+            price = energy_cost,
+            tooltip = '[Linked Power]:\nUpgrades the buffer size of the energy interface\nUsable if the power dies easily.\nCan be purchased multiple times.',
+            sprite = 'item/computer',
+            enabled = true
+        },
+        ['locomotive_max_health'] = {
+            stack = 1,
+            value = 'coin',
+            price = health_cost,
+            tooltip = '[Locomotive Health]:\nUpgrades the train health.\nCan be purchased multiple times.',
+            sprite = 'item/computer',
+            enabled = true
+        },
+        ['locomotive_xp_aura'] = {
+            stack = 1,
+            value = 'coin',
+            price = aura_cost,
+            tooltip = '[XP Aura]:\nUpgrades the aura that is around the train.\nNote! Reaching breach walls gives more XP.',
+            sprite = 'item/computer',
+            enabled = true
+        },
+        ['player_terrain_reveal'] = {
+            stack = 1,
+            value = 'coin',
+            price = 250,
+            tooltip = '[Terrain Reveal]:\nAllows the player to reveal terrain for a short amount of time.',
+            sprite = 'item/computer',
+            enabled = true
+        },
+        ['small-lamp'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Small Lamp'},
+        ['land-mine'] = {stack = 1, value = 'coin', price = 25, tooltip = 'Land Mine'},
+        ['raw-fish'] = {stack = 2, value = 'coin', price = 25, tooltip = 'Raw Fish'},
+        ['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Magazine'},
+        ['loader'] = {stack = 1, value = 'coin', price = 150, tooltip = 'Loader'},
+        ['fast-loader'] = {stack = 1, value = 'coin', price = 300, tooltip = 'Fast Loader'}
+    }
+
+    return items
+end
 
 local space = {
     minimal_height = 10,
@@ -104,7 +116,7 @@ local function validate_player(player)
 end
 
 local function close_market_gui(player)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
 
     local element = player.gui.center
     local data = this.players[player.index].data
@@ -127,10 +139,10 @@ local function redraw_market_items(gui, player, search_text)
     if not validate_player(player) then
         return
     end
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
 
     gui.clear()
-    shuffle(items)
+    shuffle(Public.get_items())
 
     local inventory = player.get_main_inventory()
     local player_item_count = inventory.get_item_count('coin')
@@ -138,7 +150,7 @@ local function redraw_market_items(gui, player, search_text)
     local items_table = gui.add({type = 'table', column_count = 6})
 
     local slider_value = math.ceil(this.players[player.index].data.slider.slider_value)
-    for name, opts in pairs(items) do
+    for name, opts in pairs(Public.get_items()) do
         if not search_text then
             goto continue
         end
@@ -150,6 +162,7 @@ local function redraw_market_items(gui, player, search_text)
         end
         local item_count = opts.stack * slider_value
         local item_cost = opts.price * slider_value
+
         local flow = items_table.add({type = 'flow'})
         flow.style.vertical_align = 'bottom'
 
@@ -168,7 +181,7 @@ local function redraw_market_items(gui, player, search_text)
         flow.add(
             {
                 type = 'label',
-                caption = format_number(item_cost, true) .. ' coin'
+                caption = format_number(item_cost, true) .. ' coins'
             }
         )
 
@@ -201,7 +214,7 @@ end
 
 local function slider_changed(event)
     local player = game.players[event.player_index]
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local slider_value
 
     slider_value = this.players
@@ -226,7 +239,7 @@ local function slider_changed(event)
 end
 
 local function text_changed(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local player = game.players[event.player_index]
 
     local data = this.players[player.index].data
@@ -244,7 +257,7 @@ local function text_changed(event)
 end
 
 local function gui_opened(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
 
     if not event.gui_type == defines.gui_type.entity then
         return
@@ -366,7 +379,7 @@ local function gui_opened(event)
 end
 
 local function gui_click(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local wdt = WD.get_table()
 
     local element = event.element
@@ -412,7 +425,7 @@ local function gui_click(event)
     if not data then
         return
     end
-    local item = items[name]
+    local item = Public.get_items()[name]
     if not item then
         return
     end
@@ -502,15 +515,22 @@ local function gui_click(event)
         return
     end
     if name == 'player_terrain_reveal' then
+        if this.players[player.index].start_tick == nil then
+            this.players[player.index].start_tick = game.tick
+            player.print(
+                grandmaster ..
+                    ' ' ..
+                        player.name .. ' a fine choice! You can now reveal terrain when going through the black mist!',
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+        else
+            return player.print(
+                grandmaster .. ' ' .. player.name .. ', you already have this feature!',
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+        end
+
         player.remove_item({name = item.value, count = cost})
-
-        this.players[player.index].reveal = this.players[player.index].reveal + duration_per_charge
-
-        player.print(
-            grandmaster ..
-                ' ' .. player.name .. ' a fine choice! You can now reveal terrain when going through the black mist!',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -536,7 +556,7 @@ end
 
 local function gui_closed(event)
     local player = game.players[event.player_index]
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
 
     local type = event.gui_type
 
@@ -564,7 +584,7 @@ local function contains_positions(pos, area)
 end
 
 local function on_player_changed_position(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local player = game.players[event.player_index]
     local data = this.players[player.index].data
 
@@ -613,7 +633,7 @@ local function create_market(data, rebuild)
 end
 
 local function place_market()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local icw_table = ICW.get_table()
     if not this.locomotive then
         return
@@ -635,7 +655,26 @@ local function place_market()
     end
 end
 
+local function reset_player(player, this)
+    this.players[player.index].start_tick = nil
+    player.print(grandmaster .. ' ' .. player.name .. ', time is up!', {r = 0.98, g = 0.66, b = 0.22})
+end
+
 local function on_tick()
+    local this = WPT.get_table()
+    if game.tick % 900 == 0 then
+        if this.players then
+            for k, v in pairs(this.players) do
+                if not v.start_tick then
+                    return
+                end
+                if game.tick - v.start_tick > 6000 then
+                    reset_player(game.players[k], this)
+                end
+            end
+        end
+    end
+
     place_market()
 end
 
@@ -646,3 +685,5 @@ Event.add(defines.events.on_gui_value_changed, slider_changed)
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+
+return Public

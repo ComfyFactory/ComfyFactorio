@@ -1,10 +1,12 @@
 local Event = require 'utils.event'
 local Power = require 'maps.scrapyard.power'
 local ICW = require 'maps.scrapyard.icw.main'
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 local RPG = require 'maps.scrapyard.rpg'
 local Terrain = require 'maps.scrapyard.terrain'
 require 'maps.scrapyard.locomotive_market'
+
+local random = math.random
 
 local Public = {}
 
@@ -59,7 +61,10 @@ local function rebuild_energy_overworld(data)
     }
 
     this.ow_energy.destructible = false
-    this.ow_energy.power_production = 5
+    this.ow_energy.minable = false
+    this.ow_energy.operable = false
+
+    this.ow_energy.power_production = 0
     if this.energy_purchased then
         this.ow_energy.electric_buffer_size = energy_upgrade
     else
@@ -90,7 +95,7 @@ local function rebuild_energy_loco(data, rebuild)
         name = 'electric-energy-interface',
         position = pos,
         create_build_effect_smoke = false,
-        force = game.forces.neutral
+        force = game.forces.enemy
     }
 
     rendering.draw_text {
@@ -151,7 +156,7 @@ local function property_boost(data)
 end
 
 local function train_rainbow()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.locomotive then
         return
     end
@@ -181,7 +186,7 @@ local function train_rainbow()
 end
 
 local function reveal_train_area()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.locomotive then
         return
     end
@@ -220,7 +225,7 @@ local function reveal_train_area()
 end
 
 local function fish_tag()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.locomotive_cargo then
         return
     end
@@ -256,7 +261,7 @@ local function fish_tag()
 end
 
 local function set_player_spawn_and_refill_fish()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not this.locomotive_cargo then
         return
     end
@@ -280,7 +285,7 @@ local function set_player_spawn_and_refill_fish()
 end
 
 local function tick()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if this.energy_shared then
         Public.power_source_overworld()
         Public.power_source_locomotive()
@@ -307,7 +312,7 @@ end
 
 function Public.boost_players_around_train()
     local rpg = RPG.get_table()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local surface = game.surfaces[this.active_surface_index]
     if not this.locomotive then
         return
@@ -325,7 +330,7 @@ function Public.boost_players_around_train()
 end
 
 function Public.render_train_hp()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local surface = game.surfaces[this.active_surface_index]
 
     this.health_text =
@@ -366,7 +371,7 @@ function Public.render_train_hp()
 end
 
 function Public.locomotive_spawn(surface, position)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     for y = -6, 6, 2 do
         surface.create_entity(
             {name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0}
@@ -437,7 +442,7 @@ function Public.contains_positions(pos, area)
 end
 
 function Public.power_source_overworld()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local surface = game.surfaces[this.active_surface_index]
     if not this.locomotive then
         return
@@ -455,7 +460,7 @@ function Public.power_source_overworld()
 end
 
 function Public.power_source_locomotive()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local icw_table = ICW.get_table()
     if not this.locomotive then
         return

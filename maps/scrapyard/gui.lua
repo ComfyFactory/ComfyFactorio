@@ -1,5 +1,5 @@
 local RPG = require 'maps.scrapyard.rpg'
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 local floor = math.floor
 local format_number = require 'util'.format_number
 
@@ -55,7 +55,7 @@ end
 
 local function update_gui(player)
     local rpg = RPG.get_table()
-    local st = Scrap_table.get_table()
+    local st = WPT.get_table()
 
     if not player.gui.top.scrapyard then
         create_gui(player)

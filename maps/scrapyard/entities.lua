@@ -11,7 +11,7 @@ local RPG = require 'maps.scrapyard.rpg'
 local Scrap = require 'maps.scrapyard.mining_scrap'
 
 -- tables
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 local WD = require 'modules.wave_defense.table'
 
 -- module
@@ -46,7 +46,7 @@ local function shuffle(tbl)
 end
 
 local function set_objective_health(entity, final_damage_amount)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if final_damage_amount == 0 then
         return
     end
@@ -73,7 +73,7 @@ local function set_objective_health(entity, final_damage_amount)
 end
 
 local function is_protected(entity)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if string.sub(entity.surface.name, 0, 9) ~= 'scrapyard' then
         return true
     end
@@ -87,7 +87,7 @@ local function is_protected(entity)
 end
 
 local function protect_train(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if event.entity.force.index ~= 1 then
         return
     end --Player Force
@@ -188,7 +188,7 @@ local function give_coin(player)
 end
 
 local function on_player_mined_entity(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
 
     Scrap.on_player_mined_entity(event)
 
@@ -270,7 +270,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if not event.entity then
         return
     end
@@ -287,7 +287,7 @@ local function on_player_repaired_entity(event)
 end
 
 local function on_entity_died(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
 
     local entity = event.entity
     if not entity.valid then
@@ -400,7 +400,7 @@ local function on_built_entity(event)
 end
 
 function Public.set_scores()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local wagon = this.locomotive_cargo
     if not wagon then
         return
@@ -417,7 +417,7 @@ function Public.set_scores()
 end
 
 function Public.loco_died()
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     local surface = game.surfaces[this.active_surface_index]
     local wave_defense_table = WD.get_table()
     Public.set_scores()

@@ -7,7 +7,7 @@ local create_entity_chain = require 'functions.create_entity_chain'
 local create_tile_chain = require 'functions.create_tile_chain'
 local noise_v1 = require 'utils.simplex_noise'.d2
 local map_functions = require 'tools.map_functions'
-local Scrap_table = require 'maps.scrapyard.table'
+local WPT = require 'maps.scrapyard.table'
 local shapes = require 'tools.shapes'
 local Loot = require 'maps.scrapyard.loot'
 local get_noise = require 'utils.get_noise'
@@ -98,6 +98,29 @@ local more_colors = {
     'brown-refined-concrete',
     'red-refined-concrete',
     'blue-refined-concrete'
+}
+
+local trees_terrain = {
+    ['dead-dry-hairy-tree'] = true,
+    ['dead-grey-trunk'] = true,
+    ['dead-tree-desert'] = true,
+    ['dry-hairy-tree'] = true,
+    ['dry-tree'] = true,
+    ['tree-01'] = true,
+    ['tree-02'] = true,
+    ['tree-02-red'] = true,
+    ['tree-03'] = true,
+    ['tree-04'] = true,
+    ['tree-05'] = true,
+    ['tree-06'] = true,
+    ['tree-06-brown'] = true,
+    ['tree-07'] = true,
+    ['tree-08'] = true,
+    ['tree-08-brown'] = true,
+    ['tree-08-red'] = true,
+    ['tree-09'] = true,
+    ['tree-09-brown'] = true,
+    ['tree-09-red'] = true
 }
 
 local function place_wagon(data)
@@ -1242,8 +1265,54 @@ function Public.reveal_train(data)
     end
 end
 
-function Public.reveal(player)
-    local this = Scrap_table.get_table()
+function Public.reveal_normally(data)
+    local left_top = data.left_top
+    local surface = data.surface
+    data.tiles = {}
+    data.entities = {}
+    data.markets = {}
+    data.treasure = {}
+    local level_index = math_floor((math_abs(left_top.y / Public.level_depth)) % 9) + 1
+    local process_level = Public.levels[level_index]
+
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            local pos = {x = left_top.x + x, y = left_top.y + y}
+            data.p = pos
+            process_level(data)
+        end
+    end
+    if #data.tiles > 0 then
+        surface.set_tiles(data.tiles, true)
+    end
+    for _, entity in pairs(data.entities) do
+        if surface.can_place_entity(entity) and entity == 'biter-spawner' or entity == 'spitter-spawner' then
+            surface.create_entity(entity)
+        else
+            surface.create_entity(entity)
+        end
+    end
+    if #data.markets > 0 then
+        local pos = data.markets[math_random(1, #data.markets)]
+        if
+            surface.count_entities_filtered {
+                area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
+                name = 'market',
+                limit = 1
+            } == 0
+         then
+            local market = Market.mountain_market(surface, pos, math_abs(pos.y) * 0.004)
+            market.destructible = false
+        end
+    end
+    for _, p in pairs(data.treasure) do
+        local name = 'steel-chest'
+        Loot.add(surface, p, name)
+    end
+end
+
+function Public.reveal_player(player)
+    local this = WPT.get_table()
     local seed = game.surfaces[this.active_surface_index].map_gen_settings.seed
     local position = player.position
     local surface = player.surface
@@ -1298,48 +1367,6 @@ function Public.reveal(player)
         local name = 'steel-chest'
         Loot.add(surface, p, name)
     end
-end
-
-local function generate_spawn_area(data)
-    local surface = data.surface
-    local left_top = data.left_top
-
-    if left_top.y < -0 then
-        return
-    end
-    if left_top.y > 10 then
-        return
-    end
-    local tiles = {}
-    local circles = shapes.circles
-
-    for r = 1, 12 do
-        for k, v in pairs(circles[r]) do
-            local pos = {x = left_top.x + v.x, y = left_top.y + 20 + v.y}
-            if pos.x > -15 and pos.x < 15 and pos.y < 40 then
-                insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
-            end
-            if pos.x > -30 and pos.x < 30 and pos.y < 40 then
-                insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
-            end
-            if pos.x > -60 and pos.x < 60 and pos.y < 40 then
-                insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
-            end
-            if pos.x > -90 and pos.x < 90 and pos.y < 40 then
-                insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
-            end
-            if pos.x > -120 and pos.x < 120 and pos.y < 40 then
-                insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
-            end
-            if pos.x > -150 and pos.x < 150 and pos.y < 40 then
-                insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
-            end
-            if pos.x > -180 and pos.x < 180 and pos.y < 40 then
-                insert(tiles, {name = more_colors[math_random(1, #more_colors)], position = pos})
-            end
-        end
-    end
-    surface.set_tiles(tiles, true)
 end
 
 local function is_out_of_map(p)
@@ -1519,7 +1546,7 @@ local function out_of_map(data)
 end
 
 local function on_chunk_generated(event)
-    local this = Scrap_table.get_table()
+    local this = WPT.get_table()
     if string.sub(event.surface.name, 0, 9) ~= 'scrapyard' then
         return
     end
@@ -1575,14 +1602,18 @@ local function on_chunk_generated(event)
     if left_top.y >= 10 then
         border_chunk(data)
     end
-    if left_top.y < 0 then
+    if left_top.y < 0 and left_top.y > -50 then
+        Public.reveal_normally(data)
+    end
+
+    if left_top.y < -50 then
         process(data)
         if math_random(1, chance_for_wagon_spawn) == 1 then
             place_wagon(data)
         end
     end
+
     out_of_map_area(data)
-    generate_spawn_area(data)
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
