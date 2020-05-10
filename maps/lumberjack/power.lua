@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local WPT = require 'maps.scrapyard.table'
+local WPT = require 'maps.lumberjack.table'
 
 local function balance(t)
     local g = 0
@@ -20,20 +20,20 @@ end
 
 local function tick()
     local this = WPT.get_table()
-    if not this.energy['scrapyard'] then
-        this.energy['scrapyard'] = this.ow_energy
+    if not this.energy['lumberjack'] then
+        this.energy['lumberjack'] = this.ow_energy
     end
 
     if not this.energy['loco'] then
         this.energy['loco'] = this.lo_energy
     end
 
-    local scrapyard = this.energy['scrapyard']
+    local lumberjack = this.energy['lumberjack']
     local loco = this.energy['loco']
-    if not scrapyard or not loco then
+    if not lumberjack or not loco then
         return
     end
-    if not scrapyard.valid or not loco.valid then
+    if not lumberjack.valid or not loco.valid then
         return
     end
     balance(this.energy)
@@ -46,7 +46,7 @@ local function built_entity(event)
     end
     local player = game.players[event.player_index]
     local surface = entity.surface
-    if surface.name ~= 'scrapyard' then
+    if surface.name ~= 'lumberjack' then
         return
     end
     if

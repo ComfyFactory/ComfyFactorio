@@ -1,4 +1,4 @@
-local WPT = require 'maps.scrapyard.table'
+local WPT = require 'maps.lumberjack.table'
 local Event = require 'utils.event'
 local math_random = math.random
 

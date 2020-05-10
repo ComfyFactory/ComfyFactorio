@@ -1,10 +1,10 @@
 local Event = require 'utils.event'
-local Power = require 'maps.scrapyard.power'
-local ICW = require 'maps.scrapyard.icw.main'
-local WPT = require 'maps.scrapyard.table'
-local RPG = require 'maps.scrapyard.rpg'
-local Terrain = require 'maps.scrapyard.terrain'
-require 'maps.scrapyard.locomotive_market'
+local Power = require 'maps.lumberjack.power'
+local ICW = require 'maps.lumberjack.icw.main'
+local WPT = require 'maps.lumberjack.table'
+local RPG = require 'maps.lumberjack.rpg'
+local Terrain = require 'maps.lumberjack.terrain'
+require 'maps.lumberjack.locomotive_market'
 
 local random = math.random
 
@@ -46,7 +46,7 @@ local function rebuild_energy_overworld(data)
             end
             this.old_ow_energy = this.ow_energy.energy
             this.ow_energy.destroy()
-            this.energy['scrapyard'] = nil
+            this.energy['lumberjack'] = nil
         end
     end
     this.ow_energy =

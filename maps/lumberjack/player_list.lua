@@ -6,7 +6,7 @@ end
 local Event = require 'utils.event'
 local play_time = require 'utils.session_data'
 local Tabs = require 'comfy_panel.main'
-local RPG = require 'maps.scrapyard.rpg'
+local RPG = require 'maps.lumberjack.rpg'
 
 local symbol_asc = '▲'
 local symbol_desc = '▼'

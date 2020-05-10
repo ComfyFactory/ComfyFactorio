@@ -1,6 +1,6 @@
 local Public = {}
 
-local Constants = require 'maps.scrapyard.icw.constants'
+local Constants = require 'maps.lumberjack.icw.constants'
 
 local table_insert = table.insert
 local table_remove = table.remove

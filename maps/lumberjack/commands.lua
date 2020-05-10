@@ -1,5 +1,5 @@
 local Color = require 'utils.color_presets'
-local WPT = require 'maps.scrapyard.table'
+local WPT = require 'maps.lumberjack.table'
 
 commands.add_command(
     'rainbow_mode',
@@ -27,7 +27,7 @@ if _DEBUG then
         'reset_game',
         'Debug only, reset the game!',
         function()
-            local reset_map = require 'maps.scrapyard.main'.reset_map
+            local reset_map = require 'maps.lumberjack.main'.reset_map
 
             local player = game.player
 

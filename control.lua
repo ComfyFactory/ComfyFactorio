@@ -4,30 +4,30 @@ _DEBUG = false
 _DUMP_ENV = false
 
 require 'utils.server'
-require "utils.server_commands"
-require "utils.utils"
-require "utils.table"
-require "utils.color_data"
-require "utils.session_data"
-require "chatbot"
-require "commands"
-require "antigrief"
-require "modules.corpse_markers"
-require "modules.floaty_chat"
-require "modules.autohotbar"
+require 'utils.server_commands'
+require 'utils.utils'
+require 'utils.table'
+require 'utils.color_data'
+require 'utils.session_data'
+require 'chatbot'
+require 'commands'
+require 'antigrief'
+require 'modules.corpse_markers'
+require 'modules.floaty_chat'
+require 'modules.autohotbar'
 
-require "comfy_panel.main"
-require "comfy_panel.player_list"
-require "comfy_panel.admin"
-require "comfy_panel.group"
-require "comfy_panel.poll"
-require "comfy_panel.score"
-require "comfy_panel.config"
+require 'comfy_panel.main'
+require 'comfy_panel.player_list'
+require 'comfy_panel.admin'
+require 'comfy_panel.group'
+require 'comfy_panel.poll'
+require 'comfy_panel.score'
+require 'comfy_panel.config'
 
-require "modules.autostash"
+require 'modules.autostash'
 
 ---- enable modules here ----
---require "modules.admins_operate_biters"
+--require 'modules.admins_operate_biters'
 --require "modules.the_floor_is_lava"
 --require "modules.biters_landfill_on_death"
 --require "modules.autodecon_when_depleted"
@@ -44,7 +44,7 @@ require "modules.autostash"
 --require "modules.fluids_are_explosive"
 --require "modules.hunger"
 --require "modules.hunger_games"
---require "modules.pistol_buffs"
+--require 'modules.pistol_buffs'
 --require "modules.players_trample_paths"
 --require "modules.railgun_enhancer"
 --require "modules.restrictive_fluid_mining"
@@ -69,15 +69,15 @@ require "modules.autostash"
 --require "maps.chronosphere.main"
 --require "maps.fish_defender.main"
 --require "maps.biter_battles_v2.main"
---require "maps.mountain_fortress_v2.main"
+--require 'maps.mountain_fortress_v2.main'
+--require 'maps.lumberjack.main'
 --require "maps.dungeons.main"
 --require "maps.island_troopers.main"
 --require "maps.biter_hatchery.main"
 --require "maps.junkyard_pvp.main"
---require "maps.scrapyard.main"
 --require "maps.cave_choppy.cave_miner"
 --require "maps.wave_of_death.WoD"
---require "maps.planet_prison"
+--require 'maps.planet_prison'
 --require "maps.stone_maze.main"
 --require "maps.choppy"
 --require "maps.overgrowth"
@@ -145,13 +145,13 @@ if _DEBUG then
 end
 
 local function on_player_created(event)
-	local player = game.players[event.player_index]
-	player.gui.top.style = 'slot_table_spacing_horizontal_flow'
-	player.gui.left.style = 'slot_table_spacing_vertical_flow'
+    local player = game.players[event.player_index]
+    player.gui.top.style = 'slot_table_spacing_horizontal_flow'
+    player.gui.left.style = 'slot_table_spacing_vertical_flow'
 end
 
 local function on_init()
-	game.forces.player.research_queue_enabled = true
+    game.forces.player.research_queue_enabled = true
 end
 
 local loaded = _G.package.loaded

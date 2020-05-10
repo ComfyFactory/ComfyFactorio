@@ -4,14 +4,14 @@ local Map_score = require 'comfy_panel.map_score'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local unearthing_worm = require 'functions.unearthing_worm'
 local unearthing_biters = require 'functions.unearthing_biters'
-local Loot = require 'maps.scrapyard.loot'
+local Loot = require 'maps.lumberjack.loot'
 local Pets = require 'modules.biter_pets'
 local tick_tack_trap = require 'functions.tick_tack_trap'
-local RPG = require 'maps.scrapyard.rpg'
-local Scrap = require 'maps.scrapyard.mining_scrap'
+local RPG = require 'maps.lumberjack.rpg'
+local Mining = require 'maps.lumberjack.mining'
 
 -- tables
-local WPT = require 'maps.scrapyard.table'
+local WPT = require 'maps.lumberjack.table'
 local WD = require 'modules.wave_defense.table'
 
 -- module
@@ -74,7 +74,7 @@ end
 
 local function is_protected(entity)
     local this = WPT.get_table()
-    if string.sub(entity.surface.name, 0, 9) ~= 'scrapyard' then
+    if string.sub(entity.surface.name, 0, 10) ~= 'lumberjack' then
         return true
     end
     local protected = {this.locomotive, this.locomotive_cargo}
@@ -95,8 +95,8 @@ local function protect_train(event)
         if event.entity == this.locomotive_cargo or event.entity == this.locomotive then
             if event.cause then
                 if
-                    event.cause.force.index == 2 or event.cause.force.name == 'scrap_defense' or
-                        event.cause.force.name == 'scrap'
+                    event.cause.force.index == 2 or event.cause.force.name == 'lumber_defense' or
+                        event.cause.force.name == 'defenders'
                  then
                     if this.locomotive_health <= 0 then
                         goto continue
@@ -190,7 +190,7 @@ end
 local function on_player_mined_entity(event)
     local this = WPT.get_table()
 
-    Scrap.on_player_mined_entity(event)
+    Mining.on_player_mined_entity(event)
 
     local entity = event.entity
     local player = game.players[event.player_index]
@@ -212,7 +212,7 @@ local function on_player_mined_entity(event)
         end
     end
 
-    if entity.name == 'mineable-wreckage' then
+    if entity.type ~= 'simple-entity' or entity.type ~= 'tree' then
         this.mined_scrap = this.mined_scrap + 1
         give_coin(player)
 
@@ -232,7 +232,7 @@ local function on_player_mined_entity(event)
         end
     end
 
-    if entity.force.name ~= 'scrap' then
+    if entity.force.name ~= 'defenders' then
         return
     end
     local positions = {}
@@ -289,6 +289,8 @@ end
 local function on_entity_died(event)
     local this = WPT.get_table()
 
+    Mining.on_entity_died(event)
+
     local entity = event.entity
     if not entity.valid then
         return
@@ -305,7 +307,7 @@ local function on_entity_died(event)
         end
     end
 
-    if entity.name == 'mineable-wreckage' then
+    if entity.type ~= 'simple-entity' or entity.type ~= 'tree' then
         if math.random(1, 32) == 1 then
             hidden_biter(event.entity)
             return
@@ -319,7 +321,7 @@ local function on_entity_died(event)
             return
         end
     end
-    if entity.force.name ~= 'scrap' then
+    if entity.force.name ~= 'defenders' then
         return
     end
     local positions = {}
@@ -343,7 +345,7 @@ local function on_entity_died(event)
 end
 
 local function on_robot_built_entity(event)
-    if string.sub(event.created_entity.surface.name, 0, 9) ~= 'scrapyard' then
+    if string.sub(event.created_entity.surface.name, 0, 10) ~= 'lumberjack' then
         return
     end
     local y = event.created_entity.position.y
@@ -371,7 +373,7 @@ local function on_robot_built_entity(event)
 end
 
 local function on_built_entity(event)
-    if string.sub(event.created_entity.surface.name, 0, 9) ~= 'scrapyard' then
+    if string.sub(event.created_entity.surface.name, 0, 10) ~= 'lumberjack' then
         return
     end
     local player = game.players[event.player_index]

@@ -1091,7 +1091,7 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    if string.sub(player.surface.name, 0, 9) ~= 'scrapyard' then
+    if string.sub(player.surface.name, 0, 10) ~= 'lumberjack' then
         return
     end
     distance(player)

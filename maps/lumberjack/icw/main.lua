@@ -1,7 +1,7 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local Functions = require 'maps.scrapyard.icw.functions'
-local Constants = require 'maps.scrapyard.icw.constants'
+local Functions = require 'maps.lumberjack.icw.functions'
+local Constants = require 'maps.lumberjack.icw.constants'
 local Public = {}
 
 local math_round = math.round

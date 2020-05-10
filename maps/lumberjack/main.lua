@@ -1,8 +1,8 @@
 -- modules
-require 'maps.scrapyard.player_list'
-require 'maps.scrapyard.comfylatron'
-require 'maps.scrapyard.commands'
-require 'maps.scrapyard.corpse_util'
+require 'maps.lumberjack.player_list'
+require 'maps.lumberjack.comfylatron'
+require 'maps.lumberjack.commands'
+require 'maps.lumberjack.corpse_util'
 
 require 'on_tick_schedule'
 require 'modules.dynamic_landfill'
@@ -22,22 +22,22 @@ require 'modules.pistol_buffs'
 
 local Explosives = require 'modules.explosives'
 local Color = require 'utils.color_presets'
-local Entities = require 'maps.scrapyard.entities'
-local update_gui = require 'maps.scrapyard.gui'
-local ICW = require 'maps.scrapyard.icw.main'
+local Entities = require 'maps.lumberjack.entities'
+local update_gui = require 'maps.lumberjack.gui'
+local ICW = require 'maps.lumberjack.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
-local RPG = require 'maps.scrapyard.rpg'
+local RPG = require 'maps.lumberjack.rpg'
 local Reset = require 'functions.soft_reset'
-local Terrain = require 'maps.scrapyard.terrain'
+local Terrain = require 'maps.lumberjack.terrain'
 local Event = require 'utils.event'
-local WPT = require 'maps.scrapyard.table'
-local Locomotive = require 'maps.scrapyard.locomotive'.locomotive_spawn
-local render_train_hp = require 'maps.scrapyard.locomotive'.render_train_hp
+local WPT = require 'maps.lumberjack.table'
+local Locomotive = require 'maps.lumberjack.locomotive'.locomotive_spawn
+local render_train_hp = require 'maps.lumberjack.locomotive'.render_train_hp
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
-local Balance = require 'maps.scrapyard.balance'
+local Balance = require 'maps.lumberjack.balance'
 
 local Public = {}
 local math_random = math.random
@@ -63,14 +63,14 @@ local disabled_tiles = {
 local grandmaster = '[color=blue]Grandmaster:[/color]'
 
 local function create_forces_and_disable_tech()
-    game.create_force('scrap')
-    game.create_force('scrap_defense')
-    game.forces.player.set_friend('scrap', true)
-    game.forces.enemy.set_friend('scrap', true)
-    game.forces.enemy.set_friend('scrap_defense', true)
-    game.forces.scrap.set_friend('player', true)
-    game.forces.scrap.set_friend('enemy', true)
-    game.forces.scrap.share_chart = false
+    game.create_force('defenders')
+    game.create_force('lumber_defense')
+    game.forces.player.set_friend('defenders', true)
+    game.forces.enemy.set_friend('defenders', true)
+    game.forces.enemy.set_friend('lumber_defense', true)
+    game.forces.defenders.set_friend('player', true)
+    game.forces.defenders.set_friend('enemy', true)
+    game.forces.defenders.share_chart = false
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.recipes['cargo-wagon'].enabled = false
@@ -135,7 +135,7 @@ function Public.reset_map()
     }
 
     if not this.active_surface_index then
-        this.active_surface_index = game.create_surface('scrapyard', map_gen_settings).index
+        this.active_surface_index = game.create_surface('lumberjack', map_gen_settings).index
     else
         game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
         this.active_surface_index =
@@ -196,16 +196,16 @@ function Public.reset_map()
 
     RPG.rpg_reset_all_players()
 
-    if game.forces.scrap_defense then
+    if game.forces.lumber_defense then
         Balance.init_enemy_weapon_damage()
     else
-        log('scrap_defense not found')
+        log('lumber_defense not found')
     end
 
     set_difficulty()
 
     rendering.draw_text {
-        text = 'Welcome to Scrapyard!',
+        text = 'Welcome to Lumberjack!',
         surface = surface,
         target = {-0, 30},
         color = {r = 0.98, g = 0.66, b = 0.22},
@@ -314,7 +314,7 @@ end
 local function on_player_changed_position(event)
     local this = WPT.get_table()
     local player = game.players[event.player_index]
-    if string.sub(player.surface.name, 0, 9) ~= 'scrapyard' then
+    if string.sub(player.surface.name, 0, 10) ~= 'lumberjack' then
         return
     end
     local position = player.position
@@ -527,28 +527,6 @@ local function darkness(data)
     end
 end
 
-local function scrap_randomness(data)
-    local this = data.this
-    local rnd = math.random
-    if rnd(1, 32) == 1 then
-        if this.scrap_enabled then
-            return
-        end
-        this.scrap_enabled = true
-        game.print(grandmaster .. ' Scrap is back!', {r = 1, g = 0.5, b = 0.1})
-        game.print(grandmaster .. ' Output from scrap is now randomized.', {r = 1, g = 0.5, b = 0.1})
-        return
-    elseif rnd(1, 64) == 1 then
-        if not this.scrap_enabled then
-            return
-        end
-        this.scrap_enabled = false
-        game.print(grandmaster .. ' It seems that the scrap is temporarily gone.', {r = 1, g = 0.5, b = 0.1})
-        game.print(grandmaster .. ' Output from scrap is now only ores.', {r = 1, g = 0.5, b = 0.1})
-        return
-    end
-end
-
 local function transfer_pollution(data)
     local surface = data.surface
     local this = data.this
@@ -561,7 +539,6 @@ local function transfer_pollution(data)
 end
 
 local tick_minute_functions = {
-    [300 * 2 + 30 * 2] = scrap_randomness,
     [300 * 3 + 30 * 1] = darkness,
     [300 * 3 + 30 * 0] = transfer_pollution
 }
@@ -624,19 +601,21 @@ local on_init = function()
 
     global.custom_highscore.description = 'Wagon distance reached:'
 
-    game.forces.scrap.share_chart = false
+    game.forces.defenders.share_chart = false
     global.rocks_yield_ore_maximum_amount = 500
     global.rocks_yield_ore_base_amount = 50
     global.rocks_yield_ore_distance_modifier = 0.025
 
     local T = Map.Pop_info()
-    T.main_caption = 'S c r a p y a r d '
-    T.sub_caption = '    ---defend the choo---'
+    T.main_caption = 'L u m b e r j a c k  '
+    T.sub_caption = ''
     T.text =
         table.concat(
         {
+            'Welcome lumberlover!\n',
+            '\n',
             'The biters have catched the scent of fish in the cargo wagon.\n',
-            'Guide the choo through the black mist and protect it for as long as possible!\n',
+            'Guide the choo and protect it for as long as possible!\n',
             'This will not be an easy task however,\n',
             'since their strength and numbers increase over time.\n',
             '\n',
@@ -644,16 +623,10 @@ local on_init = function()
             'Mining productivity research, will overhaul your mining equipment,\n',
             'reinforcing your pickaxe as well as increasing the size of your backpack.\n',
             '\n',
-            'Scrap randomness seems to occur frequently, sometimes mining scrap\n',
-            'does not output scrap, weird...\n',
-            '\n',
             "We've also noticed that solar eclipse occuring, \n",
             'we have yet to solve this mystery\n',
             '\n',
-            'Good luck, over and out!',
-            '\n',
-            '\n',
-            '\n'
+            'Good luck, over and out!'
         }
     )
     T.main_caption_color = {r = 150, g = 150, b = 0}

@@ -1,5 +1,5 @@
-local RPG = require 'maps.scrapyard.rpg'
-local WPT = require 'maps.scrapyard.table'
+local RPG = require 'maps.lumberjack.rpg'
+local WPT = require 'maps.lumberjack.table'
 local floor = math.floor
 local format_number = require 'util'.format_number
 
@@ -7,7 +7,7 @@ local function create_gui(player)
     local label
     local line
 
-    local frame = player.gui.top.add({type = 'frame', name = 'scrapyard'})
+    local frame = player.gui.top.add({type = 'frame', name = 'lumberjack'})
     frame.style.minimal_height = 38
     frame.style.maximal_height = 38
 
@@ -57,10 +57,10 @@ local function update_gui(player)
     local rpg = RPG.get_table()
     local st = WPT.get_table()
 
-    if not player.gui.top.scrapyard then
+    if not player.gui.top.lumberjack then
         create_gui(player)
     end
-    local gui = player.gui.top.scrapyard
+    local gui = player.gui.top.lumberjack
 
     if rpg.global_pool == 0 then
         gui.global_pool.caption = 'XP: 0'
@@ -70,8 +70,8 @@ local function update_gui(player)
         gui.global_pool.tooltip = 'Get this number over 5k to get some of this mad XP! \\o/'
     end
 
-    gui.scrap_mined.caption = ' [img=entity.mineable-wreckage]: ' .. format_number(st.mined_scrap, true)
-    gui.scrap_mined.tooltip = 'Amount of scrap mined.'
+    gui.scrap_mined.caption = ' [img=entity.tree-01]: ' .. format_number(st.mined_scrap, true)
+    gui.scrap_mined.tooltip = 'Amount of trees harvested.'
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(st.biters_killed, true)
     gui.biters_killed.tooltip = 'Amount of biters killed.'

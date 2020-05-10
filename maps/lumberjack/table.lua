@@ -31,7 +31,6 @@ function Public.reset_table()
     this.cargo_health = 10000
     this.cargo_max_health = 10000
     this.revealed_spawn = 0
-    this.scrap_enabled = true
     this.left_top = {
         x = 0,
         y = 0

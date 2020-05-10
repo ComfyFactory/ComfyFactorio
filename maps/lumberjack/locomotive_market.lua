@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
-local WPT = require 'maps.scrapyard.table'
+local WPT = require 'maps.lumberjack.table'
 local WD = require 'modules.wave_defense.table'
-local ICW = require 'maps.scrapyard.icw.main'
+local ICW = require 'maps.lumberjack.icw.main'
 local format_number = require 'util'.format_number
 
 local grandmaster = '[color=blue]Grandmaster:[/color]'

@@ -156,7 +156,7 @@ function Public.add(surface, position, chest)
         end
     end
 
-    local e = surface.create_entity({name = chest, position = position, force = 'scrap'})
+    local e = surface.create_entity({name = chest, position = position, force = 'defenders'})
     e.minable = false
     local i = e.get_inventory(defines.inventory.chest)
     for x = 1, math_random(2, 6), 1 do
@@ -323,7 +323,7 @@ function Public.add_rare(surface, position, chest, magic)
         end
     end
 
-    local e = surface.create_entity({name = chest, position = position, force = 'scrap'})
+    local e = surface.create_entity({name = chest, position = position, force = 'defenders'})
     e.minable = false
     local i = e.get_inventory(defines.inventory.chest)
     for x = 1, math_random(2, 7), 1 do

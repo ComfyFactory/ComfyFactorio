@@ -21,7 +21,7 @@ function Public.init_enemy_weapon_damage()
         ['shotgun-shell'] = 0
     }
 
-    local e, s, sd = game.forces.enemy, game.forces.scrap, game.forces.scrap_defense
+    local e, s, sd = game.forces.enemy, game.forces.defenders, game.forces.lumber_defense
 
     for k, v in pairs(data) do
         e.set_ammo_damage_modifier(k, v)
@@ -34,7 +34,7 @@ local function enemy_weapon_damage()
     if game.tick < 100 then
         goto rtn
     end
-    local e, s, sd = game.forces.enemy, game.forces.scrap, game.forces.scrap_defense
+    local e, s, sd = game.forces.enemy, game.forces.defenders, game.forces.lumber_defense
 
     local data = {
         ['artillery-shell'] = 0.5,
