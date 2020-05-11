@@ -39,7 +39,6 @@ local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Balance = require 'maps.lumberjack.balance'
-local fish = require 'maps.lumberjack.terrain'.fish
 local shape = require 'maps.lumberjack.terrain'.heavy_functions
 local Generate = require 'maps.lumberjack.generate'
 local Task = require 'utils.task'
@@ -300,10 +299,8 @@ function Public.reset_map()
         scale_with_zoom = false
     }
 
-    local s = fish(shape, 55)
-
     local surfaces = {
-        [surface.name] = s
+        [surface.name] = shape
     }
     Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
     Task.reset_queue()

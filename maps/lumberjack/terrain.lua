@@ -474,13 +474,6 @@ local function process_level_9_position(data)
             markets[#markets + 1] = p
         end
         if math_random(1, 256) == 1 then
-            entities[#entities + 1] = {
-                name = spawner_raffle[math_random(1, #spawner_raffle)],
-                position = p,
-                force = 'lumber_defense'
-            }
-        end
-        if math_random(1, 256) == 1 then
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
         if math_random(1, 32) == 1 then
@@ -657,14 +650,6 @@ local function process_level_7_position(data)
                 create_inner_content(surface, p, cave_rivers_3)
                 markets[#markets + 1] = p
             end
-            if math_random(1, 32) == 1 then
-                entities[#entities + 1] = {
-                    name = spawner_raffle[math_random(1, #spawner_raffle)],
-                    position = p,
-                    force = 'enemy'
-                }
-            end
-
             if noise_ores < -0.5 and no_rocks_2 > -0.6 then
                 if cave_rivers_3 > 0 and cave_rivers_3 < 0.07 then
                     entities[#entities + 1] = {name = 'iron-ore', position = p, amount = math_abs(p.y) + 1}
@@ -689,14 +674,6 @@ local function process_level_7_position(data)
             if math_random(1, 2048) == 1 then
                 markets[#markets + 1] = p
             end
-            if math_random(1, 32) == 1 then
-                entities[#entities + 1] = {
-                    name = spawner_raffle[math_random(1, #spawner_raffle)],
-                    position = p,
-                    force = 'enemy'
-                }
-            end
-
             if noise_ores < -0.5 and no_rocks_2 > -0.6 then
                 if cave_rivers_4 > 0 and cave_rivers_4 < 0.07 then
                     create_inner_content(surface, p, noise_ores)
@@ -900,13 +877,6 @@ local function process_level_4_position(data)
         if math_random(1, 32) == 1 then
             markets[#markets + 1] = p
         end
-        if math_random(1, 32) == 1 then
-            entities[#entities + 1] = {
-                name = spawner_raffle[math_random(1, #spawner_raffle)],
-                position = p,
-                force = 'enemy'
-            }
-        end
     end
     if math_abs(noise_large_caves) > 0.5 then
         tiles[#tiles + 1] = {name = 'grass-2', position = p}
@@ -1009,14 +979,6 @@ local function process_level_3_position(data)
             if math_random(1, 32) == 1 then
                 markets[#markets + 1] = p
             end
-            if math_random(1, 32) == 1 then
-                entities[#entities + 1] = {
-                    name = spawner_raffle[math_random(1, #spawner_raffle)],
-                    position = p,
-                    force = 'enemy'
-                }
-            end
-
             if math_random(1, 16) == 1 then
                 entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
             end
@@ -1190,14 +1152,6 @@ local function process_level_2_position(data)
             if math_random(1, 32) == 1 then
                 markets[#markets + 1] = p
             end
-            if math_random(1, 32) == 1 then
-                entities[#entities + 1] = {
-                    name = spawner_raffle[math_random(1, #spawner_raffle)],
-                    position = p,
-                    force = 'enemy'
-                }
-            end
-
             if math_random(1, 16) == 1 then
                 entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
             end
@@ -1313,14 +1267,6 @@ local function process_level_1_position(data)
         if math_random(1, 32) == 1 then
             markets[#markets + 1] = p
         end
-        if math_random(1, 32) == 1 then
-            entities[#entities + 1] = {
-                name = spawner_raffle[math_random(1, #spawner_raffle)],
-                position = p,
-                force = 'enemy'
-            }
-        end
-
         if math_random(1, 32) == 1 then
             entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
         end
@@ -1555,67 +1501,6 @@ local function biter_chunk(data)
     end
 end
 
-local water_tiles = {
-    ['water'] = true,
-    ['deepwater'] = true,
-    ['water-green'] = true,
-    ['deepwater-green'] = true
-}
-
-Public.water_tiles = water_tiles
-
-local function add_entity(tile, entity)
-    if type(tile) == 'table' then
-        if tile.entities then
-            tile.entities[#tile.entities + 1] = entity
-        else
-            tile.entities = {entity}
-        end
-    elseif tile then
-        tile = {
-            tile = tile,
-            entities = {entity}
-        }
-    end
-
-    return tile
-end
-
-function Public.fish(shape, spawn_rate)
-    return function(x, y, world)
-        local function handle_tile(tile)
-            if type(tile) == 'string' then
-                if water_tiles[tile] and spawn_rate >= math_random() then
-                    return {name = 'fish'}
-                end
-            elseif tile then
-                if world.surface.get_tile(world.x, world.y).collides_with('water-tile') and spawn_rate >= math_random() then
-                    return {name = 'fish'}
-                end
-            end
-        end
-
-        local tile = shape(x, y, world)
-
-        if type(tile) == 'table' then
-            local entity = handle_tile(tile.tile)
-            if entity then
-                add_entity(tile, entity)
-            end
-        else
-            local entity = handle_tile(tile)
-            if entity then
-                tile = {
-                    tile = tile,
-                    entities = {entity}
-                }
-            end
-        end
-
-        return tile
-    end
-end
-
 local function out_of_map(data)
     local surface = data.surface
     local left_top = data.left_top
@@ -1707,8 +1592,7 @@ function Public.heavy_functions(x, y, data)
     end
 
     if top_y < 0 then
-        local fish = process_bits(x, y, data)
-        Public.fish(fish, 3)
+        process_bits(x, y, data)
     end
 end
 
