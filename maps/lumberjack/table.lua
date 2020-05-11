@@ -5,7 +5,8 @@ local Event = require 'utils.event'
 local this = {
     train_reveal = true,
     energy_shared = true,
-    reveal_normally = false
+    reveal_normally = false,
+    disable_reset = false
 }
 local Public = {}
 
@@ -40,10 +41,16 @@ function Public.reset_table()
     this.energy_purchased = false
     this.freeze_daytime = false
     this.offline_players = {}
+    this.biter_pets = {}
     this.mined_scrap = 0
     this.biters_killed = 0
     this.locomotive_xp_aura = 40
     this.randomness = 0
+    this.xp_points = 0
+    this.xp_points_upgrade = 0
+    this.aura_upgrades = 0
+    this.health_upgrades = 0
+    this.threat_upgrades = 0
 end
 
 function Public.get_table()

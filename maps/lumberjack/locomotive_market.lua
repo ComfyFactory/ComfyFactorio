@@ -23,73 +23,73 @@ end
 function Public.get_items()
     local this = WPT.get_table()
 
-    local threat_cost = 15000 * (1 + this.train_upgrades)
-    local energy_cost = 15000 * (1 + this.train_upgrades)
-    local health_cost = 15000 * (1 + this.train_upgrades)
-    local aura_cost = 15000 * (1 + this.train_upgrades)
+    local threat_cost = 15000 * (0.5 + this.threat_upgrades)
+    local energy_cost = 15000
+    local health_cost = 15000 * (0.5 + this.health_upgrades)
+    local aura_cost = 15000 * (0.5 + this.aura_upgrades)
+    local xp_point_boost_cost = 15000 * (0.5 + this.xp_points_upgrade)
 
-    local items = {
-        ['clear_threat_level'] = {
-            stack = 1,
-            value = 'coin',
-            price = threat_cost,
-            tooltip = '[Wave Defense]:\nClears the current threat to 0\nUsable if threat level is too high.\nCan be purchased multiple times.',
-            sprite = 'item/computer',
-            enabled = true
-        },
-        ['energy_upgrade'] = {
-            stack = 1,
-            value = 'coin',
-            price = energy_cost,
-            tooltip = '[Linked Power]:\nUpgrades the buffer size of the energy interface\nUsable if the power dies easily.\nCan be purchased multiple times.',
-            sprite = 'item/computer',
-            enabled = true
-        },
-        ['locomotive_max_health'] = {
-            stack = 1,
-            value = 'coin',
-            price = health_cost,
-            tooltip = '[Locomotive Health]:\nUpgrades the train health.\nCan be purchased multiple times.',
-            sprite = 'item/computer',
-            enabled = true
-        },
-        ['locomotive_xp_aura'] = {
-            stack = 1,
-            value = 'coin',
-            price = aura_cost,
-            tooltip = '[XP Aura]:\nUpgrades the aura that is around the train.\nNote! Reaching breach walls gives more XP.',
-            sprite = 'item/computer',
-            enabled = true
-        },
-        ['player_terrain_reveal'] = {
-            stack = 1,
-            value = 'coin',
-            price = 250,
-            tooltip = '[Terrain Reveal]:\nAllows the player to reveal terrain for a short amount of time.',
-            sprite = 'item/computer',
-            enabled = false
-        },
-        ['purge_darkness'] = {
-            stack = 1,
-            value = 'coin',
-            price = 1550,
-            tooltip = "[Darkness]:\nPay the Sun Gods some coins and they'll reward you handsomely.",
-            sprite = 'item/computer',
-            enabled = true
-        },
-        ['small-lamp'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Small Sunlight'},
-        ['wood'] = {stack = 50, value = 'coin', price = 12, tooltip = 'Some fine Wood'},
-        ['land-mine'] = {stack = 1, value = 'coin', price = 25, tooltip = 'Land Boom Danger'},
-        ['raw-fish'] = {stack = 1, value = 'coin', price = 4, tooltip = 'Flappy Fish'},
-        ['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Pew'},
-        ['crude-oil-barrel'] = {stack = 1, value = 'coin', price = 8, tooltip = 'Crude Oil Flame'},
-        ['loader'] = {stack = 1, value = 'coin', price = 150, tooltip = 'Ground Inserter.'},
-        ['fast-loader'] = {
-            stack = 1,
-            value = 'coin',
-            price = 300,
-            tooltip = 'Ground Fast Inserter'
-        }
+    local items = {}
+    items['clear_threat_level'] = {
+        stack = 1,
+        value = 'coin',
+        price = threat_cost,
+        tooltip = '[Wave Defense]:\nClears the current threat to 0\nUsable if threat level is too high.\nCan be purchased multiple times.',
+        sprite = 'item/computer',
+        enabled = true
+    }
+    items['energy_upgrade'] = {
+        stack = 1,
+        value = 'coin',
+        price = energy_cost,
+        tooltip = '[Linked Power]:\nUpgrades the buffer size of the energy interface\nUsable if the power dies easily.',
+        sprite = 'item/computer',
+        enabled = true
+    }
+    items['locomotive_max_health'] = {
+        stack = 1,
+        value = 'coin',
+        price = health_cost,
+        tooltip = '[Locomotive Health]:\nUpgrades the train health.\nCan be purchased multiple times.',
+        sprite = 'item/computer',
+        enabled = true
+    }
+    items['locomotive_xp_aura'] = {
+        stack = 1,
+        value = 'coin',
+        price = aura_cost,
+        tooltip = '[XP Aura]:\nUpgrades the aura that is around the train.\nNote! Reaching breach walls gives more XP.',
+        sprite = 'item/computer',
+        enabled = true
+    }
+    items['xp_points_boost'] = {
+        stack = 1,
+        value = 'coin',
+        price = xp_point_boost_cost,
+        tooltip = '[XP Points]:\nUpgrades the amount of xp points you get inside the XP aura',
+        sprite = 'item/computer',
+        enabled = true
+    }
+    items['purge_darkness'] = {
+        stack = 1,
+        value = 'coin',
+        price = 1550,
+        tooltip = "[Darkness]:\nPay the Sun Gods some coins and they'll reward you handsomely.",
+        sprite = 'item/computer',
+        enabled = true
+    }
+    items['small-lamp'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Small Sunlight'}
+    items['wood'] = {stack = 50, value = 'coin', price = 12, tooltip = 'Some fine Wood'}
+    items['land-mine'] = {stack = 1, value = 'coin', price = 25, tooltip = 'Land Boom Danger'}
+    items['raw-fish'] = {stack = 1, value = 'coin', price = 4, tooltip = 'Flappy Fish'}
+    items['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Pew'}
+    items['crude-oil-barrel'] = {stack = 1, value = 'coin', price = 8, tooltip = 'Crude Oil Flame'}
+    items['loader'] = {stack = 1, value = 'coin', price = 150, tooltip = 'Ground Inserter.'}
+    items['fast-loader'] = {
+        stack = 1,
+        value = 'coin',
+        price = 300,
+        tooltip = 'Ground Fast Inserter'
     }
 
     return items
@@ -259,6 +259,13 @@ local function text_changed(event)
 
     local data = this.players[player.index].data
     if not data then
+        return
+    end
+    if not data.text_input then
+        return
+    end
+
+    if not data.text_input.text then
         return
     end
 
@@ -458,7 +465,7 @@ local function gui_click(event)
             grandmaster .. ' ' .. player.name .. ' has bought the group some extra time. Threat level is no more!',
             {r = 0.98, g = 0.66, b = 0.22}
         )
-        this.train_upgrades = this.train_upgrades + 1
+        this.threat_upgrades = this.threat_upgrades + 1
         wdt.threat = 0
 
         redraw_market_items(data.item_frame, player, data.search_text)
@@ -467,6 +474,12 @@ local function gui_click(event)
         return
     end
     if name == 'energy_upgrade' then
+        if this.energy_purchased then
+            return player.print(
+                grandmaster .. ' ' .. player.name .. ', max energy upgrade is already purchased!',
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+        end
         player.remove_item({name = item.value, count = cost})
 
         game.print(
@@ -474,8 +487,9 @@ local function gui_click(event)
                 ' ' .. player.name .. ' has bought the group a power upgrade! The energy interface is now buffed!',
             {r = 0.98, g = 0.66, b = 0.22}
         )
-        this.train_upgrades = this.train_upgrades + 1
         this.energy_purchased = true
+        this.train_upgrades = this.train_upgrades + 1
+
         this.lo_energy.electric_buffer_size = this.lo_energy.electric_buffer_size + energy_upgrade
         this.ow_energy.electric_buffer_size = this.ow_energy.electric_buffer_size + energy_upgrade
 
@@ -494,6 +508,7 @@ local function gui_click(event)
         )
         this.locomotive_max_health = this.locomotive_max_health + 2500
         this.train_upgrades = this.train_upgrades + 1
+        this.health_upgrades = this.health_upgrades + 1
         rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
 
         redraw_market_items(data.item_frame, player, data.search_text)
@@ -509,6 +524,7 @@ local function gui_click(event)
             {r = 0.98, g = 0.66, b = 0.22}
         )
         this.locomotive_xp_aura = this.locomotive_xp_aura + 5
+        this.aura_upgrades = this.aura_upgrades + 1
         this.train_upgrades = this.train_upgrades + 1
 
         if this.circle then
@@ -523,29 +539,6 @@ local function gui_click(event)
             radius = this.locomotive_xp_aura,
             only_in_alt_mode = true
         }
-
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
-    if name == 'player_terrain_reveal' then
-        if this.players[player.index].start_tick == nil then
-            this.players[player.index].start_tick = game.tick
-            player.print(
-                grandmaster ..
-                    ' ' ..
-                        player.name .. ' a fine choice! You can now reveal terrain when going through the black mist!',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
-        else
-            return player.print(
-                grandmaster .. ' ' .. player.name .. ', you already have this feature!',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
-        end
-
-        player.remove_item({name = item.value, count = cost})
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -575,6 +568,24 @@ local function gui_click(event)
         this.freeze_daytime = false
 
         player.remove_item({name = item.value, count = cost})
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
+    if name == 'xp_points_boost' then
+        player.remove_item({name = item.value, count = cost})
+
+        game.print(
+            grandmaster ..
+                ' ' .. player.name .. ' has bought the group a XP point modifier! You now gain more XP points!',
+            {r = 0.98, g = 0.66, b = 0.22}
+        )
+        this.xp_points = this.xp_points + 0.5
+        this.xp_points_upgrade = this.xp_points_upgrade + 1
+        this.train_upgrades = this.train_upgrades + 1
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)

@@ -3,7 +3,6 @@ local Power = require 'maps.lumberjack.power'
 local ICW = require 'maps.lumberjack.icw.main'
 local WPT = require 'maps.lumberjack.table'
 local RPG = require 'maps.lumberjack.rpg'
-local Terrain = require 'maps.lumberjack.terrain'
 require 'maps.lumberjack.locomotive_market'
 
 local random = math.random
@@ -120,7 +119,7 @@ end
 
 local function property_boost(data)
     local rng = math.random
-    local xp_floating_text_color = {r = rng(0, 128), g = 128, b = 0}
+    local xp_floating_text_color = {r = rng(0, 250), g = 128, b = 0}
     local visuals_delay = 1800
     local this = data.this
     local aura = this.locomotive_xp_aura
@@ -130,9 +129,6 @@ local function property_boost(data)
         left_top = {x = loco.x - aura, y = loco.y - aura},
         right_bottom = {x = loco.x + aura, y = loco.y + aura}
     }
-    if this.beam then
-        this.beam.destroy()
-    end
 
     for _, player in pairs(game.connected_players) do
         if not validate_player(player) then
@@ -140,7 +136,7 @@ local function property_boost(data)
         end
         if Public.contains_positions(player.position, area) then
             local pos = player.position
-            RPG.gain_xp(player, 0.2 * rpg[player.index].bonus)
+            RPG.gain_xp(player, 0.4 * (rpg[player.index].bonus + this.xp_points))
 
             player.create_local_flying_text {
                 text = '+' .. '',
@@ -183,45 +179,6 @@ local function train_rainbow()
         radius = this.locomotive_xp_aura,
         only_in_alt_mode = true
     }
-end
-
-local function reveal_train_area()
-    local this = WPT.get_table()
-    if not this.locomotive then
-        return
-    end
-    if not this.locomotive.valid then
-        return
-    end
-    if this.revealed_spawn > game.tick then
-        goto continue
-    end
-    if this.ow_energy then
-        if this.ow_energy.valid then
-            local position = this.ow_energy.position
-            local area = {
-                left_top = {x = position.x - 2, y = position.y - 2},
-                right_bottom = {x = position.x + 2, y = position.y + 2}
-            }
-            if Public.contains_positions(this.locomotive.position, area) then
-                return
-            end
-        end
-    end
-    this.revealed_spawn = game.tick + 500
-
-    ::continue::
-    local position = this.locomotive.position
-    local surface = game.surfaces[this.active_surface_index]
-    local seed = game.surfaces[this.active_surface_index].map_gen_settings.seed
-    local data = {
-        this = this,
-        surface = surface,
-        seed = seed,
-        position = position,
-        reveal = 23
-    }
-    Terrain.reveal_train(data)
 end
 
 local function fish_tag()
@@ -295,11 +252,6 @@ local function tick()
     end
     if game.tick % 80 == 0 then
         train_rainbow()
-    end
-    if this.train_reveal then
-        if game.tick % 10 == 0 then
-            reveal_train_area()
-        end
     end
 
     if game.tick % 30 == 0 then

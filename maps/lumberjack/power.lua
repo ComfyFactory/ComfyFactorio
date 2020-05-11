@@ -46,7 +46,9 @@ local function built_entity(event)
     end
     local player = game.players[event.player_index]
     local surface = entity.surface
-    if surface.name ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if surface.name ~= map_name then
         return
     end
     if

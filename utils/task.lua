@@ -164,14 +164,10 @@ function Task.reset_queue()
     end
 end
 
-function Task.reset_primitives()
-    primitives = {
-        next_async_callback_time = -1,
-        total_task_weight = 0,
-        task_queue_speed = 1,
-        task_per_tick = 1
-    }
+function Task.get_task_queue()
+    return task_queue
 end
+
 Event.add(defines.events.on_tick, on_tick)
 
 return Task

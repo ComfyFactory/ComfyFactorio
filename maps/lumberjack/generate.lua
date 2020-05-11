@@ -1,3 +1,5 @@
+local Market = require 'functions.basic_markets'
+local Loot = require 'maps.lumberjack.loot'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
@@ -22,14 +24,14 @@ local function do_tile_inner(tiles, tile, pos)
 end
 
 local function do_tile(y, x, data, shape)
-    if not data.surface.valid then
-        return
-    end
-
     local pos = {x, y}
 
     -- local coords need to be 'centered' to allow for correct rotation and scaling.
     local tile = shape(x + 0.5, y + 0.5, data)
+
+    if not data.surface.valid then
+        return
+    end
 
     if type(tile) == 'table' then
         do_tile_inner(data.tiles, tile.tile, pos)
@@ -81,13 +83,13 @@ local function do_tile(y, x, data, shape)
 end
 
 local function do_row(row, data, shape)
-    if not data.surface.valid then
-        return
-    end
-
     local y = data.top_y + row
     local top_x = data.top_x
     local tiles = data.tiles
+
+    if not data.surface.valid then
+        return
+    end
 
     data.y = y
 
@@ -151,6 +153,54 @@ local function do_row(row, data, shape)
     end
 end
 
+local function do_place_treasure(data)
+    if not data.surface.valid then
+        return
+    end
+
+    local surface = data.surface
+    local treasure = data.treasure
+    local rnd = math.random
+
+    if #treasure == 0 then
+        return
+    end
+
+    for _, e in ipairs(data.treasure) do
+        if rnd(1, 6) == 1 then
+            e.chest = 'iron-chest'
+        end
+        Loot.add(surface, e.position, e.chest)
+    end
+end
+
+local function do_place_markets(data)
+    if not data.surface.valid then
+        return
+    end
+
+    local markets = data.markets
+    local surface = data.surface
+    local rnd = math.random
+    local abs = math.abs
+
+    if #markets == 0 then
+        return
+    end
+
+    local pos = markets[rnd(1, #markets)]
+    if
+        surface.count_entities_filtered {
+            area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
+            name = 'market',
+            limit = 1
+        } == 0
+     then
+        local market = Market.mountain_market(surface, pos, abs(pos.y) * 0.004)
+        market.destructible = false
+    end
+end
+
 local function do_place_tiles(data)
     if not data.surface.valid then
         return
@@ -191,24 +241,17 @@ local function do_place_entities(data)
     end
 
     local surface = data.surface
-    local ev
+    local entity
+
     for _, e in ipairs(data.entities) do
-        if not e.active and not e.destructible then
-            ev = surface.create_entity(e)
-            ev.destructible = false
-            ev.active = false
-        elseif not e.destructible then
-            ev = surface.create_entity(e)
-            ev.destructible = false
-        elseif not e.active then
-            ev = surface.create_entity(e)
-            ev.active = false
+        if e.force then
+            entity = surface.create_entity({name = e.name, position = e.position, force = e.force})
         else
-            local entity = surface.create_entity(e)
-            if entity and e.callback then
-                local callback = Token.get(e.callback)
-                callback(entity, e.data)
-            end
+            entity = surface.create_entity(e)
+        end
+        if entity and e.callback then
+            local callback = Token.get(e.callback)
+            callback(entity, e.data)
         end
     end
 end
@@ -286,10 +329,18 @@ local function map_gen_action(data)
         data.y = 35
         return true
     elseif state == 35 then
-        do_place_decoratives(data)
+        do_place_markets(data)
         data.y = 36
         return true
     elseif state == 36 then
+        do_place_treasure(data)
+        data.y = 37
+        return true
+    elseif state == 37 then
+        do_place_decoratives(data)
+        data.y = 38
+        return true
+    elseif state == 38 then
         run_chart_update(data)
         return false
     end
@@ -302,9 +353,8 @@ local map_gen_action_token = Token.register(map_gen_action)
 function Public.schedule_chunk(event)
     local surface = event.surface
     local shape = surfaces[surface.name]
-    local str = surface.name
 
-    if string.sub(event.surface.name, 0, #str) ~= surface.name then
+    if not surface.valid then
         return
     end
 
@@ -341,9 +391,8 @@ end
 function Public.do_chunk(event)
     local surface = event.surface
     local shape = surfaces[surface.name]
-    local str = surface.name
 
-    if string.sub(event.surface.name, 0, #str) ~= surface.name then
+    if not surface.valid then
         return
     end
 
@@ -378,6 +427,8 @@ function Public.do_chunk(event)
     do_place_hidden_tiles(data)
     do_place_entities(data)
     do_place_decoratives(data)
+    do_place_markets(data)
+    do_place_treasure(data)
 end
 
 --- Sets the variables for the generate functions, should only be called from map_loader

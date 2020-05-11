@@ -20,6 +20,7 @@ require 'modules.wave_defense.main'
 require 'modules.admins_operate_biters'
 require 'modules.pistol_buffs'
 
+local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Color = require 'utils.color_presets'
 local Entities = require 'maps.lumberjack.entities'
@@ -38,30 +39,17 @@ local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Balance = require 'maps.lumberjack.balance'
+local fish = require 'maps.lumberjack.terrain'.fish
 local shape = require 'maps.lumberjack.terrain'.heavy_functions
 local Generate = require 'maps.lumberjack.generate'
 local Task = require 'utils.task'
 
 local Public = {}
 local math_random = math.random
-local math_floor = math.floor
 
 WPT.init({train_reveal = false, energy_shared = true, reveal_normally = true})
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
-local colors = {
-    'green-refined-concrete',
-    'red-refined-concrete',
-    'blue-refined-concrete'
-}
-local disabled_tiles = {
-    ['water-shallow'] = true,
-    ['deepwater-green'] = true,
-    ['out-of-map'] = true,
-    ['green-refined-concrete'] = true,
-    ['red-refined-concrete'] = true,
-    ['blue-refined-concrete'] = true
-}
 
 local grandmaster = '[color=blue]Grandmaster:[/color]'
 
@@ -74,6 +62,7 @@ local function create_forces_and_disable_tech()
     end
     game.forces.defenders.share_chart = false
     game.forces.player.set_friend('defenders', true)
+    game.forces.player.set_friend('lumber_defense', false)
     game.forces.lumber_defense.set_friend('player', false)
     game.forces.enemy.set_friend('defenders', true)
     game.forces.enemy.set_friend('lumber_defense', true)
@@ -82,11 +71,6 @@ local function create_forces_and_disable_tech()
     game.forces.defenders.share_chart = false
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['optics'].researched = true
-    game.forces.player.recipes['cargo-wagon'].enabled = false
-    game.forces.player.recipes['fluid-wagon'].enabled = false
-    game.forces.player.recipes['artillery-wagon'].enabled = false
-    game.forces.player.recipes['locomotive'].enabled = false
-    game.forces.player.recipes['pistol'].enabled = false
     game.forces.player.technologies['land-mine'].enabled = false
 end
 
@@ -145,6 +129,7 @@ function Public.reset_map()
 
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('lumberjack', map_gen_settings).index
+        this.active_surface = game.surfaces[this.active_surface_index]
     else
         game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
         this.active_surface_index =
@@ -315,28 +300,39 @@ function Public.reset_map()
         scale_with_zoom = false
     }
 
+    local s = fish(shape, 55)
+
     local surfaces = {
-        [surface.name] = shape
+        [surface.name] = s
     }
     Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
     Task.reset_queue()
-    Task.reset_primitives()
     Task.start_queue()
     Task.set_queue_speed(10)
 
     this.chunk_load_tick = game.tick + 500
 end
 
-local function change_tile(surface, pos, steps)
-    return surface.set_tiles {{name = colors[math_floor(steps * 0.5) % 3 + 1], position = {x = pos.x, y = pos.y}}}
+local function on_load()
+    local this = WPT.get_table()
+
+    local surfaces = {
+        [this.active_surface.name] = shape
+    }
+    Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
+    Generate.register()
+    Task.start_queue()
 end
 
 local function on_player_changed_position(event)
     local this = WPT.get_table()
     local player = game.players[event.player_index]
-    if string.sub(player.surface.name, 0, 10) ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return
     end
+
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
     if position.x >= Terrain.level_depth * 0.5 then
@@ -345,24 +341,7 @@ local function on_player_changed_position(event)
     if position.x < Terrain.level_depth * -0.5 then
         return
     end
-    if position.y < 5 then
-        if not this.players[player.index].tiles_enabled then
-            goto continue
-        end
 
-        local steps = this.players[player.index].steps
-        local tile = surface.get_tile(position).name
-        local disabled = disabled_tiles[tile]
-        if disabled then
-            goto continue
-        end
-        change_tile(surface, position, steps)
-        if this.players[player.index].steps > 5000 then
-            this.players[player.index].steps = 0
-        end
-        this.players[player.index].steps = this.players[player.index].steps + 1
-    end
-    ::continue::
     if
         not this.train_reveal and not this.reveal_normally or
             this.players[player.index].start_tick and game.tick - this.players[player.index].start_tick < 6400
@@ -397,8 +376,6 @@ local function on_player_joined_game(event)
 
     if not this.players[player.index] then
         this.players[player.index] = {
-            tiles_enabled = true,
-            steps = 0,
             first_join = false,
             data = {}
         }
@@ -407,8 +384,6 @@ local function on_player_joined_game(event)
     if not this.players[player.index].first_join then
         player.print(grandmaster .. ' Greetings, newly joined ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
         player.print(grandmaster .. ' Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
-        player.print(grandmaster .. ' Guide the choo through the black mist.', {r = 0.98, g = 0.66, b = 0.22})
-        player.print(grandmaster .. ' To disable rainbow mode, type in console: /rainbow_mode', Color.info)
         this.players[player.index].first_join = true
     end
 
@@ -506,7 +481,17 @@ local function offline_players()
     end
 end
 
+local function disable_recipes()
+    local force = game.forces.player
+    force.recipes['cargo-wagon'].enabled = false
+    force.recipes['fluid-wagon'].enabled = false
+    force.recipes['artillery-wagon'].enabled = false
+    force.recipes['locomotive'].enabled = false
+    force.recipes['pistol'].enabled = false
+end
+
 local function on_research_finished(event)
+    disable_recipes()
     event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
     local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
     if event.research.force.technologies['steel-axe'].researched then
@@ -613,8 +598,18 @@ local on_tick = function()
 
     if this.game_reset_tick then
         if this.game_reset_tick < game.tick then
-            this.game_reset_tick = nil
-            Public.reset_map()
+            if not this.disable_reset then
+                this.game_reset_tick = nil
+                Public.reset_map()
+            else
+                if not this.reset_the_game then
+                    game.print('Auto reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Auto reset is disabled. Server is shutting down!'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.stop_scenario()
+                    this.reset_the_game = true
+                end
+            end
         end
         return
     end
@@ -628,17 +623,19 @@ local on_tick = function()
 end
 
 local on_init = function()
+    local this = WPT.get_table()
     Public.reset_map()
 
     global.custom_highscore.description = 'Wagon distance reached:'
 
-    global.rocks_yield_ore_maximum_amount = 500
-    global.rocks_yield_ore_base_amount = 50
-    global.rocks_yield_ore_distance_modifier = 0.025
+    this.rocks_yield_ore_maximum_amount = 500
+    this.type_modifier = 1
+    this.rocks_yield_ore_base_amount = 50
+    this.rocks_yield_ore_distance_modifier = 0.025
 
     local T = Map.Pop_info()
-    T.main_caption = 'L u m b e r j a c k  '
-    T.sub_caption = ''
+    T.main_caption = 'L u m b e r  j a c k  '
+    T.sub_caption = 'Chop the wood, toss the wood, save the train, die again!'
     T.text =
         table.concat(
         {
@@ -680,6 +677,7 @@ end
 
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
+Event.on_load(on_load)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

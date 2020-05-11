@@ -525,13 +525,13 @@ end
 
 function Public.gain_xp(player, amount)
     local fee
-    if rpg_t[player.index].xp > 50 then
-        fee = amount * 0.3
-    else
+    if amount < 1.1 then
         fee = 0
+    else
+        fee = amount * 0.3
+        rpg_t.global_pool = rpg_t.global_pool + fee
     end
     amount = math_floor(amount, 2) - fee
-    rpg_t.global_pool = rpg_t.global_pool + fee
     rpg_t[player.index].xp = rpg_t[player.index].xp + amount
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
     if player.gui.left.rpg then
@@ -1091,9 +1091,12 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    if string.sub(player.surface.name, 0, 10) ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return
     end
+
     distance(player)
     if math_random(1, 64) ~= 1 then
         return
@@ -1139,11 +1142,14 @@ local function on_pre_player_mined_item(event)
         Public.gain_xp(player, 0.5)
         return
     end
-    --if entity.force.index == 3 then
-    Public.gain_xp(player, 0.75 + event.entity.prototype.max_health * 0.0013)
-    --return
-    --end
-    --Public.gain_xp(player, 0.1 + event.entity.prototype.max_health * 0.0005)
+    local health
+
+    if event.entity.prototype.max_health < 500 then
+        health = event.entity.prototype.max_health * 10
+        Public.gain_xp(player, 0.75 + health * 0.0013)
+    else
+        Public.gain_xp(player, 0.75 + event.entity.prototype.max_health * 0.0013)
+    end
 end
 
 local function on_player_crafted_item(event)
