@@ -37,21 +37,21 @@ local function enemy_weapon_damage()
     local e, s, sd = game.forces.enemy, game.forces.defenders, game.forces.lumber_defense
 
     local data = {
-        ['artillery-shell'] = 0.2,
-        ['biological'] = 0.2,
-        ['bullet'] = 0.2,
-        ['capsule'] = 0.2,
-        ['combat-robot-beam'] = 0.2,
-        ['combat-robot-laser'] = 0.2,
-        ['electric'] = 0.2,
-        ['flamethrower'] = 0.2,
-        --['grenade'] = 0.2,
-        --['landmine'] = 0.2,
-        ['laser-turret'] = 0.2,
-        ['melee'] = 0.2
-        --['railgun'] = 0.2,
-        --['rocket'] = 0.2,
-        --['shotgun-shell'] = 0.2
+        ['artillery-shell'] = 0.1,
+        ['biological'] = 0.1,
+        ['bullet'] = 0.1,
+        ['capsule'] = 0.1,
+        ['combat-robot-beam'] = 0.1,
+        ['combat-robot-laser'] = 0.1,
+        ['electric'] = 0.1,
+        ['flamethrower'] = 0.1,
+        --['grenade'] = 0.1,
+        --['landmine'] = 0.1,
+        ['laser-turret'] = 0.1,
+        ['melee'] = 0.1
+        --['railgun'] = 0.1,
+        --['rocket'] = 0.1,
+        --['shotgun-shell'] = 0.1
     }
 
     for k, v in pairs(data) do
@@ -69,6 +69,6 @@ local function enemy_weapon_damage()
     ::rtn::
 end
 
-Event.on_nth_tick(18000, enemy_weapon_damage)
+Event.on_nth_tick(54000, enemy_weapon_damage)
 
 return Public

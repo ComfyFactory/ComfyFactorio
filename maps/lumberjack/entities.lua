@@ -37,7 +37,25 @@ local rare_treasure_chest_messages = {
     "You're a wizard Harry! We has found the rare precious!"
 }
 
-local disabled_entities = {'gun-turret', 'laser-turret', 'flamethrower-turret', 'land-mine'}
+local disabled_entities = {
+    'gun-turret',
+    'laser-turret',
+    'flamethrower-turret',
+    'land-mine'
+}
+
+local disabled_threats = {
+    ['entity-ghost'] = true,
+    ['raw-fish'] = true
+}
+
+local defeated_messages = {
+    "Oh no, the biters nom'ed the train away!",
+    "I'm not 100% sure, but - apparently the train was chewed away.",
+    'You had one objective - defend the train *-*',
+    "Looks like we're resetting cause you did not defend the train ._.",
+    'ohgodno-why-must-you-do-this-to-me'
+}
 
 local function shuffle(tbl)
     local size = #tbl
@@ -227,7 +245,7 @@ local function on_player_mined_entity(event)
         return
     end
 
-    if entity.name == 'entity-ghost' then
+    if disabled_threats[entity.name] then
         return
     end
 
@@ -332,7 +350,7 @@ local function on_entity_died(event)
         return
     end
 
-    if entity.name == 'entity-ghost' then
+    if disabled_threats[entity.name] then
         return
     end
 
@@ -475,7 +493,10 @@ function Public.loco_died()
     if not this.locomotive.valid then
         wave_defense_table.game_lost = true
         wave_defense_table.target = nil
-        game.print(grandmaster .. ' Oh noooeeeew, the void destroyed my train!', {r = 1, g = 0.5, b = 0.1})
+        game.print(
+            grandmaster .. ' ' .. defeated_messages[math.random(1, #defeated_messages)],
+            {r = 1, g = 0.5, b = 0.1}
+        )
         game.print(grandmaster .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
         Public.reset_map()
         return
@@ -485,7 +506,7 @@ function Public.loco_died()
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
-    game.print(grandmaster .. ' Oh noooeeeew, they destroyed my train!', {r = 1, g = 0.5, b = 0.1})
+    game.print(grandmaster .. ' ' .. defeated_messages[math.random(1, #defeated_messages)], {r = 1, g = 0.5, b = 0.1})
     game.print(grandmaster .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
     game.print(grandmaster .. ' Game will soft-reset shortly.', {r = 1, g = 0.5, b = 0.1})
     game.forces.enemy.set_friend('player', true)
@@ -499,7 +520,7 @@ function Public.loco_died()
             position = this.locomotive.position,
             force = 'enemy',
             speed = 1,
-            max_range = 800,
+            max_range = 1200,
             target = this.locomotive,
             source = fake_shooter
         }

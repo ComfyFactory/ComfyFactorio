@@ -291,13 +291,15 @@ local function desync(event)
             }
         )
         if event.cause then
-            if event.cause.valid and event.cause.player then
-                game.print(
-                    '[color=blue]Grandmaster:[/color]: I got you this time! Back to work, ' ..
-                        event.cause.player.name .. '!',
-                    {r = 200, g = 0, b = 0}
-                )
-                event.cause.die('player', this.grandmaster)
+            if event.cause.valid then
+                if event.cause.player then
+                    game.print(
+                        '[color=blue]Grandmaster:[/color]: I got you this time! Back to work, ' ..
+                            event.cause.player.name .. '!',
+                        {r = 200, g = 0, b = 0}
+                    )
+                    event.cause.die('player', this.grandmaster)
+                end
             end
         end
     end

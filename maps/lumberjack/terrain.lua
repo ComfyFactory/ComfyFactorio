@@ -36,6 +36,95 @@ local rock_raffle = {
     'rock-huge'
 }
 
+local remnants = {
+    '1x2-remnants',
+    'accumulator-remnants',
+    'active-provider-chest-remnants',
+    'arithmetic-combinator-remnants',
+    'artillery-turret-remnants',
+    'artillery-wagon-remnants',
+    'big-electric-pole-remnants',
+    'big-remnants',
+    'boiler-remnants',
+    'buffer-chest-remnants',
+    'burner-inserter-remnants',
+    'burner-mining-drill-remnants',
+    'car-remnants',
+    'cargo-wagon-remnants',
+    'centrifuge-remnants',
+    'chemical-plant-remnants',
+    'constant-combinator-remnants',
+    'construction-robot-remnants',
+    'decider-combinator-remnants',
+    'defender-remnants',
+    'destroyer-remnants',
+    'distractor-remnants',
+    'electric-furnace-remnants',
+    'express-splitter-remnants',
+    'express-transport-belt-remnants',
+    'express-underground-belt-remnants',
+    'fast-inserter-remnants',
+    'fast-splitter-remnants',
+    'fast-transport-belt-remnants',
+    'fast-underground-belt-remnants',
+    'filter-inserter-remnants',
+    'flamethrower-turret-remnants',
+    'fluid-wagon-remnants',
+    'gate-remnants',
+    'gun-turret-remnants',
+    'heat-exchanger-remnants',
+    'heat-pipe-remnants',
+    'inserter-remnants',
+    'iron-chest-remnants',
+    'lab-remnants',
+    'lamp-remnants',
+    'laser-turret-remnants',
+    'locomotive-remnants',
+    'logistic-robot-remnants',
+    'long-handed-inserter-remnants',
+    'medium-electric-pole-remnants',
+    'medium-remnants',
+    'medium-small-remnants',
+    'nuclear-reactor-remnants',
+    'offshore-pump-remnants',
+    'oil-refinery-remnants',
+    'passive-provider-chest-remnants',
+    'pipe-remnants',
+    'pipe-to-ground-remnants',
+    'programmable-speaker-remnants',
+    'pump-remnants',
+    'pumpjack-remnants',
+    'radar-remnants',
+    'rail-chain-signal-remnants',
+    'rail-ending-remnants',
+    'rail-signal-remnants',
+    'requester-chest-remnants',
+    'roboport-remnants',
+    --'rocket-silo-remnants',
+    'small-electric-pole-remnants',
+    'small-remnants',
+    'solar-panel-remnants',
+    'splitter-remnants',
+    'stack-filter-inserter-remnants',
+    'stack-inserter-remnants',
+    'steam-engine-remnants',
+    'steam-turbine-remnants',
+    'steel-chest-remnants',
+    'steel-furnace-remnants',
+    'stone-furnace-remnants',
+    'storage-chest-remnants',
+    'storage-tank-remnants',
+    'substation-remnants',
+    'tank-remnants',
+    'train-stop-remnants',
+    'transport-belt-remnants',
+    'underground-belt-remnants',
+    'wall-remnants',
+    'wooden-chest-remnants'
+}
+
+local remnants_index = #remnants
+
 local scrap_entities = {
     'crash-site-assembling-machine-1-broken',
     'crash-site-assembling-machine-2-broken',
@@ -234,7 +323,7 @@ local function get_oil_amount(p)
     return (math_abs(p.y) * 200 + 10000) * math_random(75, 125) * 0.01
 end
 
-local function forest_look(data)
+local function forest_look(data, rock)
     local p = {x = data.x, y = data.y}
     local seed = data.seed
     local surface = data.surface
@@ -244,11 +333,19 @@ local function forest_look(data)
     if noise_forest_location > 0.095 then
         if noise_forest_location > 0.6 then
             if math_random(1, 100) > 42 then
-                entities[#entities + 1] = {name = 'tree-08-brown', position = p}
+                if rock then
+                    entities[#entities + 1] = {name = 'rock-big', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-08-brown', position = p}
+                end
             end
         else
             if math_random(1, 100) > 42 then
-                entities[#entities + 1] = {name = 'tree-01', position = p}
+                if rock then
+                    entities[#entities + 1] = {name = 'rock-huge', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-01', position = p}
+                end
             end
         end
         surface.create_decoratives(
@@ -269,11 +366,19 @@ local function forest_look(data)
     if noise_forest_location < -0.095 then
         if noise_forest_location < -0.6 then
             if math_random(1, 100) > 42 then
-                entities[#entities + 1] = {name = 'tree-04', position = p}
+                if rock then
+                    entities[#entities + 1] = {name = 'sand-rock-big', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-04', position = p}
+                end
             end
         else
             if math_random(1, 100) > 42 then
-                entities[#entities + 1] = {name = 'tree-02-red', position = p}
+                if rock then
+                    entities[#entities + 1] = {name = 'rock-big', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-02-red', position = p}
+                end
             end
         end
         surface.create_decoratives(
@@ -1329,7 +1434,9 @@ local function process_level_1_position(data)
         place_random_scrap_entity(surface, p)
     end
 
-    forest_look(data)
+    if math_random(1, 100) > 25 then
+        forest_look(data)
+    end
 end
 
 Public.levels = {
@@ -1387,11 +1494,14 @@ local function border_chunk(data)
         for y = 0, 31, 1 do
             local pos = {x = left_top.x + x, y = left_top.y + y}
             if not is_out_of_map(pos) then
+                if math_random(1, math.ceil(pos.y + pos.y) + 32) == 1 then
+                    surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
+                end
                 if math_random(1, pos.y + 23) == 1 then
                     surface.create_entity {
-                        name = 'gun-turret-remnants',
+                        name = remnants[math_random(1, remnants_index)],
                         position = pos,
-                        amount = math_random(1, 1 + math.ceil(20 - y / 2))
+                        amount = 1
                     }
                 end
                 if math_random(1, pos.y + 2) == 1 then
@@ -1409,16 +1519,6 @@ local function border_chunk(data)
                             {name = 'rock-tiny', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
                         }
                     }
-                end
-                if math_random(1, pos.y + 22) == 1 then
-                    surface.create_entity {
-                        name = 'wall-remnants',
-                        position = pos,
-                        amount = math_random(1, 1 + math.ceil(20 - y / 2))
-                    }
-                end
-                if math_random(1, math.ceil(pos.y + pos.y) + 32) == 1 then
-                    surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
                 end
             end
         end
@@ -1541,26 +1641,28 @@ local function on_chunk_generated(event)
         return
     end
 
-    if left_top.y > 32 then
-        game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
-    end
-
     if left_top.y % Public.level_depth == 0 and left_top.y < 0 then
         this.left_top = data.left_top
         wall(data)
         return
     end
 
-    if left_top.y > 268 then
+    if left_top.y > 150 then
         out_of_map(data)
         return
     end
+
+    if left_top.y > 75 then
+        biter_chunk(data)
+    end
+    if left_top.y > 32 then
+        game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+    end
+
     if left_top.y >= 0 then
         replace_water(data)
     end
-    if left_top.y > 210 then
-        biter_chunk(data)
-    end
+
     if left_top.y >= 0 then
         border_chunk(data)
     end

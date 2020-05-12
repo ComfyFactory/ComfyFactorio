@@ -63,6 +63,7 @@ local function create_forces_and_disable_tech()
     game.forces.player.set_friend('defenders', true)
     game.forces.player.set_friend('lumber_defense', false)
     game.forces.lumber_defense.set_friend('player', false)
+    game.forces.lumber_defense.set_friend('enemy', true)
     game.forces.enemy.set_friend('defenders', true)
     game.forces.enemy.set_friend('lumber_defense', true)
     game.forces.defenders.set_friend('player', true)
@@ -92,11 +93,7 @@ local function set_difficulty()
     end
     Collapse.set_amount(amount)
 
-    --20 Players for fastest wave_interval
-    wave_defense_table.wave_interval = 3600 - player_count * 90
-    if wave_defense_table.wave_interval < 2000 then
-        wave_defense_table.wave_interval = 2000
-    end
+    wave_defense_table.wave_interval = 3600
 end
 
 function Public.reset_map()
@@ -106,12 +103,13 @@ function Public.reset_map()
     Poll.reset()
     ICW.reset()
     game.reset_time_played()
-    create_forces_and_disable_tech()
     WPT.reset_table()
     wave_defense_table.math = 8
     if not this.train_reveal and not this.reveal_normally then
         this.revealed_spawn = game.tick + 100
     end
+
+    wave_defense_table.next_wave = game.tick + 3600 * 25
 
     local map_gen_settings = {
         ['seed'] = math_random(10000, 99999),
@@ -135,6 +133,8 @@ function Public.reset_map()
             Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
         this.active_surface = game.surfaces[this.active_surface_index]
     end
+
+    create_forces_and_disable_tech()
 
     local surface = game.surfaces[this.active_surface_index]
 
@@ -160,7 +160,7 @@ function Public.reset_map()
     Collapse.set_amount(1)
     Collapse.set_max_line_size(Terrain.level_depth)
     Collapse.set_surface(surface)
-    Collapse.set_position({0, 290})
+    Collapse.set_position({0, 162})
     Collapse.set_direction('north')
     Collapse.start_now(false)
 
@@ -182,10 +182,10 @@ function Public.reset_map()
     wave_defense_table.target = this.locomotive_cargo
     wave_defense_table.nest_building_density = 32
     wave_defense_table.game_lost = false
-    wave_defense_table.spawn_position = {x = 0, y = 220}
+    wave_defense_table.spawn_position = {x = 0, y = 100}
 
-    surface.create_entity({name = 'electric-beam', position = {-196, 190}, source = {-196, 190}, target = {196, 190}})
-    surface.create_entity({name = 'electric-beam', position = {-196, 190}, source = {-196, 190}, target = {196, 190}})
+    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
+    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
 
     RPG.rpg_reset_all_players()
 
@@ -200,7 +200,7 @@ function Public.reset_map()
     rendering.draw_text {
         text = 'Welcome to Lumberjack!',
         surface = surface,
-        target = {-0, 30},
+        target = {-0, 10},
         color = {r = 0.98, g = 0.66, b = 0.22},
         scale = 3,
         font = 'heading-1',
@@ -208,6 +208,27 @@ function Public.reset_map()
         scale_with_zoom = false
     }
 
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 20},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 30},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
     rendering.draw_text {
         text = '▼',
         surface = surface,
@@ -239,59 +260,9 @@ function Public.reset_map()
         scale_with_zoom = false
     }
     rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 70},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 80},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 90},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 100},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 110},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
         text = 'Biters will attack this area.',
         surface = surface,
-        target = {-0, 120},
+        target = {-0, 70},
         color = {r = 0.98, g = 0.66, b = 0.22},
         scale = 3,
         font = 'heading-1',
@@ -347,7 +318,7 @@ local function on_player_changed_position(event)
             Terrain.reveal_player(player)
         end
     end
-    if position.y >= 190 then
+    if position.y >= 74 then
         player.teleport({position.x, position.y - 1}, surface)
         player.print(grandmaster .. ' Forcefield does not approve.', {r = 0.98, g = 0.66, b = 0.22})
         if player.character then

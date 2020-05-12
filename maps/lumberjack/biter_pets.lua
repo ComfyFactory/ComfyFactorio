@@ -124,6 +124,9 @@ function Public.tame_unit_for_closest_player(unit)
 end
 
 local function command_unit(entity, player)
+    if entity.surface ~= player.surface then
+        return
+    end
     local square_distance = (player.position.x - entity.position.x) ^ 2 + (player.position.y - entity.position.y) ^ 2
 
     --Pet will follow, if the player is between a distance of 8 to 160 tiles away from it.
