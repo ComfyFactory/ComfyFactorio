@@ -16,6 +16,10 @@ local function reset_forces(new_surface, old_surface)
         f.reset_evolution()
         f.set_spawn_position(spawn, new_surface)
     end
+    for _, tech in pairs(game.forces.player.technologies) do
+        tech.researched = false
+        game.player.force.set_saved_technology_progress(tech, 0)
+    end
 end
 
 local function teleport_players(surface)
@@ -67,6 +71,8 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
     game.delete_surface(old_surface)
 
     local message = table.concat({grandmaster .. ' Welcome to ', this.original_surface_name, '!'})
+    local message_to_discord = table.concat({'** Welcome to ', this.original_surface_name, '! **'})
+
     if this.soft_reset_counter > 1 then
         message =
             table.concat(
@@ -81,7 +87,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
         )
     end
     game.print(message, {r = 0.98, g = 0.66, b = 0.22})
-    Server.to_discord_embed(message)
+    Server.to_discord_embed(message_to_discord)
 
     return new_surface
 end

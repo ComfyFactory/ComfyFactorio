@@ -46,7 +46,8 @@ local function mining_chances_ores()
         {name = 'iron-ore', chance = 545},
         {name = 'copper-ore', chance = 545},
         {name = 'coal', chance = 545},
-        {name = 'stone', chance = 545}
+        {name = 'stone', chance = 545},
+        {name = 'uranium-ore', chance = 200}
     }
     return data
 end
@@ -111,7 +112,7 @@ local function randomness(data)
     local second_harvest_amount
 
     if entity.type == 'simple-entity' then
-        harvest = 'uranium-ore'
+        harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
         second_harvest = 'stone'
         harvest_amount, second_harvest_amount = get_amount(data)
     else
@@ -122,18 +123,29 @@ local function randomness(data)
 
     local position = {x = entity.position.x, y = entity.position.y}
 
-    player.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = position,
-            text = '+' ..
-                harvest_amount ..
-                    ' [img=item/' ..
-                        harvest .. ']\n+' .. second_harvest_amount .. ' [img=item/' .. second_harvest .. ']',
-            color = {r = math_random(1, 200), g = 160, b = 30}
-        }
-    )
-    player.insert({name = second_harvest, count = second_harvest_amount})
+    if second_harvest then
+        player.surface.create_entity(
+            {
+                name = 'flying-text',
+                position = position,
+                text = '+' ..
+                    harvest_amount ..
+                        ' [img=item/' ..
+                            harvest .. ']\n+' .. second_harvest_amount .. ' [img=item/' .. second_harvest .. ']',
+                color = {r = math_random(1, 200), g = 160, b = 30}
+            }
+        )
+        player.insert({name = second_harvest, count = second_harvest_amount})
+    else
+        player.surface.create_entity(
+            {
+                name = 'flying-text',
+                position = position,
+                text = '+' .. harvest_amount .. ' [img=item/' .. harvest .. ']',
+                color = {r = math_random(1, 200), g = 160, b = 30}
+            }
+        )
+    end
 
     if harvest_amount > max_spill then
         player.surface.spill_item_stack(position, {name = harvest, count = max_spill}, true)

@@ -181,7 +181,7 @@ local trees = {'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree'}
 
 local noises = {
     ['forest_location'] = {
-        {modifier = 0.006, weight = 1},
+        {modifier = 0.003, weight = 1},
         {modifier = 0.01, weight = 0.25},
         {modifier = 0.05, weight = 0.15},
         {modifier = 0.1, weight = 0.05}
@@ -550,7 +550,7 @@ local function process_level_9_position(data)
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
 
-            tiles[#tiles + 1] = {name = 'grass-1', position = p}
+            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
             if math_random(1, 4028) == 1 then
                 place_random_scrap_entity(surface, p)
@@ -687,7 +687,7 @@ local function process_level_8_position(data)
     local large_caves = get_noise('large_caves', p, seed)
     if scrapyard > -0.15 and scrapyard < 0.15 then
         if math_floor(large_caves * 10) % 4 < 3 then
-            tiles[#tiles + 1] = {name = 'grass-1', position = p}
+            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
             if math_random(1, 4028) == 1 then
                 place_random_scrap_entity(surface, p)
@@ -813,7 +813,7 @@ local function process_level_7_position(data)
         treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
     end
 
-    tiles[#tiles + 1] = {name = 'grass-1', position = p}
+    tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
     if math_random(1, 4028) == 1 then
         place_random_scrap_entity(surface, p)
@@ -877,13 +877,19 @@ local function process_level_6_position(data)
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
 
-            tiles[#tiles + 1] = {name = 'grass-1', position = p}
+            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
             if math_random(1, 4028) == 1 then
                 place_random_scrap_entity(surface, p)
             end
 
-            forest_look(data)
+            if math_random(1, 100) > 25 then
+                if math_random(1, 4) == 1 then
+                    forest_look(data, true)
+                else
+                    forest_look(data)
+                end
+            end
         end
     end
 end
@@ -943,13 +949,19 @@ local function process_level_5_position(data)
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
 
-            tiles[#tiles + 1] = {name = 'grass-1', position = p}
+            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
             if math_random(1, 4028) == 1 then
                 place_random_scrap_entity(surface, p)
             end
 
-            forest_look(data)
+            if math_random(1, 100) > 25 then
+                if math_random(1, 8) == 1 then
+                    forest_look(data, true)
+                else
+                    forest_look(data)
+                end
+            end
         end
     end
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
@@ -1049,13 +1061,19 @@ local function process_level_4_position(data)
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
 
-        tiles[#tiles + 1] = {name = 'grass-1', position = p}
+        tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
         if math_random(1, 4028) == 1 then
             place_random_scrap_entity(surface, p)
         end
 
-        forest_look(data)
+        if math_random(1, 100) > 25 then
+            if math_random(1, 8) == 1 then
+                forest_look(data, true)
+            else
+                forest_look(data)
+            end
+        end
     end
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
@@ -1185,13 +1203,19 @@ local function process_level_3_position(data)
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
 
-        tiles[#tiles + 1] = {name = 'grass-1', position = p}
+        tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
         if math_random(1, 4028) == 1 then
             place_random_scrap_entity(surface, p)
         end
 
-        forest_look(data)
+        if math_random(1, 100) > 25 then
+            if math_random(1, 8) == 1 then
+                forest_look(data, true)
+            else
+                forest_look(data)
+            end
+        end
     end
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
@@ -1258,7 +1282,7 @@ local function process_level_2_position(data)
                 markets[#markets + 1] = p
             end
             if math_random(1, 16) == 1 then
-                entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
+                forest_look(data, true)
             end
             return
         end
@@ -1303,13 +1327,19 @@ local function process_level_2_position(data)
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
 
-        tiles[#tiles + 1] = {name = 'grass-1', position = p}
+        tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
         if math_random(1, 4028) == 1 then
             place_random_scrap_entity(surface, p)
         end
 
-        forest_look(data)
+        if math_random(1, 100) > 25 then
+            if math_random(1, 8) == 1 then
+                forest_look(data, true)
+            else
+                forest_look(data)
+            end
+        end
     end
 end
 
@@ -1428,14 +1458,18 @@ local function process_level_1_position(data)
         treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
     end
 
-    tiles[#tiles + 1] = {name = 'grass-1', position = p}
+    tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
     if math_random(1, 4028) == 1 then
         place_random_scrap_entity(surface, p)
     end
 
     if math_random(1, 100) > 25 then
-        forest_look(data)
+        if math_random(1, 8) == 1 then
+            forest_look(data, true)
+        else
+            forest_look(data)
+        end
     end
 end
 
@@ -1671,13 +1705,6 @@ local function on_chunk_generated(event)
         if math_random(1, chance_for_wagon_spawn) == 1 then
             place_wagon(data)
         end
-    end
-
-    local p = this.locomotive.position
-    for _, entity in pairs(
-        surface.find_entities_filtered({area = {{p.x - 10, p.y - 10}, {p.x + 10, p.y + 10}}, type = 'simple-entity'})
-    ) do
-        entity.destroy()
     end
 
     out_of_map_area(data)

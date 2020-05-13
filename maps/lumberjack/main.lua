@@ -72,6 +72,7 @@ local function create_forces_and_disable_tech()
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['land-mine'].enabled = false
+    Balance.init_enemy_weapon_damage()
 end
 
 local function set_difficulty()
@@ -96,107 +97,7 @@ local function set_difficulty()
     wave_defense_table.wave_interval = 3600
 end
 
-function Public.reset_map()
-    local this = WPT.get_table()
-    local wave_defense_table = WD.get_table()
-    local get_score = Score.get_table()
-    Poll.reset()
-    ICW.reset()
-    game.reset_time_played()
-    WPT.reset_table()
-    wave_defense_table.math = 8
-    if not this.train_reveal and not this.reveal_normally then
-        this.revealed_spawn = game.tick + 100
-    end
-
-    wave_defense_table.next_wave = game.tick + 3600 * 25
-
-    local map_gen_settings = {
-        ['seed'] = math_random(10000, 99999),
-        ['water'] = 0.001,
-        ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
-        ['default_enable_all_autoplace_controls'] = true,
-        ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = true}
-        }
-    }
-
-    if not this.active_surface_index then
-        this.active_surface_index = game.create_surface('lumberjack', map_gen_settings).index
-        this.active_surface = game.surfaces[this.active_surface_index]
-    else
-        game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
-        this.active_surface = game.surfaces[this.active_surface_index]
-    end
-
-    create_forces_and_disable_tech()
-
-    local surface = game.surfaces[this.active_surface_index]
-
-    surface.request_to_generate_chunks({0, 0}, 0.5)
-    surface.force_generate_chunk_requests()
-
-    local p = surface.find_non_colliding_position('character-corpse', {2, 21}, 2, 2)
-    surface.create_entity({name = 'character-corpse', position = p})
-
-    game.forces.player.set_spawn_position({0, 21}, surface)
-
-    global.friendly_fire_history = {}
-    global.landfill_history = {}
-    global.mining_history = {}
-    get_score.score_table = {}
-    global.difficulty_poll_closing_timeout = game.tick + 90000
-    global.difficulty_player_votes = {}
-
-    game.difficulty_settings.technology_price_multiplier = 0.6
-
-    Collapse.set_kill_entities(false)
-    Collapse.set_speed(8)
-    Collapse.set_amount(1)
-    Collapse.set_max_line_size(Terrain.level_depth)
-    Collapse.set_surface(surface)
-    Collapse.set_position({0, 162})
-    Collapse.set_direction('north')
-    Collapse.start_now(false)
-
-    surface.ticks_per_day = surface.ticks_per_day * 2
-    surface.daytime = 0.71
-    surface.brightness_visual_weights = {1, 0, 0, 0}
-    surface.freeze_daytime = false
-    surface.solar_power_multiplier = 1
-    this.locomotive_health = 10000
-    this.locomotive_max_health = 10000
-    this.cargo_health = 10000
-    this.cargo_max_health = 10000
-
-    Locomotive(surface, {x = -18, y = 25})
-    render_train_hp()
-
-    WD.reset_wave_defense()
-    wave_defense_table.surface_index = this.active_surface_index
-    wave_defense_table.target = this.locomotive_cargo
-    wave_defense_table.nest_building_density = 32
-    wave_defense_table.game_lost = false
-    wave_defense_table.spawn_position = {x = 0, y = 100}
-
-    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
-    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
-
-    RPG.rpg_reset_all_players()
-
-    if game.forces.lumber_defense then
-        Balance.init_enemy_weapon_damage()
-    else
-        log('lumber_defense not found')
-    end
-
-    set_difficulty()
-
+local function render_direction(surface)
     rendering.draw_text {
         text = 'Welcome to Lumberjack!',
         surface = surface,
@@ -269,6 +170,101 @@ function Public.reset_map()
         alignment = 'center',
         scale_with_zoom = false
     }
+
+    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
+    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
+end
+
+function Public.reset_map()
+    local this = WPT.get_table()
+    local wave_defense_table = WD.get_table()
+    local get_score = Score.get_table()
+    local map_gen_settings = {
+        ['seed'] = math_random(10000, 99999),
+        ['water'] = 0.001,
+        ['starting_area'] = 1,
+        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['default_enable_all_autoplace_controls'] = true,
+        ['autoplace_settings'] = {
+            ['entity'] = {treat_missing_as_default = false},
+            ['tile'] = {treat_missing_as_default = true},
+            ['decorative'] = {treat_missing_as_default = true}
+        }
+    }
+
+    if not this.active_surface_index then
+        this.active_surface_index = game.create_surface('lumberjack', map_gen_settings).index
+        this.active_surface = game.surfaces[this.active_surface_index]
+    else
+        game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
+        this.active_surface_index =
+            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface = game.surfaces[this.active_surface_index]
+    end
+
+    Poll.reset()
+    ICW.reset()
+    game.reset_time_played()
+    WPT.reset_table()
+    wave_defense_table.math = 8
+    if not this.train_reveal and not this.reveal_normally then
+        this.revealed_spawn = game.tick + 100
+    end
+
+    create_forces_and_disable_tech()
+
+    local surface = game.surfaces[this.active_surface_index]
+
+    surface.request_to_generate_chunks({0, 0}, 0.5)
+    surface.force_generate_chunk_requests()
+
+    local p = surface.find_non_colliding_position('character-corpse', {2, 21}, 2, 2)
+    surface.create_entity({name = 'character-corpse', position = p})
+
+    game.forces.player.set_spawn_position({0, 21}, surface)
+
+    global.friendly_fire_history = {}
+    global.landfill_history = {}
+    global.mining_history = {}
+    get_score.score_table = {}
+    global.difficulty_poll_closing_timeout = game.tick + 90000
+    global.difficulty_player_votes = {}
+
+    game.difficulty_settings.technology_price_multiplier = 0.6
+
+    Collapse.set_kill_entities(false)
+    Collapse.set_speed(8)
+    Collapse.set_amount(1)
+    Collapse.set_max_line_size(Terrain.level_depth)
+    Collapse.set_surface(surface)
+    Collapse.set_position({0, 162})
+    Collapse.set_direction('north')
+    Collapse.start_now(false)
+
+    surface.ticks_per_day = surface.ticks_per_day * 2
+    surface.daytime = 0.71
+    surface.brightness_visual_weights = {1, 0, 0, 0}
+    surface.freeze_daytime = false
+    surface.solar_power_multiplier = 1
+    this.locomotive_health = 10000
+    this.locomotive_max_health = 10000
+    this.cargo_health = 10000
+    this.cargo_max_health = 10000
+
+    Locomotive(surface, {x = -18, y = 25})
+    render_train_hp()
+    render_direction(surface)
+    RPG.rpg_reset_all_players()
+
+    WD.reset_wave_defense()
+    wave_defense_table.surface_index = this.active_surface_index
+    wave_defense_table.target = this.locomotive_cargo
+    wave_defense_table.nest_building_density = 32
+    wave_defense_table.game_lost = false
+    wave_defense_table.spawn_position = {x = 0, y = 100}
+    wave_defense_table.next_wave = game.tick + 3600 * 25
+
+    set_difficulty()
 
     local surfaces = {
         [surface.name] = shape

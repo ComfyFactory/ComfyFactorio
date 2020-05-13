@@ -200,7 +200,7 @@ local function hidden_treasure(event)
             rare_treasure_chest_messages[math.random(1, #rare_treasure_chest_messages)],
             {r = 0.98, g = 0.66, b = 0.22}
         )
-        Loot.add(event.entity.surface, event.entity.position, 'wooden-chest', magic)
+        Loot.add_rare(event.entity.surface, event.entity.position, 'wooden-chest', magic)
         return
     end
     player.print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r = 0.98, g = 0.66, b = 0.22})
@@ -358,7 +358,7 @@ local function on_entity_died(event)
 
     if entity.type == 'unit' or entity.type == 'unit-spawner' then
         this.biters_killed = this.biters_killed + 1
-        if math_random(1, 256) == 1 then
+        if math_random(1, 512) == 1 then
             tick_tack_trap(entity.surface, entity.position)
             return
         end
@@ -377,7 +377,7 @@ local function on_entity_died(event)
             hidden_worm(event.entity)
             return
         end
-        if math_random(1, 160) == 1 then
+        if math_random(1, 512) == 1 then
             tick_tack_trap(entity.surface, entity.position)
             return
         end

@@ -208,6 +208,9 @@ local function greet_player(nearby_characters)
         return false
     end
     for _, c in pairs(nearby_characters) do
+        if not c.player then
+            return
+        end
         if c.player.index == this.grandmaster_greet_player_index then
             local str = texts['greetings'][math_random(1, #texts['greetings'])] .. ' '
             str = str .. c.player.name
@@ -235,6 +238,9 @@ local function talks(nearby_characters)
     local str
     if #nearby_characters == 1 then
         local c = nearby_characters[math_random(1, #nearby_characters)]
+        if not c.player then
+            return
+        end
         str = c.player.name
         local symbols = {'. ', '! ', '. ', '! ', '? '}
         str = str .. symbols[math_random(1, #symbols)]
@@ -292,14 +298,15 @@ local function desync(event)
         )
         if event.cause then
             if event.cause.valid then
-                if event.cause.player then
-                    game.print(
-                        '[color=blue]Grandmaster:[/color]: I got you this time! Back to work, ' ..
-                            event.cause.player.name .. '!',
-                        {r = 200, g = 0, b = 0}
-                    )
-                    event.cause.die('player', this.grandmaster)
+                if not event.cause.player then
+                    return
                 end
+                game.print(
+                    '[color=blue]Grandmaster:[/color]: I got you this time! Back to work, ' ..
+                        event.cause.player.name .. '!',
+                    {r = 200, g = 0, b = 0}
+                )
+                event.cause.die('player', this.grandmaster)
             end
         end
     end
