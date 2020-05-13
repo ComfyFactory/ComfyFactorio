@@ -223,6 +223,7 @@ function Public.reset_map()
 
     game.forces.player.set_spawn_position({0, 21}, surface)
 
+    global.bad_fire_history = {}
     global.friendly_fire_history = {}
     global.landfill_history = {}
     global.mining_history = {}

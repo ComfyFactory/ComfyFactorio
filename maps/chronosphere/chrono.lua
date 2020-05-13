@@ -58,6 +58,7 @@ function Public_chrono.restart_settings()
 	for _, player in pairs(game.connected_players) do
 		objective.flame_boots[player.index] = {fuel = 1, steps = {}}
 	end
+    global.bad_fire_history = {}
 	global.friendly_fire_history = {}
 	global.landfill_history = {}
 	global.mining_history = {}
