@@ -108,6 +108,9 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
         button.enabled = false
 
         if caption == 'Armor' then
+            if not target.get_inventory(5)[1].grid then
+                return
+            end
             local p_armor = target.get_inventory(5)[1].grid.get_contents()
             for k, v in pairs(p_armor) do
                 prototype = build_prototype_data(k)
@@ -125,6 +128,8 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                 armor_gui.enabled = false
             end
         end
+
+        ::continue::
     end
 end
 
