@@ -6,7 +6,6 @@ require 'maps.lumberjack.corpse_util'
 
 require 'on_tick_schedule'
 require 'modules.dynamic_landfill'
-require 'modules.difficulty_vote'
 require 'modules.shotgun_buff'
 require 'modules.burden'
 require 'modules.rocks_heal_over_time'
@@ -20,6 +19,7 @@ require 'modules.wave_defense.main'
 require 'modules.admins_operate_biters'
 require 'modules.pistol_buffs'
 
+local Difficulty = require 'modules.difficulty_vote'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Color = require 'utils.color_presets'
@@ -76,16 +76,17 @@ local function create_forces_and_disable_tech()
 end
 
 local function set_difficulty()
+    local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
     local player_count = #game.connected_players
-    if not global.difficulty_vote_value then
-        global.difficulty_vote_value = 0.1
+    if not Diff.difficulty_vote_value then
+        Diff.difficulty_vote_value = 0.1
     end
 
-    wave_defense_table.max_active_biters = 768 + player_count * (90 * global.difficulty_vote_value)
+    wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
 
     -- threat gain / wave
-    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * global.difficulty_vote_value * 0.1
+    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
     local amount = player_count * 0.25 + 2
     amount = math.floor(amount)
@@ -179,6 +180,7 @@ function Public.reset_map()
     local this = WPT.get_table()
     local wave_defense_table = WD.get_table()
     local get_score = Score.get_table()
+    local Diff = Difficulty.get()
     local map_gen_settings = {
         ['seed'] = math_random(10000, 99999),
         ['water'] = 0.001,
@@ -228,8 +230,8 @@ function Public.reset_map()
     global.landfill_history = {}
     global.mining_history = {}
     get_score.score_table = {}
-    global.difficulty_poll_closing_timeout = game.tick + 90000
-    global.difficulty_player_votes = {}
+    Diff.difficulty_poll_closing_timeout = game.tick + 90000
+    Diff.difficulty_player_votes = {}
 
     game.difficulty_settings.technology_price_multiplier = 0.6
 
@@ -498,12 +500,13 @@ local function darkness(data)
 end
 
 local function transfer_pollution(data)
+    local Diff = Difficulty.get()
     local surface = data.loco_surface
     local this = data.this
     if not surface then
         return
     end
-    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * global.difficulty_vote_value
+    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Diff.difficulty_vote_value
     game.surfaces[this.active_surface_index].pollute(this.locomotive.position, pollution)
     surface.clear_pollution()
 end
@@ -590,6 +593,18 @@ end
 local on_init = function()
     local this = WPT.get_table()
     Public.reset_map()
+
+    local tooltip = {
+        [1] = 'something',
+        [2] = 'something else',
+        [3] = 'something else else',
+        [4] = 'something else else else',
+        [5] = 'something else else else else',
+        [6] = 'something else else else else else',
+        [7] = 'something else else else else else else'
+    }
+
+    Difficulty:set_tooltip(tooltip)
 
     global.custom_highscore.description = 'Wagon distance reached:'
 

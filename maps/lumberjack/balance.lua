@@ -1,4 +1,5 @@
 local Event = require 'utils.event'
+local Difficulty = require 'modules.difficulty_vote'
 local Public = {}
 
 function Public.init_enemy_weapon_damage()
@@ -31,6 +32,7 @@ function Public.init_enemy_weapon_damage()
 end
 
 local function enemy_weapon_damage()
+    Difficulty.get()
     if game.tick < 100 then
         goto rtn
     end
@@ -55,7 +57,7 @@ local function enemy_weapon_damage()
     }
 
     for k, v in pairs(data) do
-        local new = global.difficulty_vote_value * v
+        local new = Diff.difficulty_vote_value * v
 
         local e_old = e.get_ammo_damage_modifier(k)
         local s_old = s.get_ammo_damage_modifier(k)
