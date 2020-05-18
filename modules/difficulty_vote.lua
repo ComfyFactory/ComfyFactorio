@@ -83,6 +83,10 @@ function Public.set_difficulties(...)
     end
 end
 
+function Public.set_poll_closing_timeout(...)
+    this.difficulty_poll_closing_timeout = ...
+end
+
 function Public.get()
     return this
 end
