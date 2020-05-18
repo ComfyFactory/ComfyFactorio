@@ -241,8 +241,8 @@ local function hidden_biter(entity)
 			unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
 		end
 
-		if math_random(1, 64) == 1 then
-			BiterHealthBooster.add_boss_unit(unit, m * h * 5 + 1, 0.38)
+		if math_random(1, 128) == 1 then
+			BiterHealthBooster.add_boss_unit(unit, m * h + 5, 0.38)
 		end
 	end
 end
