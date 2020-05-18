@@ -1,21 +1,7 @@
---[[
-Hello there!
-
-This will add a player list with "ranks" to your server.
-Oh.. and you can also "poke" a player.
-pokemessages = 80% by redlabel
-
-To install, add: require "player_list"
-to your scenario control.lua.
-
----MewMew---
-
-Minor changes by ~~~Gerkiz~~~
---]]
 local Event = require 'utils.event'
 local play_time = require 'utils.session_data'
 local Tabs = require 'comfy_panel.main'
-local RPG = require 'maps.scrapyard.rpg'
+local RPG = require 'maps.lumberjack.rpg'
 
 local symbol_asc = '▲'
 local symbol_desc = '▼'

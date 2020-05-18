@@ -1,4 +1,6 @@
 local Chrono_table = require 'maps.chronosphere.table'
+local Balance = require 'maps.chronosphere.balance'
+local Difficulty = require 'modules.difficulty_vote'
 local Public_event = {}
 
 local tick_tack_trap = require "functions.tick_tack_trap"
@@ -7,11 +9,12 @@ local unearthing_biters = require "functions.unearthing_biters"
 
 local math_random = math.random
 local math_floor = math.floor
+local math_ceil = math.ceil
 
 local function get_ore_amount()
 	local objective = Chrono_table.get_table()
-	local scaling = 5 * objective.chronojumps
-	local amount = (30 + scaling ) * (1 + game.forces.player.mining_drill_productivity_bonus / 2) * objective.planet[1].ore_richness.factor
+
+	local amount = Balance.Base_ore_loot_yield(objective.chronojumps) * objective.planet[1].ore_richness.factor
 	if amount > 600 then amount = 600 end
 	amount = math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
 	return amount
@@ -127,8 +130,8 @@ function Public_event.choppy_loot(event)
 	if choppy_entity_yield[entity.name] then
 		if event.buffer then event.buffer.clear() end
 		if not event.player_index then return end
-		local amount = get_ore_amount()
-		local second_item_amount = math_random(2,5)
+		local amount = math_ceil(math_ceil(get_ore_amount() / 5))
+		local second_item_amount = math_random(1,3)
 		local second_item = "wood"
 		local main_item = choppy_entity_yield[entity.name][math_random(1,#choppy_entity_yield[entity.name])]
 
@@ -155,7 +158,7 @@ function Public_event.rocky_loot(event)
 	local surface = game.surfaces[objective.active_surface_index]
 	local player = game.players[event.player_index]
 	surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(1,3)},true)
-	local amount = get_ore_amount()
+	local amount = math_floor(get_ore_amount())
 	local rock_mining = {"iron-ore", "iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "copper-ore", "stone", "stone", "coal", "coal"}
 	local mined_loot = rock_mining[math_random(1,#rock_mining)]
 	surface.create_entity({
@@ -186,9 +189,9 @@ function Public_event.swamp_loot(event)
 		["spitter-spawner"] = 10,
 	}
 	local surface = game.surfaces[objective.active_surface_index]
-	local amount = get_ore_amount() / 20
+	local amount = math_floor(get_ore_amount() / 10)
 	if ore_yield[event.entity.name] then
-		amount = (get_ore_amount() * ore_yield[event.entity.name]) / 20
+		amount = math_floor((get_ore_amount() * ore_yield[event.entity.name]) / 10)
 	end
 	if amount > 50 then amount = 50 end
 
@@ -200,16 +203,24 @@ function Public_event.swamp_loot(event)
 	else
 		surface.create_entity{name = "item-on-ground", position = event.entity.position, stack = {name = mined_loot, count = amount}}
 	end
+
+	event.entity.surface.create_entity({
+		name = "flying-text",
+		position = event.entity.position,
+		text = "+" .. amount .. " [img=item/" .. mined_loot .. "]",
+		color = {r=0.7,g=0.8,b=0.4}
+	})
+
 	--surface.spill_item_stack(event.entity.position,{name = mined_loot, count = amount}, true)
 end
 
 function Public_event.danger_silo(entity)
 	local objective = Chrono_table.get_table()
-	if objective.planet[1].name.id == 19 then
+	if objective.planet[1].type.id == 19 then
 		if objective.dangers and #objective.dangers > 1 then
 	    for i = 1, #objective.dangers, 1 do
 	      if entity == objective.dangers[i].silo then
-					game.print({"chronosphere.message_silo"}, {r=0.98, g=0.66, b=0.22})
+					game.print({"chronosphere.message_silo", Balance.nukes_looted_per_silo(Difficulty.get().difficulty_vote_value)}, {r=0.98, g=0.66, b=0.22})
 					objective.dangers[i].destroyed = true
 					objective.dangers[i].silo = nil
 					objective.dangers[i].speaker.destroy()
@@ -229,7 +240,7 @@ end
 
 function Public_event.biter_immunities(event)
 	local objective = Chrono_table.get_table()
-	local planet = objective.planet[1].name.id
+	local planet = objective.planet[1].type.id
 	if event.damage_type.name == "fire" then
 		if planet == 14 then --lava planet
 			event.entity.health = event.entity.health + event.final_damage_amount
@@ -240,7 +251,7 @@ function Public_event.biter_immunities(event)
 				end
 			end
 		-- else -- other planets
-		-- 	event.entity.health = math_floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * global.difficulty_vote_value * objective.chronojumps)))
+		-- 	event.entity.health = math_floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * Difficulty.get().difficulty_vote_value * objective.chronojumps)))
 		end
 	elseif event.damage_type.name == "poison" then
 		if planet == 18 then --swamp planet
@@ -251,13 +262,8 @@ end
 
 function Public_event.flamer_nerfs()
 	local objective = Chrono_table.get_table()
-	local flamer_power = 0
-	local difficulty = global.difficulty_vote_value
-	if difficulty > 1 then
-		difficulty = 1 + ((difficulty - 1) / 2)
-	elseif difficulty < 1 then
-		difficulty = 1 - ((1 - difficulty) / 2)
-	end
+	local difficulty = Difficulty.get().difficulty_vote_value
+	
 	local flame_researches = {
 		[1] = {name = "refined-flammables-1", bonus = 0.2},
 		[2] = {name = "refined-flammables-2", bonus = 0.2},
@@ -267,14 +273,17 @@ function Public_event.flamer_nerfs()
 		[6] = {name = "refined-flammables-6", bonus = 0.4},
 		[7] = {name = "refined-flammables-7", bonus = 0.2}
 	}
+
+	local flamer_power = 0
 	for i = 1, 6, 1 do
 		if game.forces.player.technologies[flame_researches[i].name].researched then
 			flamer_power = flamer_power + flame_researches[i].bonus
 		end
 	end
 	flamer_power = flamer_power + (game.forces.player.technologies[flame_researches[7].name].level - 7) * 0.2
-	game.forces.player.set_ammo_damage_modifier("flamethrower", flamer_power - 0.02 * difficulty * objective.chronojumps)
-	game.forces.player.set_turret_attack_modifier("flamethrower-turret", flamer_power - 0.02 * difficulty * objective.chronojumps)
+
+	game.forces.player.set_ammo_damage_modifier("flamethrower", flamer_power - Balance.flamers_nerfs_size(objective.chronojumps, difficulty))
+	game.forces.player.set_turret_attack_modifier("flamethrower-turret", flamer_power - Balance.flamers_nerfs_size(objective.chronojumps, difficulty))
 end
 
 local mining_researches = {
@@ -286,6 +295,7 @@ local mining_researches = {
 }
 
 function Public_event.mining_buffs(event)
+
 	if event == nil then
 		-- initialization/reset call
 		game.forces.player.mining_drill_productivity_bonus = game.forces.player.mining_drill_productivity_bonus + 1
@@ -294,6 +304,7 @@ function Public_event.mining_buffs(event)
 	end
 
 	if mining_researches[event.research.name] == nil then return end
+	
 	local tech = mining_researches[event.research.name]
 
 	if tech.bonus_productivity then

@@ -37,13 +37,16 @@ function Public.locomotive_spawn(surface, position)
 
 	global.locomotive.color = {0, 255, 0}
 	global.locomotive_cargo.minable = false
+	global.locomotive.minable = false
 	
 	for y = -1, 0, 0.05 do
 		local scale = math.random(50, 100) * 0.01
 		rendering.draw_sprite({sprite = "item/raw-fish", orientation = math.random(0, 100) * 0.01, x_scale = scale, y_scale = scale, tint = {math.random(75, 255), math.random(75, 255), math.random(75, 255)}, render_layer = "selection-box", target = global.locomotive_cargo, target_offset = {-0.7 + math.random(0, 140) * 0.01, y}, surface = surface})
 	end
 	
-	Immersive_cargo_wagons.register_wagon(global.locomotive)
+	local wagon = Immersive_cargo_wagons.register_wagon(global.locomotive)
+	wagon.entity_count = 999
+	
 	local wagon = Immersive_cargo_wagons.register_wagon(global.locomotive_cargo)	
 	wagon.entity_count = 999
 	

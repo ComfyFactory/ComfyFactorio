@@ -1,4 +1,3 @@
---Hunger games balance things by Gerkiz --
 local Event = require 'utils.event'
 
 local function player_ammo_starting_modifiers()
@@ -130,17 +129,15 @@ local function init_player_weapon_damage(force)
 end
 
 local function init_enemy_weapon_damage()
-    local e, s, sd = game.forces['enemy'], game.forces['scrap'], game.forces['scrap_defense']
+    local e = game.forces['enemy']
 
     for k, v in pairs(enemy_ammo_starting_modifiers()) do
         e.set_ammo_damage_modifier(k, v)
-        s.set_ammo_damage_modifier(k, v)
-        sd.set_ammo_damage_modifier(k, v)
     end
 end
 
 local function enemy_weapon_damage()
-    local e, s, sd = game.forces.enemy, game.forces.scrap, game.forces.scrap_defense
+    local e = game.forces.enemy
 
     local ef = e.evolution_factor
 
@@ -149,8 +146,6 @@ local function enemy_weapon_damage()
 
         local new = base + v * ef
         e.set_ammo_damage_modifier(k, new)
-        s.set_ammo_damage_modifier(k, new)
-        sd.set_ammo_damage_modifier(k, new)
     end
 end
 
@@ -192,6 +187,7 @@ local function research_finished(event)
     end
 end
 
+Event.on_init(init_player_weapon_damage)
 Event.on_init(init_enemy_weapon_damage)
 Event.on_nth_tick(18000, enemy_weapon_damage)
---Event.add(defines.events.on_research_finished, research_finished)
+Event.add(defines.events.on_research_finished, research_finished)

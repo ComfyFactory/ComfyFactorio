@@ -1,3 +1,5 @@
+local WPT = require 'maps.lumberjack.table'
+
 local math_random = math.random
 local nom_msg = {'munch', 'munch', 'yum'}
 
@@ -85,9 +87,8 @@ local function is_valid_player(player, unit)
 end
 
 function Public.biter_pets_tame_unit(player, unit, forced)
-    if global.biter_pets[player.index] then
-        return false
-    end
+    local this = WPT.get_table()
+
     if not forced then
         if math_random(1, math.floor(unit.prototype.max_health * 0.01) + 1) ~= 1 then
             feed_floaty_text(unit)
@@ -101,7 +102,7 @@ function Public.biter_pets_tame_unit(player, unit, forced)
     unit.ai_settings.allow_try_return_to_spawner = false
     unit.force = player.force
     unit.set_command({type = defines.command.wander, distraction = defines.distraction.by_enemy})
-    global.biter_pets[player.index] = {last_command = 0, entity = unit}
+    this.biter_pets[player.index] = {last_command = 0, entity = unit}
     tame_unit_effects(player, unit)
     return true
 end
@@ -119,17 +120,13 @@ function Public.tame_unit_for_closest_player(unit)
         return
     end
 
-    for i = 2, #valid_players, 1 do
-        local player = valid_players[i + 1]
-        if player.position.x ^ 2 + player.position.y ^ 2 < nearest_player.position.x ^ 2 + nearest_player.position.y ^ 2 then
-            nearest_player = spawner
-        end
-    end
-
     Public.biter_pets_tame_unit(nearest_player, unit, true)
 end
 
 local function command_unit(entity, player)
+    if entity.surface ~= player.surface then
+        return
+    end
     local square_distance = (player.position.x - entity.position.x) ^ 2 + (player.position.y - entity.position.y) ^ 2
 
     --Pet will follow, if the player is between a distance of 8 to 160 tiles away from it.
@@ -148,29 +145,31 @@ local function command_unit(entity, player)
 end
 
 local function on_player_changed_position(event)
+    local this = WPT.get_table()
+
     if math_random(1, 100) ~= 1 then
         return
     end
     local player = game.players[event.player_index]
-    if not global.biter_pets[player.index] then
+    if not this.biter_pets[player.index] then
         return
     end
-    if not global.biter_pets[player.index].entity then
-        global.biter_pets[player.index] = nil
+    if not this.biter_pets[player.index].entity then
+        this.biter_pets[player.index] = nil
         return
     end
-    if not global.biter_pets[player.index].entity.valid then
-        global.biter_pets[player.index] = nil
+    if not this.biter_pets[player.index].entity.valid then
+        this.biter_pets[player.index] = nil
         return
     end
     if not player.character then
         return
     end
-    if global.biter_pets[player.index].last_command + 600 > game.tick then
+    if this.biter_pets[player.index].last_command + 600 > game.tick then
         return
     end
-    global.biter_pets[player.index].last_command = game.tick
-    command_unit(global.biter_pets[player.index].entity, player)
+    this.biter_pets[player.index].last_command = game.tick
+    command_unit(this.biter_pets[player.index].entity, player)
 end
 
 local function on_player_dropped_item(event)
@@ -191,12 +190,7 @@ local function on_player_dropped_item(event)
     end
 end
 
-local function on_init(event)
-    global.biter_pets = {}
-end
-
 local event = require 'utils.event'
-event.on_init(on_init)
 event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 event.add(defines.events.on_player_changed_position, on_player_changed_position)
 
