@@ -23,7 +23,7 @@ end
 -- slope 4/5 -> {0.20, 0.40, 0.60, 0.80, 1.20, 2.40, 4.00}
 -- slope 3/5 -> {0.15, 0.30, 0.45, 0.60, 0.90, 1.80, 3.00}
 -- slope 2/5 -> {0.10, 0.20, 0.30, 0.40, 0.60, 1.20, 2.00}
-  
+
 local function difficulty_exp(difficulty,exponent)
 
 	return math_pow(difficulty,exponent)
@@ -57,29 +57,11 @@ function Public.passive_planet_jumptime(jumps)
 	return mins * 60
 end
 
-function Public.generate_jump_countdown_length(difficulty)
-	if difficulty <= 1 then
-		return Rand.raffle({90,120,150,180,210,240,270},{1,2,14,98,14,2,1})
-	else
-		return 180 -- thesixthroc: suppress rng for speedrunners
-	end
---	return 180
-end
-
-function Public.misfire_percentage_chance(difficulty)
- 	if difficulty <= 1 and difficulty > 0.25 then
- 		return 4
- 	else
- 		return 0 -- thesixthroc: suppress rng for speedrunners
- 	end
---	return 0
-end
-
 function Public.passive_pollution_rate(jumps, difficulty, filter_upgrades)
 	local baserate = 5 * jumps
 
 	local modifiedrate = baserate * Public.pollution_filter_upgrade_factor(filter_upgrades) * math_max(0, difficulty_sloped(difficulty, 5/4))
-  
+
 	return modifiedrate
 end
 
@@ -102,7 +84,7 @@ function Public.countdown_pollution_rate(jumps, difficulty)
 	local baserate = 40 * (10 + jumps) * math_max(0, difficulty_sloped(difficulty, 5/4))
 
 	local modifiedrate = baserate -- thesixthroc: Constant, because part of drama of planet progression. Interpret this as hyperwarp portal pollution
-	
+
 	return modifiedrate
 end
 
@@ -110,7 +92,7 @@ function Public.post_jump_initial_pollution(jumps, difficulty)
 	local baserate = 200 * (1 + jumps) * math_max(0, difficulty_sloped(difficulty, 5/4))
 
 	local modifiedrate = baserate -- thesixthroc: Constant, because part of drama of planet progression. Interpret this as hyperwarp portal pollution
-	
+
 	return modifiedrate
 end
 
@@ -134,7 +116,7 @@ end
 
 Public.Chronotrain_max_HP = 10000
 Public.Chronotrain_HP_repaired_per_pack = 150
-Public.Tech_price_multiplier = 0.7
+Public.Tech_price_multiplier = 0.6
 
 Public.starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 2, ['raw-fish'] = 4, ['wood'] = 16}
 Public.wagon_starting_items = {{name = 'firearm-magazine', count = 16},{name = 'iron-plate', count = 16},{name = 'wood', count = 16},{name = 'burner-mining-drill', count = 8}}
@@ -184,7 +166,7 @@ function Public.player_ammo_damage_modifiers() -- bullet affects gun turrets, bu
         ['melee'] = 0, -- doesn't do anything
         ['railgun'] = 0,
         ['rocket'] = 0,
-        ['shotgun-shell'] = 0.1
+        ['shotgun-shell'] = 0
     }
     return data
 end
@@ -204,7 +186,7 @@ function Public.flamers_nerfs_size(jumps, difficulty) return 0.02 * jumps * diff
 
 function Public.max_new_attack_group_size(difficulty) return math_max(200,math_floor(120 * difficulty_sloped(difficulty, 1))) end
 
-function Public.evoramp50_multiplier_per_10s(difficulty) return (1 + 1/200 * difficulty_sloped(difficulty, 3/5)) end
+function Public.evoramp50_multiplier_per_10s(difficulty) return (1 + 1/600 * difficulty_sloped(difficulty, 1)) end
 
 function Public.nukes_looted_per_silo(difficulty) return math_max(10, 10 * math_ceil(difficulty_sloped(difficulty, 1))) end
 
@@ -259,10 +241,10 @@ end
 Public.dayspeed_weights = {
 	static = 2,
 	normal = 4,
-  	slow = 3,
+  slow = 3,
 	superslow = 1,
-  	fast = 3,
-  	superfast = 1
+  fast = 3,
+  superfast = 1
 }
 function Public.market_offers()
 	return {

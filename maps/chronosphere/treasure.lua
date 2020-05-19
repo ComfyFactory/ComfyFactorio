@@ -12,15 +12,14 @@ local Public = {}
 
 
 local function treasure_chest_loot(difficulty, planet)
-	
+
 	local function loot_data_sensible(loot_data_item)
 		return {weight = loot_data_item[1], d_min = loot_data_item[2], d_max = loot_data_item[3], scaling = loot_data_item[4], name = loot_data_item[5], min_count = loot_data_item[6], max_count = loot_data_item[7]}
 	end
-	
+
 	local loot_data_raw= {
 		--always there (or normally always there):
 
-		{8, 0, 1, false, "railgun-dart", 8, 16}, -- thesixthroc: this should not scale with jumps. reward treasure hunting currency the same at all jump numbers
 		{8, 0, 1, false, "coin", 4, 60},
 
 		{4, 0, 1, false, "pistol", 1, 2},
@@ -60,7 +59,7 @@ local function treasure_chest_loot(difficulty, planet)
 		{1.6, 0, 1, true, "energy-shield-equipment", 1, 2},
 		{0.8, 0, 1, true, "night-vision-equipment", 1, 1},
 		{0.4, 0.5, 1.5, true, "personal-laser-defense-equipment", 1, 1},
-		
+
 		--loader meta:
 		{math_max(1.5 * difficulty - 1.25, 0), 0, 0.2, false, "loader", 1, 2},
 		{math_max(1.5 * difficulty - 1.25, 0), 0.2, 0.6, false, "fast-loader", 1, 2},
@@ -76,6 +75,7 @@ local function treasure_chest_loot(difficulty, planet)
 		{10, 0.5, 1.5, true, "space-science-pack", 16, 24},
 
 		--early-game:
+		{3, -0.1, 0.2, false, "railgun-dart", 2, 4},
 		{3, -0.1, 0.1, true, "wooden-chest", 8, 40},
 		{5, -0.1, 0.1, true, "burner-inserter", 8, 20},
 		{1, -0.2, 0.2, true, "offshore-pump", 1, 3},
@@ -97,6 +97,7 @@ local function treasure_chest_loot(difficulty, planet)
 		{5, -0.8, 0.8, true, "transport-belt", 15, 120},
 
 		--mid-game:
+		{6, 0.2, 0.5, false, "railgun-dart", 4, 8},
 		{5, -0.2, 0.7, true, "pipe", 30, 50},
 		{1, -0.2, 0.7, true, "pipe-to-ground", 4, 8},
 		{5, -0.2, 0.7, true, "iron-gear-wheel", 40, 160},
@@ -120,6 +121,7 @@ local function treasure_chest_loot(difficulty, planet)
 		{3, 0.2, 1, true, "chemical-plant", 1, 3},
 
 		--late-game:
+		{9, 0.5, 0.8, false, "railgun-dart", 8, 16},
 		{3, 0, 1.2, true, "rocket-launcher", 1, 1},
 		{5, 0, 1.2, true, "rocket", 16, 32},
 		{3, 0, 1.2, true, "land-mine", 16, 32},
@@ -147,6 +149,7 @@ local function treasure_chest_loot(difficulty, planet)
 		{2, 0.6, 1.4, true, "roboport", 1, 1},
 
 		-- super late-game:
+		{9, 0.8, 1.2, false, "railgun-dart", 12, 20},
 		{1, 0.9, 1.1, true, "power-armor-mk2", 1, 1},
 
 		--{2, 0, 1, , "computer", 1, 1},

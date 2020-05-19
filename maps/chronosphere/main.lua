@@ -308,11 +308,9 @@ local tick_minute_functions = {
 local function initiate_jump_countdown()
 	local objective = Chrono_table.get_table()
 	local difficulty = Difficulty.get().difficulty_vote_value
-	local length = Balance.generate_jump_countdown_length(difficulty)
 
 	objective.jump_countdown_start_time = objective.passivetimer
-	objective.jump_countdown_length = length
-	game.print({"chronosphere.message_initiate_jump_countdown", length}, {r=0.98, g=0.66, b=0.22})
+	game.print({"chronosphere.message_jump180"}, {r=0.98, g=0.66, b=0.22})
 end
 
 local function check_if_overstayed()
@@ -345,16 +343,16 @@ local function drain_accumulators()
 		local energy = acus[i].energy
 		if energy > 1010000 and objective.chronocharges < objective.chronochargesneeded then
 			acus[i].energy = acus[i].energy - 1000000
-	
+
 			objective.chronocharges = objective.chronocharges + 1
 
 			if objective.locomotive ~= nil and objective.locomotive.valid then
-		
+
 				local pos = objective.locomotive.position or {x=0,y=0}
 				local exterior_pollution = Balance.pollution_per_MJ_actively_charged(objective.chronojumps, difficulty, objective.upgrades[2])
 				game.surfaces[objective.active_surface_index].pollute(pos, exterior_pollution)
 				game.pollution_statistics.on_flow("locomotive", exterior_pollution)
-			
+
 				if objective.chronocharges == objective.chronochargesneeded then
 					check_if_overstayed()
 					initiate_jump_countdown()
@@ -363,19 +361,6 @@ local function drain_accumulators()
 		end
 	end
 end
-
-function Public.attempt_to_jump()
-	local objective = Chrono_table.get_table()
-	local difficulty = Difficulty.get().difficulty_vote_value
-	
-	if 100 * math_random() <= Balance.misfire_percentage_chance(difficulty) then
-		game.print({"chronosphere.message_jump_misfire"}, {r=0.98, g=0.66, b=0.22})
-		objective.jump_countdown_length = objective.jump_countdown_length + 15
-	else
-		Public.chronojump(nil)
-	end
-end
-
 
 function Public.get_total_accu_charge()
 	local objective = Chrono_table.get_table()
@@ -405,7 +390,7 @@ local function tick() --only even ticks trigger
 		end
 		--surface.force_generate_chunk_requests()
 	end
-	
+
 	if tick % 12 == 0 and objective.planet[1].type.id == 18 then
 		Tick_functions.spawn_poison()
 	end
@@ -418,7 +403,7 @@ local function tick() --only even ticks trigger
 
 	if objective.chronocharges < objective.chronochargesneeded and objective.planet[1].type.id ~= 17 then
 		local chronotimer_ticks_between_increase = math_floor(60 / objective.passive_chronocharge_rate / 2) * 2 --make sure it's even because you can't do things on odd ticks
-		
+
 		if tick % chronotimer_ticks_between_increase == 0 then
 			objective.chronocharges = objective.chronocharges + 1
 		end
@@ -426,19 +411,19 @@ local function tick() --only even ticks trigger
 
 	if tick % 30 == 0 then
 		local difficulty = Difficulty.get().difficulty_vote_value
-		
+
 		if tick % 60 == 0 and objective.planet[1].type.id ~= 17 then
 			objective.passivetimer = objective.passivetimer + 1
 
 			if objective.planet[1].type.id == 19 then
 				Tick_functions.dangertimer()
 			end
-			
+
 			Tick_functions.realtime_events()
 
 			if objective.locomotive ~= nil and objective.locomotive.valid then
 				if objective.jump_countdown_start_time == -1 then
-					if objective.chronocharges == objective.chronochargesneeded then
+					if objective.chronocharges >= objective.chronochargesneeded then
 						check_if_overstayed()
 						initiate_jump_countdown()
 					end
@@ -449,7 +434,7 @@ local function tick() --only even ticks trigger
 					game.pollution_statistics.on_flow("locomotive", exterior_pollution)
 				else
 					if objective.passivetimer == objective.jump_countdown_start_time + objective.jump_countdown_length then
-						Public.attempt_to_jump()
+						Public.chronojump(nil)
 					else
 						local pos = objective.locomotive.position or {x=0,y=0}
 						local exterior_pollution = Balance.countdown_pollution_rate(objective.chronojumps, Difficulty.get().difficulty_vote_value)
@@ -464,7 +449,7 @@ local function tick() --only even ticks trigger
 		if tick % 60 == 0 then
 			drain_accumulators()
 		end
-		
+
 		if tick % 120 == 0 then
 			Tick_functions.move_items()
 			Tick_functions.output_items()
@@ -486,11 +471,11 @@ local function tick() --only even ticks trigger
 				Tick_functions.offline_players()
 			end
 		end
-		
+
 		if tick % 1800 == 900 and objective.jump_countdown_start_time ~= -1 then
 			Ai.perform_main_attack()
 		end
-		
+
 		local key = tick % 3600
 		if tick_minute_functions[key] then tick_minute_functions[key]() end
 		if objective.game_reset_tick then
@@ -523,7 +508,7 @@ local function on_init()
 	mgs.height = 16
 	game.surfaces["nauvis"].map_gen_settings = mgs
 	game.surfaces["nauvis"].clear()
-	
+
     for k, v in pairs(Balance.player_ammo_damage_modifiers()) do
         game.forces['player'].set_ammo_damage_modifier(k, v)
     end
@@ -696,13 +681,13 @@ end
 
 local function on_research_finished(event)
 	local difficulty = Difficulty.get().difficulty_vote_value
-	
+
 	Event_functions.flamer_nerfs()
 	Event_functions.mining_buffs(event)
 
 	local research = event.research
 	local p_force = research.force
-	
+
     for _, e in ipairs(research.effects) do
 		local t = e.type
         if t == 'ammo-damage' then
@@ -717,7 +702,7 @@ local function on_research_finished(event)
 		elseif t == 'gun-speed' then
 			local category = e.ammo_category
 			local factor = Balance.player_gun_speed_modifiers()[category] or 0
-	
+
 			if factor then
 				local current_m = p_force.get_gun_speed_modifier(category)
 				local m = e.modifier
@@ -725,12 +710,12 @@ local function on_research_finished(event)
 			end
 		end
 	end
-	
+
 end
 
 local function on_entity_damaged(event)
     local difficulty = Difficulty.get().difficulty_vote_value
-	
+
 	if not event.entity.valid then return end
 	protect_entity(event)
 	if not event.entity.valid then return end
@@ -752,7 +737,7 @@ local function on_entity_damaged(event)
   if not weapon.valid_for_read or not ammo.valid_for_read then return end
 	if weapon.name ~= "pistol" then return end
 	if ammo.name ~= "firearm-magazine" and ammo.name ~= "piercing-rounds-magazine" and ammo.name ~= "uranium-rounds-magazine" then return end
-  if not event.entity.valid then return end 
+  if not event.entity.valid then return end
 	event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier(difficulty) - 1), player.force, "impact", player)
 end
 

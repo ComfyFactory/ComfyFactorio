@@ -86,6 +86,7 @@ local function update_upgrades_gui(player)
 	if not player.gui.screen["gui_upgrades"] then return end
 	local upgrades = Upgrades.upgrades()
 	local frame = player.gui.screen["gui_upgrades"]
+	local switch = frame["quest_switch"].switch_state
 
 	for i = 1, #upgrades, 1 do
 		local t = frame["upgrades_table" .. i]
@@ -108,17 +109,28 @@ local function update_upgrades_gui(player)
 				t[index .. "-" .. i].number = item.count
 			end
 		end
+		if upgrades[i].quest then
+			if switch == "left" then
+				t.visible = false
+			else
+				t.visible = true
+			end
+		else
+			if switch == "right" then
+				t.visible = false
+			else
+				t.visible = true
+			end
+		end
 	end
 end
-
-
 
 local function planet_gui(player)
 	local objective = Chrono_table.get_table()
 	if player.gui.screen["gui_planet"] then player.gui.screen["gui_planet"].destroy() return end
 	local planet = objective.planet[1]
 	local evolution = game.forces["enemy"].evolution_factor
-	local frame = player.gui.screen.add{type = "frame", name = "gui_planet", caption = "Planet Info", direction = "vertical"}
+	local frame = player.gui.screen.add{type = "frame", name = "gui_planet", caption = {"chronosphere.gui_planet_button"}, direction = "vertical"}
   frame.location = {x = 650, y = 45}
   frame.style.minimal_height = 300
   frame.style.maximal_height = 500
@@ -142,7 +154,7 @@ local function planet_gui(player)
 	frame.add({type = "label", name = "planet_biters3", caption = {"chronosphere.gui_planet_4_1", objective.overstaycount * 2.5, objective.overstaycount * 10}})
 	frame.add({type = "line"})
 	frame.add({type = "label", name = "overstay_time", caption = {"chronosphere.gui_planet_7", "",""}})
-	
+
 	frame.add({type = "line"})
 
 	local close = frame.add({type = "button", name = "close_planet", caption = "Close"})
@@ -181,26 +193,28 @@ local function update_planet_gui(player)
 
 	frame["planet_biters3"].caption = {"chronosphere.gui_planet_4_1", objective.overstaycount * 2.5, objective.overstaycount * 10}
 	frame["planet_time"].caption = {"chronosphere.gui_planet_5", planet.day_speed.name}
-	
+
 	if objective.jump_countdown_start_time == -1 then
 		if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
 			local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
 			if time_until_overstay < 0 then
-				frame["overstay_time"].caption = {"chronosphere.gui_overstayed","",""}
+				frame["overstay_time"].caption = {"chronosphere.gui_overstayed"}
 			else
 				frame["overstay_time"].caption = {"chronosphere.gui_planet_6", math_floor(time_until_overstay / 60), math_floor(time_until_overstay % 60)}
 			end
 		else
-			frame["overstay_time"].caption = {"chronosphere.gui_planet_7",Balance.jumps_until_overstay_is_on(difficulty),""}
+			frame["overstay_time"].caption = {"chronosphere.gui_planet_7",Balance.jumps_until_overstay_is_on(difficulty)}
 		end
 	else
 		if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
 			local overstayed = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate < objective.jump_countdown_start_time)
-			if overstayed < 0 then
-				frame["overstay_time"].caption = {"chronosphere.gui_overstayed","",""}
+			if overstayed then
+				frame["overstay_time"].caption = {"chronosphere.gui_overstayed"}
 			else
-				frame["overstay_time"].caption = {"chronosphere.gui_not_overstayed","",""}
+				frame["overstay_time"].caption = {"chronosphere.gui_not_overstayed"}
 			end
+		else
+			frame["overstay_time"].caption = {"chronosphere.gui_planet_7",Balance.jumps_until_overstay_is_on(difficulty)}
 		end
 	end
 
@@ -208,7 +222,7 @@ end
 
 local function ETA_seconds_until_full(power, storedbattery) -- in watts and joules
 	local objective = Chrono_table.get_table()
-	
+
 	local n = objective.chronochargesneeded - objective.chronocharges
 
 	if n <= 0 then return 0
@@ -250,7 +264,7 @@ function Public_gui.update_gui(player)
 		gui.charger_value.caption =  math_floor(objective.chronocharges/100000)/10 .. " / " .. math_floor(objective.chronochargesneeded/100000)/10 .. " TJ"
 	end
 	]]
-	
+
 	if (objective.chronochargesneeded<100000) then
 		gui.charger_value.caption =  string.format("%.2f", objective.chronocharges/1000) .. " / " .. math_floor(objective.chronochargesneeded)/1000 .. " GJ"
 	else
@@ -266,12 +280,12 @@ function Public_gui.update_gui(player)
 				powerobserved = (history[2] - history[1]) / 54 * 60
 				storedbattery = history[2]
 			end
-			
+
 			seconds_ETA = ETA_seconds_until_full(powerobserved, storedbattery)
-	
+
 			gui.timer.caption = {"chronosphere.gui_3"}
 			gui.timer_value.caption = math_floor(seconds_ETA / 60) .. "m" .. seconds_ETA % 60 .. "s"
-			
+
 				if objective.planet[1].type.id == 19 and objective.passivetimer > 31 then
 					local nukecase = objective.dangertimer
 					gui.timer2.caption = {"chronosphere.gui_3_2"}
@@ -308,7 +322,7 @@ function Public_gui.update_gui(player)
 		end
 	else
 		gui.timer.caption = {"chronosphere.gui_3_3"}
-		gui.timer_value.caption = objective.passivetimer - objective.jump_countdown_start_time .. " / " .. objective.jump_countdown_length
+		gui.timer_value.caption = 180 - (objective.passivetimer - objective.jump_countdown_start_time) .. "s"
 		gui.timer.tooltip = ""
 		gui.timer_value.tooltip = ""
 		gui.timer2.caption = ""
@@ -332,6 +346,7 @@ local function upgrades_gui(player)
   frame.style.maximal_width = 630
   frame.add({type = "label", caption = {"chronosphere.gui_upgrades_1"}})
 	frame.add({type = "label", caption = {"chronosphere.gui_upgrades_2"}})
+	frame.add({type = "switch", name = "quest_switch", switch_state = "left", allow_none_state = false, left_label_caption = {"chronosphere.gui_upgrades_switch_left"}, right_label_caption = {"chronosphere.gui_upgrades_switch_right"}})
 
 	for i = 1, #upgrades, 1 do
 		local upg_table = frame.add({type = "table", name = "upgrades_table" .. i, column_count = 10})
@@ -340,7 +355,7 @@ local function upgrades_gui(player)
 		name.style.width = 200
 
 		local maxed = upg_table.add({type = "sprite-button", name = "maxed" .. i, enabled = false, sprite = "virtual-signal/signal-check", tooltip = "Upgrade maxed!", visible = false})
-		local jumps = upg_table.add({type = "sprite-button", name = "jump_req" .. i, enabled = false, sprite = "virtual-signal/signal-J", number = upgrades[i].jump_limit, tooltip = "Required jump number", visible = true})
+		local jumps = upg_table.add({type = "sprite-button", name = "jump_req" .. i, enabled = false, sprite = "virtual-signal/signal-J", number = upgrades[i].jump_limit, tooltip = {"chronosphere.gui_upgrades_jumps"}, visible = true})
 
 		for index,item in pairs(upgrades[i].cost) do
 			costs[index] = upg_table.add({type = "sprite-button", name = index .. "-" .. i, number = item.count, sprite = item.sprite, enabled = false, tooltip = {item.tt .. "." .. item.name}, visible = true})
@@ -358,6 +373,7 @@ local function upgrades_gui(player)
 				costs[index].visible = true
 			end
 		end
+		if upgrades[i].quest then upg_table.visible = false end
 	end
   frame.add({type = "button", name = "close_upgrades", caption = "Close"})
   return costs

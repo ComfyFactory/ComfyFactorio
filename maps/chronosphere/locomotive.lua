@@ -63,7 +63,7 @@ function Public.locomotive_spawn(surface, position, wagons)
 		 	xi = 0
 		end
 
-		local comfychest = surface.create_entity({name = "steel-chest", position = {position.x - 2 + xi, position.y - 2 + yi + i}, force = "player"})
+		local comfychest = surface.create_entity({name = "blue-chest", position = {position.x - 2 + xi, position.y - 2 + yi + i}, force = "player"})
 		comfychest.minable = false
 		--comfychest.destructible = false
 		if not objective.comfychests[i] then
@@ -257,7 +257,7 @@ function Public.create_wagon_room()
 		for i = 1, 12, 1 do
 			local step = math_floor((i-1)/4)
 			local y = -131 + i + step * 128 - step * 4
-			local e = surface.create_entity({name = "steel-chest", position = {x,y}, force = "player", create_build_effect_smoke = false})
+			local e = surface.create_entity({name = "red-chest", position = {x,y}, force = "player", create_build_effect_smoke = false})
 			e.destructible = false
 			e.minable = false
 			table.insert(objective.comfychests2, e)
@@ -302,7 +302,7 @@ function Public.create_wagon_room()
 	local market = surface.create_entity({name = "market", position = {-29, height * -0.5 + 4}, force="neutral", create_build_effect_smoke = false})
 	market.minable = false
 	market.destructible = false
-  local repairchest = surface.create_entity({name = "steel-chest", position = {-24, height * -0.5 + 3}, force = "player"})
+  local repairchest = surface.create_entity({name = "blue-chest", position = {-24, height * -0.5 + 3}, force = "player"})
   repairchest.minable = false
   repairchest.destructible = false
   objective.upgradechest[0] = repairchest
@@ -319,7 +319,7 @@ function Public.create_wagon_room()
   }
   local upgrades = Upgrades.upgrades()
   for i = 1, #upgrades, 1 do
-    local e = surface.create_entity({name = "steel-chest", position = {-21 + i, height * -0.5 + 3}, force = "player"})
+    local e = surface.create_entity({name = "blue-chest", position = {-21 + i, height * -0.5 + 3}, force = "player"})
     e.minable = false
     e.destructible = false
     objective.upgradechest[i] = e

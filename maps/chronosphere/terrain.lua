@@ -453,8 +453,8 @@ local function process_biter_position(p, seed, tiles, entities, treasure, planet
     if math_random(1,52 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 150 + handicap then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
 
   end
-  if scrapyard > -0.05 - 0.01 * ore_size and scrapyard < 0.05 + 0.01 * ore_size  then
-    if math_random(1,20) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
+  if scrapyard > -0.08 - 0.01 * ore_size and scrapyard < 0.08 + 0.01 * ore_size  then
+    if math_random(1,30) == 1 then entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p} end
   end
   if scrapyard + 0.5 > -0.1  - 0.1 * planet[1].type.moisture and scrapyard + 0.5 < 0.1 +  0.1 * planet[1].type.moisture  then
     local treetypes = tree_raffle[math_random(1, s_tree_raffle)]

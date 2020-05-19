@@ -75,7 +75,7 @@ function Public_terrain.fish_market(surface, left_top)
     alignment = "center",
     scale_with_zoom = false
   }
-  local fishchest = surface.create_entity({name = "steel-chest", force = "player", position = {x = left_top.x + 11, y = left_top.y + 16}})
+  local fishchest = surface.create_entity({name = "blue-chest", force = "player", position = {x = left_top.x + 11, y = left_top.y + 16}})
   fishchest.destructible = false
   fishchest.minable = false
   fishchest.operable = false
