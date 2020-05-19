@@ -20,10 +20,6 @@ function Public.add(surface, position, chest)
         budget = budget * 4
         chest = 'crash-site-chest-' .. math_random(1, 2)
     end
-    if math_random(1, 256) == 1 then
-        budget = budget * 4
-        chest = 'crash-site-chest-' .. math_random(1, 2)
-    end
 
     budget = math_floor(budget) + 1
 
@@ -48,10 +44,6 @@ function Public.add_rare(surface, position, chest, magic)
     budget = budget * math_random(25, 175) * 0.01
 
     if math_random(1, 128) == 1 then
-        budget = budget * 6
-        chest = 'crash-site-chest-' .. math_random(1, 2)
-    end
-    if math_random(1, 256) == 1 then
         budget = budget * 6
         chest = 'crash-site-chest-' .. math_random(1, 2)
     end

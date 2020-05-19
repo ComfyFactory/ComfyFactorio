@@ -35,7 +35,7 @@ end
 local gain_info_tooltip = 'XP gain from mining, moving, crafting, repairing and combat.'
 local reset_tooltip = 'ONE-TIME reset if you picked the wrong path (this will keep your points)'
 local reset_not_available =
-    'ONE-TIME reset if you picked the wrong path (this will keep your points)\nAvailable after level 20.'
+    'ONE-TIME reset if you picked the wrong path (this will keep your points)\nAvailable after level 50.'
 
 local rpg_t = {}
 local rpg_frame_icons = {
@@ -142,6 +142,24 @@ local function level_up_effects(player)
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
 end
 
+local function xp_effects(player)
+    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+    player.surface.create_entity(
+        {name = 'flying-text', position = position, text = '+XP', color = level_up_floating_text_color}
+    )
+    local b = 0.75
+    for a = 1, 5, 1 do
+        local p = {
+            (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1),
+            position.y + (b * -1 + math_random(0, b * 20) * 0.1)
+        }
+        player.surface.create_entity(
+            {name = 'flying-text', position = p, text = '✚', color = {255, math_random(0, 100), 0}}
+        )
+    end
+    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+end
+
 local function get_melee_modifier(player)
     return (rpg_t[player.index].strength - 10) * 0.10
 end
@@ -190,13 +208,14 @@ local function update_player_stats(player)
     local strength = rpg_t[player.index].strength - 10
     player_modifiers[player.index].character_inventory_slots_bonus['rpg'] = math.round(strength * 0.2, 3)
     player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math.round(strength * 0.008, 3)
+    player_modifiers[player.index].character_maximum_following_robot_count_bonus['rpg'] = math.round(strength * 0.2, 3)
 
     local magic = rpg_t[player.index].magic - 10
     local v = magic * 0.22
-    player_modifiers[player.index].character_build_distance_bonus['rpg'] = math.round(v, 3)
-    player_modifiers[player.index].character_item_drop_distance_bonus['rpg'] = math.round(v, 3)
-    player_modifiers[player.index].character_reach_distance_bonus['rpg'] = math.round(v, 3)
-    player_modifiers[player.index].character_loot_pickup_distance_bonus['rpg'] = math.round(v * 0.5, 3)
+    player_modifiers[player.index].character_build_distance_bonus['rpg'] = math.round(v * 0.25, 3)
+    player_modifiers[player.index].character_item_drop_distance_bonus['rpg'] = math.round(v * 0.25, 3)
+    player_modifiers[player.index].character_reach_distance_bonus['rpg'] = math.round(v * 0.25, 3)
+    player_modifiers[player.index].character_loot_pickup_distance_bonus['rpg'] = math.round(v * 0.22, 3)
     player_modifiers[player.index].character_item_pickup_distance_bonus['rpg'] = math.round(v * 0.25, 3)
     player_modifiers[player.index].character_resource_reach_distance_bonus['rpg'] = math.round(v * 0.15, 3)
 
@@ -354,7 +373,7 @@ local function draw_gui(player, forced)
     local w1 = 85
     local w2 = 63
 
-    local tip = 'Increases inventory slots and mining speed.\nIncreases melee damage.'
+    local tip = 'Increases inventory slots, mining speed.\nIncreases melee damage and amount of robot followers.'
     local e = add_gui_description(tt, 'STRENGTH', w1)
     e.tooltip = tip
     local e = add_gui_stat(tt, rpg_t[player.index].strength, w2)
@@ -572,14 +591,9 @@ local function level_up(player)
 end
 
 function Public.gain_xp(player, amount)
-    local fee
-    if amount < 1.1 then
-        fee = 0
-    else
-        fee = amount * 0.3
-        rpg_t.global_pool = rpg_t.global_pool + fee
-    end
-    amount = math_floor(amount, 3) - fee
+    local fee = amount * 0.3
+    rpg_t.global_pool = rpg_t.global_pool + fee
+    amount = math_round(amount, 3) - fee
     rpg_t[player.index].xp = rpg_t[player.index].xp + amount
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
     if player.gui.left.rpg then
@@ -615,27 +629,16 @@ local function global_pool()
     local share = pool / player_count
     rpg_t.global_pool = 0
     for _, p in pairs(game.connected_players) do
-        if rpg_t[p.index].level < 10 and p.online_time < 50000 then
-            local s = share * 2
-            p.create_local_flying_text {
-                text = '+' .. math_floor(s) .. ' xp',
-                position = p.position,
-                color = xp_floating_text_color,
-                time_to_live = 240,
-                speed = 1
-            }
-            Public.gain_xp(p, s * 2)
-        else
-            p.create_local_flying_text {
-                text = '+' .. math_floor(share) .. ' xp',
-                position = p.position,
-                color = xp_floating_text_color,
-                time_to_live = 240,
-                speed = 1
-            }
-            rpg_t[p.index].xp_since_last_floaty_text = 0
-            Public.gain_xp(p, share)
-        end
+        p.create_local_flying_text {
+            text = '+' .. math_floor(share) .. ' xp',
+            position = p.position,
+            color = xp_floating_text_color,
+            time_to_live = 240,
+            speed = 1
+        }
+        rpg_t[p.index].xp_since_last_floaty_text = 0
+        Public.gain_xp(p, share)
+        xp_effects(p)
     end
     return
 end
@@ -651,6 +654,7 @@ function Public.rpg_reset_player(player, one_time_reset)
     if one_time_reset then
         local total = rpg_t[player.index].total
         local old_level = rpg_t[player.index].level
+        local old_points_to_distribute = rpg_t[player.index].points_to_distribute
         local old_xp = rpg_t[player.index].xp
         rpg_t[player.index] = {
             level = 1,
@@ -668,7 +672,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             gui_refresh_delay = 0,
             last_mined_entity_position = {x = 0, y = 0}
         }
-        rpg_t[player.index].points_to_distribute = total
+        rpg_t[player.index].points_to_distribute = old_points_to_distribute + total
         rpg_t[player.index].xp = old_xp
         rpg_t[player.index].level = old_level
     else
@@ -730,7 +734,7 @@ local function on_gui_click(event)
     end
 
     if element.caption == 'false' then
-        if rpg_t[player.index].level <= 19 then
+        if rpg_t[player.index].level <= 49 then
             return
         end
         rpg_t[player.index].reset = true
@@ -1092,7 +1096,7 @@ local function on_player_repaired_entity(event)
     if not player.character then
         return
     end
-    Public.gain_xp(player, 0.40)
+    Public.gain_xp(player, 0.05)
 end
 
 local function on_player_rotated_entity(event)
@@ -1185,7 +1189,7 @@ local function on_pre_player_mined_item(event)
     if entity.type == 'resource' then
         xp_amount = 0.5 * distance_multiplier
     else
-        xp_amount = (3 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
+        xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
     end
 
     Public.gain_xp(player, xp_amount)
@@ -1199,7 +1203,11 @@ local function on_player_crafted_item(event)
     if not player.valid then
         return
     end
-    local amount = math_floor(math_random(0.40, 4))
+    local distance_multiplier = math_floor(math_sqrt(player.position.x ^ 2 + player.position.y ^ 2)) * 0.0005 + 1
+    local amount = 0.30 * distance_multiplier
+    if amount >= 2 then
+        amount = 2
+    end
     Public.gain_xp(player, event.recipe.energy * amount)
 end
 

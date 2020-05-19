@@ -22,10 +22,10 @@ end
 function Public.get_items()
     local this = WPT.get()
 
-    local threat_cost = 20000
-    local health_cost = 15000 * (1 + this.health_upgrades)
-    local aura_cost = 15000 * (1 + this.aura_upgrades)
-    local xp_point_boost_cost = 15000 * (1 + this.xp_points_upgrade)
+    local threat_cost = 100000
+    local health_cost = 30000 * (1 + this.health_upgrades)
+    local aura_cost = 30000 * (1 + this.aura_upgrades)
+    local xp_point_boost_cost = 30000 * (1 + this.xp_points_upgrade)
 
     local items = {}
     items['clear_threat_level'] = {
@@ -483,6 +483,8 @@ local function gui_click(event)
             {r = 0.98, g = 0.66, b = 0.22}
         )
         this.locomotive_max_health = this.locomotive_max_health + 2500
+        local m = this.locomotive_health / this.locomotive_max_health
+        this.locomotive.health = 1000 * m
         this.train_upgrades = this.train_upgrades + 1
         this.health_upgrades = this.health_upgrades + 1
         rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)

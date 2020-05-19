@@ -11,7 +11,7 @@ local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 Public.level_depth = 704
-Public.level_width = 400
+Public.level_width = 448
 local worm_level_modifier = 0.18
 local average_number_of_wagons_per_level = 2
 local chunks_per_level = ((Public.level_depth - 32) / 32) ^ 2
@@ -236,8 +236,8 @@ local function wall(data)
     end
 end
 
-local function process_level_11_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_11_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -289,8 +289,8 @@ local function process_level_11_position(data)
     tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
 end
 
-local function process_level_10_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_10_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -340,8 +340,8 @@ local function process_level_10_position(data)
     tiles[#tiles + 1] = {name = 'grass-2', position = p}
 end
 
-local function process_level_9_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_9_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -395,8 +395,8 @@ local function process_level_9_position(data)
 end
 
 --SCRAPYARD
-local function process_level_8_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_8_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -481,8 +481,8 @@ local function process_level_8_position(data)
     end
 end
 
-local function process_level_7_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_7_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -582,8 +582,8 @@ local function process_level_7_position(data)
     end
 end
 
-local function process_level_6_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_6_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -640,8 +640,8 @@ local function process_level_6_position(data)
     end
 end
 
-local function process_level_5_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_5_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -699,8 +699,8 @@ local function process_level_5_position(data)
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
-local function process_level_4_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_4_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -798,8 +798,8 @@ local function process_level_4_position(data)
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
-local function process_level_3_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_3_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -926,8 +926,8 @@ local function process_level_3_position(data)
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
-local function process_level_2_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_2_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -1039,8 +1039,8 @@ local function process_level_2_position(data)
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
-local function process_level_1_position(data)
-    local p = {x = data.x, y = data.y}
+local function process_level_1_position(x, y, data)
+    local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -1172,7 +1172,7 @@ local function is_out_of_map(p)
     return true
 end
 
-local function process_bits(data)
+local function process_bits(x, y, data)
     local left_top_y = data.area.left_top.y
     local index = math_floor((math_abs(left_top_y / Public.level_depth)) % 11) + 1
     local process_level = Public.levels[index]
@@ -1180,7 +1180,7 @@ local function process_bits(data)
         process_level = Public.levels[#Public.levels]
     end
 
-    process_level(data)
+    process_level(x, y, data)
 end
 
 local function border_chunk(data)
@@ -1297,25 +1297,26 @@ local function out_of_map(data)
     end
 end
 
-function Public.heavy_functions(_, _, data)
+function Public.heavy_functions(x, y, data)
     local area = data.area
     local top_y = area.left_top.y
     local surface = data.surface
     local p = {x = data.x, y = data.y}
     local oom = surface.get_tile(p).name == 'out-of-map'
 
-    data.seed = data.surface.map_gen_settings.seed
+    if not data.seed then
+        data.seed = data.surface.map_gen_settings.seed
+    end
+    if oom then
+        return
+    end
 
     if top_y % Public.level_depth == 0 and top_y < 0 then
         return
     end
 
-    if oom then
-        return
-    end
-
     if top_y < 0 then
-        process_bits(data)
+        process_bits(x, y, data)
     end
 end
 
@@ -1338,13 +1339,13 @@ local function on_chunk_generated(event)
         left_top = left_top
     }
 
-    if left_top.y % Public.level_depth == 0 and left_top.y < 0 then
-        WPT.get().left_top = data.left_top
-        wall(data)
+    if oom then
         return
     end
 
-    if oom then
+    if left_top.y % Public.level_depth == 0 and left_top.y < 0 then
+        WPT.get().left_top = data.left_top
+        wall(data)
         return
     end
 

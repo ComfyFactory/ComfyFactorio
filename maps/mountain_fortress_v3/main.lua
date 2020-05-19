@@ -13,6 +13,7 @@ require 'modules.spawners_contain_biters'
 require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.pistol_buffs'
+require 'modules.mineable_wreckage_yields_scrap'
 
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Server = require 'utils.server'
@@ -43,7 +44,6 @@ local function disable_tech()
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['railway'].researched = true
     game.forces.player.technologies['land-mine'].enabled = false
-    --Balance.init_enemy_weapon_damage()
 end
 
 local function set_difficulty()
@@ -174,6 +174,12 @@ function Public.reset_map()
     local wave_defense_table = WD.get_table()
     local get_score = Score.get_table()
 
+    for _, player in pairs(game.players) do
+        if player.controller_type == defines.controllers.editor then
+            player.toggle_map_editor()
+        end
+    end
+
     if not this.active_surface_index then
         this.active_surface_index = Settings.active_surface_index
     else
@@ -189,10 +195,14 @@ function Public.reset_map()
 
     local surface = game.surfaces[this.active_surface_index]
 
+    Explosives.set_surface_whitelist({[surface.name] = true})
+
     surface.request_to_generate_chunks({-17, 47}, 1)
     surface.force_generate_chunk_requests()
 
-    game.forces.player.set_spawn_position({-27, 40}, surface)
+    game.forces.player.set_spawn_position({-27, 25}, surface)
+    game.forces.enemy.set_ammo_damage_modifier('bullet', 1)
+    game.forces.enemy.set_turret_attack_modifier('gun-turret', 1)
 
     global.bad_fire_history = {}
     global.friendly_fire_history = {}
@@ -205,7 +215,7 @@ function Public.reset_map()
     Collapse.set_kill_entities(false)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
-    Collapse.set_max_line_size(Terrain.level_depth)
+    Collapse.set_max_line_size(Terrain.level_width)
     Collapse.set_surface(surface)
     Collapse.set_position({0, 162})
     Collapse.set_direction('north')
@@ -284,7 +294,7 @@ local function on_player_joined_game(event)
     end
 
     if not this.players[player.index].first_join then
-        player.print('Greetings, newly joined ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
+        player.print('Greetings, ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
         player.print('Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
         this.players[player.index].first_join = true
     end
@@ -314,33 +324,49 @@ local function on_pre_player_left_game(event)
         player.toggle_map_editor()
     end
     if player.character then
-        this.offline_players[#this.offline_players + 1] = {index = event.player_index, tick = game.tick}
+        this.offline_players[#this.offline_players + 1] = {
+            index = event.player_index,
+            name = player.name,
+            tick = game.tick
+        }
     end
 end
 
-local function offline_players()
+local function remove_offline_players()
     local this = WPT.get()
-    local players = this.offline_players
-    local surface = game.surfaces[this.active_surface_index]
-    if #players > 0 then
+    local offline_players = WPT.get('offline_players')
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+    local keeper = '[color=blue]Cleaner:[/color]'
+    local player_inv = {}
+    local items = {}
+    if #offline_players > 0 then
         local later = {}
-        for i = 1, #players, 1 do
-            if players[i] and game.players[players[i].index] and game.players[players[i].index].connected then
-                players[i] = nil
+        for i = 1, #offline_players, 1 do
+            if
+                offline_players[i] and game.players[offline_players[i].index] and
+                    game.players[offline_players[i].index].connected
+             then
+                this.offline_players[i] = nil
             else
-                if players[i] and players[i].tick < game.tick - 54000 then
-                    local player_inv = {}
-                    local items = {}
-                    player_inv[1] = game.players[players[i].index].get_inventory(defines.inventory.character_main)
-                    player_inv[2] = game.players[players[i].index].get_inventory(defines.inventory.character_armor)
-                    player_inv[3] = game.players[players[i].index].get_inventory(defines.inventory.character_guns)
-                    player_inv[4] = game.players[players[i].index].get_inventory(defines.inventory.character_ammo)
-                    player_inv[5] = game.players[players[i].index].get_inventory(defines.inventory.character_trash)
+                if offline_players[i] and offline_players[i].tick < game.tick - 54000 then
+                    local name = offline_players[i].name
+                    player_inv[1] =
+                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
+                    player_inv[2] =
+                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_armor)
+                    player_inv[3] =
+                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_guns)
+                    player_inv[4] =
+                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_ammo)
+                    player_inv[5] =
+                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_trash)
+                    local pos = game.forces.player.get_spawn_position(surface)
                     local e =
                         surface.create_entity(
                         {
                             name = 'character',
-                            position = game.forces.player.get_spawn_position(surface),
+                            position = pos,
                             force = 'neutral'
                         }
                     )
@@ -360,7 +386,11 @@ local function offline_players()
                                 inv.insert(items[item])
                             end
                         end
-                        game.print({'chronosphere.message_accident'}, {r = 0.98, g = 0.66, b = 0.22})
+                        game.print(
+                            keeper .. ' ' .. name .. ' has left his goodies! [gps=' .. pos.x .. ',' .. pos.y .. ']',
+                            {r = 0.98, g = 0.66, b = 0.22}
+                        )
+
                         e.die('neutral')
                     else
                         e.destroy()
@@ -371,16 +401,16 @@ local function offline_players()
                             player_inv[ii].clear()
                         end
                     end
-                    players[i] = nil
+                    this.offline_players[i] = nil
                 else
-                    later[#later + 1] = players[i]
+                    later[#later + 1] = offline_players[i]
                 end
             end
         end
-        players = {}
+        this.offline_players = {}
         if #later > 0 then
             for i = 1, #later, 1 do
-                players[#players + 1] = later[i]
+                this.offline_players[#offline_players + 1] = later[i]
             end
         end
     end
@@ -454,11 +484,12 @@ local on_tick = function()
         end
 
         if game.tick % 1800 == 0 then
-            local position = surface.find_non_colliding_position('stone-furnace', Collapse.get_position(), 128, 1)
+            local collapse_pos = Collapse.get_position()
+            local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)
             if position then
                 wave_defense_table.spawn_position = position
             end
-            offline_players()
+            remove_offline_players()
             Entities.set_scores()
         end
         is_locomotive_valid()

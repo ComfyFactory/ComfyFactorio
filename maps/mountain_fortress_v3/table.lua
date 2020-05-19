@@ -4,7 +4,8 @@ local Event = require 'utils.event'
 
 local this = {
     disable_reset = false,
-    players = {}
+    players = {},
+    offline_players = {}
 }
 local Public = {}
 

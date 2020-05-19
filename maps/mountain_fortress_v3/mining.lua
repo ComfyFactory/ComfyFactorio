@@ -7,9 +7,10 @@ local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
 
-local valid_types = {
-    ['tree'] = false,
-    ['simple-entity'] = true
+local valid_rocks = {
+    ['sand-rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-huge'] = true
 }
 
 local rock_yield = {
@@ -131,13 +132,8 @@ local function randomness(data)
     local harvest
     local harvest_amount
 
-    if entity.type == 'simple-entity' then
-        harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
-        harvest_amount = get_amount(data)
-    else
-        harvest = 'wood'
-        harvest_amount = get_amount(data)
-    end
+    harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
+    harvest_amount = get_amount(data)
 
     local position = {x = entity.position.x, y = entity.position.y}
 
@@ -146,7 +142,7 @@ local function randomness(data)
             name = 'flying-text',
             position = position,
             text = '+' .. harvest_amount .. ' [img=item/' .. harvest .. ']',
-            color = {r = math_random(1, 200), g = 160, b = 30}
+            color = {r = 0, g = 127, b = 33}
         }
     )
 
@@ -170,7 +166,7 @@ function Public.on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    if not valid_types[entity.type] then
+    if not valid_rocks[entity.name] then
         return
     end
 

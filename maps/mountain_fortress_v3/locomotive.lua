@@ -29,8 +29,7 @@ local function validate_player(player)
 end
 
 local function property_boost(data)
-    local rng = math.random
-    local xp_floating_text_color = {r = rng(0, 250), g = 128, b = 0}
+    local xp_floating_text_color = {r = 0, g = 127, b = 33}
     local visuals_delay = 1800
     local this = data.this
     local locomotive_surface = data.locomotive_surface
@@ -48,7 +47,7 @@ local function property_boost(data)
         end
         if Public.contains_positions(player.position, area) or player.surface.index == locomotive_surface.index then
             local pos = player.position
-            RPG.gain_xp(player, 0.4 * (rpg[player.index].bonus + this.xp_points))
+            RPG.gain_xp(player, 0.3 * (rpg[player.index].bonus + this.xp_points))
 
             player.create_local_flying_text {
                 text = '+' .. '',
@@ -123,6 +122,15 @@ local function set_player_spawn_and_refill_fish()
     game.forces.player.set_spawn_position({x = position.x, y = position.y}, this.locomotive_cargo.surface)
 end
 
+local function set_locomotive_health()
+    local this = WPT.get()
+    local locomotive_health = WPT.get('locomotive_health')
+    local locomotive_max_health = WPT.get('locomotive_max_health')
+    local m = locomotive_health / locomotive_max_health
+    this.locomotive.health = 1000 * m
+    rendering.set_text(this.health_text, 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health)
+end
+
 local function tick()
     if game.tick % 120 == 0 then
         Public.boost_players_around_train()
@@ -132,7 +140,7 @@ local function tick()
         if game.tick % 1800 == 0 then
             set_player_spawn_and_refill_fish()
         end
-
+        set_locomotive_health()
         fish_tag()
     end
 end

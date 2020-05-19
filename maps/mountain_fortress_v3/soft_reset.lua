@@ -23,7 +23,7 @@ local function reset_forces(new_surface, old_surface)
 end
 
 local function teleport_players(surface)
-    game.forces.player.set_spawn_position({-27, 40}, surface)
+    game.forces.player.set_spawn_position({-27, 25}, surface)
 
     for _, player in pairs(game.connected_players) do
         player.teleport(
