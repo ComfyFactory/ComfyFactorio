@@ -228,6 +228,7 @@ end
 Public.send_near_biters_to_objective = function()
   local objective = Chrono_table.get_table()
 	if objective.chronojumps == 0 then return end
+  if objective.passivetimer < 60 then return end
 	if not objective.locomotive then return end
 	if not objective.locomotive_cargo[1] then return end
   if not objective.locomotive_cargo[2] then return end
@@ -510,6 +511,7 @@ end
 Public.pre_main_attack = function()
   local objective = Chrono_table.get_table()
   if objective.chronojumps == 0 then return end
+  if objective.passivetimer < 60 then return end
 	local surface = game.surfaces[objective.active_surface_index]
   set_biter_raffle_table(surface)
 end
@@ -517,6 +519,7 @@ end
 Public.perform_main_attack = function()
   local objective = Chrono_table.get_table()
   if objective.chronojumps == 0 then return end
+  if objective.passivetimer < 60 then return end
 	local surface = game.surfaces[objective.active_surface_index]
 	create_attack_group(surface)
 end
@@ -524,6 +527,7 @@ end
 Public.wake_up_sleepy_groups = function()
   local objective = Chrono_table.get_table()
   if objective.chronojumps == 0 then return end
+  if objective.passivetimer < 60 then return end
   local entity
 	local unit_group
 	for _, biter in pairs(objective.active_biters) do

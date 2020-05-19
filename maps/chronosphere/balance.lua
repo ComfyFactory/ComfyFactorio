@@ -26,7 +26,7 @@ end
   
 local function difficulty_exp(difficulty,exponent)
 
-	return math_floor(math_pow(difficulty,exponent))
+	return math_pow(difficulty,exponent)
 end
 -- EXPONENT GUIDE
 -- exponent 1 -> {0.25, 0.50, 0.75, 1.00, 1.50, 3.00, 5.00}
@@ -115,7 +115,7 @@ function Public.post_jump_initial_pollution(jumps, difficulty)
 end
 
 
-function Public.pollution_spent_per_attack(difficulty) return 60 * difficulty_exp(difficulty, -1.4) end
+function Public.pollution_spent_per_attack(difficulty) return math_ceil(60 * difficulty_exp(difficulty, -1.4)) end
 
 function Public.defaultai_attack_pollution_consumption_modifier(difficulty) return 0.8 * difficulty_exp(difficulty, -1.4) end
 
