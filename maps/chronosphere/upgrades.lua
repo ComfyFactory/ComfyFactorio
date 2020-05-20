@@ -20,10 +20,8 @@ local function check_win()
             objective.game_reset_tick = game.tick + 18000
             objective.game_won = true
             objective.game_lost = true
-            objective.chronotimer = 200000000 - 300
-            for _, player in pairs(game.connected_players) do
-					player.play_sound{path="utility/game_won", volume_modifier=0.85}
-				end
+            objective.chronocharges = 200000000 - 300
+			game.play_sound{path="utility/game_won", volume_modifier=0.85}
             local message = {"chronosphere.message_game_won1"}
 						local message2 = "Number of delivered fish: " .. objective.mainscore
             game.print(message, {r=0.98, g=0.66, b=0.22})
@@ -43,7 +41,7 @@ local function upgrade_hp()
 	rendering.set_text(objective.health_text, "HP: " .. objective.health .. " / " .. objective.max_health)
 end
 
-local function spawn_acumulators()
+local function spawn_accumulators()
 	local objective = Chrono_table.get_table()
 	local x = -28
 	local y = -252
@@ -56,7 +54,7 @@ local function spawn_acumulators()
 		local acumulator = surface.create_entity({name = "accumulator", position = {x + 2 * i, y + yy}, force="player", create_build_effect_smoke = false})
 		acumulator.minable = false
 		acumulator.destructible = false
-		table.insert(objective.acumulators, acumulator)
+		table.insert(objective.accumulators, acumulator)
 	end
 end
 
@@ -167,7 +165,7 @@ local function process_upgrade(index)
 	if index == 1 then
 		upgrade_hp()
 	elseif index == 3 then
-		spawn_acumulators()
+		spawn_accumulators()
 	elseif index == 4 then
 		upgrade_pickup()
 	elseif index == 5 then
@@ -236,7 +234,7 @@ function Public.check_upgrades()
   if not objective.upgradechest then return end
 	if objective.game_lost == true then return end
 	check_all_upgrades()
-  if objective.planet[1].name.id == 17 then
+  if objective.planet[1].type.id == 17 then
     if objective.fishchest then
       check_win()
     end
@@ -251,7 +249,8 @@ function Public.trigger_poison()
     objective.poisontimeout = 120
     local objs = {objective.locomotive, objective.locomotive_cargo[1], objective.locomotive_cargo[2], objective.locomotive_cargo[3]}
     local surface = objective.surface
-    game.print({"chronosphere.message_poison_defense"}, {r=0.98, g=0.66, b=0.22})
+	game.print({"chronosphere.message_poison_defense"}, {r=0.98, g=0.66, b=0.22})
+	Server.to_discord_embed("Triggering poison defense. Let's kill everything!")
     for i = 1, 4, 1 do
       surface.create_entity({name = "poison-capsule", position = objs[i].position, force = "player", target = objs[i], speed = 1 })
     end

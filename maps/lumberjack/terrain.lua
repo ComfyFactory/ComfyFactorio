@@ -1,5 +1,4 @@
 local Biters = require 'modules.wave_defense.biter_rolls'
-local WD = require 'modules.wave_defense.table'
 local ICW = require 'maps.lumberjack.icw.main'
 local Event = require 'utils.event'
 local Market = require 'functions.basic_markets'
@@ -7,13 +6,12 @@ local create_entity_chain = require 'functions.create_entity_chain'
 local create_tile_chain = require 'functions.create_tile_chain'
 local map_functions = require 'tools.map_functions'
 local WPT = require 'maps.lumberjack.table'
-local shapes = require 'tools.shapes'
 local Loot = require 'maps.lumberjack.loot'
 local get_noise = require 'utils.get_noise'
+local simplex_noise = require 'utils.simplex_noise'.d2
 
 local Public = {}
 
-local insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
@@ -37,6 +35,95 @@ local rock_raffle = {
     'rock-big',
     'rock-huge'
 }
+
+local remnants = {
+    '1x2-remnants',
+    'accumulator-remnants',
+    'active-provider-chest-remnants',
+    'arithmetic-combinator-remnants',
+    'artillery-turret-remnants',
+    'artillery-wagon-remnants',
+    'big-electric-pole-remnants',
+    'big-remnants',
+    'boiler-remnants',
+    'buffer-chest-remnants',
+    'burner-inserter-remnants',
+    'burner-mining-drill-remnants',
+    'car-remnants',
+    'cargo-wagon-remnants',
+    'centrifuge-remnants',
+    'chemical-plant-remnants',
+    'constant-combinator-remnants',
+    'construction-robot-remnants',
+    'decider-combinator-remnants',
+    'defender-remnants',
+    'destroyer-remnants',
+    'distractor-remnants',
+    'electric-furnace-remnants',
+    'express-splitter-remnants',
+    'express-transport-belt-remnants',
+    'express-underground-belt-remnants',
+    'fast-inserter-remnants',
+    'fast-splitter-remnants',
+    'fast-transport-belt-remnants',
+    'fast-underground-belt-remnants',
+    'filter-inserter-remnants',
+    'flamethrower-turret-remnants',
+    'fluid-wagon-remnants',
+    'gate-remnants',
+    'gun-turret-remnants',
+    'heat-exchanger-remnants',
+    'heat-pipe-remnants',
+    'inserter-remnants',
+    'iron-chest-remnants',
+    'lab-remnants',
+    'lamp-remnants',
+    'laser-turret-remnants',
+    'locomotive-remnants',
+    'logistic-robot-remnants',
+    'long-handed-inserter-remnants',
+    'medium-electric-pole-remnants',
+    'medium-remnants',
+    'medium-small-remnants',
+    'nuclear-reactor-remnants',
+    'offshore-pump-remnants',
+    'oil-refinery-remnants',
+    'passive-provider-chest-remnants',
+    'pipe-remnants',
+    'pipe-to-ground-remnants',
+    'programmable-speaker-remnants',
+    'pump-remnants',
+    'pumpjack-remnants',
+    'radar-remnants',
+    'rail-chain-signal-remnants',
+    'rail-ending-remnants',
+    'rail-signal-remnants',
+    'requester-chest-remnants',
+    'roboport-remnants',
+    --'rocket-silo-remnants',
+    'small-electric-pole-remnants',
+    'small-remnants',
+    'solar-panel-remnants',
+    'splitter-remnants',
+    'stack-filter-inserter-remnants',
+    'stack-inserter-remnants',
+    'steam-engine-remnants',
+    'steam-turbine-remnants',
+    'steel-chest-remnants',
+    'steel-furnace-remnants',
+    'stone-furnace-remnants',
+    'storage-chest-remnants',
+    'storage-tank-remnants',
+    'substation-remnants',
+    'tank-remnants',
+    'train-stop-remnants',
+    'transport-belt-remnants',
+    'underground-belt-remnants',
+    'wall-remnants',
+    'wooden-chest-remnants'
+}
+
+local remnants_index = #remnants
 
 local scrap_entities = {
     'crash-site-assembling-machine-1-broken',
@@ -88,26 +175,31 @@ local scrap_buildings = {
     'steam-turbine',
     'steam-engine'
 }
+local decos_inside_forest = {'brown-asterisk', 'brown-asterisk', 'brown-carpet-grass', 'brown-hairy-grass'}
 local spawner_raffle = {'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner'}
 local trees = {'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree'}
 
-local trees_terrain = {
-    'tree-01',
-    'tree-02',
-    'tree-02-red',
-    'tree-03',
-    'tree-04',
-    'tree-05',
-    'tree-06',
-    'tree-06-brown',
-    'tree-07',
-    'tree-08',
-    'tree-08-brown',
-    'tree-08-red',
-    'tree-09',
-    'tree-09-brown',
-    'tree-09-red'
+local noises = {
+    ['forest_location'] = {
+        {modifier = 0.003, weight = 1},
+        {modifier = 0.01, weight = 0.25},
+        {modifier = 0.05, weight = 0.15},
+        {modifier = 0.1, weight = 0.05}
+    },
+    ['forest_density'] = {
+        {modifier = 0.01, weight = 1},
+        {modifier = 0.05, weight = 0.5},
+        {modifier = 0.1, weight = 0.025}
+    }
 }
+local function get_forest_noise(name, p, seed)
+    local noise = 0
+    for _, n in pairs(noises[name]) do
+        noise = noise + simplex_noise(p.x * n.modifier, p.y * n.modifier, seed) * n.weight
+        seed = seed + 10000
+    end
+    return noise
+end
 
 local function place_wagon(data)
     local surface = data.surface
@@ -181,7 +273,15 @@ local function place_random_scrap_entity(surface, position)
         return
     end
     if r < 75 then
-        local e = surface.create_entity({name = 'gun-turret', position = position, force = 'lumber_defense'})
+        local e =
+            surface.create_entity(
+            {
+                name = 'gun-turret',
+                position = position,
+                force = 'lumber_defense',
+                destructible = true
+            }
+        )
         if math_abs(position.y) < Public.level_depth * 2.5 then
             e.insert({name = 'piercing-rounds-magazine', count = math_random(64, 128)})
         else
@@ -223,6 +323,80 @@ local function get_oil_amount(p)
     return (math_abs(p.y) * 200 + 10000) * math_random(75, 125) * 0.01
 end
 
+local function forest_look(data, rock)
+    local p = {x = data.x, y = data.y}
+    local seed = data.seed
+    local surface = data.surface
+    local entities = data.entities
+    local noise_forest_location = get_forest_noise('forest_location', p, seed)
+
+    if noise_forest_location > 0.095 then
+        if noise_forest_location > 0.6 then
+            if math_random(1, 100) > 42 then
+                if rock then
+                    entities[#entities + 1] = {name = 'rock-big', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-08-brown', position = p}
+                end
+            end
+        else
+            if math_random(1, 100) > 42 then
+                if rock then
+                    entities[#entities + 1] = {name = 'rock-huge', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-01', position = p}
+                end
+            end
+        end
+        surface.create_decoratives(
+            {
+                check_collision = false,
+                decoratives = {
+                    {
+                        name = decos_inside_forest[math_random(1, #decos_inside_forest)],
+                        position = p,
+                        amount = math_random(1, 2)
+                    }
+                }
+            }
+        )
+        return
+    end
+
+    if noise_forest_location < -0.095 then
+        if noise_forest_location < -0.6 then
+            if math_random(1, 100) > 42 then
+                if rock then
+                    entities[#entities + 1] = {name = 'sand-rock-big', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-04', position = p}
+                end
+            end
+        else
+            if math_random(1, 100) > 42 then
+                if rock then
+                    entities[#entities + 1] = {name = 'rock-big', position = p}
+                else
+                    entities[#entities + 1] = {name = 'tree-02-red', position = p}
+                end
+            end
+        end
+        surface.create_decoratives(
+            {
+                check_collision = false,
+                decoratives = {
+                    {
+                        name = decos_inside_forest[math_random(1, #decos_inside_forest)],
+                        position = p,
+                        amount = math_random(1, 2)
+                    }
+                }
+            }
+        )
+        return
+    end
+end
+
 local function wall(data)
     local surface = data.surface
     local left_top = data.left_top
@@ -242,13 +416,22 @@ local function wall(data)
                 else
                     surface.set_tiles({{name = 'dirt-7', position = p}})
                     if math_random(1, 5) ~= 1 then
-                        surface.create_entity({name = trees_terrain[math_random(1, #trees_terrain)], position = p})
+                        surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = p})
                     end
                 end
             else
                 surface.set_tiles({{name = 'dirt-7', position = p}})
 
-                if surface.can_place_entity({name = 'stone-wall', position = p, force = 'lumber_defense'}) then
+                if
+                    surface.can_place_entity(
+                        {
+                            name = 'stone-wall',
+                            position = p,
+                            force = 'lumber_defense',
+                            destructible = true
+                        }
+                    )
+                 then
                     if math_random(1, 512) == 1 and y > 3 and y < 28 then
                         if math_random(1, 2) == 1 then
                             Loot.add(surface, p, 'wooden-chest')
@@ -261,7 +444,12 @@ local function wall(data)
                                 if math_random(1, y + 1) == 1 then
                                     local e =
                                         surface.create_entity(
-                                        {name = 'stone-wall', position = p, force = 'lumber_defense'}
+                                        {
+                                            name = 'stone-wall',
+                                            position = p,
+                                            force = 'lumber_defense',
+                                            destructible = true
+                                        }
                                     )
                                     e.minable = false
                                 end
@@ -269,7 +457,12 @@ local function wall(data)
                                 if math_random(1, 32 - y) == 1 then
                                     local e =
                                         surface.create_entity(
-                                        {name = 'stone-wall', position = p, force = 'lumber_defense'}
+                                        {
+                                            name = 'stone-wall',
+                                            position = p,
+                                            force = 'lumber_defense',
+                                            destructible = true
+                                        }
                                     )
                                     e.minable = false
                                 end
@@ -283,17 +476,48 @@ local function wall(data)
                 end
 
                 if math_random(1, 16) == 1 then
-                    if surface.can_place_entity({name = 'small-worm-turret', position = p, force = 'lumber_defense'}) then
+                    if
+                        surface.can_place_entity(
+                            {
+                                name = 'small-worm-turret',
+                                position = p,
+                                force = 'lumber_defense',
+                                destructible = true
+                            }
+                        )
+                     then
                         Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
                         surface.create_entity(
-                            {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'lumber_defense'}
+                            {
+                                name = Biters.wave_defense_roll_worm_name(),
+                                position = p,
+                                force = 'lumber_defense',
+                                destructible = true
+                            }
                         )
                     end
                 end
 
                 if math_random(1, 32) == 1 then
-                    if surface.can_place_entity({name = 'gun-turret', position = p, force = 'lumber_defense'}) then
-                        local e = surface.create_entity({name = 'gun-turret', position = p, force = 'lumber_defense'})
+                    if
+                        surface.can_place_entity(
+                            {
+                                name = 'gun-turret',
+                                position = p,
+                                force = 'lumber_defense',
+                                destructible = true
+                            }
+                        )
+                     then
+                        local e =
+                            surface.create_entity(
+                            {
+                                name = 'gun-turret',
+                                position = p,
+                                force = 'lumber_defense',
+                                destructible = true
+                            }
+                        )
                         if math_abs(p.y) < Public.level_depth * 2.5 then
                             e.insert({name = 'piercing-rounds-magazine', count = math_random(64, 128)})
                         else
@@ -308,7 +532,7 @@ end
 
 local function process_level_9_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -322,10 +546,20 @@ local function process_level_9_position(data)
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         local no_rocks_2 = get_noise('no_rocks_2', p, seed)
         if math_random(1, 2) == 1 and no_rocks_2 > -0.5 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+            if math_random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
+
+            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
+
+            if math_random(1, 4028) == 1 then
+                place_random_scrap_entity(surface, p)
+            end
+
+            forest_look(data)
         end
         if math_random(1, 1024) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         if math_random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
@@ -333,7 +567,8 @@ local function process_level_9_position(data)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'lumber_defense'
+                force = 'lumber_defense',
+                destructible = true
             }
         end
         return
@@ -368,7 +603,7 @@ end
 
 local function process_level_8_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -391,13 +626,16 @@ local function process_level_8_position(data)
 
     if scrapyard < -0.25 or scrapyard > 0.25 then
         if math_random(1, 256) == 1 then
-            entities[#entities + 1] = {name = 'gun-turret', position = p, force = 'lumber_defense'}
+            entities[#entities + 1] = {
+                name = 'gun-turret',
+                position = p,
+                force = 'lumber_defense',
+                destructible = true
+            }
         end
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         if scrapyard < -0.55 or scrapyard > 0.55 then
-            if math_random(1, 2) == 1 then
-                entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
-            end
+            forest_look(data)
             return
         end
         if scrapyard < -0.28 or scrapyard > 0.28 then
@@ -407,23 +645,30 @@ local function process_level_8_position(data)
                 entities[#entities + 1] = {
                     name = Biters.wave_defense_roll_worm_name(),
                     position = p,
-                    force = 'lumber_defense'
+                    force = 'lumber_defense',
+                    destructible = true
                 }
             end
             if math_random(1, 96) == 1 then
                 entities[#entities + 1] = {
                     name = scrap_entities[math_random(1, scrap_entities_index)],
                     position = p,
-                    force = 'lumber_defense'
+                    force = 'lumber_defense',
+                    destructible = true
                 }
             end
             if math_random(1, 5) > 1 then
-                entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+                forest_look(data)
             end
             if math_random(1, 256) == 1 then
                 create_inner_content(surface, p, scrapyard)
 
-                entities[#entities + 1] = {name = 'land-mine', position = p, force = 'lumber_defense'}
+                entities[#entities + 1] = {
+                    name = 'land-mine',
+                    position = p,
+                    force = 'lumber_defense',
+                    destructible = true
+                }
             end
             return
         end
@@ -443,9 +688,13 @@ local function process_level_8_position(data)
     if scrapyard > -0.15 and scrapyard < 0.15 then
         if math_floor(large_caves * 10) % 4 < 3 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            if math_random(1, 2) == 1 then
-                entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+            if math_random(1, 4028) == 1 then
+                place_random_scrap_entity(surface, p)
             end
+
+            forest_look(data)
+
             return
         end
     end
@@ -456,13 +705,18 @@ local function process_level_8_position(data)
 
     tiles[#tiles + 1] = {name = 'stone-path', position = p}
     if math_random(1, 256) == 1 then
-        entities[#entities + 1] = {name = 'land-mine', position = p, force = 'lumber_defense'}
+        entities[#entities + 1] = {
+            name = 'land-mine',
+            position = p,
+            force = 'lumber_defense',
+            destructible = true
+        }
     end
 end
 
 local function process_level_7_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -511,7 +765,7 @@ local function process_level_7_position(data)
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
         if math_random(1, 2048) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
@@ -536,7 +790,7 @@ local function process_level_7_position(data)
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
         if math_random(1, 2048) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
@@ -555,18 +809,22 @@ local function process_level_7_position(data)
         end
     end
 
+    if math_random(1, 2048) == 1 then
+        treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+    end
+
     tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-    if math_random(1, 100) > 15 then
-        entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+    if math_random(1, 4028) == 1 then
+        place_random_scrap_entity(surface, p)
     end
-    if math_random(1, 256) == 1 then
-        treasure[#treasure + 1] = p
-    end
+
+    forest_look(data)
 end
 
 local function process_level_6_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -579,10 +837,7 @@ local function process_level_6_position(data)
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
         if math_random(1, 768) == 1 then
-            treasure[#treasure + 1] = p
-        end
-        if math_random(1, 3) > 1 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
@@ -598,7 +853,8 @@ local function process_level_6_position(data)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'lumber_defense'
+                force = 'lumber_defense',
+                destructible = true
             }
         end
         return
@@ -609,7 +865,7 @@ local function process_level_6_position(data)
             tiles[#tiles + 1] = {name = 'dirt-' .. math_random(1, 4), position = p}
             --tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
             if math_random(1, 256) == 1 then
-                treasure[#treasure + 1] = p
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             if math_random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
@@ -617,22 +873,30 @@ local function process_level_6_position(data)
             return
         end
         if noise_cave_ponds > 0.25 then
+            if math_random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
+
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
-            if math_random(1, 512) == 1 then
-                treasure[#treasure + 1] = p
+
+            if math_random(1, 4028) == 1 then
+                place_random_scrap_entity(surface, p)
             end
-            if math_random(1, 2) > 1 then
-                entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+            if math_random(1, 100) > 25 then
+                if math_random(1, 4) == 1 then
+                    forest_look(data, true)
+                else
+                    forest_look(data)
+                end
             end
-            return
         end
     end
 end
 
 local function process_level_5_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -645,10 +909,7 @@ local function process_level_5_position(data)
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
         if math_random(1, 768) == 1 then
-            treasure[#treasure + 1] = p
-        end
-        if math_random(1, 3) > 1 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
@@ -664,7 +925,8 @@ local function process_level_5_position(data)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'lumber_defense'
+                force = 'lumber_defense',
+                destructible = true
             }
         end
         return
@@ -675,7 +937,7 @@ local function process_level_5_position(data)
             tiles[#tiles + 1] = {name = 'dirt-' .. math_random(1, 4), position = p}
             --tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
             if math_random(1, 256) == 1 then
-                treasure[#treasure + 1] = p
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             if math_random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
@@ -683,22 +945,31 @@ local function process_level_5_position(data)
             return
         end
         if noise_cave_ponds > 0.25 then
+            if math_random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
+
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
-            if math_random(1, 512) == 1 then
-                treasure[#treasure + 1] = p
+
+            if math_random(1, 4028) == 1 then
+                place_random_scrap_entity(surface, p)
             end
-            if math_random(1, 2) > 1 then
-                entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+            if math_random(1, 100) > 25 then
+                if math_random(1, 8) == 1 then
+                    forest_look(data, true)
+                else
+                    forest_look(data)
+                end
             end
-            return
         end
     end
+    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
 local function process_level_4_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -735,34 +1006,32 @@ local function process_level_4_position(data)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'lumber_defense'
+                force = 'lumber_defense',
+                destructible = true
             }
         end
         if math_random(1, 1024) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
     if math_abs(noise_large_caves) > 0.475 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
-        if math_random(1, 3) > 1 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
-        end
         if math_random(1, 2048) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
 
     --Chasms
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
-        if small_caves > 0.45 then
-            tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+        if small_caves > 0.75 then
+            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
-        if small_caves < -0.45 then
-            tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+        if small_caves < -0.75 then
+            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
     end
@@ -770,11 +1039,8 @@ local function process_level_4_position(data)
     if small_caves > -0.15 and small_caves < 0.15 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         --tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
-        if math_random(1, 5) > 1 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
-        end
         if math_random(1, 1024) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
@@ -786,26 +1052,35 @@ local function process_level_4_position(data)
             --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
             tiles[#tiles + 1] = {name = 'dirt-' .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
             if math_random(1, 512) == 1 then
-                treasure[#treasure + 1] = p
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
 
         if math_random(1, 2048) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
+
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
-        if math_random(1, 100) > 30 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+        if math_random(1, 4028) == 1 then
+            place_random_scrap_entity(surface, p)
         end
-        return
+
+        if math_random(1, 100) > 25 then
+            if math_random(1, 8) == 1 then
+                forest_look(data, true)
+            else
+                forest_look(data)
+            end
+        end
     end
+    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
 local function process_level_3_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -820,9 +1095,8 @@ local function process_level_3_position(data)
     --Market Spots
     if noise_cave_ponds < -0.77 then
         if noise_cave_ponds > -0.79 then
-            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
             --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         else
             tiles[#tiles + 1] = {name = 'grass-' .. math_floor(noise_cave_ponds * 32) % 3 + 1, position = p}
             if math_random(1, 32) == 1 then
@@ -847,12 +1121,12 @@ local function process_level_3_position(data)
 
         --Chasms
         if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
-            if small_caves > 0.55 then
-                tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+            if small_caves > 0.85 then
+                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
                 return
             end
-            if small_caves < -0.55 then
-                tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+            if small_caves < -0.85 then
+                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
                 return
             end
         end
@@ -900,11 +1174,12 @@ local function process_level_3_position(data)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'lumber_defense'
+                        force = 'lumber_defense',
+                        destructible = true
                     }
                 end
                 if math_random(1, 512) == 1 then
-                    treasure[#treasure + 1] = p
+                    treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
                 end
                 if math_random(1, 64) == 1 then
                     entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
@@ -919,29 +1194,35 @@ local function process_level_3_position(data)
             tiles[#tiles + 1] = {name = 'dirt-' .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
             --tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
             if math_random(1, 512) == 1 then
-                treasure[#treasure + 1] = p
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
 
         if math_random(1, 2048) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
+
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
-        if math_random(1, 2048) == 1 then
+
+        if math_random(1, 4028) == 1 then
             place_random_scrap_entity(surface, p)
         end
-        if math_random(1, 100) > 30 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+        if math_random(1, 100) > 25 then
+            if math_random(1, 8) == 1 then
+                forest_look(data, true)
+            else
+                forest_look(data)
+            end
         end
-        return
     end
+    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
 local function process_level_2_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -957,11 +1238,11 @@ local function process_level_2_position(data)
         --Chasms
         if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
             if small_caves > 0.32 then
-                tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
                 return
             end
             if small_caves < -0.32 then
-                tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
                 return
             end
         end
@@ -1001,7 +1282,7 @@ local function process_level_2_position(data)
                 markets[#markets + 1] = p
             end
             if math_random(1, 16) == 1 then
-                entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
+                forest_look(data, true)
             end
             return
         end
@@ -1020,7 +1301,8 @@ local function process_level_2_position(data)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'lumber_defense'
+                        force = 'lumber_defense',
+                        destructible = true
                     }
                 end
                 if math_random(1, 64) == 1 then
@@ -1036,29 +1318,34 @@ local function process_level_2_position(data)
             tiles[#tiles + 1] = {name = 'dirt-' .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
             --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
             if math_random(1, 512) == 1 then
-                treasure[#treasure + 1] = p
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
 
         if math_random(1, 2048) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
+
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        if math_random(1, 2048) == 1 then
+
+        if math_random(1, 4028) == 1 then
             place_random_scrap_entity(surface, p)
         end
-        if math_random(1, 100) > 30 then
-            entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+        if math_random(1, 100) > 25 then
+            if math_random(1, 8) == 1 then
+                forest_look(data, true)
+            else
+                forest_look(data)
+            end
         end
-        return
     end
 end
 
 local function process_level_1_position(data)
     local surface = data.surface
-    local p = data.p
+    local p = {x = data.x, y = data.y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
@@ -1137,11 +1424,12 @@ local function process_level_1_position(data)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'lumber_defense'
+                        force = 'lumber_defense',
+                        destructible = true
                     }
                 end
                 if math_random(1, 1024) == 1 then
-                    treasure[#treasure + 1] = p
+                    treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
                 end
                 if math_random(1, 64) == 1 then
                     entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
@@ -1153,6 +1441,7 @@ local function process_level_1_position(data)
 
     --Main Terrain
     local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
+
     if no_rocks_2 > 0.70 or no_rocks_2 < -0.70 then
         --tiles[#tiles + 1] = {name = more_colors[math_random(1, #more_colors)].. "-refined-concrete", position = p}
         tiles[#tiles + 1] = {name = 'dirt-' .. math_floor(no_rocks_2 * 8) % 2 + 5, position = p}
@@ -1160,23 +1449,27 @@ local function process_level_1_position(data)
             entities[#entities + 1] = {name = trees[math_random(1, #trees)], position = p}
         end
         if math_random(1, 512) == 1 then
-            treasure[#treasure + 1] = p
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
 
     if math_random(1, 2048) == 1 then
-        treasure[#treasure + 1] = p
+        treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
     end
-    --tiles[#tiles + 1] = {name = colors[math_random(1, #colors)].. "-refined-concrete", position = p}
-    --tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-    tiles[#tiles + 1] = {name = 'stone-path', position = p}
+
+    tiles[#tiles + 1] = {name = 'dirt-7', position = p}
 
     if math_random(1, 4028) == 1 then
         place_random_scrap_entity(surface, p)
     end
-    if math_random(1, 100) > 30 then
-        entities[#entities + 1] = {name = trees_terrain[math_random(1, #trees_terrain)], position = p}
+
+    if math_random(1, 100) > 25 then
+        if math_random(1, 8) == 1 then
+            forest_look(data, true)
+        else
+            forest_look(data)
+        end
     end
 end
 
@@ -1190,166 +1483,7 @@ Public.levels = {
     process_level_7_position,
     process_level_8_position,
     process_level_9_position
-    --process_level_10_position,
 }
-
-function Public.reveal_train(data)
-    local position = data.position
-    local surface = data.surface
-    local circles = shapes.circles
-    local uncover_radius = data.reveal
-    data.tiles = {}
-    data.entities = {}
-    data.markets = {}
-    data.treasure = {}
-    local level_index = math_floor((math_abs(position.y / Public.level_depth)) % 9) + 1
-    local process_level = Public.levels[level_index]
-
-    for r = 1, uncover_radius, 1 do
-        for _, v in pairs(circles[r]) do
-            local pos = {x = position.x - 30 + math_random(1, 64) + v.x, y = position.y - 20 + v.y + math_random(1, 64)}
-            data.p = pos
-            local t_name
-            if surface.get_tile(pos).valid then
-                t_name = surface.get_tile(pos).name == 'out-of-map'
-            end
-            if t_name then
-                process_level(data)
-            end
-        end
-    end
-    if #data.tiles > 0 then
-        surface.set_tiles(data.tiles, true)
-    end
-    for _, entity in pairs(data.entities) do
-        if surface.can_place_entity(entity) and entity == 'biter-spawner' or entity == 'spitter-spawner' then
-            surface.create_entity(entity)
-        else
-            surface.create_entity(entity)
-        end
-    end
-    if #data.markets > 0 then
-        local pos = data.markets[math_random(1, #data.markets)]
-        if
-            surface.count_entities_filtered {
-                area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
-                name = 'market',
-                limit = 1
-            } == 0
-         then
-            local market = Market.mountain_market(surface, pos, math_abs(pos.y) * 0.004)
-            market.destructible = false
-        end
-    end
-    for _, p in pairs(data.treasure) do
-        local name = 'steel-chest'
-        Loot.add(surface, p, name)
-    end
-end
-
-function Public.reveal_normally(data)
-    local left_top = data.left_top
-    local surface = data.surface
-    data.tiles = {}
-    data.entities = {}
-    data.markets = {}
-    data.treasure = {}
-    local level_index = math_floor((math_abs(left_top.y / Public.level_depth)) % 9) + 1
-    local process_level = Public.levels[level_index]
-
-    for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
-            data.p = pos
-            process_level(data)
-        end
-    end
-    if #data.tiles > 0 then
-        surface.set_tiles(data.tiles, true)
-    end
-    for _, entity in pairs(data.entities) do
-        if surface.can_place_entity(entity) and entity == 'biter-spawner' or entity == 'spitter-spawner' then
-            surface.create_entity(entity)
-        else
-            surface.create_entity(entity)
-        end
-    end
-    if #data.markets > 0 then
-        local pos = data.markets[math_random(1, #data.markets)]
-        if
-            surface.count_entities_filtered {
-                area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
-                name = 'market',
-                limit = 1
-            } == 0
-         then
-            local market = Market.mountain_market(surface, pos, math_abs(pos.y) * 0.004)
-            market.destructible = false
-        end
-    end
-    for _, p in pairs(data.treasure) do
-        local name = 'steel-chest'
-        Loot.add(surface, p, name)
-    end
-end
-
-function Public.reveal_player(player)
-    local this = WPT.get_table()
-    local seed = game.surfaces[this.active_surface_index].map_gen_settings.seed
-    local position = player.position
-    local surface = player.surface
-    local circles = shapes.circles
-    local uncover_radius = 10
-    local data = {
-        surface = surface,
-        seed = seed,
-        tiles = {},
-        entities = {},
-        markets = {},
-        treasure = {}
-    }
-
-    local level_index = math_floor((math_abs(position.y / Public.level_depth)) % 9) + 1
-    local process_level = Public.levels[level_index]
-
-    for r = 1, uncover_radius, 1 do
-        for _, v in pairs(circles[r]) do
-            local pos = {x = position.x + v.x, y = position.y + v.y}
-            data.p = pos
-            local t_name = surface.get_tile(pos).name == 'out-of-map'
-            if t_name then
-                process_level(data)
-            end
-        end
-    end
-    if #data.tiles > 0 then
-        surface.set_tiles(data.tiles, true)
-    end
-    for _, entity in pairs(data.entities) do
-        if surface.can_place_entity(entity) and entity == 'biter-spawner' or entity == 'spitter-spawner' then
-            surface.create_entity(entity)
-        else
-            surface.create_entity(entity)
-        end
-    end
-    if #data.markets > 0 then
-        local pos = data.markets[math_random(1, #data.markets)]
-        if
-            surface.count_entities_filtered {
-                area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
-                name = 'market',
-                limit = 1
-            } == 0
-         then
-            local market = Market.mountain_market(surface, pos, math_abs(pos.y) * 0.004)
-            market.destructible = false
-        end
-    end
-    for _, p in pairs(data.treasure) do
-        local name = 'steel-chest'
-        Loot.add(surface, p, name)
-    end
-end
 
 local function is_out_of_map(p)
     if p.x < 196 and p.x >= -196 then
@@ -1362,6 +1496,19 @@ local function is_out_of_map(p)
         return
     end
     return true
+end
+
+local function process_bits(_, _, data)
+    local left_top_y = data.area.left_top.y
+    local index = math_floor((math_abs(left_top_y / Public.level_depth)) % 11) + 1
+    local process_level = Public.levels[index]
+    if not process_level then
+        process_level = Public.levels[#Public.levels]
+    end
+
+    if not is_out_of_map({x = data.x, y = data.y}) then
+        process_level(data)
+    end
 end
 
 local function border_chunk(data)
@@ -1381,11 +1528,14 @@ local function border_chunk(data)
         for y = 0, 31, 1 do
             local pos = {x = left_top.x + x, y = left_top.y + y}
             if not is_out_of_map(pos) then
+                if math_random(1, math.ceil(pos.y + pos.y) + 32) == 1 then
+                    surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
+                end
                 if math_random(1, pos.y + 23) == 1 then
                     surface.create_entity {
-                        name = 'gun-turret-remnants',
+                        name = remnants[math_random(1, remnants_index)],
                         position = pos,
-                        amount = math_random(1, 1 + math.ceil(20 - y / 2))
+                        amount = 1
                     }
                 end
                 if math_random(1, pos.y + 2) == 1 then
@@ -1403,16 +1553,6 @@ local function border_chunk(data)
                             {name = 'rock-tiny', position = pos, amount = math_random(1, 1 + math.ceil(20 - y / 2))}
                         }
                     }
-                end
-                if math_random(1, pos.y + 22) == 1 then
-                    surface.create_entity {
-                        name = 'wall-remnants',
-                        position = pos,
-                        amount = math_random(1, 1 + math.ceil(20 - y / 2))
-                    }
-                end
-                if math_random(1, math.ceil(pos.y + pos.y) + 32) == 1 then
-                    surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = pos})
                 end
             end
         end
@@ -1439,28 +1579,6 @@ local function replace_water(data)
             end
         end
     end
-end
-
-local function process(data)
-    local surface = data.surface
-    local left_top = data.left_top
-
-    local tiles = {}
-    for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
-            local tile_to_insert = 'out-of-map'
-            local pos = {x = left_top.x + x, y = left_top.y + y}
-            insert(tiles, {name = tile_to_insert, position = pos})
-        end
-    end
-    surface.set_tiles(tiles, true)
-    local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
-        if v.autoplace_specification then
-            decorative_names[#decorative_names + 1] = k
-        end
-    end
-    surface.regenerate_decorative(decorative_names, {left_top})
 end
 
 local function out_of_map_area(data)
@@ -1529,16 +1647,18 @@ end
 
 local function on_chunk_generated(event)
     local this = WPT.get_table()
-    if string.sub(event.surface.name, 0, 10) ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if string.sub(event.surface.name, 0, #map_name) ~= map_name then
         return
     end
+
     local surface = event.surface
     local seed = surface.map_gen_settings.seed
     local position = this.locomotive.position
     local left_top = event.area.left_top
 
     local data = {
-        this = this,
         surface = surface,
         seed = seed,
         position = position,
@@ -1555,47 +1675,54 @@ local function on_chunk_generated(event)
         return
     end
 
-    if left_top.y > 32 then
-        game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
-    end
-
-    if not this.train_reveal then
-        if this.revealed_spawn > game.tick then
-            Public.reveal_train(data)
-        end
-    end
-
     if left_top.y % Public.level_depth == 0 and left_top.y < 0 then
         this.left_top = data.left_top
         wall(data)
         return
     end
 
-    if left_top.y > 268 then
+    if left_top.y > 150 then
         out_of_map(data)
         return
     end
+
+    if left_top.y > 75 then
+        biter_chunk(data)
+    end
+    if left_top.y > 32 then
+        game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+    end
+
     if left_top.y >= 0 then
         replace_water(data)
     end
-    if left_top.y > 210 then
-        biter_chunk(data)
-    end
-    if left_top.y >= 10 then
+
+    if left_top.y >= 0 then
         border_chunk(data)
-    end
-    if left_top.y < 0 and left_top.y > -50 then
-        Public.reveal_normally(data)
     end
 
     if left_top.y < -50 then
-        process(data)
         if math_random(1, chance_for_wagon_spawn) == 1 then
             place_wagon(data)
         end
     end
 
     out_of_map_area(data)
+end
+
+function Public.heavy_functions(x, y, data)
+    local area = data.area
+    local top_y = area.left_top.y
+
+    data.seed = data.surface.map_gen_settings.seed
+
+    if top_y % Public.level_depth == 0 and top_y < 0 then
+        return
+    end
+
+    if top_y < 0 then
+        process_bits(x, y, data)
+    end
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)

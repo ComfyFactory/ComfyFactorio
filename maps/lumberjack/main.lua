@@ -6,7 +6,6 @@ require 'maps.lumberjack.corpse_util'
 
 require 'on_tick_schedule'
 require 'modules.dynamic_landfill'
-require 'modules.difficulty_vote'
 require 'modules.shotgun_buff'
 require 'modules.burden'
 require 'modules.rocks_heal_over_time'
@@ -20,6 +19,8 @@ require 'modules.wave_defense.main'
 require 'modules.admins_operate_biters'
 require 'modules.pistol_buffs'
 
+local Difficulty = require 'modules.difficulty_vote'
+local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Color = require 'utils.color_presets'
 local Entities = require 'maps.lumberjack.entities'
@@ -28,7 +29,7 @@ local ICW = require 'maps.lumberjack.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG = require 'maps.lumberjack.rpg'
-local Reset = require 'functions.soft_reset'
+local Reset = require 'maps.lumberjack.soft_reset'
 local Terrain = require 'maps.lumberjack.terrain'
 local Event = require 'utils.event'
 local WPT = require 'maps.lumberjack.table'
@@ -38,34 +39,31 @@ local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Balance = require 'maps.lumberjack.balance'
+local shape = require 'maps.lumberjack.terrain'.heavy_functions
+local Generate = require 'maps.lumberjack.generate'
+local Task = require 'utils.task'
 
 local Public = {}
 local math_random = math.random
-local math_floor = math.floor
 
-WPT.init({train_reveal = true, energy_shared = true})
+WPT.init({train_reveal = false, energy_shared = true, reveal_normally = true})
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
-local colors = {
-    'green-refined-concrete',
-    'red-refined-concrete',
-    'blue-refined-concrete'
-}
-local disabled_tiles = {
-    ['water-shallow'] = true,
-    ['deepwater-green'] = true,
-    ['out-of-map'] = true,
-    ['green-refined-concrete'] = true,
-    ['red-refined-concrete'] = true,
-    ['blue-refined-concrete'] = true
-}
 
 local grandmaster = '[color=blue]Grandmaster:[/color]'
 
 local function create_forces_and_disable_tech()
-    game.create_force('defenders')
-    game.create_force('lumber_defense')
+    if not game.forces.defenders then
+        game.create_force('defenders')
+    end
+    if not game.forces.lumber_defense then
+        game.create_force('lumber_defense')
+    end
+    game.forces.defenders.share_chart = false
     game.forces.player.set_friend('defenders', true)
+    game.forces.player.set_friend('lumber_defense', false)
+    game.forces.lumber_defense.set_friend('player', false)
+    game.forces.lumber_defense.set_friend('enemy', true)
     game.forces.enemy.set_friend('defenders', true)
     game.forces.enemy.set_friend('lumber_defense', true)
     game.forces.defenders.set_friend('player', true)
@@ -73,25 +71,22 @@ local function create_forces_and_disable_tech()
     game.forces.defenders.share_chart = false
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['optics'].researched = true
-    game.forces.player.recipes['cargo-wagon'].enabled = false
-    game.forces.player.recipes['fluid-wagon'].enabled = false
-    game.forces.player.recipes['artillery-wagon'].enabled = false
-    game.forces.player.recipes['locomotive'].enabled = false
-    game.forces.player.recipes['pistol'].enabled = false
     game.forces.player.technologies['land-mine'].enabled = false
+    Balance.init_enemy_weapon_damage()
 end
 
 local function set_difficulty()
+    local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
     local player_count = #game.connected_players
-    if not global.difficulty_vote_value then
-        global.difficulty_vote_value = 0.1
+    if not Diff.difficulty_vote_value then
+        Diff.difficulty_vote_value = 0.1
     end
 
-    wave_defense_table.max_active_biters = 768 + player_count * (90 * global.difficulty_vote_value)
+    wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
 
     -- threat gain / wave
-    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * global.difficulty_vote_value * 0.1
+    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
     local amount = player_count * 0.25 + 2
     amount = math.floor(amount)
@@ -100,112 +95,34 @@ local function set_difficulty()
     end
     Collapse.set_amount(amount)
 
-    --20 Players for fastest wave_interval
-    wave_defense_table.wave_interval = 3600 - player_count * 90
-    if wave_defense_table.wave_interval < 2000 then
-        wave_defense_table.wave_interval = 2000
-    end
+    wave_defense_table.wave_interval = 3600
 end
 
-function Public.reset_map()
-    local this = WPT.get_table()
-    local wave_defense_table = WD.get_table()
-    local get_score = Score.get_table()
-    Poll.reset()
-    ICW.reset()
-    game.reset_time_played()
-    create_forces_and_disable_tech()
-    WPT.reset_table()
-    wave_defense_table.math = 8
-    if not this.train_reveal then
-        this.revealed_spawn = game.tick + 100
-    end
-
-    local map_gen_settings = {
-        ['seed'] = math_random(1, 1000000),
-        ['water'] = 0.001,
-        ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
-        ['default_enable_all_autoplace_controls'] = true,
-        ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = true}
-        }
-    }
-
-    if not this.active_surface_index then
-        this.active_surface_index = game.create_surface('lumberjack', map_gen_settings).index
-    else
-        game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
-        this.active_surface = game.surfaces[this.active_surface_index]
-    end
-
-    local surface = game.surfaces[this.active_surface_index]
-
-    surface.request_to_generate_chunks({0, 0}, 0.5)
-    surface.force_generate_chunk_requests()
-
-    local p = surface.find_non_colliding_position('character-corpse', {2, 21}, 2, 2)
-    surface.create_entity({name = 'character-corpse', position = p})
-
-    game.forces.player.set_spawn_position({0, 21}, surface)
-
-    global.friendly_fire_history = {}
-    global.landfill_history = {}
-    global.mining_history = {}
-    get_score.score_table = {}
-    global.difficulty_poll_closing_timeout = game.tick + 90000
-    global.difficulty_player_votes = {}
-
-    game.difficulty_settings.technology_price_multiplier = 0.6
-
-    Collapse.set_kill_entities(false)
-    Collapse.set_speed(8)
-    Collapse.set_amount(1)
-    Collapse.set_max_line_size(Terrain.level_depth)
-    Collapse.set_surface(surface)
-    Collapse.set_position({0, 290})
-    Collapse.set_direction('north')
-    Collapse.start_now(false)
-
-    surface.ticks_per_day = surface.ticks_per_day * 2
-    surface.daytime = 0.71
-    surface.brightness_visual_weights = {1, 0, 0, 0}
-    surface.freeze_daytime = false
-    surface.solar_power_multiplier = 1
-    this.locomotive_health = 10000
-    this.locomotive_max_health = 10000
-    this.cargo_health = 10000
-    this.cargo_max_health = 10000
-
-    Locomotive(surface, {x = -18, y = 25})
-    render_train_hp()
-
-    WD.reset_wave_defense()
-    wave_defense_table.surface_index = this.active_surface_index
-    wave_defense_table.target = this.locomotive_cargo
-    wave_defense_table.nest_building_density = 32
-    wave_defense_table.game_lost = false
-    wave_defense_table.spawn_position = {x = 0, y = 220}
-
-    surface.create_entity({name = 'electric-beam', position = {-196, 190}, source = {-196, 190}, target = {196, 190}})
-    surface.create_entity({name = 'electric-beam', position = {-196, 190}, source = {-196, 190}, target = {196, 190}})
-
-    RPG.rpg_reset_all_players()
-
-    if game.forces.lumber_defense then
-        Balance.init_enemy_weapon_damage()
-    else
-        log('lumber_defense not found')
-    end
-
-    set_difficulty()
-
+local function render_direction(surface)
     rendering.draw_text {
         text = 'Welcome to Lumberjack!',
+        surface = surface,
+        target = {-0, 10},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 20},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
+    rendering.draw_text {
+        text = '▼',
         surface = surface,
         target = {-0, 30},
         color = {r = 0.98, g = 0.66, b = 0.22},
@@ -214,7 +131,6 @@ function Public.reset_map()
         alignment = 'center',
         scale_with_zoom = false
     }
-
     rendering.draw_text {
         text = '▼',
         surface = surface,
@@ -246,7 +162,7 @@ function Public.reset_map()
         scale_with_zoom = false
     }
     rendering.draw_text {
-        text = '▼',
+        text = 'Biters will attack this area.',
         surface = surface,
         target = {-0, 70},
         color = {r = 0.98, g = 0.66, b = 0.22},
@@ -255,68 +171,135 @@ function Public.reset_map()
         alignment = 'center',
         scale_with_zoom = false
     }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 80},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 90},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 100},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = '▼',
-        surface = surface,
-        target = {-0, 110},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-    rendering.draw_text {
-        text = 'Biters will attack this area.',
-        surface = surface,
-        target = {-0, 120},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+
+    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
+    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
 end
 
-local function change_tile(surface, pos, steps)
-    return surface.set_tiles {{name = colors[math_floor(steps * 0.5) % 3 + 1], position = {x = pos.x, y = pos.y}}}
+function Public.reset_map()
+    local this = WPT.get_table()
+    local wave_defense_table = WD.get_table()
+    local get_score = Score.get_table()
+    local Diff = Difficulty.get()
+    local map_gen_settings = {
+        ['seed'] = math_random(10000, 99999),
+        ['water'] = 0.001,
+        ['starting_area'] = 1,
+        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
+        ['default_enable_all_autoplace_controls'] = true,
+        ['autoplace_settings'] = {
+            ['entity'] = {treat_missing_as_default = false},
+            ['tile'] = {treat_missing_as_default = true},
+            ['decorative'] = {treat_missing_as_default = true}
+        }
+    }
+
+    if not this.active_surface_index then
+        this.active_surface_index = game.create_surface('lumberjack', map_gen_settings).index
+        this.active_surface = game.surfaces[this.active_surface_index]
+    else
+        game.forces.player.set_spawn_position({0, 25}, game.surfaces[this.active_surface_index])
+        this.active_surface_index =
+            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface = game.surfaces[this.active_surface_index]
+    end
+
+    Poll.reset()
+    ICW.reset()
+    game.reset_time_played()
+    WPT.reset_table()
+    wave_defense_table.math = 8
+    if not this.train_reveal and not this.reveal_normally then
+        this.revealed_spawn = game.tick + 100
+    end
+
+    create_forces_and_disable_tech()
+
+    local surface = game.surfaces[this.active_surface_index]
+
+    surface.request_to_generate_chunks({0, 0}, 0.5)
+    surface.force_generate_chunk_requests()
+
+    local p = surface.find_non_colliding_position('character-corpse', {2, 21}, 2, 2)
+    surface.create_entity({name = 'character-corpse', position = p})
+
+    game.forces.player.set_spawn_position({0, 21}, surface)
+
+    global.bad_fire_history = {}
+    global.friendly_fire_history = {}
+    global.landfill_history = {}
+    global.mining_history = {}
+    get_score.score_table = {}
+    Diff.difficulty_poll_closing_timeout = game.tick + 90000
+    Diff.difficulty_player_votes = {}
+
+    game.difficulty_settings.technology_price_multiplier = 0.6
+
+    Collapse.set_kill_entities(false)
+    Collapse.set_speed(8)
+    Collapse.set_amount(1)
+    Collapse.set_max_line_size(Terrain.level_depth)
+    Collapse.set_surface(surface)
+    Collapse.set_position({0, 162})
+    Collapse.set_direction('north')
+    Collapse.start_now(false)
+
+    surface.ticks_per_day = surface.ticks_per_day * 2
+    surface.daytime = 0.71
+    surface.brightness_visual_weights = {1, 0, 0, 0}
+    surface.freeze_daytime = false
+    surface.solar_power_multiplier = 1
+    this.locomotive_health = 10000
+    this.locomotive_max_health = 10000
+    this.cargo_health = 10000
+    this.cargo_max_health = 10000
+
+    Locomotive(surface, {x = -18, y = 25})
+    render_train_hp()
+    render_direction(surface)
+    RPG.rpg_reset_all_players()
+
+    WD.reset_wave_defense()
+    wave_defense_table.surface_index = this.active_surface_index
+    wave_defense_table.target = this.locomotive_cargo
+    wave_defense_table.nest_building_density = 32
+    wave_defense_table.game_lost = false
+    wave_defense_table.spawn_position = {x = 0, y = 100}
+    wave_defense_table.next_wave = game.tick + 3600 * 25
+
+    set_difficulty()
+
+    local surfaces = {
+        [surface.name] = shape
+    }
+    Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
+    Task.reset_queue()
+    Task.start_queue()
+    Task.set_queue_speed(10)
+
+    this.chunk_load_tick = game.tick + 500
+end
+
+local function on_load()
+    local this = WPT.get_table()
+
+    local surfaces = {
+        [this.active_surface.name] = shape
+    }
+    Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
+    Generate.register()
+    Task.start_queue()
 end
 
 local function on_player_changed_position(event)
     local this = WPT.get_table()
     local player = game.players[event.player_index]
-    if string.sub(player.surface.name, 0, 10) ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return
     end
+
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
     if position.x >= Terrain.level_depth * 0.5 then
@@ -325,33 +308,16 @@ local function on_player_changed_position(event)
     if position.x < Terrain.level_depth * -0.5 then
         return
     end
-    if position.y < 5 then
-        if not this.players[player.index].tiles_enabled then
-            goto continue
-        end
 
-        local steps = this.players[player.index].steps
-        local tile = surface.get_tile(position).name
-        local disabled = disabled_tiles[tile]
-        if disabled then
-            goto continue
-        end
-        change_tile(surface, position, steps)
-        if this.players[player.index].steps > 5000 then
-            this.players[player.index].steps = 0
-        end
-        this.players[player.index].steps = this.players[player.index].steps + 1
-    end
-    ::continue::
     if
-        not this.train_reveal or
+        not this.train_reveal and not this.reveal_normally or
             this.players[player.index].start_tick and game.tick - this.players[player.index].start_tick < 6400
      then
         if position.y < 5 then
             Terrain.reveal_player(player)
         end
     end
-    if position.y >= 190 then
+    if position.y >= 74 then
         player.teleport({position.x, position.y - 1}, surface)
         player.print(grandmaster .. ' Forcefield does not approve.', {r = 0.98, g = 0.66, b = 0.22})
         if player.character then
@@ -377,18 +343,14 @@ local function on_player_joined_game(event)
 
     if not this.players[player.index] then
         this.players[player.index] = {
-            tiles_enabled = true,
-            steps = 0,
             first_join = false,
             data = {}
         }
     end
 
     if not this.players[player.index].first_join then
-        player.print(grandmaster .. ' Greetings, newly joined ' .. player.name .. '!', {r = 1, g = 0.5, b = 0.1})
-        player.print(grandmaster .. ' Please read the map info.', {r = 1, g = 0.5, b = 0.1})
-        player.print(grandmaster .. ' Guide the choo through the black mist.', {r = 1, g = 0.5, b = 0.1})
-        player.print(grandmaster .. ' To disable rainbow mode, type in console: /rainbow_mode', Color.info)
+        player.print(grandmaster .. ' Greetings, newly joined ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
+        player.print(grandmaster .. ' Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
         this.players[player.index].first_join = true
     end
 
@@ -486,7 +448,17 @@ local function offline_players()
     end
 end
 
+local function disable_recipes()
+    local force = game.forces.player
+    force.recipes['cargo-wagon'].enabled = false
+    force.recipes['fluid-wagon'].enabled = false
+    force.recipes['artillery-wagon'].enabled = false
+    force.recipes['locomotive'].enabled = false
+    force.recipes['pistol'].enabled = false
+end
+
 local function on_research_finished(event)
+    disable_recipes()
     event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
     local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
     if event.research.force.technologies['steel-axe'].researched then
@@ -499,15 +471,15 @@ local function darkness(data)
     local rnd = math.random
     local this = data.this
     local surface = data.surface
-    if rnd(1, 32) == 1 then
+    if rnd(1, 24) == 1 then
         if not this.freeze_daytime then
             return
         end
-        game.print(grandmaster .. ' Sunlight, finally!', {r = 1, g = 0.5, b = 0.1})
+        game.print(grandmaster .. ' Sunlight, finally!', {r = 0.98, g = 0.66, b = 0.22})
         surface.min_brightness = 1
         surface.brightness_visual_weights = {1, 0, 0, 0}
         surface.daytime = 1
-        surface.freeze_daytime = true
+        surface.freeze_daytime = false
         surface.solar_power_multiplier = 1
         this.freeze_daytime = false
         return
@@ -515,8 +487,8 @@ local function darkness(data)
         if this.freeze_daytime then
             return
         end
-        game.print(grandmaster .. ' Darkness has surrounded us!', {r = 1, g = 0.5, b = 0.1})
-        game.print(grandmaster .. ' Builds some lamps!', {r = 1, g = 0.5, b = 0.1})
+        game.print(grandmaster .. ' Darkness has surrounded us!', {r = 0.98, g = 0.66, b = 0.22})
+        game.print(grandmaster .. ' Builds some lamps!', {r = 0.98, g = 0.66, b = 0.22})
         surface.min_brightness = 0
         surface.brightness_visual_weights = {0.90, 0.90, 0.90}
         surface.daytime = 0.42
@@ -528,19 +500,20 @@ local function darkness(data)
 end
 
 local function transfer_pollution(data)
-    local surface = data.surface
+    local Diff = Difficulty.get()
+    local surface = data.loco_surface
     local this = data.this
     if not surface then
         return
     end
-    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * global.difficulty_vote_value
+    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Diff.difficulty_vote_value
     game.surfaces[this.active_surface_index].pollute(this.locomotive.position, pollution)
     surface.clear_pollution()
 end
 
 local tick_minute_functions = {
-    [300 * 3 + 30 * 1] = darkness,
-    [300 * 3 + 30 * 0] = transfer_pollution
+    [300 * 3 + 30 * 6] = darkness,
+    [300 * 3 + 30 * 6] = transfer_pollution
 }
 
 local on_tick = function()
@@ -550,13 +523,17 @@ local on_tick = function()
     local tick = game.tick
     local status = Collapse.start_now()
     local key = tick % 3600
-    local data = {
-        this = this,
-        surface = surface
-    }
+    local unit_surface = this.locomotive.unit_number
+    local icw_table = ICW.get_table()
     if not this.locomotive.valid then
         Entities.loco_died()
     end
+    local data = {
+        this = this,
+        surface = surface,
+        loco_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
+    }
+
     if status == true then
         goto continue
     end
@@ -589,26 +566,56 @@ local on_tick = function()
 
     if this.game_reset_tick then
         if this.game_reset_tick < game.tick then
-            this.game_reset_tick = nil
-            Public.reset_map()
+            if not this.disable_reset then
+                this.game_reset_tick = nil
+                Public.reset_map()
+            else
+                if not this.reset_the_game then
+                    game.print('Auto reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Auto reset is disabled. Server is shutting down!'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.stop_scenario()
+                    this.reset_the_game = true
+                end
+            end
         end
         return
+    end
+
+    if this.chunk_load_tick then
+        if this.chunk_load_tick < game.tick then
+            this.chunk_load_tick = nil
+            Task.set_queue_speed(1)
+        end
     end
 end
 
 local on_init = function()
+    local this = WPT.get_table()
     Public.reset_map()
+
+    local tooltip = {
+        [1] = 'something',
+        [2] = 'something else',
+        [3] = 'something else else',
+        [4] = 'something else else else',
+        [5] = 'something else else else else',
+        [6] = 'something else else else else else',
+        [7] = 'something else else else else else else'
+    }
+
+    Difficulty:set_tooltip(tooltip)
 
     global.custom_highscore.description = 'Wagon distance reached:'
 
-    game.forces.defenders.share_chart = false
-    global.rocks_yield_ore_maximum_amount = 500
-    global.rocks_yield_ore_base_amount = 50
-    global.rocks_yield_ore_distance_modifier = 0.025
+    this.rocks_yield_ore_maximum_amount = 500
+    this.type_modifier = 1
+    this.rocks_yield_ore_base_amount = 50
+    this.rocks_yield_ore_distance_modifier = 0.025
 
     local T = Map.Pop_info()
-    T.main_caption = 'L u m b e r j a c k  '
-    T.sub_caption = ''
+    T.main_caption = 'L u m b e r  j a c k  '
+    T.sub_caption = 'Chop the wood, toss the wood, save the train, die again!'
     T.text =
         table.concat(
         {
@@ -644,10 +651,13 @@ local on_init = function()
     Explosives.set_destructible_tile('deepwater-green', 1000)
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
+
+    Generate.register()
 end
 
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
+Event.on_load(on_load)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

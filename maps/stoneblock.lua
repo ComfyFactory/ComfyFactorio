@@ -13,7 +13,7 @@ require "modules.spawners_contain_biters"
 --require "modules.spitters_spit_biters"
 --require "modules.biters_avoid_damage"
 require "modules.flashlight_toggle_button"
-require "modules.more_attacks"
+--require "modules.more_attacks"
 require "modules.evolution_extended"
 
 local event = require 'utils.event'

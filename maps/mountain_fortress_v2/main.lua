@@ -221,7 +221,13 @@ local function hidden_biter(entity)
 	local surface = entity.surface
 	local h = math_floor(math_abs(entity.position.y))
 	local m = 1 / level_depth
-	local count = math_floor(math_random(0, h + level_depth) * m) + 1
+	
+	local count = 64	
+	for _ = 1, 2, 1 do
+		local c = math_floor(math_random(0, h + level_depth) * m) + 1
+		if c < count then count = c end
+	end			
+	
 	local position = surface.find_non_colliding_position("small-biter", entity.position, 16, 0.5)
 	if not position then position = entity.position end
 	
@@ -235,8 +241,8 @@ local function hidden_biter(entity)
 			unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
 		end
 
-		if math_random(1, 64) == 1 then
-			BiterHealthBooster.add_boss_unit(unit, m * h * 5 + 1, 0.38)
+		if math_random(1, 128) == 1 then
+			BiterHealthBooster.add_boss_unit(unit, m * h + 5, 0.38)
 		end
 	end
 end

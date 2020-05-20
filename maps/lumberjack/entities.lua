@@ -5,10 +5,12 @@ local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local unearthing_worm = require 'functions.unearthing_worm'
 local unearthing_biters = require 'functions.unearthing_biters'
 local Loot = require 'maps.lumberjack.loot'
-local Pets = require 'modules.biter_pets'
+local Pets = require 'maps.lumberjack.biter_pets'
 local tick_tack_trap = require 'functions.tick_tack_trap'
 local RPG = require 'maps.lumberjack.rpg'
 local Mining = require 'maps.lumberjack.mining'
+local Terrain = require 'maps.lumberjack.terrain'
+local BiterHealthBooster = require 'modules.biter_health_booster'
 
 -- tables
 local WPT = require 'maps.lumberjack.table'
@@ -19,6 +21,7 @@ local Public = {}
 
 local math_random = math.random
 local math_floor = math.floor
+local math_abs = math.abs
 
 local grandmaster = '[color=blue]Grandmaster:[/color]'
 
@@ -34,7 +37,25 @@ local rare_treasure_chest_messages = {
     "You're a wizard Harry! We has found the rare precious!"
 }
 
-local disabled_entities = {'gun-turret', 'laser-turret', 'flamethrower-turret', 'land-mine'}
+local disabled_entities = {
+    'gun-turret',
+    'laser-turret',
+    'flamethrower-turret',
+    'land-mine'
+}
+
+local disabled_threats = {
+    ['entity-ghost'] = true,
+    ['raw-fish'] = true
+}
+
+local defeated_messages = {
+    "Oh no, the biters nom'ed the train away!",
+    "I'm not 100% sure, but - apparently the train was chewed away.",
+    'You had one objective - defend the train *-*',
+    "Looks like we're resetting cause you did not defend the train ._.",
+    'ohgodno-why-must-you-do-this-to-me'
+}
 
 local function shuffle(tbl)
     local size = #tbl
@@ -74,9 +95,12 @@ end
 
 local function is_protected(entity)
     local this = WPT.get_table()
-    if string.sub(entity.surface.name, 0, 10) ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return true
     end
+
     local protected = {this.locomotive, this.locomotive_cargo}
     for i = 1, #protected do
         if protected[i] == entity then
@@ -114,26 +138,43 @@ local function protect_train(event)
 end
 
 local function hidden_biter(entity)
-    BiterRolls.wave_defense_set_unit_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.25)
-    if math.random(1, 3) == 1 then
-        entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = entity.position})
-    else
-        entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = entity.position})
+    local surface = entity.surface
+    local h = math_floor(math_abs(entity.position.y))
+    local m = 1 / Terrain.level_depth
+    local count = math_floor(math_random(0, h + Terrain.level_depth) * m) + 1
+    local position = surface.find_non_colliding_position('small-biter', entity.position, 16, 0.5)
+    if not position then
+        position = entity.position
+    end
+
+    BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
+
+    for _ = 1, count, 1 do
+        local unit
+        if math_random(1, 3) == 1 then
+            unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
+        else
+            unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
+        end
+
+        if math_random(1, 64) == 1 then
+            BiterHealthBooster.add_boss_unit(unit, m * h * 5 + 1, 0.38)
+        end
     end
 end
 
 local function hidden_worm(entity)
-    BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.25)
+    BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.20)
     entity.surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position})
 end
 
 local function hidden_biter_pet(event)
-    if math.random(1, 2048) ~= 1 then
+    if math_random(1, 2048) ~= 1 then
         return
     end
     BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
     local unit
-    if math.random(1, 3) == 1 then
+    if math_random(1, 3) == 1 then
         unit =
             event.entity.surface.create_entity(
             {name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position}
@@ -159,7 +200,7 @@ local function hidden_treasure(event)
             rare_treasure_chest_messages[math.random(1, #rare_treasure_chest_messages)],
             {r = 0.98, g = 0.66, b = 0.22}
         )
-        Loot.add(event.entity.surface, event.entity.position, 'wooden-chest', magic)
+        Loot.add_rare(event.entity.surface, event.entity.position, 'wooden-chest', magic)
         return
     end
     player.print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r = 0.98, g = 0.66, b = 0.22})
@@ -189,9 +230,6 @@ end
 
 local function on_player_mined_entity(event)
     local this = WPT.get_table()
-
-    Mining.on_player_mined_entity(event)
-
     local entity = event.entity
     local player = game.players[event.player_index]
     if not player.valid then
@@ -200,6 +238,18 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
+
+    local map_name = 'lumberjack'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    if disabled_threats[entity.name] then
+        return
+    end
+
+    Mining.on_player_mined_entity(event)
 
     if entity.type == 'unit' or entity.type == 'unit-spawner' then
         if math_random(1, 160) == 1 then
@@ -289,15 +339,26 @@ end
 local function on_entity_died(event)
     local this = WPT.get_table()
 
-    Mining.on_entity_died(event)
-
     local entity = event.entity
     if not entity.valid then
         return
     end
+
+    local map_name = 'lumberjack'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    if disabled_threats[entity.name] then
+        return
+    end
+
+    Mining.on_entity_died(event)
+
     if entity.type == 'unit' or entity.type == 'unit-spawner' then
         this.biters_killed = this.biters_killed + 1
-        if math_random(1, 160) == 1 then
+        if math_random(1, 512) == 1 then
             tick_tack_trap(entity.surface, entity.position)
             return
         end
@@ -316,7 +377,7 @@ local function on_entity_died(event)
             hidden_worm(event.entity)
             return
         end
-        if math_random(1, 160) == 1 then
+        if math_random(1, 512) == 1 then
             tick_tack_trap(entity.surface, entity.position)
             return
         end
@@ -345,9 +406,12 @@ local function on_entity_died(event)
 end
 
 local function on_robot_built_entity(event)
-    if string.sub(event.created_entity.surface.name, 0, 10) ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if string.sub(event.created_entity.surface.name, 0, #map_name) ~= map_name then
         return
     end
+
     local y = event.created_entity.position.y
     local ent = event.created_entity
     if y >= 150 then
@@ -373,9 +437,12 @@ local function on_robot_built_entity(event)
 end
 
 local function on_built_entity(event)
-    if string.sub(event.created_entity.surface.name, 0, 10) ~= 'lumberjack' then
+    local map_name = 'lumberjack'
+
+    if string.sub(event.created_entity.surface.name, 0, #map_name) ~= map_name then
         return
     end
+
     local player = game.players[event.player_index]
     local y = event.created_entity.position.y
     local ent = event.created_entity
@@ -426,7 +493,10 @@ function Public.loco_died()
     if not this.locomotive.valid then
         wave_defense_table.game_lost = true
         wave_defense_table.target = nil
-        game.print(grandmaster .. ' Oh noooeeeew, the void destroyed my train!', {r = 1, g = 0.5, b = 0.1})
+        game.print(
+            grandmaster .. ' ' .. defeated_messages[math.random(1, #defeated_messages)],
+            {r = 1, g = 0.5, b = 0.1}
+        )
         game.print(grandmaster .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
         Public.reset_map()
         return
@@ -436,9 +506,11 @@ function Public.loco_died()
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
-    game.print(grandmaster .. ' Oh noooeeeew, they destroyed my train!', {r = 1, g = 0.5, b = 0.1})
+    game.print(grandmaster .. ' ' .. defeated_messages[math.random(1, #defeated_messages)], {r = 1, g = 0.5, b = 0.1})
     game.print(grandmaster .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
     game.print(grandmaster .. ' Game will soft-reset shortly.', {r = 1, g = 0.5, b = 0.1})
+    game.forces.enemy.set_friend('player', true)
+    game.forces.player.set_friend('enemy', true)
 
     local fake_shooter =
         surface.create_entity({name = 'character', position = this.locomotive.position, force = 'enemy'})
@@ -448,7 +520,7 @@ function Public.loco_died()
             position = this.locomotive.position,
             force = 'enemy',
             speed = 1,
-            max_range = 800,
+            max_range = 1200,
             target = this.locomotive,
             source = fake_shooter
         }

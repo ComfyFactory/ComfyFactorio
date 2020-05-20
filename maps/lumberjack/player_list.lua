@@ -1,8 +1,3 @@
--- unload the normal player list
-if package.loaded['comfy_panel.player_list'] then
-    package.unload = 'comfy_panel.player_list'
-end
-
 local Event = require 'utils.event'
 local play_time = require 'utils.session_data'
 local Tabs = require 'comfy_panel.main'

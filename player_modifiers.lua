@@ -29,6 +29,7 @@ local modifiers = {
     'character_mining_speed_modifier',
     'character_reach_distance_bonus',
     'character_resource_reach_distance_bonus',
+    'character_maximum_following_robot_count_bonus',
     'character_running_speed_modifier'
 }
 
