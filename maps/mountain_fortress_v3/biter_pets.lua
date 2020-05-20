@@ -87,7 +87,7 @@ local function is_valid_player(player, unit)
 end
 
 function Public.biter_pets_tame_unit(player, unit, forced)
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     if this.biter_pets[player.index] then
         return false
@@ -149,7 +149,7 @@ local function command_unit(entity, player)
 end
 
 local function on_player_changed_position(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     if math_random(1, 100) ~= 1 then
         return

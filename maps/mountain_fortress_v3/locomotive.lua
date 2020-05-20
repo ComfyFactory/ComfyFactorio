@@ -7,7 +7,6 @@ require 'maps.mountain_fortress_v3.locomotive_market'
 
 local Public = {}
 
-local energy_upgrade = 50000000
 local rnd = math.random
 
 local function validate_player(player)
@@ -27,93 +26,6 @@ local function validate_player(player)
         return false
     end
     return true
-end
-
-local function rebuild_energy_overworld(data)
-    local this = data.this
-    local surface = data.surface
-    if this.ow_energy then
-        if this.ow_energy.valid then
-            local position = this.ow_energy.position
-            local area = {
-                left_top = {x = position.x - 2, y = position.y - 2},
-                right_bottom = {x = position.x + 2, y = position.y + 2}
-            }
-            if Public.contains_positions(this.locomotive.position, area) then
-                return
-            end
-            this.old_ow_energy = this.ow_energy.energy
-            this.ow_energy.destroy()
-            this.energy['mountain_fortress_v3'] = nil
-        end
-    end
-    this.ow_energy =
-        surface.create_entity {
-        name = 'hidden-electric-energy-interface',
-        position = {
-            x = this.locomotive.position.x,
-            y = this.locomotive.position.y + 2
-        },
-        create_build_effect_smoke = false,
-        force = game.forces.enemy
-    }
-
-    this.ow_energy.destructible = false
-    this.ow_energy.minable = false
-    this.ow_energy.operable = false
-
-    this.ow_energy.power_production = 0
-    if this.energy_purchased then
-        this.ow_energy.electric_buffer_size = energy_upgrade
-    else
-        this.ow_energy.electric_buffer_size = 10000000
-    end
-    if this.old_ow_energy then
-        this.ow_energy.energy = this.old_ow_energy
-    end
-end
-
-local function rebuild_energy_loco(data, rebuild)
-    local this = data.this
-    local surface = data.surface
-
-    if rebuild then
-        local radius = 1024
-        local area = {{x = -radius, y = -radius}, {x = radius, y = radius}}
-        for _, entity in pairs(surface.find_entities_filtered {area = area, name = 'electric-energy-interface'}) do
-            entity.destroy()
-        end
-        this.energy.loco = nil
-        this.lo_energy = nil
-    end
-
-    local locomotive = this.locomotive_index
-    if not locomotive then
-        return
-    end
-
-    local center_position = {
-        x = locomotive.area.left_top.x + (locomotive.area.right_bottom.x - locomotive.area.left_top.x) * 0.512,
-        y = locomotive.area.left_top.y + (locomotive.area.right_bottom.y - locomotive.area.left_top.y) * 0.504
-    }
-
-    this.lo_energy =
-        surface.create_entity {
-        name = 'electric-energy-interface',
-        position = center_position,
-        create_build_effect_smoke = false,
-        force = game.forces.enemy
-    }
-
-    this.lo_energy.minable = false
-    this.lo_energy.destructible = false
-    this.lo_energy.operable = false
-    this.lo_energy.power_production = 0
-    if this.energy_purchased then
-        this.lo_energy.electric_buffer_size = energy_upgrade
-    else
-        this.lo_energy.electric_buffer_size = 10000000
-    end
 end
 
 local function property_boost(data)
@@ -152,7 +64,7 @@ local function property_boost(data)
 end
 
 local function fish_tag()
-    local this = WPT.get_table()
+    local this = WPT.get()
     if not this.locomotive_cargo then
         return
     end
@@ -188,7 +100,7 @@ local function fish_tag()
 end
 
 local function set_player_spawn_and_refill_fish()
-    local this = WPT.get_table()
+    local this = WPT.get()
     if not this.locomotive_cargo then
         return
     end
@@ -211,145 +123,15 @@ local function set_player_spawn_and_refill_fish()
     game.forces.player.set_spawn_position({x = position.x, y = position.y}, this.locomotive_cargo.surface)
 end
 
-local direction_lookup = {
-    [-1] = {
-        [1] = defines.direction.southwest,
-        [0] = defines.direction.west,
-        [-1] = defines.direction.northwest
-    },
-    [0] = {
-        [1] = defines.direction.south,
-        [-1] = defines.direction.north
-    },
-    [1] = {
-        [1] = defines.direction.southeast,
-        [0] = defines.direction.east,
-        [-1] = defines.direction.northeast
-    }
-}
-
-local function rand_range(start, stop)
-    local this = WPT.get_table()
-
-    if not this.rng then
-        this.rng = game.create_random_generator()
-    end
-
-    return this.rng(start, stop)
-end
-
-local function get_axis(point, axis)
-    local function safe_get(t, k)
-        local res, value =
-            pcall(
-            function()
-                return t[k]
-            end
-        )
-        if res then
-            return value
-        end
-
-        return nil
-    end
-
-    if point.position then
-        return get_axis(point.position, axis)
-    end
-
-    if point[axis] then
-        return point[axis]
-    end
-
-    if safe_get(point, 'target') then
-        return get_axis(point.target, axis)
-    end
-
-    if #point ~= 2 then
-        log('get_axis: invalid point format')
-        return nil
-    end
-
-    if axis == 'x' then
-        return point[1]
-    end
-
-    return point[2]
-end
-
-local function get_direction(src, dest)
-    local src_x = get_axis(src, 'x')
-    local src_y = get_axis(src, 'y')
-    local dest_x = get_axis(dest, 'x')
-    local dest_y = get_axis(dest, 'y')
-
-    local step = {
-        x = nil,
-        y = nil
-    }
-
-    local precision = rand_range(1, 10)
-    if dest_x - precision > src_x then
-        step.x = 1
-    elseif dest_x < src_x - precision then
-        step.x = -1
-    else
-        step.x = 0
-    end
-
-    if dest_y - precision > src_y then
-        step.y = 1
-    elseif dest_y < src_y - precision then
-        step.y = -1
-    else
-        step.y = 0
-    end
-
-    return direction_lookup[step.x][step.y]
-end
-
-local function get_distance(a, b)
-    local h = (get_axis(a, 'x') - get_axis(b, 'x')) ^ 2
-    local v = (get_axis(a, 'y') - get_axis(b, 'y')) ^ 2
-
-    return math.sqrt(h + v)
-end
-
-local function move_to(ent, trgt, min_distance)
-    local state = {
-        walking = false
-    }
-
-    local distance = get_distance(trgt.position, ent.position)
-    if min_distance < distance then
-        local dir = get_direction(ent.position, trgt.position)
-        if dir then
-            state = {
-                walking = true,
-                direction = dir
-            }
-        end
-    end
-
-    ent.walking_state = state
-    return state.walking
-end
-
 local function tick()
     if game.tick % 120 == 0 then
         Public.boost_players_around_train()
     end
 
     if game.tick % 30 == 0 then
-        local this = WPT.get_table()
-        if this.energy_shared then
-            Public.power_source_overworld()
-            Public.power_source_locomotive()
-        end
         if game.tick % 1800 == 0 then
             set_player_spawn_and_refill_fish()
         end
-        --Public.spawn_player()
 
         fish_tag()
     end
@@ -357,7 +139,10 @@ end
 
 function Public.boost_players_around_train()
     local rpg = RPG.get_table()
-    local this = WPT.get_table()
+    local this = WPT.get()
+    if not this.active_surface_index then
+        return
+    end
     local surface = game.surfaces[this.active_surface_index]
     local icw_table = ICW.get_table()
     local unit_surface = this.locomotive.unit_number
@@ -380,17 +165,29 @@ function Public.boost_players_around_train()
 end
 
 function Public.render_train_hp()
-    local this = WPT.get_table()
+    local this = WPT.get()
     local surface = game.surfaces[this.active_surface_index]
 
     local names = {
+        'Hanakocz',
+        'Redlabel',
+        'Hanakocz',
+        'Gerkiz',
+        'Hanakocz',
         'Mewmew',
+        'Gerkiz',
+        'Hanakocz',
+        'Redlabel',
+        'Gerkiz',
+        'Hanakocz',
         'Redlabel',
         'Gerkiz',
         'Hanakocz'
     }
 
     local size_of_names = #names
+
+    local n = names[rnd(1, size_of_names)]
 
     this.health_text =
         rendering.draw_text {
@@ -407,7 +204,7 @@ function Public.render_train_hp()
 
     this.caption =
         rendering.draw_text {
-        text = names[rnd(1, size_of_names)] .. 's Comfy Train',
+        text = n .. 's Comfy Train',
         surface = surface,
         target = this.locomotive,
         target_offset = {0, -4.25},
@@ -429,85 +226,8 @@ function Public.render_train_hp()
     }
 end
 
-function Public.spawn_player()
-    local rnd = math.random
-
-    local this = WPT.get_table()
-    local surface = game.surfaces[this.active_surface_index]
-    local position = this.locomotive.position
-    if not this.locomotive then
-        return
-    end
-    if not this.locomotive.valid then
-        return
-    end
-
-    if not this.mountain_fortress_v3_one or not this.mountain_fortress_v3_one.valid then
-        this.mountain_fortress_v3_one =
-            surface.create_entity(
-            {
-                name = 'character',
-                position = {position.x + 5, position.y},
-                force = 'player',
-                direction = 0
-            }
-        )
-        this.mountain_fortress_v3_one_caption =
-            rendering.draw_text {
-            text = 'Lumberjack',
-            surface = surface,
-            target = this.mountain_fortress_v3_one,
-            target_offset = {0, -2.25},
-            color = {r = 0, g = 110, b = 33},
-            scale = 0.75,
-            font = 'default-game',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
-    end
-    if not this.mountain_fortress_v3_two or not this.mountain_fortress_v3_two.valid then
-        this.mountain_fortress_v3_two =
-            surface.create_entity(
-            {
-                name = 'character',
-                position = {position.x + -5, position.y},
-                force = 'player',
-                direction = 0
-            }
-        )
-        this.mountain_fortress_v3_two_caption =
-            rendering.draw_text {
-            text = 'Lumberjack',
-            surface = surface,
-            target = this.mountain_fortress_v3_two,
-            target_offset = {0, -2.25},
-            color = {r = 0, g = 110, b = 33},
-            scale = 0.75,
-            font = 'default-game',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
-    end
-    for _, p in pairs(game.connected_players) do
-        if this.mountain_fortress_v3_one and this.mountain_fortress_v3_one.valid then
-            if rnd(1, 32) == 1 then
-                this.mountain_fortress_v3_one.destroy()
-                return
-            end
-            move_to(this.mountain_fortress_v3_one, p, rnd(15, 50))
-        end
-        if this.mountain_fortress_v3_two and this.mountain_fortress_v3_two.valid then
-            if rnd(1, 32) == 1 then
-                this.mountain_fortress_v3_two.destroy()
-                return
-            end
-            move_to(this.mountain_fortress_v3_two, p, rnd(15, 50))
-        end
-    end
-end
-
 function Public.locomotive_spawn(surface, position)
-    local this = WPT.get_table()
+    local this = WPT.get()
     for y = -6, 6, 2 do
         surface.create_entity(
             {name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0}
@@ -580,49 +300,6 @@ function Public.contains_positions(pos, area)
     return false
 end
 
-function Public.power_source_overworld()
-    local this = WPT.get_table()
-    local surface = game.surfaces[this.active_surface_index]
-    if not this.locomotive then
-        return
-    end
-    if not this.locomotive.valid then
-        return
-    end
-
-    local data = {
-        this = this,
-        surface = surface
-    }
-
-    rebuild_energy_overworld(data)
-end
-
-function Public.power_source_locomotive()
-    local this = WPT.get_table()
-    local icw_table = ICW.get_table()
-    if not this.locomotive then
-        return
-    end
-    if not this.locomotive.valid then
-        return
-    end
-    local unit_surface = this.locomotive.unit_number
-    local surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
-
-    local data = {
-        this = this,
-        icw_table = icw_table,
-        surface = surface
-    }
-
-    if not this.lo_energy then
-        rebuild_energy_loco(data)
-    elseif not this.lo_energy.valid then
-        rebuild_energy_loco(data, true)
-    end
-end
-
---Event.on_nth_tick(5, tick)
+Event.on_nth_tick(5, tick)
 
 return Public

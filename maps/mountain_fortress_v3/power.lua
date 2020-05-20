@@ -19,7 +19,7 @@ local function balance(t)
 end
 
 local function tick()
-    local this = WPT.get_table()
+    local this = WPT.get()
     if not this.energy['mountain_fortress_v3'] then
         this.energy['mountain_fortress_v3'] = this.ow_energy
     end

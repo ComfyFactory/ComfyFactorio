@@ -6,7 +6,6 @@ local format_number = require 'util'.format_number
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]'
 
-local energy_upgrade = 50000000
 local random = math.random
 
 local Public = {}
@@ -21,10 +20,9 @@ local function shuffle(tbl)
 end
 
 function Public.get_items()
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     local threat_cost = 20000
-    local energy_cost = 15000
     local health_cost = 15000 * (1 + this.health_upgrades)
     local aura_cost = 15000 * (1 + this.aura_upgrades)
     local xp_point_boost_cost = 15000 * (1 + this.xp_points_upgrade)
@@ -35,14 +33,6 @@ function Public.get_items()
         value = 'coin',
         price = threat_cost,
         tooltip = '[Wave Defense]:\nReduces the threat level by 50%\nUsable if threat level is too high.\nCan be purchased multiple times.',
-        sprite = 'item/computer',
-        enabled = true
-    }
-    items['energy_upgrade'] = {
-        stack = 1,
-        value = 'coin',
-        price = energy_cost,
-        tooltip = '[Linked Power]:\nUpgrades the buffer size of the energy interface\nUsable if the power dies easily.',
         sprite = 'item/computer',
         enabled = true
     }
@@ -67,14 +57,6 @@ function Public.get_items()
         value = 'coin',
         price = xp_point_boost_cost,
         tooltip = '[XP Points]:\nUpgrades the amount of xp points you get inside the XP aura',
-        sprite = 'item/computer',
-        enabled = true
-    }
-    items['purge_darkness'] = {
-        stack = 1,
-        value = 'coin',
-        price = 1550,
-        tooltip = "[Darkness]:\nPay the Sun Gods some coins and they'll reward you handsomely.",
         sprite = 'item/computer',
         enabled = true
     }
@@ -137,7 +119,7 @@ local function validate_player(player)
 end
 
 local function close_market_gui(player)
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     local element = player.gui.center
     local data = this.players[player.index].data
@@ -152,6 +134,9 @@ local function close_market_gui(player)
         end
         if data.frame and data.frame.valid then
             data.frame.destroy()
+            for k, _ in pairs(data) do
+                data[k] = nil
+            end
         end
     end
 end
@@ -160,7 +145,7 @@ local function redraw_market_items(gui, player, search_text)
     if not validate_player(player) then
         return
     end
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     gui.clear()
     shuffle(Public.get_items())
@@ -235,7 +220,7 @@ end
 
 local function slider_changed(event)
     local player = game.players[event.player_index]
-    local this = WPT.get_table()
+    local this = WPT.get()
     local slider_value
 
     slider_value = this.players
@@ -260,7 +245,7 @@ local function slider_changed(event)
 end
 
 local function text_changed(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local player = game.players[event.player_index]
 
     local data = this.players[player.index].data
@@ -285,7 +270,7 @@ local function text_changed(event)
 end
 
 local function gui_opened(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     if not event.gui_type == defines.gui_type.entity then
         return
@@ -407,12 +392,16 @@ local function gui_opened(event)
 end
 
 local function gui_click(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local wdt = WD.get_table()
 
     local element = event.element
     local player = game.players[event.player_index]
     if not validate_player(player) then
+        return
+    end
+
+    if not this.players[player.index] then
         return
     end
 
@@ -485,31 +474,6 @@ local function gui_click(event)
 
         return
     end
-    if name == 'energy_upgrade' then
-        if this.energy_purchased then
-            return player.print(
-                shopkeeper .. ' ' .. player.name .. ', max energy upgrade is already purchased!',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
-        end
-        player.remove_item({name = item.value, count = cost})
-
-        game.print(
-            shopkeeper ..
-                ' ' .. player.name .. ' has bought the group a power upgrade! The energy interface is now buffed!',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
-        this.energy_purchased = true
-        this.train_upgrades = this.train_upgrades + 1
-
-        this.lo_energy.electric_buffer_size = this.lo_energy.electric_buffer_size + energy_upgrade
-        this.ow_energy.electric_buffer_size = this.ow_energy.electric_buffer_size + energy_upgrade
-
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
     if name == 'locomotive_max_health' then
         player.remove_item({name = item.value, count = cost})
 
@@ -558,35 +522,6 @@ local function gui_click(event)
         return
     end
 
-    if name == 'purge_darkness' then
-        if not this.freeze_daytime then
-            return player.print(
-                shopkeeper .. ' ' .. player.name .. ", it's already sunlight!",
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
-        end
-        game.print(
-            shopkeeper .. ' ' .. player.name .. ' has paid the Sun Gods some coins for sunlight!',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
-
-        local surface = game.surfaces[this.active_surface_index]
-        game.print(shopkeeper .. ' Sunlight, finally!', {r = 0.98, g = 0.66, b = 0.22})
-        surface.min_brightness = 1
-        surface.brightness_visual_weights = {1, 0, 0, 0}
-        surface.daytime = 1
-        surface.freeze_daytime = false
-        surface.solar_power_multiplier = 1
-        this.freeze_daytime = false
-
-        player.remove_item({name = item.value, count = cost})
-
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
-
     if name == 'xp_points_boost' then
         player.remove_item({name = item.value, count = cost})
 
@@ -623,7 +558,7 @@ end
 
 local function gui_closed(event)
     local player = game.players[event.player_index]
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     local type = event.gui_type
 
@@ -651,8 +586,11 @@ local function contains_positions(pos, area)
 end
 
 local function on_player_changed_position(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local player = game.players[event.player_index]
+    if not this.players[player.index] then
+        return
+    end
     local data = this.players[player.index].data
 
     if data and data.frame and data.frame.valid then
@@ -685,9 +623,6 @@ local function create_market(data, rebuild)
     end
 
     local locomotive = this.locomotive_index
-    if not locomotive then
-        return
-    end
 
     local center_position = {
         x = locomotive.area.left_top.x + (locomotive.area.right_bottom.x - locomotive.area.left_top.x) * 0.5,
@@ -697,7 +632,7 @@ local function create_market(data, rebuild)
     this.market = surface.create_entity {name = 'market', position = center_position, force = 'player'}
 
     rendering.draw_text {
-        text = 'Power & Market',
+        text = 'Market',
         surface = surface,
         target = this.market,
         target_offset = {0, 2},
@@ -708,6 +643,7 @@ local function create_market(data, rebuild)
     this.market.destructible = false
 
     if not this.loco_surface then
+        this.loco_surface = this.locomotive.surface
         return
     end
 
@@ -746,14 +682,16 @@ local function create_market(data, rebuild)
 end
 
 local function place_market()
-    local this = WPT.get_table()
+    local this = WPT.get()
     local icw_table = ICW.get_table()
     if not this.locomotive then
         return
     end
+
     if not this.locomotive.valid then
         return
     end
+
     local unit_surface = this.locomotive.unit_number
     local surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
 

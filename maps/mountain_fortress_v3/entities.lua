@@ -1,4 +1,5 @@
 require 'on_tick_schedule'
+require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'
 local Map_score = require 'comfy_panel.map_score'
@@ -45,8 +46,7 @@ local defeated_messages = {
     "Oh no, the biters nom'ed the train away!",
     "I'm not 100% sure, but - apparently the train was chewed away.",
     'You had one objective - defend the train *-*',
-    "Looks like we're resetting cause you did not defend the train ._.",
-    'ohgodno-why-must-you-do-this-to-me'
+    "Looks like we're resetting cause you did not defend the train ._."
 }
 
 local entity_type = {
@@ -57,7 +57,7 @@ local entity_type = {
 }
 
 local function set_objective_health(entity, final_damage_amount)
-    local this = WPT.get_table()
+    local this = WPT.get()
     if final_damage_amount == 0 then
         return
     end
@@ -84,7 +84,7 @@ local function set_objective_health(entity, final_damage_amount)
 end
 
 local function is_protected(entity)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local map_name = 'mountain_fortress_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
@@ -101,7 +101,7 @@ local function is_protected(entity)
 end
 
 local function protect_train(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     if event.entity.force.index ~= 1 then
         return
     end --Player Force
@@ -256,7 +256,7 @@ local function give_coin(player)
 end
 
 local function on_player_mined_entity(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local entity = event.entity
     local player = game.players[event.player_index]
     if not player.valid then
@@ -316,7 +316,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     if not event.entity then
         return
     end
@@ -333,7 +333,7 @@ local function on_player_repaired_entity(event)
 end
 
 local function on_entity_died(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     local entity = event.entity
     if not entity.valid then
@@ -396,7 +396,7 @@ local function on_entity_died(event)
 end
 
 function Public.set_scores()
-    local this = WPT.get_table()
+    local this = WPT.get()
     local wagon = this.locomotive_cargo
     if not wagon then
         return
@@ -413,7 +413,7 @@ function Public.set_scores()
 end
 
 function Public.loco_died()
-    local this = WPT.get_table()
+    local this = WPT.get()
     local surface = game.surfaces[this.active_surface_index]
     local wave_defense_table = WD.get_table()
     Public.set_scores()
@@ -452,7 +452,7 @@ function Public.loco_died()
 
     surface.spill_item_stack(this.locomotive.position, {name = 'coin', count = 512}, false)
     surface.spill_item_stack(this.locomotive_cargo.position, {name = 'coin', count = 512}, false)
-    this.game_reset_tick = game.tick + 1800
+    this.game_reset_tick = game.tick + 1000
     for _, player in pairs(game.connected_players) do
         player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
     end

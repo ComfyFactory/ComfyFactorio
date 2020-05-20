@@ -18,6 +18,7 @@ local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local P = require 'player_modifiers'
 local Collapse = require 'modules.collapse'
+local Terrain = require 'maps.mountain_fortress_v3.terrain'
 
 local math_floor = math.floor
 local math_random = math.random
@@ -187,24 +188,24 @@ end
 local function update_player_stats(player)
     local player_modifiers = P.get_table()
     local strength = rpg_t[player.index].strength - 10
-    player_modifiers[player.index].character_inventory_slots_bonus['rpg'] = math_round(strength * 0.2, 3)
-    player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math_round(strength * 0.008, 3)
+    player_modifiers[player.index].character_inventory_slots_bonus['rpg'] = math.round(strength * 0.2, 3)
+    player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math.round(strength * 0.008, 3)
 
     local magic = rpg_t[player.index].magic - 10
     local v = magic * 0.22
-    player_modifiers[player.index].character_build_distance_bonus['rpg'] = math_round(v, 3)
-    player_modifiers[player.index].character_item_drop_distance_bonus['rpg'] = math_round(v, 3)
-    player_modifiers[player.index].character_reach_distance_bonus['rpg'] = math_round(v, 3)
-    player_modifiers[player.index].character_loot_pickup_distance_bonus['rpg'] = math_round(v * 0.5, 3)
-    player_modifiers[player.index].character_item_pickup_distance_bonus['rpg'] = math_round(v * 0.25, 3)
-    player_modifiers[player.index].character_resource_reach_distance_bonus['rpg'] = math_round(v * 0.15, 3)
+    player_modifiers[player.index].character_build_distance_bonus['rpg'] = math.round(v, 3)
+    player_modifiers[player.index].character_item_drop_distance_bonus['rpg'] = math.round(v, 3)
+    player_modifiers[player.index].character_reach_distance_bonus['rpg'] = math.round(v, 3)
+    player_modifiers[player.index].character_loot_pickup_distance_bonus['rpg'] = math.round(v * 0.5, 3)
+    player_modifiers[player.index].character_item_pickup_distance_bonus['rpg'] = math.round(v * 0.25, 3)
+    player_modifiers[player.index].character_resource_reach_distance_bonus['rpg'] = math.round(v * 0.15, 3)
 
     local dexterity = rpg_t[player.index].dexterity - 10
-    player_modifiers[player.index].character_running_speed_modifier['rpg'] = math_round(dexterity * 0.002, 3)
-    player_modifiers[player.index].character_crafting_speed_modifier['rpg'] = math_round(dexterity * 0.015, 3)
+    player_modifiers[player.index].character_running_speed_modifier['rpg'] = math.round(dexterity * 0.002, 3)
+    player_modifiers[player.index].character_crafting_speed_modifier['rpg'] = math.round(dexterity * 0.015, 3)
 
     player_modifiers[player.index].character_health_bonus['rpg'] =
-        math_round((rpg_t[player.index].vitality - 10) * 6, 3)
+        math.round((rpg_t[player.index].vitality - 10) * 6, 3)
 
     P.update_player_modifiers(player)
 end
@@ -578,7 +579,7 @@ function Public.gain_xp(player, amount)
         fee = amount * 0.3
         rpg_t.global_pool = rpg_t.global_pool + fee
     end
-    amount = math_floor(amount, 2) - fee
+    amount = math_floor(amount, 3) - fee
     rpg_t[player.index].xp = rpg_t[player.index].xp + amount
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
     if player.gui.left.rpg then
@@ -678,7 +679,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             magic = 10,
             dexterity = 10,
             vitality = 10,
-            points_to_distribute = 0,
+            points_to_distribute = 5,
             last_floaty_text = visuals_delay,
             xp_since_last_floaty_text = 0,
             reset = false,
@@ -1109,11 +1110,11 @@ end
 local function distance(player)
     local distance_to_center = math_floor(math_sqrt(player.position.x ^ 2 + player.position.y ^ 2))
     local location = distance_to_center
-    if location < 950 then
+    if location < Terrain.level_depth - 10 then
         return
     end
-    local min = 960 * rpg_t[player.index].bonus
-    local max = 965 * rpg_t[player.index].bonus
+    local min = Terrain.level_depth * rpg_t[player.index].bonus
+    local max = Terrain.level_depth + 5 * rpg_t[player.index].bonus
     local min_times = location >= min
     local max_times = location <= max
     if min_times and max_times then
@@ -1184,7 +1185,7 @@ local function on_pre_player_mined_item(event)
     if entity.type == 'resource' then
         xp_amount = 0.5 * distance_multiplier
     else
-        xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
+        xp_amount = (3 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
     end
 
     Public.gain_xp(player, xp_amount)

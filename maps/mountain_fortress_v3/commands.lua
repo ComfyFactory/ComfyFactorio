@@ -11,7 +11,7 @@ commands.add_command(
         local p
         local player = game.player
         local reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
-        local this = WPT.get_table()
+        local this = WPT.get()
 
         if player then
             if player ~= nil then
@@ -45,7 +45,7 @@ commands.add_command(
     function(cmd)
         local p
         local player = game.player
-        local this = WPT.get_table()
+        local this = WPT.get()
         local param = tostring(cmd.parameter)
 
         if player then

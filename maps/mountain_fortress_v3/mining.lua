@@ -175,7 +175,7 @@ function Public.on_player_mined_entity(event)
     end
 
     local player = game.players[event.player_index]
-    local this = WPT.get_table()
+    local this = WPT.get()
     if not player then
         return
     end

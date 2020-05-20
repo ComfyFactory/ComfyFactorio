@@ -18,7 +18,7 @@ local function reset_forces(new_surface, old_surface)
     end
     for _, tech in pairs(game.forces.player.technologies) do
         tech.researched = false
-        game.player.force.set_saved_technology_progress(tech, 0)
+        game.forces.player.set_saved_technology_progress(tech, 0)
     end
 end
 

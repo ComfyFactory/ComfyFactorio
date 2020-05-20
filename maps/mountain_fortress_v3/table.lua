@@ -3,10 +3,8 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 
 local this = {
-    train_reveal = true,
-    energy_shared = true,
-    reveal_normally = false,
-    disable_reset = false
+    disable_reset = false,
+    players = {}
 }
 local Public = {}
 
@@ -18,12 +16,6 @@ Global.register(
 )
 
 function Public.reset_table()
-    --for k, _ in pairs(this) do
-    --  this[k] = nil
-    --end
-    this.lo_energy = nil
-    this.ow_energy = nil
-    this.dummy = nil
     this.locomotive_index = nil
     this.loco_surface = nil
     this.game_lost = false
@@ -55,17 +47,11 @@ function Public.reset_table()
     this.threat_upgrades = 0
 end
 
-function Public.get_table()
-    return this
-end
-
-function Public.init(args)
-    if args then
-        this.train_reveal = args.train_reveal
-        this.energy_shared = args.energy_shared
-        this.reveal_normally = args.reveal_normally
+function Public.get(key)
+    if key then
+        return this[key]
     else
-        return error('Not a valid init argument', 2)
+        return this
     end
 end
 

@@ -3,14 +3,14 @@ local Loot = require 'maps.mountain_fortress_v3.loot'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
+local Terrain = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
 
 local insert = table.insert
 
-local tiles_per_tick
-local regen_decoratives
-local surfaces = {}
-
-local total_calls
+local tiles_per_call = 16 --how many tiles are inserted with each call of insert_action
+local total_calls = math.ceil(1024 / tiles_per_call)
+local regen_decoratives = false
+local force_chunk = false
 
 local Public = {}
 
@@ -283,12 +283,12 @@ local function map_gen_action(data)
             return
         end
 
-        local shape = surfaces[data.surface.name]
+        local shape = Terrain
         if shape == nil then
             return false
         end
 
-        local count = tiles_per_tick
+        local count = total_calls
 
         local y = state + data.top_y
         local x = data.x
@@ -352,7 +352,7 @@ local map_gen_action_token = Token.register(map_gen_action)
 -- @param event <table> the event table from on_chunk_generated
 function Public.schedule_chunk(event)
     local surface = event.surface
-    local shape = surfaces[surface.name]
+    local shape = Terrain
 
     if not surface.valid then
         return
@@ -390,7 +390,7 @@ end
 -- @param event <table> the event table from on_chunk_generated
 function Public.do_chunk(event)
     local surface = event.surface
-    local shape = surfaces[surface.name]
+    local shape = Terrain
 
     if not surface.valid then
         return
@@ -431,50 +431,19 @@ function Public.do_chunk(event)
     do_place_treasure(data)
 end
 
---- Sets the variables for the generate functions, should only be called from map_loader
--- @param args <table>
-function Public.init(args)
-    tiles_per_tick = args.tiles_per_tick or 32
-    regen_decoratives = args.regen_decoratives or false
-    for surface_name, shape in pairs(args.surfaces or {}) do
-        surfaces[surface_name] = shape
-    end
-
-    total_calls = math.ceil(1024 / tiles_per_tick) + 5
-end
-
 local do_chunk = Public.do_chunk
 local schedule_chunk = Public.schedule_chunk
 
 local function on_chunk(event)
-    if event.tick == 0 then
+    if force_chunk then
         do_chunk(event)
+    elseif event.tick == 0 then
+        --do_chunk(event)
     else
         schedule_chunk(event)
     end
 end
 
---- Registers the event to generate our map when Chunks are generated, should only be called from map_loader
-function Public.register()
-    if not Public.enable_register_events then
-        return
-    end
-
-    if _DEBUG then
-        Event.add(defines.events.on_chunk_generated, do_chunk)
-    else
-        Event.add(defines.events.on_chunk_generated, on_chunk)
-    end
-end
-
---- Returns the surfaces that the generate functions will act on
--- Warning! Changing this table after on_init or on_load has run will cause desyncs!
--- @return dictionary of surface_name -> shape function
-function Public.get_surfaces()
-    if _LIFECYCLE == 8 then
-        error('Calling Generate.get_surfaces after on_init() or on_load() has run is a desync risk.', 2)
-    end
-    return surfaces
-end
+Event.add(defines.events.on_chunk_generated, on_chunk)
 
 return Public

@@ -10,7 +10,8 @@ local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
-Public.level_depth = 960
+Public.level_depth = 704
+Public.level_width = 400
 local worm_level_modifier = 0.18
 local average_number_of_wagons_per_level = 2
 local chunks_per_level = ((Public.level_depth - 32) / 32) ^ 2
@@ -1171,7 +1172,7 @@ local function is_out_of_map(p)
     return true
 end
 
-local function process_bits(_, _, data)
+local function process_bits(data)
     local left_top_y = data.area.left_top.y
     local index = math_floor((math_abs(left_top_y / Public.level_depth)) % 11) + 1
     local process_level = Public.levels[index]
@@ -1179,9 +1180,7 @@ local function process_bits(_, _, data)
         process_level = Public.levels[#Public.levels]
     end
 
-    if not is_out_of_map({x = data.x, y = data.y}) then
-        process_level(data)
-    end
+    process_level(data)
 end
 
 local function border_chunk(data)
@@ -1192,6 +1191,9 @@ local function border_chunk(data)
         for y = 0, 31, 1 do
             local pos = {x = left_top.x + x, y = left_top.y + y}
             local p = {x = left_top.x + x, y = left_top.y + y}
+            if surface.get_tile(p).name == 'out-of-map' then
+                return
+            end
             if math_random(1, math.ceil(p.y + p.y) + 64) == 1 then
                 surface.create_entity({name = trees[math_random(1, #trees)], position = p})
             end
@@ -1235,6 +1237,9 @@ local function replace_water(data)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
+            if surface.get_tile(p).name == 'out-of-map' then
+                return
+            end
             if surface.get_tile(p).collides_with('resource-layer') then
                 surface.set_tiles({{name = 'dirt-' .. math_random(1, 5), position = p}}, true)
             end
@@ -1292,9 +1297,12 @@ local function out_of_map(data)
     end
 end
 
-function Public.heavy_functions(x, y, data)
+function Public.heavy_functions(_, _, data)
     local area = data.area
     local top_y = area.left_top.y
+    local surface = data.surface
+    local p = {x = data.x, y = data.y}
+    local oom = surface.get_tile(p).name == 'out-of-map'
 
     data.seed = data.surface.map_gen_settings.seed
 
@@ -1302,8 +1310,12 @@ function Public.heavy_functions(x, y, data)
         return
     end
 
+    if oom then
+        return
+    end
+
     if top_y < 0 then
-        process_bits(x, y, data)
+        process_bits(data)
     end
 end
 
@@ -1316,26 +1328,23 @@ local function on_chunk_generated(event)
 
     local surface = event.surface
     local seed = surface.map_gen_settings.seed
-    local position = WPT.get_table().locomotive.position
     local left_top = event.area.left_top
+    local p = {x = left_top.x, y = left_top.y}
+    local oom = surface.get_tile(p).name == 'out-of-map'
 
     local data = {
         surface = surface,
         seed = seed,
-        position = position,
         left_top = left_top
     }
 
-    if left_top.x >= Public.level_depth * 0.5 then
-        return
-    end
-    if left_top.x < Public.level_depth * -0.5 then
+    if left_top.y % Public.level_depth == 0 and left_top.y < 0 then
+        WPT.get().left_top = data.left_top
+        wall(data)
         return
     end
 
-    if left_top.y % Public.level_depth == 0 and left_top.y < 0 then
-        WPT.get_table().left_top = data.left_top
-        wall(data)
+    if oom then
         return
     end
 
@@ -1360,9 +1369,11 @@ local function on_chunk_generated(event)
     end
 
     if left_top.y == -128 and left_top.x == -128 then
-        local p = WPT.get_table().locomotive.position
+        local pl = WPT.get().locomotive.position
         for _, entity in pairs(
-            surface.find_entities_filtered({area = {{p.x - 3, p.y - 4}, {p.x + 3, p.y + 10}}, type = 'simple-entity'})
+            surface.find_entities_filtered(
+                {area = {{pl.x - 3, pl.y - 4}, {pl.x + 3, pl.y + 10}}, type = 'simple-entity'}
+            )
         ) do
             entity.destroy()
         end
@@ -1373,8 +1384,6 @@ local function on_chunk_generated(event)
             place_wagon(data)
         end
     end
-
-    --out_of_map_area(data)
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)

@@ -1,6 +1,6 @@
 -- modules
+require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.player_list'
---require 'maps.mountain_fortress_v3.comfylatron'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.flamethrower_nerf'
 
@@ -14,6 +14,7 @@ require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.pistol_buffs'
 
+local CS = require 'maps.mountain_fortress_v3.surface'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Entities = require 'maps.mountain_fortress_v3.entities'
@@ -22,7 +23,6 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
-local Reset = require 'maps.mountain_fortress_v3.soft_reset'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -31,24 +31,19 @@ local render_train_hp = require 'maps.mountain_fortress_v3.locomotive'.render_tr
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
-local Balance = require 'maps.mountain_fortress_v3.balance'
-local shape = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
-local Generate = require 'maps.mountain_fortress_v3.generate'
-local Task = require 'utils.task'
 local Difficulty = require 'modules.difficulty_vote'
+local Task = require 'utils.task'
 
 local Public = {}
-local math_random = math.random
 
-WPT.init({train_reveal = false, energy_shared = true, reveal_normally = true})
-
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['wood'] = 4, ['rail'] = 16, ['raw-fish'] = 2}
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
 
 local function disable_tech()
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['optics'].researched = true
+    game.forces.player.technologies['railway'].researched = true
     game.forces.player.technologies['land-mine'].enabled = false
-    Balance.init_enemy_weapon_damage()
+    --Balance.init_enemy_weapon_damage()
 end
 
 local function set_difficulty()
@@ -78,16 +73,30 @@ local function set_difficulty()
 end
 
 local function render_direction(surface)
-    rendering.draw_text {
-        text = 'Welcome to Mountain Fortress v3!',
-        surface = surface,
-        target = {-0, 10},
-        color = {r = 0.98, g = 0.66, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+    local counter = WPT.get('soft_reset_counter')
+    if counter then
+        rendering.draw_text {
+            text = 'Welcome to Mountain Fortress v3!\nRun: ' .. counter,
+            surface = surface,
+            target = {-0, 10},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    else
+        rendering.draw_text {
+            text = 'Welcome to Mountain Fortress v3!',
+            surface = surface,
+            target = {-0, 10},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    end
 
     rendering.draw_text {
         text = '▼',
@@ -151,37 +160,24 @@ local function render_direction(surface)
         scale_with_zoom = false
     }
 
-    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
-    surface.create_entity({name = 'electric-beam', position = {-196, 74}, source = {-196, 74}, target = {196, 74}})
+    local x_min = -Terrain.level_width / 2
+    local x_max = Terrain.level_width / 2
+
+    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
 end
 
 function Public.reset_map()
+    local Settings = CS.get()
     local Diff = Difficulty.get()
-    local this = WPT.get_table()
+    local this = WPT.get()
     local wave_defense_table = WD.get_table()
     local get_score = Score.get_table()
-    local map_gen_settings = {
-        ['seed'] = math_random(10000, 99999),
-        ['width'] = Terrain.level_depth,
-        ['water'] = 0.001,
-        ['starting_area'] = 1,
-        ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
-        ['default_enable_all_autoplace_controls'] = true,
-        ['autoplace_settings'] = {
-            ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
-            ['decorative'] = {treat_missing_as_default = true}
-        }
-    }
 
     if not this.active_surface_index then
-        this.active_surface_index = game.create_surface('mountain_fortress_v3', map_gen_settings).index
-        this.active_surface = game.surfaces[this.active_surface_index]
+        this.active_surface_index = Settings.active_surface_index
     else
-        game.forces.player.set_spawn_position({-27, 40}, game.surfaces[this.active_surface_index])
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
-        this.active_surface = game.surfaces[this.active_surface_index]
+        this.active_surface_index = CS.create_surface()
     end
 
     Poll.reset()
@@ -205,8 +201,6 @@ function Public.reset_map()
     get_score.score_table = {}
     Diff.difficulty_poll_closing_timeout = game.tick + 90000
     Diff.difficulty_player_votes = {}
-
-    game.difficulty_settings.technology_price_multiplier = 0.6
 
     Collapse.set_kill_entities(false)
     Collapse.set_speed(8)
@@ -239,30 +233,15 @@ function Public.reset_map()
 
     set_difficulty()
 
-    local surfaces = {
-        [surface.name] = shape
-    }
-    Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
     Task.reset_queue()
     Task.start_queue()
-    Task.set_queue_speed(20)
+    Task.set_queue_speed(10)
 
     this.chunk_load_tick = game.tick + 500
 end
 
-local function on_load()
-    local this = WPT.get_table()
-
-    local surfaces = {
-        [this.active_surface.name] = shape
-    }
-    Generate.init({surfaces = surfaces, regen_decoratives = true, tiles_per_tick = 32})
-    Generate.register()
-    Task.start_queue()
-end
-
 local function on_player_changed_position(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local player = game.players[event.player_index]
     local map_name = 'mountain_fortress_v3'
 
@@ -272,21 +251,7 @@ local function on_player_changed_position(event)
 
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
-    if position.x >= Terrain.level_depth * 0.5 then
-        return
-    end
-    if position.x < Terrain.level_depth * -0.5 then
-        return
-    end
 
-    if
-        not this.train_reveal and not this.reveal_normally or
-            this.players[player.index].start_tick and game.tick - this.players[player.index].start_tick < 6400
-     then
-        if position.y < 5 then
-            Terrain.reveal_player(player)
-        end
-    end
     if position.y >= 74 then
         player.teleport({position.x, position.y - 1}, surface)
         player.print('Forcefield does not approve.', {r = 0.98, g = 0.66, b = 0.22})
@@ -301,7 +266,7 @@ local function on_player_changed_position(event)
 end
 
 local function on_player_joined_game(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local surface = game.surfaces[this.active_surface_index]
     local player = game.players[event.player_index]
 
@@ -325,6 +290,9 @@ local function on_player_joined_game(event)
     end
 
     if player.surface.index ~= this.active_surface_index then
+        if not player.character then
+            player.create_character()
+        end
         player.teleport(
             surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
             surface
@@ -340,7 +308,7 @@ local function on_player_left_game()
 end
 
 local function on_pre_player_left_game(event)
-    local this = WPT.get_table()
+    local this = WPT.get()
     local player = game.players[event.player_index]
     if player.controller_type == defines.controllers.editor then
         player.toggle_map_editor()
@@ -351,7 +319,7 @@ local function on_pre_player_left_game(event)
 end
 
 local function offline_players()
-    local this = WPT.get_table()
+    local this = WPT.get()
     local players = this.offline_players
     local surface = game.surfaces[this.active_surface_index]
     if #players > 0 then
@@ -437,83 +405,15 @@ local function on_research_finished(event)
     event.research.force.manual_mining_speed_modifier = mining_speed_bonus
 end
 
-local function darkness(data)
-    local rnd = math.random
-    local this = data.this
-    local surface = data.surface
-    if rnd(1, 24) == 1 then
-        if not this.freeze_daytime then
-            return
-        end
-        game.print('Sunlight, finally!', {r = 0.98, g = 0.66, b = 0.22})
-        surface.min_brightness = 1
-        surface.brightness_visual_weights = {1, 0, 0, 0}
-        surface.daytime = 1
-        surface.freeze_daytime = false
-        surface.solar_power_multiplier = 1
-        this.freeze_daytime = false
-        return
-    elseif rnd(1, 64) == 1 then
-        if this.freeze_daytime then
-            return
-        end
-        game.print('Darkness has surrounded us!', {r = 0.98, g = 0.66, b = 0.22})
-        game.print('Builds some lamps!', {r = 0.98, g = 0.66, b = 0.22})
-        surface.min_brightness = 0
-        surface.brightness_visual_weights = {0.90, 0.90, 0.90}
-        surface.daytime = 0.42
-        surface.freeze_daytime = true
-        surface.solar_power_multiplier = 0
-        this.freeze_daytime = true
-        return
-    end
-end
-
-local function transfer_pollution(data)
-    local Diff = data.diff
-    local surface = data.loco_surface
-    local this = data.this
-    if not surface then
-        return
-    end
-    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Diff.difficulty_vote_value
-    game.surfaces[this.active_surface_index].pollute(this.locomotive.position, pollution)
-    surface.clear_pollution()
-end
-
-local tick_minute_functions = {
-    [300 * 3 + 30 * 6] = darkness,
-    [300 * 3 + 30 * 6] = transfer_pollution
-}
-
-local function tick_functions()
-    local this = WPT.get_table()
-    local tick = game.tick
-    local key = tick % 3600
-    local Diff = Difficulty.get()
-    local unit_surface = this.locomotive.unit_number
-    local icw_table = ICW.get_table()
-    local surface = game.surfaces[this.active_surface_index]
-    local data = {
-        this = this,
-        surface = surface,
-        diff = Diff,
-        loco_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
-    }
-    if tick_minute_functions[key] then
-        tick_minute_functions[key](data)
-    end
-end
-
 local function is_locomotive_valid()
-    local this = WPT.get_table()
+    local this = WPT.get()
     if not this.locomotive.valid then
         Entities.loco_died()
     end
 end
 
 local function has_the_game_ended()
-    local this = WPT.get_table()
+    local this = WPT.get()
     if this.game_reset_tick then
         if this.game_reset_tick < game.tick then
             if not this.disable_reset then
@@ -534,7 +434,7 @@ local function has_the_game_ended()
 end
 
 local function chunk_load()
-    local this = WPT.get_table()
+    local this = WPT.get()
     if this.chunk_load_tick then
         if this.chunk_load_tick < game.tick then
             this.chunk_load_tick = nil
@@ -544,8 +444,8 @@ local function chunk_load()
 end
 
 local on_tick = function()
-    local this = WPT.get_table()
-    local surface = game.surfaces[this.active_surface_index]
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
     local wave_defense_table = WD.get_table()
 
     if game.tick % 30 == 0 then
@@ -562,14 +462,13 @@ local on_tick = function()
             Entities.set_scores()
         end
         is_locomotive_valid()
-        tick_functions()
         has_the_game_ended()
         chunk_load()
     end
 end
 
 local on_init = function()
-    local this = WPT.get_table()
+    local this = WPT.get()
     Public.reset_map()
 
     global.custom_highscore.description = 'Wagon distance reached:'
@@ -584,25 +483,16 @@ local on_init = function()
     T.main_caption_color = {r = 150, g = 150, b = 0}
     T.sub_caption_color = {r = 0, g = 150, b = 0}
 
-    local mgs = game.surfaces['nauvis'].map_gen_settings
-    mgs.width = 16
-    mgs.height = 16
-    game.surfaces['nauvis'].map_gen_settings = mgs
-    game.surfaces['nauvis'].clear()
-
     Explosives.set_destructible_tile('out-of-map', 1500)
     Explosives.set_destructible_tile('water', 1000)
     Explosives.set_destructible_tile('water-green', 1000)
     Explosives.set_destructible_tile('deepwater-green', 1000)
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
-
-    Generate.register()
 end
 
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
-Event.on_load(on_load)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

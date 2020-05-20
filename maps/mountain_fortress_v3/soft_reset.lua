@@ -18,7 +18,7 @@ local function reset_forces(new_surface, old_surface)
     end
     for _, tech in pairs(game.forces.player.technologies) do
         tech.researched = false
-        game.player.force.set_saved_technology_progress(tech, 0)
+        game.forces.player.set_saved_technology_progress(tech, 0)
     end
 end
 
@@ -49,7 +49,7 @@ local function equip_players(player_starting_items)
 end
 
 function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     if not this.soft_reset_counter then
         this.soft_reset_counter = 0

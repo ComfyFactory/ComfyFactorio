@@ -55,7 +55,7 @@ end
 
 local function update_gui(player)
     local rpg = RPG.get_table()
-    local st = WPT.get_table()
+    local st = WPT.get()
 
     if not player.gui.top.mountain_fortress_v3 then
         create_gui(player)
