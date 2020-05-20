@@ -124,6 +124,12 @@ end
 
 local function set_locomotive_health()
     local this = WPT.get()
+    if not this.locomotive then
+        return
+    end
+    if not this.locomotive.valid then
+        return
+    end
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
     local m = locomotive_health / locomotive_max_health

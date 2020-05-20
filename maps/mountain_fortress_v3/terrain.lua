@@ -11,8 +11,8 @@ local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
 Public.level_depth = 704
-Public.level_width = 448
-local worm_level_modifier = 0.18
+Public.level_width = 512
+local worm_level_modifier = 0.19
 local average_number_of_wagons_per_level = 2
 local chunks_per_level = ((Public.level_depth - 32) / 32) ^ 2
 local chance_for_wagon_spawn = math_floor(chunks_per_level / average_number_of_wagons_per_level)
@@ -1373,7 +1373,7 @@ local function on_chunk_generated(event)
         local pl = WPT.get().locomotive.position
         for _, entity in pairs(
             surface.find_entities_filtered(
-                {area = {{pl.x - 3, pl.y - 4}, {pl.x + 3, pl.y + 10}}, type = 'simple-entity'}
+                {area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'}
             )
         ) do
             entity.destroy()

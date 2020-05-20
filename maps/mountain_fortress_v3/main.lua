@@ -194,6 +194,7 @@ function Public.reset_map()
     disable_tech()
 
     local surface = game.surfaces[this.active_surface_index]
+    surface.min_brightness = 0.5
 
     Explosives.set_surface_whitelist({[surface.name] = true})
 
@@ -221,9 +222,6 @@ function Public.reset_map()
     Collapse.set_direction('north')
     Collapse.start_now(false)
 
-    surface.brightness_visual_weights = {1, 0, 0, 0}
-    surface.freeze_daytime = false
-    surface.solar_power_multiplier = 1
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
     this.cargo_health = 10000
@@ -243,9 +241,8 @@ function Public.reset_map()
 
     set_difficulty()
 
-    Task.reset_queue()
     Task.start_queue()
-    Task.set_queue_speed(10)
+    Task.set_queue_speed(2)
 
     this.chunk_load_tick = game.tick + 500
 end
@@ -468,7 +465,7 @@ local function chunk_load()
     if this.chunk_load_tick then
         if this.chunk_load_tick < game.tick then
             this.chunk_load_tick = nil
-            Task.set_queue_speed(1)
+            Task.set_queue_speed(0.8)
         end
     end
 end
