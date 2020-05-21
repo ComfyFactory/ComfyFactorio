@@ -1114,11 +1114,11 @@ end
 local function distance(player)
     local distance_to_center = math_floor(math_sqrt(player.position.x ^ 2 + player.position.y ^ 2))
     local location = distance_to_center
-    if location < Terrain.level_depth - 10 then
+    if location < Terrain.level_depth * rpg_t[player.index].bonus - 10 then
         return
     end
     local min = Terrain.level_depth * rpg_t[player.index].bonus
-    local max = Terrain.level_depth + 5 * rpg_t[player.index].bonus
+    local max = (Terrain.level_depth + 5) * rpg_t[player.index].bonus
     local min_times = location >= min
     local max_times = location <= max
     if min_times and max_times then

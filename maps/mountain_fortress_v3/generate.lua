@@ -8,7 +8,7 @@ local Terrain = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
 local insert = table.insert
 
 local tiles_per_call = 16 --how many tiles are inserted with each call of insert_action
-local total_calls = math.ceil(1024 / tiles_per_call)
+local total_calls
 local regen_decoratives = false
 local force_chunk = false
 
@@ -242,6 +242,7 @@ local function do_place_entities(data)
 
     local surface = data.surface
     local entity
+    local callback
 
     for _, e in ipairs(data.entities) do
         if e.force then
@@ -250,8 +251,18 @@ local function do_place_entities(data)
             entity = surface.create_entity(e)
         end
         if entity and e.callback then
-            local callback = Token.get(e.callback)
-            callback(entity, e.data)
+            local c = e.callback.callback
+            if not c then
+                return
+            end
+            local d = {callback_data = e.callback.data}
+            if not d then
+                callback = Token.get(c)
+                callback(entity)
+                return
+            end
+            callback = Token.get(c)
+            callback(entity, d)
         end
     end
 end
@@ -299,9 +310,11 @@ local function map_gen_action(data)
 
         repeat
             count = count - 1
+
             do_tile(y, x, data, shape)
 
             x = x + 1
+
             if x == max_x then
                 y = y + 1
                 if y == data.top_y + 32 then
@@ -365,6 +378,8 @@ function Public.schedule_chunk(event)
     local area = event.area
 
     local data = {
+        yv = 0,
+        xv = 1,
         y = 0,
         x = area.left_top.x,
         area = area,
@@ -403,6 +418,8 @@ function Public.do_chunk(event)
     local area = event.area
 
     local data = {
+        yv = 0,
+        xv = 1,
         area = area,
         top_x = area.left_top.x,
         top_y = area.left_top.y,
@@ -434,6 +451,15 @@ end
 local do_chunk = Public.do_chunk
 local schedule_chunk = Public.schedule_chunk
 
+function Public.init(args)
+    if args then
+        tiles_per_call = args.tiles_per_call or 16
+        regen_decoratives = args.regen_decoratives or false
+    end
+
+    total_calls = math.ceil(1024 / tiles_per_call)
+end
+
 local function on_chunk(event)
     if force_chunk then
         do_chunk(event)
@@ -445,5 +471,6 @@ local function on_chunk(event)
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk)
+Public.init()
 
 return Public

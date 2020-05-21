@@ -182,27 +182,6 @@ function Public.render_train_hp()
     local this = WPT.get()
     local surface = game.surfaces[this.active_surface_index]
 
-    local names = {
-        'Hanakocz',
-        'Redlabel',
-        'Hanakocz',
-        'Gerkiz',
-        'Hanakocz',
-        'Mewmew',
-        'Gerkiz',
-        'Hanakocz',
-        'Redlabel',
-        'Gerkiz',
-        'Hanakocz',
-        'Redlabel',
-        'Gerkiz',
-        'Hanakocz'
-    }
-
-    local size_of_names = #names
-
-    local n = names[rnd(1, size_of_names)]
-
     this.health_text =
         rendering.draw_text {
         text = 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health,
@@ -218,7 +197,7 @@ function Public.render_train_hp()
 
     this.caption =
         rendering.draw_text {
-        text = n .. 's Comfy Train',
+        text = 'Comfy Choo Choo',
         surface = surface,
         target = this.locomotive,
         target_offset = {0, -4.25},
@@ -299,6 +278,13 @@ function Public.locomotive_spawn(surface, position)
 
     this.loco_surface = locomotive.surface
     this.locomotive_index = locomotive
+
+    local loco = this.loco_surface
+
+    loco.request_to_generate_chunks({0, 19}, 1)
+    loco.force_generate_chunk_requests()
+
+    game.forces.player.set_spawn_position({0, 19}, loco)
 end
 
 function Public.inside(pos, area)

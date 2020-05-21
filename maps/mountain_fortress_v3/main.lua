@@ -198,9 +198,6 @@ function Public.reset_map()
 
     Explosives.set_surface_whitelist({[surface.name] = true})
 
-    surface.request_to_generate_chunks({-17, 47}, 1)
-    surface.force_generate_chunk_requests()
-
     game.forces.player.set_spawn_position({-27, 25}, surface)
     game.forces.enemy.set_ammo_damage_modifier('bullet', 1)
     game.forces.enemy.set_turret_attack_modifier('gun-turret', 1)
@@ -274,8 +271,12 @@ end
 
 local function on_player_joined_game(event)
     local this = WPT.get()
-    local surface = game.surfaces[this.active_surface_index]
     local player = game.players[event.player_index]
+    local surface = game.surfaces[this.active_surface_index]
+
+    if not surface.is_chunk_generated({-20, 22}) then
+        surface.request_to_generate_chunks({-20, 22}, 1)
+    end
 
     set_difficulty(event)
 
@@ -291,22 +292,29 @@ local function on_player_joined_game(event)
     end
 
     if not this.players[player.index].first_join then
+        local loco_surface = game.surfaces[this.loco_surface.name]
+
+        if player.surface.index ~= loco_surface.index then
+            if not player.character then
+                player.create_character()
+            end
+            player.teleport(
+                loco_surface.find_non_colliding_position(
+                    'character',
+                    game.forces.player.get_spawn_position(loco_surface),
+                    3,
+                    0,
+                    5
+                ),
+                loco_surface
+            )
+            for item, amount in pairs(starting_items) do
+                player.insert({name = item, count = amount})
+            end
+        end
         player.print('Greetings, ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
         player.print('Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
         this.players[player.index].first_join = true
-    end
-
-    if player.surface.index ~= this.active_surface_index then
-        if not player.character then
-            player.create_character()
-        end
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-            surface
-        )
-        for item, amount in pairs(starting_items) do
-            player.insert({name = item, count = amount})
-        end
     end
 end
 

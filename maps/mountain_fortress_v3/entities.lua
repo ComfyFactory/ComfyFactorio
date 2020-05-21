@@ -418,11 +418,12 @@ function Public.loco_died()
     local wave_defense_table = WD.get_table()
     Public.set_scores()
     if not this.locomotive.valid then
+        local Reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
         wave_defense_table.game_lost = true
         wave_defense_table.target = nil
         game.print(mapkeeper .. ' ' .. defeated_messages[math.random(1, #defeated_messages)], {r = 1, g = 0.5, b = 0.1})
         game.print(mapkeeper .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
-        Public.reset_map()
+        Reset_map()
         return
     end
     this.locomotive_health = 0

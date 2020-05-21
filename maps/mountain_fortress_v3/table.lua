@@ -5,7 +5,11 @@ local Event = require 'utils.event'
 local this = {
     disable_reset = false,
     players = {},
-    offline_players = {}
+    offline_players = {},
+    power_sources = {},
+    refill_turrets = {index = 1},
+    magic_crafters = {index = 1},
+    magic_fluid_crafters = {index = 1}
 }
 local Public = {}
 
@@ -27,6 +31,10 @@ function Public.reset_table()
     this.train_upgrades = 0
     this.offline_players = {}
     this.biter_pets = {}
+    this.power_sources = {}
+    this.refill_turrets = {index = 1}
+    this.magic_crafters = {index = 1}
+    this.magic_fluid_crafters = {index = 1}
     this.mined_scrap = 0
     this.biters_killed = 0
     this.locomotive_xp_aura = 40

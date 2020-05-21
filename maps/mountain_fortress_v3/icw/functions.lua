@@ -513,17 +513,26 @@ function Public.use_cargo_wagon_door(icw, player, door)
         local surface = wagon.entity.surface
         local x_vector = (door.position.x / math.abs(door.position.x)) * 2
         local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
-        local position = surface.find_non_colliding_position('character', position, 128, 0.5)
+        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
         if not position then
             return
         end
+        if not surface_position then
+            surface.request_to_generate_chunks({-20, 22}, 1)
+            if player.character and player.character.valid and player.character.driving then
+                if wagon.surface == player.surface then
+                    player.character.driving = false
+                end
+            end
+            return
+        end
         if wagon.entity.type == 'locomotive' then
-            player.teleport(position, surface)
+            player.teleport(surface_position, surface)
             player_data.state = 2
             player.driving = true
             Public.kill_minimap(player)
         else
-            player.teleport(position, surface)
+            player.teleport(surface_position, surface)
             Public.kill_minimap(player)
         end
         player_data.surface = surface.index
