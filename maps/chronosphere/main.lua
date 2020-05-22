@@ -23,6 +23,7 @@ local Rand = require 'maps.chronosphere.random'
 local Chrono = require "maps.chronosphere.chrono"
 local Chrono_table = require 'maps.chronosphere.table'
 local Locomotive = require "maps.chronosphere.locomotive"
+local Minimap = require "maps.chronosphere.minimap"
 local Gui = require "maps.chronosphere.gui"
 local Difficulty = require 'modules.difficulty_vote'
 local math_random = math.random
@@ -152,6 +153,9 @@ local function reset_map()
 	local surface = game.surfaces[objective.active_surface_index]
 	generate_overworld(surface, planet)
 	Chrono.restart_settings()
+	for _,player in pairs(game.players) do
+		Minimap.minimap(player)
+	end
 
 	game.forces.player.set_spawn_position({12, 10}, surface)
 	Locomotive.locomotive_spawn(surface, {x = 16, y = 10}, Chrono.get_wagons(true))
@@ -486,12 +490,25 @@ local function tick() --only even ticks trigger
 		end
 		Locomotive.fish_tag()
 	end
-	for _, player in pairs(game.connected_players) do Gui.update_gui(player) end
+	for _, player in pairs(game.connected_players) do
+		Minimap.toggle_button(player)
+		Gui.update_gui(player)
+	end
 end
 
 local function on_init()
 	local objective = Chrono_table.get_table()
 	local T = Map.Pop_info()
+	local difficulty_tooltips = {
+		[1] = {"chronosphere.difficulty1"},
+		[2] = {"chronosphere.difficulty2"},
+		[3] = {"chronosphere.difficulty3"},
+		[4] = {"chronosphere.difficulty4"},
+		[5] = {"chronosphere.difficulty5"},
+		[6] = {"chronosphere.difficulty6"},
+		[7] = {"chronosphere.difficulty7"}
+	}
+	Difficulty.set_tooltip(difficulty_tooltips)
 	T.localised_category = "chronosphere"
 	T.main_caption_color = {r = 150, g = 150, b = 0}
 	T.sub_caption_color = {r = 0, g = 150, b = 0}
@@ -631,6 +648,7 @@ local function on_player_driving_changed_state(event)
 	local player = game.players[event.player_index]
 	local vehicle = event.entity
 	Locomotive.enter_cargo_wagon(player, vehicle)
+	Minimap.minimap(player)
 end
 
 -- function deny_building(event)
@@ -717,8 +735,6 @@ local function on_research_finished(event)
 end
 
 local function on_entity_damaged(event)
-    local difficulty = Difficulty.get().difficulty_vote_value
-
 	if not event.entity.valid then return end
 	protect_entity(event)
 	if not event.entity.valid then return end

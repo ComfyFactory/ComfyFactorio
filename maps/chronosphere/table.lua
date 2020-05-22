@@ -53,6 +53,8 @@ function Public.reset_table()
 	chronosphere.comfychests2 = {}
 	chronosphere.locomotive_cargo = {}
 	chronosphere.planet = {}
+  chronosphere.icw = {}
+  chronosphere.icw.players = {}
 end
 
 function Public.get_table()

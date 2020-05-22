@@ -8,6 +8,7 @@ local math_min = math.min
 local Upgrades = require "maps.chronosphere.upgrade_list"
 local Balance = require "maps.chronosphere.balance"
 local Difficulty = require 'modules.difficulty_vote'
+local Minimap = require "maps.chronosphere.minimap"
 
 local function create_gui(player)
 	local frame = player.gui.top.add({ type = "frame", name = "chronosphere"})
@@ -399,6 +400,10 @@ function Public_gui.on_gui_click(event)
 	elseif event.element.name == "planet_button" then
 		planet_gui(player)
 		return
+	elseif event.element.name == "minimap_button" then
+		Minimap.minimap(player)
+	elseif event.element.name =="icw_map" or event.element.name == "icw_map_frame" then
+		Minimap.toggle_minimap(event)
 	end
 
 	if event.element.type ~= "button" and event.element.type ~= "sprite-button" then return end

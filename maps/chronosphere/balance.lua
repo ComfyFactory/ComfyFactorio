@@ -125,9 +125,13 @@ Public.wagon_starting_items = {{name = 'firearm-magazine', count = 16},{name = '
 function Public.jumps_until_overstay_is_on(difficulty) --both overstay penalties, and evoramp
 	local objective = Chrono_table.get_table()
 	if not objective.config.overstay_penalty then return 999 end
-	if difficulty > 1 then return 2
-	elseif difficulty == 1 then return 3
-	else return 5
+	if not difficulty then return 3 end
+	if difficulty > 1 then
+		return 2
+	elseif difficulty == 1 then
+		return 3
+	else
+		return 5
 	end
 end
 
