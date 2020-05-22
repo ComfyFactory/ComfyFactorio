@@ -1,8 +1,8 @@
 local Server = require 'utils.server'
 local Modifers = require 'player_modifiers'
-local WPT = require 'maps.lumberjack.table'
+local WPT = require 'maps.mountain_fortress_v3.table'
 
-local grandmaster = '[color=blue]Grandmaster:[/color]'
+local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local Public = {}
 
@@ -23,7 +23,7 @@ local function reset_forces(new_surface, old_surface)
 end
 
 local function teleport_players(surface)
-    game.forces.player.set_spawn_position({0, 21}, surface)
+    game.forces.player.set_spawn_position({-27, 25}, surface)
 
     for _, player in pairs(game.connected_players) do
         player.teleport(
@@ -49,7 +49,7 @@ local function equip_players(player_starting_items)
 end
 
 function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
-    local this = WPT.get_table()
+    local this = WPT.get()
 
     if not this.soft_reset_counter then
         this.soft_reset_counter = 0
@@ -70,14 +70,14 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
 
     game.delete_surface(old_surface)
 
-    local message = table.concat({grandmaster .. ' Welcome to ', this.original_surface_name, '!'})
+    local message = table.concat({mapkeeper .. ' Welcome to ', this.original_surface_name, '!'})
     local message_to_discord = table.concat({'** Welcome to ', this.original_surface_name, '! **'})
 
     if this.soft_reset_counter > 1 then
         message =
             table.concat(
             {
-                grandmaster,
+                mapkeeper,
                 ' The world has been reshaped, welcome to ',
                 this.original_surface_name,
                 ' number ',

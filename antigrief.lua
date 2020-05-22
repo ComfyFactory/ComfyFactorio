@@ -39,31 +39,40 @@ local function on_player_demoted(event)
 	if player.gui.left["admin_panel"] then player.gui.left["admin_panel"].destroy() end
 end
 ]]
-
 local function on_marked_for_deconstruction(event)
-	local tracker = session.get_session_table()
-	local trusted = session.get_trusted_table()
-	if not event.player_index then return end
-	local player = game.players[event.player_index]
-	if player.admin == true then return end
-	if trusted[player.name] == true then return end
+    local tracker = session.get_session_table()
+    local trusted = session.get_trusted_table()
+    if not event.player_index then
+        return
+    end
+    local player = game.players[event.player_index]
+    if player.admin == true then
+        return
+    end
+    if trusted[player.name] == true then
+        return
+    end
 
-	local playtime = player.online_time
-		if tracker[player.name] then
-			playtime = player.online_time + tracker[player.name]
-		end
-	if playtime < 2592000 then
-		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
-		player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
-	end
+    local playtime = player.online_time
+    if tracker[player.name] then
+        playtime = player.online_time + tracker[player.name]
+    end
+    if playtime < 2592000 then
+        event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+        player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
+    end
 end
 
 local function on_player_ammo_inventory_changed(event)
-	local tracker = session.get_session_table()
-	local trusted = session.get_trusted_table()
-	local player = game.players[event.player_index]
-	if player.admin == true then return end
-	if trusted[player.name] == true then return end
+    local tracker = session.get_session_table()
+    local trusted = session.get_trusted_table()
+    local player = game.players[event.player_index]
+    if player.admin == true then
+        return
+    end
+    if trusted[player.name] == true then
+        return
+    end
 
 	local playtime = player.online_time
 	if tracker[player.name] then
@@ -75,19 +84,25 @@ local function on_player_ammo_inventory_changed(event)
 			player.surface.spill_item_stack(player.position, {name = "atomic-bomb", count = nukes}, false)
 			player.print("You have not grown accustomed to this technology yet.", {r=0.22, g=0.99, b=0.99})
 			Server.to_discord_bold(table.concat{'[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.'})
+			game.print('[Nuke] ' .. player.name .. ' tried to equip nukes but was not trusted.', {r=0.22, g=0.99, b=0.99})
 			player.character.health = 0
 		end
 	end
 end
 
 local function on_player_built_tile(event)
-	local tracker = session.get_session_table()
-	local trusted = session.get_trusted_table()
-	local placed_tiles = event.tiles
-	if placed_tiles[1].old_tile.name ~= "deepwater" and placed_tiles[1].old_tile.name ~= "water" and placed_tiles[1].old_tile.name ~= "water-green" then return end
-	local player = game.players[event.player_index]
+    local tracker = session.get_session_table()
+    local trusted = session.get_trusted_table()
+    local placed_tiles = event.tiles
+    if
+        placed_tiles[1].old_tile.name ~= 'deepwater' and placed_tiles[1].old_tile.name ~= 'water' and
+            placed_tiles[1].old_tile.name ~= 'water-green'
+     then
+        return
+    end
+    local player = game.players[event.player_index]
 
-	--[[
+    --[[
 	if not player.admin and not trusted[player.name] then
 		local playtime = player.online_time
 		if tracker[player.name] then
@@ -107,7 +122,9 @@ local function on_player_built_tile(event)
 	--landfill history--
 	if not global.landfill_history then global.landfill_history = {} end
 	if #global.landfill_history > 999 then global.landfill_history = {} end
-	local str = player.name .. " at X:"
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " at X:"
 	str = str .. placed_tiles[1].position.x
 	str = str .. " Y:"
 	str = str .. placed_tiles[1].position.y
@@ -115,26 +132,32 @@ local function on_player_built_tile(event)
 end
 
 local function on_built_entity(event)
-	local tracker = session.get_session_table()
-	local trusted = session.get_trusted_table()
-	if game.tick < 1296000 then return end
-	
-	if event.created_entity.type == "entity-ghost" then
-		local player = game.players[event.player_index]
-		
-		if player.admin == true then return end
-		if trusted[player.name] == true then return end
-		
-		local playtime = player.online_time
-		if tracker[player.name] then
-			playtime = player.online_time + tracker[player.name]
-		end
-		
-		if playtime < 432000 then
-			event.created_entity.destroy()
-			player.print("You have not grown accustomed to this technology yet.", { r=0.22, g=0.99, b=0.99})
-		end		
-	end
+    local tracker = session.get_session_table()
+    local trusted = session.get_trusted_table()
+    if game.tick < 1296000 then
+        return
+    end
+
+    if event.created_entity.type == 'entity-ghost' then
+        local player = game.players[event.player_index]
+
+        if player.admin == true then
+            return
+        end
+        if trusted[player.name] == true then
+            return
+        end
+
+        local playtime = player.online_time
+        if tracker[player.name] then
+            playtime = player.online_time + tracker[player.name]
+        end
+
+        if playtime < 432000 then
+            event.created_entity.destroy()
+            player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
+        end
+    end
 end
 
 --Artillery History and Antigrief
@@ -162,7 +185,9 @@ local function on_player_used_capsule(event)
 	
 	if not global.artillery_history then global.artillery_history = {} end
 	if #global.artillery_history > 999 then global.artillery_history = {} end
-	local str = player.name .. " at X:"
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " at X:"
 	str = str .. math.floor(position.x)
 	str = str .. " Y:"
 	str = str .. math.floor(position.y)
@@ -170,15 +195,15 @@ local function on_player_used_capsule(event)
 end
 
 local blacklisted_types = {
-	["transport-belt"] = true,
-	["wall"] = true,
-	["underground-belt"] = true,
-	["inserter"] = true,
-	["land-mine"] = true,
-	["gate"] = true,
-	["lamp"] = true,
-	["mining-drill"] = true,
-	["splitter"] = true	
+    ['transport-belt'] = true,
+    ['wall'] = true,
+    ['underground-belt'] = true,
+    ['inserter'] = true,
+    ['land-mine'] = true,
+    ['gate'] = true,
+    ['lamp'] = true,
+    ['mining-drill'] = true,
+    ['splitter'] = true
 }
 
 --Friendly Fire History
@@ -190,8 +215,11 @@ local function on_entity_died(event)
 	local player = event.cause.player		
 	if not global.friendly_fire_history then global.friendly_fire_history = {} end
 	if #global.friendly_fire_history > 999 then global.friendly_fire_history = {} end
-	if not player then return end
-	local str = player.name .. " destroyed "
+	if not player then return end	
+	
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " destroyed "
 	str = str .. event.entity.name
 	str = str .. " at X:"	
 	str = str .. math.floor(event.entity.position.x)
@@ -199,30 +227,6 @@ local function on_entity_died(event)
 	str = str .. math.floor(event.entity.position.y)
 	
 	global.friendly_fire_history[#global.friendly_fire_history + 1] = str	
-end
-
-local chest_types = {
-	["container"] = true,
-	["logistic-container"] = true
-}
-
---Bad Fire History
-local function on_entity_died_do_actual_usefull_logging(event)
-	if not event.cause then return end
-	if event.cause.name ~= "character" then return end
-	local player = event.cause.player
-	if not player then return end
-	if not chest_types[event.entity.type] then return end
-
-	if event.entity.get_item_count("explosives") < 100 then return end
-
-	if not global.bad_fire_history then global.bad_fire_history = {} end
-	if #global.bad_fire_history > 999 then global.bad_fire_history = {} end
-
-	local str = player.name .. " destroyed container with explosives amount: " .. event.entity.get_item_count("explosives") .. ", at location: "
-	str = str .. " at X:" .. event.entity.position.x .. " Y:" .. event.entity.position.y
-
-	global.bad_fire_history[#global.bad_fire_history + 1] = str
 end
 
 --Mining Thieves History
@@ -236,7 +240,9 @@ local function on_player_mined_entity(event)
 	if not global.mining_history then global.mining_history = {} end
 	if #global.mining_history > 999 then global.mining_history = {} end
 	
-	local str = player.name .. " mined "
+	local t = math.abs(math.floor((game.tick) / 3600))
+	local str = "[" .. t .. "] "
+	str = str .. player.name .. " mined "
 	str = str .. event.entity.name
 	str = str .. " at X:"	
 	str = str .. math.floor(event.entity.position.x)
@@ -247,28 +253,54 @@ local function on_player_mined_entity(event)
 end
 
 local function on_gui_opened(event)
-	if not event.entity then return end
-	if event.entity.name ~= "character-corpse" then return end
-	local player = game.players[event.player_index]
-	local corpse_owner = game.players[event.entity.character_corpse_player_index]
-	if not corpse_owner then return end
-	if corpse_owner.force.name ~= player.force.name then return end
-	if player.name ~= corpse_owner.name then
-		game.print(player.name .. " is looting " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
-		Server.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " is looting " .. corpse_owner.name .. "´s body."})
-	end
+    if not event.entity then
+        return
+    end
+    if event.entity.name ~= 'character-corpse' then
+        return
+    end
+    local player = game.players[event.player_index]
+    local corpse_owner = game.players[event.entity.character_corpse_player_index]
+    if not corpse_owner then
+        return
+    end
+    if corpse_owner.force.name ~= player.force.name then
+        return
+    end
+    if player.name ~= corpse_owner.name then
+        game.print(player.name .. ' is looting ' .. corpse_owner.name .. '´s body.', {r = 0.85, g = 0.85, b = 0.85})
+        Server.to_discord_bold(
+            table.concat {'[Corpse] ' .. player.name .. ' is looting ' .. corpse_owner.name .. '´s body.'}
+        )
+    end
 end
 
 local function on_pre_player_mined_item(event)
-	if event.entity.name ~= "character-corpse" then return end
-	local player = game.players[event.player_index]
-	local corpse_owner = game.players[event.entity.character_corpse_player_index]
-	if not corpse_owner then return end
-	if corpse_owner.force.name ~= player.force.name then return end
-	if player.name ~= corpse_owner.name then
-		game.print(player.name .. " has looted " .. corpse_owner.name .. "´s body.", { r=0.85, g=0.85, b=0.85})
-		Server.to_discord_bold(table.concat{'[Corpse] ' .. player.name .. " has looted " .. corpse_owner.name .. "´s body."})
-	end
+    if event.entity.name ~= 'character-corpse' then
+        return
+    end
+    local player = game.players[event.player_index]
+    local corpse_owner = game.players[event.entity.character_corpse_player_index]
+    if not corpse_owner then
+        return
+    end
+    local entity = event.entity
+    if not entity then
+        return
+    end
+    local corpse_content = #entity.get_inventory(defines.inventory.character_corpse)
+    if corpse_content <= 0 then
+        return
+    end
+    if corpse_owner.force.name ~= player.force.name then
+        return
+    end
+    if player.name ~= corpse_owner.name then
+        game.print(player.name .. ' has looted ' .. corpse_owner.name .. '´s body.', {r = 0.85, g = 0.85, b = 0.85})
+        Server.to_discord_bold(
+            table.concat {'[Corpse] ' .. player.name .. ' has looted ' .. corpse_owner.name .. '´s body.'}
+        )
+    end
 end
 
 event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

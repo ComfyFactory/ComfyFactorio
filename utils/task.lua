@@ -155,15 +155,6 @@ function Task.start_queue()
     end
 end
 
-function Task.reset_queue()
-    if #task_queue > 50 then
-        task_queue = {
-            _head = 1,
-            _tail = 0
-        }
-    end
-end
-
 function Task.get_task_queue()
     return task_queue
 end
