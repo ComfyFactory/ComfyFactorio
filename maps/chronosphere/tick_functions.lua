@@ -31,12 +31,12 @@ function Public_tick.realtime_events()
   end
 
   if objective.jump_countdown_start_time ~= -1 then
-    if objective.passivetimer == objective.jump_countdown_start_time + objective.jump_countdown_length - 60 then
+    if objective.passivetimer == objective.jump_countdown_start_time + 180 - 60 then
       game.print({"chronosphere.message_jump60"}, {r=0.98, g=0.66, b=0.22})
-    elseif objective.passivetimer == objective.jump_countdown_start_time + objective.jump_countdown_length - 30 then
+    elseif objective.passivetimer == objective.jump_countdown_start_time + 180 - 30 then
       game.print({"chronosphere.message_jump30"}, {r=0.98, g=0.66, b=0.22})
-    elseif objective.passivetimer >= objective.jump_countdown_start_time + objective.jump_countdown_length - 10 and objective.jump_countdown_start_time + objective.jump_countdown_length - objective.passivetimer > 0 then
-      game.print({"chronosphere.message_jump10", objective.jump_countdown_start_time + objective.jump_countdown_length - objective.passivetimer}, {r=0.98, g=0.66, b=0.22})
+    elseif objective.passivetimer >= objective.jump_countdown_start_time + 180 - 10 and objective.jump_countdown_start_time + 180 - objective.passivetimer > 0 then
+      game.print({"chronosphere.message_jump10", objective.jump_countdown_start_time + 180 - objective.passivetimer}, {r=0.98, g=0.66, b=0.22})
     end
   end
 end

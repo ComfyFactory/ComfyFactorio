@@ -247,7 +247,7 @@ function Public.chronojump(choice)
 
 	if objective.chronojumps <= 24 then
 		award_coins(
-			Balance.coin_reward_per_second_jumped_early(objective.chronochargesneeded / objective.passive_chronocharge_rate + objective.jump_countdown_length - objective.passivetimer, Difficulty.get().difficulty_vote_value)
+			Balance.coin_reward_per_second_jumped_early(objective.chronochargesneeded / objective.passive_chronocharge_rate + 180 - objective.passivetimer, Difficulty.get().difficulty_vote_value)
 		)
 	end
 
@@ -315,10 +315,9 @@ end
 
 local function check_if_overstayed()
 	local objective = Chrono_table.get_table()
-
-	  if objective.passivetimer * objective.passive_chronocharge_rate > (objective.chronochargesneeded * 0.75) and objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
-		  objective.overstaycount = objective.overstaycount + 1
-	  end
+  if objective.passivetimer * objective.passive_chronocharge_rate > (objective.chronochargesneeded * 0.75) and objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
+	  objective.overstaycount = objective.overstaycount + 1
+  end
 end
 
 function Public.add_chronocharge()
@@ -433,7 +432,7 @@ local function tick() --only even ticks trigger
 					game.surfaces[objective.active_surface_index].pollute(pos, exterior_pollution)
 					game.pollution_statistics.on_flow("locomotive", exterior_pollution)
 				else
-					if objective.passivetimer == objective.jump_countdown_start_time + objective.jump_countdown_length then
+					if objective.passivetimer == objective.jump_countdown_start_time + 180 then
 						Public.chronojump(nil)
 					else
 						local pos = objective.locomotive.position or {x=0,y=0}
@@ -502,6 +501,7 @@ local function on_init()
 
 	objective.config.offline_loot = true
 	objective.config.jumpfailure = true
+	objective.config.overstay_penalty = true
 	game.create_force("scrapyard")
 	local mgs = game.surfaces["nauvis"].map_gen_settings
 	mgs.width = 16
@@ -569,6 +569,9 @@ local function on_player_mined_entity(event)
 		elseif
 			objective.planet[1].type.id == 11 then event.buffer.clear() -- rocky planet
 		end
+	elseif entity.name == "mineable-wreckage" then
+		Event_functions.scrap_loot(event)
+		event.buffer.clear()
 	end
 end
 
@@ -724,21 +727,6 @@ local function on_entity_damaged(event)
 	if event.entity.force.name == "enemy" then
 		Event_functions.biter_immunities(event)
 	end
-
-	if not event.cause then return end
-	if not event.cause.valid then return end
-	if event.cause.name ~= "character" then return end
-	if event.damage_type.name ~= "physical" then return end
-
-	local player = event.cause
-	if player.shooting_state.state == defines.shooting.not_shooting then return end
-	local weapon = player.get_inventory(defines.inventory.character_guns)[player.selected_gun_index]
-	local ammo = player.get_inventory(defines.inventory.character_ammo)[player.selected_gun_index]
-  if not weapon.valid_for_read or not ammo.valid_for_read then return end
-	if weapon.name ~= "pistol" then return end
-	if ammo.name ~= "firearm-magazine" and ammo.name ~= "piercing-rounds-magazine" and ammo.name ~= "uranium-rounds-magazine" then return end
-  if not event.entity.valid then return end
-	event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier(difficulty) - 1), player.force, "impact", player)
 end
 
 

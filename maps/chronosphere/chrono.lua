@@ -89,7 +89,7 @@ function Public_chrono.restart_settings()
 	game.map_settings.pollution.pollution_with_max_forest_damage = 10
 	game.map_settings.pollution.pollution_per_tree_damage = 0.1
 	game.map_settings.pollution.ageing = 0.1
-	game.map_settings.pollution.diffusion_ratio = 0.12
+	game.map_settings.pollution.diffusion_ratio = 0.1
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 5
 	game.map_settings.unit_group.min_group_gathering_time = 1800
 	game.map_settings.unit_group.max_group_gathering_time = 18000

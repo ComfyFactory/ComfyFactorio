@@ -187,7 +187,7 @@ function Public.upgrades()
       quest = false,
       message = {"chronosphere.upgrade_mk2_message"},
       tooltip = {"chronosphere.upgrade_mk2_tooltip"},
-      jump_limit = 24,
+      jump_limit = 28,
       cost = {
         item1 = {name = "low-density-structure", tt = "item-name", sprite = "item/low-density-structure", count = 100},
         item2 = {name = "railgun-dart", tt = "item-name", sprite = "item/railgun-dart", count = 300},

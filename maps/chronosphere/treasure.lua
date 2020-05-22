@@ -47,17 +47,17 @@ local function treasure_chest_loot(difficulty, planet)
 		--shotgun meta:
 		{10, -0.2, 0.4, true, "shotgun-shell", 12, 24},
 		{5, 0, 0.4, true, "shotgun", 1, 1},
-		{3, 0, 1.2, true, "piercing-shotgun-shell", 8, 24},
-		{2, 0, 1.2, true, "combat-shotgun", 1, 1},
+		{3, 0.4, 1.2, true, "piercing-shotgun-shell", 8, 24},
+		{2, 0.4, 1.2, true, "combat-shotgun", 1, 1},
 
 		--modular armor meta:
-		{0.7, -3, 1, true, "modular-armor", 1, 1},
-		{0.4, 0.3, 1, true, "power-armor", 1, 1},
+		{0.7, 0.25, 0.6, true, "modular-armor", 1, 1},
+		{0.4, 0.5, 1, true, "power-armor", 1, 1},
 		-- {0.5, -1,3, true, "power-armor-mk2", 1, 1},
-		{2, 0, 1, true, "solar-panel-equipment", 1, 2},
-		{2, 0, 1, true, "battery-equipment", 1, 1},
-		{1.6, 0, 1, true, "energy-shield-equipment", 1, 2},
-		{0.8, 0, 1, true, "night-vision-equipment", 1, 1},
+		{3, 0.1, 1, true, "solar-panel-equipment", 1, 2},
+		{2, 0.1, 1, true, "battery-equipment", 1, 1},
+		{1.6, 0.2, 1, true, "energy-shield-equipment", 1, 2},
+		{0.8, 0.1, 1, true, "night-vision-equipment", 1, 1},
 		{0.4, 0.5, 1.5, true, "personal-laser-defense-equipment", 1, 1},
 
 		--loader meta:
@@ -66,13 +66,13 @@ local function treasure_chest_loot(difficulty, planet)
 		{math_max(1.5 * difficulty - 1.25, 0), 0.6, 1, false, "express-loader", 1, 2},
 
 		--science meta:
-		{8, -0.5, 0.5, true, "automation-science-pack", 4, 12},
-		{8, -0.6, 0.6, true, "logistic-science-pack", 4, 12},
-		{6, -0.1, 1, true, "military-science-pack", 8, 8}, --careful with this
-		{6, 0.2, 1.4, true, "chemical-science-pack", 16, 24},
-		{6, 0.3, 1.5, true, "production-science-pack", 16, 24},
-		{4, 0.4, 1.5, true, "utility-science-pack", 16, 24},
-		{10, 0.5, 1.5, true, "space-science-pack", 16, 24},
+		{8, -0.5, 0.5, true, "automation-science-pack", 4, 32},
+		{8, -0.6, 0.6, true, "logistic-science-pack", 4, 32},
+		{6, -0.1, 1, true, "military-science-pack", 8, 32},
+		{6, 0.2, 1.4, true, "chemical-science-pack", 16, 64},
+		{6, 0.3, 1.5, true, "production-science-pack", 16, 64},
+		{4, 0.4, 1.5, true, "utility-science-pack", 16, 64},
+		{10, 0.5, 1.5, true, "space-science-pack", 16, 64},
 
 		--early-game:
 		{3, -0.1, 0.2, false, "railgun-dart", 2, 4},
@@ -80,13 +80,12 @@ local function treasure_chest_loot(difficulty, planet)
 		{5, -0.1, 0.1, true, "burner-inserter", 8, 20},
 		{1, -0.2, 0.2, true, "offshore-pump", 1, 3},
 		{3, -0.2, 0.2, true, "boiler", 3, 6},
-		{6, -0.2, 0.2, true, "lab", 1, 2},
+		{3, 0, 0.1, true, "lab", 1, 3},
 		{3, -0.2, 0.2, true, "steam-engine", 2, 4},
 		{3, -0.2, 0.2, true, "burner-mining-drill", 2, 4},
-		{2.7, 0, 0.15, false, "submachine-gun", 1, 3},
-		{0.3, 0, 0.15, false, "vehicle-machine-gun", 1, 1},
+		{2, 0, 0.1, false, "submachine-gun", 1, 2},
 		{3, 0, 0.3, true, "iron-chest", 8, 40},
-		{4, -0.3, 0.3, true, "light-armor", 1, 1},
+		{4, 0, 0.1, false, "light-armor", 1, 1},
 		{4, -0.3, 0.3, true, "inserter", 8, 16},
 		{8, -0.3, 0.3, true, "small-electric-pole", 16, 32},
 		{6, -0.4, 0.4, true, "stone-furnace", 8, 16},
@@ -107,7 +106,7 @@ local function treasure_chest_loot(difficulty, planet)
 		{4, -0.1, 0.8, true, "fast-underground-belt", 3, 10},
 		{4, -0.1, 0.8, true, "fast-splitter", 1, 5},
 		{2, 0, 0.6, true, "storage-tank", 2, 6},
-		{4, 0, 0.6, true, "heavy-armor", 1, 1},
+		{2, 0, 0.5, true, "heavy-armor", 1, 1},
 		{3, 0, 0.7, true, "steel-plate", 15, 100},
 		{8, 0, 0.9, true, "piercing-rounds-magazine", 20, 128},
 		{4, 0.2, 0.6, true, "engine-unit", 16, 32},
@@ -234,26 +233,26 @@ local function treasure_chest_loot(difficulty, planet)
 			{9, 0, 1, false, "green-wire", 10, 29},
 			{9, 0, 1, false, "red-wire", 10, 29},
 
-			{11, 0, 0.6, true, "modular-armor", 1, 1},
-			{7, -0.2,1, true, "power-armor", 1, 1},
-			{3, 0,2, true, "power-armor-mk2", 1, 1},
+			{11, 0.2, 0.6, false, "modular-armor", 1, 1},
+			{7, 0.4, 1, false, "power-armor", 1, 1},
+			{3, 0.8, 2, false, "power-armor-mk2", 1, 1},
 
-			{4, 0, 1, false, "exoskeleton-equipment", 1, 1},
-			{4, 0, 1, false, "belt-immunity-equipment", 1, 1},
-			{4, 0, 1, true, "energy-shield-equipment", 1, 2},
-			{4, 0, 1, false, "night-vision-equipment", 1, 1},
-			{4, 0, 1, false, "discharge-defense-equipment", 1, 1},
-			{4, 0.2, 1, false, "personal-roboport-equipment", 1, 2},
-			{4, 0.4, 1, false, "personal-laser-defense-equipment", 1, 1},
-			{8, 0, 1, false, "solar-panel-equipment", 1, 2},
-			{8, 0, 1, false, "battery-equipment", 1, 1},
+			{4, 0.5, 1, false, "exoskeleton-equipment", 1, 1},
+			{4, 0.2, 1, false, "belt-immunity-equipment", 1, 1},
+			{4, 0.3, 1, true, "energy-shield-equipment", 1, 2},
+			{4, 0.2, 1, false, "night-vision-equipment", 1, 1},
+			{4, 0.6, 1, false, "discharge-defense-equipment", 1, 1},
+			{4, 0.4, 1, false, "personal-roboport-equipment", 1, 2},
+			{4, 0.6, 1, false, "personal-laser-defense-equipment", 1, 1},
+			{8, 0.2, 1, false, "solar-panel-equipment", 1, 2},
+			{8, 0.2, 1, false, "battery-equipment", 1, 1},
 
-			{1, 0.5, 1, false, "energy-shield-mk2-equipment", 1, 1},
-			{1, 0.5, 1, false, "battery-mk2-equipment", 1, 1},
+			{1, 0.6, 1, false, "energy-shield-mk2-equipment", 1, 1},
+			{1, 0.6, 1, false, "battery-mk2-equipment", 1, 1},
 
 			{3, 0, 1, true, "copper-cable", 20, 400},
 			{3, -0.3, 0.6, true, "electronic-circuit", 50, 100},
-			{3, 0.2, 1.4, true, "advanced-circuit", 50, 100},
+			{3, 0.3, 1.4, true, "advanced-circuit", 50, 100},
 			{3, 0.5, 1.5, true, "processing-unit", 50, 100},
 		}
 	end
@@ -287,8 +286,8 @@ function Public.treasure_chest(surface, position, container_name)
 
 	local chest_raffle = {}
 
-	local distance_to_center = (jumps / 40)
-	if distance_to_center > 1 then distance_to_center = 1 end
+	local distance = (jumps / 40)
+	if distance > 1 then distance = 1 end
 
 	local loot_data = treasure_chest_loot(difficulty, objective.planet[1])
 	local loot_types, loot_weights = {}, {}
@@ -298,9 +297,9 @@ function Public.treasure_chest(surface, position, container_name)
 		if loot_data[i].scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
 			local midpoint = (loot_data[i].d_max + loot_data[i].d_min) / 2
 			local difference = (loot_data[i].d_max - loot_data[i].d_min)
-			table.insert(loot_weights,loot_data[i].weight * math_max(0, 1 - (math_abs(distance_to_center - midpoint) / (difference / 2))))
+			table.insert(loot_weights,loot_data[i].weight * math_max(0, 1 - (math_abs(distance - midpoint) / (difference / 2))))
 		else -- no scaling
-			if loot_data[i].d_min <= distance_to_center and loot_data[i].d_max >= distance_to_center then
+			if loot_data[i].d_min <= distance and loot_data[i].d_max >= distance then
 				table.insert(loot_weights, loot_data[i].weight)
 			else
 				table.insert(loot_weights, 0)
@@ -310,8 +309,8 @@ function Public.treasure_chest(surface, position, container_name)
 
 	local e = surface.create_entity({name = container_name, position=position, force="neutral", create_build_effect_smoke = false})
 	e.minable = false
-	local i = e.get_inventory(defines.inventory.chest)
-	for _ = 1, math_random(2,5), 1 do -- 20/04/04: max 5 items better than 6, so that if you observe 4 items in alt-mode the chance of an extra one is 1/2 rather than 2/3
+	local inv = e.get_inventory(defines.inventory.chest)
+	for _ = 1, math_random(2,6), 1 do
 		local loot = Rand.raffle(loot_types,loot_weights)
 		local difficulty_scaling = Balance.treasure_quantity_difficulty_scaling(difficulty)
 		if objective.chronojumps == 0 then difficulty_scaling = 1 end
@@ -324,7 +323,7 @@ function Public.treasure_chest(surface, position, container_name)
 		elseif lucky <= 10 then
 			_count = _count * 2
 		end
-		i.insert({name = loot.name, count = _count})
+		inv.insert({name = loot.name, count = _count})
 	end
 end
 

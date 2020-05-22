@@ -460,10 +460,14 @@ local function desync(event)
 			frame_speed = 0.1,
 			vertical_speed = 0.1,
 			height = 0.1,
-			movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+			movement = {m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01)}
 		})
 	end
-	if not event or math_random(1,2) == 1 then -- 20/04/04: nerf comfylatron
+	local blocked = false
+	if not objective.comfylatron.surface.find_non_colliding_position("compilatron", objective.comfylatron.position, 0.5, 0.1) then
+		blocked = true
+	end
+	if not event or blocked or math_random(1,5) == 1 then
 		objective.comfylatron.surface.create_entity({name = "medium-explosion", position = objective.comfylatron.position})
 		objective.comfylatron.surface.create_entity({name = "flying-text", position = objective.comfylatron.position, text = "desync", color = {r = 150, g = 0, b = 0}})
 		objective.comfylatron.destroy()
@@ -472,7 +476,7 @@ local function desync(event)
 		objective.comfylatron.surface.create_entity({name = "flying-text", position = objective.comfylatron.position, text = "desync evaded", color = {r = 0, g = 150, b = 0}})
 		if event.cause then
 			if event.cause.valid and event.cause.player then
-				game.print("Comfylatron: I got you that time! Back to work, " .. event.cause.player.name .. "!", {r = 200, g = 0, b = 0})
+				game.print({"chronosphere.message_comfylatron_desync", event.cause.player.name}, {r = 200, g = 0, b = 0})
 				event.cause.die("player", objective.comfylatron)
 			end
 		end
@@ -603,7 +607,7 @@ local function go_to_some_location()
 			}
 		})
 	end
-	
+
 	local symbols = {"!","!!","..","..."," "}
 	local arg1 = symbols[math_random(1, #symbols)]
 	local randomphrase = texts["random_travel"][math_random(1, #texts["random_travel"])]

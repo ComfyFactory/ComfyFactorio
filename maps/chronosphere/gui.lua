@@ -246,10 +246,16 @@ function Public_gui.update_gui(player)
 	gui.label.caption = {"chronosphere.gui_1"}
 	gui.jump_number.caption = objective.chronojumps
 
+	gui.charger.caption = {"chronosphere.gui_2"}
+
+	if (objective.chronochargesneeded<100000) then
+		gui.charger_value.caption =  string.format("%.2f", objective.chronocharges/1000) .. " / " .. math_floor(objective.chronochargesneeded)/1000 .. " GJ"
+	else
+		gui.charger_value.caption =  string.format("%.2f", objective.chronocharges/1000000) .. " / " .. math_floor(objective.chronochargesneeded)/1000000 .. " TJ"
+	end
+
 	local interval = objective.chronochargesneeded
 	gui.progressbar.value = 1 - (objective.chronochargesneeded - objective.chronocharges) / interval
-
-	gui.charger.caption = {"chronosphere.gui_2"}
 
 	--[[
 	if (objective.chronochargesneeded<1000) then
@@ -265,26 +271,21 @@ function Public_gui.update_gui(player)
 	end
 	]]
 
-	if (objective.chronochargesneeded<100000) then
-		gui.charger_value.caption =  string.format("%.2f", objective.chronocharges/1000) .. " / " .. math_floor(objective.chronochargesneeded)/1000 .. " GJ"
-	else
-		gui.charger_value.caption =  string.format("%.2f", objective.chronocharges/1000000) .. " / " .. math_floor(objective.chronochargesneeded)/1000000 .. " TJ"
-	end
-
 	if objective.jump_countdown_start_time == -1 then
-		if tick % 60 == 58 then -- charge history updates
-			local history = objective.accumulator_energy_history
-			objective.accumulator_energy_history = {}
+		--if tick % 60 == 58 then -- charge history updates
+			--local history = objective.accumulator_energy_history
+			--objective.accumulator_energy_history = {}
 			local powerobserved,storedbattery,seconds_ETA = 0,0,0
-			if #history == 2 and history[1] and history[2] then
-				powerobserved = (history[2] - history[1]) / 54 * 60
-				storedbattery = history[2]
-			end
+			--if #history == 2 and history[1] and history[2] then
+			--	powerobserved = (history[2] - history[1]) / 54 * 60
+			--	storedbattery = history[2]
+			--end
 
 			seconds_ETA = ETA_seconds_until_full(powerobserved, storedbattery)
 
 			gui.timer.caption = {"chronosphere.gui_3"}
 			gui.timer_value.caption = math_floor(seconds_ETA / 60) .. "m" .. seconds_ETA % 60 .. "s"
+			gui.timer_value.style.font_color = {r = 0, g = 0.98, b = 0}
 
 				if objective.planet[1].type.id == 19 and objective.passivetimer > 31 then
 					local nukecase = objective.dangertimer
@@ -301,10 +302,16 @@ function Public_gui.update_gui(player)
 					gui.timer_value2.style.font_color = {r = 0, g = 200, b = 0}
 				end
 			end
-		end
+		--end
 		if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
 			local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
 			local time_until_evo = (objective.chronochargesneeded * 0.5 / objective.passive_chronocharge_rate - objective.passivetimer)
+			if time_until_evo <= seconds_ETA then
+				gui.timer_value.style.font_color = {r = 0.98, g = 0.5, b = 0}
+			end
+			if time_until_overstay <= seconds_ETA then
+				gui.timer_value.style.font_color = {r = 0.98, g = 0, b = 0}
+			end
 
 			local first_part = "Biters permanently evolve in: " .. math_floor(time_until_overstay/60) .. "m" .. math_floor(time_until_overstay) % 60 .. "s"
 			if time_until_overstay < 0 then
@@ -375,7 +382,9 @@ local function upgrades_gui(player)
 		end
 		if upgrades[i].quest then upg_table.visible = false end
 	end
-  frame.add({type = "button", name = "close_upgrades", caption = "Close"})
+	frame.add({type = "line", direction = "horizontal"})
+  local close = frame.add({type = "button", name = "close_upgrades", caption = "Close"})
+	close.style.horizontally_stretchable = true
   return costs
 end
 

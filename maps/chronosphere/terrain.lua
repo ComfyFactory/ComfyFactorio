@@ -9,7 +9,7 @@ local math_min = math.min
 local math_abs = math.abs
 local math_sqrt = math.sqrt
 local level_depth = 960
-local lake_noise_value = -0.9
+local lake_noise_value = -0.85
 local labyrinth_cell_size = 32 --valid values are 2, 4, 8, 16, 32
 local Treasure = require 'maps.chronosphere.treasure'
 local simplex_noise = require "utils.simplex_noise".d2
@@ -159,7 +159,7 @@ local function process_dangerevent_position(p, seed, tiles, entities, treasure, 
 		tiles[#tiles + 1] = {name = "dirt-7", position = p}
 		if scrapyard < -0.38 or scrapyard > 0.38 then
 			if math_random(1,36) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end
-			if math_random(1,6) == 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
+			if math_random(1,3) == 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
 			return
 		end
 		return
@@ -201,19 +201,19 @@ local function process_hedgemaze_position(p, seed, tiles, entities, treasure, pl
           if math_random(1,252 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 300 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
         elseif things == "camp" then
           if p.x % 32 > 12 and p.x % 32 < 20 and p.y % 32 > 12 and p.y % 32 < 20 then
-            if math_random(1,16) == 1 then treasure[#treasure + 1] = p end
+            if math_random(1,10) == 1 then treasure[#treasure + 1] = p end
           elseif p.x % 32 == 11 or p.x % 32 == 12 or p.y % 32 == 11 or p.y % 32 == 12 or p.x % 32 == 21 or p.x % 32 == 20 or p.y % 32 == 21 or p.y % 32 == 20 then
-            if math_random(1,28) == 1 then entities[#entities + 1] = {name = "land-mine", position = p, force = "scrapyard"} end
+            if math_random(1,14) == 1 then entities[#entities + 1] = {name = "land-mine", position = p, force = "scrapyard"} end
           end
         elseif things == "crashsite" then
-          if math_random(1,10) == 1 then
+          if math_random(1,2) == 1 then
             entities[#entities + 1] = {name="mineable-wreckage", position=p}
           end
         elseif things == "treasure" then
-          local roll = math_random(1,512)
+          local roll = math_random(1,128)
           if roll <= 2 then
             treasure[#treasure + 1] = p
-          elseif roll == 3 then
+          elseif roll > 2 and roll < 10 then
             entities[#entities + 1] = {name = "land-mine", position = p, force = "scrapyard"}
           end
         end
@@ -241,15 +241,15 @@ local function process_hedgemaze_position(p, seed, tiles, entities, treasure, pl
         elseif things == "prospect" then
           if math_random(1,252 - biters) == 1 and math_sqrt(p.x * p.x + p.y * p.y) > 300 then entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p} end
         elseif things == "camp" then
-          if p.x % 32 > 12 and p.x % 32 < 20 and p.y % 32 > 12 and p.y % 32 < 20 and math_random(1,16) == 1 then
+          if p.x % 32 > 12 and p.x % 32 < 20 and p.y % 32 > 12 and p.y % 32 < 20 and math_random(1,6) == 1 then
             treasure[#treasure + 1] = p
           end
         elseif things == "crashsite" then
-          if math_random(1,10) == 1 then
+          if math_random(1,2) == 1 then
             entities[#entities + 1] = {name="mineable-wreckage", position=p}
           end
         elseif things == "treasure" then
-          if math_random(1,256) == 1 then
+          if math_random(1,128) == 1 then
             treasure[#treasure + 1] = p
           end
         end
@@ -518,8 +518,11 @@ local function process_scrapyard_position(p, seed, tiles, entities, treasure, pl
        if math_random(1,100) > 42 then entities[#entities + 1] = {name = tree_raffle[math_random(1, s_tree_raffle)], position = p} end
      end
 		if scrapyard < -0.28 or scrapyard > 0.28 then
-			if math_random(1,48) == 1 then entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"} end
-			if math_random(1,3) == 1 then entities[#entities + 1] = {name="mineable-wreckage", position=p} end
+			if math_random(1,48) == 1 then
+        entities[#entities + 1] = {name = scrap_entities[math_random(1, scrap_entities_index)], position = p, force = "enemy"}
+      else
+		    entities[#entities + 1] = {name="mineable-wreckage", position=p}
+      end
 			return
 		end
 		return
@@ -686,9 +689,9 @@ local entity_functions = {
 		Treasure(surface, entity.position, entity.name)
 	end,
   ["lab"] = function(surface, entity)
-	local objective = Chrono_table.get_table()
+  	local objective = Chrono_table.get_table()
     local e = surface.create_entity(entity)
-    local evo = 1 + math_min(math_floor(objective.chronojumps / 4), 4)
+    local evo = 1 + math_min(math_floor(objective.chronojumps / 5), 4)
     local research = {
       {"automation-science-pack", "logistic-science-pack"},
       {"automation-science-pack", "logistic-science-pack", "military-science-pack"},
@@ -697,7 +700,7 @@ local entity_functions = {
       {"automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack", "production-science-pack", "utility-science-pack"}
     }
     for _,science in pairs(research[evo]) do
-      e.insert({name = science, count = math_random(math_min(32 + objective.chronojumps, 100), math_min(64 + objective.chronojumps, 200))})
+      e.insert({name = science, count = math_random(math_min(30 + objective.chronojumps * 5, 100), math_min(60 + objective.chronojumps * 5, 200))})
     end
   end,
 }
@@ -892,32 +895,25 @@ local function normal_chunk(surface, left_top, level, planet)
       if things == "prospect" then
         Ores.prospect_ores(nil, surface, {x = left_top.x + 16, y = left_top.y + 16})
       elseif things == "camp" or things == "lab" then
-        local positions = {
-          {x = left_top.x + 9, y = left_top.y + 9},{x = left_top.x + 9, y = left_top.y + 16},{x = left_top.x + 9, y = left_top.y + 23},
-          {x = left_top.x + 16, y = left_top.y + 9},{x = left_top.x + 16, y = left_top.y + 23},
-          {x = left_top.x + 23, y = left_top.y + 9},{x = left_top.x + 23, y = left_top.y + 16},{x = left_top.x + 23, y = left_top.y + 23}
-        }
-        for i = 1, 8, 1 do
-          entities[#entities + 1] = {name = "gun-turret", position = positions[i], force = "scrapyard"}
-        end
+        Specials.defended_position(surface, left_top, entities)
         if things == "lab" then
           entities[#entities + 1] = {name = "lab", position = {x = left_top.x + 15, y = left_top.y + 15}, force = "neutral"}
         end
       end
 		end
     for y = 0, 31, 1 do
-		for x = 0, 31, 1 do
-			local p = {x = left_top.x + x, y = left_top.y + y}
-			process_level(p, seed, tiles, entities, treasure, planet, cell, things)
-		end
-	end
+  		for x = 0, 31, 1 do
+  			local p = {x = left_top.x + x, y = left_top.y + y}
+  			process_level(p, seed, tiles, entities, treasure, planet, cell, things)
+  		end
+  	end
   else
     for y = 0, 31, 1 do
-		for x = 0, 31, 1 do
-			local p = {x = left_top.x + x, y = left_top.y + y}
-			process_level(p, seed, tiles, entities, treasure, planet)
-		end
-	end
+  		for x = 0, 31, 1 do
+  			local p = {x = left_top.x + x, y = left_top.y + y}
+  			process_level(p, seed, tiles, entities, treasure, planet)
+  		end
+  	end
   end
 	surface.set_tiles(tiles, true)
 

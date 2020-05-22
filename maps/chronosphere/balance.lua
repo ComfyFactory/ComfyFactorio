@@ -1,5 +1,6 @@
 local Public = {}
 local Rand = require 'maps.chronosphere.random'
+local Chrono_table = require 'maps.chronosphere.table'
 
 local math_floor = math.floor
 local math_min = math.min
@@ -118,10 +119,12 @@ Public.Chronotrain_max_HP = 10000
 Public.Chronotrain_HP_repaired_per_pack = 150
 Public.Tech_price_multiplier = 0.6
 
-Public.starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 2, ['raw-fish'] = 4, ['wood'] = 16}
+Public.starting_items = {['pistol'] = 1, ['firearm-magazine'] = 32, ['grenade'] = 4, ['raw-fish'] = 4, ['wood'] = 16}
 Public.wagon_starting_items = {{name = 'firearm-magazine', count = 16},{name = 'iron-plate', count = 16},{name = 'wood', count = 16},{name = 'burner-mining-drill', count = 8}}
 
 function Public.jumps_until_overstay_is_on(difficulty) --both overstay penalties, and evoramp
+	local objective = Chrono_table.get_table()
+	if not objective.config.overstay_penalty then return 999 end
 	if difficulty > 1 then return 2
 	elseif difficulty == 1 then return 3
 	else return 5
@@ -170,9 +173,6 @@ function Public.player_ammo_damage_modifiers() -- bullet affects gun turrets, bu
     }
     return data
 end
-function Public.pistol_damage_multiplier(difficulty) return 2.5 end --3 will one-shot biters
-
-
 
 function Public.coin_reward_per_second_jumped_early(seconds, difficulty)
 	local minutes = seconds / 60
@@ -280,9 +280,9 @@ function Public.initial_cargo_boxes()
 		{name = "shotgun-shell", count = math_random(4, 5)},
 		{name = "shotgun-shell", count = math_random(4, 5)},
 		{name = "land-mine", count = math_random(6, 18)},
-		-- {name = "grenade", count = math_random(2, 3)}, --make these harder to get
-		-- {name = "grenade", count = math_random(2, 3)},
-		-- {name = "grenade", count = math_random(2, 3)},
+		{name = "grenade", count = math_random(2, 3)},
+		{name = "grenade", count = math_random(2, 3)},
+		{name = "grenade", count = math_random(2, 3)},
 		{name = "iron-gear-wheel", count = math_random(7, 15)},
 		{name = "iron-gear-wheel", count = math_random(7, 15)},
 		{name = "iron-gear-wheel", count = math_random(7, 15)},
@@ -305,12 +305,87 @@ end
 
 function Public.treasure_quantity_difficulty_scaling(difficulty) return difficulty_sloped(difficulty, 1) end
 
-function Public.Base_ore_loot_yield(jumps)
-	return 13 + 2 * jumps
+function Public.Base_ore_loot_yield(jumps, scrap)
+	if scrap then
+		return 5 + 1 * jumps
+	else
+		return 15 + 3 * jumps
+	end
 end
 
-function Public.scrap_quantity_multiplier(evolution_factor)
-	return 1 + 3 * evolution_factor
+function Public.scrap()
+	local main_loot = {
+		["iron-plate"] = {amount = 5, chance = 400},
+		["iron-gear-wheel"] = {amount = 3, chance = 250},
+		["iron-stick"] = {amount = 2, chance = 100},
+		["copper-plate"] = {amount = 5, chance = 400},
+		["copper-cable"] = {amount = 8, chance = 150},
+		["electronic-circuit"] = {amount = 3, chance = 100},
+		["steel-plate"] = {amount = 4, chance = 100},
+		["pipe"] = {amount = 3, chance = 50},
+		["pipe-to-ground"] = {amount = 1, chance = 10},
+		["battery"] = {amount = 3, chance = 10},
+		["explosives"] = {amount = 3, chance = 5},
+		["advanced-circuit"] = {amount = 5, chance = 3},
+		["plastic-bar"] = {amount = 5, chance = 5},
+		["processing-unit"] = {amount = 2, chance = 1},
+		["used-up-uranium-fuel-cell"] = {amount = 1, chance = 4},
+		["uranium-fuel-cell"] = {amount = 0.3, chance = 1},
+		["rocket-control-unit"] = {amount = 0.3, chance = 1},
+		["low-density-structure"] = {amount = 0.5, chance = 2},
+		["heat-pipe"] = {amount = 1, chance = 1},
+		["engine-unit"] = {amount = 3, chance = 3},
+		["electric-engine-unit"] = {amount = 2, chance = 2},
+		["flying-robot-frame"] = {amount = 1, chance = 2},
+		["logistic-robot"] = {amount = 0.3, chance = 1},
+		["construction-robot"] = {amount = 0.3, chance = 1},
+		["land-mine"] = {amount = 1, chance = 1},
+		["rocket"] = {amount = 2, chance = 1},
+		["explosive-rocket"] = {amount = 2, chance = 1},
+		["defender-capsule"] = {amount = 2, chance = 1},
+		["destroyer-capsule"] = {amount = 0.3, chance = 1},
+		["distractor-capsule"] = {amount = 0.3, chance = 1}
+	}
+	local second_loot = {
+		["cannon-shell"] = {amount = 0.1, chance = 5},
+		["explosive-cannon-shell"] = {amount = 0.1, chance = 4},
+		["uranium-cannon-shell"] = {amount = 0.1, chance = 3},
+		["explosive-uranium-cannon-shell"] = {amount = 0.1, chance = 2},
+		["artillery-shell"] = {amount = 0.1, chance = 1},
+		["cluster-grenade"] = {amount = 0.2, chance = 20},
+		["firearm-magazine"] = {amount = 0.4, chance = 70},
+		["piercing-rounds-magazine"] = {amount = 0.2, chance = 55},
+		["uranium-rounds-magazine"] = {amount = 0.1, chance = 40},
+		["nuclear-fuel"] = {amount = 0.1, chance = 3},
+		["rocket-fuel"] = {amount = 0.3, chance = 8},
+		["grenade"] = {amount = 0.3, chance = 40},
+		["solid-fuel"] = {amount = 0.4, chance = 50},
+		["empty-barrel"] = {amount = 0.1, chance = 50},
+		["crude-oil-barrel"] = {amount = 0.1, chance = 70},
+		["lubricant-barrel"] = {amount = 0.1, chance = 40},
+		["petroleum-gas-barrel"] = {amount = 0.1, chance = 60},
+		["heavy-oil-barrel"] = {amount = 0.1, chance = 70},
+		["light-oil-barrel"] = {amount = 0.1, chance = 70},
+		["water-barrel"] = {amount = 0.1, chance = 40},
+	}
+
+	local scrap_raffle = {}
+	for k, t in pairs (main_loot) do
+		for x = 1, t.chance, 1 do
+			table.insert(scrap_raffle, {name = k, amount = t.amount})
+		end
+	end
+
+	local second_raffle = {}
+	for k, t in pairs (second_loot) do
+		for x = 1, t.chance, 1 do
+			table.insert(second_raffle, {name = k, amount = t.amount})
+		end
+	end
+	Rand.shuffle(scrap_raffle)
+	Rand.shuffle(second_raffle)
+
+	return {main = scrap_raffle, second = second_raffle}
 end
 
 return Public
