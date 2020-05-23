@@ -9,7 +9,14 @@ local this = {
     power_sources = {},
     refill_turrets = {index = 1},
     magic_crafters = {index = 1},
-    magic_fluid_crafters = {index = 1}
+    magic_fluid_crafters = {index = 1},
+    breached_wall = 1,
+    entity_limits = {},
+    ore_loot = {
+        limit = 10000,
+        divisor = 10,
+        ore_list = {'iron-ore', 'copper-ore', 'coal'}
+    }
 }
 local Public = {}
 
@@ -32,6 +39,7 @@ function Public.reset_table()
     this.offline_players = {}
     this.biter_pets = {}
     this.power_sources = {}
+    this.flamethrower_damage = {}
     this.refill_turrets = {index = 1}
     this.magic_crafters = {index = 1}
     this.magic_fluid_crafters = {index = 1}
@@ -40,9 +48,27 @@ function Public.reset_table()
     this.locomotive_xp_aura = 40
     this.xp_points = 0
     this.xp_points_upgrade = 0
+    this.upgrades = {
+        showed_text = false,
+        landmine = {
+            limit = 0,
+            built = 0
+        },
+        flame_turret = {
+            limit = 0,
+            built = 0
+        },
+        unit_number = {
+            landmine = {},
+            flame_turret = {}
+        }
+    }
     this.aura_upgrades = 0
     this.health_upgrades = 0
     this.threat_upgrades = 0
+    this.breached_wall = 1
+    this.entity_limits = {}
+    this.offline_players_enabled = false
     this.left_top = {
         x = 0,
         y = 0

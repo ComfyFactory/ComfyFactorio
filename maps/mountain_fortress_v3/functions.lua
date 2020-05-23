@@ -177,16 +177,6 @@ local function tick()
     do_magic_fluid_crafters()
 end
 
-Public.refill_turret_callback =
-    Token.register(
-    function(turret, data)
-        local refill_turrets = WPT.get('refill_turrets')
-        local callback_data = data.callback_data
-
-        refill_turrets[#refill_turrets + 1] = {turret = turret, data = callback_data.data}
-    end
-)
-
 Public.deactivate_callback =
     Token.register(
     function(entity)
@@ -195,6 +185,21 @@ Public.deactivate_callback =
         entity.destructible = false
     end
 )
+
+Public.neutral_force =
+    Token.register(
+    function(entity)
+        entity.force = 'neutral'
+    end
+)
+
+Public.enemy_force =
+    Token.register(
+    function(entity)
+        entity.force = 'enemy'
+    end
+)
+
 Public.active_not_destructible_callback =
     Token.register(
     function(entity)
@@ -233,6 +238,17 @@ Public.disable_active_callback =
     end
 )
 
+Public.refill_turret_callback =
+    Token.register(
+    function(turret, data)
+        local refill_turrets = WPT.get('refill_turrets')
+        local callback_data = data.callback_data
+        turret.direction = 3
+
+        refill_turrets[#refill_turrets + 1] = {turret = turret, data = callback_data}
+    end
+)
+
 Public.refill_liquid_turret_callback =
     Token.register(
     function(turret, data)
@@ -240,7 +256,7 @@ Public.refill_liquid_turret_callback =
         local callback_data = data.callback_data
         callback_data.liquid = true
 
-        refill_turrets[#refill_turrets + 1] = {turret = turret, data = callback_data.data}
+        refill_turrets[#refill_turrets + 1] = {turret = turret, data = callback_data}
     end
 )
 
@@ -257,10 +273,11 @@ Public.power_source_callback =
         power_source.destructible = false
         local power_pole =
             turret.surface.create_entity {
-            name = 'medium-electric-pole',
-            position = {x = turret.position.x, y = turret.position.y - 2}
+            name = 'crash-site-electric-pole',
+            position = {x = turret.position.x, y = turret.position.y}
         }
         power_pole.destructible = false
+        power_pole.disconnect_neighbour()
 
         power_sources[turret.unit_number] = {entity = power_source, pole = power_pole}
     end
@@ -270,6 +287,7 @@ Public.firearm_magazine_ammo = {name = 'firearm-magazine', count = 200}
 Public.piercing_rounds_magazine_ammo = {name = 'piercing-rounds-magazine', count = 200}
 Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count = 200}
 Public.light_oil_ammo = {name = 'light-oil', amount = 100}
+Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
 
 Event.add(defines.events.on_tick, tick)

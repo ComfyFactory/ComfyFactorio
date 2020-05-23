@@ -17,8 +17,6 @@ require 'player_modifiers'
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local P = require 'player_modifiers'
-local Collapse = require 'modules.collapse'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'
 
 local math_floor = math.floor
 local math_random = math.random
@@ -37,7 +35,14 @@ local reset_tooltip = 'ONE-TIME reset if you picked the wrong path (this will ke
 local reset_not_available =
     'ONE-TIME reset if you picked the wrong path (this will keep your points)\nAvailable after level 50.'
 
+local teller = '[color=blue]Global Pool Reward:[/color]'
+
 local rpg_t = {}
+local rpg_extra = {
+    debug = false,
+    breached_walls = 1,
+    reward_new_players = 0
+}
 local rpg_frame_icons = {
     'entity/small-worm-turret',
     'entity/medium-worm-turret',
@@ -58,10 +63,11 @@ local rpg_frame_icons = {
 }
 
 Global.register(
-    {rpg_t = rpg_t, rpg_frame_icons = rpg_frame_icons},
+    {rpg_t = rpg_t, rpg_frame_icons = rpg_frame_icons, rpg_extra = rpg_extra},
     function(tbl)
         rpg_t = tbl.rpg_t
         rpg_frame_icons = tbl.rpg_frame_icons
+        rpg_extra = tbl.rpg_extra
     end
 )
 
@@ -71,10 +77,29 @@ function Public.get_table()
     return rpg_t
 end
 
+function Public.get_extra_table()
+    return rpg_extra
+end
+
+function Public.toggle_debug()
+    if rpg_extra.debug then
+        rpg_extra.debug = false
+    else
+        rpg_extra.debug = true
+    end
+end
+
+function Public.debug_log(str)
+    if not rpg_extra.debug then
+        return
+    end
+    print(str)
+end
+
 local classes = {
     ['engineer'] = 'ENGINEER',
     ['strength'] = 'MINER',
-    ['magic'] = 'SORCERER',
+    ['magicka'] = 'SORCERER',
     ['dexterity'] = 'ROGUE',
     ['vitality'] = 'TANK'
 }
@@ -207,10 +232,10 @@ local function update_player_stats(player)
     local player_modifiers = P.get_table()
     local strength = rpg_t[player.index].strength - 10
     player_modifiers[player.index].character_inventory_slots_bonus['rpg'] = math.round(strength * 0.2, 3)
-    player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math.round(strength * 0.008, 3)
+    player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math.round(strength * 0.007, 3)
     player_modifiers[player.index].character_maximum_following_robot_count_bonus['rpg'] = math.round(strength * 0.2, 3)
 
-    local magic = rpg_t[player.index].magic - 10
+    local magic = rpg_t[player.index].magicka - 10
     local v = magic * 0.22
     player_modifiers[player.index].character_build_distance_bonus['rpg'] = math.round(v * 0.25, 3)
     player_modifiers[player.index].character_item_drop_distance_bonus['rpg'] = math.round(v * 0.25, 3)
@@ -220,7 +245,7 @@ local function update_player_stats(player)
     player_modifiers[player.index].character_resource_reach_distance_bonus['rpg'] = math.round(v * 0.15, 3)
 
     local dexterity = rpg_t[player.index].dexterity - 10
-    player_modifiers[player.index].character_running_speed_modifier['rpg'] = math.round(dexterity * 0.002, 3)
+    player_modifiers[player.index].character_running_speed_modifier['rpg'] = math.round(dexterity * 0.0015, 3)
     player_modifiers[player.index].character_crafting_speed_modifier['rpg'] = math.round(dexterity * 0.015, 3)
 
     player_modifiers[player.index].character_health_bonus['rpg'] =
@@ -231,12 +256,12 @@ end
 
 local function get_class(player)
     local average =
-        (rpg_t[player.index].strength + rpg_t[player.index].magic + rpg_t[player.index].dexterity +
+        (rpg_t[player.index].strength + rpg_t[player.index].magicka + rpg_t[player.index].dexterity +
         rpg_t[player.index].vitality) /
         4
     local high_attribute = 0
     local high_attribute_name = ''
-    for _, attribute in pairs({'strength', 'magic', 'dexterity', 'vitality'}) do
+    for _, attribute in pairs({'strength', 'magicka', 'dexterity', 'vitality'}) do
         if rpg_t[player.index][attribute] > high_attribute then
             high_attribute = rpg_t[player.index][attribute]
             high_attribute_name = attribute
@@ -383,9 +408,9 @@ local function draw_gui(player, forced)
     local tip = 'Increases reach distance.'
     local e = add_gui_description(tt, 'MAGIC', w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].magic, w2)
+    local e = add_gui_stat(tt, rpg_t[player.index].magicka, w2)
     e.tooltip = tip
-    add_gui_increase_stat(tt, 'magic', player)
+    add_gui_increase_stat(tt, 'magicka', player)
 
     local tip = 'Increases running and crafting speed.'
     local e = add_gui_description(tt, 'DEXTERITY', w1)
@@ -591,9 +616,12 @@ local function level_up(player)
 end
 
 function Public.gain_xp(player, amount)
+    Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
     local fee = amount * 0.3
+    Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
     rpg_t.global_pool = rpg_t.global_pool + fee
     amount = math_round(amount, 3) - fee
+    Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
     rpg_t[player.index].xp = rpg_t[player.index].xp + amount
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
     if player.gui.left.rpg then
@@ -622,24 +650,30 @@ end
 
 local function global_pool()
     local pool = rpg_t.global_pool
-    if pool <= 5000 then
+    local random_amount = math_random(5000, 10000)
+    if pool <= random_amount then
         return
     end
     local player_count = #game.connected_players
     local share = pool / player_count
-    rpg_t.global_pool = 0
+    Public.debug_log('RPG - Share per player:' .. share)
     for _, p in pairs(game.connected_players) do
-        p.create_local_flying_text {
-            text = '+' .. math_floor(share) .. ' xp',
-            position = p.position,
-            color = xp_floating_text_color,
-            time_to_live = 240,
-            speed = 1
-        }
-        rpg_t[p.index].xp_since_last_floaty_text = 0
-        Public.gain_xp(p, share)
-        xp_effects(p)
+        if p.afk_time < 5000 then
+            p.create_local_flying_text {
+                text = '+' .. math_floor(share) .. ' xp',
+                position = p.position,
+                color = xp_floating_text_color,
+                time_to_live = 240,
+                speed = 1
+            }
+            rpg_t[p.index].xp_since_last_floaty_text = 0
+            Public.gain_xp(p, share)
+            xp_effects(p)
+        else
+            game.print(teller .. ' ' .. p.name .. ' received nothing. Reason: AFK')
+        end
     end
+    rpg_t.global_pool = 0
     return
 end
 
@@ -660,14 +694,14 @@ function Public.rpg_reset_player(player, one_time_reset)
             level = 1,
             xp = 0,
             strength = 10,
-            magic = 10,
+            magicka = 10,
             dexterity = 10,
             vitality = 10,
             points_to_distribute = 0,
             last_floaty_text = visuals_delay,
             xp_since_last_floaty_text = 0,
             reset = true,
-            bonus = 1,
+            bonus = rpg_extra.breached_walls or 1,
             rotated_entity_delay = 0,
             gui_refresh_delay = 0,
             last_mined_entity_position = {x = 0, y = 0}
@@ -680,10 +714,10 @@ function Public.rpg_reset_player(player, one_time_reset)
             level = 1,
             xp = 0,
             strength = 10,
-            magic = 10,
+            magicka = 10,
             dexterity = 10,
             vitality = 10,
-            points_to_distribute = 5,
+            points_to_distribute = 0,
             last_floaty_text = visuals_delay,
             xp_since_last_floaty_text = 0,
             reset = false,
@@ -707,6 +741,9 @@ function Public.rpg_reset_all_players()
     for _, p in pairs(game.connected_players) do
         Public.rpg_reset_player(p)
     end
+    rpg_extra.breached_walls = 1
+    rpg_extra.reward_new_players = 0
+    rpg_t.global_pool = 0
 end
 
 local function on_gui_click(event)
@@ -1111,29 +1148,6 @@ local function on_player_rotated_entity(event)
     Public.gain_xp(player, 0.20)
 end
 
-local function distance(player)
-    local distance_to_center = math_floor(math_sqrt(player.position.x ^ 2 + player.position.y ^ 2))
-    local location = distance_to_center
-    if location < Terrain.level_depth * rpg_t[player.index].bonus - 10 then
-        return
-    end
-    local min = Terrain.level_depth * rpg_t[player.index].bonus
-    local max = (Terrain.level_depth + 5) * rpg_t[player.index].bonus
-    local min_times = location >= min
-    local max_times = location <= max
-    if min_times and max_times then
-        if not Collapse.start_now() then
-            Collapse.start_now(true)
-            game.print('[color=blue]Mapkeeper:[/color] Warning, collapse has begun!')
-        end
-        local level = rpg_t[player.index].bonus
-        rpg_t[player.index].bonus = rpg_t[player.index].bonus + 1
-        player.print('[color=blue]Mapkeeper:[/color] Survivor! Well done. You have completed level: ' .. level)
-        Public.gain_xp(player, 300 * rpg_t[player.index].bonus)
-        return
-    end
-end
-
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
     local map_name = 'mountain_fortress_v3'
@@ -1142,7 +1156,6 @@ local function on_player_changed_position(event)
         return
     end
 
-    distance(player)
     if math_random(1, 64) ~= 1 then
         return
     end
@@ -1203,11 +1216,8 @@ local function on_player_crafted_item(event)
     if not player.valid then
         return
     end
-    local distance_multiplier = math_floor(math_sqrt(player.position.x ^ 2 + player.position.y ^ 2)) * 0.0005 + 1
-    local amount = 0.30 * distance_multiplier
-    if amount >= 2 then
-        amount = 2
-    end
+    local amount = 0.30 * math_random(1, 2)
+
     Public.gain_xp(player, event.recipe.energy * amount)
 end
 
@@ -1225,6 +1235,9 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if not rpg_t[player.index] then
         Public.rpg_reset_player(player)
+        if rpg_extra.reward_new_players > 10 then
+            Public.gain_xp(player, rpg_extra.reward_new_players)
+        end
     end
     for _, p in pairs(game.connected_players) do
         draw_level_text(p)

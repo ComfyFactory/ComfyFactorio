@@ -1,25 +1,8 @@
--- modules
-require 'maps.mountain_fortress_v3.generate'
-require 'maps.mountain_fortress_v3.player_list'
-require 'maps.mountain_fortress_v3.commands'
-require 'maps.mountain_fortress_v3.flamethrower_nerf'
-
-require 'modules.dynamic_landfill'
-require 'modules.shotgun_buff'
-require 'modules.rocks_heal_over_time'
-require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.rocks_yield_ore_veins'
-require 'modules.spawners_contain_biters'
-require 'modules.biters_yield_coins'
-require 'modules.wave_defense.main'
-require 'modules.pistol_buffs'
-require 'modules.mineable_wreckage_yields_scrap'
-
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Entities = require 'maps.mountain_fortress_v3.entities'
-local update_gui = require 'maps.mountain_fortress_v3.gui'
+local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
@@ -34,6 +17,24 @@ local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
+
+require 'maps.mountain_fortress_v3.biter_corpse_remover'
+require 'maps.mountain_fortress_v3.generate'
+require 'maps.mountain_fortress_v3.player_list'
+require 'maps.mountain_fortress_v3.commands'
+require 'maps.mountain_fortress_v3.breached_wall'
+require 'maps.mountain_fortress_v3.ore_generator'
+
+require 'modules.dynamic_landfill'
+require 'modules.shotgun_buff'
+require 'modules.rocks_heal_over_time'
+require 'modules.no_deconstruction_of_neutral_entities'
+require 'modules.rocks_yield_ore_veins'
+require 'modules.spawners_contain_biters'
+require 'modules.biters_yield_coins'
+require 'modules.wave_defense.main'
+require 'modules.pistol_buffs'
+require 'modules.mineable_wreckage_yields_scrap'
 
 local Public = {}
 
@@ -194,13 +195,15 @@ function Public.reset_map()
     disable_tech()
 
     local surface = game.surfaces[this.active_surface_index]
-    surface.min_brightness = 0.5
 
     Explosives.set_surface_whitelist({[surface.name] = true})
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
-    game.forces.enemy.set_ammo_damage_modifier('bullet', 1)
-    game.forces.enemy.set_turret_attack_modifier('gun-turret', 1)
+
+    game.forces.enemy.technologies['artillery-shell-range-1'].researched = true
+    game.forces.enemy.technologies['refined-flammables-1'].researched = true
+    game.forces.enemy.technologies['refined-flammables-2'].researched = true
+    game.forces.enemy.technologies['energy-weapons-damage-1'].researched = true
 
     global.bad_fire_history = {}
     global.friendly_fire_history = {}
@@ -209,13 +212,14 @@ function Public.reset_map()
     get_score.score_table = {}
     Diff.difficulty_poll_closing_timeout = game.tick + 90000
     Diff.difficulty_player_votes = {}
+    Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     Collapse.set_max_line_size(Terrain.level_width)
     Collapse.set_surface(surface)
-    Collapse.set_position({0, 162})
+    Collapse.set_position({0, 130})
     Collapse.set_direction('north')
     Collapse.start_now(false)
 
@@ -238,10 +242,18 @@ function Public.reset_map()
 
     set_difficulty()
 
-    Task.start_queue()
-    Task.set_queue_speed(2)
+    if not surface.is_chunk_generated({-20, 22}) then
+        surface.request_to_generate_chunks({-20, 22}, 0.1)
+        surface.force_generate_chunk_requests()
+        surface.set_chunk_generated_status({-20, 22}, defines.chunk_generated_status.custom_tiles)
+    end
 
-    this.chunk_load_tick = game.tick + 500
+    game.forces.player.set_spawn_position({-27, 25}, surface)
+
+    Task.start_queue()
+    Task.set_queue_speed(4)
+
+    this.chunk_load_tick = game.tick + 800
 end
 
 local function on_player_changed_position(event)
@@ -274,10 +286,6 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     local surface = game.surfaces[this.active_surface_index]
 
-    if not surface.is_chunk_generated({-20, 22}) then
-        surface.request_to_generate_chunks({-20, 22}, 1)
-    end
-
     set_difficulty(event)
 
     if not this.players then
@@ -292,29 +300,34 @@ local function on_player_joined_game(event)
     end
 
     if not this.players[player.index].first_join then
-        local loco_surface = game.surfaces[this.loco_surface.name]
+        player.print('Greetings, ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
+        player.print('Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
+        this.players[player.index].first_join = true
+        for item, amount in pairs(starting_items) do
+            player.insert({name = item, count = amount})
+        end
+    end
 
-        if player.surface.index ~= loco_surface.index then
-            if not player.character then
-                player.create_character()
-            end
+    if player.surface.index ~= this.active_surface_index then
+        player.teleport(
+            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
+            surface
+        )
+    else
+        local p = {x = player.position.x, y = player.position.y}
+        local oom = surface.get_tile(p).name == 'out-of-map'
+        if oom then
             player.teleport(
-                loco_surface.find_non_colliding_position(
+                surface.find_non_colliding_position(
                     'character',
-                    game.forces.player.get_spawn_position(loco_surface),
+                    game.forces.player.get_spawn_position(surface),
                     3,
                     0,
                     5
                 ),
-                loco_surface
+                surface
             )
-            for item, amount in pairs(starting_items) do
-                player.insert({name = item, count = amount})
-            end
         end
-        player.print('Greetings, ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
-        player.print('Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
-        this.players[player.index].first_join = true
     end
 end
 
@@ -325,20 +338,32 @@ end
 local function on_pre_player_left_game(event)
     local this = WPT.get()
     local player = game.players[event.player_index]
-    if player.controller_type == defines.controllers.editor then
-        player.toggle_map_editor()
-    end
+    local tick
     if player.character then
+        if this.offline_players_enabled then
+            tick = game.tick + 432000
+        else
+            tick = game.tick
+        end
         this.offline_players[#this.offline_players + 1] = {
             index = event.player_index,
             name = player.name,
-            tick = game.tick
+            tick = tick
         }
     end
 end
 
 local function remove_offline_players()
     local this = WPT.get()
+    if not this.offline_players_enabled then
+        if game.tick < 500 then
+            return
+        end
+        if game.tick % 432000 == 0 then
+            this.offline_players_enabled = true
+        end
+        return
+    end
     local offline_players = WPT.get('offline_players')
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
@@ -432,17 +457,36 @@ end
 
 local function on_research_finished(event)
     disable_recipes()
-    event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
+    local research = event.research
+    local this = WPT.get()
+
+    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
     local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
-    if event.research.force.technologies['steel-axe'].researched then
+    if research.force.technologies['steel-axe'].researched then
         mining_speed_bonus = mining_speed_bonus + 0.5
     end -- +50% speed for steel-axe research
-    event.research.force.manual_mining_speed_modifier = mining_speed_bonus
+    research.force.manual_mining_speed_modifier = mining_speed_bonus
+
+    local force_name = research.force.name
+    if not force_name then
+        return
+    end
+    this.flamethrower_damage[force_name] = -0.65
+    if research.name == 'military' then
+        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', this.flamethrower_damage[force_name])
+        game.forces[force_name].set_ammo_damage_modifier('flamethrower', this.flamethrower_damage[force_name])
+    end
+
+    if string.sub(research.name, 0, 18) == 'refined-flammables' then
+        this.flamethrower_damage[force_name] = this.flamethrower_damage[force_name] + 0.10
+        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', this.flamethrower_damage[force_name])
+        game.forces[force_name].set_ammo_damage_modifier('flamethrower', this.flamethrower_damage[force_name])
+    end
 end
 
 local function is_locomotive_valid()
-    local this = WPT.get()
-    if not this.locomotive.valid then
+    local locomotive = WPT.get('locomotive')
+    if not locomotive.valid then
         Entities.loco_died()
     end
 end
@@ -455,13 +499,10 @@ local function has_the_game_ended()
                 this.game_reset_tick = nil
                 Public.reset_map()
             else
-                if not this.reset_the_game then
-                    game.print('Auto reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
-                    local message = 'Auto reset is disabled. Server is shutting down!'
-                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-                    Server.stop_scenario()
-                    this.reset_the_game = true
-                end
+                game.print('Auto reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
+                local message = 'Auto reset is disabled. Server is shutting down!'
+                Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                Server.stop_scenario()
             end
         end
         return
@@ -469,11 +510,11 @@ local function has_the_game_ended()
 end
 
 local function chunk_load()
-    local this = WPT.get()
-    if this.chunk_load_tick then
-        if this.chunk_load_tick < game.tick then
-            this.chunk_load_tick = nil
-            Task.set_queue_speed(0.8)
+    local chunk_load_tick = WPT.get('chunk_load_tick')
+    if chunk_load_tick then
+        if chunk_load_tick < game.tick then
+            WPT.get().chunk_load_tick = nil
+            Task.set_queue_speed(0.5)
         end
     end
 end
@@ -482,24 +523,26 @@ local on_tick = function()
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
     local wave_defense_table = WD.get_table()
+    local update_gui = Gui_mf.update_gui
 
     if game.tick % 30 == 0 then
         for _, player in pairs(game.connected_players) do
             update_gui(player)
         end
 
+        is_locomotive_valid()
+        has_the_game_ended()
+        chunk_load()
+
         if game.tick % 1800 == 0 then
+            remove_offline_players()
+            Entities.set_scores()
             local collapse_pos = Collapse.get_position()
             local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)
             if position then
                 wave_defense_table.spawn_position = position
             end
-            remove_offline_players()
-            Entities.set_scores()
         end
-        is_locomotive_valid()
-        has_the_game_ended()
-        chunk_load()
     end
 end
 
@@ -508,6 +551,36 @@ local on_init = function()
     Public.reset_map()
 
     global.custom_highscore.description = 'Wagon distance reached:'
+
+    local difficulties = {
+        [1] = {
+            name = 'Easy',
+            value = 0.75,
+            color = {r = 0.00, g = 0.25, b = 0.00},
+            print_color = {r = 0.00, g = 0.4, b = 0.00}
+        },
+        [2] = {
+            name = 'Normal',
+            value = 1,
+            color = {r = 0.00, g = 0.00, b = 0.25},
+            print_color = {r = 0.0, g = 0.0, b = 0.5}
+        },
+        [3] = {
+            name = 'Hard',
+            value = 1.5,
+            color = {r = 0.25, g = 0.00, b = 0.00},
+            print_color = {r = 0.4, g = 0.0, b = 0.00}
+        }
+    }
+
+    local tooltip = {
+        [1] = 'Makes the game really easy.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick.',
+        [2] = 'Normal Mountain Fortress game-play.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick.',
+        [3] = "Are you sure? It won't be easy.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick."
+    }
+
+    Difficulty.set_difficulties(difficulties)
+    Difficulty.set_tooltip(tooltip)
 
     this.rocks_yield_ore_maximum_amount = 500
     this.type_modifier = 1
@@ -525,6 +598,7 @@ local on_init = function()
     Explosives.set_destructible_tile('deepwater-green', 1000)
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
+    Explosives.set_destructible_tile('water-mud', 1000)
 end
 
 Event.on_nth_tick(10, on_tick)

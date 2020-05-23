@@ -208,7 +208,7 @@ local function biters_chew_rocks_faster(event)
         return
     end --Enemy Force
 
-    event.entity.health = event.entity.health - event.final_damage_amount * 2.5
+    event.entity.health = event.entity.health - event.final_damage_amount * 3.5
 end
 
 local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
@@ -433,7 +433,11 @@ function Public.loco_died()
     wave_defense_table.target = nil
     game.print(mapkeeper .. ' ' .. defeated_messages[math.random(1, #defeated_messages)], {r = 1, g = 0.5, b = 0.1})
     game.print(mapkeeper .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
-    game.print(mapkeeper .. ' Game will soft-reset shortly.', {r = 1, g = 0.5, b = 0.1})
+    if not this.disable_reset then
+        game.print(mapkeeper .. ' Game will soft-reset shortly.', {r = 1, g = 0.5, b = 0.1})
+    else
+        game.print(mapkeeper .. ' Game will not soft-reset. Soft-reset is disabled.', {r = 1, g = 0.5, b = 0.1})
+    end
     game.forces.enemy.set_friend('player', true)
     game.forces.player.set_friend('enemy', true)
 
@@ -459,9 +463,157 @@ function Public.loco_died()
     end
 end
 
+local function on_built_entity(event)
+    local this = WPT.get()
+    local entity = event.created_entity
+    if not entity.valid then
+        return
+    end
+
+    local upg = this.upgrades
+
+    local built = {
+        ['land-mine'] = upg.landmine.built,
+        ['flamethrower-turret'] = upg.flame_turret.built
+    }
+
+    local limit = {
+        ['land-mine'] = upg.landmine.limit,
+        ['flamethrower-turret'] = upg.flame_turret.limit
+    }
+
+    local validator = {
+        ['land-mine'] = 'landmine',
+        ['flamethrower-turret'] = 'flame_turret'
+    }
+
+    local name = validator[entity.name]
+
+    if built[entity.name] then
+        local surface = entity.surface
+
+        for k, _ in pairs(this.upgrades.unit_number[name]) do
+            if not k or not k.valid then
+                this.upgrades[name].built = #this.upgrades.unit_number[name]
+                this.upgrades.unit_number[name][k] = nil
+                built = {
+                    ['land-mine'] = upg.landmine.built,
+                    ['flamethrower-turret'] = upg.flame_turret.built
+                }
+            end
+        end
+
+        if built[entity.name] < limit[entity.name] then
+            this.upgrades[name].built = built[entity.name] + 1
+            this.upgrades.unit_number[name][entity] = entity
+            this.upgrades.showed_text = false
+
+            surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = this.upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
+                    color = {r = 0.82, g = 0.11, b = 0.11}
+                }
+            )
+        else
+            if not this.upgrades.showed_text then
+                surface.create_entity(
+                    {
+                        name = 'flying-text',
+                        position = entity.position,
+                        text = entity.name .. ' limit reached. Purchase more slots at the market!',
+                        color = {r = 0.82, g = 0.11, b = 0.11}
+                    }
+                )
+
+                this.upgrades.showed_text = true
+            end
+            local player = game.players[event.player_index]
+            player.insert({name = entity.name, count = 1})
+            entity.destroy()
+        end
+    end
+end
+
+local function on_robot_built_entity(event)
+    local this = WPT.get()
+    local entity = event.created_entity
+    if not entity.valid then
+        return
+    end
+
+    local upg = this.upgrades
+
+    local built = {
+        ['land-mine'] = upg.landmine.built,
+        ['flamethrower-turret'] = upg.flame_turret.built
+    }
+
+    local limit = {
+        ['land-mine'] = upg.landmine.limit,
+        ['flamethrower-turret'] = upg.flame_turret.limit
+    }
+
+    local validator = {
+        ['land-mine'] = 'landmine',
+        ['flamethrower-turret'] = 'flame_turret'
+    }
+
+    local name = validator[entity.name]
+
+    if built[entity.name] then
+        local surface = entity.surface
+
+        for k, _ in pairs(this.upgrades.unit_number[name]) do
+            if not k or not k.valid then
+                this.upgrades[name].built = #this.upgrades.unit_number[name]
+                this.upgrades.unit_number[name][k] = nil
+                built = {
+                    ['land-mine'] = upg.landmine.built,
+                    ['flamethrower-turret'] = upg.flame_turret.built
+                }
+            end
+        end
+
+        if built[entity.name] < limit[entity.name] then
+            this.upgrades[name].built = built[entity.name] + 1
+            this.upgrades.unit_number[name][entity] = entity
+            this.upgrades.showed_text = false
+
+            surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = this.upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
+                    color = {r = 0.82, g = 0.11, b = 0.11}
+                }
+            )
+        else
+            if not this.upgrades.showed_text then
+                surface.create_entity(
+                    {
+                        name = 'flying-text',
+                        position = entity.position,
+                        text = entity.name .. ' limit reached. Purchase more slots at the market!',
+                        color = {r = 0.82, g = 0.11, b = 0.11}
+                    }
+                )
+
+                this.upgrades.showed_text = true
+            end
+            local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+            inventory.insert({name = entity.name, count = 1})
+            entity.destroy()
+        end
+    end
+end
+
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 
 return Public

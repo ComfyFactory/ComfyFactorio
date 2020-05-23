@@ -6,6 +6,7 @@ local math_abs = math.abs
 local math_floor = math.floor
 
 local blacklist = {
+    ['atomic-bomb'] = true,
     ['cargo-wagon'] = true,
     ['locomotive'] = true,
     ['artillery-wagon'] = true,

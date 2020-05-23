@@ -1,4 +1,4 @@
-local Market = require 'functions.basic_markets'
+local Market = require 'maps.mountain_fortress_v3.basic_markets'
 local Loot = require 'maps.mountain_fortress_v3.loot'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
@@ -245,24 +245,52 @@ local function do_place_entities(data)
     local callback
 
     for _, e in ipairs(data.entities) do
-        if e.force then
-            entity = surface.create_entity({name = e.name, position = e.position, force = e.force})
+        if e.collision then
+            if surface.can_place_entity(e) then
+                entity = surface.create_entity(e)
+                if entity and e.direction then
+                    entity.direction = e.direction
+                end
+                if entity and e.force then
+                    entity.force = e.force
+                end
+                if entity and e.callback then
+                    local c = e.callback.callback
+                    if not c then
+                        return
+                    end
+                    local d = {callback_data = e.callback.data}
+                    if not d then
+                        callback = Token.get(c)
+                        callback(entity)
+                        return
+                    end
+                    callback = Token.get(c)
+                    callback(entity, d)
+                end
+            end
         else
             entity = surface.create_entity(e)
-        end
-        if entity and e.callback then
-            local c = e.callback.callback
-            if not c then
-                return
+            if entity and e.direction then
+                entity.direction = e.direction
             end
-            local d = {callback_data = e.callback.data}
-            if not d then
+            if entity and e.force then
+                entity.force = e.force
+            end
+            if entity and e.callback then
+                local c = e.callback.callback
+                if not c then
+                    return
+                end
+                local d = {callback_data = e.callback.data}
+                if not d then
+                    callback = Token.get(c)
+                    callback(entity)
+                    return
+                end
                 callback = Token.get(c)
-                callback(entity)
-                return
+                callback(entity, d)
             end
-            callback = Token.get(c)
-            callback(entity, d)
         end
     end
 end
@@ -379,7 +407,7 @@ function Public.schedule_chunk(event)
 
     local data = {
         yv = 0,
-        xv = 1,
+        xv = 0,
         y = 0,
         x = area.left_top.x,
         area = area,

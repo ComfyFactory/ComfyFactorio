@@ -45,19 +45,21 @@ local function property_boost(data)
         if not validate_player(player) then
             return
         end
-        if Public.contains_positions(player.position, area) or player.surface.index == locomotive_surface.index then
-            local pos = player.position
-            RPG.gain_xp(player, 0.3 * (rpg[player.index].bonus + this.xp_points))
+        if player.afk_time < 200 then
+            if Public.contains_positions(player.position, area) or player.surface.index == locomotive_surface.index then
+                local pos = player.position
+                RPG.gain_xp(player, 0.3 * (rpg[player.index].bonus + this.xp_points))
 
-            player.create_local_flying_text {
-                text = '+' .. '',
-                position = {x = pos.x, y = pos.y - 2},
-                color = xp_floating_text_color,
-                time_to_live = 60,
-                speed = 3
-            }
-            rpg[player.index].xp_since_last_floaty_text = 0
-            rpg[player.index].last_floaty_text = game.tick + visuals_delay
+                player.create_local_flying_text {
+                    text = '+' .. '',
+                    position = {x = pos.x, y = pos.y - 2},
+                    color = xp_floating_text_color,
+                    time_to_live = 60,
+                    speed = 3
+                }
+                rpg[player.index].xp_since_last_floaty_text = 0
+                rpg[player.index].last_floaty_text = game.tick + visuals_delay
+            end
         end
     end
 end
@@ -157,17 +159,16 @@ function Public.boost_players_around_train()
     if not this.active_surface_index then
         return
     end
-    local surface = game.surfaces[this.active_surface_index]
-    local icw_table = ICW.get_table()
-    local unit_surface = this.locomotive.unit_number
-    local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
-
     if not this.locomotive then
         return
     end
     if not this.locomotive.valid then
         return
     end
+    local surface = game.surfaces[this.active_surface_index]
+    local icw_table = ICW.get_table()
+    local unit_surface = this.locomotive.unit_number
+    local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
 
     local data = {
         this = this,
