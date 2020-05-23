@@ -57,9 +57,10 @@ local this = {
         [7] = ''
     },
     difficulty_vote_value = 1,
-    difficulty_vote_index = 4,
+    difficulty_vote_index = 1,
     difficulty_poll_closing_timeout = 54000,
-    difficulty_player_votes = {}
+    difficulty_player_votes = {},
+    gui_width = 108
 }
 
 local Public = {}
@@ -112,6 +113,7 @@ local function difficulty_gui()
             b.style.font = 'heading-2'
             b.style.font_color = this.difficulties[this.difficulty_vote_index].print_color
             b.style.minimal_height = 38
+            b.style.minimal_width = this.gui_width
         end
     end
 end
@@ -142,7 +144,7 @@ local function poll_difficulty(player)
         name = 'difficulty_poll',
         direction = 'vertical'
     }
-    for i = 1, 7, 1 do
+    for i = 1, #this.difficulties, 1 do
         local b = frame.add({type = 'button', name = tostring(i), caption = this.difficulties[i].name})
         b.style.font_color = this.difficulties[i].color
         b.style.font = 'heading-2'
@@ -188,7 +190,7 @@ end
 
 function Public.reset_difficulty_poll()
     this.difficulty_vote_value = 1
-    this.difficulty_vote_index = 4
+    this.difficulty_vote_index = 1
     this.difficulty_player_votes = {}
     this.difficulty_poll_closing_timeout = game.tick + 54000
     for _, p in pairs(game.connected_players) do
