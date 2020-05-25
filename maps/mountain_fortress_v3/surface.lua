@@ -53,17 +53,10 @@ function Public.create_surface()
 
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface(surface_name, map_gen_settings).index
-        game.forces.player.set_spawn_position({-27, 25}, game.surfaces[this.active_surface_index])
     else
-        game.forces.player.set_spawn_position({-27, 25}, game.surfaces[this.active_surface_index])
         this.active_surface_index =
             Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
-
-    local surface = game.surfaces[this.active_surface_index]
-
-    surface.request_to_generate_chunks({-17, 45}, 1)
-    surface.force_generate_chunk_requests()
 
     return this.active_surface_index
 end

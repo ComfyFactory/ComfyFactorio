@@ -1,4 +1,5 @@
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
@@ -26,6 +27,8 @@ function Public.get_items()
     local health_cost = 30000 * (1 + this.health_upgrades)
     local aura_cost = 30000 * (1 + this.aura_upgrades)
     local xp_point_boost_cost = 30000 * (1 + this.xp_points_upgrade)
+    local flamethrower_turrets_cost = 7999 * (1 + this.upgrades.flame_turret.limit)
+    local land_mine_cost = 2 * (1 + this.upgrades.landmine.limit)
 
     local items = {}
     items['clear_threat_level'] = {
@@ -60,6 +63,22 @@ function Public.get_items()
         sprite = 'item/computer',
         enabled = true
     }
+    items['flamethrower_turrets'] = {
+        stack = 1,
+        value = 'coin',
+        price = flamethrower_turrets_cost,
+        tooltip = 'Upgrades the amount of flamethrowers that can be placed.',
+        sprite = 'item/computer',
+        enabled = true
+    }
+    items['land_mine'] = {
+        stack = 1,
+        value = 'coin',
+        price = land_mine_cost,
+        tooltip = 'Upgrades the amount of landmines that can be placed.',
+        sprite = 'item/computer',
+        enabled = true
+    }
     items['small-lamp'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Small Sunlight'}
     items['wood'] = {stack = 50, value = 'coin', price = 12, tooltip = 'Some fine Wood'}
     items['iron-ore'] = {stack = 50, value = 'coin', price = 12, tooltip = 'Some chunky iron'}
@@ -71,16 +90,7 @@ function Public.get_items()
     items['raw-fish'] = {stack = 1, value = 'coin', price = 4, tooltip = 'Flappy Fish'}
     items['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Pew'}
     items['crude-oil-barrel'] = {stack = 1, value = 'coin', price = 8, tooltip = 'Crude Oil Flame'}
-    --
-    --[[
-    items['loader'] = {stack = 1, value = 'coin', price = 150, tooltip = 'Ground Inserter.'}
-    items['fast-loader'] = {
-        stack = 1,
-        value = 'coin',
-        price = 300,
-        tooltip = 'Ground Fast Inserter'
-    }
-    ]] return items
+    return items
 end
 
 local space = {
@@ -216,6 +226,66 @@ local function redraw_coins_left(gui, player)
     )
 
     adjustSpace(coinsleft)
+end
+
+local slot_upgrade_offers = {
+    [1] = {'gun-turret', 'gun turret'},
+    [2] = {'laser-turret', 'laser turret'},
+    [3] = {'artillery-turret', 'artillery turret'},
+    [4] = {'flamethrower-turret', 'flamethrower turret'},
+    [5] = {'land-mine', 'land mine'}
+}
+
+local function slot_upgrade(player, offer_index)
+    local this = WPT.get()
+
+    local data = this.players[player.index].data
+    if not data then
+        return
+    end
+
+    local price =
+        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit *
+        this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+
+    local gain = 1
+    if offer_index == 5 then
+        price =
+            math.ceil(
+            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) *
+                this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+        )
+        gain = 3
+    end
+
+    if slot_upgrade_offers[offer_index][1] == 'flamethrower-turret' then
+        price =
+            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) *
+            this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+    end
+
+    local coins_removed = player.remove_item({name = 'coin', count = price})
+    if coins_removed ~= price then
+        if coins_removed > 0 then
+            player.insert({name = 'coin', count = coins_removed})
+        end
+        player.print('Not enough coins.', {r = 0.22, g = 0.77, b = 0.44})
+        return false
+    end
+
+    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit =
+        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
+    game.print(
+        player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
+        {r = 0.22, g = 0.77, b = 0.44}
+    )
+    Server.to_discord_bold(
+        table.concat {
+            player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!'
+        }
+    )
+    redraw_market_items(data.item_frame, player, data.search_text)
+    redraw_coins_left(data.coins_left, player)
 end
 
 local function slider_changed(event)
@@ -463,11 +533,21 @@ local function gui_click(event)
         player.remove_item({name = item.value, count = cost})
 
         game.print(
-            shopkeeper .. ' ' .. player.name .. ' has bought the group some extra time. Threat level is reduced by 50%!',
+            shopkeeper ..
+                ' ' ..
+                    player.name ..
+                        ' has bought the clear threat modifier for ' ..
+                            cost .. ' coins. Threat level is reduced by 50%!',
             {r = 0.98, g = 0.66, b = 0.22}
         )
-        this.threat_upgrades = this.threat_upgrades + 1
-        wdt.threat = wdt.threat / 2
+        Server.to_discord_bold(
+            table.concat {
+                player.name ..
+                    ' has bought the clear threat modifier for ' .. cost .. ' coins. Threat level is reduced by 50%!'
+            }
+        )
+        this.threat_upgrades = this.threat_upgrades + item_count
+        wdt.threat = wdt.threat / 2 * item_count
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -479,14 +559,24 @@ local function gui_click(event)
 
         game.print(
             shopkeeper ..
-                ' ' .. player.name .. ' has bought the group a train health modifier! The train health is now buffed!',
+                ' ' ..
+                    player.name ..
+                        ' has bought the locomotive health modifier for ' ..
+                            cost .. ' coins. The train health is now buffed.',
             {r = 0.98, g = 0.66, b = 0.22}
         )
-        this.locomotive_max_health = this.locomotive_max_health + 2500
+        Server.to_discord_bold(
+            table.concat {
+                player.name ..
+                    ' has bought the locomotive health modifier for ' ..
+                        cost .. ' coins. The train health is now buffed.'
+            }
+        )
+        this.locomotive_max_health = this.locomotive_max_health + 2500 * item_count
         local m = this.locomotive_health / this.locomotive_max_health
         this.locomotive.health = 1000 * m
-        this.train_upgrades = this.train_upgrades + 1
-        this.health_upgrades = this.health_upgrades + 1
+        this.train_upgrades = this.train_upgrades + item_count
+        this.health_upgrades = this.health_upgrades + item_count
         rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
 
         redraw_market_items(data.item_frame, player, data.search_text)
@@ -498,12 +588,22 @@ local function gui_click(event)
         player.remove_item({name = item.value, count = cost})
 
         game.print(
-            shopkeeper .. ' ' .. player.name .. ' has bought the group a XP aura modifier! The XP aura is now buffed!',
+            shopkeeper ..
+                ' ' ..
+                    player.name ..
+                        ' has bought the locomotive xp aura modifier for ' ..
+                            cost .. ' coins. The XP aura is now buffed.',
             {r = 0.98, g = 0.66, b = 0.22}
         )
+        Server.to_discord_bold(
+            table.concat {
+                player.name ..
+                    ' has bought the locomotive xp aura modifier for ' .. cost .. ' coins. The XP aura is now buffed.'
+            }
+        )
         this.locomotive_xp_aura = this.locomotive_xp_aura + 5
-        this.aura_upgrades = this.aura_upgrades + 1
-        this.train_upgrades = this.train_upgrades + 1
+        this.aura_upgrades = this.aura_upgrades + item_count
+        this.train_upgrades = this.train_upgrades + item_count
 
         if this.circle then
             rendering.destroy(this.circle)
@@ -529,16 +629,88 @@ local function gui_click(event)
 
         game.print(
             shopkeeper ..
-                ' ' .. player.name .. ' has bought the group a XP point modifier! You now gain more XP points!',
+                ' ' ..
+                    player.name ..
+                        ' has bought the xp point modifier for ' .. cost .. ' coins. You now gain more XP points.',
             {r = 0.98, g = 0.66, b = 0.22}
         )
+        Server.to_discord_bold(
+            table.concat {
+                player.name ..
+                    ' has bought the xp point modifier for ' .. cost .. ' coins. You now gain more XP points.'
+            }
+        )
         this.xp_points = this.xp_points + 0.5
-        this.xp_points_upgrade = this.xp_points_upgrade + 1
-        this.train_upgrades = this.train_upgrades + 1
+        this.xp_points_upgrade = this.xp_points_upgrade + item_count
+        this.train_upgrades = this.train_upgrades + item_count
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
 
+        return
+    end
+
+    if name == 'flamethrower_turrets' then
+        player.remove_item({name = item.value, count = cost})
+        if item_count >= 1 then
+            game.print(
+                shopkeeper .. ' ' .. player.name .. ' has bought a flamethrower-turret slot for ' .. cost .. ' coins.',
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+            Server.to_discord_bold(
+                table.concat {
+                    player.name .. ' has bought a flamethrower-turret slot for ' .. cost .. ' coins.'
+                }
+            )
+        else
+            game.print(
+                shopkeeper ..
+                    ' ' ..
+                        player.name ..
+                            ' has bought ' .. item_count .. ' flamethrower-turret slots for ' .. cost .. ' coins.',
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+            Server.to_discord_bold(
+                table.concat {
+                    player.name ..
+                        ' has bought ' .. item_count .. ' flamethrower-turret slots for ' .. cost .. ' coins.'
+                }
+            )
+        end
+        this.upgrades.flame_turret.limit = this.upgrades.flame_turret.limit + item_count
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+    if name == 'land_mine' then
+        player.remove_item({name = item.value, count = cost})
+
+        if item_count >= 1 then
+            game.print(
+                shopkeeper .. ' ' .. player.name .. ' has bought a landmine slot for ' .. cost .. ' coins.',
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+        else
+            game.print(
+                shopkeeper ..
+                    ' ' .. player.name .. ' has bought ' .. item_count .. ' landmine slots for ' .. cost .. ' coins.',
+                {r = 0.98, g = 0.66, b = 0.22}
+            )
+            if cost > 5000 then
+                Server.to_discord_bold(
+                    table.concat {
+                        player.name .. ' has bought ' .. item_count .. ' landmine slots for ' .. cost .. ' coins.'
+                    }
+                )
+            end
+        end
+
+        this.upgrades.landmine.limit = this.upgrades.landmine.limit + item_count
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
         return
     end
 
@@ -637,7 +809,8 @@ local function create_market(data, rebuild)
         text = 'Market',
         surface = surface,
         target = this.market,
-        target_offset = {0, 2},
+        scale = 1.5,
+        target_offset = {0, -2},
         color = {r = 0.98, g = 0.66, b = 0.22},
         alignment = 'center'
     }
@@ -650,9 +823,15 @@ local function create_market(data, rebuild)
     end
 
     local position = this.loco_surface.find_non_colliding_position('market', center_position, 128, 0.5)
+    local biters = {
+        'big-biter',
+        'behemoth-biter',
+        'big-spitter',
+        'behemoth-spitter'
+    }
     local e =
         this.loco_surface.create_entity(
-        {name = 'big-biter', position = position, force = 'player', create_build_effect_smoke = false}
+        {name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
     )
     e.ai_settings.allow_destroy_when_commands_fail = false
     e.ai_settings.allow_try_return_to_spawner = false

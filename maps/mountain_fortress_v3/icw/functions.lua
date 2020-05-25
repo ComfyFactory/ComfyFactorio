@@ -89,7 +89,7 @@ end
 local function input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
     local request_stacks = {}
     local prototypes = game.item_prototypes
-    for slot_index = 1, 4, 1 do
+    for slot_index = 1, 12, 1 do
         local stack = chest.get_request_slot(slot_index)
         if stack then
             request_stacks[stack.name] = 10 * prototypes[stack.name].stack_size
@@ -389,10 +389,7 @@ function Public.create_wagon_room(icw, wagon)
     if wagon.entity.type == 'cargo-wagon' then
         local vectors = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
         local v = vectors[math_random(1, 4)]
-        local position = {
-            math_random(area.left_top.x + 4, area.right_bottom.x - 4),
-            math_random(area.left_top.y + 6, area.right_bottom.y - 6)
-        }
+        local position = {0, 30}
 
         local e =
             surface.create_entity(
@@ -513,17 +510,26 @@ function Public.use_cargo_wagon_door(icw, player, door)
         local surface = wagon.entity.surface
         local x_vector = (door.position.x / math.abs(door.position.x)) * 2
         local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
-        local position = surface.find_non_colliding_position('character', position, 128, 0.5)
+        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
         if not position then
             return
         end
+        if not surface_position then
+            surface.request_to_generate_chunks({-20, 22}, 1)
+            if player.character and player.character.valid and player.character.driving then
+                if wagon.surface == player.surface then
+                    player.character.driving = false
+                end
+            end
+            return
+        end
         if wagon.entity.type == 'locomotive' then
-            player.teleport(position, surface)
+            player.teleport(surface_position, surface)
             player_data.state = 2
             player.driving = true
             Public.kill_minimap(player)
         else
-            player.teleport(position, surface)
+            player.teleport(surface_position, surface)
             Public.kill_minimap(player)
         end
         player_data.surface = surface.index

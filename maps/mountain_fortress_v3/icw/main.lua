@@ -120,6 +120,7 @@ local function on_gui_opened(event)
     if not wagon then
         return
     end
+
     Functions.draw_minimap(
         icw,
         game.players[event.player_index],
