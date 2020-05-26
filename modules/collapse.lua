@@ -56,6 +56,9 @@ local function print_debug(a)
 end
 
 local function set_collapse_tiles(surface)
+	if not surface or surface.valid then
+		print_debug(45)
+	end
     game.forces.player.chart(surface, collapse.area)
     collapse.tiles = surface.find_tiles_filtered({area = collapse.area})
     if not collapse.tiles then
