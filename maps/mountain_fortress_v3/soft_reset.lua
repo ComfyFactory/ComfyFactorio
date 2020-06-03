@@ -33,18 +33,25 @@ local function teleport_players(surface)
     end
 end
 
-local function equip_players(player_starting_items)
-    for k, player in pairs(game.connected_players) do
-        if player.character then
+local function equip_players(player_starting_items, data)
+    for k, player in pairs(game.players) do
+        if player.character and player.character.valid then
             player.character.destroy()
         end
-        player.character = nil
-        player.set_controller({type = defines.controllers.god})
-        player.create_character()
-        for item, amount in pairs(player_starting_items) do
-            player.insert({name = item, count = amount})
+        if player.connected then
+            if not player.character then
+                player.set_controller({type = defines.controllers.god})
+                player.create_character()
+            end
+            player.clear_items_inside()
+            Modifers.update_player_modifiers(player)
+            for item, amount in pairs(player_starting_items) do
+                player.insert({name = item, count = amount})
+            end
+        else
+            data.players[player.index] = nil
+            game.remove_offline_players({player.index})
         end
-        Modifers.update_player_modifiers(player)
     end
 end
 
@@ -66,9 +73,19 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
 
     reset_forces(new_surface, old_surface)
     teleport_players(new_surface)
-    equip_players(player_starting_items)
+    equip_players(player_starting_items, this)
 
     game.delete_surface(old_surface)
+
+    local radius = 512
+    local area = {{x = -radius, y = -radius}, {x = radius, y = radius}}
+    for _, entity in pairs(new_surface.find_entities_filtered {area = area, type = 'logistic-robot'}) do
+        entity.destroy()
+    end
+
+    for _, entity in pairs(new_surface.find_entities_filtered {area = area, type = 'construction-robot'}) do
+        entity.destroy()
+    end
 
     local message = table.concat({mapkeeper .. ' Welcome to ', this.original_surface_name, '!'})
     local message_to_discord = table.concat({'** Welcome to ', this.original_surface_name, '! **'})

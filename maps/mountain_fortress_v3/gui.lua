@@ -190,7 +190,22 @@ local function on_player_changed_surface(event)
     end
 
     local locomotive = WPT.get('locomotive')
-    local loco_surface = WPT.get('loco_surface')
+    local icw_locomotive = WPT.get('icw_locomotive')
+    local loco_surface = icw_locomotive.surface
+
+    if not locomotive then
+        return
+    end
+    if not locomotive.valid then
+        return
+    end
+
+    if not loco_surface then
+        return
+    end
+    if not loco_surface.valid then
+        return
+    end
 
     if player.surface == locomotive.surface then
         player.gui.top[main_button_name].tooltip = 'Shows statistics!'
@@ -243,11 +258,15 @@ function Public.update_gui(player)
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(this.biters_killed, true)
     gui.biters_killed.tooltip = 'Amount of biters killed.'
 
-    gui.landmine.caption = ' [img=entity.land-mine]: ' .. format_number(this.upgrades.landmine.limit, true)
+    gui.landmine.caption =
+        ' [img=entity.land-mine]: ' ..
+        format_number(this.upgrades.landmine.built, true) .. ' / ' .. format_number(this.upgrades.landmine.limit, true)
     gui.landmine.tooltip = 'Amount of land-mines that can be built.'
 
     gui.flame_turret.caption =
-        ' [img=entity.flamethrower-turret]: ' .. format_number(this.upgrades.flame_turret.limit, true)
+        ' [img=entity.flamethrower-turret]: ' ..
+        format_number(this.upgrades.flame_turret.built, true) ..
+            ' / ' .. format_number(this.upgrades.flame_turret.limit, true)
     gui.flame_turret.tooltip = 'Amount of flamethrower-turrets that can be built.'
 
     gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(this.train_upgrades, true)

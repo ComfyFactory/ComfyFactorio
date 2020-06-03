@@ -1,3 +1,4 @@
+local Event = require 'utils.event'
 local Biters = require 'modules.wave_defense.biter_rolls'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -82,7 +83,7 @@ local function place_wagon(data)
     local entities = data.entities
     local top_x = data.top_x
     local top_y = data.top_y
-    if math_random(1, 2048) ~= 1 then
+    if math_random(1, 1548) ~= 1 then
         return
     end
 
@@ -1337,9 +1338,6 @@ local function process_level_1_position(x, y, data)
         if math_random(1, 32) == 1 then
             markets[#markets + 1] = p
         end
-        if math_random(1, 512) == 1 then
-            spawn_turret(entities, p, 1)
-        end
         if math_random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. math_random(1, 9), position = p}
         end
@@ -1363,9 +1361,7 @@ local function process_level_1_position(x, y, data)
                         force = 'enemy'
                     }
                 end
-                if math_random(1, 512) == 1 then
-                    spawn_turret(entities, p, 1)
-                end
+
                 if math_random(1, 1024) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
                 end
@@ -1475,17 +1471,6 @@ local function border_chunk(data)
     end
 end
 
-local function replace_water(x, y, data)
-    local surface = data.surface
-    local tiles = data.tiles
-
-    local p = {x = x, y = y}
-
-    if surface.get_tile(p).collides_with('resource-layer') then
-        tiles[#tiles + 1] = {name = 'dirt-' .. math_random(1, 5), position = p}
-    end
-end
-
 local function biter_chunk(x, y, data)
     local surface = data.surface
     local entities = data.entities
@@ -1534,7 +1519,7 @@ end
 
 local function out_of_map(x, y, data)
     local surface = data.surface
-    surface.set_tiles({{name = 'out-of-map', position = {x = x, y = y}}})
+    surface.set_tiles({{name = 'out-of-map', position = {x = data.x, y = data.y}}})
 end
 
 function Public.heavy_functions(x, y, data)
@@ -1563,26 +1548,6 @@ function Public.heavy_functions(x, y, data)
         return
     end
 
-    if top_y > 120 then
-        out_of_map(x, y, data)
-        return
-    end
-
-    if top_y > 75 then
-        biter_chunk(x, y, data)
-    end
-    if top_y > 32 then
-        game.forces.player.chart(surface, {{top_x, top_y}, {top_x + 31, top_y + 31}})
-    end
-
-    if top_y >= 0 then
-        replace_water(x, y, data)
-    end
-
-    if top_y >= 0 then
-        border_chunk(data)
-    end
-
     if top_y == -128 and top_x == -128 then
         local pl = WPT.get().locomotive.position
         for _, entity in pairs(
@@ -1594,15 +1559,86 @@ function Public.heavy_functions(x, y, data)
         end
     end
 
-    if top_y < -256 then
+    if top_y < 0 then
+        process_bits(x, y, data)
         if math_random(1, chance_for_wagon_spawn) == 1 then
             place_wagon(data)
         end
+        return
     end
 
-    if top_y < 0 then
-        process_bits(x, y, data)
+    if top_y > 120 then
+        out_of_map(x, y, data)
+        return
+    end
+
+    if top_y > 75 then
+        biter_chunk(x, y, data)
+        return
+    end
+
+    if top_y >= 0 then
+        border_chunk(data)
+        return
     end
 end
+
+Event.add(
+    defines.events.on_chunk_generated,
+    function(e)
+        local surface = e.surface
+        local map_name = 'mountain_fortress_v3'
+
+        if string.sub(surface.name, 0, #map_name) ~= map_name then
+            return
+        end
+
+        local area = e.area
+        local left_top = area.left_top
+        if not surface then
+            return
+        end
+        if not surface.valid then
+            return
+        end
+
+        local function get_replacement_tile(position)
+            for i = 1, 128, 1 do
+                local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
+                table.shuffle_table(vectors)
+                for k, v in pairs(vectors) do
+                    local tile = surface.get_tile(position.x + v[1], position.y + v[2])
+                    if tile.valid and not tile.collides_with('resource-layer') then
+                        return tile.name
+                    end
+                end
+            end
+            return 'grass-1'
+        end
+
+        local function clear_water()
+            for x = 0, 31, 1 do
+                for y = 0, 31, 1 do
+                    local p = {x = left_top.x + x, y = left_top.y + y}
+                    local oom = surface.get_tile(p).name == 'out-of-map'
+                    if oom then
+                        return
+                    end
+                    if surface.get_tile(p).collides_with('resource-layer') then
+                        surface.set_tiles({{name = get_replacement_tile(p), position = p}}, true)
+                    end
+                end
+            end
+        end
+
+        if left_top.y > 32 then
+            game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+        end
+
+        if left_top.y >= 0 then
+            clear_water()
+        end
+    end
+)
 
 return Public

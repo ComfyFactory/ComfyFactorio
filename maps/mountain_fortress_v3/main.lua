@@ -1,6 +1,21 @@
+require 'maps.mountain_fortress_v3.generate'
+require 'maps.mountain_fortress_v3.commands'
+require 'maps.mountain_fortress_v3.breached_wall'
+
+require 'modules.dynamic_landfill'
+require 'modules.shotgun_buff'
+require 'modules.rocks_heal_over_time'
+require 'modules.no_deconstruction_of_neutral_entities'
+require 'modules.rocks_yield_ore_veins'
+require 'modules.spawners_contain_biters'
+require 'modules.biters_yield_coins'
+require 'modules.wave_defense.main'
+require 'modules.mineable_wreckage_yields_scrap'
+
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
+local Balance = require 'maps.mountain_fortress_v3.balance'
 local Entities = require 'maps.mountain_fortress_v3.entities'
 local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
@@ -17,34 +32,41 @@ local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
-
-require 'maps.mountain_fortress_v3.biter_corpse_remover'
-require 'maps.mountain_fortress_v3.generate'
-require 'maps.mountain_fortress_v3.player_list'
-require 'maps.mountain_fortress_v3.commands'
-require 'maps.mountain_fortress_v3.breached_wall'
-require 'maps.mountain_fortress_v3.ore_generator'
-
-require 'modules.dynamic_landfill'
-require 'modules.shotgun_buff'
-require 'modules.rocks_heal_over_time'
-require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.rocks_yield_ore_veins'
-require 'modules.spawners_contain_biters'
-require 'modules.biters_yield_coins'
-require 'modules.wave_defense.main'
-require 'modules.pistol_buffs'
-require 'modules.mineable_wreckage_yields_scrap'
+--local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
+-- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
+
+local function disable_recipes()
+    local force = game.forces.player
+    force.recipes['cargo-wagon'].enabled = false
+    force.recipes['fluid-wagon'].enabled = false
+    force.recipes['artillery-wagon'].enabled = false
+    force.recipes['locomotive'].enabled = false
+    force.recipes['pistol'].enabled = false
+end
+
+local collapse_kill = {
+    entities = {
+        ['laser-turret'] = true,
+        ['flamethrower-turret'] = true,
+        ['gun-turret'] = true,
+        ['artillery-turret'] = true,
+        ['landmine'] = true,
+        ['locomotive'] = true,
+        ['cargo-wagon'] = true
+    },
+    enabled = true
+}
 
 local function disable_tech()
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['railway'].researched = true
     game.forces.player.technologies['land-mine'].enabled = false
+    disable_recipes()
 end
 
 local function set_difficulty()
@@ -200,10 +222,7 @@ function Public.reset_map()
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
-    game.forces.enemy.technologies['artillery-shell-range-1'].researched = true
-    game.forces.enemy.technologies['refined-flammables-1'].researched = true
-    game.forces.enemy.technologies['refined-flammables-2'].researched = true
-    game.forces.enemy.technologies['energy-weapons-damage-1'].researched = true
+    Balance.init_enemy_weapon_damage()
 
     global.bad_fire_history = {}
     global.friendly_fire_history = {}
@@ -215,6 +234,7 @@ function Public.reset_map()
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
+    Collapse.set_kill_specific_entities(collapse_kill)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     Collapse.set_max_line_size(Terrain.level_width)
@@ -231,11 +251,12 @@ function Public.reset_map()
     Locomotive(surface, {x = -18, y = 25})
     render_train_hp()
     render_direction(surface)
+    -- LM.place_market()
     RPG.rpg_reset_all_players()
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
-    wave_defense_table.target = this.locomotive_cargo
+    wave_defense_table.target = this.locomotive
     wave_defense_table.nest_building_density = 32
     wave_defense_table.game_lost = false
     wave_defense_table.spawn_position = {x = 0, y = 100}
@@ -254,6 +275,14 @@ function Public.reset_map()
     Task.set_queue_speed(4)
 
     this.chunk_load_tick = game.tick + 800
+
+    --HD.enable_auto_init = false
+
+    --local pos = {x = this.icw_area.x, y = this.icw_area.y}
+
+    --HD.init({position = pos, hd_surface = tostring(this.icw_locomotive.surface.name)})
+
+    --raise_event(HD.events.reset_game, {})
 end
 
 local function on_player_changed_position(event)
@@ -282,33 +311,26 @@ local function on_player_changed_position(event)
 end
 
 local function on_player_joined_game(event)
-    local this = WPT.get()
+    local players = WPT.get('players')
+    local active_surface_index = WPT.get('active_surface_index')
     local player = game.players[event.player_index]
-    local surface = game.surfaces[this.active_surface_index]
+    local surface = game.surfaces[active_surface_index]
 
-    set_difficulty(event)
+    set_difficulty()
 
-    if not this.players then
-        this.players = {}
-    end
-
-    if not this.players[player.index] then
-        this.players[player.index] = {
-            first_join = false,
+    if not players[player.index] then
+        players[player.index] = {
             data = {}
         }
-    end
-
-    if not this.players[player.index].first_join then
         player.print('Greetings, ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
         player.print('Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
-        this.players[player.index].first_join = true
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
         end
+    --RPG.gain_xp(player, 515)
     end
 
-    if player.surface.index ~= this.active_surface_index then
+    if player.surface.index ~= active_surface_index then
         player.teleport(
             surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
             surface
@@ -340,7 +362,7 @@ local function on_pre_player_left_game(event)
     local player = game.players[event.player_index]
     local tick
     if player.character then
-        if this.offline_players_enabled then
+        if not this.offline_players_enabled then
             tick = game.tick + 432000
         else
             tick = game.tick
@@ -446,15 +468,6 @@ local function remove_offline_players()
     end
 end
 
-local function disable_recipes()
-    local force = game.forces.player
-    force.recipes['cargo-wagon'].enabled = false
-    force.recipes['fluid-wagon'].enabled = false
-    force.recipes['artillery-wagon'].enabled = false
-    force.recipes['locomotive'].enabled = false
-    force.recipes['pistol'].enabled = false
-end
-
 local function on_research_finished(event)
     disable_recipes()
     local research = event.research
@@ -499,10 +512,13 @@ local function has_the_game_ended()
                 this.game_reset_tick = nil
                 Public.reset_map()
             else
-                game.print('Auto reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
-                local message = 'Auto reset is disabled. Server is shutting down!'
-                Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-                Server.stop_scenario()
+                if not this.game_will_not_reset then
+                    game.print('Auto reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Auto reset is disabled. Server is shutting down!'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.stop_scenario()
+                    this.game_will_not_reset = true
+                end
             end
         end
         return

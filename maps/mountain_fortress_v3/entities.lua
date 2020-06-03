@@ -1,4 +1,3 @@
-require 'on_tick_schedule'
 require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'
@@ -6,11 +5,11 @@ local Map_score = require 'comfy_panel.map_score'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local Loot = require 'maps.mountain_fortress_v3.loot'
 local Pets = require 'maps.mountain_fortress_v3.biter_pets'
-local tick_tack_trap = require 'maps.mountain_fortress_v3.tick_tack_trap'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local BiterHealthBooster = require 'modules.biter_health_booster'
+--local HD = require 'modules.hidden_dimension.main'
 
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -22,6 +21,7 @@ local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
+--local raise_event = script.raise_event
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
@@ -56,69 +56,76 @@ local entity_type = {
     ['tree'] = true
 }
 
-local function set_objective_health(entity, final_damage_amount)
+local wagon_types = {
+    ['cargo-wagon'] = true,
+    ['artillery-wagon'] = true,
+    ['fluid-wagon'] = true,
+    ['locomotive'] = true
+}
+
+local function set_objective_health(final_damage_amount)
     local this = WPT.get()
     if final_damage_amount == 0 then
         return
     end
+
+    if this.locomotive_health <= 0 then
+        this.locomotive.health = this.locomotive.health + final_damage_amount
+        return
+    end
+
     this.locomotive_health = math_floor(this.locomotive_health - final_damage_amount)
-    this.cargo_health = math_floor(this.cargo_health - final_damage_amount)
     if this.locomotive_health > this.locomotive_max_health then
         this.locomotive_health = this.locomotive_max_health
     end
-    if this.cargo_health > this.cargo_max_health then
-        this.cargo_health = this.cargo_max_health
-    end
+
     if this.locomotive_health <= 0 then
         Public.loco_died()
+        this.locomotive_health = 0
     end
-    local m
-    if entity == this.locomotive then
-        m = this.locomotive_health / this.locomotive_max_health
-        entity.health = 1000 * m
-    elseif entity == this.locomotive_cargo then
-        m = this.cargo_health / this.cargo_max_health
-        entity.health = 600 * m
-    end
+
+    local m = this.locomotive_health / this.locomotive_max_health
+    this.locomotive.health = 1000 * m
+
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
 end
 
-local function is_protected(entity)
+local function protect_entities(event)
     local this = WPT.get()
-    local map_name = 'mountain_fortress_v3'
+    local entity = event.entity
 
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
-        return true
+    if not this.locomotive then
+        return
+    end
+    if not this.locomotive.valid then
+        return
     end
 
-    local protected = {this.locomotive, this.locomotive_cargo}
-    for i = 1, #protected do
-        if protected[i] == entity then
-            return true
-        end
-    end
-    return false
-end
-
-local function protect_train(event)
-    local this = WPT.get()
-    if event.entity.force.index ~= 1 then
+    if entity.force.index ~= 1 then
         return
     end --Player Force
-    if is_protected(event.entity) then
-        if event.entity == this.locomotive_cargo or event.entity == this.locomotive then
-            if event.cause then
-                if event.cause.force.index == 2 then
-                    if this.locomotive_health <= 0 then
-                        goto continue
-                    end
-                    set_objective_health(event.entity, event.final_damage_amount)
-                end
-            end
-            ::continue::
+
+    local function is_protected(e)
+        local map_name = 'mountain_fortress_v3'
+
+        if string.sub(e.surface.name, 0, #map_name) ~= map_name then
+            return true
         end
-        if not event.entity.valid then
-            return
+        if wagon_types[e.type] then
+            return true
+        end
+        return false
+    end
+
+    if is_protected(entity) then
+        if event.cause then
+            if event.cause.force.index == 2 and entity.unit_number == this.locomotive.unit_number then
+                set_objective_health(event.final_damage_amount)
+            elseif event.cause.force.index == 2 then
+                return
+            else
+                event.entity.health = event.entity.health + event.final_damage_amount
+            end
         end
         event.entity.health = event.entity.health + event.final_damage_amount
     end
@@ -178,7 +185,7 @@ end
 local function hidden_treasure(event)
     local player = game.players[event.player_index]
     local rpg_t = RPG.get_table()
-    local magic = rpg_t[player.index].magic
+    local magic = rpg_t[player.index].magicka
     if math.random(1, 320) ~= 1 then
         return
     end
@@ -208,7 +215,7 @@ local function biters_chew_rocks_faster(event)
         return
     end --Enemy Force
 
-    event.entity.health = event.entity.health - event.final_damage_amount * 3.5
+    event.entity.health = event.entity.health - event.final_damage_amount * 5
 end
 
 local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
@@ -272,6 +279,27 @@ local function on_player_mined_entity(event)
         return
     end
 
+    local upg = this.upgrades
+
+    local built = {
+        ['land-mine'] = upg.landmine.built,
+        ['flamethrower-turret'] = upg.flame_turret.built
+    }
+
+    local validator = {
+        ['land-mine'] = 'landmine',
+        ['flamethrower-turret'] = 'flame_turret'
+    }
+
+    local name = validator[entity.name]
+
+    if built[entity.name] then
+        this.upgrades[name].built = this.upgrades[name].built - 1
+        if this.upgrades[name].built <= 0 then
+            this.upgrades[name].built = 0
+        end
+    end
+
     if disabled_threats[entity.name] then
         return
     end
@@ -290,10 +318,6 @@ local function on_player_mined_entity(event)
             entity.destroy()
             return
         end
-        if math_random(1, 512) == 1 then
-            tick_tack_trap(entity.surface, entity.position)
-            return
-        end
         hidden_biter_pet(event)
         hidden_treasure(event)
         angry_tree(event.entity, game.players[event.player_index].character)
@@ -301,18 +325,174 @@ local function on_player_mined_entity(event)
     end
 end
 
+local function on_robot_mined_entity(event)
+    local this = WPT.get()
+    local entity = event.entity
+
+    if not entity.valid then
+        return
+    end
+
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    local upg = this.upgrades
+
+    local built = {
+        ['land-mine'] = upg.landmine.built,
+        ['flamethrower-turret'] = upg.flame_turret.built
+    }
+
+    local validator = {
+        ['land-mine'] = 'landmine',
+        ['flamethrower-turret'] = 'flame_turret'
+    }
+
+    local name = validator[entity.name]
+
+    if built[entity.name] then
+        this.upgrades[name].built = this.upgrades[name].built - 1
+        if this.upgrades[name].built <= 0 then
+            this.upgrades[name].built = 0
+        end
+    end
+end
+
+local function boss_puncher(event)
+    local wd = WD.get_table()
+    local cause = event.cause
+    if not cause then
+        return
+    end
+    if not cause.valid then
+        return
+    end
+
+    local entity = event.entity
+
+    if entity.force.index ~= 1 then
+        return
+    end
+    if not entity then
+        return
+    end
+    if not entity.valid then
+        return
+    end
+
+    local function kaboom(e_cause, target, damage)
+        local base_vector = {target.position.x - e_cause.position.x, target.position.y - e_cause.position.y}
+
+        local vector = {base_vector[1], base_vector[2]}
+        vector[1] = vector[1] * 512
+        vector[2] = vector[2] * 256
+
+        local msg = {'TASTY', 'MUNCH', 'SNACK_TIME', 'OVER 9000!'}
+
+        e_cause.surface.create_entity(
+            {
+                name = 'flying-text',
+                position = {e_cause.position.x + base_vector[1] * 0.5, e_cause.position.y + base_vector[2] * 0.5},
+                text = msg[math_random(1, #msg)],
+                color = {255, 0, 0}
+            }
+        )
+        e_cause.surface.create_entity({name = 'blood-explosion-huge', position = target.position})
+        e_cause.surface.create_entity(
+            {
+                name = 'big-artillery-explosion',
+                position = {target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5}
+            }
+        )
+
+        if math.abs(vector[1]) > math.abs(vector[2]) then
+            local d = math.abs(vector[1])
+            if math.abs(vector[1]) > 0 then
+                vector[1] = vector[1] / d
+            end
+            if math.abs(vector[2]) > 0 then
+                vector[2] = vector[2] / d
+            end
+        else
+            local d = math.abs(vector[2])
+            if math.abs(vector[2]) > 0 then
+                vector[2] = vector[2] / d
+            end
+            if math.abs(vector[1]) > 0 and d > 0 then
+                vector[1] = vector[1] / d
+            end
+        end
+
+        vector[1] = vector[1] * 1.5
+        vector[2] = vector[2] * 1.5
+
+        local a = 0.25
+
+        for i = 1, 16, 1 do
+            for x = i * -1 * a, i * a, 1 do
+                for y = i * -1 * a, i * a, 1 do
+                    if not e_cause.valid then
+                        return
+                    end
+                    local p = {e_cause.position.x + x + vector[1] * i, e_cause.position.y + y + vector[2] * i}
+                    e_cause.surface.create_trivial_smoke({name = 'fire-smoke', position = p})
+                    for _, e in pairs(entity.surface.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
+                        if e.valid then
+                            if e.health then
+                                if e.destructible and e.minable then
+                                    if e.force.index ~= e_cause.force.index then
+                                        e.health = e.health - damage * 0.05
+                                        if e.health <= 0 then
+                                            e.die(e.force.name, e_cause)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local function get_damage()
+        local damage = event.original_damage_amount + event.original_damage_amount * math_random(1, 100)
+        if entity.prototype.resistances then
+            if entity.prototype.resistances.physical then
+                damage = damage - entity.prototype.resistances.physical.decrease
+                damage = damage - damage * entity.prototype.resistances.physical.percent
+            end
+        end
+        damage = math.round(damage, 3)
+        if damage < 1 then
+            damage = 1
+        end
+        return damage
+    end
+    if wd.boss_wave then
+        if math_random(0, 512) == 1 then
+            kaboom(cause, entity, get_damage())
+            return
+        end
+    end
+end
+
 local function on_entity_damaged(event)
-    if not event.entity then
+    local entity = event.entity
+
+    if not entity then
         return
     end
-    if not event.entity.valid then
+
+    if not entity.valid then
         return
     end
-    if not event.entity.health then
-        return
-    end
-    protect_train(event)
+
+    protect_entities(event)
     biters_chew_rocks_faster(event)
+    boss_puncher(event)
 end
 
 local function on_player_repaired_entity(event)
@@ -327,8 +507,8 @@ local function on_player_repaired_entity(event)
         return
     end
     local entity = event.entity
-    if entity == this.locomotive_cargo or entity == this.locomotive then
-        set_objective_health(entity, -1)
+    if entity == this.locomotive then
+        set_objective_health(-1)
     end
 end
 
@@ -340,7 +520,32 @@ local function on_entity_died(event)
         return
     end
 
-    local rng = math.random(1, 32) == 1
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    local upg = this.upgrades
+
+    local built = {
+        ['land-mine'] = upg.landmine.built,
+        ['flamethrower-turret'] = upg.flame_turret.built
+    }
+
+    local validator = {
+        ['land-mine'] = 'landmine',
+        ['flamethrower-turret'] = 'flame_turret'
+    }
+
+    local name = validator[entity.name]
+
+    if built[entity.name] then
+        this.upgrades[name].built = this.upgrades[name].built - 1
+        if this.upgrades[name].built <= 0 then
+            this.upgrades[name].built = 0
+        end
+    end
 
     if event.cause then
         if event.cause.valid then
@@ -349,12 +554,6 @@ local function on_entity_died(event)
                 return
             end
         end
-    end
-
-    local map_name = 'mountain_fortress_v3'
-
-    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
-        return
     end
 
     if disabled_threats[entity.name] then
@@ -374,10 +573,6 @@ local function on_entity_died(event)
             hidden_biter(event.entity)
             return
         end
-        if math_random(1, 512) == 1 then
-            tick_tack_trap(entity.surface, entity.position)
-            return
-        end
     end
 
     if entity.type == 'tree' then
@@ -386,9 +581,6 @@ local function on_entity_died(event)
     end
 
     if entity.type == 'simple-entity' then
-        if rng then
-            hidden_biter(event.entity)
-        end
         Mining.entity_died_randomness(data)
         entity.destroy()
         return
@@ -426,7 +618,15 @@ function Public.loco_died()
         Reset_map()
         return
     end
+    -- raise_event(
+    --     HD.events.reset_game,
+    --     {
+    --         surface = surface
+    --     }
+    -- )
     this.locomotive_health = 0
+    this.locomotive.health = 1
+    this.locomotive.destructible = false
     this.locomotive.color = {0.49, 0, 255, 1}
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true
@@ -456,7 +656,6 @@ function Public.loco_died()
     )
 
     surface.spill_item_stack(this.locomotive.position, {name = 'coin', count = 512}, false)
-    surface.spill_item_stack(this.locomotive_cargo.position, {name = 'coin', count = 512}, false)
     this.game_reset_tick = game.tick + 1000
     for _, player in pairs(game.connected_players) do
         player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
@@ -491,17 +690,6 @@ local function on_built_entity(event)
 
     if built[entity.name] then
         local surface = entity.surface
-
-        for k, _ in pairs(this.upgrades.unit_number[name]) do
-            if not k or not k.valid then
-                this.upgrades[name].built = #this.upgrades.unit_number[name]
-                this.upgrades.unit_number[name][k] = nil
-                built = {
-                    ['land-mine'] = upg.landmine.built,
-                    ['flamethrower-turret'] = upg.flame_turret.built
-                }
-            end
-        end
 
         if built[entity.name] < limit[entity.name] then
             this.upgrades[name].built = built[entity.name] + 1
@@ -565,17 +753,6 @@ local function on_robot_built_entity(event)
     if built[entity.name] then
         local surface = entity.surface
 
-        for k, _ in pairs(this.upgrades.unit_number[name]) do
-            if not k or not k.valid then
-                this.upgrades[name].built = #this.upgrades.unit_number[name]
-                this.upgrades.unit_number[name][k] = nil
-                built = {
-                    ['land-mine'] = upg.landmine.built,
-                    ['flamethrower-turret'] = upg.flame_turret.built
-                }
-            end
-        end
-
         if built[entity.name] < limit[entity.name] then
             this.upgrades[name].built = built[entity.name] + 1
             this.upgrades.unit_number[name][entity] = entity
@@ -612,6 +789,7 @@ end
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)

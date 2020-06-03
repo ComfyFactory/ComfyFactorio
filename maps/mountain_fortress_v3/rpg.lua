@@ -17,6 +17,9 @@ require 'player_modifiers'
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local P = require 'player_modifiers'
+local WD = require 'modules.wave_defense.table'
+
+local points_per_level = 5
 
 local math_floor = math.floor
 local math_random = math.random
@@ -41,7 +44,8 @@ local rpg_t = {}
 local rpg_extra = {
     debug = false,
     breached_walls = 1,
-    reward_new_players = 0
+    reward_new_players = 0,
+    level_limit_enabled = true
 }
 local rpg_frame_icons = {
     'entity/small-worm-turret',
@@ -147,6 +151,38 @@ local function validate_player(player)
         return false
     end
     return true
+end
+
+local function level_limit_exceeded(player, value)
+    if not rpg_extra.level_limit_enabled then
+        return false
+    end
+
+    local limits = {
+        [1] = 20,
+        [2] = 40,
+        [3] = 60,
+        [4] = 80,
+        [5] = 100,
+        [6] = 120,
+        [7] = 140,
+        [8] = 160,
+        [9] = 180,
+        [10] = 200
+    }
+
+    local level = rpg_t[player.index].level
+    local zone = rpg_extra.breached_walls
+    if zone >= 11 then
+        zone = 10
+    end
+    if value then
+        return limits[zone]
+    end
+    if level >= limits[zone] then
+        return true
+    end
+    return false
 end
 
 local function level_up_effects(player)
@@ -317,7 +353,8 @@ local function add_gui_increase_stat(element, name, player, width)
     e.style.vertical_align = 'center'
     e.style.padding = 0
     e.style.margin = 0
-    e.tooltip = 'Right-click to allocate 5 points.'
+    e.tooltip =
+        'Right-click to allocate ' .. tostring(points_per_level) .. ' points.\nShift + click to allocate all points.'
 
     return e
 end
@@ -365,9 +402,13 @@ local function draw_gui(player, forced)
     local t = frame.add({type = 'table', column_count = 4})
     t.style.cell_padding = 1
 
+    local level_tooltip =
+        'Current max level limit for this zone is: ' ..
+        level_limit_exceeded(player, true) .. '\nIncreases by breaching walls/zones.'
+
     add_gui_description(t, 'LEVEL', 80)
     local e = add_gui_stat(t, rpg_t[player.index].level, 80)
-    e.tooltip = gain_info_tooltip
+    e.tooltip = level_tooltip
 
     add_gui_description(t, 'EXPERIENCE', 100)
     local e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
@@ -597,7 +638,7 @@ local function level_up(player)
     for i = rpg_t[player.index].level + 1, #experience_levels, 1 do
         if rpg_t[player.index].xp > experience_levels[i] then
             rpg_t[player.index].level = i
-            distribute_points_gain = distribute_points_gain + 5
+            distribute_points_gain = distribute_points_gain + points_per_level
         else
             break
         end
@@ -616,6 +657,9 @@ local function level_up(player)
 end
 
 function Public.gain_xp(player, amount)
+    if level_limit_exceeded(player) then
+        return
+    end
     Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
     local fee = amount * 0.3
     Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
@@ -649,7 +693,7 @@ function Public.gain_xp(player, amount)
 end
 
 local function global_pool()
-    local pool = rpg_t.global_pool
+    local pool = math.floor(rpg_t.global_pool)
     local random_amount = math_random(5000, 10000)
     if pool <= random_amount then
         return
@@ -669,8 +713,9 @@ local function global_pool()
             rpg_t[p.index].xp_since_last_floaty_text = 0
             Public.gain_xp(p, share)
             xp_effects(p)
+            nth_tick = 1
         else
-            game.print(teller .. ' ' .. p.name .. ' received nothing. Reason: AFK')
+            p.print(teller .. ' ' .. p.name .. ' received nothing. Reason: AFK')
         end
     end
     rpg_t.global_pool = 0
@@ -735,8 +780,8 @@ function Public.rpg_reset_player(player, one_time_reset)
 end
 
 function Public.rpg_reset_all_players()
-    for _, p in pairs(game.players) do
-        rpg_t[p.index] = nil
+    for k, _ in pairs(rpg_t) do
+        rpg_t[k] = nil
     end
     for _, p in pairs(game.connected_players) do
         Public.rpg_reset_player(p)
@@ -759,6 +804,8 @@ local function on_gui_click(event)
     if element.type ~= 'sprite-button' then
         return
     end
+
+    local shift = event.shift
 
     if element.caption == 'CHAR' then
         if element.name == 'rpg' then
@@ -794,17 +841,29 @@ local function on_gui_click(event)
         return
     end
 
-    if event.button == defines.mouse_button_type.right then
-        for _ = 1, 5, 1 do
+    if shift then
+        local count = rpg_t[player.index].points_to_distribute
+        if not count then
+            return
+        end
+        rpg_t[player.index].points_to_distribute = 0
+        rpg_t[player.index][index] = rpg_t[player.index][index] + count
+        if not rpg_t[player.index].reset then
+            rpg_t[player.index].total = rpg_t[player.index].total + count
+        end
+        update_player_stats(player)
+        draw_gui(player, true)
+    elseif event.button == defines.mouse_button_type.right then
+        for _ = 1, points_per_level, 1 do
             if rpg_t[player.index].points_to_distribute <= 0 then
                 draw_gui(player, true)
                 return
             end
+            rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
+            rpg_t[player.index][index] = rpg_t[player.index][index] + 1
             if not rpg_t[player.index].reset then
                 rpg_t[player.index].total = rpg_t[player.index].total + 1
             end
-            rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
-            rpg_t[player.index][index] = rpg_t[player.index][index] + 1
             update_player_stats(player)
         end
         draw_gui(player, true)
@@ -815,11 +874,11 @@ local function on_gui_click(event)
         draw_gui(player, true)
         return
     end
+    rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
+    rpg_t[player.index][index] = rpg_t[player.index][index] + 1
     if not rpg_t[player.index].reset then
         rpg_t[player.index].total = rpg_t[player.index].total + 1
     end
-    rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
-    rpg_t[player.index][index] = rpg_t[player.index][index] + 1
     update_player_stats(player)
     draw_gui(player, true)
 end
@@ -889,6 +948,15 @@ local function on_entity_died(event)
             end
             Public.gain_xp(event.entity.last_user, 1)
             return
+        end
+    end
+
+    if xp_yield['big-biter'] <= 16 then
+        local wd = WD.get_table()
+        local wave_number = wd.wave_number
+        if wave_number >= 500 then
+            xp_yield['big-biter'] = 16
+            xp_yield['behemoth-biter'] = 64
         end
     end
 

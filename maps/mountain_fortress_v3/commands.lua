@@ -132,7 +132,7 @@ commands.add_command(
 
                     this.disable_reset = true
 
-                    p('[SUCCESS] Auto-reset is disabled!', Color.success)
+                    p('[SUCCESS] Auto-reset is disabled!')
                     this.reset_are_you_sure = nil
                 elseif param == 'false' then
                     if not this.disable_reset then

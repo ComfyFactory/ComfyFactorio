@@ -19,6 +19,14 @@ local rock_yield = {
     ['sand-rock-big'] = 1
 }
 
+local particles = {
+    ['iron-ore'] = 'iron-ore-particle',
+    ['copper-ore'] = 'copper-ore-particle',
+    ['uranium-ore'] = 'coal-particle',
+    ['coal'] = 'coal-particle',
+    ['stone'] = 'stone-particle'
+}
+
 local function create_particles(surface, name, position, amount, cause_position)
     local d1 = (-100 + math_random(0, 200)) * 0.0004
     local d2 = (-100 + math_random(0, 200)) * 0.0004
@@ -46,6 +54,24 @@ local function create_particles(surface, name, position, amount, cause_position)
             }
         )
     end
+end
+
+local function compute_fullness(player)
+    local inv = player.get_inventory(defines.inventory.character_main)
+    local max_stacks = #inv
+    local num_stacks = 0
+
+    local contents = inv.get_contents()
+    for item, count in pairs(contents) do
+        local stack_size = 1
+        if game.item_prototypes[item].stackable then
+            stack_size = game.item_prototypes[item].stack_size
+        end
+
+        num_stacks = num_stacks + count / stack_size
+    end
+
+    return num_stacks / max_stacks
 end
 
 local function mining_chances_ores()
@@ -122,15 +148,52 @@ function Public.entity_died_randomness(data)
     local position = {x = entity.position.x, y = entity.position.y}
 
     surface.spill_item_stack(position, {name = harvest, count = math_random(1, 5)}, true)
+    local particle = particles[harvest]
+    create_particles(surface, particle, position, 64, {x = entity.position.x, y = entity.position.y})
+end
 
-    create_particles(surface, 'shell-particle', position, 64, {x = entity.position.x, y = entity.position.y})
+local function debug_print(str)
+    local debug = WPT.get('debug')
+    if debug then
+        print(str)
+    end
 end
 
 local function randomness(data)
     local entity = data.entity
     local player = data.player
+    local this = data.this
+    local fullness_limit = this.fullness_limit
+    local fullness_enabled = this.fullness_enabled
     local harvest
     local harvest_amount
+    local fullness = compute_fullness(player)
+
+    if not fullness_enabled then
+        goto continue
+    end
+
+    debug_print(player.name .. ' is ' .. fullness .. '% full.')
+
+    if fullness >= fullness_limit then
+        if player.character then
+            player.character.health = player.character.health - math_random(50, 100)
+            player.character.surface.create_entity({name = 'water-splash', position = player.position})
+            local messages = {
+                'Ouch.. That hurt! Better be careful now.',
+                'Just a fleshwound.',
+                'Better keep those hands to yourself or you might loose them.'
+            }
+            player.print(messages[math_random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
+            if player.character.health <= 0 then
+                player.character.die('enemy')
+                game.print(player.name .. ' should have emptied their pockets.', {r = 0.75, g = 0.0, b = 0.0})
+                return
+            end
+        end
+    end
+
+    ::continue::
 
     harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
     harvest_amount = get_amount(data)
@@ -157,8 +220,8 @@ local function randomness(data)
     else
         player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
     end
-
-    create_particles(player.surface, 'shell-particle', position, 64, {x = player.position.x, y = player.position.y})
+    local particle = particles[harvest]
+    create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})
 end
 
 function Public.on_player_mined_entity(event)

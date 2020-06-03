@@ -1,4 +1,3 @@
-require 'util'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local surface_name = 'mountain_fortress_v3'
@@ -33,7 +32,7 @@ end
 
 function Public.create_surface()
     local map_gen_settings = {
-        ['seed'] = math.random(10000, 99999),
+        ['seed'] = math.random(1000, 99999),
         ['width'] = level_width,
         ['water'] = 0.001,
         ['starting_area'] = 1,
@@ -43,6 +42,11 @@ function Public.create_surface()
             ['entity'] = {treat_missing_as_default = false},
             ['tile'] = {treat_missing_as_default = true},
             ['decorative'] = {treat_missing_as_default = true}
+        },
+        property_expression_names = {
+            cliffiness = 0,
+            ['tile:water:probability'] = -10000,
+            ['tile:deep-water:probability'] = -10000
         }
     }
     local mine = {}
