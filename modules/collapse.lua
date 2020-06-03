@@ -4,7 +4,9 @@ local Public = {}
 local math_floor = math.floor
 local table_shuffle_table = table.shuffle_table
 
-local collapse = {}
+local collapse = {
+    debug = false
+}
 Global.register(
     collapse,
     function(tbl)
@@ -52,13 +54,16 @@ local directions = {
 }
 
 local function print_debug(a)
+    if not collapse.debug then
+        return
+    end
     print('Collapse error #' .. a)
 end
 
 local function set_collapse_tiles(surface)
-	if not surface or surface.valid then
-		print_debug(45)
-	end
+    if not surface or surface.valid then
+        print_debug(45)
+    end
     game.forces.player.chart(surface, collapse.area)
     collapse.tiles = surface.find_tiles_filtered({area = collapse.area})
     if not collapse.tiles then
@@ -239,7 +244,13 @@ function Public.set_kill_entities(a)
 end
 
 function Public.set_kill_specific_entities(tbl)
-    collapse.specific_entities = tbl
+    if tbl then
+        collapse.specific_entities = tbl
+    else
+        collapse.specific_entities = {
+            enabled = false
+        }
+    end
 end
 
 local function on_init()
@@ -248,7 +259,7 @@ local function on_init()
     Public.set_max_line_size(256)
     Public.set_direction('north')
     Public.set_kill_entities(true)
-    Public.set_kill_specific_entities({})
+    Public.set_kill_specific_entities()
     collapse.tiles = nil
     collapse.speed = 1
     collapse.amount = 8
