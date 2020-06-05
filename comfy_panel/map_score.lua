@@ -72,6 +72,13 @@ function Public.get_score(player)
 	return score_list[player.index]
 end
 
+function Public.reset_score()
+    global.custom_highscore = {
+        description = 'Won rounds:',
+        score_list = {}
+    }
+end
+
 local function on_init()
 	global.custom_highscore = {
 		description = "Won rounds:",

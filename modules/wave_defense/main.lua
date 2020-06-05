@@ -228,12 +228,26 @@ local function set_next_wave()
 	end
 	if wave_defense_table.wave_number % 25 == 0 then
 		wave_defense_table.boss_wave = true
+		wave_defense_table.boss_wave_warning = true
+		game.print('Boss Wave: ' .. wave_defense_table.wave_number, {r = 0.8, g = 0.1, b = 0.1})
 		threat_gain = threat_gain * 2
+	else
+		if wave_defense_table.boss_wave_warning then
+			wave_defense_table.boss_wave_warning = false
+		end
 	end
 
 	wave_defense_table.threat = wave_defense_table.threat + math_floor(threat_gain)
 	wave_defense_table.last_wave = wave_defense_table.next_wave
 	wave_defense_table.next_wave = game.tick + wave_defense_table.wave_interval
+	if wave_defense_table.clear_corpses then
+		local surface = game.surfaces[wave_defense_table.surface_index]
+		for _, entity in pairs(surface.find_entities_filtered {type = 'corpse'}) do
+			if math_random(1, 2) == 1 then
+				entity.destroy()
+			end
+		end
+	end
 end
 
 local function reform_group(group)

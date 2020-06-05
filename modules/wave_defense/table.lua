@@ -13,6 +13,7 @@ Global.register(
 
 function Public.reset_wave_defense()
 	wave_defense.boss_wave = false
+	wave_defense.boss_wave_warning = false
 	wave_defense.side_target_count = 0
     wave_defense.active_biters = {}
     wave_defense.active_biter_count = 0
@@ -48,6 +49,7 @@ function Public.reset_wave_defense()
     wave_defense.worm_building_chance = 3
     wave_defense.worm_building_density = 16
     wave_defense.worm_raffle = {}
+    wave_defense.clear_corpses = true
 end
 
 function Public.get_table()
