@@ -1,18 +1,5 @@
-require 'maps.mountain_fortress_v3.generate'
-require 'maps.mountain_fortress_v3.commands'
-require 'maps.mountain_fortress_v3.breached_wall'
-
-require 'modules.dynamic_landfill'
-require 'modules.shotgun_buff'
-require 'modules.rocks_heal_over_time'
-require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.rocks_yield_ore_veins'
-require 'modules.spawners_contain_biters'
-require 'modules.biters_yield_coins'
-require 'modules.wave_defense.main'
-require 'modules.mineable_wreckage_yields_scrap'
-
 local CS = require 'maps.mountain_fortress_v3.surface'
+local Map_score = require 'comfy_panel.map_score'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Balance = require 'maps.mountain_fortress_v3.balance'
@@ -33,6 +20,20 @@ local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
 --local HD = require 'modules.hidden_dimension.main'
+
+require 'maps.mountain_fortress_v3.generate'
+require 'maps.mountain_fortress_v3.commands'
+require 'maps.mountain_fortress_v3.breached_wall'
+
+require 'modules.dynamic_landfill'
+require 'modules.shotgun_buff'
+require 'modules.rocks_heal_over_time'
+require 'modules.no_deconstruction_of_neutral_entities'
+require 'modules.rocks_yield_ore_veins'
+require 'modules.spawners_contain_biters'
+require 'modules.biters_yield_coins'
+require 'modules.wave_defense.main'
+require 'modules.mineable_wreckage_yields_scrap'
 
 local Public = {}
 -- local raise_event = script.raise_event
@@ -213,6 +214,7 @@ function Public.reset_map()
     ICW.reset()
     game.reset_time_played()
     WPT.reset_table()
+    Map_score.reset_score()
 
     disable_tech()
 
@@ -225,6 +227,8 @@ function Public.reset_map()
     Balance.init_enemy_weapon_damage()
 
     global.bad_fire_history = {}
+    global.custom_highscore.description = 'Wagon distance reached:'
+    Entities.set_scores()
     global.friendly_fire_history = {}
     global.landfill_history = {}
     global.mining_history = {}
@@ -311,15 +315,14 @@ local function on_player_changed_position(event)
 end
 
 local function on_player_joined_game(event)
-    local players = WPT.get('players')
-    local active_surface_index = WPT.get('active_surface_index')
+    local this = WPT.get()
     local player = game.players[event.player_index]
-    local surface = game.surfaces[active_surface_index]
+    local surface = game.surfaces[this.active_surface_index]
 
     set_difficulty()
 
-    if not players[player.index] then
-        players[player.index] = {
+    if not this.players[player.index] then
+        this.players[player.index] = {
             data = {}
         }
         player.print('Greetings, ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
@@ -330,7 +333,7 @@ local function on_player_joined_game(event)
     --RPG.gain_xp(player, 515)
     end
 
-    if player.surface.index ~= active_surface_index then
+    if player.surface.index ~= this.active_surface_index then
         player.teleport(
             surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
             surface
@@ -565,8 +568,6 @@ end
 local on_init = function()
     local this = WPT.get()
     Public.reset_map()
-
-    global.custom_highscore.description = 'Wagon distance reached:'
 
     local difficulties = {
         [1] = {

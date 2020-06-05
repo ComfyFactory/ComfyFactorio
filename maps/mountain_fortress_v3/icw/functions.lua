@@ -396,13 +396,13 @@ function Public.create_wagon_room(icw, wagon)
     end
 
     if wagon.entity.type == 'cargo-wagon' then
-        local get_icw = ICW.get()
+        local multiple_chests = ICW.get('multiple_chests')
         local position1 = {-12, 1}
         local position2 = {12, 1}
         local position3 = {-12, 58}
         local position4 = {12, 58}
 
-        if get_icw.multiple_chests then
+        if multiple_chests then
             local e1 =
                 surface.create_entity(
                 {
@@ -534,6 +534,14 @@ function Public.create_wagon_room(icw, wagon)
 end
 
 function Public.create_wagon(icw, created_entity, delay_surface)
+    if not created_entity then
+        return
+    end
+
+    if not created_entity.valid then
+        return
+    end
+
     if not created_entity.unit_number then
         return
     end

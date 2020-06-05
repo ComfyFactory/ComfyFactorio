@@ -1602,42 +1602,10 @@ Event.add(
             return
         end
 
-        local function get_replacement_tile(position)
-            for i = 1, 128, 1 do
-                local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
-                table.shuffle_table(vectors)
-                for k, v in pairs(vectors) do
-                    local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-                    if tile.valid and not tile.collides_with('resource-layer') then
-                        return tile.name
-                    end
-                end
-            end
-            return 'grass-1'
-        end
-
-        local function clear_water()
-            for x = 0, 31, 1 do
-                for y = 0, 31, 1 do
-                    local p = {x = left_top.x + x, y = left_top.y + y}
-                    local oom = surface.get_tile(p).name == 'out-of-map'
-                    if oom then
-                        return
-                    end
-                    if surface.get_tile(p).collides_with('resource-layer') then
-                        surface.set_tiles({{name = get_replacement_tile(p), position = p}}, true)
-                    end
-                end
-            end
-        end
-
         if left_top.y > 32 then
             game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
         end
 
-        if left_top.y >= 0 then
-            clear_water()
-        end
     end
 )
 

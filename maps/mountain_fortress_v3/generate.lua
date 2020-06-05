@@ -7,8 +7,8 @@ local Terrain = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
 
 local insert = table.insert
 
-local tiles_per_call
-local total_calls
+local tiles_per_call = 32
+local total_calls = math.ceil(1024 / tiles_per_call)
 local regen_decoratives = false
 local force_chunk = false
 
@@ -479,29 +479,16 @@ end
 local do_chunk = Public.do_chunk
 local schedule_chunk = Public.schedule_chunk
 
-function Public.init(args)
-    if args then
-        tiles_per_call = args.tiles_per_call or 32
-        regen_decoratives = args.regen_decoratives or false
-    else
-        tiles_per_call = 32
-        regen_decoratives = false
-    end
-
-    total_calls = math.ceil(1024 / tiles_per_call)
-end
-
 local function on_chunk(event)
     if force_chunk then
         do_chunk(event)
     elseif event.tick == 0 then
-        do_chunk(event)
+        --do_chunk(event)
     else
         schedule_chunk(event)
     end
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk)
-Public.init()
 
 return Public

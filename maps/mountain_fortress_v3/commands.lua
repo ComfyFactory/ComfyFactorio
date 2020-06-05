@@ -1,8 +1,12 @@
+local Event = require 'utils.event'
+local Timestamp = require 'utils.timestamp'
+local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
+local format = string.format
 
 commands.add_command(
     'reset_game',
@@ -200,3 +204,43 @@ commands.add_command(
         end
     end
 )
+
+local function on_console_command(event)
+    local cmd = event.command
+    if not event.player_index then
+        return
+    end
+    local player = game.players[event.player_index]
+    local param = event.parameters
+
+    if not player.admin then
+        return
+    end
+
+    local server_time = Server.get_current_time()
+    if server_time then
+        server_time = format('(Server time: %s)', Timestamp.to_string(server_time))
+    else
+        server_time = game.tick
+    end
+
+    if player then
+        if param then
+            print(player.name .. ' used command: ' .. cmd .. ' with param: ' .. param .. ' at tick: ' .. server_time)
+            return
+        else
+            print(player.name .. ' used command: ' .. cmd .. ' at tick: ' .. server_time)
+            return
+        end
+    else
+        if param then
+            print('used command: ' .. cmd .. ' with param: ' .. param .. ' at tick: ' .. server_time)
+            return
+        else
+            print('used command: ' .. cmd .. ' at tick: ' .. server_time)
+            return
+        end
+    end
+end
+
+Event.add(defines.events.on_console_command, on_console_command)

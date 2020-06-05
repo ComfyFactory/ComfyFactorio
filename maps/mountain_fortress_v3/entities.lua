@@ -9,6 +9,7 @@ local RPG = require 'maps.mountain_fortress_v3.rpg'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local BiterHealthBooster = require 'modules.biter_health_booster'
+local Traps = require 'maps.mountain_fortress_v3.traps'
 --local HD = require 'modules.hidden_dimension.main'
 
 -- tables
@@ -81,7 +82,6 @@ local function set_objective_health(final_damage_amount)
 
     if this.locomotive_health <= 0 then
         Public.loco_died()
-        this.locomotive_health = 0
     end
 
     local m = this.locomotive_health / this.locomotive_max_health
@@ -318,6 +318,10 @@ local function on_player_mined_entity(event)
             entity.destroy()
             return
         end
+        if math_random(1, 512) == 1 then
+            Traps(entity.surface, entity.position)
+            return
+        end
         hidden_biter_pet(event)
         hidden_treasure(event)
         angry_tree(event.entity, game.players[event.player_index].character)
@@ -361,13 +365,97 @@ local function on_robot_mined_entity(event)
     end
 end
 
+local function get_damage(event)
+    local entity = event.entity
+    local damage = event.original_damage_amount + event.original_damage_amount * math_random(1, 100)
+    if entity.prototype.resistances then
+        if entity.prototype.resistances.physical then
+            damage = damage - entity.prototype.resistances.physical.decrease
+            damage = damage - damage * entity.prototype.resistances.physical.percent
+        end
+    end
+    damage = math.round(damage, 3)
+    if damage < 1 then
+        damage = 1
+    end
+    return damage
+end
+
+local function kaboom(entity, target, damage)
+    local base_vector = {target.position.x - entity.position.x, target.position.y - entity.position.y}
+
+    local vector = {base_vector[1], base_vector[2]}
+    vector[1] = vector[1] * 512
+    vector[2] = vector[2] * 256
+
+    local msg = {'TASTY', 'MUNCH', 'SNACK_TIME', 'OVER 9000!'}
+
+    entity.surface.create_entity(
+        {
+            name = 'flying-text',
+            position = {entity.position.x + base_vector[1] * 0.5, entity.position.y + base_vector[2] * 0.5},
+            text = msg[math_random(1, #msg)],
+            color = {255, 0, 0}
+        }
+    )
+
+    if math.abs(vector[1]) > math.abs(vector[2]) then
+        local d = math.abs(vector[1])
+        if math.abs(vector[1]) > 0 then
+            vector[1] = vector[1] / d
+        end
+        if math.abs(vector[2]) > 0 then
+            vector[2] = vector[2] / d
+        end
+    else
+        local d = math.abs(vector[2])
+        if math.abs(vector[2]) > 0 then
+            vector[2] = vector[2] / d
+        end
+        if math.abs(vector[1]) > 0 and d > 0 then
+            vector[1] = vector[1] / d
+        end
+    end
+
+    vector[1] = vector[1] * 1.5
+    vector[2] = vector[2] * 1.5
+
+    local a = 0.25
+
+    for i = 1, 16, 1 do
+        for x = i * -1 * a, i * a, 1 do
+            for y = i * -1 * a, i * a, 1 do
+                local p = {entity.position.x + x + vector[1] * i, entity.position.y + y + vector[2] * i}
+                entity.surface.create_trivial_smoke({name = 'fire-smoke', position = p})
+                for _, e in pairs(entity.surface.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
+                    if e.valid then
+                        if e.health then
+                            if e.destructible and e.minable then
+                                if e.force.index ~= entity.force.index then
+                                    e.health = e.health - damage * 0.05
+                                    if e.health <= 0 then
+                                        e.die(e.force.name, entity)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function boss_puncher(event)
-    local wd = WD.get_table()
     local cause = event.cause
     if not cause then
         return
     end
     if not cause.valid then
+        return
+    end
+
+    if cause.force.index ~= 2 then
         return
     end
 
@@ -383,99 +471,10 @@ local function boss_puncher(event)
         return
     end
 
-    local function kaboom(e_cause, target, damage)
-        local base_vector = {target.position.x - e_cause.position.x, target.position.y - e_cause.position.y}
-
-        local vector = {base_vector[1], base_vector[2]}
-        vector[1] = vector[1] * 512
-        vector[2] = vector[2] * 256
-
-        local msg = {'TASTY', 'MUNCH', 'SNACK_TIME', 'OVER 9000!'}
-
-        e_cause.surface.create_entity(
-            {
-                name = 'flying-text',
-                position = {e_cause.position.x + base_vector[1] * 0.5, e_cause.position.y + base_vector[2] * 0.5},
-                text = msg[math_random(1, #msg)],
-                color = {255, 0, 0}
-            }
-        )
-        e_cause.surface.create_entity({name = 'blood-explosion-huge', position = target.position})
-        e_cause.surface.create_entity(
-            {
-                name = 'big-artillery-explosion',
-                position = {target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5}
-            }
-        )
-
-        if math.abs(vector[1]) > math.abs(vector[2]) then
-            local d = math.abs(vector[1])
-            if math.abs(vector[1]) > 0 then
-                vector[1] = vector[1] / d
-            end
-            if math.abs(vector[2]) > 0 then
-                vector[2] = vector[2] / d
-            end
-        else
-            local d = math.abs(vector[2])
-            if math.abs(vector[2]) > 0 then
-                vector[2] = vector[2] / d
-            end
-            if math.abs(vector[1]) > 0 and d > 0 then
-                vector[1] = vector[1] / d
-            end
-        end
-
-        vector[1] = vector[1] * 1.5
-        vector[2] = vector[2] * 1.5
-
-        local a = 0.25
-
-        for i = 1, 16, 1 do
-            for x = i * -1 * a, i * a, 1 do
-                for y = i * -1 * a, i * a, 1 do
-                    if not e_cause.valid then
-                        return
-                    end
-                    local p = {e_cause.position.x + x + vector[1] * i, e_cause.position.y + y + vector[2] * i}
-                    e_cause.surface.create_trivial_smoke({name = 'fire-smoke', position = p})
-                    for _, e in pairs(entity.surface.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
-                        if e.valid then
-                            if e.health then
-                                if e.destructible and e.minable then
-                                    if e.force.index ~= e_cause.force.index then
-                                        e.health = e.health - damage * 0.05
-                                        if e.health <= 0 then
-                                            e.die(e.force.name, e_cause)
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    local function get_damage()
-        local damage = event.original_damage_amount + event.original_damage_amount * math_random(1, 100)
-        if entity.prototype.resistances then
-            if entity.prototype.resistances.physical then
-                damage = damage - entity.prototype.resistances.physical.decrease
-                damage = damage - damage * entity.prototype.resistances.physical.percent
-            end
-        end
-        damage = math.round(damage, 3)
-        if damage < 1 then
-            damage = 1
-        end
-        return damage
-    end
-    if wd.boss_wave then
-        if math_random(0, 512) == 1 then
-            kaboom(cause, entity, get_damage())
-            return
-        end
+    local wd = WD.get_table()
+    if wd.boss_wave_warning then
+        kaboom(cause, entity, get_damage(event))
+        return
     end
 end
 
@@ -492,7 +491,9 @@ local function on_entity_damaged(event)
 
     protect_entities(event)
     biters_chew_rocks_faster(event)
-    boss_puncher(event)
+    if math_random(0, 512) == 1 then
+        boss_puncher(event)
+    end
 end
 
 local function on_player_repaired_entity(event)
@@ -573,6 +574,10 @@ local function on_entity_died(event)
             hidden_biter(event.entity)
             return
         end
+        if math_random(1, 512) == 1 then
+            Traps(entity.surface, entity.position)
+            return
+        end
     end
 
     if entity.type == 'tree' then
@@ -589,14 +594,14 @@ end
 
 function Public.set_scores()
     local this = WPT.get()
-    local wagon = this.locomotive_cargo
-    if not wagon then
+    local loco = this.locomotive
+    if not loco then
         return
     end
-    if not wagon.valid then
+    if not loco.valid then
         return
     end
-    local score = math_floor(wagon.position.y * -1)
+    local score = math_floor(loco.position.y * -1)
     for _, player in pairs(game.connected_players) do
         if score > Map_score.get_score(player) then
             Map_score.set_score(player, score)
@@ -625,8 +630,6 @@ function Public.loco_died()
     --     }
     -- )
     this.locomotive_health = 0
-    this.locomotive.health = 1
-    this.locomotive.destructible = false
     this.locomotive.color = {0.49, 0, 255, 1}
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true

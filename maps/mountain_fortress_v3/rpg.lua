@@ -66,12 +66,33 @@ local rpg_frame_icons = {
     'entity/behemoth-spitter'
 }
 
+local rpg_xp_yield = {
+    ['behemoth-biter'] = 16,
+    ['behemoth-spitter'] = 16,
+    ['behemoth-worm-turret'] = 64,
+    ['big-biter'] = 8,
+    ['big-spitter'] = 8,
+    ['big-worm-turret'] = 48,
+    ['biter-spawner'] = 64,
+    ['character'] = 16,
+    ['gun-turret'] = 8,
+    ['laser-turret'] = 16,
+    ['medium-biter'] = 4,
+    ['medium-spitter'] = 4,
+    ['medium-worm-turret'] = 32,
+    ['small-biter'] = 1,
+    ['small-spitter'] = 1,
+    ['small-worm-turret'] = 16,
+    ['spitter-spawner'] = 64
+}
+
 Global.register(
-    {rpg_t = rpg_t, rpg_frame_icons = rpg_frame_icons, rpg_extra = rpg_extra},
+    {rpg_t = rpg_t, rpg_frame_icons = rpg_frame_icons, rpg_extra = rpg_extra, rpg_xp_yield = rpg_xp_yield},
     function(tbl)
         rpg_t = tbl.rpg_t
         rpg_frame_icons = tbl.rpg_frame_icons
         rpg_extra = tbl.rpg_extra
+        rpg_xp_yield = tbl.rpg_xp_yield
     end
 )
 
@@ -108,26 +129,6 @@ local classes = {
     ['vitality'] = 'TANK'
 }
 
-local xp_yield = {
-    ['behemoth-biter'] = 16,
-    ['behemoth-spitter'] = 16,
-    ['behemoth-worm-turret'] = 64,
-    ['big-biter'] = 8,
-    ['big-spitter'] = 8,
-    ['big-worm-turret'] = 48,
-    ['biter-spawner'] = 64,
-    ['character'] = 16,
-    ['gun-turret'] = 8,
-    ['laser-turret'] = 16,
-    ['medium-biter'] = 4,
-    ['medium-spitter'] = 4,
-    ['medium-worm-turret'] = 32,
-    ['small-biter'] = 1,
-    ['small-spitter'] = 1,
-    ['small-worm-turret'] = 16,
-    ['spitter-spawner'] = 64
-}
-
 local enemy_types = {
     ['unit'] = true,
     ['unit-spawner'] = true,
@@ -159,16 +160,16 @@ local function level_limit_exceeded(player, value)
     end
 
     local limits = {
-        [1] = 20,
-        [2] = 40,
-        [3] = 60,
-        [4] = 80,
-        [5] = 100,
-        [6] = 120,
-        [7] = 140,
-        [8] = 160,
-        [9] = 180,
-        [10] = 200
+        [1] = 30,
+        [2] = 50,
+        [3] = 70,
+        [4] = 90,
+        [5] = 110,
+        [6] = 130,
+        [7] = 150,
+        [8] = 170,
+        [9] = 190,
+        [10] = 210
     }
 
     local level = rpg_t[player.index].level
@@ -269,7 +270,7 @@ local function update_player_stats(player)
     local strength = rpg_t[player.index].strength - 10
     player_modifiers[player.index].character_inventory_slots_bonus['rpg'] = math.round(strength * 0.2, 3)
     player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math.round(strength * 0.007, 3)
-    player_modifiers[player.index].character_maximum_following_robot_count_bonus['rpg'] = math.round(strength * 0.2, 3)
+    player_modifiers[player.index].character_maximum_following_robot_count_bonus['rpg'] = math.round(strength * 0.07, 1)
 
     local magic = rpg_t[player.index].magicka - 10
     local v = magic * 0.22
@@ -336,7 +337,7 @@ local function add_gui_stat(element, value, width)
     return e
 end
 
-local function add_gui_increase_stat(element, name, player, width)
+local function add_gui_increase_stat(element, name, player)
     local sprite = 'virtual-signal/signal-red'
     local symbol = '✚'
     if rpg_t[player.index].points_to_distribute <= 0 then
@@ -383,6 +384,9 @@ local function draw_gui(player, forced)
         return
     end
 
+    local value
+    local e
+
     local frame = player.gui.left.add({type = 'frame', name = 'rpg', direction = 'vertical'})
     frame.style.maximal_width = 425
     frame.style.minimal_width = 425
@@ -391,15 +395,15 @@ local function draw_gui(player, forced)
     add_separator(frame, 400)
 
     local t = frame.add({type = 'table', column_count = 2})
-    local e = add_gui_stat(t, player.name, 200)
+    e = add_gui_stat(t, player.name, 200)
     e.style.font_color = player.chat_color
     e.style.font = 'default-large-bold'
-    local e = add_gui_stat(t, get_class(player), 200)
+    e = add_gui_stat(t, get_class(player), 200)
     e.style.font = 'default-large-bold'
 
     add_separator(frame, 400)
 
-    local t = frame.add({type = 'table', column_count = 4})
+    t = frame.add({type = 'table', column_count = 4})
     t.style.cell_padding = 1
 
     local level_tooltip =
@@ -407,16 +411,20 @@ local function draw_gui(player, forced)
         level_limit_exceeded(player, true) .. '\nIncreases by breaching walls/zones.'
 
     add_gui_description(t, 'LEVEL', 80)
-    local e = add_gui_stat(t, rpg_t[player.index].level, 80)
-    e.tooltip = level_tooltip
+    e = add_gui_stat(t, rpg_t[player.index].level, 80)
+    if rpg_extra.level_limit_enabled then
+        e.tooltip = level_tooltip
+    else
+        e.tooltip = gain_info_tooltip
+    end
 
     add_gui_description(t, 'EXPERIENCE', 100)
-    local e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
+    e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
     e.tooltip = gain_info_tooltip
 
     if not rpg_t[player.index].reset then
         add_gui_description(t, 'RESET', 80)
-        local e = add_gui_stat(t, rpg_t[player.index].reset, 80)
+        e = add_gui_stat(t, rpg_t[player.index].reset, 80)
         if rpg_t[player.index].level <= 19 then
             e.tooltip = reset_not_available
         else
@@ -428,7 +436,7 @@ local function draw_gui(player, forced)
     end
 
     add_gui_description(t, 'NEXT LEVEL', 100)
-    local e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
+    e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
     e.tooltip = gain_info_tooltip
 
     add_separator(frame, 400)
@@ -440,35 +448,35 @@ local function draw_gui(player, forced)
     local w2 = 63
 
     local tip = 'Increases inventory slots, mining speed.\nIncreases melee damage and amount of robot followers.'
-    local e = add_gui_description(tt, 'STRENGTH', w1)
+    e = add_gui_description(tt, 'STRENGTH', w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].strength, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].strength, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'strength', player)
 
     local tip = 'Increases reach distance.'
-    local e = add_gui_description(tt, 'MAGIC', w1)
+    e = add_gui_description(tt, 'MAGIC', w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].magicka, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].magicka, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'magicka', player)
 
     local tip = 'Increases running and crafting speed.'
-    local e = add_gui_description(tt, 'DEXTERITY', w1)
+    e = add_gui_description(tt, 'DEXTERITY', w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].dexterity, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].dexterity, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'dexterity', player)
 
     local tip = 'Increases health.\nIncreases melee life on-hit.'
-    local e = add_gui_description(tt, 'VITALITY', w1)
+    e = add_gui_description(tt, 'VITALITY', w1)
     e.tooltip = tip
-    local e = add_gui_stat(tt, rpg_t[player.index].vitality, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].vitality, w2)
     e.tooltip = tip
     add_gui_increase_stat(tt, 'vitality', player)
 
     add_gui_description(tt, 'POINTS TO\nDISTRIBUTE', w1)
-    local e = add_gui_stat(tt, rpg_t[player.index].points_to_distribute, w2)
+    e = add_gui_stat(tt, rpg_t[player.index].points_to_distribute, w2)
     e.style.font_color = {200, 0, 0}
     add_gui_description(tt, ' ', w2)
 
@@ -507,32 +515,31 @@ local function draw_gui(player, forced)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'MINING\nSPEED', w1)
-    local value =
+    value =
         math_round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'SLOT\nBONUS', w1)
-    local value =
-        '+ ' .. math_round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
+    value = '+ ' .. math_round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'MELEE\nDAMAGE', w1)
-    local value = math_round(100 * (1 + get_melee_modifier(player))) .. '%'
-    local e = add_gui_stat(tt, value, w2)
+    value = math_round(100 * (1 + get_melee_modifier(player))) .. '%'
+    e = add_gui_stat(tt, value, w2)
     e.tooltip =
         'Life on-hit: ' .. get_life_on_hit(player) .. '\nOne punch chance: ' .. get_one_punch_chance(player) .. '%'
 
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
 
-    local value = '+ ' .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
+    value = '+ ' .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
     local tooltip = ''
     tooltip = tooltip .. 'Reach distance bonus: ' .. player.character_reach_distance_bonus
     tooltip = tooltip .. '\nBuild distance bonus: ' .. player.character_build_distance_bonus
@@ -541,48 +548,48 @@ local function draw_gui(player, forced)
     tooltip = tooltip .. '\nItem pickup distance bonus: ' .. player.character_item_pickup_distance_bonus
     tooltip = tooltip .. '\nResource reach distance bonus: ' .. player.character_resource_reach_distance_bonus
     add_gui_description(tt, ' ', w0)
-    local e = add_gui_description(tt, 'REACH\nDISTANCE', w1)
+    e = add_gui_description(tt, 'REACH\nDISTANCE', w1)
     e.tooltip = tooltip
-    local e = add_gui_stat(tt, value, w2)
+    e = add_gui_stat(tt, value, w2)
     e.tooltip = tooltip
 
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'CRAFTING\nSPEED', w1)
-    local value =
+    value =
         math_round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'RUNNING\nSPEED', w1)
-    local value =
+    value =
         math_round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(tt, value, w2)
 
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
-    local e = add_gui_description(tt, '', w0)
+    e = add_gui_description(tt, '', w0)
     e.style.maximal_height = 10
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'HEALTH\nBONUS', w1)
-    local value = '+ ' .. math_round((player.force.character_health_bonus + player.character_health_bonus))
+    value = '+ ' .. math_round((player.force.character_health_bonus + player.character_health_bonus))
     add_gui_stat(tt, value, w2)
 
     add_separator(frame, 400)
     local t = frame.add({type = 'table', column_count = 14})
     for i = 1, 14, 1 do
-        local e = t.add({type = 'sprite', sprite = rpg_frame_icons[i]})
+        e = t.add({type = 'sprite', sprite = rpg_frame_icons[i]})
         e.style.maximal_width = 24
         e.style.maximal_height = 24
         e.style.padding = 0
@@ -693,7 +700,11 @@ function Public.gain_xp(player, amount)
 end
 
 local function global_pool()
-    local pool = math.floor(rpg_t.global_pool)
+    if not rpg_t.global_pool then
+        return
+    end
+
+    local pool = math_floor(rpg_t.global_pool)
     local random_amount = math_random(5000, 10000)
     if pool <= random_amount then
         return
@@ -713,7 +724,6 @@ local function global_pool()
             rpg_t[p.index].xp_since_last_floaty_text = 0
             Public.gain_xp(p, share)
             xp_effects(p)
-            nth_tick = 1
         else
             p.print(teller .. ' ' .. p.name .. ' received nothing. Reason: AFK')
         end
@@ -951,12 +961,12 @@ local function on_entity_died(event)
         end
     end
 
-    if xp_yield['big-biter'] <= 16 then
+    if rpg_xp_yield['big-biter'] <= 16 then
         local wd = WD.get_table()
         local wave_number = wd.wave_number
         if wave_number >= 500 then
-            xp_yield['big-biter'] = 16
-            xp_yield['behemoth-biter'] = 64
+            rpg_xp_yield['big-biter'] = 16
+            rpg_xp_yield['behemoth-biter'] = 64
         end
     end
 
@@ -985,8 +995,8 @@ local function on_entity_died(event)
     if global.biter_health_boost then
         if enemy_types[event.entity.type] then
             for _, player in pairs(players) do
-                if xp_yield[event.entity.name] then
-                    Public.gain_xp(player, xp_yield[event.entity.name] * global.biter_health_boost)
+                if rpg_xp_yield[event.entity.name] then
+                    Public.gain_xp(player, rpg_xp_yield[event.entity.name] * global.biter_health_boost)
                 else
                     Public.gain_xp(player, 0.5 * global.biter_health_boost)
                 end
@@ -997,8 +1007,8 @@ local function on_entity_died(event)
 
     --Grant normal XP
     for _, player in pairs(players) do
-        if xp_yield[event.entity.name] then
-            Public.gain_xp(player, xp_yield[event.entity.name])
+        if rpg_xp_yield[event.entity.name] then
+            Public.gain_xp(player, rpg_xp_yield[event.entity.name])
         else
             Public.gain_xp(player, 0.5)
         end

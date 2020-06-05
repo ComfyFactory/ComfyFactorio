@@ -1,3 +1,4 @@
+require 'util'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local surface_name = 'mountain_fortress_v3'
@@ -32,7 +33,7 @@ end
 
 function Public.create_surface()
     local map_gen_settings = {
-        ['seed'] = math.random(1000, 99999),
+        ['seed'] = math.random(10000, 99999),
         ['width'] = level_width,
         ['water'] = 0.001,
         ['starting_area'] = 1,
@@ -40,7 +41,17 @@ function Public.create_surface()
         ['default_enable_all_autoplace_controls'] = true,
         ['autoplace_settings'] = {
             ['entity'] = {treat_missing_as_default = false},
-            ['tile'] = {treat_missing_as_default = true},
+            ['tile'] = {
+                settings = {
+                    ['deepwater'] = {frequency = 1, size = 0, richness = 1},
+                    ['deepwater-green'] = {frequency = 1, size = 0, richness = 1},
+                    ['water'] = {frequency = 1, size = 0, richness = 1},
+                    ['water-green'] = {frequency = 1, size = 0, richness = 1},
+                    ['water-mud'] = {frequency = 1, size = 0, richness = 1},
+                    ['water-shallow'] = {frequency = 1, size = 0, richness = 1}
+                },
+                treat_missing_as_default = true
+            },
             ['decorative'] = {treat_missing_as_default = true}
         },
         property_expression_names = {

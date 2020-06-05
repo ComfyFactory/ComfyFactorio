@@ -193,6 +193,11 @@ local function on_player_changed_surface(event)
     local icw_locomotive = WPT.get('icw_locomotive')
     local loco_surface = icw_locomotive.surface
 
+    if player.gui.top[main_button_name] then
+        player.gui.top[main_button_name].tooltip = 'Shows statistics!'
+        player.gui.top[main_button_name].sprite = 'item/dummy-steel-axe'
+    end
+
     if not locomotive then
         return
     end
@@ -208,6 +213,10 @@ local function on_player_changed_surface(event)
     end
 
     if player.surface == locomotive.surface then
+        local s = player.gui.left.icw_map
+        if s and s.visible then
+            player.gui.left.icw_map.visible = false
+        end
         player.gui.top[main_button_name].tooltip = 'Shows statistics!'
         player.gui.top[main_button_name].sprite = 'item/dummy-steel-axe'
     elseif player.surface == loco_surface then
