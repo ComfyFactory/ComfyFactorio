@@ -3,13 +3,57 @@ local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Balance = require 'maps.mountain_fortress_v3.balance'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local Alert = require 'maps.mountain_fortress_v3.alert'
 local Event = require 'utils.event'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 
 local raise_event = script.raise_event
 local floor = math.floor
 local sqrt = math.sqrt
+local concat = table.concat
 
-local keeper = '[color=blue]Mapkeeper:[/color] '
+local keeper = '[color=blue]Mapkeeper:[/color] \n'
+
+local collapse_message =
+    Token.register(
+    function(data)
+        local pos = data.position
+        local message = keeper .. 'Warning, collapse has begun!'
+        local collapse_position = {
+            position = pos
+        }
+        Alert.alert_all_players_location(collapse_position, message)
+    end
+)
+
+local zone_complete =
+    Token.register(
+    function(data)
+        local bonus = data.bonus
+        local player = data.player
+        local message = keeper .. 'Survivor! Well done. You have completed zone: ' .. bonus
+        Alert.alert_player(player, 10, message)
+    end
+)
+
+local first_player_to_zone =
+    Token.register(
+    function(data)
+        local player = data.player
+        local breached_wall = data.breached_wall
+        local message = concat {keeper .. player.name .. ' was the first to reach zone ' .. breached_wall .. '.'}
+        Alert.alert_all_players(10, message)
+    end
+)
+
+local artillery_warning =
+    Token.register(
+    function()
+        local message = keeper .. 'Warning, Artillery have been spotted north!'
+        Alert.alert_all_players(10, message)
+    end
+)
 
 local function distance(player)
     local rpg_t = RPG.get_table()
@@ -33,19 +77,30 @@ local function distance(player)
             rpg_extra.reward_new_players = 150 * rpg_extra.breached_walls
             WPT.get().breached_wall = breached_wall + 1
             raise_event(Balance.events.breached_wall, {})
-            game.print(keeper .. player.name .. ' was the first to reach zone ' .. breached_wall .. '.')
+
+            local data = {
+                player = player,
+                breached_wall = breached_wall
+            }
+            Task.set_timeout_in_ticks(360, first_player_to_zone, data)
             if breached_wall == 5 then
-                game.print(keeper .. 'Warning, Artilleries have been spotted north!')
+                Task.set_timeout_in_ticks(360, artillery_warning)
             end
         end
         if not Collapse.start_now() then
             Collapse.start_now(true)
-            game.print(keeper .. 'Warning, collapse has begun!')
+            local data = {
+                position = Collapse.get_position()
+            }
+            Task.set_timeout_in_ticks(550, collapse_message, data)
         end
         rpg_t[player.index].bonus = bonus + 1
-        player.print(keeper .. 'Survivor! Well done. You have completed zone: ' .. bonus)
+        local data = {
+            player = player,
+            bonus = bonus
+        }
+        Task.set_timeout_in_ticks(1, zone_complete, data)
         RPG.gain_xp(player, 150 * bonus)
-
         return
     end
 end

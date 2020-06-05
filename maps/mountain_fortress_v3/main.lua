@@ -19,6 +19,7 @@ local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
+local Alert = require 'maps.mountain_fortress_v3.alert'
 --local HD = require 'modules.hidden_dimension.main'
 
 require 'maps.mountain_fortress_v3.generate'
@@ -325,8 +326,8 @@ local function on_player_joined_game(event)
         this.players[player.index] = {
             data = {}
         }
-        player.print('Greetings, ' .. player.name .. '!', {r = 0.98, g = 0.66, b = 0.22})
-        player.print('Please read the map info.', {r = 0.98, g = 0.66, b = 0.22})
+        local message = 'Greetings, ' .. player.name .. '!\nPlease read the map info.'
+        Alert.alert_player(player, 10, message)
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
         end
@@ -386,13 +387,13 @@ local function remove_offline_players()
         end
         if game.tick % 432000 == 0 then
             this.offline_players_enabled = true
+            return
         end
-        return
     end
     local offline_players = WPT.get('offline_players')
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
-    local keeper = '[color=blue]Cleaner:[/color]'
+    local keeper = '[color=blue]Cleaner:[/color] \n'
     local player_inv = {}
     local items = {}
     if #offline_players > 0 then
@@ -441,10 +442,12 @@ local function remove_offline_players()
                                 inv.insert(items[item])
                             end
                         end
-                        game.print(
-                            keeper .. ' ' .. name .. ' has left his goodies! [gps=' .. pos.x .. ',' .. pos.y .. ']',
-                            {r = 0.98, g = 0.66, b = 0.22}
-                        )
+
+                        local message = keeper .. name .. ' has left his goodies!'
+                        local data = {
+                            position = pos
+                        }
+                        Alert.alert_all_players_location(data, message)
 
                         e.die('neutral')
                     else

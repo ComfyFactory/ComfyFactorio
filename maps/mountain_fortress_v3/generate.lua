@@ -406,7 +406,7 @@ function Public.schedule_chunk(event)
     local area = event.area
 
     local data = {
-        yv = 0,
+        yv = -1,
         xv = 0,
         y = 0,
         x = area.left_top.x,
@@ -446,8 +446,8 @@ function Public.do_chunk(event)
     local area = event.area
 
     local data = {
-        yv = 0,
-        xv = 1,
+        yv = -0,
+        xv = 0,
         area = area,
         top_x = area.left_top.x,
         top_y = area.left_top.y,

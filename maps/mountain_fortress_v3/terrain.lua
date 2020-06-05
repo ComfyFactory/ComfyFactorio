@@ -139,20 +139,20 @@ local function get_oil_amount(p)
     return (math_abs(p.y) * 200 + 10000) * math_random(75, 125) * 0.01
 end
 
-function Public.increment_value(tbl, key, max, target)
-    if target then
-        if tbl.yv == 31 then
-            tbl[key] = tbl[key] + 1
+function Public.increment_value(tbl)
+    tbl.yv = tbl.yv + 1
+
+    if tbl.yv == 32 then
+        if tbl.xv == 32 then
+            tbl.xv = 0
         end
-    else
-        tbl[key] = tbl[key] + 1
+        if tbl.yv == 32 then
+            tbl.yv = 0
+        end
+        tbl.xv = tbl.xv + 1
     end
 
-    if tbl[key] == max then
-        tbl[key] = 0
-    end
-
-    return tbl[key]
+    return tbl.xv, tbl.yv
 end
 
 local function spawn_turret(entities, p, probability)
@@ -173,8 +173,7 @@ local function wall(data)
     local treasure = data.treasure
     local stone_wall = {callback = Functions.disable_minable_callback}
 
-    local y = Public.increment_value(data, 'yv', 32)
-    local x = Public.increment_value(data, 'xv', 32, true)
+    local x, y = Public.increment_value(data)
 
     local seed = data.seed
     local p = {x = x + data.top_x, y = y + data.top_y}
@@ -1436,8 +1435,7 @@ local function border_chunk(data)
     local top_x = data.top_x
     local top_y = data.top_y
 
-    local x = Public.increment_value(data, 'xv', 32)
-    local y = Public.increment_value(data, 'yv', 31)
+    local x, y = Public.increment_value(data)
 
     local pos = {x = x + data.top_x, y = y + data.top_y}
 
@@ -1471,11 +1469,13 @@ local function border_chunk(data)
     end
 end
 
-local function biter_chunk(x, y, data)
+local function biter_chunk(data)
     local surface = data.surface
     local entities = data.entities
     local tile_positions = {}
-    local p = {x = x, y = y}
+    local x, y = Public.increment_value(data)
+
+    local p = {x = x + data.top_x, y = y + data.top_y}
     tile_positions[#tile_positions + 1] = p
 
     local disable_spawners = {
@@ -1518,8 +1518,11 @@ local function biter_chunk(x, y, data)
 end
 
 local function out_of_map(x, y, data)
-    local surface = data.surface
-    surface.set_tiles({{name = 'out-of-map', position = {x = data.x, y = data.y}}})
+    local tiles = data.tiles
+
+    local p = {x = x, y = y}
+
+    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
 function Public.heavy_functions(x, y, data)
@@ -1548,6 +1551,10 @@ function Public.heavy_functions(x, y, data)
         return
     end
 
+    if top_y > 32 then
+        game.forces.player.chart(surface, {{top_x, top_y}, {top_x + 31, top_y + 31}})
+    end
+
     if top_y == -128 and top_x == -128 then
         local pl = WPT.get().locomotive.position
         for _, entity in pairs(
@@ -1573,7 +1580,7 @@ function Public.heavy_functions(x, y, data)
     end
 
     if top_y > 75 then
-        biter_chunk(x, y, data)
+        biter_chunk(data)
         return
     end
 
@@ -1582,31 +1589,5 @@ function Public.heavy_functions(x, y, data)
         return
     end
 end
-
-Event.add(
-    defines.events.on_chunk_generated,
-    function(e)
-        local surface = e.surface
-        local map_name = 'mountain_fortress_v3'
-
-        if string.sub(surface.name, 0, #map_name) ~= map_name then
-            return
-        end
-
-        local area = e.area
-        local left_top = area.left_top
-        if not surface then
-            return
-        end
-        if not surface.valid then
-            return
-        end
-
-        if left_top.y > 32 then
-            game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
-        end
-
-    end
-)
 
 return Public

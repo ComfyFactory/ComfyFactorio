@@ -4,6 +4,7 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
 local Server = require 'utils.server'
+local Alert = require 'maps.mountain_fortress_v3.alert'
 local WD = require 'modules.wave_defense.table'
 local format_number = require 'util'.format_number
 
@@ -203,7 +204,7 @@ local function close_market_gui(player)
     end
 end
 
-local function redraw_market_items(gui, player, search_text)
+local function redraw_market_items(gui, player)
     if not validate_player(player) then
         return
     end
@@ -218,15 +219,6 @@ local function redraw_market_items(gui, player, search_text)
 
     local slider_value = math.ceil(this.players[player.index].data.slider.slider_value)
     for item, data in pairs(Public.get_items()) do
-        if not search_text then
-            goto continue
-        end
-        if not search_text.text then
-            goto continue
-        end
-        if not string.lower(item:gsub('-', ' ')):find(search_text.text) then
-            goto continue
-        end
         local item_count = data.stack * slider_value
         local item_cost = data.price * slider_value
 
@@ -257,7 +249,6 @@ local function redraw_market_items(gui, player, search_text)
         if player_item_count < item_cost then
             button.enabled = false
         end
-        ::continue::
     end
 end
 
@@ -304,7 +295,7 @@ local function slider_changed(event)
     end
     slider_value = math.ceil(slider_value)
     this.players[player.index].data.text_input.text = slider_value
-    redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
+    redraw_market_items(this.players[player.index].data.item_frame, player)
 end
 
 local function text_changed(event)
@@ -323,13 +314,15 @@ local function text_changed(event)
         return
     end
 
-    local value = 0
-    tonumber(data.text_input.text)
+    local value = tonumber(data.text_input.text)
+
     if not value then
         return
     end
-    data.slider.slider_value = value
-    redraw_market_items(data.item_frame, player, data.search_text)
+
+    this.players[player.index].data.slider.slider_value = value
+
+    redraw_market_items(data.item_frame, player)
 end
 
 local function gui_opened(event)
@@ -418,13 +411,12 @@ local function gui_opened(event)
         {
             type = 'slider',
             minimum_value = 1,
-            maximum_value = 1e3,
+            maximum_value = 5e3,
             value = 1
         }
     )
-
     slider.style.width = 115
-    text_input.style.width = 45
+    text_input.style.width = 60
 
     local coinsleft = frame.add({type = 'flow'})
 
@@ -442,7 +434,7 @@ local function gui_opened(event)
     this.players[player.index].data.item_frame = pane
     this.players[player.index].data.coins_left = coinsleft
 
-    redraw_market_items(pane, player, search_text)
+    redraw_market_items(pane, player)
 end
 
 local function gui_click(event)
@@ -474,7 +466,7 @@ local function gui_click(event)
         if slider_value > 1 then
             data.slider.slider_value = slider_value - 1
             data.text_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player, data.search_text)
+            redraw_market_items(data.item_frame, player)
         end
         return
     elseif name == 'more' then
@@ -482,7 +474,7 @@ local function gui_click(event)
         if slider_value <= 1e3 then
             data.slider.slider_value = slider_value + 1
             data.text_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player, data.search_text)
+            redraw_market_items(data.item_frame, player)
         end
         return
     end
@@ -522,24 +514,22 @@ local function gui_click(event)
         end
         player.remove_item({name = item.value, count = cost})
 
-        game.print(
+        local message =
             shopkeeper ..
-                ' ' ..
-                    player.name ..
-                        ' has bought the clear threat modifier for ' ..
-                            cost .. ' coins. Threat level is reduced by 50%!',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+            ' ' ..
+                player.name ..
+                    ' has bought the clear threat modifier for ' .. cost .. ' coins.\nThreat level is reduced by 50%!'
+        Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
                 player.name ..
-                    ' has bought the clear threat modifier for ' .. cost .. ' coins. Threat level is reduced by 50%!'
+                    ' has bought the clear threat modifier for ' .. cost .. ' coins.\nThreat level is reduced by 50%!'
             }
         )
         this.threat_upgrades = this.threat_upgrades + item_count
         wdt.threat = wdt.threat / 2 * item_count
 
-        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_market_items(data.item_frame, player)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -547,19 +537,18 @@ local function gui_click(event)
     if name == 'locomotive_max_health' then
         player.remove_item({name = item.value, count = cost})
 
-        game.print(
+        local message =
             shopkeeper ..
-                ' ' ..
-                    player.name ..
-                        ' has bought the locomotive health modifier for ' ..
-                            cost .. ' coins. The train health is now buffed.',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+            ' ' ..
+                player.name ..
+                    ' has bought the locomotive health modifier for ' ..
+                        cost .. ' coins.\nThe train health is now buffed.'
+        Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
                 player.name ..
                     ' has bought the locomotive health modifier for ' ..
-                        cost .. ' coins. The train health is now buffed.'
+                        cost .. ' coins.\nThe train health is now buffed.'
             }
         )
         this.locomotive_max_health = this.locomotive_max_health + 2500 * item_count
@@ -570,7 +559,7 @@ local function gui_click(event)
         this.health_upgrades = this.health_upgrades + item_count
         rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
 
-        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_market_items(data.item_frame, player)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -578,18 +567,16 @@ local function gui_click(event)
     if name == 'locomotive_xp_aura' then
         player.remove_item({name = item.value, count = cost})
 
-        game.print(
+        local message =
             shopkeeper ..
-                ' ' ..
-                    player.name ..
-                        ' has bought the locomotive xp aura modifier for ' ..
-                            cost .. ' coins. The XP aura is now buffed.',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+            ' ' ..
+                player.name ..
+                    ' has bought the locomotive xp aura modifier for ' .. cost .. ' coins.\nThe XP aura is now buffed.'
+        Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
                 player.name ..
-                    ' has bought the locomotive xp aura modifier for ' .. cost .. ' coins. The XP aura is now buffed.'
+                    ' has bought the locomotive xp aura modifier for ' .. cost .. ' coins.\nThe XP aura is now buffed.'
             }
         )
         this.locomotive_xp_aura = this.locomotive_xp_aura + 5
@@ -609,7 +596,7 @@ local function gui_click(event)
             only_in_alt_mode = true
         }
 
-        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_market_items(data.item_frame, player)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -618,24 +605,23 @@ local function gui_click(event)
     if name == 'xp_points_boost' then
         player.remove_item({name = item.value, count = cost})
 
-        game.print(
+        local message =
             shopkeeper ..
-                ' ' ..
-                    player.name ..
-                        ' has bought the xp point modifier for ' .. cost .. ' coins. You now gain more XP points.',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+            ' ' ..
+                player.name ..
+                    ' has bought the xp point modifier for ' .. cost .. ' coins.\nYou now gain more XP points.'
+        Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
                 player.name ..
-                    ' has bought the xp point modifier for ' .. cost .. ' coins. You now gain more XP points.'
+                    ' has bought the xp point modifier for ' .. cost .. ' coins.\nYou now gain more XP points.'
             }
         )
         this.xp_points = this.xp_points + 0.5
         this.xp_points_upgrade = this.xp_points_upgrade + item_count
         this.train_upgrades = this.train_upgrades + item_count
 
-        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_market_items(data.item_frame, player)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -644,23 +630,21 @@ local function gui_click(event)
     if name == 'flamethrower_turrets' then
         player.remove_item({name = item.value, count = cost})
         if item_count >= 1 then
-            game.print(
-                shopkeeper .. ' ' .. player.name .. ' has bought a flamethrower-turret slot for ' .. cost .. ' coins.',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
+            local message =
+                shopkeeper .. ' ' .. player.name .. ' has bought a flamethrower-turret slot for ' .. cost .. ' coins.'
+            Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
                     player.name .. ' has bought a flamethrower-turret slot for ' .. cost .. ' coins.'
                 }
             )
         else
-            game.print(
+            local message =
                 shopkeeper ..
-                    ' ' ..
-                        player.name ..
-                            ' has bought ' .. item_count .. ' flamethrower-turret slots for ' .. cost .. ' coins.',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
+                ' ' ..
+                    player.name ..
+                        ' has bought ' .. item_count .. ' flamethrower-turret slots for ' .. cost .. ' coins.'
+            Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
                     player.name ..
@@ -671,7 +655,7 @@ local function gui_click(event)
         this.upgrades.flame_turret.limit = this.upgrades.flame_turret.limit + item_count
         this.upgrades.flame_turret.bought = this.upgrades.flame_turret.bought + item_count
 
-        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_market_items(data.item_frame, player)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -680,17 +664,14 @@ local function gui_click(event)
         player.remove_item({name = item.value, count = cost})
 
         if item_count >= 1 then
-            game.print(
-                shopkeeper .. ' ' .. player.name .. ' has bought a landmine slot for ' .. cost .. ' coins.',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
+            local message = shopkeeper .. ' ' .. player.name .. ' has bought a landmine slot for ' .. cost .. ' coins.'
+            Alert.alert_all_players(3, message)
         else
-            game.print(
+            local message =
                 shopkeeper ..
-                    ' ' .. player.name .. ' has bought ' .. item_count .. ' landmine slots for ' .. cost .. ' coins.',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
-            if cost > 5000 then
+                ' ' .. player.name .. ' has bought ' .. item_count .. ' landmine slots for ' .. cost .. ' coins.'
+            Alert.alert_all_players(3, message)
+            if cost >= 5000 then
                 Server.to_discord_bold(
                     table.concat {
                         player.name .. ' has bought ' .. item_count .. ' landmine slots for ' .. cost .. ' coins.'
@@ -702,7 +683,7 @@ local function gui_click(event)
         this.upgrades.landmine.limit = this.upgrades.landmine.limit + item_count
         this.upgrades.landmine.bought = this.upgrades.landmine.bought + item_count
 
-        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_market_items(data.item_frame, player)
         redraw_coins_left(data.coins_left, player)
         return
     end
@@ -717,7 +698,7 @@ local function gui_click(event)
                 player.insert({name = item.value, count = cost})
                 player.remove_item({name = name, count = inserted_count})
             end
-            redraw_market_items(data.item_frame, player, data.search_text)
+            redraw_market_items(data.item_frame, player)
             redraw_coins_left(data.coins_left, player)
         end
     end
