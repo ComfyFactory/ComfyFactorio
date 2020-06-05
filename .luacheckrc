@@ -48,7 +48,7 @@ local STD_BASE_CONTROL = 'lua52c+factorio+factorio_control+factorio_defines+fact
 --[Assume Factorio Control stage as default]--
 -------------------------------------------------------------------------------
 std = STD_CONTROL
-globals = {'print', '_DEBUG', '_CHEATS', '_DUMP_ENV', 'ServerCommands', 'Debug', '_LIFECYCLE', '_STAGE'} -- RedMew-specific globals
+globals = {'print', '_DEBUG', '_CHEATS', '_DUMP_ENV', 'ServerCommands', 'Debug', '_LIFECYCLE', '_STAGE'}
 max_line_length = LINE_LENGTH
 
 not_globals = NOT_GLOBALS
@@ -355,6 +355,7 @@ stds.factorio_control = {
                 "save_atlas",
                 "server_save",
                 "set_game_state",
+                "reset_time_played",
                 "show_message_dialog",
                 "table_to_json",
                 "take_screenshot",
