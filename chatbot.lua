@@ -200,7 +200,7 @@ local function on_console_command(event)
 
     local server_time = Server.get_current_time()
     if server_time then
-        server_time = format('(Server time: %s)', Timestamp.to_string(server_time))
+        server_time = format(' (Server time: %s)', Timestamp.to_string(server_time))
     else
         server_time = '" at tick: ' .. game.tick
     end
