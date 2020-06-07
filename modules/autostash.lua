@@ -357,7 +357,10 @@ local function auto_stash(player, event)
         end
     end
 
-    autostash.floating_text_y_offsets = nil
+    local c = autostash.floating_text_y_offsets
+    for k, _ in pairs(c) do
+        autostash.floating_text_y_offsets[k] = nil
+    end
 end
 
 local function create_gui_button(player)
