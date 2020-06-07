@@ -202,7 +202,7 @@ local function on_console_command(event)
     if server_time then
         server_time = format(' (Server time: %s)', Timestamp.to_string(server_time))
     else
-        server_time = '" at tick: ' .. game.tick
+        server_time = ' at tick: ' .. game.tick
     end
 
     if string.len(param) <= 0 then
@@ -211,7 +211,7 @@ local function on_console_command(event)
 
     if player then
         if param then
-            print(player.name .. ' ran: ' .. cmd .. ' "' .. param .. server_time)
+            print(player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time)
             return
         else
             print(player.name .. ' ran: ' .. cmd .. server_time)
@@ -219,7 +219,7 @@ local function on_console_command(event)
         end
     else
         if param then
-            print('ran: ' .. cmd .. ' "' .. param .. server_time)
+            print('ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time)
             return
         else
             print('ran: ' .. cmd .. server_time)
