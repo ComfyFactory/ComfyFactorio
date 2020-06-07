@@ -27,6 +27,7 @@ local math_abs = math.abs
 --local raise_event = script.raise_event
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]\n'
+local comfylatron = '[color=blue]Comfylatron:[/color]\n'
 
 local treasure_chest_messages = {
     "You notice an old crate within the rubble. It's filled with treasure!",
@@ -72,9 +73,16 @@ local function set_objective_health(final_damage_amount)
         return
     end
 
-    if this.locomotive_health <= 2000 then
+    if this.locomotive_health <= 5000 then
         if not this.poison_deployed then
-            Locomotive.enable_poison_defense()
+            for i = 1, 2, 1 do
+                Locomotive.enable_poison_defense()
+            end
+            local p = {
+                position = this.locomotive.position
+            }
+            local msg = comfylatron .. 'Train is taking heavy damage.\nDeploying defense mechanisms.'
+            Alert.alert_all_players_location(p, msg)
             this.poison_deployed = true
         end
     elseif this.locomotive_health >= this.locomotive_max_health then
@@ -656,7 +664,7 @@ function Public.loco_died()
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
     local msg
-    if not this.disable_reset then
+    if this.soft_reset then
         msg =
             mapkeeper ..
             defeated_messages[math.random(1, #defeated_messages)] ..

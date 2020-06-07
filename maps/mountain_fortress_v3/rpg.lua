@@ -1,20 +1,7 @@
---[[
-Character Experience Gain RPG by MewMew
-
-STRENGTH > character_inventory_slots_bonus , character_mining_speed_modifier
-
-MAGIC >	character_build_distance_bonus, character_item_drop_distance_bonus, character_reach_distance_bonus,
-                character_item_pickup_distance_bonus, character_loot_pickup_distance_bonus,
-
-DEXTERITY > character_running_speed_modifier, character_crafting_speed_modifier
-
-VITALITY > character_health_bonus
-
-Modified by Gerkiz *-*
-]]
 require 'player_modifiers'
 
 local Global = require 'utils.global'
+local Event = require 'utils.event'
 local Alert = require 'utils.alert'
 local Tabs = require 'comfy_panel.main'
 local P = require 'player_modifiers'
@@ -117,6 +104,12 @@ local enemy_types = {
     ['turret'] = true
 }
 
+local die_cause = {
+    ['ammo-turret'] = true,
+    ['electric-turret'] = true,
+    ['fluid-turret'] = true
+}
+
 local function validate_player(player)
     if not player then
         return false
@@ -207,6 +200,10 @@ end
 
 local function get_melee_modifier(player)
     return (rpg_t[player.index].strength - 10) * 0.10
+end
+
+local function get_heal_modifier(player)
+    return (rpg_t[player.index].vitality - 10) * 0.02
 end
 
 local function get_life_on_hit(player)
@@ -567,7 +564,8 @@ local function draw_gui(player, forced)
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'HEALTH\nBONUS', w1)
     value = '+ ' .. math_round((player.force.character_health_bonus + player.character_health_bonus))
-    add_gui_stat(tt, value, w2)
+    e = add_gui_stat(tt, value, w2)
+    e.tooltip = 'Health regen bonus: ' .. get_heal_modifier(player)
 
     add_separator(frame, 400)
     local t = frame.add({type = 'table', column_count = 14})
@@ -650,13 +648,14 @@ local function add_to_global_pool(amount)
     if not rpg_extra.global_pool then
         return
     end
+
     local fee = amount * 0.3
-    Public.debug_log('RPG - global_pool got : ' .. fee)
+
     rpg_extra.global_pool = rpg_extra.global_pool + fee
     return fee
 end
 
-local function global_pool()
+local function global_pool(players, count)
     if not rpg_extra.global_pool then
         return
     end
@@ -668,13 +667,12 @@ local function global_pool()
     if pool <= random_amount then
         return
     end
+
     if pool >= 20000 then
         pool = 20000
     end
-    local players_count = #game.connected_players
-    local players = game.connected_players
 
-    local share = pool / players_count
+    local share = pool / count
 
     Public.debug_log('RPG - Share per player:' .. share)
 
@@ -682,33 +680,24 @@ local function global_pool()
         local p = players[i]
         if p.afk_time < 5000 then
             if not level_limit_exceeded(p) then
-                p.create_local_flying_text {
-                    text = '+' .. math_floor(share) .. ' xp',
-                    position = p.position,
-                    color = xp_floating_text_color,
-                    time_to_live = 240,
-                    speed = 1
-                }
-                rpg_t[p.index].xp_since_last_floaty_text = 0
-                Public.gain_xp(p, share)
+                Public.gain_xp(p, share, false, true)
                 xp_effects(p)
             else
-                if p.afk_time < 5000 then
-                    share = share / 10
-                    rpg_extra.leftover_pool = rpg_extra.leftover_pool + share
-                    Public.debug_log('RPG - player level capped:' .. share)
-                end
+                share = share / 10
+                rpg_extra.leftover_pool = rpg_extra.leftover_pool + share
+                Public.debug_log('RPG - player capped: ' .. p.name .. '. Amount to pool:' .. share)
             end
         else
             local message = teller_global_pool .. p.name .. ' received nothing. Reason: AFK'
             Alert.alert_player_warning(p, 10, message)
+            share = share / 10
+            rpg_extra.leftover_pool = rpg_extra.leftover_pool + share
+            Public.debug_log('RPG - player AFK: ' .. p.name .. '. Amount to pool:' .. share)
         end
     end
-    if rpg_extra.leftover_pool >= 0 then
-        add_to_global_pool(rpg_extra.leftover_pool)
-    else
-        rpg_extra.global_pool = 0
-    end
+
+    rpg_extra.global_pool = rpg_extra.leftover_pool or 0
+
     return
 end
 
@@ -875,7 +864,7 @@ local function on_entity_died(event)
     if rpg_xp_yield['big-biter'] <= 16 then
         local wd = WD.get_table()
         local wave_number = wd.wave_number
-        if wave_number >= 500 then
+        if wave_number >= 1000 then
             rpg_xp_yield['big-biter'] = 16
             rpg_xp_yield['behemoth-biter'] = 64
         end
@@ -884,12 +873,37 @@ local function on_entity_died(event)
     if not event.cause then
         return
     end
+
     if not event.cause.valid then
         return
     end
+
+    local type = event.cause.type
+    if not type then
+        goto continue
+    end
+
+    if event.cause.force.index == 1 then
+        if die_cause[type] then
+            if rpg_xp_yield[event.entity.name] then
+                local amount = rpg_xp_yield[event.entity.name]
+                amount = amount / 5
+                if rpg_extra.turret_kills_to_global_pool then
+                    add_to_global_pool(amount)
+                end
+            else
+                add_to_global_pool(0.5)
+            end
+            return
+        end
+    end
+
+    ::continue::
+
     if event.cause.force.index == event.entity.force.index then
         return
     end
+
     if not get_cause_player[event.cause.type] then
         return
     end
@@ -909,7 +923,8 @@ local function on_entity_died(event)
                 if rpg_xp_yield[event.entity.name] then
                     local amount = rpg_xp_yield[event.entity.name] * global.biter_health_boost
                     if rpg_extra.turret_kills_to_global_pool then
-                        add_to_global_pool(amount)
+                        local inserted = add_to_global_pool(amount)
+                        Public.gain_xp(player, inserted, true)
                     else
                         Public.gain_xp(player, amount)
                     end
@@ -926,12 +941,28 @@ local function on_entity_died(event)
         if rpg_xp_yield[event.entity.name] then
             local amount = rpg_xp_yield[event.entity.name]
             if rpg_extra.turret_kills_to_global_pool then
-                add_to_global_pool(amount)
+                local inserted = add_to_global_pool(amount)
+                Public.gain_xp(player, inserted, true)
             else
                 Public.gain_xp(player, amount)
             end
         else
             Public.gain_xp(player, 0.5)
+        end
+    end
+end
+
+local function on_healed_player(players)
+    for i = 1, #players do
+        local player = players[i]
+        local heal_per_tick = get_heal_modifier(player)
+        if heal_per_tick <= 0 then
+            return
+        end
+        if player and player.valid then
+            if player.character and player.character.valid then
+                player.character.health = player.character.health + heal_per_tick
+            end
         end
     end
 end
@@ -1225,6 +1256,11 @@ local function on_player_crafted_item(event)
     if not player.valid then
         return
     end
+
+    if player.cheat_mode then
+        return
+    end
+
     local amount = 0.30 * math_random(1, 2)
 
     Public.gain_xp(player, event.recipe.energy * amount)
@@ -1259,7 +1295,17 @@ local function on_player_joined_game(event)
 end
 
 local function tick()
-    global_pool()
+    local ticker = game.tick
+    local count = #game.connected_players
+    local players = game.connected_players
+
+    if ticker % nth_tick == 0 then
+        global_pool(players, count)
+    end
+
+    if ticker % 15 == 0 then
+        on_healed_player(players)
+    end
 end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.
@@ -1352,7 +1398,7 @@ function Public.get_magicka(player)
     return (rpg_t[player.index].magicka - 10) * 0.10
 end
 
-function Public.gain_xp(player, amount)
+function Public.gain_xp(player, amount, added_to_pool, text)
     if level_limit_exceeded(player) then
         add_to_global_pool(amount)
         if not rpg_t[player.index].capped then
@@ -1362,36 +1408,58 @@ function Public.gain_xp(player, amount)
         end
         return
     end
+
+    local text_to_draw
+
     if rpg_t[player.index].capped then
         rpg_t[player.index].capped = false
     end
-    Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
-    local fee = add_to_global_pool(amount)
-    Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
-    amount = math_round(amount, 3) - fee
-    Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
+
+    if not added_to_pool then
+        Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
+        local fee = add_to_global_pool(amount)
+        Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
+        amount = math_round(amount, 3) - fee
+        Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
+    else
+        Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
+    end
+
     rpg_t[player.index].xp = rpg_t[player.index].xp + amount
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
+
     if player.gui.left.rpg then
         draw_gui(player, false)
     end
+
     if not experience_levels[rpg_t[player.index].level + 1] then
         return
     end
+
     if rpg_t[player.index].xp >= experience_levels[rpg_t[player.index].level + 1] then
         level_up(player)
-        return
     end
+
     if rpg_t[player.index].last_floaty_text > game.tick then
-        return
+        if not text then
+            return
+        end
     end
+
+    if text then
+        text_to_draw = '+' .. math_floor(amount) .. ' xp'
+    else
+        text_to_draw = '+' .. math_floor(rpg_t[player.index].xp_since_last_floaty_text) .. ' xp'
+    end
+
     player.create_local_flying_text {
-        text = '+' .. math_floor(rpg_t[player.index].xp_since_last_floaty_text) .. ' xp',
+        text = text_to_draw,
         position = player.position,
         color = xp_floating_text_color,
-        time_to_live = 120,
+        time_to_live = 340,
         speed = 2
     }
+
     rpg_t[player.index].xp_since_last_floaty_text = 0
     rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
 end
@@ -1412,6 +1480,13 @@ function Public.toggle_debug()
     end
 end
 
+function Public.distribute_pool()
+    local count = #game.connected_players
+    local players = game.connected_players
+    global_pool(players, count)
+    print('Distributed the global XP pool')
+end
+
 function Public.debug_log(str)
     if not rpg_extra.debug then
         return
@@ -1419,17 +1494,16 @@ function Public.debug_log(str)
     print(str)
 end
 
-local event = require 'utils.event'
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
-event.add(defines.events.on_player_respawned, on_player_respawned)
-event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
-event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
-event.on_nth_tick(nth_tick, tick)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
+Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
+Event.on_nth_tick(10, tick)
 
 return Public

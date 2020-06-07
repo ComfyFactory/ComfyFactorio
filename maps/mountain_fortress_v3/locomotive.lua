@@ -16,7 +16,6 @@ local cos = math.cos
 local sin = math.sin
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
-local comfylatron = '[color=blue]Comfylatron:[/color]\n'
 
 local space = {
     minimal_height = 10,
@@ -1188,11 +1187,6 @@ function Public.enable_poison_defense()
         local random_angles = {rad(random(359))}
         create_poison_cloud({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])})
     end
-    local p = {
-        position = pos
-    }
-    local msg = comfylatron .. 'Train is taking heavy damage.\nDeploying defense mechanisms.'
-    Alert.alert_all_players_location(p, msg)
 end
 
 Public.place_market = place_market

@@ -12,6 +12,7 @@ require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.mineable_wreckage_yields_scrap'
 
+local Autostash = require 'modules.autostash'
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Map_score = require 'comfy_panel.map_score'
 local Server = require 'utils.server'
@@ -206,6 +207,8 @@ function Public.reset_map()
 
     this.active_surface_index = CS.create_surface()
 
+    Autostash.insert_into_furnace(true)
+
     Poll.reset()
     ICW.reset()
     game.reset_time_played()
@@ -324,11 +327,10 @@ local on_player_joined_game = function(event)
             data = {}
         }
         local message = comfy .. 'Greetings, ' .. player.name .. '!\nPlease read the map info.'
-        Alert.alert_player(player, 10, message)
+        Alert.alert_player(player, 15, message)
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
         end
-    --RPG.gain_xp(player, 515)
     end
 
     if player.surface.index ~= this.active_surface_index then
@@ -511,16 +513,29 @@ local has_the_game_ended = function()
     local this = WPT.get()
     if this.game_reset_tick then
         if this.game_reset_tick < game.tick then
-            if not this.disable_reset then
+            if this.soft_reset then
                 this.game_reset_tick = nil
                 Public.reset_map()
-            else
-                if not this.game_will_not_reset then
-                    game.print('Auto reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
-                    local message = 'Auto reset is disabled. Server is shutting down!'
+                return
+            end
+            if this.restart then
+                if not this.announced_message then
+                    game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Soft-reset is disabled. Server will restart!'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.start_scenario('Mountain_Fortress_v3')
+                    this.announced_message = true
+                    return
+                end
+            end
+            if this.shutdown then
+                if not this.announced_message then
+                    game.print('Soft-reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Soft-reset is disabled. Server is shutting down!'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
                     Server.stop_scenario()
-                    this.game_will_not_reset = true
+                    this.announced_message = true
+                    return
                 end
             end
         end

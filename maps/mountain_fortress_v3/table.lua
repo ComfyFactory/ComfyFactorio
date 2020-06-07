@@ -3,7 +3,6 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 
 local this = {
-    disable_reset = false,
     players = {},
     offline_players = {},
     hidden_dimension = {
@@ -28,10 +27,16 @@ Global.register(
 )
 
 function Public.reset_table()
+    -- @start
+    -- these 3 are in case of stop/start/reloading the instance.
+    this.soft_reset = true
+    this.restart = false
+    this.shutdown = false
+    this.announced_message = false
+    -- @end
     this.icw_locomotive = nil
     this.game_lost = false
     this.debug = false
-    this.game_will_not_reset = false
     this.fullness_enabled = true
     this.fullness_limit = 0.95
     this.locomotive_health = 10000
