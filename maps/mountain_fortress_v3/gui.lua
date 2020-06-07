@@ -133,38 +133,51 @@ local function on_gui_click(event)
 
     if name == main_button_name then
         if player.surface ~= locomotive.surface then
-            local s = player.gui.left.icw_map
-            if s and s.visible then
-                player.gui.left.icw_map.visible = false
+            local minimap = player.gui.left.icw_map
+            if minimap and minimap.visible then
+                minimap.visible = false
                 return
-            elseif s and not s.visible then
-                player.gui.left.icw_map.visible = true
+            elseif minimap and not minimap.visible then
+                minimap.visible = true
                 return
             end
             return
         end
         if player.gui.top[main_frame_name] then
-            local s = player.gui.top[main_frame_name]
-            if s and s.visible then
-                if player.gui.top['wave_defense'] then
-                    player.gui.top['wave_defense'].visible = false
+            local info = player.gui.top[main_frame_name]
+            local wd = player.gui.top['wave_defense']
+            local diff = player.gui.top['difficulty_gui']
+            if info and info.visible then
+                if wd then
+                    wd.visible = false
                 end
-                if player.gui.top['difficulty_gui'] then
-                    player.gui.top['difficulty_gui'].visible = false
+                if diff then
+                    diff.visible = false
                 end
-                player.gui.top[main_frame_name].visible = false
+                info.visible = false
                 return
-            elseif s and not s.visible then
+            elseif wd and not wd.visible then
                 for _, child in pairs(player.gui.left.children) do
                     child.destroy()
                 end
-                if player.gui.top['wave_defense'] then
-                    player.gui.top['wave_defense'].visible = true
+                if wd then
+                    wd.visible = true
                 end
-                if player.gui.top['difficulty_gui'] then
-                    player.gui.top['difficulty_gui'].visible = true
+                if diff then
+                    diff.visible = true
                 end
-                player.gui.top[main_frame_name].visible = true
+                return
+            elseif info and not info.visible then
+                for _, child in pairs(player.gui.left.children) do
+                    child.destroy()
+                end
+                if wd then
+                    wd.visible = true
+                end
+                if diff then
+                    diff.visible = true
+                end
+                info.visible = true
                 return
             end
         else
@@ -172,14 +185,6 @@ local function on_gui_click(event)
                 child.destroy()
             end
             create_main_frame(player)
-        end
-    elseif name ~= main_button_name then
-        if player.gui.top[main_frame_name] then
-            local s = player.gui.top[main_frame_name]
-            if s and s.visible then
-                player.gui.top[main_frame_name].visible = false
-                return
-            end
         end
     end
 end
@@ -189,51 +194,54 @@ local function on_player_changed_surface(event)
         return
     end
 
-    local locomotive = WPT.get('locomotive')
+    local main = WPT.get('locomotive')
     local icw_locomotive = WPT.get('icw_locomotive')
-    local loco_surface = icw_locomotive.surface
+    local wagon_surface = icw_locomotive.surface
+    local info = player.gui.top[main_button_name]
+    local wd = player.gui.top['wave_defense']
+    local diff = player.gui.top['difficulty_gui']
+    local frame = player.gui.top[main_frame_name]
 
-    if player.gui.top[main_button_name] then
-        player.gui.top[main_button_name].tooltip = 'Shows statistics!'
-        player.gui.top[main_button_name].sprite = 'item/dummy-steel-axe'
-    end
-
-    if not locomotive then
-        return
-    end
-    if not locomotive.valid then
-        return
+    if info then
+        info.tooltip = 'Shows statistics!'
+        info.sprite = 'item/dummy-steel-axe'
     end
 
-    if not loco_surface then
+    if not main then
         return
     end
-    if not loco_surface.valid then
+    if not main.valid then
         return
     end
 
-    if player.surface == locomotive.surface then
-        local s = player.gui.left.icw_map
-        if s and s.visible then
-            player.gui.left.icw_map.visible = false
+    if not wagon_surface then
+        return
+    end
+    if not wagon_surface.valid then
+        return
+    end
+
+    if player.surface == main.surface then
+        local minimap = player.gui.left.icw_map
+        if minimap and minimap.visible then
+            minimap.visible = false
         end
-        player.gui.top[main_button_name].tooltip = 'Shows statistics!'
-        player.gui.top[main_button_name].sprite = 'item/dummy-steel-axe'
-    elseif player.surface == loco_surface then
-        if player.gui.top['wave_defense'] then
-            player.gui.top['wave_defense'].visible = false
+        info.tooltip = 'Shows statistics!'
+        info.sprite = 'item/dummy-steel-axe'
+    elseif player.surface == wagon_surface then
+        if wd then
+            wd.visible = false
         end
-        if player.gui.top['difficulty_gui'] then
-            player.gui.top['difficulty_gui'].visible = false
+        if diff then
+            diff.visible = false
         end
-        if player.gui.top[main_button_name] then
-            player.gui.top[main_button_name].tooltip = 'Hide locomotive minimap!'
-            player.gui.top[main_button_name].sprite = 'utility/map'
+        if info then
+            info.tooltip = 'Hide locomotive minimap!'
+            info.sprite = 'utility/map'
         end
         if player.gui.top[main_frame_name] then
-            local vis = player.gui.top[main_frame_name].visible
-            if vis then
-                player.gui.top[main_frame_name].visible = false
+            if frame then
+                frame.visible = false
                 return
             end
         end
@@ -241,7 +249,7 @@ local function on_player_changed_surface(event)
 end
 
 function Public.update_gui(player)
-    local rpg = RPG.get_table()
+    local rpg_extra = RPG.get_extra_table()
     local this = WPT.get()
 
     if not player.gui.top[main_frame_name] then
@@ -253,12 +261,13 @@ function Public.update_gui(player)
     end
     local gui = player.gui.top[main_frame_name]
 
-    if rpg.global_pool == 0 then
+    if rpg_extra.global_pool == 0 then
         gui.global_pool.caption = 'XP: 0'
         gui.global_pool.tooltip = 'Dig, handcraft or run to increase the pool!'
-    elseif rpg.global_pool > 0 then
-        gui.global_pool.caption = 'XP: ' .. format_number(floor(rpg.global_pool), true)
-        gui.global_pool.tooltip = 'Amount of XP that is stored inside the global xp pool.'
+    elseif rpg_extra.global_pool >= 0 then
+        gui.global_pool.caption = 'XP: ' .. format_number(floor(rpg_extra.global_pool), true)
+        gui.global_pool.tooltip =
+            'Amount of XP that is stored inside the global xp pool.\nRaw Value: ' .. floor(rpg_extra.global_pool)
     end
 
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(this.mined_scrap, true)

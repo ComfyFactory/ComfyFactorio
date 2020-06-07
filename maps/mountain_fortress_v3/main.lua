@@ -1,3 +1,17 @@
+require 'maps.mountain_fortress_v3.generate'
+require 'maps.mountain_fortress_v3.commands'
+require 'maps.mountain_fortress_v3.breached_wall'
+
+require 'modules.dynamic_landfill'
+require 'modules.shotgun_buff'
+require 'modules.rocks_heal_over_time'
+require 'modules.no_deconstruction_of_neutral_entities'
+require 'modules.rocks_yield_ore_veins'
+require 'modules.spawners_contain_biters'
+require 'modules.biters_yield_coins'
+require 'modules.wave_defense.main'
+require 'modules.mineable_wreckage_yields_scrap'
+
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Map_score = require 'comfy_panel.map_score'
 local Server = require 'utils.server'
@@ -19,29 +33,15 @@ local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
-local Alert = require 'maps.mountain_fortress_v3.alert'
+local Alert = require 'utils.alert'
 --local HD = require 'modules.hidden_dimension.main'
-
-require 'maps.mountain_fortress_v3.generate'
-require 'maps.mountain_fortress_v3.commands'
-require 'maps.mountain_fortress_v3.breached_wall'
-
-require 'modules.dynamic_landfill'
-require 'modules.shotgun_buff'
-require 'modules.rocks_heal_over_time'
-require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.rocks_yield_ore_veins'
-require 'modules.spawners_contain_biters'
-require 'modules.biters_yield_coins'
-require 'modules.wave_defense.main'
-require 'modules.mineable_wreckage_yields_scrap'
 
 local Public = {}
 -- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
 
-local function disable_recipes()
+local disable_recipes = function()
     local force = game.forces.player
     force.recipes['cargo-wagon'].enabled = false
     force.recipes['fluid-wagon'].enabled = false
@@ -63,7 +63,7 @@ local collapse_kill = {
     enabled = true
 }
 
-local function disable_tech()
+local disable_tech = function()
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['railway'].researched = true
@@ -71,7 +71,7 @@ local function disable_tech()
     disable_recipes()
 end
 
-local function set_difficulty()
+local set_difficulty = function()
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
     local player_count = #game.connected_players
@@ -97,7 +97,7 @@ local function set_difficulty()
     end
 end
 
-local function render_direction(surface)
+local render_direction = function(surface)
     local counter = WPT.get('soft_reset_counter')
     if counter then
         rendering.draw_text {
@@ -193,7 +193,6 @@ local function render_direction(surface)
 end
 
 function Public.reset_map()
-    local Settings = CS.get()
     local Diff = Difficulty.get()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
@@ -205,11 +204,7 @@ function Public.reset_map()
         end
     end
 
-    if not this.active_surface_index then
-        this.active_surface_index = Settings.active_surface_index
-    else
-        this.active_surface_index = CS.create_surface()
-    end
+    this.active_surface_index = CS.create_surface()
 
     Poll.reset()
     ICW.reset()
@@ -265,21 +260,22 @@ function Public.reset_map()
     wave_defense_table.nest_building_density = 32
     wave_defense_table.game_lost = false
     wave_defense_table.spawn_position = {x = 0, y = 100}
+    WD.alert_boss_wave(true)
+    WD.clear_corpses(true)
 
     set_difficulty()
 
     if not surface.is_chunk_generated({-20, 22}) then
         surface.request_to_generate_chunks({-20, 22}, 0.1)
         surface.force_generate_chunk_requests()
-        surface.set_chunk_generated_status({-20, 22}, defines.chunk_generated_status.custom_tiles)
     end
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
     Task.start_queue()
-    Task.set_queue_speed(4)
+    Task.set_queue_speed(32)
 
-    this.chunk_load_tick = game.tick + 800
+    this.chunk_load_tick = game.tick + 1200
 
     --HD.enable_auto_init = false
 
@@ -290,7 +286,7 @@ function Public.reset_map()
     --raise_event(HD.events.reset_game, {})
 end
 
-local function on_player_changed_position(event)
+local on_player_changed_position = function(event)
     local this = WPT.get()
     local player = game.players[event.player_index]
     local map_name = 'mountain_fortress_v3'
@@ -315,10 +311,11 @@ local function on_player_changed_position(event)
     end
 end
 
-local function on_player_joined_game(event)
+local on_player_joined_game = function(event)
     local this = WPT.get()
     local player = game.players[event.player_index]
     local surface = game.surfaces[this.active_surface_index]
+    local comfy = '[color=blue]Comfylatron:[/color] \n'
 
     set_difficulty()
 
@@ -326,7 +323,7 @@ local function on_player_joined_game(event)
         this.players[player.index] = {
             data = {}
         }
-        local message = 'Greetings, ' .. player.name .. '!\nPlease read the map info.'
+        local message = comfy .. 'Greetings, ' .. player.name .. '!\nPlease read the map info.'
         Alert.alert_player(player, 10, message)
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
@@ -357,11 +354,11 @@ local function on_player_joined_game(event)
     end
 end
 
-local function on_player_left_game()
+local on_player_left_game = function()
     set_difficulty()
 end
 
-local function on_pre_player_left_game(event)
+local on_pre_player_left_game = function(event)
     local this = WPT.get()
     local player = game.players[event.player_index]
     local tick
@@ -379,7 +376,7 @@ local function on_pre_player_left_game(event)
     end
 end
 
-local function remove_offline_players()
+local remove_offline_players = function()
     local this = WPT.get()
     if not this.offline_players_enabled then
         if game.tick < 500 then
@@ -474,7 +471,7 @@ local function remove_offline_players()
     end
 end
 
-local function on_research_finished(event)
+local on_research_finished = function(event)
     disable_recipes()
     local research = event.research
     local this = WPT.get()
@@ -503,14 +500,14 @@ local function on_research_finished(event)
     end
 end
 
-local function is_locomotive_valid()
+local is_locomotive_valid = function()
     local locomotive = WPT.get('locomotive')
     if not locomotive.valid then
         Entities.loco_died()
     end
 end
 
-local function has_the_game_ended()
+local has_the_game_ended = function()
     local this = WPT.get()
     if this.game_reset_tick then
         if this.game_reset_tick < game.tick then
@@ -531,12 +528,12 @@ local function has_the_game_ended()
     end
 end
 
-local function chunk_load()
+local chunk_load = function()
     local chunk_load_tick = WPT.get('chunk_load_tick')
     if chunk_load_tick then
         if chunk_load_tick < game.tick then
             WPT.get().chunk_load_tick = nil
-            Task.set_queue_speed(0.5)
+            Task.set_queue_speed(1)
         end
     end
 end

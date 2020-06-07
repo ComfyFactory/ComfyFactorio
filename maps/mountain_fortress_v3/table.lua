@@ -1,4 +1,4 @@
--- on table to rule them all!
+-- one table to rule them all!
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
@@ -51,6 +51,7 @@ function Public.reset_table()
     this.locomotive_xp_aura = 40
     this.xp_points = 0
     this.xp_points_upgrade = 0
+    this.poison_deployed = false
     this.upgrades = {
         showed_text = false,
         landmine = {
@@ -73,7 +74,6 @@ function Public.reset_table()
         this.hidden_dimension.logistic_research_level = 0
     end
     this.health_upgrades = 0
-    this.threat_upgrades = 0
     this.breached_wall = 1
     this.entity_limits = {}
     this.offline_players_enabled = false

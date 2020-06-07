@@ -26,17 +26,6 @@ local function addStyle(guiIn, styleIn)
     end
 end
 
-local function build_prototype_data(item_name)
-    local localised_name
-    for name, prototype in pairs(game.item_prototypes) do
-        if item_name == name then
-            localised_name = prototype.localised_name
-        end
-    end
-
-    return localised_name
-end
-
 local function adjustSpace(guiIn)
     addStyle(guiIn.add {type = 'line', direction = 'horizontal'}, space)
 end
@@ -83,7 +72,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
     gui.clear()
 
     local items_table = gui.add({type = 'table', column_count = 11})
-    local prototype
+    local types = game.item_prototypes
 
     local mod_gui = this.gui[source.index].inventory_gui
     mod_gui.caption = 'Inventory of ' .. target.name
@@ -92,8 +81,6 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
         local flow = items_table.add({type = 'flow'})
         flow.style.vertical_align = 'bottom'
 
-        prototype = build_prototype_data(name)
-
         local button =
             flow.add(
             {
@@ -101,35 +88,31 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                 sprite = 'item/' .. name,
                 number = opts,
                 name = name,
-                tooltip = prototype,
+                tooltip = types[name].localised_name,
                 style = 'slot_button'
             }
         )
         button.enabled = false
 
         if caption == 'Armor' then
-            if not target.get_inventory(5)[1].grid then
-                return
-            end
-            local p_armor = target.get_inventory(5)[1].grid.get_contents()
-            for k, v in pairs(p_armor) do
-                prototype = build_prototype_data(k)
-                local armor_gui =
-                    flow.add(
-                    {
-                        type = 'sprite-button',
-                        sprite = 'item/' .. k,
-                        number = v,
-                        name = k,
-                        tooltip = prototype,
-                        style = 'slot_button'
-                    }
-                )
-                armor_gui.enabled = false
+            if target.get_inventory(5)[1].grid then
+                local p_armor = target.get_inventory(5)[1].grid.get_contents()
+                for k, v in pairs(p_armor) do
+                    local armor_gui =
+                        flow.add(
+                        {
+                            type = 'sprite-button',
+                            sprite = 'item/' .. k,
+                            number = v,
+                            name = k,
+                            tooltip = types[name].localised_name,
+                            style = 'slot_button'
+                        }
+                    )
+                    armor_gui.enabled = false
+                end
             end
         end
-
-        ::continue::
     end
 end
 
@@ -170,6 +153,7 @@ local function open_inventory(source, target)
     local menu_frame = mod_gui.inventory_gui
     if menu_frame then
         menu_frame.destroy()
+        return
     end
 
     local frame =
@@ -194,16 +178,24 @@ local function open_inventory(source, target)
     this.data[source.index].frame = frame
     this.data[source.index].player_opened = target
 
+    local main = target.get_main_inventory().get_contents()
+    local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
+    local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
+    local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()
+    local trash = target.get_inventory(defines.inventory.character_trash).get_contents()
+
     local types = {
-        ['Main'] = target.get_main_inventory().get_contents(),
-        ['Armor'] = target.get_inventory(defines.inventory.character_armor).get_contents(),
-        ['Guns'] = target.get_inventory(defines.inventory.character_guns).get_contents(),
-        ['Ammo'] = target.get_inventory(defines.inventory.character_ammo).get_contents(),
-        ['Trash'] = target.get_inventory(defines.inventory.character_trash).get_contents()
+        ['Main'] = main,
+        ['Armor'] = armor,
+        ['Guns'] = guns,
+        ['Ammo'] = ammo,
+        ['Trash'] = trash
     }
 
     for k, v in pairs(types) do
-        add_inventory(panel, source, target, k, v)
+        if v ~= nil then
+            add_inventory(panel, source, target, k, v)
+        end
     end
 end
 

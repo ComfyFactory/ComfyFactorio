@@ -2,17 +2,21 @@ local Event = require 'utils.event'
 --local Power = require 'maps.mountain_fortress_v3.power'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local Difficulty = require 'modules.difficulty_vote'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
 local Server = require 'utils.server'
-local Alert = require 'maps.mountain_fortress_v3.alert'
-local WD = require 'modules.wave_defense.table'
+local Alert = require 'utils.alert'
 local format_number = require 'util'.format_number
 
 local Public = {}
 local random = math.random
+local rad = math.rad
 local concat = table.concat
+local cos = math.cos
+local sin = math.sin
 
-local shopkeeper = '[color=blue]Shopkeeper:[/color]'
+local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
+local comfylatron = '[color=blue]Comfylatron:[/color]\n'
 
 local space = {
     minimal_height = 10,
@@ -179,6 +183,56 @@ local function validate_index()
     if not loco_surface.valid then
         WPT.get().loco_surface = locomotive_surface
     end
+end
+
+local function create_poison_cloud(position)
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+
+    local random_angles = {
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359))
+    }
+
+    surface.create_entity({name = 'poison-cloud', position = {x = position.x, y = position.y}})
+    surface.create_entity(
+        {
+            name = 'poison-cloud',
+            position = {
+                x = position.x + 12 * cos(random_angles[1]),
+                y = position.y + 12 * sin(random_angles[1])
+            }
+        }
+    )
+    surface.create_entity(
+        {
+            name = 'poison-cloud',
+            position = {
+                x = position.x + 12 * cos(random_angles[2]),
+                y = position.y + 12 * sin(random_angles[2])
+            }
+        }
+    )
+    surface.create_entity(
+        {
+            name = 'poison-cloud',
+            position = {
+                x = position.x + 12 * cos(random_angles[3]),
+                y = position.y + 12 * sin(random_angles[3])
+            }
+        }
+    )
+    surface.create_entity(
+        {
+            name = 'poison-cloud',
+            position = {
+                x = position.x + 12 * cos(random_angles[4]),
+                y = position.y + 12 * sin(random_angles[4])
+            }
+        }
+    )
 end
 
 local function close_market_gui(player)
@@ -439,7 +493,6 @@ end
 
 local function gui_click(event)
     local this = WPT.get()
-    local wdt = WD.get_table()
 
     local element = event.element
     local player = game.players[event.player_index]
@@ -505,50 +558,17 @@ local function gui_click(event)
     local cost = (item.price * slider_value)
     local item_count = item.stack * slider_value
 
-    if name == 'clear_threat_level' then
-        if wdt.threat <= 10000 then
-            return player.print(
-                shopkeeper .. ' ' .. player.name .. ', threat is already low!',
-                {r = 0.98, g = 0.66, b = 0.22}
-            )
-        end
-        player.remove_item({name = item.value, count = cost})
-
-        local message =
-            shopkeeper ..
-            ' ' ..
-                player.name ..
-                    ' has bought the clear threat modifier for ' .. cost .. ' coins.\nThreat level is reduced by 50%!'
-        Alert.alert_all_players(5, message)
-        Server.to_discord_bold(
-            table.concat {
-                player.name ..
-                    ' has bought the clear threat modifier for ' .. cost .. ' coins.\nThreat level is reduced by 50%!'
-            }
-        )
-        this.threat_upgrades = this.threat_upgrades + item_count
-        wdt.threat = wdt.threat / 2 * item_count
-
-        redraw_market_items(data.item_frame, player)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
     if name == 'locomotive_max_health' then
         player.remove_item({name = item.value, count = cost})
 
         local message =
             shopkeeper ..
-            ' ' ..
-                player.name ..
-                    ' has bought the locomotive health modifier for ' ..
-                        cost .. ' coins.\nThe train health is now buffed.'
+            player.name .. ' has bought the locomotive health modifier for ' .. format_number(cost, true) .. ' coins.'
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
                 player.name ..
-                    ' has bought the locomotive health modifier for ' ..
-                        cost .. ' coins.\nThe train health is now buffed.'
+                    ' has bought the locomotive health modifier for ' .. format_number(cost, true) .. ' coins.'
             }
         )
         this.locomotive_max_health = this.locomotive_max_health + 2500 * item_count
@@ -569,14 +589,12 @@ local function gui_click(event)
 
         local message =
             shopkeeper ..
-            ' ' ..
-                player.name ..
-                    ' has bought the locomotive xp aura modifier for ' .. cost .. ' coins.\nThe XP aura is now buffed.'
+            player.name .. ' has bought the locomotive xp aura modifier for ' .. format_number(cost, true) .. ' coins.'
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
                 player.name ..
-                    ' has bought the locomotive xp aura modifier for ' .. cost .. ' coins.\nThe XP aura is now buffed.'
+                    ' has bought the locomotive xp aura modifier for ' .. format_number(cost, true) .. ' coins.'
             }
         )
         this.locomotive_xp_aura = this.locomotive_xp_aura + 5
@@ -607,14 +625,11 @@ local function gui_click(event)
 
         local message =
             shopkeeper ..
-            ' ' ..
-                player.name ..
-                    ' has bought the xp point modifier for ' .. cost .. ' coins.\nYou now gain more XP points.'
+            player.name .. ' has bought the XP points modifier for ' .. format_number(cost, true) .. ' coins.'
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name ..
-                    ' has bought the xp point modifier for ' .. cost .. ' coins.\nYou now gain more XP points.'
+                player.name .. ' has bought the XP points modifier for ' .. format_number(cost) .. ' coins.'
             }
         )
         this.xp_points = this.xp_points + 0.5
@@ -631,24 +646,27 @@ local function gui_click(event)
         player.remove_item({name = item.value, count = cost})
         if item_count >= 1 then
             local message =
-                shopkeeper .. ' ' .. player.name .. ' has bought a flamethrower-turret slot for ' .. cost .. ' coins.'
+                shopkeeper ..
+                player.name .. ' has bought a flamethrower-turret slot for ' .. format_number(cost, true) .. ' coins.'
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
-                    player.name .. ' has bought a flamethrower-turret slot for ' .. cost .. ' coins.'
+                    player.name ..
+                        ' has bought a flamethrower-turret slot for ' .. format_number(cost, true) .. ' coins.'
                 }
             )
         else
             local message =
                 shopkeeper ..
-                ' ' ..
-                    player.name ..
-                        ' has bought ' .. item_count .. ' flamethrower-turret slots for ' .. cost .. ' coins.'
+                player.name ..
+                    ' has bought ' ..
+                        item_count .. ' flamethrower-turret slots for ' .. format_number(cost, true) .. ' coins.'
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
                     player.name ..
-                        ' has bought ' .. item_count .. ' flamethrower-turret slots for ' .. cost .. ' coins.'
+                        ' has bought ' ..
+                            item_count .. ' flamethrower-turret slots for ' .. format_number(cost, true) .. ' coins.'
                 }
             )
         end
@@ -663,18 +681,18 @@ local function gui_click(event)
     if name == 'land_mine' then
         player.remove_item({name = item.value, count = cost})
 
-        if item_count >= 1 then
-            local message = shopkeeper .. ' ' .. player.name .. ' has bought a landmine slot for ' .. cost .. ' coins.'
-            Alert.alert_all_players(3, message)
-        else
+        if item_count >= 1 and this.upgrades.landmine.bought % 10 == 0 then
             local message =
                 shopkeeper ..
-                ' ' .. player.name .. ' has bought ' .. item_count .. ' landmine slots for ' .. cost .. ' coins.'
+                player.name .. ' has bought a landmine slot for ' .. format_number(cost, true) .. ' coins.'
             Alert.alert_all_players(3, message)
-            if cost >= 5000 then
+
+            if cost >= 1000 then
                 Server.to_discord_bold(
                     table.concat {
-                        player.name .. ' has bought ' .. item_count .. ' landmine slots for ' .. cost .. ' coins.'
+                        player.name ..
+                            ' has bought ' ..
+                                item_count .. ' landmine slots for ' .. format_number(cost, true) .. ' coins.'
                     }
                 )
             end
@@ -682,6 +700,21 @@ local function gui_click(event)
 
         this.upgrades.landmine.limit = this.upgrades.landmine.limit + item_count
         this.upgrades.landmine.bought = this.upgrades.landmine.bought + item_count
+
+        redraw_market_items(data.item_frame, player)
+        redraw_coins_left(data.coins_left, player)
+        return
+    end
+    if name == 'skill_reset' then
+        player.remove_item({name = item.value, count = cost})
+
+        local message =
+            shopkeeper ..
+            player.name ..
+                ' decided to recycle their RPG skills and start over for ' .. format_number(cost, true) .. ' coins.'
+        Alert.alert_all_players(10, message)
+
+        RPG.rpg_reset_player(player, true)
 
         redraw_market_items(data.item_frame, player)
         redraw_coins_left(data.coins_left, player)
@@ -883,19 +916,26 @@ local function place_market()
 end
 
 local function tick()
-    if game.tick % 120 == 0 then
-        Public.boost_players_around_train()
-    end
+    local ticker = game.tick
 
-    if game.tick % 30 == 0 then
+    if ticker % 30 == 0 then
         place_market()
         validate_index()
         set_locomotive_health()
         fish_tag()
-        if game.tick % 1800 == 0 then
-            set_player_spawn()
-            refill_fish()
-        end
+    end
+
+    if ticker % 120 == 0 then
+        Public.boost_players_around_train()
+    end
+
+    if ticker % 600 == 0 then
+        Public.transfer_pollution()
+    end
+
+    if ticker % 1800 == 0 then
+        set_player_spawn()
+        refill_fish()
     end
 end
 
@@ -1025,9 +1065,6 @@ function Public.locomotive_spawn(surface, position)
 
     this.icw_locomotive = locomotive
 
-    locomotive.surface.request_to_generate_chunks({0, 19}, 1)
-    locomotive.surface.force_generate_chunk_requests()
-
     game.forces.player.set_spawn_position({0, 19}, locomotive.surface)
 end
 
@@ -1047,44 +1084,36 @@ end
 function Public.get_items()
     local this = WPT.get()
 
-    local threat_cost = 150000
     local health_cost = 10000 * (1 + this.health_upgrades)
     local aura_cost = 10000 * (1 + this.aura_upgrades)
     local xp_point_boost_cost = 10000 * (1 + this.xp_points_upgrade)
     local flamethrower_turrets_cost = 3500 * (1 + this.upgrades.flame_turret.bought)
     local land_mine_cost = 2 * (1 + this.upgrades.landmine.bought)
+    local skill_reset_cost = 100000
 
     local items = {}
-    items['clear_threat_level'] = {
-        stack = 1,
-        value = 'coin',
-        price = threat_cost,
-        tooltip = '[Wave Defense]:\nReduces the threat level by 50%\nUsable if threat level is too high.\nCan be purchased multiple times.',
-        sprite = 'item/computer',
-        enabled = true
-    }
     items['locomotive_max_health'] = {
         stack = 1,
         value = 'coin',
         price = health_cost,
-        tooltip = '[Locomotive Health]:\nUpgrades the train health.\nCan be purchased multiple times.',
-        sprite = 'item/computer',
+        tooltip = 'Upgrades the train health.\nCan be purchased multiple times.',
+        sprite = 'achievement/getting-on-track',
         enabled = true
     }
     items['locomotive_xp_aura'] = {
         stack = 1,
         value = 'coin',
         price = aura_cost,
-        tooltip = '[XP Aura]:\nUpgrades the aura that is around the train.\nNote! Reaching breach walls gives more XP.',
-        sprite = 'item/computer',
+        tooltip = 'Upgrades the XP aura that is around the train.',
+        sprite = 'achievement/tech-maniac',
         enabled = true
     }
     items['xp_points_boost'] = {
         stack = 1,
         value = 'coin',
         price = xp_point_boost_cost,
-        tooltip = '[XP Points]:\nUpgrades the amount of xp points you get inside the XP aura',
-        sprite = 'item/computer',
+        tooltip = 'Upgrades the amount of XP points you get inside the XP aura',
+        sprite = 'achievement/trans-factorio-express',
         enabled = true
     }
     items['flamethrower_turrets'] = {
@@ -1092,7 +1121,7 @@ function Public.get_items()
         value = 'coin',
         price = flamethrower_turrets_cost,
         tooltip = 'Upgrades the amount of flamethrowers that can be placed.',
-        sprite = 'item/computer',
+        sprite = 'achievement/pyromaniac',
         enabled = true
     }
     items['land_mine'] = {
@@ -1100,7 +1129,15 @@ function Public.get_items()
         value = 'coin',
         price = land_mine_cost,
         tooltip = 'Upgrades the amount of landmines that can be placed.',
-        sprite = 'item/computer',
+        sprite = 'achievement/watch-your-step',
+        enabled = true
+    }
+    items['skill_reset'] = {
+        stack = 1,
+        value = 'coin',
+        price = skill_reset_cost,
+        tooltip = 'For when you have picked the wrong RPG path and want to start over.\nPoints will be kept.',
+        sprite = 'achievement/golem',
         enabled = true
     }
 
@@ -1116,6 +1153,46 @@ function Public.get_items()
     items['firearm-magazine'] = {stack = 1, value = 'coin', price = 5, tooltip = 'Firearm Pew'}
     items['crude-oil-barrel'] = {stack = 1, value = 'coin', price = 8, tooltip = 'Crude Oil Flame'}
     return items
+end
+
+function Public.transfer_pollution()
+    local locomotive = WPT.get('locomotive')
+    local active_surface_index = WPT.get('active_surface_index')
+    local icw_locomotive = WPT.get('icw_locomotive')
+    local surface = icw_locomotive.surface
+    local Diff = Difficulty.get()
+
+    if not surface then
+        return
+    end
+
+    local total_interior_pollution = surface.get_total_pollution()
+
+    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Diff.difficulty_vote_value
+    game.surfaces[active_surface_index].pollute(locomotive.position, pollution)
+    game.pollution_statistics.on_flow('locomotive', pollution - total_interior_pollution)
+    surface.clear_pollution()
+end
+
+function Public.enable_poison_defense()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive then
+        return
+    end
+    if not locomotive.valid then
+        return
+    end
+    local pos = locomotive.position
+    create_poison_cloud({x = pos.x, y = pos.y})
+    if random(1, 3) == 1 then
+        local random_angles = {rad(random(359))}
+        create_poison_cloud({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])})
+    end
+    local p = {
+        position = pos
+    }
+    local msg = comfylatron .. 'Train is taking heavy damage.\nDeploying defense mechanisms.'
+    Alert.alert_all_players_location(p, msg)
 end
 
 Public.place_market = place_market

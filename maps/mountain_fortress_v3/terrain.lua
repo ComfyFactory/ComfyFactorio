@@ -78,15 +78,14 @@ local turret_list = {
 }
 
 local function place_wagon(data)
+    if math_random(1, 5048) ~= 1 then
+        return false
+    end
     local surface = data.surface
     local tiles = data.tiles
     local entities = data.entities
     local top_x = data.top_x
     local top_y = data.top_y
-    if math_random(1, 1548) ~= 1 then
-        return
-    end
-
     local position = {x = top_x + math_random(4, 12) * 2, y = top_y + math_random(4, 12) * 2}
     local wagon_mineable = {
         callback = Functions.disable_minable_and_ICW_callback
@@ -133,6 +132,7 @@ local function place_wagon(data)
             callback = wagon_mineable
         }
     )
+    return true
 end
 
 local function get_oil_amount(p)
@@ -346,6 +346,9 @@ local function process_level_13_position(x, y, data)
         if math_random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
         end
+        if place_wagon(data) then
+            return
+        end
         return
     end
 
@@ -433,6 +436,9 @@ local function process_level_12_position(x, y, data)
         elseif math_random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'coal', position = p, amount = math_abs(p.y) + 1}
         end
+        if place_wagon(data) then
+            return
+        end
     end
     if math_random(1, 8192) == 1 then
         markets[#markets + 1] = p
@@ -470,6 +476,9 @@ local function process_level_11_position(x, y, data)
     if noise_1 < -0.72 then
         tiles[#tiles + 1] = {name = 'lab-dark-1', position = p}
         entities[#entities + 1] = {name = 'uranium-ore', position = p, amount = math_abs(p.y) + 1 * 3}
+        if place_wagon(data) then
+            return
+        end
         return
     end
 
@@ -532,6 +541,9 @@ local function process_level_10_position(x, y, data)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
         tiles[#tiles + 1] = {name = 'water-mud', position = p}
+        if place_wagon(data) then
+            return
+        end
         return
     end
     if math_abs(scrapyard) > 0.25 and math_abs(scrapyard) < 0.40 then
@@ -582,6 +594,9 @@ local function process_level_9_position(x, y, data)
         if math_random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            if place_wagon(data) then
+                return
+            end
         end
         return
     end
@@ -630,8 +645,13 @@ local function process_level_8_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.35 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            return
+        end
+
+        if place_wagon(data) then
             return
         end
     end
@@ -790,8 +810,14 @@ local function process_level_7_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.55 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
+            return
+        end
+
+        if place_wagon(data) then
             return
         end
     end
@@ -824,8 +850,13 @@ local function process_level_6_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.45 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            return
+        end
+
+        if place_wagon(data) then
             return
         end
     end
@@ -895,6 +926,9 @@ local function process_level_5_position(x, y, data)
         if math_random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(math_abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            if place_wagon(data) then
+                return
+            end
         end
         if math_random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
@@ -921,7 +955,6 @@ local function process_level_5_position(x, y, data)
             if math_random(1, 2) == 1 then
                 entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p}
             end
-            return
         end
     end
 
@@ -986,8 +1019,13 @@ local function process_level_4_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.75 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            return
+        end
+
+        if place_wagon(data) then
             return
         end
     end
@@ -1071,10 +1109,17 @@ local function process_level_3_position(x, y, data)
         if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
             if small_caves > 0.85 then
                 tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
                 return
             end
+
             if small_caves < -0.85 then
                 tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
+                return
+            end
+
+            if place_wagon(data) then
                 return
             end
         end
@@ -1176,10 +1221,15 @@ local function process_level_2_position(x, y, data)
         if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
             if small_caves > 0.32 then
                 tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
                 return
             end
             if small_caves < -0.32 then
                 tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+                return
+            end
+
+            if place_wagon(data) then
                 return
             end
         end
@@ -1294,6 +1344,10 @@ local function process_level_1_position(x, y, data)
         end
         if small_caves < -0.53 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            return
+        end
+
+        if place_wagon(data) then
             return
         end
     end
@@ -1551,10 +1605,6 @@ function Public.heavy_functions(x, y, data)
         return
     end
 
-    if top_y > 32 then
-        game.forces.player.chart(surface, {{top_x, top_y}, {top_x + 31, top_y + 31}})
-    end
-
     if top_y == -128 and top_x == -128 then
         local pl = WPT.get().locomotive.position
         for _, entity in pairs(
@@ -1568,9 +1618,6 @@ function Public.heavy_functions(x, y, data)
 
     if top_y < 0 then
         process_bits(x, y, data)
-        if math_random(1, chance_for_wagon_spawn) == 1 then
-            place_wagon(data)
-        end
         return
     end
 
@@ -1589,5 +1636,30 @@ function Public.heavy_functions(x, y, data)
         return
     end
 end
+
+Event.add(
+    defines.events.on_chunk_generated,
+    function(e)
+        local surface = e.surface
+        local map_name = 'mountain_fortress_v3'
+
+        if string.sub(surface.name, 0, #map_name) ~= map_name then
+            return
+        end
+
+        local area = e.area
+        local left_top = area.left_top
+        if not surface then
+            return
+        end
+        if not surface.valid then
+            return
+        end
+
+        if left_top.y > 32 then
+            game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+        end
+    end
+)
 
 return Public

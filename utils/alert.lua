@@ -256,6 +256,33 @@ function Public.alert_player(player, duration, message, color)
         player,
         duration,
         function(container)
+            container.add {
+                type = 'sprite-button',
+                sprite = 'achievement/you-are-doing-it-right',
+                style = 'slot_button'
+            }
+            local label = container.add({type = 'label', name = close_alert_name, caption = message})
+            label.style.single_line = false
+            label.style.font_color = color or Color.comfy
+        end
+    )
+end
+
+---Message to a specific player as warning
+---@param player LuaPlayer
+---@param duration number
+---@param message string
+---@param color string
+function Public.alert_player_warning(player, duration, message, color)
+    Public.alert_player_template(
+        player,
+        duration,
+        function(container)
+            container.add {
+                type = 'sprite-button',
+                sprite = 'achievement/golem',
+                style = 'slot_button'
+            }
             local label = container.add({type = 'label', name = close_alert_name, caption = message})
             label.style.single_line = false
             label.style.font_color = color or Color.comfy
@@ -305,14 +332,19 @@ commands.add_command(
                 if not param then
                     return p('Valid arguments are: message_to_print')
                 end
-                Public.alert_all_players_location(player, param)
-            else
-                p = log
-                if not param then
-                    return p('Valid arguments are: message_to_print')
-                end
-                Public.alert_all_players(15, param)
+                local comfy = '[color=blue]' .. player.name .. ':[/color] \n'
+                local message = comfy .. param
+                Public.alert_all_players_location(player, message)
             end
+        else
+            p = log
+            if not param then
+                return p('Valid arguments are: message_to_print')
+            end
+            local comfy = '[color=blue]Server:[/color] \n'
+            local message = comfy .. param
+            p(param)
+            Public.alert_all_players(15, message)
         end
     end
 )
@@ -361,8 +393,9 @@ commands.add_command(
                 end
 
                 if t_message then
-                    local message = t_message
-                    Public.alert_player(target_player, 15, message)
+                    local comfy = '[color=blue]' .. player.name .. ':[/color] \n'
+                    local message = comfy .. t_message
+                    Public.alert_player_warning(target_player, 15, message)
                 else
                     p('No message was provided', Color.fail)
                 end

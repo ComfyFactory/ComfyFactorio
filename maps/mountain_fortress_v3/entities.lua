@@ -10,6 +10,8 @@ local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local BiterHealthBooster = require 'modules.biter_health_booster'
 local Traps = require 'maps.mountain_fortress_v3.traps'
+local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
+local Alert = require 'utils.alert'
 --local HD = require 'modules.hidden_dimension.main'
 
 -- tables
@@ -24,7 +26,7 @@ local math_floor = math.floor
 local math_abs = math.abs
 --local raise_event = script.raise_event
 
-local mapkeeper = '[color=blue]Mapkeeper:[/color]'
+local mapkeeper = '[color=blue]Mapkeeper:[/color]\n'
 
 local treasure_chest_messages = {
     "You notice an old crate within the rubble. It's filled with treasure!",
@@ -68,6 +70,15 @@ local function set_objective_health(final_damage_amount)
     local this = WPT.get()
     if final_damage_amount == 0 then
         return
+    end
+
+    if this.locomotive_health <= 2000 then
+        if not this.poison_deployed then
+            Locomotive.enable_poison_defense()
+            this.poison_deployed = true
+        end
+    elseif this.locomotive_health >= this.locomotive_max_health then
+        this.poison_deployed = false
     end
 
     if this.locomotive_health <= 0 then
@@ -190,14 +201,13 @@ local function hidden_treasure(event)
         return
     end
     if magic > 50 then
-        player.print(
-            rare_treasure_chest_messages[math.random(1, #rare_treasure_chest_messages)],
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+        local msg = rare_treasure_chest_messages[math.random(1, #rare_treasure_chest_messages)]
+        Alert.alert_player(player, 5, msg)
         Loot.add_rare(event.entity.surface, event.entity.position, 'wooden-chest', magic)
         return
     end
-    player.print(treasure_chest_messages[math.random(1, #treasure_chest_messages)], {r = 0.98, g = 0.66, b = 0.22})
+    local msg = treasure_chest_messages[math.random(1, #treasure_chest_messages)]
+    Alert.alert_player(player, 5, msg)
     Loot.add(event.entity.surface, event.entity.position, 'wooden-chest')
 end
 
@@ -509,7 +519,15 @@ local function on_player_repaired_entity(event)
     end
     local entity = event.entity
     if entity == this.locomotive then
-        set_objective_health(-1)
+        local player = game.players[event.player_index]
+        local repair_speed = RPG.get_magicka(player)
+        if repair_speed <= 0 then
+            set_objective_health(-1)
+            return
+        else
+            set_objective_health(-repair_speed)
+            return
+        end
     end
 end
 
@@ -618,8 +636,11 @@ function Public.loco_died()
         local Reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
         wave_defense_table.game_lost = true
         wave_defense_table.target = nil
-        game.print(mapkeeper .. ' ' .. defeated_messages[math.random(1, #defeated_messages)], {r = 1, g = 0.5, b = 0.1})
-        game.print(mapkeeper .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
+        local pos = {
+            position = this.locomotive.position
+        }
+        local msg = mapkeeper .. defeated_messages[math.random(1, #defeated_messages)] .. '\nBetter luck next time.'
+        Alert.alert_all_players_location(pos, msg)
         Reset_map()
         return
     end
@@ -634,13 +655,22 @@ function Public.loco_died()
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
-    game.print(mapkeeper .. ' ' .. defeated_messages[math.random(1, #defeated_messages)], {r = 1, g = 0.5, b = 0.1})
-    game.print(mapkeeper .. ' Better luck next time.', {r = 1, g = 0.5, b = 0.1})
+    local msg
     if not this.disable_reset then
-        game.print(mapkeeper .. ' Game will soft-reset shortly.', {r = 1, g = 0.5, b = 0.1})
+        msg =
+            mapkeeper ..
+            defeated_messages[math.random(1, #defeated_messages)] ..
+                '\nBetter luck next time.\nGame will soft-reset shortly.'
     else
-        game.print(mapkeeper .. ' Game will not soft-reset. Soft-reset is disabled.', {r = 1, g = 0.5, b = 0.1})
+        msg =
+            mapkeeper ..
+            defeated_messages[math.random(1, #defeated_messages)] ..
+                '\nBetter luck next time.\nGame will not soft-reset. Soft-reset is disabled.'
     end
+    local pos = {
+        position = this.locomotive.position
+    }
+    Alert.alert_all_players_location(pos, msg)
     game.forces.enemy.set_friend('player', true)
     game.forces.player.set_friend('enemy', true)
 

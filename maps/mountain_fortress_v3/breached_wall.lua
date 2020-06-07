@@ -3,7 +3,7 @@ local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Balance = require 'maps.mountain_fortress_v3.balance'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local Alert = require 'maps.mountain_fortress_v3.alert'
+local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
@@ -33,7 +33,7 @@ local zone_complete =
         local bonus = data.bonus
         local player = data.player
         local message = keeper .. 'Survivor! Well done. You have completed zone: ' .. bonus
-        Alert.alert_player(player, 10, message)
+        Alert.alert_player_warning(player, 10, message)
     end
 )
 

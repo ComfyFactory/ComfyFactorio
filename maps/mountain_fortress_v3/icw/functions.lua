@@ -274,7 +274,7 @@ function Public.kill_wagon(icw, entity)
     kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
     for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
-        if e.name == 'character' and e.player then
+        if e and e.valid and e.name == 'character' and e.player then
             local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
             if p then
                 e.player.teleport(p, wagon.entity.surface)
@@ -315,7 +315,7 @@ function Public.create_room_surface(icw, unit_number)
     local surface = game.create_surface(tostring(unit_number), map_gen_settings)
     surface.freeze_daytime = true
     surface.daytime = 0.1
-    surface.request_to_generate_chunks({16, 16}, 2)
+    surface.request_to_generate_chunks({16, 16}, 1)
     surface.force_generate_chunk_requests()
     for _, tile in pairs(surface.find_tiles_filtered({area = {{-2, -2}, {2, 2}}})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
