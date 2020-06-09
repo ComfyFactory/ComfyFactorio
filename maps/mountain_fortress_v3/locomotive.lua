@@ -535,11 +535,7 @@ local function gui_click(event)
         return
     end
 
-    if not player.opened.name then
-        return
-    end
-
-    if not player.opened.name == 'market_gui' then
+    if not player.opened == 'market_gui' then
         return
     end
 

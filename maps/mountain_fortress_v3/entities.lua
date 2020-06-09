@@ -490,7 +490,7 @@ local function boss_puncher(event)
     end
 
     local wd = WD.get_table()
-    if wd.boss_wave_warning then
+    if wd.boss_wave_warning or wd.wave_number >= 1000 then
         kaboom(cause, entity, get_damage(event))
         return
     end

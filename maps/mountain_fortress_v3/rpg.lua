@@ -660,13 +660,13 @@ local function global_pool(players, count)
         return
     end
 
-    local pool = math_floor(rpg_extra.global_pool)
+local pool = math_floor(rpg_extra.global_pool)
 
-    local random_amount = math_random(5000, 10000)
+local random_amount = math_random(5000, 10000)
 
-    if pool <= random_amount then
-        return
-    end
+if pool <= random_amount then
+    return
+end
 
     if pool >= 20000 then
         pool = 20000
