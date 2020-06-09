@@ -10,6 +10,16 @@ function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
 end
 
+local function validate_entity(entity)
+    if not entity then
+        return false
+    end
+    if not entity.valid then
+        return false
+    end
+    return true
+end
+
 local function delete_empty_surfaces(icw)
     for k, surface in pairs(icw.surfaces) do
         if not icw.trains[tonumber(surface.name)] then
@@ -191,10 +201,16 @@ local transfer_functions = {
 }
 
 local function get_wagon_for_entity(icw, entity)
+    if not validate_entity(entity) then
+        return
+    end
+
     local train = icw.trains[tonumber(entity.surface.name)]
+
     if not train then
         return
     end
+
     local position = entity.position
     for k, unit_number in pairs(train.wagons) do
         local wagon = icw.wagons[unit_number]
@@ -265,7 +281,19 @@ function Public.kill_minimap(player)
     end
 end
 
+function Public.is_minimap_valid(player, surface)
+    if validate_entity(player) then
+        if player.surface ~= surface then
+            Public.kill_minimap(player)
+        end
+    end
+end
+
 function Public.kill_wagon(icw, entity)
+    if not validate_entity(entity) then
+        return
+    end
+
     if not Constants.wagon_types[entity.type] then
         return
     end
@@ -534,11 +562,7 @@ function Public.create_wagon_room(icw, wagon)
 end
 
 function Public.create_wagon(icw, created_entity, delay_surface)
-    if not created_entity then
-        return
-    end
-
-    if not created_entity.valid then
+    if not validate_entity(created_entity) then
         return
     end
 

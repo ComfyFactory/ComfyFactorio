@@ -21,14 +21,14 @@ local Balance = require 'maps.mountain_fortress_v3.balance'
 local Entities = require 'maps.mountain_fortress_v3.entities'
 local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
+local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local Locomotive = require 'maps.mountain_fortress_v3.locomotive'.locomotive_spawn
-local render_train_hp = require 'maps.mountain_fortress_v3.locomotive'.render_train_hp
+local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
@@ -251,8 +251,8 @@ function Public.reset_map()
     this.cargo_health = 10000
     this.cargo_max_health = 10000
 
-    Locomotive(surface, {x = -18, y = 25})
-    render_train_hp()
+    Locomotive.locomotive_spawn(surface, {x = -18, y = 25})
+    Locomotive.render_train_hp()
     render_direction(surface)
     -- LM.place_market()
     RPG.rpg_reset_all_players()
@@ -322,6 +322,8 @@ local on_player_joined_game = function(event)
 
     set_difficulty()
 
+    ICW_Func.is_minimap_valid(player, surface)
+
     if not this.players[player.index] then
         this.players[player.index] = {
             data = {}
@@ -363,12 +365,10 @@ end
 local on_pre_player_left_game = function(event)
     local this = WPT.get()
     local player = game.players[event.player_index]
-    local tick
+    local tick = game.tick
     if player.character then
         if not this.offline_players_enabled then
-            tick = game.tick + 432000
-        else
-            tick = game.tick
+            return
         end
         this.offline_players[#this.offline_players + 1] = {
             index = event.player_index,
@@ -381,13 +381,7 @@ end
 local remove_offline_players = function()
     local this = WPT.get()
     if not this.offline_players_enabled then
-        if game.tick < 500 then
-            return
-        end
-        if game.tick % 432000 == 0 then
-            this.offline_players_enabled = true
-            return
-        end
+        return
     end
     local offline_players = WPT.get('offline_players')
     local active_surface_index = WPT.get('active_surface_index')

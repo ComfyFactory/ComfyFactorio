@@ -24,11 +24,10 @@ local ore_names = {
     ['coal'] = true,
     ['stone'] = true,
     ['iron-ore'] = true,
-    ['copper-ore'] = true,
-    ['uranium-ore'] = true
+    ['copper-ore'] = true
 }
 
-local function create_floaty_text(surface, position, name, count, height_offset)
+local function create_floaty_text(surface, position, name, count)
     if autostash.floating_text_y_offsets[position.x .. '_' .. position.y] then
         autostash.floating_text_y_offsets[position.x .. '_' .. position.y] =
             autostash.floating_text_y_offsets[position.x .. '_' .. position.y] - 0.5
@@ -139,35 +138,11 @@ local function get_nearby_chests(player)
     local containers = {}
     local i = 0
     if autostash.insert_into_furnace then
-        type = {'furnace', 'container'}
+        type = {'furnace', 'container', 'logistic-container'}
     else
-        type = {'container'}
+        type = {'container', 'logistic-container'}
     end
     for _, e in pairs(player.surface.find_entities_filtered({type = type, area = area})) do
-        if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-            i = i + 1
-            containers[i] = e
-        end
-    end
-    sort_entities_by_distance(player.position, containers)
-    for _, entity in pairs(containers) do
-        size_of_chests = size_of_chests + 1
-        chests[size_of_chests] = entity
-    end
-
-    for _, e in pairs(player.surface.find_entities_filtered({name = 'logistic-chest-storage', area = area})) do
-        if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-            i = i + 1
-            containers[i] = e
-        end
-    end
-    sort_entities_by_distance(player.position, containers)
-    for _, entity in pairs(containers) do
-        size_of_chests = size_of_chests + 1
-        chests[size_of_chests] = entity
-    end
-
-    for _, e in pairs(player.surface.find_entities_filtered({name = 'logistic-chest-passive-provider', area = area})) do
         if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
             i = i + 1
             containers[i] = e
@@ -192,6 +167,11 @@ local function does_inventory_contain_item_type(inventory, item_subgroup)
 end
 
 local function insert_item_into_chest(player_inventory, chests, filtered_chests, name, count, furnace)
+    local container = {
+        ['container'] = true,
+        ['logistic-container'] = true
+    }
+
     --Attempt to store into furnaces.
     if furnace then
         for _, chest in pairs(chests) do
@@ -210,8 +190,8 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
         end
 
         for _, chest in pairs(chests) do
-            local chest_inventory = chest.get_inventory(defines.inventory.chest)
-            if chest_inventory and chest.type == 'furnace' then
+            if chest.type == 'furnace' then
+                local chest_inventory = chest.get_inventory(defines.inventory.chest)
                 if chest_inventory.can_insert({name = name, count = count}) then
                     local inserted_count = chest_inventory.insert({name = name, count = count})
                     player_inventory.remove({name = name, count = inserted_count})
@@ -227,8 +207,8 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
 
     --Attempt to store in chests that already have the same item.
     for _, chest in pairs(chests) do
-        local chest_inventory = chest.get_inventory(defines.inventory.chest)
-        if chest_inventory and chest.type == 'container' then
+        if container[chest.type] then
+            local chest_inventory = chest.get_inventory(defines.inventory.chest)
             if chest_inventory.can_insert({name = name, count = count}) then
                 if chest_inventory.find_item_stack(name) then
                     local inserted_count = chest_inventory.insert({name = name, count = count})
@@ -246,8 +226,8 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
 
     --Attempt to store in empty chests.
     for _, chest in pairs(filtered_chests) do
-        local chest_inventory = chest.get_inventory(defines.inventory.chest)
-        if chest_inventory and chest.type == 'container' then
+        if container[chest.type] then
+            local chest_inventory = chest.get_inventory(defines.inventory.chest)
             if chest_inventory.can_insert({name = name, count = count}) then
                 if chest_inventory.is_empty() then
                     local inserted_count = chest_inventory.insert({name = name, count = count})
@@ -266,8 +246,8 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
     local item_subgroup = game.item_prototypes[name].subgroup.name
     if item_subgroup then
         for _, chest in pairs(filtered_chests) do
-            local chest_inventory = chest.get_inventory(defines.inventory.chest)
-            if chest_inventory and chest.type == 'container' then
+            if container[chest.type] then
+                local chest_inventory = chest.get_inventory(defines.inventory.chest)
                 if chest_inventory.can_insert({name = name, count = count}) then
                     if does_inventory_contain_item_type(chest_inventory, item_subgroup) then
                         local inserted_count = chest_inventory.insert({name = name, count = count})
@@ -285,8 +265,8 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
 
     --Attempt to store in mixed chests.
     for _, chest in pairs(filtered_chests) do
-        local chest_inventory = chest.get_inventory(defines.inventory.chest)
-        if chest_inventory and chest.type == 'container' then
+        if container[chest.type] then
+            local chest_inventory = chest.get_inventory(defines.inventory.chest)
             if chest_inventory.can_insert({name = name, count = count}) then
                 local inserted_count = chest_inventory.insert({name = name, count = count})
                 player_inventory.remove({name = name, count = inserted_count})
@@ -340,15 +320,16 @@ local function auto_stash(player, event)
     end
 
     for name, count in pairs(inventory.get_contents()) do
-        local is_ore =
-            game.entity_prototypes[name] and game.entity_prototypes[name].type == 'resource' or ore_names[name]
+        local is_ore = ore_names[name]
+        local is_resource = game.entity_prototypes[name] and game.entity_prototypes[name].type == 'resource'
+
         if not inventory.find_item_stack(name).grid and not hotbar_items[name] then
             if ctrl then
                 if is_ore and autostash.insert_into_furnace then
                     insert_item_into_chest(inventory, chests, filtered_chests, name, count, true)
                 end
             elseif button == defines.mouse_button_type.right then
-                if is_ore then
+                if is_resource or is_ore then
                     insert_item_into_chest(inventory, chests, filtered_chests, name, count)
                 end
             elseif button == defines.mouse_button_type.left then

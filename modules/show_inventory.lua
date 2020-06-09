@@ -259,11 +259,9 @@ local function on_player_joined_game(event)
     end
 end
 
-local function on_player_left_game(event)
+local function on_pre_player_left_game(event)
     local player = game.players[event.player_index]
-    if validate_player(player) then
-        close_player_inventory(player)
-    end
+    close_player_inventory(player)
 end
 
 local function update_gui()
@@ -331,6 +329,6 @@ end
 Event.add(defines.events.on_player_main_inventory_changed, update_gui)
 Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 
 return Public

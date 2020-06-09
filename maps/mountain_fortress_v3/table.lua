@@ -81,7 +81,7 @@ function Public.reset_table()
     this.health_upgrades = 0
     this.breached_wall = 1
     this.entity_limits = {}
-    this.offline_players_enabled = false
+    this.offline_players_enabled = true
     this.left_top = {
         x = 0,
         y = 0
