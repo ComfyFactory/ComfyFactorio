@@ -192,12 +192,6 @@ local function on_console_command(event)
         return
     end
 
-    for _, p in pairs(game.connected_players) do
-        if p.admin == true and p.name ~= player.name then
-            p.print(player.name .. ' did a silent-command: ' .. event.parameters, {r = 0.22, g = 0.99, b = 0.99})
-        end
-    end
-
     local server_time = Server.get_current_time()
     if server_time then
         server_time = format(' (Server time: %s)', Timestamp.to_string(server_time))
@@ -209,7 +203,29 @@ local function on_console_command(event)
         param = nil
     end
 
+    local commands = {
+        ['editor'] = true,
+        ['silent-command'] = true,
+        ['sc'] = true
+    }
+
+    if not commands[cmd] then
+        return
+    end
+
     if player then
+        for _, p in pairs(game.connected_players) do
+            if p.admin == true and p.name ~= player.name then
+                if param then
+                    p.print(
+                        player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time,
+                        {r = 0.22, g = 0.99, b = 0.99}
+                    )
+                else
+                    p.print(player.name .. ' ran: ' .. cmd .. server_time, {r = 0.22, g = 0.99, b = 0.99})
+                end
+            end
+        end
         if param then
             print(player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time)
             return
