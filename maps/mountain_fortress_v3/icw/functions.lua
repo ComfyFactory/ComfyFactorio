@@ -1,14 +1,23 @@
 local Public = {}
 
 local Constants = require 'maps.mountain_fortress_v3.icw.constants'
+local ICW = require 'maps.mountain_fortress_v3.icw.table'
 
 local table_insert = table.insert
 local table_remove = table.remove
-local math_round = math.round
-local math_random = math.random
 
 function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
+end
+
+local function validate_entity(entity)
+    if not entity then
+        return false
+    end
+    if not entity.valid then
+        return false
+    end
+    return true
 end
 
 local function delete_empty_surfaces(icw)
@@ -27,6 +36,15 @@ local function kick_players_out_of_vehicles(wagon)
             if wagon.surface == player.surface then
                 character.driving = false
             end
+        end
+    end
+end
+
+local function recreate_players()
+    for _, player in pairs(game.connected_players) do
+        if not player.character then
+            player.set_controller({type = defines.controllers.god})
+            player.create_character()
         end
     end
 end
@@ -89,7 +107,7 @@ end
 local function input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
     local request_stacks = {}
     local prototypes = game.item_prototypes
-    for slot_index = 1, 12, 1 do
+    for slot_index = 1, 30, 1 do
         local stack = chest.get_request_slot(slot_index)
         if stack then
             request_stacks[stack.name] = 10 * prototypes[stack.name].stack_size
@@ -153,25 +171,25 @@ local function input_cargo(wagon, chest)
 end
 
 local function output_cargo(wagon, passive_chest)
-    local passive_chest_inventory = passive_chest.get_inventory(defines.inventory.cargo_wagon)
-    if passive_chest_inventory.is_empty() then
+    if not wagon.entity then
         return
     end
-    local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
-    local free_slots = 0
-    for i = 1, wagon_inventory.get_bar() - 1, 1 do
-        if not wagon_inventory[i].valid_for_read and not wagon_inventory.get_filter(i) then
-            free_slots = free_slots + 1
-        end
+    if not wagon.entity.valid then
+        return
     end
-    for i = 1, passive_chest_inventory.get_bar() - 1, 1 do
-        if free_slots <= 0 then
-            return
-        end
-        if passive_chest_inventory[i].valid_for_read then
-            wagon_inventory.insert(passive_chest_inventory[i])
-            passive_chest_inventory[i].clear()
-            free_slots = free_slots - 1
+    if not passive_chest.valid then
+        return
+    end
+    if not passive_chest.valid then
+        return
+    end
+    local chest1 = passive_chest.get_inventory(defines.inventory.cargo_wagon)
+    local chest2 = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
+    for k, v in pairs(chest1.get_contents()) do
+        local t = {name = k, count = v}
+        local c = chest2.insert(t)
+        if (c > 0) then
+            chest1.remove({name = k, count = c})
         end
     end
 end
@@ -183,10 +201,16 @@ local transfer_functions = {
 }
 
 local function get_wagon_for_entity(icw, entity)
+    if not validate_entity(entity) then
+        return
+    end
+
     local train = icw.trains[tonumber(entity.surface.name)]
+
     if not train then
         return
     end
+
     local position = entity.position
     for k, unit_number in pairs(train.wagons) do
         local wagon = icw.wagons[unit_number]
@@ -257,7 +281,19 @@ function Public.kill_minimap(player)
     end
 end
 
+function Public.is_minimap_valid(player, surface)
+    if validate_entity(player) then
+        if player.surface ~= surface then
+            Public.kill_minimap(player)
+        end
+    end
+end
+
 function Public.kill_wagon(icw, entity)
+    if not validate_entity(entity) then
+        return
+    end
+
     if not Constants.wagon_types[entity.type] then
         return
     end
@@ -266,7 +302,7 @@ function Public.kill_wagon(icw, entity)
     kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
     for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
-        if e.name == 'character' and e.player then
+        if e and e.valid and e.name == 'character' and e.player then
             local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
             if p then
                 e.player.teleport(p, wagon.entity.surface)
@@ -276,6 +312,7 @@ function Public.kill_wagon(icw, entity)
             Public.kill_minimap(e.player)
         else
             e.die()
+            recreate_players()
         end
     end
     for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
@@ -303,10 +340,10 @@ function Public.create_room_surface(icw, unit_number)
             ['decorative'] = {treat_missing_as_default = false}
         }
     }
-    local surface = game.create_surface(unit_number, map_gen_settings)
+    local surface = game.create_surface(tostring(unit_number), map_gen_settings)
     surface.freeze_daytime = true
     surface.daytime = 0.1
-    surface.request_to_generate_chunks({16, 16}, 2)
+    surface.request_to_generate_chunks({16, 16}, 1)
     surface.force_generate_chunk_requests()
     for _, tile in pairs(surface.find_tiles_filtered({area = {{-2, -2}, {2, 2}}})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
@@ -387,40 +424,148 @@ function Public.create_wagon_room(icw, wagon)
     end
 
     if wagon.entity.type == 'cargo-wagon' then
-        local vectors = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
-        local v = vectors[math_random(1, 4)]
-        local position = {0, 30}
+        local multiple_chests = ICW.get('multiple_chests')
+        local position1 = {-12, 1}
+        local position2 = {12, 1}
+        local position3 = {-12, 58}
+        local position4 = {12, 58}
 
-        local e =
-            surface.create_entity(
-            {
-                name = 'logistic-chest-requester',
-                position = position,
-                force = 'neutral',
-                create_build_effect_smoke = false
-            }
-        )
-        e.destructible = false
-        e.minable = false
+        if multiple_chests then
+            local e1 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = position1,
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e1.destructible = false
+            e1.minable = false
 
-        local e2 =
-            surface.create_entity(
-            {
-                name = 'logistic-chest-passive-provider',
-                position = {position[1] + v[1], position[2] + v[2]},
-                force = 'neutral',
-                create_build_effect_smoke = false
-            }
-        )
-        e2.destructible = false
-        e2.minable = false
+            local e2 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = {position1[1] - 1, position1[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e2.destructible = false
+            e2.minable = false
 
-        wagon.transfer_entities = {e, e2}
+            local e3 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = position2,
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e3.destructible = false
+            e3.minable = false
+
+            local e4 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = {position2[1] + 1, position2[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e4.destructible = false
+            e4.minable = false
+
+            local e5 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = position3,
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e5.destructible = false
+            e5.minable = false
+
+            local e6 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = {position3[1] - 1, position3[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e6.destructible = false
+            e6.minable = false
+
+            local e7 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = position4,
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e7.destructible = false
+            e7.minable = false
+
+            local e8 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = {position4[1] + 1, position4[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e8.destructible = false
+            e8.minable = false
+
+            wagon.transfer_entities = {e1, e3}
+            wagon.transfer_entities = {e2, e4}
+            wagon.transfer_entities = {e5, e7}
+            wagon.transfer_entities = {e6, e8}
+        else
+            local e1 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = position1,
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e1.destructible = false
+            e1.minable = false
+
+            local e2 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = position2,
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            e2.destructible = false
+            e2.minable = false
+            wagon.transfer_entities = {e1, e2}
+        end
         return
     end
 end
 
 function Public.create_wagon(icw, created_entity, delay_surface)
+    if not validate_entity(created_entity) then
+        return
+    end
+
     if not created_entity.unit_number then
         return
     end
@@ -610,6 +755,8 @@ local function move_room_to_train(icw, train, wagon)
         local player = game.players[player_index]
         player.teleport(position, train.surface)
     end
+
+    recreate_players()
 
     for _, tile in pairs(wagon.surface.find_tiles_filtered({area = wagon.area})) do
         wagon.surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)

@@ -1,3 +1,4 @@
+local Event = require 'utils.event'
 local Biters = require 'modules.wave_defense.biter_rolls'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -77,15 +78,14 @@ local turret_list = {
 }
 
 local function place_wagon(data)
+    if math_random(1, 1500) ~= 1 then
+        return
+    end
     local surface = data.surface
     local tiles = data.tiles
     local entities = data.entities
     local top_x = data.top_x
     local top_y = data.top_y
-    if math_random(1, 2048) ~= 1 then
-        return
-    end
-
     local position = {x = top_x + math_random(4, 12) * 2, y = top_y + math_random(4, 12) * 2}
     local wagon_mineable = {
         callback = Functions.disable_minable_and_ICW_callback
@@ -132,26 +132,27 @@ local function place_wagon(data)
             callback = wagon_mineable
         }
     )
+    return true
 end
 
 local function get_oil_amount(p)
     return (math_abs(p.y) * 200 + 10000) * math_random(75, 125) * 0.01
 end
 
-function Public.increment_value(tbl, key, max, target)
-    if target then
-        if tbl.yv == 31 then
-            tbl[key] = tbl[key] + 1
+function Public.increment_value(tbl)
+    tbl.yv = tbl.yv + 1
+
+    if tbl.yv == 32 then
+        if tbl.xv == 32 then
+            tbl.xv = 0
         end
-    else
-        tbl[key] = tbl[key] + 1
+        if tbl.yv == 32 then
+            tbl.yv = 0
+        end
+        tbl.xv = tbl.xv + 1
     end
 
-    if tbl[key] == max then
-        tbl[key] = 0
-    end
-
-    return tbl[key]
+    return tbl.xv, tbl.yv
 end
 
 local function spawn_turret(entities, p, probability)
@@ -172,8 +173,7 @@ local function wall(data)
     local treasure = data.treasure
     local stone_wall = {callback = Functions.disable_minable_callback}
 
-    local y = Public.increment_value(data, 'yv', 32)
-    local x = Public.increment_value(data, 'xv', 32, true)
+    local x, y = Public.increment_value(data)
 
     local seed = data.seed
     local p = {x = x + data.top_x, y = y + data.top_y}
@@ -630,6 +630,7 @@ local function process_level_8_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.35 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
@@ -790,8 +791,10 @@ local function process_level_7_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.55 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
             return
         end
     end
@@ -824,6 +827,7 @@ local function process_level_6_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.45 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
@@ -921,7 +925,6 @@ local function process_level_5_position(x, y, data)
             if math_random(1, 2) == 1 then
                 entities[#entities + 1] = {name = rock_raffle[math_random(1, size_of_rock_raffle)], position = p}
             end
-            return
         end
     end
 
@@ -986,6 +989,7 @@ local function process_level_4_position(x, y, data)
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
         end
+
         if small_caves < -0.75 then
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
             return
@@ -1071,10 +1075,13 @@ local function process_level_3_position(x, y, data)
         if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
             if small_caves > 0.85 then
                 tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
                 return
             end
+
             if small_caves < -0.85 then
                 tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
                 return
             end
         end
@@ -1176,6 +1183,7 @@ local function process_level_2_position(x, y, data)
         if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
             if small_caves > 0.32 then
                 tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+
                 return
             end
             if small_caves < -0.32 then
@@ -1337,9 +1345,6 @@ local function process_level_1_position(x, y, data)
         if math_random(1, 32) == 1 then
             markets[#markets + 1] = p
         end
-        if math_random(1, 512) == 1 then
-            spawn_turret(entities, p, 1)
-        end
         if math_random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. math_random(1, 9), position = p}
         end
@@ -1363,9 +1368,7 @@ local function process_level_1_position(x, y, data)
                         force = 'enemy'
                     }
                 end
-                if math_random(1, 512) == 1 then
-                    spawn_turret(entities, p, 1)
-                end
+
                 if math_random(1, 1024) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
                 end
@@ -1440,8 +1443,7 @@ local function border_chunk(data)
     local top_x = data.top_x
     local top_y = data.top_y
 
-    local x = Public.increment_value(data, 'xv', 32)
-    local y = Public.increment_value(data, 'yv', 31)
+    local x, y = Public.increment_value(data)
 
     local pos = {x = x + data.top_x, y = y + data.top_y}
 
@@ -1475,22 +1477,13 @@ local function border_chunk(data)
     end
 end
 
-local function replace_water(x, y, data)
-    local surface = data.surface
-    local tiles = data.tiles
-
-    local p = {x = x, y = y}
-
-    if surface.get_tile(p).collides_with('resource-layer') then
-        tiles[#tiles + 1] = {name = 'dirt-' .. math_random(1, 5), position = p}
-    end
-end
-
-local function biter_chunk(x, y, data)
+local function biter_chunk(data)
     local surface = data.surface
     local entities = data.entities
     local tile_positions = {}
-    local p = {x = x, y = y}
+    local x, y = Public.increment_value(data)
+
+    local p = {x = x + data.top_x, y = y + data.top_y}
     tile_positions[#tile_positions + 1] = p
 
     local disable_spawners = {
@@ -1533,8 +1526,11 @@ local function biter_chunk(x, y, data)
 end
 
 local function out_of_map(x, y, data)
-    local surface = data.surface
-    surface.set_tiles({{name = 'out-of-map', position = {x = x, y = y}}})
+    local tiles = data.tiles
+
+    local p = {x = x, y = y}
+
+    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
 function Public.heavy_functions(x, y, data)
@@ -1563,26 +1559,6 @@ function Public.heavy_functions(x, y, data)
         return
     end
 
-    if top_y > 120 then
-        out_of_map(x, y, data)
-        return
-    end
-
-    if top_y > 75 then
-        biter_chunk(x, y, data)
-    end
-    if top_y > 32 then
-        game.forces.player.chart(surface, {{top_x, top_y}, {top_x + 31, top_y + 31}})
-    end
-
-    if top_y >= 0 then
-        replace_water(x, y, data)
-    end
-
-    if top_y >= 0 then
-        border_chunk(data)
-    end
-
     if top_y == -128 and top_x == -128 then
         local pl = WPT.get().locomotive.position
         for _, entity in pairs(
@@ -1594,15 +1570,53 @@ function Public.heavy_functions(x, y, data)
         end
     end
 
-    if top_y < -256 then
+    if top_y < 0 then
+        process_bits(x, y, data)
         if math_random(1, chance_for_wagon_spawn) == 1 then
             place_wagon(data)
         end
+        return
     end
 
-    if top_y < 0 then
-        process_bits(x, y, data)
+    if top_y > 120 then
+        out_of_map(x, y, data)
+        return
+    end
+
+    if top_y > 75 then
+        biter_chunk(data)
+        return
+    end
+
+    if top_y >= 0 then
+        border_chunk(data)
+        return
     end
 end
+
+Event.add(
+    defines.events.on_chunk_generated,
+    function(e)
+        local surface = e.surface
+        local map_name = 'mountain_fortress_v3'
+
+        if string.sub(surface.name, 0, #map_name) ~= map_name then
+            return
+        end
+
+        local area = e.area
+        local left_top = area.left_top
+        if not surface then
+            return
+        end
+        if not surface.valid then
+            return
+        end
+
+        if left_top.y > 32 then
+            game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+        end
+    end
+)
 
 return Public

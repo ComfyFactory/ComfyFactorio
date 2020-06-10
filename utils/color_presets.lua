@@ -144,6 +144,7 @@ return {
     gainsboro = {r = 220, g = 220, b = 220},
     white_smoke = {r = 245, g = 245, b = 245},
     white = {r = 255, g = 255, b = 255},
+    comfy = {r = 0.98, g = 0.66, b = 0.22},
     jailed = {r = 255, g = 255, b = 255},
     trusted = {r = 192, g = 192, b = 192},
     regular = {r = 0.155, g = 0.540, b = 0.898},

@@ -1,8 +1,8 @@
 local Global = require 'utils.global'
+local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 
 local this = {
-    gui = {},
     data = {}
 }
 local Public = {}
@@ -26,19 +26,34 @@ local function addStyle(guiIn, styleIn)
     end
 end
 
-local function build_prototype_data(item_name)
-    local localised_name
-    for name, prototype in pairs(game.item_prototypes) do
-        if item_name == name then
-            localised_name = prototype.localised_name
-        end
-    end
-
-    return localised_name
-end
-
 local function adjustSpace(guiIn)
     addStyle(guiIn.add {type = 'line', direction = 'horizontal'}, space)
+end
+
+local function validate_object(obj)
+    if not obj then
+        return false
+    end
+    if not obj.valid then
+        return false
+    end
+    return true
+end
+
+local function player_opened(player)
+    local data = this.data[player.index]
+
+    if not data then
+        return false
+    end
+
+    local opened = data.player_opened
+
+    if not validate_object(opened) then
+        return false
+    end
+
+    return true, opened
 end
 
 local function validate_player(player)
@@ -61,38 +76,47 @@ local function validate_player(player)
 end
 
 local function close_player_inventory(player)
-    local element = player.gui.center
     local data = this.data[player.index]
+
     if not data then
         return
     end
 
-    if element and element.valid then
-        element = element['inventory_gui']
-        if element and element.valid then
-            element.destroy()
-        end
-        if data.frame and data.frame.valid then
-            data.frame.destroy()
-        end
-        Public.reset_table(player)
+    local gui = player.gui.screen
+
+    if not validate_object(gui) then
+        return
     end
+
+    local element = gui.inventory_gui
+
+    if not validate_object(element) then
+        return
+    end
+
+    element.destroy()
+    Public.reset_table(player)
 end
 
 local function redraw_inventory(gui, source, target, caption, panel_type)
     gui.clear()
 
     local items_table = gui.add({type = 'table', column_count = 11})
-    local prototype
+    local types = game.item_prototypes
 
-    local mod_gui = this.gui[source.index].inventory_gui
-    mod_gui.caption = 'Inventory of ' .. target.name
+    local screen = source.gui.screen
+
+    if not validate_object(screen) then
+        return
+    end
+
+    local inventory_gui = screen.inventory_gui
+
+    inventory_gui.caption = 'Inventory of ' .. target.name
 
     for name, opts in pairs(panel_type) do
         local flow = items_table.add({type = 'flow'})
         flow.style.vertical_align = 'bottom'
-
-        prototype = build_prototype_data(name)
 
         local button =
             flow.add(
@@ -101,41 +125,36 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
                 sprite = 'item/' .. name,
                 number = opts,
                 name = name,
-                tooltip = prototype,
+                tooltip = types[name].localised_name,
                 style = 'slot_button'
             }
         )
         button.enabled = false
 
         if caption == 'Armor' then
-            if not target.get_inventory(5)[1].grid then
-                return
-            end
-            local p_armor = target.get_inventory(5)[1].grid.get_contents()
-            for k, v in pairs(p_armor) do
-                prototype = build_prototype_data(k)
-                local armor_gui =
-                    flow.add(
-                    {
-                        type = 'sprite-button',
-                        sprite = 'item/' .. k,
-                        number = v,
-                        name = k,
-                        tooltip = prototype,
-                        style = 'slot_button'
-                    }
-                )
-                armor_gui.enabled = false
+            if target.get_inventory(5)[1].grid then
+                local p_armor = target.get_inventory(5)[1].grid.get_contents()
+                for k, v in pairs(p_armor) do
+                    local armor_gui =
+                        flow.add(
+                        {
+                            type = 'sprite-button',
+                            sprite = 'item/' .. k,
+                            number = v,
+                            name = k,
+                            tooltip = types[name].localised_name,
+                            style = 'slot_button'
+                        }
+                    )
+                    armor_gui.enabled = false
+                end
             end
         end
-
-        ::continue::
     end
 end
 
 local function add_inventory(panel, source, target, caption, panel_type)
     local data = this.data[source.index]
-    data.item_frame = data.item_frame or {}
     data.panel_type = data.panel_type or {}
     local pane_name = panel.add({type = 'tab', caption = caption})
     local scroll_pane =
@@ -151,7 +170,6 @@ local function add_inventory(panel, source, target, caption, panel_type)
     scroll_pane.style.right_padding = 0
     panel.add_tab(pane_name, scroll_pane)
 
-    data.item_frame[caption] = scroll_pane
     data.panel_type[caption] = panel_type
 
     redraw_inventory(scroll_pane, source, target, caption, panel_type)
@@ -166,14 +184,19 @@ local function open_inventory(source, target)
         return
     end
 
-    local mod_gui = this.gui[source.index]
-    local menu_frame = mod_gui.inventory_gui
-    if menu_frame then
-        menu_frame.destroy()
+    local screen = source.gui.screen
+
+    if not validate_object(screen) then
+        return
+    end
+
+    local inventory_gui = screen.inventory_gui
+    if inventory_gui then
+        close_player_inventory(source)
     end
 
     local frame =
-        mod_gui.add(
+        screen.add(
         {
             type = 'frame',
             caption = 'Inventory',
@@ -191,19 +214,26 @@ local function open_inventory(source, target)
 
     local panel = frame.add({type = 'tabbed-pane'})
 
-    this.data[source.index].frame = frame
     this.data[source.index].player_opened = target
 
+    local main = target.get_main_inventory().get_contents()
+    local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
+    local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
+    local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()
+    local trash = target.get_inventory(defines.inventory.character_trash).get_contents()
+
     local types = {
-        ['Main'] = target.get_main_inventory().get_contents(),
-        ['Armor'] = target.get_inventory(defines.inventory.character_armor).get_contents(),
-        ['Guns'] = target.get_inventory(defines.inventory.character_guns).get_contents(),
-        ['Ammo'] = target.get_inventory(defines.inventory.character_ammo).get_contents(),
-        ['Trash'] = target.get_inventory(defines.inventory.character_trash).get_contents()
+        ['Main'] = main,
+        ['Armor'] = armor,
+        ['Guns'] = guns,
+        ['Ammo'] = ammo,
+        ['Trash'] = trash
     }
 
     for k, v in pairs(types) do
-        add_inventory(panel, source, target, k, v)
+        if v ~= nil then
+            add_inventory(panel, source, target, k, v)
+        end
     end
 end
 
@@ -224,24 +254,23 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 
-    if not this.gui[player.index] then
-        this.gui[player.index] = player.gui.screen
-    end
     if not this.data[player.index] then
         this.data[player.index] = {}
     end
 end
 
-local function on_player_left_game(event)
+local function on_pre_player_left_game(event)
     local player = game.players[event.player_index]
-    Public.reset_table(player)
+    close_player_inventory(player)
 end
 
 local function update_gui()
-    for _, source in pairs(game.connected_players) do
-        local target = this.data[source.index].player_opened
-        if target then
-            open_inventory(source, target)
+    for _, player in pairs(game.connected_players) do
+        local valid, target = player_opened(player)
+        if valid then
+            open_inventory(player, target)
+        else
+            close_player_inventory(player)
         end
     end
 end
@@ -252,13 +281,27 @@ commands.add_command(
     function(cmd)
         local player = game.player
 
-        if player and player ~= nil then
-            if cmd.parameter == nil then
+        if validate_player(player) then
+            if not cmd.parameter then
                 return
             end
             local target_player = game.players[cmd.parameter]
-            if target_player then
+
+            if target_player == player then
+                return player.print('Cannot open self.', Color.warning)
+            end
+
+            local valid, opened = player_opened(player)
+            if valid then
+                if target_player == opened then
+                    return player.print('You are already viewing this players inventory.', Color.warning)
+                end
+            end
+
+            if validate_player(target_player) then
                 open_inventory(player, target_player)
+            else
+                player.print('Please type a name of a player who is connected.', Color.warning)
             end
         else
             return
@@ -266,14 +309,18 @@ commands.add_command(
     end
 )
 
-function Public.get_table()
-    return this
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
 end
 
 function Public.reset_table(player)
-    if player then
+    if validate_player(player) then
         local data = this.data[player.index]
-        for k, _ in pairs(data) do
+        for k in pairs(data) do
             this.data[player.index][k] = nil
         end
     end
@@ -282,6 +329,6 @@ end
 Event.add(defines.events.on_player_main_inventory_changed, update_gui)
 Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 
 return Public

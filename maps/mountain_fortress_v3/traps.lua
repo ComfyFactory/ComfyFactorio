@@ -1,3 +1,6 @@
+local Event = require 'utils.event'
+local WPT = require 'maps.mountain_fortress_v3.table'
+
 local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*'}
 
 local kaboom_weights = {
@@ -84,31 +87,51 @@ local function tick_tack_trap(surface, position)
     if not position.y then
         return
     end
+    local traps = WPT.get('traps')
     local tick_tack_count = math.random(5, 9)
     for t = 60, tick_tack_count * 60, 60 do
-        if not global.on_tick_schedule[game.tick + t] then
-            global.on_tick_schedule[game.tick + t] = {}
+        if not traps[game.tick + t] then
+            traps[game.tick + t] = {}
         end
 
         if t < tick_tack_count * 60 then
-            global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-                func = create_flying_text,
-                args = {surface, {x = position.x, y = position.y}, tick_tacks[math.random(1, #tick_tacks)]}
+            traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                callback = 'create_flying_text',
+                params = {surface, {x = position.x, y = position.y}, tick_tacks[math.random(1, #tick_tacks)]}
             }
         else
             if math.random(1, 10) == 1 then
-                global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-                    func = create_flying_text,
-                    args = {surface, {x = position.x, y = position.y}, '( ͡° ͜ʖ ͡°)'}
+                traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                    callback = 'create_flying_text',
+                    params = {surface, {x = position.x, y = position.y}, '( ͡° ͜ʖ ͡°)'}
                 }
             else
-                global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-                    func = create_kaboom,
-                    args = {surface, {x = position.x, y = position.y}, kabooms[math.random(1, #kabooms)]}
+                traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                    callback = 'create_kaboom',
+                    params = {surface, {x = position.x, y = position.y}, kabooms[math.random(1, #kabooms)]}
                 }
             end
         end
     end
 end
+
+local function on_tick()
+    local traps = WPT.get('traps')
+    if not traps[game.tick] then
+        return
+    end
+    for _, token in pairs(traps[game.tick]) do
+        local callback = token.callback
+        local params = token.params
+        if callback == 'create_kaboom' then
+            create_kaboom(params[1], params[2], params[3])
+        elseif callback == 'create_flying_text' then
+            create_flying_text(params[1], params[2], params[3])
+        end
+    end
+    traps[game.tick] = nil
+end
+
+Event.add(defines.events.on_tick, on_tick)
 
 return tick_tack_trap

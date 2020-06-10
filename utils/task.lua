@@ -42,6 +42,8 @@ Global.register(
         callbacks = tbl.callbacks
         task_queue = tbl.task_queue
         primitives = tbl.primitives
+
+        PriorityQueue.load(callbacks, comparator)
     end
 )
 

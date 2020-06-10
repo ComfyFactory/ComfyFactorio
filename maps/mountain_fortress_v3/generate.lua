@@ -5,10 +5,8 @@ local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
 
-local insert = table.insert
-
-local tiles_per_call = 16 --how many tiles are inserted with each call of insert_action
-local total_calls
+local tiles_per_call = 8
+local total_calls = math.ceil(1024 / tiles_per_call)
 local regen_decoratives = false
 local force_chunk = false
 
@@ -19,7 +17,7 @@ Public.enable_register_events = true
 
 local function do_tile_inner(tiles, tile, pos)
     if type(tile) == 'string' then
-        insert(tiles, {name = tile, position = pos})
+        tiles[#tiles + 1] = {name = tile, position = pos}
     end
 end
 
@@ -36,45 +34,40 @@ local function do_tile(y, x, data, shape)
     if type(tile) == 'table' then
         do_tile_inner(data.tiles, tile.tile, pos)
 
-        local hidden_tile = tile.hidden_tile
-        if hidden_tile then
-            insert(data.hidden_tiles, {tile = hidden_tile, position = pos})
-        end
-
         local entities = tile.entities
         if entities then
-            for _, entity in ipairs(entities) do
+            for _, entity in pairs(entities) do
                 if not entity.position then
                     entity.position = pos
                 end
-                insert(data.entities, entity)
+                data.entities[#data.entities + 1] = entity
             end
         end
 
         local decoratives = tile.decoratives
         if decoratives then
-            for _, decorative in ipairs(decoratives) do
-                insert(data.decoratives, decorative)
+            for _, decorative in pairs(decoratives) do
+                data.decoratives[#data.decoratives + 1] = decorative
             end
         end
 
         local markets = tile.markets
         if markets then
-            for _, t in ipairs(markets) do
+            for _, t in pairs(markets) do
                 if not t.position then
                     t.position = pos
                 end
-                insert(data.markets, t)
+                data.markets[#data.markets + 1] = t
             end
         end
 
         local treasure = tile.treasure
         if treasure then
-            for _, t in ipairs(treasure) do
+            for _, t in pairs(treasure) do
                 if not t.position then
                     t.position = pos
                 end
-                insert(data.treasure, t)
+                data.treasure[#data.treasure + 1] = t
             end
         end
     else
@@ -103,48 +96,43 @@ local function do_row(row, data, shape)
         if type(tile) == 'table' then
             do_tile_inner(tiles, tile.tile, pos)
 
-            local hidden_tile = tile.hidden_tile
-            if hidden_tile then
-                insert(data.hidden_tiles, {tile = hidden_tile, position = pos})
-            end
-
             local entities = tile.entities
             if entities then
-                for _, entity in ipairs(entities) do
+                for _, entity in pairs(entities) do
                     if not entity.position then
                         entity.position = pos
                     end
-                    insert(data.entities, entity)
+                    data.entities[#data.entities + 1] = entity
                 end
             end
 
             local decoratives = tile.decoratives
             if decoratives then
-                for _, decorative in ipairs(decoratives) do
+                for _, decorative in pairs(decoratives) do
                     if not decorative.position then
                         decorative.position = pos
                     end
-                    insert(data.decoratives, decorative)
+                    data.decoratives[#data.decoratives + 1] = decorative
                 end
             end
 
             local markets = tile.markets
             if markets then
-                for _, t in ipairs(markets) do
+                for _, t in pairs(markets) do
                     if not t.position then
                         t.position = pos
                     end
-                    insert(data.markets, t)
+                    data.markets[#data.markets + 1] = t
                 end
             end
 
             local treasure = tile.treasure
             if treasure then
-                for _, t in ipairs(treasure) do
+                for _, t in pairs(treasure) do
                     if not t.position then
                         t.position = pos
                     end
-                    insert(data.treasure, t)
+                    data.treasure[#data.treasure + 1] = t
                 end
             end
         else
@@ -166,7 +154,7 @@ local function do_place_treasure(data)
         return
     end
 
-    for _, e in ipairs(data.treasure) do
+    for _, e in pairs(data.treasure) do
         if rnd(1, 6) == 1 then
             e.chest = 'iron-chest'
         end
@@ -209,17 +197,6 @@ local function do_place_tiles(data)
     data.surface.set_tiles(data.tiles, true)
 end
 
-local function do_place_hidden_tiles(data)
-    if not data.surface.valid then
-        return
-    end
-
-    local surface = data.surface
-    for _, t in ipairs(data.hidden_tiles) do
-        surface.set_hidden_tile(t.position, t.tile)
-    end
-end
-
 local function do_place_decoratives(data)
     if not data.surface.valid then
         return
@@ -244,7 +221,7 @@ local function do_place_entities(data)
     local entity
     local callback
 
-    for _, e in ipairs(data.entities) do
+    for _, e in pairs(data.entities) do
         if e.collision then
             if surface.can_place_entity(e) then
                 entity = surface.create_entity(e)
@@ -318,16 +295,16 @@ local function map_gen_action(data)
     local state = data.y
 
     if state < 32 then
-        if not data.surface.valid then
-            return
-        end
-
         local shape = Terrain
         if shape == nil then
             return false
         end
 
-        local count = total_calls
+        if not data.surface.valid then
+            return
+        end
+
+        local count = tiles_per_call
 
         local y = state + data.top_y
         local x = data.x
@@ -338,7 +315,6 @@ local function map_gen_action(data)
 
         repeat
             count = count - 1
-
             do_tile(y, x, data, shape)
 
             x = x + 1
@@ -362,26 +338,22 @@ local function map_gen_action(data)
         data.y = 33
         return true
     elseif state == 33 then
-        do_place_hidden_tiles(data)
+        do_place_entities(data)
         data.y = 34
         return true
     elseif state == 34 then
-        do_place_entities(data)
+        do_place_markets(data)
         data.y = 35
         return true
     elseif state == 35 then
-        do_place_markets(data)
+        do_place_treasure(data)
         data.y = 36
         return true
     elseif state == 36 then
-        do_place_treasure(data)
+        do_place_decoratives(data)
         data.y = 37
         return true
     elseif state == 37 then
-        do_place_decoratives(data)
-        data.y = 38
-        return true
-    elseif state == 38 then
         run_chart_update(data)
         return false
     end
@@ -395,6 +367,10 @@ function Public.schedule_chunk(event)
     local surface = event.surface
     local shape = Terrain
 
+    if event.tick < 1 then
+        return
+    end
+
     if not surface.valid then
         return
     end
@@ -406,7 +382,7 @@ function Public.schedule_chunk(event)
     local area = event.area
 
     local data = {
-        yv = 0,
+        yv = -1,
         xv = 0,
         y = 0,
         x = area.left_top.x,
@@ -415,7 +391,6 @@ function Public.schedule_chunk(event)
         top_y = area.left_top.y,
         surface = surface,
         tiles = {},
-        hidden_tiles = {},
         entities = {},
         decoratives = {},
         markets = {},
@@ -446,14 +421,13 @@ function Public.do_chunk(event)
     local area = event.area
 
     local data = {
-        yv = 0,
-        xv = 1,
+        yv = -0,
+        xv = 0,
         area = area,
         top_x = area.left_top.x,
         top_y = area.left_top.y,
         surface = surface,
         tiles = {},
-        hidden_tiles = {},
         entities = {},
         decoratives = {},
         markets = {},
@@ -469,7 +443,6 @@ function Public.do_chunk(event)
     end
 
     do_place_tiles(data)
-    do_place_hidden_tiles(data)
     do_place_entities(data)
     do_place_decoratives(data)
     do_place_markets(data)
@@ -478,15 +451,6 @@ end
 
 local do_chunk = Public.do_chunk
 local schedule_chunk = Public.schedule_chunk
-
-function Public.init(args)
-    if args then
-        tiles_per_call = args.tiles_per_call or 16
-        regen_decoratives = args.regen_decoratives or false
-    end
-
-    total_calls = math.ceil(1024 / tiles_per_call)
-end
 
 local function on_chunk(event)
     if force_chunk then
@@ -499,6 +463,5 @@ local function on_chunk(event)
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk)
-Public.init()
 
 return Public

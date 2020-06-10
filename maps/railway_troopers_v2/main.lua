@@ -103,7 +103,7 @@ local function map_reset()
     global.collapse_x = -96
     global.collapse_tiles = {}
 
-    reset_difficulty_poll()
+    Difficulty.reset_difficulty_poll()
     Diff.difficulty_poll_closing_timeout = game.tick + 7200
 
     game.difficulty_settings.technology_price_multiplier = 0.5

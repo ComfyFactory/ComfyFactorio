@@ -290,7 +290,8 @@ Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
 
-Event.add(defines.events.on_tick, tick)
+Event.on_nth_tick(20, tick)
+--Event.add(defines.events.on_tick, tick)
 Event.add(defines.events.on_entity_died, turret_died)
 
 return Public
