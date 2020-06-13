@@ -6,7 +6,6 @@ require "modules.no_deconstruction_of_neutral_entities"
 --require "modules.no_solar"
 require "maps.chronosphere.comfylatron"
 require "maps.chronosphere.terrain"
-require "on_tick_schedule"
 require "modules.biter_noms_you"
 -- require "modules.custom_death_messages"
 local Server = require 'utils.server'

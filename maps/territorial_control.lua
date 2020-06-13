@@ -1,7 +1,6 @@
 -- territorial control by Gerkiz
 
 local Map = require "modules.map_info"
-require "on_tick_schedule"
 require "modules.fish_respawner"
 global.fish_respawner_water_tiles_per_fish = 16
 
@@ -126,7 +125,7 @@ local function secret_shop(pos, surface)
 	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'iron-ore', count = math_random(25,75)}},
 	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'copper-ore', count = math_random(25,75)}},
 	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'stone', count = math_random(25,75)}},
-	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'coal', count = math_random(25,75)}},	
+	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'coal', count = math_random(25,75)}},
 	{price = {{"coin", 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = math_random(25,75)}}
 	}
 	secret_market_items = shuffle(secret_market_items)
@@ -240,7 +239,7 @@ local function get_noise_tile(position)
 
 	local noise_2 = get_noise("water", position)
 	if noise_2 > 0.71 then
-		tile_name = "water"	
+		tile_name = "water"
 		if noise_2 > 0.78 then
 			tile_name = "deepwater"
 		end
@@ -259,7 +258,7 @@ local function uncover_map(surface, position, radius_min, radius_max)
 	local fishes = {}
 	for r = radius_min, radius_max, 1 do
 		for _, position_modifier in pairs(circles[r]) do
-			local pos = {x = position.x + position_modifier.x, y = position.y + position_modifier.y} 
+			local pos = {x = position.x + position_modifier.x, y = position.y + position_modifier.y}
 			if surface.get_tile(pos).name == "out-of-map" then
 				local tile_name = get_noise_tile(pos)
 				insert(tiles, {name = tile_name, position = pos})
@@ -292,7 +291,7 @@ local function uncover_map(surface, position, radius_min, radius_max)
 		surface.set_tiles(tiles, true)
 	end
 	for _, fish in pairs(fishes) do
-		surface.create_entity({name = "fish", position = fish}) 
+		surface.create_entity({name = "fish", position = fish})
 	end
 end
 
@@ -346,7 +345,7 @@ local function uncover_map_for_player(player)
 		uncover_map(surface, pos, 1, 16)
 	end
 	for _, fish in pairs(fishes) do
-		surface.create_entity({name = "fish", position = fish}) 
+		surface.create_entity({name = "fish", position = fish})
 	end
 
 end
@@ -405,7 +404,7 @@ local function on_player_joined_game(event)
 	end
 
 	local surface = game.surfaces["territorial_control"]
-	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then 
+	if player.online_time < 2 and surface.is_chunk_generated({0,0}) then
 		player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 1), "territorial_control")
 	else
 		if player.online_time < 2 then

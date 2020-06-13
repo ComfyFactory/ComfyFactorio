@@ -1,6 +1,5 @@
 --overgrowth-- by mewmew --
 
-require 'on_tick_schedule'
 require 'modules.dynamic_landfill'
 require 'modules.satellite_score'
 require 'modules.spawners_contain_biters'

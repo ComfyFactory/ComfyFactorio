@@ -1,6 +1,5 @@
 local event = require 'utils.event'
 local simplex_noise = require 'utils.simplex_noise'.d2
-require "on_tick_schedule"
 require "modules.satellite_score"
 require "modules.biter_noms_you"
 require "modules.dangerous_goods"
@@ -26,29 +25,29 @@ local function init_surface()
 	local map_gen_settings = {}
 	map_gen_settings.water = "0.12"
 	map_gen_settings.starting_area = "0.5"
-	map_gen_settings.cliff_settings = {cliff_elevation_interval = 7, cliff_elevation_0 = 7}		
+	map_gen_settings.cliff_settings = {cliff_elevation_interval = 7, cliff_elevation_0 = 7}
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = "0", size = "7", richness = "1"},
 		["stone"] = {frequency = "0", size = "2.0", richness = "0.5"},
 		["iron-ore"] = {frequency = "0", size = "2.0", richness = "0.5"},
 		["copper-ore"] = {frequency = "0", size = "2.0", richness = "0.5"},
-		["uranium-ore"] = {frequency = "0", size = "1", richness = "0.5"},		
+		["uranium-ore"] = {frequency = "0", size = "1", richness = "0.5"},
 		["crude-oil"] = {frequency = "5", size = "1", richness = "1"},
 		["trees"] = {frequency = "3", size = "0.85", richness = "0.1"},
 		["enemy-base"] = {frequency = "5", size = "3", richness = "1"}
 	}
 
 	game.difficulty_settings.technology_price_multiplier = 2
-		
-	local surface = game.create_surface("rocky_waste", map_gen_settings)				
+
+	local surface = game.create_surface("rocky_waste", map_gen_settings)
 	surface.request_to_generate_chunks({x = 0, y = 0}, 3)
 	surface.force_generate_chunk_requests()
 	surface.daytime = 0.7
 	surface.ticks_per_day = surface.ticks_per_day * 2
 	surface.min_brightness = 0.1
-	
+
 	game.forces["player"].set_spawn_position({0,0},game.surfaces["rocky_waste"])
-	
+
 	return surface
 end
 
@@ -67,7 +66,7 @@ local function get_noise(name, pos)
 		noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
 		seed = seed + noise_seed_add
 		noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-		local noise = noise[1] + noise[2] * 0.35 + noise[3] * 0.23 + noise[4] * 0.11		
+		local noise = noise[1] + noise[2] * 0.35 + noise[3] * 0.23 + noise[4] * 0.11
 		return noise
 	end
 	seed = seed + noise_seed_add * 5
@@ -75,24 +74,24 @@ local function get_noise(name, pos)
 		local noise = {}
 		noise[1] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
 		seed = seed + noise_seed_add
-		noise[2] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)		
-		local noise = noise[1] + noise[2] * 0.1	
+		noise[2] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
+		local noise = noise[1] + noise[2] * 0.1
 		return noise
 	end
 end
 
 local function process_tile(surface, pos)
-	
+
 	local tile = surface.get_tile(pos)
 	if tile.collides_with("player-layer") then return end
 
-	local noise = get_noise(1, pos)		
-	
+	local noise = get_noise(1, pos)
+
 	if noise < 0.09 and noise > -0.09 then
 		return
 	end
-	
-	local noise_2 = get_noise(2, pos)	
+
+	local noise_2 = get_noise(2, pos)
 	if noise_2 < 0.06 and noise_2 > -0.06 then
 		if math.random(1,6) ~= 1 then
 			surface.set_tiles({{name = "water", position = pos}})
@@ -102,7 +101,7 @@ local function process_tile(surface, pos)
 		end
 		return
 	end
-	
+
 	if math.random(1,6) ~= 1 then
 		surface.create_entity({name = "rock-big", position = pos, force = "neutral"})
 	end
@@ -127,28 +126,28 @@ local function on_chunk_generated(event)
 			process_tile(surface, pos)
 		end
 	end
-	
+
 	for _, e in pairs(surface.find_entities_filtered({type = "unit-spawner", area = event.area})) do
 		clear_entities_around_position(surface, 7, e.position, {"rock-big"})
 	end
-	
+
 	for _, e in pairs(surface.find_entities_filtered({type = "cliff", area = event.area})) do
 		clear_entities_around_position(surface, 2.25, e.position, {"rock-big"})
 	end
-	
+
 	for _, e in pairs(surface.find_entities_filtered({type = "tree", area = event.area})) do
 		clear_entities_around_position(surface, 1, e.position, {"rock-big"})
 	end
-	
+
 	if left_top.x == 128 and left_top.y == 128 then
 		clear_entities_around_position(surface, 5, {x = 0, y = 0}, {"rock-big"})
 	end
 end
 
 local function on_player_joined_game(event)
-	local surface = init_surface()	
+	local surface = init_surface()
 	local player = game.players[event.player_index]
-	
+
 	if player.online_time == 0 then
 		if not spawn_pos then spawn_pos = {x = 0, y = 0} end
 		game.forces.player.set_spawn_position(spawn_pos, surface)
@@ -164,14 +163,14 @@ local unearthing_biters = require "functions.unearthing_biters"
 
 local function on_player_mined_entity(event)
 	local entity = event.entity
-	if not entity.valid then return end	
+	if not entity.valid then return end
 	if entity.force.name ~= "neutral" then return end
 	if math.random(1,256) == 1 then unearthing_worm(entity.surface, entity.position) return end
-	if math.random(1,256) == 1 then unearthing_biters(entity.surface, entity.position, math.random(4,16)) return end		
+	if math.random(1,256) == 1 then unearthing_biters(entity.surface, entity.position, math.random(4,16)) return end
 end
 
 local function on_init()
-	
+
 end
 
 event.on_init(on_init)

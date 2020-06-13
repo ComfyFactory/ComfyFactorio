@@ -4,7 +4,6 @@ require 'maps.lumberjack.comfylatron'
 require 'maps.lumberjack.commands'
 require 'maps.lumberjack.corpse_util'
 
-require 'on_tick_schedule'
 require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
 require 'modules.burden'
