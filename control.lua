@@ -53,7 +53,7 @@ require 'modules.autostash'
 --require 'modules.show_health'
 --require 'modules.splice_double'
 --require 'modules.ores_are_mixed'
---require 'modules.team_teleport' --(REQUIRES "on_tick_schedule" !)
+--require 'modules.team_teleport'
 --require 'modules.surrounded_by_worms'
 --require 'modules.no_blueprint_library'
 --require 'modules.explosives'
