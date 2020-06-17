@@ -117,6 +117,7 @@ function Public_chrono.objective_died()
 	for i = 1, 3, 1 do
 		surface.create_entity({name = "big-artillery-explosion", position = objective.locomotive_cargo[i].position})
 		objective.locomotive_cargo[i].destroy()
+		objective.locomotive_cargo[i] = nil
 	end
 	for i = 1, #objective.comfychests,1 do
 		--surface.create_entity({name = "big-artillery-explosion", position = objective.comfychests[i].position})

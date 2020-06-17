@@ -3,6 +3,8 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Ores = require "maps.chronosphere.ores"
 local Specials = require "maps.chronosphere.terrain_specials"
+local Difficulty = require 'modules.difficulty_vote'
+local Balance = require "maps.chronosphere.balance"
 local math_random = math.random
 local math_floor = math.floor
 local math_min = math.min
@@ -596,6 +598,9 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
   local body_circle_center_1 = {x = body_center_position.x, y = body_center_position.y - body_spacing}
   local body_circle_center_2 = {x = body_center_position.x, y = body_center_position.y + body_spacing}
 
+  local difficulty = Difficulty.get().difficulty_vote_value
+  local biters = Balance.fish_market_base_modifier(difficulty)
+
   --local fin_radius = 200
   --local square_fin_radius = fin_radius ^ 2
   --local fin_circle_center_1 = {x = -600, y = 0}
@@ -618,7 +623,7 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
         tiles[#tiles + 1] = {name = "water", position = p}
       else
         tiles[#tiles + 1] = {name = "grass-1", position = p}
-        local roll = math_random(1,500)
+        local roll = math_random(1, biters)
         if roll < 4 and p.x > -800 then
           entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
         elseif roll == 5 and p.x > -800 then
@@ -635,7 +640,7 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
 				tiles[#tiles + 1] = {name = "out-of-map", position = p}
 			else --rest
         tiles[#tiles + 1 ] = {name = "grass-1", position = p}
-        local roll = math_random(1,500)
+        local roll = math_random(1, biters)
         if roll < 4 and p.x > -800 then
           entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
         elseif roll == 5 and p.x > -800 then
@@ -651,7 +656,7 @@ local function process_fish_position(p, seed, tiles, entities, treasure, planet)
   else
     if p.x > 800 and math_abs(p.y) < p.x - 800 then --tail
       tiles[#tiles + 1 ] = {name = "grass-1", position = p}
-      local roll = math_random(1,500)
+      local roll = math_random(1, biters)
       if roll < 4 and p.x > -800 then
         entities[#entities + 1] = {name = spawner_raffle[math_random(1, 4)], position = p}
       elseif roll == 5 and p.x > -800 then

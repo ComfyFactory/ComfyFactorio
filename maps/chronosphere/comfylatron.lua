@@ -395,7 +395,7 @@ local function talks(nearby_characters)
 		local arg2 = symbols[math_random(1, #symbols)]
 		local randomphrase = texts["convo_starters"][math_random(1, #texts["convo_starters"])]
 		str = str .. string.format(randomphrase, arg1, arg2)
-		if math_random(1,40) == 1 and objective.planet[1].type.id ~= 10 and global.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
+		if math_random(1,40) == 1 and objective.planet[1].type.id ~= 10 and objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
 			local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
 			local time_until_evo = (objective.chronochargesneeded * 0.5 / objective.passive_chronocharge_rate - objective.passivetimer)
 			if time_until_evo < 0 and time_until_overstay > 0 then

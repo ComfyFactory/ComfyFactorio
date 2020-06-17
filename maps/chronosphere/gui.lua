@@ -401,9 +401,11 @@ function Public_gui.on_gui_click(event)
 		planet_gui(player)
 		return
 	elseif event.element.name == "minimap_button" then
-		Minimap.minimap(player)
+		Minimap.minimap(player, false)
 	elseif event.element.name =="icw_map" or event.element.name == "icw_map_frame" then
 		Minimap.toggle_minimap(event)
+	elseif event.element.name == "switch_auto_map" then
+		Minimap.toggle_auto(player)
 	end
 
 	if event.element.type ~= "button" and event.element.type ~= "sprite-button" then return end

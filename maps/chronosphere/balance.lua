@@ -188,7 +188,9 @@ function Public.upgrades_coin_cost_difficulty_scaling(difficulty) return difficu
 
 function Public.flamers_nerfs_size(jumps, difficulty) return 0.02 * jumps * difficulty_sloped(difficulty, 1/2) end
 
-function Public.max_new_attack_group_size(difficulty) return math_max(200,math_floor(120 * difficulty_sloped(difficulty, 1))) end
+function Public.max_new_attack_group_size(difficulty) return math_min(200,math_floor(120 * difficulty_sloped(difficulty, 1/2))) end
+
+function Public.fish_market_base_modifier(difficulty) return math_floor(500 / difficulty_sloped(difficulty, 1/2)) end
 
 function Public.evoramp50_multiplier_per_10s(difficulty) return (1 + 1/600 * difficulty_sloped(difficulty, 1)) end
 
@@ -311,7 +313,7 @@ function Public.treasure_quantity_difficulty_scaling(difficulty) return difficul
 
 function Public.Base_ore_loot_yield(jumps, scrap)
 	if scrap then
-		return 5 + 1 * jumps
+		return 4 + 0.5 * jumps
 	else
 		return 15 + 3 * jumps
 	end

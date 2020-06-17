@@ -153,7 +153,7 @@ local function reset_map()
 	generate_overworld(surface, planet)
 	Chrono.restart_settings()
 	for _,player in pairs(game.players) do
-		Minimap.minimap(player)
+		Minimap.minimap(player, true)
 	end
 
 	game.forces.player.set_spawn_position({12, 10}, surface)
@@ -268,7 +268,6 @@ function Public.chronojump(choice)
 	objective.lab_cells = {}
 	objective.active_surface_index = game.create_surface("chronosphere" .. objective.chronojumps, Chrono.get_map_gen_settings()).index
 	local surface = game.surfaces[objective.active_surface_index]
-	--log("seed of new surface: " .. surface.map_gen_settings.seed)
 	local planet = objective.planet
 	if choice then
 		Planets.determine_planet(choice)
@@ -283,6 +282,7 @@ function Public.chronojump(choice)
 	game.delete_surface(oldsurface)
 	Chrono.post_jump()
 	Event_functions.flamer_nerfs()
+	Minimap.update_minimap()
 
 	--
     local pos = objective.locomotive.position or {x=0,y=0}
@@ -534,7 +534,6 @@ local function on_init()
     end
 
 	reset_map()
-	--if game.surfaces["nauvis"] then game.delete_surface(game.surfaces["nauvis"]) end
 end
 
 -- local function on_load()
@@ -647,7 +646,7 @@ local function on_player_driving_changed_state(event)
 	local player = game.players[event.player_index]
 	local vehicle = event.entity
 	Locomotive.enter_cargo_wagon(player, vehicle)
-	Minimap.minimap(player)
+	Minimap.minimap(player, true)
 end
 
 -- function deny_building(event)

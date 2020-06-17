@@ -29,7 +29,8 @@ function Public_tick.realtime_events()
   if objective.jump_countdown_start_time == -1 and objective.passivetimer == math_floor(objective.chronochargesneeded * 0.50 / objective.passive_chronocharge_rate) and objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
 		game.print({"chronosphere.message_rampup50"}, {r=0.98, g=0.66, b=0.22})
   end
-
+  
+  if objective.game_lost then return end
   if objective.jump_countdown_start_time ~= -1 then
     if objective.passivetimer == objective.jump_countdown_start_time + 180 - 60 then
       game.print({"chronosphere.message_jump60"}, {r=0.98, g=0.66, b=0.22})
