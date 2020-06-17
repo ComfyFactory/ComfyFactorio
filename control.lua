@@ -155,6 +155,14 @@ end
 
 local function on_init()
     game.forces.player.research_queue_enabled = true
+    game.permissions.get_group('Default').set_allows_action(
+        defines.input_action.flush_opened_entity_fluid,
+        false
+    )
+    game.permissions.get_group('Default').set_allows_action(
+        defines.input_action.flush_opened_entity_specific_fluid,
+        false
+    )
 end
 
 local loaded = _G.package.loaded
