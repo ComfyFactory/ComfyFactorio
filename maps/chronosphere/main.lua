@@ -9,6 +9,7 @@ require "maps.chronosphere.terrain"
 require "modules.biter_noms_you"
 -- require "modules.custom_death_messages"
 local Server = require 'utils.server'
+local Chrono_table = require 'maps.chronosphere.table'
 local Ai = require "maps.chronosphere.ai"
 local Planets = require "maps.chronosphere.chronobubles"
 local Ores =require "maps.chronosphere.ores"
@@ -20,7 +21,6 @@ local Event_functions = require "maps.chronosphere.event_functions"
 local Balance = require "maps.chronosphere.balance"
 local Rand = require 'maps.chronosphere.random'
 local Chrono = require "maps.chronosphere.chrono"
-local Chrono_table = require 'maps.chronosphere.table'
 local Locomotive = require "maps.chronosphere.locomotive"
 local Minimap = require "maps.chronosphere.minimap"
 local Gui = require "maps.chronosphere.gui"

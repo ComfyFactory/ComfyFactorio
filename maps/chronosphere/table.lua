@@ -44,6 +44,7 @@ function Public.reset_table()
 	chronosphere.offline_players = {}
 	chronosphere.nextsurface = nil
 	chronosphere.upgrades = {}
+  chronosphere.upgrades_on = {}
 	chronosphere.outchests = {}
 	chronosphere.upgradechest = {}
 	chronosphere.fishchest = {}

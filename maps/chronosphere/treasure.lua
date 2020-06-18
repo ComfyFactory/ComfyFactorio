@@ -20,7 +20,7 @@ local function treasure_chest_loot(difficulty, planet)
 	local loot_data_raw= {
 		--always there (or normally always there):
 
-		{8, 0, 1, false, "coin", 4, 60},
+		{8, 0, 1, false, "coin", 50, 200},
 
 		{4, 0, 1, false, "pistol", 1, 2},
 		{1, 0, 1, false, "gun-turret", 2, 4},

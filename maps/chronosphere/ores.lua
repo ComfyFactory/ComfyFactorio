@@ -130,7 +130,7 @@ function Public_ores.prospect_ores(entity, surface, pos)
     if entity.name == "rock-huge" then chance = 45 end
     if entity.type == "unit-spawner" then chance = 45 end
     if planet[1].type.id == 15 then chance = chance + 30 end
-    if math_random(chance + math_floor(10 * planet[1].ore_richness.factor), 100 + chance) >= 100 then
+    if math_random(chance + math_floor(20 * planet[1].ore_richness.factor), 100 + chance) >= 100 then
       spawn_ore_vein(surface, pos, planet, extrasize)
     end
   else
