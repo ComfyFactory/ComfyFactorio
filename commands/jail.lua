@@ -15,63 +15,80 @@ local jail_messages = {
     'Busted!'
 }
 
-local function jail(target_player, source_player)
-    local source = source_player.name or 'Server'
-    local permission_group = game.permissions.get_group('prisoner')
-    if not permission_group then
-        permission_group = game.permissions.create_group('prisoner')
-        for action_name, _ in pairs(defines.input_action) do
-            if permission_group then
-                permission_group.set_allows_action(defines.input_action[action_name], false)
-            end
-        end
-        if permission_group then
-            permission_group.set_allows_action(defines.input_action.write_to_console, true)
-            permission_group.set_allows_action(defines.input_action.gui_click, true)
-            permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
-        end
-    end
-    local permission_group_players = permission_group.players
-    for k, v in pairs(permission_group_players) do
-        if target_player.name == v.name then
-            source_player.print(target_player.name .. ' is already jailed.', {r = 0.98, g = 0.66, b = 0.22})
-            return
-        end
-    end
-    if permission_group then
-        permission_group.add_player(target_player.name)
-    end
-    game.print(
-        target_player.name .. ' has been jailed. ' .. jail_messages[math.random(1, #jail_messages)],
-        {r = 0.98, g = 0.66, b = 0.22}
-    )
-    admin_only_message(target_player.name .. ' was jailed by ' .. source)
-end
-
 local freedom_messages = {
     'Yaay!',
     'Welcome back!'
 }
-local function free(target_player, source_player)
-    local source = source_player.name or 'Server'
-    local permission_group = game.permissions.get_group('Default')
-    local permission_group_players = permission_group.players
-    if permission_group and permission_group_players then
-        for k, v in pairs(permission_group_players) do
+
+local function jail(target_player, source_player)
+    local group = game.permissions.get_group('prisoner')
+    if not group then
+        group = game.permissions.create_group('prisoner')
+        for action_name, _ in pairs(defines.input_action) do
+            group.set_allows_action(defines.input_action[action_name], false)
+        end
+        group.set_allows_action(defines.input_action.write_to_console, true)
+        group.set_allows_action(defines.input_action.gui_click, true)
+        group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
+    end
+
+    if group and group.players then
+        for k, v in pairs(group.players) do
             if target_player.name == v.name then
-                source_player.print(target_player.name .. ' is already free.', {r = 0.98, g = 0.66, b = 0.22})
+                if source_player and source_player.valid then
+                    source_player.print(target_player.name .. ' is already jailed.', {r = 0.98, g = 0.66, b = 0.22})
+                else
+                    print(target_player.name .. ' is already jailed.', {r = 0.98, g = 0.66, b = 0.22})
+                end
                 return
             end
         end
     end
-    if permission_group then
-        permission_group.add_player(target_player.name)
+
+    group.add_player(target_player.name)
+    game.print(
+        target_player.name .. ' has been jailed. ' .. jail_messages[math.random(1, #jail_messages)],
+        {r = 0.98, g = 0.66, b = 0.22}
+    )
+    if source_player and source_player.valid then
+        admin_only_message(target_player.name .. ' was jailed by ' .. source_player.name)
+        Server.to_discord_bold(
+            table.concat {'[Jailed] ' .. target_player.name .. ' has been jailed by ' .. source_player.name .. '!'}
+        )
+    else
+        admin_only_message(target_player.name .. ' was jailed by Server')
+        Server.to_discord_bold(table.concat {'[Jailed] ' .. target_player.name .. ' has been jailed by Server!'})
     end
+end
+
+local function free(target_player, source_player)
+    local group = game.permissions.get_group('Default')
+    if group and group.players then
+        for k, v in pairs(group.players) do
+            if target_player.name == v.name then
+                if source_player and source_player.valid then
+                    source_player.print(target_player.name .. ' is already free.', {r = 0.98, g = 0.66, b = 0.22})
+                else
+                    print(target_player.name .. ' is already free.', {r = 0.98, g = 0.66, b = 0.22})
+                end
+                return
+            end
+        end
+    end
+    group.add_player(target_player.name)
     game.print(
         target_player.name .. ' was set free from jail. ' .. freedom_messages[math.random(1, #freedom_messages)],
         {r = 0.98, g = 0.66, b = 0.22}
     )
-    admin_only_message(source .. ' set ' .. target_player.name .. ' free from jail')
+    if source_player and source_player.valid then
+        admin_only_message(source_player.name .. ' set ' .. target_player.name .. ' free from jail')
+        Server.to_discord_bold(
+            table.concat {'[Unjailed] ' .. target_player.name .. ' has been unjailed by ' .. source_player.name .. '!'}
+        )
+    else
+        admin_only_message('Server set ' .. target_player.name .. ' free from jail')
+        Server.to_discord_bold(table.concat {'[Unjailed] ' .. target_player.name .. ' has been unjailed by Server!'})
+    end
 end
 
 commands.add_command(
@@ -108,9 +125,6 @@ commands.add_command(
                 end
                 trusted[target_player.name] = false
                 jail(target_player, player)
-                Server.to_discord_bold(
-                    table.concat {'[Jailed] ' .. target_player.name .. ' has been jailed by ' .. player.name .. '!'}
-                )
                 return
             end
         else
@@ -121,9 +135,6 @@ commands.add_command(
             if target_player then
                 trusted[target_player.name] = false
                 jail(target_player, 'Server')
-                Server.to_discord_bold(
-                    table.concat {'[Jailed] ' .. target_player.name .. ' has been jailed by Server!'}
-                )
                 return
             end
         end
@@ -163,9 +174,6 @@ commands.add_command(
                     return
                 end
                 free(target_player, player)
-                Server.to_discord_bold(
-                    table.concat {'[Unjailed] ' .. target_player.name .. ' has been unjailed by ' .. player.name .. '!'}
-                )
                 return
             end
         else
@@ -175,9 +183,6 @@ commands.add_command(
             local target_player = game.players[cmd.parameter]
             if target_player then
                 free(target_player, 'Server')
-                Server.to_discord_bold(
-                    table.concat {'[Unjailed] ' .. target_player.name .. ' has been unjailed by Server!'}
-                )
                 return
             end
         end
