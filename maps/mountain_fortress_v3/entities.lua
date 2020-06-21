@@ -491,7 +491,9 @@ local function boss_puncher(event)
 
     local wd = WD.get_table()
     if wd.boss_wave_warning or wd.wave_number >= 1000 then
-        kaboom(cause, entity, get_damage(event))
+        if math_random(1, 10) == 1 then
+            kaboom(cause, entity, get_damage(event))
+        end
         return
     end
 end
@@ -596,7 +598,7 @@ local function on_entity_died(event)
         if entity.type == 'unit' or entity_type == 'unit-spawner' then
             this.biters_killed = this.biters_killed + 1
         end
-        if math.random(1, 32) == 1 then
+        if math.random(1, 64) == 1 then
             hidden_biter(event.entity)
             return
         end
@@ -644,11 +646,15 @@ function Public.loco_died()
         local Reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
         wave_defense_table.game_lost = true
         wave_defense_table.target = nil
-        local pos = {
-            position = this.locomotive.position
-        }
+        local data = {}
+        if this.locomotive and this.locomotive.valid then
+            data.position = this.locomotive.position
+        else
+            data.position = {x = 0, y = 0}
+        end
+
         local msg = mapkeeper .. defeated_messages[math.random(1, #defeated_messages)] .. '\nBetter luck next time.'
-        Alert.alert_all_players_location(pos, msg)
+        Alert.alert_all_players_location(data, msg)
         Reset_map()
         return
     end

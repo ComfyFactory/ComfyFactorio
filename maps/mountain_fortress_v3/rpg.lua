@@ -93,9 +93,9 @@ local Public = {}
 local classes = {
     ['engineer'] = 'ENGINEER',
     ['strength'] = 'MINER',
-    ['magicka'] = 'SORCERER',
-    ['dexterity'] = 'ROGUE',
-    ['vitality'] = 'TANK'
+    ['magicka'] = 'SCIENTIST',
+    ['dexterity'] = 'BEASTMASTER',
+    ['vitality'] = 'SOLDIER'
 }
 
 local enemy_types = {
@@ -367,23 +367,40 @@ local function draw_gui(player, forced)
     local value
     local e
 
-    local frame = player.gui.left.add({type = 'frame', name = 'rpg', direction = 'vertical'})
-    frame.style.maximal_width = 425
-    frame.style.minimal_width = 425
-    frame.style.margin = 6
+    local frame =
+        player.gui.left.add({type = 'frame', name = 'rpg', direction = 'vertical', style = 'changelog_subheader_frame'})
+    frame.style.maximal_height = 800
+    frame.style.maximal_width = 440
+    frame.style.minimal_width = 440
+    frame.style.use_header_filler = false
+    frame.style.top_padding = 4
+    frame.style.bottom_padding = 4
+    frame.style.left_padding = 4
+    frame.style.right_padding = 10
 
-    add_separator(frame, 400)
+    local scroll_pane =
+        frame.add {
+        type = 'scroll-pane',
+        direction = 'vertical',
+        vertical_scroll_policy = 'always',
+        horizontal_scroll_policy = 'never'
+    }
+    scroll_pane.style.minimal_width = 400
+    scroll_pane.style.maximal_width = 450
+    scroll_pane.style.minimal_height = 600
+    scroll_pane.style.horizontally_squashable = false
+    scroll_pane.style.vertically_squashable = false
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = scroll_pane.add({type = 'table', column_count = 2})
     e = add_gui_stat(t, player.name, 200)
     e.style.font_color = player.chat_color
     e.style.font = 'default-large-bold'
     e = add_gui_stat(t, get_class(player), 200)
     e.style.font = 'default-large-bold'
 
-    add_separator(frame, 400)
+    add_separator(scroll_pane, 400)
 
-    t = frame.add({type = 'table', column_count = 4})
+    t = scroll_pane.add({type = 'table', column_count = 4})
     t.style.cell_padding = 1
 
     add_gui_description(t, 'LEVEL', 80)
@@ -418,9 +435,9 @@ local function draw_gui(player, forced)
     e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
     e.tooltip = gain_info_tooltip
 
-    add_separator(frame, 400)
+    add_separator(scroll_pane, 400)
 
-    local t = frame.add({type = 'table', column_count = 2})
+    local t = scroll_pane.add({type = 'table', column_count = 2})
     local tt = t.add({type = 'table', column_count = 3})
     tt.style.cell_padding = 1
     local w1 = 85
@@ -567,15 +584,15 @@ local function draw_gui(player, forced)
     e = add_gui_stat(tt, value, w2)
     e.tooltip = 'Health regen bonus: ' .. get_heal_modifier(player)
 
-    add_separator(frame, 400)
-    local t = frame.add({type = 'table', column_count = 14})
+    add_separator(scroll_pane, 400)
+    local t = scroll_pane.add({type = 'table', column_count = 14})
     for i = 1, 14, 1 do
         e = t.add({type = 'sprite', sprite = rpg_frame_icons[i]})
         e.style.maximal_width = 24
         e.style.maximal_height = 24
         e.style.padding = 0
     end
-    add_separator(frame, 400)
+    add_separator(scroll_pane, 400)
 
     rpg_t[player.index].gui_refresh_delay = game.tick + 60
     update_char_button(player)
@@ -660,13 +677,13 @@ local function global_pool(players, count)
         return
     end
 
-local pool = math_floor(rpg_extra.global_pool)
+    local pool = math_floor(rpg_extra.global_pool)
 
-local random_amount = math_random(5000, 10000)
+    local random_amount = math_random(5000, 10000)
 
-if pool <= random_amount then
-    return
-end
+    if pool <= random_amount then
+        return
+    end
 
     if pool >= 20000 then
         pool = 20000

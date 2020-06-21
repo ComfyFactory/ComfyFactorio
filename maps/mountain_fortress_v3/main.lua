@@ -1,6 +1,8 @@
 require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
+-- require 'maps.mountain_fortress_v3.nightfall'
+-- require 'maps.mountain_fortress_v3.void_away'
 
 require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
