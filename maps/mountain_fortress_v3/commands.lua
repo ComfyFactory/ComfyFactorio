@@ -1,5 +1,6 @@
 local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
+local Server = require 'utils.server'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
@@ -24,10 +25,10 @@ commands.add_command(
         local reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
         local param = cmd.parameter
 
-        if param == 'restart' or param == 'shutdown' or param == 'reset' then
+        if param == 'restart' or param == 'shutdown' or param == 'reset' or param == 'restartnow' then
             goto continue
         else
-            p('[ERROR] Arguments are restart or shutdown or reset.')
+            p('[ERROR] Arguments are:\nrestart\nshutdown\nreset\nrestartnow')
             return
         end
 
@@ -58,6 +59,11 @@ commands.add_command(
                 p('[WARNING] Soft-reset is disabled! Server will restart from scenario.')
                 return
             end
+        elseif param == 'restartnow' then
+            this.reset_are_you_sure = nil
+            p(player.name .. ' has restarted the game.')
+            Server.start_scenario('Mountain_Fortress_v3')
+            return
         elseif param == 'shutdown' then
             if this.shutdown then
                 this.reset_are_you_sure = nil

@@ -1,12 +1,9 @@
 require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
--- require 'maps.mountain_fortress_v3.nightfall'
--- require 'maps.mountain_fortress_v3.void_away'
 
 require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
-require 'modules.rocks_heal_over_time'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.rocks_yield_ore_veins'
 require 'modules.spawners_contain_biters'
@@ -61,7 +58,9 @@ local collapse_kill = {
         ['artillery-turret'] = true,
         ['landmine'] = true,
         ['locomotive'] = true,
-        ['cargo-wagon'] = true
+        ['cargo-wagon'] = true,
+        ['assembling-machine'] = true,
+        ['furnace'] = true
     },
     enabled = true
 }
@@ -266,7 +265,7 @@ function Public.reset_map()
     wave_defense_table.game_lost = false
     wave_defense_table.spawn_position = {x = 0, y = 100}
     WD.alert_boss_wave(true)
-    WD.clear_corpses(true)
+    WD.clear_corpses(false)
 
     set_difficulty()
 
@@ -344,8 +343,8 @@ local on_player_joined_game = function(event)
         )
     else
         local p = {x = player.position.x, y = player.position.y}
-        local oom = surface.get_tile(p).name == 'out-of-map'
-        if oom then
+        local get_tile = surface.get_tile(p)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
             player.teleport(
                 surface.find_non_colliding_position(
                     'character',
@@ -616,7 +615,7 @@ local on_init = function()
     this.rocks_yield_ore_distance_modifier = 0.025
 
     local T = Map.Pop_info()
-    T.localised_category = 'mountain_fortress'
+    T.localised_category = 'mountain_fortress_v3'
     T.main_caption_color = {r = 150, g = 150, b = 0}
     T.sub_caption_color = {r = 0, g = 150, b = 0}
 

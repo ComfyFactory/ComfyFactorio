@@ -2,7 +2,6 @@ local Event = require 'utils.event'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Gui = require 'utils.gui'
-local floor = math.floor
 local format_number = require 'util'.format_number
 
 local Public = {}
@@ -265,9 +264,9 @@ function Public.update_gui(player)
         gui.global_pool.caption = 'XP: 0'
         gui.global_pool.tooltip = 'Dig, handcraft or run to increase the pool!'
     elseif rpg_extra.global_pool >= 0 then
-        gui.global_pool.caption = 'XP: ' .. format_number(floor(rpg_extra.global_pool), true)
+        gui.global_pool.caption = 'XP: ' .. format_number(math.floor(rpg_extra.global_pool), true)
         gui.global_pool.tooltip =
-            'Amount of XP that is stored inside the global xp pool.\nRaw Value: ' .. floor(rpg_extra.global_pool)
+            'Amount of XP that is stored inside the global xp pool.\nRaw Value: ' .. math.floor(rpg_extra.global_pool)
     end
 
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(this.mined_scrap, true)

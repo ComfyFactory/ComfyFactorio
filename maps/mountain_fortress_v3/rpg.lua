@@ -9,10 +9,6 @@ local WD = require 'modules.wave_defense.table'
 
 local points_per_level = 5
 
-local math_floor = math.floor
-local math_random = math.random
-local math_sqrt = math.sqrt
-local math_round = math.round
 local nth_tick = 18001
 local visuals_delay = 1800
 local level_up_floating_text_color = {0, 205, 0}
@@ -170,11 +166,11 @@ local function level_up_effects(player)
     local b = 0.75
     for a = 1, 5, 1 do
         local p = {
-            (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1),
-            position.y + (b * -1 + math_random(0, b * 20) * 0.1)
+            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
         player.surface.create_entity(
-            {name = 'flying-text', position = p, text = '✚', color = {255, math_random(0, 100), 0}}
+            {name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}}
         )
     end
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
@@ -188,11 +184,11 @@ local function xp_effects(player)
     local b = 0.75
     for a = 1, 5, 1 do
         local p = {
-            (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1),
-            position.y + (b * -1 + math_random(0, b * 20) * 0.1)
+            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
         player.surface.create_entity(
-            {name = 'flying-text', position = p, text = '✚', color = {255, math_random(0, 100), 0}}
+            {name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}}
         )
     end
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
@@ -512,18 +508,18 @@ local function draw_gui(player, forced)
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'MINING\nSPEED', w1)
     value =
-        math_round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) ..
+        math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'SLOT\nBONUS', w1)
-    value = '+ ' .. math_round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
+    value = '+ ' .. math.round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'MELEE\nDAMAGE', w1)
-    value = math_round(100 * (1 + get_melee_modifier(player))) .. '%'
+    value = math.round(100 * (1 + get_melee_modifier(player))) .. '%'
     e = add_gui_stat(tt, value, w2)
     e.tooltip =
         'Life on-hit: ' .. get_life_on_hit(player) .. '\nOne punch chance: ' .. get_one_punch_chance(player) .. '%'
@@ -560,14 +556,14 @@ local function draw_gui(player, forced)
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'CRAFTING\nSPEED', w1)
     value =
-        math_round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) ..
+        math.round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(tt, value, w2)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'RUNNING\nSPEED', w1)
     value =
-        math_round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) ..
+        math.round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(tt, value, w2)
 
@@ -580,7 +576,7 @@ local function draw_gui(player, forced)
 
     add_gui_description(tt, ' ', w0)
     add_gui_description(tt, 'HEALTH\nBONUS', w1)
-    value = '+ ' .. math_round((player.force.character_health_bonus + player.character_health_bonus))
+    value = '+ ' .. math.round((player.force.character_health_bonus + player.character_health_bonus))
     e = add_gui_stat(tt, value, w2)
     e.tooltip = 'Health regen bonus: ' .. get_heal_modifier(player)
 
@@ -677,9 +673,9 @@ local function global_pool(players, count)
         return
     end
 
-    local pool = math_floor(rpg_extra.global_pool)
+    local pool = math.floor(rpg_extra.global_pool)
 
-    local random_amount = math_random(5000, 10000)
+    local random_amount = math.random(5000, 10000)
 
     if pool <= random_amount then
         return
@@ -879,8 +875,7 @@ local function on_entity_died(event)
     end
 
     if rpg_xp_yield['big-biter'] <= 16 then
-        local wd = WD.get_table()
-        local wave_number = wd.wave_number
+        local wave_number = WD.get_wave()
         if wave_number >= 1000 then
             rpg_xp_yield['big-biter'] = 16
             rpg_xp_yield['behemoth-biter'] = 64
@@ -1101,7 +1096,7 @@ local function on_entity_damaged(event)
     end
 
     --Cause a one punch.
-    if math_random(0, 999) < get_one_punch_chance(event.cause.player) * 10 then
+    if math.random(0, 999) < get_one_punch_chance(event.cause.player) * 10 then
         one_punch(event.cause, event.entity, damage)
         if event.entity.valid then
             event.entity.die(event.entity.force.name, event.cause)
@@ -1110,8 +1105,8 @@ local function on_entity_damaged(event)
     end
 
     --Floating messages and particle effects.
-    if math_random(1, 7) == 1 then
-        damage = damage * math_random(250, 350) * 0.01
+    if math.random(1, 7) == 1 then
+        damage = damage * math.random(250, 350) * 0.01
         event.cause.surface.create_entity(
             {
                 name = 'flying-text',
@@ -1122,7 +1117,7 @@ local function on_entity_damaged(event)
         )
         event.cause.surface.create_entity({name = 'blood-explosion-huge', position = event.entity.position})
     else
-        damage = damage * math_random(100, 125) * 0.01
+        damage = damage * math.random(100, 125) * 0.01
         event.cause.player.create_local_flying_text(
             {
                 text = math.floor(damage),
@@ -1161,7 +1156,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    if math_random(1, 4) ~= 1 then
+    if math.random(1, 4) ~= 1 then
         return
     end
 
@@ -1213,7 +1208,7 @@ local function on_player_changed_position(event)
         return
     end
 
-    if math_random(1, 64) ~= 1 then
+    if math.random(1, 64) ~= 1 then
         return
     end
     if not player.character then
@@ -1253,7 +1248,7 @@ local function on_pre_player_mined_item(event)
     rpg_t[player.index].last_mined_entity_position.x = entity.position.x
     rpg_t[player.index].last_mined_entity_position.y = entity.position.y
 
-    local distance_multiplier = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
+    local distance_multiplier = math.floor(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
 
     local xp_amount
     if entity.type == 'resource' then
@@ -1278,7 +1273,7 @@ local function on_player_crafted_item(event)
         return
     end
 
-    local amount = 0.30 * math_random(1, 2)
+    local amount = 0.30 * math.random(1, 2)
 
     Public.gain_xp(player, event.recipe.energy * amount)
 end
@@ -1436,7 +1431,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
         local fee = add_to_global_pool(amount)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
-        amount = math_round(amount, 3) - fee
+        amount = math.round(amount, 3) - fee
         Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
     else
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
@@ -1464,9 +1459,9 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     end
 
     if text then
-        text_to_draw = '+' .. math_floor(amount) .. ' xp'
+        text_to_draw = '+' .. math.floor(amount) .. ' xp'
     else
-        text_to_draw = '+' .. math_floor(rpg_t[player.index].xp_since_last_floaty_text) .. ' xp'
+        text_to_draw = '+' .. math.floor(rpg_t[player.index].xp_since_last_floaty_text) .. ' xp'
     end
 
     player.create_local_flying_text {
