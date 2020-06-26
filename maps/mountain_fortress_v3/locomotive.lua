@@ -9,11 +9,7 @@ local Alert = require 'utils.alert'
 local format_number = require 'util'.format_number
 
 local Public = {}
-local random = math.random
-local rad = math.rad
 local concat = table.concat
-local cos = math.cos
-local sin = math.sin
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
@@ -189,10 +185,10 @@ local function create_poison_cloud(position)
     local surface = game.surfaces[active_surface_index]
 
     local random_angles = {
-        rad(random(359)),
-        rad(random(359)),
-        rad(random(359)),
-        rad(random(359))
+        math.rad(math.random(359)),
+        math.rad(math.random(359)),
+        math.rad(math.random(359)),
+        math.rad(math.random(359))
     }
 
     surface.create_entity({name = 'poison-cloud', position = {x = position.x, y = position.y}})
@@ -200,8 +196,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * cos(random_angles[1]),
-                y = position.y + 12 * sin(random_angles[1])
+                x = position.x + 12 * math.cos(random_angles[1]),
+                y = position.y + 12 * math.sin(random_angles[1])
             }
         }
     )
@@ -209,8 +205,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * cos(random_angles[2]),
-                y = position.y + 12 * sin(random_angles[2])
+                x = position.x + 12 * math.cos(random_angles[2]),
+                y = position.y + 12 * math.sin(random_angles[2])
             }
         }
     )
@@ -218,8 +214,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * cos(random_angles[3]),
-                y = position.y + 12 * sin(random_angles[3])
+                x = position.x + 12 * math.cos(random_angles[3]),
+                y = position.y + 12 * math.sin(random_angles[3])
             }
         }
     )
@@ -227,8 +223,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * cos(random_angles[4]),
-                y = position.y + 12 * sin(random_angles[4])
+                x = position.x + 12 * math.cos(random_angles[4]),
+                y = position.y + 12 * math.sin(random_angles[4])
             }
         }
     )
@@ -854,7 +850,7 @@ local function create_market(data, rebuild)
     }
     local e =
         loco_surface.create_entity(
-        {name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
+        {name = biters[math.random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
     )
     e.ai_settings.allow_destroy_when_commands_fail = false
     e.ai_settings.allow_try_return_to_spawner = false
@@ -924,7 +920,7 @@ local function tick()
         Public.boost_players_around_train()
     end
 
-    if ticker % 600 == 0 then
+    if ticker % 2500 == 0 then
         Public.transfer_pollution()
     end
 
@@ -969,7 +965,7 @@ function Public.render_train_hp()
         text = 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health,
         surface = surface,
         target = this.locomotive,
-        target_offset = {0, -2.5},
+        target_offset = {0, -4.5},
         color = this.locomotive.color,
         scale = 1.40,
         font = 'default-game',
@@ -982,7 +978,7 @@ function Public.render_train_hp()
         text = 'Comfy Choo Choo',
         surface = surface,
         target = this.locomotive,
-        target_offset = {0, -4.25},
+        target_offset = {0, -6.25},
         color = this.locomotive.color,
         scale = 1.80,
         font = 'default-game',
@@ -1155,15 +1151,13 @@ function Public.transfer_pollution()
     local active_surface_index = WPT.get('active_surface_index')
     local icw_locomotive = WPT.get('icw_locomotive')
     local surface = icw_locomotive.surface
-    local Diff = Difficulty.get()
-
     if not surface then
         return
     end
 
     local total_interior_pollution = surface.get_total_pollution()
 
-    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Diff.difficulty_vote_value
+    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Difficulty.get().difficulty_vote_value
     game.surfaces[active_surface_index].pollute(locomotive.position, pollution)
     game.pollution_statistics.on_flow('locomotive', pollution - total_interior_pollution)
     surface.clear_pollution()
@@ -1179,9 +1173,9 @@ function Public.enable_poison_defense()
     end
     local pos = locomotive.position
     create_poison_cloud({x = pos.x, y = pos.y})
-    if random(1, 3) == 1 then
-        local random_angles = {rad(random(359))}
-        create_poison_cloud({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])})
+    if math.random(1, 3) == 1 then
+        local random_angles = {math.rad(math.random(359))}
+        create_poison_cloud({x = pos.x + 24 * math.cos(random_angles[1]), y = pos.y + -24 * math.sin(random_angles[1])})
     end
 end
 

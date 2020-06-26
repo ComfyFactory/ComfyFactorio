@@ -87,6 +87,7 @@ function Public.reset_table()
         y = 0
     }
     this.traps = {}
+    this.much_time = true
 end
 
 function Public.get(key)

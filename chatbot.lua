@@ -206,7 +206,8 @@ local function on_console_command(event)
     local commands = {
         ['editor'] = true,
         ['silent-command'] = true,
-        ['sc'] = true
+        ['sc'] = true,
+        ['debug'] = true
     }
 
     if not commands[cmd] then
