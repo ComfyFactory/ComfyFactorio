@@ -3,6 +3,7 @@
 local event = require 'utils.event'
 local Jailed = require 'utils.jail_data'
 local Tabs = require 'comfy_panel.main'
+local AntiGrief = require 'antigrief'
 
 local function admin_only_message(str)
     for _, player in pairs(game.connected_players) do
@@ -172,11 +173,12 @@ local function delete_all_blueprints(player)
     admin_only_message(player.name .. ' has cleared all blueprints.')
 end
 
-local function create_mini_camera_gui(player, caption, position)
+local function create_mini_camera_gui(player, caption, position, surface)
     if player.gui.center['mini_camera'] then
         player.gui.center['mini_camera'].destroy()
     end
     local frame = player.gui.center.add({type = 'frame', name = 'mini_camera', caption = caption})
+    surface = tonumber(surface)
     local camera =
         frame.add(
         {
@@ -184,7 +186,7 @@ local function create_mini_camera_gui(player, caption, position)
             name = 'mini_cam_element',
             position = position,
             zoom = 0.6,
-            surface_index = player.surface.index
+            surface_index = game.surfaces[surface].index
         }
     )
     camera.style.minimal_width = 640
@@ -192,6 +194,7 @@ local function create_mini_camera_gui(player, caption, position)
 end
 
 local create_admin_panel = (function(player, frame)
+    local antigrief = AntiGrief.get()
     frame.clear()
 
     local player_names = {}
@@ -321,20 +324,20 @@ local create_admin_panel = (function(player, frame)
     line.style.bottom_margin = 8
 
     local histories = {}
-    if global.bad_fire_history then
-        table.insert(histories, 'Bad Fire History')
+    if antigrief.capsule_history then
+        table.insert(histories, 'Capsule History')
     end
-    if global.friendly_fire_history then
+    if antigrief.friendly_fire_history then
         table.insert(histories, 'Friendly Fire History')
     end
-    if global.mining_history then
+    if antigrief.mining_history then
         table.insert(histories, 'Mining History')
     end
-    if global.landfill_history then
+    if antigrief.landfill_history then
         table.insert(histories, 'Landfill History')
     end
-    if global.artillery_history then
-        table.insert(histories, 'Artillery History')
+    if antigrief.corpse_history then
+        table.insert(histories, 'Corpse Looting History')
     end
 
     if #histories == 0 then
@@ -343,28 +346,28 @@ local create_admin_panel = (function(player, frame)
 
     local l = frame.add({type = 'label', caption = '----------------------------------------------'})
 
-    local selected_index = 1
+    local selected_index_2 = 1
     if global.admin_panel_selected_history_index then
         if global.admin_panel_selected_history_index[player.name] then
-            selected_index = global.admin_panel_selected_history_index[player.name]
+            selected_index_2 = global.admin_panel_selected_history_index[player.name]
         end
     end
 
-    local drop_down =
+    local drop_down_2 =
         frame.add(
-        {type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index}
+        {type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2}
     )
-    drop_down.style.right_padding = 12
-    drop_down.style.left_padding = 12
+    drop_down_2.style.right_padding = 12
+    drop_down_2.style.left_padding = 12
 
     local history = frame['admin_history_select'].items[frame['admin_history_select'].selected_index]
 
     local history_index = {
-        ['Bad Fire History'] = global.bad_fire_history,
-        ['Friendly Fire History'] = global.friendly_fire_history,
-        ['Mining History'] = global.mining_history,
-        ['Landfill History'] = global.landfill_history,
-        ['Artillery History'] = global.artillery_history
+        ['Capsule History'] = antigrief.capsule_history,
+        ['Friendly Fire History'] = antigrief.friendly_fire_history,
+        ['Mining History'] = antigrief.mining_history,
+        ['Landfill History'] = antigrief.landfill_history,
+        ['Corpse Looting History'] = antigrief.corpse_history
     }
 
     local t = frame.add({type = 'table', column_count = 1})
@@ -380,8 +383,38 @@ local create_admin_panel = (function(player, frame)
         }
     )
     scroll_pane.style.maximal_height = 200
-    for i = #history_index[history], 1, -1 do
-        scroll_pane.add({type = 'label', caption = history_index[history][i], tooltip = 'Click to open mini camera.'})
+
+    local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
+
+    if game.players[target_player_name] then
+        for k, v in pairs(history_index[history]) do
+            local target_player = game.players[target_player_name].index
+            if k == target_player then
+                for i = #v, 1, -1 do
+                    scroll_pane.add(
+                        {
+                            type = 'label',
+                            caption = history_index[history][target_player][i],
+                            tooltip = 'Click to open mini camera.'
+                        }
+                    )
+                end
+            end
+        end
+    else
+        for k, v in pairs(history_index[history]) do
+            if history_index[history][k] ~= nil and history_index[history][k] ~= '' then
+                for i = #v, 1, -1 do
+                    scroll_pane.add(
+                        {
+                            type = 'label',
+                            caption = history_index[history][k][i],
+                            tooltip = 'Click to open mini camera.'
+                        }
+                    )
+                end
+            end
+        end
     end
 end)
 
@@ -401,6 +434,24 @@ local admin_global_functions = {
     ['turn_off_global_speakers'] = turn_off_global_speakers,
     ['delete_all_blueprints'] = delete_all_blueprints
 }
+
+local function get_surface_from_string(str)
+    if not str then
+        return
+    end
+    if str == '' then
+        return
+    end
+    str = string.lower(str)
+    local start = string.find(str, 'surface:')
+    local sname = string.len(str)
+    local surface = string.sub(str, start + 8, sname)
+    if not surface then
+        return false
+    end
+
+    return surface
+end
 
 local function get_position_from_string(str)
     if not str then
@@ -459,11 +510,21 @@ local function on_gui_click(event)
     if not frame then
         return
     end
-    if frame.name ~= 'Admin' then
+
+    if not event.element.valid then
         return
     end
 
     local name = event.element.name
+
+    if name == 'mini_camera' or name == 'mini_cam_element' then
+        player.gui.center['mini_camera'].destroy()
+        return
+    end
+
+    if frame.name ~= 'Admin' then
+        return
+    end
 
     if admin_functions[name] then
         local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
@@ -486,11 +547,6 @@ local function on_gui_click(event)
         return
     end
 
-    if name == 'mini_camera' or name == 'mini_cam_element' then
-        player.gui.center['mini_camera'].destroy()
-        return
-    end
-
     if not frame then
         return
     end
@@ -502,6 +558,11 @@ local function on_gui_click(event)
         return
     end
 
+    local surface = get_surface_from_string(event.element.caption)
+    if not surface then
+        return
+    end
+
     if player.gui.center['mini_camera'] then
         if player.gui.center['mini_camera'].caption == event.element.caption then
             player.gui.center['mini_camera'].destroy()
@@ -509,7 +570,7 @@ local function on_gui_click(event)
         end
     end
 
-    create_mini_camera_gui(player, event.element.caption, position)
+    create_mini_camera_gui(player, event.element.caption, position, surface)
 end
 
 local function on_gui_selection_state_changed(event)
@@ -521,6 +582,22 @@ local function on_gui_selection_state_changed(event)
             global.admin_panel_selected_history_index = {}
         end
         global.admin_panel_selected_history_index[player.name] = event.element.selected_index
+
+        local frame = Tabs.comfy_panel_get_active_frame(player)
+        if not frame then
+            return
+        end
+        if frame.name ~= 'Admin' then
+            return
+        end
+
+        create_admin_panel(player, frame)
+    end
+    if name == 'admin_player_select' then
+        if not global.admin_panel_selected_player_index then
+            global.admin_panel_selected_player_index = {}
+        end
+        global.admin_panel_selected_player_index[player.name] = event.element.selected_index
 
         local frame = Tabs.comfy_panel_get_active_frame(player)
         if not frame then

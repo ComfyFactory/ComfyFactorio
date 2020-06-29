@@ -23,6 +23,11 @@ local freedom_messages = {
     'Welcome back!'
 }
 
+local valid_commands = {
+    ['free'] = true,
+    ['jail'] = true
+}
+
 Global.register(
     jailed,
     function(t)
@@ -201,6 +206,10 @@ Event.add(
         local total_time = Session.get_session_table()
         local p
         local cmd = event.command
+
+        if not valid_commands[cmd] then
+            return
+        end
 
         local griefer = event.parameters
         if not griefer then
