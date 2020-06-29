@@ -26,7 +26,28 @@ local this = {
         ['unknown'] = {}
     },
     whitelist_types = {},
-    log_tree_harvest = false
+    log_tree_harvest = false,
+    do_not_check_trusted = true
+}
+
+local blacklisted_types = {
+    ['transport-belt'] = true,
+    ['wall'] = true,
+    ['underground-belt'] = true,
+    ['inserter'] = true,
+    ['land-mine'] = true,
+    ['gate'] = true,
+    ['lamp'] = true,
+    ['mining-drill'] = true,
+    ['splitter'] = true
+}
+
+local ammo_names = {
+    ['poison-capsule'] = true,
+    ['cluster-grenade'] = true,
+    ['grenade'] = true,
+    ['atomic-bomb'] = true,
+    ['cliff-explosives'] = true
 }
 
 Global.register(
@@ -43,10 +64,10 @@ local function on_marked_for_deconstruction(event)
         return
     end
     local player = game.players[event.player_index]
-    if player.admin == true then
+    if player.admin then
         return
     end
-    if trusted[player.name] == true then
+    if trusted[player.name] and this.do_not_check_trusted then
         return
     end
 
@@ -64,10 +85,10 @@ local function on_player_ammo_inventory_changed(event)
     local tracker = session.get_session_table()
     local trusted = session.get_trusted_table()
     local player = game.players[event.player_index]
-    if player.admin == true then
+    if player.admin then
         return
     end
-    if trusted[player.name] == true then
+    if trusted[player.name] and this.do_not_check_trusted then
         return
     end
 
@@ -103,7 +124,7 @@ local function on_player_built_tile(event)
 
     --landfill history--
 
-    if #this.landfill_history[player.index] > 999 then
+    if #this.landfill_history[player.index] > 100 then
         this.landfill_history[player.index] = {}
     end
     local t = math.abs(math.floor((game.tick) / 3600))
@@ -127,10 +148,10 @@ local function on_built_entity(event)
     if event.created_entity.type == 'entity-ghost' then
         local player = game.players[event.player_index]
 
-        if player.admin == true then
+        if player.admin then
             return
         end
-        if trusted[player.name] == true then
+        if trusted[player.name] and this.do_not_check_trusted then
             return
         end
 
@@ -146,19 +167,17 @@ local function on_built_entity(event)
     end
 end
 
-local ammo_names = {
-    ['poison-capsule'] = true,
-    ['cluster-grenade'] = true,
-    ['grenade'] = true,
-    ['atomic-bomb'] = true,
-    ['cliff-explosives'] = true
-}
-
 --Capsule History and Antigrief
 local function on_player_used_capsule(event)
-    local tracker = session.get_session_table()
-    local position = event.position
+    local trusted = session.get_trusted_table()
     local player = game.players[event.player_index]
+    if player.admin then
+        return
+    end
+    if trusted[player.name] and this.do_not_check_trusted then
+        return
+    end
+    local position = event.position
 
     local item = event.item
 
@@ -168,57 +187,23 @@ local function on_player_used_capsule(event)
 
     local name = item.name
 
-    local playtime = player.online_time
-    if tracker[player.name] then
-        playtime = player.online_time + tracker[player.name]
-    end
-
-    if playtime < 1296000 then
-        if ammo_names[name] then
-            local item_to_remove = player.remove_item({name = name, count = 1000})
-            if item_to_remove > 0 then
-                player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
-                Server.to_discord_bold(
-                    table.concat {
-                        '** [Capsule] ' .. player.name .. ' used ' .. name .. ' but was not trusted. **'
-                    }
-                )
-                game.print(
-                    '[Capsule] ' .. player.name .. ' used ' .. name .. ' but was not trusted.',
-                    {r = 0.22, g = 0.99, b = 0.99}
-                )
-                player.character.health = 0
-            end
-
-            if #this.capsule_history[player.index] > 999 then
-                this.capsule_history[player.index] = {}
-            end
-
-            local t = math.abs(math.floor((game.tick) / 3600))
-            local str = '[' .. t .. '] '
-            str = str .. player.name .. ' used ' .. name
-            str = str .. ' at X:'
-            str = str .. math.floor(position.x)
-            str = str .. ' Y:'
-            str = str .. math.floor(position.y)
-            str = str .. ' '
-            str = str .. 'surface:' .. player.surface.index
-            this.capsule_history[player.index][#this.capsule_history[player.index] + 1] = str
+    if ammo_names[name] then
+        if #this.capsule_history[player.index] > 100 then
+            this.capsule_history[player.index] = {}
         end
+
+        local t = math.abs(math.floor((game.tick) / 3600))
+        local str = '[' .. t .. '] '
+        str = str .. player.name .. ' used ' .. name
+        str = str .. ' at X:'
+        str = str .. math.floor(position.x)
+        str = str .. ' Y:'
+        str = str .. math.floor(position.y)
+        str = str .. ' '
+        str = str .. 'surface:' .. player.surface.index
+        this.capsule_history[player.index][#this.capsule_history[player.index] + 1] = str
     end
 end
-
-local blacklisted_types = {
-    ['transport-belt'] = true,
-    ['wall'] = true,
-    ['underground-belt'] = true,
-    ['inserter'] = true,
-    ['land-mine'] = true,
-    ['gate'] = true,
-    ['lamp'] = true,
-    ['mining-drill'] = true,
-    ['splitter'] = true
-}
 
 --Friendly Fire History
 local function on_entity_died(event)
@@ -232,7 +217,7 @@ local function on_entity_died(event)
         local player = cause.player
         name = player.name
 
-        if #this.friendly_fire_history[cause.player.index] > 999 then
+        if #this.friendly_fire_history[cause.player.index] > 100 then
             this.friendly_fire_history[cause.player.index] = {}
         end
 
@@ -270,12 +255,12 @@ local function on_entity_died(event)
         str = str .. 'surface:' .. event.entity.surface.index
 
         if cause and cause.name == 'character' and cause.player then
-            if #this.friendly_fire_history[cause.player.index] > 999 then
+            if #this.friendly_fire_history[cause.player.index] > 100 then
                 this.friendly_fire_history[cause.player.index] = {}
             end
             this.friendly_fire_history[cause.player.index][#this.friendly_fire_history[cause.player.index] + 1] = str
         else
-            if #this.friendly_fire_history['unknown'] > 999 then
+            if #this.friendly_fire_history['unknown'] > 100 then
                 this.friendly_fire_history['unknown'] = {}
             end
             this.friendly_fire_history['unknown'][#this.friendly_fire_history['unknown'] + 1] = str
@@ -292,7 +277,7 @@ local function on_player_mined_entity(event)
     end
 
     if this.whitelist_types[event.entity.type] then
-        if #this.mining_history[player.index] > 999 then
+        if #this.mining_history[player.index] > 100 then
             this.mining_history[player.index] = {}
         end
         local t = math.abs(math.floor((game.tick) / 3600))
@@ -322,7 +307,7 @@ local function on_player_mined_entity(event)
         return
     end
 
-    if #this.mining_history[player.index] > 999 then
+    if #this.mining_history[player.index] > 100 then
         this.mining_history[player.index] = {}
     end
 
@@ -367,7 +352,7 @@ local function on_gui_opened(event)
         Server.to_discord_bold(
             table.concat {'** [Corpse] ' .. player.name .. ' is looting ' .. corpse_owner.name .. '´s body. **'}
         )
-        if #this.corpse_history[player.index] > 999 then
+        if #this.corpse_history[player.index] > 100 then
             this.corpse_history[player.index] = {}
         end
 
@@ -411,7 +396,7 @@ local function on_pre_player_mined_item(event)
         Server.to_discord_bold(
             table.concat {'[Corpse] ' .. player.name .. ' has looted ' .. corpse_owner.name .. '´s body.'}
         )
-        if #this.corpse_history[player.index] > 999 then
+        if #this.corpse_history[player.index] > 100 then
             this.corpse_history[player.index] = {}
         end
 
@@ -453,20 +438,51 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_cursor_stack_changed(event)
-    local player = game.get_player(event.player_index)
+    local tracker = session.get_session_table()
+    local trusted = session.get_trusted_table()
+    local player = game.players[event.player_index]
+    if player.admin then
+        return
+    end
+    if trusted[player.name] and this.do_not_check_trusted then
+        return
+    end
 
-    local stack = player.cursor_stack
+    local item = player.cursor_stack
 
-    log(serpent.block(stack.name))
+    if not item then
+        return
+    end
 
-    -- Public.cursor_stack(event, pattern)
-    -- local character = player.character
+    if not item.valid_for_read then
+        return
+    end
 
-    -- if character then
-    --     if character.cursor_stack() then
-    --         log(serpent.block(character.cursor_stack()))
-    --     end
-    --player.play_sound({path = 'utility/wire_connect_pole', position = player.position, volume = 1})
+    local name = item.name
+
+    local playtime = player.online_time
+    if tracker[player.name] then
+        playtime = player.online_time + tracker[player.name]
+    end
+
+    if playtime < 1296000 then
+        if ammo_names[name] then
+            local item_to_remove = player.remove_item({name = name, count = 1000})
+            if item_to_remove > 0 then
+                player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
+                Server.to_discord_bold(
+                    table.concat {
+                        '** [Capsule] ' .. player.name .. ' equipped ' .. name .. ' but was not trusted. **'
+                    }
+                )
+                game.print(
+                    '[Capsule] ' .. player.name .. ' equipped ' .. name .. ' but was not trusted.',
+                    {r = 0.22, g = 0.99, b = 0.99}
+                )
+                player.character.health = 0
+            end
+        end
+    end
 end
 
 function Public.cursor_stack(event, pattern)
@@ -489,6 +505,14 @@ end
 function Public.whitelist_types(key, value)
     if key and value then
         this.whitelist_types[key] = value
+    end
+end
+
+--- If the event should also check trusted players
+---@param value string
+function Public.do_not_check_trusted(value)
+    if value then
+        this.do_not_check_trusted = value
     end
 end
 
