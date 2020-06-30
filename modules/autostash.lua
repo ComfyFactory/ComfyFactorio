@@ -41,7 +41,7 @@ local function create_floaty_text(surface, position, name, count)
                 position.x,
                 position.y + autostash.floating_text_y_offsets[position.x .. '_' .. position.y]
             },
-            text = '-' .. count .. ' ' .. name,
+            text = {'', '-', count, ' ', game.item_prototypes[name].localised_name},
             color = {r = 255, g = 255, b = 255}
         }
     )
