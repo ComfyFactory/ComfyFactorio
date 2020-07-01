@@ -1,9 +1,12 @@
 --antigrief things made by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local Jailed = require 'utils.jail_data'
 local Tabs = require 'comfy_panel.main'
 local AntiGrief = require 'antigrief'
+
+local lower = string.lower
+local gmatch = string.gmatch
 
 local function admin_only_message(str)
     for _, player in pairs(game.connected_players) do
@@ -193,6 +196,109 @@ local function create_mini_camera_gui(player, caption, position, surface)
     camera.style.minimal_height = 480
 end
 
+local function filter_brackets(str)
+    return (string.find(str, '%[') ~= nil)
+end
+
+local function match_test(value, pattern)
+    return lower(value:gsub('-', ' ')):find(pattern)
+end
+
+local function draw_events(data)
+    local frame = data.frame
+    local antigrief = data.antigrief
+    local search_text = data.search_text or nil
+    local history = frame['admin_history_select'].items[frame['admin_history_select'].selected_index]
+
+    local history_index = {
+        ['Capsule History'] = antigrief.capsule_history,
+        ['Friendly Fire History'] = antigrief.friendly_fire_history,
+        ['Mining History'] = antigrief.mining_history,
+        ['Landfill History'] = antigrief.landfill_history,
+        ['Corpse Looting History'] = antigrief.corpse_history
+    }
+
+    local scroll_pane
+    if frame.datalog then
+        frame.datalog.clear()
+    else
+        scroll_pane =
+            frame.add(
+            {
+                type = 'scroll-pane',
+                name = 'datalog',
+                direction = 'vertical',
+                horizontal_scroll_policy = 'never',
+                vertical_scroll_policy = 'auto'
+            }
+        )
+        scroll_pane.style.maximal_height = 200
+    end
+
+    local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
+
+    local finder
+
+    if game.players[target_player_name] then
+        local target_player = game.players[target_player_name].index
+        finder = target_player
+    end
+    for key, value in pairs(history_index[history]) do
+        if not finder then
+            finder = key
+        end
+        if key == finder then
+            for i = #value, 1, -1 do
+                if search_text then
+                    if filter_brackets(search_text) then
+                        goto continue
+                    end
+                    if not match_test(value[i], search_text) then
+                        goto continue
+                    end
+                end
+                frame.datalog.add(
+                    {
+                        type = 'label',
+                        caption = history_index[history][finder][i],
+                        tooltip = 'Click to open mini camera.'
+                    }
+                )
+                ::continue::
+            end
+        end
+    end
+end
+
+local function text_changed(event)
+    local element = event.element
+    if not element then
+        return
+    end
+    if not element.valid then
+        return
+    end
+
+    local antigrief = AntiGrief.get()
+    local player = game.players[event.player_index]
+
+    local frame = Tabs.comfy_panel_get_active_frame(player)
+    if not frame then
+        return
+    end
+    if frame.name ~= 'Admin' then
+        return
+    end
+
+    local data = {
+        frame = frame,
+        antigrief = antigrief,
+        search_text = element.text
+    }
+
+    draw_events(data)
+end
+
 local create_admin_panel = (function(player, frame)
     local antigrief = AntiGrief.get()
     frame.clear()
@@ -344,7 +450,14 @@ local create_admin_panel = (function(player, frame)
         return
     end
 
+    local search_table = frame.add({type = 'table', column_count = 2})
+    search_table.add({type = 'label', caption = 'Search: '})
+    local search_text = search_table.add({type = 'textfield'})
+    search_text.style.width = 140
+
     local l = frame.add({type = 'label', caption = '----------------------------------------------'})
+    l.style.font = 'default-listbox'
+    l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
 
     local selected_index_2 = 1
     if global.admin_panel_selected_history_index then
@@ -360,62 +473,12 @@ local create_admin_panel = (function(player, frame)
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
-    local history = frame['admin_history_select'].items[frame['admin_history_select'].selected_index]
-
-    local history_index = {
-        ['Capsule History'] = antigrief.capsule_history,
-        ['Friendly Fire History'] = antigrief.friendly_fire_history,
-        ['Mining History'] = antigrief.mining_history,
-        ['Landfill History'] = antigrief.landfill_history,
-        ['Corpse Looting History'] = antigrief.corpse_history
+    local data = {
+        frame = frame,
+        antigrief = antigrief
     }
 
-    local t = frame.add({type = 'table', column_count = 1})
-    l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
-    local scroll_pane =
-        t.add(
-        {
-            type = 'scroll-pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    )
-    scroll_pane.style.maximal_height = 200
-
-    local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
-
-    if game.players[target_player_name] then
-        for k, v in pairs(history_index[history]) do
-            local target_player = game.players[target_player_name].index
-            if k == target_player then
-                for i = #v, 1, -1 do
-                    scroll_pane.add(
-                        {
-                            type = 'label',
-                            caption = history_index[history][target_player][i],
-                            tooltip = 'Click to open mini camera.'
-                        }
-                    )
-                end
-            end
-        end
-    else
-        for k, v in pairs(history_index[history]) do
-            if history_index[history][k] ~= nil and history_index[history][k] ~= '' then
-                for i = #v, 1, -1 do
-                    scroll_pane.add(
-                        {
-                            type = 'label',
-                            caption = history_index[history][k][i],
-                            tooltip = 'Click to open mini camera.'
-                        }
-                    )
-                end
-            end
-        end
-    end
+    draw_events(data)
 end)
 
 local admin_functions = {
@@ -613,5 +676,6 @@ end
 
 comfy_panel_tabs['Admin'] = {gui = create_admin_panel, admin = true}
 
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
+Event.add(defines.events.on_gui_text_changed, text_changed)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)

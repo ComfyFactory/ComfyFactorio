@@ -253,7 +253,7 @@ local function close_market_gui(player)
     end
 end
 
-local function redraw_market_items(gui, player)
+local function redraw_market_items(gui, player, search_text)
     if not validate_player(player) then
         return
     end
@@ -268,6 +268,15 @@ local function redraw_market_items(gui, player)
 
     local slider_value = math.ceil(this.players[player.index].data.slider.slider_value)
     for item, data in pairs(Public.get_items()) do
+        if not search_text then
+            goto continue
+        end
+        if not search_text.text then
+            goto continue
+        end
+        if not string.lower(item:gsub('-', ' ')):find(search_text.text) then
+            goto continue
+        end
         local item_count = data.stack * slider_value
         local item_cost = data.price * slider_value
 
@@ -298,6 +307,7 @@ local function redraw_market_items(gui, player)
         if player_item_count < item_cost then
             button.enabled = false
         end
+        ::continue::
     end
 end
 
@@ -344,10 +354,18 @@ local function slider_changed(event)
     end
     slider_value = math.ceil(slider_value)
     this.players[player.index].data.text_input.text = slider_value
-    redraw_market_items(this.players[player.index].data.item_frame, player)
+    redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
 end
 
 local function text_changed(event)
+    local element = event.element
+    if not element then
+        return
+    end
+    if not element.valid then
+        return
+    end
+
     local this = WPT.get()
     local player = game.players[event.player_index]
 
@@ -369,9 +387,7 @@ local function text_changed(event)
         return
     end
 
-    this.players[player.index].data.slider.slider_value = value
-
-    redraw_market_items(data.item_frame, player)
+    redraw_market_items(data.item_frame, player, data.search_text)
 end
 
 local function gui_opened(event)
@@ -483,7 +499,7 @@ local function gui_opened(event)
     this.players[player.index].data.item_frame = pane
     this.players[player.index].data.coins_left = coinsleft
 
-    redraw_market_items(pane, player)
+    redraw_market_items(pane, player, search_text)
 end
 
 local function gui_click(event)
@@ -514,7 +530,7 @@ local function gui_click(event)
         if slider_value > 1 then
             data.slider.slider_value = slider_value - 1
             data.text_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player)
+            redraw_market_items(data.item_frame, player, data.search_text)
         end
         return
     elseif name == 'more' then
@@ -522,7 +538,7 @@ local function gui_click(event)
         if slider_value <= 1e3 then
             data.slider.slider_value = slider_value + 1
             data.text_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player)
+            redraw_market_items(data.item_frame, player, data.search_text)
         end
         return
     end
@@ -570,7 +586,7 @@ local function gui_click(event)
         this.health_upgrades = this.health_upgrades + item_count
         rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
 
-        redraw_market_items(data.item_frame, player)
+        redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -605,7 +621,7 @@ local function gui_click(event)
             only_in_alt_mode = true
         }
 
-        redraw_market_items(data.item_frame, player)
+        redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -627,7 +643,7 @@ local function gui_click(event)
         this.xp_points_upgrade = this.xp_points_upgrade + item_count
         this.train_upgrades = this.train_upgrades + item_count
 
-        redraw_market_items(data.item_frame, player)
+        redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -664,7 +680,7 @@ local function gui_click(event)
         this.upgrades.flame_turret.limit = this.upgrades.flame_turret.limit + item_count
         this.upgrades.flame_turret.bought = this.upgrades.flame_turret.bought + item_count
 
-        redraw_market_items(data.item_frame, player)
+        redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
 
         return
@@ -692,7 +708,7 @@ local function gui_click(event)
         this.upgrades.landmine.limit = this.upgrades.landmine.limit + item_count
         this.upgrades.landmine.bought = this.upgrades.landmine.bought + item_count
 
-        redraw_market_items(data.item_frame, player)
+        redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
         return
     end
@@ -707,7 +723,7 @@ local function gui_click(event)
 
         RPG.rpg_reset_player(player, true)
 
-        redraw_market_items(data.item_frame, player)
+        redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
         return
     end
@@ -722,7 +738,7 @@ local function gui_click(event)
                 player.insert({name = item.value, count = cost})
                 player.remove_item({name = name, count = inserted_count})
             end
-            redraw_market_items(data.item_frame, player)
+            redraw_market_items(data.item_frame, player, data.search_text)
             redraw_coins_left(data.coins_left, player)
         end
     end
