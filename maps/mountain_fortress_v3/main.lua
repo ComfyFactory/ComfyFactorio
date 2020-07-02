@@ -34,6 +34,7 @@ local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
 local Alert = require 'utils.alert'
+local AntiGrief = require 'antigrief'
 --local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
@@ -199,6 +200,7 @@ function Public.reset_map()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
     local get_score = Score.get_table()
+    local antigrief = AntiGrief.get()
 
     for _, player in pairs(game.players) do
         if player.controller_type == defines.controllers.editor then
@@ -232,6 +234,8 @@ function Public.reset_map()
     global.friendly_fire_history = {}
     global.landfill_history = {}
     global.mining_history = {}
+    AntiGrief.log_tree_harvest(true)
+    AntiGrief.whitelist_types('tree', true)
     get_score.score_table = {}
     Diff.difficulty_poll_closing_timeout = game.tick + 90000
     Diff.difficulty_player_votes = {}
@@ -543,7 +547,7 @@ local chunk_load = function()
     if chunk_load_tick then
         if chunk_load_tick < game.tick then
             WPT.get().chunk_load_tick = nil
-            Task.set_queue_speed(1)
+            Task.set_queue_speed(4)
         end
     end
 end

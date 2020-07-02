@@ -68,7 +68,6 @@ local build_group_gui = (function(player, frame)
 
     for _, group in pairs(this.tag_groups) do
         if (group.name and group.founder and group.description) then
-            log(serpent.block(group))
             local l = t.add({type = 'label', caption = group.name})
             l.style.font = 'default-bold'
             l.style.top_padding = 16

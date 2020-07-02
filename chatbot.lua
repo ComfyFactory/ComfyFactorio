@@ -2,8 +2,10 @@ local Event = require 'utils.event'
 local session = require 'utils.session_data'
 local Timestamp = require 'utils.timestamp'
 local Server = require 'utils.server'
+local Color = require 'utils.color_presets'
 
-local font_color = {r = 150, g = 100, b = 255, a = 255}
+local font_color = Color.warning
+local font_welcome = {r = 150, g = 100, b = 255, a = 255}
 local font = 'default-game'
 local format = string.format
 
@@ -11,7 +13,9 @@ local brain = {
     [1] = {'Our Discord server is at: https://getcomfy.eu/discord'},
     [2] = {
         'Need an admin? Type @Mods in game chat to notify moderators,',
-        'or put a message in the discord help channel.'
+        'or put a message in the discord help channel.',
+        'If you have played for more than 10h in our maps then,',
+        'you are eligible to run the command /jail and /free'
     },
     [3] = {'Scenario repository for download:', 'https://github.com/M3wM3w/ComfyFactorio'}
 }
@@ -37,7 +41,7 @@ local links = {
 
 local function on_player_created(event)
     local player = game.players[event.player_index]
-    player.print('[font=' .. font .. ']' .. 'Join the comfy discord >> getcomfy.eu/discord' .. '[/font]', font_color)
+    player.print('[font=' .. font .. ']' .. 'Join the comfy discord >> getcomfy.eu/discord' .. '[/font]', font_welcome)
 end
 
 commands.add_command(
@@ -45,7 +49,6 @@ commands.add_command(
     'Promotes a player to trusted!',
     function(cmd)
         local trusted = session.get_trusted_table()
-        local server = 'server'
         local player = game.player
         local p
 
@@ -102,7 +105,6 @@ commands.add_command(
     'Demotes a player from trusted!',
     function(cmd)
         local trusted = session.get_trusted_table()
-        local server = 'server'
         local player = game.player
         local p
 
@@ -156,9 +158,9 @@ commands.add_command(
 
 local function process_bot_answers(event)
     local player = game.players[event.player_index]
-    if player.admin == true then
-        return
-    end
+    -- if player.admin == true then
+    --     return
+    -- end
     local message = event.message
     message = string.lower(message)
     for word in string.gmatch(message, '%g+') do
