@@ -216,6 +216,10 @@ Event.add(
             return
         end
 
+        if not game.players[griefer] then
+            return
+        end
+
         if event.player_index then
             local player = game.players[event.player_index]
             p = player.print
