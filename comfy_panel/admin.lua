@@ -17,6 +17,9 @@ local function admin_only_message(str)
 end
 
 local function jail(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     local is_jailed = Jailed.try_ul_data(player.name, true, source_player.name)
     if is_jailed then
         admin_only_message(player.name .. ' was jailed by ' .. source_player.name)
@@ -24,6 +27,9 @@ local function jail(player, source_player)
 end
 
 local function free(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     local is_free = Jailed.try_ul_data(player.name, false, source_player.name)
     if is_free then
         admin_only_message(source_player.name .. ' set ' .. player.name .. ' free from jail')
@@ -37,6 +43,9 @@ local bring_player_messages = {
 }
 
 local function bring_player(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     if player.driving == true then
         source_player.print('Target player is in a vehicle, teleport not available.', {r = 0.88, g = 0.88, b = 0.88})
         return
@@ -58,6 +67,9 @@ local go_to_player_messages = {
     'What are you up to?'
 }
 local function go_to_player(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     local pos = player.surface.find_non_colliding_position('character', player.position, 50, 1)
     if pos then
         source_player.teleport(pos, player.surface)
@@ -70,6 +82,9 @@ local function go_to_player(player, source_player)
 end
 
 local function spank(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     if player.character then
         if player.character.health > 1 then
             player.character.damage(1, 'player')
@@ -85,6 +100,9 @@ local damage_messages = {
     ' recieved a strange package from '
 }
 local function damage(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     if player.character then
         if player.character.health > 1 then
             player.character.damage(1, 'player')
@@ -106,6 +124,9 @@ local kill_messages = {
     ' was struck by lightning.'
 }
 local function kill(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     if player.character then
         player.character.die('player')
         game.print(player.name .. kill_messages[math.random(1, #kill_messages)], {r = 0.98, g = 0.66, b = 0.22})
@@ -118,6 +139,9 @@ local enemy_messages = {
     'Wanted dead or alive!'
 }
 local function enemy(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     if not game.forces.enemy_players then
         game.create_force('enemy_players')
     end
@@ -130,6 +154,9 @@ local function enemy(player, source_player)
 end
 
 local function ally(player, source_player)
+    if player.name == source_player.name then
+        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    end
     player.force = game.forces.player
     game.print(player.name .. ' is our ally again!', {r = 0.98, g = 0.66, b = 0.22})
     admin_only_message(source_player.name .. ' made ' .. player.name .. ' our ally')
@@ -215,7 +242,8 @@ local function draw_events(data)
         ['Friendly Fire History'] = antigrief.friendly_fire_history,
         ['Mining History'] = antigrief.mining_history,
         ['Landfill History'] = antigrief.landfill_history,
-        ['Corpse Looting History'] = antigrief.corpse_history
+        ['Corpse Looting History'] = antigrief.corpse_history,
+        ['Cancel Crafting History'] = antigrief.cancel_crafting_history
     }
 
     local scroll_pane
@@ -444,6 +472,9 @@ local create_admin_panel = (function(player, frame)
     end
     if antigrief.corpse_history then
         table.insert(histories, 'Corpse Looting History')
+    end
+    if antigrief.cancel_crafting_history then
+        table.insert(histories, 'Cancel Crafting History')
     end
 
     if #histories == 0 then
