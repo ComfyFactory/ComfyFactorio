@@ -25,6 +25,9 @@ local this = {
     corpse_history = {
         ['unknown'] = {}
     },
+    cancel_crafting_history = {
+        ['unknown'] = {}
+    },
     whitelist_types = {},
     log_tree_harvest = false,
     do_not_check_trusted = true
@@ -435,6 +438,9 @@ local function on_player_joined_game(event)
     if not this.corpse_history[player.index] then
         this.corpse_history[player.index] = {}
     end
+    if not this.cancel_crafting_history[player.index] then
+        this.cancel_crafting_history[player.index] = {}
+    end
 end
 
 local function on_player_cursor_stack_changed(event)
@@ -481,6 +487,53 @@ local function on_player_cursor_stack_changed(event)
                 )
                 player.character.health = 0
             end
+        end
+    end
+end
+local function on_player_cancelled_crafting(event)
+    local tracker = session.get_session_table()
+    local player = game.players[event.player_index]
+
+    local playtime = player.online_time
+    if tracker[player.name] then
+        playtime = player.online_time + tracker[player.name]
+    end
+
+    game.print(serpent.block(#event.items))
+
+    local count = #event.items
+
+    if playtime < 1296000 then
+        if count > 40 then
+            game.print(
+                player.name ..
+                    ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. count .. '.',
+                {r = 0.85, g = 0.85, b = 0.85}
+            )
+            Server.to_discord_bold(
+                table.concat {
+                    '[Crafting] ' ..
+                        player.name ..
+                            ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. count .. '.'
+                }
+            )
+            if #this.cancel_crafting_history[player.index] > 100 then
+                this.cancel_crafting_history[player.index] = {}
+            end
+
+            local t = math.abs(math.floor((game.tick) / 3600))
+            local str = '[' .. t .. '] '
+            str = str .. player.name .. ' canceled '
+            str = str .. ' item ' .. event.recipe.name
+            str = str .. ' count was a total of: ' .. count
+            str = str .. ' at X:'
+            str = str .. math.floor(player.position.x)
+            str = str .. ' Y:'
+            str = str .. math.floor(player.position.y)
+            str = str .. ' '
+            str = str .. 'surface:' .. player.surface.index
+
+            this.cancel_crafting_history[player.index][#this.cancel_crafting_history[player.index] + 1] = str
         end
     end
 end
@@ -537,5 +590,6 @@ Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
+Event.add(defines.events.on_player_cancelled_crafting, on_player_cancelled_crafting)
 
 return Public
