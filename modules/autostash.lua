@@ -199,6 +199,9 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
                     amount = amount + 1
                     variator = variator - 1
                 end
+                if amount <= 0 then
+                    return
+                end
                 local chest_inventory = chest.get_inventory(defines.inventory.chest)
                 if chest_inventory.can_insert({name = name, count = amount}) then
                     local inserted_count = chest_inventory.insert({name = name, count = amount})

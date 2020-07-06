@@ -60,7 +60,9 @@ local this = {
     difficulty_vote_index = 1,
     difficulty_poll_closing_timeout = 54000,
     difficulty_player_votes = {},
-    gui_width = 108
+    gui_width = 108,
+    name = 'Easy',
+    button_tooltip = nil
 }
 
 local Public = {}
@@ -88,18 +90,21 @@ function Public.set_poll_closing_timeout(...)
     this.difficulty_poll_closing_timeout = ...
 end
 
-function Public.get()
-    return this
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
 end
 
-local function difficulty_gui()
-    local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.difficulty_vote_index].name
-    tooltip = tooltip .. '.'
+function Public.difficulty_gui()
+    local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.difficulty_vote_index].name .. '.'
 
     for _, player in pairs(game.connected_players) do
         if player.gui.top['difficulty_gui'] then
             player.gui.top['difficulty_gui'].caption = this.difficulties[this.difficulty_vote_index].name
-            player.gui.top['difficulty_gui'].tooltip = tooltip
+            player.gui.top['difficulty_gui'].tooltip = this.button_tooltip or tooltip
             player.gui.top['difficulty_gui'].style.font_color =
                 this.difficulties[this.difficulty_vote_index].print_color
         else
@@ -199,7 +204,7 @@ function Public.reset_difficulty_poll()
         end
         poll_difficulty(p)
     end
-    difficulty_gui()
+    Public.difficulty_gui()
 end
 
 local function on_player_joined_game(event)
@@ -213,7 +218,7 @@ local function on_player_joined_game(event)
             player.gui.center['difficulty_poll'].destroy()
         end
     end
-    difficulty_gui()
+    Public.difficulty_gui()
 end
 
 local function on_player_left_game(event)
@@ -226,7 +231,7 @@ local function on_player_left_game(event)
     end
     this.difficulty_player_votes[player.name] = nil
     set_difficulty()
-    difficulty_gui()
+    Public.difficulty_gui()
 end
 
 local function on_gui_click(event)
@@ -265,7 +270,7 @@ local function on_gui_click(event)
     )
     this.difficulty_player_votes[player.name] = i
     set_difficulty()
-    difficulty_gui()
+    Public.difficulty_gui()
     event.element.parent.destroy()
 end
 

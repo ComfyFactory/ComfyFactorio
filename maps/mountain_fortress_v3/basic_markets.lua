@@ -213,6 +213,54 @@ local function get_market_item_list(market_types, rarity)
     return list
 end
 
+function Public.get_random_item(rarity)
+    rarity = rarity or 0
+    local types = get_types()
+    table.shuffle_table(types)
+    local items
+    for i = 1, 9 do
+        items = get_market_item_list({types[i]}, rarity)
+    end
+    if not items then
+        return
+    end
+    if #items > 0 then
+        table.shuffle_table(items)
+    end
+
+    local items_return = {}
+
+    local blacklist = {
+        ['cargo-wagon'] = true,
+        ['locomotive'] = true,
+        ['artillery-wagon'] = true,
+        ['fluid-wagon'] = true,
+        ['land-mine'] = true
+    }
+
+    for i = 1, math.random(5, 10), 1 do
+        local item = items[i]
+        if not item then
+            break
+        end
+        if not blacklist[item.offer.item] then
+            items_return[#items_return + 1] = items[i]
+        end
+    end
+
+    local sells = get_resource_market_sells()
+    for i = 1, math.random(1, 3), 1 do
+        items_return[#items_return + 1] = sells[i]
+    end
+
+    local buys = get_resource_market_buys()
+    for i = 1, math.random(1, 3), 1 do
+        items_return[#items_return + 1] = buys[i]
+    end
+
+    return items_return
+end
+
 function Public.mountain_market(surface, position, rarity)
     local types = get_types()
     table.shuffle_table(types)

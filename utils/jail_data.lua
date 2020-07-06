@@ -203,7 +203,7 @@ Event.add(
 Event.add(
     defines.events.on_console_command,
     function(event)
-        local total_time = Session.get_session_table()
+        local trusted = Session.get_trusted_table()
         local p
         local cmd = event.command
 
@@ -224,10 +224,7 @@ Event.add(
                 return p("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
             end
 
-            if not total_time[player.name] then
-                return
-            end
-            if total_time[player.name] < 51900000 then
+            if not trusted[player.name] then
                 if not player.admin then
                     p("You're not admin nor are you trusted enough to run this command!", {r = 1, g = 0.5, b = 0.1})
                     return

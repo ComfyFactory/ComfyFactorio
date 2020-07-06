@@ -1,5 +1,3 @@
--- luacheck: ignore
-
 local Global = require 'utils.global'
 local Game = require 'utils.game'
 local Token = require 'utils.token'
@@ -17,6 +15,7 @@ local trusted = {}
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
+local trusted_value = 2592000
 local nth_tick = 54001 -- nearest prime to 15 minutes in ticks
 
 Global.register(
@@ -34,15 +33,6 @@ Global.register(
 
 local Public = {}
 
-if _DEBUG then
-    printinfo =
-        Token.register(
-        function(data)
-            game.print(serpent.block(data))
-        end
-    )
-end
-
 local try_download_data =
     Token.register(
     function(data)
@@ -50,7 +40,7 @@ local try_download_data =
         local value = data.value
         if value then
             session[key] = value
-            if value > 2592000 then
+            if value > trusted_value then
                 trusted[key] = true
             end
         else
@@ -89,28 +79,26 @@ end
 --- Tries to get data from the webpanel and updates the local table with values.
 -- @param data_set player token
 function Public.try_dl_data(key)
-    local key = tostring(key)
+    key = tostring(key)
     local secs = Server.get_current_time()
     if secs == nil then
         raw_print(error_offline)
         return
     else
         try_get_data(session_data_set, key, try_download_data)
-        secs = nil
     end
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
 -- @param data_set player token
 function Public.try_ul_data(key)
-    local key = tostring(key)
+    key = tostring(key)
     local secs = Server.get_current_time()
     if secs == nil then
         raw_print(error_offline)
         return
     else
         try_get_data(session_data_set, key, try_upload_data)
-        secs = nil
     end
 end
 
@@ -185,6 +173,13 @@ Server.on_data_set_changed(
     session_data_set,
     function(data)
         session[data.key] = data.value
+        if data.value > trusted_value then
+            trusted[data.key] = true
+        else
+            if trusted[data.key] then
+                trusted[data.key] = false
+            end
+        end
     end
 )
 

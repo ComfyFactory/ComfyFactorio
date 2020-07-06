@@ -59,6 +59,11 @@ local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     Functions.use_cargo_wagon_door(icw, player, event.entity)
 end
+
+local function on_player_changed_surface(event)
+    local player = game.players[event.player_index]
+    Functions.kill_minimap(player)
+end
 --[[
 local function on_player_created(event)
 	local player = game.players[event.player_index]
@@ -132,6 +137,7 @@ end
 local function on_tick()
     local icw = ICW.get()
     local tick = game.tick
+
     if tick % 60 == 0 then
         Functions.item_transfer(icw)
     end
@@ -161,6 +167,7 @@ end
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
+Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_train_created, on_train_created)

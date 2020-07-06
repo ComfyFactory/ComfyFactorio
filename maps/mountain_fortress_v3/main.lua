@@ -61,7 +61,8 @@ local collapse_kill = {
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
         ['assembling-machine'] = true,
-        ['furnace'] = true
+        ['furnace'] = true,
+        ['steel-chest'] = true
     },
     enabled = true
 }
@@ -200,7 +201,6 @@ function Public.reset_map()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
     local get_score = Score.get_table()
-    local antigrief = AntiGrief.get()
 
     for _, player in pairs(game.players) do
         if player.controller_type == defines.controllers.editor then
@@ -239,6 +239,7 @@ function Public.reset_map()
     get_score.score_table = {}
     Diff.difficulty_poll_closing_timeout = game.tick + 90000
     Diff.difficulty_player_votes = {}
+    Diff.difficulty_poll_closing_timeout = 60000
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
@@ -253,8 +254,6 @@ function Public.reset_map()
 
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
-    this.cargo_health = 10000
-    this.cargo_max_health = 10000
 
     Locomotive.locomotive_spawn(surface, {x = -18, y = 25})
     Locomotive.render_train_hp()
@@ -330,9 +329,7 @@ local on_player_joined_game = function(event)
     ICW_Func.is_minimap_valid(player, surface)
 
     if not this.players[player.index] then
-        this.players[player.index] = {
-            data = {}
-        }
+        this.players[player.index] = {}
         local message = comfy .. 'Greetings, ' .. player.name .. '!\nPlease read the map info.'
         Alert.alert_player(player, 15, message)
         for item, amount in pairs(starting_items) do
@@ -542,6 +539,69 @@ local has_the_game_ended = function()
     end
 end
 
+local boost_difficulty = function()
+    local difficulty_set = WPT.get('difficulty_set')
+    if difficulty_set then
+        return
+    end
+
+    local difficulty = Difficulty.get()
+    if game.tick < difficulty.difficulty_poll_closing_timeout then
+        return
+    end
+
+    local rpg_extra = RPG.get_extra_table()
+    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+    Difficulty.get().name = name
+
+    Difficulty.get().button_tooltip = difficulty.tooltip[difficulty.difficulty_vote_index]
+    Difficulty.difficulty_gui()
+
+    local message = 'Difficulty has been set! Game has been set to: [color=green]' .. name .. '[/color]'
+    local data = {
+        position = WPT.get('locomotive').position
+    }
+    Alert.alert_all_players_location(data, message)
+
+    if name == 'Easy' then
+        rpg_extra.difficulty = 1
+        game.forces.player.manual_mining_speed_modifier = 1.5
+        game.forces.player.character_running_speed_modifier = 0.2
+        game.forces.player.manual_crafting_speed_modifier = 0.4
+        WPT.get().coin_amount = 2
+        WPT.get('upgrades').flame_turret.limit = 25
+        WPT.get('upgrades').landmine.limit = 100
+        WPT.get().locomotive_health = 20000
+        WPT.get().locomotive_max_health = 20000
+        WPT.get().difficulty_set = true
+        WPT.get().bonus_xp_on_join = 700
+    elseif name == 'Normal' then
+        rpg_extra.difficulty = 0.5
+        game.forces.player.manual_mining_speed_modifier = 1
+        game.forces.player.character_running_speed_modifier = 0.1
+        game.forces.player.manual_crafting_speed_modifier = 0.2
+        WPT.get().coin_amount = 1
+        WPT.get('upgrades').flame_turret.limit = 10
+        WPT.get('upgrades').landmine.limit = 50
+        WPT.get().locomotive_health = 10000
+        WPT.get().locomotive_max_health = 10000
+        WPT.get().bonus_xp_on_join = 300
+        WPT.get().difficulty_set = true
+    elseif name == 'Hard' then
+        rpg_extra.difficulty = 0
+        game.forces.player.manual_mining_speed_modifier = 0
+        game.forces.player.character_running_speed_modifier = 0
+        game.forces.player.manual_crafting_speed_modifier = 0
+        WPT.get().coin_amount = 1
+        WPT.get('upgrades').flame_turret.limit = 3
+        WPT.get('upgrades').landmine.limit = 10
+        WPT.get().locomotive_health = 5000
+        WPT.get().locomotive_max_health = 5000
+        WPT.get().bonus_xp_on_join = 50
+        WPT.get().difficulty_set = true
+    end
+end
+
 local chunk_load = function()
     local chunk_load_tick = WPT.get('chunk_load_tick')
     if chunk_load_tick then
@@ -569,6 +629,7 @@ local on_tick = function()
 
         if game.tick % 1800 == 0 then
             remove_offline_players()
+            boost_difficulty()
             Entities.set_scores()
             local collapse_pos = Collapse.get_position()
             local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)
@@ -605,9 +666,9 @@ local on_init = function()
     }
 
     local tooltip = {
-        [1] = 'Makes the game really easy.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick.',
-        [2] = 'Normal Mountain Fortress game-play.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick.',
-        [3] = "Are you sure? It won't be easy.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick."
+        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 20000.\nHidden Treasure has higher chance to spawn.',
+        [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.',
+        [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.'
     }
 
     Difficulty.set_difficulties(difficulties)
@@ -630,6 +691,8 @@ local on_init = function()
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
     Explosives.set_destructible_tile('water-mud', 1000)
+    Explosives.set_whitelist_entity('straight-rail')
+    Explosives.set_whitelist_entity('curved-rail')
 end
 
 Event.on_nth_tick(10, on_tick)

@@ -33,7 +33,8 @@ local rpg_extra = {
     level_limit_enabled = false,
     global_pool = 0,
     leftover_pool = 0,
-    turret_kills_to_global_pool = true
+    turret_kills_to_global_pool = true,
+    difficulty = false
 }
 local rpg_frame_icons = {
     'entity/small-worm-turret',
@@ -1432,6 +1433,9 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         local fee = add_to_global_pool(amount)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
         amount = math.round(amount, 3) - fee
+        if rpg_extra.difficulty then
+            amount = amount + rpg_extra.difficulty
+        end
         Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
     else
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
@@ -1476,12 +1480,20 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
 end
 
-function Public.get_table()
-    return rpg_t
+function Public.get_table(key)
+    if key then
+        return rpg_t[key]
+    else
+        return rpg_t
+    end
 end
 
-function Public.get_extra_table()
-    return rpg_extra
+function Public.get_extra_table(key)
+    if key then
+        return rpg_extra[key]
+    else
+        return rpg_extra
+    end
 end
 
 function Public.toggle_debug()

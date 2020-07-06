@@ -9,6 +9,7 @@ local RPG = require 'maps.mountain_fortress_v3.rpg'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local BiterHealthBooster = require 'modules.biter_health_booster'
+local Difficulty = require 'modules.difficulty_vote'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Alert = require 'utils.alert'
@@ -200,11 +201,22 @@ end
 
 local function hidden_treasure(event)
     local player = game.players[event.player_index]
-    local rpg_t = RPG.get_table()
-    local magic = rpg_t[player.index].magicka
-    if math.random(1, 320) ~= 1 then
-        return
+    local magic = RPG.get_table(player.index).magicka
+    local name = Difficulty.get('name')
+    if name == 'Easy' then
+        if math.random(1, 220) ~= 1 then
+            return
+        end
+    elseif name == 'Normal' then
+        if math.random(1, 320) ~= 1 then
+            return
+        end
+    elseif name == 'Hard' then
+        if math.random(1, 420) ~= 1 then
+            return
+        end
     end
+
     if magic > 50 then
         local msg = rare_treasure_chest_messages[math.random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg)
@@ -274,7 +286,10 @@ local function angry_tree(entity, cause)
 end
 
 local function give_coin(player)
-    player.insert({name = 'coin', count = 1})
+    local coin_amount = WPT.get('coin_amount')
+    if coin_amount >= 1 then
+        player.insert({name = 'coin', count = coin_amount})
+    end
 end
 
 local function on_player_mined_entity(event)
