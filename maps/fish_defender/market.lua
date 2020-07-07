@@ -29,15 +29,9 @@ local special_descriptions = {
     ['laser-pointer'] = 'Unlock Laser Pointer - The biters are on a quest to slay the red (artillery) dot.'
 }
 
-function place_fish_market(surface, position)
-    local market = surface.create_entity({name = 'market', position = position, force = 'player'})
-    market.minable = false
-    return market
-end
-
 local function refresh_market_offers()
     local this = FDT.get()
-    if not this.market then
+    if not this.market or not this.market.valid then
         return
     end
     for i = 1, 100, 1 do

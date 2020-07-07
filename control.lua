@@ -2,6 +2,7 @@ require 'utils.data_stages'
 _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
 _DUMP_ENV = false
+local branch_version = '0.18.35'
 
 require 'utils.server'
 require 'utils.server_commands'
@@ -154,9 +155,11 @@ end
 
 local function on_init()
     game.forces.player.research_queue_enabled = true
-    local default = game.permissions.get_group('Default')
-    default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
-    default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
+    if game.active_mods.base >= branch_version then
+        local default = game.permissions.get_group('Default')
+        default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
+        default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
+    end
 end
 
 local loaded = _G.package.loaded

@@ -66,6 +66,14 @@ local jail = function(target_player, player)
             target_player ..
             ' has been jailed automatically since they have griefed. ' .. jail_messages[math.random(1, #jail_messages)]
     end
+
+    if
+        game.players[target_player].character and game.players[target_player].character.valid and
+            game.players[target_player].character.driving
+     then
+        game.players[target_player].character.driving = false
+    end
+
     game.print(message, {r = 0.98, g = 0.66, b = 0.22})
     Server.to_discord_embed(
         table.concat {
@@ -138,7 +146,7 @@ local update_jailed =
 function Public.try_dl_data(key)
     key = tostring(key)
     local secs = Server.get_current_time()
-    if secs == nil then
+    if not secs then
         return
     else
         try_get_data(jailed_data_set, key, is_jailed)
@@ -155,8 +163,14 @@ function Public.try_ul_data(key, value, player)
         value = value,
         player = player or nil
     }
-    if secs == nil then
-        return
+    if not secs then
+        if value then
+            jail(key, player)
+            return
+        else
+            free(key, player)
+            return
+        end
     else
         Task.set_timeout_in_ticks(1, update_jailed, data)
     end
@@ -191,9 +205,14 @@ Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.get_player(event.player_index)
-        if not player then
+        local secs = Server.get_current_time()
+        if not secs then
             return
         end
+        if not player or player.valid then
+            return
+        end
+
         if game.is_multiplayer() then
             Public.try_dl_data(player.name)
         end
@@ -224,16 +243,16 @@ Event.add(
             local player = game.players[event.player_index]
             p = player.print
 
-            if player.name == griefer then
-                return p("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-            end
-
             if not trusted[player.name] then
                 if not player.admin then
                     p("You're not admin nor are you trusted enough to run this command!", {r = 1, g = 0.5, b = 0.1})
                     return
                 end
             end
+            if player.name == griefer then
+                return p("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+            end
+
             if cmd == 'jail' then
                 Public.try_ul_data(griefer, true, player.name)
                 return

@@ -11,11 +11,13 @@ require 'modules.biters_yield_coins'
 require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
 
+local branch_version = '0.18.35'
+
 local Terrain = require 'maps.fish_defender.terrain'
 local Unit_health_booster = require 'modules.biter_health_booster'
 local Difficulty = require 'modules.difficulty_vote'
 local Map = require 'modules.map_info'
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local Reset = require 'functions.soft_reset'
 local Server = require 'utils.server'
 local Poll = require 'comfy_panel.poll'
@@ -192,7 +194,7 @@ local function on_gui_click(event)
     end
 end
 
-local function on_market_item_purchased(event)
+local function on_market_item_purchased()
     update_fd_stats()
 end
 
@@ -503,7 +505,7 @@ end
 
 local function wake_up_the_biters(surface)
     local market = FDT.get('market')
-    if not market then
+    if not market or not market.valid then
         return
     end
 
@@ -587,7 +589,7 @@ local function biter_attack_wave()
     local Diff = Difficulty.get()
     local this = FDT.get()
 
-    if not this.market then
+    if not this.market or not this.market.valid then
         return
     end
     if this.wave_grace_period then
@@ -884,10 +886,20 @@ end
 
 local function market_kill_visuals()
     local market = FDT.get('market')
+    local surface = FDT.get('active_surface')
+
+    if not surface or not surface.valid then
+        return
+    end
+
+    if not market or not market.valid then
+        return
+    end
+
     local m = 32
     local m2 = m * 0.005
     for i = 1, 1024, 1 do
-        market.surface.create_particle(
+        surface.create_particle(
             {
                 name = 'branch-particle',
                 position = market.position,
@@ -901,7 +913,7 @@ local function market_kill_visuals()
     for x = -5, 5, 0.5 do
         for y = -5, 5, 0.5 do
             if math_random(1, 2) == 1 then
-                market.surface.create_trivial_smoke(
+                surface.create_trivial_smoke(
                     {
                         name = 'smoke-fast',
                         position = {market.position.x + (x * 0.35), market.position.y + (y * 0.35)}
@@ -909,7 +921,7 @@ local function market_kill_visuals()
                 )
             end
             if math_random(1, 3) == 1 then
-                market.surface.create_trivial_smoke(
+                surface.create_trivial_smoke(
                     {
                         name = 'train-smoke',
                         position = {market.position.x + (x * 0.35), market.position.y + (y * 0.35)}
@@ -918,7 +930,7 @@ local function market_kill_visuals()
             end
         end
     end
-    market.surface.spill_item_stack(market.position, {name = 'raw-fish', count = 1024}, true)
+    surface.spill_item_stack(market.position, {name = 'raw-fish', count = 1024}, true)
 end
 
 local biter_splash_damage = {
@@ -1126,15 +1138,13 @@ local function on_robot_built_entity(event)
 end
 
 local function on_init()
-    local Diff = Difficulty.get()
-    local get_score = Score.get_table()
-
-    local this = FDT.get()
-
     FDT.reset_table()
     Poll.reset()
+    local get_score = Score.get_table()
+    local this = FDT.get()
 
-    Diff.difficulty_poll_closing_timeout = this.wave_grace_period
+    Difficulty.reset_difficulty_poll()
+    Difficulty.set_poll_closing_timeout = game.tick + 36000
     get_score.score_table = {}
 
     local map_gen_settings = {}
@@ -1172,9 +1182,6 @@ local function on_init()
     game.map_settings.enemy_evolution.pollution_factor = 0
     game.map_settings.pollution.enabled = false
 
-    Difficulty.reset_difficulty_poll()
-    Difficulty.set_poll_closing_timeout(game.tick + 35 * 60 * 60)
-
     game.forces['player'].technologies['atomic-bomb'].enabled = false
     --game.forces["player"].technologies["landfill"].enabled = false
 
@@ -1189,7 +1196,9 @@ local function on_init()
 
     game.map_settings.enemy_expansion.enabled = false
     game.forces['player'].technologies['artillery'].researched = false
-    game.reset_time_played()
+    if game.active_mods.base >= branch_version then
+        game.reset_time_played()
+    end
 
     local T = Map.Pop_info()
     T.localised_category = 'fish_defender'
@@ -1324,18 +1333,18 @@ local function on_player_respawned(event)
     player.character.destructible = false
 end
 
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
-event.add(defines.events.on_player_respawned, on_player_respawned)
-event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-event.add(defines.events.on_research_finished, on_research_finished)
-event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
-event.add(defines.events.on_tick, on_tick)
-event.on_init(on_init)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
+Event.add(defines.events.on_tick, on_tick)
+Event.on_init(on_init)
 
 return on_init
