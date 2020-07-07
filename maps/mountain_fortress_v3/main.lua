@@ -274,8 +274,8 @@ function Public.reset_map()
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
-    -- Task.start_queue()
-    -- Task.set_queue_speed(32)
+    Task.start_queue()
+    Task.set_queue_speed(32)
 
     this.chunk_load_tick = game.tick + 1200
 
