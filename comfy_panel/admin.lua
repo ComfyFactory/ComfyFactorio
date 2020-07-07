@@ -264,31 +264,32 @@ local function draw_events(data)
     end
 
     local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
-
     local finder
-
     if game.players[target_player_name] then
         local target_player = game.players[target_player_name].index
         finder = target_player
     end
+
     for key, value in pairs(history_index[history]) do
         if not finder then
             finder = key
         end
+
         if key == finder then
-            for i = #value, 1, -1 do
+            for logger = 1, #value do
                 if search_text then
                     if filter_brackets(search_text) then
                         goto continue
                     end
-                    if not match_test(value[i], search_text) then
+                    if not match_test(value[logger], search_text) then
                         goto continue
                     end
                 end
+
                 frame.datalog.add(
                     {
                         type = 'label',
-                        caption = history_index[history][finder][i],
+                        caption = history_index[history][finder][logger],
                         tooltip = 'Click to open mini camera.'
                     }
                 )
