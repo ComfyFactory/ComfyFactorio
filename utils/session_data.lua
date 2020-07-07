@@ -101,6 +101,7 @@ function Public.try_dl_data(key)
     local secs = Server.get_current_time()
     if secs == nil then
         raw_print(error_offline)
+        session[key] = game.players[key].online_time
         return
     else
         try_get_data(session_data_set, key, try_download_data)
@@ -164,11 +165,8 @@ Event.add(
         if not player then
             return
         end
-        if game.is_multiplayer() then
-            Public.try_dl_data(player.name)
-        else
-            session[player.name] = player.online_time
-        end
+
+        Public.try_dl_data(player.name)
     end
 )
 
@@ -179,9 +177,8 @@ Event.add(
         if not player then
             return
         end
-        if game.is_multiplayer() then
-            Public.try_ul_data(player.name)
-        end
+
+        Public.try_ul_data(player.name)
     end
 )
 

@@ -6,34 +6,19 @@ local Tabs = require 'comfy_panel.main'
 local AntiGrief = require 'antigrief'
 
 local lower = string.lower
-local gmatch = string.gmatch
-
-local function admin_only_message(str)
-    for _, player in pairs(game.connected_players) do
-        if player.admin == true then
-            player.print('Admins-only-message: ' .. str, {r = 0.88, g = 0.88, b = 0.88})
-        end
-    end
-end
 
 local function jail(player, source_player)
     if player.name == source_player.name then
         return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
     end
-    local is_jailed = Jailed.try_ul_data(player.name, true, source_player.name)
-    if is_jailed then
-        admin_only_message(player.name .. ' was jailed by ' .. source_player.name)
-    end
+    Jailed.try_ul_data(player.name, true, source_player.name)
 end
 
 local function free(player, source_player)
     if player.name == source_player.name then
         return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
     end
-    local is_free = Jailed.try_ul_data(player.name, false, source_player.name)
-    if is_free then
-        admin_only_message(source_player.name .. ' set ' .. player.name .. ' free from jail')
-    end
+    Jailed.try_ul_data(player.name, false, source_player.name)
 end
 
 local bring_player_messages = {
@@ -231,6 +216,22 @@ local function match_test(value, pattern)
     return lower(value:gsub('-', ' ')):find(pattern)
 end
 
+local function contains_text(key, value, search_text)
+    if filter_brackets(search_text) then
+        return false
+    end
+    if value then
+        if not match_test(key[value], search_text) then
+            return false
+        end
+    else
+        if not match_test(key, search_text) then
+            return false
+        end
+    end
+    return true
+end
+
 local function draw_events(data)
     local frame = data.frame
     local antigrief = data.antigrief
@@ -264,24 +265,32 @@ local function draw_events(data)
     end
 
     local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
-    local finder
     if game.players[target_player_name] then
         local target_player = game.players[target_player_name].index
-        finder = target_player
-    end
 
-    for key, value in pairs(history_index[history]) do
-        if not finder then
-            finder = key
+        for _, value in pairs(history_index[history][target_player]) do
+            if search_text then
+                local success = contains_text(value, nil, search_text)
+                if not success then
+                    goto continue
+                end
+            end
+
+            frame.datalog.add(
+                {
+                    type = 'label',
+                    caption = value,
+                    tooltip = 'Click to open mini camera.'
+                }
+            )
+            ::continue::
         end
-
-        if key == finder then
-            for logger = 1, #value do
+    else
+        for key, value in pairs(history_index[history]) do
+            for t = 1, #value do
                 if search_text then
-                    if filter_brackets(search_text) then
-                        goto continue
-                    end
-                    if not match_test(value[logger], search_text) then
+                    local success = contains_text(value, t, search_text)
+                    if not success then
                         goto continue
                     end
                 end
@@ -289,7 +298,7 @@ local function draw_events(data)
                 frame.datalog.add(
                     {
                         type = 'label',
-                        caption = history_index[history][finder][logger],
+                        caption = history_index[history][key][t],
                         tooltip = 'Click to open mini camera.'
                     }
                 )

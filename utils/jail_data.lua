@@ -37,6 +37,14 @@ Global.register(
 
 local Public = {}
 
+local function admin_only_message(str)
+    for _, player in pairs(game.connected_players) do
+        if player.admin == true then
+            player.print('Admins-only-message: ' .. str, {r = 0.88, g = 0.88, b = 0.88})
+        end
+    end
+end
+
 local jail = function(target_player, player)
     if jailed[target_player] then
         if player then
@@ -74,12 +82,15 @@ local jail = function(target_player, player)
         game.players[target_player].character.driving = false
     end
 
+    jailed[target_player] = true
+
     game.print(message, {r = 0.98, g = 0.66, b = 0.22})
     Server.to_discord_embed(
         table.concat {
             message
         }
     )
+    admin_only_message(target_player .. ' was jailed by ' .. player)
     return true
 end
 
@@ -102,12 +113,16 @@ local free = function(target_player, player)
     else
         messsage = target_player .. ' was set free from jail. ' .. freedom_messages[math.random(1, #freedom_messages)]
     end
+
+    jailed[target_player] = nil
     game.print(messsage, {r = 0.98, g = 0.66, b = 0.22})
     Server.to_discord_embed(
         table.concat {
             messsage
         }
     )
+
+    admin_only_message(player .. ' set ' .. target_player .. ' free from jail')
     return true
 end
 
@@ -166,10 +181,10 @@ function Public.try_ul_data(key, value, player)
     if not secs then
         if value then
             jail(key, player)
-            return
+            return true
         else
             free(key, player)
-            return
+            return true
         end
     else
         Task.set_timeout_in_ticks(1, update_jailed, data)
@@ -243,6 +258,10 @@ Event.add(
             local player = game.players[event.player_index]
             p = player.print
 
+            if jailed[player.name] and not player.admin then
+                return p('You are jailed, there is nothing to be done.', {r = 1, g = 0.5, b = 0.1})
+            end
+
             if not trusted[player.name] then
                 if not player.admin then
                     p("You're not admin nor are you trusted enough to run this command!", {r = 1, g = 0.5, b = 0.1})
@@ -251,6 +270,10 @@ Event.add(
             end
             if player.name == griefer then
                 return p("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+            end
+
+            if game.players[griefer].admin and not player.admin then
+                return p("You can't sadly jail an admin!", {r = 1, g = 0.5, b = 0.1})
             end
 
             if cmd == 'jail' then

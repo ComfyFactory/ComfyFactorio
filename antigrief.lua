@@ -12,24 +12,12 @@ local Public = {}
 local match = string.match
 
 local this = {
-    landfill_history = {
-        ['unknown'] = {}
-    },
-    capsule_history = {
-        ['unknown'] = {}
-    },
-    friendly_fire_history = {
-        ['unknown'] = {}
-    },
-    mining_history = {
-        ['unknown'] = {}
-    },
-    corpse_history = {
-        ['unknown'] = {}
-    },
-    cancel_crafting_history = {
-        ['unknown'] = {}
-    },
+    landfill_history = {},
+    capsule_history = {},
+    friendly_fire_history = {},
+    mining_history = {},
+    corpse_history = {},
+    cancel_crafting_history = {},
     whitelist_types = {},
     log_tree_harvest = false,
     do_not_check_trusted = true
@@ -62,6 +50,10 @@ Global.register(
         this = t
     end
 )
+
+local function increment(t, k, v)
+    t[k][#t[k] + 1] = (v or 1)
+end
 
 local function damage_player(player)
     if player.character then
@@ -163,7 +155,7 @@ local function on_player_built_tile(event)
     str = str .. placed_tiles[1].position.y
     str = str .. ' '
     str = str .. 'surface:' .. event.surface.index
-    this.landfill_history[player.index][#this.landfill_history[player.index] + 1] = str
+    increment(this.landfill_history, player.index, str)
 end
 
 local function on_built_entity(event)
@@ -232,7 +224,7 @@ local function on_player_used_capsule(event)
         str = str .. math.floor(position.y)
         str = str .. ' '
         str = str .. 'surface:' .. player.surface.index
-        this.capsule_history[player.index][#this.capsule_history[player.index] + 1] = str
+        increment(this.capsule_history, player.index, str)
     end
 end
 
@@ -248,8 +240,8 @@ local function on_entity_died(event)
         local player = cause.player
         name = player.name
 
-        if not this.friendly_fire_history[player.index] then
-            this.friendly_fire_history[player.index] = {}
+        if not this.friendly_fire_history[cause.player.index] then
+            this.friendly_fire_history[cause.player.index] = {}
         end
 
         if #this.friendly_fire_history[cause.player.index] > 100 then
@@ -266,8 +258,7 @@ local function on_entity_died(event)
         str = str .. math.floor(event.entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
-
-        this.friendly_fire_history[cause.player.index][#this.friendly_fire_history[cause.player.index] + 1] = str
+        increment(this.friendly_fire_history, player.index, str)
     elseif not blacklisted_types[event.entity.type] and this.whitelist_types[event.entity.type] then
         if cause then
             if cause.force.name ~= 'player' then
@@ -296,15 +287,15 @@ local function on_entity_died(event)
             if #this.friendly_fire_history[cause.player.index] > 100 then
                 this.friendly_fire_history[cause.player.index] = {}
             end
-            this.friendly_fire_history[cause.player.index][#this.friendly_fire_history[cause.player.index] + 1] = str
+            increment(this.friendly_fire_history, cause.player.index, str)
         else
-            if not this.friendly_fire_history['unknown'] then
-                this.friendly_fire_history['unknown'] = {}
+            if not this.friendly_fire_history[99999] then
+                this.friendly_fire_history[99999] = {}
             end
-            if #this.friendly_fire_history['unknown'] > 100 then
-                this.friendly_fire_history['unknown'] = {}
+            if #this.friendly_fire_history[99999] > 100 then
+                this.friendly_fire_history[99999] = {}
             end
-            this.friendly_fire_history['unknown'][#this.friendly_fire_history['unknown'] + 1] = str
+            increment(this.friendly_fire_history, 99999, str)
         end
     end
 end
@@ -334,8 +325,8 @@ local function on_player_mined_entity(event)
         str = str .. math.floor(event.entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
+        increment(this.mining_history, player.index, str)
 
-        this.mining_history[player.index][#this.mining_history[player.index] + 1] = str
         return
     end
     if not event.entity.last_user then
@@ -368,8 +359,7 @@ local function on_player_mined_entity(event)
     str = str .. math.floor(event.entity.position.y)
     str = str .. ' '
     str = str .. 'surface:' .. event.entity.surface.index
-
-    this.mining_history[player.index][#this.mining_history[player.index] + 1] = str
+    increment(this.mining_history, player.index, str)
 end
 
 local function on_gui_opened(event)
@@ -413,8 +403,7 @@ local function on_gui_opened(event)
         str = str .. math.floor(event.entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
-
-        this.corpse_history[player.index][#this.corpse_history[player.index] + 1] = str
+        increment(this.corpse_history, player.index, str)
     end
 end
 
@@ -457,8 +446,7 @@ local function on_pre_player_mined_item(event)
         str = str .. math.floor(event.entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
-
-        this.corpse_history[player.index][#this.corpse_history[player.index] + 1] = str
+        increment(this.corpse_history, player.index, str)
     end
 end
 
@@ -536,28 +524,17 @@ local function on_player_cancelled_crafting(event)
             str = str .. math.floor(player.position.y)
             str = str .. ' '
             str = str .. 'surface:' .. player.surface.index
-
-            this.cancel_crafting_history[player.index][#this.cancel_crafting_history[player.index] + 1] = str
+            increment(this.cancel_crafting_history, player.index, str)
         end
     end
 end
 
 function Public.reset_tables()
-    this.landfill_history = {
-        ['unknown'] = {}
-    }
-    this.capsule_history = {
-        ['unknown'] = {}
-    }
-    this.friendly_fire_history = {
-        ['unknown'] = {}
-    }
-    this.mining_history = {
-        ['unknown'] = {}
-    }
-    this.corpse_history = {
-        ['unknown'] = {}
-    }
+    this.landfill_history = {}
+    this.capsule_history = {}
+    this.friendly_fire_history = {}
+    this.mining_history = {}
+    this.corpse_history = {}
     this.cancel_crafting_history = {}
 end
 

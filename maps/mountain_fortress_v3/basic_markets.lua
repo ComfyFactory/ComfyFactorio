@@ -213,7 +213,7 @@ local function get_market_item_list(market_types, rarity)
     return list
 end
 
-function Public.get_random_item(rarity)
+function Public.get_random_item(rarity, sell, buy)
     rarity = rarity or 0
     local types = get_types()
     table.shuffle_table(types)
@@ -248,14 +248,18 @@ function Public.get_random_item(rarity)
         end
     end
 
-    local sells = get_resource_market_sells()
-    for i = 1, math.random(1, 3), 1 do
-        items_return[#items_return + 1] = sells[i]
+    if sell then
+        local sells = get_resource_market_sells()
+        for i = 1, math.random(1, 3), 1 do
+            items_return[#items_return + 1] = sells[i]
+        end
     end
 
-    local buys = get_resource_market_buys()
-    for i = 1, math.random(1, 3), 1 do
-        items_return[#items_return + 1] = buys[i]
+    if buy then
+        local buys = get_resource_market_buys()
+        for i = 1, math.random(1, 3), 1 do
+            items_return[#items_return + 1] = buys[i]
+        end
     end
 
     return items_return

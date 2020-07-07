@@ -12,7 +12,7 @@ to your scenario control.lua.
 
 Minor changes by ~~~Gerkiz~~~
 --]]
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local play_time = require 'utils.session_data'
 local Tabs = require 'comfy_panel.main'
 
@@ -158,9 +158,6 @@ local pokemessages = {
 }
 
 local function get_formatted_playtime(x)
-    local time_one = 216000
-    local time_two = 3600
-
     if x < 5184000 then
         local y = x / 216000
         y = tostring(y)
@@ -615,7 +612,6 @@ local function refresh()
 end
 
 local function on_player_joined_game(event)
-    local player = game.players[event.player_index]
     if not global.player_list.last_poke_tick[event.player_index] then
         global.player_list.pokes[event.player_index] = 0
         global.player_list.last_poke_tick[event.player_index] = 0
@@ -624,7 +620,7 @@ local function on_player_joined_game(event)
     refresh()
 end
 
-local function on_player_left_game(event)
+local function on_player_left_game()
     refresh()
 end
 
@@ -637,7 +633,7 @@ end
 
 comfy_panel_tabs['Players'] = {gui = player_list_show, admin = false}
 
-event.on_init(on_init)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_left_game, on_player_left_game)
-event.add(defines.events.on_gui_click, on_gui_click)
+Event.on_init(on_init)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_gui_click, on_gui_click)

@@ -131,152 +131,6 @@ local function place_fish_market(surface, position)
     return market
 end
 
-local function generate_spawn_area(surface)
-    surface.request_to_generate_chunks({x = 0, y = 0}, 7)
-    surface.request_to_generate_chunks({x = 160, y = 0}, 4)
-    --surface.force_generate_chunk_requests()
-    local spawn_area_generated = FDT.get('spawn_area_generated')
-    if spawn_area_generated then
-        return
-    end
-    if not surface.is_chunk_generated({-7, 0}) then
-        return
-    end
-    if not surface.is_chunk_generated({5, 0}) then
-        return
-    end
-    FDT.get().spawn_area_generated = true
-
-    local spawn_position_x = -128
-
-    surface.create_entity({name = 'electric-beam', position = {160, -96}, source = {160, -96}, target = {160, 96}})
-
-    for _, tile in pairs(
-        surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-160, -160}, {160, 160}}})
-    ) do
-        local noise =
-            math_abs(
-            simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16
-        )
-        if tile.position.x > -160 + noise then
-            surface.set_tiles(
-                {{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}},
-                true
-            )
-        end
-    end
-
-    for _, entity in pairs(
-        surface.find_entities_filtered(
-            {type = {'resource', 'cliff'}, area = {{spawn_position_x - 32, -256}, {160, 256}}}
-        )
-    ) do
-        if is_body(entity.position) then
-            if
-                entity.position.x >
-                    spawn_position_x - 32 +
-                        math_abs(
-                            simplex_noise(
-                                entity.position.x * 0.02,
-                                entity.position.y * 0.02,
-                                game.surfaces[1].map_gen_settings.seed
-                            ) * 16
-                        )
-             then
-                entity.destroy()
-            end
-        end
-    end
-
-    local decorative_names = {}
-    for k, v in pairs(game.decorative_prototypes) do
-        if v.autoplace_specification then
-            decorative_names[#decorative_names + 1] = k
-        end
-    end
-    for x = -4, 4, 1 do
-        for y = -3, 3, 1 do
-            surface.regenerate_decorative(decorative_names, {{x, y}})
-        end
-    end
-
-    local y = 80
-    local ore_positions = {
-        {x = spawn_position_x - 52, y = y},
-        {x = spawn_position_x - 52, y = y * 0.5},
-        {x = spawn_position_x - 52, y = 0},
-        {x = spawn_position_x - 52, y = y * -0.5},
-        {x = spawn_position_x - 52, y = y * -1}
-    }
-    table.shuffle_table(ore_positions)
-    map_functions.draw_smoothed_out_ore_circle(ore_positions[1], 'copper-ore', surface, 15, 2500)
-    map_functions.draw_smoothed_out_ore_circle(ore_positions[2], 'iron-ore', surface, 15, 2500)
-    map_functions.draw_smoothed_out_ore_circle(ore_positions[3], 'coal', surface, 15, 1500)
-    map_functions.draw_smoothed_out_ore_circle(ore_positions[4], 'stone', surface, 15, 1500)
-    map_functions.draw_noise_tile_circle({x = spawn_position_x - 20, y = 0}, 'water', surface, 16)
-    map_functions.draw_oil_circle(ore_positions[5], 'crude-oil', surface, 8, 200000)
-
-    local pos = surface.find_non_colliding_position('market', {spawn_position_x, 0}, 50, 1)
-    FDT.get().market = place_fish_market(surface, pos)
-    local market = FDT.get('market')
-
-    local r = 16
-    for _, entity in pairs(
-        surface.find_entities_filtered(
-            {
-                area = {
-                    {market.position.x - r, market.position.y - r},
-                    {market.position.x + r, market.position.y + r}
-                },
-                type = 'tree'
-            }
-        )
-    ) do
-        local distance_to_center =
-            math_sqrt((entity.position.x - market.position.x) ^ 2 + (entity.position.y - market.position.y) ^ 2)
-        if distance_to_center < r then
-            if math_random(1, r) > distance_to_center then
-                entity.destroy()
-            end
-        end
-    end
-
-    local pos = surface.find_non_colliding_position('gun-turret', {spawn_position_x + 5, 1}, 50, 1)
-    local turret = surface.create_entity({name = 'gun-turret', position = pos, force = 'player'})
-    turret.insert({name = 'firearm-magazine', count = 32})
-
-    for x = -20, 20, 1 do
-        for y = -20, 20, 1 do
-            local pos = {x = market.position.x + x, y = market.position.y + y}
-            --local distance_to_center = math_sqrt(x^2 + y^2)
-            --if distance_to_center > 8 and distance_to_center < 15 then
-            local distance_to_center = x ^ 2 + y ^ 2
-            if distance_to_center > 64 and distance_to_center < 225 then
-                if
-                    math_random(1, 3) == 1 and
-                        surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'player'})
-                 then
-                    local chest = surface.create_entity({name = 'wooden-chest', position = pos, force = 'player'})
-                end
-            end
-        end
-    end
-
-    local area = {{x = -160, y = -96}, {x = 160, y = 96}}
-    for _, tile in pairs(surface.find_tiles_filtered({name = 'water', area = area})) do
-        if math_random(1, 32) == 1 then
-            surface.create_entity({name = 'fish', position = tile.position})
-        end
-    end
-
-    local pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, 4}, 50, 1)
-    game.forces['player'].set_spawn_position(pos, surface)
-    for _, player in pairs(game.connected_players) do
-        local pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, 4}, 50, 1)
-        player.teleport(pos, surface)
-    end
-end
-
 local function enemy_territory(surface, left_top)
     --surface.request_to_generate_chunks({x = 256, y = 0}, 16)
     --surface.force_generate_chunk_requests()
@@ -384,32 +238,6 @@ local function fish_mouth(surface, left_top)
     end
 end
 
-function Public.fish_eye(surface, position)
-    surface.request_to_generate_chunks(position, 2)
-    surface.force_generate_chunk_requests()
-    for x = -48, 48, 1 do
-        for y = -48, 48, 1 do
-            local p = {x = position.x + x, y = position.y + y}
-            --local distance = math_sqrt(((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2))
-            --if distance < 44 then
-            --	surface.set_tiles({{name = "water-green", position = p}}, true)
-            --end
-            --if distance < 22 then
-            --	surface.set_tiles({{name = "out-of-map", position = p}}, true)
-            --end
-
-            local distance = ((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2)
-            if distance < 1936 then
-                if distance < 484 then
-                    surface.set_tiles({{name = 'out-of-map', position = p}}, true)
-                else
-                    surface.set_tiles({{name = 'water-green', position = p}}, true)
-                end
-            end
-        end
-    end
-end
-
 local ores = {'coal', 'iron-ore', 'copper-ore', 'stone'}
 
 local function plankton_territory(surface, position, seed)
@@ -476,7 +304,7 @@ local function process_chunk(left_top)
 
     local seed = game.surfaces[1].map_gen_settings.seed
 
-    generate_spawn_area(surface)
+    Public.generate_spawn_area(surface)
     enemy_territory(surface, left_top)
     fish_mouth(surface, left_top)
 
@@ -532,6 +360,211 @@ local function on_chunk_generated(event)
             return
         end
         this.chunk_queue[#this.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
+    end
+end
+
+local function render_market_hp()
+    local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+
+    this.health_text =
+        rendering.draw_text {
+        text = 'HP: ' .. this.market_health .. ' / ' .. this.market_max_health,
+        surface = surface,
+        target = this.market,
+        target_offset = {0, -3},
+        color = {0, 255, 0},
+        scale = 1.40,
+        font = 'default-game',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
+    this.caption =
+        rendering.draw_text {
+        text = 'Fish Market',
+        surface = surface,
+        target = this.market,
+        target_offset = {0, -4.4},
+        color = {0, 255, 0},
+        scale = 1.80,
+        font = 'default-game',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+end
+
+function Public.generate_spawn_area(surface)
+    surface.request_to_generate_chunks({x = 0, y = 0}, 7)
+    surface.request_to_generate_chunks({x = 160, y = 0}, 4)
+    --surface.force_generate_chunk_requests()
+    local spawn_area_generated = FDT.get('spawn_area_generated')
+    if spawn_area_generated then
+        return
+    end
+    if not surface.is_chunk_generated({-7, 0}) then
+        return
+    end
+    if not surface.is_chunk_generated({5, 0}) then
+        return
+    end
+    FDT.get().spawn_area_generated = true
+
+    local spawn_position_x = -128
+
+    surface.create_entity({name = 'electric-beam', position = {160, -96}, source = {160, -96}, target = {160, 96}})
+
+    for _, tile in pairs(
+        surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-160, -160}, {160, 160}}})
+    ) do
+        local noise =
+            math_abs(
+            simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16
+        )
+        if tile.position.x > -160 + noise then
+            surface.set_tiles(
+                {{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}},
+                true
+            )
+        end
+    end
+
+    for _, entity in pairs(
+        surface.find_entities_filtered(
+            {type = {'resource', 'cliff'}, area = {{spawn_position_x - 32, -256}, {160, 256}}}
+        )
+    ) do
+        if is_body(entity.position) then
+            if
+                entity.position.x >
+                    spawn_position_x - 32 +
+                        math_abs(
+                            simplex_noise(
+                                entity.position.x * 0.02,
+                                entity.position.y * 0.02,
+                                game.surfaces[1].map_gen_settings.seed
+                            ) * 16
+                        )
+             then
+                entity.destroy()
+            end
+        end
+    end
+
+    local decorative_names = {}
+    for k, v in pairs(game.decorative_prototypes) do
+        if v.autoplace_specification then
+            decorative_names[#decorative_names + 1] = k
+        end
+    end
+    for x = -4, 4, 1 do
+        for y = -3, 3, 1 do
+            surface.regenerate_decorative(decorative_names, {{x, y}})
+        end
+    end
+
+    local y = 80
+    local ore_positions = {
+        {x = spawn_position_x - 52, y = y},
+        {x = spawn_position_x - 52, y = y * 0.5},
+        {x = spawn_position_x - 52, y = 0},
+        {x = spawn_position_x - 52, y = y * -0.5},
+        {x = spawn_position_x - 52, y = y * -1}
+    }
+    table.shuffle_table(ore_positions)
+    map_functions.draw_smoothed_out_ore_circle(ore_positions[1], 'copper-ore', surface, 15, 2500)
+    map_functions.draw_smoothed_out_ore_circle(ore_positions[2], 'iron-ore', surface, 15, 2500)
+    map_functions.draw_smoothed_out_ore_circle(ore_positions[3], 'coal', surface, 15, 1500)
+    map_functions.draw_smoothed_out_ore_circle(ore_positions[4], 'stone', surface, 15, 1500)
+    map_functions.draw_noise_tile_circle({x = spawn_position_x - 20, y = 0}, 'water', surface, 16)
+    map_functions.draw_oil_circle(ore_positions[5], 'crude-oil', surface, 8, 200000)
+
+    local pos = surface.find_non_colliding_position('market', {spawn_position_x, 0}, 50, 1)
+    FDT.get().market = place_fish_market(surface, pos)
+    local market = FDT.get('market')
+
+    render_market_hp()
+
+    local r = 16
+    for _, entity in pairs(
+        surface.find_entities_filtered(
+            {
+                area = {
+                    {market.position.x - r, market.position.y - r},
+                    {market.position.x + r, market.position.y + r}
+                },
+                type = 'tree'
+            }
+        )
+    ) do
+        local distance_to_center =
+            math_sqrt((entity.position.x - market.position.x) ^ 2 + (entity.position.y - market.position.y) ^ 2)
+        if distance_to_center < r then
+            if math_random(1, r) > distance_to_center then
+                entity.destroy()
+            end
+        end
+    end
+
+    local pos = surface.find_non_colliding_position('gun-turret', {spawn_position_x + 5, 1}, 50, 1)
+    local turret = surface.create_entity({name = 'gun-turret', position = pos, force = 'player'})
+    turret.insert({name = 'firearm-magazine', count = 32})
+
+    for x = -20, 20, 1 do
+        for y = -20, 20, 1 do
+            local pos = {x = market.position.x + x, y = market.position.y + y}
+            --local distance_to_center = math_sqrt(x^2 + y^2)
+            --if distance_to_center > 8 and distance_to_center < 15 then
+            local distance_to_center = x ^ 2 + y ^ 2
+            if distance_to_center > 64 and distance_to_center < 225 then
+                if
+                    math_random(1, 3) == 1 and
+                        surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'player'})
+                 then
+                    local chest = surface.create_entity({name = 'wooden-chest', position = pos, force = 'player'})
+                end
+            end
+        end
+    end
+
+    local area = {{x = -160, y = -96}, {x = 160, y = 96}}
+    for _, tile in pairs(surface.find_tiles_filtered({name = 'water', area = area})) do
+        if math_random(1, 32) == 1 then
+            surface.create_entity({name = 'fish', position = tile.position})
+        end
+    end
+
+    local pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, 4}, 50, 1)
+    game.forces['player'].set_spawn_position(pos, surface)
+    for _, player in pairs(game.connected_players) do
+        local pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, 4}, 50, 1)
+        player.teleport(pos, surface)
+    end
+end
+
+function Public.fish_eye(surface, position)
+    surface.request_to_generate_chunks(position, 2)
+    surface.force_generate_chunk_requests()
+    for x = -48, 48, 1 do
+        for y = -48, 48, 1 do
+            local p = {x = position.x + x, y = position.y + y}
+            --local distance = math_sqrt(((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2))
+            --if distance < 44 then
+            --	surface.set_tiles({{name = "water-green", position = p}}, true)
+            --end
+            --if distance < 22 then
+            --	surface.set_tiles({{name = "out-of-map", position = p}}, true)
+            --end
+
+            local distance = ((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2)
+            if distance < 1936 then
+                if distance < 484 then
+                    surface.set_tiles({{name = 'out-of-map', position = p}}, true)
+                else
+                    surface.set_tiles({{name = 'water-green', position = p}}, true)
+                end
+            end
+        end
     end
 end
 

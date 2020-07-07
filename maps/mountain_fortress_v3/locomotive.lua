@@ -1196,7 +1196,7 @@ end
 
 local function add_random_loot_to_main_market(rarity)
     local main_market_items = WPT.get('main_market_items')
-    local items = Market.get_random_item(rarity)
+    local items = Market.get_random_item(rarity, true, false)
 
     local types = game.item_prototypes
     local ticker = 0

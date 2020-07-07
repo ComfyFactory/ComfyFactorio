@@ -3,6 +3,7 @@
 --require "modules.rpg"
 
 require 'maps.fish_defender.market'
+require 'maps.fish_defender.commands'
 require 'maps.fish_defender.shotgun_buff'
 require 'maps.fish_defender.on_entity_damaged'
 require 'modules.rocket_launch_always_yields_science'
@@ -25,6 +26,11 @@ local Score = require 'comfy_panel.score'
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
+
+local branch_version = '0.18.35'
+local sub = string.sub
+
+local Public = {}
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['raw-fish'] = 3, ['iron-plate'] = 32}
 
@@ -887,6 +893,9 @@ local function market_kill_visuals()
     local active_surface_index = FDT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
 
+    local is_branch_18 = sub(branch_version, 3, 4)
+    local get_active_version = sub(game.active_mods.base, 3, 4)
+
     if not surface or not surface.valid then
         return
     end
@@ -897,17 +906,32 @@ local function market_kill_visuals()
 
     local m = 32
     local m2 = m * 0.005
-    for i = 1, 1024, 1 do
-        surface.create_entity(
-            {
-                name = 'branch-particle',
-                position = market.position,
-                frame_speed = 0.1,
-                vertical_speed = 0.1,
-                height = 0.1,
-                movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
-            }
-        )
+    if get_active_version >= is_branch_18 then
+        for i = 1, 1024, 1 do
+            surface.create_particle(
+                {
+                    name = 'branch-particle',
+                    position = market.position,
+                    frame_speed = 0.1,
+                    vertical_speed = 0.1,
+                    height = 0.1,
+                    movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+                }
+            )
+        end
+    else
+        for i = 1, 1024, 1 do
+            surface.create_entity(
+                {
+                    name = 'branch-particle',
+                    position = market.position,
+                    frame_speed = 0.1,
+                    vertical_speed = 0.1,
+                    height = 0.1,
+                    movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+                }
+            )
+        end
     end
     for x = -5, 5, 0.5 do
         for y = -5, 5, 0.5 do
@@ -1003,13 +1027,6 @@ local function on_entity_died(event)
         return
     end
 
-    if event.entity == this.market then
-        market_kill_visuals()
-        this.market = nil
-        this.market_age = game.tick - this.last_reset
-        is_game_lost()
-    end
-
     if this.entity_limits[event.entity.name] then
         this.entity_limits[event.entity.name].placed = this.entity_limits[event.entity.name].placed - 1
         update_fd_stats()
@@ -1027,24 +1044,17 @@ local function on_player_joined_game(event)
 
     if player.online_time == 0 then
         player.insert({name = 'pistol', count = 1})
-        --player.insert({name = "iron-axe", count = 1})
-        player.insert({name = 'raw-fish', count = 3})
+        player.insert({name = 'raw-fish', count = 4})
         player.insert({name = 'firearm-magazine', count = 16})
         player.insert({name = 'iron-plate', count = 32})
+        player.insert({name = 'stone', count = 16})
         if global.show_floating_killscore then
             global.show_floating_killscore[player.name] = false
         end
     end
 
-    if player.online_time < 2 and surface.is_chunk_generated({0, 0}) then
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces['player'].get_spawn_position(surface), 50, 1),
-            surface.name
-        )
-    else
-        if player.online_time < 2 then
-            player.teleport(game.forces['player'].get_spawn_position(surface), surface.name)
-        end
+    if player.online_time < 2 or player.surface.index ~= active_surface_index then
+        player.teleport(game.forces['player'].get_spawn_position(surface), surface.name)
     end
 
     create_wave_gui(player)
@@ -1139,149 +1149,6 @@ local function on_robot_built_entity(event)
     end
 end
 
-local function on_init()
-    FDT.reset_table()
-    Poll.reset()
-    local get_score = Score.get_table()
-    local this = FDT.get()
-    local branch_version = '0.18.35'
-    local sub = string.sub
-    local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
-
-    Difficulty.reset_difficulty_poll()
-    Difficulty.set_poll_closing_timeout = game.tick + 36000
-    get_score.score_table = {}
-
-    local map_gen_settings = {}
-    map_gen_settings.height = 2048
-    map_gen_settings.water = 0.10
-    map_gen_settings.terrain_segmentation = 3
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
-    map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 3, size = 1.5, richness = 1},
-        ['stone'] = {frequency = 3, size = 1.5, richness = 1},
-        ['copper-ore'] = {frequency = 3, size = 1.5, richness = 1},
-        ['iron-ore'] = {frequency = 3, size = 1.5, richness = 1},
-        ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
-        ['crude-oil'] = {frequency = 5, size = 1.25, richness = 2},
-        ['trees'] = {frequency = 2, size = 1, richness = 1},
-        ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
-    }
-
-    if not this.active_surface_index then
-        this.active_surface_index = game.create_surface('fish_defender', map_gen_settings).index
-        this.active_surface = game.surfaces[this.active_surface_index]
-    else
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
-        this.active_surface = game.surfaces[this.active_surface_index]
-    end
-
-    local surface = this.active_surface
-
-    surface.peaceful_mode = false
-
-    game.map_settings.enemy_expansion.enabled = false
-    game.map_settings.enemy_evolution.destroy_factor = 0
-    game.map_settings.enemy_evolution.time_factor = 0
-    game.map_settings.enemy_evolution.pollution_factor = 0
-    game.map_settings.pollution.enabled = false
-
-    game.forces['player'].technologies['atomic-bomb'].enabled = false
-    --game.forces["player"].technologies["landfill"].enabled = false
-
-    if not game.forces.decoratives then
-        game.create_force('decoratives')
-    end
-    game.forces['decoratives'].set_cease_fire('enemy', true)
-    game.forces['enemy'].set_cease_fire('decoratives', true)
-    game.forces['player'].set_cease_fire('decoratives', true)
-
-    Terrain.fish_eye(surface, {x = -2150, y = -300})
-
-    game.map_settings.enemy_expansion.enabled = false
-    game.forces['player'].technologies['artillery'].researched = false
-
-    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
-    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
-    if get_active_version >= is_branch_18 then
-        game.reset_time_played()
-    end
-
-    local T = Map.Pop_info()
-    T.localised_category = 'fish_defender'
-    T.main_caption_color = {r = 0.11, g = 0.8, b = 0.44}
-    T.sub_caption_color = {r = 0.33, g = 0.66, b = 0.9}
-
-    for _, player in pairs(game.connected_players) do
-        if player.gui.left['fish_defense_game_lost'] then
-            player.gui.left['fish_defense_game_lost'].destroy()
-        end
-    end
-
-    local mgs = game.surfaces['nauvis'].map_gen_settings
-    mgs.width = 16
-    mgs.height = 16
-    game.surfaces['nauvis'].map_gen_settings = mgs
-    game.surfaces['nauvis'].clear()
-end
-
-local function on_tick()
-    local Diff = Difficulty.get()
-    local active_surface_index = FDT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
-    local this = FDT.get()
-    if game.tick % 30 == 0 then
-        if this.market then
-            for _, player in pairs(game.connected_players) do
-                if surface.peaceful_mode == false then
-                    create_wave_gui(player)
-                end
-            end
-        end
-        if game.tick % 180 == 0 then
-            if surface then
-                game.forces.player.chart(surface, {{-160, -128}, {192, 128}})
-                if Diff.difficulty_vote_index then
-                    this.wave_interval = difficulties_votes[Diff.difficulty_vote_index].wave_interval
-                end
-            end
-        end
-
-        if this.market_age then
-            if not this.game_restart_timer then
-                this.game_restart_timer = 10800
-            else
-                if this.game_restart_timer < 0 then
-                    return
-                end
-                this.game_restart_timer = this.game_restart_timer - 30
-            end
-            if this.game_restart_timer % 1800 == 0 then
-                if this.game_restart_timer > 0 then
-                    this.game_reset = true
-                    this.game_has_ended = true
-                    game.print(
-                        'Map will restart in ' .. this.game_restart_timer / 60 .. ' seconds!',
-                        {r = 0.22, g = 0.88, b = 0.22}
-                    )
-                end
-                if this.game_restart_timer == 0 then
-                    on_init()
-                end
-            end
-        end
-    end
-
-    if game.tick % this.wave_interval == this.wave_interval - 1 then
-        if surface.peaceful_mode == true then
-            return
-        end
-        biter_attack_wave()
-    end
-end
-
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
     local active_surface_index = FDT.get('active_surface_index')
@@ -1342,6 +1209,246 @@ local function on_player_respawned(event)
     player.character.destructible = false
 end
 
+local function set_objective_health(final_damage_amount)
+    local this = FDT.get()
+    if final_damage_amount == 0 then
+        return
+    end
+
+    if this.market_health <= 0 then
+        this.market.health = this.market.health + final_damage_amount
+        return
+    end
+
+    this.market_health = math.floor(this.market_health - final_damage_amount)
+    if this.market_health > this.market_max_health then
+        this.market_health = this.market_max_health
+    end
+
+    if this.market_health <= 0 then
+        market_kill_visuals()
+        this.market.die()
+        this.market = nil
+        this.market_age = game.tick - this.last_reset
+        is_game_lost()
+        return
+    end
+
+    local m = this.market_health / this.market_max_health
+    this.market.health = 150 * m
+
+    rendering.set_text(this.health_text, 'HP: ' .. this.market_health .. ' / ' .. this.market_max_health)
+end
+
+local function protect_entities(event)
+    local this = FDT.get()
+    local entity = event.entity
+
+    if not entity or not entity.valid then
+        return
+    end
+
+    if not this.market or not this.market.valid then
+        return
+    end
+
+    if entity.force.index ~= 1 then
+        return
+    end --Player Force
+
+    if event.cause then
+        if event.cause.force.index == 2 and entity == this.market then
+            set_objective_health(event.final_damage_amount)
+        elseif event.cause.force.index == 2 then
+            return
+        else
+            event.entity.health = event.entity.health + event.final_damage_amount
+        end
+    end
+    if entity and entity.valid then
+        event.entity.health = event.entity.health + event.final_damage_amount
+    end
+end
+
+local function on_entity_damaged(event)
+    local entity = event.entity
+
+    if not entity then
+        return
+    end
+
+    if not entity.valid then
+        return
+    end
+
+    protect_entities(event)
+end
+
+local function on_player_repaired_entity(event)
+    local this = FDT.get()
+    if not event.entity then
+        return
+    end
+    if not event.entity.valid then
+        return
+    end
+    if not event.entity.health then
+        return
+    end
+    local entity = event.entity
+    if entity == this.market then
+        set_objective_health(-1)
+    end
+end
+
+function Public.on_init()
+    FDT.reset_table()
+    Poll.reset()
+    local get_score = Score.get_table()
+    local this = FDT.get()
+    local is_branch_18 = sub(branch_version, 3, 4)
+    local get_active_version = sub(game.active_mods.base, 3, 4)
+
+    Difficulty.reset_difficulty_poll()
+    Difficulty.set_poll_closing_timeout = game.tick + 36000
+    get_score.score_table = {}
+
+    local map_gen_settings = {}
+    map_gen_settings.height = 2048
+    map_gen_settings.water = 0.10
+    map_gen_settings.terrain_segmentation = 3
+    map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
+    map_gen_settings.autoplace_controls = {
+        ['coal'] = {frequency = 3, size = 1.5, richness = 1},
+        ['stone'] = {frequency = 3, size = 1.5, richness = 1},
+        ['copper-ore'] = {frequency = 3, size = 1.5, richness = 1},
+        ['iron-ore'] = {frequency = 3, size = 1.5, richness = 1},
+        ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
+        ['crude-oil'] = {frequency = 5, size = 1.25, richness = 2},
+        ['trees'] = {frequency = 2, size = 1, richness = 1},
+        ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
+    }
+
+    if not this.active_surface_index then
+        this.active_surface_index = game.create_surface('fish_defender', map_gen_settings).index
+        this.active_surface = game.surfaces[this.active_surface_index]
+    else
+        this.active_surface_index =
+            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface = game.surfaces[this.active_surface_index]
+    end
+
+    local surface = this.active_surface
+
+    surface.peaceful_mode = false
+
+    game.map_settings.enemy_expansion.enabled = false
+    game.map_settings.enemy_evolution.destroy_factor = 0
+    game.map_settings.enemy_evolution.time_factor = 0
+    game.map_settings.enemy_evolution.pollution_factor = 0
+    game.map_settings.pollution.enabled = false
+
+    game.forces['player'].technologies['atomic-bomb'].enabled = false
+    --game.forces["player"].technologies["landfill"].enabled = false
+
+    if not game.forces.decoratives then
+        game.create_force('decoratives')
+    end
+    game.forces['decoratives'].set_cease_fire('enemy', true)
+    game.forces['enemy'].set_cease_fire('decoratives', true)
+    game.forces['player'].set_cease_fire('decoratives', true)
+    game.remove_offline_players()
+
+    Terrain.fish_eye(surface, {x = -2150, y = -300})
+
+    game.map_settings.enemy_expansion.enabled = false
+    game.forces['player'].technologies['artillery'].researched = false
+
+    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
+    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
+    if get_active_version >= is_branch_18 then
+        game.reset_time_played()
+    end
+
+    this.market_health = 1000
+    this.market_max_health = 1000
+
+    local T = Map.Pop_info()
+    T.localised_category = 'fish_defender'
+    T.main_caption_color = {r = 0.11, g = 0.8, b = 0.44}
+    T.sub_caption_color = {r = 0.33, g = 0.66, b = 0.9}
+
+    for _, player in pairs(game.connected_players) do
+        if player.gui.left['fish_defense_game_lost'] then
+            player.gui.left['fish_defense_game_lost'].destroy()
+        end
+    end
+
+    local mgs = game.surfaces['nauvis'].map_gen_settings
+    mgs.width = 16
+    mgs.height = 16
+    game.surfaces['nauvis'].map_gen_settings = mgs
+    game.surfaces['nauvis'].clear()
+end
+
+local function on_tick()
+    local Diff = Difficulty.get()
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+    local this = FDT.get()
+    if game.tick % 30 == 0 then
+        if this.market then
+            for _, player in pairs(game.connected_players) do
+                if surface.peaceful_mode == false then
+                    create_wave_gui(player)
+                end
+            end
+        end
+        if game.tick % 180 == 0 then
+            if surface then
+                game.forces.player.chart(surface, {{-160, -128}, {192, 128}})
+                if Diff.difficulty_vote_index then
+                    this.wave_interval = difficulties_votes[Diff.difficulty_vote_index].wave_interval
+                end
+            end
+        end
+
+        if this.market_age then
+            if not this.game_restart_timer then
+                this.game_restart_timer = 5400
+            else
+                if this.game_restart_timer < 0 then
+                    return
+                end
+                this.game_restart_timer = this.game_restart_timer - 30
+            end
+            if this.game_restart_timer % 1800 == 0 then
+                if this.game_restart_timer > 0 then
+                    this.game_reset = true
+                    this.game_has_ended = true
+                    game.print(
+                        'Game will soft-reset in ' .. this.game_restart_timer / 60 .. ' seconds!',
+                        {r = 0.22, g = 0.88, b = 0.22}
+                    )
+                end
+                if this.game_restart_timer == 0 then
+                    Public.on_init()()
+                end
+            end
+        end
+    end
+
+    if game.tick % this.wave_interval == this.wave_interval - 1 then
+        if surface.peaceful_mode == true then
+            return
+        end
+        biter_attack_wave()
+    end
+end
+
+local on_init = Public.on_init
+
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
@@ -1352,8 +1459,9 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
-return on_init
+return Public
