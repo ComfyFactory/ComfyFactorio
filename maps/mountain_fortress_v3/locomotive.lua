@@ -91,6 +91,22 @@ local function property_boost(data)
     end
 end
 
+local function is_around_train(data)
+    local entity = data.entity
+    local aura = 60
+    local loco = data.locomotive.position
+    local area = {
+        left_top = {x = loco.x - aura, y = loco.y - aura},
+        right_bottom = {x = loco.x + aura, y = loco.y + aura}
+    }
+    local pos = entity.position
+
+    if Math2D.bounding_box.contains_point(area, pos) then
+        return true
+    end
+    return false
+end
+
 local function fish_tag()
     local this = WPT.get()
     if not this.locomotive_cargo then
@@ -636,6 +652,14 @@ local function gui_click(event)
     local item_count = item.stack * slider_value
 
     if name == 'chest_limit_outside' then
+        if this.chest_limit_outside_upgrades == 8 then
+            local main_market_items = WPT.get('main_market_items')
+
+            main_market_items['chest_limit_outside'].enabled = false
+            main_market_items['chest_limit_outside'].tooltip = 'Max limit bought!'
+            redraw_market_items(data.item_frame, player, data.search_text)
+            return player.print("You can't purchase more chests.", {r = 0.98, g = 0.66, b = 0.22})
+        end
         player.remove_item({name = item.value, count = item.price})
 
         local message =
@@ -1028,6 +1052,7 @@ local function on_built_entity(event)
     local chests_linked_to = WPT.get('chests_linked_to')
     local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
     local chest_created
+    local increased = false
 
     for k, v in pairs(outside_chests) do
         if v and v.valid then
@@ -1037,11 +1062,19 @@ local function on_built_entity(event)
                     return
                 end
                 outside_chests[entity.unit_number] = entity
-                chests_linked_to[train.unit_number].count = linked_to + 1
+
+                if not increased then
+                    chests_linked_to[train.unit_number].count = linked_to + 1
+                    chests_linked_to[train.unit_number][entity.unit_number] = true
+                    increased = true
+                    goto continue
+                end
             else
                 outside_chests[entity.unit_number] = entity
-                chests_linked_to[train.unit_number] = {count = 1, chest = entity.unit_number}
+                chests_linked_to[train.unit_number] = {count = 1}
             end
+
+            ::continue::
             rendering.draw_text {
                 text = '♠',
                 surface = entity.surface,
@@ -1061,7 +1094,9 @@ local function on_built_entity(event)
 
     if next(outside_chests) == nil then
         outside_chests[entity.unit_number] = entity
-        chests_linked_to[train.unit_number] = {count = 1, chest = entity.unit_number}
+        chests_linked_to[train.unit_number] = {count = 1}
+        chests_linked_to[train.unit_number][entity.unit_number] = true
+
         rendering.draw_text {
             text = '♠',
             surface = entity.surface,
@@ -1087,11 +1122,14 @@ local function on_player_and_robot_mined_entity(event)
 
     if outside_chests[entity.unit_number] then
         for k, v in pairs(chests_linked_to) do
-            if v.chest == entity.unit_number then
+            if v[entity.unit_number] then
                 v.count = v.count - 1
                 if v.count <= 0 then
                     chests_linked_to[k] = nil
                 end
+            end
+            if chests_linked_to[k] and chests_linked_to[k][entity.unit_number] then
+                chests_linked_to[k][entity.unit_number] = nil
             end
         end
         outside_chests[entity.unit_number] = nil
@@ -1170,15 +1208,25 @@ local function add_random_loot_to_main_market(rarity)
     end
 
     for k, v in pairs(items) do
-        log(serpent.block(items))
+        local price = v.price[1][2] + math.random(1, 15) * rarity
+        local value = v.price[1][1]
+        local stack = 1
         ticker = ticker + 1
+        if v.offer.item == 'coin' then
+            price = v.price[1][2]
+            stack = v.offer.count
+            if not stack then
+                stack = v.price[1][2]
+            end
+        end
+
         if main_market_items[v.offer.item] then
             main_market_items[v.offer.item] = nil
         end
         main_market_items[v.offer.item] = {
-            stack = 1,
-            value = v.price[1][1],
-            price = v.price[1][2] + math.random(1, 15) * rarity,
+            stack = stack,
+            value = value,
+            price = price,
             tooltip = types[v.offer.item].localised_name,
             upgrade = false
         }
@@ -1189,6 +1237,11 @@ local function add_random_loot_to_main_market(rarity)
 end
 
 local function on_research_finished()
+    local difficulty_poll_closing_timeout = Difficulty.get('difficulty_poll_closing_timeout')
+    if game.tick < difficulty_poll_closing_timeout then
+        return
+    end
+
     local locomotive = WPT.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -1277,6 +1330,36 @@ function Public.boost_players_around_train()
         rpg = rpg
     }
     property_boost(data)
+end
+
+function Public.is_around_train(entity)
+    local locomotive = WPT.get('locomotive')
+    local active_surface_index = WPT.get('active_surface_index')
+
+    if not active_surface_index then
+        return false
+    end
+    if not locomotive then
+        return false
+    end
+    if not locomotive.valid then
+        return false
+    end
+
+    if not entity or not entity.valid then
+        return false
+    end
+
+    local surface = game.surfaces[active_surface_index]
+
+    local data = {
+        locomotive = locomotive,
+        surface = surface,
+        entity = entity
+    }
+
+    local success = is_around_train(data)
+    return success
 end
 
 function Public.render_train_hp()
@@ -1399,16 +1482,29 @@ function Public.get_items()
     local land_mine_cost = 2 * (1 + landmine)
     local skill_reset_cost = 100000
 
-    main_market_items['chest_limit_outside'] = {
-        stack = 1,
-        value = 'coin',
-        price = chest_limit_cost,
-        tooltip = 'Upgrades the amount of chests that can be placed outside.\nCan be purchased multiple times.',
-        sprite = 'achievement/getting-on-track',
-        enabled = true,
-        upgrade = true,
-        static = true
-    }
+    if main_market_items['chest_limit_outside'] then
+        main_market_items['chest_limit_outside'] = {
+            stack = 1,
+            value = 'coin',
+            price = chest_limit_cost,
+            tooltip = main_market_items['chest_limit_outside'].tooltip,
+            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            enabled = main_market_items['chest_limit_outside'].enabled,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['chest_limit_outside'] = {
+            stack = 1,
+            value = 'coin',
+            price = chest_limit_cost,
+            tooltip = 'Upgrades the amount of chests that can be placed outside.\nCan be purchased multiple times.',
+            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
     main_market_items['locomotive_max_health'] = {
         stack = 1,
         value = 'coin',
@@ -1605,6 +1701,7 @@ Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_robot_built_entity, on_built_entity)
 Event.add(defines.events.on_entity_died, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_pre_player_mined_item, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity)

@@ -9,7 +9,7 @@ local this = {
         logistic_research_level = 0,
         reset_counter = 1
     },
-    power_sources = {},
+    power_sources = {index = 1},
     refill_turrets = {index = 1},
     magic_crafters = {index = 1},
     magic_fluid_crafters = {index = 1},
@@ -43,7 +43,7 @@ function Public.reset_table()
     this.train_upgrades = 0
     this.offline_players = {}
     this.biter_pets = {}
-    this.power_sources = {}
+    this.power_sources = {index = 1}
     this.flamethrower_damage = {}
     this.refill_turrets = {index = 1}
     this.magic_crafters = {index = 1}

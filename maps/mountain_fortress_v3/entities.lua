@@ -250,6 +250,7 @@ local function angry_tree(entity, cause)
     if entity.type ~= 'tree' then
         return
     end
+
     if math.abs(entity.position.y) < Terrain.level_depth then
         return
     end
@@ -338,6 +339,11 @@ local function on_player_mined_entity(event)
         this.mined_scrap = this.mined_scrap + 1
         Mining.on_player_mined_entity(event)
         give_coin(player)
+
+        if Locomotive.is_around_train(entity) then
+            return
+        end
+
         if math.random(1, 32) == 1 then
             hidden_biter(event.entity)
             entity.destroy()

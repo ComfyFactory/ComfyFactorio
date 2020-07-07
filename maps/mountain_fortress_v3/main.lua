@@ -217,6 +217,8 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
     Map_score.reset_score()
+    AntiGrief.reset_tables()
+    RPG.rpg_reset_all_players()
 
     disable_tech()
 
@@ -228,18 +230,12 @@ function Public.reset_map()
 
     Balance.init_enemy_weapon_damage()
 
-    global.bad_fire_history = {}
     global.custom_highscore.description = 'Wagon distance reached:'
     Entities.set_scores()
-    global.friendly_fire_history = {}
-    global.landfill_history = {}
-    global.mining_history = {}
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
     get_score.score_table = {}
-    Diff.difficulty_poll_closing_timeout = game.tick + 90000
-    Diff.difficulty_player_votes = {}
-    Diff.difficulty_poll_closing_timeout = 60000
+    Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
@@ -259,7 +255,6 @@ function Public.reset_map()
     Locomotive.render_train_hp()
     render_direction(surface)
     -- LM.place_market()
-    RPG.rpg_reset_all_players()
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index

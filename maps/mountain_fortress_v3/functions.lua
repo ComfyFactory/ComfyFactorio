@@ -9,8 +9,6 @@ local Public = {}
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
 local floor = math.floor
-local round = math.round
-local table_shuffle_table = table.shuffle_table
 
 local function fast_remove(tbl, index)
     local count = #tbl
@@ -194,30 +192,6 @@ local function add_magic_crafter_output(entity, output, distance)
     else
         magic_crafters[#magic_crafters + 1] = data
     end
-end
-
-function roll(budget, item_name)
-    if not budget then
-        return
-    end
-
-    budget = math.floor(budget)
-    if budget == 0 then
-        return
-    end
-
-    local final_stack_set
-    local final_stack_set_worth = 0
-
-    for _ = 1, 5, 1 do
-        local item_stack_set, item_stack_set_worth = roll_item_stacks(budget, item_name)
-        if item_stack_set_worth > final_stack_set_worth or item_stack_set_worth == budget then
-            final_stack_set = item_stack_set
-            final_stack_set_worth = item_stack_set_worth
-        end
-    end
-
-    return final_stack_set
 end
 
 local function tick()

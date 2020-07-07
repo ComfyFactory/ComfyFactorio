@@ -103,6 +103,15 @@ local function create_main_frame(player)
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
     label.style.font = 'default-bold'
     label.style.right_padding = 4
+
+    line = frame.add({type = 'line', direction = 'vertical'})
+    line.style.left_padding = 4
+    line.style.right_padding = 4
+
+    label = frame.add({type = 'label', caption = ' ', name = 'chest_upgrades'})
+    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label.style.font = 'default-bold'
+    label.style.right_padding = 4
 end
 
 local function on_player_joined_game(event)
@@ -288,6 +297,9 @@ function Public.update_gui(player)
 
     gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(this.train_upgrades, true)
     gui.train_upgrades.tooltip = 'Amount of train upgrades.'
+
+    gui.chest_upgrades.caption = ' [img=entity.steel-chest]: ' .. format_number(this.chest_limit_outside_upgrades, true)
+    gui.chest_upgrades.tooltip = 'Amount of chests that can be placed near train.'
 end
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
