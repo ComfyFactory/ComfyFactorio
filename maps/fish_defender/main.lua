@@ -11,8 +11,6 @@ require 'modules.biters_yield_coins'
 require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
 
-local branch_version = '0.18.35'
-
 local Terrain = require 'maps.fish_defender.terrain'
 local Unit_health_booster = require 'modules.biter_health_booster'
 local Difficulty = require 'modules.difficulty_vote'
@@ -1142,6 +1140,10 @@ local function on_init()
     Poll.reset()
     local get_score = Score.get_table()
     local this = FDT.get()
+    local branch_version = '0.18.35'
+    local sub = string.sub
+    local is_branch_18 = sub(branch_version, 3, 4)
+    local get_active_version = sub(game.active_mods.base, 3, 4)
 
     Difficulty.reset_difficulty_poll()
     Difficulty.set_poll_closing_timeout = game.tick + 36000
@@ -1196,7 +1198,10 @@ local function on_init()
 
     game.map_settings.enemy_expansion.enabled = false
     game.forces['player'].technologies['artillery'].researched = false
-    if game.active_mods.base >= branch_version then
+
+    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
+    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
+    if get_active_version >= is_branch_18 then
         game.reset_time_played()
     end
 
