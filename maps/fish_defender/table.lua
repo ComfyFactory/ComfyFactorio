@@ -2,21 +2,7 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
-local this = {
-    players = {},
-    offline_players = {},
-    hidden_dimension = {
-        logistic_research_level = 0,
-        reset_counter = 1
-    },
-    power_sources = {},
-    refill_turrets = {index = 1},
-    magic_crafters = {index = 1},
-    magic_fluid_crafters = {index = 1},
-    breached_wall = 1,
-    entity_limits = {},
-    traps = {}
-}
+local this = {}
 local Public = {}
 
 Global.register(

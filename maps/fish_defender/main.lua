@@ -884,7 +884,8 @@ end
 
 local function market_kill_visuals()
     local market = FDT.get('market')
-    local surface = FDT.get('active_surface')
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
 
     if not surface or not surface.valid then
         return
@@ -897,7 +898,7 @@ local function market_kill_visuals()
     local m = 32
     local m2 = m * 0.005
     for i = 1, 1024, 1 do
-        surface.create_particle(
+        surface.create_entity(
             {
                 name = 'branch-particle',
                 position = market.position,
@@ -1018,7 +1019,12 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     local show_floating_killscore = FDT.get('show_floating_killscore')
-    local active_surface = FDT.get('active_surface')
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+
+    if player.gui.left['fish_defense_game_lost'] then
+        player.gui.left['fish_defense_game_lost'].destroy()
+    end
 
     if player.online_time == 0 then
         player.insert({name = 'pistol', count = 1})
@@ -1031,15 +1037,14 @@ local function on_player_joined_game(event)
         end
     end
 
-    local surface = active_surface
     if player.online_time < 2 and surface.is_chunk_generated({0, 0}) then
         player.teleport(
             surface.find_non_colliding_position('character', game.forces['player'].get_spawn_position(surface), 50, 1),
-            'fish_defender'
+            surface.name
         )
     else
         if player.online_time < 2 then
-            player.teleport(game.forces['player'].get_spawn_position(surface), 'fish_defender')
+            player.teleport(game.forces['player'].get_spawn_position(surface), surface.name)
         end
     end
 
@@ -1225,9 +1230,9 @@ end
 
 local function on_tick()
     local Diff = Difficulty.get()
-    local active_surface = FDT.get('active_surface')
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
     local this = FDT.get()
-    local surface = active_surface
     if game.tick % 30 == 0 then
         if this.market then
             for _, player in pairs(game.connected_players) do
@@ -1280,9 +1285,9 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    local active_surface = FDT.get('active_surface')
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
     local map_height = FDT.get('map_height')
-    local surface = active_surface
     if player.position.x + player.position.y < 0 then
         return
     end
