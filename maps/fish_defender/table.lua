@@ -35,7 +35,6 @@ function Public.reset_table()
     this.wave_grace_period = game.tick + 3600 * 20
     this.boss_biters = {}
     this.acid_lines_delay = {}
-    this.show_floating_killscore = {}
     this.entity_limits = {
         ['gun-turret'] = {placed = 1, limit = 1, str = 'gun turret', slot_price = 75},
         ['laser-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
