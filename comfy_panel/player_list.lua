@@ -279,10 +279,19 @@ local function get_rank(player)
         'item/beacon',
         'item/steam-turbine',
         'item/centrifuge',
-        'item/nuclear-reactor'
+        'item/nuclear-reactor',
+        'item/cannon-shell',
+        'item/rocket',
+        'item/explosive-cannon-shell',
+        'item/explosive-rocket',
+        'item/uranium-cannon-shell',
+        'item/explosive-uranium-cannon-shell',
+        'item/atomic-bomb',
+        'achievement/so-long-and-thanks-for-all-the-fish',
+        'achievement/golem'
     }
 
-    --52 ranks
+    --60? ranks
 
     local time_needed = 240 -- in minutes between rank upgrades
     m = m / time_needed
@@ -363,7 +372,7 @@ local function player_list_show(player, frame, sort_by)
 
     -- Header management
     local t = frame.add {type = 'table', name = 'player_list_panel_header_table', column_count = 5}
-    local column_widths = {tonumber(40), tonumber(250), tonumber(250), tonumber(150), tonumber(100)}
+    local column_widths = {tonumber(40), tonumber(240), tonumber(240), tonumber(150), tonumber(100)}
     for _, w in ipairs(column_widths) do
         local label = t.add {type = 'label', caption = ''}
         label.style.minimal_width = w
@@ -456,8 +465,9 @@ local function player_list_show(player, frame, sort_by)
             name = 'player_rank_sprite_' .. i,
             sprite = player_list[i].rank
         }
-        sprite.style.minimal_width = column_widths[1]
-        sprite.style.maximal_width = column_widths[1]
+        sprite.style.height = 32
+        sprite.style.width = 32
+        sprite.style.stretch_image_to_widget_size = true
 
         -- Name
         local label =

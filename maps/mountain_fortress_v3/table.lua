@@ -92,6 +92,9 @@ function Public.reset_table()
     this.outside_chests = {}
     this.chests_linked_to = {}
     this.chest_limit_outside_upgrades = 1
+    this.force_mining_speed = {
+        speed = 0
+    }
 end
 
 function Public.get(key)

@@ -87,14 +87,14 @@ local resource_loot = {
             recipe = 'stone-wall',
             output = {item = 'stone-wall', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
-        weight = 1
+        weight = 2
     },
     {
         stack = {
             recipe = 'iron-gear-wheel',
             output = {item = 'iron-gear-wheel', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
-        weight = 4
+        weight = 3
     }
 }
 

@@ -725,7 +725,7 @@ function Public.loco_died()
     )
 
     surface.spill_item_stack(this.locomotive.position, {name = 'coin', count = 512}, false)
-    this.game_reset_tick = game.tick + 1000
+    this.game_reset_tick = 5400
     for _, player in pairs(game.connected_players) do
         player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
     end

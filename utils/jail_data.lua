@@ -238,6 +238,7 @@ Event.add(
     defines.events.on_console_command,
     function(event)
         local trusted = Session.get_trusted_table()
+        local tracker = Session.get_session_table()
         local p
         local cmd = event.command
 
@@ -257,6 +258,14 @@ Event.add(
         if event.player_index then
             local player = game.players[event.player_index]
             p = player.print
+
+            local playtime = player.online_time
+            if tracker[player.name] then
+                playtime = player.online_time + tracker[player.name]
+            end
+            if playtime < 25920000 then -- 5 days
+                return p('You are not trusted enough to run this command.', {r = 1, g = 0.5, b = 0.1})
+            end
 
             if jailed[player.name] and not player.admin then
                 return p('You are jailed, there is nothing to be done.', {r = 1, g = 0.5, b = 0.1})

@@ -1,6 +1,5 @@
 local Event = require 'utils.event'
 local Functions = require 'maps.mountain_fortress_v3.icw.functions'
-local Constants = require 'maps.mountain_fortress_v3.icw.constants'
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local Public = {}
 
@@ -12,7 +11,9 @@ local function on_entity_died(event)
     if not entity and not entity.valid then
         return
     end
-    if not Constants.wagon_types[entity.type] then
+    local wagon_types = ICW.get('wagon_types')
+
+    if not wagon_types[entity.type] then
         return
     end
     local icw = ICW.get()

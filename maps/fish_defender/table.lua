@@ -13,7 +13,13 @@ Global.register(
 )
 
 function Public.reset_table()
-    this.chunk_queue = {}
+    -- @start
+    -- these 3 are in case of stop/start/reloading the instance.
+    this.soft_reset = true
+    this.restart = false
+    this.shutdown = false
+    this.announced_message = false
+    -- @end
     this.game_has_ended = false
     this.game_reset = false
     this.spawn_area_generated = false
@@ -40,7 +46,32 @@ function Public.reset_table()
         ['laser-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
         ['artillery-turret'] = {placed = 0, limit = 1, str = 'artillery turret', slot_price = 500},
         ['flamethrower-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
-        ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 1}
+        ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 6}
+    }
+    this.difficulties_votes = {
+        [1] = {wave_interval = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},
+        [2] = {wave_interval = 4100, amount_modifier = 0.76, strength_modifier = 0.65, boss_modifier = 4.0},
+        [3] = {wave_interval = 3800, amount_modifier = 0.92, strength_modifier = 0.85, boss_modifier = 5.0},
+        [4] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0},
+        [5] = {wave_interval = 3400, amount_modifier = 1.08, strength_modifier = 1.25, boss_modifier = 7.0},
+        [6] = {wave_interval = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0},
+        [7] = {wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
+    }
+    this.boss_waves = {
+        [50] = {{name = 'big-biter', count = 3}},
+        [100] = {{name = 'behemoth-biter', count = 1}},
+        [150] = {{name = 'behemoth-spitter', count = 4}, {name = 'big-spitter', count = 16}},
+        [200] = {
+            {name = 'behemoth-biter', count = 4},
+            {name = 'behemoth-spitter', count = 2},
+            {name = 'big-biter', count = 32}
+        },
+        [250] = {
+            {name = 'behemoth-biter', count = 8},
+            {name = 'behemoth-spitter', count = 4},
+            {name = 'big-spitter', count = 32}
+        },
+        [300] = {{name = 'behemoth-biter', count = 16}, {name = 'behemoth-spitter', count = 8}}
     }
     this.comfylatron_habitat = {
         left_top = {x = -1500, y = -1500},

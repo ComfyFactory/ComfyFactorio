@@ -334,10 +334,9 @@ local function process_chunk(left_top)
 end
 
 local function process_chunk_queue()
-    local chunk_queue = FDT.get('chunk_queue')
-    for k, left_top in pairs(chunk_queue) do
+    for k, left_top in pairs(global.chunk_queue) do
         process_chunk(left_top)
-        FDT.get().chunk_queue[k] = nil
+        global.chunk_queue[k] = nil
         return
     end
 end
@@ -351,7 +350,6 @@ local function on_chunk_generated(event)
     local left_top = event.area.left_top
     local game_reset = FDT.get('game_reset')
     local game_has_ended = FDT.get('game_has_ended')
-    local this = FDT.get()
 
     if game.tick == 0 or game_reset then
         process_chunk(left_top)
@@ -359,7 +357,7 @@ local function on_chunk_generated(event)
         if game_has_ended then
             return
         end
-        this.chunk_queue[#this.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
+        global.chunk_queue[#global.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
     end
 end
 

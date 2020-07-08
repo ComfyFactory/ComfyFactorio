@@ -21,6 +21,7 @@ local Entities = require 'maps.mountain_fortress_v3.entities'
 local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
+local ICT = require 'maps.mountain_fortress_v3.icw.table'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
@@ -38,6 +39,7 @@ local AntiGrief = require 'antigrief'
 --local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
+local rng = math.random
 -- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -83,17 +85,25 @@ local set_difficulty = function()
         Diff.difficulty_vote_value = 0.1
     end
 
-    wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
+    wave_defense_table.max_active_biters = 888 + player_count * (90 * Diff.difficulty_vote_value)
 
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
     local amount = player_count * 0.25 + 2
     amount = math.floor(amount)
-    if amount > 6 then
-        amount = 6
+    if amount > 8 then
+        amount = 8
     end
     Collapse.set_amount(amount)
+
+    if player_count >= 8 and player_count <= 12 then
+        Collapse.set_speed(8)
+    elseif player_count >= 20 then
+        Collapse.set_speed(6)
+    elseif player_count >= 35 then
+        Collapse.set_speed(5)
+    end
 
     wave_defense_table.wave_interval = 3600 - player_count * 60
     if wave_defense_table.wave_interval < 1800 then
@@ -247,6 +257,18 @@ function Public.reset_map()
     Collapse.set_position({0, 130})
     Collapse.set_direction('north')
     Collapse.start_now(false)
+
+    local x_value = rng(15, 25)
+    local y_value = rng(50, 60)
+
+    local data = {
+        ['cargo-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
+        ['artillery-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
+        ['fluid-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
+        ['locomotive'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}}
+    }
+
+    ICT.set_wagon_area(data)
 
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
@@ -474,7 +496,11 @@ local on_research_finished = function(event)
     if research.force.technologies['steel-axe'].researched then
         mining_speed_bonus = mining_speed_bonus + 0.5
     end -- +50% speed for steel-axe research
-    research.force.manual_mining_speed_modifier = mining_speed_bonus
+    if this.breached_wall <= 2 then
+        research.force.manual_mining_speed_modifier = this.force_mining_speed.speed + mining_speed_bonus
+    else
+        research.force.manual_mining_speed_modifier = mining_speed_bonus
+    end
 
     local force_name = research.force.name
     if not force_name then
@@ -503,23 +529,45 @@ end
 local has_the_game_ended = function()
     local this = WPT.get()
     if this.game_reset_tick then
-        if this.game_reset_tick < game.tick then
-            if this.soft_reset then
+        if this.game_reset_tick < 0 then
+            return
+        end
+
+        this.game_reset_tick = this.game_reset_tick - 30
+        if this.game_reset_tick % 1800 == 0 then
+            if this.game_reset_tick > 0 then
+                local cause_msg
+                if this.restart then
+                    cause_msg = 'restart'
+                elseif this.shutdown then
+                    cause_msg = 'shutdown'
+                elseif this.soft_reset then
+                    cause_msg = 'soft-reset'
+                end
+
+                this.game_reset = true
+                this.game_has_ended = true
+                game.print(
+                    'Game will ' .. cause_msg .. ' in ' .. this.game_reset_tick / 60 .. ' seconds!',
+                    {r = 0.22, g = 0.88, b = 0.22}
+                )
+            end
+            if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
                 Public.reset_map()
                 return
             end
-            if this.restart then
+            if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled. Server will restart!'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-                    Server.start_scenario('Mountain_Fortress_v3')
+                    Server.start_scenario('Fish_Defender')
                     this.announced_message = true
                     return
                 end
             end
-            if this.shutdown then
+            if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     game.print('Soft-reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled. Server is shutting down!'
@@ -530,12 +578,12 @@ local has_the_game_ended = function()
                 end
             end
         end
-        return
     end
 end
 
 local boost_difficulty = function()
     local difficulty_set = WPT.get('difficulty_set')
+    local force_mining_speed = WPT.get('force_mining_speed')
     if difficulty_set then
         return
     end
@@ -561,6 +609,7 @@ local boost_difficulty = function()
     if name == 'Easy' then
         rpg_extra.difficulty = 1
         game.forces.player.manual_mining_speed_modifier = 1.5
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0.2
         game.forces.player.manual_crafting_speed_modifier = 0.4
         WPT.get().coin_amount = 2
@@ -573,6 +622,7 @@ local boost_difficulty = function()
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
         game.forces.player.manual_mining_speed_modifier = 1
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0.1
         game.forces.player.manual_crafting_speed_modifier = 0.2
         WPT.get().coin_amount = 1
@@ -585,6 +635,7 @@ local boost_difficulty = function()
     elseif name == 'Hard' then
         rpg_extra.difficulty = 0
         game.forces.player.manual_mining_speed_modifier = 0
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0
         game.forces.player.manual_crafting_speed_modifier = 0
         WPT.get().coin_amount = 1

@@ -32,35 +32,15 @@ local sub = string.sub
 
 local Public = {}
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['raw-fish'] = 3, ['iron-plate'] = 32}
+local starting_items = {
+    ['pistol'] = 1,
+    ['firearm-magazine'] = 16,
+    ['raw-fish'] = 3,
+    ['iron-plate'] = 32,
+    ['stone'] = 12
+}
 
 local biter_count_limit = 1024 --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
-local boss_waves = {
-    [50] = {{name = 'big-biter', count = 3}},
-    [100] = {{name = 'behemoth-biter', count = 1}},
-    [150] = {{name = 'behemoth-spitter', count = 4}, {name = 'big-spitter', count = 16}},
-    [200] = {
-        {name = 'behemoth-biter', count = 4},
-        {name = 'behemoth-spitter', count = 2},
-        {name = 'big-biter', count = 32}
-    },
-    [250] = {
-        {name = 'behemoth-biter', count = 8},
-        {name = 'behemoth-spitter', count = 4},
-        {name = 'big-spitter', count = 32}
-    },
-    [300] = {{name = 'behemoth-biter', count = 16}, {name = 'behemoth-spitter', count = 8}}
-}
-
-local difficulties_votes = {
-    [1] = {wave_interval = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},
-    [2] = {wave_interval = 4100, amount_modifier = 0.76, strength_modifier = 0.65, boss_modifier = 4.0},
-    [3] = {wave_interval = 3800, amount_modifier = 0.92, strength_modifier = 0.85, boss_modifier = 5.0},
-    [4] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0},
-    [5] = {wave_interval = 3400, amount_modifier = 1.08, strength_modifier = 1.25, boss_modifier = 7.0},
-    [6] = {wave_interval = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0},
-    [7] = {wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
-}
 
 local function shuffle(tbl)
     local size = #tbl
@@ -152,10 +132,10 @@ local function show_fd_stats(player)
         local placed = v.placed
         local limit = v.limit
         local entry = {name, placed .. '/' .. limit}
-        for k, v in pairs(entry) do
+        for _, value_entry in pairs(entry) do
             table.add {
                 type = 'label',
-                caption = v
+                caption = value_entry
             }
         end
     end
@@ -174,8 +154,8 @@ local function add_fd_stats_button(player)
     if player.gui.top[button_id] then
         player.gui.top[button_id].destroy()
     end
-    local button =
-        player.gui.top.add {
+
+    player.gui.top.add {
         type = 'sprite-button',
         name = button_id,
         sprite = 'item/submachine-gun'
@@ -350,7 +330,7 @@ local function get_biter_pool()
     local biter_pool = get_biter_initial_pool()
     local biter_raffle = {}
     for _, biter_type in pairs(biter_pool) do
-        for x = 1, biter_type.weight, 1 do
+        for _ = 1, biter_type.weight, 1 do
             insert(biter_raffle, {name = biter_type.name, threat = biter_type.threat})
         end
     end
@@ -472,26 +452,26 @@ local function spawn_boss_units(surface)
         game.print({'fish_defender.boss_message', this.wave_count}, {r = 0.8, g = 0.1, b = 0.1})
     end
 
-    if not boss_waves[this.wave_count] then
+    if not this.boss_waves[this.wave_count] then
         local amount = this.wave_count
         if amount > 1000 then
             amount = 1000
         end
-        boss_waves[this.wave_count] = {
+        this.boss_waves[this.wave_count] = {
             {name = 'behemoth-biter', count = math.floor(amount / 20)},
             {name = 'behemoth-spitter', count = math.floor(amount / 40)}
         }
     end
 
-    local health_factor = difficulties_votes[Diff.difficulty_vote_index].boss_modifier
+    local health_factor = this.difficulties_votes[Diff.difficulty_vote_index].boss_modifier
     if this.wave_count == 100 then
         health_factor = health_factor * 2
     end
 
     local position = {x = 216, y = 0}
     local biter_group = surface.create_unit_group({position = position})
-    for _, entry in pairs(boss_waves[this.wave_count]) do
-        for x = 1, entry.count, 1 do
+    for _, entry in pairs(this.boss_waves[this.wave_count]) do
+        for _ = 1, entry.count, 1 do
             local pos = surface.find_non_colliding_position(entry.name, position, 64, 3)
             if pos then
                 local biter = surface.create_entity({name = entry.name, position = pos})
@@ -617,15 +597,15 @@ local function biter_attack_wave()
 
     local m = 0.0015
     if Diff.difficulty_vote_index then
-        m = m * difficulties_votes[Diff.difficulty_vote_index].strength_modifier
+        m = m * this.difficulties_votes[Diff.difficulty_vote_index].strength_modifier
     end
     game.forces.enemy.set_ammo_damage_modifier('melee', this.wave_count * m)
     game.forces.enemy.set_ammo_damage_modifier('biological', this.wave_count * m)
     this.biter_health_boost = 1 + (this.wave_count * (m * 2))
 
-    local m = 4
+    m = 4
     if Diff.difficulty_vote_index then
-        m = m * difficulties_votes[Diff.difficulty_vote_index].amount_modifier
+        m = m * this.difficulties_votes[Diff.difficulty_vote_index].amount_modifier
     end
 
     if this.wave_count % 50 == 0 then
@@ -701,7 +681,7 @@ local function biter_attack_wave()
 end
 
 local function get_sorted_list(column_name, score_list)
-    for x = 1, #score_list, 1 do
+    for _ = 1, #score_list, 1 do
         for y = 1, #score_list, 1 do
             if not score_list[y + 1] then
                 break
@@ -768,6 +748,7 @@ local function is_game_lost()
     end
 
     local this = FDT.get()
+    local l
 
     for _, player in pairs(game.connected_players) do
         if player.gui.left['fish_defense_game_lost'] then
@@ -785,12 +766,12 @@ local function is_game_lost()
         f.style.font_color = {r = 0.65, g = 0.1, b = 0.99}
 
         local t = f.add({type = 'table', column_count = 2})
-        local l = t.add({type = 'label', caption = 'Survival Time >> '})
+        l = t.add({type = 'label', caption = 'Survival Time >> '})
         l.style.font = 'default-listbox'
         l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
 
         if this.market_age >= 216000 then
-            local l =
+            l =
                 t.add(
                 {
                     type = 'label',
@@ -801,25 +782,24 @@ local function is_game_lost()
             l.style.font = 'default-bold'
             l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
         else
-            local l = t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
+            l = t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
             l.style.font = 'default-bold'
             l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
         end
 
         local mvp = get_mvps()
         if mvp then
-            local l = t.add({type = 'label', caption = 'MVP Defender >> '})
+            l = t.add({type = 'label', caption = 'MVP Defender >> '})
             l.style.font = 'default-listbox'
             l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            local l =
-                t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+            l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
             l.style.font = 'default-bold'
             l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-            local l = t.add({type = 'label', caption = 'MVP Builder >> '})
+            l = t.add({type = 'label', caption = 'MVP Builder >> '})
             l.style.font = 'default-listbox'
             l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            local l =
+            l =
                 t.add(
                 {
                     type = 'label',
@@ -829,10 +809,10 @@ local function is_game_lost()
             l.style.font = 'default-bold'
             l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-            local l = t.add({type = 'label', caption = 'MVP Deaths >> '})
+            l = t.add({type = 'label', caption = 'MVP Deaths >> '})
             l.style.font = 'default-listbox'
             l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            local l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+            l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
             l.style.font = 'default-bold'
             l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -852,9 +832,7 @@ local function is_game_lost()
             end
         end
 
-        for _, player in pairs(game.connected_players) do
-            player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
-        end
+        player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
     end
 
     game.map_settings.enemy_expansion.enabled = true
@@ -1043,18 +1021,22 @@ local function on_player_joined_game(event)
     end
 
     if player.online_time == 0 then
-        player.insert({name = 'pistol', count = 1})
-        player.insert({name = 'raw-fish', count = 4})
-        player.insert({name = 'firearm-magazine', count = 16})
-        player.insert({name = 'iron-plate', count = 32})
-        player.insert({name = 'stone', count = 16})
+        for item, amount in pairs(starting_items) do
+            player.insert({name = item, count = amount})
+        end
+
         if global.show_floating_killscore then
             global.show_floating_killscore[player.name] = false
         end
     end
 
-    if player.online_time < 2 or player.surface.index ~= active_surface_index then
-        player.teleport(game.forces['player'].get_spawn_position(surface), surface.name)
+    local spawn = player.force.get_spawn_position(surface)
+    local pos = surface.find_non_colliding_position('character', spawn, 3, 0.5)
+
+    if not pos and player.online_time < 2 then
+        player.teleport(game.forces['player'].get_spawn_position(surface), surface)
+    elseif player.online_time < 2 or player.surface.index ~= active_surface_index then
+        player.teleport(pos, surface)
     end
 
     create_wave_gui(player)
@@ -1301,6 +1283,80 @@ local function on_player_repaired_entity(event)
     end
 end
 
+local function set_market_health()
+    local this = FDT.get()
+    if not this.market then
+        return
+    end
+    if not this.market.valid then
+        return
+    end
+    local market_health = FDT.get('market_health')
+    local market_max_health = FDT.get('market_max_health')
+    local m = market_health / market_max_health
+    this.market.health = 150 * m
+    rendering.set_text(this.health_text, 'HP: ' .. market_health .. ' / ' .. market_max_health)
+end
+
+local function has_the_game_ended()
+    local this = FDT.get()
+    if this.market_age then
+        if not this.game_restart_timer then
+            this.game_restart_timer = 5400
+        else
+            if this.game_restart_timer < 0 then
+                return
+            end
+
+            this.game_restart_timer = this.game_restart_timer - 30
+        end
+        local cause_msg
+        if this.restart then
+            cause_msg = 'restart'
+        elseif this.shutdown then
+            cause_msg = 'shutdown'
+        elseif this.soft_reset then
+            cause_msg = 'soft-reset'
+        end
+
+        if this.game_restart_timer % 1800 == 0 then
+            if this.game_restart_timer > 0 then
+                this.game_reset = true
+                this.game_has_ended = true
+                game.print(
+                    'Game will ' .. cause_msg .. ' in ' .. this.game_restart_timer / 60 .. ' seconds!',
+                    {r = 0.22, g = 0.88, b = 0.22}
+                )
+            end
+            if this.soft_reset and this.game_restart_timer == 0 then
+                this.game_reset_tick = nil
+                Public.on_init()
+                return
+            end
+            if this.restart and this.game_restart_timer == 0 then
+                if not this.announced_message then
+                    game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Soft-reset is disabled. Server will restart!'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.start_scenario('Fish_Defender')
+                    this.announced_message = true
+                    return
+                end
+            end
+            if this.shutdown and this.game_restart_timer == 0 then
+                if not this.announced_message then
+                    game.print('Soft-reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Soft-reset is disabled. Server is shutting down!'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.stop_scenario()
+                    this.announced_message = true
+                    return
+                end
+            end
+        end
+    end
+end
+
 function Public.on_init()
     FDT.reset_table()
     Poll.reset()
@@ -1342,6 +1398,8 @@ function Public.on_init()
 
     surface.peaceful_mode = false
 
+    global.chunk_queue = {}
+
     game.map_settings.enemy_expansion.enabled = false
     game.map_settings.enemy_evolution.destroy_factor = 0
     game.map_settings.enemy_evolution.time_factor = 0
@@ -1370,8 +1428,8 @@ function Public.on_init()
         game.reset_time_played()
     end
 
-    this.market_health = 1000
-    this.market_max_health = 1000
+    this.market_health = 500
+    this.market_max_health = 500
 
     local T = Map.Pop_info()
     T.localised_category = 'fish_defender'
@@ -1397,7 +1455,9 @@ local function on_tick()
     local surface = game.surfaces[active_surface_index]
     local this = FDT.get()
     if game.tick % 30 == 0 then
+        has_the_game_ended()
         if this.market then
+            set_market_health()
             for _, player in pairs(game.connected_players) do
                 if surface.peaceful_mode == false then
                     create_wave_gui(player)
@@ -1408,31 +1468,7 @@ local function on_tick()
             if surface then
                 game.forces.player.chart(surface, {{-160, -128}, {192, 128}})
                 if Diff.difficulty_vote_index then
-                    this.wave_interval = difficulties_votes[Diff.difficulty_vote_index].wave_interval
-                end
-            end
-        end
-
-        if this.market_age then
-            if not this.game_restart_timer then
-                this.game_restart_timer = 5400
-            else
-                if this.game_restart_timer < 0 then
-                    return
-                end
-                this.game_restart_timer = this.game_restart_timer - 30
-            end
-            if this.game_restart_timer % 1800 == 0 then
-                if this.game_restart_timer > 0 then
-                    this.game_reset = true
-                    this.game_has_ended = true
-                    game.print(
-                        'Game will soft-reset in ' .. this.game_restart_timer / 60 .. ' seconds!',
-                        {r = 0.22, g = 0.88, b = 0.22}
-                    )
-                end
-                if this.game_restart_timer == 0 then
-                    Public.on_init()()
+                    this.wave_interval = this.difficulties_votes[Diff.difficulty_vote_index].wave_interval
                 end
             end
         end

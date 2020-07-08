@@ -19,18 +19,19 @@ commands.add_command(
             end
         end
 
-        local this = FDT.get()
-        local reset_map = require 'maps.fish_defender.main'.on_init
         local param = cmd.parameter
 
-        if param == 'reset' or param == 'restartnow' then
+        if param == 'restart' or param == 'shutdown' or param == 'reset' or param == 'restartnow' then
             goto continue
         else
-            p('[ERROR] Arguments are:\nreset\nrestartnow')
+            p('[ERROR] Arguments are:\nrestart\nshutdown\nreset\nrestartnow')
             return
         end
 
         ::continue::
+
+        local this = FDT.get()
+        local reset_map = require 'maps.fish_defender.main'.on_init
 
         if not this.reset_are_you_sure then
             this.reset_are_you_sure = true
@@ -40,11 +41,45 @@ commands.add_command(
             return
         end
 
-        if param == 'restartnow' then
+        if param == 'restart' then
+            if this.restart then
+                this.reset_are_you_sure = nil
+                this.restart = false
+                this.soft_reset = true
+                p('[SUCCESS] Soft-reset is enabled.')
+                return
+            else
+                this.reset_are_you_sure = nil
+                this.restart = true
+                this.soft_reset = false
+                if this.shutdown then
+                    this.shutdown = false
+                end
+                p('[WARNING] Soft-reset is disabled! Server will restart from scenario.')
+                return
+            end
+        elseif param == 'restartnow' then
             this.reset_are_you_sure = nil
             p(player.name .. ' has restarted the game.')
-            Server.start_scenario('Fish_defense')
+            Server.start_scenario('Fish_Defender')
             return
+        elseif param == 'shutdown' then
+            if this.shutdown then
+                this.reset_are_you_sure = nil
+                this.shutdown = false
+                this.soft_reset = true
+                p('[SUCCESS] Soft-reset is enabled.')
+                return
+            else
+                this.reset_are_you_sure = nil
+                this.shutdown = true
+                this.soft_reset = false
+                if this.restart then
+                    this.restart = false
+                end
+                p('[WARNING] Soft-reset is disabled! Server will shutdown.')
+                return
+            end
         elseif param == 'reset' then
             this.reset_are_you_sure = nil
             if player and player.valid then
