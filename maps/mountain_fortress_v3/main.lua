@@ -562,7 +562,7 @@ local has_the_game_ended = function()
                     game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled. Server will restart!'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-                    Server.start_scenario('Fish_Defender')
+                    Server.start_scenario('Mountain_Fortress_v3')
                     this.announced_message = true
                     return
                 end
@@ -608,10 +608,10 @@ local boost_difficulty = function()
 
     if name == 'Easy' then
         rpg_extra.difficulty = 1
-        game.forces.player.manual_mining_speed_modifier = 1.5
+        game.forces.player.manual_mining_speed_modifier = 1
         force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0.2
-        game.forces.player.manual_crafting_speed_modifier = 0.4
+        game.forces.player.manual_crafting_speed_modifier = 0.3
         WPT.get().coin_amount = 2
         WPT.get('upgrades').flame_turret.limit = 25
         WPT.get('upgrades').landmine.limit = 100
@@ -621,10 +621,10 @@ local boost_difficulty = function()
         WPT.get().bonus_xp_on_join = 700
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
-        game.forces.player.manual_mining_speed_modifier = 1
+        game.forces.player.manual_mining_speed_modifier = 0.5
         force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0.1
-        game.forces.player.manual_crafting_speed_modifier = 0.2
+        game.forces.player.manual_crafting_speed_modifier = 0.1
         WPT.get().coin_amount = 1
         WPT.get('upgrades').flame_turret.limit = 10
         WPT.get('upgrades').landmine.limit = 50

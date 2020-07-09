@@ -33,7 +33,8 @@ function Public.reset_table()
     this.crumbly_walls_unlocked = false
     this.vehicle_nanobots_unlocked = false
     this.game_restart_timer = nil
-    this.wave_count = 1
+    this.wave_count = 0
+    this.attack_wave_threat = nil
     this.market = nil
     this.market_age = nil
     this.last_reset = game.tick

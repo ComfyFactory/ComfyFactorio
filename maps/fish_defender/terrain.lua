@@ -294,8 +294,11 @@ local function plankton_territory(surface, position, seed)
 end
 
 local function process_chunk(left_top)
-    local active_surface_index = FDT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
+    local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
     local market = FDT.get('market')
 
     if not surface or not surface.valid then
@@ -364,6 +367,9 @@ end
 local function render_market_hp()
     local this = FDT.get()
     local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
 
     this.health_text =
         rendering.draw_text {
@@ -519,7 +525,7 @@ function Public.generate_spawn_area(surface)
                     math_random(1, 3) == 1 and
                         surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'player'})
                  then
-                    local chest = surface.create_entity({name = 'wooden-chest', position = pos, force = 'player'})
+                    surface.create_entity({name = 'wooden-chest', position = pos, force = 'player'})
                 end
             end
         end

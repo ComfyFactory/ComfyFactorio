@@ -103,7 +103,7 @@ end
 local function show_fd_stats(player)
     local gui_id = 'fd-stats'
     local table_id = gui_id .. 'table'
-    local entity_limits = FDT.get('entity_limits')
+    local this = FDT.get()
 
     if player.gui.left[gui_id] then
         player.gui.left[gui_id].destroy()
@@ -127,7 +127,7 @@ local function show_fd_stats(player)
         h.style.font = 'heading-2'
     end
 
-    for k, v in pairs(entity_limits) do
+    for k, v in pairs(this.entity_limits) do
         local name = v.str
         local placed = v.placed
         local limit = v.limit
@@ -194,16 +194,16 @@ local threat_values = {
 }
 
 local function get_biter_initial_pool()
-    local wave_count = FDT.get('wave_count')
+    local this = FDT.get()
     local biter_pool
-    if wave_count > 1750 then
+    if this.wave_count > 1750 then
         biter_pool = {
             {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
             {name = 'behemoth-spitter', threat = threat_values.behemoth_spitter, weight = 1}
         }
         return biter_pool
     end
-    if wave_count > 1500 then
+    if this.wave_count > 1500 then
         biter_pool = {
             {name = 'big-biter', threat = threat_values.big_biter, weight = 1},
             {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
@@ -211,7 +211,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if wave_count > 1250 then
+    if this.wave_count > 1250 then
         biter_pool = {
             {name = 'big-biter', threat = threat_values.big_biter, weight = 2},
             {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
@@ -219,7 +219,7 @@ local function get_biter_initial_pool()
         }
         return biter_pool
     end
-    if wave_count > 1000 then
+    if this.wave_count > 1000 then
         biter_pool = {
             {name = 'big-biter', threat = threat_values.big_biter, weight = 3},
             {name = 'behemoth-biter', threat = threat_values.behemoth_biter, weight = 2},
@@ -343,7 +343,11 @@ local function spawn_biter(pos, biter_pool)
         return false
     end
 
-    local surface = this.active_surface
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
+
     biter_pool = shuffle(biter_pool)
     this.attack_wave_threat = this.attack_wave_threat - biter_pool[1].threat
     local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 2)
@@ -385,16 +389,16 @@ local function get_number_of_attack_groups()
 end
 
 local function clear_corpses(surface)
-    local wave_count = FDT.get('wave_count')
+    local this = FDT.get()
 
-    if not wave_count then
+    if not this.wave_count then
         return
     end
     local chance = 4
-    if wave_count > 250 then
+    if this.wave_count > 250 then
         chance = 3
     end
-    if wave_count > 500 then
+    if this.wave_count > 500 then
         chance = 2
     end
     for _, entity in pairs(surface.find_entities_filtered {type = 'corpse'}) do
@@ -406,8 +410,8 @@ end
 
 local function send_unit_group(unit_group)
     local commands = {}
-    local market = FDT.get('market')
-    for x = unit_group.position.x, market.position.x, -48 do
+    local this = FDT.get()
+    for x = unit_group.position.x, this.market.position.x, -48 do
         local destination =
             unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
         if destination then
@@ -421,13 +425,13 @@ local function send_unit_group(unit_group)
     end
     commands[#commands + 1] = {
         type = defines.command.attack_area,
-        destination = {x = market.position.x, y = unit_group.position.y},
+        destination = {x = this.market.position.x, y = unit_group.position.y},
         radius = 16,
         distraction = defines.distraction.by_enemy
     }
     commands[#commands + 1] = {
         type = defines.command.attack,
-        target = market,
+        target = this.market,
         distraction = defines.distraction.by_enemy
     }
 
@@ -488,8 +492,8 @@ local function spawn_boss_units(surface)
 end
 
 local function wake_up_the_biters(surface)
-    local market = FDT.get('market')
-    if not market or not market.valid then
+    local this = FDT.get()
+    if not this.market or not this.market.valid then
         return
     end
 
@@ -534,7 +538,7 @@ local function wake_up_the_biters(surface)
         {
             command = {
                 type = defines.command.attack,
-                target = market,
+                target = this.market,
                 distraction = defines.distraction.none
             },
             unit_count = 16,
@@ -579,7 +583,10 @@ local function biter_attack_wave()
     if this.wave_grace_period then
         return
     end
-    local surface = this.active_surface
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
 
     clear_corpses(surface)
     wake_up_the_biters(surface)
@@ -742,13 +749,7 @@ local function get_mvps()
 end
 
 local function is_game_lost()
-    local market = FDT.get('market')
-    if market then
-        return
-    end
-
     local this = FDT.get()
-    local l
 
     for _, player in pairs(game.connected_players) do
         if player.gui.left['fish_defense_game_lost'] then
@@ -766,12 +767,15 @@ local function is_game_lost()
         f.style.font_color = {r = 0.65, g = 0.1, b = 0.99}
 
         local t = f.add({type = 'table', column_count = 2})
-        l = t.add({type = 'label', caption = 'Survival Time >> '})
-        l.style.font = 'default-listbox'
-        l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+
+        local survival_time_label = t.add({type = 'label', caption = 'Survival Time >> '})
+        survival_time_label.style.font = 'default-listbox'
+        survival_time_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+
+        local market_age_label
 
         if this.market_age >= 216000 then
-            l =
+            market_age_label =
                 t.add(
                 {
                     type = 'label',
@@ -779,42 +783,48 @@ local function is_game_lost()
                         ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
                 }
             )
-            l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            market_age_label.style.font = 'default-bold'
+            market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
         else
-            l = t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
-            l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            market_age_label =
+                t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
+            market_age_label.style.font = 'default-bold'
+            market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
         end
 
         local mvp = get_mvps()
         if mvp then
-            l = t.add({type = 'label', caption = 'MVP Defender >> '})
-            l.style.font = 'default-listbox'
-            l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
-            l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            local mvp_defender_label = t.add({type = 'label', caption = 'MVP Defender >> '})
+            mvp_defender_label.style.font = 'default-listbox'
+            mvp_defender_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
 
-            l = t.add({type = 'label', caption = 'MVP Builder >> '})
-            l.style.font = 'default-listbox'
-            l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            l =
+            local mvp_killscore_label =
+                t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+            mvp_killscore_label.style.font = 'default-bold'
+            mvp_killscore_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+            local mvp_builder_label = t.add({type = 'label', caption = 'MVP Builder >> '})
+            mvp_builder_label.style.font = 'default-listbox'
+            mvp_builder_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+
+            local mvp_built_ent_label =
                 t.add(
                 {
                     type = 'label',
                     caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'
                 }
             )
-            l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            mvp_built_ent_label.style.font = 'default-bold'
+            mvp_built_ent_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-            l = t.add({type = 'label', caption = 'MVP Deaths >> '})
-            l.style.font = 'default-listbox'
-            l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            l = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
-            l.style.font = 'default-bold'
-            l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            local mvp_deaths_label = t.add({type = 'label', caption = 'MVP Deaths >> '})
+            mvp_deaths_label.style.font = 'default-listbox'
+            mvp_deaths_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+
+            local mvp_deaths_name_label =
+                t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+            mvp_deaths_name_label.style.font = 'default-bold'
+            mvp_deaths_name_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
             if not this.results_sent then
                 local result = {}
@@ -867,9 +877,11 @@ local function damage_entities_in_radius(surface, position, radius, damage)
 end
 
 local function market_kill_visuals()
-    local market = FDT.get('market')
-    local active_surface_index = FDT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
+    local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
 
     local is_branch_18 = sub(branch_version, 3, 4)
     local get_active_version = sub(game.active_mods.base, 3, 4)
@@ -878,7 +890,7 @@ local function market_kill_visuals()
         return
     end
 
-    if not market or not market.valid then
+    if not this.market or not this.market.valid then
         return
     end
 
@@ -889,7 +901,7 @@ local function market_kill_visuals()
             surface.create_particle(
                 {
                     name = 'branch-particle',
-                    position = market.position,
+                    position = this.market.position,
                     frame_speed = 0.1,
                     vertical_speed = 0.1,
                     height = 0.1,
@@ -902,7 +914,7 @@ local function market_kill_visuals()
             surface.create_entity(
                 {
                     name = 'branch-particle',
-                    position = market.position,
+                    position = this.market.position,
                     frame_speed = 0.1,
                     vertical_speed = 0.1,
                     height = 0.1,
@@ -917,7 +929,7 @@ local function market_kill_visuals()
                 surface.create_trivial_smoke(
                     {
                         name = 'smoke-fast',
-                        position = {market.position.x + (x * 0.35), market.position.y + (y * 0.35)}
+                        position = {this.market.position.x + (x * 0.35), this.market.position.y + (y * 0.35)}
                     }
                 )
             end
@@ -925,13 +937,13 @@ local function market_kill_visuals()
                 surface.create_trivial_smoke(
                     {
                         name = 'train-smoke',
-                        position = {market.position.x + (x * 0.35), market.position.y + (y * 0.35)}
+                        position = {this.market.position.x + (x * 0.35), this.market.position.y + (y * 0.35)}
                     }
                 )
             end
         end
     end
-    surface.spill_item_stack(market.position, {name = 'raw-fish', count = 1024}, true)
+    surface.spill_item_stack(this.market.position, {name = 'raw-fish', count = 1024}, true)
 end
 
 local biter_splash_damage = {
@@ -1013,8 +1025,11 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local active_surface_index = FDT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
+    local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
 
     if player.gui.left['fish_defense_game_lost'] then
         player.gui.left['fish_defense_game_lost'].destroy()
@@ -1035,7 +1050,7 @@ local function on_player_joined_game(event)
 
     if not pos and player.online_time < 2 then
         player.teleport(game.forces['player'].get_spawn_position(surface), surface)
-    elseif player.online_time < 2 or player.surface.index ~= active_surface_index then
+    elseif player.online_time < 2 or player.surface.index ~= this.active_surface_index then
         player.teleport(pos, surface)
     end
 
@@ -1100,17 +1115,18 @@ end
 
 local function on_robot_built_entity(event)
     local entity = event.created_entity
-    local entity_limits = FDT.get('entity_limits')
-    if entity_limits[entity.name] then
+    local this = FDT.get()
+    if this.entity_limits[entity.name] then
         local surface = entity.surface
-        if entity_limits[entity.name].placed < entity_limits[entity.name].limit then
-            entity_limits[entity.name].placed = entity_limits[entity.name].placed + 1
+        if this.entity_limits[entity.name].placed < this.entity_limits[entity.name].limit then
+            this.entity_limits[entity.name].placed = this.entity_limits[entity.name].placed + 1
             surface.create_entity(
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].placed ..
-                        ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
+                    text = this.entity_limits[entity.name].placed ..
+                        ' / ' ..
+                            this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1120,7 +1136,7 @@ local function on_robot_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].str .. ' limit reached.',
+                    text = this.entity_limits[entity.name].str .. ' limit reached.',
                     color = {r = 0.82, g = 0.11, b = 0.11}
                 }
             )
@@ -1133,9 +1149,11 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    local active_surface_index = FDT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
-    local map_height = FDT.get('map_height')
+    local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
     if player.position.x + player.position.y < 0 then
         return
     end
@@ -1144,7 +1162,7 @@ local function on_player_changed_position(event)
     end
     if player.position.x >= 160 then
         player.teleport({player.position.x - 1, player.position.y}, surface)
-        if player.position.y > map_height or player.position.y < map_height * -1 then
+        if player.position.y > this.map_height or player.position.y < this.map_height * -1 then
             player.teleport({player.position.x, 0}, surface)
         end
         if player.character then
@@ -1183,8 +1201,8 @@ local function on_research_finished(event)
 end
 
 local function on_player_respawned(event)
-    local market_age = FDT.get('market_age')
-    if not market_age then
+    local this = FDT.get()
+    if not this.market_age then
         return
     end
     local player = game.players[event.player_index]
@@ -1291,11 +1309,9 @@ local function set_market_health()
     if not this.market.valid then
         return
     end
-    local market_health = FDT.get('market_health')
-    local market_max_health = FDT.get('market_max_health')
-    local m = market_health / market_max_health
+    local m = this.market_health / this.market_max_health
     this.market.health = 150 * m
-    rendering.set_text(this.health_text, 'HP: ' .. market_health .. ' / ' .. market_max_health)
+    rendering.set_text(this.health_text, 'HP: ' .. this.market_health .. ' / ' .. this.market_max_health)
 end
 
 local function has_the_game_ended()
@@ -1360,14 +1376,18 @@ end
 function Public.on_init()
     FDT.reset_table()
     Poll.reset()
-    local get_score = Score.get_table()
     local this = FDT.get()
     local is_branch_18 = sub(branch_version, 3, 4)
     local get_active_version = sub(game.active_mods.base, 3, 4)
 
     Difficulty.reset_difficulty_poll()
     Difficulty.set_poll_closing_timeout = game.tick + 36000
-    get_score.score_table = {}
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        Score.init_player_table(player)
+    end
 
     local map_gen_settings = {}
     map_gen_settings.height = 2048
@@ -1394,7 +1414,10 @@ function Public.on_init()
         this.active_surface = game.surfaces[this.active_surface_index]
     end
 
-    local surface = this.active_surface
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
 
     surface.peaceful_mode = false
 
@@ -1451,9 +1474,11 @@ end
 
 local function on_tick()
     local Diff = Difficulty.get()
-    local active_surface_index = FDT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
     local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
     if game.tick % 30 == 0 then
         has_the_game_ended()
         if this.market then
@@ -1500,4 +1525,16 @@ Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
+--[[ local gmeta = getmetatable(_ENV)
+if not gmeta then
+    gmeta = {}
+    setmetatable(_ENV, gmeta)
+end
+gmeta.__newindex = function(_, n, v)
+    log('Desync warning: attempt to write to undeclared var ' .. n)
+    global[n] = v
+end
+gmeta.__index = function(_, n)
+    return global[n]
+end ]]
 return Public

@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local FDT = require 'maps.fish_defender.table'
 local math_random = math.random
 
@@ -24,4 +24,4 @@ local function on_entity_died(event)
     )
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_died, on_entity_died)

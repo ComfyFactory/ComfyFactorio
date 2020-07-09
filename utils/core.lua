@@ -45,13 +45,23 @@ function Public.print_except(msg, player, color)
     end
 end
 
+function Public.print_to(player_ident, msg)
+    local player = Public.validate_player(player_ident)
+
+    if player then
+        player.print(prefix .. msg, Color.yellow)
+    else
+        game.print(prefix .. msg, Color.yellow)
+    end
+end
+
 --- Prints a message to all online admins
 -- @param msg <string|table> table if locale is used
 -- @param source <LuaPlayer|string|nil> string must be the name of a player, nil for server.
 function Public.print_admins(msg, source)
     local source_name
     local chat_color
-    if source then
+    if source and game.players[source] then
         if type(source) == 'string' then
             source_name = source
             chat_color = game.players[source].chat_color
@@ -63,7 +73,7 @@ function Public.print_admins(msg, source)
         source_name = 'Server'
         chat_color = Color.yellow
     end
-    local formatted_msg = {'utils_core.print_admins', prefix, source_name, msg}
+    local formatted_msg = prefix .. '(ADMIN) ' .. source_name .. ': ' .. msg
     log(formatted_msg)
     for _, p in pairs(game.connected_players) do
         if p.admin then
@@ -215,6 +225,16 @@ function Public.action_warning(warning_prefix, msg)
     msg = format('%s %s', warning_prefix, msg)
     log(msg)
     Server.to_discord_bold(msg)
+end
+
+--- Takes msg and prints it to all players. Also prints to the log and discord
+-- @param msg <string> The message to print
+-- @param warning_prefix <string> The name of the module/warning
+function Public.action_warning_embed(warning_prefix, msg)
+    game.print(prefix .. msg, Color.yellow)
+    msg = format('%s %s', warning_prefix, msg)
+    log(msg)
+    Server.to_discord_embed(msg)
 end
 
 --- Takes msg and prints it to the log and discord.

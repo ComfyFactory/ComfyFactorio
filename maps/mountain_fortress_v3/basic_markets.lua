@@ -265,7 +265,7 @@ function Public.get_random_item(rarity, sell, buy)
     return items_return
 end
 
-function Public.mountain_market(surface, position, rarity)
+function Public.mountain_market(surface, position, rarity, buy)
     local types = get_types()
     table.shuffle_table(types)
     local items = get_market_item_list({types[1], types[2], types[3]}, rarity)
@@ -300,9 +300,11 @@ function Public.mountain_market(surface, position, rarity)
         mrk.add_market_item(sells[i])
     end
 
-    local buys = get_resource_market_buys()
-    for i = 1, math.random(1, 3), 1 do
-        mrk.add_market_item(buys[i])
+    if buy then
+        local buys = get_resource_market_buys()
+        for i = 1, math.random(1, 3), 1 do
+            mrk.add_market_item(buys[i])
+        end
     end
 
     return mrk
