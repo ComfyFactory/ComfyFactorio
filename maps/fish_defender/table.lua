@@ -19,6 +19,7 @@ function Public.reset_table()
     this.restart = false
     this.shutdown = false
     this.announced_message = false
+    this.force_chunk = false
     -- @end
     this.game_has_ended = false
     this.game_reset = false
@@ -40,6 +41,7 @@ function Public.reset_table()
     this.last_reset = game.tick
     this.wave_interval = 3600
     this.wave_grace_period = game.tick + 3600 * 20
+    -- this.wave_grace_period = game.tick + 3600
     this.boss_biters = {}
     this.acid_lines_delay = {}
     this.entity_limits = {

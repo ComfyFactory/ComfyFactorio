@@ -7,6 +7,14 @@ local AntiGrief = require 'antigrief'
 
 local lower = string.lower
 
+local function admin_only_message(str)
+    for _, player in pairs(game.connected_players) do
+        if player.admin == true then
+            player.print('Admins-only-message: ' .. str, {r = 0.88, g = 0.88, b = 0.88})
+        end
+    end
+end
+
 local function jail(player, source_player)
     if player.name == source_player.name then
         return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})

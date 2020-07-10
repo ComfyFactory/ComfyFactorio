@@ -21,10 +21,22 @@ local rock_raffle = {
     'rock-huge'
 }
 
+local function shuffle(t)
+    local tbl = {}
+    for i = 1, #t do
+        tbl[i] = t[i]
+    end
+    for i = #tbl, 2, -1 do
+        local j = math.random(i)
+        tbl[i], tbl[j] = tbl[j], tbl[i]
+    end
+    return tbl
+end
+
 local function get_replacement_tile(surface, position)
     for i = 1, 128, 1 do
         local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
-        table.shuffle_table(vectors)
+        shuffle(vectors)
         for k, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
             if not tile.collides_with('resource-layer') then
@@ -132,9 +144,6 @@ local function place_fish_market(surface, position)
 end
 
 local function enemy_territory(surface, left_top)
-    --surface.request_to_generate_chunks({x = 256, y = 0}, 16)
-    --surface.force_generate_chunk_requests()
-
     if left_top.x < 160 then
         return
     end
@@ -150,12 +159,6 @@ local function enemy_territory(surface, left_top)
 
     local area = {{left_top.x, left_top.y}, {left_top.x + 32, left_top.y + 32}}
 
-    --local area = {{160, -512},{750, 512}}
-    --for _, tile in pairs(surface.find_tiles_filtered({area = area})) do
-    --	if is_enemy_territory(tile.position) then
-    --		surface.set_tiles({{name = "water-mud", position = {tile.position.x, tile.position.y}}}, true)
-    --	end
-    --end
     if left_top.x > 256 then
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
@@ -179,15 +182,6 @@ local function enemy_territory(surface, left_top)
                             entity.destructible = false
                         end
                     end
-                --if pos.x % 32 == 0 and pos.y % 32 == 0 then
-                --	local decorative_names = {}
-                --	for k,v in pairs(game.decorative_prototypes) do
-                --		if v.autoplace_specification then
-                --		  decorative_names[#decorative_names+1] = k
-                --		end
-                --	 end
-                --	surface.regenerate_decorative(decorative_names, {{x=math_floor(pos.x/32),y=math_floor(pos.y/32)}})
-                --end
                 end
             end
         end
@@ -299,15 +293,10 @@ local function process_chunk(left_top)
     if not surface or not surface.valid then
         return
     end
-    local market = FDT.get('market')
-
-    if not surface or not surface.valid then
-        return
-    end
 
     local seed = game.surfaces[1].map_gen_settings.seed
 
-    Public.generate_spawn_area(surface)
+    Public.generate_spawn_area(this, surface, left_top)
     enemy_territory(surface, left_top)
     fish_mouth(surface, left_top)
 
@@ -320,7 +309,7 @@ local function process_chunk(left_top)
                 --if not plankton_territory(surface, pos, seed) then surface.set_tiles({{name = "out-of-map", position = pos}}, true) end
                 local tile_to_set = plankton_territory(surface, pos, seed)
                 --local tile_to_set = "out-of-map"
-                table.insert(tiles, {name = tile_to_set, position = pos})
+                tiles[#tiles + 1] = {name = tile_to_set, position = pos}
             end
         end
     end
@@ -331,12 +320,16 @@ local function process_chunk(left_top)
     --if game.forces.player.is_chunk_charted(surface, {left_top.x / 32, left_top.y / 32}) then
     game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
     --end
-    if market and market.valid then
-        FDT.get().game_reset = false
+    if this.market and this.market.valid then
+        this.game_reset = false
     end
 end
 
 local function process_chunk_queue()
+    local chunks = #global.chunk_queue
+    if chunks <= 0 then
+        return
+    end
     for k, left_top in pairs(global.chunk_queue) do
         process_chunk(left_top)
         global.chunk_queue[k] = nil
@@ -351,15 +344,14 @@ local function on_chunk_generated(event)
         return
     end
     local left_top = event.area.left_top
-    local game_reset = FDT.get('game_reset')
-    local game_has_ended = FDT.get('game_has_ended')
+    local this = FDT.get()
+    if this.game_has_ended then
+        return
+    end
 
-    if game.tick == 0 or game_reset then
+    if game.tick == 0 or this.game_reset or this.force_chunk then
         process_chunk(left_top)
     else
-        if game_has_ended then
-            return
-        end
         global.chunk_queue[#global.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
     end
 end
@@ -398,21 +390,21 @@ local function render_market_hp()
     }
 end
 
-function Public.generate_spawn_area(surface)
+function Public.generate_spawn_area(this, surface)
+    if this.spawn_area_generated then
+        return
+    end
+
     surface.request_to_generate_chunks({x = 0, y = 0}, 7)
     surface.request_to_generate_chunks({x = 160, y = 0}, 4)
     --surface.force_generate_chunk_requests()
-    local spawn_area_generated = FDT.get('spawn_area_generated')
-    if spawn_area_generated then
-        return
-    end
+
     if not surface.is_chunk_generated({-7, 0}) then
         return
     end
     if not surface.is_chunk_generated({5, 0}) then
         return
     end
-    FDT.get().spawn_area_generated = true
 
     local spawn_position_x = -128
 
@@ -475,7 +467,7 @@ function Public.generate_spawn_area(surface)
         {x = spawn_position_x - 52, y = y * -0.5},
         {x = spawn_position_x - 52, y = y * -1}
     }
-    table.shuffle_table(ore_positions)
+    shuffle(ore_positions)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[1], 'copper-ore', surface, 15, 2500)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[2], 'iron-ore', surface, 15, 2500)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[3], 'coal', surface, 15, 1500)
@@ -484,25 +476,28 @@ function Public.generate_spawn_area(surface)
     map_functions.draw_oil_circle(ore_positions[5], 'crude-oil', surface, 8, 200000)
 
     local pos = surface.find_non_colliding_position('market', {spawn_position_x, 0}, 50, 1)
-    FDT.get().market = place_fish_market(surface, pos)
-    local market = FDT.get('market')
+    this.market = place_fish_market(surface, pos)
 
     render_market_hp()
+
+    Public.fish_eye(surface, {x = -2150, y = -300})
 
     local r = 16
     for _, entity in pairs(
         surface.find_entities_filtered(
             {
                 area = {
-                    {market.position.x - r, market.position.y - r},
-                    {market.position.x + r, market.position.y + r}
+                    {this.market.position.x - r, this.market.position.y - r},
+                    {this.market.position.x + r, this.market.position.y + r}
                 },
                 type = 'tree'
             }
         )
     ) do
         local distance_to_center =
-            math_sqrt((entity.position.x - market.position.x) ^ 2 + (entity.position.y - market.position.y) ^ 2)
+            math_sqrt(
+            (entity.position.x - this.market.position.x) ^ 2 + (entity.position.y - this.market.position.y) ^ 2
+        )
         if distance_to_center < r then
             if math_random(1, r) > distance_to_center then
                 entity.destroy()
@@ -516,7 +511,7 @@ function Public.generate_spawn_area(surface)
 
     for x = -20, 20, 1 do
         for y = -20, 20, 1 do
-            local pos = {x = market.position.x + x, y = market.position.y + y}
+            local pos = {x = this.market.position.x + x, y = this.market.position.y + y}
             --local distance_to_center = math_sqrt(x^2 + y^2)
             --if distance_to_center > 8 and distance_to_center < 15 then
             local distance_to_center = x ^ 2 + y ^ 2
@@ -544,11 +539,11 @@ function Public.generate_spawn_area(surface)
         local pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, 4}, 50, 1)
         player.teleport(pos, surface)
     end
+    this.spawn_area_generated = true
 end
 
 function Public.fish_eye(surface, position)
     surface.request_to_generate_chunks(position, 2)
-    surface.force_generate_chunk_requests()
     for x = -48, 48, 1 do
         for y = -48, 48, 1 do
             local p = {x = position.x + x, y = position.y + y}

@@ -40,16 +40,19 @@ local starting_items = {
     ['stone'] = 12
 }
 
-local biter_count_limit = 1024 --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
-
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math.random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
+local function shuffle(t)
+    local tbl = {}
+    for i = 1, #t do
+        tbl[i] = t[i]
+    end
+    for i = #tbl, 2, -1 do
+        local j = math.random(i)
+        tbl[i], tbl[j] = tbl[j], tbl[i]
     end
     return tbl
 end
+
+local biter_count_limit = 1024 --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 
 local function create_wave_gui(player)
     if player.gui.top['fish_defense_waves'] then
@@ -362,7 +365,7 @@ local function get_y_coord_raffle_table()
     for y = -96, 96, 8 do
         t[#t + 1] = y
     end
-    table.shuffle_table(t)
+    shuffle(t)
     return t
 end
 
@@ -662,7 +665,7 @@ local function biter_attack_wave()
 
     local biter_pool = get_biter_pool()
     --local spawners = surface.find_entities_filtered({type = "unit-spawner", area = {{160, -196},{512, 196}}})
-    --table.shuffle_table(spawners)
+    --shuffle(spawners)
 
     while this.attack_wave_threat > 0 do
         for i = 1, #unit_groups, 1 do
@@ -751,6 +754,10 @@ end
 local function is_game_lost()
     local this = FDT.get()
 
+    if not this.game_has_ended then
+        return
+    end
+
     for _, player in pairs(game.connected_players) do
         if player.gui.left['fish_defense_game_lost'] then
             return
@@ -774,22 +781,24 @@ local function is_game_lost()
 
         local market_age_label
 
-        if this.market_age >= 216000 then
-            market_age_label =
-                t.add(
-                {
-                    type = 'label',
-                    caption = math.floor(((this.market_age / 60) / 60) / 60) ..
-                        ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
-                }
-            )
-            market_age_label.style.font = 'default-bold'
-            market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
-        else
-            market_age_label =
-                t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
-            market_age_label.style.font = 'default-bold'
-            market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        if this.market_age then
+            if this.market_age >= 216000 then
+                market_age_label =
+                    t.add(
+                    {
+                        type = 'label',
+                        caption = math.floor(((this.market_age / 60) / 60) / 60) ..
+                            ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
+                    }
+                )
+                market_age_label.style.font = 'default-bold'
+                market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            else
+                market_age_label =
+                    t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
+                market_age_label.style.font = 'default-bold'
+                market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+            end
         end
 
         local mvp = get_mvps()
@@ -1230,6 +1239,7 @@ local function set_objective_health(final_damage_amount)
         this.market.die()
         this.market = nil
         this.market_age = game.tick - this.last_reset
+        this.game_has_ended = true
         is_game_lost()
         return
     end
@@ -1338,7 +1348,6 @@ local function has_the_game_ended()
         if this.game_restart_timer % 1800 == 0 then
             if this.game_restart_timer > 0 then
                 this.game_reset = true
-                this.game_has_ended = true
                 game.print(
                     'Game will ' .. cause_msg .. ' in ' .. this.game_restart_timer / 60 .. ' seconds!',
                     {r = 0.22, g = 0.88, b = 0.22}
@@ -1346,7 +1355,7 @@ local function has_the_game_ended()
             end
             if this.soft_reset and this.game_restart_timer == 0 then
                 this.game_reset_tick = nil
-                Public.on_init()
+                Public.reset_game()
                 return
             end
             if this.restart and this.game_restart_timer == 0 then
@@ -1373,7 +1382,7 @@ local function has_the_game_ended()
     end
 end
 
-function Public.on_init()
+function Public.reset_game()
     FDT.reset_table()
     Poll.reset()
     local this = FDT.get()
@@ -1387,9 +1396,13 @@ function Public.on_init()
     for i = 1, #players do
         local player = players[i]
         Score.init_player_table(player)
+        if player.gui.left['fish_defense_game_lost'] then
+            player.gui.left['fish_defense_game_lost'].destroy()
+        end
     end
 
     local map_gen_settings = {}
+    map_gen_settings.seed = math_random(10000, 99999)
     map_gen_settings.height = 2048
     map_gen_settings.water = 0.10
     map_gen_settings.terrain_segmentation = 3
@@ -1407,11 +1420,9 @@ function Public.on_init()
 
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('fish_defender', map_gen_settings).index
-        this.active_surface = game.surfaces[this.active_surface_index]
     else
         this.active_surface_index =
             Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
-        this.active_surface = game.surfaces[this.active_surface_index]
     end
 
     local surface = game.surfaces[this.active_surface_index]
@@ -1435,12 +1446,11 @@ function Public.on_init()
     if not game.forces.decoratives then
         game.create_force('decoratives')
     end
+
     game.forces['decoratives'].set_cease_fire('enemy', true)
     game.forces['enemy'].set_cease_fire('decoratives', true)
     game.forces['player'].set_cease_fire('decoratives', true)
     game.remove_offline_players()
-
-    Terrain.fish_eye(surface, {x = -2150, y = -300})
 
     game.map_settings.enemy_expansion.enabled = false
     game.forces['player'].technologies['artillery'].researched = false
@@ -1453,17 +1463,15 @@ function Public.on_init()
 
     this.market_health = 500
     this.market_max_health = 500
+end
+
+function Public.on_init()
+    Public.reset_game()
 
     local T = Map.Pop_info()
     T.localised_category = 'fish_defender'
     T.main_caption_color = {r = 0.11, g = 0.8, b = 0.44}
     T.sub_caption_color = {r = 0.33, g = 0.66, b = 0.9}
-
-    for _, player in pairs(game.connected_players) do
-        if player.gui.left['fish_defense_game_lost'] then
-            player.gui.left['fish_defense_game_lost'].destroy()
-        end
-    end
 
     local mgs = game.surfaces['nauvis'].map_gen_settings
     mgs.width = 16
@@ -1525,7 +1533,7 @@ Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
---[[ local gmeta = getmetatable(_ENV)
+local gmeta = getmetatable(_ENV)
 if not gmeta then
     gmeta = {}
     setmetatable(_ENV, gmeta)
@@ -1536,5 +1544,6 @@ gmeta.__newindex = function(_, n, v)
 end
 gmeta.__index = function(_, n)
     return global[n]
-end ]]
+end
+
 return Public
