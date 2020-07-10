@@ -244,6 +244,7 @@ function Public.reset_map()
     Entities.set_scores()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
+    AntiGrief.protect_entities(true)
     get_score.score_table = {}
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
     Diff.gui_width = 20

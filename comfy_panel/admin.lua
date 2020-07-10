@@ -276,6 +276,10 @@ local function draw_events(data)
     if game.players[target_player_name] then
         local target_player = game.players[target_player_name].index
 
+        if #history_index[history] <= 0 then
+            return
+        end
+
         for _, value in pairs(history_index[history][target_player]) do
             if search_text then
                 local success = contains_text(value, nil, search_text)

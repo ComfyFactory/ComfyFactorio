@@ -31,7 +31,7 @@ commands.add_command(
         ::continue::
 
         local this = FDT.get()
-        local reset_map = require 'maps.fish_defender.main'.on_init
+        local reset_map = require 'maps.fish_defender.main'.reset_game
 
         if not this.reset_are_you_sure then
             this.reset_are_you_sure = true

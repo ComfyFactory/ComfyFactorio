@@ -369,6 +369,7 @@ local function player_list_show(player, frame, sort_by)
     -- Frame management
     frame.clear()
     frame.style.padding = 8
+    local play_table = play_time.get_trusted_table()
 
     -- Header management
     local t = frame.add {type = 'table', name = 'player_list_panel_header_table', column_count = 5}
@@ -469,12 +470,27 @@ local function player_list_show(player, frame, sort_by)
         sprite.style.width = 32
         sprite.style.stretch_image_to_widget_size = true
 
+        local trusted
+        local tooltip
+
+        if game.players[player_list[i].name].admin then
+            trusted = '[color=#ff0000][A][/color]'
+            tooltip = 'This player is an admin of this server.'
+        elseif play_table[player_list[i].name] then
+            trusted = '[color=#008000][T][/color]'
+            tooltip = 'This player trusted.'
+        else
+            trusted = '[color=#ffff00][U][/color]'
+            tooltip = 'This player not trusted.'
+        end
+
         -- Name
         local label =
             player_list_panel_table.add {
             type = 'label',
             name = 'player_list_panel_player_names_' .. i,
-            caption = player_list[i].name
+            caption = player_list[i].name .. ' ' .. trusted,
+            tooltip = tooltip
         }
         label.style.font = 'default'
         label.style.font_color = {

@@ -6,10 +6,14 @@ local Event = require 'utils.event'
 local session = require 'utils.session_data'
 local Global = require 'utils.global'
 local Utils = require 'utils.core'
+local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 
 local Public = {}
 local match = string.match
+local capsule_bomb_threshold = 8
+
+local format = string.format
 
 local this = {
     landfill_history = {},
@@ -19,8 +23,12 @@ local this = {
     corpse_history = {},
     cancel_crafting_history = {},
     whitelist_types = {},
+    players_warned = {},
     log_tree_harvest = false,
-    do_not_check_trusted = true
+    do_not_check_trusted = true,
+    protect_entities = false,
+    enable_autokick = true,
+    enable_autoban = false
 }
 
 local blacklisted_types = {
@@ -36,12 +44,19 @@ local blacklisted_types = {
 }
 
 local ammo_names = {
+    ['artillery-targeting-remote'] = true,
     ['poison-capsule'] = true,
     ['cluster-grenade'] = true,
     ['grenade'] = true,
     ['atomic-bomb'] = true,
     ['cliff-explosives'] = true,
     ['rocket'] = true
+}
+
+local not_protected = {
+    ['wall'] = true,
+    ['container'] = true,
+    ['logistic-container'] = true
 }
 
 Global.register(
@@ -55,8 +70,47 @@ local function increment(t, k, v)
     t[k][#t[k] + 1] = (v or 1)
 end
 
-local function damage_player(player)
+local function get_entities(item_name, entities)
+    local set = {}
+    for i = 1, #entities do
+        local e = entities[i]
+        local name = e.name
+
+        if name ~= item_name and name ~= 'entity-ghost' then
+            local count = set[name]
+            if count then
+                set[name] = count + 1
+            else
+                set[name] = 1
+            end
+        end
+    end
+
+    local list = {}
+    local i = 1
+    for k, v in pairs(set) do
+        list[i] = v
+        i = i + 1
+        list[i] = ' '
+        i = i + 1
+        list[i] = k
+        i = i + 1
+        list[i] = ', '
+        i = i + 1
+    end
+    list[i - 1] = nil
+
+    return table.concat(list)
+end
+
+local function damage_player(player, kill)
+    local msg = ' tried to destroy our base, but it backfired!'
     if player.character then
+        if kill then
+            player.character.die('enemy')
+            game.print(player.name .. msg, Color.yellow)
+            return
+        end
         player.character.health = player.character.health - math.random(50, 100)
         player.character.surface.create_entity({name = 'water-splash', position = player.position})
         local messages = {
@@ -64,10 +118,10 @@ local function damage_player(player)
             'Just a fleshwound.',
             'Better keep those hands to yourself or you might loose them.'
         }
-        player.print(messages[math.random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
+        player.print(messages[math.random(1, #messages)], Color.yellow)
         if player.character.health <= 0 then
             player.character.die('enemy')
-            game.print(player.name .. ' should have obeyed the law.', {r = 0.75, g = 0.0, b = 0.0})
+            game.print(player.name .. msg, Color.yellow)
             return
         end
     end
@@ -197,8 +251,6 @@ local function on_player_used_capsule(event)
     if trusted[player.name] and this.do_not_check_trusted then
         return
     end
-    local position = event.position
-
     local item = event.item
 
     if not item then
@@ -207,7 +259,58 @@ local function on_player_used_capsule(event)
 
     local name = item.name
 
+    local position = event.position
+    local x, y = position.x, position.y
+    local surface = player.surface
+
     if ammo_names[name] then
+        if
+            surface.count_entities_filtered({force = 'enemy', area = {{x - 10, y - 10}, {x + 10, y + 10}}, limit = 1}) >
+                0
+         then
+            return
+        end
+
+        local count = 0
+        local entities =
+            player.surface.find_entities_filtered {force = player.force, area = {{x - 5, y - 5}, {x + 5, y + 5}}}
+
+        for i = 1, #entities do
+            local e = entities[i]
+            local entity_name = e.name
+            if entity_name ~= name and entity_name ~= 'entity-ghost' and not blacklisted_types[e.type] then
+                count = count + 1
+            end
+        end
+
+        if count <= capsule_bomb_threshold then
+            return
+        end
+
+        local msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
+
+        if this.players_warned[event.player_index] == 2 then
+            if this.enable_autoban then
+                Server.ban_sync(
+                    player.name,
+                    format(
+                        'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
+                        get_entities(name, entities),
+                        name
+                    ),
+                    '<script>'
+                )
+            end
+        elseif this.players_warned[event.player_index] == 1 then
+            this.players_warned[event.player_index] = true
+            if this.enable_autokick then
+                game.kick_player(player, msg)
+            end
+        else
+            this.players_warned[event.player_index] = 1
+            damage_player(player, true)
+            Utils.print_to(nil, msg)
+        end
         if not this.capsule_history[player.index] then
             this.capsule_history[player.index] = {}
         end
@@ -217,7 +320,7 @@ local function on_player_used_capsule(event)
 
         local t = math.abs(math.floor((game.tick) / 3600))
         local str = '[' .. t .. '] '
-        str = str .. player.name .. ' used ' .. name
+        str = str .. msg
         str = str .. ' at X:'
         str = str .. math.floor(position.x)
         str = str .. ' Y:'
@@ -488,6 +591,7 @@ local function on_player_cursor_stack_changed(event)
         end
     end
 end
+
 local function on_player_cancelled_crafting(event)
     local tracker = session.get_session_table()
     local player = game.players[event.player_index]
@@ -529,6 +633,47 @@ local function on_player_cancelled_crafting(event)
     end
 end
 
+local function protect_entities(event)
+    local entity = event.entity
+
+    local function is_protected(e)
+        if not_protected[e.type] then
+            return false
+        end
+
+        return true
+    end
+
+    if is_protected(entity) then
+        entity.health = entity.health + event.final_damage_amount
+    end
+end
+
+local function on_entity_damaged(event)
+    local entity = event.entity
+
+    if not entity or not entity.valid then
+        return
+    end
+
+    if entity.force.index ~= 1 then
+        return
+    end
+
+    if this.protect_entities then
+        protect_entities(event)
+    end
+end
+
+--- Enabling this will protect all entities except for those in the not_protected table.
+---@param boolean true/false
+function Public.protect_entities(value)
+    if value then
+        this.protect_entities = value
+    end
+end
+
+--- This will reset the table of this
 function Public.reset_tables()
     this.landfill_history = {}
     this.capsule_history = {}
@@ -536,12 +681,6 @@ function Public.reset_tables()
     this.mining_history = {}
     this.corpse_history = {}
     this.cancel_crafting_history = {}
-end
-
-function Public.cursor_stack(event, pattern)
-    local player = game.get_player(event.player_index)
-    local stack = player.cursor_stack
-    return stack and stack.valid_for_read and stack.name:match(pattern)
 end
 
 --- Enable this to log when trees are destroyed
@@ -591,5 +730,6 @@ Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 Event.add(defines.events.on_player_cancelled_crafting, on_player_cancelled_crafting)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 
 return Public

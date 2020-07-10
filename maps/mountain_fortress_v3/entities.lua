@@ -341,6 +341,7 @@ local function on_player_mined_entity(event)
         give_coin(player)
 
         if Locomotive.is_around_train(entity) then
+            entity.destroy()
             return
         end
 
@@ -617,6 +618,10 @@ local function on_entity_died(event)
     }
 
     if entity_type[entity.type] then
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
         if entity.type == 'unit' or entity_type == 'unit-spawner' then
             this.biters_killed = this.biters_killed + 1
         end
@@ -631,6 +636,10 @@ local function on_entity_died(event)
     end
 
     if entity.type == 'tree' then
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
         angry_tree(event.entity, event.cause)
         return
     end
