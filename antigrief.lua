@@ -143,12 +143,14 @@ local function get_entities(item_name, entities)
     return table.concat(list)
 end
 
-local function damage_player(player, kill)
+local function damage_player(player, kill, print_to_all)
     local msg = ' tried to destroy our base, but it backfired!'
     if player.character then
         if kill then
             player.character.die('enemy')
-            game.print(player.name .. msg, Color.yellow)
+            if print_to_all then
+                game.print(player.name .. msg, Color.yellow)
+            end
             return
         end
         player.character.health = player.character.health - math.random(50, 100)
@@ -164,6 +166,29 @@ local function damage_player(player, kill)
             game.print(player.name .. msg, Color.yellow)
             return
         end
+    end
+end
+
+local function do_action(player, prefix, msg, ban_msg, kill)
+    if not prefix or not msg or not ban_msg then
+        return
+    end
+    kill = kill or false
+
+    damage_player(player, kill)
+    Utils.action_warning(prefix, msg)
+
+    if this.players_warned[player.index] == 2 then
+        if this.enable_autoban then
+            Server.ban_sync(player.name, ban_msg, '<script>')
+        end
+    elseif this.players_warned[player.index] == 1 then
+        this.players_warned[player.index] = 2
+        if this.enable_autokick then
+            game.kick_player(player, msg)
+        end
+    else
+        this.players_warned[player.index] = 1
     end
 end
 
@@ -232,6 +257,13 @@ local function on_player_built_tile(event)
     end
     local player = game.players[event.player_index]
 
+    local surface = event.surface
+    if surface and surface.valid then
+        surface = event.surface.index
+    else
+        surface = 'nil'
+    end
+
     --landfill history--
 
     if not this.landfill_history[player.index] then
@@ -248,7 +280,7 @@ local function on_player_built_tile(event)
     str = str .. ' Y:'
     str = str .. placed_tiles[1].position.y
     str = str .. ' '
-    str = str .. 'surface:' .. event.surface.index
+    str = str .. 'surface:' .. surface
     increment(this.landfill_history, player.index, str)
 end
 
@@ -327,30 +359,17 @@ local function on_player_used_capsule(event)
             return
         end
 
+        local prefix = '{Capsule}'
         local msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
+        local ban_msg =
+            format(
+            'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
+            get_entities(name, entities),
+            name
+        )
 
-        if this.players_warned[event.player_index] == 2 then
-            if this.enable_autoban then
-                Server.ban_sync(
-                    player.name,
-                    format(
-                        'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
-                        get_entities(name, entities),
-                        name
-                    ),
-                    '<script>'
-                )
-            end
-        elseif this.players_warned[event.player_index] == 1 then
-            this.players_warned[event.player_index] = true
-            if this.enable_autokick then
-                game.kick_player(player, msg)
-            end
-        else
-            this.players_warned[event.player_index] = 1
-            damage_player(player, true)
-            Utils.print_to(nil, msg)
-        end
+        do_action(player, prefix, msg, ban_msg, true)
+
         if not this.capsule_history[player.index] then
             this.capsule_history[player.index] = {}
         end
@@ -446,12 +465,16 @@ end
 --Mining Thieves History
 local function on_player_mined_entity(event)
     local player = game.players[event.player_index]
-
-    if not player then
+    if not player or not player.valid then
         return
     end
 
-    if this.whitelist_types[event.entity.type] then
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    if this.whitelist_types[entity.type] then
         if not this.mining_history[player.index] then
             this.mining_history[player.index] = {}
         end
@@ -461,24 +484,24 @@ local function on_player_mined_entity(event)
         local t = math.abs(math.floor((game.tick) / 3600))
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' mined '
-        str = str .. event.entity.name
+        str = str .. entity.name
         str = str .. ' at X:'
-        str = str .. math.floor(event.entity.position.x)
+        str = str .. math.floor(entity.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(event.entity.position.y)
+        str = str .. math.floor(entity.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. event.entity.surface.index
+        str = str .. 'surface:' .. entity.surface.index
         increment(this.mining_history, player.index, str)
+        return
+    end
 
+    if not entity.last_user then
         return
     end
-    if not event.entity.last_user then
+    if entity.last_user.name == player.name then
         return
     end
-    if event.entity.last_user.name == player.name then
-        return
-    end
-    if event.entity.force.name ~= player.force.name then
+    if entity.force.name ~= player.force.name then
         return
     end
     if blacklisted_types[event.entity.type] then
@@ -551,18 +574,26 @@ local function on_gui_opened(event)
 end
 
 local function on_pre_player_mined_item(event)
-    if event.entity.name ~= 'character-corpse' then
+    local player = game.players[event.player_index]
+
+    if not player or not player.valid then
         return
     end
-    local player = game.players[event.player_index]
-    local corpse_owner = game.players[event.entity.character_corpse_player_index]
+
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    if entity.name ~= 'character-corpse' then
+        return
+    end
+
+    local corpse_owner = game.players[entity.character_corpse_player_index]
     if not corpse_owner then
         return
     end
-    local entity = event.entity
-    if not entity then
-        return
-    end
+
     local corpse_content = #entity.get_inventory(defines.inventory.character_corpse)
     if corpse_content <= 0 then
         return
@@ -584,11 +615,11 @@ local function on_pre_player_mined_item(event)
         str = str .. player.name .. ' mined '
         str = str .. corpse_owner.name .. ' body'
         str = str .. ' at X:'
-        str = str .. math.floor(event.entity.position.x)
+        str = str .. math.floor(entity.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(event.entity.position.y)
+        str = str .. math.floor(entity.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. event.entity.surface.index
+        str = str .. 'surface:' .. entity.surface.index
         increment(this.corpse_history, player.index, str)
     end
 end
@@ -713,6 +744,29 @@ local function on_entity_damaged(event)
     protect_entities(event)
 end
 
+local function on_init()
+    local branch_version = '0.18.35'
+    local sub = string.sub
+    game.forces.player.research_queue_enabled = true
+    local is_branch_18 = sub(branch_version, 3, 4)
+    local get_active_version = sub(game.active_mods.base, 3, 4)
+    local default = game.permissions.get_group('Default')
+
+    default.set_allows_action(defines.input_action.change_multiplayer_config, false)
+    default.set_allows_action(defines.input_action.edit_permission_group, false)
+    default.set_allows_action(defines.input_action.import_permissions_string, false)
+    default.set_allows_action(defines.input_action.delete_permission_group, false)
+    default.set_allows_action(defines.input_action.add_permission_group, false)
+    default.set_allows_action(defines.input_action.admin_action, false)
+
+    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
+    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
+    if get_active_version >= is_branch_18 then
+        default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
+        default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
+    end
+end
+
 --- Enabling this will protect all entities except for those in the not_protected table.
 ---@param boolean true/false
 function Public.protect_entities(value)
@@ -748,7 +802,7 @@ function Public.whitelist_types(key, value)
     end
 end
 
---- If the event should also check trusted players
+--- If the event should also check trusted players.
 ---@param value string
 function Public.do_not_check_trusted(value)
     if value then
@@ -756,7 +810,7 @@ function Public.do_not_check_trusted(value)
     end
 end
 
---- Returns the table
+--- Returns the table.
 ---@param key string
 function Public.get(key)
     if key then
@@ -766,6 +820,7 @@ function Public.get(key)
     end
 end
 
+Event.on_init(on_init)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)

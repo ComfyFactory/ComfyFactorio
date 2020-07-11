@@ -474,13 +474,13 @@ local function player_list_show(player, frame, sort_by)
         local tooltip
 
         if game.players[player_list[i].name].admin then
-            trusted = '[color=#ff0000][A][/color]'
+            trusted = '[color=red][A][/color]'
             tooltip = 'This player is an admin of this server.'
         elseif play_table[player_list[i].name] then
-            trusted = '[color=#008000][T][/color]'
+            trusted = '[color=green][T][/color]'
             tooltip = 'This player is trusted.'
         else
-            trusted = '[color=#ffff00][U][/color]'
+            trusted = '[color=yellow][U][/color]'
             tooltip = 'This player is not trusted.'
         end
 

@@ -242,7 +242,7 @@ local function spawn_random_buildings(entities, p, depth)
 
     if math.abs(p.y) < depth * 1.5 then
         if math.random(1, 16) == 1 then
-            return buildings[randomizer](entities, p, low)
+            return buildings[randomizer](entities, p, medium)
         else
             return buildings[randomizer](entities, p, low)
         end
