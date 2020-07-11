@@ -152,27 +152,10 @@ local function on_player_created(event)
     player.gui.left.style = 'slot_table_spacing_vertical_flow'
 end
 
-local function on_init()
-    local branch_version = '0.18.35'
-    local sub = string.sub
-    game.forces.player.research_queue_enabled = true
-    local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
-
-    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
-    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
-    if get_active_version >= is_branch_18 then
-        local default = game.permissions.get_group('Default')
-        default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
-        default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
-    end
-end
-
 local loaded = _G.package.loaded
 function require(path)
     return loaded[path] or error('Can only require files at runtime that have been required in the control stage.', 2)
 end
 
-local event = require 'utils.event'
-event.on_init(on_init)
-event.add(defines.events.on_player_created, on_player_created)
+local Event = require 'utils.event'
+Event.add(defines.events.on_player_created, on_player_created)
