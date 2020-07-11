@@ -1,5 +1,5 @@
 --antigrief things made by mewmew
---modified by gerkiz--
+--rewritten by gerkiz--
 --as an admin, write either /trust or /untrust and the players name in the chat to grant/revoke immunity from protection
 
 local Event = require 'utils.event'
@@ -26,7 +26,7 @@ local this = {
     players_warned = {},
     log_tree_harvest = false,
     do_not_check_trusted = true,
-    protect_entities = false,
+    protect_entities = true,
     enable_autokick = true,
     enable_autoban = false
 }
@@ -53,10 +53,50 @@ local ammo_names = {
     ['rocket'] = true
 }
 
-local not_protected = {
-    ['wall'] = true,
-    ['container'] = true,
-    ['logistic-container'] = true
+local protected = {
+    ['reactor'] = true,
+    ['roboport'] = true,
+    ['rocket-silo'] = true,
+    ['solar-panel'] = true,
+    ['generator'] = true,
+    ['splitter'] = true,
+    ['transport-belt'] = true,
+    ['underground-belt'] = true,
+    ['assembling-machine'] = true,
+    ['storage-tank'] = true,
+    ['pump'] = true,
+    ['mining-drill'] = true,
+    ['market'] = true,
+    ['accumulator'] = true,
+    ['ammo-turret'] = true,
+    ['artillery-turret'] = true,
+    ['artillery-wagon'] = true,
+    ['beacon'] = true,
+    ['boiler'] = true,
+    ['burner-generator'] = true,
+    ['car'] = true,
+    ['cargo-wagon'] = true,
+    ['constant-combinator'] = true,
+    ['straight-rail'] = true,
+    ['curved-rail'] = true,
+    ['decider-combinator'] = true,
+    ['electric-pole'] = true,
+    ['electric-turret'] = true,
+    ['fluid-turret'] = true,
+    ['fluid-wagon'] = true,
+    ['furnace'] = true,
+    ['gate'] = true,
+    ['heat-interface'] = true,
+    ['heat-pipe'] = true,
+    ['inserter'] = true,
+    ['lab'] = true,
+    ['lamp'] = true,
+    ['loader'] = true,
+    ['locomotive'] = true,
+    ['logistic-robot'] = true,
+    ['offshore-pump'] = true,
+    ['pipe-to-ground'] = true,
+    ['pipe'] = true
 }
 
 Global.register(
@@ -637,11 +677,11 @@ local function protect_entities(event)
     local entity = event.entity
 
     local function is_protected(e)
-        if not_protected[e.type] then
-            return false
+        if protected[e.type] then
+            return true
         end
 
-        return true
+        return false
     end
 
     if is_protected(entity) then
@@ -649,10 +689,20 @@ local function protect_entities(event)
     end
 end
 
+--- Protect entities from the player force
+---@param event
 local function on_entity_damaged(event)
+    if not this.protect_entities then
+        return
+    end
+
     local entity = event.entity
 
     if not entity or not entity.valid then
+        return
+    end
+
+    if event.force.index ~= 1 then
         return
     end
 
@@ -660,9 +710,7 @@ local function on_entity_damaged(event)
         return
     end
 
-    if this.protect_entities then
-        protect_entities(event)
-    end
+    protect_entities(event)
 end
 
 --- Enabling this will protect all entities except for those in the not_protected table.

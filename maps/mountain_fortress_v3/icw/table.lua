@@ -51,12 +51,11 @@ function Public.get(key)
 end
 
 function Public.set_wagon_area(tbl)
-    local arg = tbl
-    if not arg then
+    if not tbl then
         return
     end
 
-    this.wagon_areas = arg
+    this.wagon_areas = tbl
 end
 
 return Public

@@ -1040,10 +1040,6 @@ local function on_player_joined_game(event)
         return
     end
 
-    if player.gui.left['fish_defense_game_lost'] then
-        player.gui.left['fish_defense_game_lost'].destroy()
-    end
-
     if player.online_time == 0 then
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
@@ -1058,7 +1054,7 @@ local function on_player_joined_game(event)
     local pos = surface.find_non_colliding_position('character', spawn, 3, 0.5)
 
     if not pos and player.online_time < 2 then
-        player.teleport(game.forces['player'].get_spawn_position(surface), surface)
+        player.teleport(spawn, surface)
     elseif player.online_time < 2 or player.surface.index ~= this.active_surface_index then
         player.teleport(pos, surface)
     end
@@ -1434,6 +1430,8 @@ function Public.reset_game()
 
     global.chunk_queue = {}
 
+    Terrain.fish_eye(surface, {x = -2150, y = -300})
+
     game.map_settings.enemy_expansion.enabled = false
     game.map_settings.enemy_evolution.destroy_factor = 0
     game.map_settings.enemy_evolution.time_factor = 0
@@ -1532,18 +1530,5 @@ Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
-
-local gmeta = getmetatable(_ENV)
-if not gmeta then
-    gmeta = {}
-    setmetatable(_ENV, gmeta)
-end
-gmeta.__newindex = function(_, n, v)
-    log('Desync warning: attempt to write to undeclared var ' .. n)
-    global[n] = v
-end
-gmeta.__index = function(_, n)
-    return global[n]
-end
 
 return Public

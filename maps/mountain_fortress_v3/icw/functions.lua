@@ -434,10 +434,10 @@ function Public.create_wagon_room(icw, wagon)
         local multiple_chests = ICW.get('multiple_chests')
         local wagon_areas = ICW.get('wagon_areas')
         local cargo_wagon = wagon_areas['cargo-wagon']
-        local position1 = {cargo_wagon.left_top.x + 7, cargo_wagon.left_top.y + 1}
-        local position2 = {cargo_wagon.right_bottom.x - 8, cargo_wagon.left_top.y + 1}
-        local position3 = {cargo_wagon.left_top.x + 7, cargo_wagon.right_bottom.y - 2}
-        local position4 = {cargo_wagon.right_bottom.x - 8, cargo_wagon.right_bottom.y - 2}
+        local position1 = {cargo_wagon.left_top.x + 4, cargo_wagon.left_top.y + 1}
+        local position2 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.left_top.y + 1}
+        local position3 = {cargo_wagon.left_top.x + 4, cargo_wagon.right_bottom.y - 2}
+        local position4 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.right_bottom.y - 2}
 
         if multiple_chests then
             local e1 =

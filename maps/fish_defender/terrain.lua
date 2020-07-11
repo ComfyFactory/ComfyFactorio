@@ -330,6 +330,7 @@ local function process_chunk_queue()
     if chunks <= 0 then
         return
     end
+
     for k, left_top in pairs(global.chunk_queue) do
         process_chunk(left_top)
         global.chunk_queue[k] = nil
@@ -480,8 +481,6 @@ function Public.generate_spawn_area(this, surface)
 
     render_market_hp()
 
-    Public.fish_eye(surface, {x = -2150, y = -300})
-
     local r = 16
     for _, entity in pairs(
         surface.find_entities_filtered(
@@ -544,6 +543,7 @@ end
 
 function Public.fish_eye(surface, position)
     surface.request_to_generate_chunks(position, 2)
+    surface.force_generate_chunk_requests()
     for x = -48, 48, 1 do
         for y = -48, 48, 1 do
             local p = {x = position.x + x, y = position.y + y}
