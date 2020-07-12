@@ -1368,7 +1368,7 @@ local function has_the_game_ended()
                     game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled. Server will restart!'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-                    Server.start_scenario('Fish_Defender')
+                    Server.start_scenario('Fish_Defender_v2')
                     this.announced_message = true
                     return
                 end
