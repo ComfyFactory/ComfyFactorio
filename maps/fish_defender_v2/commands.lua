@@ -62,7 +62,7 @@ commands.add_command(
         elseif param == 'restartnow' then
             this.reset_are_you_sure = nil
             p(player.name .. ' has restarted the game.')
-            Server.start_scenario('Fish_Defender')
+            Server.start_scenario('Fish_Defender_v2')
             return
         elseif param == 'shutdown' then
             if this.shutdown then
