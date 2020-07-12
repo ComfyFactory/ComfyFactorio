@@ -210,7 +210,6 @@ function Public.reset_map()
     local Diff = Difficulty.get()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
-    local get_score = Score.get_table()
 
     for _, player in pairs(game.players) do
         if player.controller_type == defines.controllers.editor then
