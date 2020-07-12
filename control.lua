@@ -152,18 +152,10 @@ local function on_player_created(event)
     player.gui.left.style = 'slot_table_spacing_vertical_flow'
 end
 
-local function on_init()
-    game.forces.player.research_queue_enabled = true
-    local default = game.permissions.get_group('Default')
-    default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
-    default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
-end
-
 local loaded = _G.package.loaded
 function require(path)
     return loaded[path] or error('Can only require files at runtime that have been required in the control stage.', 2)
 end
 
-local event = require 'utils.event'
-event.on_init(on_init)
-event.add(defines.events.on_player_created, on_player_created)
+local Event = require 'utils.event'
+Event.add(defines.events.on_player_created, on_player_created)

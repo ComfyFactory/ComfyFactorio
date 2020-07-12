@@ -158,14 +158,13 @@ commands.add_command(
 
 local function process_bot_answers(event)
     local player = game.players[event.player_index]
-    -- if player.admin == true then
-    --     return
-    -- end
+    if player.admin == true then
+        return
+    end
     local message = event.message
     message = string.lower(message)
     for word in string.gmatch(message, '%g+') do
         if links[word] then
-            local player = game.players[event.player_index]
             for _, bot_answer in pairs(links[word]) do
                 player.print('[font=' .. font .. ']' .. bot_answer .. '[/font]', font_color)
             end

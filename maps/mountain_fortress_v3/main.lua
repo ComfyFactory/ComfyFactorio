@@ -21,6 +21,7 @@ local Entities = require 'maps.mountain_fortress_v3.entities'
 local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
+local ICT = require 'maps.mountain_fortress_v3.icw.table'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG = require 'maps.mountain_fortress_v3.rpg'
@@ -38,6 +39,7 @@ local AntiGrief = require 'antigrief'
 --local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
+local rng = math.random
 -- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -61,7 +63,8 @@ local collapse_kill = {
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
         ['assembling-machine'] = true,
-        ['furnace'] = true
+        ['furnace'] = true,
+        ['steel-chest'] = true
     },
     enabled = true
 }
@@ -82,17 +85,25 @@ local set_difficulty = function()
         Diff.difficulty_vote_value = 0.1
     end
 
-    wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
+    wave_defense_table.max_active_biters = 888 + player_count * (90 * Diff.difficulty_vote_value)
 
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
     local amount = player_count * 0.25 + 2
     amount = math.floor(amount)
-    if amount > 6 then
-        amount = 6
+    if amount > 8 then
+        amount = 8
     end
     Collapse.set_amount(amount)
+
+    if player_count >= 8 and player_count <= 12 then
+        Collapse.set_speed(8)
+    elseif player_count >= 20 then
+        Collapse.set_speed(6)
+    elseif player_count >= 35 then
+        Collapse.set_speed(5)
+    end
 
     wave_defense_table.wave_interval = 3600 - player_count * 60
     if wave_defense_table.wave_interval < 1800 then
@@ -200,7 +211,6 @@ function Public.reset_map()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
     local get_score = Score.get_table()
-    local antigrief = AntiGrief.get()
 
     for _, player in pairs(game.players) do
         if player.controller_type == defines.controllers.editor then
@@ -217,6 +227,8 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
     Map_score.reset_score()
+    AntiGrief.reset_tables()
+    RPG.rpg_reset_all_players()
 
     disable_tech()
 
@@ -228,17 +240,19 @@ function Public.reset_map()
 
     Balance.init_enemy_weapon_damage()
 
-    global.bad_fire_history = {}
     global.custom_highscore.description = 'Wagon distance reached:'
     Entities.set_scores()
-    global.friendly_fire_history = {}
-    global.landfill_history = {}
-    global.mining_history = {}
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
-    get_score.score_table = {}
-    Diff.difficulty_poll_closing_timeout = game.tick + 90000
-    Diff.difficulty_player_votes = {}
+    --AntiGrief.protect_entities(true)
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        Score.init_player_table(player)
+    end
+
+    Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
@@ -251,16 +265,23 @@ function Public.reset_map()
     Collapse.set_direction('north')
     Collapse.start_now(false)
 
+    --[[ local x_value = rng(15, 25)
+    local y_value = rng(50, 60)
+
+    local data = {
+        ['cargo-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
+        ['artillery-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
+        ['fluid-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
+        ['locomotive'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}}
+    }
+    ICT.set_wagon_area(data) ]]
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
-    this.cargo_health = 10000
-    this.cargo_max_health = 10000
 
     Locomotive.locomotive_spawn(surface, {x = -18, y = 25})
     Locomotive.render_train_hp()
     render_direction(surface)
     -- LM.place_market()
-    RPG.rpg_reset_all_players()
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
@@ -330,9 +351,7 @@ local on_player_joined_game = function(event)
     ICW_Func.is_minimap_valid(player, surface)
 
     if not this.players[player.index] then
-        this.players[player.index] = {
-            data = {}
-        }
+        this.players[player.index] = {}
         local message = comfy .. 'Greetings, ' .. player.name .. '!\nPlease read the map info.'
         Alert.alert_player(player, 15, message)
         for item, amount in pairs(starting_items) do
@@ -482,7 +501,11 @@ local on_research_finished = function(event)
     if research.force.technologies['steel-axe'].researched then
         mining_speed_bonus = mining_speed_bonus + 0.5
     end -- +50% speed for steel-axe research
-    research.force.manual_mining_speed_modifier = mining_speed_bonus
+    if this.breached_wall <= 2 then
+        research.force.manual_mining_speed_modifier = this.force_mining_speed.speed + mining_speed_bonus
+    else
+        research.force.manual_mining_speed_modifier = mining_speed_bonus
+    end
 
     local force_name = research.force.name
     if not force_name then
@@ -511,13 +534,35 @@ end
 local has_the_game_ended = function()
     local this = WPT.get()
     if this.game_reset_tick then
-        if this.game_reset_tick < game.tick then
-            if this.soft_reset then
+        if this.game_reset_tick < 0 then
+            return
+        end
+
+        this.game_reset_tick = this.game_reset_tick - 30
+        if this.game_reset_tick % 1800 == 0 then
+            if this.game_reset_tick > 0 then
+                local cause_msg
+                if this.restart then
+                    cause_msg = 'restart'
+                elseif this.shutdown then
+                    cause_msg = 'shutdown'
+                elseif this.soft_reset then
+                    cause_msg = 'soft-reset'
+                end
+
+                this.game_reset = true
+                this.game_has_ended = true
+                game.print(
+                    'Game will ' .. cause_msg .. ' in ' .. this.game_reset_tick / 60 .. ' seconds!',
+                    {r = 0.22, g = 0.88, b = 0.22}
+                )
+            end
+            if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
                 Public.reset_map()
                 return
             end
-            if this.restart then
+            if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled. Server will restart!'
@@ -527,7 +572,7 @@ local has_the_game_ended = function()
                     return
                 end
             end
-            if this.shutdown then
+            if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
                     game.print('Soft-reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled. Server is shutting down!'
@@ -538,7 +583,73 @@ local has_the_game_ended = function()
                 end
             end
         end
+    end
+end
+
+local boost_difficulty = function()
+    local difficulty_set = WPT.get('difficulty_set')
+    local force_mining_speed = WPT.get('force_mining_speed')
+    if difficulty_set then
         return
+    end
+
+    local difficulty = Difficulty.get()
+    if game.tick < difficulty.difficulty_poll_closing_timeout then
+        return
+    end
+
+    local rpg_extra = RPG.get_extra_table()
+    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+    Difficulty.get().name = name
+
+    Difficulty.get().button_tooltip = difficulty.tooltip[difficulty.difficulty_vote_index]
+    Difficulty.difficulty_gui()
+
+    local message = 'Difficulty has been set! Game has been set to: [color=green]' .. name .. '[/color]'
+    local data = {
+        position = WPT.get('locomotive').position
+    }
+    Alert.alert_all_players_location(data, message)
+
+    if name == 'Easy' then
+        rpg_extra.difficulty = 1
+        game.forces.player.manual_mining_speed_modifier = 1
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
+        game.forces.player.character_running_speed_modifier = 0.2
+        game.forces.player.manual_crafting_speed_modifier = 0.3
+        WPT.get().coin_amount = 2
+        WPT.get('upgrades').flame_turret.limit = 25
+        WPT.get('upgrades').landmine.limit = 100
+        WPT.get().locomotive_health = 20000
+        WPT.get().locomotive_max_health = 20000
+        WPT.get().difficulty_set = true
+        WPT.get().bonus_xp_on_join = 700
+    elseif name == 'Normal' then
+        rpg_extra.difficulty = 0.5
+        game.forces.player.manual_mining_speed_modifier = 0.5
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
+        game.forces.player.character_running_speed_modifier = 0.1
+        game.forces.player.manual_crafting_speed_modifier = 0.1
+        WPT.get().coin_amount = 1
+        WPT.get('upgrades').flame_turret.limit = 10
+        WPT.get('upgrades').landmine.limit = 50
+        WPT.get().locomotive_health = 10000
+        WPT.get().locomotive_max_health = 10000
+        WPT.get().bonus_xp_on_join = 300
+        WPT.get().difficulty_set = true
+    elseif name == 'Hard' then
+        rpg_extra.difficulty = 0
+        game.forces.player.manual_mining_speed_modifier = 0
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
+        game.forces.player.character_running_speed_modifier = 0
+        game.forces.player.manual_crafting_speed_modifier = 0
+        WPT.get().coin_amount = 1
+        WPT.get('upgrades').flame_turret.limit = 3
+        WPT.get('upgrades').landmine.limit = 10
+        WPT.get().locomotive_health = 5000
+        WPT.get().locomotive_max_health = 5000
+        WPT.get().bonus_xp_on_join = 50
+        WPT.get().difficulty_set = true
     end
 end
 
@@ -569,6 +680,7 @@ local on_tick = function()
 
         if game.tick % 1800 == 0 then
             remove_offline_players()
+            boost_difficulty()
             Entities.set_scores()
             local collapse_pos = Collapse.get_position()
             local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)
@@ -605,9 +717,9 @@ local on_init = function()
     }
 
     local tooltip = {
-        [1] = 'Makes the game really easy.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick.',
-        [2] = 'Normal Mountain Fortress game-play.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick.',
-        [3] = "Are you sure? It won't be easy.\nDo note that wave_defense is still based on amount of players.\nAnd what difficulty you pick."
+        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 20000.\nHidden Treasure has higher chance to spawn.',
+        [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.',
+        [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.'
     }
 
     Difficulty.set_difficulties(difficulties)
@@ -630,6 +742,8 @@ local on_init = function()
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
     Explosives.set_destructible_tile('water-mud', 1000)
+    Explosives.set_whitelist_entity('straight-rail')
+    Explosives.set_whitelist_entity('curved-rail')
 end
 
 Event.on_nth_tick(10, on_tick)

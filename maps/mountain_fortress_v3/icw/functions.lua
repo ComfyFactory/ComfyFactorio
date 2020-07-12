@@ -1,6 +1,5 @@
 local Public = {}
 
-local Constants = require 'maps.mountain_fortress_v3.icw.constants'
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 
 function Public.request_reconstruction(icw)
@@ -293,7 +292,9 @@ function Public.kill_wagon(icw, entity)
         return
     end
 
-    if not Constants.wagon_types[entity.type] then
+    local wagon_types = ICW.get('wagon_types')
+
+    if not wagon_types[entity.type] then
         return
     end
     local wagon = icw.wagons[entity.unit_number]
@@ -422,12 +423,21 @@ function Public.create_wagon_room(icw, wagon)
         return
     end
 
+    -- this.wagon_areas = {
+    --     ['cargo-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
+    --     ['artillery-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
+    --     ['fluid-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
+    --     ['locomotive'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}}
+    -- }
+
     if wagon.entity.type == 'cargo-wagon' then
         local multiple_chests = ICW.get('multiple_chests')
-        local position1 = {-12, 1}
-        local position2 = {12, 1}
-        local position3 = {-12, 58}
-        local position4 = {12, 58}
+        local wagon_areas = ICW.get('wagon_areas')
+        local cargo_wagon = wagon_areas['cargo-wagon']
+        local position1 = {cargo_wagon.left_top.x + 4, cargo_wagon.left_top.y + 1}
+        local position2 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.left_top.y + 1}
+        local position3 = {cargo_wagon.left_top.x + 4, cargo_wagon.right_bottom.y - 2}
+        local position4 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.right_bottom.y - 2}
 
         if multiple_chests then
             local e1 =
@@ -565,16 +575,19 @@ function Public.create_wagon(icw, created_entity, delay_surface)
         return
     end
 
+    local wagon_types = ICW.get('wagon_types')
+    local wagon_areas = ICW.get('wagon_areas')
+
     if not created_entity.unit_number then
         return
     end
     if icw.trains[tonumber(created_entity.surface.name)] or icw.wagons[tonumber(created_entity.surface.name)] then
         return
     end
-    if not Constants.wagon_types[created_entity.type] then
+    if not wagon_types[created_entity.type] then
         return
     end
-    local wagon_area = Constants.wagon_areas[created_entity.type]
+    local wagon_area = wagon_areas[created_entity.type]
 
     icw.wagons[created_entity.unit_number] = {
         entity = created_entity,

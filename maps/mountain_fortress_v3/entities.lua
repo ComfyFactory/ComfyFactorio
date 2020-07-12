@@ -9,6 +9,7 @@ local RPG = require 'maps.mountain_fortress_v3.rpg'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local BiterHealthBooster = require 'modules.biter_health_booster'
+local Difficulty = require 'modules.difficulty_vote'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Alert = require 'utils.alert'
@@ -200,11 +201,22 @@ end
 
 local function hidden_treasure(event)
     local player = game.players[event.player_index]
-    local rpg_t = RPG.get_table()
-    local magic = rpg_t[player.index].magicka
-    if math.random(1, 320) ~= 1 then
-        return
+    local magic = RPG.get_table(player.index).magicka
+    local name = Difficulty.get('name')
+    if name == 'Easy' then
+        if math.random(1, 220) ~= 1 then
+            return
+        end
+    elseif name == 'Normal' then
+        if math.random(1, 320) ~= 1 then
+            return
+        end
+    elseif name == 'Hard' then
+        if math.random(1, 420) ~= 1 then
+            return
+        end
     end
+
     if magic > 50 then
         local msg = rare_treasure_chest_messages[math.random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg)
@@ -238,6 +250,7 @@ local function angry_tree(entity, cause)
     if entity.type ~= 'tree' then
         return
     end
+
     if math.abs(entity.position.y) < Terrain.level_depth then
         return
     end
@@ -274,7 +287,10 @@ local function angry_tree(entity, cause)
 end
 
 local function give_coin(player)
-    player.insert({name = 'coin', count = 1})
+    local coin_amount = WPT.get('coin_amount')
+    if coin_amount >= 1 then
+        player.insert({name = 'coin', count = coin_amount})
+    end
 end
 
 local function on_player_mined_entity(event)
@@ -323,6 +339,12 @@ local function on_player_mined_entity(event)
         this.mined_scrap = this.mined_scrap + 1
         Mining.on_player_mined_entity(event)
         give_coin(player)
+
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
+
         if math.random(1, 32) == 1 then
             hidden_biter(event.entity)
             entity.destroy()
@@ -596,6 +618,10 @@ local function on_entity_died(event)
     }
 
     if entity_type[entity.type] then
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
         if entity.type == 'unit' or entity_type == 'unit-spawner' then
             this.biters_killed = this.biters_killed + 1
         end
@@ -610,6 +636,10 @@ local function on_entity_died(event)
     end
 
     if entity.type == 'tree' then
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
         angry_tree(event.entity, event.cause)
         return
     end
@@ -704,7 +734,7 @@ function Public.loco_died()
     )
 
     surface.spill_item_stack(this.locomotive.position, {name = 'coin', count = 512}, false)
-    this.game_reset_tick = game.tick + 1000
+    this.game_reset_tick = 5400
     for _, player in pairs(game.connected_players) do
         player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
     end
