@@ -2,10 +2,14 @@ local Event = require 'utils.event'
 local map_functions = require 'tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local FDT = require 'maps.fish_defender.table'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
 local math_sqrt = math.sqrt
+local tiles_per_call = 16
+local total_calls = math.ceil(1024 / tiles_per_call)
 
 local Public = {}
 
@@ -21,14 +25,11 @@ local rock_raffle = {
     'rock-huge'
 }
 
-local function shuffle(t)
-    local tbl = {}
-    for i = 1, #t do
-        tbl[i] = t[i]
-    end
-    for i = #tbl, 2, -1 do
-        local j = math.random(i)
-        tbl[i], tbl[j] = tbl[j], tbl[i]
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = math.random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
     end
     return tbl
 end
@@ -287,76 +288,6 @@ local function plankton_territory(surface, position, seed)
     return 'water'
 end
 
-local function process_chunk(left_top)
-    local this = FDT.get()
-    local surface = game.surfaces[this.active_surface_index]
-    if not surface or not surface.valid then
-        return
-    end
-
-    local seed = game.surfaces[1].map_gen_settings.seed
-
-    Public.generate_spawn_area(this, surface, left_top)
-    enemy_territory(surface, left_top)
-    fish_mouth(surface, left_top)
-
-    local tiles = {}
-
-    for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
-            local pos = {x = left_top.x + x, y = left_top.y + y}
-            if is_out_of_map_tile(pos) then
-                --if not plankton_territory(surface, pos, seed) then surface.set_tiles({{name = "out-of-map", position = pos}}, true) end
-                local tile_to_set = plankton_territory(surface, pos, seed)
-                --local tile_to_set = "out-of-map"
-                tiles[#tiles + 1] = {name = tile_to_set, position = pos}
-            end
-        end
-    end
-
-    surface.set_tiles(tiles, true)
-
-    --if game.tick == 0 then return end
-    --if game.forces.player.is_chunk_charted(surface, {left_top.x / 32, left_top.y / 32}) then
-    game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
-    --end
-    if this.market and this.market.valid then
-        this.game_reset = false
-    end
-end
-
-local function process_chunk_queue()
-    local chunks = #global.chunk_queue
-    if chunks <= 0 then
-        return
-    end
-
-    for k, left_top in pairs(global.chunk_queue) do
-        process_chunk(left_top)
-        global.chunk_queue[k] = nil
-        return
-    end
-end
-
-local function on_chunk_generated(event)
-    local map_name = 'fish_defender'
-
-    if string.sub(event.surface.name, 0, #map_name) ~= map_name then
-        return
-    end
-    local left_top = event.area.left_top
-    local this = FDT.get()
-    if this.game_has_ended then
-        return
-    end
-
-    if game.tick == 0 or this.game_reset or this.force_chunk then
-        process_chunk(left_top)
-    else
-        global.chunk_queue[#global.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
-    end
-end
-
 local function render_market_hp()
     local this = FDT.get()
     local surface = game.surfaces[this.active_surface_index]
@@ -391,7 +322,7 @@ local function render_market_hp()
     }
 end
 
-function Public.generate_spawn_area(this, surface)
+local function generate_spawn_area(this, surface)
     if this.spawn_area_generated then
         return
     end
@@ -541,6 +472,81 @@ function Public.generate_spawn_area(this, surface)
     this.spawn_area_generated = true
 end
 
+local function process_chunk(left_top)
+    local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
+
+    local seed = game.surfaces[1].map_gen_settings.seed
+
+    generate_spawn_area(this, surface, left_top)
+    enemy_territory(surface, left_top)
+    fish_mouth(surface, left_top)
+
+    local tiles = {}
+
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            local pos = {x = left_top.x + x, y = left_top.y + y}
+            if is_out_of_map_tile(pos) then
+                --if not plankton_territory(surface, pos, seed) then surface.set_tiles({{name = "out-of-map", position = pos}}, true) end
+                local tile_to_set = plankton_territory(surface, pos, seed)
+                --local tile_to_set = "out-of-map"
+                tiles[#tiles + 1] = {name = tile_to_set, position = pos}
+            end
+        end
+    end
+
+    surface.set_tiles(tiles, true)
+
+    --if game.tick == 0 then return end
+    --if game.forces.player.is_chunk_charted(surface, {left_top.x / 32, left_top.y / 32}) then
+    game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
+    --end
+    if this.market and this.market.valid then
+        this.game_reset = false
+    end
+end
+
+local process_chunk_queue =
+    Token.register(
+    function(data)
+        local chunk_queue = data.chunk_queue
+
+        for i = 1, #chunk_queue do
+            local pos = {x = chunk_queue[i].x, y = chunk_queue[i].y}
+            process_chunk(pos)
+            chunk_queue[i] = nil
+        end
+    end
+)
+
+local function on_chunk_generated(event)
+    local map_name = 'fish_defender'
+
+    if string.sub(event.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+    local left_top = event.area.left_top
+    local this = FDT.get()
+    if this.game_has_ended then
+        return
+    end
+
+    if game.tick == 0 or this.game_reset or this.force_chunk then
+        process_chunk(left_top)
+    else
+        global.chunk_queue[#global.chunk_queue + 1] = {x = left_top.x, y = left_top.y}
+
+        local data = {
+            chunk_queue = global.chunk_queue
+        }
+        Task.set_timeout_in_ticks(total_calls, process_chunk_queue, data)
+    end
+end
+
 function Public.fish_eye(surface, position)
     surface.request_to_generate_chunks(position, 2)
     surface.force_generate_chunk_requests()
@@ -567,7 +573,6 @@ function Public.fish_eye(surface, position)
     end
 end
 
-Event.on_nth_tick(25, process_chunk_queue)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 
 return Public

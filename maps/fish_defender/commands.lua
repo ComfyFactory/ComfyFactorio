@@ -1,5 +1,6 @@
 local Server = require 'utils.server'
 local FDT = require 'maps.fish_defender.table'
+local Task = require 'utils.task'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
@@ -90,6 +91,58 @@ commands.add_command(
             reset_map()
             p('[WARNING] Game has been reset!')
             return
+        end
+    end
+)
+
+commands.add_command(
+    'set_queue_speed',
+    'Usable only for admins - sets the queue speed of this map!',
+    function(cmd)
+        local p
+        local player = game.player
+        local param = tonumber(cmd.parameter)
+
+        if player then
+            if player ~= nil then
+                p = player.print
+                if not player.admin then
+                    p("[ERROR] You're not admin!", Color.fail)
+                    return
+                end
+                if not param then
+                    return
+                end
+                p('Queue speed set to: ' .. param)
+                Task.set_queue_speed(param)
+            else
+                p = log
+                p('Queue speed set to: ' .. param)
+                Task.set_queue_speed(param)
+            end
+        end
+    end
+)
+
+commands.add_command(
+    'get_queue_speed',
+    'Usable only for admins - gets the queue speed of this map!',
+    function()
+        local p
+        local player = game.player
+
+        if player then
+            if player ~= nil then
+                p = player.print
+                if not player.admin then
+                    p("[ERROR] You're not admin!", Color.fail)
+                    return
+                end
+                p(Task.get_queue_speed())
+            else
+                p = log
+                p(Task.get_queue_speed())
+            end
         end
     end
 )

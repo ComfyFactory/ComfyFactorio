@@ -265,7 +265,7 @@ function Public.reset_map()
     Collapse.set_direction('north')
     Collapse.start_now(false)
 
-    --[[ local x_value = rng(15, 25)
+    local x_value = rng(15, 25)
     local y_value = rng(50, 60)
 
     local data = {
@@ -274,7 +274,7 @@ function Public.reset_map()
         ['fluid-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
         ['locomotive'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}}
     }
-    ICT.set_wagon_area(data) ]]
+    ICT.set_wagon_area(data)
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 

@@ -25,6 +25,7 @@ function Public.reset_table()
     this.game_reset = false
     this.spawn_area_generated = false
     this.results_sent = false
+
     this.explosive_bullets_unlocked = false
     this.bouncy_shells_unlocked = false
     this.trapped_capsules_unlocked = false
@@ -49,7 +50,7 @@ function Public.reset_table()
         ['laser-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
         ['artillery-turret'] = {placed = 0, limit = 1, str = 'artillery turret', slot_price = 500},
         ['flamethrower-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
-        ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 6}
+        ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 20}
     }
     this.difficulties_votes = {
         [1] = {wave_interval = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},

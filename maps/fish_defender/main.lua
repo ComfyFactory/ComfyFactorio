@@ -13,6 +13,7 @@ require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
 
 local Terrain = require 'maps.fish_defender.terrain'
+local Task = require 'utils.task'
 local Unit_health_booster = require 'modules.biter_health_booster'
 local Difficulty = require 'modules.difficulty_vote'
 local Map = require 'modules.map_info'
@@ -40,14 +41,11 @@ local starting_items = {
     ['stone'] = 12
 }
 
-local function shuffle(t)
-    local tbl = {}
-    for i = 1, #t do
-        tbl[i] = t[i]
-    end
-    for i = #tbl, 2, -1 do
-        local j = math.random(i)
-        tbl[i], tbl[j] = tbl[j], tbl[i]
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = math.random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
     end
     return tbl
 end
@@ -551,18 +549,29 @@ local function wake_up_the_biters(surface)
     )
 end
 
-local function damage_entity_outside_of_fence(e)
+local function damage_entity_outside_and_inside_of_fence(e)
     if not e.health then
         return
     end
+
     if e.force.name == 'neutral' then
         return
     end
+
     if e.type == 'unit' or e.type == 'unit-spawner' then
         return
     end
 
     e.surface.create_entity({name = 'water-splash', position = e.position})
+
+    if e.type == 'land-mine' then
+        e.health =
+            e.health - math_random(math.floor(e.prototype.max_health * 0.2), math.floor(e.prototype.max_health * 0.4))
+        if e.health <= 0 then
+            e.die('enemy')
+        end
+        return
+    end
 
     if e.type == 'entity-ghost' then
         e.destroy()
@@ -646,8 +655,8 @@ local function biter_attack_wave()
     --	end
     --end
 
-    for _, e in pairs(surface.find_entities_filtered({area = {{160, -256}, {360, 256}}})) do
-        damage_entity_outside_of_fence(e)
+    for _, e in pairs(surface.find_entities_filtered({area = {{110, -256}, {360, 256}}})) do
+        damage_entity_outside_and_inside_of_fence(e)
     end
 
     local y_raffle = get_y_coord_raffle_table()
@@ -1431,6 +1440,9 @@ function Public.reset_game()
     global.chunk_queue = {}
 
     Terrain.fish_eye(surface, {x = -2150, y = -300})
+
+    Task.get_task_queue(4)
+    Task.start_queue()
 
     game.map_settings.enemy_expansion.enabled = false
     game.map_settings.enemy_evolution.destroy_factor = 0
