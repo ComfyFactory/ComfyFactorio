@@ -10,9 +10,6 @@ local Public = {}
 Public.level_depth = 704
 Public.level_width = 512
 local worm_level_modifier = 0.19
-local average_number_of_wagons_per_level = 2
-local chunks_per_level = ((Public.level_depth - 32) / 32) ^ 2
-local chance_for_wagon_spawn = math.floor(chunks_per_level / average_number_of_wagons_per_level)
 
 local wagon_raffle = {'cargo-wagon', 'cargo-wagon', 'cargo-wagon', 'locomotive', 'fluid-wagon'}
 local rock_raffle = {
@@ -84,8 +81,22 @@ local turret_list = {
 }
 
 local function place_wagon(data)
-    if math.random(1, 1500) ~= 1 then
-        return
+    local function is_position_near(area, table_to_check)
+        local status = false
+        local function inside(pos)
+            local lt = area.left_top
+            local rb = area.right_bottom
+
+            return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+        end
+
+        for k, entity in pairs(table_to_check) do
+            if inside(entity, area) then
+                status = true
+            end
+        end
+
+        return status
     end
     local surface = data.surface
     local tiles = data.tiles
@@ -96,6 +107,26 @@ local function place_wagon(data)
     local wagon_mineable = {
         callback = Functions.disable_minable_and_ICW_callback
     }
+
+    local rail_mineable = {
+        callback = Functions.disable_destructible_callback
+    }
+
+    local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
+
+    if placed_trains_in_zone.placed >= placed_trains_in_zone.limit then
+        return
+    end
+
+    local radius = 300
+    local area = {
+        left_top = {x = position.x - radius, y = position.y - radius},
+        right_bottom = {x = position.x + radius, y = position.y + radius}
+    }
+
+    if is_position_near(area, placed_trains_in_zone.positions) then
+        return
+    end
 
     local location
     local direction
@@ -124,20 +155,21 @@ local function place_wagon(data)
                 name = 'straight-rail',
                 position = tile.position,
                 force = 'player',
-                direction = direction
+                direction = direction,
+                callback = rail_mineable
             }
         end
     end
+    entities[#entities + 1] = {
+        name = wagon_raffle[math.random(1, #wagon_raffle)],
+        position = position,
+        force = 'player',
+        callback = wagon_mineable
+    }
+    placed_trains_in_zone.placed = placed_trains_in_zone.placed + 1
+    placed_trains_in_zone.positions[#placed_trains_in_zone.positions + 1] = position
+    print('Placed trains are: ' .. placed_trains_in_zone.placed)
 
-    table.insert(
-        entities,
-        {
-            name = wagon_raffle[math.random(1, #wagon_raffle)],
-            position = position,
-            force = 'player',
-            callback = wagon_mineable
-        }
-    )
     return true
 end
 
@@ -1703,9 +1735,7 @@ function Public.heavy_functions(x, y, data)
 
     if top_y < 0 then
         process_bits(x, y, data)
-        if math.random(1, chance_for_wagon_spawn) == 1 then
-            place_wagon(data)
-        end
+        place_wagon(data)
         return
     end
 

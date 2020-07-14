@@ -5,16 +5,12 @@ local Event = require 'utils.event'
 local this = {
     players = {},
     offline_players = {},
-    hidden_dimension = {
+    --[[ hidden_dimension = {
         logistic_research_level = 0,
         reset_counter = 1
     },
-    power_sources = {index = 1},
-    refill_turrets = {index = 1},
-    magic_crafters = {index = 1},
-    magic_fluid_crafters = {index = 1},
+    ]]
     breached_wall = 1,
-    entity_limits = {},
     traps = {}
 }
 local Public = {}
@@ -43,11 +39,7 @@ function Public.reset_table()
     this.train_upgrades = 0
     this.offline_players = {}
     this.biter_pets = {}
-    this.power_sources = {index = 1}
     this.flamethrower_damage = {}
-    this.refill_turrets = {index = 1}
-    this.magic_crafters = {index = 1}
-    this.magic_fluid_crafters = {index = 1}
     this.mined_scrap = 0
     this.biters_killed = 0
     this.locomotive_xp_aura = 40
@@ -77,7 +69,6 @@ function Public.reset_table()
     this.aura_upgrades = 0
     this.health_upgrades = 0
     this.breached_wall = 1
-    this.entity_limits = {}
     this.offline_players_enabled = true
     this.left_top = {
         x = 0,
@@ -95,9 +86,22 @@ function Public.reset_table()
     this.force_mining_speed = {
         speed = 0
     }
+    this.placed_trains_in_zone = {
+        placed = 0,
+        positions = {},
+        limit = 5
+    }
 end
 
 function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key)
     if key then
         return this[key]
     else

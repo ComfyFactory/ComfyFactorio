@@ -3,13 +3,11 @@ local Tabs = require 'comfy_panel.main'
 
 local map_info = {
     localised_category = false,
-    main_caption = 'Insert Main Caption',
+    main_caption = nil,
     main_caption_color = {r = 0.6, g = 0.3, b = 0.99},
-    sub_caption = 'Insert Sub Caption',
+    sub_caption = nil,
     sub_caption_color = {r = 0.2, g = 0.9, b = 0.2},
-    text = [[
-	Add info text to map_info.
-	]]
+    text = nil
 }
 
 Global.register(
@@ -36,10 +34,14 @@ local create_map_intro = (function(player, frame)
     line.style.top_margin = 4
     line.style.bottom_margin = 4
 
+    local caption = map_info.main_caption or {map_info.localised_category .. '.map_info_main_caption'}
+    local sub_caption = map_info.sub_caption or {map_info.localised_category .. '.map_info_sub_caption'}
+    local text = map_info.text or {map_info.localised_category .. '.map_info_text'}
+
     if map_info.localised_category then
-        map_info.main_caption = {map_info.localised_category .. '.map_info_main_caption'}
-        map_info.sub_caption = {map_info.localised_category .. '.map_info_sub_caption'}
-        map_info.text = {map_info.localised_category .. '.map_info_text'}
+        map_info.main_caption = caption
+        map_info.sub_caption = sub_caption
+        map_info.text = text
     end
     local l = t.add {type = 'label', caption = map_info.main_caption}
     l.style.font = 'heading-1'
