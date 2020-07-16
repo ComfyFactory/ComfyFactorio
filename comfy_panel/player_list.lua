@@ -13,7 +13,8 @@ to your scenario control.lua.
 Minor changes by ~~~Gerkiz~~~
 --]]
 local Event = require 'utils.event'
-local play_time = require 'utils.session_data'
+local Session = require 'utils.session_data'
+local Jailed = require 'utils.jail_data'
 local Tabs = require 'comfy_panel.main'
 
 local symbol_asc = '▲'
@@ -218,7 +219,7 @@ local function get_formatted_playtime(x)
 end
 
 local function get_rank(player)
-    local play_table = play_time.get_session_table()
+    local play_table = Session.get_session_table()
     local t = 0
     if play_table then
         if play_table[player.name] then
@@ -337,7 +338,7 @@ local function get_comparator(sort_by)
 end
 
 local function get_sorted_list(sort_by)
-    local play_table = play_time.get_session_table()
+    local play_table = Session.get_session_table()
     local player_list = {}
     for i, player in pairs(game.connected_players) do
         player_list[i] = {}
@@ -369,12 +370,14 @@ local function player_list_show(player, frame, sort_by)
     -- Frame management
     frame.clear()
     frame.style.padding = 8
-    local play_table = play_time.get_trusted_table()
+    local play_table = Session.get_trusted_table()
+    local jailed = Jailed.get_jailed_table()
 
     -- Header management
     local t = frame.add {type = 'table', name = 'player_list_panel_header_table', column_count = 5}
-    local column_widths = {tonumber(40), tonumber(240), tonumber(240), tonumber(150), tonumber(100)}
-    for _, w in ipairs(column_widths) do
+    local column_widths = {tonumber(40), tonumber(218), tonumber(220), tonumber(222), tonumber(50)}
+    local header_column_widths = {tonumber(40), tonumber(210), tonumber(220), tonumber(226), tonumber(50)}
+    for _, w in ipairs(header_column_widths) do
         local label = t.add {type = 'label', caption = ''}
         label.style.minimal_width = w
         label.style.maximal_width = w
@@ -427,14 +430,14 @@ local function player_list_show(player, frame, sort_by)
     header_modifier[sort_by](headers)
 
     for k, v in ipairs(headers) do
-        local label =
+        local header_label =
             t.add {
             type = 'label',
             name = 'player_list_panel_header_' .. k,
             caption = v
         }
-        label.style.font = 'default-bold'
-        label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+        header_label.style.font = 'default-bold'
+        header_label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
     end
 
     -- special style on first header
@@ -476,6 +479,9 @@ local function player_list_show(player, frame, sort_by)
         if game.players[player_list[i].name].admin then
             trusted = '[color=red][A][/color]'
             tooltip = 'This player is an admin of this server.'
+        elseif jailed[player_list[i].name] then
+            trusted = '[color=orange][J][/color]'
+            tooltip = 'This player is currently jailed.'
         elseif play_table[player_list[i].name] then
             trusted = '[color=green][T][/color]'
             tooltip = 'This player is trusted.'
@@ -485,41 +491,42 @@ local function player_list_show(player, frame, sort_by)
         end
 
         -- Name
-        local label =
+        local name_label =
             player_list_panel_table.add {
             type = 'label',
             name = 'player_list_panel_player_names_' .. i,
             caption = player_list[i].name .. ' ' .. trusted,
             tooltip = tooltip
         }
-        label.style.font = 'default'
-        label.style.font_color = {
-            r = .4 + game.players[player_list[i].player_index].color.r * 0.6,
-            g = .4 + game.players[player_list[i].player_index].color.g * 0.6,
-            b = .4 + game.players[player_list[i].player_index].color.b * 0.6
+        local p_color = game.players[player_list[i].player_index]
+        name_label.style.font = 'default'
+        name_label.style.font_color = {
+            r = .4 + p_color.color.r * 0.6,
+            g = .4 + p_color.color.g * 0.6,
+            b = .4 + p_color.color.b * 0.6
         }
-        label.style.minimal_width = column_widths[2]
-        label.style.maximal_width = column_widths[2]
+        name_label.style.minimal_width = column_widths[2]
+        name_label.style.maximal_width = column_widths[2]
 
         -- Total time
-        local label =
+        local total_label =
             player_list_panel_table.add {
             type = 'label',
             name = 'player_list_panel_player_total_time_played_' .. i,
             caption = player_list[i].total_played_time
         }
-        label.style.minimal_width = column_widths[3]
-        label.style.maximal_width = column_widths[3]
+        total_label.style.minimal_width = column_widths[3]
+        total_label.style.maximal_width = column_widths[3]
 
         -- Current time
-        local label =
+        local current_label =
             player_list_panel_table.add {
             type = 'label',
             name = 'player_list_panel_player_time_played_' .. i,
             caption = player_list[i].played_time
         }
-        label.style.minimal_width = column_widths[4]
-        label.style.maximal_width = column_widths[4]
+        current_label.style.minimal_width = column_widths[4]
+        current_label.style.maximal_width = column_widths[4]
 
         -- Poke
         local flow = player_list_panel_table.add {type = 'flow', name = 'button_flow_' .. i, direction = 'horizontal'}
@@ -527,6 +534,7 @@ local function player_list_show(player, frame, sort_by)
         local button =
             flow.add {type = 'button', name = 'poke_player_' .. player_list[i].name, caption = player_list[i].pokes}
         button.style.font = 'default'
+        button.tooltip = 'Poke ' .. player_list[i].name .. ' with a random message!'
         label.style.font_color = {r = 0.83, g = 0.83, b = 0.83}
         button.style.minimal_height = 30
         button.style.minimal_width = 30

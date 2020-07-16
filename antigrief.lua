@@ -26,7 +26,6 @@ local this = {
     players_warned = {},
     log_tree_harvest = false,
     do_not_check_trusted = true,
-    protect_entities = true,
     enable_autokick = true,
     enable_autoban = false
 }
@@ -51,52 +50,6 @@ local ammo_names = {
     ['atomic-bomb'] = true,
     ['cliff-explosives'] = true,
     ['rocket'] = true
-}
-
-local protected = {
-    ['reactor'] = true,
-    ['roboport'] = true,
-    ['rocket-silo'] = true,
-    ['solar-panel'] = true,
-    ['generator'] = true,
-    ['splitter'] = true,
-    ['transport-belt'] = true,
-    ['underground-belt'] = true,
-    ['assembling-machine'] = true,
-    ['storage-tank'] = true,
-    ['pump'] = true,
-    ['mining-drill'] = true,
-    ['market'] = true,
-    ['accumulator'] = true,
-    ['ammo-turret'] = true,
-    ['artillery-turret'] = true,
-    ['artillery-wagon'] = true,
-    ['beacon'] = true,
-    ['boiler'] = true,
-    ['burner-generator'] = true,
-    ['car'] = true,
-    ['cargo-wagon'] = true,
-    ['constant-combinator'] = true,
-    ['straight-rail'] = true,
-    ['curved-rail'] = true,
-    ['decider-combinator'] = true,
-    ['electric-pole'] = true,
-    ['electric-turret'] = true,
-    ['fluid-turret'] = true,
-    ['fluid-wagon'] = true,
-    ['furnace'] = true,
-    ['gate'] = true,
-    ['heat-interface'] = true,
-    ['heat-pipe'] = true,
-    ['inserter'] = true,
-    ['lab'] = true,
-    ['lamp'] = true,
-    ['loader'] = true,
-    ['locomotive'] = true,
-    ['logistic-robot'] = true,
-    ['offshore-pump'] = true,
-    ['pipe-to-ground'] = true,
-    ['pipe'] = true
 }
 
 Global.register(
@@ -704,46 +657,6 @@ local function on_player_cancelled_crafting(event)
     end
 end
 
-local function protect_entities(event)
-    local entity = event.entity
-
-    local function is_protected(e)
-        if protected[e.type] then
-            return true
-        end
-
-        return false
-    end
-
-    if is_protected(entity) then
-        entity.health = entity.health + event.final_damage_amount
-    end
-end
-
---- Protect entities from the player force
----@param event
-local function on_entity_damaged(event)
-    if not this.protect_entities then
-        return
-    end
-
-    local entity = event.entity
-
-    if not entity or not entity.valid then
-        return
-    end
-
-    if event.force.index ~= 1 then
-        return
-    end
-
-    if entity.force.index ~= 1 then
-        return
-    end
-
-    protect_entities(event)
-end
-
 local function on_init()
     local branch_version = '0.18.35'
     local sub = string.sub
@@ -764,14 +677,6 @@ local function on_init()
     if get_active_version >= is_branch_18 then
         default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
         default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
-    end
-end
-
---- Enabling this will protect all entities except for those in the not_protected table.
----@param boolean true/false
-function Public.protect_entities(value)
-    if value then
-        this.protect_entities = value
     end
 end
 
@@ -833,6 +738,5 @@ Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
 Event.add(defines.events.on_player_cancelled_crafting, on_player_cancelled_crafting)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 
 return Public
