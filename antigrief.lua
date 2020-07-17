@@ -210,12 +210,7 @@ local function on_player_built_tile(event)
     end
     local player = game.players[event.player_index]
 
-    local surface = event.surface
-    if surface and surface.valid then
-        surface = event.surface.index
-    else
-        surface = 'nil'
-    end
+    local surface = event.surface_index
 
     --landfill history--
 
@@ -617,43 +612,34 @@ local function on_player_cursor_stack_changed(event)
 end
 
 local function on_player_cancelled_crafting(event)
-    local tracker = session.get_session_table()
     local player = game.players[event.player_index]
-
-    local playtime = player.online_time
-    if tracker[player.name] then
-        playtime = player.online_time + tracker[player.name]
-    end
 
     local count = #event.items
 
-    if playtime < 1296000 then
-        if count > 40 then
-            Utils.action_warning(
-                '{Crafting}',
-                player.name ..
-                    ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. count .. '.'
-            )
-            if not this.cancel_crafting_history[player.index] then
-                this.cancel_crafting_history[player.index] = {}
-            end
-            if #this.cancel_crafting_history[player.index] > 100 then
-                this.cancel_crafting_history[player.index] = {}
-            end
-
-            local t = math.abs(math.floor((game.tick) / 3600))
-            local str = '[' .. t .. '] '
-            str = str .. player.name .. ' canceled '
-            str = str .. ' item ' .. event.recipe.name
-            str = str .. ' count was a total of: ' .. count
-            str = str .. ' at X:'
-            str = str .. math.floor(player.position.x)
-            str = str .. ' Y:'
-            str = str .. math.floor(player.position.y)
-            str = str .. ' '
-            str = str .. 'surface:' .. player.surface.index
-            increment(this.cancel_crafting_history, player.index, str)
+    if count > 40 then
+        Utils.action_warning(
+            '{Crafting}',
+            player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. count .. '.'
+        )
+        if not this.cancel_crafting_history[player.index] then
+            this.cancel_crafting_history[player.index] = {}
         end
+        if #this.cancel_crafting_history[player.index] > 100 then
+            this.cancel_crafting_history[player.index] = {}
+        end
+
+        local t = math.abs(math.floor((game.tick) / 3600))
+        local str = '[' .. t .. '] '
+        str = str .. player.name .. ' canceled '
+        str = str .. ' item ' .. event.recipe.name
+        str = str .. ' count was a total of: ' .. count
+        str = str .. ' at X:'
+        str = str .. math.floor(player.position.x)
+        str = str .. ' Y:'
+        str = str .. math.floor(player.position.y)
+        str = str .. ' '
+        str = str .. 'surface:' .. player.surface.index
+        increment(this.cancel_crafting_history, player.index, str)
     end
 end
 

@@ -12,7 +12,6 @@ require 'modules.custom_death_messages'
 local Unit_health_booster = require 'modules.biter_health_booster'
 local Difficulty = require 'modules.difficulty_vote'
 local Map = require 'modules.map_info'
-local WD = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local Reset = require 'functions.soft_reset'
 local Server = require 'utils.server'
@@ -37,26 +36,7 @@ local starting_items = {
     ['stone'] = 12
 }
 
-local set_difficulty = function()
-    local Diff = Difficulty.get()
-    local wave_defense_table = WD.get_table()
-    local player_count = #game.connected_players
-    if not Diff.difficulty_vote_value then
-        Diff.difficulty_vote_value = 0.1
-    end
-
-    wave_defense_table.max_active_biters = 888 + player_count * (90 * Diff.difficulty_vote_value)
-
-    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
-
-    wave_defense_table.wave_interval = 3600 - player_count * 60
-    if wave_defense_table.wave_interval < 1800 then
-        wave_defense_table.wave_interval = 1800
-    end
-end
-
 function Public.reset_game()
-    local wave_defense_table = WD.get_table()
     FDT.reset_table()
     Poll.reset()
     local this = FDT.get()
@@ -118,17 +98,6 @@ function Public.reset_game()
     end
 
     surface.peaceful_mode = false
-
-    WD.reset_wave_defense()
-    wave_defense_table.surface_index = this.active_surface_index
-    wave_defense_table.target = this.locomotive
-    wave_defense_table.nest_building_density = 32
-    wave_defense_table.game_lost = false
-    wave_defense_table.spawn_position = {x = 0, y = 100}
-    WD.alert_boss_wave(true)
-    WD.clear_corpses(false)
-
-    set_difficulty()
 
     local r = 320
     local p = {x = -131, y = 5}
@@ -1182,15 +1151,10 @@ local on_player_joined_game = function(event)
 
     create_wave_gui(player)
     add_fd_stats_button(player)
-    set_difficulty()
 
     if game.tick > 900 then
         is_game_lost()
     end
-end
-
-local on_player_left_game = function()
-    set_difficulty()
 end
 
 local on_built_entity = function(event)
@@ -1484,7 +1448,6 @@ Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
