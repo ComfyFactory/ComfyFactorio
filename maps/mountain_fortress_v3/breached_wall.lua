@@ -1,7 +1,7 @@
 local Collapse = require 'modules.collapse'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Balance = require 'maps.mountain_fortress_v3.balance'
-local RPG = require 'maps.mountain_fortress_v3.rpg'
+local RPG = require 'modules.rpg_v2'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Alert = require 'utils.alert'
 local Event = require 'utils.event'
