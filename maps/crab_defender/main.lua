@@ -1,12 +1,8 @@
--- fish defender -- by mewmew --
-
---require "modules.rpg"
-
-require 'maps.fish_defender_v2.terrain'
-require 'maps.fish_defender_v2.market'
-require 'maps.fish_defender_v2.commands'
-require 'maps.fish_defender_v2.shotgun_buff'
-require 'maps.fish_defender_v2.on_entity_damaged'
+require 'maps.crab_defender.terrain'
+require 'maps.crab_defender.market'
+require 'maps.crab_defender.commands'
+require 'maps.crab_defender.shotgun_buff'
+require 'maps.crab_defender.on_entity_damaged'
 require 'modules.rocket_launch_always_yields_science'
 require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
@@ -20,8 +16,8 @@ local Event = require 'utils.event'
 local Reset = require 'functions.soft_reset'
 local Server = require 'utils.server'
 local Poll = require 'comfy_panel.poll'
-local boss_biter = require 'maps.fish_defender_v2.boss_biters'
-local FDT = require 'maps.fish_defender_v2.table'
+local boss_biter = require 'maps.crab_defender.boss_biters'
+local FDT = require 'maps.crab_defender.table'
 local Score = require 'comfy_panel.score'
 local math_random = math.random
 local insert = table.insert
@@ -40,7 +36,111 @@ local starting_items = {
     ['stone'] = 12
 }
 
-local function shuffle(tbl)
+function Public.reset_game()
+    FDT.reset_table()
+    Poll.reset()
+    local this = FDT.get()
+    local is_branch_18 = sub(branch_version, 3, 4)
+    local get_active_version = sub(game.active_mods.base, 3, 4)
+
+    Difficulty.reset_difficulty_poll()
+    Difficulty.set_poll_closing_timeout = game.tick + 36000
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        Score.init_player_table(player)
+        if player.gui.left['crab_defender_game_lost'] then
+            player.gui.left['crab_defender_game_lost'].destroy()
+        end
+    end
+
+    local map_gen_settings = {}
+    map_gen_settings.seed = math_random(10000, 99999)
+    map_gen_settings.height = 2048
+    map_gen_settings.water = 0.10
+    map_gen_settings.terrain_segmentation = 3
+    map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
+    map_gen_settings.autoplace_controls = {
+        ['coal'] = {frequency = 4, size = 1.5, richness = 2},
+        ['stone'] = {frequency = 4, size = 1.5, richness = 2},
+        ['copper-ore'] = {frequency = 4, size = 1.5, richness = 2},
+        ['iron-ore'] = {frequency = 4, size = 1.5, richness = 2},
+        ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
+        ['crude-oil'] = {frequency = 5, size = 1.25, richness = 2},
+        ['trees'] = {frequency = 2, size = 1, richness = 1},
+        ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
+    }
+    map_gen_settings.autoplace_settings = {
+        ['tile'] = {
+            settings = {
+                ['deepwater'] = {frequency = 1, size = 0, richness = 1},
+                ['deepwater-green'] = {frequency = 1, size = 0, richness = 1},
+                ['water'] = {frequency = 1, size = 0, richness = 1},
+                ['water-green'] = {frequency = 1, size = 0, richness = 1},
+                ['water-mud'] = {frequency = 1, size = 0, richness = 1},
+                ['water-shallow'] = {frequency = 1, size = 0, richness = 1}
+            },
+            treat_missing_as_default = true
+        }
+    }
+
+    if not this.active_surface_index then
+        this.active_surface_index = game.create_surface('crab_defender', map_gen_settings).index
+    else
+        this.active_surface_index =
+            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+    end
+
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
+
+    surface.peaceful_mode = false
+
+    local r = 320
+    local p = {x = -131, y = 5}
+    game.forces.player.chart(
+        surface,
+        {
+            {p.x - r - 200, p.y - r - 200},
+            {p.x + r + 600, p.y + r}
+        }
+    )
+
+    game.map_settings.enemy_expansion.enabled = false
+    game.map_settings.enemy_evolution.destroy_factor = 0
+    game.map_settings.enemy_evolution.time_factor = 0
+    game.map_settings.enemy_evolution.pollution_factor = 0
+    game.map_settings.pollution.enabled = false
+
+    game.forces['player'].technologies['atomic-bomb'].enabled = false
+
+    if not game.forces.decoratives then
+        game.create_force('decoratives')
+    end
+
+    game.forces['decoratives'].set_cease_fire('enemy', true)
+    game.forces['enemy'].set_cease_fire('decoratives', true)
+    game.forces['player'].set_cease_fire('decoratives', true)
+    game.remove_offline_players()
+
+    game.map_settings.enemy_expansion.enabled = false
+    game.forces['player'].technologies['artillery'].researched = false
+
+    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
+    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
+    if get_active_version >= is_branch_18 then
+        game.reset_time_played()
+    end
+
+    this.market_health = 500
+    this.market_max_health = 500
+    this.spawn_area_generated = false
+end
+
+local shuffle = function(tbl)
     local size = #tbl
     for i = size, 1, -1 do
         local rand = math.random(size)
@@ -49,14 +149,14 @@ local function shuffle(tbl)
     return tbl
 end
 
-local biter_count_limit = 1024 --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
+local biter_count_limit = 1024
 
-local function create_wave_gui(player)
-    if player.gui.top['fish_defense_waves'] then
-        player.gui.top['fish_defense_waves'].destroy()
+local create_wave_gui = function(player)
+    if player.gui.top['crab_defender_waves'] then
+        player.gui.top['crab_defender_waves'].destroy()
     end
     local this = FDT.get()
-    local frame = player.gui.top.add({type = 'frame', name = 'fish_defense_waves', tooltip = 'Click to show map info'})
+    local frame = player.gui.top.add({type = 'frame', name = 'crab_defender_waves', tooltip = 'Click to show map info'})
     frame.style.maximal_height = 38
 
     local wave_count = 0
@@ -100,7 +200,7 @@ local function create_wave_gui(player)
     end
 end
 
-local function show_fd_stats(player)
+local show_fd_stats = function(player)
     local gui_id = 'fd-stats'
     local table_id = gui_id .. 'table'
     local this = FDT.get()
@@ -141,7 +241,7 @@ local function show_fd_stats(player)
     end
 end
 
-local function update_fd_stats()
+local update_fd_stats = function()
     for _, player in pairs(game.connected_players) do
         if player.gui.left['fd-stats'] then
             show_fd_stats(player)
@@ -149,7 +249,7 @@ local function update_fd_stats()
     end
 end
 
-local function add_fd_stats_button(player)
+local add_fd_stats_button = function(player)
     local button_id = 'fd-stats-button'
     if player.gui.top[button_id] then
         player.gui.top[button_id].destroy()
@@ -162,7 +262,7 @@ local function add_fd_stats_button(player)
     }
 end
 
-local function on_gui_click(event)
+local on_gui_click = function(event)
     if not event.element.valid then
         return
     end
@@ -178,7 +278,7 @@ local function on_gui_click(event)
     end
 end
 
-local function on_market_item_purchased()
+local on_market_item_purchased = function()
     update_fd_stats()
 end
 
@@ -193,7 +293,7 @@ local threat_values = {
     ['behemoth_spitter'] = 10
 }
 
-local function get_biter_initial_pool()
+local get_biter_initial_pool = function()
     local this = FDT.get()
     local biter_pool
     if this.wave_count > 1750 then
@@ -326,7 +426,7 @@ local function get_biter_initial_pool()
     end
 end
 
-local function get_biter_pool()
+local get_biter_pool = function()
     local biter_pool = get_biter_initial_pool()
     local biter_raffle = {}
     for _, biter_type in pairs(biter_pool) do
@@ -337,7 +437,7 @@ local function get_biter_pool()
     return biter_raffle
 end
 
-local function spawn_biter(pos, biter_pool)
+local spawn_biter = function(pos, biter_pool)
     local this = FDT.get()
     if this.attack_wave_threat < 1 then
         return false
@@ -357,17 +457,36 @@ local function spawn_biter(pos, biter_pool)
     return biter
 end
 
-local function get_y_coord_raffle_table()
-    local this = FDT.get()
+local get_y_coord_raffle_table = function()
     local t = {}
 
-    --for y = -96, 96, 8 do -- fish
-    for y = -96, 240, 8 do -- cat
-        if this.wave_count <= 80 then
-            y = 0
-        end
-        t[#t + 1] = y
-    end
+    t[#t + 1] = -65
+    t[#t + 1] = -282
+    t[#t + 1] = -65
+    t[#t + 1] = -282
+    t[#t + 1] = -65
+    t[#t + 1] = -282
+    t[#t + 1] = -65
+    t[#t + 1] = -282
+    t[#t + 1] = -65
+    t[#t + 1] = -282
+    shuffle(t)
+    return t
+end
+
+local get_x_coord_raffle_table = function()
+    local t = {}
+
+    t[#t + 1] = 671
+    t[#t + 1] = -535
+    t[#t + 1] = 671
+    t[#t + 1] = -535
+    t[#t + 1] = 671
+    t[#t + 1] = -535
+    t[#t + 1] = 671
+    t[#t + 1] = -535
+    t[#t + 1] = 671
+    t[#t + 1] = -535
     shuffle(t)
     return t
 end
@@ -383,7 +502,7 @@ local attack_group_count_thresholds = {
     {3000, 8}
 }
 
-local function get_number_of_attack_groups()
+local get_number_of_attack_groups = function()
     local n = 1
     local this = FDT.get()
     for _, entry in pairs(attack_group_count_thresholds) do
@@ -394,7 +513,7 @@ local function get_number_of_attack_groups()
     return n
 end
 
-local function clear_corpses(surface)
+local clear_corpses = function(surface)
     local this = FDT.get()
 
     if not this.wave_count then
@@ -408,7 +527,7 @@ local function clear_corpses(surface)
         chance = 2
     end
 
-    local area = {{-137, -256}, {160, 256}}
+    local area = {{-96, 34}, {96, 187}}
     for _, entity in pairs(surface.find_entities_filtered {area = area, type = 'corpse'}) do
         if math_random(1, chance) == 1 then
             entity.destroy()
@@ -416,33 +535,35 @@ local function clear_corpses(surface)
     end
 end
 
-local function send_unit_group(unit_group)
+local send_unit_group = function(unit_group)
     local commands = {}
     local this = FDT.get()
-    for x = unit_group.position.x, this.market.position.x, -48 do
+    for x = unit_group.position.x, this.market.position.x, -64 do
         local destination =
             unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
         if destination then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
                 destination = destination,
-                radius = 16,
+                radius = 24,
                 distraction = defines.distraction.by_enemy
             }
         end
     end
-    commands[#commands + 1] = {
-        type = defines.command.attack_area,
-        destination = {x = this.market.position.x, y = unit_group.position.y},
-        radius = 16,
-        distraction = defines.distraction.by_enemy
-    }
-    commands[#commands + 1] = {
-        type = defines.command.attack,
-        target = this.market,
-        distraction = defines.distraction.by_enemy
-    }
-
+    if math_random(1, 2) == 1 then
+        commands[#commands + 1] = {
+            type = defines.command.attack_area,
+            destination = {x = this.market.position.x, y = unit_group.position.y},
+            radius = 24,
+            distraction = defines.distraction.by_enemy
+        }
+    else
+        commands[#commands + 1] = {
+            type = defines.command.attack,
+            target = this.market,
+            distraction = defines.distraction.by_enemy
+        }
+    end
     unit_group.set_command(
         {
             type = defines.command.compound,
@@ -452,16 +573,16 @@ local function send_unit_group(unit_group)
     )
 end
 
-local function spawn_boss_units(surface)
+local spawn_boss_units = function(surface)
     local Diff = Difficulty.get()
     local this = FDT.get()
     if this.wave_count <= 2000 then
         game.print(
-            {'fish_defender_v2.boss_message', this.wave_count, {'fish_defender_v2.' .. this.wave_count}},
+            {'crab_defender.boss_message', this.wave_count, {'crab_defender.' .. this.wave_count}},
             {r = 0.8, g = 0.1, b = 0.1}
         )
     else
-        game.print({'fish_defender_v2.boss_message', this.wave_count}, {r = 0.8, g = 0.1, b = 0.1})
+        game.print({'crab_defender.boss_message', this.wave_count}, {r = 0.8, g = 0.1, b = 0.1})
     end
 
     if not this.boss_waves[this.wave_count] then
@@ -499,7 +620,7 @@ local function spawn_boss_units(surface)
     send_unit_group(biter_group)
 end
 
-local function wake_up_the_biters(surface)
+local wake_up_the_biters = function(surface)
     local this = FDT.get()
     if not this.market or not this.market.valid then
         return
@@ -508,6 +629,7 @@ local function wake_up_the_biters(surface)
     local units = surface.find_entities_filtered({type = 'unit'})
     units = shuffle(units)
     local unit_groups = {}
+    local x_raffle = get_x_coord_raffle_table()
     local y_raffle = get_y_coord_raffle_table()
     for i = 1, 2, 1 do
         if not units[i] then
@@ -518,7 +640,7 @@ local function wake_up_the_biters(surface)
         end
         local x = units[i].position.x
         if x > 256 then
-            x = 256
+            x = x_raffle[i]
         end
         local y = units[i].position.y
         if y > 96 or y < -96 then
@@ -526,7 +648,7 @@ local function wake_up_the_biters(surface)
         end
 
         unit_groups[i] = surface.create_unit_group({position = {x = x, y = y}})
-        local biters = surface.find_enemy_units(units[i].position, 24, 'player')
+        local biters = surface.find_enemy_units(units[i].position, 36, 'player')
         for _, biter in pairs(biters) do
             unit_groups[i].add_member(biter)
         end
@@ -551,48 +673,12 @@ local function wake_up_the_biters(surface)
             },
             unit_count = 16,
             force = 'enemy',
-            unit_search_distance = 24
+            unit_search_distance = 36
         }
     )
 end
 
-local function damage_entity_outside_and_inside_of_fence(e)
-    if not e.health then
-        return
-    end
-
-    if e.force.name == 'neutral' then
-        return
-    end
-
-    if e.type == 'unit' or e.type == 'unit-spawner' then
-        return
-    end
-
-    e.surface.create_entity({name = 'water-splash', position = e.position})
-
-    if e.type == 'land-mine' then
-        e.health =
-            e.health - math_random(math.floor(e.prototype.max_health * 0.2), math.floor(e.prototype.max_health * 0.4))
-        if e.health <= 0 then
-            e.die('enemy')
-        end
-        return
-    end
-
-    if e.type == 'entity-ghost' then
-        e.destroy()
-        return
-    end
-
-    e.health =
-        e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
-    if e.health <= 0 then
-        e.die('enemy')
-    end
-end
-
-local function biter_attack_wave()
+local biter_attack_wave = function()
     local Diff = Difficulty.get()
     local this = FDT.get()
 
@@ -611,7 +697,6 @@ local function biter_attack_wave()
     wake_up_the_biters(surface)
 
     if surface.count_entities_filtered({type = 'unit'}) > biter_count_limit then
-        --game.print("Biter limit reached, wave delayed.", {r = 0.7, g = 0.1, b = 0.1})
         return
     end
 
@@ -653,29 +738,17 @@ local function biter_attack_wave()
     end
     game.forces.enemy.evolution_factor = evolution
 
-    --if game.forces.enemy.evolution_factor == 1 then
-    --	if not this.endgame_modifier then
-    --		this.endgame_modifier = 1
-    --		game.print("Endgame enemy evolution reached.", {r = 0.7, g = 0.1, b = 0.1})
-    --	else
-    --		this.endgame_modifier = this.endgame_modifier + 1
-    --	end
-    --end
-
-    for _, e in pairs(surface.find_entities_filtered({area = {{160, -256}, {360, 256}}})) do
-        damage_entity_outside_and_inside_of_fence(e)
-    end
-
     local y_raffle = get_y_coord_raffle_table()
+    local x_raffle = get_x_coord_raffle_table()
 
     local unit_groups = {}
     if this.wave_count > 50 and math_random(1, 8) == 1 then
         for i = 1, 10, 1 do
-            unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
+            unit_groups[i] = surface.create_unit_group({position = {x = x_raffle[i], y = y_raffle[i]}})
         end
     else
         for i = 1, get_number_of_attack_groups(), 1 do
-            unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
+            unit_groups[i] = surface.create_unit_group({position = {x = x_raffle[i], y = y_raffle[i]}})
         end
     end
 
@@ -697,7 +770,7 @@ local function biter_attack_wave()
     end
 end
 
-local function get_sorted_list(column_name, score_list)
+local get_sorted_list = function(column_name, score_list)
     for _ = 1, #score_list, 1 do
         for y = 1, #score_list, 1 do
             if not score_list[y + 1] then
@@ -713,7 +786,7 @@ local function get_sorted_list(column_name, score_list)
     return score_list
 end
 
-local function get_mvps()
+local get_mvps = function()
     local get_score = Score.get_table().score_table
     if not get_score['player'] then
         return false
@@ -758,7 +831,7 @@ local function get_mvps()
     return mvp
 end
 
-local function is_game_lost()
+local is_game_lost = function()
     local this = FDT.get()
 
     if not this.game_has_ended then
@@ -766,15 +839,15 @@ local function is_game_lost()
     end
 
     for _, player in pairs(game.connected_players) do
-        if player.gui.left['fish_defense_game_lost'] then
+        if player.gui.left['crab_defender_game_lost'] then
             return
         end
         local f =
             player.gui.left.add(
             {
                 type = 'frame',
-                name = 'fish_defense_game_lost',
-                caption = 'The fish market was overrun! The biters are having a feast :3',
+                name = 'crab_defender_game_lost',
+                caption = 'The crab market was overrun! The biters are having a feast :3',
                 direction = 'vertical'
             }
         )
@@ -869,7 +942,7 @@ local function is_game_lost()
     game.map_settings.enemy_expansion.max_expansion_cooldown = 600
 end
 
-local function damage_entities_in_radius(surface, position, radius, damage)
+local damage_entities_in_radius = function(surface, position, radius, damage)
     local entities_to_damage =
         surface.find_entities_filtered(
         {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
@@ -892,7 +965,7 @@ local function damage_entities_in_radius(surface, position, radius, damage)
     end
 end
 
-local function market_kill_visuals()
+local market_kill_visuals = function()
     local this = FDT.get()
     local surface = game.surfaces[this.active_surface_index]
     if not surface or not surface.valid then
@@ -986,7 +1059,7 @@ local biter_splash_damage = {
     }
 }
 
-local function on_entity_died(event)
+local on_entity_died = function(event)
     if not event.entity.valid then
         return
     end
@@ -1049,7 +1122,7 @@ local function on_entity_died(event)
     end
 end
 
-local function on_player_joined_game(event)
+local on_player_joined_game = function(event)
     local player = game.players[event.player_index]
     local this = FDT.get()
     local surface = game.surfaces[this.active_surface_index]
@@ -1082,22 +1155,26 @@ local function on_player_joined_game(event)
     if game.tick > 900 then
         is_game_lost()
     end
-
-    --if this.charting_done then return end
-    --game.forces.player.chart(game.surfaces["fish_defender"], {{-256, -512},{768, 512}})
-    --this.charting_done = true
 end
 
-local function on_built_entity(event)
+local on_built_entity = function(event)
     local get_score = Score.get_table().score_table
     local this = FDT.get()
     local entity = event.created_entity
+    local surface = entity.surface
+
+    if not surface or not surface.valid then
+        return
+    end
+
     if not entity.valid then
         return
     end
-    if this.entity_limits[entity.name] then
-        local surface = entity.surface
 
+    local e = {x = entity.position.x, y = entity.position.y}
+    local get_tile = surface.get_tile(e)
+
+    if this.entity_limits[entity.name] then
         if this.entity_limits[entity.name].placed < this.entity_limits[entity.name].limit then
             this.entity_limits[entity.name].placed = this.entity_limits[entity.name].placed + 1
             surface.create_entity(
@@ -1133,13 +1210,29 @@ local function on_built_entity(event)
             entity.destroy()
         end
     end
+
+    if get_tile.valid and get_tile.name == 'tutorial-grid' then
+        entity.destroy()
+        return
+    end
 end
 
-local function on_robot_built_entity(event)
+local on_robot_built_entity = function(event)
     local entity = event.created_entity
+    local surface = entity.surface
+
+    if not surface or not surface.valid then
+        return
+    end
+
+    if not entity.valid then
+        return
+    end
+
+    local e = {x = entity.position.x, y = entity.position.y}
+    local get_tile = surface.get_tile(e)
     local this = FDT.get()
     if this.entity_limits[entity.name] then
-        local surface = entity.surface
         if this.entity_limits[entity.name].placed < this.entity_limits[entity.name].limit then
             this.entity_limits[entity.name].placed = this.entity_limits[entity.name].placed + 1
             surface.create_entity(
@@ -1167,9 +1260,14 @@ local function on_robot_built_entity(event)
             entity.destroy()
         end
     end
+
+    if get_tile.valid and get_tile.name == 'tutorial-grid' then
+        entity.destroy()
+        return
+    end
 end
 
-local function on_player_changed_position(event)
+local on_player_changed_position = function(event)
     local player = game.players[event.player_index]
     local this = FDT.get()
     local surface = game.surfaces[this.active_surface_index]
@@ -1177,20 +1275,37 @@ local function on_player_changed_position(event)
         return
     end
 
-    if player.position.x >= 160 then
-        player.teleport({player.position.x - 1, 0}, surface)
-
-        if player.character then
-            player.character.health = player.character.health - 25
+    local p = {x = player.position.x, y = player.position.y}
+    local get_tile = surface.get_tile(p)
+    if get_tile.valid and get_tile.name == 'tutorial-grid' then
+        if player.character and player.character.valid then
+            player.character.health = player.character.health - math.random(20, 40)
             player.character.surface.create_entity({name = 'water-splash', position = player.position})
+
             if player.character.health <= 0 then
                 player.character.die('enemy')
+                return
             end
         end
     end
 end
 
-local function on_player_mined_entity(event)
+local on_player_or_robot_built_tile = function(event)
+    local surface = game.surfaces[event.surface_index]
+
+    local tiles = event.tiles
+    if not tiles then
+        return
+    end
+    for k, v in pairs(tiles) do
+        local old_tile = v.old_tile
+        if old_tile.name == 'tutorial-grid' then
+            surface.set_tiles({{name = 'tutorial-grid', position = v.position}}, true)
+        end
+    end
+end
+
+local on_player_mined_entity = function(event)
     local this = FDT.get()
     if this.entity_limits[event.entity.name] then
         this.entity_limits[event.entity.name].placed = this.entity_limits[event.entity.name].placed - 1
@@ -1198,7 +1313,7 @@ local function on_player_mined_entity(event)
     end
 end
 
-local function on_robot_mined_entity(event)
+local on_robot_mined_entity = function(event)
     local this = FDT.get()
     if this.entity_limits[event.entity.name] then
         this.entity_limits[event.entity.name].placed = this.entity_limits[event.entity.name].placed - 1
@@ -1206,7 +1321,7 @@ local function on_robot_mined_entity(event)
     end
 end
 
-local function on_research_finished(event)
+local on_research_finished = function(event)
     local research = event.research.name
     if research ~= 'tanks' then
         return
@@ -1215,7 +1330,7 @@ local function on_research_finished(event)
     game.forces.player.recipes['artillery-wagon'].enabled = false
 end
 
-local function on_player_respawned(event)
+local on_player_respawned = function(event)
     local this = FDT.get()
     if not this.market_age then
         return
@@ -1224,7 +1339,7 @@ local function on_player_respawned(event)
     player.character.destructible = false
 end
 
-local function has_the_game_ended()
+local has_the_game_ended = function()
     local this = FDT.get()
     if this.market_age then
         if not this.game_restart_timer then
@@ -1263,7 +1378,7 @@ local function has_the_game_ended()
                     game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled. Server will restart!'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
-                    Server.start_scenario('Fish_Defender_v2')
+                    Server.start_scenario('Crab_Defender')
                     this.announced_message = true
                     return
                 end
@@ -1282,133 +1397,16 @@ local function has_the_game_ended()
     end
 end
 
-function Public.reset_game()
-    FDT.reset_table()
-    Poll.reset()
-    local this = FDT.get()
-    local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
-
-    Difficulty.reset_difficulty_poll()
-    Difficulty.set_poll_closing_timeout = game.tick + 36000
-
-    local players = game.connected_players
-    for i = 1, #players do
-        local player = players[i]
-        Score.init_player_table(player)
-        if player.gui.left['fish_defense_game_lost'] then
-            player.gui.left['fish_defense_game_lost'].destroy()
-        end
-    end
-
-    local map_gen_settings = {}
-    map_gen_settings.seed = math_random(10000, 99999)
-    map_gen_settings.height = 2048
-    map_gen_settings.water = 0.10
-    map_gen_settings.terrain_segmentation = 3
-    map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
-    map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 4, size = 1.5, richness = 2},
-        ['stone'] = {frequency = 4, size = 1.5, richness = 2},
-        ['copper-ore'] = {frequency = 4, size = 1.5, richness = 2},
-        ['iron-ore'] = {frequency = 4, size = 1.5, richness = 2},
-        ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
-        ['crude-oil'] = {frequency = 5, size = 1.25, richness = 2},
-        ['trees'] = {frequency = 2, size = 1, richness = 1},
-        ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
-    }
-
-    if not this.active_surface_index then
-        this.active_surface_index = game.create_surface('fish_defender', map_gen_settings).index
-    else
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
-    end
-
-    local surface = game.surfaces[this.active_surface_index]
-    if not surface or not surface.valid then
-        return
-    end
-
-    surface.peaceful_mode = false
-
-    -- Terrain.fish_eye(surface, {x = -1442, y = -59})
-
-    --[[ local radius = 200
-    --local pos = {x = 419, y = -308} -- fish
-    local pos = {x = -27, y = -308} -- cat
-    game.forces.player.chart(
-        surface,
-        {
-            {pos.x - radius - 100, pos.y - radius - 40},
-            {pos.x + radius + 250, pos.y + radius}
-        }
-    )
-
-    radius = 50
-    -- pos = {x = -1575, y = 2}
-    -- pos = {x = -1246, y = 74} -- fish
-    pos = {x = -748, y = -309} -- cat
-    game.forces.player.chart(
-        surface,
-        {
-            {pos.x - radius, pos.y - radius},
-            {pos.x + radius, pos.y + radius}
-        }
-    ) ]]
-    local r = 750
-    local p = {x = -131, y = 5}
-    game.forces.player.chart(
-        surface,
-        {
-            {p.x - r - 200, p.y - r},
-            {p.x + r + 600, p.y + r}
-        }
-    )
-
-    game.map_settings.enemy_expansion.enabled = false
-    game.map_settings.enemy_evolution.destroy_factor = 0
-    game.map_settings.enemy_evolution.time_factor = 0
-    game.map_settings.enemy_evolution.pollution_factor = 0
-    game.map_settings.pollution.enabled = false
-
-    game.forces['player'].technologies['atomic-bomb'].enabled = false
-    --game.forces["player"].technologies["landfill"].enabled = false
-
-    if not game.forces.decoratives then
-        game.create_force('decoratives')
-    end
-
-    game.forces['decoratives'].set_cease_fire('enemy', true)
-    game.forces['enemy'].set_cease_fire('decoratives', true)
-    game.forces['player'].set_cease_fire('decoratives', true)
-    game.remove_offline_players()
-
-    game.map_settings.enemy_expansion.enabled = false
-    game.forces['player'].technologies['artillery'].researched = false
-
-    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
-    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
-    if get_active_version >= is_branch_18 then
-        game.reset_time_played()
-    end
-
-    this.market_health = 500
-    this.market_max_health = 500
-    this.spawn_area_generated = false
-end
-
-function Public.on_init()
+local on_init = function()
     Public.reset_game()
 
     local T = Map.Pop_info()
-    T.localised_category = 'fish_defender_v2'
-    T.main_caption = '-- Chonk Defender -- '
+    T.localised_category = 'crab_defender'
     T.main_caption_color = {r = 0.11, g = 0.8, b = 0.44}
     T.sub_caption_color = {r = 0.33, g = 0.66, b = 0.9}
 end
 
-local function on_tick()
+local on_tick = function()
     local Diff = Difficulty.get()
     local this = FDT.get()
     local surface = game.surfaces[this.active_surface_index]
@@ -1426,7 +1424,8 @@ local function on_tick()
         end
         if game.tick % 180 == 0 then
             if surface then
-                game.forces.player.chart(surface, {{-160, -160}, {192, 300}})
+                game.forces.player.chart(surface, {{-428, -24}, {-575, -126}})
+                game.forces.player.chart(surface, {{577, -24}, {724, -126}})
                 if Diff.difficulty_vote_index then
                     this.wave_interval = this.difficulties_votes[Diff.difficulty_vote_index].wave_interval
                 end
@@ -1442,8 +1441,6 @@ local function on_tick()
     end
 end
 
-local on_init = Public.on_init
-
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
@@ -1455,6 +1452,8 @@ Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
+Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
+Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 

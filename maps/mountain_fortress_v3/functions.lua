@@ -1,8 +1,22 @@
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
+local Global = require 'utils.global'
+
+local this = {
+    power_sources = {index = 1},
+    refill_turrets = {index = 1},
+    magic_crafters = {index = 1},
+    magic_fluid_crafters = {index = 1}
+}
+
+Global.register(
+    this,
+    function(t)
+        this = t
+    end
+)
 
 local Public = {}
 
@@ -22,7 +36,7 @@ local function fast_remove(tbl, index)
 end
 
 local function do_refill_turrets()
-    local refill_turrets = WPT.get('refill_turrets')
+    local refill_turrets = this.refill_turrets
     local index = refill_turrets.index
 
     if index > #refill_turrets then
@@ -58,7 +72,7 @@ local function turret_died(event)
     if not number then
         return
     end
-    local power_sources = WPT.get('power_sources')
+    local power_sources = this.power_sources
 
     local ps_data = power_sources[number]
     if ps_data then
@@ -78,7 +92,7 @@ local function turret_died(event)
 end
 
 local function do_magic_crafters()
-    local magic_crafters = WPT.get('magic_crafters')
+    local magic_crafters = this.magic_crafters
     local limit = #magic_crafters
     if limit == 0 then
         return
@@ -122,7 +136,7 @@ local function do_magic_crafters()
 end
 
 local function do_magic_fluid_crafters()
-    local magic_fluid_crafters = WPT.get('magic_fluid_crafters')
+    local magic_fluid_crafters = this.magic_fluid_crafters
     local limit = #magic_fluid_crafters
 
     if limit == 0 then
@@ -173,8 +187,8 @@ local function do_magic_fluid_crafters()
 end
 
 local function add_magic_crafter_output(entity, output, distance)
-    local magic_fluid_crafters = WPT.get('magic_fluid_crafters')
-    local magic_crafters = WPT.get('magic_crafters')
+    local magic_fluid_crafters = this.magic_fluid_crafters
+    local magic_crafters = this.magic_crafters
     local rate = output.min_rate + output.distance_factor * distance
 
     local fluidbox_index = output.fluidbox_index
@@ -282,7 +296,7 @@ local disable_active_callback = Public.disable_active_callback
 Public.refill_turret_callback =
     Token.register(
     function(turret, data)
-        local refill_turrets = WPT.get('refill_turrets')
+        local refill_turrets = this.refill_turrets
         local callback_data = data.callback_data
         turret.direction = 3
 
@@ -293,7 +307,7 @@ Public.refill_turret_callback =
 Public.refill_liquid_turret_callback =
     Token.register(
     function(turret, data)
-        local refill_turrets = WPT.get('refill_turrets')
+        local refill_turrets = this.refill_turrets
         local callback_data = data.callback_data
         callback_data.liquid = true
 
@@ -304,7 +318,7 @@ Public.refill_liquid_turret_callback =
 Public.power_source_callback =
     Token.register(
     function(turret, data)
-        local power_sources = WPT.get('power_sources')
+        local power_sources = this.power_sources
         local callback_data = data.callback_data
 
         local power_source =
@@ -476,6 +490,13 @@ Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count =
 Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
+
+function Public.reset_table()
+    this.power_sources = {index = 1}
+    this.refill_turrets = {index = 1}
+    this.magic_crafters = {index = 1}
+    this.magic_fluid_crafters = {index = 1}
+end
 
 Event.on_nth_tick(10, tick)
 --Event.add(defines.events.on_tick, tick)

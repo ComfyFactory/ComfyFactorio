@@ -76,7 +76,9 @@ local function distance(player)
         if breach_max_times then
             rpg_extra.breached_walls = rpg_extra.breached_walls + 1
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
-            WPT.get().breached_wall = breached_wall + 1
+            WPT.set().breached_wall = breached_wall + 1
+            WPT.set().placed_trains_in_zone.placed = 0
+            WPT.set().placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})
 
             local data = {

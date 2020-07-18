@@ -324,7 +324,7 @@ local function on_player_mined_entity(event)
 
     local name = validator[entity.name]
 
-    if built[entity.name] then
+    if built[entity.name] and entity.force.index == 1 then
         this.upgrades[name].built = this.upgrades[name].built - 1
         if this.upgrades[name].built <= 0 then
             this.upgrades[name].built = 0
@@ -394,7 +394,7 @@ local function on_robot_mined_entity(event)
 
     local name = validator[entity.name]
 
-    if built[entity.name] then
+    if built[entity.name] and entity.force.index == 1 then
         this.upgrades[name].built = this.upgrades[name].built - 1
         if this.upgrades[name].built <= 0 then
             this.upgrades[name].built = 0
@@ -592,7 +592,7 @@ local function on_entity_died(event)
 
     local name = validator[entity.name]
 
-    if built[entity.name] then
+    if built[entity.name] and entity.force.index == 1 then
         this.upgrades[name].built = this.upgrades[name].built - 1
         if this.upgrades[name].built <= 0 then
             this.upgrades[name].built = 0
@@ -766,7 +766,7 @@ local function on_built_entity(event)
 
     local name = validator[entity.name]
 
-    if built[entity.name] then
+    if built[entity.name] and entity.force.index == 1 then
         local surface = entity.surface
 
         if built[entity.name] < limit[entity.name] then
@@ -828,7 +828,7 @@ local function on_robot_built_entity(event)
 
     local name = validator[entity.name]
 
-    if built[entity.name] then
+    if built[entity.name] and entity.force.index == 1 then
         local surface = entity.surface
 
         if built[entity.name] < limit[entity.name] then

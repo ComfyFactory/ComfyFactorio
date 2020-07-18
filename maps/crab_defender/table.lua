@@ -41,12 +41,12 @@ function Public.reset_table()
     this.market_age = nil
     this.last_reset = game.tick
     this.wave_interval = 3600
-    this.wave_grace_period = game.tick + 3600 * 20
+    this.wave_grace_period = game.tick + 5500 * 20
     -- this.wave_grace_period = game.tick + 3600
     this.boss_biters = {}
     this.acid_lines_delay = {}
     this.entity_limits = {
-        ['gun-turret'] = {placed = 1, limit = 1, str = 'gun turret', slot_price = 75},
+        ['gun-turret'] = {placed = 1, limit = 2, str = 'gun turret', slot_price = 75},
         ['laser-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
         ['artillery-turret'] = {placed = 0, limit = 1, str = 'artillery turret', slot_price = 500},
         ['flamethrower-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
@@ -62,7 +62,7 @@ function Public.reset_table()
         [7] = {wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
     }
     this.boss_waves = {
-        [50] = {{name = 'big-biter', count = 3}},
+        [50] = {{name = 'big-biter', count = 2}},
         [100] = {{name = 'behemoth-biter', count = 1}},
         [150] = {{name = 'behemoth-spitter', count = 4}, {name = 'big-spitter', count = 16}},
         [200] = {
@@ -76,10 +76,6 @@ function Public.reset_table()
             {name = 'big-spitter', count = 32}
         },
         [300] = {{name = 'behemoth-biter', count = 16}, {name = 'behemoth-spitter', count = 8}}
-    }
-    this.comfylatron_habitat = {
-        left_top = {x = -1500, y = -1500},
-        right_bottom = {x = -80, y = 1500}
     }
     this.shotgun_shell_damage_modifier_old = {}
     this.flame_boots = {}
