@@ -34,7 +34,8 @@ local rpg_extra = {
     global_pool = 0,
     leftover_pool = 0,
     turret_kills_to_global_pool = true,
-    difficulty = false
+    difficulty = false,
+    surface_name = 'nauvis'
 }
 local rpg_frame_icons = {
     'entity/small-worm-turret',
@@ -1203,9 +1204,8 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    local map_name = 'mountain_fortress_v3'
 
-    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
+    if string.sub(player.surface.name, 0, #rpg_extra.surface_name) ~= rpg_extra.surface_name then
         return
     end
 
@@ -1323,7 +1323,7 @@ end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.
 -- amount (integer) -- 10 levels
--- local Public = require 'maps.mountain_fortress_v3.rpg' Public.give_xp(512)
+-- local Public = require 'modules.rpg_v2' Public.give_xp(512)
 function Public.give_xp(amount)
     for _, player in pairs(game.connected_players) do
         if not validate_player(player) then
@@ -1480,6 +1480,8 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
 end
 
+--- Returns the rpg_t table.
+---@param key <string>
 function Public.get_table(key)
     if key then
         return rpg_t[key]
@@ -1488,6 +1490,8 @@ function Public.get_table(key)
     end
 end
 
+--- Returns the rpg_extra table.
+---@param key <string>
 function Public.get_extra_table(key)
     if key then
         return rpg_extra[key]
@@ -1496,6 +1500,7 @@ function Public.get_extra_table(key)
     end
 end
 
+--- Toggle debug - when you need to troubleshoot.
 function Public.toggle_debug()
     if rpg_extra.debug then
         rpg_extra.debug = false
@@ -1504,6 +1509,7 @@ function Public.toggle_debug()
     end
 end
 
+--- Distributes the global xp pool to every connected player.
 function Public.distribute_pool()
     local count = #game.connected_players
     local players = game.connected_players
@@ -1511,11 +1517,23 @@ function Public.distribute_pool()
     print('Distributed the global XP pool')
 end
 
+--- Debug only - when you need to troubleshoot.
+---@param str <string>
 function Public.debug_log(str)
     if not rpg_extra.debug then
         return
     end
     print(str)
+end
+
+--- Sets surface name for rpg_v2 to use
+---@param name <string>
+function Public.set_surface_name(name)
+    if name then
+        rpg_extra.surface_name = name
+    else
+        return error('No surface name given.', 2)
+    end
 end
 
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
