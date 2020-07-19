@@ -32,6 +32,7 @@ local rpg_extra = {
     reward_new_players = 0,
     level_limit_enabled = false,
     global_pool = 0,
+    personal_tax_rate = 0.3,
     leftover_pool = 0,
     turret_kills_to_global_pool = true,
     difficulty = false,
@@ -659,12 +660,16 @@ local function level_up(player)
     level_up_effects(player)
 end
 
-local function add_to_global_pool(amount)
+local function add_to_global_pool(amount, personal_tax)
     if not rpg_extra.global_pool then
         return
     end
-
-    local fee = amount * 0.3
+    local fee
+    if personal_tax then
+      fee = amount * rpg_extra.personal_tax_rate
+    else
+      fee = amount * 0.3
+    end
 
     rpg_extra.global_pool = rpg_extra.global_pool + fee
     return fee
@@ -903,10 +908,10 @@ local function on_entity_died(event)
                 local amount = rpg_xp_yield[event.entity.name]
                 amount = amount / 5
                 if rpg_extra.turret_kills_to_global_pool then
-                    add_to_global_pool(amount)
+                    add_to_global_pool(amount, false)
                 end
             else
-                add_to_global_pool(0.5)
+                add_to_global_pool(0.5, false)
             end
             return
         end
@@ -933,20 +938,23 @@ local function on_entity_died(event)
     --Grant modified XP for health boosted units
     if global.biter_health_boost then
         if enemy_types[event.entity.type] then
+          local health_pool = global.biter_health_boost_units[event.entity.unit_number]
+          if health_pool then
             for _, player in pairs(players) do
                 if rpg_xp_yield[event.entity.name] then
-                    local amount = rpg_xp_yield[event.entity.name] * global.biter_health_boost
+                    local amount = rpg_xp_yield[event.entity.name] * (1 / health_pool[2])
                     if rpg_extra.turret_kills_to_global_pool then
-                        local inserted = add_to_global_pool(amount)
+                        local inserted = add_to_global_pool(amount, true)
                         Public.gain_xp(player, inserted, true)
                     else
                         Public.gain_xp(player, amount)
                     end
                 else
-                    Public.gain_xp(player, 0.5 * global.biter_health_boost)
+                    Public.gain_xp(player, 0.5 * (1 / health_pool[2]))
                 end
             end
             return
+          end
         end
     end
 
@@ -955,7 +963,7 @@ local function on_entity_died(event)
         if rpg_xp_yield[event.entity.name] then
             local amount = rpg_xp_yield[event.entity.name]
             if rpg_extra.turret_kills_to_global_pool then
-                local inserted = add_to_global_pool(amount)
+                local inserted = add_to_global_pool(amount, true)
                 Public.gain_xp(player, inserted, true)
             else
                 Public.gain_xp(player, amount)
@@ -1413,7 +1421,7 @@ end
 
 function Public.gain_xp(player, amount, added_to_pool, text)
     if level_limit_exceeded(player) then
-        add_to_global_pool(amount)
+        add_to_global_pool(amount, false)
         if not rpg_t[player.index].capped then
             rpg_t[player.index].capped = true
             local message = teller_level_limit .. 'You have hit the max level for the current zone.'
@@ -1430,7 +1438,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
 
     if not added_to_pool then
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
-        local fee = add_to_global_pool(amount)
+        local fee = add_to_global_pool(amount, true)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
         amount = math.round(amount, 3) - fee
         if rpg_extra.difficulty then
