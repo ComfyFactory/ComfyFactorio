@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local RPG = require 'maps.mountain_fortress_v3.rpg'
+local RPG = require 'modules.rpg_v2'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Gui = require 'utils.gui'
 local format_number = require 'util'.format_number
