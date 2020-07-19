@@ -25,8 +25,12 @@ local function clean_table()
 	end
 
 	--Remove valid health boost entries from deletion
+	local validtypes = {}
+	for k,v in pairs(entity_types) do
+		if v then table.insert(validtypes, k) end
+	end
 	for _, surface in pairs(game.surfaces) do
-		for _, unit in pairs(surface.find_entities_filtered({type = "unit"})) do
+		for _, unit in pairs(surface.find_entities_filtered({type = validtypes})) do
 			units_to_delete[unit.unit_number] = nil
 		end
 	end
@@ -91,7 +95,7 @@ local function on_entity_damaged(event)
 		else
 			Public.add_unit(biter, global.biter_health_boost)
 		end
-		health_pool = biter_health_boost_units[unit_number]
+		health_pool = global.biter_health_boost_units[unit_number]
 	end
 
 	--Process boss unit health bars
