@@ -230,6 +230,7 @@ function Public.reset_map()
     Map_score.reset_score()
     AntiGrief.reset_tables()
     RPG.rpg_reset_all_players()
+    RPG.set_surface_name('mountain_fortress_v3')
 
     disable_tech()
 
