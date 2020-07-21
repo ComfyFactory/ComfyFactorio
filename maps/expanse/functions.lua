@@ -28,7 +28,7 @@ local function get_cell_value(expanse, left_top)
 	
 	for _, tile in pairs(tiles) do
 		if price_modifiers[tile.name] then
-			value = value - price_modifiers[tile.name]
+			value = value + price_modifiers[tile.name]
 		end		
 	end
 		
@@ -40,7 +40,7 @@ local function get_cell_value(expanse, left_top)
 	
 	for _, entity in pairs(entities) do
 		if price_modifiers[entity.type] then
-			value = value - price_modifiers[entity.type]
+			value = value + price_modifiers[entity.type]
 		end
 		if entity.type == "resource" then
 			if entity.name == "crude-oil" then
