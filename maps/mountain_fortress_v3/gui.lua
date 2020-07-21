@@ -196,6 +196,28 @@ local function on_gui_click(event)
         end
     end
 end
+
+local function add_player_to_permission_group(player, group)
+    if group == 'locomotive' then
+        local locomotive_group = game.permissions.get_group('locomotive')
+        if not locomotive_group then
+            locomotive_group = game.permissions.create_group('locomotive')
+            locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
+            locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
+            locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.admin_action, false)
+        end
+        locomotive_group = game.permissions.get_group('locomotive')
+        locomotive_group.add_player(player)
+    elseif group == 'default' then
+        local default_group = game.permissions.get_group('Default')
+
+        default_group.add_player(player)
+    end
+end
+
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
     if not validate_player(player) then
@@ -230,6 +252,7 @@ local function on_player_changed_surface(event)
     end
 
     if player.surface == main.surface then
+        add_player_to_permission_group(player, 'default')
         local minimap = player.gui.left.icw_map
         if minimap and minimap.visible then
             minimap.visible = false
@@ -237,6 +260,7 @@ local function on_player_changed_surface(event)
         info.tooltip = 'Shows statistics!'
         info.sprite = 'item/dummy-steel-axe'
     elseif player.surface == wagon_surface then
+        add_player_to_permission_group(player, 'locomotive')
         if wd then
             wd.visible = false
         end
