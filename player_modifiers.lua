@@ -3,7 +3,9 @@
 
 local Global = require 'utils.global'
 
-local this = {}
+local this = {
+    disabled_modifier = {}
+}
 
 Global.register(
     this,
@@ -40,7 +42,11 @@ function Public.update_player_modifiers(player)
             sum_value = sum_value + value
         end
         if player.character then
-            player[modifier] = sum_value
+            if this.disabled_modifier[player.index] and this.disabled_modifier[player.index][modifier] then
+                player[modifier] = 0
+            else
+                player[modifier] = sum_value
+            end
         end
     end
 end
