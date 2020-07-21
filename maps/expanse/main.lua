@@ -1,3 +1,5 @@
+require 'modules.satellite_score'
+
 local Event = require 'utils.event'
 local Functions = require 'maps.expanse.functions'
 local Global = require 'utils.global'
@@ -109,7 +111,7 @@ local function infini_rock(entity)
 	local a = math.floor(expanse.square_size * 0.5)		
 	if entity.position.x == a and entity.position.y == a then
 		entity.surface.create_entity({name = "rock-big", position = {a, a}})
-		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(100, 200)}, true, nil, true)
+		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(125, 250)}, true, nil, true)
 	end
 end
 
@@ -144,6 +146,7 @@ Event.on_init(on_init)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_entity_died, infini_resource)
 Event.add(defines.events.on_robot_mined_entity, infini_resource)
 Event.add(defines.events.on_player_mined_entity, infini_resource)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
