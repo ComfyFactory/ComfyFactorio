@@ -66,6 +66,7 @@ require 'modules.autostash'
 --require 'modules.immersive_cargo_wagons.main'
 --require 'modules.wave_defense.main'
 --require 'modules.fjei.main'
+--require 'modules.charging_station'
 -----------------------------
 
 ---- enable maps here ---- (maps higher up in the list may be more actually playable)

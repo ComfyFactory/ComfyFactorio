@@ -672,7 +672,7 @@ local function add_to_global_pool(amount, personal_tax)
     end
 
     rpg_extra.global_pool = rpg_extra.global_pool + fee
-    return fee
+    return amount - fee
 end
 
 local function global_pool(players, count)
@@ -907,6 +907,13 @@ local function on_entity_died(event)
             if rpg_xp_yield[event.entity.name] then
                 local amount = rpg_xp_yield[event.entity.name]
                 amount = amount / 5
+                if global.biter_health_boost then
+                  local health_pool = global.biter_health_boost_units[event.entity.unit_number]
+                  if health_pool then
+                    amount = amount * (1 / health_pool[2])
+                  end
+                end
+
                 if rpg_extra.turret_kills_to_global_pool then
                     add_to_global_pool(amount, false)
                 end
