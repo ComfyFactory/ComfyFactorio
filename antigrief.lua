@@ -614,12 +614,23 @@ end
 local function on_player_cancelled_crafting(event)
     local player = game.players[event.player_index]
 
-    local count = #event.items
+    local count = event.items.get_item_count() -- Error in calculations were just misinterpretation of API, #event.items returned item slots, not actual count.
+
+    local playerInventoryStacks = #player.get_main_inventory() -- Get this to calculate overhead + player inventory
+    local canceledCraftingQueueStacks = #event.items -- Get item stacks num from crafting queue
+
+    if canceledCraftingQueueStacks > playerInventoryStacks then
+        player.character.character_inventory_slots_bonus = canceledCraftingQueueStacks + playerInventoryStacks -- Resize player's inventory for this entity at maximum level to hold crafting queue + inventory, so don't cause item drop.
+        for i = 1, canceledCraftingQueueStacks do -- Manually insert crafting queue to inventory
+            player.character.get_main_inventory().insert(event.items[i])
+        end
+        player.character.die('player') -- Kill griefer!11 Thanks to RPG system - inventory size will automagically returned to it's previous state, so there is no abuse of playable RPG.
+    end
 
     if count > 40 then
         Utils.action_warning(
             '{Crafting}',
-            player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. count .. '.'
+            player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. count .. ' in raw items (' .. canceledCraftingQueueStacks .. ' slots)' -- Corrected message
         )
         if not this.cancel_crafting_history[player.index] then
             this.cancel_crafting_history[player.index] = {}
