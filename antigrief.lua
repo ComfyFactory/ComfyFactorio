@@ -615,11 +615,11 @@ local function on_player_cancelled_crafting(event)
     local player = game.players[event.player_index]
 
     local crafting_queue_item_count = event.items.get_item_count()
-    local player_inventory_maximum_slot_count = #player.get_main_inventory()
+    local player_inventory_free_slot_count = player.get_main_inventory().count_empty_stacks()
     local crafting_queue_canceled_item_slot_count = #event.items
 
-    if crafting_queue_canceled_item_slot_count > player_inventory_maximum_slot_count then
-        player.character.character_inventory_slots_bonus = crafting_queue_canceled_item_slot_count + player_inventory_maximum_slot_count
+    if crafting_queue_canceled_item_slot_count > player_inventory_free_slot_count then
+        player.character.character_inventory_slots_bonus = crafting_queue_canceled_item_slot_count + player_inventory_free_slot_count
         for i = 1, crafting_queue_canceled_item_slot_count do
             player.character.get_main_inventory().insert(event.items[i])
         end
