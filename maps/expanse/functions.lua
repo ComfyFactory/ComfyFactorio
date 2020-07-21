@@ -33,7 +33,10 @@ local function get_cell_value(expanse, left_top)
 	end
 		
 	local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-	local value = value * (distance * 0.01)
+	local value = value * (distance * 0.005)
+	
+	local ore_modifier = distance * 0.00025
+	if ore_modifier > 0.5 then ore_modifier = 0.5 end
 	
 	for _, entity in pairs(entities) do
 		if price_modifiers[entity.type] then
@@ -41,9 +44,9 @@ local function get_cell_value(expanse, left_top)
 		end
 		if entity.type == "resource" then
 			if entity.name == "crude-oil" then
-				value = value + (entity.amount * 0.01)
+				value = value + (entity.amount * ore_modifier * 0.01)
 			else
-				value = value + (entity.amount * 0.1)
+				value = value + (entity.amount * ore_modifier)
 			end
 		end
 	end
@@ -128,6 +131,16 @@ function Public.expand(expanse, left_top)
 			e.minable = false
 		end
 	end
+	
+	if game.tick == 0 then
+		local a = math.floor(expanse.square_size * 0.5)
+		surface.create_entity({name = "crude-oil", position = {a - 3, a}, amount = 300000})
+		local e = surface.create_entity({name = "offshore-pump", force = "player", position = {a + 1, a}})
+		e.destructible = false
+		e.minable = false		
+		surface.create_entity({name = "rock-big", position = {a, a}})		
+		surface.create_entity({name = "tree-0" .. math.random(1,9), position = {a, a - 1}})
+	end
 end
 
 local function init_container(expanse, entity)
@@ -135,13 +148,28 @@ local function init_container(expanse, entity)
 	if not left_top then return end
 
 	local cell_value = get_cell_value(expanse, left_top)
-	game.print(cell_value)
+
+	local item_stacks = {}
+	local roll_count = 2
+	for _ = 1, roll_count, 1 do
+		for _, stack in pairs(Price_raffle.roll(math.floor(cell_value / roll_count), 2)) do
+			if not item_stacks[stack.name] then
+				item_stacks[stack.name] = stack.count
+			else
+				item_stacks[stack.name] = item_stacks[stack.name] + stack.count
+			end		
+		end
+	end
+	
+	local price = {}
+	for k, v in pairs(item_stacks) do table.insert(price, {name = k, count = v}) end
 
 	local containers = expanse.containers
-	containers[entity.unit_number] = {entity = entity, left_top = left_top, price = Price_raffle.roll(cell_value, 30)}	
+	containers[entity.unit_number] = {entity = entity, left_top = left_top, price = price}	
 end
 
 function Public.set_container(expanse, entity)
+	if entity.name ~= "logistic-chest-requester" then return end
 	if not expanse.containers[entity.unit_number] then init_container(expanse, entity) end
 	
 	local container = expanse.containers[entity.unit_number]
