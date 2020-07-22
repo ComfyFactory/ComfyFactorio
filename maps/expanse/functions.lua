@@ -208,7 +208,7 @@ function Public.set_container(expanse, entity)
 				entity.surface.spill_item_stack(entity.position, {name = name, count = count}, true, nil, false)
 			end
 		end
-		if math.random(1, 3) == 1 then
+		if math.random(1, 4) == 1 then
 			entity.surface.spill_item_stack(entity.position, {name = "small-plane", count = 1}, true, nil, false)
 		end
 		entity.destructible = true

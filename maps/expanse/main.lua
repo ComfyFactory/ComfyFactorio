@@ -3,6 +3,7 @@ require 'modules.satellite_score'
 local Event = require 'utils.event'
 local Functions = require 'maps.expanse.functions'
 local Global = require 'utils.global'
+local Map_info = require "modules.map_info"
 
 local math_round = math.round
 
@@ -159,6 +160,10 @@ local function on_player_joined_game(event)
 end
 
 local function on_init(event)
+	local T = Map_info.Pop_info()
+	T.localised_category = "expanse"
+	T.main_caption_color = {r = 170, g = 170, b = 0}
+	T.sub_caption_color = {r = 120, g = 120, b = 0}
 	reset()
 end
 
