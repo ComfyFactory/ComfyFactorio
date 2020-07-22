@@ -202,7 +202,9 @@ function Public.set_container(expanse, entity)
 
 	if #container.price == 0 then
 		Public.expand(expanse, container.left_top)
-		expanse.containers[entity.unit_number] = nil		
+		local a = math.floor(expanse.square_size * 0.5)
+		local expansion_position = {x = expanse.containers[entity.unit_number].left_top.x + a, y = expanse.containers[entity.unit_number].left_top.y + a}
+		expanse.containers[entity.unit_number] = nil
 		if not inventory.is_empty() then
 			for name, count in pairs(inventory.get_contents()) do
 				entity.surface.spill_item_stack(entity.position, {name = name, count = count}, true, nil, false)
@@ -213,7 +215,7 @@ function Public.set_container(expanse, entity)
 		end
 		entity.destructible = true
 		entity.die()		
-		return
+		return expansion_position
 	end
 
 	for slot = 1, 30, 1 do

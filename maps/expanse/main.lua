@@ -108,22 +108,26 @@ local function on_chunk_generated(event)
 	event.surface.set_tiles(tiles, true)
 end
 
-local function on_gui_opened(event)
+local function container_opened(event)
 	local entity = event.entity 
 	if not entity then return end
 	if not entity.valid then return end
 	if not entity.unit_number then return end
-	if entity.force.index ~= 3 then return end	
-	Functions.set_container(expanse, entity)
+	if entity.force.index ~= 3 then return end
+	local expansion_position = Functions.set_container(expanse, entity)
+	if expansion_position then
+		local player = game.players[event.player_index]
+		local colored_player_name = table.concat({"[color=", player.color.r * 0.6 + 0.35, ",", player.color.g * 0.6 + 0.35, ",", player.color.b * 0.6 + 0.35, "]", player.name, "[/color]"})
+		game.print(colored_player_name .. " unlocked new grounds! [gps=" .. math.floor(expansion_position.x) .. "," .. math.floor(expansion_position.y) .. ",expanse]")
+	end
+end
+
+local function on_gui_opened(event)
+	container_opened(event)
 end
 
 local function on_gui_closed(event)
-	local entity = event.entity 
-	if not entity then return end
-	if not entity.valid then return end
-	if not entity.unit_number then return end
-	if entity.force.index ~= 3 then return end	
-	Functions.set_container(expanse, entity)
+	container_opened(event)
 end
 
 local ores = {"iron-ore", "iron-ore", "copper-ore", "coal"}
@@ -171,7 +175,7 @@ local function on_player_left_game(event)
 		for _ = 1, removed_count, 1 do
 			player.surface.spill_item_stack(player.position, {name = "small-plane", count = 1}, false, nil, false)
 		end
-		game.print(player.name .. " dropped their tokens! [gps=" .. math.floor(player.position.x) .. "," .. math.floor(player.position.y) .. "]")
+		game.print(player.name .. " dropped their tokens! [gps=" .. math.floor(player.position.x) .. "," .. math.floor(player.position.y) .. "," .. player.surface.name .. "]")
 	end
 end
 
