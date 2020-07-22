@@ -614,13 +614,22 @@ end
 local function on_player_cancelled_crafting(event)
     local player = game.players[event.player_index]
 
-    local count = #event.items
+    local crafting_queue_item_count = event.items.get_item_count()
+    local player_inventory_free_slot_count = player.get_main_inventory().count_empty_stacks()
+    local crafting_queue_canceled_item_slot_count = #event.items
 
-    if count > 40 then
+    if crafting_queue_canceled_item_slot_count > player_inventory_free_slot_count then
+        player.character.character_inventory_slots_bonus = crafting_queue_canceled_item_slot_count + #player.get_main_inventory()
+        for i = 1, crafting_queue_canceled_item_slot_count do
+            player.character.get_main_inventory().insert(event.items[i])
+        end
+        player.character.die('player')
+
         Utils.action_warning(
             '{Crafting}',
-            player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. count .. '.'
+            player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafting_queue_canceled_item_slot_count .. ' slots) and was punished.'
         )
+
         if not this.cancel_crafting_history[player.index] then
             this.cancel_crafting_history[player.index] = {}
         end
@@ -632,7 +641,7 @@ local function on_player_cancelled_crafting(event)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' canceled '
         str = str .. ' item ' .. event.recipe.name
-        str = str .. ' count was a total of: ' .. count
+        str = str .. ' count was a total of: ' .. crafting_queue_item_count
         str = str .. ' at X:'
         str = str .. math.floor(player.position.x)
         str = str .. ' Y:'
