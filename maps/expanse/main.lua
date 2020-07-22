@@ -16,7 +16,7 @@ Global.register(
 
 local function reset()
 	expanse.containers = {}
-	expanse.source_surface = 1
+	if not expanse.source_surface then expanse.source_surface = "nauvis" end
 	expanse.square_size = 15
 	
 	local map_gen_settings = {
@@ -41,6 +41,26 @@ local function reset()
 		},
 	}
 	game.create_surface("expanse", map_gen_settings)
+	
+	if expanse.source_surface == "nauvis" then
+		local surface = game.surfaces[1]
+		local map_gen_settings = surface.map_gen_settings
+		map_gen_settings.autoplace_controls = {
+			["coal"] = {frequency = 10, size = 0.7, richness = 0.5,},
+			["stone"] = {frequency = 10, size = 0.7, richness = 0.5,},
+			["copper-ore"] = {frequency = 10, size = 0.7, richness = 0.75,},
+			["iron-ore"] = {frequency = 10, size = 0.7, richness = 1,},
+			["uranium-ore"] = {frequency = 10, size = 0.5, richness = 1,},
+			["crude-oil"] = {frequency = 25, size = 1.5, richness = 1.5,},
+			["trees"] = {frequency = 1.5, size = 1, richness = 1},
+			["enemy-base"] = {frequency = 10, size = 2, richness = 1},	
+		}
+		map_gen_settings.starting_area = 0.25
+		surface.map_gen_settings = map_gen_settings
+		for chunk in surface.get_chunks() do		
+			surface.delete_chunk({chunk.x, chunk.y})		
+		end
+	end
 	
 	local source_surface = game.surfaces[expanse.source_surface]
 	source_surface.request_to_generate_chunks({x = 0, y = 0}, 4)
@@ -111,7 +131,7 @@ local function infini_rock(entity)
 	local a = math.floor(expanse.square_size * 0.5)		
 	if entity.position.x == a and entity.position.y == a then
 		entity.surface.create_entity({name = "rock-big", position = {a, a}})
-		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(125, 250)}, true, nil, true)
+		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(100, 200)}, true, nil, true)
 	end
 end
 
