@@ -88,7 +88,7 @@ end
 
 local function get_random_close_spawner(surface)
 	local wave_defense_table = WD.get_table()
-	local spawners = surface.find_entities_filtered({type = "unit-spawner"})
+	local spawners = surface.find_entities_filtered({type = "unit-spawner", force = 'enemy'})
 	if not spawners[1] then return false end
 	local center = wave_defense_table.target.position
 	local spawner = spawners[math_random(1,#spawners)]

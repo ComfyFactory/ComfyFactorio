@@ -47,7 +47,9 @@ local rpg_extra = {
     enable_health_and_mana_bars = false,
     enable_mana = false,
     enable_wave_defense = false,
-    enable_flame_boots = false
+    enable_flame_boots = false,
+    mana_per_tick = 0.1,
+    force_mana_per_tick = false
 }
 local rpg_frame_icons = {
     'entity/small-worm-turret',
@@ -111,7 +113,7 @@ local projectile_types = {
     ['petroleum-gas-barrel'] = {name = 'flamethrower-fire-stream', count = 4, max_range = 24, tick_speed = 1},
     ['light-oil-barrel'] = {name = 'flamethrower-fire-stream', count = 4, max_range = 24, tick_speed = 1},
     ['heavy-oil-barrel'] = {name = 'flamethrower-fire-stream', count = 4, max_range = 24, tick_speed = 1},
-    ['sulfuric-acid-barrel'] = {
+    ['acid-stream-spitter-big'] = {
         name = 'acid-stream-spitter-big',
         count = 3,
         max_range = 16,
@@ -119,7 +121,7 @@ local projectile_types = {
         force = 'enemy'
     },
     ['lubricant-barrel'] = {name = 'acid-stream-spitter-big', count = 3, max_range = 16, tick_speed = 1},
-    ['railgun-dart'] = {name = 'railgun-beam', count = 5, max_range = 40, tick_speed = 5},
+    ['railgun-beam'] = {name = 'railgun-beam', count = 5, max_range = 40, tick_speed = 5},
     ['shotgun-shell'] = {name = 'shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},
     ['piercing-shotgun-shell'] = {name = 'piercing-shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},
     ['firearm-magazine'] = {name = 'shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},
@@ -164,55 +166,243 @@ local conjure_items = {
     [1] = {
         name = 'Stone Wall',
         obj_to_create = 'stone-wall',
-        level = '10',
+        level = 10,
+        target = true,
         type = 'item',
-        mana_cost = 40,
-        tick = 60,
+        mana_cost = 35,
+        tick = 160,
         enabled = true
     },
     [2] = {
-        name = 'Steel Chest',
-        obj_to_create = 'steel-chest',
-        level = '10',
+        name = 'Wooden Chest',
+        obj_to_create = 'wooden-chest',
+        level = 2,
+        target = true,
         type = 'item',
-        mana_cost = 40,
-        tick = 60,
+        mana_cost = 30,
+        tick = 160,
         enabled = true
     },
     [3] = {
-        name = 'Transport Belt',
-        obj_to_create = 'transport-belt',
-        level = '10',
+        name = 'Iron Chest',
+        obj_to_create = 'iron-chest',
+        level = 10,
+        target = true,
         type = 'item',
         mana_cost = 40,
-        tick = 60,
+        tick = 260,
         enabled = true
     },
     [4] = {
-        name = 'Sandy Rock',
-        obj_to_create = 'sand-rock-big',
-        level = '10',
-        type = 'entity',
-        mana_cost = 40,
-        tick = 120,
+        name = 'Steel Chest',
+        obj_to_create = 'steel-chest',
+        level = 15,
+        target = true,
+        type = 'item',
+        mana_cost = 50,
+        tick = 360,
         enabled = true
     },
     [5] = {
-        name = 'Smol Biter',
-        obj_to_create = 'small-biter',
-        level = '10',
-        type = 'entity',
+        name = 'Transport Belt',
+        obj_to_create = 'transport-belt',
+        level = 3,
+        target = true,
+        type = 'item',
         mana_cost = 40,
-        tick = 120,
+        tick = 160,
         enabled = true
     },
     [6] = {
-        name = 'Aoe Grenade',
-        obj_to_create = 'grenade',
-        level = '10',
-        type = 'entity',
+        name = 'Fast Transport Belt',
+        obj_to_create = 'fast-transport-belt',
+        level = 20,
+        target = true,
+        type = 'item',
+        mana_cost = 50,
+        tick = 260,
+        enabled = true
+    },
+    [7] = {
+        name = 'Express Transport Belt',
+        obj_to_create = 'express-transport-belt',
+        level = 60,
+        target = true,
+        type = 'item',
+        mana_cost = 60,
+        tick = 360,
+        enabled = true
+    },
+    [8] = {
+        name = 'Underground Belt',
+        obj_to_create = 'underground-belt',
+        level = 3,
+        target = true,
+        type = 'item',
         mana_cost = 40,
-        tick = 120,
+        tick = 160,
+        enabled = true
+    },
+    [9] = {
+        name = 'Fast Underground Belt',
+        obj_to_create = 'fast-underground-belt',
+        level = 20,
+        target = true,
+        type = 'item',
+        mana_cost = 50,
+        tick = 260,
+        enabled = true
+    },
+    [10] = {
+        name = 'Express Underground Belt',
+        obj_to_create = 'express-underground-belt',
+        level = 60,
+        target = true,
+        type = 'item',
+        mana_cost = 60,
+        tick = 360,
+        enabled = true
+    },
+    [11] = {
+        name = 'Sandy Rock',
+        obj_to_create = 'sand-rock-big',
+        level = 80,
+        target = true,
+        type = 'entity',
+        mana_cost = 80,
+        tick = 420,
+        enabled = true
+    },
+    [12] = {
+        name = 'Smol Biter',
+        obj_to_create = 'small-biter',
+        level = 50,
+        target = true,
+        biter = true,
+        type = 'entity',
+        mana_cost = 55,
+        tick = 220,
+        enabled = true
+    },
+    [13] = {
+        name = 'Smol Spitter',
+        obj_to_create = 'small-spitter',
+        level = 50,
+        target = true,
+        biter = true,
+        type = 'entity',
+        mana_cost = 55,
+        tick = 220,
+        enabled = true
+    },
+    [14] = {
+        name = 'Medium Biter',
+        obj_to_create = 'medium-biter',
+        level = 70,
+        target = true,
+        biter = true,
+        type = 'entity',
+        mana_cost = 77,
+        tick = 420,
+        enabled = true
+    },
+    [15] = {
+        name = 'Medium Spitter',
+        obj_to_create = 'medium-spitter',
+        level = 70,
+        target = true,
+        type = 'entity',
+        mana_cost = 77,
+        tick = 420,
+        enabled = true
+    },
+    [16] = {
+        name = 'Bitter Spawner',
+        obj_to_create = 'biter-spawner',
+        level = 100,
+        target = true,
+        biter = true,
+        type = 'entity',
+        mana_cost = 300,
+        tick = 1420,
+        enabled = true
+    },
+    [17] = {
+        name = 'Spitter Spawner',
+        obj_to_create = 'spitter-spawner',
+        level = 100,
+        target = true,
+        biter = true,
+        type = 'entity',
+        mana_cost = 300,
+        tick = 1420,
+        enabled = true
+    },
+    [18] = {
+        name = 'AOE Grenade',
+        obj_to_create = 'grenade',
+        target = true,
+        amount = 1,
+        damage = true,
+        force = 'player',
+        level = 30,
+        type = 'special',
+        mana_cost = 60,
+        tick = 420,
+        enabled = true
+    },
+    [19] = {
+        name = 'Big AOE Grenade',
+        obj_to_create = 'cluster-grenade',
+        target = true,
+        amount = 2,
+        damage = true,
+        force = 'player',
+        level = 50,
+        type = 'special',
+        mana_cost = 80,
+        tick = 620,
+        enabled = true
+    },
+    [20] = {
+        name = 'Pointy Rocket',
+        obj_to_create = 'rocket',
+        range = 240,
+        target = true,
+        amount = 4,
+        damage = true,
+        force = 'enemy',
+        level = 40,
+        type = 'special',
+        mana_cost = 60,
+        tick = 420,
+        enabled = true
+    },
+    [21] = {
+        name = 'Bitter Spew',
+        obj_to_create = 'acid-stream-spitter-big',
+        target = true,
+        amount = 1,
+        range = 0,
+        force = 'player',
+        level = 70,
+        type = 'special',
+        mana_cost = 90,
+        tick = 520,
+        enabled = true
+    },
+    [22] = {
+        name = 'Fire my lazors!!',
+        obj_to_create = 'railgun-beam',
+        target = false,
+        amount = 3,
+        damage = true,
+        range = 240,
+        force = 'player',
+        level = 50,
+        type = 'special',
+        mana_cost = 66,
+        tick = 320,
         enabled = true
     }
 }
@@ -356,7 +546,13 @@ local function get_heal_modifier(player)
 end
 
 local function get_mana_modifier(player)
-    return (rpg_t[player.index].magicka - 10) * 0.00505
+    if rpg_t[player.index].level <= 40 then
+        return (rpg_t[player.index].magicka - 10) * 0.02000
+    elseif rpg_t[player.index].level <= 80 then
+        return (rpg_t[player.index].magicka - 10) * 0.01800
+    else
+        return (rpg_t[player.index].magicka - 10) * 0.01400
+    end
 end
 
 local function get_life_on_hit(player)
@@ -413,7 +609,7 @@ local function update_player_stats(player)
     player_modifiers[player.index].character_loot_pickup_distance_bonus['rpg'] = math.round(v * 0.22, 3)
     player_modifiers[player.index].character_item_pickup_distance_bonus['rpg'] = math.round(v * 0.25, 3)
     player_modifiers[player.index].character_resource_reach_distance_bonus['rpg'] = math.round(v * 0.15, 3)
-    rpg_t[player.index].mana_max = math.round(rpg_t[player.index].mana_max + math.round(v * 1, 3))
+    rpg_t[player.index].mana_max = math.round(rpg_t[player.index].mana_max + math.round(v * 0.9, 3))
 
     local dexterity = rpg_t[player.index].dexterity - 10
     player_modifiers[player.index].character_running_speed_modifier['rpg'] = math.round(dexterity * 0.0015, 3)
@@ -554,7 +750,7 @@ local function extra_settings(player)
 
     local setting_grid = scroll_pane.add({type = 'table', column_count = 2})
 
-    local health_bar_gui_input = nil
+    local health_bar_gui_input
     if rpg_extra.enable_health_and_mana_bars then
         local health_bar_label =
             setting_grid.add(
@@ -575,13 +771,16 @@ local function extra_settings(player)
         input_style.vertical_align = 'center'
         health_bar_gui_input = create_input_element(health_bar_input, 'boolean', rpg_t[player.index].show_bars)
         health_bar_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+        if not rpg_extra.enable_mana then
+            health_bar_label.caption = 'Show health bar?'
+        end
     end
 
     local reset_label =
         setting_grid.add(
         {
             type = 'label',
-            caption = 'Reset your skillpoints.',
+            caption = 'Reset your skillpoints?',
             tooltip = ''
         }
     )
@@ -615,7 +814,7 @@ local function extra_settings(player)
         setting_grid.add(
         {
             type = 'label',
-            caption = 'Enable item reach distance bonus.',
+            caption = 'Enable item reach distance bonus?',
             tooltip = 'Don´t feeling like picking up others people loot?\nYou can toggle it here.'
         }
     )
@@ -645,7 +844,7 @@ local function extra_settings(player)
         setting_grid.add(
         {
             type = 'label',
-            caption = 'Enable movement speed bonus.',
+            caption = 'Enable movement speed bonus?',
             tooltip = 'Don´t feeling like running like the flash?\nYou can toggle it here.'
         }
     )
@@ -671,16 +870,16 @@ local function extra_settings(player)
     local movement_speed_gui_input = create_input_element(movement_speed_input, 'boolean', speed_mod)
     movement_speed_gui_input.tooltip = 'Checked = true\nUnchecked = false'
 
-    local enable_entity_gui_input = nil
-    local conjure_gui_input = nil
-    local flame_boots_gui_input = nil
+    local enable_entity_gui_input
+    local conjure_gui_input
+    local flame_boots_gui_input
 
     if rpg_extra.enable_flame_boots then
         local flame_boots_label =
             setting_grid.add(
             {
                 type = 'label',
-                caption = 'Enable flame boots.',
+                caption = 'Enable flame boots?',
                 tooltip = 'When the bullets simply don´t bite.'
             }
         )
@@ -716,8 +915,8 @@ local function extra_settings(player)
             setting_grid.add(
             {
                 type = 'label',
-                caption = 'Enable spawning entities with raw-fish.',
-                tooltip = 'When simply constructing items is not enough.'
+                caption = 'Enable spawning with raw-fish?',
+                tooltip = 'When simply constructing items is not enough.\nNOTE! Use Raw-fish to cast spells.'
             }
         )
 
@@ -769,11 +968,19 @@ local function extra_settings(player)
             if entity.type == 'item' then
                 conjure_label.tooltip =
                     conjure_label.tooltip ..
-                    '[item=' .. entity.obj_to_create .. '] requires ' .. entity.mana_cost .. ' mana to cast.\n'
+                    '[item=' ..
+                        entity.obj_to_create ..
+                            '] requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level .. '\n'
             elseif entity.type == 'entity' then
                 conjure_label.tooltip =
                     conjure_label.tooltip ..
-                    '[entity=' .. entity.obj_to_create .. '] requires ' .. entity.mana_cost .. ' mana to cast.\n'
+                    '[entity=' ..
+                        entity.obj_to_create ..
+                            '] requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level .. '\n'
+            elseif entity.type == 'special' then
+                conjure_label.tooltip =
+                    conjure_label.tooltip ..
+                    entity.name .. ' requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level .. '\n'
             end
         end
     end
@@ -784,7 +991,7 @@ local function extra_settings(player)
         movement_speed_gui_input = movement_speed_gui_input
     }
 
-    if rpg_extra.health_bar_gui_input then
+    if rpg_extra.enable_health_and_mana_bars then
         data.health_bar_gui_input = health_bar_gui_input
     end
 
@@ -1057,7 +1264,7 @@ local function draw_gui(player, forced)
         add_gui_description(tt, 'MANA\nBONUS', w1)
         local magic = rpg_t[player.index].magicka - 10
         local v = magic * 0.22
-        value = '+ ' .. math.round(math.round(v * 1, 3))
+        value = '+ ' .. (math.floor(get_mana_modifier(player) * 10) / 10)
         e = add_gui_stat(tt, value, w2)
         e.tooltip = 'Mana regen bonus: ' .. (math.floor(get_mana_modifier(player) * 10) / 10)
     end
@@ -1370,10 +1577,10 @@ local function on_entity_died(event)
                 local amount = rpg_xp_yield[event.entity.name]
                 amount = amount / 5
                 if global.biter_health_boost then
-                  local health_pool = global.biter_health_boost_units[event.entity.unit_number]
-                  if health_pool then
-                    amount = amount * (1 / health_pool[2])
-                  end
+                    local health_pool = global.biter_health_boost_units[event.entity.unit_number]
+                    if health_pool then
+                        amount = amount * (1 / health_pool[2])
+                    end
                 end
 
                 if rpg_extra.turret_kills_to_global_pool then
@@ -1457,7 +1664,7 @@ local function regen_health_player(players)
             end
         end
         if player.gui.left[main_frame_name] then
-            draw_gui(player, true)
+            draw_gui(player)
         end
 
         ::continue::
@@ -1471,7 +1678,9 @@ local function regen_health_player(players)
                             player.character.prototype.max_health + player.character_health_bonus +
                                 player.force.character_health_bonus
                         )
-                        if not rendering.is_valid(rpg_t[player.index].health_bar) then
+                        if not rpg_t[player.index].health_bar then
+                            rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
+                        elseif not rendering.is_valid(rpg_t[player.index].health_bar) then
                             rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
                         end
                         set_bar(player.character.health, max_life, rpg_t[player.index].health_bar)
@@ -1486,33 +1695,42 @@ local function regen_mana_player(players)
     for i = 1, #players do
         local player = players[i]
         local mana_per_tick = get_mana_modifier(player)
-        if mana_per_tick <= 0 then
-            mana_per_tick = (math.floor(0.5 * 10) / 10)
+        if mana_per_tick <= 0.1 then
+            mana_per_tick = rpg_extra.mana_per_tick
         end
-        mana_per_tick = (math.floor(mana_per_tick * 10) / 10)
+
+        if rpg_extra.force_mana_per_tick then
+            mana_per_tick = 1
+        end
+
         if player and player.valid then
             if player.character and player.character.valid then
                 if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
-                    return
+                    goto continue
                 end
                 rpg_t[player.index].mana = rpg_t[player.index].mana + mana_per_tick
-                rpg_t[player.index].mana = (math.floor(rpg_t[player.index].mana * 10) / 10)
+
                 if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
                     rpg_t[player.index].mana = rpg_t[player.index].mana_max
                 end
+                rpg_t[player.index].mana = (math.round(rpg_t[player.index].mana * 10) / 10)
             end
         end
 
+        ::continue::
+
         if rpg_extra.enable_health_and_mana_bars then
             if rpg_t[player.index].show_bars then
-                if not rendering.is_valid(rpg_t[player.index].mana_bar) then
+                if not rpg_t[player.index].mana_bar then
+                    rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                elseif not rendering.is_valid(rpg_t[player.index].mana_bar) then
                     rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
                 end
                 set_bar(rpg_t[player.index].mana, rpg_t[player.index].mana_max, rpg_t[player.index].mana_bar, true)
             end
         end
         if player.gui.left[main_frame_name] then
-            draw_gui(player, true)
+            draw_gui(player)
         end
     end
 end
@@ -1553,7 +1771,7 @@ local function give_player_flameboots(event)
         rpg_t[player.index].mana = 0
     end
     if player.gui.left[main_frame_name] then
-        draw_gui(player, true)
+        draw_gui(player)
     end
 end
 
@@ -1883,12 +2101,6 @@ local function on_player_joined_game(event)
             Public.gain_xp(player, rpg_extra.reward_new_players)
         end
     end
-    if rpg_extra.enable_health_and_mana_bars then
-        rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
-        if rpg_extra.enable_mana then
-            rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
-        end
-    end
     for _, p in pairs(game.connected_players) do
         draw_level_text(p)
     end
@@ -1923,17 +2135,30 @@ local function splash_damage(surface, position, final_damage_amount)
 end
 
 local function create_projectile(surface, name, position, force, target, max_range)
-    surface.create_entity(
-        {
-            name = name,
-            position = position,
-            force = force,
-            source = position,
-            target = target,
-            max_range = max_range,
-            speed = 0.4
-        }
-    )
+    if max_range then
+        surface.create_entity(
+            {
+                name = name,
+                position = position,
+                force = force,
+                source = position,
+                target = target,
+                max_range = max_range,
+                speed = 0.4
+            }
+        )
+    else
+        surface.create_entity(
+            {
+                name = name,
+                position = position,
+                force = force,
+                source = position,
+                target = target,
+                speed = 0.4
+            }
+        )
+    end
 end
 
 local function get_near_coord_modifier(range)
@@ -1947,31 +2172,61 @@ local function get_near_coord_modifier(range)
     return coord
 end
 
-local function get_near_range(range)
-    local r = math.random(1, math.floor(range * 2))
-    for i = 1, 2, 1 do
-        local r2 = math.random(1, math.floor(range * 2))
-        if r2 < r then
-            r = r2
-        end
+local function damage_entity(e)
+    if not e.health then
+        return
     end
-    return r
+
+    if e.force.name == 'player' then
+        return
+    end
+
+    e.surface.create_entity({name = 'water-splash', position = e.position})
+
+    if e.type == 'entity-ghost' then
+        e.destroy()
+        return
+    end
+
+    e.health = e.health - math.random(30, 90)
+    if e.health <= 0 then
+        e.die('enemy')
+    end
 end
 
-local function is_position_near(area, p)
-    local status = false
-    local function inside(pos)
-        local lt = area.left_top
-        local rb = area.right_bottom
-
-        return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+local function floaty_hearts(entity, c)
+    local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
+    local b = 1.35
+    for a = 1, c, 1 do
+        local p = {
+            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+        }
+        entity.surface.create_entity(
+            {name = 'flying-text', position = p, text = '♥', color = {math.random(150, 255), 0, 255}}
+        )
     end
+end
 
-    if inside(p, area) then
-        status = true
-    end
+local function tame_unit_effects(player, entity)
+    floaty_hearts(entity, 7)
 
-    return status
+    rendering.draw_text {
+        text = '~' .. player.name .. "'s pet~",
+        surface = player.surface,
+        target = entity,
+        target_offset = {0, -2.6},
+        color = {
+            r = player.color.r * 0.6 + 0.25,
+            g = player.color.g * 0.6 + 0.25,
+            b = player.color.b * 0.6 + 0.25,
+            a = 1
+        },
+        scale = 1.05,
+        font = 'default-large-semibold',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
 end
 
 local function on_player_used_capsule(event)
@@ -2022,6 +2277,10 @@ local function on_player_used_capsule(event)
         return
     end
 
+    if rpg_t[player.index].level <= object.level then
+        return p('You lack the level to cast this spell.', Color.fail)
+    end
+
     local object_name = object.name
     local obj_name = object.obj_to_create
 
@@ -2030,7 +2289,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    local radius = 10
+    local radius = 15
     local area = {
         left_top = {x = position.x - radius, y = position.y - radius},
         right_bottom = {x = position.x + radius, y = position.y + radius}
@@ -2047,17 +2306,54 @@ local function on_player_used_capsule(event)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     end
 
-    if projectile_types[obj_name] then
+    local target_pos
+    if object.target then
+        target_pos = {position.x, position.y}
+    elseif projectile_types[obj_name] then
         local coord_modifier = get_near_coord_modifier(projectile_types[obj_name].max_range)
         local proj_pos = {position.x + coord_modifier.x, position.y + coord_modifier.y}
-        create_projectile(surface, obj_name, position, 'player', proj_pos, 0)
+        target_pos = proj_pos
+    end
+
+    local range
+    if object.range then
+        range = object.range
     else
-        surface.create_entity({name = obj_name, position = position, force = 'player'})
+        range = 0
+    end
+
+    local force
+    if object.force then
+        force = object.force
+    else
+        force = 'player'
+    end
+
+    if projectile_types[obj_name] then
+        for i = 1, object.amount do
+            local damage_area = {
+                left_top = {x = position.x - 2, y = position.y - 2},
+                right_bottom = {x = position.x + 2, y = position.y + 2}
+            }
+            create_projectile(surface, obj_name, position, force, target_pos, range)
+            if object.damage then
+                for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
+                    damage_entity(e)
+                end
+            end
+        end
+    else
+        if object.biter then
+            local e = surface.create_entity({name = obj_name, position = position, force = force})
+            tame_unit_effects(player, e)
+        else
+            surface.create_entity({name = obj_name, position = position, force = force})
+        end
     end
 
     rpg_t[player.index].last_spawned = game.tick + object.tick
     if player.gui.left[main_frame_name] then
-        draw_gui(player, true)
+        draw_gui(player)
     end
     if rpg_extra.enable_health_and_mana_bars then
         if rpg_t[player.index].show_bars then
@@ -2140,7 +2436,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             rotated_entity_delay = 0,
             gui_refresh_delay = 0,
             last_mined_entity_position = {x = 0, y = 0},
-            show_bars = true
+            show_bars = false
         }
         rpg_t[player.index].points_to_distribute = old_points_to_distribute + total
         rpg_t[player.index].xp = old_xp
@@ -2169,7 +2465,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             rotated_entity_delay = 0,
             gui_refresh_delay = 0,
             last_mined_entity_position = {x = 0, y = 0},
-            show_bars = true
+            show_bars = false
         }
     end
     draw_gui_char_button(player)
@@ -2326,7 +2622,7 @@ function Public.enable_health_and_mana_bars(value)
     if value then
         rpg_extra.enable_health_and_mana_bars = value
     else
-        return error('No value given.', 2)
+        rpg_extra.enable_health_and_mana_bars = false
     end
 end
 
@@ -2336,7 +2632,7 @@ function Public.enable_mana(value)
     if value then
         rpg_extra.enable_mana = value
     else
-        return error('No value given.', 2)
+        rpg_extra.enable_mana = false
     end
 end
 
@@ -2347,7 +2643,7 @@ function Public.enable_wave_defense(value)
     if value then
         rpg_extra.enable_wave_defense = value
     else
-        return error('No value given.', 2)
+        rpg_extra.enable_wave_defense = false
     end
 end
 
@@ -2357,7 +2653,17 @@ function Public.enable_flame_boots(value)
     if value then
         rpg_extra.enable_flame_boots = value
     else
-        return error('No value given.', 2)
+        rpg_extra.enable_flame_boots = false
+    end
+end
+
+--- Enables/disabled personal tax.
+---@param value <boolean>
+function Public.personal_tax_rate(value)
+    if value then
+        rpg_extra.personal_tax_rate = value
+    else
+        rpg_extra.personal_tax_rate = nil
     end
 end
 
@@ -2454,15 +2760,23 @@ Gui.on_click(
             if health_bar_gui_input and health_bar_gui_input.valid then
                 if not health_bar_gui_input.state then
                     rpg_t[player.index].show_bars = false
-                    if rendering.is_valid(rpg_t[player.index].health_bar) then
-                        rendering.destroy(rpg_t[player.index].health_bar)
+                    if rpg_t[player.index].health_bar then
+                        if rendering.is_valid(rpg_t[player.index].health_bar) then
+                            rendering.destroy(rpg_t[player.index].health_bar)
+                        end
                     end
-                    if rendering.is_valid(rpg_t[player.index].mana_bar) then
-                        rendering.destroy(rpg_t[player.index].mana_bar)
+                    if rpg_extra.enable_mana then
+                        if rpg_t[player.index].mana_bar then
+                            if rendering.is_valid(rpg_t[player.index].mana_bar) then
+                                rendering.destroy(rpg_t[player.index].mana_bar)
+                            end
+                        end
                     end
                 elseif health_bar_gui_input.state then
                     rpg_t[player.index].show_bars = true
-                    if not rendering.is_valid(rpg_t[player.index].health_bar) then
+                    if not rpg_t[player.index].health_bar then
+                        rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
+                    elseif not rendering.is_valid(rpg_t[player.index].health_bar) then
                         rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
                     end
                     local max_life =
@@ -2471,14 +2785,25 @@ Gui.on_click(
                             player.force.character_health_bonus
                     )
                     set_bar(player.character.health, max_life, rpg_t[player.index].health_bar)
-                    if not rendering.is_valid(rpg_t[player.index].mana_bar) then
-                        rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                    if rpg_extra.enable_mana then
+                        if not rpg_t[player.index].mana_bar then
+                            rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                        elseif not rendering.is_valid(rpg_t[player.index].mana_bar) then
+                            rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                        end
+                        set_bar(
+                            rpg_t[player.index].mana,
+                            rpg_t[player.index].mana_max,
+                            rpg_t[player.index].mana_bar,
+                            true
+                        )
                     end
-                    set_bar(rpg_t[player.index].mana, rpg_t[player.index].mana_max, rpg_t[player.index].mana_bar, true)
                 end
             end
 
-            draw_gui(player, true)
+            if player.gui.left[main_frame_name] then
+                draw_gui(player, false)
+            end
             frame.destroy()
         end
     end

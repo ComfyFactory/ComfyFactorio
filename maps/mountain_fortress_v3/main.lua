@@ -233,8 +233,9 @@ function Public.reset_map()
     RPG.set_surface_name('mountain_fortress_v3')
     RPG.enable_health_and_mana_bars(true)
     RPG.enable_wave_defense(true)
-    RPG.enable_mana(false)
-    RPG.enable_flame_boots(false)
+    RPG.enable_mana(true)
+    RPG.enable_flame_boots(true)
+    RPG.personal_tax_rate(1)
 
     disable_tech()
 

@@ -89,7 +89,8 @@ function Public.reset_table()
     this.placed_trains_in_zone = {
         placed = 0,
         positions = {},
-        limit = 5
+        limit = 5,
+        randomized = false
     }
 end
 
