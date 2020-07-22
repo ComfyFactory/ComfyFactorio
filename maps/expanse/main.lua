@@ -133,6 +133,7 @@ local function infini_rock(entity)
 	if entity.position.x == a and entity.position.y == a then
 		entity.surface.create_entity({name = "rock-big", position = {a, a}})
 		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(100, 200)}, true, nil, true)
+		entity.surface.spill_item_stack(entity.position, {name = "stone", count = math.random(25, 50)}, true, nil, true)
 	end
 end
 
@@ -159,6 +160,21 @@ local function on_player_joined_game(event)
 	end	
 end
 
+local function on_player_left_game(event)
+	local player = game.players[event.player_index]
+	if not player.character then return end
+	if not player.character.valid then return end
+	local inventory = player.get_main_inventory()
+	if not inventory then return end
+	local removed_count = inventory.remove({name = "small-plane", count = 999})
+	if removed_count > 0 then
+		for _ = 1, removed_count, 1 do
+			player.surface.spill_item_stack(player.position, {name = "small-plane", count = 1}, false, nil, false)
+		end
+		game.print(player.name .. " dropped their tokens! [gps=" .. math.floor(player.position.x) .. "," .. math.floor(player.position.y) .. "]")
+	end
+end
+
 local function on_init(event)
 	local T = Map_info.Pop_info()
 	T.localised_category = "expanse"
@@ -168,10 +184,11 @@ local function on_init(event)
 end
 
 Event.on_init(on_init)
-Event.add(defines.events.on_gui_opened, on_gui_opened)
-Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_entity_died, infini_resource)
-Event.add(defines.events.on_robot_mined_entity, infini_resource)
-Event.add(defines.events.on_player_mined_entity, infini_resource)
+Event.add(defines.events.on_gui_closed, on_gui_closed)
+Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_player_mined_entity, infini_resource)
+Event.add(defines.events.on_robot_mined_entity, infini_resource)
