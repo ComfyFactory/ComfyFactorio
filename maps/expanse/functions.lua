@@ -188,6 +188,8 @@ function Public.set_container(expanse, entity)
 			local count_removed = inventory.remove({name = "small-plane", count = 1})
 			if count_removed > 0 then
 				init_container(expanse, entity)
+				container = expanse.containers[entity.unit_number]
+				game.print("The hungry chest has renewed it's offer! [gps=" .. math.floor(entity.position.x) .. "," .. math.floor(entity.position.y) .. ",expanse]")			
 			end
 		end
 	end
