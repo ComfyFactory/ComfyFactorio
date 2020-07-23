@@ -5,8 +5,6 @@ local Functions = require 'maps.expanse.functions'
 local Global = require 'utils.global'
 local Map_info = require "modules.map_info"
 
-local math_round = math.round
-
 local expanse = {}
 Global.register(
     expanse,
@@ -15,10 +13,28 @@ Global.register(
     end
 )
 
+local function set_nauvis()
+	local surface = game.surfaces[1]
+	local map_gen_settings = surface.map_gen_settings
+	map_gen_settings.autoplace_controls = {
+		["coal"] = {frequency = 10, size = 0.7, richness = 0.5,},
+		["stone"] = {frequency = 10, size = 0.7, richness = 0.5,},
+		["copper-ore"] = {frequency = 10, size = 0.7, richness = 0.75,},
+		["iron-ore"] = {frequency = 10, size = 0.7, richness = 1,},
+		["uranium-ore"] = {frequency = 10, size = 0.5, richness = 1,},
+		["crude-oil"] = {frequency = 25, size = 1.5, richness = 1.5,},
+		["trees"] = {frequency = 1.5, size = 1, richness = 1},
+		["enemy-base"] = {frequency = 10, size = 2, richness = 1},	
+	}
+	map_gen_settings.starting_area = 0.25
+	surface.map_gen_settings = map_gen_settings
+	for chunk in surface.get_chunks() do		
+		surface.delete_chunk({chunk.x, chunk.y})		
+	end
+end
+
 local function reset()
 	expanse.containers = {}
-	if not expanse.source_surface then expanse.source_surface = "nauvis" end
-	expanse.square_size = 15
 	
 	local map_gen_settings = {
 		["water"] = 0,
@@ -43,25 +59,7 @@ local function reset()
 	}
 	game.create_surface("expanse", map_gen_settings)
 	
-	if expanse.source_surface == "nauvis" then
-		local surface = game.surfaces[1]
-		local map_gen_settings = surface.map_gen_settings
-		map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = 10, size = 0.7, richness = 0.5,},
-			["stone"] = {frequency = 10, size = 0.7, richness = 0.5,},
-			["copper-ore"] = {frequency = 10, size = 0.7, richness = 0.75,},
-			["iron-ore"] = {frequency = 10, size = 0.7, richness = 1,},
-			["uranium-ore"] = {frequency = 10, size = 0.5, richness = 1,},
-			["crude-oil"] = {frequency = 25, size = 1.5, richness = 1.5,},
-			["trees"] = {frequency = 1.5, size = 1, richness = 1},
-			["enemy-base"] = {frequency = 10, size = 2, richness = 1},	
-		}
-		map_gen_settings.starting_area = 0.25
-		surface.map_gen_settings = map_gen_settings
-		for chunk in surface.get_chunks() do		
-			surface.delete_chunk({chunk.x, chunk.y})		
-		end
-	end
+	--set_nauvis()
 	
 	local source_surface = game.surfaces[expanse.source_surface]
 	source_surface.request_to_generate_chunks({x = 0, y = 0}, 4)
@@ -184,6 +182,18 @@ local function on_init(event)
 	T.localised_category = "expanse"
 	T.main_caption_color = {r = 170, g = 170, b = 0}
 	T.sub_caption_color = {r = 120, g = 120, b = 0}
+	
+	if not expanse.source_surface then expanse.source_surface = "nauvis" end
+	if not expanse.token_chance then expanse.token_chance = 0.33 end
+	if not expanse.price_distance_modifier then expanse.price_distance_modifier = 0.004 end
+	if not expanse.max_ore_price_modifier then expanse.max_ore_price_modifier = 0.33 end
+	if not expanse.square_size then expanse.square_size = 16 end
+	
+	--[[
+	expanse.token_chance = 2.5
+	expanse.price_distance_modifier = 0.001
+	expanse.max_ore_price_modifier = 0.01
+	]]
 	reset()
 end
 

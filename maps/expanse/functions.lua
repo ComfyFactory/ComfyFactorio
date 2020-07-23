@@ -16,6 +16,23 @@ local price_modifiers = {
 	["water-shallow"] = -6,
 }
 
+local function reward_tokens(expanse, entity)
+	local chance = expanse.token_chance % 1
+	local count = math.floor(expanse.token_chance)
+	
+	if chance > 0 then
+		chance = math.floor(chance * 1000)
+		if math.random(1, 1000) <= chance then
+			entity.surface.spill_item_stack(entity.position, {name = "small-plane", count = 1}, true, nil, false)
+		end
+	end
+	if count > 0 then
+		for _ = 1, count, 1 do
+			entity.surface.spill_item_stack(entity.position, {name = "small-plane", count = 1}, true, nil, false)
+		end
+	end	
+end
+
 local function get_cell_value(expanse, left_top)
 	local square_size = expanse.square_size
 	local value = square_size ^ 2
@@ -38,13 +55,13 @@ local function get_cell_value(expanse, left_top)
 	end
 	
 	local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-	local value = value * (distance * 0.005)	
+	local value = value * (distance * expanse.price_distance_modifier)	
 	local ore_modifier = distance * 0.00025
-	if ore_modifier > 0.33 then ore_modifier = 0.33 end
+	if ore_modifier > expanse.max_ore_price_modifier then ore_modifier = expanse.max_ore_price_modifier end
 	
 	for _, entity in pairs(entities) do		
 		if entity.type == "resource" then
-			if entity.name == "crude-oil" then
+			if entity.prototype.resource_category == "basic-fluid" then
 				value = value + (entity.amount * ore_modifier * 0.01)
 			else
 				value = value + (entity.amount * ore_modifier)
@@ -212,9 +229,7 @@ function Public.set_container(expanse, entity)
 				entity.surface.spill_item_stack(entity.position, {name = name, count = count}, true, nil, false)
 			end
 		end
-		if math.random(1, 3) == 1 then
-			entity.surface.spill_item_stack(entity.position, {name = "small-plane", count = 1}, true, nil, false)
-		end
+		reward_tokens(expanse, entity)
 		entity.destructible = true
 		entity.die()		
 		return expansion_position
