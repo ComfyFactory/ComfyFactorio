@@ -2509,7 +2509,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
 
     if not added_to_pool then
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
-        local fee = add_to_global_pool(amount, true)
+        local fee = amount - add_to_global_pool(amount, true)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
         amount = math.round(amount, 3) - fee
         if rpg_extra.difficulty then
