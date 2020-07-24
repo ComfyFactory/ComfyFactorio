@@ -1936,8 +1936,9 @@ local function on_entity_damaged(event)
             event.entity.health = health_pool[1] * health_pool[2]
 
             if health_pool[1] <= 0 then
-                global.biter_health_boost_units[event.entity.unit_number] = nil
+                local entity_number = event.entity.unit_number
                 event.entity.die(event.entity.force.name, event.cause)
+                global.biter_health_boost_units[entity_number] = nil
             end
             return
         end
