@@ -114,6 +114,12 @@ local function place_wagon(data)
 
     local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
 
+    if not placed_trains_in_zone.randomized then
+        placed_trains_in_zone.limit = math.random(1, 5)
+        placed_trains_in_zone.randomized = true
+        placed_trains_in_zone = WPT.get('placed_trains_in_zone')
+    end
+
     if placed_trains_in_zone.placed >= placed_trains_in_zone.limit then
         return
     end
@@ -1416,7 +1422,7 @@ local function process_level_2_position(x, y, data)
         --Main Rock Terrain
         local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
-            tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
+            tiles[#tiles + 1] = {name = 'grass-' .. math.random(1, 4), position = p}
             if math.random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
@@ -1426,7 +1432,7 @@ local function process_level_2_position(x, y, data)
         if math.random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        tiles[#tiles + 1] = {name = 'dirt-7', position = p}
+        tiles[#tiles + 1] = {name = 'grass-' .. math.random(1, 4), position = p}
         if math.random(1, 100) > 25 then
             entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
         end
@@ -1508,9 +1514,9 @@ local function process_level_1_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
-        end
+        -- if math.random(1, 8) == 1 then
+        Generate_resources(buildings, p, Public.level_depth)
+    -- end
     end
 
     local no_rocks = get_noise('no_rocks', p, seed + 25000)
@@ -1565,7 +1571,9 @@ local function process_level_1_position(x, y, data)
 end
 
 Public.levels = {
+    process_level_4_position,
     process_level_1_position,
+    process_level_6_position,
     process_level_2_position,
     process_level_3_position,
     process_level_4_position,
@@ -1588,11 +1596,12 @@ local function is_out_of_map(p)
 end
 
 local function process_bits(x, y, data)
+    local levels = Public.levels
     local left_top_y = data.area.left_top.y
-    local index = math.floor((math.abs(left_top_y / Public.level_depth)) % 13) + 1
-    local process_level = Public.levels[index]
+    local index = math.floor((math.abs(left_top_y / Public.level_depth)) % 15) + 1
+    local process_level = levels[index]
     if not process_level then
-        process_level = Public.levels[#Public.levels]
+        process_level = levels[#levels]
     end
 
     process_level(x, y, data)

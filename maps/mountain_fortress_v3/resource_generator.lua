@@ -87,14 +87,126 @@ local resource_loot = {
             recipe = 'stone-wall',
             output = {item = 'stone-wall', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
-        weight = 2
+        weight = 10
     },
     {
         stack = {
             recipe = 'iron-gear-wheel',
             output = {item = 'iron-gear-wheel', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
+        weight = 12
+    },
+    {
+        stack = {
+            recipe = 'inserter',
+            output = {item = 'inserter', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+        },
+        weight = 12
+    },
+    {
+        stack = {
+            recipe = 'transport-belt',
+            output = {item = 'transport-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+        },
+        weight = 8
+    },
+    {
+        stack = {
+            recipe = 'underground-belt',
+            output = {item = 'underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+        },
+        weight = 8
+    },
+    {
+        stack = {
+            recipe = 'small-electric-pole',
+            output = {item = 'small-electric-pole', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+        },
+        weight = 8
+    },
+    {
+        stack = {
+            recipe = 'fast-transport-belt',
+            output = {item = 'fast-transport-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 12 / 60 / 512}
+        },
+        weight = 5
+    },
+    {
+        stack = {
+            recipe = 'fast-underground-belt',
+            output = {item = 'fast-underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 12 / 60 / 512}
+        },
+        weight = 5
+    },
+    {
+        stack = {
+            recipe = 'solar-panel',
+            output = {item = 'solar-panel', min_rate = 1 / 4 / 60, distance_factor = 1 / 12 / 60 / 512}
+        },
         weight = 3
+    },
+    {
+        stack = {
+            recipe = 'productivity-module',
+            output = {item = 'productivity-module', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+        },
+        weight = 0.9
+    },
+    {
+        stack = {
+            recipe = 'effectivity-module',
+            output = {item = 'effectivity-module', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+        },
+        weight = 0.9
+    },
+    {
+        stack = {
+            recipe = 'speed-module',
+            output = {item = 'speed-module', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+        },
+        weight = 0.8
+    },
+    {
+        stack = {
+            recipe = 'productivity-module-2',
+            output = {item = 'productivity-module-2', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+        },
+        weight = 0.5
+    },
+    {
+        stack = {
+            recipe = 'effectivity-module-2',
+            output = {item = 'effectivity-module-2', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+        },
+        weight = 0.5
+    },
+    {
+        stack = {
+            recipe = 'speed-module-2',
+            output = {item = 'speed-module-2', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+        },
+        weight = 0.5
+    },
+    {
+        stack = {
+            recipe = 'productivity-module-3',
+            output = {item = 'productivity-module-3', min_rate = 1 / 4 / 60, distance_factor = 1 / 30 / 60 / 512}
+        },
+        weight = 0.25
+    },
+    {
+        stack = {
+            recipe = 'effectivity-module-3',
+            output = {item = 'effectivity-module-3', min_rate = 1 / 4 / 60, distance_factor = 1 / 30 / 60 / 512}
+        },
+        weight = 0.25
+    },
+    {
+        stack = {
+            recipe = 'speed-module-3',
+            output = {item = 'speed-module-3', min_rate = 1 / 4 / 60, distance_factor = 1 / 30 / 60 / 512}
+        },
+        weight = 0.10
     }
 }
 
@@ -116,7 +228,7 @@ local furnace_loot = {
     {
         stack = {
             furance_item = 'steel-plate',
-            output = {item = 'steel-plate', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 25 / 60 / 512}
+            output = {item = 'steel-plate', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 15 / 60 / 512}
         },
         weight = 1
     }

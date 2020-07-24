@@ -227,7 +227,7 @@ function Public.roll_item_stack(remaining_budget, blacklist)
 		if not blacklist[item_name] and item_worth <= remaining_budget then break end
 	end
 	
-	local stack_size = game.item_prototypes[item_name].stack_size * 16
+	local stack_size = game.item_prototypes[item_name].stack_size * 32
 	
 	local item_count = 1
 	

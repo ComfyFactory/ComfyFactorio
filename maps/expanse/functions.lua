@@ -2,19 +2,36 @@ local Price_raffle = require 'maps.expanse.price_raffle'
 local Public = {}
 
 local price_modifiers = {
-	["unit-spawner"] = -128,
+	["unit-spawner"] = -256,
 	["unit"] = -16,
 	["turret"] = -128,
 	["tree"] = -8,
-	["simple-entity"] = -12,
-	["cliff"] = -32,
-	["water"] = -4,
-	["water-green"] = -4,
-	["deepwater"] = -4,
-	["deepwater-green"] = -4,
+	["simple-entity"] = 2,
+	["cliff"] = -128,
+	["water"] = -5,
+	["water-green"] = -5,
+	["deepwater"] = -5,
+	["deepwater-green"] = -5,
 	["water-mud"] = -6,
 	["water-shallow"] = -6,
 }
+
+local function reward_tokens(expanse, entity)
+	local chance = expanse.token_chance % 1
+	local count = math.floor(expanse.token_chance)
+	
+	if chance > 0 then
+		chance = math.floor(chance * 1000)
+		if math.random(1, 1000) <= chance then
+			entity.surface.spill_item_stack(entity.position, {name = "small-plane", count = 1}, true, nil, false)
+		end
+	end
+	if count > 0 then
+		for _ = 1, count, 1 do
+			entity.surface.spill_item_stack(entity.position, {name = "small-plane", count = 1}, true, nil, false)
+		end
+	end	
+end
 
 local function get_cell_value(expanse, left_top)
 	local square_size = expanse.square_size
@@ -30,20 +47,21 @@ local function get_cell_value(expanse, left_top)
 		if price_modifiers[tile.name] then
 			value = value + price_modifiers[tile.name]
 		end		
-	end
-		
-	local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-	local value = value * (distance * 0.005)
-	
-	local ore_modifier = distance * 0.00025
-	if ore_modifier > 0.5 then ore_modifier = 0.5 end
-	
+	end	
 	for _, entity in pairs(entities) do
 		if price_modifiers[entity.type] then
 			value = value + price_modifiers[entity.type]
 		end
+	end
+	
+	local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
+	local value = value * (distance * expanse.price_distance_modifier)	
+	local ore_modifier = distance * 0.00025
+	if ore_modifier > expanse.max_ore_price_modifier then ore_modifier = expanse.max_ore_price_modifier end
+	
+	for _, entity in pairs(entities) do		
 		if entity.type == "resource" then
-			if entity.name == "crude-oil" then
+			if entity.prototype.resource_category == "basic-fluid" then
 				value = value + (entity.amount * ore_modifier * 0.01)
 			else
 				value = value + (entity.amount * ore_modifier)
@@ -96,7 +114,7 @@ end
 function Public.expand(expanse, left_top)
 	local source_surface = game.surfaces[expanse.source_surface]
 	if not source_surface then return end
-	source_surface.request_to_generate_chunks({x = 0, y = 0}, 3)
+	source_surface.request_to_generate_chunks(left_top, 3)
 	source_surface.force_generate_chunk_requests()
 	
 	local square_size = expanse.square_size
@@ -134,12 +152,17 @@ function Public.expand(expanse, left_top)
 	
 	if game.tick == 0 then
 		local a = math.floor(expanse.square_size * 0.5)
-		surface.create_entity({name = "crude-oil", position = {a - 3, a}, amount = 300000})
-		local e = surface.create_entity({name = "offshore-pump", force = "player", position = {a + 1, a}})
-		e.destructible = false
-		e.minable = false		
+		for x = 1, 3, 1 do
+			for y = 1, 3, 1 do
+				surface.set_tiles({{name = "water", position = {a + x, a + y - 2}}}, true)
+			end
+		end
+		surface.create_entity({name = "crude-oil", position = {a - 3, a}, amount = 1500000})
 		surface.create_entity({name = "rock-big", position = {a, a}})		
 		surface.create_entity({name = "tree-0" .. math.random(1,9), position = {a, a - 1}})
+		surface.spill_item_stack({a, a + 2}, {name = "small-plane", count = 1}, false, nil, false)
+		surface.spill_item_stack({a + 0.5, a + 2.5}, {name = "small-plane", count = 1}, false, nil, false)
+		surface.spill_item_stack({a - 0.5, a + 2.5}, {name = "small-plane", count = 1}, false, nil, false)
 	end
 end
 
@@ -176,6 +199,18 @@ function Public.set_container(expanse, entity)
 	
 	local inventory = container.entity.get_inventory(defines.inventory.chest)
 	
+	if not inventory.is_empty() then
+		local contents = inventory.get_contents()
+		if contents["small-plane"] then
+			local count_removed = inventory.remove({name = "small-plane", count = 1})
+			if count_removed > 0 then
+				init_container(expanse, entity)
+				container = expanse.containers[entity.unit_number]
+				game.print("The hungry chest has renewed it's offer! [gps=" .. math.floor(entity.position.x) .. "," .. math.floor(entity.position.y) .. ",expanse]")			
+			end
+		end
+	end
+	
 	for key, item_stack in pairs(container.price) do
 		local count_removed = inventory.remove(item_stack)
 		container.price[key].count = container.price[key].count - count_removed
@@ -186,15 +221,18 @@ function Public.set_container(expanse, entity)
 
 	if #container.price == 0 then
 		Public.expand(expanse, container.left_top)
-		expanse.containers[entity.unit_number] = nil		
+		local a = math.floor(expanse.square_size * 0.5)
+		local expansion_position = {x = expanse.containers[entity.unit_number].left_top.x + a, y = expanse.containers[entity.unit_number].left_top.y + a}
+		expanse.containers[entity.unit_number] = nil
 		if not inventory.is_empty() then
 			for name, count in pairs(inventory.get_contents()) do
 				entity.surface.spill_item_stack(entity.position, {name = name, count = count}, true, nil, false)
 			end
-		end		
+		end
+		reward_tokens(expanse, entity)
 		entity.destructible = true
 		entity.die()		
-		return
+		return expansion_position
 	end
 
 	for slot = 1, 30, 1 do
