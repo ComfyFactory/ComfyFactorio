@@ -1299,8 +1299,8 @@ local on_player_or_robot_built_tile = function(event)
     end
     for k, v in pairs(tiles) do
         local old_tile = v.old_tile
-        if old_tile.name == 'tutorial-grid' then
-            surface.set_tiles({{name = 'tutorial-grid', position = v.position}}, true)
+        if old_tile.name == 'shallow-water' then
+            surface.set_tiles({{name = 'shallow-water', position = v.position}}, true)
         end
     end
 end

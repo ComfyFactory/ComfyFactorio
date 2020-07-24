@@ -4,9 +4,12 @@ local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local Alert = require 'utils.alert'
 local Tabs = require 'comfy_panel.main'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 local P = require 'player_modifiers'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
+local Session = require 'utils.session_data'
 
 local points_per_level = 5
 local nth_tick = 18001
@@ -49,7 +52,8 @@ local rpg_extra = {
     enable_wave_defense = false,
     enable_flame_boots = false,
     mana_per_tick = 0.1,
-    force_mana_per_tick = false
+    force_mana_per_tick = false,
+    enable_stone_path = false
 }
 local rpg_frame_icons = {
     'entity/small-worm-turret',
@@ -404,8 +408,139 @@ local conjure_items = {
         mana_cost = 66,
         tick = 320,
         enabled = true
+    },
+    [23] = {
+        name = 'Conjure Raw-fish',
+        obj_to_create = 'fish',
+        target = false,
+        amount = 4,
+        damage = false,
+        range = 30,
+        force = 'player',
+        level = 50,
+        type = 'special',
+        mana_cost = 120,
+        tick = 320,
+        enabled = true
+    },
+    [24] = {
+        name = 'Suicidal Comfylatron',
+        obj_to_create = 'suicidal_comfylatron',
+        target = false,
+        amount = 4,
+        damage = false,
+        range = 30,
+        force = 'player',
+        level = 60,
+        type = 'special',
+        mana_cost = 150,
+        tick = 320,
+        enabled = true
     }
 }
+
+local desync =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        if not entity or not entity.valid then
+            return
+        end
+        local surface = data.surface
+        local fake_shooter = surface.create_entity({name = 'character', position = entity.position, force = 'enemy'})
+        for i = 1, 3 do
+            surface.create_entity(
+                {
+                    name = 'explosive-rocket',
+                    position = entity.position,
+                    force = 'enemy',
+                    speed = 1,
+                    max_range = 1,
+                    target = entity,
+                    source = fake_shooter
+                }
+            )
+        end
+        if fake_shooter and fake_shooter.valid then
+            fake_shooter.destroy()
+        end
+    end
+)
+
+local travelings = {
+    'bzzZZrrt',
+    'WEEEeeeeeee',
+    'out of my way son',
+    'on my way',
+    'i need to leave',
+    'comfylatron seeking target',
+    'gotta go fast',
+    'gas gas gas',
+    'comfylatron coming through'
+}
+
+local function suicidal_comfylatron(pos, surface)
+    local str = travelings[math.random(1, #travelings)]
+    local symbols = {'', '!', '!', '!!', '..'}
+    str = str .. symbols[math.random(1, #symbols)]
+    local text = str
+    local e =
+        surface.create_entity(
+        {
+            name = 'compilatron',
+            position = {x = pos.x, y = pos.y + 2},
+            force = 'player'
+        }
+    )
+    surface.create_entity(
+        {
+            name = 'compi-speech-bubble',
+            position = e.position,
+            source = e,
+            text = text
+        }
+    )
+    local entities =
+        surface.find_entities_filtered(
+        {
+            type = {'unit', 'unit-spawner', 'turret'},
+            force = 'enemy',
+            area = {{e.position.x - 80, e.position.y - 80}, {e.position.x + 80, e.position.y + 80}},
+            limit = 1
+        }
+    )
+
+    if entities then
+        for _, entity in pairs(entities) do
+            if entity.name ~= 'compilatron' and entity.active then
+                e.set_command(
+                    {
+                        type = defines.command.attack,
+                        target = entity,
+                        distraction = defines.distraction.none
+                    }
+                )
+            else
+                e.surface.create_entity({name = 'medium-explosion', position = e.position})
+                e.surface.create_entity(
+                    {name = 'flying-text', position = e.position, text = 'desync', color = {r = 150, g = 0, b = 0}}
+                )
+                e.die()
+            end
+        end
+        local data = {
+            entity = e,
+            surface = surface
+        }
+        Task.set_timeout_in_ticks(300, desync, data)
+    else
+        e.surface.create_entity({name = 'medium-explosion', position = e.position})
+        e.surface.create_entity(
+            {name = 'flying-text', position = e.position, text = 'desync', color = {r = 150, g = 0, b = 0}}
+        )
+        e.die()
+    end
+end
 
 local function create_healthbar(player, size)
     return rendering.draw_sprite(
@@ -715,6 +850,7 @@ end
 
 local function extra_settings(player)
     local player_modifiers = P.get_table()
+    local trusted = Session.get_trusted_table()
     local main_frame =
         player.gui.screen.add(
         {
@@ -727,7 +863,7 @@ local function extra_settings(player)
     main_frame.auto_center = true
 
     local main_frame_style = main_frame.style
-    main_frame_style.width = 400
+    main_frame_style.width = 500
 
     local info_text =
         main_frame.add({type = 'label', caption = 'Common RPG settings. These settings are per player basis.'})
@@ -797,6 +933,11 @@ local function extra_settings(player)
     local reset_gui_input = create_input_element(reset_input, 'boolean', false)
 
     if not rpg_t[player.index].reset then
+        if not trusted[player.name] then
+            reset_gui_input.enabled = false
+            reset_gui_input.tooltip = 'Not trusted.\nChecked = true\nUnchecked = false'
+            goto continue
+        end
         if rpg_t[player.index].level <= 49 then
             reset_gui_input.enabled = false
             reset_gui_input.tooltip = 'Level requirement: 50\nChecked = true\nUnchecked = false'
@@ -808,7 +949,10 @@ local function extra_settings(player)
         end
     else
         reset_gui_input.enabled = false
+        reset_gui_input.tooltip = 'All used up!'
     end
+
+    ::continue::
 
     local magic_pickup_label =
         setting_grid.add(
@@ -873,6 +1017,44 @@ local function extra_settings(player)
     local enable_entity_gui_input
     local conjure_gui_input
     local flame_boots_gui_input
+    local stone_path_gui_input
+
+    if rpg_extra.enable_stone_path then
+        local stone_path_label =
+            setting_grid.add(
+            {
+                type = 'label',
+                caption = 'Enable stone-path when mining?',
+                tooltip = 'Enabling this will automatically create stone-path when you mine.'
+            }
+        )
+
+        local stone_path_label_style = stone_path_label.style
+        stone_path_label_style.horizontally_stretchable = true
+        stone_path_label_style.height = 35
+        stone_path_label_style.vertical_align = 'center'
+
+        local stone_path_input = setting_grid.add({type = 'flow'})
+        local stone_path_input_style = stone_path_input.style
+        stone_path_input_style.height = 35
+        stone_path_input_style.vertical_align = 'center'
+        local stone_path
+        if rpg_t[player.index].stone_path then
+            stone_path = rpg_t[player.index].stone_path
+        else
+            stone_path = false
+        end
+        stone_path_gui_input = create_input_element(stone_path_input, 'boolean', stone_path)
+
+        if rpg_t[player.index].level <= 20 then
+            stone_path_gui_input.enabled = false
+            stone_path_gui_input.tooltip = 'Level requirement: 20\nChecked = true\nUnchecked = false'
+            stone_path_label.tooltip = 'Level requirement: 20'
+        else
+            stone_path_gui_input.enabled = true
+            stone_path_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+        end
+    end
 
     if rpg_extra.enable_flame_boots then
         local flame_boots_label =
@@ -1002,6 +1184,10 @@ local function extra_settings(player)
 
     if rpg_extra.enable_flame_boots then
         data.flame_boots_gui_input = flame_boots_gui_input
+    end
+
+    if rpg_extra.enable_stone_path then
+        data.stone_path_gui_input = stone_path_gui_input
     end
 
     local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
@@ -1721,12 +1907,14 @@ local function regen_mana_player(players)
 
         if rpg_extra.enable_health_and_mana_bars then
             if rpg_t[player.index].show_bars then
-                if not rpg_t[player.index].mana_bar then
-                    rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
-                elseif not rendering.is_valid(rpg_t[player.index].mana_bar) then
-                    rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                if player.character and player.character.valid then
+                    if not rpg_t[player.index].mana_bar then
+                        rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                    elseif not rendering.is_valid(rpg_t[player.index].mana_bar) then
+                        rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                    end
+                    set_bar(rpg_t[player.index].mana, rpg_t[player.index].mana_max, rpg_t[player.index].mana_bar, true)
                 end
-                set_bar(rpg_t[player.index].mana, rpg_t[player.index].mana_max, rpg_t[player.index].mana_bar, true)
             end
         end
         if player.gui.left[main_frame_name] then
@@ -2087,8 +2275,17 @@ local function on_player_respawned(event)
     draw_level_text(player)
     if rpg_extra.enable_health_and_mana_bars then
         rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
+        if player.character and player.character.valid then
+            local max_life =
+                math.floor(
+                player.character.prototype.max_health + player.character_health_bonus +
+                    player.force.character_health_bonus
+            )
+            set_bar(player.character.health, max_life, rpg_t[player.index].health_bar)
+        end
         if rpg_extra.enable_mana then
             rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+            set_bar(rpg_t[player.index].mana, rpg_t[player.index].mana_max, rpg_t[player.index].mana_bar, true)
         end
     end
 end
@@ -2301,7 +2498,7 @@ local function on_player_used_capsule(event)
     end
 
     if mana <= object.mana_cost then
-        return p('You wave your wand but nothing happens.', Color.fail)
+        return p('You don´t have enough mana to cast this spell.', Color.fail)
     else
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     end
@@ -2328,8 +2525,9 @@ local function on_player_used_capsule(event)
     else
         force = 'player'
     end
-
-    if projectile_types[obj_name] then
+    if object.obj_to_create == 'suicidal_comfylatron' then
+        suicidal_comfylatron(position, surface)
+    elseif projectile_types[obj_name] then
         for i = 1, object.amount do
             local damage_area = {
                 left_top = {x = position.x - 2, y = position.y - 2},
@@ -2343,7 +2541,9 @@ local function on_player_used_capsule(event)
             end
         end
     else
-        if object.biter then
+        if object.obj_to_create == 'fish' then
+            player.insert({name = 'raw-fish', count = object.amount})
+        elseif object.biter then
             local e = surface.create_entity({name = obj_name, position = position, force = force})
             tame_unit_effects(player, e)
         else
@@ -2436,7 +2636,8 @@ function Public.rpg_reset_player(player, one_time_reset)
             rotated_entity_delay = 0,
             gui_refresh_delay = 0,
             last_mined_entity_position = {x = 0, y = 0},
-            show_bars = false
+            show_bars = false,
+            stone_path = false
         }
         rpg_t[player.index].points_to_distribute = old_points_to_distribute + total
         rpg_t[player.index].xp = old_xp
@@ -2465,7 +2666,8 @@ function Public.rpg_reset_player(player, one_time_reset)
             rotated_entity_delay = 0,
             gui_refresh_delay = 0,
             last_mined_entity_position = {x = 0, y = 0},
-            show_bars = false
+            show_bars = false,
+            stone_path = false
         }
     end
     draw_gui_char_button(player)
@@ -2491,6 +2693,10 @@ function Public.get_magicka(player)
 end
 
 function Public.gain_xp(player, amount, added_to_pool, text)
+    if not validate_player(player) then
+        return
+    end
+
     if level_limit_exceeded(player) then
         add_to_global_pool(amount, false)
         if not rpg_t[player.index].capped then
@@ -2667,6 +2873,21 @@ function Public.personal_tax_rate(value)
     end
 end
 
+--- Enables/disabled stone-path-tile creation on mined.
+---@param value <boolean>
+function Public.enable_stone_path(value)
+    if value then
+        rpg_extra.enable_stone_path = value
+    else
+        rpg_extra.enable_stone_path = nil
+    end
+end
+
+--- Pass along the main_button and main_frame
+Public.main_frame_name = main_frame_name
+Public.draw_main_frame_name = draw_main_frame_name
+Public.settings_frame_name = settings_frame_name
+
 Gui.on_click(
     draw_main_frame_name,
     function(event)
@@ -2702,8 +2923,17 @@ Gui.on_click(
         local movement_speed_gui_input = data.movement_speed_gui_input
         local flame_boots_gui_input = data.flame_boots_gui_input
         local enable_entity_gui_input = data.enable_entity_gui_input
+        local stone_path_gui_input = data.stone_path_gui_input
 
         if frame and frame.valid then
+            if stone_path_gui_input and stone_path_gui_input.valid then
+                if not stone_path_gui_input.state then
+                    rpg_t[player.index].stone_path = false
+                elseif stone_path_gui_input.state then
+                    rpg_t[player.index].stone_path = true
+                end
+            end
+
             if enable_entity_gui_input and enable_entity_gui_input.valid then
                 if not enable_entity_gui_input.state then
                     rpg_t[player.index].enable_entity_spawn = false

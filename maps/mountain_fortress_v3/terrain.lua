@@ -1571,8 +1571,10 @@ local function process_level_1_position(x, y, data)
 end
 
 Public.levels = {
+    process_level_2_position,
     process_level_4_position,
     process_level_1_position,
+    process_level_2_position,
     process_level_6_position,
     process_level_2_position,
     process_level_3_position,
@@ -1598,7 +1600,7 @@ end
 local function process_bits(x, y, data)
     local levels = Public.levels
     local left_top_y = data.area.left_top.y
-    local index = math.floor((math.abs(left_top_y / Public.level_depth)) % 15) + 1
+    local index = math.floor((math.abs(left_top_y / Public.level_depth)) % 17) + 1
     local process_level = levels[index]
     if not process_level then
         process_level = levels[#levels]

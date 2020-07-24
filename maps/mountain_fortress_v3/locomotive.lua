@@ -52,6 +52,32 @@ local function validate_player(player)
     return true
 end
 
+function Public.add_player_to_permission_group(player, group)
+    if group == 'locomotive' then
+        local locomotive_group = game.permissions.get_group('locomotive')
+        if not locomotive_group then
+            locomotive_group = game.permissions.create_group('locomotive')
+            locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
+            locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
+            locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.admin_action, false)
+            locomotive_group.set_allows_action(defines.input_action.drop_item, false)
+            locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
+            locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
+            locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        -- locomotive_group.set_allows_action(defines.input_action.connect_rolling_stock, false)
+        end
+        locomotive_group = game.permissions.get_group('locomotive')
+        locomotive_group.add_player(player)
+    elseif group == 'default' then
+        local default_group = game.permissions.get_group('Default')
+
+        default_group.add_player(player)
+    end
+end
+
 local function property_boost(data)
     local xp_floating_text_color = {r = 0, g = 127, b = 33}
     local visuals_delay = 1800
@@ -74,6 +100,7 @@ local function property_boost(data)
                 Math2D.bounding_box.contains_point(area, player.position) or
                     player.surface.index == locomotive_surface.index
              then
+                Public.add_player_to_permission_group(player, 'locomotive')
                 local pos = player.position
                 RPG.gain_xp(player, 0.3 * (rpg[player.index].bonus + this.xp_points))
 
@@ -86,6 +113,8 @@ local function property_boost(data)
                 }
                 rpg[player.index].xp_since_last_floaty_text = 0
                 rpg[player.index].last_floaty_text = game.tick + visuals_delay
+            else
+                Public.add_player_to_permission_group(player, 'default')
             end
         end
     end

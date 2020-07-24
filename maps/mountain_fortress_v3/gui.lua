@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local RPG = require 'modules.rpg_v2'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Gui = require 'utils.gui'
 local format_number = require 'util'.format_number
 
@@ -155,6 +156,7 @@ local function on_gui_click(event)
             local info = player.gui.top[main_frame_name]
             local wd = player.gui.top['wave_defense']
             local diff = player.gui.top['difficulty_gui']
+
             if info and info.visible then
                 if wd then
                     wd.visible = false
@@ -197,39 +199,25 @@ local function on_gui_click(event)
     end
 end
 
-local function add_player_to_permission_group(player, group)
-    if group == 'locomotive' then
-        local locomotive_group = game.permissions.get_group('locomotive')
-        if not locomotive_group then
-            locomotive_group = game.permissions.create_group('locomotive')
-            locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
-            locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
-            locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.admin_action, false)
-        end
-        locomotive_group = game.permissions.get_group('locomotive')
-        locomotive_group.add_player(player)
-    elseif group == 'default' then
-        local default_group = game.permissions.get_group('Default')
-
-        default_group.add_player(player)
-    end
-end
-
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
     if not validate_player(player) then
         return
     end
 
+    local rpg_button = RPG.draw_main_frame_name
+    local rpg_frame = RPG.main_frame_name
+    local rpg_settings = RPG.settings_frame_name
     local main = WPT.get('locomotive')
     local icw_locomotive = WPT.get('icw_locomotive')
     local wagon_surface = icw_locomotive.surface
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
+    local rpg_b = player.gui.top[rpg_button]
+    local rpg_f = player.gui.left[rpg_frame]
+    local rpg_s = player.gui.screen[rpg_settings]
     local diff = player.gui.top['difficulty_gui']
+    local charging = player.gui.top['charging_station']
     local frame = player.gui.top[main_frame_name]
 
     if info then
@@ -252,20 +240,43 @@ local function on_player_changed_surface(event)
     end
 
     if player.surface == main.surface then
-        add_player_to_permission_group(player, 'default')
         local minimap = player.gui.left.icw_map
         if minimap and minimap.visible then
             minimap.visible = false
         end
+        if rpg_b and not rpg_b.visible then
+            rpg_b.visible = true
+        end
+        if diff and not diff.visible then
+            diff.visible = true
+        end
+        if wd and not wd.visible then
+            wd.visible = true
+        end
+        if charging and not charging.visible then
+            charging.visible = true
+        end
+
         info.tooltip = 'Shows statistics!'
         info.sprite = 'item/dummy-steel-axe'
     elseif player.surface == wagon_surface then
-        add_player_to_permission_group(player, 'locomotive')
         if wd then
             wd.visible = false
         end
+        if rpg_b then
+            rpg_b.visible = false
+        end
+        if rpg_f then
+            rpg_f.destroy()
+        end
+        if rpg_s then
+            rpg_s.destroy()
+        end
         if diff then
             diff.visible = false
+        end
+        if charging then
+            charging.visible = false
         end
         if info then
             info.tooltip = 'Hide locomotive minimap!'
