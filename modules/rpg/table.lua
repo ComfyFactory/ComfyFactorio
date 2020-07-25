@@ -275,7 +275,7 @@ Public.conjure_items = {
         level = 40,
         type = 'special',
         mana_cost = 60,
-        tick = 420,
+        tick = 320,
         enabled = true
     },
     [21] = {

@@ -81,6 +81,103 @@ local ammo_loot = {
     }
 }
 
+local oil_loot = {
+    {
+        stack = {
+            recipe = 'basic-oil-processing',
+            output = {
+                min_rate = 0.5 / 8 / 60,
+                distance_factor = 1 / 10 / 60 / 512,
+                item = 'petroleum-gas',
+                fluidbox_index = 2
+            }
+        },
+        weight = 1
+    },
+    {
+        stack = {
+            recipe = 'advanced-oil-processing',
+            output = {
+                {min_rate = 3.125 / 60, distance_factor = 3.125 / 60 / 512, item = 'heavy-oil', fluidbox_index = 3},
+                {min_rate = 5.625 / 60, distance_factor = 5.625 / 60 / 512, item = 'light-oil', fluidbox_index = 4},
+                {min_rate = 6.875 / 60, distance_factor = 6.875 / 60 / 512, item = 'petroleum-gas', fluidbox_index = 5}
+            }
+        },
+        weight = 0.1
+    }
+}
+
+local oil_prod_loot = {
+    {
+        stack = {
+            recipe = 'lubricant',
+            output = {
+                item = 'lubricant',
+                min_rate = 0.5 / 8 / 60,
+                distance_factor = 1 / 10 / 60 / 512,
+                fluidbox_index = 2
+            }
+        },
+        weight = 1
+    },
+    {
+        stack = {
+            recipe = 'solid-fuel-from-light-oil',
+            output = {
+                item = 'solid-fuel',
+                min_rate = 1 / 4 / 60,
+                distance_factor = 1 / 4 / 60 / 512
+            }
+        },
+        weight = 4
+    },
+    {
+        stack = {
+            recipe = 'sulfuric-acid',
+            output = {
+                item = 'sulfuric-acid',
+                min_rate = 0.5 / 8 / 60,
+                distance_factor = 1 / 6 / 60 / 512,
+                fluidbox_index = 2
+            }
+        },
+        weight = 1
+    },
+    {
+        stack = {
+            recipe = 'battery',
+            output = {
+                item = 'battery',
+                min_rate = 0.5 / 8 / 60,
+                distance_factor = 1 / 25 / 60 / 512
+            }
+        },
+        weight = 0.75
+    },
+    {
+        stack = {
+            recipe = 'sulfur',
+            output = {
+                item = 'sulfur',
+                min_rate = 0.5 / 8 / 60,
+                distance_factor = 1 / 25 / 60 / 512
+            }
+        },
+        weight = 0.55
+    },
+    {
+        stack = {
+            recipe = 'plastic-bar',
+            output = {
+                item = 'plastic-bar',
+                min_rate = 0.5 / 8 / 60,
+                distance_factor = 1 / 25 / 60 / 512
+            }
+        },
+        weight = 0.25
+    }
+}
+
 local resource_loot = {
     {
         stack = {
@@ -236,6 +333,8 @@ local furnace_loot = {
 
 local science_weights = Functions.prepare_weighted_loot(science_loot)
 local building_weights = Functions.prepare_weighted_loot(ammo_loot)
+local oil_weights = Functions.prepare_weighted_loot(oil_loot)
+local oil_prod_weights = Functions.prepare_weighted_loot(oil_prod_loot)
 local resource_weights = Functions.prepare_weighted_loot(resource_loot)
 local furnace_weights = Functions.prepare_weighted_loot(furnace_loot)
 
@@ -252,6 +351,22 @@ local building_callback = {
     data = {
         loot = ammo_loot,
         weights = building_weights
+    }
+}
+
+local oil_callback = {
+    callback = Functions.magic_item_crafting_callback_weighted,
+    data = {
+        loot = oil_loot,
+        weights = oil_weights
+    }
+}
+
+local oil_prod_callback = {
+    callback = Functions.magic_item_crafting_callback_weighted,
+    data = {
+        loot = oil_prod_loot,
+        weights = oil_prod_weights
     }
 }
 
@@ -281,6 +396,14 @@ local ammo_list = {
     [1] = {name = 'assembling-machine-1', callback = building_callback},
     [2] = {name = 'assembling-machine-2', callback = building_callback},
     [3] = {name = 'assembling-machine-3', callback = building_callback}
+}
+
+local oil_list = {
+    [1] = {name = 'oil-refinery', callback = oil_callback}
+}
+
+local oil_prod_list = {
+    [1] = {name = 'chemical-plant', callback = oil_prod_callback}
 }
 
 local resource_list = {
@@ -317,6 +440,28 @@ local function spawn_ammo_building(entities, p, probability)
     }
 end
 
+local function spawn_oil_buildings(entities, p)
+    entities[#entities + 1] = {
+        name = oil_list[1].name,
+        position = p,
+        force = 'player',
+        callback = oil_list[1].callback,
+        collision = true,
+        e_type = types
+    }
+end
+
+local function spawn_oil_prod_buildings(entities, p)
+    entities[#entities + 1] = {
+        name = oil_prod_list[1].name,
+        position = p,
+        force = 'player',
+        callback = oil_prod_list[1].callback,
+        collision = true,
+        e_type = types
+    }
+end
+
 local function spawn_resource_building(entities, p, probability)
     entities[#entities + 1] = {
         name = resource_list[probability].name,
@@ -343,7 +488,9 @@ local buildings = {
     [1] = spawn_ammo_building,
     [2] = spawn_resource_building,
     [3] = spawn_furnace_building,
-    [4] = spawn_science_buildings
+    [4] = spawn_science_buildings,
+    [5] = spawn_oil_buildings,
+    [6] = spawn_oil_prod_buildings
 }
 
 local function spawn_random_buildings(entities, p, depth)

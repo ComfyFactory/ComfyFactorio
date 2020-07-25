@@ -5,6 +5,7 @@ local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
 
+local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = math.ceil(1024 / tiles_per_call)
 local regen_decoratives = false
@@ -26,10 +27,6 @@ local function do_tile(y, x, data, shape)
 
     -- local coords need to be 'centered' to allow for correct rotation and scaling.
     local tile = shape(x + 0.5, y + 0.5, data)
-
-    if not data.surface.valid then
-        return
-    end
 
     if type(tile) == 'table' then
         do_tile_inner(data.tiles, tile.tile, pos)
@@ -89,10 +86,6 @@ local function do_row(row, data, shape)
     local y = data.top_y + row
     local top_x = data.top_x
     local tiles = data.tiles
-
-    if not data.surface.valid then
-        return
-    end
 
     data.y = y
 
@@ -162,30 +155,25 @@ local function do_row(row, data, shape)
 end
 
 local function do_place_treasure(data)
-    if not data.surface.valid then
-        return
-    end
-
     local surface = data.surface
     local treasure = data.treasure
 
     if #treasure == 0 then
         return
     end
-
-    for _, e in pairs(data.treasure) do
-        if math.random(1, 6) == 1 then
-            e.chest = 'iron-chest'
+    pcall(
+        function()
+            for _, e in pairs(data.treasure) do
+                if math.random(1, 6) == 1 then
+                    e.chest = 'iron-chest'
+                end
+                Loot.add(surface, e.position, e.chest)
+            end
         end
-        Loot.add(surface, e.position, e.chest)
-    end
+    )
 end
 
 local function do_place_markets(data)
-    if not data.surface.valid then
-        return
-    end
-
     local markets = data.markets
     local surface = data.surface
 
@@ -193,51 +181,51 @@ local function do_place_markets(data)
         return
     end
 
-    local pos = markets[math.random(1, #markets)]
-    if
-        surface.count_entities_filtered {
-            area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
-            name = 'market',
-            limit = 1
-        } == 0
-     then
-        local market = Market.mountain_market(surface, pos, math.abs(pos.y) * 0.004)
-        market.destructible = false
-    end
+    pcall(
+        function()
+            local pos = markets[math.random(1, #markets)]
+            if
+                surface.count_entities_filtered {
+                    area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
+                    name = 'market',
+                    limit = 1
+                } == 0
+             then
+                local market = Market.mountain_market(surface, pos, math.abs(pos.y) * 0.004)
+                market.destructible = false
+            end
+        end
+    )
 end
 
 local function do_place_tiles(data)
-    if not data.surface.valid then
-        return
-    end
-
-    data.surface.set_tiles(data.tiles, true)
+    pcall(
+        function()
+            data.surface.set_tiles(data.tiles, true)
+        end
+    )
 end
 
 local function do_place_decoratives(data)
-    if not data.surface.valid then
-        return
-    end
+    local surface = data.surface
+    pcall(
+        function()
+            if regen_decoratives then
+                surface.regenerate_decorative(nil, {{data.top_x / 32, data.top_y / 32}})
+            end
 
-    if regen_decoratives then
-        data.surface.regenerate_decorative(nil, {{data.top_x / 32, data.top_y / 32}})
-    end
-
-    local dec = data.decoratives
-    if #dec > 0 then
-        data.surface.create_decoratives({check_collision = true, decoratives = dec})
-    end
+            local dec = data.decoratives
+            if #dec > 0 then
+                surface.create_decoratives({check_collision = true, decoratives = dec})
+            end
+        end
+    )
 end
 
 local function do_place_buildings(data)
-    if not data.surface.valid then
-        return
-    end
-
     local surface = data.surface
     local entity
     local callback
-
     for _, e in pairs(data.buildings) do
         if e.e_type then
             local p = e.position
@@ -275,76 +263,72 @@ local function do_place_buildings(data)
 end
 
 local function do_place_entities(data)
-    if not data.surface.valid then
-        return
-    end
-
     local surface = data.surface
     local entity
     local callback
-
-    for _, e in pairs(data.entities) do
-        if e.collision then
-            if surface.can_place_entity(e) then
-                entity = surface.create_entity(e)
-                if entity and e.direction then
-                    entity.direction = e.direction
-                end
-                if entity and e.force then
-                    entity.force = e.force
-                end
-                if entity and e.callback then
-                    local c = e.callback.callback
-                    if not c then
-                        return
+    pcall(
+        function()
+            for _, e in pairs(data.entities) do
+                if e.collision then
+                    if surface.can_place_entity(e) then
+                        entity = surface.create_entity(e)
+                        if entity and e.direction then
+                            entity.direction = e.direction
+                        end
+                        if entity and e.force then
+                            entity.force = e.force
+                        end
+                        if entity and e.callback then
+                            local c = e.callback.callback
+                            if not c then
+                                return
+                            end
+                            local d = {callback_data = e.callback.data}
+                            if not d then
+                                callback = Token.get(c)
+                                callback(entity)
+                                return
+                            end
+                            callback = Token.get(c)
+                            callback(entity, d)
+                        end
                     end
-                    local d = {callback_data = e.callback.data}
-                    if not d then
+                else
+                    entity = surface.create_entity(e)
+                    if entity and e.direction then
+                        entity.direction = e.direction
+                    end
+                    if entity and e.force then
+                        entity.force = e.force
+                    end
+                    if entity and e.callback then
+                        local c = e.callback.callback
+                        if not c then
+                            return
+                        end
+                        local d = {callback_data = e.callback.data}
+                        if not d then
+                            callback = Token.get(c)
+                            callback(entity)
+                            return
+                        end
                         callback = Token.get(c)
-                        callback(entity)
-                        return
+                        callback(entity, d)
                     end
-                    callback = Token.get(c)
-                    callback(entity, d)
                 end
-            end
-        else
-            entity = surface.create_entity(e)
-            if entity and e.direction then
-                entity.direction = e.direction
-            end
-            if entity and e.force then
-                entity.force = e.force
-            end
-            if entity and e.callback then
-                local c = e.callback.callback
-                if not c then
-                    return
-                end
-                local d = {callback_data = e.callback.data}
-                if not d then
-                    callback = Token.get(c)
-                    callback(entity)
-                    return
-                end
-                callback = Token.get(c)
-                callback(entity, d)
             end
         end
-    end
+    )
 end
 
 local function run_chart_update(data)
-    if not data.surface.valid then
-        return
-    end
-
     local x = data.top_x / 32
     local y = data.top_y / 32
-    if game.forces.player.is_chunk_charted(data.surface, {x, y}) then
+    local surface = data.surface
+    if game.forces.player.is_chunk_charted(surface, {x, y}) then
         -- Don't use full area, otherwise adjacent chunks get charted
         game.forces.player.chart(
-            data.surface,
+            surface,
             {
                 {data.top_x, data.top_y},
                 {data.top_x + 1, data.top_y + 1}
@@ -464,11 +448,11 @@ function Public.schedule_chunk(event)
         treasure = {}
     }
 
-    if not data.surface.valid then
+    if not data.surface or not data.surface.valid then
         return
     end
 
-    Task.queue_task(map_gen_action_token, data, total_calls)
+    queue_task(map_gen_action_token, data, total_calls)
 end
 
 --- Generates a Chunk of map when called

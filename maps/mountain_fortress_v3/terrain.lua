@@ -80,24 +80,32 @@ local turret_list = {
     [6] = {name = 'artillery-turret', callback = callback[6]}
 }
 
-local function place_wagon(data)
-    local function is_position_near(area, table_to_check)
-        local status = false
-        local function inside(pos)
-            local lt = area.left_top
-            local rb = area.right_bottom
+local function is_position_near(area, table_to_check)
+    local status = false
+    local function inside(pos)
+        local lt = area.left_top
+        local rb = area.right_bottom
 
-            return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
-        end
-
-        for k, entity in pairs(table_to_check) do
-            if inside(entity, area) then
-                status = true
-            end
-        end
-
-        return status
+        return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
     end
+
+    for i = 1, #table_to_check do
+        if inside(table_to_check[i], area) then
+            status = true
+        end
+    end
+
+    return status
+end
+
+local function place_wagon(data)
+    local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
+    if not placed_trains_in_zone.randomized then
+        placed_trains_in_zone.limit = math.random(1, 5)
+        placed_trains_in_zone.randomized = true
+        placed_trains_in_zone = WPT.get('placed_trains_in_zone')
+    end
+
     local surface = data.surface
     local tiles = data.tiles
     local entities = data.entities
@@ -111,14 +119,6 @@ local function place_wagon(data)
     local rail_mineable = {
         callback = Functions.disable_destructible_callback
     }
-
-    local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
-
-    if not placed_trains_in_zone.randomized then
-        placed_trains_in_zone.limit = math.random(1, 5)
-        placed_trains_in_zone.randomized = true
-        placed_trains_in_zone = WPT.get('placed_trains_in_zone')
-    end
 
     if placed_trains_in_zone.placed >= placed_trains_in_zone.limit then
         return
@@ -174,7 +174,6 @@ local function place_wagon(data)
     }
     placed_trains_in_zone.placed = placed_trains_in_zone.placed + 1
     placed_trains_in_zone.positions[#placed_trains_in_zone.positions + 1] = position
-    print('Placed trains are: ' .. placed_trains_in_zone.placed)
 
     return true
 end
@@ -1610,11 +1609,8 @@ local function process_bits(x, y, data)
 end
 
 local function border_chunk(data)
-    local surface = data.surface
     local entities = data.entities
     local decoratives = data.decoratives
-    local top_x = data.top_x
-    local top_y = data.top_y
 
     local x, y = Public.increment_value(data)
 
@@ -1641,12 +1637,6 @@ local function border_chunk(data)
                 amount = math.random(1, 1 + math.ceil(20 - y / 2))
             }
         end
-    end
-
-    for _, e in pairs(
-        surface.find_entities_filtered({area = {{top_x, top_y}, {top_x + 32, top_y + 32}}, type = 'cliff'})
-    ) do
-        e.destroy()
     end
 end
 
@@ -1707,7 +1697,6 @@ local function out_of_map(x, y, data)
 end
 
 function Public.heavy_functions(x, y, data)
-    local top_x = data.top_x
     local top_y = data.top_y
     local surface = data.surface
     local p = {x = data.x, y = data.y}
@@ -1720,7 +1709,7 @@ function Public.heavy_functions(x, y, data)
     end
 
     if not data.seed then
-        data.seed = data.surface.map_gen_settings.seed
+        data.seed = surface.map_gen_settings.seed
     end
 
     if get_tile.valid and get_tile.name == 'out-of-map' then
@@ -1728,20 +1717,9 @@ function Public.heavy_functions(x, y, data)
     end
 
     if top_y % Public.level_depth == 0 and top_y < 0 then
-        WPT.get().left_top = data.left_top
+        WPT.set().left_top = data.left_top
         wall(data)
         return
-    end
-
-    if top_y == -128 and top_x == -128 then
-        local pl = WPT.get().locomotive.position
-        for _, entity in pairs(
-            surface.find_entities_filtered(
-                {area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'}
-            )
-        ) do
-            entity.destroy()
-        end
     end
 
     if top_y < 0 then
@@ -1783,6 +1761,17 @@ Event.add(
         end
         if not surface.valid then
             return
+        end
+
+        if left_top.y == -128 and left_top.x == -128 then
+            local pl = WPT.get().locomotive.position
+            for _, entity in pairs(
+                surface.find_entities_filtered(
+                    {area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'}
+                )
+            ) do
+                entity.destroy()
+            end
         end
 
         if left_top.y > 32 then

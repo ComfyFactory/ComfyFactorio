@@ -353,7 +353,7 @@ Public.magic_item_crafting_callback =
         else
             local furance_item = callback_data.furance_item
             if furance_item then
-                local inv = entity.get_inventory(2) -- defines.inventory.furnace_source
+                local inv = entity.get_inventory(defines.inventory.furnace_result)
                 inv.insert(furance_item)
             end
         end

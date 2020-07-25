@@ -562,8 +562,11 @@ local has_the_game_ended = function()
             end
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
-                    local message = 'Soft-reset is disabled. Server will restart!'
+                    game.print(
+                        'Soft-reset is disabled! Server will restart from scenario to load new changes.',
+                        {r = 0.22, g = 0.88, b = 0.22}
+                    )
+                    local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
                     Server.start_scenario('Mountain_Fortress_v3')
                     this.announced_message = true
@@ -572,8 +575,11 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print('Soft-reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
-                    local message = 'Soft-reset is disabled. Server is shutting down!'
+                    game.print(
+                        'Soft-reset is disabled! Server will shutdown. Most likely because of updates.',
+                        {r = 0.22, g = 0.88, b = 0.22}
+                    )
+                    local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
                     Server.stop_scenario()
                     this.announced_message = true
@@ -701,7 +707,7 @@ local on_tick = function()
     local wave_defense_table = WD.get_table()
     local update_gui = Gui_mf.update_gui
 
-    if game.tick % 30 == 0 then
+    if game.tick % 60 == 0 then
         for _, player in pairs(game.connected_players) do
             update_gui(player)
         end
