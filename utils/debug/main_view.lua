@@ -10,6 +10,7 @@ local pages = {
 }
 
 if _DEBUG then
+    pages[#pages + 1] = require 'utils.debug.gui_data_view'
     pages[#pages + 1] = require 'utils.debug.package_view'
     pages[#pages + 1] = require 'utils.debug._g_view'
     pages[#pages + 1] = require 'utils.debug.event_view'

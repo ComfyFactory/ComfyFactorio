@@ -67,7 +67,7 @@ local xp_yield = {
 	["big-biter"] = 8,
 	["big-spitter"] = 8,
 	["big-worm-turret"] = 48,
-	["biter-spawner"] = 64,	
+	["biter-spawner"] = 64,
 	["character"] = 16,
 	["gun-turret"] = 8,
 	["laser-turret"] = 16,
@@ -91,9 +91,9 @@ local function level_up_effects(player)
 	player.surface.create_entity({name = "flying-text", position = position, text = "+LVL ", color = level_up_floating_text_color})
 	local b = 0.75
 	for a = 1, 5, 1 do
-		local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}			
-		player.surface.create_entity({name = "flying-text", position = p, text = "✚", color = {255, math_random(0, 100), 0}})						
-	end	
+		local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}
+		player.surface.create_entity({name = "flying-text", position = p, text = "✚", color = {255, math_random(0, 100), 0}})
+	end
 	player.play_sound{path="utility/achievement_unlocked", volume_modifier=0.40}
 end
 
@@ -133,7 +133,7 @@ local function update_player_stats(player)
 	local strength = rpg_t[player.index].strength - 10
 	player_modifiers[player.index].character_inventory_slots_bonus["rpg"] = math.round(strength * 0.2, 3)
 	player_modifiers[player.index].character_mining_speed_modifier["rpg"] = math.round(strength * 0.008, 3)
-	
+
 	local magic = rpg_t[player.index].magic - 10
 	local v = magic * 0.15
 	player_modifiers[player.index].character_build_distance_bonus["rpg"] = math.round(v, 3)
@@ -142,11 +142,11 @@ local function update_player_stats(player)
 	player_modifiers[player.index].character_loot_pickup_distance_bonus["rpg"] = math.round(v * 0.5, 3)
 	player_modifiers[player.index].character_item_pickup_distance_bonus["rpg"] = math.round(v * 0.25, 3)
 	player_modifiers[player.index].character_resource_reach_distance_bonus["rpg"] = math.round(v * 0.15, 3)
-	
+
 	local dexterity = rpg_t[player.index].dexterity - 10
 	player_modifiers[player.index].character_running_speed_modifier["rpg"] = math.round(dexterity * 0.002, 3)
 	player_modifiers[player.index].character_crafting_speed_modifier["rpg"] = math.round(dexterity * 0.015, 3)
-	
+
 	player_modifiers[player.index].character_health_bonus["rpg"] = math.round((rpg_t[player.index].vitality - 10) * 6, 3)
 
 	P.update_player_modifiers(player)
@@ -204,12 +204,12 @@ local function add_gui_increase_stat(element, name, player, width)
 	e.style.minimal_width = 38
 	e.style.font = "default-large-semibold"
 	e.style.font_color = {0,0,0}
-	e.style.horizontal_align = "center"	
-	e.style.vertical_align = "center"	
+	e.style.horizontal_align = "center"
+	e.style.vertical_align = "center"
 	e.style.padding = 0
-	e.style.margin = 0	
+	e.style.margin = 0
 	e.tooltip = "Rightclick to allocate 5 points."
-	
+
 	return e
 end
 
@@ -225,142 +225,142 @@ local function draw_gui(player, forced)
 	if not forced then
 		if rpg_t[player.index].gui_refresh_delay > game.tick then return end
 	end
-	
+
 	Tabs.comfy_panel_clear_left_gui(player)
-	
+
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
 	if not player.character then return end
-	
+
 	local frame = player.gui.left.add({type = "frame", name = "rpg", direction = "vertical"})
 	frame.style.maximal_width = 425
 	frame.style.minimal_width = 425
 	frame.style.margin = 6
-	
+
 	add_separator(frame, 400)
-	
+
 	local t = frame.add({type = "table", column_count = 2})
 	local e = add_gui_stat(t, player.name, 200)
 	e.style.font_color = player.chat_color
 	e.style.font = "default-large-bold"
 	local e = add_gui_stat(t, get_class(player), 200)
 	e.style.font = "default-large-bold"
-	
+
 	add_separator(frame, 400)
-	
+
 	local t = frame.add({type = "table", column_count = 4})
 	t.style.cell_padding = 1
-	
+
 	add_gui_description(t, "LEVEL", 80)
 	add_gui_stat(t, rpg_t[player.index].level, 80)
 
 	add_gui_description(t, "EXPERIENCE", 100)
 	local e = add_gui_stat(t, math.floor(rpg_t[player.index].xp), 125)
 	e.tooltip = gain_info_tooltip
-	
+
 	add_gui_description(t, " ", 75)
 	add_gui_description(t, " ", 75)
-	
+
 	add_gui_description(t, "NEXT LEVEL", 100)
 	local e = add_gui_stat(t, experience_levels[rpg_t[player.index].level + 1], 125)
 	e.tooltip = gain_info_tooltip
-	
+
 	add_separator(frame, 400)
-	
+
 	local t = frame.add({type = "table", column_count = 2})
 	local tt = t.add({type = "table", column_count = 3})
 	tt.style.cell_padding = 1
 	local w1 = 85
 	local w2 = 63
-	
+
 	local tip = "Increases inventory slots and mining speed.\nIncreases melee damage."
 	local e = add_gui_description(tt, "STRENGTH", w1)
 	e.tooltip = tip
 	local e = add_gui_stat(tt, rpg_t[player.index].strength, w2)
 	e.tooltip = tip
 	add_gui_increase_stat(tt, "strength", player)
-	
+
 	local tip = "Increases reach distance."
 	local e = add_gui_description(tt, "MAGIC", w1)
 	e.tooltip = tip
 	local e = add_gui_stat(tt, rpg_t[player.index].magic, w2)
 	e.tooltip = tip
 	add_gui_increase_stat(tt, "magic", player)
-	
+
 	local tip = "Increases running and crafting speed."
 	local e = add_gui_description(tt, "DEXTERITY", w1)
 	e.tooltip = tip
 	local e = add_gui_stat(tt, rpg_t[player.index].dexterity, w2)
 	e.tooltip = tip
 	add_gui_increase_stat(tt, "dexterity", player)
-	
+
 	local tip = "Increases health.\nIncreases melee life on-hit."
 	local e = add_gui_description(tt, "VITALITY", w1)
 	e.tooltip = tip
 	local e = add_gui_stat(tt, rpg_t[player.index].vitality, w2)
 	e.tooltip = tip
 	add_gui_increase_stat(tt, "vitality", player)
-	
+
 	add_gui_description(tt, "POINTS TO\nDISTRIBUTE", w1)
 	local e = add_gui_stat(tt, rpg_t[player.index].points_to_distribute, w2)
-	e.style.font_color = {200, 0, 0}	
+	e.style.font_color = {200, 0, 0}
 	add_gui_description(tt, " ", w2)
-	
+
 	add_gui_description(tt, " ", w1)
 	add_gui_description(tt, " ", w2)
 	add_gui_description(tt, " ", w2)
-	
+
 	add_gui_description(tt, "LIFE", w1)
 	add_gui_stat(tt, math.floor(player.character.health), w2)
 	add_gui_stat(tt, math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus), w2)
 
 	local shield = 0
-	local shield_max = 0	
+	local shield_max = 0
 	local i = player.character.get_inventory(defines.inventory.character_armor)
 	if not i.is_empty() then
 		if i[1].grid then
-			shield = math.floor(i[1].grid.shield) 
+			shield = math.floor(i[1].grid.shield)
 			shield_max = math.floor(i[1].grid.max_shield)
 		end
 	end
 	add_gui_description(tt, "SHIELD", w1)
 	add_gui_stat(tt, shield, w2)
 	add_gui_stat(tt, shield_max, w2)
-	
-	
+
+
 	local tt = t.add({type = "table", column_count = 3})
 	tt.style.cell_padding = 1
 	local w0 = 2
 	local w1 = 80
 	local w2 = 80
-	
+
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "MINING\nSPEED", w1)
 	local value = (player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100 .. "%"
 	add_gui_stat(tt, value, w2)
-	
+
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "SLOT\nBONUS", w1)
 	local value = "+ " .. player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus
 	add_gui_stat(tt, value, w2)
-	
+
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "MELEE\nDAMAGE", w1)
 	local value = 100 * (1 + get_melee_modifier(player)) .. "%"
 	local e = add_gui_stat(tt, value, w2)
 	e.tooltip = "Life on-hit: " .. get_life_on_hit(player) .. "\nOne punch chance: " .. get_one_punch_chance(player) .. "%"
-	
+
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
-	
+
 	local value = "+ " .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
 	local tooltip = ""
 	tooltip = tooltip .. "Reach distance bonus: " .. player.character_reach_distance_bonus
 	tooltip = tooltip .. "\nBuild distance bonus: " .. player.character_build_distance_bonus
-	tooltip = tooltip .. "\nItem drop distance bonus: " .. player.character_item_drop_distance_bonus	
+	tooltip = tooltip .. "\nItem drop distance bonus: " .. player.character_item_drop_distance_bonus
 	tooltip = tooltip .. "\nLoot pickup distance bonus: " .. player.character_loot_pickup_distance_bonus
 	tooltip = tooltip .. "\nItem pickup distance bonus: " .. player.character_item_pickup_distance_bonus
 	tooltip = tooltip .. "\nResource reach distance bonus: " .. player.character_resource_reach_distance_bonus
@@ -369,36 +369,36 @@ local function draw_gui(player, forced)
 	e.tooltip = tooltip
 	local e = add_gui_stat(tt, value, w2)
 	e.tooltip = tooltip
-	
+
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
-	
+
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "CRAFTING\nSPEED", w1)
 	local value = (player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100 .. "%"
 	add_gui_stat(tt, value, w2)
-	
+
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "RUNNING\nSPEED", w1)
 	local value = (player.force.character_running_speed_modifier  + player.character_running_speed_modifier + 1) * 100 .. "%"
 	add_gui_stat(tt, value, w2)
-	
+
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
 	local e = add_gui_description(tt, "", w0)
 	e.style.maximal_height = 10
-	
+
 	add_gui_description(tt, " ", w0)
 	add_gui_description(tt, "HEALTH\nBONUS", w1)
 	local value = "+ " .. (player.force.character_health_bonus + player.character_health_bonus)
 	add_gui_stat(tt, value, w2)
-	
+
 	add_separator(frame, 400)
 	local t = frame.add({type = "table", column_count = 14})
 	for i = 1, 14, 1 do
@@ -408,14 +408,14 @@ local function draw_gui(player, forced)
 		e.style.padding = 0
 	end
 	add_separator(frame, 400)
-	
+
 	rpg_t[player.index].gui_refresh_delay = game.tick + 60
 	update_char_button(player)
 end
 
 local function draw_level_text(player)
 	if not player.character then return end
-	
+
 	if rpg_t[player.index].text then
 		rendering.destroy(rpg_t[player.index].text)
 		rpg_t[player.index].text = nil
@@ -426,9 +426,9 @@ local function draw_level_text(player)
 		if p.index ~= player.index then
 			players[#players + 1] = p.index
 		end
-	end	
+	end
 	if #players == 0 then return end
-	
+
 	rpg_t[player.index].text = rendering.draw_text{
 		text = "lvl " .. rpg_t[player.index].level,
 		surface = player.surface,
@@ -449,7 +449,7 @@ local function draw_level_text(player)
 end
 
 local function level_up(player)
-	local distribute_points_gain = 0	
+	local distribute_points_gain = 0
 	for i = rpg_t[player.index].level + 1, #experience_levels, 1 do
 		if rpg_t[player.index].xp > experience_levels[i] then
 			rpg_t[player.index].level = i
@@ -487,13 +487,13 @@ function Public.rpg_reset_player(player)
 	if player.gui.left.rpg then player.gui.left.rpg.destroy() end
 	if not player.character then
 		player.set_controller({type=defines.controllers.god})
-		player.create_character() 
+		player.create_character()
 	end
 	rpg_t[player.index] = {
 		level = 1, xp = 0, strength = 10, magic = 10, dexterity = 10, vitality = 10, points_to_distribute = 0,
 		last_floaty_text = visuals_delay, xp_since_last_floaty_text = 0,
 		rotated_entity_delay = 0, gui_refresh_delay = 0, last_mined_entity_position = {x = 0, y = 0},
-	}	
+	}
 	draw_gui_char_button(player)
 	draw_level_text(player)
 	update_char_button(player)
@@ -513,9 +513,9 @@ local function on_gui_click(event)
 	if not event.element then return end
 	if not event.element.valid then return end
 	local element = event.element
-	
+
 	if element.type ~= "sprite-button" then return end
-	
+
 	if element.caption == "CHAR" then
 		if element.name == "rpg" then
 			local player = game.players[event.player_index]
@@ -526,15 +526,15 @@ local function on_gui_click(event)
 			draw_gui(player, true)
 		end
 	end
-	
+
 	if element.caption ~= "✚" then return end
 	if element.sprite ~= "virtual-signal/signal-red" then return end
-	
+
 	local index = element.name
 	local player = game.players[event.player_index]
 	if not rpg_t[player.index][index] then return end
 	if not player.character then return end
-	
+
 	if event.button == defines.mouse_button_type.right then
 		for a = 1, 5, 1 do
 			if rpg_t[player.index].points_to_distribute <= 0 then draw_gui(player, true) return end
@@ -545,7 +545,7 @@ local function on_gui_click(event)
 		draw_gui(player, true)
 		return
 	end
-	
+
 	if rpg_t[player.index].points_to_distribute <= 0 then draw_gui(player, true) return end
 	rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
 	rpg_t[player.index][index] = rpg_t[player.index][index] + 1
@@ -553,13 +553,13 @@ local function on_gui_click(event)
 	draw_gui(player, true)
 end
 
-local function train_type_cause(cause)	
+local function train_type_cause(cause)
 	local players = {}
 	if cause.train.passengers then
 		for _, player in pairs(cause.train.passengers) do
 			players[#players + 1] = player
 		end
-	end			
+	end
 	return players
 end
 
@@ -593,7 +593,7 @@ local get_cause_player = {
 
 local function on_entity_died(event)
 	if not event.entity.valid then return end
-	
+
 	--Grant XP for hand placed land mines
 	if event.entity.last_user then
 		if event.entity.type == "land-mine" then
@@ -606,16 +606,16 @@ local function on_entity_died(event)
 			return
 		end
 	end
-	
+
 	if not event.cause then return end
-	if not event.cause.valid then return end	
+	if not event.cause.valid then return end
 	if event.cause.force.index == event.entity.force.index then return end
 	if not get_cause_player[event.cause.type] then return end
-		
+
 	local players = get_cause_player[event.cause.type](event.cause)
 	if not players then return end
 	if not players[1] then return end
-	
+
 	--Grant modified XP for health boosted units
 	if global.biter_health_boost then
 		if enemy_types[event.entity.type] then
@@ -629,7 +629,7 @@ local function on_entity_died(event)
 			return
 		end
 	end
-	
+
 	--Grant normal XP
 	for _, player in pairs(players) do
 		if xp_yield[event.entity.name] then
@@ -643,25 +643,25 @@ end
 --Melee damage modifier
 local function one_punch(character, target, damage)
 	local base_vector = {target.position.x - character.position.x, target.position.y - character.position.y}
-	
+
 	local vector = {base_vector[1], base_vector[2]}
 	vector[1] = vector[1] * 1000
 	vector[2] = vector[2] * 1000
-	
+
 	character.surface.create_entity({name = "flying-text", position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5}, text = "ONE PUNCH", color = {255, 0, 0}})
 	character.surface.create_entity({name = "blood-explosion-huge", position = target.position})
 	character.surface.create_entity({name = "big-artillery-explosion", position = {target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5}})
-	
+
 	if math.abs(vector[1]) > math.abs(vector[2]) then
 		local d = math.abs(vector[1])
 		if math.abs(vector[1]) > 0 then vector[1] = vector[1] / d end
 		if math.abs(vector[2]) > 0 then vector[2] = vector[2] / d end
 	else
-		local d = math.abs(vector[2])		
+		local d = math.abs(vector[2])
 		if math.abs(vector[2]) > 0 then vector[2] = vector[2] / d end
-		if math.abs(vector[1]) > 0 and d > 0 then vector[1] = vector[1] / d end	
+		if math.abs(vector[1]) > 0 and d > 0 then vector[1] = vector[1] / d end
 	end
-	
+
 	vector[1] = vector[1] * 1.5
 	vector[2] = vector[2] * 1.5
 
@@ -671,7 +671,7 @@ local function one_punch(character, target, damage)
 		for x = i * -1 * a, i * a, 1 do
 			for y = i * -1 * a, i * a, 1 do
 				local p = {character.position.x + x + vector[1] * i, character.position.y + y + vector[2] * i}
-				character.surface.create_trivial_smoke({name="train-smoke", position=p})				
+				character.surface.create_trivial_smoke({name="train-smoke", position=p})
 				for _, e in pairs(character.surface.find_entities({{p[1] - a, p[2] - a},{p[1] + a, p[2] + a}})) do
 					if e.valid then
 						if e.health then
@@ -685,10 +685,10 @@ local function one_punch(character, target, damage)
 							end
 						end
 					end
-				end			
+				end
 			end
-		end	
-	end	
+		end
+	end
 end
 
 local function on_entity_damaged(event)
@@ -698,33 +698,33 @@ local function on_entity_damaged(event)
 	if event.cause.name ~= "character" then return end
 	if event.damage_type.name ~= "physical" then return end
 	if not event.entity.valid then return end
-	if event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].valid_for_read 
+	if event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].valid_for_read
 	and event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].valid_for_read then return end
 	if not event.cause.player then return end
-	
+
 	--Grant the player life-on-hit.
 	event.cause.health = event.cause.health + get_life_on_hit(event.cause.player)
-	
+
 	--Calculate modified damage.
 	local damage = event.original_damage_amount + event.original_damage_amount * get_melee_modifier(event.cause.player)
 	if event.entity.prototype.resistances then
 		if event.entity.prototype.resistances.physical then
 			damage = damage - event.entity.prototype.resistances.physical.decrease
-			damage = damage - damage * event.entity.prototype.resistances.physical.percent 
+			damage = damage - damage * event.entity.prototype.resistances.physical.percent
 		end
 	end
 	damage = math.round(damage, 3)
 	if damage < 1 then damage = 1 end
-	
+
 	--Cause a one punch.
 	if math_random(0,999) < get_one_punch_chance(event.cause.player) * 10 then
 		one_punch(event.cause, event.entity, damage)
 		if event.entity.valid then
 			event.entity.die(event.entity.force.name, event.cause)
-		end	
+		end
 		return
 	end
-	
+
 	--Floating messages and particle effects.
 	if math_random(1,7) == 1 then
 		damage = damage * math_random(250, 350) * 0.01
@@ -732,9 +732,9 @@ local function on_entity_damaged(event)
 		event.cause.surface.create_entity({name = "blood-explosion-huge", position = event.entity.position})
 	else
 		damage = damage * math_random(100, 125) * 0.01
-		event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})	
+		event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})
 	end
-	
+
 	--Handle the custom health pool of the biter health booster, if it is used in the map.
 	if global.biter_health_boost then
 		local health_pool = global.biter_health_boost_units[event.entity.unit_number]
@@ -747,12 +747,12 @@ local function on_entity_damaged(event)
 
 			if health_pool[1] <= 0 then
 				global.biter_health_boost_units[event.entity.unit_number] = nil
-				event.entity.die(event.entity.force.name, event.cause)			
+				event.entity.die(event.entity.force.name, event.cause)
 			end
 			return
 		end
 	end
-	
+
 	--Handle vanilla damage.
 	event.entity.health = event.entity.health + event.final_damage_amount
 	event.entity.health = event.entity.health - damage
@@ -781,7 +781,7 @@ local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if player.character.driving then return end
-	gain_xp(player, 1.0)	
+	gain_xp(player, 1.0)
 end
 
 local building_and_mining_blacklist = {
@@ -796,20 +796,20 @@ local function on_pre_player_mined_item(event)
 	if building_and_mining_blacklist[entity.type] then return end
 	if entity.force.index ~= 3 then return end
 	local player = game.players[event.player_index]
-	
+
 	if rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y then return end
 	rpg_t[player.index].last_mined_entity_position.x = entity.position.x
 	rpg_t[player.index].last_mined_entity_position.y = entity.position.y
-	
+
 	local distance_multiplier = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
-	
-	local xp_amount	
+
+	local xp_amount
 	if entity.type == "resource" then
 		xp_amount = 0.5 * distance_multiplier
 	else
 		xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
 	end
-	
+
 	gain_xp(player, xp_amount)
 end
 
@@ -828,7 +828,7 @@ end
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
-	if not rpg_t[player.index] then Public.rpg_reset_player(player) end	
+	if not rpg_t[player.index] then Public.rpg_reset_player(player) end
 	for _, p in pairs(game.connected_players) do
 		draw_level_text(p)
 	end

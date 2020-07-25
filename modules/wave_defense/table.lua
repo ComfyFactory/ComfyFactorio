@@ -53,9 +53,23 @@ function Public.reset_wave_defense()
     wave_defense.alert_boss_wave = false
 end
 
-function Public.get_table()
-    return wave_defense
+function Public.get(key)
+    if key then
+        return wave_defense[key]
+    else
+        return wave_defense
+    end
 end
+
+function Public.set(key)
+    if key then
+        return wave_defense[key]
+    else
+        return wave_defense
+    end
+end
+
+Public.get_table = Public.get
 
 function Public.clear_corpses(value)
     if value then

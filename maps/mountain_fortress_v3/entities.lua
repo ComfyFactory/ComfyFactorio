@@ -5,7 +5,8 @@ local Map_score = require 'comfy_panel.map_score'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local Loot = require 'maps.mountain_fortress_v3.loot'
 local Pets = require 'maps.mountain_fortress_v3.biter_pets'
-local RPG = require 'modules.rpg_v2'
+local RPG_Settings = require 'modules.rpg.table'
+local Functions = require 'modules.rpg.functions'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local BiterHealthBooster = require 'modules.biter_health_booster'
@@ -201,7 +202,8 @@ end
 
 local function hidden_treasure(event)
     local player = game.players[event.player_index]
-    local magic = RPG.get_table(player.index).magicka
+    local rpg = RPG_Settings.get('rpg_t')
+    local magic = rpg[player.index].magicka
     local name = Difficulty.get('name')
     if name == 'Easy' then
         if math.random(1, 220) ~= 1 then
@@ -303,6 +305,8 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
+    local rpg = RPG_Settings.get('rpg_t')
+    local rpg_char = rpg[player.index]
 
     local map_name = 'mountain_fortress_v3'
 
@@ -339,7 +343,9 @@ local function on_player_mined_entity(event)
         this.mined_scrap = this.mined_scrap + 1
         Mining.on_player_mined_entity(event)
         give_coin(player)
-
+        if rpg_char.stone_path then
+            entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
+        end
         if Locomotive.is_around_train(entity) then
             entity.destroy()
             return
@@ -553,7 +559,7 @@ local function on_player_repaired_entity(event)
     local entity = event.entity
     if entity == this.locomotive then
         local player = game.players[event.player_index]
-        local repair_speed = RPG.get_magicka(player)
+        local repair_speed = Functions.get_magicka(player)
         if repair_speed <= 0 then
             set_objective_health(-1)
             return
@@ -748,6 +754,7 @@ local function on_built_entity(event)
     end
 
     local upg = this.upgrades
+    local surface = entity.surface
 
     local built = {
         ['land-mine'] = upg.landmine.built,
@@ -767,8 +774,6 @@ local function on_built_entity(event)
     local name = validator[entity.name]
 
     if built[entity.name] and entity.force.index == 1 then
-        local surface = entity.surface
-
         if built[entity.name] < limit[entity.name] then
             this.upgrades[name].built = built[entity.name] + 1
             this.upgrades.unit_number[name][entity] = entity
@@ -810,6 +815,10 @@ local function on_robot_built_entity(event)
     end
 
     local upg = this.upgrades
+    local surface = entity.surface
+
+    local e = {x = entity.position.x, y = entity.position.y}
+    local get_tile = surface.get_tile(e)
 
     local built = {
         ['land-mine'] = upg.landmine.built,
@@ -829,8 +838,6 @@ local function on_robot_built_entity(event)
     local name = validator[entity.name]
 
     if built[entity.name] and entity.force.index == 1 then
-        local surface = entity.surface
-
         if built[entity.name] < limit[entity.name] then
             this.upgrades[name].built = built[entity.name] + 1
             this.upgrades.unit_number[name][entity] = entity
@@ -862,6 +869,40 @@ local function on_robot_built_entity(event)
             entity.destroy()
         end
     end
+    if get_tile.valid and get_tile.name == 'black-refined-concrete' then
+        entity.destroy()
+        return
+    end
+end
+
+local on_player_or_robot_built_tile = function(event)
+    local surface = game.surfaces[event.surface_index]
+
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(surface.name, 0, #map_name) == map_name then
+        return
+    end
+
+    local tiles = event.tiles
+    if not tiles then
+        return
+    end
+    for k, v in pairs(tiles) do
+        local old_tile = v.old_tile
+        if old_tile.name == 'black-refined-concrete' then
+            surface.set_tiles({{name = 'black-refined-concrete', position = v.position}}, true)
+        end
+        if old_tile.name == 'blue-refined-concrete' then
+            surface.set_tiles({{name = 'blue-refined-concrete', position = v.position}}, true)
+        end
+        if old_tile.name == 'cyan-refined-concrete' then
+            surface.set_tiles({{name = 'cyan-refined-concrete', position = v.position}}, true)
+        end
+        if old_tile.name == 'hazard-concrete-right' then
+            surface.set_tiles({{name = 'hazard-concrete-right', position = v.position}}, true)
+        end
+    end
 end
 
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
@@ -871,5 +912,7 @@ Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
+Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 
 return Public

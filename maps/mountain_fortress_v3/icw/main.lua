@@ -58,7 +58,7 @@ end
 local function on_player_driving_changed_state(event)
     local icw = ICW.get()
     local player = game.players[event.player_index]
-    Functions.use_cargo_wagon_door(icw, player, event.entity)
+    Functions.use_cargo_wagon_door_with_entity(icw, player, event.entity)
 end
 
 local function on_player_changed_surface(event)
@@ -140,6 +140,7 @@ local function on_tick()
     local tick = game.tick
 
     if tick % 60 == 0 then
+        Functions.teleport_players_around(icw)
         Functions.item_transfer(icw)
     end
     if tick % 240 == 0 then

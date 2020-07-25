@@ -10,6 +10,7 @@ require 'modules.spawners_contain_biters'
 require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.mineable_wreckage_yields_scrap'
+require 'modules.charging_station'
 
 local Autostash = require 'modules.autostash'
 local CS = require 'maps.mountain_fortress_v3.surface'
@@ -21,10 +22,10 @@ local Entities = require 'maps.mountain_fortress_v3.entities'
 local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
-local ICT = require 'maps.mountain_fortress_v3.icw.table'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
-local RPG = require 'modules.rpg_v2'
+local RPG = require 'modules.rpg.main'
+local RPG_Settings = require 'modules.rpg.table'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local Event = require 'utils.event'
@@ -35,12 +36,12 @@ local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
+local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
 --local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
-local rng = math.random
 -- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -228,14 +229,16 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
     Map_score.reset_score()
-    -- AntiGrief.reset_tables()
     RPG.rpg_reset_all_players()
-    RPG.set_surface_name('mountain_fortress_v3')
-    RPG.enable_health_and_mana_bars(true)
-    RPG.enable_wave_defense(true)
-    RPG.enable_mana(true)
-    RPG.enable_flame_boots(true)
-    RPG.personal_tax_rate(1)
+    RPG_Settings.set_surface_name('mountain_fortress_v3')
+    RPG_Settings.enable_health_and_mana_bars(true)
+    RPG_Settings.enable_wave_defense(true)
+    RPG_Settings.enable_mana(true)
+    RPG_Settings.enable_flame_boots(true)
+    RPG_Settings.personal_tax_rate(0.3)
+    RPG_Settings.enable_stone_path(true)
+    RPG_Settings.enable_one_punch(true)
+    RPG_Settings.enable_one_punch_globally(false)
 
     disable_tech()
 
@@ -251,7 +254,6 @@ function Public.reset_map()
     Entities.set_scores()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
-    --AntiGrief.protect_entities(true)
 
     local players = game.connected_players
     for i = 1, #players do
@@ -272,26 +274,12 @@ function Public.reset_map()
     Collapse.set_direction('north')
     Collapse.start_now(false)
 
-    --[[
-    local x_value = rng(15, 25)
-    local y_value = rng(50, 60)
-
-    local data = {
-        ['cargo-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
-        ['artillery-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
-        ['fluid-wagon'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}},
-        ['locomotive'] = {left_top = {x = -x_value, y = 0}, right_bottom = {x = x_value, y = y_value}}
-    }
-    ICT.set_wagon_area(data)
-
-     ]]
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
     Locomotive.locomotive_spawn(surface, {x = -18, y = 25})
     Locomotive.render_train_hp()
     render_direction(surface)
-    -- LM.place_market()
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
@@ -608,7 +596,7 @@ local boost_difficulty = function()
         return
     end
 
-    local rpg_extra = RPG.get_extra_table()
+    local rpg_extra = RPG_Settings.get('rpg_extra')
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
     Difficulty.get().name = name
 
@@ -632,8 +620,9 @@ local boost_difficulty = function()
         WPT.get('upgrades').landmine.limit = 100
         WPT.get().locomotive_health = 20000
         WPT.get().locomotive_max_health = 20000
-        WPT.get().difficulty_set = true
         WPT.get().bonus_xp_on_join = 700
+        WD.set().next_wave = game.tick + 3600 * 20
+        WPT.get().difficulty_set = true
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
         game.forces.player.manual_mining_speed_modifier = 0.5
@@ -646,6 +635,7 @@ local boost_difficulty = function()
         WPT.get().locomotive_health = 10000
         WPT.get().locomotive_max_health = 10000
         WPT.get().bonus_xp_on_join = 300
+        WD.set().next_wave = game.tick + 3600 * 15
         WPT.get().difficulty_set = true
     elseif name == 'Hard' then
         rpg_extra.difficulty = 0
@@ -659,6 +649,7 @@ local boost_difficulty = function()
         WPT.get().locomotive_health = 5000
         WPT.get().locomotive_max_health = 5000
         WPT.get().bonus_xp_on_join = 50
+        WD.set().next_wave = game.tick + 3600 * 10
         WPT.get().difficulty_set = true
     end
 end
@@ -670,6 +661,37 @@ local chunk_load = function()
             WPT.get().chunk_load_tick = nil
             Task.set_queue_speed(4)
         end
+    end
+end
+
+local collapse_message =
+    Token.register(
+    function(data)
+        local keeper = '[color=blue]Mapkeeper:[/color] \n'
+        local pos = data.position
+        local message = keeper .. 'Warning, collapse has begun - wave limit has been reached!'
+        local collapse_position = {
+            position = pos
+        }
+        Alert.alert_all_players_location(collapse_position, message)
+    end
+)
+
+local collapse_after_wave_100 = function()
+    local collapse_grace = WPT.get('collapse_grace')
+    if not collapse_grace then
+        return
+    end
+    if Collapse.start_now() then
+        return
+    end
+    local wave_number = WD.get_wave()
+    if wave_number >= 100 then
+        Collapse.start_now(true)
+        local data = {
+            position = Collapse.get_position()
+        }
+        Task.set_timeout_in_ticks(550, collapse_message, data)
     end
 end
 
@@ -691,6 +713,7 @@ local on_tick = function()
         if game.tick % 1800 == 0 then
             remove_offline_players()
             boost_difficulty()
+            collapse_after_wave_100()
             Entities.set_scores()
             local collapse_pos = Collapse.get_position()
             local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)
@@ -727,9 +750,9 @@ local on_init = function()
     }
 
     local tooltip = {
-        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 20000.\nHidden Treasure has higher chance to spawn.',
-        [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.',
-        [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.'
+        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 20000.\nHidden Treasure has higher chance to spawn.\nGrace period: 20 minutes',
+        [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.\nGrace period: 15 minutes',
+        [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.\nGrace period: 10 minutes'
     }
 
     Difficulty.set_difficulties(difficulties)

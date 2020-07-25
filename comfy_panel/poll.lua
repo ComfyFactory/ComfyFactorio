@@ -372,6 +372,7 @@ local function draw_main_frame(left, player)
     Gui.set_data(forward_button, data)
 
     update_poll_viewer(data)
+     --
 
     --[[
     frame.add {
@@ -381,9 +382,8 @@ local function draw_main_frame(left, player)
         state = not no_notify_players[player.index],
         tooltip = 'Receive a message when new polls are created and popup the poll.'
     }
-    ]]--
-
-    local bottom_flow = frame.add {type = 'flow', direction = 'horizontal'}
+    ]] local bottom_flow =
+        frame.add {type = 'flow', direction = 'horizontal'}
 
     local left_flow = bottom_flow.add {type = 'flow'}
     left_flow.style.horizontal_align = 'left'
@@ -793,21 +793,21 @@ local function vote(event)
                     vote_button.caption = previous_vote_button_count
                     vote_button.tooltip = previous_vote_button_tooltip
 
-                    --if p.index == player_index then
-                    --    local vote_button_style = vote_button.style
-                    --    vote_button_style.font_color = normal_color
-                    --    vote_button_style.disabled_font_color = normal_color
-                    --end
+                --if p.index == player_index then
+                --    local vote_button_style = vote_button.style
+                --    vote_button_style.font_color = normal_color
+                --    vote_button_style.disabled_font_color = normal_color
+                --end
                 end
 
                 local vote_button = vote_buttons[vote_index]
                 vote_button.caption = vote_button_count
                 vote_button.tooltip = vote_button_tooltip
-                -- if p.index == player_index then -- block commented to avoid desync risk      
-                --     local vote_button_style = vote_button.style      
-                --     vote_button_style.font_color = focus_color       
-                --     vote_button_style.disabled_font_color = focus_color      
-                -- end
+            -- if p.index == player_index then -- block commented to avoid desync risk
+            --     local vote_button_style = vote_button.style
+            --     vote_button_style.font_color = focus_color
+            --     vote_button_style.disabled_font_color = focus_color
+            -- end
             end
         end
     end
@@ -826,14 +826,19 @@ local function player_joined(event)
             update_poll_viewer(data)
         end
     else
-        player.gui.top.add{type = 'sprite-button', name = main_button_name, sprite = 'item/programmable-speaker', tooltip = "Let your question be heard!"}
+        player.gui.top.add {
+            type = 'sprite-button',
+            name = main_button_name,
+            sprite = 'item/programmable-speaker',
+            tooltip = 'Let your question be heard!'
+        }
     end
 end
 
 local function tick()
-    if not polls.running then 
-        return 
-    end 
+    if not polls.running then
+        return
+    end
     for _, p in pairs(game.connected_players) do
         local frame = p.gui.left[main_frame_name]
         if frame and frame.valid then
@@ -1190,17 +1195,15 @@ Gui.on_click(
 
 Gui.on_click(poll_view_vote_name, vote)
 
-Gui.allow_player_to_toggle_top_element_visibility(main_button_name)
-
 function Class.reset()
     for k, _ in pairs(polls) do
-      polls[k] = nil
+        polls[k] = nil
     end
     for k, _ in pairs(player_poll_index) do
-      player_poll_index[k] = nil
+        player_poll_index[k] = nil
     end
     for k, _ in pairs(player_create_poll_data) do
-      player_create_poll_data[k] = nil
+        player_create_poll_data[k] = nil
     end
     for _, p in pairs(game.connected_players) do
         local main_frame = p.gui.left[main_frame_name]

@@ -1,7 +1,9 @@
 local Collapse = require 'modules.collapse'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Balance = require 'maps.mountain_fortress_v3.balance'
-local RPG = require 'modules.rpg_v2'
+local RPG_Settings = require 'modules.rpg.table'
+local RPG = require 'modules.rpg.main'
+local WD = require 'modules.wave_defense.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Alert = require 'utils.alert'
 local Event = require 'utils.event'
@@ -56,8 +58,8 @@ local artillery_warning =
 )
 
 local function distance(player)
-    local rpg_t = RPG.get_table()
-    local rpg_extra = RPG.get_extra_table()
+    local rpg_t = RPG_Settings.get('rpg_t')
+    local rpg_extra = RPG_Settings.get('rpg_extra')
     local bonus = rpg_t[player.index].bonus
     local breached_wall = WPT.get('breached_wall')
     local bonus_xp_on_join = WPT.get('bonus_xp_on_join')
