@@ -67,6 +67,7 @@ require 'modules.autostash'
 --require 'modules.wave_defense.main'
 --require 'modules.fjei.main'
 --require 'modules.charging_station'
+--require 'modules.nuclear_landmines'
 -----------------------------
 
 ---- enable maps here ---- (maps higher up in the list may be more actually playable)
