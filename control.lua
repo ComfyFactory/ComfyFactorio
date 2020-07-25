@@ -134,8 +134,8 @@ require 'modules.autostash'
 ---- more modules here ----
 --require 'modules.hidden_dimension.main'
 --require 'modules.towny.main'
---require 'modules.rpg_v2'
 --require 'modules.rpg.main'
+--require 'modules.rpg'
 --require 'modules.trees_grow'
 --require 'modules.trees_randomly_die'
 
