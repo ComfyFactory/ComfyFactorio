@@ -2124,8 +2124,9 @@ local function on_entity_damaged(event)
             event.entity.health = health_pool[1] * health_pool[2]
 
             if health_pool[1] <= 0 then
-                global.biter_health_boost_units[event.entity.unit_number] = nil
+                local entity_number = event.entity.unit_number
                 event.entity.die(event.entity.force.name, event.cause)
+                global.biter_health_boost_units[entity_number] = nil
             end
             return
         end
@@ -2715,7 +2716,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
 
     if not added_to_pool then
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
-        local fee = add_to_global_pool(amount, true)
+        local fee = amount - add_to_global_pool(amount, true)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
         amount = math.round(amount, 3) - fee
         if rpg_extra.difficulty then

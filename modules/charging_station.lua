@@ -23,7 +23,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
           accu.energy = accu.energy - 2000000
           power_needs = power_needs - 2000000
         else
-          power_drained = power_needs
+          power_drained = power_drained + power_needs
           accu.energy = accu.energy - power_needs
         end
       elseif power_needs <= 0 then
@@ -43,12 +43,16 @@ local function charge(player)
   if not grid or not grid.valid then return end
   local equip = grid.equipment
   for _,piece in pairs(equip) do
-    if piece.valid then
+    if piece.valid and piece.generator_power == 0 then
       local energy_needs = piece.max_energy - piece.energy
       if energy_needs > 0 then
         local energy = discharge_accumulators(player.surface, player.position, player.force, energy_needs)
         if energy > 0 then
-          piece.energy = piece.energy + energy
+          if piece.energy + energy >= piece.max_energy then
+            piece.energy = piece.max_energy
+          else
+            piece.energy = piece.energy + energy
+          end
         end
       end
     end
