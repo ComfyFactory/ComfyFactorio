@@ -22,10 +22,10 @@ local Entities = require 'maps.mountain_fortress_v3.entities'
 local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
-local ICT = require 'maps.mountain_fortress_v3.icw.table'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
-local RPG = require 'modules.rpg_v2'
+local RPG = require 'modules.rpg.main'
+local RPG_Settings = require 'modules.rpg.table'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local Event = require 'utils.event'
@@ -36,12 +36,12 @@ local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote'
 local Task = require 'utils.task'
+local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
 --local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
-local rng = math.random
 -- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -230,13 +230,15 @@ function Public.reset_map()
     WPT.reset_table()
     Map_score.reset_score()
     RPG.rpg_reset_all_players()
-    RPG.set_surface_name('mountain_fortress_v3')
-    RPG.enable_health_and_mana_bars(true)
-    RPG.enable_wave_defense(true)
-    RPG.enable_mana(true)
-    RPG.enable_flame_boots(true)
-    RPG.personal_tax_rate(0.3)
-    RPG.enable_stone_path(true)
+    RPG_Settings.set_surface_name('mountain_fortress_v3')
+    RPG_Settings.enable_health_and_mana_bars(true)
+    RPG_Settings.enable_wave_defense(true)
+    RPG_Settings.enable_mana(true)
+    RPG_Settings.enable_flame_boots(true)
+    RPG_Settings.personal_tax_rate(0.3)
+    RPG_Settings.enable_stone_path(true)
+    RPG_Settings.enable_one_punch(true)
+    RPG_Settings.enable_one_punch_globally(false)
 
     disable_tech()
 
@@ -594,7 +596,7 @@ local boost_difficulty = function()
         return
     end
 
-    local rpg_extra = RPG.get_extra_table()
+    local rpg_extra = RPG_Settings.get('rpg_extra')
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
     Difficulty.get().name = name
 
@@ -662,6 +664,37 @@ local chunk_load = function()
     end
 end
 
+local collapse_message =
+    Token.register(
+    function(data)
+        local keeper = '[color=blue]Mapkeeper:[/color] \n'
+        local pos = data.position
+        local message = keeper .. 'Warning, collapse has begun - wave limit has been reached!'
+        local collapse_position = {
+            position = pos
+        }
+        Alert.alert_all_players_location(collapse_position, message)
+    end
+)
+
+local collapse_after_wave_100 = function()
+    local collapse_grace = WPT.get('collapse_grace')
+    if not collapse_grace then
+        return
+    end
+    if Collapse.start_now() then
+        return
+    end
+    local wave_number = WD.get_wave()
+    if wave_number >= 100 then
+        Collapse.start_now(true)
+        local data = {
+            position = Collapse.get_position()
+        }
+        Task.set_timeout_in_ticks(550, collapse_message, data)
+    end
+end
+
 local on_tick = function()
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
@@ -680,6 +713,7 @@ local on_tick = function()
         if game.tick % 1800 == 0 then
             remove_offline_players()
             boost_difficulty()
+            collapse_after_wave_100()
             Entities.set_scores()
             local collapse_pos = Collapse.get_position()
             local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)

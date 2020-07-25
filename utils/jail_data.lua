@@ -302,7 +302,6 @@ Event.add(
     function(event)
         local tracker = Session.get_session_table()
         local cmd = event.command
-        local _10d = 51840000 -- 10d
         local _12h = 2592000 --  12h
 
         if not valid_commands[cmd] then
@@ -332,7 +331,7 @@ Event.add(
                 griefer = game.players[griefer].name
             end
 
-            if playtime >= _12h and playtime < _10d and not player.admin then
+            if playtime >= _12h and not player.admin then
                 if cmd == 'jail' then
                     vote_to_jail(player, griefer)
                     return
@@ -340,7 +339,7 @@ Event.add(
                     vote_to_free(player, griefer)
                     return
                 end
-            elseif playtime < _10d and not player.admin then
+            elseif playtime < _12h and not player.admin then
                 return Utils.print_to(player, 'You are not trusted enough to run this command.')
             end
 

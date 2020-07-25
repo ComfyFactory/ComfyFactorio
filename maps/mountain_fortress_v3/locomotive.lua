@@ -4,7 +4,9 @@ local Market = require 'maps.mountain_fortress_v3.basic_markets'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Difficulty = require 'modules.difficulty_vote'
-local RPG = require 'modules.rpg_v2'
+local Jailed = require 'utils.jail_data'
+local RPG_Settings = require 'modules.rpg.table'
+local RPG = require 'modules.rpg.main'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
 local Alert = require 'utils.alert'
@@ -53,6 +55,12 @@ local function validate_player(player)
 end
 
 function Public.add_player_to_permission_group(player, group)
+    local jailed = Jailed.get_jailed_table()
+
+    if jailed[player.name] then
+        return
+    end
+
     if group == 'locomotive' then
         local locomotive_group = game.permissions.get_group('locomotive')
         if not locomotive_group then
@@ -575,6 +583,7 @@ local function gui_opened(event)
     add_space(flow)
 
     local bottom_grid = frame.add({type = 'table', column_count = 2})
+    bottom_grid.style.vertically_stretchable = false
 
     bottom_grid.add({type = 'label', caption = 'Quantity: '}).style.font = 'default-bold'
 
@@ -585,6 +594,7 @@ local function gui_opened(event)
             text = 1
         }
     )
+    text_input.style.maximal_height = 28
 
     local slider =
         frame.add(
@@ -1336,7 +1346,7 @@ function Public.refresh_gui()
 end
 
 function Public.boost_players_around_train()
-    local rpg = RPG.get_table()
+    local rpg = RPG_Settings.get('rpg_t')
     local this = WPT.get()
     if not this.active_surface_index then
         return

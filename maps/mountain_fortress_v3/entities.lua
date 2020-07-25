@@ -5,7 +5,8 @@ local Map_score = require 'comfy_panel.map_score'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local Loot = require 'maps.mountain_fortress_v3.loot'
 local Pets = require 'maps.mountain_fortress_v3.biter_pets'
-local RPG = require 'modules.rpg_v2'
+local RPG_Settings = require 'modules.rpg.table'
+local Functions = require 'modules.rpg.functions'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local BiterHealthBooster = require 'modules.biter_health_booster'
@@ -201,7 +202,8 @@ end
 
 local function hidden_treasure(event)
     local player = game.players[event.player_index]
-    local magic = RPG.get_table(player.index).magicka
+    local rpg = RPG_Settings.get('rpg_t')
+    local magic = rpg[player.index].magicka
     local name = Difficulty.get('name')
     if name == 'Easy' then
         if math.random(1, 220) ~= 1 then
@@ -303,7 +305,8 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    local rpg_char = RPG.get_table(player.index)
+    local rpg = RPG_Settings.get('rpg_t')
+    local rpg_char = rpg[player.index]
 
     local map_name = 'mountain_fortress_v3'
 
@@ -556,7 +559,7 @@ local function on_player_repaired_entity(event)
     local entity = event.entity
     if entity == this.locomotive then
         local player = game.players[event.player_index]
-        local repair_speed = RPG.get_magicka(player)
+        local repair_speed = Functions.get_magicka(player)
         if repair_speed <= 0 then
             set_objective_health(-1)
             return
@@ -753,9 +756,6 @@ local function on_built_entity(event)
     local upg = this.upgrades
     local surface = entity.surface
 
-    local e = {x = entity.position.x, y = entity.position.y}
-    local get_tile = surface.get_tile(e)
-
     local built = {
         ['land-mine'] = upg.landmine.built,
         ['flamethrower-turret'] = upg.flame_turret.built
@@ -805,11 +805,6 @@ local function on_built_entity(event)
             entity.destroy()
         end
     end
-
-    -- if get_tile.valid and get_tile.name == 'black-refined-concrete' then
-    --     entity.destroy()
-    --     return
-    -- end
 end
 
 local function on_robot_built_entity(event)

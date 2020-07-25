@@ -130,7 +130,7 @@ local function draw_element_headers(element_panel, values, selected_index)
             ele_name = gui_name
         end
 
-        if ele_name:match('%d* %- utils/debug') then
+        if ele_name:match('%d* %- utils/debug/') then
             goto continue
         end
 

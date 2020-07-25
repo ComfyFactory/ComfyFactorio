@@ -92,6 +92,7 @@ function Public.reset_table()
         limit = 5,
         randomized = false
     }
+    this.collapse_grace = true
 end
 
 function Public.get(key)

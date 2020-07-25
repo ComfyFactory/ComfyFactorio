@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
-local RPG = require 'modules.rpg_v2'
+local RPG_Settings = require 'modules.rpg.table'
+local RPG = require 'modules.rpg.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Gui = require 'utils.gui'
 local format_number = require 'util'.format_number
 
@@ -205,9 +205,9 @@ local function on_player_changed_surface(event)
         return
     end
 
-    local rpg_button = RPG.draw_main_frame_name
-    local rpg_frame = RPG.main_frame_name
-    local rpg_settings = RPG.settings_frame_name
+    local rpg_button = RPG_Settings.draw_main_frame_name
+    local rpg_frame = RPG_Settings.main_frame_name
+    local rpg_settings = RPG_Settings.settings_frame_name
     local main = WPT.get('locomotive')
     local icw_locomotive = WPT.get('icw_locomotive')
     local wagon_surface = icw_locomotive.surface
@@ -292,7 +292,7 @@ local function on_player_changed_surface(event)
 end
 
 function Public.update_gui(player)
-    local rpg_extra = RPG.get_extra_table()
+    local rpg_extra = RPG_Settings.get('rpg_extra')
     local this = WPT.get()
 
     if not player.gui.top[main_frame_name] then
