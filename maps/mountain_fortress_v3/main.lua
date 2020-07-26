@@ -14,6 +14,7 @@ require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.charging_station'
 
 local Autostash = require 'modules.autostash'
+local PL = require 'comfy_panel.player_list'
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Map_score = require 'comfy_panel.map_score'
 local Server = require 'utils.server'
@@ -71,9 +72,6 @@ local collapse_kill = {
     },
     enabled = true
 }
-
-local add_to_config = function()
-end
 
 local disable_tech = function()
     game.forces.player.technologies['landfill'].enabled = false
@@ -258,6 +256,9 @@ function Public.reset_map()
     Entities.set_scores()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
+    AntiGrief.enable_capsule_warning(true)
+
+    PL.show_roles_in_list(true)
 
     local players = game.connected_players
     for i = 1, #players do
@@ -735,7 +736,6 @@ local on_tick = function()
 end
 
 local on_init = function()
-    add_to_config()
     local this = WPT.get()
     Public.reset_map()
 

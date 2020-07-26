@@ -1,5 +1,6 @@
 local Gui = require 'utils.gui'
 local Event = require 'utils.event'
+local AntiGrief = require 'antigrief'
 local Color = require 'utils.color_presets'
 local Alert = require 'utils.alert'
 
@@ -8,6 +9,7 @@ local Math2D = require 'math2d'
 
 --RPG Modules
 local RPG = require 'modules.rpg.table'
+local Spells = require 'modules.rpg.spells'
 local Settings = require 'modules.rpg.settings'
 local Functions = require 'modules.rpg.functions'
 local RPG_GUI = require 'modules.rpg.gui'
@@ -16,8 +18,8 @@ local RPG_GUI = require 'modules.rpg.gui'
 local enemy_types = RPG.enemy_types
 local die_cause = RPG.die_cause
 local rpg_frame_icons = RPG.rpg_frame_icons
-local conjure_items = RPG.conjure_items
-local projectile_types = RPG.projectile_types
+local conjure_items = Spells.conjure_items
+local projectile_types = Spells.projectile_types
 local points_per_level = RPG.points_per_level
 local nth_tick = RPG.nth_tick
 local visuals_delay = RPG.visuals_delay
@@ -1045,6 +1047,8 @@ local function on_player_used_capsule(event)
 
     rpg_t[player.index].last_spawned = game.tick + object.tick
     Functions.update_mana(player)
+
+    AntiGrief.insert_into_capsule_history(player, position)
 
     return p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
 end
