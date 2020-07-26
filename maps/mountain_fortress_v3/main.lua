@@ -2,6 +2,7 @@ require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
 
+require 'modules.autofill'
 require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
@@ -70,6 +71,9 @@ local collapse_kill = {
     },
     enabled = true
 }
+
+local add_to_config = function()
+end
 
 local disable_tech = function()
     game.forces.player.technologies['landfill'].enabled = false
@@ -731,6 +735,7 @@ local on_tick = function()
 end
 
 local on_init = function()
+    add_to_config()
     local this = WPT.get()
     Public.reset_map()
 

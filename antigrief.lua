@@ -24,6 +24,7 @@ local this = {
     cancel_crafting_history = {},
     whitelist_types = {},
     players_warned = {},
+    punish_cancel_craft = false,
     log_tree_harvest = false,
     do_not_check_trusted = true,
     enable_autokick = true,
@@ -615,20 +616,28 @@ local function on_player_cancelled_crafting(event)
     local player = game.players[event.player_index]
 
     local crafting_queue_item_count = event.items.get_item_count()
-    local player_inventory_free_slot_count = player.get_main_inventory().count_empty_stacks()
-    local crafting_queue_canceled_item_slot_count = #event.items
+    local free_slots = player.get_main_inventory().count_empty_stacks()
+    local crafted_items = #event.items
 
-    if crafting_queue_canceled_item_slot_count > player_inventory_free_slot_count then
-        player.character.character_inventory_slots_bonus = crafting_queue_canceled_item_slot_count + #player.get_main_inventory()
-        for i = 1, crafting_queue_canceled_item_slot_count do
-            player.character.get_main_inventory().insert(event.items[i])
+    if crafted_items > free_slots then
+        if this.punish_cancel_craft then
+            player.character.character_inventory_slots_bonus = crafted_items + #player.get_main_inventory()
+            for i = 1, crafted_items do
+                player.character.get_main_inventory().insert(event.items[i])
+            end
+
+            player.character.die('player')
+
+            Utils.action_warning(
+                '{Crafting}',
+                player.name ..
+                    ' canceled their craft of item ' ..
+                        event.recipe.name ..
+                            ' of total count ' ..
+                                crafting_queue_item_count ..
+                                    ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
+            )
         end
-        player.character.die('player')
-
-        Utils.action_warning(
-            '{Crafting}',
-            player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafting_queue_canceled_item_slot_count .. ' slots) and was punished.'
-        )
 
         if not this.cancel_crafting_history[player.index] then
             this.cancel_crafting_history[player.index] = {}

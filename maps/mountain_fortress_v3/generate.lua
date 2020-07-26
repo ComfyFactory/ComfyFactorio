@@ -226,40 +226,44 @@ local function do_place_buildings(data)
     local surface = data.surface
     local entity
     local callback
-    for _, e in pairs(data.buildings) do
-        if e.e_type then
-            local p = e.position
-            if
-                surface.count_entities_filtered {
-                    area = {{p.x - 32, p.y - 32}, {p.x + 32, p.y + 32}},
-                    type = e.e_type,
-                    limit = 1
-                } == 0
-             then
-                entity = surface.create_entity(e)
-                if entity and e.direction then
-                    entity.direction = e.direction
-                end
-                if entity and e.force then
-                    entity.force = e.force
-                end
-                if entity and e.callback then
-                    local c = e.callback.callback
-                    if not c then
-                        return
+    pcall(
+        function()
+            for _, e in pairs(data.buildings) do
+                if e.e_type then
+                    local p = e.position
+                    if
+                        surface.count_entities_filtered {
+                            area = {{p.x - 32, p.y - 32}, {p.x + 32, p.y + 32}},
+                            type = e.e_type,
+                            limit = 1
+                        } == 0
+                     then
+                        entity = surface.create_entity(e)
+                        if entity and e.direction then
+                            entity.direction = e.direction
+                        end
+                        if entity and e.force then
+                            entity.force = e.force
+                        end
+                        if entity and e.callback then
+                            local c = e.callback.callback
+                            if not c then
+                                return
+                            end
+                            local d = {callback_data = e.callback.data}
+                            if not d then
+                                callback = Token.get(c)
+                                callback(entity)
+                                return
+                            end
+                            callback = Token.get(c)
+                            callback(entity, d)
+                        end
                     end
-                    local d = {callback_data = e.callback.data}
-                    if not d then
-                        callback = Token.get(c)
-                        callback(entity)
-                        return
-                    end
-                    callback = Token.get(c)
-                    callback(entity, d)
                 end
             end
         end
-    end
+    )
 end
 
 local function do_place_entities(data)

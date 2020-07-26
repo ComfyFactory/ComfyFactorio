@@ -676,7 +676,7 @@ local function on_player_repaired_entity(event)
     end
     Public.gain_xp(player, 0.05)
 
-    local repair_speed = Public.get_magicka(player)
+    local repair_speed = Functions.get_magicka(player)
     if repair_speed <= 0 then
         return
     end
@@ -959,7 +959,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if rpg_t[player.index].level <= object.level then
+    if rpg_t[player.index].level < object.level then
         return p('You lack the level to cast this spell.', Color.fail)
     end
 
