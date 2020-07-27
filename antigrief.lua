@@ -187,7 +187,7 @@ local function on_player_ammo_inventory_changed(event)
         playtime = player.online_time + tracker[player.name]
     end
     if playtime < 1296000 then
-        if this.enable_capsule_warning then 
+        if this.enable_capsule_warning then
             local nukes = player.remove_item({name = 'atomic-bomb', count = 1000})
             if nukes > 0 then
                 Utils.action_warning('{Nuke}', player.name .. ' tried to equip nukes but was not trusted.')
@@ -671,17 +671,11 @@ end
 local function on_init()
     local branch_version = '0.18.35'
     local sub = string.sub
-    game.forces.player.research_queue_enabled = true
     local is_branch_18 = sub(branch_version, 3, 4)
     local get_active_version = sub(game.active_mods.base, 3, 4)
     local default = game.permissions.get_group('Default')
 
-    default.set_allows_action(defines.input_action.change_multiplayer_config, false)
-    default.set_allows_action(defines.input_action.edit_permission_group, false)
-    default.set_allows_action(defines.input_action.import_permissions_string, false)
-    default.set_allows_action(defines.input_action.delete_permission_group, false)
-    default.set_allows_action(defines.input_action.add_permission_group, false)
-    default.set_allows_action(defines.input_action.admin_action, false)
+    game.forces.player.research_queue_enabled = true
 
     is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
     get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)

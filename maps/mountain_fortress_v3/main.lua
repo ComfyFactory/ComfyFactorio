@@ -12,6 +12,7 @@ require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.charging_station'
+require 'modules.admins_operate_biters'
 
 local Autostash = require 'modules.autostash'
 local PL = require 'comfy_panel.player_list'
@@ -788,6 +789,17 @@ local on_init = function()
     Explosives.set_destructible_tile('water-mud', 1000)
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail')
+    Explosives.set_whitelist_entity('character')
+
+    if global.biter_command and global.biter_command.whitelist then
+        global.biter_command.whitelist = {
+            ['Hanakocz'] = true,
+            ['mewmew'] = true,
+            ['Gerkiz'] = true
+        }
+    end
+
+    global.biter_command.enabled = false
 end
 
 Event.on_nth_tick(10, on_tick)

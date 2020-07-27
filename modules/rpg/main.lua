@@ -9,7 +9,6 @@ local Math2D = require 'math2d'
 
 --RPG Modules
 local RPG = require 'modules.rpg.table'
-local Spells = require 'modules.rpg.spells'
 local Settings = require 'modules.rpg.settings'
 local Functions = require 'modules.rpg.functions'
 local RPG_GUI = require 'modules.rpg.gui'
@@ -18,8 +17,6 @@ local RPG_GUI = require 'modules.rpg.gui'
 local enemy_types = RPG.enemy_types
 local die_cause = RPG.die_cause
 local rpg_frame_icons = RPG.rpg_frame_icons
-local conjure_items = Spells.conjure_items
-local projectile_types = Spells.projectile_types
 local points_per_level = RPG.points_per_level
 local nth_tick = RPG.nth_tick
 local visuals_delay = RPG.visuals_delay
@@ -853,6 +850,10 @@ local function get_near_coord_modifier(range)
 end
 
 local function damage_entity(e)
+    if not e or not e.valid then
+        return
+    end
+
     if not e.health then
         return
     end
@@ -915,6 +916,9 @@ local function on_player_used_capsule(event)
     if not enable_mana then
         return
     end
+
+    local conjure_items = RPG.get_spells()
+    local projectile_types = RPG.get_projectiles
 
     local player = game.players[event.player_index]
     if not player or not player.valid then

@@ -753,6 +753,12 @@ local function on_built_entity(event)
         return
     end
 
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
     local upg = this.upgrades
     local surface = entity.surface
 
@@ -811,6 +817,12 @@ local function on_robot_built_entity(event)
     local this = WPT.get()
     local entity = event.created_entity
     if not entity.valid then
+        return
+    end
+
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
     end
 

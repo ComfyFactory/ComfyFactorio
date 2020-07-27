@@ -1,11 +1,13 @@
 -- one table to rule them all!
 local Global = require 'utils.global'
+local Spells = require 'modules.rpg.spells'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 
 local this = {
     rpg_extra = {},
-    rpg_t = {}
+    rpg_t = {},
+    rpg_spells = {}
 }
 
 --! Gui Frames
@@ -120,6 +122,7 @@ function Public.reset_table()
         ['small-worm-turret'] = 16,
         ['spitter-spawner'] = 64
     }
+    this.rpg_spells = Spells.conjure_items
 end
 
 --- Gets value from table
@@ -272,6 +275,31 @@ function Public.enable_one_punch_globally(value)
     return this.rpg_extra.enable_one_punch_globally
 end
 
+--- Retrieves the spell table.
+---@param key <string>
+function Public.get_spells(key)
+    if key then
+        return this.rpg_spells[key]
+    else
+        return this.rpg_spells
+    end
+end
+
+--- Adds a spell to the rpg_spells
+---@param key <string>
+---@param value <string>
+function Public.set_spells(key, value)
+    if key and value then
+        this.rpg_spells[key] = value
+        return this.rpg_spells[key]
+    elseif key then
+        return this.rpg_spells[key]
+    else
+        return this.rpg_spells
+    end
+end
+
+Public.get_projectiles = Spells.projectile_types
 Public.settings_frame_name = settings_frame_name
 Public.save_button_name = save_button_name
 Public.discard_button_name = discard_button_name

@@ -1,5 +1,4 @@
 local RPG = require 'modules.rpg.table'
-local Spells = require 'modules.rpg.spells'
 local Gui = require 'utils.gui'
 local P = require 'player_modifiers'
 local Session = require 'utils.session_data'
@@ -29,7 +28,7 @@ function Public.extra_settings(player)
     local rpg_extra = RPG.get('rpg_extra')
     local rpg_t = RPG.get('rpg_t')
     local trusted = Session.get_trusted_table()
-    local conjure_items = Spells.conjure_items
+    local conjure_items = RPG.get_spells()
     local main_frame =
         player.gui.screen.add(
         {
