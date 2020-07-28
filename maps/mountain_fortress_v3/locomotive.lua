@@ -3,10 +3,12 @@ local Event = require 'utils.event'
 local Market = require 'maps.mountain_fortress_v3.basic_markets'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local WD = require 'modules.wave_defense.table'
+local Session = require 'utils.session_data'
 local Difficulty = require 'modules.difficulty_vote'
 local Jailed = require 'utils.jail_data'
 local RPG_Settings = require 'modules.rpg.table'
-local RPG = require 'modules.rpg.main'
+local Functions = require 'modules.rpg.functions'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
 local Alert = require 'utils.alert'
@@ -16,6 +18,7 @@ local format_number = require 'util'.format_number
 local Public = {}
 local concat = table.concat
 local main_frame_name = Gui.uid_name()
+local rpg_main_frame = RPG_Settings.main_frame_name
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
@@ -56,33 +59,77 @@ end
 
 function Public.add_player_to_permission_group(player, group)
     local jailed = Jailed.get_jailed_table()
+    local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
+    local session = Session.get_session_table()
+
+    if player.admin then
+        return
+    end
+
+    local playtime = player.online_time
+    if session[player.name] then
+        playtime = player.online_time + session[player.name]
+    end
 
     if jailed[player.name] then
         return
     end
 
-    if group == 'locomotive' then
+    if enable_permission_group_disconnect then
         local locomotive_group = game.permissions.get_group('locomotive')
-        if not locomotive_group then
-            locomotive_group = game.permissions.create_group('locomotive')
-            locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
-            locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
-            locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.admin_action, false)
-            locomotive_group.set_allows_action(defines.input_action.drop_item, false)
-            locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
-            locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
-            locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-        -- locomotive_group.set_allows_action(defines.input_action.connect_rolling_stock, false)
+        if locomotive_group then
+            locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
-        locomotive_group = game.permissions.get_group('locomotive')
-        locomotive_group.add_player(player)
-    elseif group == 'default' then
-        local default_group = game.permissions.get_group('Default')
+    else
+        local locomotive_group = game.permissions.get_group('locomotive')
+        if locomotive_group then
+            locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        end
+    end
 
-        default_group.add_player(player)
+    local not_trusted = game.permissions.get_group('not_trusted')
+    if playtime < 5184000 then -- 24 hours
+        if not not_trusted then
+            not_trusted = game.permissions.create_group('not_trusted')
+            not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
+            not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
+            not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
+            not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
+            not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
+            not_trusted.set_allows_action(defines.input_action.admin_action, false)
+            not_trusted.set_allows_action(defines.input_action.drop_item, false)
+            not_trusted.set_allows_action(defines.input_action.place_equipment, false)
+            not_trusted.set_allows_action(defines.input_action.take_equipment, false)
+            not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+            not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
+        end
+        not_trusted = game.permissions.get_group('not_trusted')
+        not_trusted.add_player(player)
+    else
+        if group == 'locomotive' then
+            local locomotive_group = game.permissions.get_group('locomotive')
+            if not locomotive_group then
+                locomotive_group = game.permissions.create_group('locomotive')
+                locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
+                locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
+                locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
+                locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
+                locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
+                locomotive_group.set_allows_action(defines.input_action.admin_action, false)
+                locomotive_group.set_allows_action(defines.input_action.drop_item, false)
+                locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
+                locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
+            -- locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+            -- locomotive_group.set_allows_action(defines.input_action.connect_rolling_stock, false)
+            end
+
+            locomotive_group = game.permissions.get_group('locomotive')
+            locomotive_group.add_player(player)
+        elseif group == 'default' then
+            local default_group = game.permissions.get_group('Default')
+
+            default_group.add_player(player)
+        end
     end
 end
 
@@ -110,7 +157,7 @@ local function property_boost(data)
              then
                 Public.add_player_to_permission_group(player, 'locomotive')
                 local pos = player.position
-                RPG.gain_xp(player, 0.3 * (rpg[player.index].bonus + this.xp_points))
+                Functions.gain_xp(player, 0.5 * (rpg[player.index].bonus + this.xp_points))
 
                 player.create_local_flying_text {
                     text = '+' .. '',
@@ -121,6 +168,13 @@ local function property_boost(data)
                 }
                 rpg[player.index].xp_since_last_floaty_text = 0
                 rpg[player.index].last_floaty_text = game.tick + visuals_delay
+                if player.gui.left[rpg_main_frame] then
+                    local f = player.gui.left[rpg_main_frame]
+                    local d = Gui.get_data(f)
+                    if d.exp_gui and d.exp_gui.valid then
+                        d.exp_gui.caption = math.floor(rpg[player.index].xp)
+                    end
+                end
             else
                 Public.add_player_to_permission_group(player, 'default')
             end
@@ -212,9 +266,11 @@ local function set_locomotive_health()
     if not this.locomotive then
         return
     end
+
     if not this.locomotive.valid then
         return
     end
+
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
     local m = locomotive_health / locomotive_max_health
@@ -231,12 +287,13 @@ local function validate_index()
     if not locomotive.valid then
         return
     end
+
     local icw_locomotive = WPT.get('icw_locomotive')
     local loco_surface = icw_locomotive.surface
     local unit_surface = locomotive.unit_number
     local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
     if not loco_surface.valid then
-        WPT.get().loco_surface = locomotive_surface
+        WPT.set().loco_surface = locomotive_surface
     end
 end
 
@@ -879,7 +936,7 @@ local function gui_click(event)
                     format_number(item.price, true) .. ' coins.'
         Alert.alert_all_players(10, message)
 
-        RPG.rpg_reset_player(player, true)
+        Functions.rpg_reset_player(player, true)
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -939,6 +996,52 @@ local function on_player_changed_position(event)
         end
         close_market_gui(player)
     end
+end
+
+local function spawn_biter()
+    local this = WPT.get()
+    local loco_surface = this.icw_locomotive.surface
+
+    if not loco_surface.valid then
+        return
+    end
+
+    local locomotive = this.icw_locomotive
+
+    local center_position = {
+        x = locomotive.area.left_top.x + (locomotive.area.right_bottom.x - locomotive.area.left_top.x) * 0.5,
+        y = locomotive.area.left_top.y + (locomotive.area.right_bottom.y - locomotive.area.left_top.y) * 0.5
+    }
+
+    if not this.icw_area then
+        this.icw_area = center_position
+    end
+
+    local position = loco_surface.find_non_colliding_position('market', center_position, 128, 0.5)
+    local biters = {
+        'big-biter',
+        'behemoth-biter',
+        'big-spitter',
+        'behemoth-spitter'
+    }
+    this.locomotive_biter =
+        loco_surface.create_entity(
+        {name = biters[math.random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
+    )
+    this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
+    this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
+
+    rendering.draw_text {
+        text = 'please don´t shoo at me',
+        surface = this.locomotive_biter.surface,
+        target = this.locomotive_biter,
+        target_offset = {0, -3.5},
+        scale = 1.05,
+        font = 'default-large-semibold',
+        color = {r = 175, g = 75, b = 255},
+        alignment = 'center',
+        scale_with_zoom = false
+    }
 end
 
 local function create_market(data, rebuild)
@@ -1001,19 +1104,7 @@ local function create_market(data, rebuild)
 
     this.market.destructible = false
 
-    local position = loco_surface.find_non_colliding_position('market', center_position, 128, 0.5)
-    local biters = {
-        'big-biter',
-        'behemoth-biter',
-        'big-spitter',
-        'behemoth-spitter'
-    }
-    local e =
-        loco_surface.create_entity(
-        {name = biters[math.random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
-    )
-    e.ai_settings.allow_destroy_when_commands_fail = false
-    e.ai_settings.allow_try_return_to_spawner = false
+    spawn_biter()
 
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
@@ -1051,9 +1142,11 @@ local function contains_positions(area)
 
     local wagons = ICW.get_table('wagons')
     for _, wagon in pairs(wagons) do
-        if wagon.entity.name == 'cargo-wagon' then
-            if inside(wagon.entity.position, area) then
-                return true, wagon.entity
+        if wagon.entity and wagon.entity.valid then
+            if wagon.entity.name == 'cargo-wagon' then
+                if inside(wagon.entity.position, area) then
+                    return true, wagon.entity
+                end
             end
         end
     end
@@ -1269,7 +1362,7 @@ local function add_random_loot_to_main_market(rarity)
             tooltip = types[v.offer.item].localised_name,
             upgrade = false
         }
-        if ticker >= 9 then
+        if ticker >= 12 then
             return
         end
     end
@@ -1293,29 +1386,57 @@ local function on_research_finished()
     Public.refresh_gui()
 end
 
-local function tick()
-    local ticker = game.tick
+local function shoo(event)
+    local icw_locomotive = WPT.get('icw_locomotive')
+    local loco_surface = icw_locomotive.surface
 
-    if ticker % 30 == 0 then
-        place_market()
-        validate_index()
-        set_locomotive_health()
-        fish_tag()
-        divide_contents()
+    if not loco_surface.valid then
+        return
     end
 
-    if ticker % 120 == 0 then
-        Public.boost_players_around_train()
+    local player = game.players[event.player_index]
+
+    if player and player.valid then
+        if player.surface.index ~= loco_surface.index then
+            return
+        end
     end
 
-    if ticker % 2500 == 0 then
-        Public.transfer_pollution()
+    local locomotive_biter = WPT.get('locomotive_biter')
+    local surface = player.surface
+    local message = event.message
+    message = string.lower(message)
+    for word in string.gmatch(message, '%g+') do
+        if word == 'shoo' then
+            if not locomotive_biter then
+                spawn_biter()
+                return
+            end
+            surface.create_entity(
+                {
+                    name = 'rocket',
+                    position = locomotive_biter.position,
+                    force = 'enemy',
+                    speed = 1,
+                    max_range = 1200,
+                    target = locomotive_biter,
+                    source = locomotive_biter
+                }
+            )
+            if locomotive_biter and locomotive_biter.valid then
+                locomotive_biter.die()
+                WPT.set().locomotive_biter = nil
+            end
+            return
+        end
     end
+end
 
-    if ticker % 1800 == 0 then
-        set_player_spawn()
-        refill_fish()
+local function on_console_chat(event)
+    if not event.player_index then
+        return
     end
+    shoo(event)
 end
 
 function Public.close_gui_player(frame)
@@ -1515,9 +1636,9 @@ function Public.get_items()
 
     local chest_limit_cost = 2500 * (1 + chest_limit_outside_upgrades)
     local health_cost = 10000 * (1 + health_upgrades)
-    local aura_cost = 5000 * (1 + aura_upgrades)
-    local xp_point_boost_cost = 7500 * (1 + xp_points_upgrade)
-    local flamethrower_turrets_cost = 3000 * (1 + flame_turret)
+    local aura_cost = 4000 * (1 + aura_upgrades)
+    local xp_point_boost_cost = 5000 * (1 + xp_points_upgrade)
+    local flamethrower_turrets_cost = 2500 * (1 + flame_turret)
     local land_mine_cost = 2 * (1 + landmine)
     local skill_reset_cost = 100000
 
@@ -1693,6 +1814,32 @@ function Public.get_items()
         upgrade = false,
         static = true
     }
+    main_market_items['tank-cannon'] = {
+        stack = 1,
+        value = 'coin',
+        price = 20000,
+        tooltip = 'Portable Tank Machine\nAvailable after wave 700.',
+        upgrade = false,
+        static = true,
+        enabled = false
+    }
+    main_market_items['tank-machine-gun'] = {
+        stack = 1,
+        value = 'coin',
+        price = 7000,
+        tooltip = 'Portable Tank Pewpew\nAvailable after wave 700.',
+        upgrade = false,
+        static = true,
+        enabled = false
+    }
+    local wave_number = WD.get_wave()
+    if wave_number >= 700 then
+        main_market_items['tank-cannon'].enabled = true
+        main_market_items['tank-cannon'].tooltip = 'Portable Tank Machine'
+        main_market_items['tank-machine-gun'].enabled = true
+        main_market_items['tank-machine-gun'].tooltip = 'Portable Tank Pewpew'
+    end
+
     return main_market_items
 end
 
@@ -1729,6 +1876,34 @@ function Public.enable_poison_defense()
     end
 end
 
+local boost_players = Public.boost_players_around_train
+local pollute_area = Public.transfer_pollution
+
+local function tick()
+    local ticker = game.tick
+
+    if ticker % 30 == 0 then
+        set_locomotive_health()
+        place_market()
+        validate_index()
+        fish_tag()
+        divide_contents()
+    end
+
+    if ticker % 120 == 0 then
+        boost_players()
+    end
+
+    if ticker % 2500 == 0 then
+        pollute_area()
+    end
+
+    if ticker % 1800 == 0 then
+        set_player_spawn()
+        refill_fish()
+    end
+end
+
 Public.place_market = place_market
 
 Event.on_nth_tick(5, tick)
@@ -1744,5 +1919,6 @@ Event.add(defines.events.on_robot_built_entity, on_built_entity)
 Event.add(defines.events.on_entity_died, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_pre_player_mined_item, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity)
+Event.add(defines.events.on_console_chat, on_console_chat)
 
 return Public

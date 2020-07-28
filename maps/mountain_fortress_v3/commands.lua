@@ -56,7 +56,7 @@ commands.add_command(
                 if this.shutdown then
                     this.shutdown = false
                 end
-                p('[WARNING] Soft-reset is disabled! Server will restart from scenario.')
+                p('[WARNING] Soft-reset is disabled! Server will restart from scenario to load new changes.')
                 return
             end
         elseif param == 'restartnow' then
@@ -78,7 +78,7 @@ commands.add_command(
                 if this.restart then
                     this.restart = false
                 end
-                p('[WARNING] Soft-reset is disabled! Server will shutdown.')
+                p('[WARNING] Soft-reset is disabled! Server will shutdown. Most likely because of updates.')
                 return
             end
         elseif param == 'reset' then

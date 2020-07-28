@@ -24,10 +24,12 @@ local this = {
     cancel_crafting_history = {},
     whitelist_types = {},
     players_warned = {},
+    punish_cancel_craft = false,
     log_tree_harvest = false,
     do_not_check_trusted = true,
     enable_autokick = true,
-    enable_autoban = false
+    enable_autoban = false,
+    enable_capsule_warning = false
 }
 
 local blacklisted_types = {
@@ -185,10 +187,12 @@ local function on_player_ammo_inventory_changed(event)
         playtime = player.online_time + tracker[player.name]
     end
     if playtime < 1296000 then
-        local nukes = player.remove_item({name = 'atomic-bomb', count = 1000})
-        if nukes > 0 then
-            Utils.action_warning('{Nuke}', player.name .. ' tried to equip nukes but was not trusted.')
-            damage_player(player)
+        if this.enable_capsule_warning then
+            local nukes = player.remove_item({name = 'atomic-bomb', count = 1000})
+            if nukes > 0 then
+                Utils.action_warning('{Nuke}', player.name .. ' tried to equip nukes but was not trusted.')
+                damage_player(player)
+            end
         end
     end
 end
@@ -290,33 +294,35 @@ local function on_player_used_capsule(event)
          then
             return
         end
+        local msg = ''
+        if this.enable_capsule_warning then
+            local count = 0
+            local entities =
+                player.surface.find_entities_filtered {force = player.force, area = {{x - 5, y - 5}, {x + 5, y + 5}}}
 
-        local count = 0
-        local entities =
-            player.surface.find_entities_filtered {force = player.force, area = {{x - 5, y - 5}, {x + 5, y + 5}}}
-
-        for i = 1, #entities do
-            local e = entities[i]
-            local entity_name = e.name
-            if entity_name ~= name and entity_name ~= 'entity-ghost' and not blacklisted_types[e.type] then
-                count = count + 1
+            for i = 1, #entities do
+                local e = entities[i]
+                local entity_name = e.name
+                if entity_name ~= name and entity_name ~= 'entity-ghost' and not blacklisted_types[e.type] then
+                    count = count + 1
+                end
             end
+
+            if count <= capsule_bomb_threshold then
+                return
+            end
+
+            local prefix = '{Capsule}'
+            msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
+            local ban_msg =
+                format(
+                'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
+                get_entities(name, entities),
+                name
+            )
+
+            do_action(player, prefix, msg, ban_msg, true)
         end
-
-        if count <= capsule_bomb_threshold then
-            return
-        end
-
-        local prefix = '{Capsule}'
-        local msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
-        local ban_msg =
-            format(
-            'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
-            get_entities(name, entities),
-            name
-        )
-
-        do_action(player, prefix, msg, ban_msg, true)
 
         if not this.capsule_history[player.index] then
             this.capsule_history[player.index] = {}
@@ -601,11 +607,13 @@ local function on_player_cursor_stack_changed(event)
     end
 
     if playtime < 1296000 then
-        if ammo_names[name] then
-            local item_to_remove = player.remove_item({name = name, count = 1000})
-            if item_to_remove > 0 then
-                Utils.action_warning('{Capsule}', player.name .. ' equipped ' .. name .. ' but was not trusted.')
-                damage_player(player)
+        if this.enable_capsule_warning then
+            if ammo_names[name] then
+                local item_to_remove = player.remove_item({name = name, count = 1000})
+                if item_to_remove > 0 then
+                    Utils.action_warning('{Capsule}', player.name .. ' equipped ' .. name .. ' but was not trusted.')
+                    damage_player(player)
+                end
             end
         end
     end
@@ -615,20 +623,28 @@ local function on_player_cancelled_crafting(event)
     local player = game.players[event.player_index]
 
     local crafting_queue_item_count = event.items.get_item_count()
-    local player_inventory_free_slot_count = player.get_main_inventory().count_empty_stacks()
-    local crafting_queue_canceled_item_slot_count = #event.items
+    local free_slots = player.get_main_inventory().count_empty_stacks()
+    local crafted_items = #event.items
 
-    if crafting_queue_canceled_item_slot_count > player_inventory_free_slot_count then
-        player.character.character_inventory_slots_bonus = crafting_queue_canceled_item_slot_count + #player.get_main_inventory()
-        for i = 1, crafting_queue_canceled_item_slot_count do
-            player.character.get_main_inventory().insert(event.items[i])
+    if crafted_items > free_slots then
+        if this.punish_cancel_craft then
+            player.character.character_inventory_slots_bonus = crafted_items + #player.get_main_inventory()
+            for i = 1, crafted_items do
+                player.character.get_main_inventory().insert(event.items[i])
+            end
+
+            player.character.die('player')
+
+            Utils.action_warning(
+                '{Crafting}',
+                player.name ..
+                    ' canceled their craft of item ' ..
+                        event.recipe.name ..
+                            ' of total count ' ..
+                                crafting_queue_item_count ..
+                                    ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
+            )
         end
-        player.character.die('player')
-
-        Utils.action_warning(
-            '{Crafting}',
-            player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafting_queue_canceled_item_slot_count .. ' slots) and was punished.'
-        )
 
         if not this.cancel_crafting_history[player.index] then
             this.cancel_crafting_history[player.index] = {}
@@ -655,17 +671,11 @@ end
 local function on_init()
     local branch_version = '0.18.35'
     local sub = string.sub
-    game.forces.player.research_queue_enabled = true
     local is_branch_18 = sub(branch_version, 3, 4)
     local get_active_version = sub(game.active_mods.base, 3, 4)
     local default = game.permissions.get_group('Default')
 
-    default.set_allows_action(defines.input_action.change_multiplayer_config, false)
-    default.set_allows_action(defines.input_action.edit_permission_group, false)
-    default.set_allows_action(defines.input_action.import_permissions_string, false)
-    default.set_allows_action(defines.input_action.delete_permission_group, false)
-    default.set_allows_action(defines.input_action.add_permission_group, false)
-    default.set_allows_action(defines.input_action.admin_action, false)
+    game.forces.player.research_queue_enabled = true
 
     is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
     get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
@@ -686,28 +696,67 @@ function Public.reset_tables()
 end
 
 --- Enable this to log when trees are destroyed
----@param value boolean
+---@param value <boolean>
 function Public.log_tree_harvest(value)
     if value then
         this.log_tree_harvest = value
     end
+
+    return this.log_tree_harvest
 end
 
 --- Add entity type to the whitelist so it gets logged.
----@param key string
----@param value string
+---@param key <string>
+---@param value <string>
 function Public.whitelist_types(key, value)
     if key and value then
         this.whitelist_types[key] = value
     end
+
+    return this.whitelist_types[key]
 end
 
 --- If the event should also check trusted players.
----@param value string
+---@param value <string>
 function Public.do_not_check_trusted(value)
     if value then
         this.do_not_check_trusted = value
     end
+
+    return this.do_not_check_trusted
+end
+
+--- If ANY actions should be performed when a player misbehaves.
+---@param value <string>
+function Public.enable_capsule_warning(value)
+    if value then
+        this.enable_capsule_warning = value
+    end
+
+    return this.enable_capsule_warning
+end
+
+--- This is used for the RPG module, when casting capsules.
+---@param player <LuaPlayer>
+---@param position <EventPosition>
+---@param msg <string>
+function Public.insert_into_capsule_history(player, position, msg)
+    if not this.capsule_history[player.index] then
+        this.capsule_history[player.index] = {}
+    end
+    if #this.capsule_history[player.index] > 100 then
+        this.capsule_history[player.index] = {}
+    end
+    local t = math.abs(math.floor((game.tick) / 3600))
+    local str = '[' .. t .. '] '
+    str = str .. msg
+    str = str .. ' at X:'
+    str = str .. math.floor(position.x)
+    str = str .. ' Y:'
+    str = str .. math.floor(position.y)
+    str = str .. ' '
+    str = str .. 'surface:' .. player.surface.index
+    increment(this.capsule_history, player.index, str)
 end
 
 --- Returns the table.

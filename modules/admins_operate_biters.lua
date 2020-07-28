@@ -6,6 +6,7 @@ global.biter_command.active_unit_groups = {}
 global.biter_command.enabled = true
 global.biter_command.whitelist = {}
 global.biter_command.admin_mode = true --if only admins can see and use the panel
+
 global.biter_command.teleporting = false --if teleporting is allowed for non-admins
 global.biter_command.buildings = true ---if player can trigger building nests and worms
 
@@ -618,14 +619,14 @@ local function on_player_joined_game(event)
 end
 
 local function on_unit_group_created(event)
-  if event and event.group then
+  if event and event.group and event.group.valid then
     global.biter_command.active_unit_groups[event.group.group_number] = {id = event.group.group_number, group = event.group}
     refresh_panel()
   end
 end
 
 local function on_unit_removed_from_group(event)
-  if event and event.group then
+  if event and event.group and event.group.valid then
     if #event.group.members == 1 then
       global.biter_command.active_unit_groups[event.group.group_number] = nil
       refresh_panel()

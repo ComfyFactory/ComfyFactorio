@@ -28,11 +28,12 @@ function Public.draw_gui_char_button(player)
     if player.gui.top[draw_main_frame_name] then
         return
     end
-    local b = player.gui.top.add({type = 'sprite-button', name = draw_main_frame_name, caption = 'CHAR'})
+    local b =
+        player.gui.top.add({type = 'sprite-button', name = draw_main_frame_name, caption = '[RPG]', tooltip = 'RPG'})
     b.style.font_color = {165, 165, 165}
-    b.style.font = 'heading-1'
-    b.style.minimal_height = 38
-    b.style.minimal_width = 60
+    b.style.font = 'heading-3'
+    b.style.minimal_height = 34
+    b.style.minimal_width = 50
     b.style.padding = 0
     b.style.margin = 0
 end
@@ -92,10 +93,23 @@ local function add_gui_stat(element, value, width, tooltip, name, color)
     e.style.maximal_height = 38
     e.style.minimal_height = 38
     e.style.font = 'default-bold'
-    e.style.font_color = {222, 222, 222}
     e.style.horizontal_align = 'center'
     e.style.vertical_align = 'center'
-    e.style.font_color = color or nil
+    e.style.font_color = color or {222, 222, 222}
+    return e
+end
+
+local function add_elem_stat(element, value, width, height, font, tooltip, name, color)
+    local e = element.add({type = 'sprite-button', name = name or nil, caption = value})
+    e.tooltip = tooltip or ''
+    e.style.maximal_width = width
+    e.style.minimal_width = width
+    e.style.maximal_height = height
+    e.style.minimal_height = height
+    e.style.font = font or 'default-bold'
+    e.style.horizontal_align = 'center'
+    e.style.vertical_align = 'center'
+    e.style.font_color = color or {222, 222, 222}
     return e
 end
 
@@ -152,36 +166,47 @@ local function draw_main_frame(player)
         return
     end
 
-    local frame =
+    local main_frame =
         player.gui.left.add(
-        {type = 'frame', name = main_frame_name, direction = 'vertical', style = 'changelog_subheader_frame'}
+        {
+            type = 'frame',
+            name = main_frame_name,
+            caption = 'RPG',
+            direction = 'vertical'
+        }
     )
 
     local data = {}
     local rpg_extra = RPG.get('rpg_extra')
     local rpg_t = RPG.get('rpg_t')
 
-    frame.style.maximal_height = 800
-    frame.style.maximal_width = 440
-    frame.style.minimal_width = 440
-    frame.style.use_header_filler = false
-    frame.style.top_padding = 4
-    frame.style.bottom_padding = 4
-    frame.style.left_padding = 4
-    frame.style.right_padding = 10
+    local inside_frame =
+        main_frame.add {
+        type = 'frame',
+        style = 'deep_frame_in_shallow_frame'
+    }
+    local inside_frame_style = inside_frame.style
+    inside_frame_style.padding = 0
+    inside_frame_style.maximal_height = 800
+
+    local inside_table =
+        inside_frame.add {
+        type = 'table',
+        column_count = 1
+    }
 
     local scroll_pane =
-        frame.add {
+        inside_table.add {
         type = 'scroll-pane',
-        direction = 'vertical',
-        vertical_scroll_policy = 'always',
+        vertical_scroll_policy = 'never',
         horizontal_scroll_policy = 'never'
     }
-    scroll_pane.style.minimal_width = 400
-    scroll_pane.style.maximal_width = 450
-    scroll_pane.style.minimal_height = 600
-    scroll_pane.style.horizontally_squashable = false
-    scroll_pane.style.vertically_squashable = false
+    local scroll_style = scroll_pane.style
+    scroll_style.vertically_squashable = true
+    scroll_style.bottom_padding = 2
+    scroll_style.left_padding = 2
+    scroll_style.right_padding = 2
+    scroll_style.top_padding = 2
 
     --!top table
     local main_table = scroll_pane.add({type = 'table', column_count = 2})
@@ -191,7 +216,15 @@ local function draw_main_frame(player)
     local rank = add_gui_stat(main_table, get_class(player), 200, 'You´re a ' .. get_class(player) .. '.')
     rank.style.font = 'default-large-bold'
 
-    add_gui_stat(main_table, 'SETTINGS', 200, 'RPG settings!', settings_button_name)
+    add_elem_stat(
+        main_table,
+        'SETTINGS',
+        200,
+        35,
+        nil,
+        'Configure your RPG player-settings here!',
+        settings_button_name
+    )
 
     add_separator(scroll_pane, 400)
 
@@ -210,7 +243,8 @@ local function draw_main_frame(player)
     end
 
     add_gui_description(scroll_table, 'EXPERIENCE', 100)
-    add_gui_stat(scroll_table, math.floor(rpg_t[player.index].xp), 125, gain_info_tooltip)
+    local exp_gui = add_gui_stat(scroll_table, math.floor(rpg_t[player.index].xp), 125, gain_info_tooltip)
+    data.exp_gui = exp_gui
 
     add_gui_description(scroll_table, ' ', 75)
     add_gui_description(scroll_table, ' ', 75)
@@ -416,9 +450,9 @@ local function draw_main_frame(player)
     add_separator(scroll_pane, 400)
 
     Public.update_char_button(player)
-    data.frame = frame
+    data.frame = main_frame
 
-    Gui.set_data(frame, data)
+    Gui.set_data(main_frame, data)
 end
 
 function Public.draw_level_text(player)
@@ -617,7 +651,7 @@ Gui.on_click(
             if reset_gui_input and reset_gui_input.valid and reset_gui_input.state then
                 if not rpg_t[player.index].reset then
                     rpg_t[player.index].reset = true
-                    Public.rpg_reset_player(player, true)
+                    Functions.rpg_reset_player(player, true)
                 end
             end
             if health_bar_gui_input and health_bar_gui_input.valid then

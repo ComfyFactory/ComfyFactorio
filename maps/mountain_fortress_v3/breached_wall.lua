@@ -2,8 +2,7 @@ local Collapse = require 'modules.collapse'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Balance = require 'maps.mountain_fortress_v3.balance'
 local RPG_Settings = require 'modules.rpg.table'
-local RPG = require 'modules.rpg.main'
-local WD = require 'modules.wave_defense.table'
+local Functions = require 'modules.rpg.functions'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Alert = require 'utils.alert'
 local Event = require 'utils.event'
@@ -21,7 +20,7 @@ local collapse_message =
     Token.register(
     function(data)
         local pos = data.position
-        local message = keeper .. 'Warning, collapse has begun!'
+        local message = keeper .. 'Warning, Collapse has begun!'
         local collapse_position = {
             position = pos
         }
@@ -63,6 +62,7 @@ local function distance(player)
     local bonus = rpg_t[player.index].bonus
     local breached_wall = WPT.get('breached_wall')
     local bonus_xp_on_join = WPT.get('bonus_xp_on_join')
+    local enable_arties = WPT.get('enable_arties')
 
     local distance_to_center = floor(sqrt(player.position.x ^ 2 + player.position.y ^ 2))
     local location = distance_to_center
@@ -90,7 +90,9 @@ local function distance(player)
             }
             Task.set_timeout_in_ticks(360, first_player_to_zone, data)
             if breached_wall == 5 then
-                Task.set_timeout_in_ticks(360, artillery_warning)
+                if enable_arties == 6 then
+                    Task.set_timeout_in_ticks(360, artillery_warning)
+                end
             end
         end
         if not Collapse.start_now() then
@@ -106,7 +108,7 @@ local function distance(player)
             bonus = bonus
         }
         Task.set_timeout_in_ticks(1, zone_complete, data)
-        RPG.gain_xp(player, bonus_xp_on_join * bonus)
+        Functions.gain_xp(player, bonus_xp_on_join * bonus)
         return
     end
 end

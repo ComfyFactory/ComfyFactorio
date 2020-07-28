@@ -1,5 +1,5 @@
 local simplex_noise = require 'utils.simplex_noise'.d2
-local map_data = require 'maps.crab_defender.crab_defender'
+local map_data = require 'maps.crab_defender.map'
 
 local random = math.random
 local abs = math.abs
@@ -102,7 +102,6 @@ local ores = {'coal', 'iron-ore', 'copper-ore', 'stone'}
 
 local function plankton_territory(position, seed, ent)
     local noise = simplex_noise(position.x * 0.009, position.y * 0.009, seed)
-    local d = 196
 
     if get_pos(position.x, position.y) then
         return

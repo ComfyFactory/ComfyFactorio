@@ -372,7 +372,7 @@ local function draw_main_frame(left, player)
     Gui.set_data(forward_button, data)
 
     update_poll_viewer(data)
-     --
+    --
 
     --[[
     frame.add {

@@ -72,6 +72,13 @@ local function set_objective_health(final_damage_amount)
         return
     end
 
+    if not this.locomotive then
+        return
+    end
+    if not this.locomotive.valid then
+        return
+    end
+
     if this.locomotive_health <= 5000 then
         if not this.poison_deployed then
             for i = 1, 2, 1 do
@@ -111,13 +118,6 @@ end
 local function protect_entities(event)
     local this = WPT.get()
     local entity = event.entity
-
-    if not this.locomotive then
-        return
-    end
-    if not this.locomotive.valid then
-        return
-    end
 
     if entity.force.index ~= 1 then
         return
@@ -753,6 +753,12 @@ local function on_built_entity(event)
         return
     end
 
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
     local upg = this.upgrades
     local surface = entity.surface
 
@@ -811,6 +817,12 @@ local function on_robot_built_entity(event)
     local this = WPT.get()
     local entity = event.created_entity
     if not entity.valid then
+        return
+    end
+
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
     end
 

@@ -28,7 +28,7 @@ function Public.extra_settings(player)
     local rpg_extra = RPG.get('rpg_extra')
     local rpg_t = RPG.get('rpg_t')
     local trusted = Session.get_trusted_table()
-    local conjure_items = RPG.conjure_items
+    local conjure_items = RPG.get_spells()
     local main_frame =
         player.gui.screen.add(
         {
@@ -39,21 +39,31 @@ function Public.extra_settings(player)
         }
     )
     main_frame.auto_center = true
-
     local main_frame_style = main_frame.style
     main_frame_style.width = 500
 
-    local info_text =
-        main_frame.add({type = 'label', caption = 'Common RPG settings. These settings are per player basis.'})
-    local info_text_style = info_text.style
-    info_text_style.single_line = false
-    info_text_style.bottom_padding = 5
-    info_text_style.left_padding = 5
-    info_text_style.right_padding = 5
-    info_text_style.top_padding = 5
-    info_text_style.width = 370
+    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame_style = inside_frame.style
+    inside_frame_style.padding = 0
+    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table_style = inside_table.style
+    inside_table_style.vertical_spacing = 0
 
-    local scroll_pane = main_frame.add({type = 'scroll-pane'})
+    inside_table.add({type = 'line'})
+
+    local info_text =
+        inside_table.add({type = 'label', caption = 'Common RPG settings. These settings are per player basis.'})
+    local info_text_style = info_text.style
+    info_text_style.font = 'default-bold'
+    info_text_style.padding = 0
+    info_text_style.left_padding = 10
+    info_text_style.horizontal_align = 'left'
+    info_text_style.vertical_align = 'bottom'
+    info_text_style.font_color = {0.55, 0.55, 0.99}
+
+    inside_table.add({type = 'line'})
+
+    local scroll_pane = inside_table.add({type = 'scroll-pane'})
     local scroll_style = scroll_pane.style
     scroll_style.vertically_squashable = true
     scroll_style.maximal_height = 800
@@ -317,9 +327,34 @@ function Public.extra_settings(player)
             flame_boots_gui_input.tooltip = 'Not enough mana.\nChecked = true\nUnchecked = false'
         end
     end
+
     if rpg_extra.enable_mana then
+        local mana_frame = inside_table.add({type = 'scroll-pane'})
+        local mana_style = mana_frame.style
+        mana_style.vertically_squashable = true
+        mana_style.bottom_padding = 5
+        mana_style.left_padding = 5
+        mana_style.right_padding = 5
+        mana_style.top_padding = 5
+
+        mana_frame.add({type = 'line'})
+
+        local label = mana_frame.add({type = 'label', caption = 'Mana Settings:'})
+        label.style.font = 'default-bold'
+        label.style.padding = 0
+        label.style.left_padding = 10
+        label.style.horizontal_align = 'left'
+        label.style.vertical_align = 'bottom'
+        label.style.font_color = {0.55, 0.55, 0.99}
+
+        mana_frame.add({type = 'line'})
+
+        local setting_grid_2 = mana_frame.add({type = 'table', column_count = 2})
+
+        local mana_grid = mana_frame.add({type = 'table', column_count = 2})
+
         local enable_entity =
-            setting_grid.add(
+            setting_grid_2.add(
             {
                 type = 'label',
                 caption = 'Enable spawning with raw-fish?',
@@ -332,10 +367,11 @@ function Public.extra_settings(player)
         enable_entity_style.height = 35
         enable_entity_style.vertical_align = 'center'
 
-        local entity_input = setting_grid.add({type = 'flow'})
+        local entity_input = setting_grid_2.add({type = 'flow'})
         local entity_input_style = entity_input.style
         entity_input_style.height = 35
         entity_input_style.vertical_align = 'center'
+        entity_input_style.horizontal_align = 'right'
         local entity_mod
         if rpg_t[player.index].enable_entity_spawn then
             entity_mod = rpg_t[player.index].enable_entity_spawn
@@ -345,7 +381,7 @@ function Public.extra_settings(player)
         enable_entity_gui_input = create_input_element(entity_input, 'boolean', entity_mod)
 
         local conjure_label =
-            setting_grid.add(
+            mana_grid.add(
             {
                 type = 'label',
                 caption = 'Select what entity to spawn',
@@ -364,7 +400,7 @@ function Public.extra_settings(player)
         conjure_label_style.height = 35
         conjure_label_style.vertical_align = 'center'
 
-        local conjure_input = setting_grid.add({type = 'flow'})
+        local conjure_input = mana_grid.add({type = 'flow'})
         local conjure_input_style = conjure_input.style
         conjure_input_style.height = 35
         conjure_input_style.vertical_align = 'center'

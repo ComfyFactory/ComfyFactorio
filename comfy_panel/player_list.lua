@@ -16,6 +16,25 @@ local Event = require 'utils.event'
 local Session = require 'utils.session_data'
 local Jailed = require 'utils.jail_data'
 local Tabs = require 'comfy_panel.main'
+local Global = require 'utils.global'
+
+local Public = {}
+
+local this = {
+    player_list = {
+        last_poke_tick = {},
+        pokes = {},
+        sorting_method = {}
+    },
+    show_roles_in_list = false
+}
+
+Global.register(
+    this,
+    function(t)
+        this = t
+    end
+)
 
 local symbol_asc = '▲'
 local symbol_desc = '▼'
@@ -356,7 +375,7 @@ local function get_sorted_list(sort_by)
         player_list[i].played_time = get_formatted_playtime(player.online_time)
         player_list[i].played_ticks = player.online_time
 
-        player_list[i].pokes = global.player_list.pokes[player.index]
+        player_list[i].pokes = this.player_list.pokes[player.index]
         player_list[i].player_index = player.index
     end
 
@@ -422,9 +441,9 @@ local function player_list_show(player, frame, sort_by)
     }
 
     if sort_by then
-        global.player_list.sorting_method[player.index] = sort_by
+        this.player_list.sorting_method[player.index] = sort_by
     else
-        sort_by = global.player_list.sorting_method[player.index]
+        sort_by = this.player_list.sorting_method[player.index]
     end
 
     header_modifier[sort_by](headers)
@@ -490,14 +509,22 @@ local function player_list_show(player, frame, sort_by)
             tooltip = 'This player is not trusted.'
         end
 
+        local caption
+        if this.show_roles_in_list or game.players[player_list[i].name].admin then
+            caption = player_list[i].name .. ' ' .. trusted
+        else
+            caption = player_list[i].name
+        end
+
         -- Name
         local name_label =
             player_list_panel_table.add {
             type = 'label',
             name = 'player_list_panel_player_names_' .. i,
-            caption = player_list[i].name .. ' ' .. trusted,
+            caption = caption,
             tooltip = tooltip
         }
+
         local p_color = game.players[player_list[i].player_index]
         name_label.style.font = 'default'
         name_label.style.font_color = {
@@ -616,7 +643,7 @@ local function on_gui_click(event)
         if player.name == poked_player then
             return
         end
-        if global.player_list.last_poke_tick[event.element.player_index] + 300 < game.tick then
+        if this.player_list.last_poke_tick[event.element.player_index] + 300 < game.tick then
             local str = '>> '
             str = str .. player.name
             str = str .. ' has poked '
@@ -626,9 +653,9 @@ local function on_gui_click(event)
             str = str .. pokemessages[z]
             str = str .. ' <<'
             game.print(str)
-            global.player_list.last_poke_tick[event.element.player_index] = game.tick
+            this.player_list.last_poke_tick[event.element.player_index] = game.tick
             local p = game.players[poked_player]
-            global.player_list.pokes[p.index] = global.player_list.pokes[p.index] + 1
+            this.player_list.pokes[p.index] = this.player_list.pokes[p.index] + 1
         end
     end
 end
@@ -640,16 +667,16 @@ local function refresh()
             if frame.name ~= 'Players' then
                 return
             end
-            player_list_show(player, frame, global.player_list.sorting_method[player.index])
+            player_list_show(player, frame, this.player_list.sorting_method[player.index])
         end
     end
 end
 
 local function on_player_joined_game(event)
-    if not global.player_list.last_poke_tick[event.player_index] then
-        global.player_list.pokes[event.player_index] = 0
-        global.player_list.last_poke_tick[event.player_index] = 0
-        global.player_list.sorting_method[event.player_index] = 'total_time_played_desc'
+    if not this.player_list.last_poke_tick[event.player_index] then
+        this.player_list.pokes[event.player_index] = 0
+        this.player_list.last_poke_tick[event.player_index] = 0
+        this.player_list.sorting_method[event.player_index] = 'total_time_played_desc'
     end
     refresh()
 end
@@ -658,16 +685,20 @@ local function on_player_left_game()
     refresh()
 end
 
-local on_init = function()
-    global.player_list = {}
-    global.player_list.last_poke_tick = {}
-    global.player_list.pokes = {}
-    global.player_list.sorting_method = {}
+--- If the different roles should be shown in the player_list.
+---@param value string
+function Public.show_roles_in_list(value)
+    if value then
+        this.show_roles_in_list = value
+    end
+
+    return this.show_roles_in_list
 end
 
 comfy_panel_tabs['Players'] = {gui = player_list_show, admin = false}
 
-Event.on_init(on_init)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
+
+return Public

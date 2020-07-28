@@ -2,6 +2,8 @@ require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
 
+require 'modules.rpg.main'
+require 'modules.autofill'
 require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
@@ -11,8 +13,10 @@ require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.charging_station'
+require 'modules.admins_operate_biters'
 
 local Autostash = require 'modules.autostash'
+local PL = require 'comfy_panel.player_list'
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Map_score = require 'comfy_panel.map_score'
 local Server = require 'utils.server'
@@ -24,8 +28,8 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
-local RPG = require 'modules.rpg.main'
 local RPG_Settings = require 'modules.rpg.table'
+local RPG_Func = require 'modules.rpg.functions'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local Event = require 'utils.event'
@@ -229,7 +233,7 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
     Map_score.reset_score()
-    RPG.rpg_reset_all_players()
+    RPG_Func.rpg_reset_all_players()
     RPG_Settings.set_surface_name('mountain_fortress_v3')
     RPG_Settings.enable_health_and_mana_bars(true)
     RPG_Settings.enable_wave_defense(true)
@@ -254,6 +258,9 @@ function Public.reset_map()
     Entities.set_scores()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
+    AntiGrief.enable_capsule_warning(true)
+
+    PL.show_roles_in_list(true)
 
     local players = game.connected_players
     for i = 1, #players do
@@ -377,6 +384,16 @@ local on_player_joined_game = function(event)
                 surface
             )
         end
+    end
+
+    if not this.locomotive or not this.locomotive.valid then
+        return
+    end
+    if player.position.y > this.locomotive.position.y then
+        player.teleport(
+            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
+            surface
+        )
     end
 end
 
@@ -562,8 +579,11 @@ local has_the_game_ended = function()
             end
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print('Soft-reset is disabled. Server will restart!', {r = 0.22, g = 0.88, b = 0.22})
-                    local message = 'Soft-reset is disabled. Server will restart!'
+                    game.print(
+                        'Soft-reset is disabled! Server will restart from scenario to load new changes.',
+                        {r = 0.22, g = 0.88, b = 0.22}
+                    )
+                    local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
                     Server.start_scenario('Mountain_Fortress_v3')
                     this.announced_message = true
@@ -572,8 +592,11 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print('Soft-reset is disabled. Server is shutting down!', {r = 0.22, g = 0.88, b = 0.22})
-                    local message = 'Soft-reset is disabled. Server is shutting down!'
+                    game.print(
+                        'Soft-reset is disabled! Server will shutdown. Most likely because of updates.',
+                        {r = 0.22, g = 0.88, b = 0.22}
+                    )
+                    local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
                     Server.stop_scenario()
                     this.announced_message = true
@@ -701,7 +724,7 @@ local on_tick = function()
     local wave_defense_table = WD.get_table()
     local update_gui = Gui_mf.update_gui
 
-    if game.tick % 30 == 0 then
+    if game.tick % 60 == 0 then
         for _, player in pairs(game.connected_players) do
             update_gui(player)
         end
@@ -710,7 +733,7 @@ local on_tick = function()
         has_the_game_ended()
         chunk_load()
 
-        if game.tick % 1800 == 0 then
+        if game.tick % 1200 == 0 then
             remove_offline_players()
             boost_difficulty()
             collapse_after_wave_100()
@@ -777,6 +800,17 @@ local on_init = function()
     Explosives.set_destructible_tile('water-mud', 1000)
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail')
+    Explosives.set_whitelist_entity('character')
+
+    if global.biter_command and global.biter_command.whitelist then
+        global.biter_command.whitelist = {
+            ['Hanakocz'] = true,
+            ['mewmew'] = true,
+            ['Gerkiz'] = true
+        }
+    end
+
+    global.biter_command.enabled = false
 end
 
 Event.on_nth_tick(10, on_tick)

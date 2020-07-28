@@ -36,6 +36,13 @@ local starting_items = {
     ['stone'] = 12
 }
 
+local disable_tech = function()
+    game.forces.player.technologies['landfill'].enabled = false
+    game.forces.player.technologies['optics'].researched = true
+    game.forces.player.technologies['artillery'].researched = false
+    game.forces.player.technologies['atomic-bomb'].enabled = false
+end
+
 function Public.reset_game()
     FDT.reset_table()
     Poll.reset()
@@ -54,6 +61,8 @@ function Public.reset_game()
             player.gui.left['crab_defender_game_lost'].destroy()
         end
     end
+
+    disable_tech()
 
     local map_gen_settings = {}
     map_gen_settings.seed = math_random(10000, 99999)
@@ -115,8 +124,6 @@ function Public.reset_game()
     game.map_settings.enemy_evolution.pollution_factor = 0
     game.map_settings.pollution.enabled = false
 
-    game.forces['player'].technologies['atomic-bomb'].enabled = false
-
     if not game.forces.decoratives then
         game.create_force('decoratives')
     end
@@ -127,7 +134,6 @@ function Public.reset_game()
     game.remove_offline_players()
 
     game.map_settings.enemy_expansion.enabled = false
-    game.forces['player'].technologies['artillery'].researched = false
 
     is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
     get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
@@ -135,8 +141,8 @@ function Public.reset_game()
         game.reset_time_played()
     end
 
-    this.market_health = 500
-    this.market_max_health = 500
+    this.market_health = 1000
+    this.market_max_health = 1000
     this.spawn_area_generated = false
 end
 
@@ -1424,8 +1430,9 @@ local on_tick = function()
         end
         if game.tick % 180 == 0 then
             if surface then
-                game.forces.player.chart(surface, {{-428, -24}, {-575, -126}})
-                game.forces.player.chart(surface, {{577, -24}, {724, -126}})
+                game.forces.player.chart(surface, {{-428, -24}, {-675, -326}})
+                game.forces.player.chart(surface, {{577, -24}, {824, -326}})
+                game.forces.player.chart(surface, {{248, 0}, {-248, 200}})
                 if Diff.difficulty_vote_index then
                     this.wave_interval = this.difficulties_votes[Diff.difficulty_vote_index].wave_interval
                 end

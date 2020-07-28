@@ -257,10 +257,7 @@ local function construct_wagon_doors(icw, wagon)
     local area = wagon.area
     local surface = wagon.surface
 
-    local main_tile_name = 'tutorial-grid'
-    if wagon.entity.type == 'locomotive' then
-        main_tile_name = 'black-refined-concrete'
-    end
+    local main_tile_name = 'black-refined-concrete'
 
     for _, x in pairs({area.left_top.x - 1, area.right_bottom.x + 0.5}) do
         local p = {x, area.left_top.y + 30}
@@ -381,10 +378,7 @@ function Public.create_wagon_room(icw, wagon)
     local surface = wagon.surface
     local area = wagon.area
 
-    local main_tile_name = 'tutorial-grid'
-    if wagon.entity.type == 'locomotive' then
-        main_tile_name = 'black-refined-concrete'
-    end
+    local main_tile_name = 'black-refined-concrete'
 
     local tiles = {}
     for x = -3, 2, 1 do
