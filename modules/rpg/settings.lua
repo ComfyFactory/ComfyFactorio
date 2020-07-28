@@ -380,6 +380,14 @@ function Public.extra_settings(player)
         end
         enable_entity_gui_input = create_input_element(entity_input, 'boolean', entity_mod)
 
+        if not trusted[player.name] then
+            enable_entity_gui_input.enabled = false
+            enable_entity_gui_input.tooltip = 'Not trusted.\nChecked = true\nUnchecked = false'
+        else
+            enable_entity_gui_input.enabled = true
+            enable_entity_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+        end
+
         local conjure_label =
             mana_grid.add(
             {
