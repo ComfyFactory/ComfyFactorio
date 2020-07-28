@@ -7,7 +7,7 @@ Public.conjure_items = {
         level = 10,
         type = 'item',
         mana_cost = 35,
-        tick = 160,
+        tick = 100,
         enabled = true
     },
     [2] = {
@@ -16,7 +16,7 @@ Public.conjure_items = {
         level = 2,
         type = 'item',
         mana_cost = 30,
-        tick = 160,
+        tick = 100,
         enabled = true
     },
     [3] = {
@@ -25,7 +25,7 @@ Public.conjure_items = {
         level = 10,
         type = 'item',
         mana_cost = 40,
-        tick = 260,
+        tick = 200,
         enabled = true
     },
     [4] = {
@@ -34,7 +34,7 @@ Public.conjure_items = {
         level = 15,
         type = 'item',
         mana_cost = 50,
-        tick = 360,
+        tick = 300,
         enabled = true
     },
     [5] = {
@@ -43,7 +43,7 @@ Public.conjure_items = {
         level = 3,
         type = 'item',
         mana_cost = 40,
-        tick = 160,
+        tick = 100,
         enabled = true
     },
     [6] = {
@@ -52,7 +52,7 @@ Public.conjure_items = {
         level = 20,
         type = 'item',
         mana_cost = 50,
-        tick = 260,
+        tick = 200,
         enabled = true
     },
     [7] = {
@@ -61,7 +61,7 @@ Public.conjure_items = {
         level = 60,
         type = 'item',
         mana_cost = 60,
-        tick = 360,
+        tick = 300,
         enabled = true
     },
     [8] = {
@@ -70,7 +70,7 @@ Public.conjure_items = {
         level = 3,
         type = 'item',
         mana_cost = 40,
-        tick = 160,
+        tick = 100,
         enabled = true
     },
     [9] = {
@@ -79,7 +79,7 @@ Public.conjure_items = {
         level = 20,
         type = 'item',
         mana_cost = 50,
-        tick = 260,
+        tick = 200,
         enabled = true
     },
     [10] = {
@@ -88,7 +88,7 @@ Public.conjure_items = {
         level = 60,
         type = 'item',
         mana_cost = 60,
-        tick = 360,
+        tick = 300,
         enabled = true
     },
     [11] = {
@@ -97,7 +97,7 @@ Public.conjure_items = {
         level = 80,
         type = 'entity',
         mana_cost = 80,
-        tick = 420,
+        tick = 350,
         enabled = true
     },
     [12] = {
@@ -210,11 +210,11 @@ Public.conjure_items = {
         level = 70,
         type = 'special',
         mana_cost = 90,
-        tick = 200,
+        tick = 100,
         enabled = true
     },
     [22] = {
-        name = 'Fire my lazors!!',
+        name = 'Shoop Da Whoop!!',
         obj_to_create = 'railgun-beam',
         target = false,
         amount = 3,
@@ -224,7 +224,7 @@ Public.conjure_items = {
         level = 50,
         type = 'special',
         mana_cost = 66,
-        tick = 320,
+        tick = 200,
         enabled = true
     },
     [23] = {
@@ -263,10 +263,21 @@ Public.conjure_items = {
         damage = false,
         range = 30,
         force = 'player',
-        level = 60,
+        level = 50,
         type = 'special',
         mana_cost = 200,
         tick = 320,
+        enabled = true
+    },
+    [26] = {
+        name = 'Warp Gate',
+        obj_to_create = 'warp-gate',
+        target = true,
+        force = 'player',
+        level = 60,
+        type = 'special',
+        mana_cost = 300,
+        tick = 2000,
         enabled = true
     }
 }

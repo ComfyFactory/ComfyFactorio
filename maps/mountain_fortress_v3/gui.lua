@@ -1,6 +1,5 @@
 local Event = require 'utils.event'
 local RPG_Settings = require 'modules.rpg.table'
-local RPG = require 'modules.rpg.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Gui = require 'utils.gui'
 local format_number = require 'util'.format_number

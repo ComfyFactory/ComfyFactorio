@@ -33,7 +33,6 @@ function Public.reset_table()
     this.icw_locomotive = nil
     this.debug = false
     this.fullness_enabled = true
-    this.fullness_limit = 0.95
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
     this.train_upgrades = 0
@@ -45,6 +44,9 @@ function Public.reset_table()
     this.locomotive_xp_aura = 40
     this.xp_points = 0
     this.xp_points_upgrade = 0
+    --!grief prevention
+    this.enable_arties = 5 -- default to callback 6
+    --!snip
     this.poison_deployed = false
     this.upgrades = {
         showed_text = false,
@@ -80,6 +82,7 @@ function Public.reset_table()
     this.difficulty_set = false
     this.bonus_xp_on_join = 150
     this.main_market_items = {}
+    this.spill_items_to_surface = false
     this.outside_chests = {}
     this.chests_linked_to = {}
     this.chest_limit_outside_upgrades = 1

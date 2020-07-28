@@ -54,21 +54,9 @@ local function create_particles(surface, name, position, amount, cause_position)
 end
 
 local function compute_fullness(player)
-    local inv = player.get_inventory(defines.inventory.character_main)
-    local max_stacks = #inv
-    local num_stacks = 0
+    local free_slots = player.get_main_inventory().count_empty_stacks()
 
-    local contents = inv.get_contents()
-    for item, count in pairs(contents) do
-        local stack_size = 1
-        if game.item_prototypes[item].stackable then
-            stack_size = game.item_prototypes[item].stack_size
-        end
-
-        num_stacks = num_stacks + count / stack_size
-    end
-
-    return num_stacks / max_stacks
+    return free_slots
 end
 
 local function mining_chances_ores()
@@ -160,7 +148,6 @@ local function randomness(data)
     local entity = data.entity
     local player = data.player
     local this = data.this
-    local fullness_limit = this.fullness_limit
     local fullness_enabled = this.fullness_enabled
     local harvest
     local harvest_amount
@@ -172,7 +159,7 @@ local function randomness(data)
 
     debug_print(player.name .. ' is ' .. fullness .. '% full.')
 
-    if fullness >= fullness_limit then
+    if fullness == 0 then
         if player.character then
             player.character.health = player.character.health - math.random(50, 100)
             player.character.surface.create_entity({name = 'water-splash', position = player.position})
@@ -207,15 +194,27 @@ local function randomness(data)
     )
 
     if harvest_amount > max_spill then
-        player.surface.spill_item_stack(position, {name = harvest, count = max_spill}, true)
+        if this.spill_items_to_surface then
+            player.surface.spill_item_stack(position, {name = harvest, count = max_spill}, true)
+        else
+            player.insert({name = harvest, count = max_spill})
+        end
         harvest_amount = harvest_amount - max_spill
         local inserted_count = player.insert({name = harvest, count = harvest_amount})
         harvest_amount = harvest_amount - inserted_count
         if harvest_amount > 0 then
-            player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
+            if this.spill_items_to_surface then
+                player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
+            else
+                player.insert({name = harvest, count = harvest_amount})
+            end
         end
     else
-        player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
+        if this.spill_items_to_surface then
+            player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
+        else
+            player.insert({name = harvest, count = harvest_amount})
+        end
     end
     local particle = particles[harvest]
     create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})

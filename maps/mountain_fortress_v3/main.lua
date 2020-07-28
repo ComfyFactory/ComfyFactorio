@@ -2,6 +2,7 @@ require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
 
+require 'modules.rpg.main'
 require 'modules.autofill'
 require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
@@ -27,8 +28,8 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
-local RPG = require 'modules.rpg.main'
 local RPG_Settings = require 'modules.rpg.table'
+local RPG_Func = require 'modules.rpg.functions'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local Event = require 'utils.event'
@@ -232,7 +233,7 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
     Map_score.reset_score()
-    RPG.rpg_reset_all_players()
+    RPG_Func.rpg_reset_all_players()
     RPG_Settings.set_surface_name('mountain_fortress_v3')
     RPG_Settings.enable_health_and_mana_bars(true)
     RPG_Settings.enable_wave_defense(true)
@@ -383,6 +384,16 @@ local on_player_joined_game = function(event)
                 surface
             )
         end
+    end
+
+    if not this.locomotive or not this.locomotive.valid then
+        return
+    end
+    if player.position.y > this.locomotive.position.y then
+        player.teleport(
+            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
+            surface
+        )
     end
 end
 
@@ -722,7 +733,7 @@ local on_tick = function()
         has_the_game_ended()
         chunk_load()
 
-        if game.tick % 1800 == 0 then
+        if game.tick % 1200 == 0 then
             remove_offline_players()
             boost_difficulty()
             collapse_after_wave_100()

@@ -68,7 +68,7 @@ local callback = {
     [3] = {callback = Functions.refill_turret_callback, data = uranium_rounds_magazine_ammo},
     [4] = {callback = Functions.power_source_callback, data = laser_turrent_power_source},
     [5] = {callback = Functions.refill_liquid_turret_callback, data = light_oil_ammo},
-    [6] = {callback = Functions.refill_turret_callback, data = artillery_shell_ammo}
+    [6] = {callback = Functions.refill_artillery_turret_callback, data = artillery_shell_ammo}
 }
 
 local turret_list = {
@@ -215,6 +215,7 @@ local function wall(data)
     local surface = data.surface
     local treasure = data.treasure
     local stone_wall = {callback = Functions.disable_minable_callback}
+    local enable_arties = WPT.get('enable_arties')
 
     local x, y = Public.increment_value(data)
 
@@ -345,12 +346,12 @@ local function wall(data)
                 elseif math.random(1, 2) == 1 then
                     spawn_turret(entities, p, 5)
                 elseif math.random(1, 8) == 1 then
-                    spawn_turret(entities, p, 6)
+                    spawn_turret(entities, p, enable_arties)
                 end
             end
         elseif math.abs(p.y) > Public.level_depth * 5.5 then
             if math.random(1, 32) == 1 then
-                spawn_turret(entities, p, math.random(3, 6))
+                spawn_turret(entities, p, math.random(3, enable_arties))
             end
         end
     end
@@ -1571,9 +1572,9 @@ end
 
 Public.levels = {
     process_level_2_position,
-    process_level_4_position,
     process_level_1_position,
     process_level_2_position,
+    process_level_3_position,
     process_level_6_position,
     process_level_2_position,
     process_level_3_position,

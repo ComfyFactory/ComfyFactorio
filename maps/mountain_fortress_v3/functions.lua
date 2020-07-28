@@ -8,7 +8,8 @@ local this = {
     power_sources = {index = 1},
     refill_turrets = {index = 1},
     magic_crafters = {index = 1},
-    magic_fluid_crafters = {index = 1}
+    magic_fluid_crafters = {index = 1},
+    art_table = {index = 1}
 }
 
 Global.register(
@@ -23,6 +24,15 @@ local Public = {}
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
 local floor = math.floor
+
+local artillery_target_entities = {
+    'character',
+    'tank',
+    'car',
+    'furnace',
+    'straight-rail',
+    'curved-rail'
+}
 
 local function fast_remove(tbl, index)
     local count = #tbl
@@ -186,6 +196,88 @@ local function do_magic_fluid_crafters()
     magic_fluid_crafters.index = index
 end
 
+local artillery_target_callback =
+    Token.register(
+    function(data)
+        local position = data.position
+        local entity = data.entity
+
+        if not entity.valid then
+            return
+        end
+
+        local tx, ty = position.x, position.y
+
+        local pos = entity.position
+        local x, y = pos.x, pos.y
+        local dx, dy = tx - x, ty - y
+        local d = dx * dx + dy * dy
+        if d >= 1024 then -- 32 ^ 2
+            entity.surface.create_entity {
+                name = 'artillery-projectile',
+                position = position,
+                target = entity,
+                speed = 1.5
+            }
+        end
+    end
+)
+
+local function do_artillery_turrets_targets()
+    local art_table = this.art_table
+    local index = art_table.index
+
+    if index > #art_table then
+        art_table.index = 1
+        return
+    end
+
+    art_table.index = index + 1
+
+    local outpost = art_table[index]
+
+    local now = game.tick
+    if now - outpost.last_fire_tick < 480 then
+        return
+    end
+
+    local turrets = outpost.artillery_turrets
+    for i = #turrets, 1, -1 do
+        local turret = turrets[i]
+        if not turret.valid then
+            fast_remove(turrets, i)
+        end
+    end
+
+    local count = #turrets
+    if count == 0 then
+        fast_remove(art_table, index)
+        return
+    end
+
+    outpost.last_fire_tick = now
+
+    local turret = turrets[1]
+    local area = outpost.artillery_area
+    local surface = turret.surface
+
+    local entities = surface.find_entities_filtered {area = area, name = artillery_target_entities}
+
+    if #entities == 0 then
+        return
+    end
+
+    local position = turret.position
+
+    for i = 1, count do
+        local entity = entities[math.random(#entities)]
+        if entity and entity.valid then
+            local data = {position = position, entity = entity}
+            Task.set_timeout_in_ticks(i * 60, artillery_target_callback, data)
+        end
+    end
+end
+
 local function add_magic_crafter_output(entity, output, distance)
     local magic_fluid_crafters = this.magic_fluid_crafters
     local magic_crafters = this.magic_crafters
@@ -212,6 +304,7 @@ local function tick()
     do_refill_turrets()
     do_magic_crafters()
     do_magic_fluid_crafters()
+    do_artillery_turrets_targets()
 end
 
 Public.deactivate_callback =
@@ -301,6 +394,39 @@ Public.refill_turret_callback =
         turret.direction = 3
 
         refill_turrets[#refill_turrets + 1] = {turret = turret, data = callback_data}
+    end
+)
+
+Public.refill_artillery_turret_callback =
+    Token.register(
+    function(turret, data)
+        local refill_turrets = this.refill_turrets
+        local art_table = this.art_table
+        local index = art_table.index
+
+        turret.direction = 3
+
+        refill_turrets[#refill_turrets + 1] = {turret = turret, data = data.callback_data}
+
+        local artillery_data = art_table[index]
+        if not artillery_data then
+            artillery_data = {}
+        end
+
+        local artillery_turrets = artillery_data.artillery_turrets
+        if not artillery_turrets then
+            artillery_turrets = {}
+            artillery_data.artillery_turrets = artillery_turrets
+
+            local pos = turret.position
+            local x, y = pos.x, pos.y
+            artillery_data.artillery_area = {{x - 112, y}, {x + 112, y + 212}}
+            artillery_data.last_fire_tick = 0
+
+            art_table[#art_table + 1] = artillery_data
+        end
+
+        artillery_turrets[#artillery_turrets + 1] = turret
     end
 )
 

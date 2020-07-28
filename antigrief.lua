@@ -740,7 +740,7 @@ end
 ---@param player <LuaPlayer>
 ---@param position <EventPosition>
 ---@param msg <string>
-function Public.insert_into_capsule_history(player, position)
+function Public.insert_into_capsule_history(player, position, msg)
     if not this.capsule_history[player.index] then
         this.capsule_history[player.index] = {}
     end
@@ -749,6 +749,7 @@ function Public.insert_into_capsule_history(player, position)
     end
     local t = math.abs(math.floor((game.tick) / 3600))
     local str = '[' .. t .. '] '
+    str = str .. msg
     str = str .. ' at X:'
     str = str .. math.floor(position.x)
     str = str .. ' Y:'

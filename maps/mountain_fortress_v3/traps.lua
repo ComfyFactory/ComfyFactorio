@@ -1,7 +1,7 @@
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
-local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*'}
+local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*', '( ͡° ͜ʖ ͡°)'}
 
 local kaboom_weights = {
     {name = 'grenade', chance = 7},

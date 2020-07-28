@@ -7,7 +7,7 @@ Public.events = {breached_wall = Event.generate_event_name('breached_wall')}
 
 function Public.init_enemy_weapon_damage()
     local data = {
-        ['artillery-shell'] = -0.85,
+        ['artillery-shell'] = -1.3,
         ['biological'] = 0,
         ['bullet'] = 0,
         ['cannon-shell'] = 0,
