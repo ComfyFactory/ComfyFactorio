@@ -891,6 +891,10 @@ local function on_player_used_capsule(event)
         return p('You lack the level to cast this spell.', Color.fail)
     end
 
+    if not object.enabled then
+        return
+    end
+
     local object_name = object.name
     local obj_name = object.obj_to_create
 

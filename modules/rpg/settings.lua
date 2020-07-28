@@ -400,7 +400,9 @@ function Public.extra_settings(player)
         local names = {}
 
         for _, items in pairs(conjure_items) do
-            names[#names + 1] = items.name
+            if items.enabled then
+                names[#names + 1] = items.name
+            end
         end
 
         local conjure_label_style = conjure_label.style
