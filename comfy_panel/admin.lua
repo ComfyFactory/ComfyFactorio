@@ -276,7 +276,7 @@ local function draw_events(data)
     if game.players[target_player_name] then
         local target_player = game.players[target_player_name].index
 
-        if #history_index[history] <= 0 then
+        if not history_index or not history_index[history] or #history_index[history] <= 0 then
             return
         end
 

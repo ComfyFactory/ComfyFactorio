@@ -97,7 +97,7 @@ function Public.reset_table()
     }
     this.collapse_grace = true
     this.locomotive_biter = nil
-    this.disconnect_wagon = true
+    this.disconnect_wagon = false
 end
 
 function Public.get(key)

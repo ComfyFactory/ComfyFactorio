@@ -74,7 +74,12 @@ local build_group_gui = (function(player, frame)
             l.style.bottom_padding = 16
             l.style.minimal_width = group_name_width
             l.style.maximal_width = group_name_width
-            local color = game.players[group.founder].color
+            local color
+            if game.players[group.founder] and game.players[group.founder].color then
+                color = game.players[group.founder].color
+            else
+                color = {r = 0.90, g = 0.90, b = 0.90}
+            end
             color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
             l.style.font_color = color
             l.style.single_line = false
@@ -295,6 +300,12 @@ function Public.alphanumeric_only(value)
     if value then
         this.alphanumeric = value or false
     end
+end
+
+function Public.reset_groups()
+    this.player_group = {}
+    this.join_spam_protection = {}
+    this.tag_groups = {}
 end
 
 comfy_panel_tabs['Groups'] = {gui = build_group_gui, admin = false}

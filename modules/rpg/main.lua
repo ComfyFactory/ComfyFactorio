@@ -159,6 +159,7 @@ local function on_entity_died(event)
                 end
             end
             Functions.gain_xp(event.entity.last_user, 1)
+            Functions.reward_mana(event.entity.last_user, 1)
             return
         end
     end
@@ -280,9 +281,10 @@ local function regen_health_player(players)
                 player.character.health = player.character.health + heal_per_tick
             end
         end
-        Functions.update_health(player)
 
         ::continue::
+
+        Functions.update_health(player)
     end
 end
 
@@ -314,9 +316,9 @@ local function regen_mana_player(players)
             end
         end
 
-        Functions.update_mana(player)
-
         ::continue::
+
+        Functions.update_mana(player)
     end
 end
 
@@ -449,9 +451,11 @@ local function on_entity_damaged(event)
     if event.cause.name ~= 'character' then
         return
     end
+
     if event.damage_type.name ~= 'physical' then
         return
     end
+
     if not event.entity.valid then
         return
     end
@@ -464,6 +468,8 @@ local function on_entity_damaged(event)
     if not event.cause.player then
         return
     end
+
+    Functions.reward_mana(event.cause.player, 2)
 
     --Grant the player life-on-hit.
     event.cause.health = event.cause.health + Functions.get_life_on_hit(event.cause.player)
@@ -575,6 +581,7 @@ local function on_player_repaired_entity(event)
         return
     end
     Functions.gain_xp(player, 0.05)
+    Functions.reward_mana(player, 0.2)
 
     local repair_speed = Functions.get_magicka(player)
     if repair_speed <= 0 then
@@ -667,6 +674,7 @@ local function on_pre_player_mined_item(event)
     end
 
     Functions.gain_xp(player, xp_amount)
+    Functions.reward_mana(player, 0.5 * distance_multiplier)
 end
 
 local function on_player_crafted_item(event)
@@ -685,6 +693,7 @@ local function on_player_crafted_item(event)
     local amount = 0.30 * math.random(1, 2)
 
     Functions.gain_xp(player, event.recipe.energy * amount)
+    Functions.reward_mana(player, amount)
 end
 
 local function on_player_respawned(event)
@@ -882,6 +891,10 @@ local function on_player_used_capsule(event)
         return p('You lack the level to cast this spell.', Color.fail)
     end
 
+    if not object.enabled then
+        return
+    end
+
     local object_name = object.name
     local obj_name = object.obj_to_create
 
@@ -980,6 +993,13 @@ local function on_player_used_capsule(event)
 
     rpg_t[player.index].last_spawned = game.tick + object.tick
     Functions.update_mana(player)
+
+    local reward_xp = object.mana_cost * 0.009
+    if reward_xp < 1 then
+        reward_xp = 1
+    end
+
+    Functions.gain_xp(player, reward_xp)
 
     AntiGrief.insert_into_capsule_history(player, position, msg)
 

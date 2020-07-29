@@ -166,7 +166,7 @@ function Public.suicidal_comfylatron(pos, surface)
         }
     )
     local nearest_player_unit =
-        surface.find_nearest_enemy({position = e.position, max_distance = 256, force = 'player'})
+        surface.find_nearest_enemy({position = e.position, max_distance = 512, force = 'player'})
 
     if nearest_player_unit and nearest_player_unit.active and nearest_player_unit.force.name ~= 'player' then
         e.set_command(
@@ -220,6 +220,11 @@ function Public.update_mana(player)
     if not rpg_extra.enable_mana then
         return
     end
+
+    if not rpg_t[player.index] then
+        return
+    end
+
     if player.gui.left[main_frame_name] then
         local f = player.gui.left[main_frame_name]
         local data = Gui.get_data(f)
@@ -227,6 +232,7 @@ function Public.update_mana(player)
             data.mana.caption = rpg_t[player.index].mana
         end
     end
+
     if rpg_t[player.index].mana < 1 then
         return
     end
@@ -250,47 +256,90 @@ function Public.update_mana(player)
     end
 end
 
+function Public.reward_mana(player, mana_to_add)
+    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_t = RPG.get('rpg_t')
+    if not rpg_extra.enable_mana then
+        return
+    end
+
+    if not mana_to_add then
+        return
+    end
+
+    if not rpg_t[player.index] then
+        return
+    end
+
+    if player.gui.left[main_frame_name] then
+        local f = player.gui.left[main_frame_name]
+        local data = Gui.get_data(f)
+        if data.mana and data.mana.valid then
+            data.mana.caption = rpg_t[player.index].mana
+        end
+    end
+    if rpg_t[player.index].mana_max < 1 then
+        return
+    end
+
+    if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
+        rpg_t[player.index].mana = rpg_t[player.index].mana_max
+        return
+    end
+
+    rpg_t[player.index].mana = rpg_t[player.index].mana + mana_to_add
+end
+
 function Public.update_health(player)
     local rpg_extra = RPG.get('rpg_extra')
     local rpg_t = RPG.get('rpg_t')
-    if rpg_extra.enable_health_and_mana_bars then
-        if rpg_t[player.index].show_bars then
-            if player and player.valid then
-                if player.character and player.character.valid then
-                    local max_life =
-                        math.floor(
-                        player.character.prototype.max_health + player.character_health_bonus +
-                            player.force.character_health_bonus
-                    )
-                    if not rpg_t[player.index].health_bar then
-                        rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
-                    elseif not rendering.is_valid(rpg_t[player.index].health_bar) then
-                        rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
-                    end
-                    set_bar(player.character.health, max_life, rpg_t[player.index].health_bar)
 
-                    if player.gui.left[main_frame_name] then
-                        local f = player.gui.left[main_frame_name]
-                        local data = Gui.get_data(f)
-                        if data.health and data.health.valid then
-                            data.health.caption = (math.round(player.character.health * 10) / 10)
-                        end
-                        local shield_gui = player.character.get_inventory(defines.inventory.character_armor)
-                        if not shield_gui.is_empty() then
-                            if shield_gui[1].grid then
-                                local shield = math.floor(shield_gui[1].grid.shield)
-                                local shield_max = math.floor(shield_gui[1].grid.max_shield)
-                                if data.shield and data.shield.valid then
-                                    data.shield.caption = shield
-                                end
-                                if data.shield_max and data.shield_max.valid then
-                                    data.shield_max.caption = shield_max
-                                end
-                            end
-                        end
-                    end
+    if not player or not player.valid then
+        return
+    end
+
+    if not player.character or not player.character.valid then
+        return
+    end
+
+    if not rpg_t[player.index] then
+        return
+    end
+
+    if player.gui.left[main_frame_name] then
+        local f = player.gui.left[main_frame_name]
+        local data = Gui.get_data(f)
+        if data.health and data.health.valid then
+            data.health.caption = (math.round(player.character.health * 10) / 10)
+        end
+        local shield_gui = player.character.get_inventory(defines.inventory.character_armor)
+        if not shield_gui.is_empty() then
+            if shield_gui[1].grid then
+                local shield = math.floor(shield_gui[1].grid.shield)
+                local shield_max = math.floor(shield_gui[1].grid.max_shield)
+                if data.shield and data.shield.valid then
+                    data.shield.caption = shield
+                end
+                if data.shield_max and data.shield_max.valid then
+                    data.shield_max.caption = shield_max
                 end
             end
+        end
+    end
+
+    if rpg_extra.enable_health_and_mana_bars then
+        if rpg_t[player.index].show_bars then
+            local max_life =
+                math.floor(
+                player.character.prototype.max_health + player.character_health_bonus +
+                    player.force.character_health_bonus
+            )
+            if not rpg_t[player.index].health_bar then
+                rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
+            elseif not rendering.is_valid(rpg_t[player.index].health_bar) then
+                rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
+            end
+            set_bar(player.character.health, max_life, rpg_t[player.index].health_bar)
         else
             if rpg_t[player.index].health_bar then
                 if rendering.is_valid(rpg_t[player.index].health_bar) then

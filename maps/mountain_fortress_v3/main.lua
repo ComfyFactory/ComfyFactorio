@@ -16,6 +16,7 @@ require 'modules.charging_station'
 require 'modules.admins_operate_biters'
 
 local Autostash = require 'modules.autostash'
+local Group = require 'comfy_panel.group'
 local PL = require 'comfy_panel.player_list'
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Map_score = require 'comfy_panel.map_score'
@@ -244,6 +245,8 @@ function Public.reset_map()
     RPG_Settings.enable_one_punch(true)
     RPG_Settings.enable_one_punch_globally(false)
 
+    Group.reset_groups()
+
     disable_tech()
 
     local surface = game.surfaces[this.active_surface_index]
@@ -259,6 +262,7 @@ function Public.reset_map()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(true)
+    AntiGrief.enable_capsule_cursor_warning(false)
 
     PL.show_roles_in_list(true)
 

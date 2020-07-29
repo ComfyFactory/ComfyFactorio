@@ -29,7 +29,8 @@ local this = {
     do_not_check_trusted = true,
     enable_autokick = true,
     enable_autoban = false,
-    enable_capsule_warning = false
+    enable_capsule_warning = false,
+    enable_capsule_cursor_warning = false
 }
 
 local blacklisted_types = {
@@ -269,12 +270,11 @@ end
 local function on_player_used_capsule(event)
     local trusted = session.get_trusted_table()
     local player = game.players[event.player_index]
-    if player.admin then
-        return
-    end
+
     if trusted[player.name] and this.do_not_check_trusted then
         return
     end
+
     local item = event.item
 
     if not item then
@@ -288,14 +288,15 @@ local function on_player_used_capsule(event)
     local surface = player.surface
 
     if ammo_names[name] then
-        if
-            surface.count_entities_filtered({force = 'enemy', area = {{x - 10, y - 10}, {x + 10, y + 10}}, limit = 1}) >
-                0
-         then
-            return
-        end
-        local msg = ''
+        local msg
         if this.enable_capsule_warning then
+            if
+                surface.count_entities_filtered(
+                    {force = 'enemy', area = {{x - 10, y - 10}, {x + 10, y + 10}}, limit = 1}
+                ) > 0
+             then
+                return
+            end
             local count = 0
             local entities =
                 player.surface.find_entities_filtered {force = player.force, area = {{x - 5, y - 5}, {x + 5, y + 5}}}
@@ -322,6 +323,8 @@ local function on_player_used_capsule(event)
             )
 
             do_action(player, prefix, msg, ban_msg, true)
+        else
+            msg = player.name .. ' used ' .. name
         end
 
         if not this.capsule_history[player.index] then
@@ -607,7 +610,7 @@ local function on_player_cursor_stack_changed(event)
     end
 
     if playtime < 1296000 then
-        if this.enable_capsule_warning then
+        if this.enable_capsule_cursor_warning then
             if ammo_names[name] then
                 local item_to_remove = player.remove_item({name = name, count = 1000})
                 if item_to_remove > 0 then
@@ -734,6 +737,16 @@ function Public.enable_capsule_warning(value)
     end
 
     return this.enable_capsule_warning
+end
+
+--- If ANY actions should be performed when a player misbehaves.
+---@param value <string>
+function Public.enable_capsule_cursor_warning(value)
+    if value then
+        this.enable_capsule_cursor_warning = value
+    end
+
+    return this.enable_capsule_cursor_warning
 end
 
 --- This is used for the RPG module, when casting capsules.
