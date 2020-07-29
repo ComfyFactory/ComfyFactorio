@@ -16,16 +16,6 @@ local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
 
-local jail_messages = {
-    'You´re done bud!',
-    'Busted!'
-}
-
-local freedom_messages = {
-    'Yaay!',
-    'Welcome back!'
-}
-
 local valid_commands = {
     ['free'] = true,
     ['jail'] = true
@@ -174,7 +164,7 @@ local jail = function(player, griefer)
         permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
     end
     permission_group.add_player(griefer)
-    local message = griefer .. ' has been jailed by ' .. player .. '. ' .. jail_messages[math.random(1, #jail_messages)]
+    local message = griefer .. ' has been jailed by ' .. player .. '.'
 
     if
         game.players[griefer].character and game.players[griefer].character.valid and
@@ -208,9 +198,7 @@ local free = function(player, griefer)
 
     local permission_group = game.permissions.get_group('Default')
     permission_group.add_player(griefer)
-    local message =
-        griefer ..
-        ' was set free from jail by ' .. player .. '. ' .. freedom_messages[math.random(1, #freedom_messages)]
+    local message = griefer .. ' was set free from jail by ' .. player .. '.'
 
     jailed[griefer] = nil
 

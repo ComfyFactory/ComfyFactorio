@@ -59,11 +59,12 @@ local entity_type = {
     ['tree'] = true
 }
 
-local wagon_types = {
+local protect_types = {
     ['cargo-wagon'] = true,
     ['artillery-wagon'] = true,
     ['fluid-wagon'] = true,
-    ['locomotive'] = true
+    ['locomotive'] = true,
+    ['reactor'] = true
 }
 
 local function set_objective_health(final_damage_amount)
@@ -129,7 +130,7 @@ local function protect_entities(event)
         if string.sub(e.surface.name, 0, #map_name) ~= map_name then
             return true
         end
-        if wagon_types[e.type] then
+        if protect_types[e.type] then
             return true
         end
         return false
