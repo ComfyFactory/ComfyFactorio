@@ -11,7 +11,7 @@ local jailed_data_set = 'jailed'
 local jailed = {}
 local votejail = {}
 local votefree = {}
-local votejail_count = 3
+local votejail_count = 5
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
@@ -45,6 +45,30 @@ Global.register(
 )
 
 local Public = {}
+
+local validate_playtime = function(player)
+    local tracker = Session.get_session_table()
+
+    local playtime = player.online_time
+
+    if tracker[player.name] then
+        playtime = player.online_time + tracker[player.name]
+    end
+
+    return playtime
+end
+
+local validate_trusted = function(player)
+    local trusted = Session.get_trusted_table()
+
+    local is_trusted = false
+
+    if trusted[player.name] then
+        is_trusted = true
+    end
+
+    return is_trusted
+end
 
 local validate_args = function(player, griefer)
     if not game.players[griefer] then
@@ -82,7 +106,7 @@ end
 
 local vote_to_jail = function(player, griefer)
     if not votejail[griefer] then
-        votejail[griefer] = {index = 0}
+        votejail[griefer] = {index = 0, actor = player.name}
         local message = player.name .. ' has started a vote to jail player ' .. griefer
         Utils.print_to(nil, message)
     end
@@ -95,7 +119,7 @@ local vote_to_jail = function(player, griefer)
                 (votejail[griefer].index == #game.connected_players - 1 and
                     #game.connected_players > votejail[griefer].index)
          then
-            Public.try_ul_data(griefer, true)
+            Public.try_ul_data(griefer, true, votejail[griefer].actor)
         end
     else
         Utils.print_to(player, 'You have already voted to kick ' .. griefer .. '.')
@@ -104,7 +128,7 @@ end
 
 local vote_to_free = function(player, griefer)
     if votejail[griefer] and not votefree[griefer] then
-        votefree[griefer] = {index = 0}
+        votefree[griefer] = {index = 0, actor = player.name}
         local message = player.name .. ' has started a vote to free player ' .. griefer
         Utils.print_to(nil, message)
     end
@@ -118,7 +142,7 @@ local vote_to_free = function(player, griefer)
                 (votefree[griefer].index == #game.connected_players - 1 and
                     #game.connected_players > votefree[griefer].index)
          then
-            Public.try_ul_data(griefer, false)
+            Public.try_ul_data(griefer, false, votefree[griefer].actor)
             votejail[griefer] = nil
             votefree[griefer] = nil
         end
@@ -300,9 +324,8 @@ Event.add(
 Event.add(
     defines.events.on_console_command,
     function(event)
-        local tracker = Session.get_session_table()
         local cmd = event.command
-        local _12h = 2592000 --  12h
+        local five_days = 25920000 --  5 days
 
         if not valid_commands[cmd] then
             return
@@ -315,7 +338,8 @@ Event.add(
 
         if event.player_index then
             local player = game.players[event.player_index]
-            local playtime = player.online_time
+            local playtime = validate_playtime(player)
+            local trusted = validate_trusted(player)
 
             local success = validate_args(player, griefer)
 
@@ -323,15 +347,15 @@ Event.add(
                 return
             end
 
-            if tracker[player.name] then
-                playtime = player.online_time + tracker[player.name]
-            end
-
             if game.players[griefer] then
                 griefer = game.players[griefer].name
             end
 
-            if playtime >= _12h and not player.admin then
+            if not trusted and playtime <= five_days and not player.admin then
+                return Utils.print_to(player, 'You are not trusted enough to run this command.')
+            end
+
+            if trusted and playtime >= five_days and not player.admin then
                 if cmd == 'jail' then
                     vote_to_jail(player, griefer)
                     return
@@ -339,8 +363,6 @@ Event.add(
                     vote_to_free(player, griefer)
                     return
                 end
-            elseif playtime < _12h and not player.admin then
-                return Utils.print_to(player, 'You are not trusted enough to run this command.')
             end
 
             if cmd == 'jail' then
@@ -348,14 +370,6 @@ Event.add(
                 return
             elseif cmd == 'free' then
                 Public.try_ul_data(griefer, false, player.name)
-                return
-            end
-        else
-            if cmd == 'jail' then
-                Public.try_ul_data(griefer, true)
-                return
-            elseif cmd == 'free' then
-                Public.try_ul_data(griefer, false)
                 return
             end
         end
