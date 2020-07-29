@@ -244,6 +244,7 @@ function Public.reset_map()
     RPG_Settings.enable_stone_path(true)
     RPG_Settings.enable_one_punch(true)
     RPG_Settings.enable_one_punch_globally(false)
+    RPG_Settings.disable_cooldowns_on_spells()
 
     Group.reset_groups()
 

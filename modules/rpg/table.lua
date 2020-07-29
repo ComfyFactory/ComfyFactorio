@@ -7,7 +7,7 @@ local Gui = require 'utils.gui'
 local this = {
     rpg_extra = {},
     rpg_t = {},
-    rpg_spells = {}
+    rpg_spells = Spells.conjure_items()
 }
 
 --! Gui Frames
@@ -122,7 +122,6 @@ function Public.reset_table()
         ['small-worm-turret'] = 16,
         ['spitter-spawner'] = 64
     }
-    this.rpg_spells = {}
 end
 
 --- Gets value from table
@@ -275,36 +274,116 @@ function Public.enable_one_punch_globally(value)
     return this.rpg_extra.enable_one_punch_globally
 end
 
---- Retrieves the spell table.
+--- Retrieves the spells table or a given spell.
 ---@param key <string>
 function Public.get_spells(key)
-    if key then
+    if this.rpg_spells[key] then
         return this.rpg_spells[key]
     else
         return this.rpg_spells
     end
+end
+
+--- Disables a spell.
+---@param key <string/table>
+-- Table would look like:
+-- Public.disable_spell({1, 2, 3, 4, 5, 6, 7, 8})
+function Public.disable_spell(key)
+    if type(key) == 'table' then
+        for _, k in pairs(key) do
+            this.rpg_spells[k].enabled = false
+        end
+    elseif this.rpg_spells[key] then
+        this.rpg_spells[key].enabled = false
+    end
+end
+
+--- Clears the spell table.
+function Public.clear_spell_table()
+    this.rpg_spells = {}
 end
 
 --- Adds a spell to the rpg_spells
----@param key <string>
----@param value <string>
-function Public.set_spells(key, value)
-    if key and value then
-        this.rpg_spells[key] = value
-        return this.rpg_spells[key]
-    elseif key then
-        return this.rpg_spells[key]
-    else
-        return this.rpg_spells
+---@param tbl <table>
+function Public.set_new_spell(tbl)
+    if tbl then
+        if not tbl.name then
+            return error('A spell requires a name. <string>', 2)
+        end
+        if not tbl.obj_to_create then
+            return error('A spell requires an object to create. <string>', 2)
+        end
+        if not tbl.target then
+            return error('A spell requires position. <boolean>', 2)
+        end
+        if not tbl.amount then
+            return error('A spell requires an amount of creation. <integer>', 2)
+        end
+        if not tbl.range then
+            return error('A spell requires a range. <integer>', 2)
+        end
+        if not tbl.damage then
+            return error('A spell requires damage. <damage-area=true/false>', 2)
+        end
+        if not tbl.force then
+            return error('A spell requires a force. <string>', 2)
+        end
+        if not tbl.level then
+            return error('A spell requires a level. <integer>', 2)
+        end
+        if not tbl.type then
+            return error('A spell requires a type. <item/entity/special>', 2)
+        end
+        if not tbl.mana_cost then
+            return error('A spell requires mana_cost. <integer>', 2)
+        end
+        if not tbl.tick then
+            return error('A spell requires tick. <integer>', 2)
+        end
+        if not tbl.enabled then
+            return error('A spell requires enabled. <boolean>', 2)
+        end
+
+        this.rpg_spells[#this.rpg_spells + 1] = tbl
     end
 end
 
---- Defines the spell table
----@param tbl <table>
-function Public.set_spells_table(tbl)
-    if tbl then
-        this.rpg_spells = tbl
+--- This rebuilds all spells. Make sure to make changes on_init if you don't
+--  want all spells enabled.
+function Public.rebuild_spells()
+    local spells = this.rpg_spells
+
+    local new_spells = {}
+    local spell_names = {}
+
+    for i = 1, #spells do
+        if spells[i].enabled then
+            new_spells[#new_spells + 1] = spells[i]
+            spell_names[#spell_names + 1] = spells[i].name
+        end
     end
+
+    this.rpg_spells = new_spells
+
+    return new_spells, spell_names
+end
+
+--- This will disable the cooldown of all spells.
+function Public.disable_cooldowns_on_spells()
+    local spells = this.rpg_spells
+
+    local new_spells = {}
+
+    for i = 1, #spells do
+        if spells[i].enabled then
+            spells[i].tick = 0
+            new_spells[#new_spells + 1] = spells[i]
+        end
+    end
+
+    this.rpg_spells = new_spells
+
+    return new_spells
 end
 
 Public.get_projectiles = Spells.projectile_types
@@ -314,7 +393,6 @@ Public.discard_button_name = discard_button_name
 Public.draw_main_frame_name = draw_main_frame_name
 Public.main_frame_name = main_frame_name
 Public.settings_button_name = settings_button_name
-Public.rebuild_spells = Spells.rebuild_spells
 
 local on_init = function()
     Public.reset_table()

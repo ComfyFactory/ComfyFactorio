@@ -286,22 +286,6 @@ function Public.conjure_items()
     return spells
 end
 
-function Public.rebuild_spells()
-    local spells = Public.conjure_items()
-
-    local new_spells = {}
-    local spell_names = {}
-
-    for i = 1, #spells do
-        if spells[i].enabled then
-            new_spells[#new_spells + 1] = spells[i]
-            spell_names[#spell_names + 1] = spells[i].name
-        end
-    end
-
-    return new_spells, spell_names
-end
-
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},
     ['land-mine'] = {name = 'grenade', count = 1, max_range = 32, tick_speed = 1},
