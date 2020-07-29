@@ -1,7 +1,10 @@
+local override_nauvis = true
+
 require 'modules.satellite_score'
 
 local Event = require 'utils.event'
 local Functions = require 'maps.expanse.functions'
+local GetNoise = require "utils.get_noise"
 local Global = require 'utils.global'
 local Map_info = require "modules.map_info"
 
@@ -22,8 +25,8 @@ local function set_nauvis()
 		["copper-ore"] = {frequency = 10, size = 0.7, richness = 0.75,},
 		["iron-ore"] = {frequency = 10, size = 0.7, richness = 1,},
 		["uranium-ore"] = {frequency = 10, size = 0.5, richness = 1,},
-		["crude-oil"] = {frequency = 25, size = 1.5, richness = 1.5,},
-		["trees"] = {frequency = 1.5, size = 1, richness = 1},
+		["crude-oil"] = {frequency = 20, size = 1.5, richness = 1.5,},
+		["trees"] = {frequency = 1.75, size = 1.25, richness = 1},
 		["enemy-base"] = {frequency = 10, size = 2, richness = 1},	
 	}
 	map_gen_settings.starting_area = 0.25
@@ -59,7 +62,9 @@ local function reset()
 	}
 	game.create_surface("expanse", map_gen_settings)
 	
-	--set_nauvis()
+	if override_nauvis then
+		set_nauvis()
+	end
 	
 	local source_surface = game.surfaces[expanse.source_surface]
 	source_surface.request_to_generate_chunks({x = 0, y = 0}, 4)
@@ -80,8 +85,43 @@ local function reset()
 	end
 end
 
+local ores = {"copper-ore", "iron-ore", "stone", "coal"}
+local function generate_ore(surface, left_top)
+	local seed = game.surfaces[1].map_gen_settings.seed
+	local left_top_x = left_top.x
+	local left_top_y = left_top.y
+	
+	--Draw the mixed ore patches.
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local pos = {x = left_top_x + x, y = left_top_y + y}
+			if surface.can_place_entity({name = "iron-ore", position = pos}) then
+				local noise = GetNoise("smol_areas", pos, seed)
+				if math.abs(noise) > 0.78 then
+					local amount = 500 + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 2
+					local i = math.floor(noise * 40 + math.abs(pos.x) * 0.05) % 4 + 1
+					surface.create_entity({name = ores[i], position = pos, amount = amount})
+				end
+			end
+		end
+	end
+end
+
 local function on_chunk_generated(event)
-	if event.surface.name ~= "expanse" then return end
+	local surface = event.surface
+
+	if surface.name ~= "expanse" then
+		if override_nauvis then
+			if surface.index == 1 then
+				for _, e in pairs(surface.find_entities_filtered({area = event.area, name = {"iron-ore", "copper-ore", "coal", "stone", "uranium-ore"}})) do
+					surface.create_entity({name = e.name, position = e.position, amount = 500 + math.sqrt(e.position.x ^ 2 + e.position.y ^ 2) * 2})
+					e.destroy()
+				end					
+				generate_ore(surface, event.area.left_top)
+			end
+		end
+		return 
+	end
 	local left_top = event.area.left_top
 	local tiles = {}
 	local i = 1
@@ -103,7 +143,7 @@ local function on_chunk_generated(event)
 			end
 		end
 	end		
-	event.surface.set_tiles(tiles, true)
+	surface.set_tiles(tiles, true)
 end
 
 local function container_opened(event)
@@ -188,6 +228,12 @@ local function on_init(event)
 	if not expanse.price_distance_modifier then expanse.price_distance_modifier = 0.004 end
 	if not expanse.max_ore_price_modifier then expanse.max_ore_price_modifier = 0.33 end
 	if not expanse.square_size then expanse.square_size = 16 end
+	
+	game.map_settings.enemy_expansion.enabled = true
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
+	game.map_settings.enemy_expansion.settler_group_max_size = 8
+	game.map_settings.enemy_expansion.settler_group_min_size = 16	
 	
 	--[[
 	expanse.token_chance = 2.5
