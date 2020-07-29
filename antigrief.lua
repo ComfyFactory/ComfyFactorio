@@ -55,6 +55,11 @@ local ammo_names = {
     ['rocket'] = true
 }
 
+local chests = {
+    ['container'] = true,
+    ['logistic-container'] = true
+}
+
 Global.register(
     this,
     function(t)
@@ -367,10 +372,27 @@ local function on_entity_died(event)
             this.friendly_fire_history[cause.player.index] = {}
         end
 
+        local chest
+        if chests[event.entity.type] then
+            local entity = event.entity
+            local inv = entity.get_inventory(1)
+            local contents = inv.get_contents()
+            local item_types = ''
+
+            for n, count in pairs(contents) do
+                if n == 'explosives' then
+                    item_types = item_types .. n .. ' count: ' .. count .. '. '
+                end
+            end
+            chest = event.entity.name .. ' with content ' .. item_types
+        else
+            chest = event.entity.name
+        end
+
         local t = math.abs(math.floor((game.tick) / 3600))
         local str = '[' .. t .. '] '
         str = str .. name .. ' destroyed '
-        str = str .. event.entity.name
+        str = str .. chest
         str = str .. ' at X:'
         str = str .. math.floor(event.entity.position.x)
         str = str .. ' Y:'

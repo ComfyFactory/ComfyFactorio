@@ -1,88 +1,91 @@
 local Public = {}
 
-Public.conjure_items = {
-    [1] = {
+function Public.conjure_items()
+    local spells = {}
+
+    spells[#spells + 1] = {
         name = 'Stone Wall',
         obj_to_create = 'stone-wall',
         level = 10,
         type = 'item',
         mana_cost = 35,
         tick = 100,
-        enabled = true
-    },
-    [2] = {
+        enabled = false
+    }
+
+    spells[#spells + 1] = {
         name = 'Wooden Chest',
         obj_to_create = 'wooden-chest',
         level = 2,
         type = 'item',
         mana_cost = 30,
         tick = 100,
-        enabled = true
-    },
-    [3] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Iron Chest',
         obj_to_create = 'iron-chest',
         level = 10,
         type = 'item',
         mana_cost = 40,
         tick = 200,
-        enabled = true
-    },
-    [4] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Steel Chest',
         obj_to_create = 'steel-chest',
         level = 15,
         type = 'item',
         mana_cost = 50,
         tick = 300,
-        enabled = true
-    },
-    [5] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Transport Belt',
         obj_to_create = 'transport-belt',
         level = 3,
         type = 'item',
         mana_cost = 40,
         tick = 100,
-        enabled = true
-    },
-    [6] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Fast Transport Belt',
         obj_to_create = 'fast-transport-belt',
         level = 20,
         type = 'item',
         mana_cost = 50,
         tick = 200,
-        enabled = true
-    },
-    [7] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Express Transport Belt',
         obj_to_create = 'express-transport-belt',
         level = 60,
         type = 'item',
         mana_cost = 60,
         tick = 300,
-        enabled = true
-    },
-    [8] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Underground Belt',
         obj_to_create = 'underground-belt',
         level = 3,
         type = 'item',
         mana_cost = 40,
         tick = 100,
-        enabled = true
-    },
-    [9] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Fast Underground Belt',
         obj_to_create = 'fast-underground-belt',
         level = 20,
         type = 'item',
         mana_cost = 50,
         tick = 200,
-        enabled = true
-    },
-    [10] = {
+        enabled = false
+    }
+    spells[#spells + 1] = {
         name = 'Express Underground Belt',
         obj_to_create = 'express-underground-belt',
         level = 60,
@@ -90,8 +93,8 @@ Public.conjure_items = {
         mana_cost = 60,
         tick = 300,
         enabled = true
-    },
-    [11] = {
+    }
+    spells[#spells + 1] = {
         name = 'Sandy Rock',
         obj_to_create = 'sand-rock-big',
         level = 80,
@@ -99,8 +102,8 @@ Public.conjure_items = {
         mana_cost = 80,
         tick = 350,
         enabled = true
-    },
-    [12] = {
+    }
+    spells[#spells + 1] = {
         name = 'Smol Biter',
         obj_to_create = 'small-biter',
         level = 50,
@@ -109,8 +112,8 @@ Public.conjure_items = {
         mana_cost = 55,
         tick = 100,
         enabled = true
-    },
-    [13] = {
+    }
+    spells[#spells + 1] = {
         name = 'Smol Spitter',
         obj_to_create = 'small-spitter',
         level = 50,
@@ -119,8 +122,8 @@ Public.conjure_items = {
         mana_cost = 55,
         tick = 100,
         enabled = true
-    },
-    [14] = {
+    }
+    spells[#spells + 1] = {
         name = 'Medium Biter',
         obj_to_create = 'medium-biter',
         level = 70,
@@ -129,8 +132,8 @@ Public.conjure_items = {
         mana_cost = 100,
         tick = 200,
         enabled = true
-    },
-    [15] = {
+    }
+    spells[#spells + 1] = {
         name = 'Medium Spitter',
         obj_to_create = 'medium-spitter',
         level = 70,
@@ -138,8 +141,8 @@ Public.conjure_items = {
         mana_cost = 100,
         tick = 200,
         enabled = true
-    },
-    [16] = {
+    }
+    spells[#spells + 1] = {
         name = 'Bitter Spawner',
         obj_to_create = 'biter-spawner',
         level = 100,
@@ -148,8 +151,8 @@ Public.conjure_items = {
         mana_cost = 600,
         tick = 1420,
         enabled = true
-    },
-    [17] = {
+    }
+    spells[#spells + 1] = {
         name = 'Spitter Spawner',
         obj_to_create = 'spitter-spawner',
         level = 100,
@@ -158,8 +161,8 @@ Public.conjure_items = {
         mana_cost = 600,
         tick = 1420,
         enabled = true
-    },
-    [18] = {
+    }
+    spells[#spells + 1] = {
         name = 'AOE Grenade',
         obj_to_create = 'grenade',
         target = true,
@@ -171,8 +174,8 @@ Public.conjure_items = {
         mana_cost = 100,
         tick = 150,
         enabled = true
-    },
-    [19] = {
+    }
+    spells[#spells + 1] = {
         name = 'Big AOE Grenade',
         obj_to_create = 'cluster-grenade',
         target = true,
@@ -184,8 +187,8 @@ Public.conjure_items = {
         mana_cost = 150,
         tick = 200,
         enabled = true
-    },
-    [20] = {
+    }
+    spells[#spells + 1] = {
         name = 'Pointy Rocket',
         obj_to_create = 'rocket',
         range = 240,
@@ -198,8 +201,8 @@ Public.conjure_items = {
         mana_cost = 60,
         tick = 320,
         enabled = true
-    },
-    [21] = {
+    }
+    spells[#spells + 1] = {
         name = 'Bitter Spew',
         obj_to_create = 'acid-stream-spitter-big',
         target = true,
@@ -212,8 +215,8 @@ Public.conjure_items = {
         mana_cost = 90,
         tick = 100,
         enabled = true
-    },
-    [22] = {
+    }
+    spells[#spells + 1] = {
         name = 'Shoop Da Whoop!!',
         obj_to_create = 'railgun-beam',
         target = false,
@@ -226,8 +229,8 @@ Public.conjure_items = {
         mana_cost = 66,
         tick = 200,
         enabled = true
-    },
-    [23] = {
+    }
+    spells[#spells + 1] = {
         name = 'Conjure Raw-fish',
         obj_to_create = 'fish',
         target = false,
@@ -240,8 +243,8 @@ Public.conjure_items = {
         mana_cost = 120,
         tick = 320,
         enabled = true
-    },
-    [24] = {
+    }
+    spells[#spells + 1] = {
         name = 'Suicidal Comfylatron',
         obj_to_create = 'suicidal_comfylatron',
         target = false,
@@ -254,8 +257,8 @@ Public.conjure_items = {
         mana_cost = 250,
         tick = 320,
         enabled = true
-    },
-    [25] = {
+    }
+    spells[#spells + 1] = {
         name = 'Distractor Capsule',
         obj_to_create = 'distractor-capsule',
         target = true,
@@ -268,8 +271,8 @@ Public.conjure_items = {
         mana_cost = 200,
         tick = 320,
         enabled = true
-    },
-    [26] = {
+    }
+    spells[#spells + 1] = {
         name = 'Warp Gate',
         obj_to_create = 'warp-gate',
         target = true,
@@ -280,7 +283,24 @@ Public.conjure_items = {
         tick = 2000,
         enabled = true
     }
-}
+    return spells
+end
+
+function Public.rebuild_spells()
+    local spells = Public.conjure_items()
+
+    local new_spells = {}
+    local spell_names = {}
+
+    for i = 1, #spells do
+        if spells[i].enabled then
+            new_spells[#new_spells + 1] = spells[i]
+            spell_names[#spell_names + 1] = spells[i].name
+        end
+    end
+
+    return new_spells, spell_names
+end
 
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},
