@@ -17,15 +17,15 @@ local function doom(surface, room)
 	for _, tile in pairs(room.path_tiles) do
 		surface.set_tiles({{name = "refined-concrete", position = tile.position}}, true)
 	end
-	
+
 	if #room.room_tiles > 1 then table_shuffle_table(room.room_tiles) end
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "red-refined-concrete", position = tile.position}}, true)
 		if math_random(1, 16) == 1 then
-			surface.create_entity({name = "copper-ore", position = tile.position, amount = Functions.get_common_resource_amount()})
+			surface.create_entity({name = "copper-ore", position = tile.position, amount = Functions.get_common_resource_amount(surface.index)})
 		end
 		if math_random(1, 16) == 1 then
-			surface.create_entity({name = Functions.roll_worm_name(), position = tile.position})
+			surface.create_entity({name = Functions.roll_worm_name(surface.index), position = tile.position, force = global.enemy_forces[surface.index]})
 		end
 		if math_random(1, 320) == 1 then
 			Functions.rare_loot_crate(surface, tile.position)
@@ -33,12 +33,12 @@ local function doom(surface, room)
 			if math_random(1, 640) == 1 then
 				Functions.epic_loot_crate(surface, tile.position)
 			end
-		end	
+		end
 		if key % 12 == 1 and math_random(1, 2) == 1 then
-			Functions.set_spawner_tier(surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = "enemy"}))
+			Functions.set_spawner_tier(surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = global.enemy_forces[surface.index]}), surface.index)
 		end
 	end
-	
+
 	if room.center then
 		if math_random(1, 5) == 1 then
 			local r = math_floor(math_sqrt(#room.room_tiles) * 0.15) + 1
@@ -51,20 +51,20 @@ local function doom(surface, room)
 					end
 				end
 			end
-		end	
+		end
 	end
-	
+
 	if #room.room_border_tiles > 1 then table_shuffle_table(room.room_border_tiles) end
 	for key, tile in pairs(room.room_border_tiles) do
 		surface.set_tiles({{name = "black-refined-concrete", position = tile.position}}, true)
 	end
-	
+
 	for key, tile in pairs(room.room_border_tiles) do
 		if key % 8 == 1 then
 			Functions.place_border_rock(surface, tile.position)
 		end
 	end
-	
+
 	add_enemy_units(surface, room)
 end
 
