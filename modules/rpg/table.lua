@@ -122,7 +122,7 @@ function Public.reset_table()
         ['small-worm-turret'] = 16,
         ['spitter-spawner'] = 64
     }
-    this.rpg_spells = Spells.conjure_items
+    this.rpg_spells = {}
 end
 
 --- Gets value from table
@@ -299,6 +299,14 @@ function Public.set_spells(key, value)
     end
 end
 
+--- Defines the spell table
+---@param tbl <table>
+function Public.set_spells_table(tbl)
+    if tbl then
+        this.rpg_spells = tbl
+    end
+end
+
 Public.get_projectiles = Spells.projectile_types
 Public.settings_frame_name = settings_frame_name
 Public.save_button_name = save_button_name
@@ -306,6 +314,7 @@ Public.discard_button_name = discard_button_name
 Public.draw_main_frame_name = draw_main_frame_name
 Public.main_frame_name = main_frame_name
 Public.settings_button_name = settings_button_name
+Public.rebuild_spells = Spells.rebuild_spells
 
 local on_init = function()
     Public.reset_table()
