@@ -351,7 +351,7 @@ Event.add(
                 griefer = game.players[griefer].name
             end
 
-            if not trusted and playtime <= five_days and not player.admin then
+            if not trusted or playtime <= five_days and not player.admin then
                 return Utils.print_to(player, 'You are not trusted enough to run this command.')
             end
 
