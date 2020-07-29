@@ -365,12 +365,14 @@ Event.add(
                 end
             end
 
-            if cmd == 'jail' then
-                Public.try_ul_data(griefer, true, player.name)
-                return
-            elseif cmd == 'free' then
-                Public.try_ul_data(griefer, false, player.name)
-                return
+            if player.admin then
+                if cmd == 'jail' then
+                    Public.try_ul_data(griefer, true, player.name)
+                    return
+                elseif cmd == 'free' then
+                    Public.try_ul_data(griefer, false, player.name)
+                    return
+                end
             end
         end
     end
