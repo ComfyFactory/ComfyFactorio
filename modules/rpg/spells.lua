@@ -10,7 +10,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 35,
         tick = 100,
-        enabled = false
+        enabled = true
     }
 
     spells[#spells + 1] = {
@@ -20,7 +20,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 30,
         tick = 100,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Iron Chest',
@@ -29,7 +29,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 40,
         tick = 200,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Steel Chest',
@@ -38,7 +38,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 50,
         tick = 300,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Transport Belt',
@@ -47,7 +47,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 40,
         tick = 100,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Fast Transport Belt',
@@ -56,7 +56,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 50,
         tick = 200,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Express Transport Belt',
@@ -65,7 +65,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 60,
         tick = 300,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Underground Belt',
@@ -74,7 +74,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 40,
         tick = 100,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Fast Underground Belt',
@@ -83,7 +83,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 50,
         tick = 200,
-        enabled = false
+        enabled = true
     }
     spells[#spells + 1] = {
         name = 'Express Underground Belt',
