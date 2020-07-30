@@ -13,7 +13,7 @@ local Jail = require 'utils.jail_data'
 local Public = {}
 local match = string.match
 local capsule_bomb_threshold = 8
-local damage_entity_threshold = 20
+local de = defines.events
 
 local format = string.format
 
@@ -25,6 +25,7 @@ local this = {
     corpse_history = {},
     cancel_crafting_history = {},
     whitelist_types = {},
+    permission_group_editing = {},
     players_warned = {},
     damage_history = {},
     punish_cancel_craft = false,
@@ -34,7 +35,10 @@ local this = {
     enable_autoban = false,
     enable_jail = false,
     enable_capsule_warning = false,
-    enable_capsule_cursor_warning = false
+    enable_capsule_cursor_warning = false,
+    required_playtime = 2592000,
+    damage_entity_threshold = 20,
+    explosive_threshold = 16
 }
 
 local blacklisted_types = {
@@ -170,7 +174,7 @@ local function on_marked_for_deconstruction(event)
     if not event.player_index then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if player.admin then
         return
     end
@@ -183,7 +187,7 @@ local function on_marked_for_deconstruction(event)
         playtime = player.online_time + tracker[player.name]
     end
     if playtime < 2592000 then
-        event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+        event.entity.cancel_deconstruction(game.get_player(event.player_index).force.name)
         player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
     end
 end
@@ -191,7 +195,7 @@ end
 local function on_player_ammo_inventory_changed(event)
     local tracker = session.get_session_table()
     local trusted = session.get_trusted_table()
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if player.admin then
         return
     end
@@ -215,7 +219,7 @@ local function on_player_ammo_inventory_changed(event)
 end
 
 local function on_player_joined_game(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if match(player.name, '^[Ili1|]+$') then
         Server.ban_sync(player.name, '', '<script>') -- No reason given, to not give them any hints to change their name
     end
@@ -229,7 +233,7 @@ local function on_player_built_tile(event)
      then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     local surface = event.surface_index
 
@@ -261,7 +265,7 @@ local function on_built_entity(event)
     end
 
     if event.created_entity.type == 'entity-ghost' then
-        local player = game.players[event.player_index]
+        local player = game.get_player(event.player_index)
 
         if player.admin then
             return
@@ -285,7 +289,7 @@ end
 --Capsule History and Antigrief
 local function on_player_used_capsule(event)
     local trusted = session.get_trusted_table()
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     if trusted[player.name] and this.do_not_check_trusted then
         return
@@ -366,7 +370,16 @@ end
 -- Damage things
 local function on_entity_damaged(event)
     local cause = event.cause
-    if not cause or not cause.player then
+    if not cause or not cause.valid or cause.force.index ~= 1 then
+        return
+    end
+
+    local force = event.force
+    if not force.index == 1 then
+        return
+    end
+
+    if cause.name ~= 'character' then
         return
     end
 
@@ -375,12 +388,13 @@ local function on_entity_damaged(event)
         return
     end
 
-    if not entity.force.index == 1 then
+    if entity.force.index ~= 1 then
         return
     end
 
     local trusted = session.get_trusted_table()
-    local player = game.players[event.cause.player.index]
+    local tracker = session.get_session_table()
+    local player = game.get_player(event.cause.player.index)
 
     if player.admin then
         return
@@ -389,12 +403,19 @@ local function on_entity_damaged(event)
     if trusted[player.name] and this.do_not_check_trusted then
         return
     end
-
     local name = entity.name
     local e_type = entity.type
     local position = entity.position
 
     local msg
+    local playtime = player.online_time
+    if tracker[player.name] then
+        playtime = player.online_time + tracker[player.name]
+    end
+
+    if playtime > this.required_playtime then
+        return
+    end
     if this.enable_capsule_warning then
         if not this.damage_history[player.index] then
             this.damage_history[player.index] = {}
@@ -403,6 +424,21 @@ local function on_entity_damaged(event)
         end
 
         if name ~= 'entity-ghost' and name ~= 'character' and not blacklisted_types[e_type] then
+            if chests[e_type] then
+                local inv = entity.get_inventory(1)
+                local contents = inv.get_contents()
+                if next(contents) == nil then
+                    return
+                else
+                    for n, count in pairs(contents) do
+                        if n == 'explosives' then
+                            if count < this.explosive_threshold then
+                                return
+                            end
+                        end
+                    end
+                end
+            end
             name = name:gsub('-', ' ')
             local index = this.damage_history[player.index].targets:find(name)
             if not index then
@@ -411,7 +447,7 @@ local function on_entity_damaged(event)
             this.damage_history[player.index].count = this.damage_history[player.index].count + 1
         end
 
-        if this.damage_history[player.index].count <= damage_entity_threshold then
+        if this.damage_history[player.index].count <= this.damage_entity_threshold then
             return
         end
 
@@ -433,7 +469,7 @@ local function on_entity_damaged(event)
 
         do_action(player, prefix, msg, ban_msg, true)
     else
-        msg = player.name .. ' used ' .. name
+        msg = player.name .. ' damaged ' .. name
     end
 
     this.damage_history[player.index].count = 0
@@ -542,7 +578,7 @@ end
 
 --Mining Thieves History
 local function on_player_mined_entity(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
@@ -613,8 +649,8 @@ local function on_gui_opened(event)
     if event.entity.name ~= 'character-corpse' then
         return
     end
-    local player = game.players[event.player_index]
-    local corpse_owner = game.players[event.entity.character_corpse_player_index]
+    local player = game.get_player(event.player_index)
+    local corpse_owner = game.get_player(event.entity.character_corpse_player_index)
     if not corpse_owner then
         return
     end
@@ -652,7 +688,7 @@ local function on_gui_opened(event)
 end
 
 local function on_pre_player_mined_item(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     if not player or not player.valid then
         return
@@ -667,7 +703,7 @@ local function on_pre_player_mined_item(event)
         return
     end
 
-    local corpse_owner = game.players[entity.character_corpse_player_index]
+    local corpse_owner = game.get_player(entity.character_corpse_player_index)
     if not corpse_owner then
         return
     end
@@ -705,7 +741,7 @@ end
 local function on_player_cursor_stack_changed(event)
     local tracker = session.get_session_table()
     local trusted = session.get_trusted_table()
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if player.admin then
         return
     end
@@ -744,7 +780,7 @@ local function on_player_cursor_stack_changed(event)
 end
 
 local function on_player_cancelled_crafting(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     local crafting_queue_item_count = event.items.get_item_count()
     local free_slots = player.get_main_inventory().count_empty_stacks()
@@ -807,6 +843,80 @@ local function on_init()
         default.set_allows_action(defines.input_action.flush_opened_entity_fluid, false)
         default.set_allows_action(defines.input_action.flush_opened_entity_specific_fluid, false)
     end
+end
+
+local function on_permission_group_added(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local group = event.group
+
+    if group then
+        Utils.log_msg('{Permission_Group}', player.name .. ' added ' .. group.name)
+    end
+end
+
+local function on_permission_group_deleted(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local name = event.group_name
+    local id = event.id
+    if name then
+        Utils.log_msg('{Permission_Group}', player.name .. ' deleted ' .. name .. ' with ID: ' .. id)
+    end
+end
+
+local function on_permission_group_edited(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local group = event.group
+    if group then
+        local action = ''
+        for k, v in pairs(defines.input_action) do
+            if event.action == v then
+                action = k
+            end
+        end
+        Utils.log_msg(
+            '{Permission_Group}',
+            player.name .. ' edited ' .. group.name .. ' with type: ' .. event.type .. ' with action: ' .. action
+        )
+    end
+    if event.other_player_index then
+        local other_player = game.get_player(event.other_player_index)
+        if other_player and other_player.valid then
+            Utils.log_msg(
+                '{Permission_Group}',
+                player.name ..
+                    ' moved ' .. other_player.name .. ' with type: ' .. event.type .. ' to group: ' .. group.name
+            )
+        end
+    end
+    local old_name = event.old_name
+    local new_name = event.new_name
+    if old_name and new_name then
+        Utils.log_msg(
+            '{Permission_Group}',
+            player.name .. ' renamed ' .. group.name .. '. New name: ' .. new_name .. '. Old Name: ' .. old_name
+        )
+    end
+end
+
+local function on_permission_string_imported(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    Utils.log_msg('{Permission_Group}', player.name .. ' imported a permission string')
 end
 
 --- This will reset the table of antigrief
@@ -880,6 +990,26 @@ function Public.enable_jail(value)
     return this.enable_jail
 end
 
+--- Defines what the threshold for amount of explosives in chest should be - logged or not.
+---@param value <string>
+function Public.explosive_threshold(value)
+    if value then
+        this.explosive_threshold = value
+    end
+
+    return this.explosive_threshold
+end
+
+--- Defines what the threshold for amount of times before the script should take action.
+---@param value <string>
+function Public.damage_entity_threshold(value)
+    if value then
+        this.damage_entity_threshold = value
+    end
+
+    return this.damage_entity_threshold
+end
+
 --- This is used for the RPG module, when casting capsules.
 ---@param player <LuaPlayer>
 ---@param position <EventPosition>
@@ -914,18 +1044,22 @@ function Public.get(key)
 end
 
 Event.on_init(on_init)
-Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-Event.add(defines.events.on_entity_died, on_entity_died)
-Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.add(defines.events.on_built_entity, on_built_entity)
-Event.add(defines.events.on_gui_opened, on_gui_opened)
-Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-Event.add(defines.events.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
-Event.add(defines.events.on_player_built_tile, on_player_built_tile)
-Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
-Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
-Event.add(defines.events.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
-Event.add(defines.events.on_player_cancelled_crafting, on_player_cancelled_crafting)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(de.on_player_mined_entity, on_player_mined_entity)
+Event.add(de.on_entity_died, on_entity_died)
+Event.add(de.on_entity_damaged, on_entity_damaged)
+Event.add(de.on_built_entity, on_built_entity)
+Event.add(de.on_gui_opened, on_gui_opened)
+Event.add(de.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(de.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
+Event.add(de.on_player_built_tile, on_player_built_tile)
+Event.add(de.on_pre_player_mined_item, on_pre_player_mined_item)
+Event.add(de.on_player_used_capsule, on_player_used_capsule)
+Event.add(de.on_player_cursor_stack_changed, on_player_cursor_stack_changed)
+Event.add(de.on_player_cancelled_crafting, on_player_cancelled_crafting)
+Event.add(de.on_player_joined_game, on_player_joined_game)
+Event.add(de.on_permission_group_added, on_permission_group_added)
+Event.add(de.on_permission_group_deleted, on_permission_group_deleted)
+Event.add(de.on_permission_group_edited, on_permission_group_edited)
+Event.add(de.on_permission_string_imported, on_permission_string_imported)
 
 return Public
