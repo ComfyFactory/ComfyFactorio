@@ -250,6 +250,7 @@ function Public.reset_map()
     RPG_Settings.disable_cooldowns_on_spells()
 
     Group.reset_groups()
+    Group.alphanumeric_only(false)
 
     disable_tech()
 
