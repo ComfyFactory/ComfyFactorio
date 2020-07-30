@@ -54,21 +54,21 @@ local ammo_loot = {
     {
         stack = {
             recipe = 'piercing-rounds-magazine',
-            output = {item = 'piercing-rounds-magazine', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 10 / 60 / 512}
+            output = {item = 'piercing-rounds-magazine', min_rate = 1 / 2 / 60, distance_factor = 1 / 10 / 60 / 512}
         },
         weight = 1
     },
     {
         stack = {
             recipe = 'firearm-magazine',
-            output = {item = 'firearm-magazine', min_rate = 1 / 4 / 60, distance_factor = 1 / 4 / 60 / 512}
+            output = {item = 'firearm-magazine', min_rate = 1 / 2 / 60, distance_factor = 1 / 4 / 60 / 512}
         },
         weight = 4
     },
     {
         stack = {
             recipe = 'shotgun-shell',
-            output = {item = 'shotgun-shell', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'shotgun-shell', min_rate = 1 / 2 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 4
     },
@@ -86,7 +86,7 @@ local oil_loot = {
         stack = {
             recipe = 'basic-oil-processing',
             output = {
-                min_rate = 0.5 / 8 / 60,
+                min_rate = 4.125 / 60,
                 distance_factor = 1 / 10 / 60 / 512,
                 item = 'petroleum-gas',
                 fluidbox_index = 2
@@ -113,7 +113,7 @@ local oil_prod_loot = {
             recipe = 'lubricant',
             output = {
                 item = 'lubricant',
-                min_rate = 0.5 / 8 / 60,
+                min_rate = 2.825 / 60,
                 distance_factor = 1 / 10 / 60 / 512,
                 fluidbox_index = 2
             }
@@ -125,7 +125,7 @@ local oil_prod_loot = {
             recipe = 'solid-fuel-from-light-oil',
             output = {
                 item = 'solid-fuel',
-                min_rate = 1 / 4 / 60,
+                min_rate = 2 / 60,
                 distance_factor = 1 / 4 / 60 / 512
             }
         },
@@ -136,8 +136,8 @@ local oil_prod_loot = {
             recipe = 'sulfuric-acid',
             output = {
                 item = 'sulfuric-acid',
-                min_rate = 0.5 / 8 / 60,
-                distance_factor = 1 / 6 / 60 / 512,
+                min_rate = 2.825 / 60,
+                distance_factor = 1 / 8 / 60 / 512,
                 fluidbox_index = 2
             }
         },
@@ -148,7 +148,7 @@ local oil_prod_loot = {
             recipe = 'battery',
             output = {
                 item = 'battery',
-                min_rate = 0.5 / 8 / 60,
+                min_rate = 2 / 60,
                 distance_factor = 1 / 25 / 60 / 512
             }
         },
@@ -159,7 +159,7 @@ local oil_prod_loot = {
             recipe = 'sulfur',
             output = {
                 item = 'sulfur',
-                min_rate = 0.5 / 8 / 60,
+                min_rate = 2.825 / 60,
                 distance_factor = 1 / 25 / 60 / 512
             }
         },
@@ -170,7 +170,7 @@ local oil_prod_loot = {
             recipe = 'plastic-bar',
             output = {
                 item = 'plastic-bar',
-                min_rate = 0.5 / 8 / 60,
+                min_rate = 2 / 60,
                 distance_factor = 1 / 25 / 60 / 512
             }
         },
@@ -182,126 +182,126 @@ local resource_loot = {
     {
         stack = {
             recipe = 'stone-wall',
-            output = {item = 'stone-wall', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'stone-wall', min_rate = 1.5 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 10
     },
     {
         stack = {
             recipe = 'iron-gear-wheel',
-            output = {item = 'iron-gear-wheel', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'iron-gear-wheel', min_rate = 1.5 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 12
     },
     {
         stack = {
             recipe = 'inserter',
-            output = {item = 'inserter', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'inserter', min_rate = 1.5 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 12
     },
     {
         stack = {
             recipe = 'transport-belt',
-            output = {item = 'transport-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'transport-belt', min_rate = 1.5 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 8
     },
     {
         stack = {
             recipe = 'underground-belt',
-            output = {item = 'underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'underground-belt', min_rate = 1.0 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 8
     },
     {
         stack = {
             recipe = 'small-electric-pole',
-            output = {item = 'small-electric-pole', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'small-electric-pole', min_rate = 1.0 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 8
     },
     {
         stack = {
             recipe = 'fast-transport-belt',
-            output = {item = 'fast-transport-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 12 / 60 / 512}
+            output = {item = 'fast-transport-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 5
     },
     {
         stack = {
             recipe = 'fast-underground-belt',
-            output = {item = 'fast-underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 12 / 60 / 512}
+            output = {item = 'fast-underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 5
     },
     {
         stack = {
             recipe = 'solar-panel',
-            output = {item = 'solar-panel', min_rate = 1 / 4 / 60, distance_factor = 1 / 12 / 60 / 512}
+            output = {item = 'solar-panel', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 3
     },
     {
         stack = {
             recipe = 'productivity-module',
-            output = {item = 'productivity-module', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+            output = {item = 'productivity-module', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.9
     },
     {
         stack = {
             recipe = 'effectivity-module',
-            output = {item = 'effectivity-module', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+            output = {item = 'effectivity-module', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.9
     },
     {
         stack = {
             recipe = 'speed-module',
-            output = {item = 'speed-module', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+            output = {item = 'speed-module', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.8
     },
     {
         stack = {
             recipe = 'productivity-module-2',
-            output = {item = 'productivity-module-2', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+            output = {item = 'productivity-module-2', min_rate = 1 / 8 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.5
     },
     {
         stack = {
             recipe = 'effectivity-module-2',
-            output = {item = 'effectivity-module-2', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+            output = {item = 'effectivity-module-2', min_rate = 1 / 8 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.5
     },
     {
         stack = {
             recipe = 'speed-module-2',
-            output = {item = 'speed-module-2', min_rate = 1 / 4 / 60, distance_factor = 1 / 20 / 60 / 512}
+            output = {item = 'speed-module-2', min_rate = 1 / 8 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.5
     },
     {
         stack = {
             recipe = 'productivity-module-3',
-            output = {item = 'productivity-module-3', min_rate = 1 / 4 / 60, distance_factor = 1 / 30 / 60 / 512}
+            output = {item = 'productivity-module-3', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.25
     },
     {
         stack = {
             recipe = 'effectivity-module-3',
-            output = {item = 'effectivity-module-3', min_rate = 1 / 4 / 60, distance_factor = 1 / 30 / 60 / 512}
+            output = {item = 'effectivity-module-3', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.25
     },
     {
         stack = {
             recipe = 'speed-module-3',
-            output = {item = 'speed-module-3', min_rate = 1 / 4 / 60, distance_factor = 1 / 30 / 60 / 512}
+            output = {item = 'speed-module-3', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 0.10
     }
@@ -311,21 +311,21 @@ local furnace_loot = {
     {
         stack = {
             furance_item = 'iron-plate',
-            output = {item = 'iron-plate', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'iron-plate', min_rate = 2.0 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 4
     },
     {
         stack = {
             furance_item = 'copper-plate',
-            output = {item = 'copper-plate', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'copper-plate', min_rate = 2.0 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 4
     },
     {
         stack = {
             furance_item = 'steel-plate',
-            output = {item = 'steel-plate', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 15 / 60 / 512}
+            output = {item = 'steel-plate', min_rate = 1.0 / 60, distance_factor = 1 / 8 / 60 / 512}
         },
         weight = 1
     }
