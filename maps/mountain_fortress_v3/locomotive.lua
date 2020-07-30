@@ -1814,6 +1814,14 @@ function Public.get_items()
         upgrade = false,
         static = true
     }
+    main_market_items['car'] = {
+        stack = 1,
+        value = 'coin',
+        price = 1000,
+        tooltip = 'Speedy Car',
+        upgrade = false,
+        static = true
+    }
     main_market_items['tank-cannon'] = {
         stack = 1,
         value = 'coin',

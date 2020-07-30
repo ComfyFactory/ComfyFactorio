@@ -550,6 +550,7 @@ function Public.toggle(player, recreate)
 end
 
 local toggle = Public.toggle
+Public.remove_main_frame = remove_main_frame
 
 Gui.on_click(
     draw_main_frame_name,

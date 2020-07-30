@@ -1571,10 +1571,10 @@ local function process_level_1_position(x, y, data)
 end
 
 Public.levels = {
-    process_level_2_position,
     process_level_1_position,
-    process_level_2_position,
     process_level_3_position,
+    process_level_5_position,
+    process_level_4_position,
     process_level_6_position,
     process_level_2_position,
     process_level_3_position,

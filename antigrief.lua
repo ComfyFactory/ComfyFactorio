@@ -8,10 +8,12 @@ local Global = require 'utils.global'
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
+local Jail = require 'utils.jail_data'
 
 local Public = {}
 local match = string.match
 local capsule_bomb_threshold = 8
+local damage_entity_threshold = 20
 
 local format = string.format
 
@@ -24,11 +26,13 @@ local this = {
     cancel_crafting_history = {},
     whitelist_types = {},
     players_warned = {},
+    player_count = {},
     punish_cancel_craft = false,
     log_tree_harvest = false,
     do_not_check_trusted = true,
-    enable_autokick = true,
+    enable_autokick = false,
     enable_autoban = false,
+    enable_jail = false,
     enable_capsule_warning = false,
     enable_capsule_cursor_warning = false
 }
@@ -145,7 +149,9 @@ local function do_action(player, prefix, msg, ban_msg, kill)
         end
     elseif this.players_warned[player.index] == 1 then
         this.players_warned[player.index] = 2
-        if this.enable_autokick then
+        if this.enable_jail then
+            Jail.try_ul_data(player, true, 'script')
+        elseif this.enable_autokick then
             game.kick_player(player, msg)
         end
     else
@@ -350,6 +356,97 @@ local function on_player_used_capsule(event)
         str = str .. 'surface:' .. player.surface.index
         increment(this.capsule_history, player.index, str)
     end
+end
+
+-- Damage things
+local function on_entity_damaged(event)
+    local cause = event.cause
+    if not cause or not cause.player then
+        return
+    end
+
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    if not entity.force.index == 1 then
+        return
+    end
+
+    local trusted = session.get_trusted_table()
+    local player = game.players[event.cause.player.index]
+
+    if player.admin then
+        return
+    end
+
+    if trusted[player.name] and this.do_not_check_trusted then
+        return
+    end
+
+    local name = entity.name
+    local e_type = entity.type
+    local position = entity.position
+
+    local msg
+    if this.enable_capsule_warning then
+        if not this.player_count[player.index] then
+            this.player_count[player.index] = {}
+            this.player_count[player.index].targets = ''
+            this.player_count[player.index].count = 0
+        end
+
+        if name ~= 'entity-ghost' and name ~= 'character' and not blacklisted_types[e_type] then
+            name = name:gsub('-', ' ')
+            local index = this.player_count[player.index].targets:find(name)
+            if not index then
+                this.player_count[player.index].targets = this.player_count[player.index].targets .. name .. ', '
+            end
+            this.player_count[player.index].count = this.player_count[player.index].count + 1
+        end
+
+        if this.player_count[player.index].count <= damage_entity_threshold then
+            return
+        end
+
+        local target_names = this.player_count[player.index].targets
+
+        local prefix = '{Friendly Fire}'
+        msg =
+            format(player.name .. ' damaged: %s counted times: %s', target_names, this.player_count[player.index].count)
+        local ban_msg =
+            format(
+            'Damaged: %s counted times: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
+            target_names,
+            this.player_count[player.index].count
+        )
+
+        do_action(player, prefix, msg, ban_msg, true)
+    else
+        msg = player.name .. ' used ' .. name
+    end
+
+    this.player_count[player.index].count = 0
+    this.player_count[player.index].targets = ''
+
+    if not this.friendly_fire_history[player.index] then
+        this.friendly_fire_history[player.index] = {}
+    end
+    if #this.friendly_fire_history[player.index] > 100 then
+        this.friendly_fire_history[player.index] = {}
+    end
+
+    local t = math.abs(math.floor((game.tick) / 3600))
+    local str = '[' .. t .. '] '
+    str = str .. msg
+    str = str .. ' at X:'
+    str = str .. math.floor(position.x)
+    str = str .. ' Y:'
+    str = str .. math.floor(position.y)
+    str = str .. ' '
+    str = str .. 'surface:' .. player.surface.index
+    increment(this.friendly_fire_history, player.index, str)
 end
 
 --Friendly Fire History
@@ -710,7 +807,7 @@ local function on_init()
     end
 end
 
---- This will reset the table of this
+--- This will reset the table of antigrief
 function Public.reset_tables()
     this.landfill_history = {}
     this.capsule_history = {}
@@ -771,6 +868,16 @@ function Public.enable_capsule_cursor_warning(value)
     return this.enable_capsule_cursor_warning
 end
 
+--- If the script should jail a person instead of kicking them
+---@param value <string>
+function Public.enable_jail(value)
+    if value then
+        this.enable_jail = value
+    end
+
+    return this.enable_jail
+end
+
 --- This is used for the RPG module, when casting capsules.
 ---@param player <LuaPlayer>
 ---@param position <EventPosition>
@@ -807,6 +914,7 @@ end
 Event.on_init(on_init)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)

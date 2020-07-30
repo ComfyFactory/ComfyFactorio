@@ -235,7 +235,8 @@ function Public.get_random_item(rarity, sell, buy)
         ['locomotive'] = true,
         ['artillery-wagon'] = true,
         ['fluid-wagon'] = true,
-        ['land-mine'] = true
+        ['land-mine'] = true,
+        ['car'] = true
     }
 
     for i = 1, math.random(5, 10), 1 do

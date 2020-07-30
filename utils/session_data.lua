@@ -15,7 +15,8 @@ local trusted = {}
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
-local trusted_value = 2592000
+-- local trusted_value = 2592000 -- 12h
+local trusted_value = 5184000 -- 24h
 local nth_tick = 18000 -- nearest prime to 5 minutes in ticks
 
 Global.register(

@@ -280,26 +280,28 @@ local function draw_events(data)
             return
         end
 
-        for _, value in pairs(history_index[history][target_player]) do
-            if search_text then
-                local success = contains_text(value, nil, search_text)
-                if not success then
-                    goto continue
+        for k, value in pairs(history_index[history][target_player]) do
+            if value:find(target_player_name) then
+                if search_text then
+                    local success = contains_text(value, nil, search_text)
+                    if not success then
+                        goto continue
+                    end
                 end
-            end
 
-            frame.datalog.add(
-                {
-                    type = 'label',
-                    caption = value,
-                    tooltip = 'Click to open mini camera.'
-                }
-            )
-            ::continue::
+                frame.datalog.add(
+                    {
+                        type = 'label',
+                        caption = value,
+                        tooltip = 'Click to open mini camera.'
+                    }
+                )
+                ::continue::
+            end
         end
     else
         for key, value in pairs(history_index[history]) do
-            for t = 1, #value do
+            for t = #value, 1, -1 do
                 if search_text then
                     local success = contains_text(value, t, search_text)
                     if not success then
@@ -310,7 +312,7 @@ local function draw_events(data)
                 frame.datalog.add(
                     {
                         type = 'label',
-                        caption = history_index[history][key][t],
+                        caption = value[t],
                         tooltip = 'Click to open mini camera.'
                     }
                 )

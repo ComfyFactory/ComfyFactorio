@@ -1,6 +1,7 @@
 require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
+-- require 'maps.mountain_fortress_v3.ic.main'
 
 require 'modules.rpg.main'
 require 'modules.autofill'
@@ -55,6 +56,7 @@ local disable_recipes = function()
     local force = game.forces.player
     force.recipes['cargo-wagon'].enabled = false
     force.recipes['fluid-wagon'].enabled = false
+    force.recipes['car'].enabled = false
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
@@ -69,6 +71,7 @@ local collapse_kill = {
         ['landmine'] = true,
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
+        ['car'] = true,
         ['assembling-machine'] = true,
         ['furnace'] = true,
         ['steel-chest'] = true
@@ -264,6 +267,7 @@ function Public.reset_map()
     AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(true)
     AntiGrief.enable_capsule_cursor_warning(false)
+    AntiGrief.enable_jail(true)
 
     PL.show_roles_in_list(true)
 

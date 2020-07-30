@@ -1006,6 +1006,18 @@ local function on_player_used_capsule(event)
     return
 end
 
+local function on_player_died(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    local left = player.gui.left
+    local screen = player.gui.screen
+    local main_frame = left[main_frame_name]
+    RPG_GUI.remove_main_frame(main_frame, screen)
+end
+
 local function tick()
     local ticker = game.tick
     local count = #game.connected_players
@@ -1063,6 +1075,7 @@ Event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
