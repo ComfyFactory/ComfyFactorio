@@ -269,6 +269,8 @@ function Public.reset_map()
     AntiGrief.enable_capsule_warning(true)
     AntiGrief.enable_capsule_cursor_warning(false)
     AntiGrief.enable_jail(true)
+    AntiGrief.damage_entity_threshold(20)
+    AntiGrief.explosive_threshold(32)
 
     PL.show_roles_in_list(true)
 

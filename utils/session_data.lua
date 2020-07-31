@@ -12,23 +12,27 @@ local error_offline = '[ERROR] Webpanel is offline.'
 local session = {}
 local online_track = {}
 local trusted = {}
+local settings = {
+    -- local trusted_value = 2592000 -- 12h
+    trusted_value = 5184000, -- 24h
+    nth_tick = 18000 -- nearest prime to 5 minutes in ticks
+}
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
--- local trusted_value = 2592000 -- 12h
-local trusted_value = 5184000 -- 24h
-local nth_tick = 18000 -- nearest prime to 5 minutes in ticks
 
 Global.register(
     {
         session = session,
         online_track = online_track,
-        trusted = trusted
+        trusted = trusted,
+        settings = settings
     },
     function(tbl)
         session = tbl.session
         online_track = tbl.online_track
         trusted = tbl.trusted
+        settings = tbl.settings
     end
 )
 
@@ -41,7 +45,7 @@ local try_download_data =
         local value = data.value
         if value then
             session[key] = value
-            if value > trusted_value then
+            if value > settings.trusted_value then
                 trusted[key] = true
             end
         else
@@ -183,13 +187,13 @@ Event.add(
     end
 )
 
-Event.on_nth_tick(nth_tick, upload_data)
+Event.on_nth_tick(settings.nth_tick, upload_data)
 
 Server.on_data_set_changed(
     session_data_set,
     function(data)
         session[data.key] = data.value
-        if data.value > trusted_value then
+        if data.value > settings.trusted_value then
             trusted[data.key] = true
         else
             if trusted[data.key] then
