@@ -44,9 +44,9 @@ local function get_biome(position)
 	if position.x ^ 2 + position.y ^ 2 < 6400 then return "dirtlands" end
 
 	local seed = game.surfaces[1].map_gen_settings.seed
-	local seed_addition = 100000	
-	
-	local a = 1	
+	local seed_addition = 100000
+
+	local a = 1
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.66 then return "glitch" end
 	a = a + 1
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.60 then return "doom" end
@@ -64,19 +64,23 @@ local function get_biome(position)
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.22 then return "desert" end
 	a = a + 1
 	if Get_noise("dungeons", position, seed + seed_addition * a) > 0.22 then return "red_desert" end
-		
+
 	return "dirtlands"
 end
 
 local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
+		local surface = player.surface
 		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
-		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth", caption = "~ Depth " .. global.dungeons.depth .. " ~"})
-		
-		element.tooltip = "Evolution: " .. Functions.get_dungeon_evolution_factor() * 100 .. "%"
-		element.tooltip = element.tooltip .. "\nEnemy Health: " .. global.biter_health_boost * 100 .. "%"
-		element.tooltip = element.tooltip .. "\nEnemy Damage: " .. math_round(game.forces.enemy.get_ammo_damage_modifier("melee") * 100 + 100, 1) .. "%"
-		
+		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth"})
+		element.caption = {"dungeons.depth", global.dungeons.depth[surface.index]}
+		element.tooltip = {
+			"dungeons.depth_tooltip",
+			Functions.get_dungeon_evolution_factor(surface.index) * 100,
+			global.biter_health_boost * 100,
+			math_round(game.forces.enemy.get_ammo_damage_modifier("melee") * 100 + 100, 1)
+		}
+
 		local style = element.style
 		style.minimal_height = 38
 		style.maximal_height = 38
@@ -95,21 +99,21 @@ local function expand(surface, position)
 	if not room then return end
 	local name = get_biome(position)
 	Biomes[name](surface, room)
-	
+
 	if not room.room_tiles[1] then return end
-	
+
 	local a = 2000
-	
-	global.dungeons.depth = global.dungeons.depth + 1
-	
-	local evo = Functions.get_dungeon_evolution_factor()
-	
+
+	global.dungeons.depth[surface.index] = global.dungeons.depth[surface.index] + 1
+
+	local evo = Functions.get_dungeon_evolution_factor(surface.index)
+
 	local force = game.forces.enemy
 	force.evolution_factor = evo
-	
+
 	if evo > 1 then
 		global.biter_health_boost = 2 + ((evo - 1) * 2)
-		local damage_mod = (evo - 1) * 0.35		
+		local damage_mod = (evo - 1) * 0.35
 		force.set_ammo_damage_modifier("melee", damage_mod)
 		force.set_ammo_damage_modifier("biological", damage_mod)
 		force.set_ammo_damage_modifier("artillery-shell", damage_mod)
@@ -118,9 +122,9 @@ local function expand(surface, position)
 	else
 		global.biter_health_boost = 1 + evo
 	end
-	
+
 	global.biter_health_boost = math_round(global.biter_health_boost, 2)
-	
+
 	draw_depth_gui()
 end
 
@@ -132,10 +136,10 @@ local function init_player(player)
 
 	player.set_controller({type=defines.controllers.god})
 	player.create_character()
-	
+
 	local surface = game.surfaces["dungeons"]
 	player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 0.5), surface)
-	player.insert({name = "raw-fish", count = 8})	
+	player.insert({name = "raw-fish", count = 8})
 	player.set_quick_bar_slot(1, "raw-fish")
 	player.insert({name = "pistol", count = 1})
 	player.insert({name = "firearm-magazine", count = 16})
@@ -148,10 +152,10 @@ local function on_entity_spawned(event)
 
 	local spawner_tier = global.dungeons.spawner_tier
 	if not spawner_tier[spawner.unit_number] then
-		Functions.set_spawner_tier(spawner)
+		Functions.set_spawner_tier(spawner, surface.index)
 	end
 
-	local e = Functions.get_dungeon_evolution_factor()
+	local e = Functions.get_dungeon_evolution_factor(surface.index)
 	for _ = 1, spawner_tier[spawner.unit_number], 1 do
 		local name = BiterRaffle.roll("mixed", e)
 		local non_colliding_position = surface.find_non_colliding_position(name, unit.position, 16, 1)
@@ -160,15 +164,15 @@ local function on_entity_spawned(event)
 			bonus_unit = surface.create_entity({name = name, position = non_colliding_position, force = "enemy"})
 		else
 			bonus_unit = surface.create_entity({name = name, position = unit.position, force = "enemy"})
-		end	
+		end
 		bonus_unit.ai_settings.allow_try_return_to_spawner = true
 		bonus_unit.ai_settings.allow_destroy_when_commands_fail = true
-		
+
 		if math_random(1, 256) == 1 then
 			BiterHealthBooster.add_boss_unit(bonus_unit, global.biter_health_boost * 8, 0.25)
 		end
 	end
-	
+
 	if math_random(1, 256) == 1 then
 		BiterHealthBooster.add_boss_unit(unit, global.biter_health_boost * 8, 0.25)
 	end
@@ -177,14 +181,14 @@ end
 local function on_chunk_generated(event)
 	local surface = event.surface
 	if surface.name ~= "dungeons" then return end
-	
+
 	local left_top = event.area.left_top
 
 	local tiles = {}
 	local i = 1
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
-			local position = {x = left_top.x + x, y = left_top.y + y}				
+			local position = {x = left_top.x + x, y = left_top.y + y}
 			tiles[i] = {name = "out-of-map", position = position}
 			i = i + 1
 		end
@@ -215,16 +219,16 @@ local function on_chunk_generated(event)
 							if math_random(1, 64) == 1 then
 								surface.create_entity({name = "fish", position = position})
 							end
-						end		
+						end
 					end
 				end
-			end			
-		end		
+			end
+		end
 	end
 
 	for _, p in pairs(rock_positions) do Functions.place_border_rock(surface, p) end
 
-	if left_top.x == 160 and left_top.y == 160 then		
+	if left_top.x == 160 and left_top.y == 160 then
 		Functions.draw_spawn(surface)
 		for _, p in pairs(game.connected_players) do init_player(p) end
 		game.forces.player.chart(surface, {{-256, -256}, {256, 256}})
@@ -237,21 +241,21 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
 		init_player(player)
-	end	
+	end
 end
 
 local function spawner_death(entity)
 	local tier = global.dungeons.spawner_tier[entity.unit_number]
-	
+
 	if not tier then
-		Functions.set_spawner_tier(entity)
+		Functions.set_spawner_tier(entity, entity.surface.index)
 		tier = global.dungeons.spawner_tier[entity.unit_number]
 	end
-	
+
 	for _ = 1, tier * 2, 1 do
 		Functions.spawn_random_biter(entity.surface, entity.position)
 	end
-	
+
 	global.dungeons.spawner_tier[entity.unit_number] = nil
 end
 
@@ -280,7 +284,7 @@ end
 
 local function on_entity_died(event)
 	local entity = event.entity
-	if not entity.valid then return end	
+	if not entity.valid then return end
 	if entity.type == "unit-spawner" then
 		spawner_death(entity)
 	end
@@ -288,7 +292,7 @@ local function on_entity_died(event)
 	expand(entity.surface, entity.position)
 end
 
-local function on_marked_for_deconstruction(event)	
+local function on_marked_for_deconstruction(event)
 	if disabled_for_deconstruction[event.entity.name] then
 		event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 	end
@@ -311,22 +315,22 @@ local function on_init()
 		},
 	}
 	local surface = game.create_surface("dungeons", map_gen_settings)
-	
+
 	surface.request_to_generate_chunks({0,0}, 8)
 	surface.force_generate_chunk_requests()
 	surface.daytime = 0.30
-	
+
 	local surface = game.surfaces[1]
 	local map_gen_settings = surface.map_gen_settings
 	map_gen_settings.height = 3
 	map_gen_settings.width = 3
 	surface.map_gen_settings = map_gen_settings
-	for chunk in surface.get_chunks() do		
-		surface.delete_chunk({chunk.x, chunk.y})		
+	for chunk in surface.get_chunks() do
+		surface.delete_chunk({chunk.x, chunk.y})
 	end
-	
+
 	game.forces.player.manual_mining_speed_modifier = 0.5
-	
+
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
 	game.map_settings.enemy_evolution.time_factor = 0
@@ -337,15 +341,20 @@ local function on_init()
 	game.map_settings.enemy_expansion.settler_group_min_size = 16
 	game.map_settings.enemy_expansion.max_expansion_distance = 16
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.50
-	
+
 	global.dungeons = {}
-	global.dungeons.depth = 0
+	global.dungeons.tiered = false
+	global.dungeons.depth = {}
+	global.dungeons.depth[1] = 0
+	global.dungeons.depth[game.surfaces["dungeons"].index] = 0
 	global.dungeons.spawn_size = 42
 	global.dungeons.spawner_tier = {}
-	
+	global.enemy_forces = {}
+	global.enemy_forces[game.surfaces["dungeons"].index] = game.forces.enemy
+
 	global.rocks_yield_ore_base_amount = 100
 	global.rocks_yield_ore_distance_modifier = 0.001
-	
+
 	local T = MapInfo.Pop_info()
 	T.localised_category = "dungeons"
 	T.main_caption_color = {r = 0, g = 0, b = 0}
@@ -354,23 +363,23 @@ end
 --[[
 local function on_tick()
 	if game.tick % 4 ~= 0 then return end
-	
+
 	local surface = game.surfaces["dungeons"]
-	
+
 	local entities = surface.find_entities_filtered({name = "rock-big"})
 	if not entities[1] then return end
-	
+
 	local entity = entities[math_random(1, #entities)]
-	
+
 	surface.request_to_generate_chunks(entity.position, 3)
 	surface.force_generate_chunk_requests()
-	
+
 	game.forces.player.chart(surface, {{entity.position.x - 32, entity.position.y - 32}, {entity.position.x + 32, entity.position.y + 32}})
-	
+
 	entity.die()
 end
 ]]
-local Event = require 'utils.event' 
+local Event = require 'utils.event'
 Event.on_init(on_init)
 --Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
