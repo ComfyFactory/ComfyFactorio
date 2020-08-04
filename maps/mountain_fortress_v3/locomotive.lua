@@ -1439,6 +1439,21 @@ local function on_console_chat(event)
     shoo(event)
 end
 
+local function on_player_changed_surface(event)
+    local player = game.players[event.player_index]
+    if not validate_player(player) then
+        return
+    end
+
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
+        return Public.add_player_to_permission_group(player, 'locomotive')
+    else
+        return Public.add_player_to_permission_group(player, 'default')
+    end
+end
+
 function Public.close_gui_player(frame)
     if not frame then
         return
@@ -1902,13 +1917,13 @@ local function tick()
         boost_players()
     end
 
-    if ticker % 2500 == 0 then
-        pollute_area()
-    end
-
-    if ticker % 1800 == 0 then
+    if ticker % 1200 == 0 then
         set_player_spawn()
         refill_fish()
+    end
+
+    if ticker % 2500 == 0 then
+        pollute_area()
     end
 end
 
@@ -1928,5 +1943,6 @@ Event.add(defines.events.on_entity_died, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_pre_player_mined_item, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_console_chat, on_console_chat)
+Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 
 return Public

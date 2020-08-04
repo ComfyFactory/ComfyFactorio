@@ -44,6 +44,36 @@ local function shuffle_distance(tbl, position)
 	return tbl
 end
 
+local function remove_trees(entity)
+	local surface = entity.surface
+	local radius = 1.5
+	local pos = entity.position
+	local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
+	local trees = surface.find_entities_filtered{area = area, type = "tree"}
+	if #trees > 0 then
+		for i,tree in pairs(trees) do
+			if tree and tree.valid then
+				tree.die()
+			end
+		end
+	end
+end
+
+local function remove_rocks(entity)
+	local surface = entity.surface
+	local radius = 1.5
+	local pos = entity.position
+	local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
+	local rocks = surface.find_entities_filtered{area = area, type = "simple-entity"}
+	if #rocks > 0 then
+		for i,rock in pairs(rocks) do
+			if rock and rock.valid then
+				rock.die()
+			end
+		end
+	end
+end
+
 local function is_unit_valid(biter)
 	local wave_defense_table = WD.get_table()
 	if not biter.entity then debug_print("is_unit_valid - unit destroyed - does no longer exist") return false end
@@ -212,6 +242,10 @@ local function spawn_biter(surface, is_boss_biter)
 	local biter = surface.create_entity({name = name, position = wave_defense_table.spawn_position, force = "enemy"})
 	biter.ai_settings.allow_destroy_when_commands_fail = false
 	biter.ai_settings.allow_try_return_to_spawner = false
+	if wave_defense_table.remove_entities then
+		remove_trees(biter)
+		remove_rocks(biter)
+	end
 	if is_boss_biter then BiterHealthBooster.add_boss_unit(biter, global.biter_health_boost * 5, 0.35) end
 	wave_defense_table.active_biters[biter.unit_number] = {entity = biter, spawn_tick = game.tick}
 	wave_defense_table.active_biter_count = wave_defense_table.active_biter_count + 1

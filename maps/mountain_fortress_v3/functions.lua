@@ -372,6 +372,7 @@ Public.disable_destructible_callback =
     function(entity)
         if entity and entity.valid then
             entity.destructible = false
+            entity.minable = false
         end
     end
 )

@@ -51,6 +51,7 @@ function Public.reset_wave_defense()
     wave_defense.worm_raffle = {}
     wave_defense.clear_corpses = false
     wave_defense.alert_boss_wave = false
+    wave_defense.remove_entities = false
 end
 
 function Public.get(key)
@@ -87,6 +88,13 @@ function Public.alert_boss_wave(value)
         wave_defense.alert_boss_wave = value
     end
     return wave_defense.alert_boss_wave
+end
+
+function Public.remove_entities(value)
+    if value then
+        wave_defense.remove_entities = value
+    end
+    return wave_defense.remove_entities
 end
 
 local on_init = function()

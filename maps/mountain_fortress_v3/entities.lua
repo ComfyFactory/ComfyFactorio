@@ -245,7 +245,7 @@ local function biters_chew_rocks_faster(event)
         return
     end --Enemy Force
 
-    event.entity.health = event.entity.health - event.final_damage_amount * 5
+    event.entity.health = event.entity.health - event.final_damage_amount * 7
 end
 
 local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
@@ -535,9 +535,9 @@ local function on_entity_damaged(event)
     biters_chew_rocks_faster(event)
     local wave_number = WD.get_wave()
     local boss_wave_warning = WD.alert_boss_wave()
-    local much_time = WPT.get('much_time')
+    local munch_time = WPT.get('munch_time')
 
-    if much_time then
+    if munch_time then
         if boss_wave_warning or wave_number >= 1500 then
             if math.random(0, 512) == 1 then
                 boss_puncher(event)
