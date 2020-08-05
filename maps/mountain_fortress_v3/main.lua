@@ -1,7 +1,7 @@
 require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
--- require 'maps.mountain_fortress_v3.ic.main'
+require 'maps.mountain_fortress_v3.ic.main'
 
 require 'modules.rpg.main'
 require 'modules.autofill'
@@ -57,6 +57,7 @@ local disable_recipes = function()
     force.recipes['cargo-wagon'].enabled = false
     force.recipes['fluid-wagon'].enabled = false
     force.recipes['car'].enabled = false
+    force.recipes['tank'].enabled = false
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
@@ -90,6 +91,8 @@ end
 local set_difficulty = function()
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
+    local collapse_speed = WPT.get('collapse_speed')
+    local collapse_amount = WPT.get('collapcollapse_amountse_speed')
     local player_count = #game.connected_players
     if not Diff.difficulty_vote_value then
         Diff.difficulty_vote_value = 0.1
@@ -109,12 +112,16 @@ local set_difficulty = function()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
     if name == 'Insane' then
         Collapse.set_amount(15)
+    elseif collapse_amount then
+        Collapse.set_amount(collapse_amount)
     else
         Collapse.set_amount(amount)
     end
 
     if name == 'Insane' then
         Collapse.set_speed(5)
+    elseif collapse_speed then
+        Collapse.set_speed(collapse_speed)
     else
         if player_count >= 8 and player_count <= 12 then
             Collapse.set_speed(8)

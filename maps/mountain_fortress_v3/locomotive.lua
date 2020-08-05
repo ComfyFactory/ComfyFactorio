@@ -1833,7 +1833,15 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 1000,
-        tooltip = 'Speedy Car',
+        tooltip = 'Portable Car Surface\nCan be killed easily.',
+        upgrade = false,
+        static = true
+    }
+    main_market_items['tank'] = {
+        stack = 1,
+        value = 'coin',
+        price = 5000,
+        tooltip = 'Portable Tank Surface\nChonk tank, can resist heavy damage.',
         upgrade = false,
         static = true
     }
