@@ -1,4 +1,9 @@
-local override_nauvis = true
+-- a map where you feed hungry boxes, which unlocks new territory, with even more hungry boxes by mewmew
+
+--CONFIGS
+local override_nauvis = true 					-- adds custom mixed ores and raises frequency of resources
+local cell_size = 15								-- size of each territory to unlock
+local chance_to_receive_token = 0.50	-- chance of a hungry chest, dropping a token after unlocking, can be above 1 for multiple
 
 require 'modules.satellite_score'
 
@@ -24,7 +29,7 @@ local function set_nauvis()
 		["stone"] = {frequency = 10, size = 0.7, richness = 0.5,},
 		["copper-ore"] = {frequency = 10, size = 0.7, richness = 0.75,},
 		["iron-ore"] = {frequency = 10, size = 0.7, richness = 1,},
-		["uranium-ore"] = {frequency = 10, size = 0.5, richness = 1,},
+		["uranium-ore"] = {frequency = 10, size = 0.7, richness = 1,},
 		["crude-oil"] = {frequency = 20, size = 1.5, richness = 1.5,},
 		["trees"] = {frequency = 1.75, size = 1.25, richness = 1},
 		["enemy-base"] = {frequency = 10, size = 2, richness = 1},	
@@ -224,10 +229,10 @@ local function on_init(event)
 	T.sub_caption_color = {r = 120, g = 120, b = 0}
 	
 	if not expanse.source_surface then expanse.source_surface = "nauvis" end
-	if not expanse.token_chance then expanse.token_chance = 0.33 end
-	if not expanse.price_distance_modifier then expanse.price_distance_modifier = 0.004 end
+	if not expanse.token_chance then expanse.token_chance = chance_to_receive_token end
+	if not expanse.price_distance_modifier then expanse.price_distance_modifier = 0.006 end
 	if not expanse.max_ore_price_modifier then expanse.max_ore_price_modifier = 0.33 end
-	if not expanse.square_size then expanse.square_size = 16 end
+	if not expanse.square_size then expanse.square_size = cell_size end
 	
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
