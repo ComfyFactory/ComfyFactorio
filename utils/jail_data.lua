@@ -81,7 +81,7 @@ local validate_args = function(player, griefer)
         return false
     end
 
-    if player.name == griefer then
+    if player.name == griefer and not player.admin then
         Utils.print_to(player, 'You can´t select yourself.')
         return false
     end
@@ -145,7 +145,6 @@ end
 local jail = function(player, griefer)
     player = player or 'script'
     if jailed[griefer] then
-        Utils.print_to(player, griefer .. ' is already jailed!')
         return false
     end
 
@@ -188,7 +187,6 @@ end
 local free = function(player, griefer)
     player = player or 'script'
     if not jailed[griefer] then
-        Utils.print_to(player, griefer .. ' is not jailed!')
         return false
     end
 
@@ -261,6 +259,10 @@ end
 --- Tries to get data from the webpanel and updates the local table with values.
 -- @param data_set player token
 function Public.try_ul_data(key, value, player)
+    if type(key) == 'table' then
+        key = key.name
+    end
+
     key = tostring(key)
 
     local data = {
@@ -314,6 +316,7 @@ Event.add(
     function(event)
         local cmd = event.command
         local five_days = 25920000 --  5 days
+        local twenty_days = 103680000 --  20 days
 
         if not valid_commands[cmd] then
             return
@@ -339,11 +342,11 @@ Event.add(
                 griefer = game.players[griefer].name
             end
 
-            if not trusted or playtime <= five_days and not player.admin then
+            if not trusted and not player.admin or playtime <= five_days and not player.admin then
                 return Utils.print_to(player, 'You are not trusted enough to run this command.')
             end
 
-            if trusted and playtime >= five_days and not player.admin then
+            if trusted and playtime >= five_days and playtime < twenty_days and not player.admin then
                 if cmd == 'jail' then
                     vote_to_jail(player, griefer)
                     return
@@ -353,7 +356,7 @@ Event.add(
                 end
             end
 
-            if player.admin then
+            if player.admin or playtime >= twenty_days then
                 if cmd == 'jail' then
                     Public.try_ul_data(griefer, true, player.name)
                     return

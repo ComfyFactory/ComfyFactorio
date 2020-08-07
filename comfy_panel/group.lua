@@ -298,7 +298,9 @@ end
 
 function Public.alphanumeric_only(value)
     if value then
-        this.alphanumeric = value or false
+        this.alphanumeric = value
+    else
+        this.alphanumeric = false
     end
 end
 

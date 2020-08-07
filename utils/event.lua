@@ -507,6 +507,12 @@ function Event.generate_event_name(name)
     return event_id
 end
 
+function Event.on_configuration_changed(func)
+    if type(func) == 'function' then
+        script.on_configuration_changed(func)
+    end
+end
+
 function Event.add_event_filter(event, filter)
     local current_filters = script.get_event_filter(event)
 

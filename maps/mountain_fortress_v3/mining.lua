@@ -62,10 +62,10 @@ end
 local function mining_chances_ores()
     local data = {
         {name = 'iron-ore', chance = 545},
-        {name = 'copper-ore', chance = 545},
+        {name = 'copper-ore', chance = 540},
         {name = 'coal', chance = 545},
         {name = 'stone', chance = 545},
-        {name = 'uranium-ore', chance = 50}
+        {name = 'uranium-ore', chance = 45}
     }
     return data
 end
@@ -73,7 +73,7 @@ end
 local harvest_raffle_ores = {}
 for _, t in pairs(mining_chances_ores()) do
     for _ = 1, t.chance, 1 do
-        table.insert(harvest_raffle_ores, t.name)
+        harvest_raffle_ores[#harvest_raffle_ores + 1] = t.name
     end
 end
 

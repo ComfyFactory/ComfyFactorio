@@ -226,7 +226,7 @@ local function redraw_poll_viewer_content(data)
     local poll_enabled = do_remaining_time(poll, remaining_time_label)
 
     local question_flow = poll_viewer_content.add {type = 'table', column_count = 2}
-    if trusted[player.name] or player.admin then
+    if player.admin then
         local edit_button =
             question_flow.add {
             type = 'sprite-button',

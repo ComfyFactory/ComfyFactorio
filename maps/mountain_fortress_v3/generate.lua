@@ -31,9 +31,14 @@ local function do_tile(y, x, data, shape)
     if type(tile) == 'table' then
         do_tile_inner(data.tiles, tile.tile, pos)
 
+        local hidden_tile = tile.hidden_tile
+        if hidden_tile then
+            data.hidden_tiles[#data.hidden_tiles + 1] = {tile = hidden_tile, position = pos}
+        end
+
         local entities = tile.entities
         if entities then
-            for _, entity in pairs(entities) do
+            for _, entity in ipairs(entities) do
                 if not entity.position then
                     entity.position = pos
                 end
@@ -43,7 +48,7 @@ local function do_tile(y, x, data, shape)
 
         local buildings = tile.buildings
         if buildings then
-            for _, entity in pairs(buildings) do
+            for _, entity in ipairs(buildings) do
                 if not entity.position then
                     entity.position = pos
                 end
@@ -53,14 +58,14 @@ local function do_tile(y, x, data, shape)
 
         local decoratives = tile.decoratives
         if decoratives then
-            for _, decorative in pairs(decoratives) do
+            for _, decorative in ipairs(decoratives) do
                 data.decoratives[#data.decoratives + 1] = decorative
             end
         end
 
         local markets = tile.markets
         if markets then
-            for _, t in pairs(markets) do
+            for _, t in ipairs(markets) do
                 if not t.position then
                     t.position = pos
                 end
@@ -70,7 +75,7 @@ local function do_tile(y, x, data, shape)
 
         local treasure = tile.treasure
         if treasure then
-            for _, t in pairs(treasure) do
+            for _, t in ipairs(treasure) do
                 if not t.position then
                     t.position = pos
                 end
@@ -99,9 +104,14 @@ local function do_row(row, data, shape)
         if type(tile) == 'table' then
             do_tile_inner(tiles, tile.tile, pos)
 
+            local hidden_tile = tile.hidden_tile
+            if hidden_tile then
+                data.hidden_tiles[#data.hidden_tiles + 1] = {tile = hidden_tile, position = pos}
+            end
+
             local entities = tile.entities
             if entities then
-                for _, entity in pairs(entities) do
+                for _, entity in ipairs(entities) do
                     if not entity.position then
                         entity.position = pos
                     end
@@ -111,7 +121,7 @@ local function do_row(row, data, shape)
 
             local buildings = tile.buildings
             if buildings then
-                for _, entity in pairs(buildings) do
+                for _, entity in ipairs(buildings) do
                     if not entity.position then
                         entity.position = pos
                     end
@@ -121,7 +131,7 @@ local function do_row(row, data, shape)
 
             local decoratives = tile.decoratives
             if decoratives then
-                for _, decorative in pairs(decoratives) do
+                for _, decorative in ipairs(decoratives) do
                     if not decorative.position then
                         decorative.position = pos
                     end
@@ -131,7 +141,7 @@ local function do_row(row, data, shape)
 
             local markets = tile.markets
             if markets then
-                for _, t in pairs(markets) do
+                for _, t in ipairs(markets) do
                     if not t.position then
                         t.position = pos
                     end
@@ -141,7 +151,7 @@ local function do_row(row, data, shape)
 
             local treasure = tile.treasure
             if treasure then
-                for _, t in pairs(treasure) do
+                for _, t in ipairs(treasure) do
                     if not t.position then
                         t.position = pos
                     end
@@ -163,7 +173,7 @@ local function do_place_treasure(data)
     end
     pcall(
         function()
-            for _, e in pairs(data.treasure) do
+            for _, e in ipairs(data.treasure) do
                 if math.random(1, 6) == 1 then
                     e.chest = 'iron-chest'
                 end
@@ -199,9 +209,19 @@ local function do_place_markets(data)
 end
 
 local function do_place_tiles(data)
+    local surface = data.surface
     pcall(
         function()
-            data.surface.set_tiles(data.tiles, true)
+            surface.set_tiles(data.tiles, true)
+        end
+    )
+end
+
+local function do_place_hidden_tiles(data)
+    local surface = data.surface
+    pcall(
+        function()
+            surface.set_tiles(data.hidden_tiles, true)
         end
     )
 end
@@ -228,7 +248,7 @@ local function do_place_buildings(data)
     local callback
     pcall(
         function()
-            for _, e in pairs(data.buildings) do
+            for _, e in ipairs(data.buildings) do
                 if e.e_type then
                     local p = e.position
                     if
@@ -272,7 +292,7 @@ local function do_place_entities(data)
     local callback
     pcall(
         function()
-            for _, e in pairs(data.entities) do
+            for _, e in ipairs(data.entities) do
                 if e.collision then
                     if surface.can_place_entity(e) then
                         entity = surface.create_entity(e)
@@ -388,26 +408,30 @@ local function map_gen_action(data)
         data.y = 33
         return true
     elseif state == 33 then
-        do_place_entities(data)
+        do_place_hidden_tiles(data)
         data.y = 34
         return true
     elseif state == 34 then
-        do_place_buildings(data)
+        do_place_entities(data)
         data.y = 35
         return true
     elseif state == 35 then
-        do_place_markets(data)
+        do_place_buildings(data)
         data.y = 36
         return true
     elseif state == 36 then
-        do_place_treasure(data)
+        do_place_markets(data)
         data.y = 37
         return true
     elseif state == 37 then
-        do_place_decoratives(data)
+        do_place_treasure(data)
         data.y = 38
         return true
     elseif state == 38 then
+        do_place_decoratives(data)
+        data.y = 39
+        return true
+    elseif state == 39 then
         run_chart_update(data)
         return false
     end
@@ -445,6 +469,7 @@ function Public.schedule_chunk(event)
         top_y = area.left_top.y,
         surface = surface,
         tiles = {},
+        hidden_tiles = {},
         entities = {},
         buildings = {},
         decoratives = {},
@@ -483,6 +508,7 @@ function Public.do_chunk(event)
         top_y = area.left_top.y,
         surface = surface,
         tiles = {},
+        hidden_tiles = {},
         entities = {},
         buildings = {},
         decoratives = {},
@@ -499,6 +525,7 @@ function Public.do_chunk(event)
     end
 
     do_place_tiles(data)
+    do_place_hidden_tiles(data)
     do_place_entities(data)
     do_place_buildings(data)
     do_place_decoratives(data)

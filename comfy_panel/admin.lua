@@ -270,38 +270,19 @@ local function draw_events(data)
             }
         )
         scroll_pane.style.maximal_height = 200
+        scroll_pane.style.minimal_width = 790
     end
 
     local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
     if game.players[target_player_name] then
-        local target_player = game.players[target_player_name].index
-
         if not history_index or not history_index[history] or #history_index[history] <= 0 then
             return
         end
 
-        for _, value in pairs(history_index[history][target_player]) do
-            if search_text then
-                local success = contains_text(value, nil, search_text)
-                if not success then
-                    goto continue
-                end
-            end
-
-            frame.datalog.add(
-                {
-                    type = 'label',
-                    caption = value,
-                    tooltip = 'Click to open mini camera.'
-                }
-            )
-            ::continue::
-        end
-    else
-        for key, value in pairs(history_index[history]) do
-            for t = 1, #value do
+        for i = #history_index[history], 1, -1 do
+            if history_index[history][i]:find(target_player_name) then
                 if search_text then
-                    local success = contains_text(value, t, search_text)
+                    local success = contains_text(history_index[history][i], nil, search_text)
                     if not success then
                         goto continue
                     end
@@ -310,12 +291,30 @@ local function draw_events(data)
                 frame.datalog.add(
                     {
                         type = 'label',
-                        caption = history_index[history][key][t],
+                        caption = history_index[history][i],
                         tooltip = 'Click to open mini camera.'
                     }
                 )
                 ::continue::
             end
+        end
+    else
+        for i = #history_index[history], 1, -1 do
+            if search_text then
+                local success = contains_text(history_index[history][i], nil, search_text)
+                if not success then
+                    goto continue
+                end
+            end
+
+            frame.datalog.add(
+                {
+                    type = 'label',
+                    caption = history_index[history][i],
+                    tooltip = 'Click to open mini camera.'
+                }
+            )
+            ::continue::
         end
     end
 end

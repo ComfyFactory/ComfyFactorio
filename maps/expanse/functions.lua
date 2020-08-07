@@ -1,6 +1,7 @@
 local Price_raffle = require 'maps.expanse.price_raffle'
 local Public = {}
 
+local ores = {"copper-ore", "iron-ore", "stone", "coal"}
 local price_modifiers = {
 	["unit-spawner"] = -256,
 	["unit"] = -16,
@@ -163,6 +164,14 @@ function Public.expand(expanse, left_top)
 		surface.spill_item_stack({a, a + 2}, {name = "small-plane", count = 1}, false, nil, false)
 		surface.spill_item_stack({a + 0.5, a + 2.5}, {name = "small-plane", count = 1}, false, nil, false)
 		surface.spill_item_stack({a - 0.5, a + 2.5}, {name = "small-plane", count = 1}, false, nil, false)
+		
+		for x = 0, square_size, 1 do
+			for y = 0, square_size, 1 do
+				if surface.can_place_entity({name = "wooden-chest", position = {x, y}}) and surface.can_place_entity({name = "coal", position = {x, y}, amount = 1}) then
+					surface.create_entity({name = ores[(x + y) % 4 + 1], position = {x, y}, amount = 1000})
+				end
+			end
+		end 	
 	end
 end
 
@@ -171,7 +180,7 @@ local function init_container(expanse, entity)
 	if not left_top then return end
 
 	local cell_value = get_cell_value(expanse, left_top)
-
+	
 	local item_stacks = {}
 	local roll_count = 2
 	for _ = 1, roll_count, 1 do

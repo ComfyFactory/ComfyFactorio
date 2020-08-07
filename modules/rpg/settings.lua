@@ -396,8 +396,7 @@ function Public.extra_settings(player)
             }
         )
 
-        local new_spells, names = RPG.rebuild_spells()
-        RPG.set_spells_table(new_spells)
+        local spells, names = RPG.rebuild_spells()
 
         local conjure_label_style = conjure_label.style
         conjure_label_style.horizontally_stretchable = true
@@ -411,7 +410,7 @@ function Public.extra_settings(player)
         conjure_gui_input =
             create_input_element(conjure_input, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index)
 
-        for _, entity in pairs(new_spells) do
+        for _, entity in pairs(spells) do
             if entity.type == 'item' then
                 conjure_label.tooltip =
                     conjure_label.tooltip ..

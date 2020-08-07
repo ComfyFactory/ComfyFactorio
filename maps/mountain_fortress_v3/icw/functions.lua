@@ -55,11 +55,15 @@ local function kick_players_out_of_vehicles(wagon)
     end
 end
 
-local function recreate_players()
-    for _, player in pairs(game.connected_players) do
-        if not player.character then
-            player.set_controller({type = defines.controllers.god})
-            player.create_character()
+local function teleport_char(position, destination_area, wagon)
+    for _, e in pairs(wagon.surface.find_entities_filtered({name = 'character', area = wagon.area})) do
+        local player = e.player
+        if player then
+            position[player.index] = {
+                player.position.x,
+                player.position.y + (destination_area.left_top.y - wagon.area.left_top.y)
+            }
+            player.teleport({0, 0}, game.surfaces.nauvis)
         end
     end
 end
@@ -334,7 +338,6 @@ function Public.kill_wagon(icw, entity)
             Public.kill_minimap(e.player)
         else
             e.destroy()
-            recreate_players()
         end
     end
     for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
@@ -832,16 +835,7 @@ local function move_room_to_train(icw, train, wagon)
 
     kick_players_out_of_vehicles(wagon)
     local player_positions = {}
-    for _, e in pairs(wagon.surface.find_entities_filtered({name = 'character', area = wagon.area})) do
-        local player = e.player
-        if player then
-            player_positions[player.index] = {
-                player.position.x,
-                player.position.y + (destination_area.left_top.y - wagon.area.left_top.y)
-            }
-            player.teleport({0, 0}, game.surfaces.nauvis)
-        end
-    end
+    teleport_char(player_positions, destination_area, wagon)
 
     kill_wagon_doors(icw, wagon)
 
@@ -852,9 +846,7 @@ local function move_room_to_train(icw, train, wagon)
             destination_surface = train.surface,
             clone_tiles = true,
             clone_entities = true,
-            clone_decoratives = true,
             clear_destination_entities = true,
-            clear_destination_decoratives = true,
             expand_map = true
         }
     )
@@ -863,8 +855,6 @@ local function move_room_to_train(icw, train, wagon)
         local player = game.players[player_index]
         player.teleport(position, train.surface)
     end
-
-    recreate_players()
 
     for _, tile in pairs(wagon.surface.find_tiles_filtered({area = wagon.area})) do
         wagon.surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)

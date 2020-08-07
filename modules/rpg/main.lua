@@ -916,8 +916,6 @@ local function on_player_used_capsule(event)
 
     if mana <= object.mana_cost then
         return p('You don´t have enough mana to cast this spell.', Color.fail)
-    else
-        rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     end
 
     local target_pos
@@ -945,6 +943,7 @@ local function on_player_used_capsule(event)
     if object.obj_to_create == 'suicidal_comfylatron' then
         Functions.suicidal_comfylatron(position, surface)
         p('You wave your wand and ' .. object_name .. ' is on the run!', Color.success)
+        rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     elseif object.obj_to_create == 'warp-gate' then
         player.teleport(
             surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
@@ -954,6 +953,7 @@ local function on_player_used_capsule(event)
         player.character.health = 10
         player.character.surface.create_entity({name = 'water-splash', position = player.position})
         p('Warped home with minor bruises.', Color.info)
+        rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     elseif projectile_types[obj_name] then
         for i = 1, object.amount do
             local damage_area = {
@@ -968,13 +968,16 @@ local function on_player_used_capsule(event)
             end
         end
         p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+        rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     else
         if object.target then
             surface.create_entity({name = obj_name, position = position, force = force, target = target_pos, speed = 1})
             p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+            rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         elseif object.obj_to_create == 'fish' then
             player.insert({name = 'raw-fish', count = object.amount})
             p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+            rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         elseif surface.can_place_entity {name = obj_name, position = position} then
             if object.biter then
                 local e = surface.create_entity({name = obj_name, position = position, force = force})
@@ -983,6 +986,7 @@ local function on_player_used_capsule(event)
                 surface.create_entity({name = obj_name, position = position, force = force})
             end
             p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+            rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         else
             p('Can´t create entity at given location.', Color.fail)
             return

@@ -1,6 +1,7 @@
 require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
+require 'maps.mountain_fortress_v3.ic.main'
 
 require 'modules.rpg.main'
 require 'modules.autofill'
@@ -55,6 +56,8 @@ local disable_recipes = function()
     local force = game.forces.player
     force.recipes['cargo-wagon'].enabled = false
     force.recipes['fluid-wagon'].enabled = false
+    force.recipes['car'].enabled = false
+    force.recipes['tank'].enabled = false
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
@@ -69,6 +72,7 @@ local collapse_kill = {
         ['landmine'] = true,
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
+        ['car'] = true,
         ['assembling-machine'] = true,
         ['furnace'] = true,
         ['steel-chest'] = true
@@ -87,6 +91,8 @@ end
 local set_difficulty = function()
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
+    local collapse_speed = WPT.get('collapse_speed')
+    local collapse_amount = WPT.get('collapcollapse_amountse_speed')
     local player_count = #game.connected_players
     if not Diff.difficulty_vote_value then
         Diff.difficulty_vote_value = 0.1
@@ -102,19 +108,85 @@ local set_difficulty = function()
     if amount > 8 then
         amount = 8
     end
-    Collapse.set_amount(amount)
-
-    if player_count >= 8 and player_count <= 12 then
-        Collapse.set_speed(8)
-    elseif player_count >= 20 then
-        Collapse.set_speed(6)
-    elseif player_count >= 35 then
-        Collapse.set_speed(5)
+    local difficulty = Difficulty.get()
+    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+    if name == 'Insane' then
+        Collapse.set_amount(15)
+    elseif collapse_amount then
+        Collapse.set_amount(collapse_amount)
+    else
+        Collapse.set_amount(amount)
     end
 
-    wave_defense_table.wave_interval = 3600 - player_count * 60
-    if wave_defense_table.wave_interval < 1800 then
+    if name == 'Insane' then
+        Collapse.set_speed(5)
+    elseif collapse_speed then
+        Collapse.set_speed(collapse_speed)
+    else
+        if player_count >= 8 and player_count <= 12 then
+            Collapse.set_speed(8)
+        elseif player_count >= 20 then
+            Collapse.set_speed(6)
+        elseif player_count >= 35 then
+            Collapse.set_speed(5)
+        end
+    end
+    if name == 'Insane' then
         wave_defense_table.wave_interval = 1800
+    else
+        wave_defense_table.wave_interval = 3600 - player_count * 60
+        if wave_defense_table.wave_interval < 1800 then
+            wave_defense_table.wave_interval = 1800
+        end
+    end
+end
+
+local biter_settings = function()
+    -- biter settings
+    local Diff = Difficulty.get()
+    if not Diff.difficulty_vote_value then
+        Diff.difficulty_vote_value = 0.1
+    end
+
+    local plus = ((game.forces.enemy.evolution_factor * 100) + 50) / (77 - Diff.difficulty_vote_value * 2)
+    local sub = (((1 - game.forces.enemy.evolution_factor) * 100) + 50) / (73 + Diff.difficulty_vote_value * 2)
+
+    local enemy_expansion = game.map_settings.enemy_expansion
+    local unit_group = game.map_settings.unit_group
+    local path_finder = game.map_settings.path_finder
+    unit_group.max_wait_time_for_late_members = 3600 * plus
+    unit_group.min_group_radius = 30 * plus
+    unit_group.max_group_radius = 60 * plus
+    unit_group.max_member_speedup_when_behind = 3 * plus
+    unit_group.member_disown_distance = 20 * plus
+    unit_group.max_gathering_unit_groups = 10 * plus
+    path_finder.max_work_done_per_tick = 6000 * plus
+
+    path_finder.max_steps_worked_per_tick = 20 + (100 * plus)
+    if path_finder.max_steps_worked_per_tick > 2000 then
+        path_finder.max_steps_worked_per_tick = 200
+    end
+
+    enemy_expansion.building_coefficient = 0.1 * sub
+    enemy_expansion.other_base_coefficient = 2.0 * sub
+    enemy_expansion.neighbouring_chunk_coefficient = 0.5 * sub
+    enemy_expansion.neighbouring_base_chunk_coefficient = 0.4 * sub
+
+    enemy_expansion.max_expansion_distance = 20 * plus
+    if enemy_expansion.max_expansion_distance > 20 then
+        enemy_expansion.max_expansion_distance = 20
+    end
+    enemy_expansion.friendly_base_influence_radius = 8 * plus
+    enemy_expansion.enemy_building_influence_radius = 3 * plus
+
+    enemy_expansion.settler_group_min_size = 5 * plus
+    if enemy_expansion.settler_group_min_size < 1 then
+        enemy_expansion.settler_group_min_size = 1
+    end
+
+    enemy_expansion.settler_group_max_size = 20 * plus
+    if enemy_expansion.settler_group_max_size > 50 then
+        enemy_expansion.settler_group_max_size = 50
     end
 end
 
@@ -244,8 +316,10 @@ function Public.reset_map()
     RPG_Settings.enable_stone_path(true)
     RPG_Settings.enable_one_punch(true)
     RPG_Settings.enable_one_punch_globally(false)
+    RPG_Settings.disable_cooldowns_on_spells()
 
     Group.reset_groups()
+    Group.alphanumeric_only(false)
 
     disable_tech()
 
@@ -263,6 +337,9 @@ function Public.reset_map()
     AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(true)
     AntiGrief.enable_capsule_cursor_warning(false)
+    AntiGrief.enable_jail(true)
+    AntiGrief.damage_entity_threshold(20)
+    AntiGrief.explosive_threshold(32)
 
     PL.show_roles_in_list(true)
 
@@ -300,6 +377,7 @@ function Public.reset_map()
     wave_defense_table.spawn_position = {x = 0, y = 100}
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
+    WD.remove_entities(true)
 
     set_difficulty()
 
@@ -312,6 +390,8 @@ function Public.reset_map()
 
     Task.start_queue()
     Task.set_queue_speed(32)
+
+    biter_settings()
 
     this.chunk_load_tick = game.tick + 1200
 
@@ -619,12 +699,13 @@ local boost_difficulty = function()
     end
 
     local difficulty = Difficulty.get()
+    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+
     if game.tick < difficulty.difficulty_poll_closing_timeout then
         return
     end
 
     local rpg_extra = RPG_Settings.get('rpg_extra')
-    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
     Difficulty.get().name = name
 
     Difficulty.get().button_tooltip = difficulty.tooltip[difficulty.difficulty_vote_index]
@@ -678,6 +759,20 @@ local boost_difficulty = function()
         WPT.get().bonus_xp_on_join = 50
         WD.set().next_wave = game.tick + 3600 * 10
         WPT.get().difficulty_set = true
+    elseif name == 'Insane' then
+        rpg_extra.difficulty = 0
+        game.forces.player.manual_mining_speed_modifier = 0
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
+        game.forces.player.character_running_speed_modifier = 0
+        game.forces.player.manual_crafting_speed_modifier = 0
+        WPT.get().coin_amount = 1
+        WPT.get('upgrades').flame_turret.limit = 0
+        WPT.get('upgrades').landmine.limit = 0
+        WPT.get().locomotive_health = 1000
+        WPT.get().locomotive_max_health = 1000
+        WPT.get().bonus_xp_on_join = 0
+        WD.set().next_wave = game.tick + 3600 * 5
+        WPT.get().difficulty_set = true
     end
 end
 
@@ -694,9 +789,8 @@ end
 local collapse_message =
     Token.register(
     function(data)
-        local keeper = '[color=blue]Mapkeeper:[/color] \n'
         local pos = data.position
-        local message = keeper .. 'Warning, collapse has begun - wave limit has been reached!'
+        local message = data.message
         local collapse_position = {
             position = pos
         }
@@ -712,12 +806,27 @@ local collapse_after_wave_100 = function()
     if Collapse.start_now() then
         return
     end
+    local difficulty = Difficulty.get()
+    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+
+    local difficulty_set = WPT.get('difficulty_set')
+    if not difficulty_set and name == 'Insane' then
+        return
+    end
+
     local wave_number = WD.get_wave()
-    if wave_number >= 100 then
+
+    if wave_number >= 100 or name == 'Insane' then
+        local keeper = '[color=blue]Mapkeeper:[/color] \n'
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
         }
+        if name == 'Insane' then
+            data.message = keeper .. 'Warning, Collapse has begun - god speed!'
+        else
+            data.message = keeper .. 'Warning, Collapse has begun - wave limit has been reached!'
+        end
         Task.set_timeout_in_ticks(550, collapse_message, data)
     end
 end
@@ -727,8 +836,13 @@ local on_tick = function()
     local surface = game.surfaces[active_surface_index]
     local wave_defense_table = WD.get_table()
     local update_gui = Gui_mf.update_gui
+    local tick = game.tick
 
-    if game.tick % 60 == 0 then
+    if tick % 36000 == 0 then
+        biter_settings()
+    end
+
+    if tick % 60 == 0 then
         for _, player in pairs(game.connected_players) do
             update_gui(player)
         end
@@ -737,7 +851,7 @@ local on_tick = function()
         has_the_game_ended()
         chunk_load()
 
-        if game.tick % 1200 == 0 then
+        if tick % 1200 == 0 then
             remove_offline_players()
             boost_difficulty()
             collapse_after_wave_100()
@@ -771,6 +885,12 @@ local on_init = function()
         [3] = {
             name = 'Hard',
             value = 1.5,
+            color = {r = 0.25, g = 0.25, b = 0.00},
+            print_color = {r = 0.4, g = 0.0, b = 0.00}
+        },
+        [4] = {
+            name = 'Insane',
+            value = 3,
             color = {r = 0.25, g = 0.00, b = 0.00},
             print_color = {r = 0.4, g = 0.0, b = 0.00}
         }
@@ -779,7 +899,8 @@ local on_init = function()
     local tooltip = {
         [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 20000.\nHidden Treasure has higher chance to spawn.\nGrace period: 20 minutes',
         [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.\nGrace period: 15 minutes',
-        [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.\nGrace period: 10 minutes'
+        [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.\nGrace period: 10 minutes',
+        [4] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 0.\nLandmine limit = 0.\nLocomotive health = 1000.\nHidden Treasure has lower chance to spawn.\nGrace period: 5 minutes\nBiters are way more aggressive.\nCollapse starts after difficulty poll has ended.\nCollapse is much faster.'
     }
 
     Difficulty.set_difficulties(difficulties)

@@ -77,10 +77,10 @@ function Public.reset_table()
         y = 0
     }
     this.traps = {}
-    this.much_time = true
+    this.munch_time = true
     this.coin_amount = 1
     this.difficulty_set = false
-    this.bonus_xp_on_join = 150
+    this.bonus_xp_on_join = 250
     this.main_market_items = {}
     this.spill_items_to_surface = false
     this.outside_chests = {}

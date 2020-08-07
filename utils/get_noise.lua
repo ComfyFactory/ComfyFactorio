@@ -88,9 +88,10 @@ local noises = {
 local function get_noise(name, pos, seed)
     local noise = 0
     local d = 0
-    for _, n in pairs(noises[name]) do
-        noise = noise + simplex_noise(pos.x * n.modifier, pos.y * n.modifier, seed) * n.weight
-        d = d + n.weight
+    for i = 1, #noises[name] do
+        local mod = noises[name]
+        noise = noise + simplex_noise(pos.x * mod[i].modifier, pos.y * mod[i].modifier, seed) * mod[i].weight
+        d = d + mod[i].weight
         seed = seed + 10000
     end
     noise = noise / d

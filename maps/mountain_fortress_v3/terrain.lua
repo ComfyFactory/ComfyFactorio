@@ -106,8 +106,12 @@ local function place_wagon(data)
         placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     end
 
+    if placed_trains_in_zone.placed >= placed_trains_in_zone.limit then
+        return
+    end
+
     local surface = data.surface
-    local tiles = data.tiles
+    local tiles = data.hidden_tiles
     local entities = data.entities
     local top_x = data.top_x
     local top_y = data.top_y
@@ -119,10 +123,6 @@ local function place_wagon(data)
     local rail_mineable = {
         callback = Functions.disable_destructible_callback
     }
-
-    if placed_trains_in_zone.placed >= placed_trains_in_zone.limit then
-        return
-    end
 
     local radius = 300
     local area = {
@@ -150,13 +150,8 @@ local function place_wagon(data)
     end
 
     for k, tile in pairs(location) do
-        if tile.collides_with('resource-layer') then
-            tiles[#tiles + 1] = {name = 'landfill', position = tile.position}
-        end
-        for _, e in pairs(surface.find_entities_filtered({position = tile.position, force = {'neutral', 'enemy'}})) do
-            e.destroy()
-        end
-        if tile.position.y % 2 == 0 and tile.position.x % 2 == 0 then
+        tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = tile.position}
+        if tile.position.y % 1 == 0 and tile.position.x % 1 == 0 then
             entities[#entities + 1] = {
                 name = 'straight-rail',
                 position = tile.position,
@@ -222,7 +217,7 @@ local function wall(data)
     local seed = data.seed
     local p = {x = x + data.top_x, y = y + data.top_y}
 
-    local small_caves = get_noise('small_caves', p, seed + 12300)
+    local small_caves = get_noise('small_caves', p, seed + 300000)
     local cave_ponds = get_noise('cave_rivers', p, seed + 150000)
     if y > 9 + cave_ponds * 6 and y < 23 + small_caves * 6 then
         if small_caves > 0.02 or cave_ponds > 0.02 then
@@ -242,7 +237,7 @@ local function wall(data)
                 entities[#entities + 1] = {name = 'fish', position = p}
             end
         else
-            tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
+            tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
 
             if math.random(1, 5) ~= 1 then
                 entities[#entities + 1] = {name = rock_raffle[math.random(1, #rock_raffle)], position = p}
@@ -256,7 +251,7 @@ local function wall(data)
             end
         end
     else
-        tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
+        tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
 
         if
             surface.can_place_entity(
@@ -275,7 +270,7 @@ local function wall(data)
                 end
             else
                 if y < 4 or y > 25 then
-                    if y <= 24 then
+                    if y <= 23 then
                         if math.random(1, y + 1) == 1 then
                             entities[#entities + 1] = {
                                 name = 'stone-wall',
@@ -369,6 +364,13 @@ local function process_level_13_position(x, y, data)
     local noise_cave_ponds = get_noise('cave_ponds', p, seed)
     local smol_areas = get_noise('smol_areas', p, seed + 70000)
 
+    --Resource Spots
+    if smol_areas < -0.72 then
+        if math.random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+    end
+
     if small_caves > -0.22 and small_caves < 0.22 then
         tiles[#tiles + 1] = {name = 'dirt-3', position = p}
         if math.random(1, 768) == 1 then
@@ -395,15 +397,12 @@ local function process_level_13_position(x, y, data)
         return
     end
 
-    --Resource Spots
-    if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
-        end
-    end
-
     if small_caves > -0.40 and small_caves < 0.40 then
         if noise_cave_ponds > 0.35 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
             tiles[#tiles + 1] = {name = 'dirt-' .. math.random(1, 4), position = p}
             if math.random(1, 256) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
@@ -441,6 +440,13 @@ local function process_level_12_position(x, y, data)
     local noise_2 = get_noise('no_rocks_2', p, seed + 20000)
     local smol_areas = get_noise('smol_areas', p, seed + 60000)
 
+    --Resource Spots
+    if smol_areas < -0.72 then
+        if math.random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+    end
+
     if noise_1 > 0.65 then
         if math.random(1, 100) > 88 then
             entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
@@ -456,6 +462,10 @@ local function process_level_12_position(x, y, data)
     end
 
     if noise_1 < -0.72 then
+        local success = place_wagon(data)
+        if success then
+            return
+        end
         tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
         if math.random(1, 100) > 88 then
             entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
@@ -476,13 +486,6 @@ local function process_level_12_position(x, y, data)
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
         end
         return
-    end
-
-    --Resource Spots
-    if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
-        end
     end
 
     if math.random(1, 64) == 1 and noise_2 > 0.65 then
@@ -531,6 +534,13 @@ local function process_level_11_position(x, y, data)
         return
     end
 
+    --Resource Spots
+    if smol_areas < -0.72 then
+        if math.random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+    end
+
     if noise_1 < -0.72 then
         tiles[#tiles + 1] = {name = 'lab-dark-1', position = p}
         entities[#entities + 1] = {name = 'uranium-ore', position = p, amount = math.abs(p.y) + 1 * 3}
@@ -552,13 +562,6 @@ local function process_level_11_position(x, y, data)
         return
     end
 
-    --Resource Spots
-    if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
-        end
-    end
-
     if math.random(1, 64) == 1 and noise_2 > 0.65 then
         entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
     end
@@ -571,6 +574,11 @@ local function process_level_11_position(x, y, data)
             position = p,
             force = 'neutral'
         }
+    end
+
+    local success = place_wagon(data)
+    if success then
+        return
     end
 
     tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
@@ -616,6 +624,10 @@ local function process_level_10_position(x, y, data)
         return
     end
     if math.abs(scrapyard) > 0.25 and math.abs(scrapyard) < 0.40 then
+        local success = place_wagon(data)
+        if success then
+            return
+        end
         if math.random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
@@ -670,6 +682,10 @@ local function process_level_9_position(x, y, data)
     end
 
     if maze_noise > 0 and maze_noise < 0.45 then
+        local success = place_wagon(data)
+        if success then
+            return
+        end
         if math.random(1, 512) == 1 then
             markets[#markets + 1] = p
         end
@@ -745,6 +761,10 @@ local function process_level_8_position(x, y, data)
             return
         end
         if scrapyard < -0.28 or scrapyard > 0.28 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
             if math.random(1, 128) == 1 then
                 Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
                 entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
@@ -834,13 +854,6 @@ local function process_level_7_position(x, y, data)
         return
     end
 
-    --Resource Spots
-    if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
-        end
-    end
-
     local noise_ores = get_noise('no_rocks_2', p, seed + 25000)
 
     if cave_rivers_3 > -0.20 and cave_rivers_3 < 0.20 then
@@ -870,6 +883,10 @@ local function process_level_7_position(x, y, data)
     if cave_rivers_4 > -0.20 and cave_rivers_4 < 0.20 then
         tiles[#tiles + 1] = {name = 'grass-' .. math.floor(cave_rivers_4 * 32) % 3 + 1, position = p}
         if cave_rivers_4 > -0.10 and cave_rivers_4 < 0.10 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
             if math.random(1, 8) == 1 and no_rocks_2 > -0.25 then
                 entities[#entities + 1] = {name = 'tree-02', position = p}
             end
@@ -967,6 +984,10 @@ local function process_level_6_position(x, y, data)
     end
 
     if cave_rivers > -0.1 and cave_rivers < 0.1 then
+        local success = place_wagon(data)
+        if success then
+            return
+        end
         if math.random(1, 36) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
         end
@@ -1041,6 +1062,10 @@ local function process_level_5_position(x, y, data)
 
     if small_caves > -0.40 and small_caves < 0.40 then
         if noise_cave_ponds > 0.35 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
             tiles[#tiles + 1] = {name = 'dirt-' .. math.random(1, 4), position = p}
             if math.random(1, 256) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
@@ -1075,7 +1100,7 @@ local function process_level_4_position(x, y, data)
 
     local noise_large_caves = get_noise('large_caves', p, seed)
     local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local small_caves = get_noise('small_caves', p, seed)
+    local small_caves = get_noise('dungeons', p, seed)
     local smol_areas = get_noise('smol_areas', p, seed + 15000)
 
     if math.abs(noise_large_caves) > 0.7 then
@@ -1101,6 +1126,10 @@ local function process_level_4_position(x, y, data)
         if math.random(1, 384) == 1 then
             Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+        end
+        local success = place_wagon(data)
+        if success then
+            return
         end
         if math.random(1, 1024) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
@@ -1182,11 +1211,18 @@ local function process_level_3_position(x, y, data)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('small_caves', p, seed + 50000)
+    local small_caves = get_noise('dungeons', p, seed + 50000)
     local small_caves_2 = get_noise('small_caves_2', p, seed + 70000)
     local noise_large_caves = get_noise('large_caves', p, seed + 60000)
     local noise_cave_ponds = get_noise('cave_ponds', p, seed)
     local smol_areas = get_noise('smol_areas', p, seed + 60000)
+
+    --Resource Spots
+    if smol_areas < -0.72 then
+        if math.random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+    end
 
     --Market Spots
     if noise_cave_ponds < -0.77 then
@@ -1203,13 +1239,6 @@ local function process_level_3_position(x, y, data)
             end
         end
         return
-    end
-
-    --Resource Spots
-    if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
-        end
     end
 
     if noise_large_caves > -0.15 and noise_large_caves < 0.15 or small_caves_2 > 0 then
@@ -1296,6 +1325,10 @@ local function process_level_3_position(x, y, data)
         --Main Rock Terrain
         local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
             tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
             if math.random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
@@ -1325,9 +1358,16 @@ local function process_level_2_position(x, y, data)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('small_caves', p, seed)
+    local small_caves = get_noise('dungeons', p, seed)
     local noise_large_caves = get_noise('large_caves', p, seed)
     local smol_areas = get_noise('smol_areas', p, seed + 15000)
+
+    --Resource Spots
+    if smol_areas < -0.72 then
+        if math.random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+    end
 
     if noise_large_caves > -0.75 and noise_large_caves < 0.75 then
         local noise_cave_ponds = get_noise('cave_ponds', p, seed)
@@ -1383,13 +1423,6 @@ local function process_level_2_position(x, y, data)
             return
         end
 
-        --Resource Spots
-        if smol_areas < -0.72 then
-            if math.random(1, 8) == 1 then
-                Generate_resources(buildings, p, Public.level_depth)
-            end
-        end
-
         local no_rocks = get_noise('no_rocks', p, seed + 25000)
         --Worm oil Zones
         if no_rocks < 0.20 and no_rocks > -0.20 then
@@ -1422,6 +1455,10 @@ local function process_level_2_position(x, y, data)
         --Main Rock Terrain
         local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
             tiles[#tiles + 1] = {name = 'grass-' .. math.random(1, 4), position = p}
             if math.random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
@@ -1451,9 +1488,16 @@ local function process_level_1_position(x, y, data)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('small_caves', p, seed)
+    local small_caves = get_noise('dungeons', p, seed)
     local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 50000)
+    local smol_areas = get_noise('smol_areas', p, seed)
+
+    --Resource Spots
+    if smol_areas < -0.72 then
+        -- if math.random(1, 8) == 1 then
+        Generate_resources(buildings, p, Public.level_depth)
+    -- end
+    end
 
     --Chasms
     if noise_cave_ponds < 0.111 and noise_cave_ponds > -0.112 then
@@ -1477,7 +1521,7 @@ local function process_level_1_position(x, y, data)
     end
 
     --Rivers
-    local cave_rivers = get_noise('cave_rivers', p, seed + 100000)
+    local cave_rivers = get_noise('cave_rivers', p, seed + 300000)
     if cave_rivers < 0.042 and cave_rivers > -0.042 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
@@ -1512,14 +1556,7 @@ local function process_level_1_position(x, y, data)
         return
     end
 
-    --Resource Spots
-    if smol_areas < -0.72 then
-        -- if math.random(1, 8) == 1 then
-        Generate_resources(buildings, p, Public.level_depth)
-    -- end
-    end
-
-    local no_rocks = get_noise('no_rocks', p, seed + 25000)
+    local no_rocks = get_noise('no_rocks', p, seed + 50000)
     --Worm oil Zones
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.12 and no_rocks > -0.12 then
@@ -1551,6 +1588,10 @@ local function process_level_1_position(x, y, data)
     --Main Rock Terrain
     local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
     if no_rocks_2 > 0.66 or no_rocks_2 < -0.66 then
+        local success = place_wagon(data)
+        if success then
+            return
+        end
         tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
         if math.random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
@@ -1571,10 +1612,10 @@ local function process_level_1_position(x, y, data)
 end
 
 Public.levels = {
-    process_level_2_position,
     process_level_1_position,
-    process_level_2_position,
     process_level_3_position,
+    process_level_5_position,
+    process_level_4_position,
     process_level_6_position,
     process_level_2_position,
     process_level_3_position,
@@ -1725,7 +1766,6 @@ function Public.heavy_functions(x, y, data)
 
     if top_y < 0 then
         process_bits(x, y, data)
-        place_wagon(data)
         return
     end
 

@@ -257,6 +257,14 @@ function Public.silent_action_warning(warning_prefix, msg, player)
     Server.to_discord_bold(msg)
 end
 
+--- Takes msg and logs it.
+-- @param msg <string> The message to print
+-- @param warning_prefix <string> The name of the module/warning
+function Public.log_msg(warning_prefix, msg)
+    msg = format('%s %s', warning_prefix, msg)
+    log(msg)
+end
+
 --- Takes a string, number, or LuaPlayer and returns a valid LuaPlayer or nil.
 -- Intended for commands as there are extra checks in place.
 -- @param <string|number|LuaPlayer>
