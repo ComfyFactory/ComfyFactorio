@@ -21,7 +21,7 @@ local function doom(surface, room)
 	if #room.room_tiles > 1 then table_shuffle_table(room.room_tiles) end
 	for key, tile in pairs(room.room_tiles) do
 		surface.set_tiles({{name = "red-refined-concrete", position = tile.position}}, true)
-		if math_random(1, 16) == 1 then
+		if math_random(1, 8) == 1 then
 			surface.create_entity({name = "copper-ore", position = tile.position, amount = Functions.get_common_resource_amount(surface.index)})
 		end
 		if math_random(1, 16) == 1 then
