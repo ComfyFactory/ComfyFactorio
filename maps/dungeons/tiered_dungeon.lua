@@ -154,7 +154,19 @@ local function unlock_researches(surface_index)
 end
 
 local function expand(surface, position)
-	local room = Room_generator.get_room(surface, position)
+	local room
+	local roll = math_random(1,100)
+	if roll > 96 then
+			room = Room_generator.get_room(surface, position, "big")
+	elseif roll > 88 then
+			room = Room_generator.get_room(surface, position, "wide")
+	elseif roll > 80 then
+			room = Room_generator.get_room(surface, position, "tall")
+	elseif roll > 50 then
+			room = Room_generator.get_room(surface, position, "rect")
+	else
+			room = Room_generator.get_room(surface, position, "square")
+	end
 	if not room then return end
 	if global.dungeons.treasures[surface.index] < 5 and global.dungeons.surface_size[surface.index] >= 225 and math.random(1,50) == 1 then
 		Biomes["treasure"](surface, room)
@@ -194,6 +206,25 @@ local function expand(surface, position)
 
 	global.biter_health_boost_forces[force.index] = math_round(global.biter_health_boost_forces[force.index], 2)
 	draw_depth_gui()
+end
+
+local function draw_light(player)
+	if not player.character then return end
+	local rpg = RPG_T.get("rpg_t")
+	local magicka = rpg[player.index].magicka
+	local scale = 1
+	if magicka < 50 then return end
+	if magicka >= 100 then scale = 2 end
+	if magicka >= 150 then scale = 3 end
+	if magicka >= 200 then scale = 4 end
+	rendering.draw_light({
+		sprite = "utility/light_medium", scale = scale * 5, intensity = scale, minimum_darkness = 0,
+		oriented = false, color = {255,255,255}, target = player.character,
+		surface = player.surface, visible = true, only_in_alt_mode = false,
+	})
+	if player.character.is_flashlight_enabled() then
+		player.character.disable_flashlight()
+	end
 end
 
 local function init_player(player, surface)
@@ -317,6 +348,7 @@ local function on_player_joined_game(event)
 	if player.online_time == 0 then
 		init_player(player, game.surfaces["dungeons_floor0"])
 	end
+	draw_light(player)
 end
 
 local function spawner_death(entity)
@@ -508,6 +540,11 @@ end
 
 local function on_player_changed_surface(event)
 	draw_depth_gui()
+	draw_light(game.players[event.player_index])
+end
+
+local function on_player_respawned(event)
+	draw_light(game.players[event.player_index])
 end
 
 -- local function on_player_changed_position(event)
@@ -691,5 +728,6 @@ Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_surface_created, on_surface_created)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
 
 require "modules.rocks_yield_ore"
