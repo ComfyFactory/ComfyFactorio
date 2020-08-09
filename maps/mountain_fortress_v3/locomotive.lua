@@ -73,24 +73,9 @@ function Public.add_player_to_permission_group(player, group, forced)
     end
 
     if forced then
-        local locomotive_group = game.permissions.get_group('locomotive')
-        if not locomotive_group then
-            locomotive_group = game.permissions.create_group('locomotive')
-            locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
-            locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
-            locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
-            locomotive_group.set_allows_action(defines.input_action.admin_action, false)
-            locomotive_group.set_allows_action(defines.input_action.drop_item, false)
-            locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
-            locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
-        -- locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-        -- locomotive_group.set_allows_action(defines.input_action.connect_rolling_stock, false)
-        end
-
-        locomotive_group = game.permissions.get_group('locomotive')
-        locomotive_group.add_player(player)
+        local default_group = game.permissions.get_group('Default')
+        default_group.add_player(player)
+        return
     end
 
     local playtime = player.online_time
@@ -203,7 +188,7 @@ local function property_boost(data)
                     end
                 end
             else
-                Public.add_player_to_permission_group(player, 'default')
+                Public.add_player_to_permission_group(player, 'default', true)
             end
         end
     end

@@ -4,6 +4,16 @@ local market = {}
 local random = math.random
 local floor = math.floor
 
+local blacklist = {
+    ['cargo-wagon'] = true,
+    ['locomotive'] = true,
+    ['artillery-wagon'] = true,
+    ['fluid-wagon'] = true,
+    ['land-mine'] = true,
+    ['car'] = true,
+    ['tank'] = true
+}
+
 market.weapons = {
     ['pistol'] = {value = 10, rarity = 1},
     ['submachine-gun'] = {value = 50, rarity = 2},
@@ -232,15 +242,6 @@ function Public.get_random_item(rarity, sell, buy)
 
     local items_return = {}
 
-    local blacklist = {
-        ['cargo-wagon'] = true,
-        ['locomotive'] = true,
-        ['artillery-wagon'] = true,
-        ['fluid-wagon'] = true,
-        ['land-mine'] = true,
-        ['car'] = true
-    }
-
     for i = 1, random(5, 10), 1 do
         local item = items[i]
         if not item then
@@ -279,14 +280,6 @@ function Public.mountain_market(surface, position, rarity, buy)
         table.shuffle_table(items)
     end
     local mrk = surface.create_entity({name = 'market', position = position, force = 'neutral'})
-
-    local blacklist = {
-        ['cargo-wagon'] = true,
-        ['locomotive'] = true,
-        ['artillery-wagon'] = true,
-        ['fluid-wagon'] = true,
-        ['land-mine'] = true
-    }
 
     for i = 1, random(5, 10), 1 do
         local item = items[i]
