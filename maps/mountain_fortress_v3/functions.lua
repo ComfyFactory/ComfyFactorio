@@ -9,7 +9,8 @@ local this = {
     refill_turrets = {index = 1},
     magic_crafters = {index = 1},
     magic_fluid_crafters = {index = 1},
-    art_table = {index = 1}
+    art_table = {index = 1},
+    surface_cleared = false
 }
 
 Global.register(

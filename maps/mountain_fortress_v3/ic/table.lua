@@ -21,9 +21,12 @@ function Public.reset()
     for k, _ in pairs(this) do
         this[k] = nil
     end
+    this.debug_mode = true
+    this.restore_on_theft = false
     this.doors = {}
     this.cars = {}
     this.saved_surfaces = {}
+    this.allowed_surface = 'nauvis'
     this.players = {}
     this.surfaces = {}
     this.entity_type = {
@@ -51,6 +54,13 @@ function Public.set_car_area(tbl)
     end
 
     this.car_areas = tbl
+end
+
+function Public.allowed_surface(value)
+    if value then
+        this.allowed_surface = value
+    end
+    return this.allowed_surface
 end
 
 return Public

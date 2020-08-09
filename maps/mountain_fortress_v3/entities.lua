@@ -143,7 +143,7 @@ local function protect_entities(event)
     end
 
     if is_protected(entity) then
-        if event.cause then
+        if event.cause and event.cause.valid then
             if event.cause.force.index == 2 and entity.unit_number == this.locomotive.unit_number then
                 set_objective_health(event.final_damage_amount)
             elseif event.cause.force.index == 2 then
@@ -725,6 +725,7 @@ function Public.loco_died()
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
+    this.game_lost = true
     local msg
     if this.soft_reset then
         msg =

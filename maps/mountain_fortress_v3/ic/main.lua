@@ -8,7 +8,7 @@ Public.get_table = IC.get
 
 local function on_entity_died(event)
     local entity = event.entity
-    if not entity and not entity.valid then
+    if not entity or not entity.valid then
         return
     end
 
@@ -22,11 +22,16 @@ end
 
 local function on_player_mined_entity(event)
     local entity = event.entity
-    if not entity and not entity.valid then
+    if not entity or not entity.valid then
         return
     end
 
     if not entity.type == 'car' then
+        return
+    end
+
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
         return
     end
 
@@ -50,8 +55,17 @@ local function on_robot_mined_entity(event)
 end
 
 local function on_built_entity(event)
-    local created_entity = event.created_entity
-    if not created_entity.type == 'car' then
+    local ce = event.created_entity
+
+    if not ce or not ce.valid then
+        return
+    end
+    if not ce.type == 'car' then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
         return
     end
 
@@ -78,13 +92,6 @@ local function on_tick()
     if tick % 600 == 0 then
         Functions.remove_invalid_cars(ic)
     end
-
-    if ic.rebuild_tick ~= tick then
-        return
-    end
-
-    Functions.reconstruct_all_cars(ic)
-    ic.rebuild_tick = nil
 end
 
 local function on_init()

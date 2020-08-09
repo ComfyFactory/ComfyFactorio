@@ -63,13 +63,34 @@ local function validate_player(player)
     return true
 end
 
-function Public.add_player_to_permission_group(player, group)
+function Public.add_player_to_permission_group(player, group, forced)
     local jailed = Jailed.get_jailed_table()
     local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
     local session = Session.get_session_table()
 
     if player.admin then
         return
+    end
+
+    if forced then
+        local locomotive_group = game.permissions.get_group('locomotive')
+        if not locomotive_group then
+            locomotive_group = game.permissions.create_group('locomotive')
+            locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
+            locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
+            locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
+            locomotive_group.set_allows_action(defines.input_action.admin_action, false)
+            locomotive_group.set_allows_action(defines.input_action.drop_item, false)
+            locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
+            locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
+        -- locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        -- locomotive_group.set_allows_action(defines.input_action.connect_rolling_stock, false)
+        end
+
+        locomotive_group = game.permissions.get_group('locomotive')
+        locomotive_group.add_player(player)
     end
 
     local playtime = player.online_time
@@ -1368,15 +1389,15 @@ local function add_random_loot_to_main_market(rarity)
             tooltip = types[v.offer.item].localised_name,
             upgrade = false
         }
-        if ticker >= 12 then
+        if ticker >= 25 then
             return
         end
     end
 end
 
 local function on_research_finished()
-    local difficulty_poll_closing_timeout = Difficulty.get('difficulty_poll_closing_timeout')
-    if game.tick < difficulty_poll_closing_timeout then
+    local game_lost = WPT.get('game_lost')
+    if game_lost then
         return
     end
 
@@ -1444,6 +1465,38 @@ local function on_console_chat(event)
     end
     shoo(event)
 end
+
+-- local function tp_player()
+--     for _, player in pairs(game.connected_players) do
+--         if not validate_player(player) then
+--             return
+--         end
+
+--         local active_surface_index = WPT.get('active_surface_index')
+--         if not active_surface_index then
+--             return
+--         end
+
+--         local surface = game.surfaces[active_surface_index]
+
+--         local nauvis = 'nauvis'
+
+--         if string.sub(player.surface.name, 0, #nauvis) == nauvis then
+--             if player.surface.find_entity('player-port', player.position) then
+--                 player.teleport(
+--                     surface.find_non_colliding_position(
+--                         'character',
+--                         game.forces.player.get_spawn_position(surface),
+--                         3,
+--                         0,
+--                         5
+--                     ),
+--                     surface
+--                 )
+--             end
+--         end
+--     end
+-- end
 
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
@@ -1746,7 +1799,36 @@ function Public.get_items()
         upgrade = true,
         static = true
     }
-
+    if game.forces.player.technologies['logistics'].researched then
+        main_market_items['loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 128,
+            tooltip = 'Loader',
+            upgrade = false,
+            static = true
+        }
+    end
+    if game.forces.player.technologies['logistics-2'].researched then
+        main_market_items['fast-loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 256,
+            tooltip = 'Fast Loader',
+            upgrade = false,
+            static = true
+        }
+    end
+    if game.forces.player.technologies['logistics-3'].researched then
+        main_market_items['express-loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 512,
+            tooltip = 'Express Loader',
+            upgrade = false,
+            static = true
+        }
+    end
     main_market_items['small-lamp'] = {
         stack = 1,
         value = 'coin',
@@ -1928,6 +2010,7 @@ local function tick()
     end
 
     if ticker % 120 == 0 then
+        -- tp_player()
         boost_players()
     end
 

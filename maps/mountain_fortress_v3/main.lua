@@ -16,6 +16,7 @@ require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.charging_station'
 require 'modules.admins_operate_biters'
 
+local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Autostash = require 'modules.autostash'
 local Group = require 'comfy_panel.group'
 local PL = require 'comfy_panel.player_list'
@@ -94,7 +95,7 @@ local set_difficulty = function()
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
     local collapse_speed = WPT.get('collapse_speed')
-    local collapse_amount = WPT.get('collapcollapse_amountse_speed')
+    local collapse_amount = WPT.get('collapse_amount')
     local player_count = #game.connected_players
     if not Diff.difficulty_vote_value then
         Diff.difficulty_vote_value = 0.1
@@ -144,51 +145,44 @@ local set_difficulty = function()
 end
 
 local biter_settings = function()
-    -- biter settings
-    local Diff = Difficulty.get()
-    if not Diff.difficulty_vote_value then
-        Diff.difficulty_vote_value = 0.1
-    end
-
-    local plus = ((game.forces.enemy.evolution_factor * 100) + 50) / (77 - Diff.difficulty_vote_value * 2)
-    local sub = (((1 - game.forces.enemy.evolution_factor) * 100) + 50) / (73 + Diff.difficulty_vote_value * 2)
-
-    local enemy_expansion = game.map_settings.enemy_expansion
-    local unit_group = game.map_settings.unit_group
-    local path_finder = game.map_settings.path_finder
-    unit_group.max_wait_time_for_late_members = 3600 * plus
-    unit_group.min_group_radius = 30 * plus
-    unit_group.max_group_radius = 60 * plus
-    unit_group.max_member_speedup_when_behind = 3 * plus
-    unit_group.member_disown_distance = 20 * plus
-    unit_group.max_gathering_unit_groups = 10 * plus
-    path_finder.max_work_done_per_tick = 6000 * plus
-
-    path_finder.max_steps_worked_per_tick = 20 + (100 * plus)
-    if path_finder.max_steps_worked_per_tick > 2000 then
-        path_finder.max_steps_worked_per_tick = 200
-    end
-
-    enemy_expansion.building_coefficient = 0.1 * sub
-    enemy_expansion.other_base_coefficient = 2.0 * sub
-    enemy_expansion.neighbouring_chunk_coefficient = 0.5 * sub
-    enemy_expansion.neighbouring_base_chunk_coefficient = 0.4 * sub
-
-    enemy_expansion.max_expansion_distance = 20 * plus
-    if enemy_expansion.max_expansion_distance > 20 then
-        enemy_expansion.max_expansion_distance = 20
-    end
-    enemy_expansion.friendly_base_influence_radius = 8 * plus
-    enemy_expansion.enemy_building_influence_radius = 3 * plus
-
-    enemy_expansion.settler_group_min_size = 5 * plus
-    if enemy_expansion.settler_group_min_size < 1 then
-        enemy_expansion.settler_group_min_size = 1
-    end
-
-    enemy_expansion.settler_group_max_size = 20 * plus
-    if enemy_expansion.settler_group_max_size > 50 then
-        enemy_expansion.settler_group_max_size = 50
+    -- -- biter settings
+    if WPT.get('enable_biter_settings') then
+        local Diff = Difficulty.get()
+        if not Diff.difficulty_vote_value then
+            Diff.difficulty_vote_value = 0.1
+        end
+        local plus = ((game.forces.enemy.evolution_factor * 100) + 50) / (77 - Diff.difficulty_vote_value * 2)
+        local sub = (((1 - game.forces.enemy.evolution_factor) * 100) + 50) / (73 + Diff.difficulty_vote_value * 2)
+        local enemy_expansion = game.map_settings.enemy_expansion
+        local unit_group = game.map_settings.unit_group
+        local path_finder = game.map_settings.path_finder
+        unit_group.max_wait_time_for_late_members = 3600 * plus
+        unit_group.max_member_speedup_when_behind = 3 * plus
+        unit_group.member_disown_distance = 20 * plus
+        unit_group.max_gathering_unit_groups = 10 * plus
+        path_finder.max_work_done_per_tick = 6000 * plus
+        path_finder.max_steps_worked_per_tick = 20 + (100 * plus)
+        if path_finder.max_steps_worked_per_tick > 2000 then
+            path_finder.max_steps_worked_per_tick = 200
+        end
+        enemy_expansion.building_coefficient = 0.1 * sub
+        enemy_expansion.other_base_coefficient = 2.0 * sub
+        enemy_expansion.neighbouring_chunk_coefficient = 0.5 * sub
+        enemy_expansion.neighbouring_base_chunk_coefficient = 0.4 * sub
+        enemy_expansion.max_expansion_distance = 20 * plus
+        if enemy_expansion.max_expansion_distance > 20 then
+            enemy_expansion.max_expansion_distance = 20
+        end
+        enemy_expansion.friendly_base_influence_radius = 8 * plus
+        enemy_expansion.enemy_building_influence_radius = 3 * plus
+        enemy_expansion.settler_group_min_size = 5 * plus
+        if enemy_expansion.settler_group_min_size < 1 then
+            enemy_expansion.settler_group_min_size = 1
+        end
+        enemy_expansion.settler_group_max_size = 20 * plus
+        if enemy_expansion.settler_group_max_size > 50 then
+            enemy_expansion.settler_group_max_size = 50
+        end
     end
 end
 
@@ -304,6 +298,8 @@ function Public.reset_map()
 
     Poll.reset()
     ICW.reset()
+    IC.reset()
+    IC.allowed_surface('mountain_fortress_v3')
     Functions.reset_table()
     game.reset_time_played()
     WPT.reset_table()
@@ -390,14 +386,18 @@ function Public.reset_map()
         surface.force_generate_chunk_requests()
     end
 
+    surface.ticks_per_day = surface.ticks_per_day * 2
+    surface.brightness_visual_weights = {1, 0, 0, 0}
+
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
     Task.start_queue()
     Task.set_queue_speed(32)
 
-    biter_settings()
+    -- biter_settings()
 
     this.chunk_load_tick = game.tick + 1200
+    this.game_lost = false
 
     --HD.enable_auto_init = false
 
@@ -840,7 +840,8 @@ local on_tick = function()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
 
-    if tick % 36000 == 0 then
+    -- if tick % 36000 == 0 then
+    if tick % 360 == 0 then
         biter_settings()
     end
 

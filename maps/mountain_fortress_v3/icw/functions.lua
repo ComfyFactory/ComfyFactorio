@@ -2,6 +2,22 @@ local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 
+local rock_raffle = {
+    'sand-rock-big',
+    'sand-rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-huge'
+}
+
+local size_of_rock_raffle = #rock_raffle
+
 function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
 end
@@ -412,6 +428,14 @@ function Public.create_wagon_room(icw, wagon)
             end
         end
     end
+
+    -- for x = -35, 30, 1 do
+    --     for y = -5, 45, 1 do
+    --         if math.random(1, 4) == 1 then
+    --             fishes[#fishes + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = {x, y}}
+    --         end
+    --     end
+    -- end
 
     surface.set_tiles(tiles, true)
 

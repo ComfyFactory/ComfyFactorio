@@ -63,7 +63,7 @@ local scrap_entities = {
 local scrap_entities_index = #scrap_entities
 
 local spawner_raffle = {'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner'}
-local trees = {'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree'}
+local trees = {'tree-08-red', 'tree-02-red', 'tree-06-brown'}
 
 local firearm_magazine_ammo = Functions.firearm_magazine_ammo
 local piercing_rounds_magazine_ammo = Functions.piercing_rounds_magazine_ammo
