@@ -554,10 +554,7 @@ local function on_tick()
 	for _, player in pairs(game.connected_players) do update_gui(player) end
 end
 
-local function on_init()
-	local wave_defense_table = WD.get_table()
-	wave_defense_table.reset_wave_defense()
-end
+Event.on_nth_tick(30, on_tick)
 
 event.on_nth_tick(30, on_tick)
 return Public

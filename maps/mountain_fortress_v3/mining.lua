@@ -1,6 +1,9 @@
 local WPT = require 'maps.mountain_fortress_v3.table'
 
 local Public = {}
+local random = math.random
+local floor = math.floor
+local sqrt = math.sqrt
 
 local max_spill = 60
 
@@ -25,8 +28,8 @@ local particles = {
 }
 
 local function create_particles(surface, name, position, amount, cause_position)
-    local d1 = (-100 + math.random(0, 200)) * 0.0004
-    local d2 = (-100 + math.random(0, 200)) * 0.0004
+    local d1 = (-100 + random(0, 200)) * 0.0004
+    local d2 = (-100 + random(0, 200)) * 0.0004
 
     if cause_position then
         d1 = (cause_position.x - position.x) * 0.025
@@ -34,7 +37,7 @@ local function create_particles(surface, name, position, amount, cause_position)
     end
 
     for i = 1, amount, 1 do
-        local m = math.random(4, 10)
+        local m = random(4, 10)
         local m2 = m * 0.005
 
         surface.create_particle(
@@ -45,8 +48,8 @@ local function create_particles(surface, name, position, amount, cause_position)
                 vertical_speed = 0.130,
                 height = 0,
                 movement = {
-                    (m2 - (math.random(0, m) * 0.01)) + d1,
-                    (m2 - (math.random(0, m) * 0.01)) + d2
+                    (m2 - (random(0, m) * 0.01)) + d1,
+                    (m2 - (random(0, m) * 0.01)) + d2
                 }
             }
         )
@@ -82,7 +85,7 @@ local size_of_ore_raffle = #harvest_raffle_ores
 local function get_amount(data)
     local entity = data.entity
     local this = data.this
-    local distance_to_center = math.floor(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
+    local distance_to_center = floor(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
     local type_modifier
     local amount
     local second_amount
@@ -108,7 +111,7 @@ local function get_amount(data)
     type_modifier = rock_yield[entity.name] or type_modifier
 
     amount = base_amount + (distance_to_center * distance_modifier)
-    second_amount = math.floor((second_base_amount + (distance_to_center * distance_modifier)) / 3)
+    second_amount = floor((second_base_amount + (distance_to_center * distance_modifier)) / 3)
     if amount > maximum_amount then
         amount = maximum_amount
     end
@@ -116,9 +119,9 @@ local function get_amount(data)
         second_amount = maximum_amount
     end
 
-    local m = (70 + math.random(0, 60)) * 0.01
+    local m = (70 + random(0, 60)) * 0.01
 
-    amount = math.floor(amount * type_modifier * m * 0.7)
+    amount = floor(amount * type_modifier * m * 0.7)
 
     return amount, second_amount
 end
@@ -128,11 +131,11 @@ function Public.entity_died_randomness(data)
     local surface = data.surface
     local harvest
 
-    harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
+    harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
 
     local position = {x = entity.position.x, y = entity.position.y}
 
-    surface.spill_item_stack(position, {name = harvest, count = math.random(1, 5)}, true)
+    surface.spill_item_stack(position, {name = harvest, count = random(1, 5)}, true)
     local particle = particles[harvest]
     create_particles(surface, particle, position, 64, {x = entity.position.x, y = entity.position.y})
 end
@@ -161,14 +164,14 @@ local function randomness(data)
 
     if fullness == 0 then
         if player.character then
-            player.character.health = player.character.health - math.random(50, 100)
+            player.character.health = player.character.health - random(50, 100)
             player.character.surface.create_entity({name = 'water-splash', position = player.position})
             local messages = {
                 'Ouch.. That hurt! Better be careful now.',
                 'Just a fleshwound.',
                 'Better keep those hands to yourself or you might loose them.'
             }
-            player.print(messages[math.random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
+            player.print(messages[random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
             if player.character.health <= 0 then
                 player.character.die('enemy')
                 game.print(player.name .. ' should have emptied their pockets.', {r = 0.75, g = 0.0, b = 0.0})
@@ -179,7 +182,7 @@ local function randomness(data)
 
     ::continue::
 
-    harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
+    harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
     harvest_amount = get_amount(data)
 
     local position = {x = entity.position.x, y = entity.position.y}

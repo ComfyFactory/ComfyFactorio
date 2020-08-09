@@ -19,6 +19,12 @@ local Public = {}
 local concat = table.concat
 local main_frame_name = Gui.uid_name()
 local rpg_main_frame = RPG_Settings.main_frame_name
+local random = math.random
+local floor = math.floor
+local rad = math.rad
+local sin = math.sin
+local cos = math.cos
+local ceil = math.ceil
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
@@ -172,7 +178,7 @@ local function property_boost(data)
                     local f = player.gui.left[rpg_main_frame]
                     local d = Gui.get_data(f)
                     if d.exp_gui and d.exp_gui.valid then
-                        d.exp_gui.caption = math.floor(rpg[player.index].xp)
+                        d.exp_gui.caption = floor(rpg[player.index].xp)
                     end
                 end
             else
@@ -258,7 +264,7 @@ local function refill_fish()
     if not locomotive_cargo.valid then
         return
     end
-    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = math.random(2, 5)})
+    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = random(2, 5)})
 end
 
 local function set_locomotive_health()
@@ -302,10 +308,10 @@ local function create_poison_cloud(position)
     local surface = game.surfaces[active_surface_index]
 
     local random_angles = {
-        math.rad(math.random(359)),
-        math.rad(math.random(359)),
-        math.rad(math.random(359)),
-        math.rad(math.random(359))
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359))
     }
 
     surface.create_entity({name = 'poison-cloud', position = {x = position.x, y = position.y}})
@@ -313,8 +319,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[1]),
-                y = position.y + 12 * math.sin(random_angles[1])
+                x = position.x + 12 * cos(random_angles[1]),
+                y = position.y + 12 * sin(random_angles[1])
             }
         }
     )
@@ -322,8 +328,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[2]),
-                y = position.y + 12 * math.sin(random_angles[2])
+                x = position.x + 12 * cos(random_angles[2]),
+                y = position.y + 12 * sin(random_angles[2])
             }
         }
     )
@@ -331,8 +337,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[3]),
-                y = position.y + 12 * math.sin(random_angles[3])
+                x = position.x + 12 * cos(random_angles[3]),
+                y = position.y + 12 * sin(random_angles[3])
             }
         }
     )
@@ -340,8 +346,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[4]),
-                y = position.y + 12 * math.sin(random_angles[4])
+                x = position.x + 12 * cos(random_angles[4]),
+                y = position.y + 12 * sin(random_angles[4])
             }
         }
     )
@@ -436,7 +442,7 @@ local function redraw_market_items(gui, player, search_text)
         }
     )
 
-    local slider_value = math.ceil(players[player.index].data.slider.slider_value)
+    local slider_value = ceil(players[player.index].data.slider.slider_value)
     local items_table = gui.add({type = 'table', column_count = 6})
 
     for item, data in pairs(Public.get_items()) do
@@ -528,7 +534,7 @@ local function slider_changed(event)
     if not slider_value then
         return
     end
-    slider_value = math.ceil(slider_value)
+    slider_value = ceil(slider_value)
     this.players[player.index].data.text_input.text = slider_value
     redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
 end
@@ -743,7 +749,7 @@ local function gui_click(event)
 
     local inventory = player.get_main_inventory()
     local player_item_count = inventory.get_item_count(item.value)
-    local slider_value = math.ceil(data.slider.slider_value)
+    local slider_value = ceil(data.slider.slider_value)
     local cost = (item.price * slider_value)
     local item_count = item.stack * slider_value
 
@@ -1026,7 +1032,7 @@ local function spawn_biter()
     }
     this.locomotive_biter =
         loco_surface.create_entity(
-        {name = biters[math.random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
+        {name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
     )
     this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
     this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
@@ -1108,9 +1114,9 @@ local function create_market(data, rebuild)
 
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
-            if math.random(1, 2) == 1 then
+            if random(1, 2) == 1 then
                 loco_surface.spill_item_stack(
-                    {x + math.random(0, 9) * 0.1, y + math.random(0, 9) * 0.1},
+                    {x + random(0, 9) * 0.1, y + random(0, 9) * 0.1},
                     {name = 'raw-fish', count = 1},
                     false
                 )
@@ -1120,9 +1126,9 @@ local function create_market(data, rebuild)
     end
     for x = center_position.x - 3, center_position.x + 3, 1 do
         for y = center_position.y - 3, center_position.y + 3, 1 do
-            if math.random(1, 2) == 1 then
+            if random(1, 2) == 1 then
                 loco_surface.spill_item_stack(
-                    {x + math.random(0, 9) * 0.1, y + math.random(0, 9) * 0.1},
+                    {x + random(0, 9) * 0.1, y + random(0, 9) * 0.1},
                     {name = 'raw-fish', count = 1},
                     false
                 )
@@ -1340,7 +1346,7 @@ local function add_random_loot_to_main_market(rarity)
     end
 
     for k, v in pairs(items) do
-        local price = v.price[1][2] + math.random(1, 15) * rarity
+        local price = v.price[1][2] + random(1, 15) * rarity
         local value = v.price[1][1]
         local stack = 1
         ticker = ticker + 1
@@ -1609,17 +1615,17 @@ function Public.locomotive_spawn(surface, position)
     )
 
     for y = -1, 0, 0.05 do
-        local scale = math.random(50, 100) * 0.01
+        local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
             {
                 sprite = 'item/raw-fish',
-                orientation = math.random(0, 100) * 0.01,
+                orientation = random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
-                tint = {math.random(60, 255), math.random(60, 255), math.random(60, 255)},
+                tint = {random(60, 255), random(60, 255), random(60, 255)},
                 render_layer = 'selection-box',
                 target = this.locomotive_cargo,
-                target_offset = {-0.7 + math.random(0, 140) * 0.01, y},
+                target_offset = {-0.7 + random(0, 140) * 0.01, y},
                 surface = surface
             }
         )
@@ -1901,9 +1907,9 @@ function Public.enable_poison_defense()
     end
     local pos = locomotive.position
     create_poison_cloud({x = pos.x, y = pos.y})
-    if math.random(1, 3) == 1 then
-        local random_angles = {math.rad(math.random(359))}
-        create_poison_cloud({x = pos.x + 24 * math.cos(random_angles[1]), y = pos.y + -24 * math.sin(random_angles[1])})
+    if random(1, 3) == 1 then
+        local random_angles = {rad(random(359))}
+        create_poison_cloud({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])})
     end
 end
 

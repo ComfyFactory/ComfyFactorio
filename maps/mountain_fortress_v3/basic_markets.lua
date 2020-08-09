@@ -1,6 +1,8 @@
 local Public = {}
 
 local market = {}
+local random = math.random
+local floor = math.floor
 
 market.weapons = {
     ['pistol'] = {value = 10, rarity = 1},
@@ -153,13 +155,13 @@ end
 
 local function get_resource_market_sells()
     local sells = {
-        {price = {{'coin', math.random(5, 10)}}, offer = {type = 'give-item', item = 'wood', count = 50}},
-        {price = {{'coin', math.random(5, 10)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
-        {price = {{'coin', math.random(5, 10)}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
-        {price = {{'coin', math.random(5, 10)}}, offer = {type = 'give-item', item = 'stone', count = 50}},
-        {price = {{'coin', math.random(5, 10)}}, offer = {type = 'give-item', item = 'coal', count = 50}},
-        {price = {{'coin', math.random(8, 16)}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
-        {price = {{'coin', math.random(2, 4)}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}}
+        {price = {{'coin', random(5, 10)}}, offer = {type = 'give-item', item = 'wood', count = 50}},
+        {price = {{'coin', random(5, 10)}}, offer = {type = 'give-item', item = 'iron-ore', count = 50}},
+        {price = {{'coin', random(5, 10)}}, offer = {type = 'give-item', item = 'copper-ore', count = 50}},
+        {price = {{'coin', random(5, 10)}}, offer = {type = 'give-item', item = 'stone', count = 50}},
+        {price = {{'coin', random(5, 10)}}, offer = {type = 'give-item', item = 'coal', count = 50}},
+        {price = {{'coin', random(8, 16)}}, offer = {type = 'give-item', item = 'uranium-ore', count = 50}},
+        {price = {{'coin', random(2, 4)}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 1}}
     }
     table.shuffle_table(sells)
     return sells
@@ -167,18 +169,18 @@ end
 
 local function get_resource_market_buys()
     local buys = {
-        {price = {{'wood', math.random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'iron-ore', math.random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'copper-ore', math.random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'stone', math.random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'coal', math.random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'uranium-ore', math.random(8, 10)}}, offer = {type = 'give-item', item = 'coin'}},
-        {price = {{'water-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = math.random(1, 2)}},
-        {price = {{'lubricant-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = math.random(3, 6)}},
-        {price = {{'sulfuric-acid-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = math.random(4, 8)}},
-        {price = {{'light-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = math.random(2, 4)}},
-        {price = {{'heavy-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = math.random(2, 4)}},
-        {price = {{'petroleum-gas-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = math.random(3, 5)}}
+        {price = {{'wood', random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
+        {price = {{'iron-ore', random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
+        {price = {{'copper-ore', random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
+        {price = {{'stone', random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
+        {price = {{'coal', random(10, 12)}}, offer = {type = 'give-item', item = 'coin'}},
+        {price = {{'uranium-ore', random(8, 10)}}, offer = {type = 'give-item', item = 'coin'}},
+        {price = {{'water-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = random(1, 2)}},
+        {price = {{'lubricant-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = random(3, 6)}},
+        {price = {{'sulfuric-acid-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = random(4, 8)}},
+        {price = {{'light-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = random(2, 4)}},
+        {price = {{'heavy-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = random(2, 4)}},
+        {price = {{'petroleum-gas-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = random(3, 5)}}
     }
     table.shuffle_table(buys)
     return buys
@@ -196,7 +198,7 @@ local function get_market_item_list(market_types, rarity)
         for k, item in pairs(market[market_type]) do
             --if item.rarity <= rarity and item.rarity + 7 >= rarity then
             if item.rarity <= rarity then
-                local price = math.random(math.floor(item.value * 0.75), math.floor(item.value * 1.25))
+                local price = random(floor(item.value * 0.75), floor(item.value * 1.25))
                 if price < 1 then
                     price = 1
                 end
@@ -239,7 +241,7 @@ function Public.get_random_item(rarity, sell, buy)
         ['car'] = true
     }
 
-    for i = 1, math.random(5, 10), 1 do
+    for i = 1, random(5, 10), 1 do
         local item = items[i]
         if not item then
             break
@@ -251,14 +253,14 @@ function Public.get_random_item(rarity, sell, buy)
 
     if sell then
         local sells = get_resource_market_sells()
-        for i = 1, math.random(1, 3), 1 do
+        for i = 1, random(1, 3), 1 do
             items_return[#items_return + 1] = sells[i]
         end
     end
 
     if buy then
         local buys = get_resource_market_buys()
-        for i = 1, math.random(1, 3), 1 do
+        for i = 1, random(1, 3), 1 do
             items_return[#items_return + 1] = buys[i]
         end
     end
@@ -286,7 +288,7 @@ function Public.mountain_market(surface, position, rarity, buy)
         ['land-mine'] = true
     }
 
-    for i = 1, math.random(5, 10), 1 do
+    for i = 1, random(5, 10), 1 do
         local item = items[i]
         if not item then
             break
@@ -297,13 +299,13 @@ function Public.mountain_market(surface, position, rarity, buy)
     end
 
     local sells = get_resource_market_sells()
-    for i = 1, math.random(1, 3), 1 do
+    for i = 1, random(1, 3), 1 do
         mrk.add_market_item(sells[i])
     end
 
     if buy then
         local buys = get_resource_market_buys()
-        for i = 1, math.random(1, 3), 1 do
+        for i = 1, random(1, 3), 1 do
             mrk.add_market_item(buys[i])
         end
     end

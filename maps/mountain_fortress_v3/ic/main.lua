@@ -75,8 +75,8 @@ local function on_tick()
         Functions.item_transfer(ic)
     end
 
-    if not ic.rebuild_tick then
-        return
+    if tick % 600 == 0 then
+        Functions.remove_invalid_cars(ic)
     end
 
     if ic.rebuild_tick ~= tick then
@@ -98,5 +98,13 @@ Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
-
+--[[ Event.add(
+    defines.events.on_player_joined_game,
+    function(e)
+        local p = game.get_player(e.player_index)
+        p.insert({name = 'car', count = 5})
+        p.insert({name = 'tank', count = 5})
+    end
+)
+ ]]
 return Public

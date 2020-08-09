@@ -48,6 +48,8 @@ local AntiGrief = require 'antigrief'
 --local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
+local floor = math.floor
+local insert = table.insert
 -- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -103,10 +105,10 @@ local set_difficulty = function()
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
-    local amount = player_count * 0.25 + 2
-    amount = math.floor(amount)
-    if amount > 8 then
-        amount = 8
+    local amount = player_count * 0.25 + 6
+    amount = floor(amount)
+    if amount > 10 then
+        amount = 10
     end
     local difficulty = Difficulty.get()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
@@ -378,6 +380,8 @@ function Public.reset_map()
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
     WD.remove_entities(true)
+    WD.enable_threat_log(true)
+    WD.check_collapse_position(true)
 
     set_difficulty()
 
@@ -649,8 +653,6 @@ local has_the_game_ended = function()
                     cause_msg = 'soft-reset'
                 end
 
-                this.game_reset = true
-                this.game_has_ended = true
                 game.print(
                     'Game will ' .. cause_msg .. ' in ' .. this.game_reset_tick / 60 .. ' seconds!',
                     {r = 0.22, g = 0.88, b = 0.22}
@@ -908,7 +910,7 @@ local on_init = function()
 
     this.rocks_yield_ore_maximum_amount = 500
     this.type_modifier = 1
-    this.rocks_yield_ore_base_amount = 50
+    this.rocks_yield_ore_base_amount = 100
     this.rocks_yield_ore_distance_modifier = 0.025
 
     local T = Map.Pop_info()

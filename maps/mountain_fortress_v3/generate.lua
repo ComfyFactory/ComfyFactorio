@@ -5,13 +5,16 @@ local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
 
+local Public = {}
+
+local random = math.random
+local abs = math.abs
+local ceil = math.ceil
 local queue_task = Task.queue_task
 local tiles_per_call = 8
-local total_calls = math.ceil(1024 / tiles_per_call)
+local total_calls = ceil(1024 / tiles_per_call)
 local regen_decoratives = false
 local force_chunk = false
-
-local Public = {}
 
 -- Set to false by modules that want to control the on_chunk_generated event themselves.
 Public.enable_register_events = true
@@ -174,7 +177,7 @@ local function do_place_treasure(data)
     pcall(
         function()
             for _, e in ipairs(data.treasure) do
-                if math.random(1, 6) == 1 then
+                if random(1, 6) == 1 then
                     e.chest = 'iron-chest'
                 end
                 Loot.add(surface, e.position, e.chest)
@@ -193,7 +196,7 @@ local function do_place_markets(data)
 
     pcall(
         function()
-            local pos = markets[math.random(1, #markets)]
+            local pos = markets[random(1, #markets)]
             if
                 surface.count_entities_filtered {
                     area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
@@ -201,7 +204,7 @@ local function do_place_markets(data)
                     limit = 1
                 } == 0
              then
-                local market = Market.mountain_market(surface, pos, math.abs(pos.y) * 0.004)
+                local market = Market.mountain_market(surface, pos, abs(pos.y) * 0.004)
                 market.destructible = false
             end
         end

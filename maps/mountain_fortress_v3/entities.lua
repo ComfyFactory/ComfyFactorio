@@ -22,6 +22,11 @@ local WD = require 'modules.wave_defense.table'
 
 -- module
 local Public = {}
+local random = math.random
+local floor = math.floor
+local abs = math.abs
+local sqrt = math.sqrt
+local round = math.round
 
 --local raise_event = script.raise_event
 
@@ -64,7 +69,8 @@ local protect_types = {
     ['artillery-wagon'] = true,
     ['fluid-wagon'] = true,
     ['locomotive'] = true,
-    ['reactor'] = true
+    ['reactor'] = true,
+    ['car'] = true
 }
 
 local function set_objective_health(final_damage_amount)
@@ -101,7 +107,7 @@ local function set_objective_health(final_damage_amount)
         return
     end
 
-    this.locomotive_health = math.floor(this.locomotive_health - final_damage_amount)
+    this.locomotive_health = floor(this.locomotive_health - final_damage_amount)
     if this.locomotive_health > this.locomotive_max_health then
         this.locomotive_health = this.locomotive_max_health
     end
@@ -152,9 +158,9 @@ end
 
 local function hidden_biter(entity)
     local surface = entity.surface
-    local h = math.floor(math.abs(entity.position.y))
+    local h = floor(abs(entity.position.y))
     local m = 1 / Terrain.level_depth
-    local count = math.floor(math.random(0, h + Terrain.level_depth) * m) + 1
+    local count = floor(random(0, h + Terrain.level_depth) * m) + 1
     local position = surface.find_non_colliding_position('small-biter', entity.position, 16, 0.5)
     if not position then
         position = entity.position
@@ -164,30 +170,30 @@ local function hidden_biter(entity)
 
     for _ = 1, count, 1 do
         local unit
-        if math.random(1, 3) == 1 then
+        if random(1, 3) == 1 then
             unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
         else
             unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
         end
 
-        if math.random(1, 64) == 1 then
+        if random(1, 64) == 1 then
             BiterHealthBooster.add_boss_unit(unit, m * h * 5 + 1, 0.38)
         end
     end
 end
 
 local function hidden_worm(entity)
-    BiterRolls.wave_defense_set_worm_raffle(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.20)
+    BiterRolls.wave_defense_set_worm_raffle(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.20)
     entity.surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position})
 end
 
 local function hidden_biter_pet(event)
-    if math.random(1, 2048) ~= 1 then
+    if random(1, 2048) ~= 1 then
         return
     end
-    BiterRolls.wave_defense_set_unit_raffle(math.sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
+    BiterRolls.wave_defense_set_unit_raffle(sqrt(event.entity.position.x ^ 2 + event.entity.position.y ^ 2) * 0.25)
     local unit
-    if math.random(1, 3) == 1 then
+    if random(1, 3) == 1 then
         unit =
             event.entity.surface.create_entity(
             {name = BiterRolls.wave_defense_roll_spitter_name(), position = event.entity.position}
@@ -207,26 +213,30 @@ local function hidden_treasure(event)
     local magic = rpg[player.index].magicka
     local name = Difficulty.get('name')
     if name == 'Easy' then
-        if math.random(1, 220) ~= 1 then
+        if random(1, 220) ~= 1 then
             return
         end
     elseif name == 'Normal' then
-        if math.random(1, 320) ~= 1 then
+        if random(1, 320) ~= 1 then
             return
         end
     elseif name == 'Hard' then
-        if math.random(1, 420) ~= 1 then
+        if random(1, 420) ~= 1 then
+            return
+        end
+    elseif name == 'Insane' then
+        if random(1, 520) ~= 1 then
             return
         end
     end
 
     if magic > 50 then
-        local msg = rare_treasure_chest_messages[math.random(1, #rare_treasure_chest_messages)]
+        local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg)
         Loot.add_rare(event.entity.surface, event.entity.position, 'wooden-chest', magic)
         return
     end
-    local msg = treasure_chest_messages[math.random(1, #treasure_chest_messages)]
+    local msg = treasure_chest_messages[random(1, #treasure_chest_messages)]
     Alert.alert_player(player, 5, msg)
     Loot.add(event.entity.surface, event.entity.position, 'wooden-chest')
 end
@@ -254,16 +264,16 @@ local function angry_tree(entity, cause)
         return
     end
 
-    if math.abs(entity.position.y) < Terrain.level_depth then
+    if abs(entity.position.y) < Terrain.level_depth then
         return
     end
-    if math.random(1, 4) == 1 then
+    if random(1, 4) == 1 then
         hidden_biter(entity)
     end
-    if math.random(1, 8) == 1 then
+    if random(1, 8) == 1 then
         hidden_worm(entity)
     end
-    if math.random(1, 16) ~= 1 then
+    if random(1, 16) ~= 1 then
         return
     end
     local position = false
@@ -273,12 +283,12 @@ local function angry_tree(entity, cause)
         end
     end
     if not position then
-        position = {entity.position.x + (-20 + math.random(0, 40)), entity.position.y + (-20 + math.random(0, 40))}
+        position = {entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40))}
     end
 
     entity.surface.create_entity(
         {
-            name = projectiles[math.random(1, 5)],
+            name = projectiles[random(1, 5)],
             position = entity.position,
             force = 'neutral',
             source = entity.position,
@@ -352,17 +362,17 @@ local function on_player_mined_entity(event)
             return
         end
 
-        if math.random(1, 32) == 1 then
+        if random(1, 32) == 1 then
             hidden_biter(event.entity)
             entity.destroy()
             return
         end
-        if math.random(1, 512) == 1 then
+        if random(1, 512) == 1 then
             hidden_worm(event.entity)
             entity.destroy()
             return
         end
-        if math.random(1, 512) == 1 then
+        if random(1, 512) == 1 then
             Traps(entity.surface, entity.position)
             return
         end
@@ -411,14 +421,14 @@ end
 
 local function get_damage(event)
     local entity = event.entity
-    local damage = event.original_damage_amount + event.original_damage_amount * math.random(1, 100)
+    local damage = event.original_damage_amount + event.original_damage_amount * random(1, 100)
     if entity.prototype.resistances then
         if entity.prototype.resistances.physical then
             damage = damage - entity.prototype.resistances.physical.decrease
             damage = damage - damage * entity.prototype.resistances.physical.percent
         end
     end
-    damage = math.round(damage, 3)
+    damage = round(damage, 3)
     if damage < 1 then
         damage = 1
     end
@@ -438,25 +448,25 @@ local function kaboom(entity, target, damage)
         {
             name = 'flying-text',
             position = {entity.position.x + base_vector[1] * 0.5, entity.position.y + base_vector[2] * 0.5},
-            text = msg[math.random(1, #msg)],
+            text = msg[random(1, #msg)],
             color = {255, 0, 0}
         }
     )
 
-    if math.abs(vector[1]) > math.abs(vector[2]) then
-        local d = math.abs(vector[1])
-        if math.abs(vector[1]) > 0 then
+    if abs(vector[1]) > abs(vector[2]) then
+        local d = abs(vector[1])
+        if abs(vector[1]) > 0 then
             vector[1] = vector[1] / d
         end
-        if math.abs(vector[2]) > 0 then
+        if abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
     else
-        local d = math.abs(vector[2])
-        if math.abs(vector[2]) > 0 then
+        local d = abs(vector[2])
+        if abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
-        if math.abs(vector[1]) > 0 and d > 0 then
+        if abs(vector[1]) > 0 and d > 0 then
             vector[1] = vector[1] / d
         end
     end
@@ -515,7 +525,7 @@ local function boss_puncher(event)
         return
     end
 
-    if math.random(1, 10) == 1 then
+    if random(1, 10) == 1 then
         kaboom(cause, entity, get_damage(event))
     end
 end
@@ -539,7 +549,7 @@ local function on_entity_damaged(event)
 
     if munch_time then
         if boss_wave_warning or wave_number >= 1500 then
-            if math.random(0, 512) == 1 then
+            if random(0, 512) == 1 then
                 boss_puncher(event)
             end
         end
@@ -632,11 +642,17 @@ local function on_entity_died(event)
         if entity.type == 'unit' or entity_type == 'unit-spawner' then
             this.biters_killed = this.biters_killed + 1
         end
-        if math.random(1, 64) == 1 then
-            hidden_biter(event.entity)
+        if random(1, 32) == 1 then
+            hidden_biter(entity)
+            entity.destroy()
             return
         end
-        if math.random(1, 512) == 1 then
+        if random(1, 368) == 1 then
+            hidden_worm(entity)
+            entity.destroy()
+            return
+        end
+        if random(1, 368) == 1 then
             Traps(entity.surface, entity.position)
             return
         end
@@ -667,7 +683,7 @@ function Public.set_scores()
     if not loco.valid then
         return
     end
-    local score = math.floor(loco.position.y * -1)
+    local score = floor(loco.position.y * -1)
     for _, player in pairs(game.connected_players) do
         if score > Map_score.get_score(player) then
             Map_score.set_score(player, score)
@@ -691,8 +707,10 @@ function Public.loco_died()
             data.position = {x = 0, y = 0}
         end
 
-        local msg = mapkeeper .. defeated_messages[math.random(1, #defeated_messages)] .. '\nBetter luck next time.'
-        Alert.alert_all_players_location(data, msg)
+        this.survival_time = game.tick - this.last_reset
+
+        local msg = mapkeeper .. defeated_messages[random(1, #defeated_messages)] .. '\nBetter luck next time.'
+        Alert.alert_all_players_location(data, msg, nil, 6000)
         Reset_map()
         return
     end
@@ -711,12 +729,12 @@ function Public.loco_died()
     if this.soft_reset then
         msg =
             mapkeeper ..
-            defeated_messages[math.random(1, #defeated_messages)] ..
+            defeated_messages[random(1, #defeated_messages)] ..
                 '\nBetter luck next time.\nGame will soft-reset shortly.'
     else
         msg =
             mapkeeper ..
-            defeated_messages[math.random(1, #defeated_messages)] ..
+            defeated_messages[random(1, #defeated_messages)] ..
                 '\nBetter luck next time.\nGame will not soft-reset. Soft-reset is disabled.'
     end
     local pos = {

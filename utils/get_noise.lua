@@ -81,6 +81,17 @@ local noises = {
         {modifier = 0.009, weight = 1},
         {modifier = 0.05, weight = 0.25},
         {modifier = 0.25, weight = 0.05}
+    },
+    ['forest_location'] = {
+        {modifier = 0.006, weight = 1},
+        {modifier = 0.01, weight = 0.25},
+        {modifier = 0.05, weight = 0.15},
+        {modifier = 0.1, weight = 0.05}
+    },
+    ['forest_density'] = {
+        {modifier = 0.01, weight = 1},
+        {modifier = 0.05, weight = 0.5},
+        {modifier = 0.1, weight = 0.025}
     }
 }
 

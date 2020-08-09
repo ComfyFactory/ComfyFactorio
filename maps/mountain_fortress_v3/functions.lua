@@ -20,10 +20,11 @@ Global.register(
 )
 
 local Public = {}
-
+local random = math.random
+local floor = math.floor
+local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
-local floor = math.floor
 
 local artillery_target_entities = {
     'character',
@@ -270,7 +271,7 @@ local function do_artillery_turrets_targets()
     local position = turret.position
 
     for i = 1, count do
-        local entity = entities[math.random(#entities)]
+        local entity = entities[random(#entities)]
         if entity and entity.valid then
             local data = {position = position, entity = entity}
             Task.set_timeout_in_ticks(i * 60, artillery_target_callback, data)
@@ -487,7 +488,7 @@ Public.magic_item_crafting_callback =
 
         local p = entity.position
         local x, y = p.x, p.y
-        local distance = math.sqrt(x * x + y * y)
+        local distance = sqrt(x * x + y * y)
 
         local output = callback_data.output
         if #output == 0 then
@@ -519,7 +520,7 @@ Public.magic_item_crafting_callback_weighted =
 
         local p = entity.position
 
-        local i = math.random() * weights.total
+        local i = random() * weights.total
 
         local index = table.binary_search(weights, i)
         if (index < 0) then
@@ -543,7 +544,7 @@ Public.magic_item_crafting_callback_weighted =
         end
 
         local x, y = p.x, p.y
-        local distance = math.sqrt(x * x + y * y)
+        local distance = sqrt(x * x + y * y)
 
         local output = stack.output
         if #output == 0 then
@@ -584,7 +585,7 @@ function Public.do_random_loot(entity, weights, loot)
     entity.operable = false
     --entity.destructible = false
 
-    local i = math.random() * weights.total
+    local i = random() * weights.total
 
     local index = table.binary_search(weights, i)
     if (index < 0) then
@@ -601,7 +602,7 @@ function Public.do_random_loot(entity, weights, loot)
     if df then
         local p = entity.position
         local x, y = p.x, p.y
-        local d = math.sqrt(x * x + y * y)
+        local d = sqrt(x * x + y * y)
 
         count = stack.count + d * df
     else
