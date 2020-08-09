@@ -1,72 +1,74 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
-local wave_defense = {}
+local this = {}
 local Public = {}
 
 Global.register(
-    wave_defense,
+    this,
     function(tbl)
-        wave_defense = tbl
+        this = tbl
     end
 )
 
 function Public.reset_wave_defense()
-    wave_defense.boss_wave = false
-    wave_defense.boss_wave_warning = false
-    wave_defense.side_target_count = 0
-    wave_defense.active_biters = {}
-    wave_defense.active_biter_count = 0
-    wave_defense.active_biter_threat = 0
-    wave_defense.average_unit_group_size = 168
-    wave_defense.biter_raffle = {}
-    wave_defense.debug = false
-    wave_defense.game_lost = false
-    wave_defense.get_random_close_spawner_attempts = 5
-    wave_defense.group_size = 2
-    wave_defense.last_wave = game.tick
-    wave_defense.max_active_biters = 1280
-    wave_defense.max_active_unit_groups = 8
-    wave_defense.max_biter_age = 3600 * 60
-    wave_defense.nest_building_density = 48
-    wave_defense.next_wave = game.tick + 3600 * 15
-    wave_defense.side_targets = {}
-    wave_defense.simple_entity_shredding_cost_modifier = 0.005
-    wave_defense.spawn_position = {x = 0, y = 64}
-    wave_defense.spitter_raffle = {}
-    wave_defense.surface_index = 1
-    wave_defense.target = nil
-    wave_defense.threat = 0
-    wave_defense.threat_gain_multiplier = 2
-    wave_defense.threat_log = {}
-    wave_defense.threat_log_index = 0
-    wave_defense.unit_groups = {}
-    wave_defense.unit_group_command_delay = 3600 * 15
-    wave_defense.unit_group_command_step_length = 20
-    wave_defense.unit_group_last_command = {}
-    wave_defense.wave_interval = 3600
-    wave_defense.wave_number = 0
-    wave_defense.worm_building_chance = 3
-    wave_defense.worm_building_density = 16
-    wave_defense.worm_raffle = {}
-    wave_defense.clear_corpses = false
-    wave_defense.alert_boss_wave = false
-    wave_defense.remove_entities = false
+    this.boss_wave = false
+    this.boss_wave_warning = false
+    this.side_target_count = 0
+    this.active_biters = {}
+    this.active_biter_count = 0
+    this.active_biter_threat = 0
+    this.average_unit_group_size = 168
+    this.biter_raffle = {}
+    this.debug = false
+    this.game_lost = false
+    this.get_random_close_spawner_attempts = 5
+    this.group_size = 2
+    this.last_wave = game.tick
+    this.max_active_biters = 1280
+    this.max_active_unit_groups = 8
+    this.max_biter_age = 3600 * 60
+    this.nest_building_density = 48
+    this.next_wave = game.tick + 3600 * 15
+    this.side_targets = {}
+    this.simple_entity_shredding_cost_modifier = 0.005
+    this.spawn_position = {x = 0, y = 64}
+    this.spitter_raffle = {}
+    this.surface_index = 1
+    this.target = nil
+    this.threat = 0
+    this.threat_gain_multiplier = 2
+    this.threat_log = {}
+    this.threat_log_index = 0
+    this.unit_groups = {}
+    this.unit_group_command_delay = 3600 * 15
+    this.unit_group_command_step_length = 20
+    this.unit_group_last_command = {}
+    this.wave_interval = 3600
+    this.wave_number = 0
+    this.worm_building_chance = 3
+    this.worm_building_density = 16
+    this.worm_raffle = {}
+    this.clear_corpses = false
+    this.alert_boss_wave = false
+    this.remove_entities = false
+    this.enable_threat_log = true
+    this.check_collapse_position = true
 end
 
 function Public.get(key)
     if key then
-        return wave_defense[key]
+        return this[key]
     else
-        return wave_defense
+        return this
     end
 end
 
 function Public.set(key)
     if key then
-        return wave_defense[key]
+        return this[key]
     else
-        return wave_defense
+        return this
     end
 end
 
@@ -74,27 +76,41 @@ Public.get_table = Public.get
 
 function Public.clear_corpses(value)
     if value then
-        wave_defense.clear_corpses = value
+        this.clear_corpses = value
     end
-    return wave_defense.clear_corpses
+    return this.clear_corpses
 end
 
 function Public.get_wave()
-    return wave_defense.wave_number
+    return this.wave_number
 end
 
 function Public.alert_boss_wave(value)
     if value then
-        wave_defense.alert_boss_wave = value
+        this.alert_boss_wave = value
     end
-    return wave_defense.alert_boss_wave
+    return this.alert_boss_wave
 end
 
 function Public.remove_entities(value)
     if value then
-        wave_defense.remove_entities = value
+        this.remove_entities = value
     end
-    return wave_defense.remove_entities
+    return this.remove_entities
+end
+
+function Public.enable_threat_log(value)
+    if value then
+        this.enable_threat_log = value
+    end
+    return this.enable_threat_log
+end
+
+function Public.check_collapse_position(value)
+    if value then
+        this.check_collapse_position = value
+    end
+    return this.check_collapse_position
 end
 
 local on_init = function()
