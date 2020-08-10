@@ -50,10 +50,21 @@ local AntiGrief = require 'antigrief'
 
 local Public = {}
 local floor = math.floor
-local insert = table.insert
+local random = math.random
+local tile_damage = 50
 -- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
+
+local death_messages = {
+    'should have watched where they walked!',
+    'was not careful enough!',
+    'angered the overlords!',
+    'tried to walk the simple path!',
+    'melted away!',
+    'got obliterated!',
+    'tried to cheat their way north!'
+}
 
 local disable_recipes = function()
     local force = game.forces.player
@@ -66,6 +77,24 @@ local disable_recipes = function()
     force.recipes['pistol'].enabled = false
 end
 
+local show_text = function(msg, pos, color, surface)
+    if color == nil then
+        surface.create_entity({name = 'flying-text', position = pos, text = msg})
+    else
+        surface.create_entity({name = 'flying-text', position = pos, text = msg, color = color})
+    end
+end
+
+local init_new_force = function()
+    local new_force = game.forces.protectors
+    local enemy = game.forces.enemy
+    if not new_force then
+        new_force = game.create_force('protectors')
+    end
+    new_force.set_friend('enemy', true)
+    enemy.set_friend('protectors', true)
+end
+
 local collapse_kill = {
     entities = {
         ['laser-turret'] = true,
@@ -76,6 +105,7 @@ local collapse_kill = {
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
         ['car'] = true,
+        ['tank'] = true,
         ['assembling-machine'] = true,
         ['furnace'] = true,
         ['steel-chest'] = true
@@ -140,48 +170,6 @@ local set_difficulty = function()
         wave_defense_table.wave_interval = 3600 - player_count * 60
         if wave_defense_table.wave_interval < 1800 then
             wave_defense_table.wave_interval = 1800
-        end
-    end
-end
-
-local biter_settings = function()
-    -- -- biter settings
-    if WPT.get('enable_biter_settings') then
-        local Diff = Difficulty.get()
-        if not Diff.difficulty_vote_value then
-            Diff.difficulty_vote_value = 0.1
-        end
-        local plus = ((game.forces.enemy.evolution_factor * 100) + 50) / (77 - Diff.difficulty_vote_value * 2)
-        local sub = (((1 - game.forces.enemy.evolution_factor) * 100) + 50) / (73 + Diff.difficulty_vote_value * 2)
-        local enemy_expansion = game.map_settings.enemy_expansion
-        local unit_group = game.map_settings.unit_group
-        local path_finder = game.map_settings.path_finder
-        unit_group.max_wait_time_for_late_members = 3600 * plus
-        unit_group.max_member_speedup_when_behind = 3 * plus
-        unit_group.member_disown_distance = 20 * plus
-        unit_group.max_gathering_unit_groups = 10 * plus
-        path_finder.max_work_done_per_tick = 6000 * plus
-        path_finder.max_steps_worked_per_tick = 20 + (100 * plus)
-        if path_finder.max_steps_worked_per_tick > 2000 then
-            path_finder.max_steps_worked_per_tick = 200
-        end
-        enemy_expansion.building_coefficient = 0.1 * sub
-        enemy_expansion.other_base_coefficient = 2.0 * sub
-        enemy_expansion.neighbouring_chunk_coefficient = 0.5 * sub
-        enemy_expansion.neighbouring_base_chunk_coefficient = 0.4 * sub
-        enemy_expansion.max_expansion_distance = 20 * plus
-        if enemy_expansion.max_expansion_distance > 20 then
-            enemy_expansion.max_expansion_distance = 20
-        end
-        enemy_expansion.friendly_base_influence_radius = 8 * plus
-        enemy_expansion.enemy_building_influence_radius = 3 * plus
-        enemy_expansion.settler_group_min_size = 5 * plus
-        if enemy_expansion.settler_group_min_size < 1 then
-            enemy_expansion.settler_group_min_size = 1
-        end
-        enemy_expansion.settler_group_max_size = 20 * plus
-        if enemy_expansion.settler_group_max_size > 50 then
-            enemy_expansion.settler_group_max_size = 50
         end
     end
 end
@@ -320,6 +308,7 @@ function Public.reset_map()
     Group.alphanumeric_only(false)
 
     disable_tech()
+    init_new_force()
 
     local surface = game.surfaces[this.active_surface_index]
 
@@ -394,8 +383,6 @@ function Public.reset_map()
     Task.start_queue()
     Task.set_queue_speed(32)
 
-    -- biter_settings()
-
     this.chunk_load_tick = game.tick + 1200
     this.game_lost = false
 
@@ -419,6 +406,31 @@ local on_player_changed_position = function(event)
 
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
+
+    if not player.character then
+        return
+    end
+    if not player.character.valid then
+        return
+    end
+
+    local p = {x = player.position.x, y = player.position.y}
+    local get_tile = surface.get_tile(p)
+
+    if get_tile.valid and get_tile.name == 'lab-dark-2' then
+        if random(1, 2) == 1 then
+            if random(1, 2) == 1 then
+                show_text('This path is not for players!', p, {r = 0.98, g = 0.66, b = 0.22}, surface)
+            end
+            player.surface.create_entity({name = 'fire-flame', position = player.position})
+            player.character.health = player.character.health - tile_damage
+            if player.character.health == 0 then
+                player.character.die()
+                local message = player.name .. ' ' .. death_messages[random(1, #death_messages)]
+                game.print(message, {r = 0.98, g = 0.66, b = 0.22})
+            end
+        end
+    end
 
     if position.y >= 74 then
         player.teleport({position.x, position.y - 1}, surface)
@@ -839,11 +851,6 @@ local on_tick = function()
     local wave_defense_table = WD.get_table()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
-
-    -- if tick % 36000 == 0 then
-    if tick % 360 == 0 then
-        biter_settings()
-    end
 
     if tick % 60 == 0 then
         for _, player in pairs(game.connected_players) do

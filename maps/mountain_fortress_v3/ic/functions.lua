@@ -4,6 +4,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 
 local Public = {}
+local random = math.random
 
 local function validate_entity(entity)
     if not entity then
@@ -27,6 +28,27 @@ local function upperCase(str)
     return (str:gsub('^%l', string.upper))
 end
 
+local function render_owner_text(player, entity)
+    local color = {
+        r = player.color.r * 0.6 + 0.25,
+        g = player.color.g * 0.6 + 0.25,
+        b = player.color.b * 0.6 + 0.25,
+        a = 1
+    }
+    rendering.draw_text {
+        text = '## - ' .. player.name .. "'s " .. entity.name .. ' - ##',
+        surface = entity.surface,
+        target = entity,
+        target_offset = {0, -2.6},
+        color = color,
+        scale = 1.05,
+        font = 'default-large-semibold',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+    entity.color = color
+end
+
 local function kill_doors(ic, car)
     if not validate_entity(car.entity) then
         return
@@ -42,6 +64,42 @@ local function get_owner_car_object(cars, player)
     for k, car in pairs(cars) do
         if car.owner == player.index then
             return k
+        end
+    end
+    return false
+end
+
+local function get_player_surface(ic, player)
+    local surfaces = ic.surfaces
+    for k, surface in pairs(surfaces) do
+        if validate_entity(surface) then
+            if surface.index == player.surface.index then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function get_player_entity(ic, player)
+    local cars = ic.cars
+    for k, car in pairs(cars) do
+        if car.owner == player.index and type(car.entity) == 'boolean' then
+            return car.name, true
+        elseif car.owner == player.index then
+            return car.name, false
+        end
+    end
+    return false, false
+end
+
+local function is_owner_on_car_surface(ic, player)
+    local cars = ic.cars
+    for k, car in pairs(cars) do
+        if validate_entity(car.surface) then
+            if car.owner == player.index and car.surface.index == player.surface.index then
+                return true
+            end
         end
     end
     return false
@@ -70,8 +128,7 @@ local function get_saved_entity(cars, entity, index)
                 {
                     'The built entity is not the same as the saved one. ',
                     'Saved entity is: ' ..
-                        upperCase(car.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. ',
-                    'This is not a bug. Do not report this!'
+                        upperCase(car.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
                 }
             )
             return false, msg
@@ -145,6 +202,13 @@ local function remove_logistics(car)
     end
 end
 
+local function remove_simply_entity(car)
+    local surface = car.surface
+    for _, entity in pairs(surface.find_entities_filtered {name = 'sand-rock-big'}) do
+        entity.destroy()
+    end
+end
+
 local function set_new_area(ic, car)
     local new_area = ic.car_areas
     local name = car.name
@@ -167,6 +231,7 @@ local function upgrade_surface(ic, player, entity)
         local c = get_owner_car_object(cars, player)
         local car = ic.cars[c]
         car.name = 'tank'
+        remove_simply_entity(car)
         set_new_area(ic, car)
         remove_logistics(car)
         replace_entity(cars, ce, index)
@@ -252,7 +317,6 @@ local function restore_surface(ic, player, entity)
         local success, msg = get_saved_entity(cars, ce, index)
         if not success then
             player.print(msg, Color.warning)
-            ce.destroy()
             return true
         end
         replace_entity(cars, ce, index)
@@ -260,6 +324,7 @@ local function restore_surface(ic, player, entity)
         replace_surface(surfaces, ce, index)
         replace_surface_entity(cars, ce, index)
         saved_surfaces[player.index] = nil
+        render_owner_text(player, ce)
         return true
     end
     return false
@@ -431,14 +496,7 @@ function Public.save_car(ic, event)
     if car.owner == player.index then
         save_surface(ic, entity, player)
         if not ic.players[player.index].notified then
-            player.print(
-                player.name ..
-                    ', the ' ..
-                        car.name ..
-                            ' surface has been saved. Do notice that you can´t place down anything else other than a ' ..
-                                car.name .. '.',
-                Color.success
-            )
+            player.print(player.name .. ', the ' .. car.name .. ' surface has been saved.', Color.success)
             ic.players[player.index].notified = true
         end
     else
@@ -493,6 +551,24 @@ function Public.kill_car(ic, entity)
     ic.cars[entity.unit_number] = nil
 end
 
+function Public.validate_owner(ic, player, entity)
+    if validate_entity(entity) then
+        local cars = ic.cars
+        local unit_number = entity.unit_number
+        local car = cars[unit_number]
+        if car and car.entity and validate_entity(car.entity) then
+            local p = game.players[car.owner]
+            if p then
+                if car.owner ~= player.index and player.driving then
+                    return Utils.print_to(nil, '{Car} ' .. player.name .. ' is driving ' .. p.name .. '´s car.')
+                end
+            end
+        end
+        return false
+    end
+    return false
+end
+
 function Public.create_room_surface(ic, unit_number)
     if game.surfaces[tostring(unit_number)] then
         return game.surfaces[tostring(unit_number)]
@@ -542,6 +618,12 @@ function Public.create_car_room(ic, car)
         for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
             tiles[#tiles + 1] = {name = main_tile_name, position = {x, y}}
         end
+    end
+
+    if entity_name == 'car' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 20}})
+    elseif entity_name == 'tank' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
     end
 
     local fishes = {}
@@ -604,7 +686,6 @@ function Public.create_car(ic, event)
     local map_name = ic.allowed_surface
 
     local entity_type = ic.entity_type
-    local cars = ic.cars
     local un = ce.unit_number
 
     if not un then
@@ -615,12 +696,23 @@ function Public.create_car(ic, event)
         return
     end
 
+    local name, mined = get_player_entity(ic, player, ce)
+
+    if
+        name == 'tank' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'car' and not mined or
+            name == 'car' and ce.name == 'tank' and not mined or
+            name == 'tank' and ce.name == 'tank' and not mined
+     then
+        return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
+    end
+
     if string.sub(ce.surface.name, 0, #map_name) ~= map_name then
         return player.print('Multi-surface is not supported at the moment.', Color.warning)
     end
 
     if get_owner_car_name(ic, player) == 'car' and ce.name == 'tank' then
         upgrade_surface(ic, player, ce)
+        render_owner_text(player, ce)
         player.print('Your car-surface has been upgraded!', Color.success)
         return
     end
@@ -628,13 +720,6 @@ function Public.create_car(ic, event)
     local saved_surface = restore_surface(ic, player, ce)
     if saved_surface then
         return
-    end
-
-    for _, c in pairs(cars) do
-        if c.owner == player.index then
-            ce.destroy()
-            return player.print('You already have a portable vehicle.', Color.warning)
-        end
     end
 
     local car_areas = ic.car_areas
@@ -655,6 +740,7 @@ function Public.create_car(ic, event)
 
     car.surface = Public.create_room_surface(ic, un)
     Public.create_car_room(ic, car)
+    render_owner_text(player, ce)
 
     return car
 end
@@ -677,6 +763,90 @@ function Public.remove_invalid_cars(ic)
         if not ic.cars[tonumber(surface.name)] then
             game.delete_surface(surface)
             ic.surfaces[k] = nil
+        end
+    end
+end
+
+function Public.infinity_scrap(ic, event, recreate)
+    if not ic.infinity_scrap_enabled then
+        return
+    end
+
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+    local player = game.players[event.player_index]
+    if not validate_player(player) then
+        return
+    end
+
+    event.buffer.clear()
+
+    if not is_owner_on_car_surface(ic, player) then
+        if get_player_surface(ic, player) then
+            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+            player.print('This is not your rock to mine!', Color.warning)
+            return
+        end
+    end
+
+    if recreate then
+        entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+        return
+    end
+
+    local items = {
+        'iron-plate',
+        'iron-gear-wheel',
+        'copper-plate',
+        'copper-cable',
+        'pipe',
+        'explosives',
+        'firearm-magazine',
+        'stone-brick'
+    }
+
+    local ores = {
+        'iron-ore',
+        'iron-ore',
+        'copper-ore',
+        'coal'
+    }
+
+    local reward
+    local size
+    local count
+    if random(1, 2) == 1 then
+        reward = items
+        size = #items
+        count = random(1, 10)
+    else
+        reward = ores
+        size = #ores
+        count = random(25, 100)
+    end
+
+    local name = reward[random(1, size)]
+
+    if entity.name ~= 'sand-rock-big' then
+        return
+    end
+    if get_player_surface(ic, player) then
+        if entity.position.x == 0 and entity.position.y == 20 or entity.position.y == 40 then
+            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+            player.insert({name = name, count = count})
+            if random(1, 4) == 1 then
+                player.insert({name = 'coin', count = 1})
+            end
+            player.surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = '+' .. count .. ' [img=item/' .. name .. ']',
+                    color = {r = 0, g = 127, b = 33}
+                }
+            )
         end
     end
 end

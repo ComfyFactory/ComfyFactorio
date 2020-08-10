@@ -20,6 +20,8 @@ local nth_tick = RPG.nth_tick
 --RPG Frames
 local main_frame_name = RPG.main_frame_name
 
+local sub = string.sub
+
 local function on_gui_click(event)
     if not event.element then
         return
@@ -29,6 +31,14 @@ local function on_gui_click(event)
     end
     local element = event.element
     local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+
+    local surface_name = RPG.get('rpg_extra').surface_name
+    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        return
+    end
 
     if element.type ~= 'sprite-button' then
         return
@@ -469,6 +479,13 @@ local function on_entity_damaged(event)
         return
     end
 
+    local p = event.cause.player
+
+    local surface_name = RPG.get('rpg_extra').surface_name
+    if sub(p.surface.name, 0, #surface_name) ~= surface_name then
+        return
+    end
+
     Functions.reward_mana(event.cause.player, 2)
 
     --Grant the player life-on-hit.
@@ -577,9 +594,10 @@ local function on_player_repaired_entity(event)
 
     local player = game.players[event.player_index]
 
-    if not player.character then
+    if not player or not player.valid or not player.character then
         return
     end
+
     Functions.gain_xp(player, 0.05)
     Functions.reward_mana(player, 0.2)
 
@@ -592,9 +610,14 @@ end
 
 local function on_player_rotated_entity(event)
     local player = game.players[event.player_index]
+
+    if not player or not player.valid then
+        return
+    end
     if not player.character then
         return
     end
+
     local rpg_t = RPG.get('rpg_t')
     if rpg_t[player.index].rotated_entity_delay > game.tick then
         return
@@ -605,8 +628,7 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    local surface_name = RPG.get('rpg_extra').surface_name
-    if string.sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not player or not player.valid then
         return
     end
 
@@ -646,6 +668,16 @@ local function on_pre_player_mined_item(event)
         return
     end
     local player = game.players[event.player_index]
+
+    if not player or not player.valid then
+        return
+    end
+
+    local surface_name = RPG.get('rpg_extra').surface_name
+    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        return
+    end
+
     local rpg_t = RPG.get('rpg_t')
     if
         rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and
@@ -682,7 +714,7 @@ local function on_player_crafted_item(event)
         return
     end
     local player = game.players[event.player_index]
-    if not player.valid then
+    if not player or not player.valid then
         return
     end
 
@@ -847,7 +879,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if string.sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
         return
     end
 

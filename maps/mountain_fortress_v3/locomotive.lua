@@ -1952,7 +1952,7 @@ function Public.transfer_pollution()
     local active_surface_index = WPT.get('active_surface_index')
     local icw_locomotive = WPT.get('icw_locomotive')
     local surface = icw_locomotive.surface
-    if not surface then
+    if not surface or not surface.valid then
         return
     end
 
@@ -1974,7 +1974,7 @@ function Public.enable_poison_defense()
     end
     local pos = locomotive.position
     create_poison_cloud({x = pos.x, y = pos.y})
-    if random(1, 3) == 1 then
+    if random(1, 4) == 1 then
         local random_angles = {rad(random(359))}
         create_poison_cloud({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])})
     end

@@ -1,3 +1,5 @@
+require 'modules.check_fullness'
+
 local Event = require 'utils.event'
 local Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
@@ -12,12 +14,15 @@ local function on_entity_died(event)
         return
     end
 
-    if not entity.type == 'car' then
-        return
+    local ic = IC.get()
+
+    if entity.type == 'car' then
+        Functions.kill_car(ic, entity)
     end
 
-    local ic = IC.get()
-    Functions.kill_car(ic, entity)
+    if entity.name == 'sand-rock-big' then
+        Functions.infinity_scrap(ic, entity, true)
+    end
 end
 
 local function on_player_mined_entity(event)
@@ -26,17 +31,15 @@ local function on_player_mined_entity(event)
         return
     end
 
-    if not entity.type == 'car' then
-        return
-    end
-
-    local player = game.players[event.player_index]
-    if not player or not player.valid then
-        return
-    end
-
     local ic = IC.get()
-    Functions.save_car(ic, event)
+
+    if entity.type == 'car' then
+        Functions.save_car(ic, event)
+    end
+
+    if entity.name == 'sand-rock-big' then
+        Functions.infinity_scrap(ic, event)
+    end
 end
 
 local function on_robot_mined_entity(event)
@@ -45,13 +48,15 @@ local function on_robot_mined_entity(event)
     if not entity and not entity.valid then
         return
     end
+    local ic = IC.get()
 
-    if not entity.type == 'car' then
-        return
+    if entity.type == 'car' then
+        Functions.kill_car(ic, entity)
     end
 
-    local ic = IC.get()
-    Functions.kill_car(ic, entity)
+    if entity.name == 'sand-rock-big' then
+        Functions.infinity_scrap(ic, event, true)
+    end
 end
 
 local function on_built_entity(event)
@@ -78,6 +83,7 @@ local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
 
     Functions.use_door_with_entity(ic, player, event.entity)
+    Functions.validate_owner(ic, player, event.entity)
 end
 
 local function on_tick()

@@ -24,6 +24,8 @@ local settings_frame_name = RPG.settings_frame_name
 local discard_button_name = RPG.discard_button_name
 local save_button_name = RPG.save_button_name
 
+local sub = string.sub
+
 function Public.draw_gui_char_button(player)
     if player.gui.top[draw_main_frame_name] then
         return
@@ -556,9 +558,10 @@ Gui.on_click(
     draw_main_frame_name,
     function(event)
         local player = event.player
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
+
         toggle(player)
     end
 )
@@ -567,7 +570,7 @@ Gui.on_click(
     save_button_name,
     function(event)
         local player = event.player
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
 
@@ -682,7 +685,7 @@ Gui.on_click(
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
         if frame and frame.valid then
@@ -697,9 +700,15 @@ Gui.on_click(
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
+
+        local surface_name = RPG.get('rpg_extra').surface_name
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return
+        end
+
         if frame and frame.valid then
             frame.destroy()
         else

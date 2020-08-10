@@ -425,7 +425,7 @@ local function spawn_science_buildings(entities, p, probability)
     entities[#entities + 1] = {
         name = science_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = science_list[probability].callback,
         collision = true,
         e_type = types
@@ -436,7 +436,7 @@ local function spawn_ammo_building(entities, p, probability)
     entities[#entities + 1] = {
         name = ammo_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = ammo_list[probability].callback,
         collision = true,
         e_type = types
@@ -447,7 +447,7 @@ local function spawn_oil_buildings(entities, p)
     entities[#entities + 1] = {
         name = oil_list[1].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = oil_list[1].callback,
         collision = true,
         e_type = types
@@ -458,7 +458,7 @@ local function spawn_oil_prod_buildings(entities, p)
     entities[#entities + 1] = {
         name = oil_prod_list[1].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = oil_prod_list[1].callback,
         collision = true,
         e_type = types
@@ -469,7 +469,7 @@ local function spawn_resource_building(entities, p, probability)
     entities[#entities + 1] = {
         name = resource_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = resource_list[probability].callback,
         collision = true,
         e_type = types
@@ -480,7 +480,7 @@ local function spawn_furnace_building(entities, p, probability)
     entities[#entities + 1] = {
         name = furnace_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = furnace_list[probability].callback,
         collision = true,
         e_type = types

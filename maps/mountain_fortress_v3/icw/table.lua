@@ -27,6 +27,7 @@ function Public.reset()
     this.players = {}
     this.surfaces = {}
     this.multiple_chests = true
+    this.allow_player_to_build_trains = false
     this.wagon_types = {
         ['cargo-wagon'] = true,
         ['artillery-wagon'] = true,

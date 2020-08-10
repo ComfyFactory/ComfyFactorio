@@ -29,6 +29,7 @@ function Public.reset()
     this.allowed_surface = 'nauvis'
     this.players = {}
     this.surfaces = {}
+    this.infinity_scrap_enabled = true
     this.entity_type = {
         ['car'] = true,
         ['tank'] = true

@@ -634,6 +634,15 @@ local function on_entity_died(event)
         surface = entity.surface
     }
 
+    if entity.type == 'tree' then
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
+        angry_tree(entity, event.cause)
+        return
+    end
+
     if entity_type[entity.type] then
         if Locomotive.is_around_train(entity) then
             entity.destroy()
@@ -656,15 +665,6 @@ local function on_entity_died(event)
             Traps(entity.surface, entity.position)
             return
         end
-    end
-
-    if entity.type == 'tree' then
-        if Locomotive.is_around_train(entity) then
-            entity.destroy()
-            return
-        end
-        angry_tree(event.entity, event.cause)
-        return
     end
 
     if entity.type == 'simple-entity' then
@@ -706,8 +706,6 @@ function Public.loco_died()
         else
             data.position = {x = 0, y = 0}
         end
-
-        this.survival_time = game.tick - this.last_reset
 
         local msg = mapkeeper .. defeated_messages[random(1, #defeated_messages)] .. '\nBetter luck next time.'
         Alert.alert_all_players_location(data, msg, nil, 6000)
@@ -849,9 +847,6 @@ local function on_robot_built_entity(event)
     local upg = this.upgrades
     local surface = entity.surface
 
-    local e = {x = entity.position.x, y = entity.position.y}
-    local get_tile = surface.get_tile(e)
-
     local built = {
         ['land-mine'] = upg.landmine.built,
         ['flamethrower-turret'] = upg.flame_turret.built
@@ -901,10 +896,6 @@ local function on_robot_built_entity(event)
             entity.destroy()
         end
     end
-    if get_tile.valid and get_tile.name == 'black-refined-concrete' then
-        entity.destroy()
-        return
-    end
 end
 
 local on_player_or_robot_built_tile = function(event)
@@ -933,6 +924,9 @@ local on_player_or_robot_built_tile = function(event)
         end
         if old_tile.name == 'hazard-concrete-right' then
             surface.set_tiles({{name = 'hazard-concrete-right', position = v.position}}, true)
+        end
+        if old_tile.name == 'tutorial-grid' then
+            surface.set_tiles({{name = 'tutorial-grid', position = v.position}}, true)
         end
     end
 end
