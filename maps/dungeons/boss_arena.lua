@@ -6,6 +6,7 @@ local BiterHealthBooster = require "modules.biter_health_booster"
 local Alert = require 'utils.alert'
 local math_floor = math.floor
 local math_min = math.min
+local math_random = math.random
 
 local arena_areas = {
   [1] = {area = {{54,54}, {74,74}}, center = {64,64}, player = {69,64}, boss = {59,64}},
@@ -38,16 +39,22 @@ local function create_arena(arena)
 end
 
 local function reset_arena(arena)
-  local surface = game.surfaces["nauvis"]
-  local area = arena_areas[arena].area
-  local acids = surface.find_entities_filtered{area = {{area[1][1] - 5, area[1][2] - 5}, {area[2][1] + 5,area[2][2] + 5}}, type = "fire"}
-  for _,acid in pairs(acids) do
-    acid.destroy()
-  end
-  local robots = surface.find_entities_filtered{area = {{area[1][1] - 15, area[1][2] - 15}, {area[2][1] + 15,area[2][2] + 15}}, force = {"enemy", "player"}}
-  for _,robot in pairs(robots) do
-    robot.destroy()
-  end
+	global.arena.timer[arena] = -100
+	global.arena.active_player[arena] = nil
+end
+
+local function wipedown_arena(arena)
+	local player = global.arena.active_player[arena]
+	local surface = game.surfaces["nauvis"]
+	local area = arena_areas[arena].area
+	local acids = surface.find_entities_filtered{area = {{area[1][1] - 5, area[1][2] - 5}, {area[2][1] + 5,area[2][2] + 5}}, type = "fire"}
+	for _,acid in pairs(acids) do
+		acid.destroy()
+	end
+	local robots = surface.find_entities_filtered{area = {{area[1][1] - 15, area[1][2] - 15}, {area[2][1] + 15,area[2][2] + 15}}, force = {"arena" .. arena}}
+	for _,robot in pairs(robots) do
+		robot.destroy()
+	end
 end
 
 local function calculate_xp(level)
@@ -104,7 +111,10 @@ local function spawn_boss(arena, biter, level)
   global.biter_health_boost_forces[force.index] = calculate_hp(level)
   force.set_ammo_damage_modifier("melee", calculate_dmg(level))
   force.set_ammo_damage_modifier("biological", calculate_dmg(level))
-  local boss = surface.create_entity({name = biter, position = arena_areas[arena].boss, force = force})
+  local pos = {x = arena_areas[arena].center[1],y = arena_areas[arena].center[2]}
+  pos.x = pos.x - 6 + math_random(0,12)
+  pos.y = pos.y - 6 + math_random(0,12)
+  local boss = surface.create_entity({name = biter, position = pos, force = force})
   boss.ai_settings.allow_try_return_to_spawner = false
   global.arena.active_boss[arena] = boss
   rendering.draw_text{
@@ -161,41 +171,56 @@ local function teleport_player_in(arena, player)
   local rpg = RPG_T.get("rpg_t")
   rpg[player.index].one_punch = false
   hide_rpg(player, false)
-  player.teleport(surface.find_non_colliding_position("character", arena_areas[arena].player, 20, 0.5), surface)
+  
+  local pos = {x = arena_areas[arena].center[1],y = arena_areas[arena].center[2]}
+  pos.x = pos.x - 6 + math_random(0,12)
+  pos.y = pos.y - 6 + math_random(0,12)
+  
+  player.teleport(surface.find_non_colliding_position("character", pos, 20, 0.5), surface)
   global.arena.active_player[arena] = player
   local group = game.permissions.get_group('Arena')
   group.add_player(player)
 end
 
 local function player_died(arena, player)
-  global.arena.active_player[arena] = nil
-  global.arena.active_boss[arena].destroy()
-  global.arena.active_boss[arena] = nil
-  teleport_player_out(arena, player)
-  player.character.health = 5
-  local level = global.arena.bosses[player.index]
-  --game.print({"dungeons_tiered.player_lost", player.name, global.arena.bosses[player.index]})
-  if level % 10 == 0 and level > 0 then
-    Alert.alert_all_players(15, {"dungeons_tiered.player_lost", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
-  else
-    Alert.alert_player(player, 15, {"dungeons_tiered.player_lost", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
-  end
+	wipedown_arena(arena)
+	global.arena.active_player[arena] = nil
+	global.arena.active_boss[arena].destroy()
+	global.arena.active_boss[arena] = nil
+	global.arena.timer[arena] = -100
+  
+	teleport_player_out(arena, player)
+	player.character.health = 5
+	
+	if not global.arena.won[arena] then --incase of death after victory
+		local level = global.arena.bosses[player.index]
+		--game.print({"dungeons_tiered.player_lost", player.name, global.arena.bosses[player.index]})
+		if level % 10 == 0 and level > 0 then
+			Alert.alert_all_players(8, {"dungeons_tiered.player_lost", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
+		else
+			Alert.alert_player(player, 8, {"dungeons_tiered.player_lost", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
+		end
+	end
 end
 
 local function boss_died(arena)
   global.arena.active_boss[arena] = nil
   local player = global.arena.active_player[arena]
   local level = global.arena.bosses[player.index]
-  teleport_player_out(arena, player)
+  wipedown_arena(arena)
+  global.arena.won[arena] = true
+  global.arena.timer[arena] = game.tick - 30
+  --teleport_player_out(arena, player)
   RPG_F.gain_xp(player, 4 + level, true)
   if level % 10 == 0 and level > 0 then
-    Alert.alert_all_players(15, {"dungeons_tiered.player_won", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
+    Alert.alert_all_players(8, {"dungeons_tiered.player_won", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
   else
-    Alert.alert_player(player, 15, {"dungeons_tiered.player_won", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
+    Alert.alert_player(player, 8, {"dungeons_tiered.player_won", player.name, global.arena.bosses[player.index]}, {r=0.8,g=0.2,b=0},"entity/behemoth-biter", 0.7)
   end
   --game.print({"dungeons_tiered.player_won", player.name, global.arena.bosses[player.index]})
   global.arena.bosses[player.index] = global.arena.bosses[player.index] + 1
-  global.arena.active_player[arena] = nil
+  --global.arena.active_player[arena] = nil
+  --global.arena.timer[arena] = -100
   update_boss_gui(player)
 end
 
@@ -212,28 +237,29 @@ local function enter_arena(player)
   if player.surface.name == "nauvis" then return end
   local chosen_arena = choose_arena()
   if not chosen_arena then
-    Alert.alert_player_warning(player, 15, {"dungeons_tiered.arena_occupied"})
+    Alert.alert_player_warning(player, 8, {"dungeons_tiered.arena_occupied"})
     -- player.print({"dungeons_tiered.arena_occupied"})
     return
   end
   local rpg_t = RPG_T.get("rpg_t")
   if rpg_t[player.index].level < 5 then
-    Alert.alert_player_warning(player, 15, {"dungeons_tiered.arena_level_needed"})
+    Alert.alert_player_warning(player, 8, {"dungeons_tiered.arena_level_needed"})
     return
   end
   if #player.character.following_robots > 0 then
-    Alert.alert_player_warning(player, 15, {"dungeons_tiered.robots_following"})
+    Alert.alert_player_warning(player, 8, {"dungeons_tiered.robots_following"})
     return
   end
 
   local level = global.arena.bosses[player.index]
   if level > 100 then
-    Alert.alert_player_warning(player, 15, {"dungeons_tiered.arena_level_max"})
+    Alert.alert_player_warning(player, 8, {"dungeons_tiered.arena_level_max"})
     return
   end
-  local biter_names = {{"small-biter", "small-spitter"}, {"medium-biter", "medium-spitter"}, {"big-biter", "big-spitter"}, {"behemoth-biter", "behemoth-spitter"}}
-  local biter = biter_names[math_min(1 + math_floor(level / 20), 4)][1 + level % 2]
-  spawn_boss(chosen_arena, biter, level)
+  --local biter_names = {{"small-biter", "small-spitter"}, {"medium-biter", "medium-spitter"}, {"big-biter", "big-spitter"}, {"behemoth-biter", "behemoth-spitter"}}
+  --local biter = biter_names[math_min(1 + math_floor(level / 20), 4)][1 + level % 2]
+  --spawn_boss(chosen_arena, biter, level)
+  global.arena.won[chosen_arena] = false
   teleport_player_in(chosen_arena, player)
 end
 
@@ -284,7 +310,7 @@ local function on_entity_died(event)
 end
 
 local function shoot(surface, biter, player)
-  surface.create_entity({name = "destroyer-capsule", position = biter.position, target = player.character, source = biter, speed = 1, force = "enemy"})
+  surface.create_entity({name = "destroyer-capsule", position = biter.position, target = player.character, source = biter, speed = 1, force = biter.force})
 end
 
 local function slow(surface, biter, player)
@@ -297,7 +323,8 @@ local function boss_attacks(i)
   local biter = global.arena.active_boss[i]
   local player = global.arena.active_player[i]
   local surface = game.surfaces["nauvis"]
-  if not biter.valid or not player.valid or not player.character or not player.character.valid then return end
+  --if not biter.valid or not player.valid or not player.character or not player.character.valid then return end
+  if not biter or not player or not player.character then return end
   if global.arena.bosses[player.index] >= 80 then
     slow(surface, biter, player)
     --shoot(surface, biter, player)
@@ -325,6 +352,30 @@ local function tick()
   end
 end
 
+local function arena_ticker()
+  for i = 1, 4, 1 do
+	if global.arena.timer[i] == game.tick - 90 then
+		--game.print("I did a delay")
+
+		local player = global.arena.active_player[i]
+		if player.valid then
+			if global.arena.won[i] then
+				--game.print("You won, now get lost")
+				teleport_player_out(i, player)
+			else
+				local level = global.arena.bosses[player.index]
+
+				local biter_names = {{"small-biter", "small-spitter"}, {"medium-biter", "medium-spitter"}, {"big-biter", "big-spitter"}, {"behemoth-biter", "behemoth-spitter"}}
+				local biter = biter_names[math_min(1 + math_floor(level / 20), 4)][1 + level % 2]
+				spawn_boss(i, biter, level)
+			end
+		end
+
+		
+	end
+  end
+end
+
 local function on_init()
   global.arena = {}
 	global.arena.bosses = {}
@@ -332,7 +383,8 @@ local function on_init()
   global.arena.active_player = {[1] = nil, [2] = nil, [3] = nil, [4] = nil}
   global.arena.active_boss = {[1] = nil, [2] = nil, [3] = nil, [4] = nil}
   global.arena.enemies = {[1] = nil, [2] = nil, [3] = nil, [4] = nil}
-  global.arena.timer = {[1] = 0, [2] = 0, [3] = 0, [4] = 0}
+  global.arena.timer = {[1] = -100, [2] = -100, [3] = -100, [4] = -100}
+  global.arena.won = {[1] = false, [2] = false, [3] = false, [4] = false}
   global.arena.previous_position = {[1] = {position = nil, surface = nil}, [2] = {position = nil, surface = nil}, [3] = {position = nil, surface = nil}, [4] = {position = nil, surface = nil}}
   local arena = game.permissions.create_group('Arena')
   arena.set_allows_action(defines.input_action.cancel_craft, false)
@@ -364,6 +416,7 @@ end
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
+Event.on_nth_tick(1, arena_ticker)
 Event.on_nth_tick(60, tick)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
