@@ -211,7 +211,7 @@ end
 
 function Public.on_player_mined_entity(event)
     local entity = event.entity
-    if not entity.valid then
+    if not entity or not entity.valid then
         return
     end
 
@@ -224,7 +224,6 @@ function Public.on_player_mined_entity(event)
 
     if valid_rocks[entity.name] or valid_trees[entity.name] then
         event.buffer.clear()
-
         local data = {
             this = this,
             entity = entity,

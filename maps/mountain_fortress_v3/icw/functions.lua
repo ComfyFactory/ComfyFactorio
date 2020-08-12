@@ -621,8 +621,6 @@ function Public.locomotive_mining(icw, event)
         return
     end
 
-    event.buffer.clear()
-
     local items = {
         'iron-plate',
         'iron-gear-wheel',
@@ -645,6 +643,7 @@ function Public.locomotive_mining(icw, event)
                 if entity.type ~= 'simple-entity' then
                     return
                 end
+                event.buffer.clear()
                 player.insert({name = name, count = count})
                 if random(1, 4) == 1 then
                     player.insert({name = 'coin', count = 1})

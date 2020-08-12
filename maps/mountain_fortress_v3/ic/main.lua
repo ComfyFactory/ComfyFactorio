@@ -21,7 +21,7 @@ local function on_entity_died(event)
     end
 
     if entity.name == 'sand-rock-big' then
-        Functions.infinity_scrap(ic, entity, true)
+        Functions.infinity_scrap(ic, event, true)
     end
 end
 

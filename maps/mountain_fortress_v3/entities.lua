@@ -925,8 +925,8 @@ local on_player_or_robot_built_tile = function(event)
         if old_tile.name == 'hazard-concrete-right' then
             surface.set_tiles({{name = 'hazard-concrete-right', position = v.position}}, true)
         end
-        if old_tile.name == 'tutorial-grid' then
-            surface.set_tiles({{name = 'tutorial-grid', position = v.position}}, true)
+        if old_tile.name == 'lab-dark-2' then
+            surface.set_tiles({{name = 'lab-dark-2', position = v.position}}, true)
         end
     end
 end

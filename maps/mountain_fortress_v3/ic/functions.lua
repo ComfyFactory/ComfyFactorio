@@ -776,17 +776,25 @@ function Public.infinity_scrap(ic, event, recreate)
     if not entity or not entity.valid then
         return
     end
-    local player = game.players[event.player_index]
+
+    local player
+    if event.player_index then
+        player = game.players[event.player_index]
+    else
+        if event.cause and event.cause.name == 'character' then
+            local cause = event.cause
+            player = cause.player
+        end
+    end
     if not validate_player(player) then
         return
     end
-
-    event.buffer.clear()
 
     if not is_owner_on_car_surface(ic, player) then
         if get_player_surface(ic, player) then
             entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
             player.print('This is not your rock to mine!', Color.warning)
+            event.buffer.clear()
             return
         end
     end
@@ -832,8 +840,10 @@ function Public.infinity_scrap(ic, event, recreate)
     if entity.name ~= 'sand-rock-big' then
         return
     end
+
     if get_player_surface(ic, player) then
         if entity.position.x == 0 and entity.position.y == 20 or entity.position.y == 40 then
+            event.buffer.clear()
             entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
             player.insert({name = name, count = count})
             if random(1, 4) == 1 then
