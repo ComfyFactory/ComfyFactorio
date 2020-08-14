@@ -314,11 +314,13 @@ local function regen_mana_player(players)
 
         if player and player.valid and not player.in_combat then
             if player.character and player.character.valid then
+                if rpg_t[player.index].mana < 0 then
+                    rpg_t[player.index].mana = 0
+                end
                 if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
                     goto continue
                 end
                 rpg_t[player.index].mana = rpg_t[player.index].mana + mana_per_tick
-
                 if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
                     rpg_t[player.index].mana = rpg_t[player.index].mana_max
                 end

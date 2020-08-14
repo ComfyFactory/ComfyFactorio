@@ -35,6 +35,7 @@ local this = {
     enable_autoban = false,
     enable_jail = false,
     enable_capsule_warning = false,
+    enable_damage_warning = false,
     enable_capsule_cursor_warning = false,
     required_playtime = 2592000,
     damage_entity_threshold = 20,
@@ -416,13 +417,13 @@ local function on_entity_damaged(event)
     if playtime > this.required_playtime then
         return
     end
-    if this.enable_capsule_warning then
-        if not this.damage_history[player.index] then
-            this.damage_history[player.index] = {}
-            this.damage_history[player.index].targets = ''
-            this.damage_history[player.index].count = 0
-        end
+    if not this.damage_history[player.index] then
+        this.damage_history[player.index] = {}
+        this.damage_history[player.index].targets = ''
+        this.damage_history[player.index].count = 0
+    end
 
+    if this.enable_damage_warning then
         if name ~= 'entity-ghost' and name ~= 'character' and not blacklisted_types[e_type] then
             if chests[e_type] then
                 local inv = entity.get_inventory(1)
@@ -955,6 +956,8 @@ end
 function Public.do_not_check_trusted(value)
     if value then
         this.do_not_check_trusted = value
+    else
+        this.do_not_check_trusted = false
     end
 
     return this.do_not_check_trusted
@@ -965,6 +968,8 @@ end
 function Public.enable_capsule_warning(value)
     if value then
         this.enable_capsule_warning = value
+    else
+        this.enable_capsule_warning = false
     end
 
     return this.enable_capsule_warning
@@ -972,9 +977,23 @@ end
 
 --- If ANY actions should be performed when a player misbehaves.
 ---@param value <string>
+function Public.enable_damage_warning(value)
+    if value then
+        this.enable_damage_warning = value
+    else
+        this.enable_damage_warning = false
+    end
+
+    return this.enable_damage_warning
+end
+
+--- If ANY actions should be performed when a player misbehaves.
+---@param value <string>
 function Public.enable_capsule_cursor_warning(value)
     if value then
         this.enable_capsule_cursor_warning = value
+    else
+        this.enable_capsule_cursor_warning = false
     end
 
     return this.enable_capsule_cursor_warning
@@ -985,6 +1004,8 @@ end
 function Public.enable_jail(value)
     if value then
         this.enable_jail = value
+    else
+        this.enable_jail = false
     end
 
     return this.enable_jail

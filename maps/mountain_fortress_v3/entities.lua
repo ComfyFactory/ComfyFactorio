@@ -903,7 +903,7 @@ local on_player_or_robot_built_tile = function(event)
 
     local map_name = 'mountain_fortress_v3'
 
-    if string.sub(surface.name, 0, #map_name) == map_name then
+    if string.sub(surface.name, 0, #map_name) ~= map_name then
         return
     end
 

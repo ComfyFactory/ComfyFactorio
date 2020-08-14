@@ -653,7 +653,7 @@ function Public.locomotive_mining(icw, event)
                         name = 'flying-text',
                         position = entity.position,
                         text = '+' .. count .. ' [img=item/' .. name .. ']',
-                        color = {r = 0, g = 127, b = 33}
+                        color = {r = 188, g = 201, b = 63}
                     }
                 )
             end

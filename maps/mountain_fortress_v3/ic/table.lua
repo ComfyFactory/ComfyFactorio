@@ -32,12 +32,14 @@ function Public.reset()
     this.infinity_scrap_enabled = true
     this.entity_type = {
         ['car'] = true,
-        ['tank'] = true
+        ['tank'] = true,
+        ['spidertron'] = true
     }
 
     this.car_areas = {
         ['car'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 20}},
-        ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}}
+        ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}},
+        ['spidertron'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}}
     }
 end
 

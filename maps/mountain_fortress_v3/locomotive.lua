@@ -146,7 +146,7 @@ function Public.add_player_to_permission_group(player, group, forced)
 end
 
 local function property_boost(data)
-    local xp_floating_text_color = {r = 0, g = 127, b = 33}
+    local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
     local this = data.this
     local locomotive_surface = data.locomotive_surface
@@ -1374,7 +1374,7 @@ local function add_random_loot_to_main_market(rarity)
             tooltip = types[v.offer.item].localised_name,
             upgrade = false
         }
-        if ticker >= 25 then
+        if ticker >= 27 then
             return
         end
     end

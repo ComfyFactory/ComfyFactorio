@@ -624,6 +624,8 @@ function Public.create_car_room(ic, car)
         surface.create_entity({name = 'sand-rock-big', position = {0, 20}})
     elseif entity_name == 'tank' then
         surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
+    elseif entity_name == 'spidertron' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
     end
 
     local fishes = {}
@@ -701,7 +703,8 @@ function Public.create_car(ic, event)
     if
         name == 'tank' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'car' and not mined or
             name == 'car' and ce.name == 'tank' and not mined or
-            name == 'tank' and ce.name == 'tank' and not mined
+            name == 'tank' and ce.name == 'tank' and not mined or
+            name == 'spidertron' and ce.name == 'spidertron' and not mined
      then
         return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
     end
@@ -710,7 +713,11 @@ function Public.create_car(ic, event)
         return player.print('Multi-surface is not supported at the moment.', Color.warning)
     end
 
-    if get_owner_car_name(ic, player) == 'car' and ce.name == 'tank' then
+    if
+        get_owner_car_name(ic, player) == 'car' and ce.name == 'tank' or
+            get_owner_car_name(ic, player) == 'car' and ce.name == 'spidertron' or
+            get_owner_car_name(ic, player) == 'tank' and ce.name == 'spidertron'
+     then
         upgrade_surface(ic, player, ce)
         render_owner_text(player, ce)
         player.print('Your car-surface has been upgraded!', Color.success)
@@ -854,7 +861,7 @@ function Public.infinity_scrap(ic, event, recreate)
                     name = 'flying-text',
                     position = entity.position,
                     text = '+' .. count .. ' [img=item/' .. name .. ']',
-                    color = {r = 0, g = 127, b = 33}
+                    color = {r = 188, g = 201, b = 63}
                 }
             )
         end
@@ -905,7 +912,7 @@ function Public.teleport_players_around(ic)
                     local x_vector = (door.position.x / math.abs(door.position.x)) * 2
                     local position = {car.entity.position.x + x_vector, car.entity.position.y}
                     local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if car.entity.type == 'car' then
+                    if car.entity.type == 'car' or car.entity.name == 'spidertron' then
                         player.teleport(surface_position, surface)
                         player_data.state = 2
                         player.driving = true

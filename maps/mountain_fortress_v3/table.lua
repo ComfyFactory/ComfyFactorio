@@ -100,6 +100,7 @@ function Public.reset_table()
     this.collapse_grace = true
     this.locomotive_biter = nil
     this.disconnect_wagon = false
+    this.spidertron_unlocked_at_wave = 11
 end
 
 function Public.get(key)

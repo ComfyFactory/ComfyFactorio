@@ -70,11 +70,11 @@ end
 
 local function mining_chances_ores()
     local data = {
-        {name = 'iron-ore', chance = 545},
-        {name = 'copper-ore', chance = 540},
-        {name = 'coal', chance = 545},
-        {name = 'stone', chance = 545},
-        {name = 'uranium-ore', chance = 45}
+        {name = 'iron-ore', chance = 25},
+        {name = 'copper-ore', chance = 17},
+        {name = 'coal', chance = 15},
+        {name = 'stone', chance = 13},
+        {name = 'uranium-ore', chance = 2}
     }
     return data
 end
@@ -178,7 +178,7 @@ local function randomness(data)
             name = 'flying-text',
             position = position,
             text = '+' .. harvest_amount .. ' [img=item/' .. harvest .. ']',
-            color = {r = 0, g = 127, b = 33}
+            color = {r = 188, g = 201, b = 63}
         }
     )
 
