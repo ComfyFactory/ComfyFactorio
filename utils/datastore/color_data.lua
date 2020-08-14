@@ -82,6 +82,12 @@ Event.add(
             return
         end
 
+        local secs = Server.get_current_time()
+        if not secs then
+            raw_print(error_offline)
+            return
+        end
+
         local param = event.parameters
         local color = player.color
         local chat = player.chat_color

@@ -56,6 +56,12 @@ commands.add_command(
             return
         end
 
+        local secs = Server.get_current_time()
+        if not secs then
+            raw_print(error_offline)
+            return
+        end
+
         local slots = {}
 
         for i = 1, 100 do

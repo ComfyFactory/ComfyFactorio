@@ -52,9 +52,15 @@ commands.add_command(
             return
         end
 
+        local secs = Server.get_current_time()
+        if not secs then
+            raw_print(error_offline)
+            return
+        end
+
         local param = cmd.parameter
         if param then
-            if param == '' and param == 'Name' then
+            if param == '' or param == 'Name' then
                 return player.print('You did not specify a message.', Color.warning)
             end
             if string.len(param) > 64 then

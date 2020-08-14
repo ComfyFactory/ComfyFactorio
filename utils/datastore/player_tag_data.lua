@@ -37,10 +37,6 @@ end
 function Public.fetch(key)
     local secs = Server.get_current_time()
     if not secs then
-        local player = game.players[key]
-        if not player or not player.valid then
-            return
-        end
         raw_print(error_offline)
         return
     else
@@ -57,21 +53,31 @@ commands.add_command(
             return
         end
 
+        local secs = Server.get_current_time()
+        if not secs then
+            raw_print(error_offline)
+            return
+        end
+
         local param = cmd.parameter
 
         if param then
-            if param ~= '' and param ~= 'Name' then
-                if alphanumeric(param) then
-                    player.print('Tag is not valid.', {r = 0.90, g = 0.0, b = 0.0})
-                    return
-                end
+            if alphanumeric(param) then
+                player.print('Tag is not valid.', {r = 0.90, g = 0.0, b = 0.0})
+                return
             end
+
+            if param == '' or param == 'Name' then
+                return player.print('You did not specify a tag.', Color.warning)
+            end
+
             if string.len(param) > 32 then
                 player.print('Tag is too long. 64 characters maximum.', {r = 0.90, g = 0.0, b = 0.0})
                 return
             end
 
             set_data(tag_dataset, player.name, param)
+            player.tag = '[' .. param .. ']'
             player.print('Your tag has been saved.', Color.success)
         else
             player.print('You did not specify a tag.', Color.warning)

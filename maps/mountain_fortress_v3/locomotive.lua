@@ -1374,7 +1374,7 @@ local function add_random_loot_to_main_market(rarity)
             tooltip = types[v.offer.item].localised_name,
             upgrade = false
         }
-        if ticker >= 27 then
+        if ticker >= 28 then
             return
         end
     end
@@ -1933,8 +1933,8 @@ function Public.get_items()
     main_market_items['tank-cannon'] = {
         stack = 1,
         value = 'coin',
-        price = 20000,
-        tooltip = 'Portable Tank Machine\nAvailable after wave 700.',
+        price = 25000,
+        tooltip = 'Tank Cannon\nAvailable after wave 650.',
         upgrade = false,
         static = true,
         enabled = false
@@ -1943,17 +1943,30 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 7000,
-        tooltip = 'Portable Tank Pewpew\nAvailable after wave 700.',
+        tooltip = 'Tank Machine Gun\nAvailable after wave 400.',
+        upgrade = false,
+        static = true,
+        enabled = false
+    }
+    main_market_items['vehicle-machine-gun'] = {
+        stack = 1,
+        value = 'coin',
+        price = 2000,
+        tooltip = 'Car Machine Gun\nAvailable after wave 200.',
         upgrade = false,
         static = true,
         enabled = false
     }
     local wave_number = WD.get_wave()
-    if wave_number >= 700 then
-        main_market_items['tank-cannon'].enabled = true
-        main_market_items['tank-cannon'].tooltip = 'Portable Tank Machine'
+    if wave_number == 200 then
+        main_market_items['vehicle-machine-gun'].enabled = true
+        main_market_items['vehicle-machine-gun'].tooltip = 'Car Machine Gun'
+    elseif wave_number == 400 then
         main_market_items['tank-machine-gun'].enabled = true
-        main_market_items['tank-machine-gun'].tooltip = 'Portable Tank Pewpew'
+        main_market_items['tank-machine-gun'].tooltip = 'Tank Machine Gune'
+    elseif wave_number == 650 then
+        main_market_items['tank-cannon'].enabled = true
+        main_market_items['tank-cannon'].tooltip = 'Tank Cannon'
     end
 
     return main_market_items
@@ -2022,6 +2035,7 @@ local function tick()
     if ticker % 1200 == 0 then
         set_player_spawn()
         refill_fish()
+        Public.get_items()
     end
 
     if ticker % 2500 == 0 then
