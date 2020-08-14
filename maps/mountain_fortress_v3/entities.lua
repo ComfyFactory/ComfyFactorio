@@ -1,6 +1,7 @@
 require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 local Map_score = require 'comfy_panel.map_score'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local Loot = require 'maps.mountain_fortress_v3.loot'
@@ -14,6 +15,8 @@ local Difficulty = require 'modules.difficulty_vote'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Alert = require 'utils.alert'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 --local HD = require 'modules.hidden_dimension.main'
 
 -- tables
@@ -72,6 +75,32 @@ local protect_types = {
     ['reactor'] = true,
     ['car'] = true
 }
+
+local reset_game =
+    Token.register(
+    function(data)
+        local this = data.this
+        local Reset_map = data.reset_map
+        if this.soft_reset then
+            this.game_reset_tick = nil
+            Reset_map()
+            return
+        end
+        if this.restart then
+            local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
+            Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+            Server.start_scenario('Mountain_Fortress_v3')
+            this.announced_message = true
+            return
+        end
+        if this.shutdown then
+            local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
+            Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+            Server.stop_scenario()
+            return
+        end
+    end
+)
 
 local function set_objective_health(final_damage_amount)
     local this = WPT.get()
@@ -697,9 +726,10 @@ function Public.loco_died()
     local wave_defense_table = WD.get_table()
     Public.set_scores()
     if not this.locomotive.valid then
-        local Reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
-        wave_defense_table.game_lost = true
-        wave_defense_table.target = nil
+        if this.announced_message then
+            return
+        end
+
         local data = {}
         if this.locomotive and this.locomotive.valid then
             data.position = this.locomotive.position
@@ -709,7 +739,44 @@ function Public.loco_died()
 
         local msg = mapkeeper .. defeated_messages[random(1, #defeated_messages)] .. '\nBetter luck next time.'
         Alert.alert_all_players_location(data, msg, nil, 6000)
-        Reset_map()
+
+        local Reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
+        wave_defense_table.game_lost = true
+        wave_defense_table.target = nil
+
+        local params = {
+            this = this,
+            reset_map = Reset_map
+        }
+
+        if this.soft_reset then
+            this.game_reset_tick = nil
+            Task.set_timeout_in_ticks(60, reset_game, params)
+            return
+        end
+        if this.restart then
+            if not this.announced_message then
+                game.print(
+                    'Soft-reset is disabled! Server will restart from scenario to load new changes.',
+                    {r = 0.22, g = 0.88, b = 0.22}
+                )
+                Task.set_timeout_in_ticks(60, reset_game, params)
+                this.announced_message = true
+                return
+            end
+        end
+        if this.shutdown then
+            if not this.announced_message then
+                game.print(
+                    'Soft-reset is disabled! Server will shutdown. Most likely because of updates.',
+                    {r = 0.22, g = 0.88, b = 0.22}
+                )
+                Task.set_timeout_in_ticks(60, reset_game, params)
+                this.announced_message = true
+                return
+            end
+        end
+
         return
     end
     -- raise_event(

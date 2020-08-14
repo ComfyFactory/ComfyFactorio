@@ -1955,11 +1955,19 @@ function Public.transfer_pollution()
     if not surface or not surface.valid then
         return
     end
+    local active_surface = game.surfaces[active_surface_index]
+    if not active_surface or not active_surface.valid then
+        return
+    end
+
+    if not locomotive or not locomotive.valid then
+        return
+    end
 
     local total_interior_pollution = surface.get_total_pollution()
 
     local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Difficulty.get().difficulty_vote_value
-    game.surfaces[active_surface_index].pollute(locomotive.position, pollution)
+    active_surface.pollute(locomotive.position, pollution)
     game.pollution_statistics.on_flow('locomotive', pollution - total_interior_pollution)
     surface.clear_pollution()
 end

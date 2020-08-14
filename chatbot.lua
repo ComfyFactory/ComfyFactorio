@@ -50,17 +50,11 @@ commands.add_command(
     function(cmd)
         local trusted = session.get_trusted_table()
         local player = game.player
-        local p
 
-        if player then
-            if player ~= nil then
-                p = player.print
-                if not player.admin then
-                    p("You're not admin!", {r = 1, g = 0.5, b = 0.1})
-                    return
-                end
-            else
-                p = log
+        if player and player.valid then
+            if not player.admin then
+                player.print("You're not admin!", {r = 1, g = 0.5, b = 0.1})
+                return
             end
 
             if cmd.parameter == nil then
@@ -68,14 +62,14 @@ commands.add_command(
             end
             local target_player = game.players[cmd.parameter]
             if target_player then
-                if trusted[target_player.name] == true then
+                if trusted[target_player.name] then
                     game.print(target_player.name .. ' is already trusted!')
                     return
                 end
                 trusted[target_player.name] = true
                 game.print(target_player.name .. ' is now a trusted player.', {r = 0.22, g = 0.99, b = 0.99})
                 for _, a in pairs(game.connected_players) do
-                    if a.admin == true and a.name ~= player.name then
+                    if a.admin and a.name ~= player.name then
                         a.print(
                             '[ADMIN]: ' .. player.name .. ' trusted ' .. target_player.name,
                             {r = 1, g = 0.5, b = 0.1}
