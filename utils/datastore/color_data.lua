@@ -1,4 +1,5 @@
 local Token = require 'utils.token'
+local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Print = require('utils.print_override')
@@ -7,7 +8,7 @@ local raw_print = Print.raw_print
 local color_data_set = 'colors'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
-local error_offline = '[ERROR] Webpanel is offline.'
+local error_offline = '[ERROR] Datastore is offline.'
 
 local Public = {}
 
@@ -89,7 +90,7 @@ Event.add(
             for word in param:gmatch('%S+') do
                 if color_table[word] then
                     set_data(color_data_set, player.name, {color = {color}, chat = {chat}})
-                    player.print('Your color was globally saved!', {r = 0.22, g = 0.99, b = 0.99})
+                    player.print('Your color has been saved.', Color.success)
                     return true
                 end
             end

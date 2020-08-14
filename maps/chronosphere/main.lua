@@ -747,7 +747,6 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
-event.on_load(on_load)
 event.on_nth_tick(2, tick)
 event.add(defines.events.on_entity_damaged, on_entity_damaged)
 event.add(defines.events.on_entity_died, on_entity_died)
@@ -763,7 +762,7 @@ event.add(defines.events.on_gui_click, Gui.on_gui_click)
 
 
 if _DEBUG then
-	local Session = require 'utils.session_data'
+	local Session = require 'utils.datastore.session_data'
 	local Color = require 'utils.color_presets'
 
 	commands.add_command(

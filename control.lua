@@ -1,15 +1,18 @@
 require 'utils.data_stages'
 _LIFECYCLE = _STAGE.control -- Control stage
-_DEBUG = false
+_DEBUG = true
 _DUMP_ENV = false
 
 require 'utils.server'
 require 'utils.server_commands'
 require 'utils.utils'
 require 'utils.table'
-require 'utils.color_data'
-require 'utils.session_data'
-require 'utils.jail_data'
+require 'utils.datastore.color_data'
+require 'utils.datastore.session_data'
+require 'utils.datastore.jail_data'
+require 'utils.datastore.quickbar_data'
+require 'utils.datastore.message_on_join_data'
+require 'utils.datastore.player_tag_data'
 require 'chatbot'
 require 'commands'
 require 'antigrief'
@@ -76,7 +79,7 @@ require 'modules.autostash'
 --require 'maps.fish_defender_v2.main'
 --require 'maps.fish_defender.main'
 --require 'maps.biter_battles_v2.main'
-require 'maps.mountain_fortress_v3.main'
+--require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
 --require 'maps.lumberjack.main'
 --require 'maps.dungeons.main'

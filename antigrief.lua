@@ -3,12 +3,12 @@
 --as an admin, write either /trust or /untrust and the players name in the chat to grant/revoke immunity from protection
 
 local Event = require 'utils.event'
-local session = require 'utils.session_data'
+local session = require 'utils.datastore.session_data'
 local Global = require 'utils.global'
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
-local Jail = require 'utils.jail_data'
+local Jail = require 'utils.datastore.jail_data'
 
 local Public = {}
 local match = string.match
@@ -209,7 +209,7 @@ local function on_player_ammo_inventory_changed(event)
         playtime = player.online_time + tracker[player.name]
     end
     if playtime < 1296000 then
-        if this.enable_capsule_warning then
+        if this.enable_capsule_cursor_warning then
             local nukes = player.remove_item({name = 'atomic-bomb', count = 1000})
             if nukes > 0 then
                 Utils.action_warning('{Nuke}', player.name .. ' tried to equip nukes but was not trusted.')

@@ -1,4 +1,4 @@
-local Session = require 'utils.session_data'
+local Session = require 'utils.datastore.session_data'
 local Modifiers = require 'player_modifiers'
 local Server = require 'utils.server'
 local Color = require 'utils.color_presets'

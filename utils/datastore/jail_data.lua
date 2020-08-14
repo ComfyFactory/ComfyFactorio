@@ -1,5 +1,5 @@
 local Global = require 'utils.global'
-local Session = require 'utils.session_data'
+local Session = require 'utils.datastore.session_data'
 local Game = require 'utils.game'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
@@ -11,6 +11,10 @@ local jailed_data_set = 'jailed'
 local jailed = {}
 local votejail = {}
 local votefree = {}
+local settings = {
+    playtime_for_vote = 25920000, -- 5 days
+    playtime_for_instant_jail = 103680000 -- 20 days
+}
 local votejail_count = 5
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
@@ -25,12 +29,14 @@ Global.register(
     {
         jailed = jailed,
         votejail = votejail,
-        votefree = votefree
+        votefree = votefree,
+        settings = settings
     },
     function(t)
         jailed = t.jailed
         votejail = t.votejail
         votefree = t.votefree
+        settings = t.settings
     end
 )
 
@@ -315,8 +321,6 @@ Event.add(
     defines.events.on_console_command,
     function(event)
         local cmd = event.command
-        local five_days = 25920000 --  5 days
-        local twenty_days = 103680000 --  20 days
 
         if not valid_commands[cmd] then
             return
@@ -342,11 +346,14 @@ Event.add(
                 griefer = game.players[griefer].name
             end
 
-            if not trusted and not player.admin or playtime <= five_days and not player.admin then
+            if not trusted and not player.admin or playtime <= settings.playtime_for_vote and not player.admin then
                 return Utils.print_to(player, 'You are not trusted enough to run this command.')
             end
 
-            if trusted and playtime >= five_days and playtime < twenty_days and not player.admin then
+            if
+                trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and
+                    not player.admin
+             then
                 if cmd == 'jail' then
                     vote_to_jail(player, griefer)
                     return
@@ -356,7 +363,7 @@ Event.add(
                 end
             end
 
-            if player.admin or playtime >= twenty_days then
+            if player.admin or playtime >= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
                     Public.try_ul_data(griefer, true, player.name)
                     return
@@ -397,5 +404,19 @@ commands.add_command(
         return
     end
 )
+
+function Public.required_playtime_for_instant_jail(value)
+    if value then
+        settings.playtime_for_instant_jail = value
+    end
+    return settings.playtime_for_instant_jail
+end
+
+function Public.required_playtime_for_vote(value)
+    if value then
+        settings.playtime_for_vote = value
+    end
+    return settings.playtime_for_vote
+end
 
 return Public

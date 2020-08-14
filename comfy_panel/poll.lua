@@ -4,7 +4,7 @@ local Event = require 'utils.event'
 local Game = require 'utils.game'
 local Server = require 'utils.server'
 local Tabs = require 'comfy_panel.main'
-local session = require 'utils.session_data'
+local session = require 'utils.datastore.session_data'
 
 local Class = {}
 
