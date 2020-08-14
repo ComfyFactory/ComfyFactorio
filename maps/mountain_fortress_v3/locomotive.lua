@@ -1491,6 +1491,18 @@ local function on_player_changed_surface(event)
 
     local map_name = 'mountain_fortress_v3'
 
+    if player.surface.name == 'nauvis' then
+        local active_surface = WPT.get('active_surface_index')
+        local surface = game.surfaces[active_surface]
+        if not surface or not surface.valid then
+            return
+        end
+        player.teleport(
+            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
+            surface
+        )
+    end
+
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return Public.add_player_to_permission_group(player, 'locomotive')
     else
