@@ -38,6 +38,7 @@ local starting_items = {
 
 local disable_tech = function()
     game.forces.player.technologies['landfill'].enabled = false
+    game.forces.player.technologies['landfill'].researched = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['artillery'].researched = false
     game.forces.player.technologies['atomic-bomb'].enabled = false
@@ -1328,6 +1329,7 @@ local on_robot_mined_entity = function(event)
 end
 
 local on_research_finished = function(event)
+    disable_tech()
     local research = event.research.name
     if research ~= 'tanks' then
         return
