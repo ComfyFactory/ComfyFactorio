@@ -20,6 +20,8 @@ local nth_tick = RPG.nth_tick
 --RPG Frames
 local main_frame_name = RPG.main_frame_name
 
+local sub = string.sub
+
 local function on_gui_click(event)
     if not event.element then
         return
@@ -29,6 +31,14 @@ local function on_gui_click(event)
     end
     local element = event.element
     local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+
+    local surface_name = RPG.get('rpg_extra').surface_name
+    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        return
+    end
 
     if element.type ~= 'sprite-button' then
         return
@@ -304,11 +314,13 @@ local function regen_mana_player(players)
 
         if player and player.valid and not player.in_combat then
             if player.character and player.character.valid then
+                if rpg_t[player.index].mana < 0 then
+                    rpg_t[player.index].mana = 0
+                end
                 if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
                     goto continue
                 end
                 rpg_t[player.index].mana = rpg_t[player.index].mana + mana_per_tick
-
                 if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
                     rpg_t[player.index].mana = rpg_t[player.index].mana_max
                 end
@@ -358,8 +370,8 @@ local function give_player_flameboots(player)
     if rpg_t[player.index].mana <= 0 then
         rpg_t[player.index].mana = 0
     end
-    if player.gui.left[main_frame_name] then
-        local f = player.gui.left[main_frame_name]
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.mana and data.mana.valid then
             data.mana.caption = rpg_t[player.index].mana
@@ -466,6 +478,13 @@ local function on_entity_damaged(event)
         return
     end
     if not event.cause.player then
+        return
+    end
+
+    local p = event.cause.player
+
+    local surface_name = RPG.get('rpg_extra').surface_name
+    if sub(p.surface.name, 0, #surface_name) ~= surface_name then
         return
     end
 
@@ -577,9 +596,10 @@ local function on_player_repaired_entity(event)
 
     local player = game.players[event.player_index]
 
-    if not player.character then
+    if not player or not player.valid or not player.character then
         return
     end
+
     Functions.gain_xp(player, 0.05)
     Functions.reward_mana(player, 0.2)
 
@@ -592,9 +612,14 @@ end
 
 local function on_player_rotated_entity(event)
     local player = game.players[event.player_index]
+
+    if not player or not player.valid then
+        return
+    end
     if not player.character then
         return
     end
+
     local rpg_t = RPG.get('rpg_t')
     if rpg_t[player.index].rotated_entity_delay > game.tick then
         return
@@ -605,8 +630,7 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    local surface_name = RPG.get('rpg_extra').surface_name
-    if string.sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not player or not player.valid then
         return
     end
 
@@ -646,6 +670,16 @@ local function on_pre_player_mined_item(event)
         return
     end
     local player = game.players[event.player_index]
+
+    if not player or not player.valid then
+        return
+    end
+
+    local surface_name = RPG.get('rpg_extra').surface_name
+    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        return
+    end
+
     local rpg_t = RPG.get('rpg_t')
     if
         rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and
@@ -665,8 +699,8 @@ local function on_pre_player_mined_item(event)
         xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
     end
 
-    if player.gui.left[main_frame_name] then
-        local f = player.gui.left[main_frame_name]
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.exp_gui and data.exp_gui.valid then
             data.exp_gui.caption = math.floor(rpg_t[player.index].xp)
@@ -682,7 +716,7 @@ local function on_player_crafted_item(event)
         return
     end
     local player = game.players[event.player_index]
-    if not player.valid then
+    if not player or not player.valid then
         return
     end
 
@@ -847,7 +881,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if string.sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
         return
     end
 

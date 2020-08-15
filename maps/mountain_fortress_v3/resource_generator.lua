@@ -1,5 +1,8 @@
 local Functions = require 'maps.mountain_fortress_v3.functions'
 
+local random = math.random
+local abs = math.abs
+
 local types = {
     'assembling-machine',
     'furnace'
@@ -422,7 +425,7 @@ local function spawn_science_buildings(entities, p, probability)
     entities[#entities + 1] = {
         name = science_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = science_list[probability].callback,
         collision = true,
         e_type = types
@@ -433,7 +436,7 @@ local function spawn_ammo_building(entities, p, probability)
     entities[#entities + 1] = {
         name = ammo_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = ammo_list[probability].callback,
         collision = true,
         e_type = types
@@ -444,7 +447,7 @@ local function spawn_oil_buildings(entities, p)
     entities[#entities + 1] = {
         name = oil_list[1].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = oil_list[1].callback,
         collision = true,
         e_type = types
@@ -455,7 +458,7 @@ local function spawn_oil_prod_buildings(entities, p)
     entities[#entities + 1] = {
         name = oil_prod_list[1].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = oil_prod_list[1].callback,
         collision = true,
         e_type = types
@@ -466,7 +469,7 @@ local function spawn_resource_building(entities, p, probability)
     entities[#entities + 1] = {
         name = resource_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = resource_list[probability].callback,
         collision = true,
         e_type = types
@@ -477,7 +480,7 @@ local function spawn_furnace_building(entities, p, probability)
     entities[#entities + 1] = {
         name = furnace_list[probability].name,
         position = p,
-        force = 'player',
+        force = 'neutral',
         callback = furnace_list[probability].callback,
         collision = true,
         e_type = types
@@ -494,46 +497,46 @@ local buildings = {
 }
 
 local function spawn_random_buildings(entities, p, depth)
-    local randomizer = math.random(1, #buildings)
-    local low = math.random(1, 2)
-    local medium = math.random(2, 3)
+    local randomizer = random(1, #buildings)
+    local low = random(1, 2)
+    local medium = random(2, 3)
     local high = 3
 
-    if math.abs(p.y) < depth * 1.5 then
-        if math.random(1, 16) == 1 then
+    if abs(p.y) < depth * 1.5 then
+        if random(1, 16) == 1 then
             return buildings[randomizer](entities, p, medium)
         else
             return buildings[randomizer](entities, p, low)
         end
-    elseif math.abs(p.y) < depth * 2.5 then
-        if math.random(1, 8) == 1 then
+    elseif abs(p.y) < depth * 2.5 then
+        if random(1, 8) == 1 then
             return buildings[randomizer](entities, p, medium)
         else
             return buildings[randomizer](entities, p, medium)
         end
-    elseif math.abs(p.y) < depth * 3.5 then
-        if math.random(1, 4) == 1 then
+    elseif abs(p.y) < depth * 3.5 then
+        if random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
         else
             return buildings[randomizer](entities, p, medium)
         end
-    elseif math.abs(p.y) < depth * 4.5 then
-        if math.random(1, 4) == 1 then
+    elseif abs(p.y) < depth * 4.5 then
+        if random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
         else
             return buildings[randomizer](entities, p, high)
         end
-    elseif math.abs(p.y) < depth * 5.5 then
-        if math.random(1, 4) == 1 then
+    elseif abs(p.y) < depth * 5.5 then
+        if random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
-        elseif math.random(1, 2) == 1 then
+        elseif random(1, 2) == 1 then
             return buildings[randomizer](entities, p, high)
-        elseif math.random(1, 8) == 1 then
+        elseif random(1, 8) == 1 then
             return buildings[randomizer](entities, p, high)
         end
     end
-    if math.abs(p.y) > depth * 5.5 then
-        if math.random(1, 32) == 1 then
+    if abs(p.y) > depth * 5.5 then
+        if random(1, 32) == 1 then
             return buildings[randomizer](entities, p, medium)
         end
     end

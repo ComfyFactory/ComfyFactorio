@@ -1,7 +1,7 @@
 local RPG = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
 local P = require 'player_modifiers'
-local Session = require 'utils.session_data'
+local Session = require 'utils.datastore.session_data'
 local reset_tooltip = 'ONE-TIME reset if you picked the wrong path (this will keep your points)'
 
 local Public = {}

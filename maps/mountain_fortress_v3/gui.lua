@@ -7,6 +7,7 @@ local format_number = require 'util'.format_number
 local Public = {}
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
+local floor = math.floor
 
 local function validate_player(player)
     if not player then
@@ -213,7 +214,7 @@ local function on_player_changed_surface(event)
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
     local rpg_b = player.gui.top[rpg_button]
-    local rpg_f = player.gui.left[rpg_frame]
+    local rpg_f = player.gui.screen[rpg_frame]
     local rpg_s = player.gui.screen[rpg_settings]
     local diff = player.gui.top['difficulty_gui']
     local charging = player.gui.top['charging_station']
@@ -307,9 +308,9 @@ function Public.update_gui(player)
         gui.global_pool.caption = 'XP: 0'
         gui.global_pool.tooltip = 'Dig, handcraft or run to increase the pool!'
     elseif rpg_extra.global_pool >= 0 then
-        gui.global_pool.caption = 'XP: ' .. format_number(math.floor(rpg_extra.global_pool), true)
+        gui.global_pool.caption = 'XP: ' .. format_number(floor(rpg_extra.global_pool), true)
         gui.global_pool.tooltip =
-            'Amount of XP that is stored inside the global xp pool.\nRaw Value: ' .. math.floor(rpg_extra.global_pool)
+            'Amount of XP that is stored inside the global xp pool.\nRaw Value: ' .. floor(rpg_extra.global_pool)
     end
 
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(this.mined_scrap, true)

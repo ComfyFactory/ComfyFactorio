@@ -127,7 +127,7 @@ local function hide_rpg(player, show)
   local rpg_settings = RPG_T.settings_frame_name
 
   local rpg_b = player.gui.top[rpg_button]
-  local rpg_f = player.gui.left[rpg_frame]
+  local rpg_f = player.gui.screen[rpg_frame]
   local rpg_s = player.gui.screen[rpg_settings]
 
   if show then

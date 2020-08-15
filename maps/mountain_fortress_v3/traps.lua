@@ -1,6 +1,8 @@
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
+local random = math.random
+
 local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*', '( ͡° ͜ʖ ͡°)'}
 
 local kaboom_weights = {
@@ -88,7 +90,7 @@ local function tick_tack_trap(surface, position)
         return
     end
     local traps = WPT.get('traps')
-    local tick_tack_count = math.random(5, 9)
+    local tick_tack_count = random(5, 9)
     for t = 60, tick_tack_count * 60, 60 do
         if not traps[game.tick + t] then
             traps[game.tick + t] = {}
@@ -97,10 +99,10 @@ local function tick_tack_trap(surface, position)
         if t < tick_tack_count * 60 then
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'create_flying_text',
-                params = {surface, {x = position.x, y = position.y}, tick_tacks[math.random(1, #tick_tacks)]}
+                params = {surface, {x = position.x, y = position.y}, tick_tacks[random(1, #tick_tacks)]}
             }
         else
-            if math.random(1, 10) == 1 then
+            if random(1, 10) == 1 then
                 traps[game.tick + t][#traps[game.tick + t] + 1] = {
                     callback = 'create_flying_text',
                     params = {surface, {x = position.x, y = position.y}, '( ͡° ͜ʖ ͡°)'}
@@ -108,7 +110,7 @@ local function tick_tack_trap(surface, position)
             else
                 traps[game.tick + t][#traps[game.tick + t] + 1] = {
                     callback = 'create_kaboom',
-                    params = {surface, {x = position.x, y = position.y}, kabooms[math.random(1, #kabooms)]}
+                    params = {surface, {x = position.x, y = position.y}, kabooms[random(1, #kabooms)]}
                 }
             end
         end

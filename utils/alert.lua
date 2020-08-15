@@ -220,9 +220,10 @@ end
 ---@param player LuaPlayer
 ---@param message string
 ---@param color string
-function Public.alert_all_players_location(player, message, color)
+function Public.alert_all_players_location(player, message, color, duration)
+    local length = duration or 15
     Public.alert_all_players_template(
-        15,
+        length,
         function(container)
             local sprite =
                 container.add {

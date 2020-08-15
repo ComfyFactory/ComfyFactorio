@@ -4,9 +4,9 @@ local Market = require 'maps.mountain_fortress_v3.basic_markets'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
-local Session = require 'utils.session_data'
+local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote'
-local Jailed = require 'utils.jail_data'
+local Jailed = require 'utils.datastore.jail_data'
 local RPG_Settings = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
 local Gui = require 'utils.gui'
@@ -19,6 +19,12 @@ local Public = {}
 local concat = table.concat
 local main_frame_name = Gui.uid_name()
 local rpg_main_frame = RPG_Settings.main_frame_name
+local random = math.random
+local floor = math.floor
+local rad = math.rad
+local sin = math.sin
+local cos = math.cos
+local ceil = math.ceil
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
@@ -57,12 +63,18 @@ local function validate_player(player)
     return true
 end
 
-function Public.add_player_to_permission_group(player, group)
+function Public.add_player_to_permission_group(player, group, forced)
     local jailed = Jailed.get_jailed_table()
     local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
     local session = Session.get_session_table()
 
     if player.admin then
+        return
+    end
+
+    if forced then
+        local default_group = game.permissions.get_group('Default')
+        default_group.add_player(player)
         return
     end
 
@@ -134,7 +146,7 @@ function Public.add_player_to_permission_group(player, group)
 end
 
 local function property_boost(data)
-    local xp_floating_text_color = {r = 0, g = 127, b = 33}
+    local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
     local this = data.this
     local locomotive_surface = data.locomotive_surface
@@ -172,11 +184,11 @@ local function property_boost(data)
                     local f = player.gui.left[rpg_main_frame]
                     local d = Gui.get_data(f)
                     if d.exp_gui and d.exp_gui.valid then
-                        d.exp_gui.caption = math.floor(rpg[player.index].xp)
+                        d.exp_gui.caption = floor(rpg[player.index].xp)
                     end
                 end
             else
-                Public.add_player_to_permission_group(player, 'default')
+                Public.add_player_to_permission_group(player, 'default', true)
             end
         end
     end
@@ -258,7 +270,7 @@ local function refill_fish()
     if not locomotive_cargo.valid then
         return
     end
-    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = math.random(2, 5)})
+    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = random(2, 5)})
 end
 
 local function set_locomotive_health()
@@ -302,10 +314,10 @@ local function create_poison_cloud(position)
     local surface = game.surfaces[active_surface_index]
 
     local random_angles = {
-        math.rad(math.random(359)),
-        math.rad(math.random(359)),
-        math.rad(math.random(359)),
-        math.rad(math.random(359))
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359))
     }
 
     surface.create_entity({name = 'poison-cloud', position = {x = position.x, y = position.y}})
@@ -313,8 +325,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[1]),
-                y = position.y + 12 * math.sin(random_angles[1])
+                x = position.x + 12 * cos(random_angles[1]),
+                y = position.y + 12 * sin(random_angles[1])
             }
         }
     )
@@ -322,8 +334,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[2]),
-                y = position.y + 12 * math.sin(random_angles[2])
+                x = position.x + 12 * cos(random_angles[2]),
+                y = position.y + 12 * sin(random_angles[2])
             }
         }
     )
@@ -331,8 +343,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[3]),
-                y = position.y + 12 * math.sin(random_angles[3])
+                x = position.x + 12 * cos(random_angles[3]),
+                y = position.y + 12 * sin(random_angles[3])
             }
         }
     )
@@ -340,8 +352,8 @@ local function create_poison_cloud(position)
         {
             name = 'poison-cloud',
             position = {
-                x = position.x + 12 * math.cos(random_angles[4]),
-                y = position.y + 12 * math.sin(random_angles[4])
+                x = position.x + 12 * cos(random_angles[4]),
+                y = position.y + 12 * sin(random_angles[4])
             }
         }
     )
@@ -436,7 +448,7 @@ local function redraw_market_items(gui, player, search_text)
         }
     )
 
-    local slider_value = math.ceil(players[player.index].data.slider.slider_value)
+    local slider_value = ceil(players[player.index].data.slider.slider_value)
     local items_table = gui.add({type = 'table', column_count = 6})
 
     for item, data in pairs(Public.get_items()) do
@@ -528,7 +540,7 @@ local function slider_changed(event)
     if not slider_value then
         return
     end
-    slider_value = math.ceil(slider_value)
+    slider_value = ceil(slider_value)
     this.players[player.index].data.text_input.text = slider_value
     redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
 end
@@ -743,7 +755,7 @@ local function gui_click(event)
 
     local inventory = player.get_main_inventory()
     local player_item_count = inventory.get_item_count(item.value)
-    local slider_value = math.ceil(data.slider.slider_value)
+    local slider_value = ceil(data.slider.slider_value)
     local cost = (item.price * slider_value)
     local item_count = item.stack * slider_value
 
@@ -1026,7 +1038,7 @@ local function spawn_biter()
     }
     this.locomotive_biter =
         loco_surface.create_entity(
-        {name = biters[math.random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
+        {name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
     )
     this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
     this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
@@ -1108,9 +1120,9 @@ local function create_market(data, rebuild)
 
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
-            if math.random(1, 2) == 1 then
+            if random(1, 2) == 1 then
                 loco_surface.spill_item_stack(
-                    {x + math.random(0, 9) * 0.1, y + math.random(0, 9) * 0.1},
+                    {x + random(0, 9) * 0.1, y + random(0, 9) * 0.1},
                     {name = 'raw-fish', count = 1},
                     false
                 )
@@ -1120,9 +1132,9 @@ local function create_market(data, rebuild)
     end
     for x = center_position.x - 3, center_position.x + 3, 1 do
         for y = center_position.y - 3, center_position.y + 3, 1 do
-            if math.random(1, 2) == 1 then
+            if random(1, 2) == 1 then
                 loco_surface.spill_item_stack(
-                    {x + math.random(0, 9) * 0.1, y + math.random(0, 9) * 0.1},
+                    {x + random(0, 9) * 0.1, y + random(0, 9) * 0.1},
                     {name = 'raw-fish', count = 1},
                     false
                 )
@@ -1340,7 +1352,7 @@ local function add_random_loot_to_main_market(rarity)
     end
 
     for k, v in pairs(items) do
-        local price = v.price[1][2] + math.random(1, 15) * rarity
+        local price = v.price[1][2] + random(1, 15) * rarity
         local value = v.price[1][1]
         local stack = 1
         ticker = ticker + 1
@@ -1362,15 +1374,15 @@ local function add_random_loot_to_main_market(rarity)
             tooltip = types[v.offer.item].localised_name,
             upgrade = false
         }
-        if ticker >= 12 then
+        if ticker >= 28 then
             return
         end
     end
 end
 
 local function on_research_finished()
-    local difficulty_poll_closing_timeout = Difficulty.get('difficulty_poll_closing_timeout')
-    if game.tick < difficulty_poll_closing_timeout then
+    local game_lost = WPT.get('game_lost')
+    if game_lost then
         return
     end
 
@@ -1439,6 +1451,38 @@ local function on_console_chat(event)
     shoo(event)
 end
 
+-- local function tp_player()
+--     for _, player in pairs(game.connected_players) do
+--         if not validate_player(player) then
+--             return
+--         end
+
+--         local active_surface_index = WPT.get('active_surface_index')
+--         if not active_surface_index then
+--             return
+--         end
+
+--         local surface = game.surfaces[active_surface_index]
+
+--         local nauvis = 'nauvis'
+
+--         if string.sub(player.surface.name, 0, #nauvis) == nauvis then
+--             if player.surface.find_entity('player-port', player.position) then
+--                 player.teleport(
+--                     surface.find_non_colliding_position(
+--                         'character',
+--                         game.forces.player.get_spawn_position(surface),
+--                         3,
+--                         0,
+--                         5
+--                     ),
+--                     surface
+--                 )
+--             end
+--         end
+--     end
+-- end
+
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
     if not validate_player(player) then
@@ -1446,6 +1490,18 @@ local function on_player_changed_surface(event)
     end
 
     local map_name = 'mountain_fortress_v3'
+
+    if player.surface.name == 'nauvis' then
+        local active_surface = WPT.get('active_surface_index')
+        local surface = game.surfaces[active_surface]
+        if not surface or not surface.valid then
+            return
+        end
+        player.teleport(
+            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
+            surface
+        )
+    end
 
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return Public.add_player_to_permission_group(player, 'locomotive')
@@ -1609,17 +1665,17 @@ function Public.locomotive_spawn(surface, position)
     )
 
     for y = -1, 0, 0.05 do
-        local scale = math.random(50, 100) * 0.01
+        local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
             {
                 sprite = 'item/raw-fish',
-                orientation = math.random(0, 100) * 0.01,
+                orientation = random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
-                tint = {math.random(60, 255), math.random(60, 255), math.random(60, 255)},
+                tint = {random(60, 255), random(60, 255), random(60, 255)},
                 render_layer = 'selection-box',
                 target = this.locomotive_cargo,
-                target_offset = {-0.7 + math.random(0, 140) * 0.01, y},
+                target_offset = {-0.7 + random(0, 140) * 0.01, y},
                 surface = surface
             }
         )
@@ -1740,7 +1796,36 @@ function Public.get_items()
         upgrade = true,
         static = true
     }
-
+    if game.forces.player.technologies['logistics'].researched then
+        main_market_items['loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 128,
+            tooltip = 'Loader',
+            upgrade = false,
+            static = true
+        }
+    end
+    if game.forces.player.technologies['logistics-2'].researched then
+        main_market_items['fast-loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 256,
+            tooltip = 'Fast Loader',
+            upgrade = false,
+            static = true
+        }
+    end
+    if game.forces.player.technologies['logistics-3'].researched then
+        main_market_items['express-loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 512,
+            tooltip = 'Express Loader',
+            upgrade = false,
+            static = true
+        }
+    end
     main_market_items['small-lamp'] = {
         stack = 1,
         value = 'coin',
@@ -1848,8 +1933,8 @@ function Public.get_items()
     main_market_items['tank-cannon'] = {
         stack = 1,
         value = 'coin',
-        price = 20000,
-        tooltip = 'Portable Tank Machine\nAvailable after wave 700.',
+        price = 25000,
+        tooltip = 'Tank Cannon\nAvailable after wave 650.',
         upgrade = false,
         static = true,
         enabled = false
@@ -1858,17 +1943,30 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 7000,
-        tooltip = 'Portable Tank Pewpew\nAvailable after wave 700.',
+        tooltip = 'Tank Machine Gun\nAvailable after wave 400.',
+        upgrade = false,
+        static = true,
+        enabled = false
+    }
+    main_market_items['vehicle-machine-gun'] = {
+        stack = 1,
+        value = 'coin',
+        price = 2000,
+        tooltip = 'Car Machine Gun\nAvailable after wave 200.',
         upgrade = false,
         static = true,
         enabled = false
     }
     local wave_number = WD.get_wave()
-    if wave_number >= 700 then
-        main_market_items['tank-cannon'].enabled = true
-        main_market_items['tank-cannon'].tooltip = 'Portable Tank Machine'
+    if wave_number == 200 then
+        main_market_items['vehicle-machine-gun'].enabled = true
+        main_market_items['vehicle-machine-gun'].tooltip = 'Car Machine Gun'
+    elseif wave_number == 400 then
         main_market_items['tank-machine-gun'].enabled = true
-        main_market_items['tank-machine-gun'].tooltip = 'Portable Tank Pewpew'
+        main_market_items['tank-machine-gun'].tooltip = 'Tank Machine Gune'
+    elseif wave_number == 650 then
+        main_market_items['tank-cannon'].enabled = true
+        main_market_items['tank-cannon'].tooltip = 'Tank Cannon'
     end
 
     return main_market_items
@@ -1879,14 +1977,22 @@ function Public.transfer_pollution()
     local active_surface_index = WPT.get('active_surface_index')
     local icw_locomotive = WPT.get('icw_locomotive')
     local surface = icw_locomotive.surface
-    if not surface then
+    if not surface or not surface.valid then
+        return
+    end
+    local active_surface = game.surfaces[active_surface_index]
+    if not active_surface or not active_surface.valid then
+        return
+    end
+
+    if not locomotive or not locomotive.valid then
         return
     end
 
     local total_interior_pollution = surface.get_total_pollution()
 
     local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Difficulty.get().difficulty_vote_value
-    game.surfaces[active_surface_index].pollute(locomotive.position, pollution)
+    active_surface.pollute(locomotive.position, pollution)
     game.pollution_statistics.on_flow('locomotive', pollution - total_interior_pollution)
     surface.clear_pollution()
 end
@@ -1901,9 +2007,9 @@ function Public.enable_poison_defense()
     end
     local pos = locomotive.position
     create_poison_cloud({x = pos.x, y = pos.y})
-    if math.random(1, 3) == 1 then
-        local random_angles = {math.rad(math.random(359))}
-        create_poison_cloud({x = pos.x + 24 * math.cos(random_angles[1]), y = pos.y + -24 * math.sin(random_angles[1])})
+    if random(1, 4) == 1 then
+        local random_angles = {rad(random(359))}
+        create_poison_cloud({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])})
     end
 end
 
@@ -1922,12 +2028,14 @@ local function tick()
     end
 
     if ticker % 120 == 0 then
+        -- tp_player()
         boost_players()
     end
 
     if ticker % 1200 == 0 then
         set_player_spawn()
         refill_fish()
+        Public.get_items()
     end
 
     if ticker % 2500 == 0 then

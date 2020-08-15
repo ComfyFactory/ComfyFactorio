@@ -13,8 +13,8 @@ to your scenario control.lua.
 Minor changes by ~~~Gerkiz~~~
 --]]
 local Event = require 'utils.event'
-local Session = require 'utils.session_data'
-local Jailed = require 'utils.jail_data'
+local Session = require 'utils.datastore.session_data'
+local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
 

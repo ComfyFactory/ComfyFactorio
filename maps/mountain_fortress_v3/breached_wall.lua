@@ -11,6 +11,7 @@ local Token = require 'utils.token'
 
 local raise_event = script.raise_event
 local floor = math.floor
+local random = math.random
 local sqrt = math.sqrt
 local concat = table.concat
 
@@ -25,6 +26,14 @@ local collapse_message =
             position = pos
         }
         Alert.alert_all_players_location(collapse_position, message)
+    end
+)
+
+local spidertron_unlocked =
+    Token.register(
+    function()
+        local message = 'Attention! Spidertron has been unlocked at the main market!'
+        Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
     end
 )
 
@@ -83,6 +92,22 @@ local function distance(player)
             WPT.set().placed_trains_in_zone.randomized = false
             WPT.set().placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})
+
+            if WPT.get('breached_wall') == WPT.get('spidertron_unlocked_at_wave') then
+                local main_market_items = WPT.get('main_market_items')
+                if not main_market_items['spidertron'] then
+                    local rng = random(70000, 120000)
+                    main_market_items['spidertron'] = {
+                        stack = 1,
+                        value = 'coin',
+                        price = rng,
+                        tooltip = 'Chonk Spidertron',
+                        upgrade = false,
+                        static = true
+                    }
+                    Task.set_timeout_in_ticks(150, spidertron_unlocked)
+                end
+            end
 
             local data = {
                 player = player,

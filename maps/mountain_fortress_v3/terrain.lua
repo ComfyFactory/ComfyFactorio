@@ -6,12 +6,22 @@ local WPT = require 'maps.mountain_fortress_v3.table'
 local get_noise = require 'utils.get_noise'
 
 local Public = {}
+local random = math.random
+local abs = math.abs
+local floor = math.floor
+local ceil = math.ceil
 
 Public.level_depth = 704
 Public.level_width = 512
 local worm_level_modifier = 0.19
 
-local wagon_raffle = {'cargo-wagon', 'cargo-wagon', 'cargo-wagon', 'locomotive', 'fluid-wagon'}
+local wagon_raffle = {
+    'cargo-wagon',
+    'cargo-wagon',
+    'cargo-wagon',
+    'locomotive',
+    'fluid-wagon'
+}
 local rock_raffle = {
     'sand-rock-big',
     'sand-rock-big',
@@ -27,6 +37,21 @@ local rock_raffle = {
 }
 
 local size_of_rock_raffle = #rock_raffle
+
+local tree_raffle = {
+    'dry-tree',
+    'tree-01',
+    'tree-02-red',
+    'tree-04',
+    'tree-08-brown'
+}
+local size_of_tree_raffle = #tree_raffle
+
+local spawner = {
+    'biter-spawner',
+    'spitter-spawner'
+}
+local size_of_spawner = #spawner
 
 local scrap_entities = {
     'crash-site-assembling-machine-1-broken',
@@ -52,8 +77,21 @@ local scrap_entities = {
 
 local scrap_entities_index = #scrap_entities
 
-local spawner_raffle = {'biter-spawner', 'biter-spawner', 'biter-spawner', 'spitter-spawner'}
-local trees = {'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree'}
+local spawner_raffle = {
+    'biter-spawner',
+    'biter-spawner',
+    'biter-spawner',
+    'spitter-spawner'
+}
+
+local trees = {
+    'tree-08-brown',
+    'tree-04',
+    'tree-03',
+    'tree-02-red',
+    'tree-01',
+    'dry-tree'
+}
 
 local firearm_magazine_ammo = Functions.firearm_magazine_ammo
 local piercing_rounds_magazine_ammo = Functions.piercing_rounds_magazine_ammo
@@ -101,7 +139,7 @@ end
 local function place_wagon(data)
     local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     if not placed_trains_in_zone.randomized then
-        placed_trains_in_zone.limit = math.random(1, 5)
+        placed_trains_in_zone.limit = random(1, 5)
         placed_trains_in_zone.randomized = true
         placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     end
@@ -115,7 +153,7 @@ local function place_wagon(data)
     local entities = data.entities
     local top_x = data.top_x
     local top_y = data.top_y
-    local position = {x = top_x + math.random(4, 12) * 2, y = top_y + math.random(4, 12) * 2}
+    local position = {x = top_x + random(4, 12) * 2, y = top_y + random(4, 12) * 2}
     local wagon_mineable = {
         callback = Functions.disable_minable_and_ICW_callback
     }
@@ -136,10 +174,10 @@ local function place_wagon(data)
 
     local location
     local direction
-    local r1 = math.random(2, 4) * 2
-    local r2 = math.random(2, 4) * 2
+    local r1 = random(2, 4) * 2
+    local r2 = random(2, 4) * 2
 
-    if math.random(1, 2) == 1 then
+    if random(1, 2) == 1 then
         location =
             surface.find_tiles_filtered({area = {{position.x, position.y - r1}, {position.x + 2, position.y + r2}}})
         direction = 0
@@ -162,7 +200,7 @@ local function place_wagon(data)
         end
     end
     entities[#entities + 1] = {
-        name = wagon_raffle[math.random(1, #wagon_raffle)],
+        name = wagon_raffle[random(1, #wagon_raffle)],
         position = position,
         force = 'player',
         callback = wagon_mineable
@@ -174,7 +212,7 @@ local function place_wagon(data)
 end
 
 local function get_oil_amount(p)
-    return (math.abs(p.y) * 200 + 10000) * math.random(75, 125) * 0.01
+    return (abs(p.y) * 200 + 10000) * random(75, 125) * 0.01
 end
 
 function Public.increment_value(tbl)
@@ -225,7 +263,7 @@ local function wall(data)
                 tiles[#tiles + 1] = {name = 'water', position = p}
             else
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
-                if math.random(1, 32) == 1 then
+                if random(1, 32) == 1 then
                     entities[#entities + 1] = {
                         name = 'land-mine',
                         position = p,
@@ -233,15 +271,15 @@ local function wall(data)
                     }
                 end
             end
-            if math.random(1, 48) == 1 then
+            if random(1, 48) == 1 then
                 entities[#entities + 1] = {name = 'fish', position = p}
             end
         else
             tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
 
-            if math.random(1, 5) ~= 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, #rock_raffle)], position = p}
-                if math.random(1, 32) == 1 then
+            if random(1, 5) ~= 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = p}
+                if random(1, 32) == 1 then
                     entities[#entities + 1] = {
                         name = 'land-mine',
                         position = p,
@@ -262,8 +300,8 @@ local function wall(data)
                 }
             )
          then
-            if math.random(1, 512) == 1 and y > 3 and y < 28 then
-                if math.random(1, 2) == 1 then
+            if random(1, 512) == 1 and y > 3 and y < 28 then
+                if random(1, 2) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
                 else
                     treasure[#treasure + 1] = {position = p, chest = 'steel-chest'}
@@ -271,7 +309,7 @@ local function wall(data)
             else
                 if y < 4 or y > 25 then
                     if y <= 23 then
-                        if math.random(1, y + 1) == 1 then
+                        if random(1, y + 1) == 1 then
                             entities[#entities + 1] = {
                                 name = 'stone-wall',
                                 position = p,
@@ -280,7 +318,7 @@ local function wall(data)
                             }
                         end
                     else
-                        if math.random(1, 32 - y) == 1 then
+                        if random(1, 32 - y) == 1 then
                             entities[#entities + 1] = {
                                 name = 'stone-wall',
                                 position = p,
@@ -293,7 +331,7 @@ local function wall(data)
             end
         end
 
-        if math.random(1, 48) == 1 then
+        if random(1, 48) == 1 then
             if
                 surface.can_place_entity(
                     {
@@ -303,7 +341,7 @@ local function wall(data)
                     }
                 )
              then
-                Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                 entities[#entities + 1] = {
                     name = Biters.wave_defense_roll_worm_name(),
                     position = p,
@@ -312,44 +350,128 @@ local function wall(data)
             end
         end
 
-        if math.random(1, 48) == 1 then
-            if math.abs(p.y) < Public.level_depth * 1.5 then
-                if math.random(1, 16) == 1 then
+        if random(1, 48) == 1 then
+            if abs(p.y) < Public.level_depth * 1.5 then
+                if random(1, 16) == 1 then
                     spawn_turret(entities, p, 1)
                 else
                     spawn_turret(entities, p, 2)
                 end
-            elseif math.abs(p.y) < Public.level_depth * 2.5 then
-                if math.random(1, 8) == 1 then
+            elseif abs(p.y) < Public.level_depth * 2.5 then
+                if random(1, 8) == 1 then
                     spawn_turret(entities, p, 3)
                 end
-            elseif math.abs(p.y) < Public.level_depth * 3.5 then
-                if math.random(1, 4) == 1 then
+            elseif abs(p.y) < Public.level_depth * 3.5 then
+                if random(1, 4) == 1 then
                     spawn_turret(entities, p, 4)
                 else
                     spawn_turret(entities, p, 3)
                 end
-            elseif math.abs(p.y) < Public.level_depth * 4.5 then
-                if math.random(1, 4) == 1 then
+            elseif abs(p.y) < Public.level_depth * 4.5 then
+                if random(1, 4) == 1 then
                     spawn_turret(entities, p, 4)
                 else
                     spawn_turret(entities, p, 5)
                 end
-            elseif math.abs(p.y) < Public.level_depth * 5.5 then
-                if math.random(1, 4) == 1 then
+            elseif abs(p.y) < Public.level_depth * 5.5 then
+                if random(1, 4) == 1 then
                     spawn_turret(entities, p, 4)
-                elseif math.random(1, 2) == 1 then
+                elseif random(1, 2) == 1 then
                     spawn_turret(entities, p, 5)
-                elseif math.random(1, 8) == 1 then
+                elseif random(1, 8) == 1 then
                     spawn_turret(entities, p, enable_arties)
                 end
             end
-        elseif math.abs(p.y) > Public.level_depth * 5.5 then
-            if math.random(1, 32) == 1 then
-                spawn_turret(entities, p, math.random(3, enable_arties))
+        elseif abs(p.y) > Public.level_depth * 5.5 then
+            if random(1, 32) == 1 then
+                spawn_turret(entities, p, random(3, enable_arties))
             end
         end
     end
+end
+
+local function process_level_14_position(x, y, data)
+    local p = {x = x, y = y}
+    local seed = data.seed
+    local tiles = data.tiles
+    local entities = data.entities
+    local buildings = data.buildings
+    local treasure = data.treasure
+
+    local small_caves = get_noise('small_caves', p, seed)
+    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
+    local smol_areas = get_noise('smol_areas', p, seed + 40000)
+
+    --Resource Spots
+    if smol_areas < -0.71 then
+        if random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+    end
+
+    if small_caves > -0.21 and small_caves < 0.21 then
+        tiles[#tiles + 1] = {name = 'grass-3', position = p}
+        if random(1, 768) == 1 then
+            treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+        end
+        if random(1, 2) == 1 then
+            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+        end
+        return
+    end
+
+    if small_caves < -0.34 or small_caves > 0.34 then
+        tiles[#tiles + 1] = {name = 'water', position = p}
+        if random(1, 128) == 1 then
+            entities[#entities + 1] = {name = 'fish', position = p}
+        end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+        end
+        if random(1, 256) == 1 then
+            spawn_turret(entities, p, 4)
+        end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
+        return
+    end
+
+    if small_caves > -0.41 and small_caves < 0.41 then
+        if noise_cave_ponds > 0.35 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
+            tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
+            if random(1, 256) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
+            if random(1, 256) == 1 then
+                entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
+            end
+            return
+        end
+        if noise_cave_ponds > 0.23 then
+            tiles[#tiles + 1] = {name = 'grass-4', position = p}
+            if random(1, 512) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+            end
+            return
+        end
+    end
+
+    tiles[#tiles + 1] = {name = 'water-shallow', position = p}
 end
 
 local function process_level_13_position(x, y, data)
@@ -366,32 +488,41 @@ local function process_level_13_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
     if small_caves > -0.22 and small_caves < 0.22 then
         tiles[#tiles + 1] = {name = 'dirt-3', position = p}
-        if math.random(1, 768) == 1 then
+        if random(1, 768) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        if math.random(1, 2) == 1 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 2) == 1 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
         return
     end
 
     if small_caves < -0.35 or small_caves > 0.35 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if math.random(1, 128) == 1 then
+        if random(1, 128) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
-        if math.random(1, 128) == 1 then
-            Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
-        if math.random(1, 256) == 1 then
+        if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
         end
         return
@@ -403,22 +534,22 @@ local function process_level_13_position(x, y, data)
             if success then
                 return
             end
-            tiles[#tiles + 1] = {name = 'dirt-' .. math.random(1, 4), position = p}
-            if math.random(1, 256) == 1 then
+            tiles[#tiles + 1] = {name = 'dirt-' .. random(1, 4), position = p}
+            if random(1, 256) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
-            if math.random(1, 256) == 1 then
+            if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
             end
             return
         end
         if noise_cave_ponds > 0.25 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            if math.random(1, 512) == 1 then
+            if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
             return
         end
@@ -442,22 +573,31 @@ local function process_level_12_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
     if noise_1 > 0.65 then
-        if math.random(1, 100) > 88 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+        if random(1, 100) > 88 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         else
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
         end
-        if math.random(1, 48) == 1 then
+        if random(1, 48) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
         return
     end
 
@@ -467,8 +607,8 @@ local function process_level_12_position(x, y, data)
             return
         end
         tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
-        if math.random(1, 100) > 88 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+        if random(1, 100) > 88 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
         return
     end
@@ -476,10 +616,10 @@ local function process_level_12_position(x, y, data)
     if noise_1 > -0.30 and noise_1 < 0.30 then
         if noise_1 > -0.14 and noise_1 < 0.14 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
-            if math.random(1, 256) == 1 then
+            if random(1, 256) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
         else
@@ -488,29 +628,29 @@ local function process_level_12_position(x, y, data)
         return
     end
 
-    if math.random(1, 64) == 1 and noise_2 > 0.65 then
-        if math.random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'stone', position = p, amount = math.abs(p.y) + 1}
-        elseif math.random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'iron-ore', position = p, amount = math.abs(p.y) + 1}
-        elseif math.random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'copper-ore', position = p, amount = math.abs(p.y) + 1}
-        elseif math.random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'coal', position = p, amount = math.abs(p.y) + 1}
+    if random(1, 64) == 1 and noise_2 > 0.65 then
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'stone', position = p, amount = abs(p.y) + 1}
+        elseif random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'iron-ore', position = p, amount = abs(p.y) + 1}
+        elseif random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'copper-ore', position = p, amount = abs(p.y) + 1}
+        elseif random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'coal', position = p, amount = abs(p.y) + 1}
         end
     end
-    if math.random(1, 8192) == 1 then
+    if random(1, 8192) == 1 then
         markets[#markets + 1] = p
     end
-    if math.random(1, 1024) == 1 then
+    if random(1, 1024) == 1 then
         entities[#entities + 1] = {
-            name = 'crash-site-chest-' .. math.random(1, 2),
+            name = 'crash-site-chest-' .. random(1, 2),
             position = p,
             force = 'neutral'
         }
     end
 
-    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+    tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
 end
 
 local function process_level_11_position(x, y, data)
@@ -528,7 +668,7 @@ local function process_level_11_position(x, y, data)
 
     if noise_1 > 0.7 then
         tiles[#tiles + 1] = {name = 'water', position = p}
-        if math.random(1, 48) == 1 then
+        if random(1, 48) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
         return
@@ -536,24 +676,33 @@ local function process_level_11_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
     if noise_1 < -0.72 then
         tiles[#tiles + 1] = {name = 'lab-dark-1', position = p}
-        entities[#entities + 1] = {name = 'uranium-ore', position = p, amount = math.abs(p.y) + 1 * 3}
+        entities[#entities + 1] = {name = 'uranium-ore', position = p, amount = abs(p.y) + 1 * 3}
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
         return
     end
 
     if noise_1 > -0.30 and noise_1 < 0.30 then
         if noise_1 > -0.14 and noise_1 < 0.14 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
-            if math.random(1, 256) == 1 then
+            if random(1, 256) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
         else
@@ -562,15 +711,15 @@ local function process_level_11_position(x, y, data)
         return
     end
 
-    if math.random(1, 64) == 1 and noise_2 > 0.65 then
+    if random(1, 64) == 1 and noise_2 > 0.65 then
         entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
     end
-    if math.random(1, 8192) == 1 then
+    if random(1, 8192) == 1 then
         markets[#markets + 1] = p
     end
-    if math.random(1, 1024) == 1 then
+    if random(1, 1024) == 1 then
         entities[#entities + 1] = {
-            name = 'crash-site-chest-' .. math.random(1, 2),
+            name = 'crash-site-chest-' .. random(1, 2),
             position = p,
             force = 'neutral'
         }
@@ -581,7 +730,32 @@ local function process_level_11_position(x, y, data)
         return
     end
 
-    tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
+    local noise_forest_location = get_noise('forest_location', p, seed)
+    if noise_forest_location > 0.095 then
+        if noise_forest_location > 0.6 then
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'red-refined-concrete', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'green-refined-concrete', position = p}
+            end
+        end
+        return
+    end
+
+    if noise_forest_location < -0.095 then
+        if noise_forest_location < -0.6 then
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'blue-refined-concrete', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'red-refined-concrete', position = p}
+            end
+        end
+        return
+    end
 end
 
 local function process_level_10_position(x, y, data)
@@ -597,7 +771,7 @@ local function process_level_10_position(x, y, data)
 
     if scrapyard < -0.70 or scrapyard > 0.70 then
         tiles[#tiles + 1] = {name = 'grass-3', position = p}
-        if math.random(1, 40) == 1 then
+        if random(1, 40) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
@@ -608,43 +782,87 @@ local function process_level_10_position(x, y, data)
         return
     end
 
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
+        return
+    end
+
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
-    if math.abs(scrapyard) > 0.40 and math.abs(scrapyard) < 0.65 then
-        if math.random(1, 64) == 1 then
-            Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+    if abs(scrapyard) > 0.40 and abs(scrapyard) < 0.65 then
+        if random(1, 64) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
         tiles[#tiles + 1] = {name = 'water-mud', position = p}
         return
     end
-    if math.abs(scrapyard) > 0.25 and math.abs(scrapyard) < 0.40 then
+    if abs(scrapyard) > 0.25 and abs(scrapyard) < 0.40 then
         local success = place_wagon(data)
         if success then
             return
         end
-        if math.random(1, 128) == 1 then
-            Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
-        if math.random(1, 256) == 1 then
+        if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
         end
         tiles[#tiles + 1] = {name = 'water-shallow', position = p}
         return
     end
+    local noise_forest_location = get_noise('forest_location', p, seed)
     if scrapyard > -0.15 and scrapyard < 0.15 then
-        if math.random(1, 100) > 88 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
-        else
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if noise_forest_location > 0.095 then
+            if random(1, 256) == 1 then
+                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                entities[#entities + 1] = {
+                    name = Biters.wave_defense_roll_worm_name(),
+                    position = p,
+                    force = 'enemy'
+                }
             end
+            if noise_forest_location > 0.6 then
+                if random(1, 100) > 42 then
+                    entities[#entities + 1] = {name = 'tree-03', position = p}
+                end
+            else
+                if random(1, 100) > 42 then
+                    entities[#entities + 1] = {name = 'tree-01', position = p}
+                end
+            end
+            return
+        end
+
+        if noise_forest_location < -0.095 then
+            if random(1, 256) == 1 then
+                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                entities[#entities + 1] = {
+                    name = Biters.wave_defense_roll_worm_name(),
+                    position = p,
+                    force = 'enemy'
+                }
+            end
+            if noise_forest_location < -0.6 then
+                if random(1, 100) > 42 then
+                    entities[#entities + 1] = {name = 'dry-tree', position = p}
+                end
+            else
+                if random(1, 100) > 42 then
+                    entities[#entities + 1] = {name = 'tree-02-red', position = p}
+                end
+            end
+            return
         end
         tiles[#tiles + 1] = {name = 'dirt-6', position = p}
         return
@@ -661,21 +879,21 @@ local function process_level_9_position(x, y, data)
     local markets = data.markets
     local treasure = data.treasure
 
-    local maze_p = {x = math.floor(p.x - p.x % 10), y = math.floor(p.y - p.y % 10)}
+    local maze_p = {x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10)}
     local maze_noise = get_noise('no_rocks_2', maze_p, seed)
     local smol_areas = get_noise('smol_areas', p, seed + 40000)
 
     if maze_noise > -0.35 and maze_noise < 0.35 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         local no_rocks_2 = get_noise('no_rocks_2', p, seed)
-        if math.random(1, 2) == 1 and no_rocks_2 > -0.5 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 2) == 1 and no_rocks_2 > -0.5 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
-        if math.random(1, 1024) == 1 then
+        if random(1, 1024) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        if math.random(1, 256) == 1 then
-            Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+        if random(1, 256) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
         return
@@ -686,35 +904,44 @@ local function process_level_9_position(x, y, data)
         if success then
             return
         end
-        if math.random(1, 512) == 1 then
+        if random(1, 512) == 1 then
             markets[#markets + 1] = p
         end
-        if math.random(1, 256) == 1 then
+        if random(1, 256) == 1 then
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
-        if math.random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
         return
     end
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
     if maze_noise < -0.5 or maze_noise > 0.5 then
         tiles[#tiles + 1] = {name = 'deepwater', position = p}
-        if math.random(1, 96) == 1 then
+        if random(1, 96) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
         return
     end
 
     tiles[#tiles + 1] = {name = 'water', position = p}
-    if math.random(1, 96) == 1 then
+    if random(1, 96) == 1 then
         entities[#entities + 1] = {name = 'fish', position = p}
     end
 end
@@ -735,19 +962,28 @@ local function process_level_8_position(x, y, data)
     local small_caves = get_noise('small_caves', p, seed)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
 
         if small_caves < -0.35 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
     end
 
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
+        return
+    end
+
     if scrapyard < -0.25 or scrapyard > 0.25 then
-        if math.random(1, 256) == 1 then
-            if math.random(1, 8) == 1 then
+        if random(1, 256) == 1 then
+            if random(1, 8) == 1 then
                 spawn_turret(entities, p, 3)
             else
                 spawn_turret(entities, p, 4)
@@ -755,8 +991,8 @@ local function process_level_8_position(x, y, data)
         end
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         if scrapyard < -0.55 or scrapyard > 0.55 then
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
             return
         end
@@ -765,21 +1001,21 @@ local function process_level_8_position(x, y, data)
             if success then
                 return
             end
-            if math.random(1, 128) == 1 then
-                Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+            if random(1, 128) == 1 then
+                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                 entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
             end
-            if math.random(1, 96) == 1 then
+            if random(1, 96) == 1 then
                 entities[#entities + 1] = {
-                    name = scrap_entities[math.random(1, scrap_entities_index)],
+                    name = scrap_entities[random(1, scrap_entities_index)],
                     position = p,
                     force = 'enemy'
                 }
             end
-            if math.random(1, 5) > 1 then
+            if random(1, 5) > 1 then
                 entities[#entities + 1] = {name = 'mineable-wreckage', position = p}
             end
-            if math.random(1, 256) == 1 then
+            if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
             end
             return
@@ -790,7 +1026,7 @@ local function process_level_8_position(x, y, data)
     local cave_ponds = get_noise('cave_ponds', p, seed)
     if cave_ponds < -0.6 and scrapyard > -0.2 and scrapyard < 0.2 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if math.random(1, 128) == 1 then
+        if random(1, 128) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
         return
@@ -798,28 +1034,28 @@ local function process_level_8_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
     local large_caves = get_noise('large_caves', p, seed)
     if scrapyard > -0.15 and scrapyard < 0.15 then
-        if math.floor(large_caves * 10) % 4 < 3 then
+        if floor(large_caves * 10) % 4 < 3 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
             return
         end
     end
 
-    if math.random(1, 64) == 1 and cave_ponds > 0.6 then
+    if random(1, 64) == 1 and cave_ponds > 0.6 then
         entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
     end
 
     tiles[#tiles + 1] = {name = 'stone-path', position = p}
-    if math.random(1, 256) == 1 then
+    if random(1, 256) == 1 then
         entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
     end
 end
@@ -840,7 +1076,7 @@ local function process_level_7_position(x, y, data)
 
     if cave_rivers_3 > -0.025 and cave_rivers_3 < 0.025 and no_rocks_2 > -0.6 then
         tiles[#tiles + 1] = {name = 'water', position = p}
-        if math.random(1, 128) == 1 then
+        if random(1, 128) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
         return
@@ -848,7 +1084,7 @@ local function process_level_7_position(x, y, data)
 
     if cave_rivers_4 > -0.025 and cave_rivers_4 < 0.025 and no_rocks_2 > -0.6 then
         tiles[#tiles + 1] = {name = 'water', position = p}
-        if math.random(1, 128) == 1 then
+        if random(1, 128) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
         return
@@ -857,52 +1093,52 @@ local function process_level_7_position(x, y, data)
     local noise_ores = get_noise('no_rocks_2', p, seed + 25000)
 
     if cave_rivers_3 > -0.20 and cave_rivers_3 < 0.20 then
-        tiles[#tiles + 1] = {name = 'grass-' .. math.floor(cave_rivers_3 * 32) % 3 + 1, position = p}
+        tiles[#tiles + 1] = {name = 'grass-' .. floor(cave_rivers_3 * 32) % 3 + 1, position = p}
         if cave_rivers_3 > -0.10 and cave_rivers_3 < 0.10 then
-            if math.random(1, 8) == 1 and no_rocks_2 > -0.25 then
+            if random(1, 8) == 1 and no_rocks_2 > -0.25 then
                 entities[#entities + 1] = {name = 'tree-01', position = p}
             end
-            if math.random(1, 2048) == 1 then
+            if random(1, 2048) == 1 then
                 markets[#markets + 1] = p
             end
             if noise_ores < -0.5 and no_rocks_2 > -0.6 then
                 if cave_rivers_3 > 0 and cave_rivers_3 < 0.07 then
-                    entities[#entities + 1] = {name = 'iron-ore', position = p, amount = math.abs(p.y) + 1}
+                    entities[#entities + 1] = {name = 'iron-ore', position = p, amount = abs(p.y) + 1}
                 end
             end
         end
-        if math.random(1, 64) == 1 and no_rocks_2 > 0.7 then
+        if random(1, 64) == 1 and no_rocks_2 > 0.7 then
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
-        if math.random(1, 2048) == 1 then
+        if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
 
     if cave_rivers_4 > -0.20 and cave_rivers_4 < 0.20 then
-        tiles[#tiles + 1] = {name = 'grass-' .. math.floor(cave_rivers_4 * 32) % 3 + 1, position = p}
+        tiles[#tiles + 1] = {name = 'grass-' .. floor(cave_rivers_4 * 32) % 3 + 1, position = p}
         if cave_rivers_4 > -0.10 and cave_rivers_4 < 0.10 then
             local success = place_wagon(data)
             if success then
                 return
             end
-            if math.random(1, 8) == 1 and no_rocks_2 > -0.25 then
+            if random(1, 8) == 1 and no_rocks_2 > -0.25 then
                 entities[#entities + 1] = {name = 'tree-02', position = p}
             end
-            if math.random(1, 2048) == 1 then
+            if random(1, 2048) == 1 then
                 markets[#markets + 1] = p
             end
             if noise_ores < -0.5 and no_rocks_2 > -0.6 then
                 if cave_rivers_4 > 0 and cave_rivers_4 < 0.07 then
-                    entities[#entities + 1] = {name = 'copper-ore', position = p, amount = math.abs(p.y) + 1}
+                    entities[#entities + 1] = {name = 'copper-ore', position = p, amount = abs(p.y) + 1}
                 end
             end
         end
-        if math.random(1, 64) == 1 and no_rocks_2 > 0.7 then
+        if random(1, 64) == 1 and no_rocks_2 > 0.7 then
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
-        if math.random(1, 2048) == 1 then
+        if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
@@ -913,12 +1149,12 @@ local function process_level_7_position(x, y, data)
     local small_caves = get_noise('small_caves', p, seed)
     if noise_cave_ponds < 0.25 and noise_cave_ponds > -0.25 then
         if small_caves > 0.55 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
 
         if small_caves < -0.55 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
 
             return
         end
@@ -926,16 +1162,16 @@ local function process_level_7_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
     tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-    if math.random(1, 100) > 15 then
-        entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+    if random(1, 100) > 15 then
+        entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
     end
-    if math.random(1, 256) == 1 then
+    if random(1, 256) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
     end
 end
@@ -958,58 +1194,107 @@ local function process_level_6_position(x, y, data)
     local small_caves = get_noise('small_caves', p, seed)
     if noise_cave_ponds < 0.45 and noise_cave_ponds > -0.45 then
         if small_caves > 0.45 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
 
         if small_caves < -0.45 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
     end
 
     if large_caves > -0.03 and large_caves < 0.03 and cave_rivers < 0.25 then
         tiles[#tiles + 1] = {name = 'water-green', position = p}
-        if math.random(1, 128) == 1 then
+        if random(1, 128) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
         return
     end
 
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
+        return
+    end
+
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
-
+    local noise_forest_location = get_noise('forest_location', p, seed)
     if cave_rivers > -0.1 and cave_rivers < 0.1 then
         local success = place_wagon(data)
         if success then
             return
         end
-        if math.random(1, 36) == 1 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+        if random(1, 36) == 1 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
-        if math.random(1, 128) == 1 then
-            Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
-        if math.random(1, 256) == 1 then
+        if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
         end
     else
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        if math.random(1, 100) > 15 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 100) > 15 then
+            if noise_forest_location > 0.095 then
+                if random(1, 256) == 1 then
+                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                    entities[#entities + 1] = {
+                        name = Biters.wave_defense_roll_worm_name(),
+                        position = p,
+                        force = 'enemy'
+                    }
+                end
+                if noise_forest_location > 0.6 then
+                    if random(1, 100) > 42 then
+                        entities[#entities + 1] = {name = 'tree-08-brown', position = p}
+                    end
+                else
+                    if random(1, 100) > 42 then
+                        entities[#entities + 1] = {name = 'tree-01', position = p}
+                    end
+                end
+                return
+            end
+
+            if noise_forest_location < -0.095 then
+                if random(1, 256) == 1 then
+                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                    entities[#entities + 1] = {
+                        name = Biters.wave_defense_roll_worm_name(),
+                        position = p,
+                        force = 'enemy'
+                    }
+                end
+                if noise_forest_location < -0.6 then
+                    if random(1, 100) > 42 then
+                        entities[#entities + 1] = {name = 'tree-04', position = p}
+                    end
+                else
+                    if random(1, 100) > 42 then
+                        entities[#entities + 1] = {name = 'tree-02-red', position = p}
+                    end
+                end
+                return
+            end
         end
-        if math.random(1, 512) == 1 then
+        if random(1, 512) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        if math.random(1, 4096) == 1 then
+        if random(1, 4096) == 1 then
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
-        if math.random(1, 8096) == 1 then
+        if random(1, 8096) == 1 then
             markets[#markets + 1] = p
         end
     end
@@ -1029,25 +1314,25 @@ local function process_level_5_position(x, y, data)
 
     if small_caves > -0.24 and small_caves < 0.24 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        if math.random(1, 768) == 1 then
+        if random(1, 768) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        if math.random(1, 2) == 1 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 2) == 1 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
         return
     end
 
     if small_caves < -0.50 or small_caves > 0.50 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if math.random(1, 128) == 1 then
+        if random(1, 128) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
-        if math.random(1, 128) == 1 then
-            Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
-        if math.random(1, 256) == 1 then
+        if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
         end
         return
@@ -1055,9 +1340,18 @@ local function process_level_5_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
+        return
     end
 
     if small_caves > -0.40 and small_caves < 0.40 then
@@ -1066,27 +1360,27 @@ local function process_level_5_position(x, y, data)
             if success then
                 return
             end
-            tiles[#tiles + 1] = {name = 'dirt-' .. math.random(1, 4), position = p}
-            if math.random(1, 256) == 1 then
+            tiles[#tiles + 1] = {name = 'dirt-' .. random(1, 4), position = p}
+            if random(1, 256) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
-            if math.random(1, 256) == 1 then
+            if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
             end
             return
         end
         if noise_cave_ponds > 0.25 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            if math.random(1, 512) == 1 then
+            if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
-            if math.random(1, 2) == 1 then
-                entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
         end
     end
 
-    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
 end
 
 local function process_level_4_position(x, y, data)
@@ -1103,45 +1397,45 @@ local function process_level_4_position(x, y, data)
     local small_caves = get_noise('dungeons', p, seed)
     local smol_areas = get_noise('smol_areas', p, seed + 15000)
 
-    if math.abs(noise_large_caves) > 0.7 then
+    if abs(noise_large_caves) > 0.7 then
         tiles[#tiles + 1] = {name = 'water', position = p}
-        if math.random(1, 16) == 1 then
+        if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
         return
     end
-    if math.abs(noise_large_caves) > 0.6 then
-        if math.random(1, 16) == 1 then
+    if abs(noise_large_caves) > 0.6 then
+        if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'tree-02', position = p}
         end
-        if math.random(1, 32) == 1 then
+        if random(1, 32) == 1 then
             markets[#markets + 1] = p
         end
     end
-    if math.abs(noise_large_caves) > 0.5 then
+    if abs(noise_large_caves) > 0.5 then
         tiles[#tiles + 1] = {name = 'grass-2', position = p}
-        if math.random(1, 620) == 1 then
+        if random(1, 620) == 1 then
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
-        if math.random(1, 384) == 1 then
-            Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+        if random(1, 384) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
             entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
         end
         local success = place_wagon(data)
         if success then
             return
         end
-        if math.random(1, 1024) == 1 then
+        if random(1, 1024) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
     end
-    if math.abs(noise_large_caves) > 0.475 then
+    if abs(noise_large_caves) > 0.475 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        if math.random(1, 2) == 1 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 2) == 1 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
-        if math.random(1, 2048) == 1 then
+        if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
@@ -1150,22 +1444,22 @@ local function process_level_4_position(x, y, data)
     --Chasms
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.75 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
 
         if small_caves < -0.75 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
     end
 
     if small_caves > -0.15 and small_caves < 0.15 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        if math.random(1, 2) == 1 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 2) == 1 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
-        if math.random(1, 1024) == 1 then
+        if random(1, 1024) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         return
@@ -1173,7 +1467,7 @@ local function process_level_4_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -1182,24 +1476,24 @@ local function process_level_4_position(x, y, data)
         --Main Rock Terrain
         local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
-            tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
-            if math.random(1, 512) == 1 then
+            tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
+            if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
 
-        if math.random(1, 2048) == 1 then
+        if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        if math.random(1, 100) > 30 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 100) > 30 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
         return
     end
 
-    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
 end
 
 local function process_level_3_position(x, y, data)
@@ -1219,7 +1513,7 @@ local function process_level_3_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -1228,16 +1522,25 @@ local function process_level_3_position(x, y, data)
     if noise_cave_ponds < -0.77 then
         if noise_cave_ponds > -0.79 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         else
-            tiles[#tiles + 1] = {name = 'grass-' .. math.floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-            if math.random(1, 32) == 1 then
+            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            if random(1, 32) == 1 then
                 markets[#markets + 1] = p
             end
-            if math.random(1, 16) == 1 then
-                entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+            if random(1, 16) == 1 then
+                entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
             end
         end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
         return
     end
 
@@ -1245,7 +1548,7 @@ local function process_level_3_position(x, y, data)
         --Green Water Ponds
         if noise_cave_ponds > 0.80 then
             tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-            if math.random(1, 16) == 1 then
+            if random(1, 16) == 1 then
                 entities[#entities + 1] = {name = 'fish', position = p}
             end
             return
@@ -1254,13 +1557,13 @@ local function process_level_3_position(x, y, data)
         --Chasms
         if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
             if small_caves > 0.85 then
-                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
 
                 return
             end
 
             if small_caves < -0.85 then
-                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
 
                 return
             end
@@ -1271,7 +1574,7 @@ local function process_level_3_position(x, y, data)
         if cave_rivers < 0.024 and cave_rivers > -0.024 then
             if noise_cave_ponds > 0.2 then
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
-                if math.random(1, 64) == 1 then
+                if random(1, 64) == 1 then
                     entities[#entities + 1] = {name = 'fish', position = p}
                 end
                 return
@@ -1281,7 +1584,7 @@ local function process_level_3_position(x, y, data)
         if cave_rivers_2 < 0.024 and cave_rivers_2 > -0.024 then
             if noise_cave_ponds < 0.4 then
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
-                if math.random(1, 64) == 1 then
+                if random(1, 64) == 1 then
                     entities[#entities + 1] = {name = 'fish', position = p}
                 end
                 return
@@ -1289,7 +1592,7 @@ local function process_level_3_position(x, y, data)
         end
 
         if noise_cave_ponds > 0.725 then
-            tiles[#tiles + 1] = {name = 'dirt-' .. math.random(4, 6), position = p}
+            tiles[#tiles + 1] = {name = 'dirt-' .. random(4, 6), position = p}
             return
         end
 
@@ -1297,25 +1600,25 @@ local function process_level_3_position(x, y, data)
         --Worm oil Zones
         if no_rocks < 0.20 and no_rocks > -0.20 then
             if small_caves > 0.35 then
-                tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
-                if math.random(1, 320) == 1 then
+                tiles[#tiles + 1] = {name = 'dirt-' .. floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+                if random(1, 320) == 1 then
                     entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
                 end
-                if math.random(1, 50) == 1 then
-                    Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+                if random(1, 50) == 1 then
+                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
                         force = 'enemy'
                     }
                 end
-                if math.random(1, 256) == 1 then
+                if random(1, 256) == 1 then
                     spawn_turret(entities, p, 3)
                 end
-                if math.random(1, 512) == 1 then
+                if random(1, 512) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
                 end
-                if math.random(1, 64) == 1 then
+                if random(1, 64) == 1 then
                     entities[#entities + 1] = {name = 'dead-tree-desert', position = p}
                 end
                 return
@@ -1329,24 +1632,24 @@ local function process_level_3_position(x, y, data)
             if success then
                 return
             end
-            tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
-            if math.random(1, 512) == 1 then
+            tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
+            if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
 
-        if math.random(1, 2048) == 1 then
+        if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        if math.random(1, 100) > 30 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        if random(1, 100) > 30 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
         return
     end
 
-    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
 end
 
 local function process_level_2_position(x, y, data)
@@ -1364,7 +1667,7 @@ local function process_level_2_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if math.random(1, 8) == 1 then
+        if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -1375,12 +1678,12 @@ local function process_level_2_position(x, y, data)
         --Chasms
         if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
             if small_caves > 0.32 then
-                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
 
                 return
             end
             if small_caves < -0.32 then
-                tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
                 return
             end
         end
@@ -1388,7 +1691,7 @@ local function process_level_2_position(x, y, data)
         --Green Water Ponds
         if noise_cave_ponds > 0.80 then
             tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-            if math.random(1, 16) == 1 then
+            if random(1, 16) == 1 then
                 entities[#entities + 1] = {name = 'fish', position = p}
             end
             return
@@ -1399,7 +1702,7 @@ local function process_level_2_position(x, y, data)
         if cave_rivers < 0.037 and cave_rivers > -0.037 then
             if noise_cave_ponds < 0.1 then
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
-                if math.random(1, 64) == 1 then
+                if random(1, 64) == 1 then
                     entities[#entities + 1] = {name = 'fish', position = p}
                 end
                 return
@@ -1407,18 +1710,27 @@ local function process_level_2_position(x, y, data)
         end
 
         if noise_cave_ponds > 0.66 then
-            tiles[#tiles + 1] = {name = 'dirt-' .. math.random(4, 6), position = p}
+            tiles[#tiles + 1] = {name = 'dirt-' .. random(4, 6), position = p}
+            return
+        end
+
+        if random(1, 2048) == 1 then
+            entities[#entities + 1] = {
+                name = spawner[random(1, size_of_spawner)],
+                position = p,
+                force = 'protectors'
+            }
             return
         end
 
         --Market Spots
         if noise_cave_ponds < -0.80 then
-            tiles[#tiles + 1] = {name = 'grass-' .. math.floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-            if math.random(1, 32) == 1 then
+            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            if random(1, 32) == 1 then
                 markets[#markets + 1] = p
             end
-            if math.random(1, 16) == 1 then
-                entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+            if random(1, 16) == 1 then
+                entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
             end
             return
         end
@@ -1427,25 +1739,25 @@ local function process_level_2_position(x, y, data)
         --Worm oil Zones
         if no_rocks < 0.20 and no_rocks > -0.20 then
             if small_caves > 0.30 then
-                tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
-                if math.random(1, 450) == 1 then
+                tiles[#tiles + 1] = {name = 'dirt-' .. floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+                if random(1, 450) == 1 then
                     entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
                 end
-                if math.random(1, 64) == 1 then
-                    Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+                if random(1, 64) == 1 then
+                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
                         force = 'enemy'
                     }
                 end
-                if math.random(1, 256) == 1 then
+                if random(1, 256) == 1 then
                     spawn_turret(entities, p, 2)
                 end
-                if math.random(1, 1024) == 1 then
+                if random(1, 1024) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
                 end
-                if math.random(1, 64) == 1 then
+                if random(1, 64) == 1 then
                     entities[#entities + 1] = {name = 'dead-tree-desert', position = p}
                 end
                 return
@@ -1459,24 +1771,204 @@ local function process_level_2_position(x, y, data)
             if success then
                 return
             end
-            tiles[#tiles + 1] = {name = 'grass-' .. math.random(1, 4), position = p}
-            if math.random(1, 512) == 1 then
+            tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
+            if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
 
-        if math.random(1, 2048) == 1 then
+        if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        tiles[#tiles + 1] = {name = 'grass-' .. math.random(1, 4), position = p}
-        if math.random(1, 100) > 25 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+        tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
+        if random(1, 100) > 25 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
         return
     end
 
-    tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+end
+
+local function process_level_1_2_position(x, y, data)
+    local p = {x = x, y = y}
+    local seed = data.seed
+    local buildings = data.buildings
+    local tiles = data.tiles
+    local entities = data.entities
+    local markets = data.markets
+    local treasure = data.treasure
+
+    local small_caves = get_noise('dungeons', p, seed + 33322)
+    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
+    local smol_areas = get_noise('smol_areas', p, seed + 33333)
+
+    --Resource Spots
+    if smol_areas < -0.71 then
+        -- if random(1, 8) == 1 then
+        Generate_resources(buildings, p, Public.level_depth)
+    -- end
+    end
+
+    --Chasms
+    if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
+        if small_caves > 0.52 then
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            return
+        end
+        if small_caves < -0.52 then
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            return
+        end
+    end
+
+    --Water Ponds
+    if noise_cave_ponds > 0.790 then
+        tiles[#tiles + 1] = {name = 'deepwater', position = p}
+        if random(1, 16) == 1 then
+            entities[#entities + 1] = {name = 'fish', position = p}
+        end
+        return
+    end
+
+    --Rivers
+    local cave_rivers = get_noise('cave_rivers', p, seed + 200000)
+    if cave_rivers < 0.041 and cave_rivers > -0.042 then
+        if noise_cave_ponds > 0 then
+            tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+            if random(1, 64) == 1 then
+                entities[#entities + 1] = {name = 'fish', position = p}
+            end
+            return
+        end
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
+        return
+    end
+
+    if noise_cave_ponds > 0.74 then
+        tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
+        tiles[#tiles + 1] = {name = 'grass-1', position = p}
+        if cave_rivers < -0.502 then
+            tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
+        end
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+        end
+        return
+    end
+
+    --Market Spots
+    if noise_cave_ponds < -0.74 then
+        tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+        if random(1, 32) == 1 then
+            markets[#markets + 1] = p
+        end
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+        end
+        return
+    end
+
+    local no_rocks = get_noise('no_rocks', p, seed + 30000)
+    --Worm oil Zones
+    if p.y < -64 + noise_cave_ponds * 10 then
+        if no_rocks < 0.11 and no_rocks > -0.11 then
+            if small_caves > 0.31 then
+                tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+                if random(1, 450) == 1 then
+                    entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
+                end
+                if random(1, 96) == 1 then
+                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                    entities[#entities + 1] = {
+                        name = Biters.wave_defense_roll_worm_name(),
+                        position = p,
+                        force = 'enemy'
+                    }
+                end
+
+                if random(1, 1024) == 1 then
+                    treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
+                end
+                if random(1, 64) == 1 then
+                    entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
+                end
+                return
+            end
+        end
+    end
+
+    --Main Rock Terrain
+    local no_rocks_2 = get_noise('no_rocks_2', p, seed + 85000)
+    if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
+        local success = place_wagon(data)
+        if success then
+            return
+        end
+        tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
+        end
+        if random(1, 512) == 1 then
+            treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
+        end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
+    end
+    tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+    local noise_forest_location = get_noise('forest_location', p, seed)
+    if noise_forest_location > 0.095 then
+        if random(1, 256) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        if noise_forest_location > 0.6 then
+            if random(1, 100) > 42 then
+                entities[#entities + 1] = {name = 'tree-08-brown', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                entities[#entities + 1] = {name = 'tree-01', position = p}
+            end
+        end
+        return
+    end
+
+    if noise_forest_location < -0.095 then
+        if random(1, 256) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        if noise_forest_location < -0.6 then
+            if random(1, 100) > 42 then
+                entities[#entities + 1] = {name = 'tree-04', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                entities[#entities + 1] = {name = 'tree-02-red', position = p}
+            end
+        end
+        return
+    end
 end
 
 local function process_level_1_position(x, y, data)
@@ -1494,7 +1986,7 @@ local function process_level_1_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        -- if math.random(1, 8) == 1 then
+        -- if random(1, 8) == 1 then
         Generate_resources(buildings, p, Public.level_depth)
     -- end
     end
@@ -1502,11 +1994,11 @@ local function process_level_1_position(x, y, data)
     --Chasms
     if noise_cave_ponds < 0.111 and noise_cave_ponds > -0.112 then
         if small_caves > 0.53 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
         if small_caves < -0.53 then
-            tiles[#tiles + 1] = {name = 'out-of-map', position = p}
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
             return
         end
     end
@@ -1514,9 +2006,18 @@ local function process_level_1_position(x, y, data)
     --Water Ponds
     if noise_cave_ponds > 0.810 then
         tiles[#tiles + 1] = {name = 'deepwater', position = p}
-        if math.random(1, 16) == 1 then
+        if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        entities[#entities + 1] = {
+            name = spawner[random(1, size_of_spawner)],
+            position = p,
+            force = 'protectors'
+        }
         return
     end
 
@@ -1525,7 +2026,7 @@ local function process_level_1_position(x, y, data)
     if cave_rivers < 0.042 and cave_rivers > -0.042 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
-            if math.random(1, 64) == 1 then
+            if random(1, 64) == 1 then
                 entities[#entities + 1] = {name = 'fish', position = p}
             end
             return
@@ -1533,25 +2034,25 @@ local function process_level_1_position(x, y, data)
     end
 
     if noise_cave_ponds > 0.74 then
-        tiles[#tiles + 1] = {name = 'dirt-' .. math.random(4, 6), position = p}
+        tiles[#tiles + 1] = {name = 'dirt-' .. random(4, 6), position = p}
         tiles[#tiles + 1] = {name = 'grass-1', position = p}
         if cave_rivers < -0.502 then
             tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
         end
-        if math.random(1, 64) == 1 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
         return
     end
 
     --Market Spots
     if noise_cave_ponds < -0.74 then
-        tiles[#tiles + 1] = {name = 'grass-' .. math.floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-        if math.random(1, 32) == 1 then
+        tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+        if random(1, 32) == 1 then
             markets[#markets + 1] = p
         end
-        if math.random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
         return
     end
@@ -1561,12 +2062,12 @@ local function process_level_1_position(x, y, data)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.12 and no_rocks > -0.12 then
             if small_caves > 0.30 then
-                tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(noise_cave_ponds * 32) % 7 + 1, position = p}
-                if math.random(1, 450) == 1 then
+                tiles[#tiles + 1] = {name = 'dirt-' .. floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+                if random(1, 450) == 1 then
                     entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
                 end
-                if math.random(1, 96) == 1 then
-                    Biters.wave_defense_set_worm_raffle(math.abs(p.y) * worm_level_modifier)
+                if random(1, 96) == 1 then
+                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
@@ -1574,11 +2075,11 @@ local function process_level_1_position(x, y, data)
                     }
                 end
 
-                if math.random(1, 1024) == 1 then
+                if random(1, 1024) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
                 end
-                if math.random(1, 64) == 1 then
-                    entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+                if random(1, 64) == 1 then
+                    entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
                 end
                 return
             end
@@ -1592,33 +2093,219 @@ local function process_level_1_position(x, y, data)
         if success then
             return
         end
-        tiles[#tiles + 1] = {name = 'dirt-' .. math.floor(no_rocks_2 * 8) % 2 + 5, position = p}
-        if math.random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'tree-0' .. math.random(1, 9), position = p}
+        tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
-        if math.random(1, 512) == 1 then
+        if random(1, 512) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
         end
         return
     end
 
-    if math.random(1, 2048) == 1 then
+    if random(1, 2048) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
     end
-    tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-    if math.random(1, 100) > 25 then
-        entities[#entities + 1] = {name = rock_raffle[math.random(1, size_of_rock_raffle)], position = p}
+    local random_tiles = get_noise('forest_location', p, seed)
+    if random_tiles > 0.095 then
+        if random_tiles > 0.6 then
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'sand-1', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'sand-2', position = p}
+            end
+        end
+    end
+
+    if random_tiles < -0.095 then
+        if random_tiles < -0.6 then
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'sand-1', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'lab-dark-1', position = p}
+            end
+        end
+    end
+    if random(1, 100) > 25 then
+        entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+    end
+end
+
+local function process_level_0_position(x, y, data)
+    local p = {x = x, y = y}
+    local seed = data.seed
+    local buildings = data.buildings
+    local tiles = data.tiles
+    local entities = data.entities
+    local markets = data.markets
+    local treasure = data.treasure
+
+    local small_caves = get_noise('dungeons', p, seed + 33322)
+    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
+    local smol_areas = get_noise('smol_areas', p, seed + 33333)
+
+    --Resource Spots
+    if smol_areas < -0.71 then
+        -- if random(1, 8) == 1 then
+        Generate_resources(buildings, p, Public.level_depth)
+    -- end
+    end
+
+    --Chasms
+    if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
+        if small_caves > 0.52 then
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            return
+        end
+        if small_caves < -0.52 then
+            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            return
+        end
+    end
+
+    --Water Ponds
+    if noise_cave_ponds > 0.790 then
+        tiles[#tiles + 1] = {name = 'deepwater', position = p}
+        if random(1, 16) == 1 then
+            entities[#entities + 1] = {name = 'fish', position = p}
+        end
+        return
+    end
+
+    --Rivers
+    local cave_rivers = get_noise('cave_rivers', p, seed + 200000)
+    if cave_rivers < 0.041 and cave_rivers > -0.042 then
+        if noise_cave_ponds > 0 then
+            tiles[#tiles + 1] = {name = 'water-shallow', position = p}
+            if random(1, 64) == 1 then
+                entities[#entities + 1] = {name = 'fish', position = p}
+            end
+            return
+        end
+    end
+
+    if noise_cave_ponds > 0.74 then
+        tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
+        tiles[#tiles + 1] = {name = 'grass-1', position = p}
+        if cave_rivers < -0.502 then
+            tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
+        end
+        if random(1, 64) == 1 then
+            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+        end
+        return
+    end
+
+    --Market Spots
+    if noise_cave_ponds < -0.74 then
+        tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+        if random(1, 32) == 1 then
+            markets[#markets + 1] = p
+        end
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+        end
+        return
+    end
+
+    local no_rocks = get_noise('no_rocks', p, seed + 30000)
+    --Worm oil Zones
+    if p.y < -64 + noise_cave_ponds * 10 then
+        if no_rocks < 0.11 and no_rocks > -0.11 then
+            if small_caves > 0.31 then
+                tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+                if random(1, 450) == 1 then
+                    entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
+                end
+                if random(1, 96) == 1 then
+                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                    entities[#entities + 1] = {
+                        name = Biters.wave_defense_roll_worm_name(),
+                        position = p,
+                        force = 'enemy'
+                    }
+                end
+
+                if random(1, 1024) == 1 then
+                    treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
+                end
+                if random(1, 64) == 1 then
+                    entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
+                end
+                return
+            end
+        end
+    end
+
+    --Main Rock Terrain
+    local no_rocks_2 = get_noise('no_rocks_2', p, seed + 85000)
+    if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
+        local success = place_wagon(data)
+        if success then
+            return
+        end
+        tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
+        if random(1, 32) == 1 then
+            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
+        end
+        if random(1, 512) == 1 then
+            treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
+        end
+        return
+    end
+
+    if random(1, 2048) == 1 then
+        treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
+    end
+    local random_tiles = get_noise('forest_location', p, seed)
+    if random_tiles > 0.095 then
+        if random_tiles > 0.6 then
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'red-desert-0', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'red-desert-1', position = p}
+            end
+        end
+    end
+
+    if random_tiles < -0.095 then
+        if random_tiles < -0.6 then
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'red-desert-2', position = p}
+            end
+        else
+            if random(1, 100) > 42 then
+                tiles[#tiles + 1] = {name = 'red-desert-3', position = p}
+            end
+        end
+    end
+    if random(1, 100) > 25 then
+        if random(1, 10) == 1 then
+            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+        else
+            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+        end
     end
 end
 
 Public.levels = {
+    process_level_0_position,
+    process_level_1_2_position,
     process_level_1_position,
     process_level_3_position,
     process_level_5_position,
+    process_level_8_position,
+    process_level_9_position,
     process_level_4_position,
-    process_level_6_position,
     process_level_2_position,
     process_level_3_position,
+    process_level_6_position,
     process_level_4_position,
     process_level_5_position,
     process_level_6_position,
@@ -1628,7 +2315,8 @@ Public.levels = {
     process_level_10_position,
     process_level_11_position,
     process_level_12_position,
-    process_level_13_position
+    process_level_13_position,
+    process_level_14_position
 }
 
 local function is_out_of_map(p)
@@ -1641,7 +2329,7 @@ end
 local function process_bits(x, y, data)
     local levels = Public.levels
     local left_top_y = data.area.left_top.y
-    local index = math.floor((math.abs(left_top_y / Public.level_depth)) % 17) + 1
+    local index = floor((abs(left_top_y / Public.level_depth)) % 22) + 1
     local process_level = levels[index]
     if not process_level then
         process_level = levels[#levels]
@@ -1658,25 +2346,25 @@ local function border_chunk(data)
 
     local pos = {x = x + data.top_x, y = y + data.top_y}
 
-    if math.random(1, math.ceil(pos.y + pos.y) + 64) == 1 then
-        entities[#entities + 1] = {name = trees[math.random(1, #trees)], position = pos}
+    if random(1, ceil(pos.y + pos.y) + 64) == 1 then
+        entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
     if not is_out_of_map(pos) then
-        if math.random(1, math.ceil(pos.y + pos.y) + 32) == 1 then
-            entities[#entities + 1] = {name = rock_raffle[math.random(1, #rock_raffle)], position = pos}
+        if random(1, ceil(pos.y + pos.y) + 32) == 1 then
+            entities[#entities + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = pos}
         end
-        if math.random(1, pos.y + 2) == 1 then
+        if random(1, pos.y + 2) == 1 then
             decoratives[#decoratives + 1] = {
                 name = 'rock-small',
                 position = pos,
-                amount = math.random(1, 1 + math.ceil(20 - y / 2))
+                amount = random(1, 1 + ceil(20 - y / 2))
             }
         end
-        if math.random(1, pos.y + 2) == 1 then
+        if random(1, pos.y + 2) == 1 then
             decoratives[#decoratives + 1] = {
                 name = 'rock-tiny',
                 position = pos,
-                amount = math.random(1, 1 + math.ceil(20 - y / 2))
+                amount = random(1, 1 + ceil(20 - y / 2))
             }
         end
     end
@@ -1698,12 +2386,12 @@ local function biter_chunk(data)
         callback = Functions.active_not_destructible_callback
     }
 
-    if math.random(1, 128) == 1 then
+    if random(1, 128) == 1 then
         local position =
-            surface.find_non_colliding_position('biter-spawner', tile_positions[math.random(1, #tile_positions)], 16, 2)
+            surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)
         if position then
             entities[#entities + 1] = {
-                name = spawner_raffle[math.random(1, #spawner_raffle)],
+                name = spawner_raffle[random(1, #spawner_raffle)],
                 position = position,
                 force = 'enemy',
                 callback = disable_spawners
@@ -1711,14 +2399,9 @@ local function biter_chunk(data)
         end
     end
 
-    if math.random(1, 128) == 1 then
+    if random(1, 128) == 1 then
         local position =
-            surface.find_non_colliding_position(
-            'big-worm-turret',
-            tile_positions[math.random(1, #tile_positions)],
-            16,
-            2
-        )
+            surface.find_non_colliding_position('big-worm-turret', tile_positions[random(1, #tile_positions)], 16, 2)
         if position then
             entities[#entities + 1] = {
                 name = 'big-worm-turret',

@@ -1,6 +1,10 @@
 local WPT = require 'maps.mountain_fortress_v3.table'
+require 'modules.check_fullness'
 
 local Public = {}
+local random = math.random
+local floor = math.floor
+local sqrt = math.sqrt
 
 local max_spill = 60
 
@@ -8,6 +12,15 @@ local valid_rocks = {
     ['sand-rock-big'] = true,
     ['rock-big'] = true,
     ['rock-huge'] = true
+}
+
+local valid_trees = {
+    ['dry-tree'] = true,
+    ['tree-01'] = true,
+    ['tree-02-red'] = true,
+    ['tree-03'] = true,
+    ['tree-04'] = true,
+    ['tree-08-brown'] = true
 }
 
 local rock_yield = {
@@ -25,8 +38,10 @@ local particles = {
 }
 
 local function create_particles(surface, name, position, amount, cause_position)
-    local d1 = (-100 + math.random(0, 200)) * 0.0004
-    local d2 = (-100 + math.random(0, 200)) * 0.0004
+    local d1 = (-100 + random(0, 200)) * 0.0004
+    local d2 = (-100 + random(0, 200)) * 0.0004
+
+    name = name or 'leaf-particle'
 
     if cause_position then
         d1 = (cause_position.x - position.x) * 0.025
@@ -34,7 +49,7 @@ local function create_particles(surface, name, position, amount, cause_position)
     end
 
     for i = 1, amount, 1 do
-        local m = math.random(4, 10)
+        local m = random(4, 10)
         local m2 = m * 0.005
 
         surface.create_particle(
@@ -45,27 +60,21 @@ local function create_particles(surface, name, position, amount, cause_position)
                 vertical_speed = 0.130,
                 height = 0,
                 movement = {
-                    (m2 - (math.random(0, m) * 0.01)) + d1,
-                    (m2 - (math.random(0, m) * 0.01)) + d2
+                    (m2 - (random(0, m) * 0.01)) + d1,
+                    (m2 - (random(0, m) * 0.01)) + d2
                 }
             }
         )
     end
 end
 
-local function compute_fullness(player)
-    local free_slots = player.get_main_inventory().count_empty_stacks()
-
-    return free_slots
-end
-
 local function mining_chances_ores()
     local data = {
-        {name = 'iron-ore', chance = 545},
-        {name = 'copper-ore', chance = 540},
-        {name = 'coal', chance = 545},
-        {name = 'stone', chance = 545},
-        {name = 'uranium-ore', chance = 45}
+        {name = 'iron-ore', chance = 25},
+        {name = 'copper-ore', chance = 17},
+        {name = 'coal', chance = 15},
+        {name = 'stone', chance = 13},
+        {name = 'uranium-ore', chance = 2}
     }
     return data
 end
@@ -82,8 +91,8 @@ local size_of_ore_raffle = #harvest_raffle_ores
 local function get_amount(data)
     local entity = data.entity
     local this = data.this
-    local distance_to_center = math.floor(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
-    local type_modifier
+    local distance_to_center = floor(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
+    local type_modifier = 1
     local amount
     local second_amount
 
@@ -108,7 +117,7 @@ local function get_amount(data)
     type_modifier = rock_yield[entity.name] or type_modifier
 
     amount = base_amount + (distance_to_center * distance_modifier)
-    second_amount = math.floor((second_base_amount + (distance_to_center * distance_modifier)) / 3)
+    second_amount = floor((second_base_amount + (distance_to_center * distance_modifier)) / 3)
     if amount > maximum_amount then
         amount = maximum_amount
     end
@@ -116,9 +125,9 @@ local function get_amount(data)
         second_amount = maximum_amount
     end
 
-    local m = (70 + math.random(0, 60)) * 0.01
+    local m = (70 + random(0, 60)) * 0.01
 
-    amount = math.floor(amount * type_modifier * m * 0.7)
+    amount = floor(amount * type_modifier * m * 0.7)
 
     return amount, second_amount
 end
@@ -128,58 +137,38 @@ function Public.entity_died_randomness(data)
     local surface = data.surface
     local harvest
 
-    harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
+    harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
 
     local position = {x = entity.position.x, y = entity.position.y}
 
-    surface.spill_item_stack(position, {name = harvest, count = math.random(1, 5)}, true)
+    surface.spill_item_stack(position, {name = harvest, count = random(1, 5)}, true)
     local particle = particles[harvest]
     create_particles(surface, particle, position, 64, {x = entity.position.x, y = entity.position.y})
-end
-
-local function debug_print(str)
-    local debug = WPT.get('debug')
-    if debug then
-        print(str)
-    end
 end
 
 local function randomness(data)
     local entity = data.entity
     local player = data.player
     local this = data.this
-    local fullness_enabled = this.fullness_enabled
     local harvest
     local harvest_amount
-    local fullness = compute_fullness(player)
 
-    if not fullness_enabled then
-        goto continue
+    local n = entity.name
+    if n == 'tree-08-brown' then
+        harvest = 'stone'
+    elseif n == 'tree-04' then
+        harvest = 'coal'
+    elseif n == 'tree-02-red' then
+        harvest = 'copper-ore'
+    elseif n == 'tree-01' then
+        harvest = 'iron-ore'
+    elseif n == 'tree-03' then
+        harvest = 'coal'
+    elseif n == 'dry-tree' then
+        harvest = 'wood'
+    else
+        harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
     end
-
-    debug_print(player.name .. ' is ' .. fullness .. '% full.')
-
-    if fullness == 0 then
-        if player.character then
-            player.character.health = player.character.health - math.random(50, 100)
-            player.character.surface.create_entity({name = 'water-splash', position = player.position})
-            local messages = {
-                'Ouch.. That hurt! Better be careful now.',
-                'Just a fleshwound.',
-                'Better keep those hands to yourself or you might loose them.'
-            }
-            player.print(messages[math.random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
-            if player.character.health <= 0 then
-                player.character.die('enemy')
-                game.print(player.name .. ' should have emptied their pockets.', {r = 0.75, g = 0.0, b = 0.0})
-                return
-            end
-        end
-    end
-
-    ::continue::
-
-    harvest = harvest_raffle_ores[math.random(1, size_of_ore_raffle)]
     harvest_amount = get_amount(data)
 
     local position = {x = entity.position.x, y = entity.position.y}
@@ -189,7 +178,7 @@ local function randomness(data)
             name = 'flying-text',
             position = position,
             text = '+' .. harvest_amount .. ' [img=item/' .. harvest .. ']',
-            color = {r = 0, g = 127, b = 33}
+            color = {r = 188, g = 201, b = 63}
         }
     )
 
@@ -222,28 +211,27 @@ end
 
 function Public.on_player_mined_entity(event)
     local entity = event.entity
-    if not entity.valid then
-        return
-    end
-    if not valid_rocks[entity.name] then
+    if not entity or not entity.valid then
         return
     end
 
     local player = game.players[event.player_index]
-    local this = WPT.get()
-    if not player then
+    if not player or not player.valid then
         return
     end
 
-    event.buffer.clear()
+    local this = WPT.get()
 
-    local data = {
-        this = this,
-        entity = entity,
-        player = player
-    }
+    if valid_rocks[entity.name] or valid_trees[entity.name] then
+        event.buffer.clear()
+        local data = {
+            this = this,
+            entity = entity,
+            player = player
+        }
 
-    randomness(data)
+        randomness(data)
+    end
 end
 
 return Public

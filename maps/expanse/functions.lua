@@ -57,7 +57,7 @@ local function get_cell_value(expanse, left_top)
 	
 	local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
 	local value = value * (distance * expanse.price_distance_modifier)	
-	local ore_modifier = distance * 0.00025
+	local ore_modifier = distance * (expanse.price_distance_modifier / 20)
 	if ore_modifier > expanse.max_ore_price_modifier then ore_modifier = expanse.max_ore_price_modifier end
 	
 	for _, entity in pairs(entities) do		
@@ -82,21 +82,17 @@ local function get_left_top(expanse, position)
 	
 	local surface = game.surfaces.expanse
 	
-	local vector = false
 	for _, v in pairs(vectors) do
 		local tile = surface.get_tile({position.x + v[1], position.y + v[2]})
 		if tile.name == "out-of-map" then
-			vector = v
-			break
+			local left_top = tile.position
+			left_top.x = left_top.x - left_top.x % expanse.square_size
+			left_top.y = left_top.y - left_top.y % expanse.square_size
+			if not expanse.grid[tostring(left_top.x .. '_' .. left_top.y)] then return left_top end
 		end
 	end
-	if not vector then return end
 	
-	local left_top = {x = position.x + vector[1], y = position.y + vector[2]}	
-	left_top.x = left_top.x - left_top.x % expanse.square_size
-	left_top.y = left_top.y - left_top.y % expanse.square_size
-	
-	return left_top
+	return false
 end
 
 local function is_container_position_valid(expanse, position)
@@ -113,6 +109,8 @@ local function is_container_position_valid(expanse, position)
 end
 
 function Public.expand(expanse, left_top)
+	expanse.grid[tostring(left_top.x .. '_' .. left_top.y)] = true
+
 	local source_surface = game.surfaces[expanse.source_surface]
 	if not source_surface then return end
 	source_surface.request_to_generate_chunks(left_top, 3)
@@ -168,7 +166,7 @@ function Public.expand(expanse, left_top)
 		for x = 0, square_size, 1 do
 			for y = 0, square_size, 1 do
 				if surface.can_place_entity({name = "wooden-chest", position = {x, y}}) and surface.can_place_entity({name = "coal", position = {x, y}, amount = 1}) then
-					surface.create_entity({name = ores[(x + y) % 4 + 1], position = {x, y}, amount = 1000})
+					surface.create_entity({name = ores[(x + y) % 4 + 1], position = {x, y}, amount = 1500})
 				end
 			end
 		end 	

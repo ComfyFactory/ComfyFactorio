@@ -1,9 +1,8 @@
 -- a map where you feed hungry boxes, which unlocks new territory, with even more hungry boxes by mewmew
 
 --CONFIGS
-local override_nauvis = true 					-- adds custom mixed ores and raises frequency of resources
 local cell_size = 15								-- size of each territory to unlock
-local chance_to_receive_token = 0.50	-- chance of a hungry chest, dropping a token after unlocking, can be above 1 for multiple
+local chance_to_receive_token = 0.35	-- chance of a hungry chest, dropping a token after unlocking, can be above 1 for multiple
 
 require 'modules.satellite_score'
 
@@ -42,6 +41,7 @@ local function set_nauvis()
 end
 
 local function reset()
+	expanse.grid = {}
 	expanse.containers = {}
 	
 	local map_gen_settings = {
@@ -67,7 +67,7 @@ local function reset()
 	}
 	game.create_surface("expanse", map_gen_settings)
 	
-	if override_nauvis then
+	if expanse.override_nauvis then
 		set_nauvis()
 	end
 	
@@ -116,7 +116,7 @@ local function on_chunk_generated(event)
 	local surface = event.surface
 
 	if surface.name ~= "expanse" then
-		if override_nauvis then
+		if expanse.override_nauvis then
 			if surface.index == 1 then
 				for _, e in pairs(surface.find_entities_filtered({area = event.area, name = {"iron-ore", "copper-ore", "coal", "stone", "uranium-ore"}})) do
 					surface.create_entity({name = e.name, position = e.position, amount = 500 + math.sqrt(e.position.x ^ 2 + e.position.y ^ 2) * 2})
@@ -179,8 +179,8 @@ local function infini_rock(entity)
 	local a = math.floor(expanse.square_size * 0.5)		
 	if entity.position.x == a and entity.position.y == a then
 		entity.surface.create_entity({name = "rock-big", position = {a, a}})
-		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(100, 200)}, true, nil, true)
-		entity.surface.spill_item_stack(entity.position, {name = "stone", count = math.random(25, 50)}, true, nil, true)
+		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(75, 150)}, true, nil, true)
+		entity.surface.spill_item_stack(entity.position, {name = "stone", count = math.random(15, 30)}, true, nil, true)
 	end
 end
 
@@ -234,16 +234,21 @@ local function on_init(event)
 	if not expanse.max_ore_price_modifier then expanse.max_ore_price_modifier = 0.33 end
 	if not expanse.square_size then expanse.square_size = cell_size end
 	
+	expanse.override_nauvis = true 				-- adds custom mixed ores and raises frequency of resources
+	
 	game.map_settings.enemy_expansion.enabled = true
 	game.map_settings.enemy_expansion.max_expansion_cooldown = 1800
 	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
 	game.map_settings.enemy_expansion.settler_group_max_size = 8
 	game.map_settings.enemy_expansion.settler_group_min_size = 16	
 	
+	--Settings for cave miner
 	--[[
-	expanse.token_chance = 2.5
-	expanse.price_distance_modifier = 0.001
-	expanse.max_ore_price_modifier = 0.01
+	expanse.override_nauvis = false
+	expanse.token_chance = 0.75
+	expanse.price_distance_modifier = 0.0035
+	expanse.max_ore_price_modifier = 0.25
+	game.forces.player.technologies.landfill.researched = true	
 	]]
 	reset()
 end
@@ -255,5 +260,5 @@ Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
-Event.add(defines.events.on_player_mined_entity, infini_resource)
-Event.add(defines.events.on_robot_mined_entity, infini_resource)
+Event.add(defines.events.on_pre_player_mined_item, infini_resource)
+Event.add(defines.events.on_robot_pre_mined, infini_resource)

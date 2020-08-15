@@ -1,7 +1,7 @@
 --antigrief things made by mewmew
 
 local Event = require 'utils.event'
-local Jailed = require 'utils.jail_data'
+local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
 local AntiGrief = require 'antigrief'
 

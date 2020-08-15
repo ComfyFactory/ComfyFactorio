@@ -27,6 +27,12 @@ local function on_player_mined_entity(event)
         return
     end
     local icw = ICW.get()
+
+    Functions.locomotive_mining(icw, event)
+
+    if not icw.allow_player_to_build_trains then
+        return
+    end
     Functions.subtract_wagon_entity_count(icw, entity)
     Functions.kill_wagon(icw, entity)
 end
@@ -37,12 +43,18 @@ local function on_robot_mined_entity(event)
         return
     end
     local icw = ICW.get()
+    if not icw.allow_player_to_build_trains then
+        return
+    end
     Functions.subtract_wagon_entity_count(icw, entity)
     Functions.kill_wagon(icw, entity)
 end
 
 local function on_built_entity(event)
     local icw = ICW.get()
+    if not icw.allow_player_to_build_trains then
+        return
+    end
     local created_entity = event.created_entity
     Functions.create_wagon(icw, created_entity)
     Functions.add_wagon_entity_count(icw, created_entity)
@@ -50,6 +62,9 @@ end
 
 local function on_robot_built_entity(event)
     local icw = ICW.get()
+    if not icw.allow_player_to_build_trains then
+        return
+    end
     local created_entity = event.created_entity
     Functions.create_wagon(icw, created_entity)
     Functions.add_wagon_entity_count(icw, created_entity)

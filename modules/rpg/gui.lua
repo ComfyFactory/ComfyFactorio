@@ -24,6 +24,8 @@ local settings_frame_name = RPG.settings_frame_name
 local discard_button_name = RPG.discard_button_name
 local save_button_name = RPG.save_button_name
 
+local sub = string.sub
+
 function Public.draw_gui_char_button(player)
     if player.gui.top[draw_main_frame_name] then
         return
@@ -161,13 +163,13 @@ local function remove_main_frame(main_frame, screen)
     end
 end
 
-local function draw_main_frame(player)
+local function draw_main_frame(player, location)
     if not player.character then
         return
     end
 
     local main_frame =
-        player.gui.left.add(
+        player.gui.screen.add(
         {
             type = 'frame',
             name = main_frame_name,
@@ -175,6 +177,11 @@ local function draw_main_frame(player)
             direction = 'vertical'
         }
     )
+    if location then
+        main_frame.location = location
+    else
+        main_frame.location = {x = 1, y = 40}
+    end
 
     local data = {}
     local rpg_extra = RPG.get('rpg_extra')
@@ -531,13 +538,13 @@ function Public.update_player_stats(player)
 end
 
 function Public.toggle(player, recreate)
-    local left = player.gui.left
     local screen = player.gui.screen
-    local main_frame = left[main_frame_name]
+    local main_frame = screen[main_frame_name]
 
     if recreate and main_frame then
+        local location = main_frame.location
         remove_main_frame(main_frame, screen)
-        draw_main_frame(player, true)
+        draw_main_frame(player, location)
         return
     end
     if main_frame then
@@ -545,7 +552,7 @@ function Public.toggle(player, recreate)
         Tabs.comfy_panel_restore_left_gui(player)
     else
         Tabs.comfy_panel_clear_left_gui(player)
-        draw_main_frame(player, true)
+        draw_main_frame(player)
     end
 end
 
@@ -556,9 +563,10 @@ Gui.on_click(
     draw_main_frame_name,
     function(event)
         local player = event.player
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
+
         toggle(player)
     end
 )
@@ -567,7 +575,7 @@ Gui.on_click(
     save_button_name,
     function(event)
         local player = event.player
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
 
@@ -669,7 +677,7 @@ Gui.on_click(
 
             remove_settings_frame(event.element)
 
-            if player.gui.left[main_frame_name] then
+            if player.gui.screen[main_frame_name] then
                 toggle(player, true)
             end
         end
@@ -682,7 +690,7 @@ Gui.on_click(
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
         if frame and frame.valid then
@@ -697,9 +705,15 @@ Gui.on_click(
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
-        if not player.character then
+        if not player or not player.valid or not player.character then
             return
         end
+
+        local surface_name = RPG.get('rpg_extra').surface_name
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return
+        end
+
         if frame and frame.valid then
             frame.destroy()
         else

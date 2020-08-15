@@ -2,6 +2,24 @@ local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 
+local random = math.random
+
+local rock_raffle = {
+    'sand-rock-big',
+    'sand-rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-big',
+    'rock-huge'
+}
+
+local size_of_rock_raffle = #rock_raffle
+
 function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
 end
@@ -413,6 +431,14 @@ function Public.create_wagon_room(icw, wagon)
         end
     end
 
+    for x = area.left_top.x, area.right_bottom.x - 1, 1 do
+        for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
+            if random(1, 16) == 1 then
+                fishes[#fishes + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = {x, y}}
+            end
+        end
+    end
+
     surface.set_tiles(tiles, true)
 
     for _, fish in pairs(fishes) do
@@ -444,13 +470,6 @@ function Public.create_wagon_room(icw, wagon)
         wagon.transfer_entities = {e}
         return
     end
-
-    -- this.wagon_areas = {
-    --     ['cargo-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
-    --     ['artillery-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
-    --     ['fluid-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
-    --     ['locomotive'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}}
-    -- }
 
     if wagon.entity.type == 'cargo-wagon' then
         local multiple_chests = ICW.get('multiple_chests')
@@ -589,6 +608,56 @@ function Public.create_wagon_room(icw, wagon)
             wagon.transfer_entities = {e1, e2}
         end
         return
+    end
+end
+
+function Public.locomotive_mining(icw, event)
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+    local player = game.players[event.player_index]
+    if not validate_player(player) then
+        return
+    end
+
+    local items = {
+        'iron-plate',
+        'iron-gear-wheel',
+        'copper-plate',
+        'copper-cable',
+        'pipe',
+        'explosives',
+        'firearm-magazine',
+        'stone-brick'
+    }
+
+    local reward = items
+    local size = #items
+    local count = random(1, 20)
+    local name = reward[random(1, size)]
+
+    for k, surface in pairs(icw.surfaces) do
+        if validate_entity(surface) then
+            if player.surface.index == surface.index then
+                if entity.type ~= 'simple-entity' then
+                    return
+                end
+                event.buffer.clear()
+                player.insert({name = name, count = count})
+                if random(1, 4) == 1 then
+                    player.insert({name = 'coin', count = 1})
+                end
+                player.surface.create_entity(
+                    {
+                        name = 'flying-text',
+                        position = entity.position,
+                        text = '+' .. count .. ' [img=item/' .. name .. ']',
+                        color = {r = 188, g = 201, b = 63}
+                    }
+                )
+            end
+        end
     end
 end
 

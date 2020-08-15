@@ -1,11 +1,10 @@
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 
 local Public = {}
-
-function Public.request_reconstruction(ic)
-    ic.rebuild_tick = game.tick + 30
-end
+local random = math.random
 
 local function validate_entity(entity)
     if not entity then
@@ -17,44 +16,247 @@ local function validate_entity(entity)
     return true
 end
 
+local function log_err(ic, err)
+    if ic.debug_mode then
+        if type(err) == 'string' then
+            log('IC: ' .. err)
+        end
+    end
+end
+
 local function upperCase(str)
     return (str:gsub('^%l', string.upper))
 end
 
-local function has_no_entity(t, entity)
-    for k, car in pairs(t) do
-        local unit_number = entity.unit_number
-        if car.name ~= entity.name then
-            local msg =
-                'The built entity is not the same as the saved one. ' ..
-                upperCase(car.name) .. ' is not equal to ' .. upperCase(entity.name) .. '.'
-            return false, msg
+local function render_owner_text(player, entity)
+    local color = {
+        r = player.color.r * 0.6 + 0.25,
+        g = player.color.g * 0.6 + 0.25,
+        b = player.color.b * 0.6 + 0.25,
+        a = 1
+    }
+    rendering.draw_text {
+        text = '## - ' .. player.name .. "'s " .. entity.name .. ' - ##',
+        surface = entity.surface,
+        target = entity,
+        target_offset = {0, -2.6},
+        color = color,
+        scale = 1.05,
+        font = 'default-large-semibold',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+    entity.color = color
+end
+
+local function kill_doors(ic, car)
+    if not validate_entity(car.entity) then
+        return
+    end
+    for k, e in pairs(car.doors) do
+        ic.doors[e.unit_number] = nil
+        e.destroy()
+        car.doors[k] = nil
+    end
+end
+
+local function get_owner_car_object(cars, player)
+    for k, car in pairs(cars) do
+        if car.owner == player.index then
+            return k
         end
-        if car.entity == false then
-            t[unit_number] = car
-            t[unit_number].entity = entity
-            t[unit_number].transfer_entities = car.transfer_entities
-            t[k] = nil
+    end
+    return false
+end
+
+local function get_player_surface(ic, player)
+    local surfaces = ic.surfaces
+    for k, surface in pairs(surfaces) do
+        if validate_entity(surface) then
+            if surface.index == player.surface.index then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function get_player_entity(ic, player)
+    local cars = ic.cars
+    for k, car in pairs(cars) do
+        if car.owner == player.index and type(car.entity) == 'boolean' then
+            return car.name, true
+        elseif car.owner == player.index then
+            return car.name, false
+        end
+    end
+    return false, false
+end
+
+local function is_owner_on_car_surface(ic, player)
+    local cars = ic.cars
+    for k, car in pairs(cars) do
+        if validate_entity(car.surface) then
+            if car.owner == player.index and car.surface.index == player.surface.index then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function get_owner_car_name(ic, player)
+    local cars = ic.cars
+    local saved_surfaces = ic.saved_surfaces
+    local index = saved_surfaces[player.index]
+    for k, car in pairs(cars) do
+        if not index then
+            return false
+        end
+        if car.owner == player.index then
+            return car.name
+        end
+    end
+    return false
+end
+
+local function get_saved_entity(cars, entity, index)
+    for k, car in pairs(cars) do
+        if index and index.name ~= entity.name then
+            local msg =
+                table.concat(
+                {
+                    'The built entity is not the same as the saved one. ',
+                    'Saved entity is: ' ..
+                        upperCase(car.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
+                }
+            )
+            return false, msg
         end
     end
     return true
 end
 
-local function replace_doors(t, saved, entity)
-    for k, door in pairs(t) do
-        local unit_number = entity.unit_number
-        if saved == door then
-            t[k] = unit_number
+local function replace_entity(cars, entity, index)
+    local unit_number = entity.unit_number
+    for k, car in pairs(cars) do
+        if car.saved_entity == index.saved_entity then
+            local c = car
+            cars[unit_number] = c
+            cars[unit_number].entity = entity
+            cars[unit_number].saved_entity = nil
+            cars[unit_number].transfer_entities = car.transfer_entities
+            cars[k] = nil
+            break
         end
     end
+end
+
+local function replace_doors(doors, entity, index)
+    if not validate_entity(entity) then
+        return
+    end
+    for k, door in pairs(doors) do
+        local unit_number = entity.unit_number
+        if index.saved_entity == door then
+            doors[k] = unit_number
+        end
+    end
+end
+
+local function replace_surface(surfaces, entity, index)
+    if not validate_entity(entity) then
+        return
+    end
+    for k, surface in pairs(surfaces) do
+        local unit_number = entity.unit_number
+        if tostring(index.saved_entity) == surface.name then
+            if validate_entity(surface) then
+                surface.name = unit_number
+                surfaces[unit_number] = surface
+                surfaces[k] = nil
+            end
+        end
+    end
+end
+
+local function replace_surface_entity(cars, entity, index)
+    if not validate_entity(entity) then
+        return
+    end
+    for _, car in pairs(cars) do
+        local unit_number = entity.unit_number
+        if index and index.saved_entity == car.saved_entity then
+            if validate_entity(car.surface) then
+                car.surface.name = unit_number
+            end
+        end
+    end
+end
+
+local function remove_logistics(car)
+    local chests = car.transfer_entities
+    for k, chest in pairs(chests) do
+        car.transfer_entities[k] = nil
+        chest.destroy()
+    end
+end
+
+local function remove_simply_entity(car)
+    local surface = car.surface
+    for _, entity in pairs(surface.find_entities_filtered {name = 'sand-rock-big'}) do
+        entity.destroy()
+    end
+end
+
+local function set_new_area(ic, car)
+    local new_area = ic.car_areas
+    local name = car.name
+    local apply_area = new_area[name]
+    car.area = apply_area
+end
+
+local function upgrade_surface(ic, player, entity)
+    local ce = entity
+    local saved_surfaces = ic.saved_surfaces
+    local cars = ic.cars
+    local door = ic.doors
+    local surfaces = ic.surfaces
+    local index = saved_surfaces[player.index]
+    if not index then
+        return
+    end
+
+    if saved_surfaces[player.index] then
+        local c = get_owner_car_object(cars, player)
+        local car = ic.cars[c]
+        if ce.name == 'spidertron' then
+            car.name = 'spidertron'
+        elseif ce.name == 'tank' then
+            car.name = 'tank'
+        end
+        remove_simply_entity(car)
+        set_new_area(ic, car)
+        remove_logistics(car)
+        replace_entity(cars, ce, index)
+        replace_doors(door, ce, index)
+        replace_surface(surfaces, ce, index)
+        replace_surface_entity(cars, ce, index)
+        kill_doors(ic, car)
+        Public.create_car_room(ic, car)
+        saved_surfaces[player.index] = nil
+        return true
+    end
+    return false
 end
 
 local function save_surface(ic, entity, player)
     local car = ic.cars[entity.unit_number]
 
     car.entity = false
+    car.saved_entity = entity.unit_number
 
-    ic.saved_surfaces[player.index] = entity.unit_number
+    ic.saved_surfaces[player.index] = {saved_entity = entity.unit_number, name = entity.name}
 end
 
 local function validate_player(player)
@@ -76,15 +278,6 @@ local function validate_player(player)
     return true
 end
 
-local function delete_empty_surfaces(ic)
-    for k, surface in pairs(ic.surfaces) do
-        if not ic.cars[tonumber(surface.name)] or ic.cars.entity == false then
-            game.delete_surface(surface)
-            ic.surfaces[k] = nil
-        end
-    end
-end
-
 local function kick_players_out_of_vehicles(car)
     for _, player in pairs(game.connected_players) do
         local character = player.character
@@ -96,7 +289,31 @@ local function kick_players_out_of_vehicles(car)
     end
 end
 
-local function kick_player_from_surface(car)
+local function kick_player_from_surface(ic, car)
+    if not car.surface or not car.surface.valid then
+        return log_err('Car surface was not valid.')
+    end
+    if not car.entity or not car.entity.valid then
+        local main_surface = game.surfaces[ic.allowed_surface]
+        if main_surface and main_surface.valid then
+            for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
+                if e and e.valid and e.name == 'character' and e.player then
+                    e.player.teleport(
+                        main_surface.find_non_colliding_position(
+                            'character',
+                            game.forces.player.get_spawn_position(main_surface),
+                            3,
+                            0,
+                            5
+                        ),
+                        main_surface
+                    )
+                end
+            end
+        end
+        return log_err('Car entity was not valid.')
+    end
+
     for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
         if e and e.valid and e.name == 'character' and e.player then
             local p = car.entity.surface.find_non_colliding_position('character', car.entity.position, 128, 0.5)
@@ -109,8 +326,37 @@ local function kick_player_from_surface(car)
     end
 end
 
+local function restore_surface(ic, player, entity)
+    local ce = entity
+    local saved_surfaces = ic.saved_surfaces
+    local cars = ic.cars
+    local door = ic.doors
+    local surfaces = ic.surfaces
+    local index = saved_surfaces[player.index]
+    if not index then
+        return
+    end
+
+    if saved_surfaces[player.index] then
+        local success, msg = get_saved_entity(cars, ce, index)
+        if not success then
+            player.print(msg, Color.warning)
+            return true
+        end
+        replace_entity(cars, ce, index)
+        replace_doors(door, ce, index)
+        replace_surface(surfaces, ce, index)
+        replace_surface_entity(cars, ce, index)
+        saved_surfaces[player.index] = nil
+        render_owner_text(player, ce)
+        return true
+    end
+    return false
+end
+
 local function input_filtered(car_inv, chest, chest_inv, free_slots)
     local request_stacks = {}
+
     local prototypes = game.item_prototypes
     for slot_index = 1, 30, 1 do
         local stack = chest.get_request_slot(slot_index)
@@ -151,6 +397,7 @@ local function input_cargo(car, chest)
 
     local chest_inventory = chest.get_inventory(defines.inventory.chest)
     local free_slots = 0
+
     for i = 1, chest_inventory.get_bar() - 1, 1 do
         if not chest_inventory[i].valid_for_read then
             free_slots = free_slots + 1
@@ -237,58 +484,78 @@ local function get_player_data(ic, player)
 
     ic.players[player.index] = {
         surface = 1,
-        fallback_surface = 1
+        fallback_surface = 1,
+        notified = false
     }
     return ic.players[player.index]
 end
 
+local remove_car =
+    Token.register(
+    function(data)
+        local player = data.player
+        local car = data.car
+        player.remove_item({name = car.name, count = 9999})
+    end
+)
+
 function Public.save_car(ic, event)
     local entity = event.entity
-    if not validate_entity(entity) then
-        return
-    end
-
     local player = game.players[event.player_index]
-    if not validate_player(player) then
-        return
-    end
 
-    local entity_type = ic.entity_type
-
-    if not entity_type[entity.name] then
-        return
-    end
     local car = ic.cars[entity.unit_number]
 
     if not car then
+        log_err('Car was not valid.')
         return
     end
 
+    local position = entity.position
+    local health = entity.health
+
     kick_players_out_of_vehicles(car)
-    kick_player_from_surface(car)
+    kick_player_from_surface(ic, car)
+    get_player_data(ic, player)
 
     if car.owner == player.index then
         save_surface(ic, entity, player)
+        if not ic.players[player.index].notified then
+            player.print(player.name .. ', the ' .. car.name .. ' surface has been saved.', Color.success)
+            ic.players[player.index].notified = true
+        end
     else
-        save_surface(ic, entity, game.players[car.owner])
-        Utils.action_warning('{Car}', player.name .. ' has looted ' .. game.players[car.owner].name .. '´s car.')
+        local p = game.players[car.owner]
+        if not p then
+            return
+        end
+
+        log_err(ic, 'Owner of this vehicle is: ' .. p.name)
+        save_surface(ic, entity, p)
+        Utils.action_warning('{Car}', player.name .. ' has looted ' .. p.name .. '´s car.')
+        player.print('This car was not yours to keep.', Color.warning)
+        player.remove_item({name = car.name, count = 9999})
+        local params = {
+            player = player,
+            car = car
+        }
+        Task.set_timeout_in_ticks(10, remove_car, params)
+        if ic.restore_on_theft then
+            local e =
+                player.surface.create_entity(
+                {name = car.name, position = position, force = player.force, create_build_effect_smoke = false}
+            )
+            e.health = health
+            restore_surface(ic, p, e)
+        else
+            p.insert({name = car.name, count = 1, health = health})
+            p.print('Your car was stolen from you - the gods foresaw this and granted you a new one.', Color.info)
+        end
     end
 end
 
 function Public.kill_car(ic, entity)
     if not validate_entity(entity) then
         return
-    end
-
-    local function kill_doors(car)
-        if not validate_entity(car.entity) then
-            return
-        end
-        for k, e in pairs(car.doors) do
-            ic.doors[e.unit_number] = nil
-            e.destroy()
-            car.doors[k] = nil
-        end
     end
 
     local entity_type = ic.entity_type
@@ -299,14 +566,32 @@ function Public.kill_car(ic, entity)
     local car = ic.cars[entity.unit_number]
     local surface = car.surface
     kick_players_out_of_vehicles(car)
-    kill_doors(car)
-    kick_player_from_surface(car)
+    kill_doors(ic, car)
+    kick_player_from_surface(ic, car)
     for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
     car.entity.force.chart(surface, car.area)
     ic.cars[entity.unit_number] = nil
-    Public.request_reconstruction(ic)
+end
+
+function Public.validate_owner(ic, player, entity)
+    if validate_entity(entity) then
+        local cars = ic.cars
+        local unit_number = entity.unit_number
+        local car = cars[unit_number]
+        if car and car.entity and validate_entity(car.entity) then
+            local p = game.players[car.owner]
+            if p then
+                if car.owner ~= player.index and player.driving then
+                    player.driving = false
+                    return Utils.print_to(nil, '{Car} ' .. player.name .. ' tried to drive ' .. p.name .. '´s car.')
+                end
+            end
+        end
+        return false
+    end
+    return false
 end
 
 function Public.create_room_surface(ic, unit_number)
@@ -335,13 +620,15 @@ function Public.create_room_surface(ic, unit_number)
     for _, tile in pairs(surface.find_tiles_filtered({area = {{-2, -2}, {2, 2}}})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
-    ic.surfaces[#ic.surfaces + 1] = surface
+    ic.surfaces[unit_number] = surface
     return surface
 end
 
 function Public.create_car_room(ic, car)
     local surface = car.surface
-    local area = car.area
+    local car_areas = ic.car_areas
+    local entity_name = car.name
+    local area = car_areas[entity_name]
 
     local main_tile_name = 'black-refined-concrete'
 
@@ -358,21 +645,20 @@ function Public.create_car_room(ic, car)
         end
     end
 
+    if entity_name == 'car' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 20}})
+    elseif entity_name == 'tank' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
+    elseif entity_name == 'spidertron' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
+    end
+
     local fishes = {}
 
-    if car.name == 'car' then
-        for x = -3, 2, 1 do
-            for y = 2, 3, 1 do
-                tiles[#tiles + 1] = {name = 'water', position = {x, y}}
-                fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
-            end
-        end
-    else
-        for x = -4, 3, 1 do
-            for y = 2, 4, 1 do
-                tiles[#tiles + 1] = {name = 'water', position = {x, y}}
-                fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
-            end
+    for x = area.left_top.x, area.right_bottom.x - 1, 1 do
+        for y = -0, 1, 1 do
+            tiles[#tiles + 1] = {name = 'water', position = {x, y}}
+            fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
         end
     end
 
@@ -383,18 +669,14 @@ function Public.create_car_room(ic, car)
 
     construct_doors(ic, car)
 
-    local entity_name = car.name
-
-    local car_areas = ic.car_areas
-    local c = car_areas[entity_name]
     local lx, ly, rx, ry
     if car.name == 'car' then
         lx, ly, rx, ry = 4, 1, 5, 1
     else
         lx, ly, rx, ry = 4, 1, 5, 1
     end
-    local position1 = {c.left_top.x + lx, c.left_top.y + ly}
-    local position2 = {c.right_bottom.x - rx, c.left_top.y + ry}
+    local position1 = {area.left_top.x + lx, area.left_top.y + ly}
+    local position2 = {area.right_bottom.x - rx, area.left_top.y + ry}
 
     local e1 =
         surface.create_entity(
@@ -424,69 +706,192 @@ function Public.create_car_room(ic, car)
 end
 
 function Public.create_car(ic, event)
-    local created_entity = event.created_entity
-    if not validate_entity(created_entity) then
-        return
-    end
-    local player = game.get_player(event.player_index)
-    if not validate_player(player) then
-        return
-    end
+    local ce = event.created_entity
 
-    local saved_surfaces = ic.saved_surfaces
-    local cars = ic.cars
-    local door = ic.doors
+    local player = game.get_player(event.player_index)
+
+    local map_name = ic.allowed_surface
 
     local entity_type = ic.entity_type
+    local un = ce.unit_number
+
+    if not un then
+        return
+    end
+
+    if not entity_type[ce.name] then
+        return
+    end
+
+    local name, mined = get_player_entity(ic, player, ce)
+
+    if
+        name == 'tank' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'car' and not mined or
+            name == 'car' and ce.name == 'tank' and not mined or
+            name == 'tank' and ce.name == 'tank' and not mined or
+            name == 'spidertron' and ce.name == 'spidertron' and not mined
+     then
+        return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
+    end
+
+    if string.sub(ce.surface.name, 0, #map_name) ~= map_name then
+        return player.print('Multi-surface is not supported at the moment.', Color.warning)
+    end
+
+    if
+        get_owner_car_name(ic, player) == 'car' and ce.name == 'tank' or
+            get_owner_car_name(ic, player) == 'car' and ce.name == 'spidertron' or
+            get_owner_car_name(ic, player) == 'tank' and ce.name == 'spidertron'
+     then
+        upgrade_surface(ic, player, ce)
+        render_owner_text(player, ce)
+        player.print('Your car-surface has been upgraded!', Color.success)
+        return
+    end
+
+    local saved_surface = restore_surface(ic, player, ce)
+    if saved_surface then
+        return
+    end
+
     local car_areas = ic.car_areas
+    local car_area = car_areas[ce.name]
 
-    if not created_entity.unit_number then
-        return
-    end
-    if not entity_type[created_entity.name] then
-        return
-    end
-
-    if saved_surfaces[player.index] then
-        local index = saved_surfaces[player.index]
-        local success, msg = has_no_entity(cars, created_entity)
-        if not success then
-            player.print(msg, Color.warning)
-            created_entity.destroy()
-            return
-        end
-        replace_doors(door, index, created_entity)
-        saved_surfaces[player.index] = nil
-        return
-    end
-
-    for _, c in pairs(cars) do
-        if c.owner == player.index then
-            created_entity.destroy()
-            return player.print('You already have a portable vehicle.', Color.fail)
-        end
-    end
-
-    local car_area = car_areas[created_entity.name]
-
-    ic.cars[created_entity.unit_number] = {
-        entity = created_entity,
+    ic.cars[un] = {
+        entity = ce,
         area = {
             left_top = {x = car_area.left_top.x, y = car_area.left_top.y},
             right_bottom = {x = car_area.right_bottom.x, y = car_area.right_bottom.y}
         },
         doors = {},
         owner = player.index,
-        name = created_entity.name
+        name = ce.name
     }
 
-    local car = ic.cars[created_entity.unit_number]
+    local car = ic.cars[un]
 
-    car.surface = Public.create_room_surface(ic, created_entity.unit_number)
-    Public.create_car_room(ic, ic.cars[created_entity.unit_number])
+    car.surface = Public.create_room_surface(ic, un)
+    Public.create_car_room(ic, car)
+    render_owner_text(player, ce)
 
-    Public.request_reconstruction(ic)
     return car
+end
+
+function Public.remove_invalid_cars(ic)
+    for k, car in pairs(ic.cars) do
+        if type(car.entity) == 'boolean' then
+            return
+        end
+        if not validate_entity(car.entity) then
+            ic.cars[k] = nil
+            for key, value in pairs(ic.doors) do
+                if k == value then
+                    ic.doors[key] = nil
+                end
+            end
+        end
+        kick_player_from_surface(ic, car)
+    end
+    for k, surface in pairs(ic.surfaces) do
+        if not ic.cars[tonumber(surface.name)] then
+            game.delete_surface(surface)
+            ic.surfaces[k] = nil
+        end
+    end
+end
+
+function Public.infinity_scrap(ic, event, recreate)
+    if not ic.infinity_scrap_enabled then
+        return
+    end
+
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local player
+    if event.player_index then
+        player = game.players[event.player_index]
+    else
+        if event.cause and event.cause.name == 'character' then
+            local cause = event.cause
+            player = cause.player
+        end
+    end
+    if not validate_player(player) then
+        return
+    end
+
+    if not is_owner_on_car_surface(ic, player) then
+        if get_player_surface(ic, player) then
+            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+            player.print('This is not your rock to mine!', Color.warning)
+            event.buffer.clear()
+            return
+        end
+    end
+
+    if recreate then
+        entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+        return
+    end
+
+    local items = {
+        'iron-plate',
+        'iron-gear-wheel',
+        'copper-plate',
+        'copper-cable',
+        'pipe',
+        'explosives',
+        'firearm-magazine',
+        'stone-brick'
+    }
+
+    local ores = {
+        'iron-ore',
+        'iron-ore',
+        'copper-ore',
+        'coal'
+    }
+
+    local reward
+    local size
+    local count
+    if random(1, 2) == 1 then
+        reward = items
+        size = #items
+        count = random(1, 10)
+    else
+        reward = ores
+        size = #ores
+        count = random(25, 100)
+    end
+
+    local name = reward[random(1, size)]
+
+    if entity.name ~= 'sand-rock-big' then
+        return
+    end
+
+    if get_player_surface(ic, player) then
+        if entity.position.x == 0 and entity.position.y == 20 or entity.position.y == 40 then
+            event.buffer.clear()
+            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+            player.insert({name = name, count = count})
+            if random(1, 4) == 1 then
+                player.insert({name = 'coin', count = 1})
+            end
+            player.surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = '+' .. count .. ' [img=item/' .. name .. ']',
+                    color = {r = 188, g = 201, b = 63}
+                }
+            )
+        end
+    end
 end
 
 function Public.teleport_players_around(ic)
@@ -497,7 +902,7 @@ function Public.teleport_players_around(ic)
 
         if player.surface.find_entity('player-port', player.position) then
             local door = player.surface.find_entity('player-port', player.position)
-            if door and door.valid then
+            if validate_entity(door) then
                 local doors = ic.doors
                 local cars = ic.cars
 
@@ -521,42 +926,24 @@ function Public.teleport_players_around(ic)
                     return
                 end
 
+                if not validate_entity(car.entity) then
+                    return
+                end
+
                 if car.entity.surface.name ~= player.surface.name then
+                    if validate_entity(car.entity) and car.owner == player.index then
+                        car.entity.minable = true
+                    end
                     local surface = car.entity.surface
                     local x_vector = (door.position.x / math.abs(door.position.x)) * 2
                     local position = {car.entity.position.x + x_vector, car.entity.position.y}
                     local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if car.entity.type == 'car' then
+                    if car.entity.type == 'car' or car.entity.name == 'spidertron' then
                         player.teleport(surface_position, surface)
                         player_data.state = 2
                         player.driving = true
                     else
                         player.teleport(surface_position, surface)
-                    end
-                    player_data.surface = surface.index
-                elseif car.entity.type == 'car' and player.driving then
-                    player.driving = false
-                else
-                    local surface = car.surface
-                    local area = car.area
-                    local x_vector = door.position.x - player.position.x
-                    local position
-                    if x_vector > 0 then
-                        position = {
-                            area.left_top.x + 0.5,
-                            area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                        }
-                    else
-                        position = {
-                            area.right_bottom.x - 0.5,
-                            area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                        }
-                    end
-                    local p = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if p then
-                        player.teleport(p, surface)
-                    else
-                        player.teleport(position, surface)
                     end
                     player_data.surface = surface.index
                 end
@@ -575,10 +962,7 @@ function Public.use_door_with_entity(ic, player, door)
         return
     end
 
-    if not door then
-        return
-    end
-    if not door.valid then
+    if not validate_entity(door) then
         return
     end
     local doors = ic.doors
@@ -598,75 +982,41 @@ function Public.use_door_with_entity(ic, player, door)
     player_data.fallback_surface = car.entity.surface.index
     player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
 
-    if car.entity.surface.name ~= player.surface.name then
-        local surface = car.entity.surface
-        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-        local position = {car.entity.position.x + x_vector, car.entity.position.y}
-        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-        if not position then
-            return
-        end
-        if not surface_position then
-            surface.request_to_generate_chunks({-20, 22}, 1)
-            if player.character and player.character.valid and player.character.driving then
-                if car.surface == player.surface then
-                    player.character.driving = false
-                end
-            end
-            return
-        end
-        if car.entity.type == 'car' then
-            player.teleport(surface_position, surface)
-            player_data.state = 2
-            player.driving = true
-        else
-            player.teleport(surface_position, surface)
-        end
-        player_data.surface = surface.index
+    local surface = car.surface
+    if validate_entity(car.entity) and car.owner == player.index then
+        car.entity.minable = false
+    end
+
+    if not validate_entity(surface) then
+        return
+    end
+
+    local area = car.area
+    local x_vector = door.position.x - player.position.x
+    local position
+    if x_vector > 0 then
+        position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
     else
-        local surface = car.surface
-        local area = car.area
-        local x_vector = door.position.x - player.position.x
-        local position
-        if x_vector > 0 then
-            position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
-        else
-            position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
-        end
-        local p = surface.find_non_colliding_position('character', position, 128, 0.5)
-        if p then
-            player.teleport(p, surface)
-        else
-            player.teleport(position, surface)
-        end
-        player_data.surface = surface.index
+        position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
     end
-end
-
-function Public.reconstruct_all_cars(ic)
-    for unit_number, car in pairs(ic.cars) do
-        if not validate_entity(car.entity) then
-            ic.cars[unit_number] = nil
-            Public.request_reconstruction(ic)
-            return
-        end
-
-        if not car.surface then
-            car.surface = Public.create_room_surface(ic, unit_number)
-            Public.create_car_room(ic, car)
-        end
+    local p = surface.find_non_colliding_position('character', position, 128, 0.5)
+    if p then
+        player.teleport(p, surface)
+    else
+        player.teleport(position, surface)
     end
-    delete_empty_surfaces(ic)
+    player_data.surface = surface.index
 end
 
 function Public.item_transfer(ic)
     for _, car in pairs(ic.cars) do
-        if not validate_entity(car.entity) then
-            return
-        end
-        if car.transfer_entities then
-            for k, e in pairs(car.transfer_entities) do
-                transfer_functions[e.name](car, e)
+        if validate_entity(car.entity) then
+            if car.transfer_entities then
+                for k, e in pairs(car.transfer_entities) do
+                    if validate_entity(e) then
+                        transfer_functions[e.name](car, e)
+                    end
+                end
             end
         end
     end

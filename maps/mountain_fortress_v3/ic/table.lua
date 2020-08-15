@@ -21,19 +21,25 @@ function Public.reset()
     for k, _ in pairs(this) do
         this[k] = nil
     end
+    this.debug_mode = true
+    this.restore_on_theft = false
     this.doors = {}
     this.cars = {}
     this.saved_surfaces = {}
+    this.allowed_surface = 'nauvis'
     this.players = {}
     this.surfaces = {}
+    this.infinity_scrap_enabled = true
     this.entity_type = {
         ['car'] = true,
-        ['tank'] = true
+        ['tank'] = true,
+        ['spidertron'] = true
     }
 
     this.car_areas = {
         ['car'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 20}},
-        ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}}
+        ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}},
+        ['spidertron'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}}
     }
 end
 
@@ -51,6 +57,13 @@ function Public.set_car_area(tbl)
     end
 
     this.car_areas = tbl
+end
+
+function Public.allowed_surface(value)
+    if value then
+        this.allowed_surface = value
+    end
+    return this.allowed_surface
 end
 
 return Public
