@@ -163,7 +163,7 @@ local function remove_main_frame(main_frame, screen)
     end
 end
 
-local function draw_main_frame(player)
+local function draw_main_frame(player, location)
     if not player.character then
         return
     end
@@ -177,7 +177,11 @@ local function draw_main_frame(player)
             direction = 'vertical'
         }
     )
-    main_frame.location = {x = 1, y = 40}
+    if location then
+        main_frame.location = location
+    else
+        main_frame.location = {x = 1, y = 40}
+    end
 
     local data = {}
     local rpg_extra = RPG.get('rpg_extra')
@@ -538,8 +542,9 @@ function Public.toggle(player, recreate)
     local main_frame = screen[main_frame_name]
 
     if recreate and main_frame then
+        local location = main_frame.location
         remove_main_frame(main_frame, screen)
-        draw_main_frame(player, true)
+        draw_main_frame(player, location)
         return
     end
     if main_frame then
@@ -547,7 +552,7 @@ function Public.toggle(player, recreate)
         Tabs.comfy_panel_restore_left_gui(player)
     else
         Tabs.comfy_panel_clear_left_gui(player)
-        draw_main_frame(player, true)
+        draw_main_frame(player)
     end
 end
 
