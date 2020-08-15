@@ -3,8 +3,8 @@ require 'maps.crab_defender.market'
 require 'maps.crab_defender.commands'
 require 'maps.crab_defender.shotgun_buff'
 require 'maps.crab_defender.on_entity_damaged'
+require 'maps.crab_defender.launch_fish_to_win'
 require 'modules.rocket_launch_always_yields_science'
-require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
 require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
@@ -37,8 +37,8 @@ local starting_items = {
 }
 
 local disable_tech = function()
-    game.forces.player.technologies['landfill'].enabled = false
-    game.forces.player.technologies['landfill'].researched = false
+    game.forces.player.technologies['spidertron'].enabled = false
+    game.forces.player.technologies['spidertron'].researched = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['artillery'].researched = false
     game.forces.player.technologies['atomic-bomb'].enabled = false
@@ -578,6 +578,9 @@ local send_unit_group = function(unit_group)
             commands = commands
         }
     )
+    if unit_group and unit_group.valid then
+        unit_group.start_moving()
+    end
 end
 
 local spawn_boss_units = function(surface)
@@ -1297,6 +1300,21 @@ local on_player_changed_position = function(event)
     end
 end
 
+local is_position_near = function(area, position)
+    local function inside(pos)
+        local lt = area.left_top
+        local rb = area.right_bottom
+
+        return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+    end
+
+    if inside(position, area) then
+        return true
+    end
+
+    return false
+end
+
 local on_player_or_robot_built_tile = function(event)
     local surface = game.surfaces[event.surface_index]
 
@@ -1304,10 +1322,22 @@ local on_player_or_robot_built_tile = function(event)
     if not tiles then
         return
     end
+    local area = {
+        left_top = {x = -944, y = -800},
+        right_bottom = {x = 944, y = 90}
+    }
     for k, v in pairs(tiles) do
-        local old_tile = v.old_tile
-        if old_tile.name == 'shallow-water' then
-            surface.set_tiles({{name = 'shallow-water', position = v.position}}, true)
+        if is_position_near(area, v.position) then
+            local old_tile = v.old_tile
+            if old_tile.name == 'tutorial-grid' then
+                surface.set_tiles({{name = 'tutorial-grid', position = v.position}}, true)
+            end
+            if old_tile.name == 'water' then
+                surface.set_tiles({{name = 'water', position = v.position}}, true)
+            end
+            if old_tile.name == 'water-green' then
+                surface.set_tiles({{name = 'water-green', position = v.position}}, true)
+            end
         end
     end
 end
