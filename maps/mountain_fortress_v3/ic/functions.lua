@@ -230,7 +230,11 @@ local function upgrade_surface(ic, player, entity)
     if saved_surfaces[player.index] then
         local c = get_owner_car_object(cars, player)
         local car = ic.cars[c]
-        car.name = 'tank'
+        if ce.name == 'spidertron' then
+            car.name = 'spidertron'
+        elseif ce.name == 'tank' then
+            car.name = 'tank'
+        end
         remove_simply_entity(car)
         set_new_area(ic, car)
         remove_logistics(car)
@@ -285,9 +289,29 @@ local function kick_players_out_of_vehicles(car)
     end
 end
 
-local function kick_player_from_surface(car)
+local function kick_player_from_surface(ic, car)
     if not car.surface or not car.surface.valid then
         return log_err('Car surface was not valid.')
+    end
+    if not car.entity or not car.entity.valid then
+        local main_surface = game.surfaces[ic.allowed_surface]
+        if main_surface and main_surface.valid then
+            for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
+                if e and e.valid and e.name == 'character' and e.player then
+                    e.player.teleport(
+                        main_surface.find_non_colliding_position(
+                            'character',
+                            game.forces.player.get_spawn_position(main_surface),
+                            3,
+                            0,
+                            5
+                        ),
+                        main_surface
+                    )
+                end
+            end
+        end
+        return log_err('Car entity was not valid.')
     end
 
     for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
@@ -490,7 +514,7 @@ function Public.save_car(ic, event)
     local health = entity.health
 
     kick_players_out_of_vehicles(car)
-    kick_player_from_surface(car)
+    kick_player_from_surface(ic, car)
     get_player_data(ic, player)
 
     if car.owner == player.index then
@@ -543,7 +567,7 @@ function Public.kill_car(ic, entity)
     local surface = car.surface
     kick_players_out_of_vehicles(car)
     kill_doors(ic, car)
-    kick_player_from_surface(car)
+    kick_player_from_surface(ic, car)
     for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
@@ -766,6 +790,7 @@ function Public.remove_invalid_cars(ic)
                 end
             end
         end
+        kick_player_from_surface(ic, car)
     end
     for k, surface in pairs(ic.surfaces) do
         if not ic.cars[tonumber(surface.name)] then
