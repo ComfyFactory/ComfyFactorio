@@ -121,7 +121,7 @@ local function level_up(player)
     rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
     RPG_GUI.update_char_button(player)
     table.shuffle_table(rpg_frame_icons)
-    if player.gui.left[main_frame_name] then
+    if player.gui.screen[main_frame_name] then
         RPG_GUI.toggle(player, true)
     end
     Public.level_up_effects(player)
@@ -225,8 +225,8 @@ function Public.update_mana(player)
         return
     end
 
-    if player.gui.left[main_frame_name] then
-        local f = player.gui.left[main_frame_name]
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.mana and data.mana.valid then
             data.mana.caption = rpg_t[player.index].mana
@@ -271,8 +271,8 @@ function Public.reward_mana(player, mana_to_add)
         return
     end
 
-    if player.gui.left[main_frame_name] then
-        local f = player.gui.left[main_frame_name]
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.mana and data.mana.valid then
             data.mana.caption = rpg_t[player.index].mana
@@ -306,8 +306,8 @@ function Public.update_health(player)
         return
     end
 
-    if player.gui.left[main_frame_name] then
-        local f = player.gui.left[main_frame_name]
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.health and data.health.valid then
             data.health.caption = (math.round(player.character.health * 10) / 10)

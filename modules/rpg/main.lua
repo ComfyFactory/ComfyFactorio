@@ -370,8 +370,8 @@ local function give_player_flameboots(player)
     if rpg_t[player.index].mana <= 0 then
         rpg_t[player.index].mana = 0
     end
-    if player.gui.left[main_frame_name] then
-        local f = player.gui.left[main_frame_name]
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.mana and data.mana.valid then
             data.mana.caption = rpg_t[player.index].mana
@@ -699,8 +699,8 @@ local function on_pre_player_mined_item(event)
         xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
     end
 
-    if player.gui.left[main_frame_name] then
-        local f = player.gui.left[main_frame_name]
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.exp_gui and data.exp_gui.valid then
             data.exp_gui.caption = math.floor(rpg_t[player.index].xp)

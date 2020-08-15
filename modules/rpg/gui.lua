@@ -169,7 +169,7 @@ local function draw_main_frame(player)
     end
 
     local main_frame =
-        player.gui.left.add(
+        player.gui.screen.add(
         {
             type = 'frame',
             name = main_frame_name,
@@ -177,6 +177,7 @@ local function draw_main_frame(player)
             direction = 'vertical'
         }
     )
+    main_frame.location = {x = 1, y = 40}
 
     local data = {}
     local rpg_extra = RPG.get('rpg_extra')
@@ -533,9 +534,8 @@ function Public.update_player_stats(player)
 end
 
 function Public.toggle(player, recreate)
-    local left = player.gui.left
     local screen = player.gui.screen
-    local main_frame = left[main_frame_name]
+    local main_frame = screen[main_frame_name]
 
     if recreate and main_frame then
         remove_main_frame(main_frame, screen)
@@ -672,7 +672,7 @@ Gui.on_click(
 
             remove_settings_frame(event.element)
 
-            if player.gui.left[main_frame_name] then
+            if player.gui.screen[main_frame_name] then
                 toggle(player, true)
             end
         end

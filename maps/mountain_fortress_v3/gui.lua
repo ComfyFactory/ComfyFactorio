@@ -214,7 +214,7 @@ local function on_player_changed_surface(event)
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
     local rpg_b = player.gui.top[rpg_button]
-    local rpg_f = player.gui.left[rpg_frame]
+    local rpg_f = player.gui.screen[rpg_frame]
     local rpg_s = player.gui.screen[rpg_settings]
     local diff = player.gui.top['difficulty_gui']
     local charging = player.gui.top['charging_station']

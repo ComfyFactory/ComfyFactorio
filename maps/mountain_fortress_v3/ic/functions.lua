@@ -560,7 +560,8 @@ function Public.validate_owner(ic, player, entity)
             local p = game.players[car.owner]
             if p then
                 if car.owner ~= player.index and player.driving then
-                    return Utils.print_to(nil, '{Car} ' .. player.name .. ' is driving ' .. p.name .. '´s car.')
+                    player.driving = false
+                    return Utils.print_to(nil, '{Car} ' .. player.name .. ' tried to drive ' .. p.name .. '´s car.')
                 end
             end
         end
