@@ -1,5 +1,6 @@
 local Functions = require "modules.fjei.functions"
 local math_ceil = math.ceil
+local math_abs = math.abs
 local string_find = string.find
 local table_remove = table.remove
 local table_insert = table.insert
@@ -317,7 +318,9 @@ local function draw_recipe(player, container, recipe_name)
 			element.style.maximal_width = recipe_window_item_name_width
 			element.style.single_line = false
 			element.style.font = "default"
+			element.style.bottom_margin = -3
 			local element = ttt.add({type = "label", caption = product.temperature .. " °C"})
+			element.style.top_margin = -3
 		else
 			local element = tt.add({type = "label", caption = get_localised_name(product.name)})
 			element.style.minimal_width = recipe_window_item_name_width
@@ -340,14 +343,16 @@ local function draw_recipe(player, container, recipe_name)
 		element.style.horizontal_align = "right"
 		
 		add_choose_elem_button(tt, ingredient.name)
-		if ingredient.temperature then
+		if ingredient.minimum_temperature and math_abs(ingredient.minimum_temperature) < 4294967296 then
 			local ttt = tt.add({type = "table", column_count = 1})
 			local element = ttt.add({type = "label", caption = get_localised_name(ingredient.name)})
 			element.style.minimal_width = recipe_window_item_name_width
 			element.style.maximal_width = recipe_window_item_name_width	
 			element.style.single_line = false
 			element.style.font = "default"
-			local element = ttt.add({type = "label", caption = ingredient.temperature .. " °C"})
+			element.style.bottom_margin = -3
+			local element = ttt.add({type = "label", caption = ingredient.minimum_temperature .. " °C"})
+			element.style.top_margin = -3
 		else		
 			local element = tt.add({type = "label", caption = get_localised_name(ingredient.name)})
 			element.style.minimal_width = recipe_window_item_name_width
