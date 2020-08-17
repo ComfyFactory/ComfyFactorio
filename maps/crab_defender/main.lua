@@ -995,33 +995,33 @@ local market_kill_visuals = function()
 
     local m = 32
     local m2 = m * 0.005
-    if get_active_version >= is_branch_18 then
-        for i = 1, 1024, 1 do
-            surface.create_particle(
-                {
-                    name = 'branch-particle',
-                    position = this.market.position,
-                    frame_speed = 0.1,
-                    vertical_speed = 0.1,
-                    height = 0.1,
-                    movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
-                }
-            )
-        end
-    else
-        for i = 1, 1024, 1 do
-            surface.create_entity(
-                {
-                    name = 'branch-particle',
-                    position = this.market.position,
-                    frame_speed = 0.1,
-                    vertical_speed = 0.1,
-                    height = 0.1,
-                    movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
-                }
-            )
-        end
-    end
+    -- if get_active_version >= is_branch_18 then
+    --     for i = 1, 1024, 1 do
+    --         surface.create_particle(
+    --             {
+    --                 name = 'branch-particle',
+    --                 position = this.market.position,
+    --                 frame_speed = 0.1,
+    --                 vertical_speed = 0.1,
+    --                 height = 0.1,
+    --                 movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+    --             }
+    --         )
+    --     end
+    -- else
+    --     for i = 1, 1024, 1 do
+    --         surface.create_entity(
+    --             {
+    --                 name = 'branch-particle',
+    --                 position = this.market.position,
+    --                 frame_speed = 0.1,
+    --                 vertical_speed = 0.1,
+    --                 height = 0.1,
+    --                 movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+    --             }
+    --         )
+    --     end
+    -- end
     for x = -5, 5, 0.5 do
         for y = -5, 5, 0.5 do
             if math_random(1, 2) == 1 then

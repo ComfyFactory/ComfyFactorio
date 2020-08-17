@@ -266,7 +266,6 @@ local function process_chunk(area)
     local seed = game.surfaces[1].map_gen_settings.seed
     local surface = game.surfaces['nauvis']
 
-
     for _, e in pairs(surface.find_entities_filtered({area = area})) do
         process_entity(e)
     end
@@ -328,7 +327,6 @@ local function process_chunk_queue()
     end
 end
 
-
 local function get_ore_from_entpos(entity)
     local seed = game.surfaces[1].map_gen_settings.seed
     local noise_forest_location = get_noise('forest_location', entity.position, seed)
@@ -345,7 +343,9 @@ local function get_ore_from_entpos(entity)
 end
 
 local function on_chunk_generated(event)
-    if game.surfaces.nauvis.index ~= event.surface.index then return end
+    if game.surfaces.nauvis.index ~= event.surface.index then
+        return
+    end
     local area = event.area
 
     if game.tick == 0 then
@@ -737,7 +737,7 @@ local on_init = function()
     T.main_caption_color = {r = 0, g = 120, b = 0}
     T.sub_caption_color = {r = 255, g = 0, b = 255}
     global.chunk_queue = {}
-    game.difficulty_settings.recipe_difficulty = 4
+    game.difficulty_settings.technology_price_multiplier = 4
 end
 
 Event.on_init(on_init)

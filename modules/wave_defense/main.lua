@@ -40,8 +40,8 @@ end
 local group_size_modifier_raffle_size = #group_size_modifier_raffle
 
 local function debug_print(msg)
-    local this = WD.get_table()
-    if not this.debug then
+    local debug = WD.get('debug')
+    if not debug then
         return
     end
     print('WaveDefense: ' .. msg)
@@ -148,7 +148,7 @@ local function create_tiles(entity)
 end
 
 local function is_unit_valid(biter)
-    local this = WD.get_table()
+    local this = WD.get()
     if not biter.entity then
         debug_print('is_unit_valid - unit destroyed - does no longer exist')
         return false
@@ -169,7 +169,7 @@ local function is_unit_valid(biter)
 end
 
 local function refresh_active_unit_threat()
-    local this = WD.get_table()
+    local this = WD.get()
     debug_print('refresh_active_unit_threat - current value ' .. this.active_biter_threat)
     local active_biter_threat = 0
     for k, biter in pairs(this.active_biters) do
@@ -184,7 +184,7 @@ local function refresh_active_unit_threat()
 end
 
 local function time_out_biters()
-    local this = WD.get_table()
+    local this = WD.get()
     for k, biter in pairs(this.active_biters) do
         if not is_unit_valid(biter) then
             this.active_biter_count = this.active_biter_count - 1
@@ -204,7 +204,7 @@ local function time_out_biters()
 end
 
 local function get_random_close_spawner(surface)
-    local this = WD.get_table()
+    local this = WD.get()
     local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = 'enemy'})
     if not spawners[1] then
         return false
@@ -242,7 +242,7 @@ local function get_random_character(this)
 end
 
 local function set_main_target()
-    local this = WD.get_table()
+    local this = WD.get()
     if this.target then
         if this.target.valid then
             return
@@ -265,7 +265,7 @@ local function set_main_target()
 end
 
 local function set_group_spawn_position(surface)
-    local this = WD.get_table()
+    local this = WD.get()
     local spawner = get_random_close_spawner(surface)
     if not spawner then
         return
@@ -282,7 +282,7 @@ local function set_group_spawn_position(surface)
 end
 
 local function set_enemy_evolution()
-    local this = WD.get_table()
+    local this = WD.get()
     local evolution_factor = this.wave_number * 0.001
     local biter_health_boost = 1
     --local damage_increase = 0
@@ -305,7 +305,7 @@ local function set_enemy_evolution()
 end
 
 local function can_units_spawn()
-    local this = WD.get_table()
+    local this = WD.get()
     if this.threat <= 0 then
         debug_print('can_units_spawn - threat too low')
         return false
@@ -322,7 +322,7 @@ local function can_units_spawn()
 end
 
 local function get_active_unit_groups_count()
-    local this = WD.get_table()
+    local this = WD.get()
     local count = 0
     for _, g in pairs(this.unit_groups) do
         if g.valid then
@@ -338,7 +338,7 @@ local function get_active_unit_groups_count()
 end
 
 local function spawn_biter(surface, is_boss_biter)
-    local this = WD.get_table()
+    local this = WD.get()
     if not is_boss_biter then
         if not can_units_spawn() then
             return
@@ -371,7 +371,7 @@ local function spawn_biter(surface, is_boss_biter)
 end
 
 local function set_next_wave()
-    local this = WD.get_table()
+    local this = WD.get()
     this.wave_number = this.wave_number + 1
 
     local threat_gain = this.wave_number * this.threat_gain_multiplier
@@ -409,7 +409,7 @@ local function set_next_wave()
 end
 
 local function reform_group(group)
-    local this = WD.get_table()
+    local this = WD.get()
     local group_position = {x = group.position.x, y = group.position.y}
     local step_length = this.unit_group_command_step_length
     local position = group.surface.find_non_colliding_position('biter-spawner', group_position, step_length, 4)
@@ -430,7 +430,7 @@ local function reform_group(group)
 end
 
 local function get_commmands(group)
-    local this = WD.get_table()
+    local this = WD.get()
     local commands = {}
     local group_position = {x = group.position.x, y = group.position.y}
     local step_length = this.unit_group_command_step_length
@@ -591,7 +591,7 @@ local function get_commmands(group)
 end
 
 local function command_unit_group(group, wd)
-    local this = WD.get_table()
+    local this = WD.get()
     if not this.unit_group_last_command[group.group_number] then
         this.unit_group_last_command[group.group_number] = game.tick - (this.unit_group_command_delay + 1)
     end
@@ -617,18 +617,12 @@ local function command_unit_group(group, wd)
             commands = get_commmands(group)
         }
     )
-    if group and group.valid then
-        if wd.remove_entities then
-            create_tiles(group)
-        end
-        group.start_moving()
-    end
 
     this.unit_group_last_command[group.group_number] = game.tick
 end
 
 local function give_commands_to_unit_groups()
-    local this = WD.get_table()
+    local this = WD.get()
     if #this.unit_groups == 0 then
         return
     end
@@ -648,7 +642,7 @@ local function give_commands_to_unit_groups()
 end
 
 local function spawn_unit_group()
-    local this = WD.get_table()
+    local this = WD.get()
     if not can_units_spawn() then
         return
     end
@@ -714,7 +708,7 @@ local function spawn_unit_group()
 end
 
 local function log_threat()
-    local this = WD.get_table()
+    local this = WD.get()
     this.threat_log_index = this.threat_log_index + 1
     this.threat_log[this.threat_log_index] = this.threat
     if this.threat_log_index > 900 then
@@ -723,7 +717,7 @@ local function log_threat()
 end
 
 local function clear_tables()
-    local this = WD.get_table()
+    local this = WD.get()
     this.unit_group_last_command = {}
 end
 
@@ -740,7 +734,7 @@ local tick_tasks = {
 }
 
 local function on_tick()
-    local this = WD.get_table()
+    local this = WD.get()
     if this.game_lost then
         return
     end

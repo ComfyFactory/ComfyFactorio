@@ -322,7 +322,7 @@ function Public.reset_map()
     Entities.set_scores()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
-    AntiGrief.enable_capsule_warning(true)
+    AntiGrief.enable_capsule_warning(false)
     AntiGrief.enable_damage_warning(false)
     AntiGrief.enable_capsule_cursor_warning(false)
     AntiGrief.enable_jail(true)
@@ -365,7 +365,7 @@ function Public.reset_map()
     wave_defense_table.spawn_position = {x = 0, y = 100}
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
-    WD.remove_entities(true)
+    WD.remove_entities(false)
     WD.enable_threat_log(true)
     WD.check_collapse_position(true)
 
@@ -375,9 +375,6 @@ function Public.reset_map()
         surface.request_to_generate_chunks({-20, 22}, 0.1)
         surface.force_generate_chunk_requests()
     end
-
-    surface.ticks_per_day = surface.ticks_per_day * 2
-    surface.brightness_visual_weights = {1, 0, 0, 0}
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
 

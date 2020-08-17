@@ -77,6 +77,8 @@ Public.get_table = Public.get
 function Public.clear_corpses(value)
     if value then
         this.clear_corpses = value
+    else
+        this.clear_corpses = false
     end
     return this.clear_corpses
 end
@@ -88,6 +90,8 @@ end
 function Public.alert_boss_wave(value)
     if value then
         this.alert_boss_wave = value
+    else
+        this.alert_boss_wave = false
     end
     return this.alert_boss_wave
 end
@@ -95,6 +99,8 @@ end
 function Public.remove_entities(value)
     if value then
         this.remove_entities = value
+    else
+        this.remove_entities = false
     end
     return this.remove_entities
 end
@@ -102,6 +108,8 @@ end
 function Public.enable_threat_log(value)
     if value then
         this.enable_threat_log = value
+    else
+        this.enable_threat_log = false
     end
     return this.enable_threat_log
 end
@@ -109,6 +117,8 @@ end
 function Public.check_collapse_position(value)
     if value then
         this.check_collapse_position = value
+    else
+        this.check_collapse_position = false
     end
     return this.check_collapse_position
 end

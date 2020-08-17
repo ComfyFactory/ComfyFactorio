@@ -87,56 +87,74 @@ function Public.add_player_to_permission_group(player, group, forced)
         return
     end
 
+    if not game.permissions.get_group('locomotive') then
+        local locomotive_group = game.permissions.create_group('locomotive')
+        locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
+        locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
+        locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
+        locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
+        locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
+        locomotive_group.set_allows_action(defines.input_action.admin_action, false)
+        locomotive_group.set_allows_action(defines.input_action.drop_item, false)
+        locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
+        locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
+    end
+
+    if not game.permissions.get_group('plebs') then
+        local plebs_group = game.permissions.create_group('plebs')
+        plebs_group.set_allows_action(defines.input_action.edit_permission_group, false)
+        plebs_group.set_allows_action(defines.input_action.import_permissions_string, false)
+        plebs_group.set_allows_action(defines.input_action.delete_permission_group, false)
+        plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
+        plebs_group.set_allows_action(defines.input_action.admin_action, false)
+    end
+
+    if not game.permissions.get_group('not_trusted') then
+        local not_trusted = game.permissions.create_group('not_trusted')
+        not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
+        not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
+        not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.admin_action, false)
+        not_trusted.set_allows_action(defines.input_action.drop_item, false)
+        not_trusted.set_allows_action(defines.input_action.place_equipment, false)
+        not_trusted.set_allows_action(defines.input_action.take_equipment, false)
+        not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
+    end
+
     if enable_permission_group_disconnect then
         local locomotive_group = game.permissions.get_group('locomotive')
+        local plebs_group = game.permissions.create_group('plebs')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
+        if plebs_group then
+            plebs_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
+        end
     else
         local locomotive_group = game.permissions.get_group('locomotive')
+        local plebs_group = game.permissions.create_group('plebs')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         end
+        if plebs_group then
+            plebs_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        end
     end
 
-    local not_trusted = game.permissions.get_group('not_trusted')
     if playtime < 5184000 then -- 24 hours
-        if not not_trusted then
-            not_trusted = game.permissions.create_group('not_trusted')
-            not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
-            not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
-            not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
-            not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
-            not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
-            not_trusted.set_allows_action(defines.input_action.admin_action, false)
-            not_trusted.set_allows_action(defines.input_action.drop_item, false)
-            not_trusted.set_allows_action(defines.input_action.place_equipment, false)
-            not_trusted.set_allows_action(defines.input_action.take_equipment, false)
-            not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-            not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
-        end
-        not_trusted = game.permissions.get_group('not_trusted')
+        local not_trusted = game.permissions.get_group('not_trusted')
         not_trusted.add_player(player)
     else
         if group == 'locomotive' then
             local locomotive_group = game.permissions.get_group('locomotive')
-            if not locomotive_group then
-                locomotive_group = game.permissions.create_group('locomotive')
-                locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
-                locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
-                locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
-                locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
-                locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
-                locomotive_group.set_allows_action(defines.input_action.admin_action, false)
-                locomotive_group.set_allows_action(defines.input_action.drop_item, false)
-                locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
-                locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
-            -- locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-            -- locomotive_group.set_allows_action(defines.input_action.connect_rolling_stock, false)
-            end
-
-            locomotive_group = game.permissions.get_group('locomotive')
             locomotive_group.add_player(player)
+        elseif group == 'plebs' then
+            local plebs_group = game.permissions.get_group('plebs')
+
+            plebs_group.add_player(player)
         elseif group == 'default' then
             local default_group = game.permissions.get_group('Default')
 
@@ -188,7 +206,7 @@ local function property_boost(data)
                     end
                 end
             else
-                Public.add_player_to_permission_group(player, 'default', true)
+                Public.add_player_to_permission_group(player, 'plebs', true)
             end
         end
     end
@@ -1506,7 +1524,7 @@ local function on_player_changed_surface(event)
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return Public.add_player_to_permission_group(player, 'locomotive')
     else
-        return Public.add_player_to_permission_group(player, 'default')
+        return Public.add_player_to_permission_group(player, 'plebs')
     end
 end
 

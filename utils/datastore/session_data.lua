@@ -8,7 +8,6 @@ local Print = require('utils.print_override')
 local raw_print = Print.raw_print
 
 local session_data_set = 'sessions'
-local error_offline = '[ERROR] Datastore is offline.'
 local session = {}
 local online_track = {}
 local trusted = {}
@@ -105,7 +104,6 @@ function Public.try_dl_data(key)
     key = tostring(key)
     local secs = Server.get_current_time()
     if secs == nil then
-        raw_print(error_offline)
         session[key] = game.players[key].online_time
         return
     else
@@ -119,7 +117,6 @@ function Public.try_ul_data(key)
     key = tostring(key)
     local secs = Server.get_current_time()
     if secs == nil then
-        raw_print(error_offline)
         return
     else
         try_get_data(session_data_set, key, try_upload_data)

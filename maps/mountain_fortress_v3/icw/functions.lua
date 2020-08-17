@@ -1,6 +1,8 @@
 local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
+local Color = require 'utils.color_presets'
+local Session = require 'utils.datastore.session_data'
 
 local random = math.random
 
@@ -723,76 +725,83 @@ end
 
 function Public.teleport_players_around(icw)
     for _, player in pairs(game.connected_players) do
-        if not validate_player(player) then
-            return
-        end
+        if validate_player(player) then
+            local trusted = Session.get_trusted_table()
 
-        if player.surface.find_entity('player-port', player.position) then
-            local door = player.surface.find_entity('player-port', player.position)
-            if door and door.valid then
-                local doors = icw.doors
-                local wagons = icw.wagons
+            if player.surface.find_entity('player-port', player.position) then
+                local door = player.surface.find_entity('player-port', player.position)
+                if door and door.valid then
+                    local doors = icw.doors
+                    local wagons = icw.wagons
 
-                local wagon = false
-                if doors[door.unit_number] then
-                    wagon = wagons[doors[door.unit_number]]
-                end
-                if wagons[door.unit_number] then
-                    wagon = wagons[door.unit_number]
-                end
-                if not wagon then
-                    return
-                end
-
-                local player_data = get_player_data(icw, player)
-                if player_data.state then
-                    player_data.state = player_data.state - 1
-                    if player_data.state == 0 then
-                        player_data.state = nil
+                    local wagon = false
+                    if doors[door.unit_number] then
+                        wagon = wagons[doors[door.unit_number]]
                     end
-                    return
-                end
+                    if wagons[door.unit_number] then
+                        wagon = wagons[door.unit_number]
+                    end
+                    if not wagon then
+                        return
+                    end
 
-                if wagon.entity.surface.name ~= player.surface.name then
-                    local surface = wagon.entity.surface
-                    local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-                    local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
-                    local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if wagon.entity.type == 'locomotive' then
-                        player.teleport(surface_position, surface)
-                        player_data.state = 2
-                        player.driving = true
-                        Public.kill_minimap(player)
+                    local player_data = get_player_data(icw, player)
+                    if player_data.state then
+                        player_data.state = player_data.state - 1
+                        if player_data.state == 0 then
+                            player_data.state = nil
+                        end
+                        return
+                    end
+
+                    if wagon.entity.surface.name ~= player.surface.name then
+                        local surface = wagon.entity.surface
+                        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
+                        local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
+                        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
+                        if wagon.entity.type == 'locomotive' then
+                            if not trusted[player.name] and not player.admin then
+                                player.teleport(surface_position, surface)
+                                player.driving = false
+                                Public.kill_minimap(player)
+                                player.print('Wooops - you slipped out of the driver seat!', Color.warning)
+                            else
+                                player.teleport(surface_position, surface)
+                                player_data.state = 2
+                                player.driving = true
+                                Public.kill_minimap(player)
+                            end
+                        else
+                            player.teleport(surface_position, surface)
+                            Public.kill_minimap(player)
+                        end
+                        player_data.surface = surface.index
+                    elseif wagon.entity.type == 'locomotive' and player.driving then
+                        player.driving = false
                     else
-                        player.teleport(surface_position, surface)
-                        Public.kill_minimap(player)
+                        local surface = wagon.surface
+                        local area = wagon.area
+                        local x_vector = door.position.x - player.position.x
+                        local position
+                        if x_vector > 0 then
+                            position = {
+                                area.left_top.x + 0.5,
+                                area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
+                            }
+                        else
+                            position = {
+                                area.right_bottom.x - 0.5,
+                                area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
+                            }
+                        end
+                        local p = surface.find_non_colliding_position('character', position, 128, 0.5)
+                        if p then
+                            player.teleport(p, surface)
+                        else
+                            player.teleport(position, surface)
+                        end
+                        player_data.surface = surface.index
                     end
-                    player_data.surface = surface.index
-                elseif wagon.entity.type == 'locomotive' and player.driving then
-                    player.driving = false
-                else
-                    local surface = wagon.surface
-                    local area = wagon.area
-                    local x_vector = door.position.x - player.position.x
-                    local position
-                    if x_vector > 0 then
-                        position = {
-                            area.left_top.x + 0.5,
-                            area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                        }
-                    else
-                        position = {
-                            area.right_bottom.x - 0.5,
-                            area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                        }
-                    end
-                    local p = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if p then
-                        player.teleport(p, surface)
-                    else
-                        player.teleport(position, surface)
-                    end
-                    player_data.surface = surface.index
                 end
             end
         end

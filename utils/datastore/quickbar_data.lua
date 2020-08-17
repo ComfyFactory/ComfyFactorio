@@ -2,13 +2,10 @@ local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
-local Print = require('utils.print_override')
-local raw_print = Print.raw_print
 
 local quickbar_dataset = 'quickbar'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
-local error_offline = '[ERROR] Datastore is offline.'
 
 local Public = {}
 
@@ -40,7 +37,6 @@ function Public.fetch(key)
         if not player or not player.valid then
             return
         end
-        raw_print(error_offline)
         return
     else
         try_get_data(quickbar_dataset, key, fetch)
@@ -58,7 +54,6 @@ commands.add_command(
 
         local secs = Server.get_current_time()
         if not secs then
-            raw_print(error_offline)
             return
         end
 
