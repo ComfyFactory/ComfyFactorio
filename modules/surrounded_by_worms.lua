@@ -20,12 +20,16 @@ end
 
 local function on_chunk_generated(event)
 	local surface = event.surface
-	local starting_distance = surface.map_gen_settings.starting_area * 200
+	if not global.worm_distance then
+		global.worm_distance = surface.map_gen_settings.starting_area * 200
+		
+	end
+	--local starting_distance = surface.map_gen_settings.starting_area * 200
 	local left_top = event.area.left_top
 	local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-	if starting_distance > chunk_distance_to_center then return end
+	if global.worm_distance > chunk_distance_to_center then return end
 	
-	local highest_worm_tier = math.floor((chunk_distance_to_center - starting_distance) * 0.002) + 1
+	local highest_worm_tier = math.floor((chunk_distance_to_center - global.worm_distance) * 0.002) + 1
 	if highest_worm_tier > 4 then highest_worm_tier = 4 end
 	
 	if not global.average_worm_amount_per_chunk then global.average_worm_amount_per_chunk = 1 end	
