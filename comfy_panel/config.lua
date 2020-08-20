@@ -71,13 +71,11 @@ local functions = {
 	end,
 	["comfy_panel_blueprint_toggle"] = function(event)
 		if event.element.switch_state == "left" then
-			game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, true)
-			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, true)
-			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, true)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.open_blueprint_library_gui, true)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, true)	
 		else
-			game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
-			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
-			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, false)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)	
 		end
 	end,
 	["comfy_panel_spaghett_toggle"] = function(event)
@@ -189,7 +187,7 @@ local build_config_gui = (function (player, frame)
 	frame.add({type = "line"})
 
 	local switch_state = "right"
-	if game.permissions.get_group("Default").allows_action(defines.input_action.import_blueprint) then switch_state = "left" end
+	if game.permissions.get_group("Default").allows_action(defines.input_action.open_blueprint_library_gui) then switch_state = "left" end
 	local switch = add_switch(frame, switch_state, "comfy_panel_blueprint_toggle", "Blueprint Library", "Toggles the usage of blueprint strings and the library.")
 	if not admin then switch.ignored_by_interaction = true end
 

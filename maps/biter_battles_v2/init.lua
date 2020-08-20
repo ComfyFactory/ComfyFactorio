@@ -17,9 +17,8 @@ function Public.initial_setup()
 	game.create_force("south_biters")
 	game.create_force("spectator")
 
-	game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
-	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
-	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, false)	
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)	
 
 	local p = game.permissions.create_group("spectator")
 	for action_name, _ in pairs(defines.input_action) do
@@ -121,7 +120,7 @@ function Public.source_surface()
 	Terrain.generate_additional_spawn_ore(surface)
 	Terrain.generate_silo(surface)
 	Terrain.draw_spawn_circle(surface)
-	Terrain.generate_spawn_goodies(surface)
+	--Terrain.generate_spawn_goodies(surface)
 end
 
 function Public.tables()

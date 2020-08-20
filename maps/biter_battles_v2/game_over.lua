@@ -288,10 +288,13 @@ function Public.server_restart()
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		--Server.start_scenario('Biter_Battles')	
+		--Server.start_scenario('Biter_Battles')
+		
+		game.remove_offline_players()
+		
 		Init.tables()
 		Init.forces()
-		Init.load_spawn()		
+		Init.load_spawn()
 		for _, player in pairs(game.players) do
 			Functions.init_player(player)
 			for _, e in pairs(player.gui.left.children) do e.destroy() end		

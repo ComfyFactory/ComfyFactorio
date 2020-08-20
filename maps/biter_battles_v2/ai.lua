@@ -421,7 +421,7 @@ Public.raise_evo = function()
 	if global.freeze_players then return end
 	if not global.training_mode and (#game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0) then return end
 	if not global.total_passive_feed_redpotion then global.total_passive_feed_redpotion = 0 end
-	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
+	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter * 0.75)
 	global.total_passive_feed_redpotion = global.total_passive_feed_redpotion + amount
 	local biter_teams = {["north_biters"] = "north", ["south_biters"] = "south"}
 	local a_team_has_players = false

@@ -1,5 +1,5 @@
 local Public = {}
-local LootRaffle = require "functions.loot_raffle"
+--local LootRaffle = require "functions.loot_raffle"
 local BiterRaffle = require "functions.biter_raffle"
 local bb_config = require "maps.biter_battles_v2.config"
 
@@ -552,7 +552,7 @@ function Public.generate_silo(surface)
 		end
 	end
 end
-
+--[[
 function Public.generate_spawn_goodies(surface)
 	local tiles = surface.find_tiles_filtered({name = "stone-path"})
 	table.shuffle_table(tiles)
@@ -583,7 +583,7 @@ function Public.generate_spawn_goodies(surface)
 		end
 	end
 end
-
+]]
 --Landfill Restriction
 function Public.restrict_landfill(surface, inventory, tiles)
 	for _, t in pairs(tiles) do
