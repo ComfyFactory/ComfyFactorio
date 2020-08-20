@@ -126,7 +126,7 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if enable_permission_group_disconnect then
         local locomotive_group = game.permissions.get_group('locomotive')
-        local plebs_group = game.permissions.create_group('plebs')
+        local plebs_group = game.permissions.get_group('plebs')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
@@ -135,7 +135,7 @@ function Public.add_player_to_permission_group(player, group, forced)
         end
     else
         local locomotive_group = game.permissions.get_group('locomotive')
-        local plebs_group = game.permissions.create_group('plebs')
+        local plebs_group = game.permissions.get_group('plebs')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         end

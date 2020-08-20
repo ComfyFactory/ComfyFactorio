@@ -592,10 +592,15 @@ Gui.on_click(
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
         local one_punch_gui_input = data.one_punch_gui_input
+        local auto_allocate_gui_input = data.auto_allocate_gui_input
 
         local rpg_t = RPG.get('rpg_t')
 
         if frame and frame.valid then
+            if auto_allocate_gui_input and auto_allocate_gui_input.valid and auto_allocate_gui_input.selected_index then
+                rpg_t[player.index].allocate_index = auto_allocate_gui_input.selected_index
+            end
+
             if one_punch_gui_input and one_punch_gui_input.valid then
                 if not one_punch_gui_input.state then
                     rpg_t[player.index].one_punch = false

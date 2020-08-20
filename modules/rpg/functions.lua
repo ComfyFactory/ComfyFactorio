@@ -104,6 +104,7 @@ end
 local function level_up(player)
     local rpg_t = RPG.get('rpg_t')
     local RPG_GUI = package.loaded['modules.rpg.gui']
+    local names = RPG.auto_allocate_nodes
 
     local distribute_points_gain = 0
     for i = rpg_t[player.index].level + 1, #experience_levels, 1 do
@@ -121,9 +122,17 @@ local function level_up(player)
     rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
     RPG_GUI.update_char_button(player)
     table.shuffle_table(rpg_frame_icons)
+    if rpg_t[player.index].allocate_index ~= 1 then
+        local node = rpg_t[player.index].allocate_index
+        local index = names[node]:lower()
+        rpg_t[player.index][index] = rpg_t[player.index][index] + distribute_points_gain
+        rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - distribute_points_gain
+        RPG_GUI.update_player_stats(player)
+    end
     if player.gui.screen[main_frame_name] then
         RPG_GUI.toggle(player, true)
     end
+
     Public.level_up_effects(player)
 end
 
@@ -503,6 +512,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             mana_max = 0,
             last_spawned = 0,
             dropdown_select_index = 1,
+            allocate_index = 1,
             flame_boots = false,
             enable_entity_spawn = false,
             health_bar = rpg_t[player.index].health_bar,
@@ -534,6 +544,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             mana_max = 0,
             last_spawned = 0,
             dropdown_select_index = 1,
+            allocate_index = 1,
             flame_boots = false,
             enable_entity_spawn = false,
             points_to_distribute = 0,

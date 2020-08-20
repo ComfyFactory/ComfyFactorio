@@ -27,6 +27,7 @@ function Public.reset()
     this.cars = {}
     this.saved_surfaces = {}
     this.allowed_surface = 'nauvis'
+    this.trust_system = {}
     this.players = {}
     this.surfaces = {}
     this.infinity_scrap_enabled = true

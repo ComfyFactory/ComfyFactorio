@@ -22,34 +22,6 @@ local science_loot = {
             output = {item = 'logistic-science-pack', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 15 / 60 / 512}
         },
         weight = 2
-    },
-    {
-        stack = {
-            recipe = 'military-science-pack',
-            output = {item = 'military-science-pack', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 25 / 60 / 512}
-        },
-        weight = 1
-    },
-    {
-        stack = {
-            recipe = 'chemical-science-pack',
-            output = {item = 'chemical-science-pack', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 33 / 60 / 512}
-        },
-        weight = 0.20
-    },
-    {
-        stack = {
-            recipe = 'production-science-pack',
-            output = {item = 'production-science-pack', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 45 / 60 / 512}
-        },
-        weight = 0.10
-    },
-    {
-        stack = {
-            recipe = 'utility-science-pack',
-            output = {item = 'utility-science-pack', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 55 / 60 / 512}
-        },
-        weight = 0.010
     }
 }
 

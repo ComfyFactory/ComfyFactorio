@@ -81,6 +81,14 @@ Public.classes = {
     ['vitality'] = 'SOLDIER'
 }
 
+Public.auto_allocate_nodes = {
+    'Deactivated',
+    'Strength',
+    'Magicka',
+    'Dexterity',
+    'Vitality'
+}
+
 function Public.reset_table()
     this.rpg_extra.debug = false
     this.rpg_extra.breached_walls = 1
@@ -100,6 +108,7 @@ function Public.reset_table()
     this.rpg_extra.mana_per_tick = 0.1
     this.rpg_extra.force_mana_per_tick = false
     this.rpg_extra.enable_stone_path = false
+    this.rpg_extra.enable_auto_allocate = false
     this.rpg_extra.enable_one_punch = true
     this.rpg_extra.enable_one_punch_globally = false
     this.rpg_t = {}
@@ -248,6 +257,18 @@ function Public.enable_stone_path(value)
     end
 
     return this.rpg_extra.enable_stone_path
+end
+
+--- Enables/disabled auto-allocations of skill-points.
+---@param value <boolean>
+function Public.enable_auto_allocate(value)
+    if value then
+        this.rpg_extra.enable_auto_allocate = value
+    else
+        this.rpg_extra.enable_auto_allocate = false
+    end
+
+    return this.rpg_extra.enable_auto_allocate
 end
 
 --- Enables/disabled stone-path-tile creation on mined.

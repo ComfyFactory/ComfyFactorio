@@ -2,6 +2,7 @@ local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 
 local Public = {}
 local random = math.random
@@ -789,8 +790,8 @@ function Public.remove_invalid_cars(ic)
                     ic.doors[key] = nil
                 end
             end
+            kick_player_from_surface(ic, car)
         end
-        kick_player_from_surface(ic, car)
     end
     for k, surface in pairs(ic.surfaces) do
         if not ic.cars[tonumber(surface.name)] then
@@ -896,56 +897,55 @@ end
 
 function Public.teleport_players_around(ic)
     for _, player in pairs(game.connected_players) do
-        if not validate_player(player) then
-            return
-        end
+        if validate_player(player) then
+            if player.surface.find_entity('player-port', player.position) then
+                local door = player.surface.find_entity('player-port', player.position)
+                if validate_entity(door) then
+                    local doors = ic.doors
+                    local cars = ic.cars
 
-        if player.surface.find_entity('player-port', player.position) then
-            local door = player.surface.find_entity('player-port', player.position)
-            if validate_entity(door) then
-                local doors = ic.doors
-                local cars = ic.cars
-
-                local car = false
-                if doors[door.unit_number] then
-                    car = cars[doors[door.unit_number]]
-                end
-                if cars[door.unit_number] then
-                    car = cars[door.unit_number]
-                end
-                if not car then
-                    return
-                end
-
-                local player_data = get_player_data(ic, player)
-                if player_data.state then
-                    player_data.state = player_data.state - 1
-                    if player_data.state == 0 then
-                        player_data.state = nil
+                    local car = false
+                    if doors[door.unit_number] then
+                        car = cars[doors[door.unit_number]]
                     end
-                    return
-                end
-
-                if not validate_entity(car.entity) then
-                    return
-                end
-
-                if car.entity.surface.name ~= player.surface.name then
-                    if validate_entity(car.entity) and car.owner == player.index then
-                        car.entity.minable = true
+                    if cars[door.unit_number] then
+                        car = cars[door.unit_number]
                     end
-                    local surface = car.entity.surface
-                    local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-                    local position = {car.entity.position.x + x_vector, car.entity.position.y}
-                    local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if car.entity.type == 'car' or car.entity.name == 'spidertron' then
-                        player.teleport(surface_position, surface)
-                        player_data.state = 2
-                        player.driving = true
-                    else
-                        player.teleport(surface_position, surface)
+                    if not car then
+                        return
                     end
-                    player_data.surface = surface.index
+
+                    local player_data = get_player_data(ic, player)
+                    if player_data.state then
+                        player_data.state = player_data.state - 1
+                        if player_data.state == 0 then
+                            player_data.state = nil
+                        end
+                        return
+                    end
+
+                    if not validate_entity(car.entity) then
+                        return
+                    end
+
+                    if car.entity.surface.name ~= player.surface.name then
+                        if validate_entity(car.entity) and car.owner == player.index then
+                            IC_Gui.remove_toolbar(player)
+                            car.entity.minable = true
+                        end
+                        local surface = car.entity.surface
+                        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
+                        local position = {car.entity.position.x + x_vector, car.entity.position.y}
+                        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
+                        if car.entity.type == 'car' or car.entity.name == 'spidertron' then
+                            player.teleport(surface_position, surface)
+                            player_data.state = 2
+                            player.driving = true
+                        else
+                            player.teleport(surface_position, surface)
+                        end
+                        player_data.surface = surface.index
+                    end
                 end
             end
         end
@@ -984,6 +984,7 @@ function Public.use_door_with_entity(ic, player, door)
 
     local surface = car.surface
     if validate_entity(car.entity) and car.owner == player.index then
+        IC_Gui.add_toolbar(player)
         car.entity.minable = false
     end
 
