@@ -948,7 +948,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if mana <= object.mana_cost then
+    if mana < object.mana_cost then
         return p('You don´t have enough mana to cast this spell.', Color.fail)
     end
 

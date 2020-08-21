@@ -1,7 +1,8 @@
-local ic = require 'maps.mountain_fortress_v3.ic.table'
+local ICT = require 'maps.mountain_fortress_v3.ic.table'
 local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
 local Tabs = require 'comfy_panel.main'
+local Event = require 'utils.event'
 
 local Public = {}
 
@@ -9,7 +10,12 @@ local Public = {}
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
+local draw_add_player_frame_name = Gui.uid_name()
 local main_toolbar_name = Gui.uid_name()
+local add_player_name = Gui.uid_name()
+local kick_player_name = Gui.uid_name()
+
+local raise_event = script.raise_event
 
 local function increment(t, k)
     t[k] = true
@@ -19,24 +25,14 @@ local function decrement(t, k)
     t[k] = nil
 end
 
-local function create_player_table(this, player)
+local function create_player_table(player)
+    local this = ICT.get()
     if not this.trust_system[player.index] then
-        this.trust_system[player.index] = {}
+        this.trust_system[player.index] = {
+            [player.name] = true
+        }
     end
     return this.trust_system[player.index]
-end
-
-local function create_input_element(frame, type, value, items, index)
-    if type == 'slider' then
-        return frame.add({type = 'slider', value = value, minimum_value = 0, maximum_value = 1})
-    end
-    if type == 'boolean' then
-        return frame.add({type = 'checkbox', state = value})
-    end
-    if type == 'dropdown' then
-        return frame.add({type = 'drop-down', name = 'admin_player_select', items = items, selected_index = index})
-    end
-    return frame.add({type = 'text-box', text = value})
 end
 
 local function remove_main_frame(main_frame)
@@ -44,22 +40,18 @@ local function remove_main_frame(main_frame)
     main_frame.destroy()
 end
 
-local function draw_main_frame(player)
-    local this = ic.get()
-    local player_list = create_player_table(this, player)
-
+local function draw_add_player(frame)
     local main_frame =
-        player.gui.screen.add(
+        frame.add(
         {
             type = 'frame',
-            name = main_frame_name,
-            caption = 'Car Settings',
+            name = draw_add_player_frame_name,
+            caption = 'Add Player',
             direction = 'vertical'
         }
     )
-    main_frame.auto_center = true
     local main_frame_style = main_frame.style
-    main_frame_style.width = 400
+    main_frame_style.width = 325
     main_frame_style.use_header_filler = true
 
     local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
@@ -67,97 +59,15 @@ local function draw_main_frame(player)
     inside_frame_style.padding = 0
     local inside_table = inside_frame.add {type = 'table', column_count = 1}
     local inside_table_style = inside_table.style
-    inside_table_style.vertical_spacing = 0
+    inside_table_style.vertical_spacing = 5
+    inside_table_style.top_padding = 10
+    inside_table_style.left_padding = 10
+    inside_table_style.right_padding = 0
+    inside_table_style.bottom_padding = 10
+    inside_table_style.width = 325
 
-    inside_table.add({type = 'line'})
-
-    local info_text = inside_table.add({type = 'label', caption = 'Trust List'})
-    local info_text_style = info_text.style
-    info_text_style.font = 'default-bold'
-    info_text_style.padding = 0
-    info_text_style.left_padding = 10
-    info_text_style.horizontal_align = 'left'
-    info_text_style.vertical_align = 'bottom'
-    info_text_style.font_color = {0.55, 0.55, 0.99}
-
-    inside_table.add({type = 'line'})
-
-    local settings_frame = inside_table.add({type = 'scroll-pane'})
-    local settings_style = settings_frame.style
-    settings_style.vertically_squashable = true
-    settings_style.bottom_padding = 5
-    settings_style.left_padding = 5
-    settings_style.right_padding = 5
-    settings_style.top_padding = 5
-
-    local settings_grid = settings_frame.add({type = 'table', column_count = 2})
-
-    local accept_label =
-        settings_grid.add(
-        {
-            type = 'label',
-            caption = 'Add a trusted player.',
-            tooltip = ''
-        }
-    )
-    accept_label.tooltip = 'This will allow the given player to join your vehicle.'
-
-    local players = game.connected_players
-
-    local allowed = {}
-    for _, p in pairs(players) do
-        if not player_list[p.name] then
-            allowed[#allowed + 1] = tostring(p.name)
-        end
-    end
-
-    local accept_label_style = accept_label.style
-    accept_label_style.horizontally_stretchable = true
-    accept_label_style.height = 35
-    accept_label_style.vertical_align = 'center'
-
-    local name_input = settings_grid.add({type = 'flow'})
-    local name_input_style = name_input.style
-    name_input_style.height = 35
-    name_input_style.vertical_align = 'center'
-    local trusted_players_input = create_input_element(name_input, 'dropdown', false, allowed, 1)
-
-    local denied = {}
-    local deny_players_input
-    if next(player_list) then
-        for _, p in pairs(player_list) do
-            denied[#denied + 1] = p
-        end
-
-        local deny_label =
-            settings_grid.add(
-            {
-                type = 'label',
-                caption = 'Remove a trusted player.',
-                tooltip = ''
-            }
-        )
-        deny_label.tooltip = 'This will instantly kick the player from your vehicle.'
-
-        local deny_label_style = deny_label.style
-        deny_label_style.horizontally_stretchable = true
-        deny_label_style.height = 35
-        deny_label_style.vertical_align = 'center'
-
-        local deny_input = settings_grid.add({type = 'flow'})
-        local deny_input_style = deny_input.style
-        deny_input_style.height = 35
-        deny_input_style.vertical_align = 'center'
-        deny_players_input = create_input_element(deny_input, 'dropdown', false, denied, 1)
-    end
-
-    local data = {
-        trusted_players_input = trusted_players_input
-    }
-
-    if deny_players_input then
-        data.deny_players_input = deny_players_input
-    end
+    local add_player_frame = main_frame.add({type = 'textfield', text = 'Name of the player.'})
+    add_player_frame.style.width = 140
 
     local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
 
@@ -165,16 +75,150 @@ local function draw_main_frame(player)
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_button_name, caption = 'Discard changes'})
+    local close_button = left_flow.add({type = 'button', name = discard_button_name, caption = 'Discard'})
     close_button.style = 'back_button'
+    close_button.style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = 'Save changes'})
+    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = 'Save'})
     save_button.style = 'confirm_button'
+    save_button.style.maximal_width = 100
 
-    Gui.set_data(save_button, data)
+    Gui.set_data(save_button, add_player_frame)
+end
+
+local function draw_players(data)
+    local player_table = data.player_table
+    local add_player_frame = data.add_player_frame
+    local player = data.player
+    local player_list = create_player_table(player)
+
+    for p, _ in pairs(player_list) do
+        Gui.set_data(add_player_frame, p)
+        local t_label =
+            player_table.add(
+            {
+                type = 'label',
+                caption = p
+            }
+        )
+        t_label.style.minimal_width = 75
+        t_label.style.horizontal_align = 'center'
+
+        local a_label =
+            player_table.add(
+            {
+                type = 'label',
+                caption = '✔️'
+            }
+        )
+        a_label.style.minimal_width = 75
+        a_label.style.horizontal_align = 'center'
+        a_label.style.font = 'default-large-bold'
+
+        local kick_flow = player_table.add {type = 'flow'}
+        local kick_player_button =
+            kick_flow.add(
+            {
+                type = 'button',
+                caption = 'Kick ' .. p,
+                name = kick_player_name
+            }
+        )
+        if player.name == t_label.caption then
+            kick_player_button.enabled = false
+        end
+        kick_player_button.style.minimal_width = 75
+        Gui.set_data(kick_player_button, p)
+    end
+end
+
+local function draw_main_frame(player)
+    local main_frame =
+        player.gui.screen.add(
+        {
+            type = 'frame',
+            name = main_frame_name,
+            caption = 'Car Settings',
+            direction = 'vertical',
+            style = 'inner_frame_in_outer_frame'
+        }
+    )
+
+    main_frame.auto_center = true
+    local main_frame_style = main_frame.style
+    main_frame_style.width = 350
+    main_frame_style.use_header_filler = true
+
+    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame_style = inside_frame.style
+    inside_frame_style.padding = 0
+
+    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table_style = inside_table.style
+    inside_table_style.vertical_spacing = 5
+    inside_table_style.top_padding = 10
+    inside_table_style.left_padding = 10
+    inside_table_style.right_padding = 0
+    inside_table_style.bottom_padding = 10
+    inside_table_style.width = 350
+
+    local add_player_frame = inside_table.add({type = 'button', caption = 'Add Player', name = add_player_name})
+
+    local player_table =
+        inside_table.add {
+        type = 'table',
+        column_count = 3,
+        draw_horizontal_lines = true,
+        draw_vertical_lines = true,
+        vertical_centering = true
+    }
+    local player_table_style = player_table.style
+    player_table_style.vertical_spacing = 10
+    player_table_style.width = 350
+    player_table_style.horizontal_spacing = 30
+
+    local name_label =
+        player_table.add(
+        {
+            type = 'label',
+            caption = 'Name',
+            tooltip = ''
+        }
+    )
+    name_label.style.minimal_width = 75
+    name_label.style.horizontal_align = 'center'
+
+    local trusted_label =
+        player_table.add(
+        {
+            type = 'label',
+            caption = 'Allowed',
+            tooltip = ''
+        }
+    )
+    trusted_label.style.minimal_width = 75
+    trusted_label.style.horizontal_align = 'center'
+
+    local operations_label =
+        player_table.add(
+        {
+            type = 'label',
+            caption = 'Operations',
+            tooltip = ''
+        }
+    )
+    operations_label.style.minimal_width = 75
+    operations_label.style.horizontal_align = 'center'
+
+    local data = {
+        player_table = player_table,
+        add_player_frame = add_player_frame,
+        player = player
+    }
+    draw_players(data)
 
     player.opened = main_frame
 end
@@ -210,8 +254,7 @@ local function add_toolbar(player, remove)
     end
 
     local tooltip = 'Control who may enter your vehicle.'
-    local b =
-        player.gui.top.add(
+    player.gui.top.add(
         {
             type = 'sprite-button',
             sprite = 'item/spidertron',
@@ -219,14 +262,6 @@ local function add_toolbar(player, remove)
             tooltip = tooltip
         }
     )
-    b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
-    b.style.font = 'heading-1'
-    b.style.minimal_height = 38
-    b.style.minimal_width = 38
-    b.style.maximal_height = 38
-    b.style.maximal_width = 38
-    b.style.padding = 1
-    b.style.margin = 0
 end
 
 local function remove_toolbar(player)
@@ -244,6 +279,28 @@ local function remove_toolbar(player)
 end
 
 Gui.on_click(
+    add_player_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        if not frame or not frame.valid then
+            return
+        end
+        local player_frame = frame[draw_add_player_frame_name]
+        if not player_frame or not player_frame.valid then
+            draw_add_player(frame)
+        else
+            player_frame.destroy()
+        end
+    end
+)
+
+Gui.on_click(
     save_button_name,
     function(event)
         local player = event.player
@@ -251,57 +308,80 @@ Gui.on_click(
             return
         end
 
-        local this = ic.get()
-
-        local player_list = this.trust_system[player.index]
+        local player_list = create_player_table(player)
 
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
-        local data = Gui.get_data(event.element)
-        local trusted_players_input = data.trusted_players_input
-        local deny_players_input = data.deny_players_input
+        local add_player_frame = Gui.get_data(event.element)
 
         if frame and frame.valid then
-            if trusted_players_input and trusted_players_input.valid and trusted_players_input.selected_index then
-                local index = trusted_players_input.selected_index
-                if not index then
+            if add_player_frame and add_player_frame.valid and add_player_frame.text then
+                local text = add_player_frame.text
+                if not text then
                     return
                 end
-
-                local target = game.players[index]
-                if not target or not target.valid then
+                local player_to_add = game.get_player(text)
+                if not player_to_add or not player_to_add.valid then
                     return player.print('Target player was not valid.', Color.warning)
                 end
-                local name = target.name
 
-                if target.index == player.index then
-                    return player.print('Target player is not valid.', Color.warning)
-                end
+                local name = player_to_add.name
+
                 if not player_list[name] then
                     player.print(name .. ' was added to your vehicle.', Color.info)
-                    increment(this.trust_system[player.index], name)
+                    player_to_add.print(player.name .. ' added you to their vehicle. You may now enter it.', Color.info)
+                    increment(player_list, name)
+                else
+                    return player.print('Target player is already trusted.', Color.warning)
+                end
+
+                remove_main_frame(event.element)
+
+                if player.gui.screen[main_frame_name] then
+                    toggle(player, true)
                 end
             end
+        end
+    end
+)
 
-            if deny_players_input and deny_players_input.valid and deny_players_input.selected_index then
-                local index = deny_players_input.selected_index
-                if not index then
-                    return
-                end
-                local target = game.players[index]
-                if not target or not target.valid then
-                    player.print('Target player was not valid.', Color.warning)
-                    return
-                end
-                local name = target.name
+Gui.on_click(
+    kick_player_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
 
-                if target.index == player.index then
-                    return player.print('Target player is not valid.', Color.warning)
-                end
-                if player_list[name] then
-                    player.print(name .. ' was removed from your vehicle.', Color.info)
-                    decrement(this.trust_system[player.index], name)
-                end
+        local player_list = create_player_table(player)
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        local player_name = Gui.get_data(event.element)
+        local this = ICT.get()
+
+        if frame and frame.valid then
+            if not player_name then
+                return
+            end
+            local target = game.get_player(player_name)
+            if not target or not target.valid then
+                player.print('Target player was not valid.', Color.warning)
+                return
+            end
+            local name = target.name
+
+            if player_list[name] then
+                player.print(name .. ' was removed from your vehicle.', Color.info)
+                decrement(player_list, name)
+                raise_event(
+                    ICT.events.on_player_kicked_from_surface,
+                    {
+                        player = player,
+                        target = target,
+                        this = this
+                    }
+                )
             end
 
             remove_main_frame(event.element)
@@ -319,11 +399,15 @@ Gui.on_click(
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
+        if not frame or not frame.valid then
+            return
+        end
+        local player_frame = frame[draw_add_player_frame_name]
         if not player or not player.valid or not player.character then
             return
         end
-        if frame and frame.valid then
-            frame.destroy()
+        if player_frame and player_frame.valid then
+            player_frame.destroy()
         end
     end
 )
@@ -350,5 +434,21 @@ Public.draw_main_frame = draw_main_frame
 Public.toggle = toggle
 Public.add_toolbar = add_toolbar
 Public.remove_toolbar = remove_toolbar
+
+Event.add(
+    defines.events.on_gui_closed,
+    function(event)
+        local player = game.get_player(event.player_index)
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        if frame and frame.valid then
+            frame.destroy()
+        end
+    end
+)
 
 return Public

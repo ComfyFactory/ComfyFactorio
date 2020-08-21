@@ -14,6 +14,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster'
 local Difficulty = require 'modules.difficulty_vote'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
+local ExplosiveBullets = require 'maps.mountain_fortress_v3.explosive_gun_bullets'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
@@ -382,7 +383,13 @@ local function on_player_mined_entity(event)
     if entity.type == 'simple-entity' or entity.type == 'tree' then
         this.mined_scrap = this.mined_scrap + 1
         Mining.on_player_mined_entity(event)
-        give_coin(player)
+        if entity.type == 'tree' then
+            if random(1, 2) == 1 then
+                give_coin(player)
+            end
+        else
+            give_coin(player)
+        end
         if rpg_char.stone_path then
             entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
         end
@@ -570,11 +577,12 @@ local function on_entity_damaged(event)
         return
     end
 
-    protect_entities(event)
-    biters_chew_rocks_faster(event)
     local wave_number = WD.get_wave()
     local boss_wave_warning = WD.alert_boss_wave()
     local munch_time = WPT.get('munch_time')
+
+    protect_entities(event)
+    biters_chew_rocks_faster(event)
 
     if munch_time then
         if boss_wave_warning or wave_number >= 1500 then
@@ -582,6 +590,10 @@ local function on_entity_damaged(event)
                 boss_puncher(event)
             end
         end
+    end
+    if WPT.get('explosive_bullets') then
+        ExplosiveBullets.explosive_bullets(event)
+        return
     end
 end
 

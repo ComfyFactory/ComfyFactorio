@@ -115,6 +115,8 @@ local collapse_kill = {
 
 local disable_tech = function()
     game.forces.player.technologies['landfill'].enabled = false
+    game.forces.player.technologies['spidertron'].enabled = false
+    game.forces.player.technologies['spidertron'].researched = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['railway'].researched = true
     game.forces.player.technologies['land-mine'].enabled = false
@@ -158,7 +160,7 @@ local set_difficulty = function()
     else
         if player_count >= 8 and player_count <= 12 then
             Collapse.set_speed(8)
-        elseif player_count >= 20 then
+        elseif player_count >= 20 and player_count <= 24 then
             Collapse.set_speed(6)
         elseif player_count >= 35 then
             Collapse.set_speed(5)
@@ -339,6 +341,7 @@ function Public.reset_map()
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
+    game.map_settings.path_finder.max_work_done_per_tick = 4000
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
@@ -536,7 +539,7 @@ local remove_offline_players = function()
              then
                 this.offline_players[i] = nil
             else
-                if offline_players[i] and offline_players[i].tick < game.tick - 54000 then
+                if offline_players[i] and offline_players[i].tick < game.tick - 34000 then
                     local name = offline_players[i].name
                     player_inv[1] =
                         game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
@@ -606,7 +609,7 @@ local remove_offline_players = function()
 end
 
 local on_research_finished = function(event)
-    disable_recipes()
+    disable_tech()
     local research = event.research
     local this = WPT.get()
 
@@ -851,7 +854,6 @@ end
 local on_tick = function()
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
-    local wave_defense_table = WD.get_table()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
 
@@ -870,9 +872,9 @@ local on_tick = function()
             collapse_after_wave_100()
             Entities.set_scores()
             local collapse_pos = Collapse.get_position()
-            local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)
+            local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
             if position then
-                wave_defense_table.spawn_position = position
+                WD.set_spawn_position(position)
             end
         end
     end
@@ -936,6 +938,7 @@ local on_init = function()
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
     Explosives.set_destructible_tile('water-mud', 1000)
+    Explosives.set_destructible_tile('lab-dark-2', 1000)
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail')
     Explosives.set_whitelist_entity('character')

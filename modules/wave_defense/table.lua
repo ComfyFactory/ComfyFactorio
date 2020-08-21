@@ -96,6 +96,15 @@ function Public.alert_boss_wave(value)
     return this.alert_boss_wave
 end
 
+function Public.set_spawn_position(value)
+    if type(value) == 'table' then
+        this.spawn_position = value
+    else
+        error('Value must be of type table.')
+    end
+    return this.spawn_position
+end
+
 function Public.remove_entities(value)
     if value then
         this.remove_entities = value

@@ -11,7 +11,8 @@ local blacklist = {
     ['fluid-wagon'] = true,
     ['land-mine'] = true,
     ['car'] = true,
-    ['tank'] = true
+    ['tank'] = true,
+    ['spidertron'] = true
 }
 
 market.weapons = {

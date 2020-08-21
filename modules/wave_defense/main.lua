@@ -75,7 +75,7 @@ end
 
 local function remove_trees(entity)
     local surface = entity.surface
-    local radius = 5
+    local radius = 10
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local trees = surface.find_entities_filtered {area = area, type = 'tree'}
@@ -90,7 +90,7 @@ end
 
 local function remove_rocks(entity)
     local surface = entity.surface
-    local radius = 5
+    local radius = 10
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
@@ -102,7 +102,7 @@ local function remove_rocks(entity)
         end
     end
 end
-
+--[[
 local function create_tiles(entity)
     local collapse
     local check_collapse_position = WD.get('check_collapse_position')
@@ -145,8 +145,7 @@ local function create_tiles(entity)
             end
         end
     end
-end
-
+end ]]
 local function is_unit_valid(biter)
     local this = WD.get()
     if not biter.entity then
@@ -356,10 +355,10 @@ local function spawn_biter(surface, is_boss_biter)
     local biter = surface.create_entity({name = name, position = position, force = 'enemy'})
     biter.ai_settings.allow_destroy_when_commands_fail = true
     biter.ai_settings.allow_try_return_to_spawner = false
+    biter.ai_settings.do_separation = true
     if this.remove_entities then
         remove_trees(biter)
         remove_rocks(biter)
-        create_tiles(biter)
     end
     if is_boss_biter then
         BiterHealthBooster.add_boss_unit(biter, global.biter_health_boost * 5, 0.35)
@@ -590,7 +589,7 @@ local function get_commmands(group)
     return commands
 end
 
-local function command_unit_group(group, wd)
+local function command_unit_group(group)
     local this = WD.get()
     if not this.unit_group_last_command[group.group_number] then
         this.unit_group_last_command[group.group_number] = game.tick - (this.unit_group_command_delay + 1)

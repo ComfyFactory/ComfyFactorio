@@ -891,6 +891,28 @@ local function gui_click(event)
         return
     end
 
+    if name == 'explosive_bullets' then
+        player.remove_item({name = item.value, count = item.price})
+
+        local message =
+            shopkeeper ..
+            player.name ..
+                ' has bought the explosive bullet modifier for ' .. format_number(item.price, true) .. ' coins.'
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name ..
+                    ' has bought the explosive bullet modifier for ' .. format_number(item.price) .. ' coins.'
+            }
+        )
+        this.explosive_bullets = true
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
     if name == 'flamethrower_turrets' then
         player.remove_item({name = item.value, count = item.price})
         if item.stack >= 1 then
@@ -1727,6 +1749,7 @@ function Public.get_items()
     local health_cost = 10000 * (1 + health_upgrades)
     local aura_cost = 4000 * (1 + aura_upgrades)
     local xp_point_boost_cost = 5000 * (1 + xp_points_upgrade)
+    local explosive_bullets_cost = 20000
     local flamethrower_turrets_cost = 2500 * (1 + flame_turret)
     local land_mine_cost = 2 * (1 + landmine)
     local skill_reset_cost = 100000
@@ -1784,6 +1807,29 @@ function Public.get_items()
         upgrade = true,
         static = true
     }
+    if WPT.get('explosive_bullets') then
+        main_market_items['explosive_bullets'] = {
+            stack = 1,
+            value = 'coin',
+            price = explosive_bullets_cost,
+            tooltip = 'Sold out!',
+            sprite = 'achievement/steamrolled',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['explosive_bullets'] = {
+            stack = 1,
+            value = 'coin',
+            price = explosive_bullets_cost,
+            tooltip = 'Upgrades ordinary SMG ammo to explosive bullets.',
+            sprite = 'achievement/steamrolled',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
     main_market_items['flamethrower_turrets'] = {
         stack = 1,
         value = 'coin',
@@ -1976,13 +2022,13 @@ function Public.get_items()
         enabled = false
     }
     local wave_number = WD.get_wave()
-    if wave_number == 200 then
+    if wave_number >= 200 then
         main_market_items['vehicle-machine-gun'].enabled = true
         main_market_items['vehicle-machine-gun'].tooltip = 'Car Machine Gun'
-    elseif wave_number == 400 then
+    elseif wave_number >= 400 then
         main_market_items['tank-machine-gun'].enabled = true
         main_market_items['tank-machine-gun'].tooltip = 'Tank Machine Gune'
-    elseif wave_number == 650 then
+    elseif wave_number >= 650 then
         main_market_items['tank-cannon'].enabled = true
         main_market_items['tank-cannon'].tooltip = 'Tank Cannon'
     end

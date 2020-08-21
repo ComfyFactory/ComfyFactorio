@@ -98,6 +98,7 @@ function Public.reset_table()
         randomized = false
     }
     this.collapse_grace = true
+    this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
     this.spidertron_unlocked_at_wave = 11
