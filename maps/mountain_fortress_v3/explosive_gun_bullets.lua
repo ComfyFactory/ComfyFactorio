@@ -32,25 +32,41 @@ function Public.explosive_bullets(event)
     if random(1, 3) ~= 1 then
         return false
     end
-    local entity = event.entity
-    if not entity or not entity.valid then
+    local cause = event.cause
+    if not cause or not cause.valid then
+        return
+    end
+
+    if cause.name ~= 'character' then
         return
     end
 
     if event.damage_type.name ~= 'physical' then
-        return false
-    end
-    local player = event.cause
-    if not player or not player.valid or player.name ~= 'character' then
         return
     end
 
+    local player = event.cause
     if player.shooting_state.state == defines.shooting.not_shooting then
-        return false
+        return
     end
-    local selected_weapon = player.get_inventory(defines.inventory.character_guns)[player.selected_gun_index]
-    if selected_weapon and selected_weapon.name ~= 'submachine-gun' and selected_weapon.name ~= 'pistol' then
-        return false
+
+    local weapon = player.get_inventory(defines.inventory.character_guns)[player.selected_gun_index]
+    local ammo = player.get_inventory(defines.inventory.character_ammo)[player.selected_gun_index]
+    if not weapon.valid_for_read or not ammo.valid_for_read then
+        return
+    end
+    if weapon.name ~= 'pistol' then
+        return
+    end
+    if
+        ammo.name ~= 'firearm-magazine' and ammo.name ~= 'piercing-rounds-magazine' and
+            ammo.name ~= 'uranium-rounds-magazine'
+     then
+        return
+    end
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
     end
 
     local surface = player.surface
