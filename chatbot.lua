@@ -13,7 +13,7 @@ local brain = {
     [1] = {'Our Discord server is at: https://getcomfy.eu/discord'},
     [2] = {
         'Need an admin? Join our discord at: https://getcomfy.eu/discord,',
-        'and post your dispute at #i-need-halp',
+        'and report it in #i-need-halp',
         'If you have played for more than 5h in our maps then,',
         'you are eligible to run the command /jail and /free'
     },
