@@ -109,19 +109,23 @@ local functions = {
                 true
             )
             game.permissions.get_group('Default').set_allows_action(defines.input_action.import_blueprint_string, true)
+            get_actor(event, '{Blueprints}', 'has enabled blueprints!')
         else
             game.permissions.get_group('Default').set_allows_action(
                 defines.input_action.open_blueprint_library_gui,
                 false
             )
             game.permissions.get_group('Default').set_allows_action(defines.input_action.import_blueprint_string, false)
+            get_actor(event, '{Blueprints}', 'has disabled blueprints!')
         end
     end,
     ['comfy_panel_spaghett_toggle'] = function(event)
         if event.element.switch_state == 'left' then
             global.comfy_panel_config.spaghett.enabled = true
+            get_actor(event, '{Spaghett}', 'has enabled spaghett mode!')
         else
             global.comfy_panel_config.spaghett.enabled = nil
+            get_actor(event, '{Spaghett}', 'has disabled spaghett mode!')
         end
         spaghett()
     end
@@ -131,8 +135,10 @@ local poll_function = {
     ['comfy_panel_poll_trusted_toggle'] = function(event)
         if event.element.switch_state == 'left' then
             global.comfy_panel_config.poll_trusted = true
+            get_actor(event, '{Poll Mode}', 'has disabled non-trusted people to do polls.')
         else
             global.comfy_panel_config.poll_trusted = false
+            get_actor(event, '{Poll Mode}', 'has allowed non-trusted people to do polls.')
         end
     end,
     ['comfy_panel_poll_no_notify_toggle'] = function(event)
@@ -467,8 +473,8 @@ local build_config_gui = (function(player, frame)
                 'Spill Ores',
                 'Left = enables ore spillage to surface when mining.\nRight = disables ore spillage to surface when mining.'
             )
+            scroll_pane.add({type = 'line'})
         end
-        scroll_pane.add({type = 'line'})
     end
     for _, e in pairs(scroll_pane.children) do
         if e.type == 'line' then
