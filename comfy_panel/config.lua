@@ -2,6 +2,7 @@
 
 local Antigrief = require 'antigrief'
 local SessionData = require 'utils.datastore.session_data'
+local Utils = require 'utils.core'
 
 local spaghett_entity_blacklist = {
     ['logistic-chest-requester'] = true,
@@ -15,6 +16,7 @@ local function get_actor(event, action)
         return
     end
     print(player.name .. ' ' .. action)
+    Utils.action_warning('{Antigrief}', player.name .. ' has ' .. action .. ' the antigrief function.')
 end
 
 local function spaghett_deny_building(event)
@@ -149,10 +151,10 @@ local antigrief_functions = {
         local AG = Antigrief.get()
         if event.element.switch_state == 'left' then
             AG.enabled = true
-            get_actor(event, 'enabled antigrief')
+            get_actor(event, 'enabled')
         else
             AG.enabled = false
-            get_actor(event, 'disabled antigrief')
+            get_actor(event, 'disabled')
         end
         trust_connected_players()
     end
