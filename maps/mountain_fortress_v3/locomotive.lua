@@ -2002,43 +2002,70 @@ function Public.get_items()
         upgrade = false,
         static = true
     }
-    main_market_items['tank-cannon'] = {
-        stack = 1,
-        value = 'coin',
-        price = 25000,
-        tooltip = 'Tank Cannon\nAvailable after wave 650.',
-        upgrade = false,
-        static = true,
-        enabled = false
-    }
-    main_market_items['tank-machine-gun'] = {
-        stack = 1,
-        value = 'coin',
-        price = 7000,
-        tooltip = 'Tank Machine Gun\nAvailable after wave 400.',
-        upgrade = false,
-        static = true,
-        enabled = false
-    }
-    main_market_items['vehicle-machine-gun'] = {
-        stack = 1,
-        value = 'coin',
-        price = 2000,
-        tooltip = 'Car Machine Gun\nAvailable after wave 200.',
-        upgrade = false,
-        static = true,
-        enabled = false
-    }
     local wave_number = WD.get_wave()
+
+    if wave_number >= 650 then
+        main_market_items['tank-cannon'] = {
+            stack = 1,
+            value = 'coin',
+            price = 25000,
+            tooltip = 'Tank Cannon',
+            upgrade = false,
+            static = true,
+            enabled = true
+        }
+    else
+        main_market_items['tank-cannon'] = {
+            stack = 1,
+            value = 'coin',
+            price = 25000,
+            tooltip = 'Tank Cannon\nAvailable after wave 650.',
+            upgrade = false,
+            static = true,
+            enabled = false
+        }
+    end
+    if wave_number >= 400 then
+        main_market_items['tank-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 7000,
+            tooltip = 'Tank Machine Gun',
+            upgrade = false,
+            static = true,
+            enabled = true
+        }
+    else
+        main_market_items['tank-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 7000,
+            tooltip = 'Tank Machine Gun\nAvailable after wave 400.',
+            upgrade = false,
+            static = true,
+            enabled = false
+        }
+    end
     if wave_number >= 200 then
-        main_market_items['vehicle-machine-gun'].enabled = true
-        main_market_items['vehicle-machine-gun'].tooltip = 'Car Machine Gun'
-    elseif wave_number >= 400 then
-        main_market_items['tank-machine-gun'].enabled = true
-        main_market_items['tank-machine-gun'].tooltip = 'Tank Machine Gune'
-    elseif wave_number >= 650 then
-        main_market_items['tank-cannon'].enabled = true
-        main_market_items['tank-cannon'].tooltip = 'Tank Cannon'
+        main_market_items['vehicle-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 2000,
+            tooltip = 'Car Machine Gun',
+            upgrade = false,
+            static = true,
+            enabled = true
+        }
+    else
+        main_market_items['vehicle-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 2000,
+            tooltip = 'Car Machine Gun\nAvailable after wave 200.',
+            upgrade = false,
+            static = true,
+            enabled = false
+        }
     end
 
     return main_market_items

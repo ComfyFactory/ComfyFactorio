@@ -100,7 +100,10 @@ function Public.reset_table()
     this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
+    this.math_difficulty = 9999
     this.spidertron_unlocked_at_wave = 11
+    -- this.void_or_tile = 'lab-dark-2'
+    this.void_or_tile = 'out-of-map'
 end
 
 function Public.get(key)

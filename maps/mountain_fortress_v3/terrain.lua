@@ -66,7 +66,12 @@ local scrap_entities = {
     'medium-ship-wreck',
     'small-ship-wreck',
     'medium-ship-wreck',
-    'small-ship-wreck',
+    'small-ship-wreck'
+}
+
+local scrap_entities_index = #scrap_entities
+
+local scrap_entities_friendly = {
     'crash-site-chest-1',
     'crash-site-chest-2',
     'crash-site-chest-1',
@@ -75,7 +80,7 @@ local scrap_entities = {
     'crash-site-chest-2'
 }
 
-local scrap_entities_index = #scrap_entities
+local scrap_entities_friendly_index = #scrap_entities_friendly
 
 local spawner_raffle = {
     'biter-spawner',
@@ -435,7 +440,9 @@ local function process_level_14_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -504,7 +511,9 @@ local function process_level_13_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -558,7 +567,7 @@ local function process_level_13_position(x, y, data)
     tiles[#tiles + 1] = {name = 'water-shallow', position = p}
 end
 
-local function process_level_12_position(x, y, data)
+local function process_level_12_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -592,7 +601,9 @@ local function process_level_12_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -606,7 +617,7 @@ local function process_level_12_position(x, y, data)
         if success then
             return
         end
-        tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+        tiles[#tiles + 1] = {name = void_or_lab, position = p}
         if random(1, 100) > 88 then
             entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
@@ -687,7 +698,9 @@ local function process_level_11_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -782,7 +795,9 @@ local function process_level_10_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -916,7 +931,9 @@ local function process_level_9_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -947,7 +964,7 @@ local function process_level_9_position(x, y, data)
 end
 
 --SCRAPYARD
-local function process_level_8_position(x, y, data)
+local function process_level_8_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -962,17 +979,19 @@ local function process_level_8_position(x, y, data)
     local small_caves = get_noise('small_caves', p, seed)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
 
         if small_caves < -0.35 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -1010,6 +1029,13 @@ local function process_level_8_position(x, y, data)
                     name = scrap_entities[random(1, scrap_entities_index)],
                     position = p,
                     force = 'enemy'
+                }
+            end
+            if random(1, 96) == 1 then
+                entities[#entities + 1] = {
+                    name = scrap_entities_friendly[random(1, scrap_entities_friendly_index)],
+                    position = p,
+                    force = 'player'
                 }
             end
             if random(1, 5) > 1 then
@@ -1060,7 +1086,7 @@ local function process_level_8_position(x, y, data)
     end
 end
 
-local function process_level_7_position(x, y, data)
+local function process_level_7_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1149,12 +1175,12 @@ local function process_level_7_position(x, y, data)
     local small_caves = get_noise('small_caves', p, seed)
     if noise_cave_ponds < 0.25 and noise_cave_ponds > -0.25 then
         if small_caves > 0.55 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
 
         if small_caves < -0.55 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
 
             return
         end
@@ -1176,7 +1202,7 @@ local function process_level_7_position(x, y, data)
     end
 end
 
-local function process_level_6_position(x, y, data)
+local function process_level_6_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1194,12 +1220,12 @@ local function process_level_6_position(x, y, data)
     local small_caves = get_noise('small_caves', p, seed)
     if noise_cave_ponds < 0.45 and noise_cave_ponds > -0.45 then
         if small_caves > 0.45 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
 
         if small_caves < -0.45 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
@@ -1212,7 +1238,9 @@ local function process_level_6_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -1300,7 +1328,7 @@ local function process_level_6_position(x, y, data)
     end
 end
 
-local function process_level_5_position(x, y, data)
+local function process_level_5_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1345,7 +1373,9 @@ local function process_level_5_position(x, y, data)
         end
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -1380,10 +1410,10 @@ local function process_level_5_position(x, y, data)
         end
     end
 
-    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+    tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_level_4_position(x, y, data)
+local function process_level_4_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1444,12 +1474,12 @@ local function process_level_4_position(x, y, data)
     --Chasms
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.75 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
 
         if small_caves < -0.75 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
@@ -1493,10 +1523,10 @@ local function process_level_4_position(x, y, data)
         return
     end
 
-    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+    tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_level_3_position(x, y, data)
+local function process_level_3_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1535,7 +1565,9 @@ local function process_level_3_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -1557,13 +1589,13 @@ local function process_level_3_position(x, y, data)
         --Chasms
         if noise_cave_ponds < 0.12 and noise_cave_ponds > -0.12 then
             if small_caves > 0.85 then
-                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+                tiles[#tiles + 1] = {name = void_or_lab, position = p}
 
                 return
             end
 
             if small_caves < -0.85 then
-                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+                tiles[#tiles + 1] = {name = void_or_lab, position = p}
 
                 return
             end
@@ -1649,10 +1681,10 @@ local function process_level_3_position(x, y, data)
         return
     end
 
-    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+    tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_level_2_position(x, y, data)
+local function process_level_2_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1678,12 +1710,12 @@ local function process_level_2_position(x, y, data)
         --Chasms
         if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
             if small_caves > 0.32 then
-                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+                tiles[#tiles + 1] = {name = void_or_lab, position = p}
 
                 return
             end
             if small_caves < -0.32 then
-                tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+                tiles[#tiles + 1] = {name = void_or_lab, position = p}
                 return
             end
         end
@@ -1714,7 +1746,9 @@ local function process_level_2_position(x, y, data)
             return
         end
 
-        if random(1, 2048) == 1 then
+        local value = WPT.get('math_difficulty')
+
+        if random(1, value) == 1 then
             entities[#entities + 1] = {
                 name = spawner[random(1, size_of_spawner)],
                 position = p,
@@ -1788,10 +1822,10 @@ local function process_level_2_position(x, y, data)
         return
     end
 
-    tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+    tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_level_1_2_position(x, y, data)
+local function process_level_1_2_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -1814,11 +1848,11 @@ local function process_level_1_2_position(x, y, data)
     --Chasms
     if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
         if small_caves > 0.52 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
         if small_caves < -0.52 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
@@ -1844,7 +1878,9 @@ local function process_level_1_2_position(x, y, data)
         end
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -1971,7 +2007,7 @@ local function process_level_1_2_position(x, y, data)
     end
 end
 
-local function process_level_1_position(x, y, data)
+local function process_level_1_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -1994,11 +2030,11 @@ local function process_level_1_position(x, y, data)
     --Chasms
     if noise_cave_ponds < 0.111 and noise_cave_ponds > -0.112 then
         if small_caves > 0.53 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
         if small_caves < -0.53 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
@@ -2012,7 +2048,9 @@ local function process_level_1_position(x, y, data)
         return
     end
 
-    if random(1, 2048) == 1 then
+    local value = WPT.get('math_difficulty')
+
+    if random(1, value) == 1 then
         entities[#entities + 1] = {
             name = spawner[random(1, size_of_spawner)],
             position = p,
@@ -2135,7 +2173,7 @@ local function process_level_1_position(x, y, data)
     end
 end
 
-local function process_level_0_position(x, y, data)
+local function process_level_0_position(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -2158,11 +2196,11 @@ local function process_level_0_position(x, y, data)
     --Chasms
     if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
         if small_caves > 0.52 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
         if small_caves < -0.52 then
-            tiles[#tiles + 1] = {name = 'lab-dark-2', position = p}
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
@@ -2296,8 +2334,8 @@ end
 
 Public.levels = {
     process_level_0_position,
-    process_level_1_2_position,
     process_level_1_position,
+    process_level_1_2_position,
     process_level_3_position,
     process_level_5_position,
     process_level_8_position,
@@ -2335,7 +2373,9 @@ local function process_bits(x, y, data)
         process_level = levels[#levels]
     end
 
-    process_level(x, y, data)
+    local void_or_tile = WPT.get('void_or_tile')
+
+    process_level(x, y, data, void_or_tile)
 end
 
 local function border_chunk(data)

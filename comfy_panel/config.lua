@@ -11,12 +11,16 @@ local spaghett_entity_blacklist = {
     ['logistic-chest-active-provider'] = true
 }
 
-local function get_actor(event, prefix, msg)
+local function get_actor(event, prefix, msg, admins_only)
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
-    Utils.action_warning(prefix, player.name .. ' ' .. msg)
+    if admins_only then
+        Utils.print_admins(msg, player.name)
+    else
+        Utils.action_warning(prefix, player.name .. ' ' .. msg)
+    end
 end
 
 local function spaghett_deny_building(event)
@@ -157,10 +161,10 @@ local antigrief_functions = {
         local AG = Antigrief.get()
         if event.element.switch_state == 'left' then
             AG.enabled = true
-            get_actor(event, '{Antigrief}', 'has enabled the antigrief function.')
+            get_actor(event, '{Antigrief}', 'has enabled the antigrief function.', true)
         else
             AG.enabled = false
-            get_actor(event, '{Antigrief}', 'has disabled the antigrief function.')
+            get_actor(event, '{Antigrief}', 'has disabled the antigrief function.', true)
         end
         trust_connected_players()
     end
@@ -262,6 +266,7 @@ local build_config_gui = (function(player, frame)
     local label
 
     local admin = player.admin
+    frame.clear()
 
     local scroll_pane =
         frame.add {
@@ -274,8 +279,6 @@ local build_config_gui = (function(player, frame)
     scroll_style.left_padding = 2
     scroll_style.right_padding = 2
     scroll_style.top_padding = 2
-
-    scroll_pane.clear()
 
     label = scroll_pane.add({type = 'label', caption = 'Player Settings'})
     label.style.font = 'default-bold'

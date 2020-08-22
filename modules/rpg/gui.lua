@@ -664,6 +664,7 @@ Gui.on_click(
 
             if reset_gui_input and reset_gui_input.valid and reset_gui_input.state then
                 if not rpg_t[player.index].reset then
+                    rpg_t[player.index].allocate_index = 1
                     rpg_t[player.index].reset = true
                     Functions.rpg_reset_player(player, true)
                 end

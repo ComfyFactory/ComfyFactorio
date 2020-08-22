@@ -576,7 +576,7 @@ local remove_car =
     function(data)
         local player = data.player
         local car = data.car
-        player.remove_item({name = car.name, count = 9999})
+        player.remove_item({name = car.name, count = 1})
     end
 )
 
@@ -667,7 +667,7 @@ function Public.validate_owner(ic, player, entity)
         if validate_entity(car.entity) then
             local p = game.players[car.owner]
             local list = get_trusted_system(ic, p)
-            if p and p.valid then
+            if p and p.valid and p.connected then
                 if list[player.name] then
                     return
                 end
@@ -1076,8 +1076,8 @@ function Public.use_door_with_entity(ic, player, door)
 
     local owner = game.players[car.owner]
     local list = get_trusted_system(ic, owner)
-    if owner and owner.valid then
-        if not list[player.name] then
+    if owner and owner.valid and player.connected then
+        if not list[player.name] and not player.admin then
             player.driving = false
             return player.print(
                 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.',

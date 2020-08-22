@@ -742,11 +742,12 @@ local boost_difficulty = function()
         WPT.set().coin_amount = 2
         WPT.set('upgrades').flame_turret.limit = 25
         WPT.set('upgrades').landmine.limit = 100
-        WPT.set().locomotive_health = 20000
-        WPT.set().locomotive_max_health = 20000
+        WPT.set().locomotive_health = 15000
+        WPT.set().locomotive_max_health = 15000
         WPT.set().bonus_xp_on_join = 700
         WD.set().next_wave = game.tick + 3600 * 20
         WPT.set().spidertron_unlocked_at_wave = 11
+        WPT.set().math_difficulty = 4096
         WPT.set().difficulty_set = true
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
@@ -762,6 +763,7 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 300
         WD.set().next_wave = game.tick + 3600 * 15
         WPT.set().spidertron_unlocked_at_wave = 16
+        WPT.set().math_difficulty = 3072
         WPT.set().difficulty_set = true
     elseif name == 'Hard' then
         rpg_extra.difficulty = 0
@@ -777,6 +779,7 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 50
         WD.set().next_wave = game.tick + 3600 * 10
         WPT.set().spidertron_unlocked_at_wave = 21
+        WPT.set().math_difficulty = 2048
         WPT.set().difficulty_set = true
     elseif name == 'Insane' then
         rpg_extra.difficulty = 0
@@ -792,6 +795,7 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 0
         WD.set().next_wave = game.tick + 3600 * 5
         WPT.set().spidertron_unlocked_at_wave = 26
+        WPT.set().math_difficulty = 1024
         WPT.set().difficulty_set = true
     end
 end
@@ -912,7 +916,7 @@ local on_init = function()
     }
 
     local tooltip = {
-        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 20000.\nHidden Treasure has higher chance to spawn.\nGrace period: 20 minutes\nSpidertrons unlocks at zone 10.',
+        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 15000.\nHidden Treasure has higher chance to spawn.\nGrace period: 20 minutes\nSpidertrons unlocks at zone 10.',
         [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.\nGrace period: 15 minutes\nSpidertrons unlocks at zone 15.',
         [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.\nGrace period: 10 minutes\nSpidertrons unlocks at zone 20.',
         [4] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 0.\nLandmine limit = 0.\nLocomotive health = 1000.\nHidden Treasure has lower chance to spawn.\nGrace period: 5 minutes\nBiters are way more aggressive.\nCollapse starts after difficulty poll has ended.\nCollapse is much faster.\nSpidertrons unlocks at zone 25.'
