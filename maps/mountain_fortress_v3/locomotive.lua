@@ -13,6 +13,7 @@ local Gui = require 'utils.gui'
 local Server = require 'utils.server'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
+local Antigrief = require 'antigrief'
 local format_number = require 'util'.format_number
 
 local Public = {}
@@ -67,6 +68,13 @@ function Public.add_player_to_permission_group(player, group, forced)
     local jailed = Jailed.get_jailed_table()
     local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
     local session = Session.get_session_table()
+    local AG = Antigrief.get()
+
+    if not AG.enabled then
+        local default_group = game.permissions.get_group('Default')
+        default_group.add_player(player)
+        return
+    end
 
     if player.admin then
         return
