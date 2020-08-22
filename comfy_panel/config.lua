@@ -226,6 +226,17 @@ local fortress_functions = {
                 'has disabled the item spillage function. Ores no longer drop to surface when mining.'
             )
         end
+    end,
+    ['comfy_panel_void_or_tile'] = function(event)
+        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local this = WPT.get()
+        if event.element.switch_state == 'left' then
+            this.void_or_tile = 'out-of-map'
+            get_actor(event, '{Void}', 'has changes the the tiles of the zones to: out-of-map (void)')
+        else
+            this.void_or_tile = 'lab-dark-2'
+            get_actor(event, '{Void}', 'has changes the the tiles of the zones to: dark-tiles (flammable tiles)')
+        end
     end
 }
 
@@ -475,6 +486,19 @@ local build_config_gui = (function(player, frame)
                 'comfy_panel_spill_items_to_surface',
                 'Spill Ores',
                 'Left = enables ore spillage to surface when mining.\nRight = disables ore spillage to surface when mining.'
+            )
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if this.void_or_tile then
+                switch_state = 'left'
+            end
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_void_or_tile',
+                'Void Tiles',
+                'Left = changes the tiles to out-of-map.\nRight = changes the tiles to lab-dark-2'
             )
             scroll_pane.add({type = 'line'})
         end
