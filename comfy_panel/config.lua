@@ -1,6 +1,7 @@
 -- config tab --
 
 local Antigrief = require 'antigrief'
+local Color = require 'utils.color_presets'
 local SessionData = require 'utils.datastore.session_data'
 local Utils = require 'utils.core'
 
@@ -10,13 +11,12 @@ local spaghett_entity_blacklist = {
     ['logistic-chest-active-provider'] = true
 }
 
-local function get_actor(event, action)
+local function get_actor(event, prefix, msg)
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
-    print(player.name .. ' ' .. action)
-    Utils.action_warning('{Antigrief}', player.name .. ' has ' .. action .. ' the antigrief function.')
+    Utils.action_warning(prefix, player.name .. ' ' .. msg)
 end
 
 local function spaghett_deny_building(event)
@@ -151,12 +151,71 @@ local antigrief_functions = {
         local AG = Antigrief.get()
         if event.element.switch_state == 'left' then
             AG.enabled = true
-            get_actor(event, 'enabled')
+            get_actor(event, '{Antigrief}', 'has enabled the antigrief function.')
         else
             AG.enabled = false
-            get_actor(event, 'disabled')
+            get_actor(event, '{Antigrief}', 'has disabled the antigrief function.')
         end
         trust_connected_players()
+    end
+}
+
+local fortress_functions = {
+    ['comfy_panel_disable_fullness'] = function(event)
+        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local this = WPT.get()
+        if event.element.switch_state == 'left' then
+            this.fullness_enabled = true
+            get_actor(event, '{Fullness}', 'has enabled the inventory fullness function.')
+        else
+            this.fullness_enabled = false
+            get_actor(event, '{Fullness}', 'has disabled the inventory fullness function.')
+        end
+    end,
+    ['comfy_panel_offline_players'] = function(event)
+        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local this = WPT.get()
+        if event.element.switch_state == 'left' then
+            this.offline_players_enabled = true
+            get_actor(event, '{Offline Players}', 'has enabled the offline player function.')
+        else
+            this.offline_players_enabled = false
+            get_actor(event, '{Offline Players}', 'has disabled the offline player function.')
+        end
+    end,
+    ['comfy_panel_collapse_grace'] = function(event)
+        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local this = WPT.get()
+        if event.element.switch_state == 'left' then
+            this.collapse_grace = true
+            get_actor(event, '{Collapse}', 'has enabled the collapse function. Collapse will occur after wave 100!')
+        else
+            this.collapse_grace = false
+            get_actor(
+                event,
+                '{Collapse}',
+                'has disabled the collapse function. You must reach zone 2 for collapse to occur!'
+            )
+        end
+    end,
+    ['comfy_panel_spill_items_to_surface'] = function(event)
+        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local this = WPT.get()
+        if event.element.switch_state == 'left' then
+            this.spill_items_to_surface = true
+            get_actor(
+                event,
+                '{Item Spill}',
+                'has enabled the ore spillage function. Ores now drop to surface when mining.'
+            )
+        else
+            this.spill_items_to_surface = false
+            get_actor(
+                event,
+                '{Item Spill}',
+                'has disabled the item spillage function. Ores no longer drop to surface when mining.'
+            )
+        end
     end
 }
 
@@ -193,11 +252,26 @@ end
 
 local build_config_gui = (function(player, frame)
     local AG = Antigrief.get()
-    frame.clear()
+    local switch_state
+    local label
 
     local admin = player.admin
 
-    local label = frame.add({type = 'label', caption = 'Player Settings'})
+    local scroll_pane =
+        frame.add {
+        type = 'scroll-pane',
+        horizontal_scroll_policy = 'never'
+    }
+    local scroll_style = scroll_pane.style
+    scroll_style.vertically_squashable = true
+    scroll_style.bottom_padding = 2
+    scroll_style.left_padding = 2
+    scroll_style.right_padding = 2
+    scroll_style.top_padding = 2
+
+    scroll_pane.clear()
+
+    label = scroll_pane.add({type = 'label', caption = 'Player Settings'})
     label.style.font = 'default-bold'
     label.style.padding = 0
     label.style.left_padding = 10
@@ -205,57 +279,56 @@ local build_config_gui = (function(player, frame)
     label.style.vertical_align = 'bottom'
     label.style.font_color = {0.55, 0.55, 0.99}
 
-    frame.add({type = 'line'})
+    scroll_pane.add({type = 'line'})
 
-    local switch_state = 'right'
+    switch_state = 'right'
     if player.spectator then
         switch_state = 'left'
     end
     add_switch(
-        frame,
+        scroll_pane,
         switch_state,
         'comfy_panel_spectator_switch',
         'SpectatorMode',
         'Toggles zoom-to-world view noise effect.\nEnvironmental sounds will be based on map view.'
     )
 
-    frame.add({type = 'line'})
+    scroll_pane.add({type = 'line'})
 
     if global.auto_hotbar_enabled then
-        local switch_state = 'right'
+        switch_state = 'right'
         if global.auto_hotbar_enabled[player.index] then
             switch_state = 'left'
         end
         add_switch(
-            frame,
+            scroll_pane,
             switch_state,
             'comfy_panel_auto_hotbar_switch',
             'AutoHotbar',
             'Automatically fills your hotbar with placeable items.'
         )
-        frame.add({type = 'line'})
+        scroll_pane.add({type = 'line'})
     end
 
     if package.loaded['comfy_panel.poll'] then
         local poll = package.loaded['comfy_panel.poll']
         local poll_table = poll.get_no_notify_players()
-        local switch_state = 'right'
+        switch_state = 'right'
         if not poll_table[player.index] then
             switch_state = 'left'
         end
-        local switch =
-            add_switch(
-            frame,
+        add_switch(
+            scroll_pane,
             switch_state,
             'comfy_panel_poll_no_notify_toggle',
             'Notify on polls',
             'Receive a message when new polls are created and popup the poll.'
         )
-        frame.add({type = 'line'})
+        scroll_pane.add({type = 'line'})
     end
 
     if admin then
-        local label = frame.add({type = 'label', caption = 'Admin Settings'})
+        label = scroll_pane.add({type = 'label', caption = 'Admin Settings'})
         label.style.font = 'default-bold'
         label.style.padding = 0
         label.style.left_padding = 10
@@ -264,30 +337,28 @@ local build_config_gui = (function(player, frame)
         label.style.vertical_align = 'bottom'
         label.style.font_color = {0.77, 0.11, 0.11}
 
-        frame.add({type = 'line'})
+        scroll_pane.add({type = 'line'})
 
-        local switch_state = 'right'
+        switch_state = 'right'
         if game.permissions.get_group('Default').allows_action(defines.input_action.open_blueprint_library_gui) then
             switch_state = 'left'
         end
-        local switch =
-            add_switch(
-            frame,
+        add_switch(
+            scroll_pane,
             switch_state,
             'comfy_panel_blueprint_toggle',
             'Blueprint Library',
             'Toggles the usage of blueprint strings and the library.'
         )
 
-        frame.add({type = 'line'})
+        scroll_pane.add({type = 'line'})
 
-        local switch_state = 'right'
+        switch_state = 'right'
         if global.comfy_panel_config.spaghett.enabled then
             switch_state = 'left'
         end
-        local switch =
-            add_switch(
-            frame,
+        add_switch(
+            scroll_pane,
             switch_state,
             'comfy_panel_spaghett_toggle',
             'Spaghett Mode',
@@ -295,14 +366,13 @@ local build_config_gui = (function(player, frame)
         )
 
         if package.loaded['comfy_panel.poll'] then
-            frame.add({type = 'line'})
-            local switch_state = 'right'
+            scroll_pane.add({type = 'line'})
+            switch_state = 'right'
             if global.comfy_panel_config.poll_trusted then
                 switch_state = 'left'
             end
-            local switch =
-                add_switch(
-                frame,
+            add_switch(
+                scroll_pane,
                 switch_state,
                 'comfy_panel_poll_trusted_toggle',
                 'Poll mode',
@@ -310,33 +380,97 @@ local build_config_gui = (function(player, frame)
             )
         end
 
-        frame.add({type = 'line'})
+        scroll_pane.add({type = 'line'})
 
-        local label = frame.add({type = 'label', caption = 'Antigrief Settings'})
+        label = scroll_pane.add({type = 'label', caption = 'Antigrief Settings'})
         label.style.font = 'default-bold'
         label.style.padding = 0
         label.style.left_padding = 10
         label.style.top_padding = 10
         label.style.horizontal_align = 'left'
         label.style.vertical_align = 'bottom'
-        label.style.font_color = {0.77, 0.11, 0.11}
+        label.style.font_color = Color.yellow
 
-        local switch_state = 'right'
+        switch_state = 'right'
         if AG.enabled then
             switch_state = 'left'
         end
-        local switch =
-            add_switch(
-            frame,
+        add_switch(
+            scroll_pane,
             switch_state,
             'comfy_panel_disable_antigrief',
             'Antigrief',
             'Left = enables antigrief / Right = disables antigrief'
         )
+        scroll_pane.add({type = 'line'})
+        if package.loaded['maps.mountain_fortress_v3.main'] then
+            label = scroll_pane.add({type = 'label', caption = 'Mountain Fortress Settings'})
+            label.style.font = 'default-bold'
+            label.style.padding = 0
+            label.style.left_padding = 10
+            label.style.top_padding = 10
+            label.style.horizontal_align = 'left'
+            label.style.vertical_align = 'bottom'
+            label.style.font_color = Color.green
+            local WPT = package.loaded['maps.mountain_fortress_v3.table']
+            local this = WPT.get()
+            switch_state = 'right'
+            if this.fullness_enabled then
+                switch_state = 'left'
+            end
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_disable_fullness',
+                'Inventory Fullness',
+                'Left = enables inventory fullness.\nRight = disables inventory fullness.'
+            )
 
-        frame.add({type = 'line'})
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if this.offline_players_enabled then
+                switch_state = 'left'
+            end
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_offline_players',
+                'Offline Players',
+                'Left = enables offline player inventory drop.\nRight = disables offline player inventory drop.'
+            )
+
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if this.collapse_grace then
+                switch_state = 'left'
+            end
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_collapse_grace',
+                'Collapse',
+                'Left = enables collapse after wave 100.\nRight = disables collapse - you must reach zone 2 for collapse to occur.'
+            )
+
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if this.spill_items_to_surface then
+                switch_state = 'left'
+            end
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_spill_items_to_surface',
+                'Spill Ores',
+                'Left = enables ore spillage to surface when mining.\nRight = disables ore spillage to surface when mining.'
+            )
+        end
+        scroll_pane.add({type = 'line'})
     end
-    for _, e in pairs(frame.children) do
+    for _, e in pairs(scroll_pane.children) do
         if e.type == 'line' then
             e.style.padding = 0
             e.style.margin = 0
@@ -356,6 +490,9 @@ local function on_gui_switch_state_changed(event)
         return
     elseif antigrief_functions[event.element.name] then
         antigrief_functions[event.element.name](event)
+        return
+    elseif fortress_functions[event.element.name] then
+        fortress_functions[event.element.name](event)
         return
     elseif package.loaded['comfy_panel.poll'] then
         if poll_function[event.element.name] then

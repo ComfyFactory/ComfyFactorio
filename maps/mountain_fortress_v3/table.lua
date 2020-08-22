@@ -36,7 +36,6 @@ function Public.reset_table()
     this.fullness_enabled = true
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
-    this.enable_biter_settings = true
     this.train_upgrades = 0
     this.offline_players = {}
     this.biter_pets = {}
