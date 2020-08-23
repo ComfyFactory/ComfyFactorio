@@ -26,18 +26,18 @@ local size_of_unit_type_raffle = #unit_type_raffle
 local threat_values = {
 	["small-spitter"] = 1.5,
 	["small-biter"] = 1.5,
-	["medium-spitter"] = 4,
-	["medium-biter"] = 4,
-	["big-spitter"] = 12,
-	["big-biter"] = 12,
-	["behemoth-spitter"] = 32,
-	["behemoth-biter"] = 32,
+	["medium-spitter"] = 4.5,
+	["medium-biter"] = 4.5,
+	["big-spitter"] = 13.5,
+	["big-biter"] = 13.5,
+	["behemoth-spitter"] = 40.5,
+	["behemoth-biter"] = 40.5,
 	["small-worm-turret"] = 8,
-	["medium-worm-turret"] = 12,
-	["big-worm-turret"] = 16,
-	["behemoth-worm-turret"] = 16,
-	["biter-spawner"] = 16,
-	["spitter-spawner"] = 16
+	["medium-worm-turret"] = 16,
+	["big-worm-turret"] = 24,
+	["behemoth-worm-turret"] = 32,
+	["biter-spawner"] = 32,
+	["spitter-spawner"] = 32
 }
 
 local function get_active_biter_count(biter_force_name)

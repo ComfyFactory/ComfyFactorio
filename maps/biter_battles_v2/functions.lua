@@ -12,7 +12,7 @@ local balance_functions = {
 		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.combat_balance[force_name].flamethrower_damage)
 	end,
 	["refined-flammables"] = function(force_name)
-		global.combat_balance[force_name].flamethrower_damage = global.combat_balance[force_name].flamethrower_damage + 0.05
+		global.combat_balance[force_name].flamethrower_damage = global.combat_balance[force_name].flamethrower_damage + 0.06
 		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.combat_balance[force_name].flamethrower_damage)								
 		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.combat_balance[force_name].flamethrower_damage)
 	end,
@@ -22,11 +22,15 @@ local balance_functions = {
 	end,
 	["stronger-explosives"] = function(force_name)
 		if not global.combat_balance[force_name].land_mine then global.combat_balance[force_name].land_mine = -0.75 end
-		global.combat_balance[force_name].land_mine = global.combat_balance[force_name].land_mine + 0.05								
+		global.combat_balance[force_name].land_mine = global.combat_balance[force_name].land_mine + 0.1								
 		game.forces[force_name].set_ammo_damage_modifier("landmine", global.combat_balance[force_name].land_mine)
 	end,
 	["military"] = function(force_name)
 		global.combat_balance[force_name].shotgun = 1
+		game.forces[force_name].set_ammo_damage_modifier("shotgun-shell", global.combat_balance[force_name].shotgun)
+	end,
+	["physical-projectile-damage"] = function(force_name)
+		global.combat_balance[force_name].shotgun = global.combat_balance[force_name].shotgun + 0.4
 		game.forces[force_name].set_ammo_damage_modifier("shotgun-shell", global.combat_balance[force_name].shotgun)
 	end,
 }
