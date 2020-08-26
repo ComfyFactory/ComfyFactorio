@@ -604,11 +604,11 @@ local function text_changed(event)
         return
     end
 
-    if (value > 1000) then
-        data.quantity_input.text = "1000"
-        value = 1000
+    if (value > 1e2) then
+        data.quantity_input.text = '100'
+        value = 1e2
     elseif (value <= 0) then
-        data.quantity_input.text = "1"
+        data.quantity_input.text = '1'
         value = 1
     end
 
@@ -1032,28 +1032,41 @@ local function gui_click(event)
             player.play_sound({path = 'entity-close/stone-furnace', volume_modifier = 0.65})
             local inserted_count = player.insert({name = name, count = item_count})
             if inserted_count < item_count then
+                --player.print("Original cost: "..cost..". New price: "..ceil((item.price * (inserted_count / item.stack)))..".") -- debug
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
-                player.print("Your pockets are now filled to the brim. So you've only bought "..inserted_count.." "..name.."(s).", {r = 0.98, g = 0.66, b = 0.22})
-                player.print("Shopkeeper has returned your change, for which you are infinitely grateful.", {r = 0.98, g = 0.66, b = 0.22})
+                player.print(
+                    "Your pockets are now filled to the brim. So you've only bought " ..
+                        inserted_count .. ' ' .. name .. '(s).',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
+                player.print(
+                    'Shopkeeper has returned your change, for which you are infinitely grateful.',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
                 player.insert({name = name, count = inserted_count})
                 -- example is say you have 12k coins, your storage is 80 slots and you have 4 items, you try to buy 80 iron-ore stacks, you get 76 stacks of ore instead and you only pay for them!
                 -- so the count = 12 * 50 * 76 instead of 12 * 50 * 80!
                 -- but wait, what if the player tries to buy 3 iron ore (3/50s of a stack)? that's 0.72 of a single coin!? no worries, player will pay 1 coin for that, the price is adjusted upwards.
                 -- shopkeeper will not divide his coins, so don't try to buy item amount less than 1 coin worth, your loss.
                 player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
-                --player.print("Original cost: "..cost..". New price: "..ceil((item.price * (inserted_count / item.stack)))..".") -- debug
             else
                 player.remove_item({name = item.value, count = cost})
             end
             redraw_market_items(data.item_frame, player, data.search_text)
             redraw_coins_left(data.coins_left, player)
         else
-          player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
-          if (random(1,10) > 1) then
-              player.print("Your inventory is full. Try to stash your loot somewhere first.", {r = 0.98, g = 0.66, b = 0.22})
-          else
-              player.print("Your inventory is full. Join the warrior club today! Pump that STR stat some more!", {r = 0.98, g = 0.66, b = 0.22})
-          end
+            player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
+            if (random(1, 10) > 1) then
+                player.print(
+                    'Your inventory is full. Try to stash your loot somewhere first.',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
+            else
+                player.print(
+                    'Your inventory is full. Join the warrior club today! Pump that STR stat some more!',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
+            end
         end
     end
 end

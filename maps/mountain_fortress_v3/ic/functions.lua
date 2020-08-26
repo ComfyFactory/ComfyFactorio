@@ -614,7 +614,6 @@ function Public.save_car(ic, event)
         save_surface(ic, entity, p)
         Utils.action_warning('{Car}', player.name .. ' has looted ' .. p.name .. '´s car.')
         player.print('This car was not yours to keep.', Color.warning)
-        player.remove_item({name = car.name, count = 9999})
         local params = {
             player = player,
             car = car
