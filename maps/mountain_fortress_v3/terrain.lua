@@ -931,17 +931,6 @@ local function process_level_9_position(x, y, data)
         return
     end
 
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
-        return
-    end
-
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 8) == 1 then
@@ -987,17 +976,6 @@ local function process_level_8_position(x, y, data, void_or_lab)
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
-    end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
-        return
     end
 
     if scrapyard < -0.25 or scrapyard > 0.25 then
@@ -1373,17 +1351,6 @@ local function process_level_5_position(x, y, data, void_or_lab)
         end
     end
 
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
-        return
-    end
-
     if small_caves > -0.40 and small_caves < 0.40 then
         if noise_cave_ponds > 0.35 then
             local success = place_wagon(data)
@@ -1562,17 +1529,6 @@ local function process_level_3_position(x, y, data, void_or_lab)
                 entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
             end
         end
-        return
-    end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
         return
     end
 
@@ -2045,17 +2001,6 @@ local function process_level_1_position(x, y, data, void_or_lab)
         if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
-        return
-    end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
         return
     end
 

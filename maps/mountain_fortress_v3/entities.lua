@@ -61,13 +61,6 @@ local defeated_messages = {
     "Looks like we're resetting cause you did not defend the train ._."
 }
 
-local entity_type = {
-    ['unit'] = true,
-    ['unit-spawner'] = true,
-    ['simple-entity'] = true,
-    ['tree'] = true
-}
-
 local protect_types = {
     ['cargo-wagon'] = true,
     ['artillery-wagon'] = true,
@@ -670,12 +663,40 @@ local function on_entity_died(event)
         return
     end
 
+    if entity.type == 'unit' or entity.type == 'unit-spawner' then
+        this.biters_killed = this.biters_killed + 1
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
+        if random(1, 512) == 1 then
+            Traps(entity.surface, entity.position)
+            return
+        end
+    end
+
     local data = {
         entity = entity,
         surface = entity.surface
     }
 
     if entity.type == 'tree' then
+        for _, e in pairs(
+            event.entity.surface.find_entities_filtered(
+                {
+                    area = {
+                        {entity.position.x - 4, entity.position.y - 4},
+                        {entity.position.x + 4, entity.position.y + 4}
+                    },
+                    name = 'fire-flame-on-tree'
+                }
+            )
+        ) do
+            if e.valid then
+                e.destroy()
+                return
+            end
+        end
         if Locomotive.is_around_train(entity) then
             entity.destroy()
             return
@@ -684,31 +705,28 @@ local function on_entity_died(event)
         return
     end
 
-    if entity_type[entity.type] then
+    if entity.type == 'simple-entity' then
         if Locomotive.is_around_train(entity) then
             entity.destroy()
             return
         end
-        if entity.type == 'unit' or entity_type == 'unit-spawner' then
-            this.biters_killed = this.biters_killed + 1
-        end
         if random(1, 32) == 1 then
             hidden_biter(entity)
+            Mining.entity_died_randomness(data)
             entity.destroy()
             return
         end
-        if random(1, 368) == 1 then
+        if random(1, 64) == 1 then
             hidden_worm(entity)
+            Mining.entity_died_randomness(data)
             entity.destroy()
             return
         end
-        if random(1, 368) == 1 then
+        if random(1, 512) == 1 then
             Traps(entity.surface, entity.position)
+            Mining.entity_died_randomness(data)
             return
         end
-    end
-
-    if entity.type == 'simple-entity' then
         Mining.entity_died_randomness(data)
         entity.destroy()
         return

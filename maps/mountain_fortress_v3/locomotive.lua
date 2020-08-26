@@ -407,7 +407,9 @@ local function redraw_market_items(gui, player, search_text)
     end
     local players = WPT.get('players')
 
-    gui.clear()
+    if gui and gui.valid then
+        gui.clear()
+    end
 
     local inventory = player.get_main_inventory()
     local player_item_count
@@ -587,7 +589,8 @@ local function text_changed(event)
     if not data then
         return
     end
-    if not data.text_input then
+
+    if not data.text_input or not data.text_input.valid then
         return
     end
 
