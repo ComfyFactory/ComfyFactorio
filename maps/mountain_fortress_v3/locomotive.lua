@@ -699,7 +699,7 @@ local function gui_opened(event)
         {
             type = 'slider',
             minimum_value = 1,
-            maximum_value = 5e3,
+            maximum_value = 1e2,
             value = 1
         }
     )
@@ -758,7 +758,7 @@ local function gui_click(event)
         return
     elseif name == 'more' then
         local slider_value = data.slider.slider_value
-        if slider_value <= 1e3 then
+        if slider_value <= 1e2 then
             data.slider.slider_value = slider_value + 1
             data.text_input.text = data.slider.slider_value
             redraw_market_items(data.item_frame, player, data.search_text)
