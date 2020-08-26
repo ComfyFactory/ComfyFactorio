@@ -172,8 +172,8 @@ local antigrief_functions = {
 
 local fortress_functions = {
     ['comfy_panel_disable_fullness'] = function(event)
-        local WPT = package.loaded['maps.mountain_fortress_v3.table']
-        local this = WPT.get()
+        local Fullness = package.loaded['modules.check_fullness']
+        local this = Fullness.get()
         if event.element.switch_state == 'left' then
             this.fullness_enabled = true
             get_actor(event, '{Fullness}', 'has enabled the inventory fullness function.')
@@ -432,10 +432,11 @@ local build_config_gui = (function(player, frame)
             label.style.horizontal_align = 'left'
             label.style.vertical_align = 'bottom'
             label.style.font_color = Color.green
-            local WPT = package.loaded['maps.mountain_fortress_v3.table']
-            local this = WPT.get()
+
+            local Fullness = package.loaded['modules.check_fullness']
+            local full = Fullness.get()
             switch_state = 'right'
-            if this.fullness_enabled then
+            if full.fullness_enabled then
                 switch_state = 'left'
             end
             add_switch(
@@ -448,6 +449,8 @@ local build_config_gui = (function(player, frame)
 
             scroll_pane.add({type = 'line'})
 
+            local WPT = package.loaded['maps.mountain_fortress_v3.table']
+            local this = WPT.get()
             switch_state = 'right'
             if this.offline_players_enabled then
                 switch_state = 'left'

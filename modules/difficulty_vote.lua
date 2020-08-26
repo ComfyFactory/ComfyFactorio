@@ -155,9 +155,9 @@ local function poll_difficulty(player)
         b.style.font = 'heading-2'
         b.style.minimal_width = 160
         b.tooltip = this.tooltip[i]
-        if this.difficulties[i].disabled then
+        --[[ if this.difficulties[i].disabled then
             b.enabled = false
-        end
+        end ]]
     end
     local b = frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
     local b =
@@ -226,12 +226,6 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local player_count = #game.connected_players
-    if player_count >= 20 then
-        this.difficulties[1].disabled = true
-        this.tooltip[1] = 'Too many players connected!'
-    end
-
     if game.tick < this.difficulty_poll_closing_timeout then
         if not this.difficulty_player_votes[player.name] then
             poll_difficulty(player)

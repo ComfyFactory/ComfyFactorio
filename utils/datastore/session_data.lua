@@ -4,8 +4,6 @@ local Token = require 'utils.token'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
-local Print = require('utils.print_override')
-local raw_print = Print.raw_print
 
 local session_data_set = 'sessions'
 local session = {}
@@ -71,6 +69,7 @@ local try_upload_data =
             local new_time = old_time_ingame + player.online_time - online_track[key]
             if new_time <= 0 then
                 new_time = old_time_ingame + player.online_time
+                online_track[key] = 0
                 print('[ERROR] ' .. key .. ' had new time set as negative value: ' .. new_time)
                 return
             end
@@ -158,6 +157,21 @@ end
 -- @return <table>
 function Public.get_trusted_table()
     return trusted
+end
+
+--- Clears a given player from the session tables.
+-- @param LuaPlayer
+function Public.clear_player(player)
+    local name = player.name
+    if session[name] then
+        session[name] = nil
+    end
+    if online_track[name] then
+        online_track[name] = nil
+    end
+    if trusted[name] then
+        trusted[name] = nil
+    end
 end
 
 Event.add(

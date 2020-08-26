@@ -14,9 +14,9 @@ local votejail = {}
 local votefree = {}
 local settings = {
     playtime_for_vote = 25920000, -- 5 days
-    playtime_for_instant_jail = 103680000 -- 20 days
+    playtime_for_instant_jail = 103680000, -- 20 days
+    votejail_count = 5
 }
-local votejail_count = 5
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
@@ -231,7 +231,7 @@ local vote_to_jail = function(player, griefer)
         votejail[griefer].index = votejail[griefer].index + 1
         Utils.print_to(player, 'You have voted to jail player ' .. griefer .. '.')
         if
-            votejail[griefer].index >= votejail_count or
+            votejail[griefer].index >= settings.votejail_count or
                 (votejail[griefer].index == #game.connected_players - 1 and
                     #game.connected_players > votejail[griefer].index)
          then
@@ -254,7 +254,7 @@ local vote_to_free = function(player, griefer)
 
         Utils.print_to(player, 'You have voted to free player ' .. griefer .. '.')
         if
-            votefree[griefer].index >= votejail_count or
+            votefree[griefer].index >= settings.votejail_count or
                 (votefree[griefer].index == #game.connected_players - 1 and
                     #game.connected_players > votefree[griefer].index)
          then

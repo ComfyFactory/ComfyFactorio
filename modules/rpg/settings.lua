@@ -276,7 +276,7 @@ function Public.extra_settings(player)
             one_punch_gui_input.enabled = false
             one_punch_gui_input.tooltip = 'Enabled globally.'
         else
-            if rpg_t[player.index].level <= 50 then
+            if rpg_t[player.index].level <= 30 then 
                 one_punch_gui_input.enabled = false
                 one_punch_gui_input.tooltip = 'Level requirement: 30\nChecked = true\nUnchecked = false'
             else

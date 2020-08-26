@@ -1010,6 +1010,7 @@ local on_player_or_robot_built_tile = function(event)
     end
 end
 
+Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'final-damage-amount', comparison = '>', value = 0})
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

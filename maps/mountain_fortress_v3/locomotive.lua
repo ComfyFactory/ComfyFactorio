@@ -222,7 +222,7 @@ end
 
 local function is_around_train(data)
     local entity = data.entity
-    local aura = 60
+    local aura = data.aura + 20
     local loco = data.locomotive.position
     local area = {
         left_top = {x = loco.x - aura, y = loco.y - aura},
@@ -1630,11 +1630,13 @@ function Public.is_around_train(entity)
     end
 
     local surface = game.surfaces[active_surface_index]
+    local aura = WPT.get('locomotive_xp_aura')
 
     local data = {
         locomotive = locomotive,
         surface = surface,
-        entity = entity
+        entity = entity,
+        aura = aura
     }
 
     local success = is_around_train(data)
