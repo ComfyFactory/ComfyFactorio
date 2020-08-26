@@ -64,6 +64,43 @@ local function delete_empty_surfaces(icw)
     end
 end
 
+local function kick_players_from_surface(wagon)
+    if not validate_entity(wagon.surface) then
+        return print('Surface was not valid.')
+    end
+    if not wagon.entity or not wagon.entity.valid then
+        local main_surface = wagon.surface
+        if validate_entity(main_surface) then
+            for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area})) do
+                if validate_entity(e) and e.name == 'character' and e.player then
+                    e.player.teleport(
+                        main_surface.find_non_colliding_position(
+                            'character',
+                            game.forces.player.get_spawn_position(main_surface),
+                            3,
+                            0,
+                            5
+                        ),
+                        main_surface
+                    )
+                end
+            end
+        end
+        return print('Wagon entity was not valid.')
+    end
+
+    for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area})) do
+        if validate_entity(e) and e.name == 'character' and e.player then
+            local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
+            if p then
+                e.player.teleport(p, wagon.entity.surface)
+            else
+                e.player.teleport(wagon.entity.position, wagon.entity.surface)
+            end
+        end
+    end
+end
+
 local function kick_players_out_of_vehicles(wagon)
     for _, player in pairs(game.connected_players) do
         local character = player.character
@@ -345,6 +382,7 @@ function Public.kill_wagon(icw, entity)
     end
     local wagon = icw.wagons[entity.unit_number]
     local surface = wagon.surface
+    kick_players_from_surface(wagon)
     kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
     for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
@@ -910,7 +948,7 @@ local function move_room_to_train(icw, train, wagon)
      then
         return
     end
-
+    kick_players_from_surface(wagon)
     kick_players_out_of_vehicles(wagon)
     local player_positions = {}
     teleport_char(player_positions, destination_area, wagon)
