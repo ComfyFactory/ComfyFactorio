@@ -569,7 +569,7 @@ local function slider_changed(event)
         return
     end
     slider_value = ceil(slider_value)
-    this.players[player.index].data.text_input.text = slider_value
+    this.players[player.index].data.quantity_input.text = slider_value
     redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
 end
 
@@ -590,19 +590,20 @@ local function text_changed(event)
         return
     end
 
-    if not data.text_input or not data.text_input.valid then
+    if not data.quantity_input or not data.quantity_input.valid then
         return
     end
 
-    if not data.text_input.text then
+    if not data.quantity_input.text then
         return
     end
 
-    local value = tonumber(data.text_input.text)
+    local value = tonumber(data.quantity_input.text)
 
     if not value then
         return
     end
+    data.slider.slider_value = value
 
     redraw_market_items(data.item_frame, player, data.search_text)
 end
@@ -680,31 +681,42 @@ local function gui_opened(event)
 
     add_space(flow)
 
-    local bottom_grid = frame.add({type = 'table', column_count = 2})
+    local bottom_grid = frame.add({type = 'table', column_count = 4})
     bottom_grid.style.vertically_stretchable = false
 
     bottom_grid.add({type = 'label', caption = 'Quantity: '}).style.font = 'default-bold'
 
-    local text_input =
+    local quantity_input =
         bottom_grid.add(
         {
             type = 'text-box',
             text = 1
         }
     )
-    text_input.style.maximal_height = 28
+    quantity_input.style.maximal_height = 28
+    local less = bottom_grid.add {type = 'button', caption = '-', name = 'less'}
+    local more = bottom_grid.add {type = 'button', caption = '+', name = 'more'}
+    -- Tom Fyuri: Ideally I'd make some fancy icon for this but alas 32 sized button will do for now
+    more.style.width = 32
+    more.style.height = 32
+    more.style.horizontal_align = 'center'
+    more.style.vertical_align = 'center'
+    less.style.width = 32
+    less.style.height = 32
+    less.style.horizontal_align = 'center'
+    less.style.vertical_align = 'center'
 
     local slider =
         frame.add(
         {
             type = 'slider',
             minimum_value = 1,
-            maximum_value = 5e3,
+            maximum_value = 1000,
             value = 1
         }
     )
     slider.style.width = 115
-    text_input.style.width = 60
+    quantity_input.style.width = 60
 
     local coinsleft = frame.add({type = 'flow'})
 
@@ -716,7 +728,7 @@ local function gui_opened(event)
     )
 
     this.players[player.index].data.search_text = search_text
-    this.players[player.index].data.text_input = text_input
+    this.players[player.index].data.quantity_input = quantity_input
     this.players[player.index].data.slider = slider
     this.players[player.index].data.frame = frame
     this.players[player.index].data.item_frame = pane
@@ -752,15 +764,15 @@ local function gui_click(event)
         local slider_value = this.players[player.index].data.slider.slider_value
         if slider_value > 1 then
             data.slider.slider_value = slider_value - 1
-            data.text_input.text = data.slider.slider_value
+            data.quantity_input.text = data.slider.slider_value
             redraw_market_items(data.item_frame, player, data.search_text)
         end
         return
     elseif name == 'more' then
         local slider_value = data.slider.slider_value
-        if slider_value <= 1e3 then
+        if slider_value < 1000 then
             data.slider.slider_value = slider_value + 1
-            data.text_input.text = data.slider.slider_value
+            data.quantity_input.text = data.slider.slider_value
             redraw_market_items(data.item_frame, player, data.search_text)
         end
         return
