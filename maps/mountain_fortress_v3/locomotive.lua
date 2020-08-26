@@ -569,7 +569,7 @@ local function slider_changed(event)
         return
     end
     slider_value = ceil(slider_value)
-    this.players[player.index].data.text_input.text = slider_value
+    this.players[player.index].data.quantity_input.text = slider_value
     redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
 end
 
@@ -590,19 +590,29 @@ local function text_changed(event)
         return
     end
 
-    if not data.text_input or not data.text_input.valid then
+    if not data.quantity_input or not data.quantity_input.valid then
         return
     end
 
-    if not data.text_input.text then
+    if not data.quantity_input.text then
         return
     end
 
-    local value = tonumber(data.text_input.text)
+    local value = tonumber(data.quantity_input.text)
 
     if not value then
         return
     end
+
+    if (value > 1000) then
+        data.quantity_input.text = "1000"
+        value = 1000
+    elseif (value <= 0) then
+        data.quantity_input.text = "1"
+        value = 1
+    end
+
+    data.slider.slider_value = value
 
     redraw_market_items(data.item_frame, player, data.search_text)
 end
@@ -680,19 +690,30 @@ local function gui_opened(event)
 
     add_space(flow)
 
-    local bottom_grid = frame.add({type = 'table', column_count = 2})
+    local bottom_grid = frame.add({type = 'table', column_count = 4})
     bottom_grid.style.vertically_stretchable = false
 
     bottom_grid.add({type = 'label', caption = 'Quantity: '}).style.font = 'default-bold'
 
-    local text_input =
+    local quantity_input =
         bottom_grid.add(
         {
             type = 'text-box',
             text = 1
         }
     )
-    text_input.style.maximal_height = 28
+    quantity_input.style.maximal_height = 28
+    local less = bottom_grid.add {type = 'button', caption = '-', name = 'less'}
+    local more = bottom_grid.add {type = 'button', caption = '+', name = 'more'}
+    -- Tom Fyuri: Ideally I'd make some fancy icon for this but alas 32 sized button will do for now
+    more.style.width = 32
+    more.style.height = 32
+    more.style.horizontal_align = 'center'
+    more.style.vertical_align = 'center'
+    less.style.width = 32
+    less.style.height = 32
+    less.style.horizontal_align = 'center'
+    less.style.vertical_align = 'center'
 
     local slider =
         frame.add(
@@ -704,7 +725,7 @@ local function gui_opened(event)
         }
     )
     slider.style.width = 115
-    text_input.style.width = 60
+    quantity_input.style.width = 60
 
     local coinsleft = frame.add({type = 'flow'})
 
@@ -716,7 +737,7 @@ local function gui_opened(event)
     )
 
     this.players[player.index].data.search_text = search_text
-    this.players[player.index].data.text_input = text_input
+    this.players[player.index].data.quantity_input = quantity_input
     this.players[player.index].data.slider = slider
     this.players[player.index].data.frame = frame
     this.players[player.index].data.item_frame = pane
@@ -752,7 +773,7 @@ local function gui_click(event)
         local slider_value = this.players[player.index].data.slider.slider_value
         if slider_value > 1 then
             data.slider.slider_value = slider_value - 1
-            data.text_input.text = data.slider.slider_value
+            data.quantity_input.text = data.slider.slider_value
             redraw_market_items(data.item_frame, player, data.search_text)
         end
         return
@@ -760,7 +781,7 @@ local function gui_click(event)
         local slider_value = data.slider.slider_value
         if slider_value <= 1e2 then
             data.slider.slider_value = slider_value + 1
-            data.text_input.text = data.slider.slider_value
+            data.quantity_input.text = data.slider.slider_value
             redraw_market_items(data.item_frame, player, data.search_text)
         end
         return
@@ -1009,15 +1030,30 @@ local function gui_click(event)
     if player_item_count >= cost then
         if player.can_insert({name = name, count = item_count}) then
             player.play_sound({path = 'entity-close/stone-furnace', volume_modifier = 0.65})
-            player.remove_item({name = item.value, count = cost})
             local inserted_count = player.insert({name = name, count = item_count})
             if inserted_count < item_count then
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
-                player.insert({name = item.value, count = cost})
-                player.remove_item({name = name, count = inserted_count})
+                player.print("Your pockets are now filled to the brim. So you've only bought "..inserted_count.." "..name.."(s).", {r = 0.98, g = 0.66, b = 0.22})
+                player.print("Shopkeeper has returned your change, for which you are infinitely grateful.", {r = 0.98, g = 0.66, b = 0.22})
+                player.insert({name = name, count = inserted_count})
+                -- example is say you have 12k coins, your storage is 80 slots and you have 4 items, you try to buy 80 iron-ore stacks, you get 76 stacks of ore instead and you only pay for them!
+                -- so the count = 12 * 50 * 76 instead of 12 * 50 * 80!
+                -- but wait, what if the player tries to buy 3 iron ore (3/50s of a stack)? that's 0.72 of a single coin!? no worries, player will pay 1 coin for that, the price is adjusted upwards.
+                -- shopkeeper will not divide his coins, so don't try to buy item amount less than 1 coin worth, your loss.
+                player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
+                --player.print("Original cost: "..cost..". New price: "..ceil((item.price * (inserted_count / item.stack)))..".") -- debug
+            else
+                player.remove_item({name = item.value, count = cost})
             end
             redraw_market_items(data.item_frame, player, data.search_text)
             redraw_coins_left(data.coins_left, player)
+        else
+          player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
+          if (random(1,10) > 1) then
+              player.print("Your inventory is full. Try to stash your loot somewhere first.", {r = 0.98, g = 0.66, b = 0.22})
+          else
+              player.print("Your inventory is full. Join the warrior club today! Pump that STR stat some more!", {r = 0.98, g = 0.66, b = 0.22})
+          end
         end
     end
 end
