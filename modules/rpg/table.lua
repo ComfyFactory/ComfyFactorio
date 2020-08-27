@@ -27,25 +27,6 @@ Global.register(
 
 local Public = {}
 
-Public.rpg_frame_icons = {
-    'entity/small-worm-turret',
-    'entity/medium-worm-turret',
-    'entity/big-worm-turret',
-    'entity/behemoth-worm-turret',
-    'entity/small-biter',
-    'entity/small-biter',
-    'entity/small-spitter',
-    'entity/medium-biter',
-    'entity/medium-biter',
-    'entity/medium-spitter',
-    'entity/big-biter',
-    'entity/big-biter',
-    'entity/big-spitter',
-    'entity/behemoth-biter',
-    'entity/behemoth-biter',
-    'entity/behemoth-spitter'
-}
-
 Public.points_per_level = 5
 
 Public.experience_levels = {0}

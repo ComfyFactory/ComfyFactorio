@@ -13,7 +13,6 @@ local xp_floating_text_color = RPG.xp_floating_text_color
 local teller_level_limit = RPG.teller_level_limit
 local experience_levels = RPG.experience_levels
 local teller_global_pool = RPG.teller_global_pool
-local rpg_frame_icons = RPG.rpg_frame_icons
 local points_per_level = RPG.points_per_level
 
 --RPG Frames
@@ -121,7 +120,6 @@ local function level_up(player)
     RPG_GUI.draw_level_text(player)
     rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
     RPG_GUI.update_char_button(player)
-    table.shuffle_table(rpg_frame_icons)
     if rpg_t[player.index].allocate_index ~= 1 then
         local node = rpg_t[player.index].allocate_index
         local index = names[node]:lower()

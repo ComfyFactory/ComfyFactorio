@@ -34,6 +34,8 @@ local function on_player_mined_entity(event)
 
     local ic = IC.get()
 
+    Minimap.kill_minimap(game.players[event.player_index])
+
     if entity.type == 'car' or entity.name == 'spidertron' then
         Functions.save_car(ic, event)
     end
@@ -105,6 +107,50 @@ local function on_tick()
     end
 end
 
+local function on_gui_closed(event)
+    local entity = event.entity
+    if not entity then
+        return
+    end
+    if not entity.valid then
+        return
+    end
+    if not entity.unit_number then
+        return
+    end
+    local ic = IC.get()
+    if not ic.cars[entity.unit_number] then
+        return
+    end
+
+    Minimap.kill_minimap(game.players[event.player_index])
+end
+
+local function on_gui_opened(event)
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    if not entity.unit_number then
+        return
+    end
+    local ic = IC.get()
+    local car = ic.cars[entity.unit_number]
+    if not car then
+        return
+    end
+
+    Minimap.minimap(
+        game.players[event.player_index],
+        car.surface,
+        {
+            car.area.left_top.x + (car.area.right_bottom.x - car.area.left_top.x) * 0.5,
+            car.area.left_top.y + (car.area.right_bottom.y - car.area.left_top.y) * 0.5
+        }
+    )
+end
+
 local function on_gui_click(event)
     local element = event.element
     if not element or not element.valid then
@@ -140,6 +186,8 @@ local changed_surface = Minimap.changed_surface
 
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)

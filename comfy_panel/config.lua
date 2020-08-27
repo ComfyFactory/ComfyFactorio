@@ -232,10 +232,21 @@ local fortress_functions = {
         local this = WPT.get()
         if event.element.switch_state == 'left' then
             this.void_or_tile = 'out-of-map'
-            get_actor(event, '{Void}', 'has changes the the tiles of the zones to: out-of-map (void)')
+            get_actor(event, '{Void}', 'has changes the tiles of the zones to: out-of-map (void)')
         else
             this.void_or_tile = 'lab-dark-2'
-            get_actor(event, '{Void}', 'has changes the the tiles of the zones to: dark-tiles (flammable tiles)')
+            get_actor(event, '{Void}', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)')
+        end
+    end,
+    ['comfy_panel_trusted_only_car_tanks'] = function(event)
+        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local this = WPT.get()
+        if event.element.switch_state == 'left' then
+            this.trusted_only_car_tanks = true
+            get_actor(event, '{Market}', 'has changed so only trusted people can buy car/tanks.', true)
+        else
+            this.trusted_only_car_tanks = false
+            get_actor(event, '{Void}', 'has changed so everybody can buy car/tanks.', true)
         end
     end
 }
@@ -420,7 +431,7 @@ local build_config_gui = (function(player, frame)
             switch_state,
             'comfy_panel_disable_antigrief',
             'Antigrief',
-            'Left = enables antigrief / Right = disables antigrief'
+            'Left = Enables antigrief / Right = Disables antigrief'
         )
         scroll_pane.add({type = 'line'})
         if package.loaded['maps.mountain_fortress_v3.main'] then
@@ -444,7 +455,7 @@ local build_config_gui = (function(player, frame)
                 switch_state,
                 'comfy_panel_disable_fullness',
                 'Inventory Fullness',
-                'Left = enables inventory fullness.\nRight = disables inventory fullness.'
+                'Left = Enables inventory fullness.\nRight = Disables inventory fullness.'
             )
 
             scroll_pane.add({type = 'line'})
@@ -460,7 +471,7 @@ local build_config_gui = (function(player, frame)
                 switch_state,
                 'comfy_panel_offline_players',
                 'Offline Players',
-                'Left = enables offline player inventory drop.\nRight = disables offline player inventory drop.'
+                'Left = Enables offline player inventory drop.\nRight = Disables offline player inventory drop.'
             )
 
             scroll_pane.add({type = 'line'})
@@ -474,7 +485,7 @@ local build_config_gui = (function(player, frame)
                 switch_state,
                 'comfy_panel_collapse_grace',
                 'Collapse',
-                'Left = enables collapse after wave 100.\nRight = disables collapse - you must reach zone 2 for collapse to occur.'
+                'Left = Enables collapse after wave 100.\nRight = Disables collapse - you must reach zone 2 for collapse to occur.'
             )
 
             scroll_pane.add({type = 'line'})
@@ -488,7 +499,7 @@ local build_config_gui = (function(player, frame)
                 switch_state,
                 'comfy_panel_spill_items_to_surface',
                 'Spill Ores',
-                'Left = enables ore spillage to surface when mining.\nRight = disables ore spillage to surface when mining.'
+                'Left = Enables ore spillage to surface when mining.\nRight = Disables ore spillage to surface when mining.'
             )
             scroll_pane.add({type = 'line'})
 
@@ -501,7 +512,20 @@ local build_config_gui = (function(player, frame)
                 switch_state,
                 'comfy_panel_void_or_tile',
                 'Void Tiles',
-                'Left = changes the tiles to out-of-map.\nRight = changes the tiles to lab-dark-2'
+                'Left = Changes the tiles to out-of-map.\nRight = Changes the tiles to lab-dark-2'
+            )
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if this.trusted_only_car_tanks then
+                switch_state = 'left'
+            end
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_trusted_only_car_tanks',
+                'Market Purchase',
+                'Left = Allows only trusted people to buy car/tanks.\nRight = Allows everyone to buy car/tanks.'
             )
             scroll_pane.add({type = 'line'})
         end

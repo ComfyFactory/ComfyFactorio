@@ -90,11 +90,11 @@ local spawner_raffle = {
 }
 
 local trees = {
-    'tree-08-brown',
-    'tree-04',
-    'tree-03',
-    'tree-02-red',
-    'tree-01',
+    'dead-tree-desert',
+    'dead-dry-hairy-tree',
+    'dry-hairy-tree',
+    'tree-06',
+    'tree-06-brown',
     'dry-tree'
 }
 
@@ -2269,11 +2269,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
         end
     end
     if random(1, 100) > 25 then
-        if random(1, 10) == 1 then
-            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
-        else
-            entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
-        end
+        entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
     end
 end
 

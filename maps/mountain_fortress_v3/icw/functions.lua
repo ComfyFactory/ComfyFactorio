@@ -356,7 +356,7 @@ local function get_player_data(icw, player)
 end
 
 function Public.kill_minimap(player)
-    local element = player.gui.left.icw_map
+    local element = player.gui.left.icw_main_frame
     if element then
         element.destroy()
     end
@@ -1043,15 +1043,20 @@ function Public.item_transfer(icw)
 end
 
 function Public.draw_minimap(icw, player, surface, position)
-    local element = player.gui.left.icw_map
+    local frame = player.gui.left.icw_main_frame
+    if not frame then
+        frame =
+            player.gui.left.add({type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap'})
+    end
+    local element = frame['icw_sub_frame']
     if not element then
         local player_data = get_player_data(icw, player)
         element =
-            player.gui.left.add(
+            player.gui.left.icw_main_frame.add(
             {
                 type = 'camera',
-                name = 'icw_map',
                 position = position,
+                name = 'icw_sub_frame',
                 surface_index = surface.index,
                 zoom = player_data.zoom,
                 tooltip = 'LMB: Increase zoom level.\nRMB: Decrease zoom level.\nMMB: Toggle camera size.'
@@ -1084,7 +1089,7 @@ function Public.toggle_minimap(icw, event)
     if not element.valid then
         return
     end
-    if element.name ~= 'icw_map' then
+    if element.name ~= 'icw_sub_frame' then
         return
     end
     local player = game.players[event.player_index]

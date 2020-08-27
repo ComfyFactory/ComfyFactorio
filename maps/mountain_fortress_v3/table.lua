@@ -43,6 +43,7 @@ function Public.reset_table()
     this.mined_scrap = 0
     this.biters_killed = 0
     this.locomotive_xp_aura = 40
+    this.trusted_only_car_tanks = true
     this.xp_points = 0
     this.xp_points_upgrade = 0
     --!grief prevention

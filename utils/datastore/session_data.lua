@@ -89,12 +89,18 @@ end
 
 --- Prints out game.tick to real hour/minute
 ---@param int
-function Public.format_time(ticks)
+function Public.format_time(ticks, h, m)
     local seconds = ticks / 60
     local minutes = math.floor((seconds) / 60)
     local hours = math.floor((minutes) / 60)
     local min = math.floor(minutes - 60 * hours)
-    return string.format('%dh:%02dm', hours, minutes, min)
+    if h and m then
+        return string.format('%dh:%02dm', hours, minutes, min)
+    elseif h then
+        return string.format('%dh', hours)
+    elseif m then
+        return string.format('%02dm', minutes, min)
+    end
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
@@ -157,6 +163,12 @@ end
 -- @return <table>
 function Public.get_trusted_table()
     return trusted
+end
+
+--- Returns the table of settings
+-- @return <table>
+function Public.get_settings_table()
+    return settings
 end
 
 --- Clears a given player from the session tables.

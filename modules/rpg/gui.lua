@@ -13,7 +13,6 @@ local gain_info_tooltip = 'XP gain from mining, moving, crafting, repairing and 
 local classes = RPG.classes
 
 --RPG Settings
-local rpg_frame_icons = RPG.rpg_frame_icons
 local experience_levels = RPG.experience_levels
 
 --RPG Frames
@@ -447,14 +446,6 @@ local function draw_main_frame(player, location)
     end
 
     add_separator(scroll_pane, 400)
-    local t = scroll_pane.add({type = 'table', column_count = 14})
-    for iv = 1, 14, 1 do
-        local rpg_biter_icons = t.add({type = 'sprite', sprite = rpg_frame_icons[iv]})
-        rpg_biter_icons.style.maximal_width = 24
-        rpg_biter_icons.style.maximal_height = 24
-        rpg_biter_icons.style.padding = 0
-    end
-    add_separator(scroll_pane, 400)
 
     Public.update_char_button(player)
     data.frame = main_frame
@@ -553,6 +544,16 @@ function Public.toggle(player, recreate)
     else
         Tabs.comfy_panel_clear_left_gui(player)
         draw_main_frame(player)
+    end
+end
+
+function Public.remove_frame(player)
+    local screen = player.gui.screen
+    local main_frame = screen[main_frame_name]
+
+    if main_frame then
+        remove_main_frame(main_frame, screen)
+        Tabs.comfy_panel_restore_left_gui(player)
     end
 end
 

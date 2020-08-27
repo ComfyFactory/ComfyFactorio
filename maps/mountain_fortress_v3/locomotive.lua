@@ -406,6 +406,7 @@ local function redraw_market_items(gui, player, search_text)
         return
     end
     local players = WPT.get('players')
+    local trusted = Session.get_trusted_table()
 
     if gui and gui.valid then
         gui.clear()
@@ -510,6 +511,19 @@ local function redraw_market_items(gui, player, search_text)
                     enabled = data.enabled
                 }
             )
+            if WPT.get('trusted_only_car_tanks') then
+                if not trusted[player.name] then
+                    if item == 'tank' then
+                        button.enabled = false
+                        button.tooltip = 'You need to be trusted to purchase this.'
+                    end
+                    if item == 'car' then
+                        button.enabled = false
+                        button.tooltip = 'You need to be trusted to purchase this.'
+                    end
+                end
+            end
+
             local label =
                 frame.add(
                 {
@@ -569,7 +583,7 @@ local function slider_changed(event)
         return
     end
     slider_value = ceil(slider_value)
-    this.players[player.index].data.quantity_input.text = slider_value
+    this.players[player.index].data.text_input.text = slider_value
     redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
 end
 
@@ -590,25 +604,25 @@ local function text_changed(event)
         return
     end
 
-    if not data.quantity_input or not data.quantity_input.valid then
+    if not data.text_input or not data.text_input.valid then
         return
     end
 
-    if not data.quantity_input.text then
+    if not data.text_input.text then
         return
     end
 
-    local value = tonumber(data.quantity_input.text)
+    local value = tonumber(data.text_input.text)
 
     if not value then
         return
     end
 
     if (value > 1e2) then
-        data.quantity_input.text = '100'
+        data.text_input.text = '100'
         value = 1e2
     elseif (value <= 0) then
-        data.quantity_input.text = '1'
+        data.text_input.text = '1'
         value = 1
     end
 
@@ -695,25 +709,14 @@ local function gui_opened(event)
 
     bottom_grid.add({type = 'label', caption = 'Quantity: '}).style.font = 'default-bold'
 
-    local quantity_input =
+    local text_input =
         bottom_grid.add(
         {
             type = 'text-box',
             text = 1
         }
     )
-    quantity_input.style.maximal_height = 28
-    local less = bottom_grid.add {type = 'button', caption = '-', name = 'less'}
-    local more = bottom_grid.add {type = 'button', caption = '+', name = 'more'}
-    -- Tom Fyuri: Ideally I'd make some fancy icon for this but alas 32 sized button will do for now
-    more.style.width = 32
-    more.style.height = 32
-    more.style.horizontal_align = 'center'
-    more.style.vertical_align = 'center'
-    less.style.width = 32
-    less.style.height = 32
-    less.style.horizontal_align = 'center'
-    less.style.vertical_align = 'center'
+    text_input.style.maximal_height = 28
 
     local slider =
         frame.add(
@@ -725,7 +728,7 @@ local function gui_opened(event)
         }
     )
     slider.style.width = 115
-    quantity_input.style.width = 60
+    text_input.style.width = 60
 
     local coinsleft = frame.add({type = 'flow'})
 
@@ -737,7 +740,7 @@ local function gui_opened(event)
     )
 
     this.players[player.index].data.search_text = search_text
-    this.players[player.index].data.quantity_input = quantity_input
+    this.players[player.index].data.text_input = text_input
     this.players[player.index].data.slider = slider
     this.players[player.index].data.frame = frame
     this.players[player.index].data.item_frame = pane
@@ -768,24 +771,6 @@ local function gui_click(event)
         return
     end
     local name = element.name
-
-    if name == 'less' then
-        local slider_value = this.players[player.index].data.slider.slider_value
-        if slider_value > 1 then
-            data.slider.slider_value = slider_value - 1
-            data.quantity_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player, data.search_text)
-        end
-        return
-    elseif name == 'more' then
-        local slider_value = data.slider.slider_value
-        if slider_value <= 1e2 then
-            data.slider.slider_value = slider_value + 1
-            data.quantity_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player, data.search_text)
-        end
-        return
-    end
 
     if not player.opened then
         return
@@ -1032,7 +1017,6 @@ local function gui_click(event)
             player.play_sound({path = 'entity-close/stone-furnace', volume_modifier = 0.65})
             local inserted_count = player.insert({name = name, count = item_count})
             if inserted_count < item_count then
-                --player.print("Original cost: "..cost..". New price: "..ceil((item.price * (inserted_count / item.stack)))..".") -- debug
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
                 player.print(
                     "Your pockets are now filled to the brim. So you've only bought " ..
@@ -1044,10 +1028,7 @@ local function gui_click(event)
                     {r = 0.98, g = 0.66, b = 0.22}
                 )
                 player.insert({name = name, count = inserted_count})
-                -- example is say you have 12k coins, your storage is 80 slots and you have 4 items, you try to buy 80 iron-ore stacks, you get 76 stacks of ore instead and you only pay for them!
-                -- so the count = 12 * 50 * 76 instead of 12 * 50 * 80!
-                -- but wait, what if the player tries to buy 3 iron ore (3/50s of a stack)? that's 0.72 of a single coin!? no worries, player will pay 1 coin for that, the price is adjusted upwards.
-                -- shopkeeper will not divide his coins, so don't try to buy item amount less than 1 coin worth, your loss.
+
                 player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
             else
                 player.remove_item({name = item.value, count = cost})
@@ -2043,7 +2024,7 @@ function Public.get_items()
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 1000,
+        price = 3000,
         tooltip = 'Portable Car Surface\nCan be killed easily.',
         upgrade = false,
         static = true
@@ -2051,7 +2032,7 @@ function Public.get_items()
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',
-        price = 5000,
+        price = 10000,
         tooltip = 'Portable Tank Surface\nChonk tank, can resist heavy damage.',
         upgrade = false,
         static = true
@@ -2188,7 +2169,6 @@ local function tick()
     if ticker % 1200 == 0 then
         set_player_spawn()
         refill_fish()
-        Public.get_items()
     end
 
     if ticker % 2500 == 0 then

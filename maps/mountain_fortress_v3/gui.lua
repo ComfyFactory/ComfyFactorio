@@ -142,7 +142,7 @@ local function on_gui_click(event)
 
     if name == main_button_name then
         if player.surface ~= locomotive.surface then
-            local minimap = player.gui.left.icw_map
+            local minimap = player.gui.left.icw_main_frame
             if minimap and minimap.visible then
                 minimap.visible = false
                 return
@@ -240,7 +240,7 @@ local function on_player_changed_surface(event)
     end
 
     if player.surface == main.surface then
-        local minimap = player.gui.left.icw_map
+        local minimap = player.gui.left.icw_main_frame
         if minimap and minimap.visible then
             minimap.visible = false
         end
