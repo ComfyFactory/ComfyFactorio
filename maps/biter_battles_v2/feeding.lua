@@ -180,7 +180,7 @@ function set_evo_and_threat(flask_amount, food, biter_force_name)
 	end
 	
 	--SET THREAT INCOME
-	global.bb_threat_income[biter_force_name] = global.bb_evolution[biter_force_name] * 20
+	global.bb_threat_income[biter_force_name] = global.bb_evolution[biter_force_name] * 25
 	
 	set_biter_endgame_modifiers(game.forces[biter_force_name])
 end

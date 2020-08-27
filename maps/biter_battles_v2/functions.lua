@@ -22,7 +22,7 @@ local balance_functions = {
 	end,
 	["stronger-explosives"] = function(force_name)
 		if not global.combat_balance[force_name].land_mine then global.combat_balance[force_name].land_mine = -0.75 end
-		global.combat_balance[force_name].land_mine = global.combat_balance[force_name].land_mine + 0.1								
+		global.combat_balance[force_name].land_mine = global.combat_balance[force_name].land_mine + 0.05								
 		game.forces[force_name].set_ammo_damage_modifier("landmine", global.combat_balance[force_name].land_mine)
 	end,
 	["military"] = function(force_name)
@@ -260,6 +260,16 @@ function Public.create_map_intro_button(player)
 	b.style.bottom_padding = 1
 end
 
+function Public.show_intro(player)
+	if player.gui.center["map_intro_frame"] then player.gui.center["map_intro_frame"].destroy() end
+	local frame = player.gui.center.add {type = "frame", name = "map_intro_frame", direction = "vertical"}
+	local frame = frame.add {type = "frame"}
+	local l = frame.add {type = "label", caption = {"biter_battles.map_info"}, name = "biter_battles_map_intro"}
+	l.style.single_line = false
+	l.style.font = "heading-2"
+	l.style.font_color = {r=0.7, g=0.6, b=0.99}
+end
+
 function Public.map_intro_click(player, element)
 	if element.name == "close_map_intro_frame" then player.gui.center["map_intro_frame"].destroy() return true end	
 	if element.name == "biter_battles_map_intro" then player.gui.center["map_intro_frame"].destroy() return true end	
@@ -268,13 +278,7 @@ function Public.map_intro_click(player, element)
 			player.gui.center["map_intro_frame"].destroy()
 			return true
 		else
-			if player.gui.center["map_intro_frame"] then player.gui.center["map_intro_frame"].destroy() end
-			local frame = player.gui.center.add {type = "frame", name = "map_intro_frame", direction = "vertical"}
-			local frame = frame.add {type = "frame"}
-			local l = frame.add {type = "label", caption = {"biter_battles.map_info"}, name = "biter_battles_map_intro"}
-			l.style.single_line = false
-			l.style.font = "heading-2"
-			l.style.font_color = {r=0.7, g=0.6, b=0.99}
+			Public.show_intro(player)
 			return true
 		end
 	end	

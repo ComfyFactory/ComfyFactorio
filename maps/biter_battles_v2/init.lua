@@ -153,6 +153,7 @@ function Public.tables()
 	global.terrain_gen.size_of_chunk_copy = 0	
 	global.terrain_gen.size_of_chunk_mirror = 0
 	global.tm_custom_name = {}
+	global.total_passive_feed_redpotion = 0
 	global.unit_groups = {}
 	global.unit_spawners = {}
 	global.unit_spawners.north_biters = {}
