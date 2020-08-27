@@ -94,7 +94,6 @@ local function on_tick()
     local tick = game.tick
 
     if tick % 60 == 0 then
-        Functions.teleport_players_around(ic)
         Functions.item_transfer(ic)
     end
 

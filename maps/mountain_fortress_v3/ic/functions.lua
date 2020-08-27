@@ -532,18 +532,22 @@ local function construct_doors(ic, car)
 
     local main_tile_name = 'black-refined-concrete'
 
-    for _, x in pairs({area.left_top.x - 1, area.right_bottom.x + 0.5}) do
+    for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
         local p
         if car.name == 'car' then
-            p = {x, area.left_top.y + 10}
+            p = {x = x, y = area.left_top.y + 10}
         else
-            p = {x, area.left_top.y + 20}
+            p = {x = x, y = area.left_top.y + 20}
         end
-        surface.set_tiles({{name = main_tile_name, position = p}}, true)
+        if p.x < 0 then
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
+        else
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x - 1, y = p.y}}}, true)
+        end
         local e =
             surface.create_entity(
             {
-                name = 'player-port',
+                name = 'car',
                 position = {x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)},
                 force = 'neutral',
                 create_build_effect_smoke = false
@@ -552,6 +556,7 @@ local function construct_doors(ic, car)
         e.destructible = false
         e.minable = false
         e.operable = false
+        e.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 1})
         ic.doors[e.unit_number] = car.entity.unit_number
         car.doors[#car.doors + 1] = e
     end
@@ -815,9 +820,11 @@ function Public.create_car(ic, event)
     local name, mined = get_player_entity(ic, player, ce)
 
     if
-        name == 'tank' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'car' and not mined or
-            name == 'car' and ce.name == 'tank' and not mined or
+        name == 'car' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'tank' and not mined or
+            name == 'tank' and ce.name == 'car' and not mined or
             name == 'tank' and ce.name == 'tank' and not mined or
+            name == 'spidertron' and ce.name == 'car' and not mined or
+            name == 'spidertron' and ce.name == 'tank' and not mined or
             name == 'spidertron' and ce.name == 'spidertron' and not mined
      then
         return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
@@ -989,63 +996,6 @@ function Public.infinity_scrap(ic, event, recreate)
     end
 end
 
-function Public.teleport_players_around(ic)
-    for _, player in pairs(game.connected_players) do
-        if validate_player(player) then
-            if player.surface.find_entity('player-port', player.position) then
-                local door = player.surface.find_entity('player-port', player.position)
-                if validate_entity(door) then
-                    local doors = ic.doors
-                    local cars = ic.cars
-
-                    local car = false
-                    if doors[door.unit_number] then
-                        car = cars[doors[door.unit_number]]
-                    end
-                    if cars[door.unit_number] then
-                        car = cars[door.unit_number]
-                    end
-                    if not car then
-                        return
-                    end
-
-                    local player_data = get_player_data(ic, player)
-                    if player_data.state then
-                        player_data.state = player_data.state - 1
-                        if player_data.state == 0 then
-                            player_data.state = nil
-                        end
-                        return
-                    end
-
-                    if not validate_entity(car.entity) then
-                        return
-                    end
-
-                    if car.entity.surface.name ~= player.surface.name then
-                        if validate_entity(car.entity) and car.owner == player.index then
-                            IC_Gui.remove_toolbar(player)
-                            car.entity.minable = true
-                        end
-                        local surface = car.entity.surface
-                        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-                        local position = {car.entity.position.x + x_vector, car.entity.position.y}
-                        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                        if car.entity.type == 'car' or car.entity.name == 'spidertron' then
-                            player.teleport(surface_position, surface)
-                            player_data.state = 2
-                            player.driving = true
-                        else
-                            player.teleport(surface_position, surface)
-                        end
-                        player_data.surface = surface.index
-                    end
-                end
-            end
-        end
-    end
-end
-
 function Public.use_door_with_entity(ic, player, door)
     local player_data = get_player_data(ic, player)
     if player_data.state then
@@ -1088,31 +1038,50 @@ function Public.use_door_with_entity(ic, player, door)
     player_data.fallback_surface = car.entity.surface.index
     player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
 
-    local surface = car.surface
-    if validate_entity(car.entity) and car.owner == player.index then
-        IC_Gui.add_toolbar(player)
-        car.entity.minable = false
-    end
+    if car.entity.surface.name == player.surface.name then
+        local surface = car.surface
+        if validate_entity(car.entity) and car.owner == player.index then
+            IC_Gui.add_toolbar(player)
+            car.entity.minable = false
+        end
 
-    if not validate_entity(surface) then
-        return
-    end
+        if not validate_entity(surface) then
+            return
+        end
 
-    local area = car.area
-    local x_vector = door.position.x - player.position.x
-    local position
-    if x_vector > 0 then
-        position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        local area = car.area
+        local x_vector = door.position.x - player.position.x
+        local position
+        if x_vector > 0 then
+            position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        else
+            position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        end
+        local p = surface.find_non_colliding_position('character', position, 128, 0.5)
+        if p then
+            player.teleport(p, surface)
+        else
+            player.teleport(position, surface)
+        end
+        player_data.surface = surface.index
     else
-        position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        if validate_entity(car.entity) and car.owner == player.index then
+            IC_Gui.remove_toolbar(player)
+            car.entity.minable = true
+        end
+        local surface = car.entity.surface
+        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
+        local position = {car.entity.position.x + x_vector, car.entity.position.y}
+        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
+        if car.entity.type == 'car' or car.entity.name == 'spidertron' then
+            player.teleport(surface_position, surface)
+            player_data.state = 2
+            player.driving = true
+        else
+            player.teleport(surface_position, surface)
+        end
+        player_data.surface = surface.index
     end
-    local p = surface.find_non_colliding_position('character', position, 128, 0.5)
-    if p then
-        player.teleport(p, surface)
-    else
-        player.teleport(position, surface)
-    end
-    player_data.surface = surface.index
 end
 
 function Public.item_transfer(ic)

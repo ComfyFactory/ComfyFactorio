@@ -320,13 +320,17 @@ local function construct_wagon_doors(icw, wagon)
 
     local main_tile_name = 'black-refined-concrete'
 
-    for _, x in pairs({area.left_top.x - 1, area.right_bottom.x + 0.5}) do
-        local p = {x, area.left_top.y + 30}
-        surface.set_tiles({{name = main_tile_name, position = p}}, true)
+    for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
+        local p = {x = x, y = area.left_top.y + 30}
+        if p.x < 0 then
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
+        else
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x - 1, y = p.y}}}, true)
+        end
         local e =
             surface.create_entity(
             {
-                name = 'player-port',
+                name = 'car',
                 position = {x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)},
                 force = 'neutral',
                 create_build_effect_smoke = false
@@ -335,6 +339,7 @@ local function construct_wagon_doors(icw, wagon)
         e.destructible = false
         e.minable = false
         e.operable = false
+        e.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 1})
         icw.doors[e.unit_number] = wagon.entity.unit_number
         wagon.doors[#wagon.doors + 1] = e
     end
@@ -759,91 +764,6 @@ function Public.subtract_wagon_entity_count(icw, removed_entity)
         return
     end
     wagon.entity.minable = true
-end
-
-function Public.teleport_players_around(icw)
-    for _, player in pairs(game.connected_players) do
-        if validate_player(player) then
-            local trusted = Session.get_trusted_table()
-
-            if player.surface.find_entity('player-port', player.position) then
-                local door = player.surface.find_entity('player-port', player.position)
-                if door and door.valid then
-                    local doors = icw.doors
-                    local wagons = icw.wagons
-
-                    local wagon = false
-                    if doors[door.unit_number] then
-                        wagon = wagons[doors[door.unit_number]]
-                    end
-                    if wagons[door.unit_number] then
-                        wagon = wagons[door.unit_number]
-                    end
-                    if not wagon then
-                        return
-                    end
-
-                    local player_data = get_player_data(icw, player)
-                    if player_data.state then
-                        player_data.state = player_data.state - 1
-                        if player_data.state == 0 then
-                            player_data.state = nil
-                        end
-                        return
-                    end
-
-                    if wagon.entity.surface.name ~= player.surface.name then
-                        local surface = wagon.entity.surface
-                        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-                        local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
-                        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                        if wagon.entity.type == 'locomotive' then
-                            if not trusted[player.name] and not player.admin then
-                                player.teleport(surface_position, surface)
-                                player.driving = false
-                                Public.kill_minimap(player)
-                                player.print('Wooops - you slipped out of the driver seat!', Color.warning)
-                            else
-                                player.teleport(surface_position, surface)
-                                player_data.state = 2
-                                player.driving = true
-                                Public.kill_minimap(player)
-                            end
-                        else
-                            player.teleport(surface_position, surface)
-                            Public.kill_minimap(player)
-                        end
-                        player_data.surface = surface.index
-                    elseif wagon.entity.type == 'locomotive' and player.driving then
-                        player.driving = false
-                    else
-                        local surface = wagon.surface
-                        local area = wagon.area
-                        local x_vector = door.position.x - player.position.x
-                        local position
-                        if x_vector > 0 then
-                            position = {
-                                area.left_top.x + 0.5,
-                                area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                            }
-                        else
-                            position = {
-                                area.right_bottom.x - 0.5,
-                                area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                            }
-                        end
-                        local p = surface.find_non_colliding_position('character', position, 128, 0.5)
-                        if p then
-                            player.teleport(p, surface)
-                        else
-                            player.teleport(position, surface)
-                        end
-                        player_data.surface = surface.index
-                    end
-                end
-            end
-        end
-    end
 end
 
 function Public.use_cargo_wagon_door_with_entity(icw, player, door)

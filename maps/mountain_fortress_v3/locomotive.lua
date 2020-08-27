@@ -1532,38 +1532,6 @@ local function on_console_chat(event)
     shoo(event)
 end
 
--- local function tp_player()
---     for _, player in pairs(game.connected_players) do
---         if not validate_player(player) then
---             return
---         end
-
---         local active_surface_index = WPT.get('active_surface_index')
---         if not active_surface_index then
---             return
---         end
-
---         local surface = game.surfaces[active_surface_index]
-
---         local nauvis = 'nauvis'
-
---         if string.sub(player.surface.name, 0, #nauvis) == nauvis then
---             if player.surface.find_entity('player-port', player.position) then
---                 player.teleport(
---                     surface.find_non_colliding_position(
---                         'character',
---                         game.forces.player.get_spawn_position(surface),
---                         3,
---                         0,
---                         5
---                     ),
---                     surface
---                 )
---             end
---         end
---     end
--- end
-
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
     if not validate_player(player) then
