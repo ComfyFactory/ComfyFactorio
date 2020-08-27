@@ -246,7 +246,7 @@ local fortress_functions = {
             get_actor(event, '{Market}', 'has changed so only trusted people can buy car/tanks.', true)
         else
             this.trusted_only_car_tanks = false
-            get_actor(event, '{Void}', 'has changed so everybody can buy car/tanks.', true)
+            get_actor(event, '{Market}', 'has changed so everybody can buy car/tanks.', true)
         end
     end
 }
