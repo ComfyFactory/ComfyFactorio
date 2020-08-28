@@ -45,6 +45,21 @@ Global.register(
 
 local Public = {}
 
+local clear_gui =
+    Token.register(
+    function(data)
+        local player = data.player
+        if player and player.valid then
+            for _, child in pairs(player.gui.center.children) do
+                child.destroy()
+            end
+            for _, child in pairs(player.gui.left.children) do
+                child.destroy()
+            end
+        end
+    end
+)
+
 local validate_playtime = function(player)
     local tracker = Session.get_session_table()
 
@@ -70,14 +85,14 @@ local validate_trusted = function(player)
 end
 
 local get_player_data = function(player, remove)
-    if remove and player_data[player.index] then
-        player_data[player.index] = nil
+    if remove and player_data[player.name] then
+        player_data[player.name] = nil
         return
     end
-    if not player_data[player.index] then
-        player_data[player.index] = {}
+    if not player_data[player.name] then
+        player_data[player.name] = {}
     end
-    return player_data[player.index]
+    return player_data[player.name]
 end
 
 local get_gulag_permission_group = function()
@@ -89,6 +104,7 @@ local get_gulag_permission_group = function()
         gulag.set_allows_action(defines.input_action.delete_permission_group, false)
         gulag.set_allows_action(defines.input_action.add_permission_group, false)
         gulag.set_allows_action(defines.input_action.admin_action, false)
+        gulag.set_allows_action(defines.input_action.gui_click, false)
         gulag.set_allows_action(defines.input_action.drop_item, false)
         gulag.set_allows_action(defines.input_action.place_equipment, false)
         gulag.set_allows_action(defines.input_action.take_equipment, false)
@@ -147,7 +163,7 @@ local create_gulag_surface = function()
         end
 
         rendering.draw_text {
-            text = 'BAAAAAD HOOOOOMAAAAAN!!',
+            text = 'The pit of despair ☹',
             surface = surface,
             target = {0, -50},
             color = {r = 0.98, g = 0.66, b = 0.22},
@@ -164,24 +180,51 @@ end
 local teleport_player_to_gulag = function(player, action)
     local p_data = get_player_data(player)
 
+    local gulag_tp = function(surface)
+        get_player_data(player, true)
+        player.teleport(
+            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 128, 1),
+            surface.name
+        )
+    end
+
     if action == 'jail' then
-        local surface = game.surfaces['gulag']
+        local gulag = game.surfaces['gulag']
         p_data.fallback_surface_index = player.surface.index
-        player.teleport(surface.find_non_colliding_position('character', {0, 0}, 2, 1), 'gulag')
+        p_data.position = player.position
+        p_data.p_group_id = player.permission_group.group_id
+        p_data.locked = true
+        player.teleport(gulag.find_non_colliding_position('character', {0, 0}, 128, 1), gulag.name)
+        local data = {
+            player = player
+        }
+        Task.set_timeout_in_ticks(5, clear_gui, data)
     elseif action == 'free' then
-        if p_data.fallback_surface_index then
-            local surface = game.surfaces[p_data.fallback_surface_index]
-            player.teleport(
-                surface.find_non_colliding_position(
-                    'character',
-                    game.forces.player.get_spawn_position(surface),
-                    3,
-                    0,
-                    5
-                ),
-                surface
-            )
+        local surface = game.surfaces[p_data.fallback_surface_index]
+        local p = p_data.position
+        local p_group = game.permissions.get_group(p_data.p_group_id)
+        p_group.add_player(player)
+        local pos = {x = p.x, y = p.y}
+        local get_tile = surface.get_tile(pos)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            gulag_tp(surface)
+        else
             get_player_data(player, true)
+            player.teleport(surface.find_non_colliding_position('character', p, 128, 1), surface.name)
+        end
+    end
+end
+
+local on_player_changed_surface = function(event)
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+    local p_data = get_player_data(player)
+    if jailed[player.name] and p_data and p_data.locked then
+        local surface = game.surfaces['gulag']
+        if player.surface.index ~= surface.index then
+            teleport_player_to_gulag(player, 'jail')
         end
     end
 end
@@ -281,21 +324,9 @@ local jail = function(player, griefer)
     local g = game.players[griefer]
     teleport_player_to_gulag(g, 'jail')
 
-    local permission_group = game.permissions.get_group('prisoner')
-    if not permission_group then
-        permission_group = game.permissions.create_group('prisoner')
-        for action_name, _ in pairs(defines.input_action) do
-            permission_group.set_allows_action(defines.input_action[action_name], false)
-        end
-        permission_group.set_allows_action(defines.input_action.write_to_console, true)
-        permission_group.set_allows_action(defines.input_action.gui_click, true)
-        permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
-    end
     if g.surface.name == 'gulag' then
         local gulag = get_gulag_permission_group()
         gulag.add_player(griefer)
-    else
-        permission_group.add_player(griefer)
     end
     local message = griefer .. ' has been jailed by ' .. player .. '.'
 
@@ -331,13 +362,6 @@ local free = function(player, griefer)
     local g = game.players[griefer]
     teleport_player_to_gulag(g, 'free')
 
-    local permission_group = game.permissions.get_group('Default')
-    if g.surface.name == 'gulag' then
-        local gulag = get_gulag_permission_group()
-        gulag.add_player(griefer)
-    else
-        permission_group.add_player(griefer)
-    end
     local message = griefer .. ' was set free from jail by ' .. player .. '.'
 
     jailed[griefer] = nil
@@ -512,6 +536,7 @@ Event.add(
     end
 )
 
+Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.on_init(create_gulag_surface)
 
 Server.on_data_set_changed(
