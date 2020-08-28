@@ -1,4 +1,5 @@
 local Global = require 'utils.global'
+local Event = require 'utils.event'
 
 local this = {}
 Global.register(
@@ -8,7 +9,11 @@ Global.register(
     end
 )
 
-local Public = {}
+local Public = {
+    events = {
+        on_player_kicked_from_surface = Event.generate_event_name('on_player_kicked_from_surface')
+    }
+}
 
 function Public.reset()
     if this.surfaces then
@@ -21,21 +26,22 @@ function Public.reset()
     for k, _ in pairs(this) do
         this[k] = nil
     end
-    this.debug_mode = true
+    this.debug_mode = false
     this.restore_on_theft = false
     this.doors = {}
     this.cars = {}
     this.saved_surfaces = {}
     this.allowed_surface = 'nauvis'
+    this.trust_system = {}
     this.players = {}
     this.surfaces = {}
+    this.minimap = {}
     this.infinity_scrap_enabled = true
     this.entity_type = {
         ['car'] = true,
         ['tank'] = true,
         ['spidertron'] = true
     }
-
     this.car_areas = {
         ['car'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 20}},
         ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}},

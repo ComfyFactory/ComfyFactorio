@@ -55,6 +55,14 @@ function Public.enable_fullness(value)
     return this.fullness_enabled
 end
 
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
 local check_fullness = Public.check_fullness
 
 Event.add(

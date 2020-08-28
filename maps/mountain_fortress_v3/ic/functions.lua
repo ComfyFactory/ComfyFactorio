@@ -2,6 +2,7 @@ local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 
 local Public = {}
 local random = math.random
@@ -22,6 +23,16 @@ local function log_err(ic, err)
             log('IC: ' .. err)
         end
     end
+end
+
+local function get_trusted_system(this, player)
+    if not this.trust_system[player.index] then
+        this.trust_system[player.index] = {
+            [player.name] = true
+        }
+    end
+
+    return this.trust_system[player.index]
 end
 
 local function upperCase(str)
@@ -69,9 +80,39 @@ local function get_owner_car_object(cars, player)
     return false
 end
 
+local function get_entity_from_player_surface(cars, player)
+    for k, car in pairs(cars) do
+        if validate_entity(car.entity) then
+            if validate_entity(car.surface) then
+                if car.surface.index == player.surface.index then
+                    return car.entity
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function get_owner_car_surface(cars, player, target)
+    for k, car in pairs(cars) do
+        if car.owner == player.index then
+            if validate_entity(car.surface) then
+                if car.surface.index == target.surface.index then
+                    return true
+                else
+                    return false
+                end
+            else
+                return false
+            end
+        end
+    end
+    return false
+end
+
 local function get_player_surface(ic, player)
     local surfaces = ic.surfaces
-    for k, surface in pairs(surfaces) do
+    for _, surface in pairs(surfaces) do
         if validate_entity(surface) then
             if surface.index == player.surface.index then
                 return true
@@ -281,7 +322,7 @@ end
 local function kick_players_out_of_vehicles(car)
     for _, player in pairs(game.connected_players) do
         local character = player.character
-        if character and character.valid and character.driving then
+        if validate_entity(character) and character.driving then
             if car.surface == player.surface then
                 character.driving = false
             end
@@ -289,15 +330,15 @@ local function kick_players_out_of_vehicles(car)
     end
 end
 
-local function kick_player_from_surface(ic, car)
-    if not car.surface or not car.surface.valid then
+local function kick_players_from_surface(ic, car)
+    if not validate_entity(car.surface) then
         return log_err('Car surface was not valid.')
     end
     if not car.entity or not car.entity.valid then
         local main_surface = game.surfaces[ic.allowed_surface]
-        if main_surface and main_surface.valid then
+        if validate_entity(main_surface) then
             for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
-                if e and e.valid and e.name == 'character' and e.player then
+                if validate_entity(e) and e.name == 'character' and e.player then
                     e.player.teleport(
                         main_surface.find_non_colliding_position(
                             'character',
@@ -315,12 +356,52 @@ local function kick_player_from_surface(ic, car)
     end
 
     for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
-        if e and e.valid and e.name == 'character' and e.player then
+        if validate_entity(e) and e.name == 'character' and e.player then
             local p = car.entity.surface.find_non_colliding_position('character', car.entity.position, 128, 0.5)
             if p then
                 e.player.teleport(p, car.entity.surface)
             else
                 e.player.teleport(car.entity.position, car.entity.surface)
+            end
+        end
+    end
+end
+
+local function kick_player_from_surface(ic, player, target)
+    local cars = ic.cars
+
+    local main_surface = game.surfaces[ic.allowed_surface]
+    if not validate_entity(main_surface) then
+        return
+    end
+
+    local c = get_owner_car_object(cars, player)
+    local car = ic.cars[c]
+
+    if not validate_entity(car.entity) then
+        return
+    end
+
+    if validate_entity(player) then
+        if validate_entity(target) then
+            local locate = get_owner_car_surface(cars, player, target)
+            if locate then
+                local p = car.entity.surface.find_non_colliding_position('character', car.entity.position, 128, 0.5)
+                if p then
+                    target.teleport(p, car.entity.surface)
+                else
+                    target.teleport(
+                        main_surface.find_non_colliding_position(
+                            'character',
+                            game.forces.player.get_spawn_position(main_surface),
+                            3,
+                            0,
+                            5
+                        ),
+                        main_surface
+                    )
+                end
+                target.print('You were kicked out of ' .. player.name .. ' vehicle.', Color.warning)
             end
         end
     end
@@ -451,18 +532,22 @@ local function construct_doors(ic, car)
 
     local main_tile_name = 'black-refined-concrete'
 
-    for _, x in pairs({area.left_top.x - 1, area.right_bottom.x + 0.5}) do
+    for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
         local p
         if car.name == 'car' then
-            p = {x, area.left_top.y + 10}
+            p = {x = x, y = area.left_top.y + 10}
         else
-            p = {x, area.left_top.y + 20}
+            p = {x = x, y = area.left_top.y + 20}
         end
-        surface.set_tiles({{name = main_tile_name, position = p}}, true)
+        if p.x < 0 then
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
+        else
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x - 1, y = p.y}}}, true)
+        end
         local e =
             surface.create_entity(
             {
-                name = 'player-port',
+                name = 'car',
                 position = {x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)},
                 force = 'neutral',
                 create_build_effect_smoke = false
@@ -471,6 +556,7 @@ local function construct_doors(ic, car)
         e.destructible = false
         e.minable = false
         e.operable = false
+        e.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 1})
         ic.doors[e.unit_number] = car.entity.unit_number
         car.doors[#car.doors + 1] = e
     end
@@ -495,7 +581,7 @@ local remove_car =
     function(data)
         local player = data.player
         local car = data.car
-        player.remove_item({name = car.name, count = 9999})
+        player.remove_item({name = car.name, count = 1})
     end
 )
 
@@ -514,7 +600,7 @@ function Public.save_car(ic, event)
     local health = entity.health
 
     kick_players_out_of_vehicles(car)
-    kick_player_from_surface(ic, car)
+    kick_players_from_surface(ic, car)
     get_player_data(ic, player)
 
     if car.owner == player.index then
@@ -533,7 +619,6 @@ function Public.save_car(ic, event)
         save_surface(ic, entity, p)
         Utils.action_warning('{Car}', player.name .. ' has looted ' .. p.name .. '´s car.')
         player.print('This car was not yours to keep.', Color.warning)
-        player.remove_item({name = car.name, count = 9999})
         local params = {
             player = player,
             car = car
@@ -567,7 +652,7 @@ function Public.kill_car(ic, entity)
     local surface = car.surface
     kick_players_out_of_vehicles(car)
     kill_doors(ic, car)
-    kick_player_from_surface(ic, car)
+    kick_players_from_surface(ic, car)
     for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
@@ -580,8 +665,17 @@ function Public.validate_owner(ic, player, entity)
         local cars = ic.cars
         local unit_number = entity.unit_number
         local car = cars[unit_number]
-        if car and car.entity and validate_entity(car.entity) then
+        if not car then
+            return
+        end
+        if validate_entity(car.entity) then
             local p = game.players[car.owner]
+            local list = get_trusted_system(ic, p)
+            if p and p.valid and p.connected then
+                if list[player.name] then
+                    return
+                end
+            end
             if p then
                 if car.owner ~= player.index and player.driving then
                     player.driving = false
@@ -726,9 +820,11 @@ function Public.create_car(ic, event)
     local name, mined = get_player_entity(ic, player, ce)
 
     if
-        name == 'tank' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'car' and not mined or
-            name == 'car' and ce.name == 'tank' and not mined or
+        name == 'car' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'tank' and not mined or
+            name == 'tank' and ce.name == 'car' and not mined or
             name == 'tank' and ce.name == 'tank' and not mined or
+            name == 'spidertron' and ce.name == 'car' and not mined or
+            name == 'spidertron' and ce.name == 'tank' and not mined or
             name == 'spidertron' and ce.name == 'spidertron' and not mined
      then
         return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
@@ -789,8 +885,8 @@ function Public.remove_invalid_cars(ic)
                     ic.doors[key] = nil
                 end
             end
+            kick_players_from_surface(ic, car)
         end
-        kick_player_from_surface(ic, car)
     end
     for k, surface in pairs(ic.surfaces) do
         if not ic.cars[tonumber(surface.name)] then
@@ -806,7 +902,7 @@ function Public.infinity_scrap(ic, event, recreate)
     end
 
     local entity = event.entity
-    if not entity or not entity.valid then
+    if not validate_entity(entity) then
         return
     end
 
@@ -823,18 +919,24 @@ function Public.infinity_scrap(ic, event, recreate)
         return
     end
 
+    if get_player_surface(ic, player) then
+        if recreate then
+            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+            return
+        end
+    end
+
     if not is_owner_on_car_surface(ic, player) then
         if get_player_surface(ic, player) then
+            if recreate then
+                entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
+                return
+            end
             entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
             player.print('This is not your rock to mine!', Color.warning)
             event.buffer.clear()
             return
         end
-    end
-
-    if recreate then
-        entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
-        return
     end
 
     local items = {
@@ -894,64 +996,6 @@ function Public.infinity_scrap(ic, event, recreate)
     end
 end
 
-function Public.teleport_players_around(ic)
-    for _, player in pairs(game.connected_players) do
-        if not validate_player(player) then
-            return
-        end
-
-        if player.surface.find_entity('player-port', player.position) then
-            local door = player.surface.find_entity('player-port', player.position)
-            if validate_entity(door) then
-                local doors = ic.doors
-                local cars = ic.cars
-
-                local car = false
-                if doors[door.unit_number] then
-                    car = cars[doors[door.unit_number]]
-                end
-                if cars[door.unit_number] then
-                    car = cars[door.unit_number]
-                end
-                if not car then
-                    return
-                end
-
-                local player_data = get_player_data(ic, player)
-                if player_data.state then
-                    player_data.state = player_data.state - 1
-                    if player_data.state == 0 then
-                        player_data.state = nil
-                    end
-                    return
-                end
-
-                if not validate_entity(car.entity) then
-                    return
-                end
-
-                if car.entity.surface.name ~= player.surface.name then
-                    if validate_entity(car.entity) and car.owner == player.index then
-                        car.entity.minable = true
-                    end
-                    local surface = car.entity.surface
-                    local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-                    local position = {car.entity.position.x + x_vector, car.entity.position.y}
-                    local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if car.entity.type == 'car' or car.entity.name == 'spidertron' then
-                        player.teleport(surface_position, surface)
-                        player_data.state = 2
-                        player.driving = true
-                    else
-                        player.teleport(surface_position, surface)
-                    end
-                    player_data.surface = surface.index
-                end
-            end
-        end
-    end
-end
-
 function Public.use_door_with_entity(ic, player, door)
     local player_data = get_player_data(ic, player)
     if player_data.state then
@@ -979,33 +1023,65 @@ function Public.use_door_with_entity(ic, player, door)
         return
     end
 
+    local owner = game.players[car.owner]
+    local list = get_trusted_system(ic, owner)
+    if owner and owner.valid and player.connected then
+        if not list[player.name] and not player.admin then
+            player.driving = false
+            return player.print(
+                'You have not been approved by ' .. owner.name .. ' to enter their vehicle.',
+                Color.warning
+            )
+        end
+    end
+
     player_data.fallback_surface = car.entity.surface.index
     player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
 
-    local surface = car.surface
-    if validate_entity(car.entity) and car.owner == player.index then
-        car.entity.minable = false
-    end
+    if car.entity.surface.name == player.surface.name then
+        local surface = car.surface
+        if validate_entity(car.entity) and car.owner == player.index then
+            IC_Gui.add_toolbar(player)
+            car.entity.minable = false
+        end
 
-    if not validate_entity(surface) then
-        return
-    end
+        if not validate_entity(surface) then
+            return
+        end
 
-    local area = car.area
-    local x_vector = door.position.x - player.position.x
-    local position
-    if x_vector > 0 then
-        position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        local area = car.area
+        local x_vector = door.position.x - player.position.x
+        local position
+        if x_vector > 0 then
+            position = {area.left_top.x + 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        else
+            position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        end
+        local p = surface.find_non_colliding_position('character', position, 128, 0.5)
+        if p then
+            player.teleport(p, surface)
+        else
+            player.teleport(position, surface)
+        end
+        player_data.surface = surface.index
     else
-        position = {area.right_bottom.x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
+        if validate_entity(car.entity) and car.owner == player.index then
+            IC_Gui.remove_toolbar(player)
+            car.entity.minable = true
+        end
+        local surface = car.entity.surface
+        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
+        local position = {car.entity.position.x + x_vector, car.entity.position.y}
+        local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
+        if car.entity.type == 'car' or car.entity.name == 'spidertron' then
+            player.teleport(surface_position, surface)
+            player_data.state = 2
+            player.driving = true
+        else
+            player.teleport(surface_position, surface)
+        end
+        player_data.surface = surface.index
     end
-    local p = surface.find_non_colliding_position('character', position, 128, 0.5)
-    if p then
-        player.teleport(p, surface)
-    else
-        player.teleport(position, surface)
-    end
-    player_data.surface = surface.index
 end
 
 function Public.item_transfer(ic)
@@ -1021,5 +1097,9 @@ function Public.item_transfer(ic)
         end
     end
 end
+
+Public.kick_player_from_surface = kick_player_from_surface
+Public.get_player_surface = get_player_surface
+Public.get_entity_from_player_surface = get_entity_from_player_surface
 
 return Public

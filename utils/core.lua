@@ -74,7 +74,7 @@ function Public.print_admins(msg, source)
         chat_color = Color.yellow
     end
     local formatted_msg = prefix .. '(ADMIN) ' .. source_name .. ': ' .. msg
-    log(formatted_msg)
+    print(formatted_msg)
     for _, p in pairs(game.connected_players) do
         if p.admin then
             p.print(formatted_msg, chat_color)
@@ -181,7 +181,7 @@ function Public.log_command(actor, command, parameters)
     if parameters then
         action = concat {action, ' ', parameters}
     end
-    log(action)
+    print(action)
 end
 
 function Public.comma_value(n) -- credit http://richard.warburton.it
@@ -223,7 +223,7 @@ end
 function Public.action_warning(warning_prefix, msg)
     game.print(prefix .. msg, Color.yellow)
     msg = format('%s %s', warning_prefix, msg)
-    log(msg)
+    print(msg)
     Server.to_discord_bold(msg)
 end
 
@@ -233,7 +233,7 @@ end
 function Public.action_warning_embed(warning_prefix, msg)
     game.print(prefix .. msg, Color.yellow)
     msg = format('%s %s', warning_prefix, msg)
-    log(msg)
+    print(msg)
     Server.to_discord_embed(msg)
 end
 
@@ -242,7 +242,7 @@ end
 -- @param warning_prefix <string> The name of the module/warning
 function Public.action_to_discord(warning_prefix, msg)
     msg = format('%s %s', warning_prefix, msg)
-    log(msg)
+    print(msg)
     Server.to_discord_bold(msg)
 end
 
@@ -253,7 +253,7 @@ end
 function Public.silent_action_warning(warning_prefix, msg, player)
     Public.print_except(prefix .. msg, player, Color.yellow)
     msg = format('%s %s', warning_prefix, msg)
-    log(msg)
+    print(msg)
     Server.to_discord_bold(msg)
 end
 
@@ -262,7 +262,7 @@ end
 -- @param warning_prefix <string> The name of the module/warning
 function Public.log_msg(warning_prefix, msg)
     msg = format('%s %s', warning_prefix, msg)
-    log(msg)
+    print(msg)
 end
 
 --- Takes a string, number, or LuaPlayer and returns a valid LuaPlayer or nil.

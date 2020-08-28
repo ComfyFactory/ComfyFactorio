@@ -14,6 +14,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster'
 local Difficulty = require 'modules.difficulty_vote'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
+local ExplosiveBullets = require 'maps.mountain_fortress_v3.explosive_gun_bullets'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
@@ -58,13 +59,6 @@ local defeated_messages = {
     "I'm not 100% sure, but - apparently the train was chewed away.",
     'You had one objective - defend the train *-*',
     "Looks like we're resetting cause you did not defend the train ._."
-}
-
-local entity_type = {
-    ['unit'] = true,
-    ['unit-spawner'] = true,
-    ['simple-entity'] = true,
-    ['tree'] = true
 }
 
 local protect_types = {
@@ -382,7 +376,13 @@ local function on_player_mined_entity(event)
     if entity.type == 'simple-entity' or entity.type == 'tree' then
         this.mined_scrap = this.mined_scrap + 1
         Mining.on_player_mined_entity(event)
-        give_coin(player)
+        if entity.type == 'tree' then
+            if random(1, 2) == 1 then
+                give_coin(player)
+            end
+        else
+            give_coin(player)
+        end
         if rpg_char.stone_path then
             entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
         end
@@ -570,11 +570,12 @@ local function on_entity_damaged(event)
         return
     end
 
-    protect_entities(event)
-    biters_chew_rocks_faster(event)
     local wave_number = WD.get_wave()
     local boss_wave_warning = WD.alert_boss_wave()
     local munch_time = WPT.get('munch_time')
+
+    protect_entities(event)
+    biters_chew_rocks_faster(event)
 
     if munch_time then
         if boss_wave_warning or wave_number >= 1500 then
@@ -582,6 +583,10 @@ local function on_entity_damaged(event)
                 boss_puncher(event)
             end
         end
+    end
+    if WPT.get('explosive_bullets') then
+        ExplosiveBullets.explosive_bullets(event)
+        return
     end
 end
 
@@ -658,12 +663,40 @@ local function on_entity_died(event)
         return
     end
 
+    if entity.type == 'unit' or entity.type == 'unit-spawner' then
+        this.biters_killed = this.biters_killed + 1
+        if Locomotive.is_around_train(entity) then
+            entity.destroy()
+            return
+        end
+        if random(1, 512) == 1 then
+            Traps(entity.surface, entity.position)
+            return
+        end
+    end
+
     local data = {
         entity = entity,
         surface = entity.surface
     }
 
     if entity.type == 'tree' then
+        for _, e in pairs(
+            event.entity.surface.find_entities_filtered(
+                {
+                    area = {
+                        {entity.position.x - 4, entity.position.y - 4},
+                        {entity.position.x + 4, entity.position.y + 4}
+                    },
+                    name = 'fire-flame-on-tree'
+                }
+            )
+        ) do
+            if e.valid then
+                e.destroy()
+                return
+            end
+        end
         if Locomotive.is_around_train(entity) then
             entity.destroy()
             return
@@ -672,31 +705,28 @@ local function on_entity_died(event)
         return
     end
 
-    if entity_type[entity.type] then
+    if entity.type == 'simple-entity' then
         if Locomotive.is_around_train(entity) then
             entity.destroy()
             return
         end
-        if entity.type == 'unit' or entity_type == 'unit-spawner' then
-            this.biters_killed = this.biters_killed + 1
-        end
         if random(1, 32) == 1 then
             hidden_biter(entity)
+            Mining.entity_died_randomness(data)
             entity.destroy()
             return
         end
-        if random(1, 368) == 1 then
+        if random(1, 64) == 1 then
             hidden_worm(entity)
+            Mining.entity_died_randomness(data)
             entity.destroy()
             return
         end
-        if random(1, 368) == 1 then
+        if random(1, 512) == 1 then
             Traps(entity.surface, entity.position)
+            Mining.entity_died_randomness(data)
             return
         end
-    end
-
-    if entity.type == 'simple-entity' then
         Mining.entity_died_randomness(data)
         entity.destroy()
         return
@@ -998,6 +1028,7 @@ local on_player_or_robot_built_tile = function(event)
     end
 end
 
+Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'final-damage-amount', comparison = '>', value = 0})
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

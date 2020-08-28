@@ -13,6 +13,7 @@ local Gui = require 'utils.gui'
 local Server = require 'utils.server'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
+local Antigrief = require 'antigrief'
 local format_number = require 'util'.format_number
 
 local Public = {}
@@ -67,6 +68,13 @@ function Public.add_player_to_permission_group(player, group, forced)
     local jailed = Jailed.get_jailed_table()
     local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
     local session = Session.get_session_table()
+    local AG = Antigrief.get()
+
+    if not AG.enabled then
+        local default_group = game.permissions.get_group('Default')
+        default_group.add_player(player)
+        return
+    end
 
     if player.admin then
         return
@@ -87,56 +95,74 @@ function Public.add_player_to_permission_group(player, group, forced)
         return
     end
 
+    if not game.permissions.get_group('locomotive') then
+        local locomotive_group = game.permissions.create_group('locomotive')
+        locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
+        locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
+        locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
+        locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
+        locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
+        locomotive_group.set_allows_action(defines.input_action.admin_action, false)
+        locomotive_group.set_allows_action(defines.input_action.drop_item, false)
+        locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
+        locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
+    end
+
+    if not game.permissions.get_group('plebs') then
+        local plebs_group = game.permissions.create_group('plebs')
+        plebs_group.set_allows_action(defines.input_action.edit_permission_group, false)
+        plebs_group.set_allows_action(defines.input_action.import_permissions_string, false)
+        plebs_group.set_allows_action(defines.input_action.delete_permission_group, false)
+        plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
+        plebs_group.set_allows_action(defines.input_action.admin_action, false)
+    end
+
+    if not game.permissions.get_group('not_trusted') then
+        local not_trusted = game.permissions.create_group('not_trusted')
+        not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
+        not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
+        not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.admin_action, false)
+        not_trusted.set_allows_action(defines.input_action.drop_item, false)
+        not_trusted.set_allows_action(defines.input_action.place_equipment, false)
+        not_trusted.set_allows_action(defines.input_action.take_equipment, false)
+        not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
+    end
+
     if enable_permission_group_disconnect then
         local locomotive_group = game.permissions.get_group('locomotive')
+        local plebs_group = game.permissions.get_group('plebs')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
+        if plebs_group then
+            plebs_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
+        end
     else
         local locomotive_group = game.permissions.get_group('locomotive')
+        local plebs_group = game.permissions.get_group('plebs')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         end
+        if plebs_group then
+            plebs_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        end
     end
 
-    local not_trusted = game.permissions.get_group('not_trusted')
     if playtime < 5184000 then -- 24 hours
-        if not not_trusted then
-            not_trusted = game.permissions.create_group('not_trusted')
-            not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
-            not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
-            not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
-            not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
-            not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
-            not_trusted.set_allows_action(defines.input_action.admin_action, false)
-            not_trusted.set_allows_action(defines.input_action.drop_item, false)
-            not_trusted.set_allows_action(defines.input_action.place_equipment, false)
-            not_trusted.set_allows_action(defines.input_action.take_equipment, false)
-            not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-            not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
-        end
-        not_trusted = game.permissions.get_group('not_trusted')
+        local not_trusted = game.permissions.get_group('not_trusted')
         not_trusted.add_player(player)
     else
         if group == 'locomotive' then
             local locomotive_group = game.permissions.get_group('locomotive')
-            if not locomotive_group then
-                locomotive_group = game.permissions.create_group('locomotive')
-                locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
-                locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
-                locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
-                locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
-                locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
-                locomotive_group.set_allows_action(defines.input_action.admin_action, false)
-                locomotive_group.set_allows_action(defines.input_action.drop_item, false)
-                locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
-                locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
-            -- locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-            -- locomotive_group.set_allows_action(defines.input_action.connect_rolling_stock, false)
-            end
-
-            locomotive_group = game.permissions.get_group('locomotive')
             locomotive_group.add_player(player)
+        elseif group == 'plebs' then
+            local plebs_group = game.permissions.get_group('plebs')
+
+            plebs_group.add_player(player)
         elseif group == 'default' then
             local default_group = game.permissions.get_group('Default')
 
@@ -188,7 +214,7 @@ local function property_boost(data)
                     end
                 end
             else
-                Public.add_player_to_permission_group(player, 'default', true)
+                Public.add_player_to_permission_group(player, 'plebs', true)
             end
         end
     end
@@ -196,7 +222,7 @@ end
 
 local function is_around_train(data)
     local entity = data.entity
-    local aura = 60
+    local aura = data.aura + 20
     local loco = data.locomotive.position
     local area = {
         left_top = {x = loco.x - aura, y = loco.y - aura},
@@ -380,8 +406,11 @@ local function redraw_market_items(gui, player, search_text)
         return
     end
     local players = WPT.get('players')
+    local trusted = Session.get_trusted_table()
 
-    gui.clear()
+    if gui and gui.valid then
+        gui.clear()
+    end
 
     local inventory = player.get_main_inventory()
     local player_item_count
@@ -482,6 +511,19 @@ local function redraw_market_items(gui, player, search_text)
                     enabled = data.enabled
                 }
             )
+            if WPT.get('trusted_only_car_tanks') then
+                if not trusted[player.name] then
+                    if item == 'tank' then
+                        button.enabled = false
+                        button.tooltip = 'You need to be trusted to purchase this.'
+                    end
+                    if item == 'car' then
+                        button.enabled = false
+                        button.tooltip = 'You need to be trusted to purchase this.'
+                    end
+                end
+            end
+
             local label =
                 frame.add(
                 {
@@ -561,7 +603,8 @@ local function text_changed(event)
     if not data then
         return
     end
-    if not data.text_input then
+
+    if not data.text_input or not data.text_input.valid then
         return
     end
 
@@ -574,6 +617,16 @@ local function text_changed(event)
     if not value then
         return
     end
+
+    if (value > 1e2) then
+        data.text_input.text = '100'
+        value = 1e2
+    elseif (value <= 0) then
+        data.text_input.text = '1'
+        value = 1
+    end
+
+    data.slider.slider_value = value
 
     redraw_market_items(data.item_frame, player, data.search_text)
 end
@@ -651,7 +704,7 @@ local function gui_opened(event)
 
     add_space(flow)
 
-    local bottom_grid = frame.add({type = 'table', column_count = 2})
+    local bottom_grid = frame.add({type = 'table', column_count = 4})
     bottom_grid.style.vertically_stretchable = false
 
     bottom_grid.add({type = 'label', caption = 'Quantity: '}).style.font = 'default-bold'
@@ -670,7 +723,7 @@ local function gui_opened(event)
         {
             type = 'slider',
             minimum_value = 1,
-            maximum_value = 5e3,
+            maximum_value = 1e2,
             value = 1
         }
     )
@@ -718,24 +771,6 @@ local function gui_click(event)
         return
     end
     local name = element.name
-
-    if name == 'less' then
-        local slider_value = this.players[player.index].data.slider.slider_value
-        if slider_value > 1 then
-            data.slider.slider_value = slider_value - 1
-            data.text_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player, data.search_text)
-        end
-        return
-    elseif name == 'more' then
-        local slider_value = data.slider.slider_value
-        if slider_value <= 1e3 then
-            data.slider.slider_value = slider_value + 1
-            data.text_input.text = data.slider.slider_value
-            redraw_market_items(data.item_frame, player, data.search_text)
-        end
-        return
-    end
 
     if not player.opened then
         return
@@ -873,6 +908,28 @@ local function gui_click(event)
         return
     end
 
+    if name == 'explosive_bullets' then
+        player.remove_item({name = item.value, count = item.price})
+
+        local message =
+            shopkeeper ..
+            player.name ..
+                ' has bought the explosive bullet modifier for ' .. format_number(item.price, true) .. ' coins.'
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name ..
+                    ' has bought the explosive bullet modifier for ' .. format_number(item.price) .. ' coins.'
+            }
+        )
+        this.explosive_bullets = true
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
     if name == 'flamethrower_turrets' then
         player.remove_item({name = item.value, count = item.price})
         if item.stack >= 1 then
@@ -958,15 +1015,39 @@ local function gui_click(event)
     if player_item_count >= cost then
         if player.can_insert({name = name, count = item_count}) then
             player.play_sound({path = 'entity-close/stone-furnace', volume_modifier = 0.65})
-            player.remove_item({name = item.value, count = cost})
             local inserted_count = player.insert({name = name, count = item_count})
             if inserted_count < item_count then
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
-                player.insert({name = item.value, count = cost})
-                player.remove_item({name = name, count = inserted_count})
+                player.print(
+                    "Your pockets are now filled to the brim. So you've only bought " ..
+                        inserted_count .. ' ' .. name .. '(s).',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
+                player.print(
+                    'Shopkeeper has returned your change, for which you are infinitely grateful.',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
+                player.insert({name = name, count = inserted_count})
+
+                player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
+            else
+                player.remove_item({name = item.value, count = cost})
             end
             redraw_market_items(data.item_frame, player, data.search_text)
             redraw_coins_left(data.coins_left, player)
+        else
+            player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
+            if (random(1, 10) > 1) then
+                player.print(
+                    'Your inventory is full. Try to stash your loot somewhere first.',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
+            else
+                player.print(
+                    'Your inventory is full. Join the warrior club today! Pump that STR stat some more!',
+                    {r = 0.98, g = 0.66, b = 0.22}
+                )
+            end
         end
     end
 end
@@ -1451,38 +1532,6 @@ local function on_console_chat(event)
     shoo(event)
 end
 
--- local function tp_player()
---     for _, player in pairs(game.connected_players) do
---         if not validate_player(player) then
---             return
---         end
-
---         local active_surface_index = WPT.get('active_surface_index')
---         if not active_surface_index then
---             return
---         end
-
---         local surface = game.surfaces[active_surface_index]
-
---         local nauvis = 'nauvis'
-
---         if string.sub(player.surface.name, 0, #nauvis) == nauvis then
---             if player.surface.find_entity('player-port', player.position) then
---                 player.teleport(
---                     surface.find_non_colliding_position(
---                         'character',
---                         game.forces.player.get_spawn_position(surface),
---                         3,
---                         0,
---                         5
---                     ),
---                     surface
---                 )
---             end
---         end
---     end
--- end
-
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
     if not validate_player(player) then
@@ -1506,7 +1555,7 @@ local function on_player_changed_surface(event)
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return Public.add_player_to_permission_group(player, 'locomotive')
     else
-        return Public.add_player_to_permission_group(player, 'default')
+        return Public.add_player_to_permission_group(player, 'plebs')
     end
 end
 
@@ -1582,11 +1631,13 @@ function Public.is_around_train(entity)
     end
 
     local surface = game.surfaces[active_surface_index]
+    local aura = WPT.get('locomotive_xp_aura')
 
     local data = {
         locomotive = locomotive,
         surface = surface,
-        entity = entity
+        entity = entity,
+        aura = aura
     }
 
     local success = is_around_train(data)
@@ -1709,6 +1760,7 @@ function Public.get_items()
     local health_cost = 10000 * (1 + health_upgrades)
     local aura_cost = 4000 * (1 + aura_upgrades)
     local xp_point_boost_cost = 5000 * (1 + xp_points_upgrade)
+    local explosive_bullets_cost = 20000
     local flamethrower_turrets_cost = 2500 * (1 + flame_turret)
     local land_mine_cost = 2 * (1 + landmine)
     local skill_reset_cost = 100000
@@ -1766,6 +1818,29 @@ function Public.get_items()
         upgrade = true,
         static = true
     }
+    if WPT.get('explosive_bullets') then
+        main_market_items['explosive_bullets'] = {
+            stack = 1,
+            value = 'coin',
+            price = explosive_bullets_cost,
+            tooltip = 'Sold out!',
+            sprite = 'achievement/steamrolled',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['explosive_bullets'] = {
+            stack = 1,
+            value = 'coin',
+            price = explosive_bullets_cost,
+            tooltip = 'Upgrades ordinary SMG ammo to explosive bullets.',
+            sprite = 'achievement/steamrolled',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
     main_market_items['flamethrower_turrets'] = {
         stack = 1,
         value = 'coin',
@@ -1917,7 +1992,7 @@ function Public.get_items()
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 1000,
+        price = 3000,
         tooltip = 'Portable Car Surface\nCan be killed easily.',
         upgrade = false,
         static = true
@@ -1925,48 +2000,75 @@ function Public.get_items()
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',
-        price = 5000,
+        price = 10000,
         tooltip = 'Portable Tank Surface\nChonk tank, can resist heavy damage.',
         upgrade = false,
         static = true
     }
-    main_market_items['tank-cannon'] = {
-        stack = 1,
-        value = 'coin',
-        price = 25000,
-        tooltip = 'Tank Cannon\nAvailable after wave 650.',
-        upgrade = false,
-        static = true,
-        enabled = false
-    }
-    main_market_items['tank-machine-gun'] = {
-        stack = 1,
-        value = 'coin',
-        price = 7000,
-        tooltip = 'Tank Machine Gun\nAvailable after wave 400.',
-        upgrade = false,
-        static = true,
-        enabled = false
-    }
-    main_market_items['vehicle-machine-gun'] = {
-        stack = 1,
-        value = 'coin',
-        price = 2000,
-        tooltip = 'Car Machine Gun\nAvailable after wave 200.',
-        upgrade = false,
-        static = true,
-        enabled = false
-    }
     local wave_number = WD.get_wave()
-    if wave_number == 200 then
-        main_market_items['vehicle-machine-gun'].enabled = true
-        main_market_items['vehicle-machine-gun'].tooltip = 'Car Machine Gun'
-    elseif wave_number == 400 then
-        main_market_items['tank-machine-gun'].enabled = true
-        main_market_items['tank-machine-gun'].tooltip = 'Tank Machine Gune'
-    elseif wave_number == 650 then
-        main_market_items['tank-cannon'].enabled = true
-        main_market_items['tank-cannon'].tooltip = 'Tank Cannon'
+
+    if wave_number >= 650 then
+        main_market_items['tank-cannon'] = {
+            stack = 1,
+            value = 'coin',
+            price = 25000,
+            tooltip = 'Tank Cannon',
+            upgrade = false,
+            static = true,
+            enabled = true
+        }
+    else
+        main_market_items['tank-cannon'] = {
+            stack = 1,
+            value = 'coin',
+            price = 25000,
+            tooltip = 'Tank Cannon\nAvailable after wave 650.',
+            upgrade = false,
+            static = true,
+            enabled = false
+        }
+    end
+    if wave_number >= 400 then
+        main_market_items['tank-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 7000,
+            tooltip = 'Tank Machine Gun',
+            upgrade = false,
+            static = true,
+            enabled = true
+        }
+    else
+        main_market_items['tank-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 7000,
+            tooltip = 'Tank Machine Gun\nAvailable after wave 400.',
+            upgrade = false,
+            static = true,
+            enabled = false
+        }
+    end
+    if wave_number >= 200 then
+        main_market_items['vehicle-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 2000,
+            tooltip = 'Car Machine Gun',
+            upgrade = false,
+            static = true,
+            enabled = true
+        }
+    else
+        main_market_items['vehicle-machine-gun'] = {
+            stack = 1,
+            value = 'coin',
+            price = 2000,
+            tooltip = 'Car Machine Gun\nAvailable after wave 200.',
+            upgrade = false,
+            static = true,
+            enabled = false
+        }
     end
 
     return main_market_items
@@ -2035,7 +2137,6 @@ local function tick()
     if ticker % 1200 == 0 then
         set_player_spawn()
         refill_fish()
-        Public.get_items()
     end
 
     if ticker % 2500 == 0 then

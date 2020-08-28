@@ -17,9 +17,8 @@ function Public.initial_setup()
 	game.create_force("south_biters")
 	game.create_force("spectator")
 
-	game.permissions.get_group("Default").set_allows_action(defines.input_action.grab_blueprint_record, false)
-	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
-	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint, false)	
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)	
 
 	local p = game.permissions.create_group("spectator")
 	for action_name, _ in pairs(defines.input_action) do
@@ -119,9 +118,10 @@ function Public.source_surface()
 	
 	Terrain.draw_spawn_area(surface)		
 	Terrain.generate_additional_spawn_ore(surface)
+	Terrain.generate_additional_rocks(surface)
 	Terrain.generate_silo(surface)
 	Terrain.draw_spawn_circle(surface)
-	Terrain.generate_spawn_goodies(surface)
+	--Terrain.generate_spawn_goodies(surface)
 end
 
 function Public.tables()
@@ -154,6 +154,7 @@ function Public.tables()
 	global.terrain_gen.size_of_chunk_copy = 0	
 	global.terrain_gen.size_of_chunk_mirror = 0
 	global.tm_custom_name = {}
+	global.total_passive_feed_redpotion = 0
 	global.unit_groups = {}
 	global.unit_spawners = {}
 	global.unit_spawners.north_biters = {}

@@ -142,7 +142,7 @@ local function on_gui_click(event)
 
     if name == main_button_name then
         if player.surface ~= locomotive.surface then
-            local minimap = player.gui.left.icw_map
+            local minimap = player.gui.left.icw_main_frame
             if minimap and minimap.visible then
                 minimap.visible = false
                 return
@@ -240,7 +240,7 @@ local function on_player_changed_surface(event)
     end
 
     if player.surface == main.surface then
-        local minimap = player.gui.left.icw_map
+        local minimap = player.gui.left.icw_main_frame
         if minimap and minimap.visible then
             minimap.visible = false
         end
@@ -259,6 +259,7 @@ local function on_player_changed_surface(event)
 
         info.tooltip = 'Shows statistics!'
         info.sprite = 'item/dummy-steel-axe'
+        info.visible = true
     elseif player.surface == wagon_surface then
         if wd then
             wd.visible = false
@@ -281,12 +282,17 @@ local function on_player_changed_surface(event)
         if info then
             info.tooltip = 'Hide locomotive minimap!'
             info.sprite = 'utility/map'
+            info.visible = true
         end
         if player.gui.top[main_frame_name] then
             if frame then
                 frame.visible = false
                 return
             end
+        end
+    else
+        if info and info.visible then
+            info.visible = false
         end
     end
 end

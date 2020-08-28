@@ -1,5 +1,5 @@
 local Public = {}
-local LootRaffle = require "functions.loot_raffle"
+--local LootRaffle = require "functions.loot_raffle"
 local BiterRaffle = require "functions.biter_raffle"
 local bb_config = require "maps.biter_battles_v2.config"
 
@@ -522,6 +522,20 @@ function Public.generate_additional_spawn_ore(surface)
 	end
 end
 
+function Public.generate_additional_rocks(surface)
+	local r = 130
+	if surface.count_entities_filtered({type = "simple-entity", area = {{r * -1, r * -1}, {r, 0}}}) >= 12 then return end		
+	local position = {x = -96 + math_random(0, 192), y = -40 - math_random(0, 96)}	
+	local rocks = {"rock-huge", "rock-big", "rock-big", "rock-big", "sand-rock-big"}	
+	for _ = 1, math_random(6, 12) do
+		local name = rocks[math_random(1, 5)]
+		local p = surface.find_non_colliding_position(name, {position.x + (-10 + math_random(0, 20)), position.y + (-10 + math_random(0, 20))}, 16, 1)
+		if p and p.y < -16 then
+			surface.create_entity({name = name, position = p})
+		end
+	end
+end
+
 function Public.generate_silo(surface)
 	local pos = {x = -32 + math_random(0, 64), y = -72}
 	local mirror_position = {x = pos.x * -1, y = pos.y * -1}
@@ -552,7 +566,7 @@ function Public.generate_silo(surface)
 		end
 	end
 end
-
+--[[
 function Public.generate_spawn_goodies(surface)
 	local tiles = surface.find_tiles_filtered({name = "stone-path"})
 	table.shuffle_table(tiles)
@@ -583,7 +597,7 @@ function Public.generate_spawn_goodies(surface)
 		end
 	end
 end
-
+]]
 --Landfill Restriction
 function Public.restrict_landfill(surface, inventory, tiles)
 	for _, t in pairs(tiles) do

@@ -4,11 +4,8 @@ local Token = require 'utils.token'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
-local Print = require('utils.print_override')
-local raw_print = Print.raw_print
 
 local session_data_set = 'sessions'
-local error_offline = '[ERROR] Datastore is offline.'
 local session = {}
 local online_track = {}
 local trusted = {}
@@ -72,6 +69,7 @@ local try_upload_data =
             local new_time = old_time_ingame + player.online_time - online_track[key]
             if new_time <= 0 then
                 new_time = old_time_ingame + player.online_time
+                online_track[key] = 0
                 print('[ERROR] ' .. key .. ' had new time set as negative value: ' .. new_time)
                 return
             end
@@ -91,12 +89,18 @@ end
 
 --- Prints out game.tick to real hour/minute
 ---@param int
-function Public.format_time(ticks)
+function Public.format_time(ticks, h, m)
     local seconds = ticks / 60
     local minutes = math.floor((seconds) / 60)
     local hours = math.floor((minutes) / 60)
     local min = math.floor(minutes - 60 * hours)
-    return string.format('%dh:%02dm', hours, minutes, min)
+    if h and m then
+        return string.format('%dh:%02dm', hours, minutes, min)
+    elseif h then
+        return string.format('%dh', hours)
+    elseif m then
+        return string.format('%02dm', minutes, min)
+    end
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
@@ -105,7 +109,6 @@ function Public.try_dl_data(key)
     key = tostring(key)
     local secs = Server.get_current_time()
     if secs == nil then
-        raw_print(error_offline)
         session[key] = game.players[key].online_time
         return
     else
@@ -119,7 +122,6 @@ function Public.try_ul_data(key)
     key = tostring(key)
     local secs = Server.get_current_time()
     if secs == nil then
-        raw_print(error_offline)
         return
     else
         try_get_data(session_data_set, key, try_upload_data)
@@ -161,6 +163,27 @@ end
 -- @return <table>
 function Public.get_trusted_table()
     return trusted
+end
+
+--- Returns the table of settings
+-- @return <table>
+function Public.get_settings_table()
+    return settings
+end
+
+--- Clears a given player from the session tables.
+-- @param LuaPlayer
+function Public.clear_player(player)
+    local name = player.name
+    if session[name] then
+        session[name] = nil
+    end
+    if online_track[name] then
+        online_track[name] = nil
+    end
+    if trusted[name] then
+        trusted[name] = nil
+    end
 end
 
 Event.add(

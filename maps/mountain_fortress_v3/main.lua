@@ -115,6 +115,8 @@ local collapse_kill = {
 
 local disable_tech = function()
     game.forces.player.technologies['landfill'].enabled = false
+    game.forces.player.technologies['spidertron'].enabled = false
+    game.forces.player.technologies['spidertron'].researched = false
     game.forces.player.technologies['optics'].researched = true
     game.forces.player.technologies['railway'].researched = true
     game.forces.player.technologies['land-mine'].enabled = false
@@ -158,7 +160,7 @@ local set_difficulty = function()
     else
         if player_count >= 8 and player_count <= 12 then
             Collapse.set_speed(8)
-        elseif player_count >= 20 then
+        elseif player_count >= 20 and player_count <= 24 then
             Collapse.set_speed(6)
         elseif player_count >= 35 then
             Collapse.set_speed(5)
@@ -302,6 +304,7 @@ function Public.reset_map()
     RPG_Settings.enable_stone_path(true)
     RPG_Settings.enable_one_punch(true)
     RPG_Settings.enable_one_punch_globally(false)
+    RPG_Settings.enable_auto_allocate(true)
     RPG_Settings.disable_cooldowns_on_spells()
 
     Group.reset_groups()
@@ -322,7 +325,7 @@ function Public.reset_map()
     Entities.set_scores()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
-    AntiGrief.enable_capsule_warning(true)
+    AntiGrief.enable_capsule_warning(false)
     AntiGrief.enable_damage_warning(false)
     AntiGrief.enable_capsule_cursor_warning(false)
     AntiGrief.enable_jail(true)
@@ -338,6 +341,7 @@ function Public.reset_map()
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
+    game.map_settings.path_finder.max_work_done_per_tick = 4000
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
@@ -365,7 +369,7 @@ function Public.reset_map()
     wave_defense_table.spawn_position = {x = 0, y = 100}
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
-    WD.remove_entities(true)
+    WD.remove_entities(false)
     WD.enable_threat_log(true)
     WD.check_collapse_position(true)
 
@@ -375,9 +379,6 @@ function Public.reset_map()
         surface.request_to_generate_chunks({-20, 22}, 0.1)
         surface.force_generate_chunk_requests()
     end
-
-    surface.ticks_per_day = surface.ticks_per_day * 2
-    surface.brightness_visual_weights = {1, 0, 0, 0}
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
@@ -538,7 +539,7 @@ local remove_offline_players = function()
              then
                 this.offline_players[i] = nil
             else
-                if offline_players[i] and offline_players[i].tick < game.tick - 54000 then
+                if offline_players[i] and offline_players[i].tick < game.tick - 34000 then
                     local name = offline_players[i].name
                     player_inv[1] =
                         game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
@@ -608,7 +609,7 @@ local remove_offline_players = function()
 end
 
 local on_research_finished = function(event)
-    disable_recipes()
+    disable_tech()
     local research = event.research
     local this = WPT.get()
 
@@ -741,11 +742,12 @@ local boost_difficulty = function()
         WPT.set().coin_amount = 2
         WPT.set('upgrades').flame_turret.limit = 25
         WPT.set('upgrades').landmine.limit = 100
-        WPT.set().locomotive_health = 20000
-        WPT.set().locomotive_max_health = 20000
+        WPT.set().locomotive_health = 15000
+        WPT.set().locomotive_max_health = 15000
         WPT.set().bonus_xp_on_join = 700
         WD.set().next_wave = game.tick + 3600 * 20
         WPT.set().spidertron_unlocked_at_wave = 11
+        WPT.set().math_difficulty = 4096
         WPT.set().difficulty_set = true
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
@@ -761,6 +763,7 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 300
         WD.set().next_wave = game.tick + 3600 * 15
         WPT.set().spidertron_unlocked_at_wave = 16
+        WPT.set().math_difficulty = 3072
         WPT.set().difficulty_set = true
     elseif name == 'Hard' then
         rpg_extra.difficulty = 0
@@ -776,6 +779,7 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 50
         WD.set().next_wave = game.tick + 3600 * 10
         WPT.set().spidertron_unlocked_at_wave = 21
+        WPT.set().math_difficulty = 2048
         WPT.set().difficulty_set = true
     elseif name == 'Insane' then
         rpg_extra.difficulty = 0
@@ -791,6 +795,7 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 0
         WD.set().next_wave = game.tick + 3600 * 5
         WPT.set().spidertron_unlocked_at_wave = 26
+        WPT.set().math_difficulty = 1024
         WPT.set().difficulty_set = true
     end
 end
@@ -853,7 +858,6 @@ end
 local on_tick = function()
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
-    local wave_defense_table = WD.get_table()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
 
@@ -872,9 +876,9 @@ local on_tick = function()
             collapse_after_wave_100()
             Entities.set_scores()
             local collapse_pos = Collapse.get_position()
-            local position = surface.find_non_colliding_position('stone-furnace', collapse_pos, 128, 1)
+            local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
             if position then
-                wave_defense_table.spawn_position = position
+                WD.set_spawn_position(position)
             end
         end
     end
@@ -912,7 +916,7 @@ local on_init = function()
     }
 
     local tooltip = {
-        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 20000.\nHidden Treasure has higher chance to spawn.\nGrace period: 20 minutes\nSpidertrons unlocks at zone 10.',
+        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 15000.\nHidden Treasure has higher chance to spawn.\nGrace period: 20 minutes\nSpidertrons unlocks at zone 10.',
         [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.\nGrace period: 15 minutes\nSpidertrons unlocks at zone 15.',
         [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.\nGrace period: 10 minutes\nSpidertrons unlocks at zone 20.',
         [4] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 0.\nLandmine limit = 0.\nLocomotive health = 1000.\nHidden Treasure has lower chance to spawn.\nGrace period: 5 minutes\nBiters are way more aggressive.\nCollapse starts after difficulty poll has ended.\nCollapse is much faster.\nSpidertrons unlocks at zone 25.'
@@ -938,6 +942,7 @@ local on_init = function()
     Explosives.set_destructible_tile('deepwater', 1000)
     Explosives.set_destructible_tile('water-shallow', 1000)
     Explosives.set_destructible_tile('water-mud', 1000)
+    Explosives.set_destructible_tile('lab-dark-2', 1000)
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail')
     Explosives.set_whitelist_entity('character')

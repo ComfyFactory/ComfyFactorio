@@ -26,18 +26,18 @@ local size_of_unit_type_raffle = #unit_type_raffle
 local threat_values = {
 	["small-spitter"] = 1.5,
 	["small-biter"] = 1.5,
-	["medium-spitter"] = 4,
-	["medium-biter"] = 4,
-	["big-spitter"] = 12,
-	["big-biter"] = 12,
-	["behemoth-spitter"] = 32,
-	["behemoth-biter"] = 32,
+	["medium-spitter"] = 4.5,
+	["medium-biter"] = 4.5,
+	["big-spitter"] = 13,
+	["big-biter"] = 13,
+	["behemoth-spitter"] = 38.5,
+	["behemoth-biter"] = 38.5,
 	["small-worm-turret"] = 8,
-	["medium-worm-turret"] = 12,
-	["big-worm-turret"] = 16,
-	["behemoth-worm-turret"] = 16,
-	["biter-spawner"] = 16,
-	["spitter-spawner"] = 16
+	["medium-worm-turret"] = 16,
+	["big-worm-turret"] = 24,
+	["behemoth-worm-turret"] = 32,
+	["biter-spawner"] = 32,
+	["spitter-spawner"] = 32
 }
 
 local function get_active_biter_count(biter_force_name)
@@ -419,10 +419,12 @@ end
 
 Public.raise_evo = function()
 	if global.freeze_players then return end
-	if not global.training_mode and (#game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0) then return end
+	if not global.training_mode and (#game.forces.north.connected_players == 0 or #game.forces.south.connected_players == 0) then return end	
+	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter * 0.75)
+	
 	if not global.total_passive_feed_redpotion then global.total_passive_feed_redpotion = 0 end
-	local amount = math.ceil(global.difficulty_vote_value * global.evo_raise_counter)
 	global.total_passive_feed_redpotion = global.total_passive_feed_redpotion + amount
+	
 	local biter_teams = {["north_biters"] = "north", ["south_biters"] = "south"}
 	local a_team_has_players = false
 	for bf, pf in pairs(biter_teams) do

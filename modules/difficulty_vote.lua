@@ -155,6 +155,9 @@ local function poll_difficulty(player)
         b.style.font = 'heading-2'
         b.style.minimal_width = 160
         b.tooltip = this.tooltip[i]
+        --[[ if this.difficulties[i].disabled then
+            b.enabled = false
+        end ]]
     end
     local b = frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
     local b =

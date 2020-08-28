@@ -18,6 +18,7 @@ local de = defines.events
 local format = string.format
 
 local this = {
+    enabled = true,
     landfill_history = {},
     capsule_history = {},
     friendly_fire_history = {},
@@ -170,6 +171,9 @@ local function do_action(player, prefix, msg, ban_msg, kill)
 end
 
 local function on_marked_for_deconstruction(event)
+    if not this.enabled then
+        return
+    end
     local tracker = session.get_session_table()
     local trusted = session.get_trusted_table()
     if not event.player_index then
@@ -194,6 +198,9 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function on_player_ammo_inventory_changed(event)
+    if not this.enabled then
+        return
+    end
     local tracker = session.get_session_table()
     local trusted = session.get_trusted_table()
     local player = game.get_player(event.player_index)
@@ -221,12 +228,23 @@ end
 
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
+    local trusted = session.get_trusted_table()
+    if not this.enabled then
+        if not trusted[player.name] then
+            trusted[player.name] = true
+        end
+        return
+    end
+
     if match(player.name, '^[Ili1|]+$') then
         Server.ban_sync(player.name, '', '<script>') -- No reason given, to not give them any hints to change their name
     end
 end
 
 local function on_player_built_tile(event)
+    if not this.enabled then
+        return
+    end
     local placed_tiles = event.tiles
     if
         placed_tiles[1].old_tile.name ~= 'deepwater' and placed_tiles[1].old_tile.name ~= 'water' and
@@ -259,6 +277,9 @@ local function on_player_built_tile(event)
 end
 
 local function on_built_entity(event)
+    if not this.enabled then
+        return
+    end
     local tracker = session.get_session_table()
     local trusted = session.get_trusted_table()
     if game.tick < 1296000 then
@@ -289,6 +310,9 @@ end
 
 --Capsule History and Antigrief
 local function on_player_used_capsule(event)
+    if not this.enabled then
+        return
+    end
     local trusted = session.get_trusted_table()
     local player = game.get_player(event.player_index)
 
@@ -370,6 +394,9 @@ end
 
 -- Damage things
 local function on_entity_damaged(event)
+    if not this.enabled then
+        return
+    end
     local cause = event.cause
     if not cause or not cause.valid or cause.force.index ~= 1 then
         return
@@ -497,6 +524,9 @@ end
 
 --Friendly Fire History
 local function on_entity_died(event)
+    if not this.enabled then
+        return
+    end
     local cause = event.cause
     local name
 
@@ -579,6 +609,9 @@ end
 
 --Mining Thieves History
 local function on_player_mined_entity(event)
+    if not this.enabled then
+        return
+    end
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
@@ -644,6 +677,9 @@ local function on_player_mined_entity(event)
 end
 
 local function on_gui_opened(event)
+    if not this.enabled then
+        return
+    end
     if not event.entity then
         return
     end
@@ -689,6 +725,9 @@ local function on_gui_opened(event)
 end
 
 local function on_pre_player_mined_item(event)
+    if not this.enabled then
+        return
+    end
     local player = game.get_player(event.player_index)
 
     if not player or not player.valid then
@@ -740,6 +779,9 @@ local function on_pre_player_mined_item(event)
 end
 
 local function on_player_cursor_stack_changed(event)
+    if not this.enabled then
+        return
+    end
     local tracker = session.get_session_table()
     local trusted = session.get_trusted_table()
     local player = game.get_player(event.player_index)
@@ -781,6 +823,9 @@ local function on_player_cursor_stack_changed(event)
 end
 
 local function on_player_cancelled_crafting(event)
+    if not this.enabled then
+        return
+    end
     local player = game.get_player(event.player_index)
 
     local crafting_queue_item_count = event.items.get_item_count()
@@ -830,6 +875,9 @@ local function on_player_cancelled_crafting(event)
 end
 
 local function on_init()
+    if not this.enabled then
+        return
+    end
     local branch_version = '0.18.35'
     local sub = string.sub
     local is_branch_18 = sub(branch_version, 3, 4)
@@ -847,6 +895,9 @@ local function on_init()
 end
 
 local function on_permission_group_added(event)
+    if not this.enabled then
+        return
+    end
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
@@ -860,6 +911,9 @@ local function on_permission_group_added(event)
 end
 
 local function on_permission_group_deleted(event)
+    if not this.enabled then
+        return
+    end
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
@@ -873,6 +927,9 @@ local function on_permission_group_deleted(event)
 end
 
 local function on_permission_group_edited(event)
+    if not this.enabled then
+        return
+    end
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
@@ -912,6 +969,9 @@ local function on_permission_group_edited(event)
 end
 
 local function on_permission_string_imported(event)
+    if not this.enabled then
+        return
+    end
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return

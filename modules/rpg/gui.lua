@@ -13,7 +13,6 @@ local gain_info_tooltip = 'XP gain from mining, moving, crafting, repairing and 
 local classes = RPG.classes
 
 --RPG Settings
-local rpg_frame_icons = RPG.rpg_frame_icons
 local experience_levels = RPG.experience_levels
 
 --RPG Frames
@@ -447,14 +446,6 @@ local function draw_main_frame(player, location)
     end
 
     add_separator(scroll_pane, 400)
-    local t = scroll_pane.add({type = 'table', column_count = 14})
-    for iv = 1, 14, 1 do
-        local rpg_biter_icons = t.add({type = 'sprite', sprite = rpg_frame_icons[iv]})
-        rpg_biter_icons.style.maximal_width = 24
-        rpg_biter_icons.style.maximal_height = 24
-        rpg_biter_icons.style.padding = 0
-    end
-    add_separator(scroll_pane, 400)
 
     Public.update_char_button(player)
     data.frame = main_frame
@@ -556,6 +547,16 @@ function Public.toggle(player, recreate)
     end
 end
 
+function Public.remove_frame(player)
+    local screen = player.gui.screen
+    local main_frame = screen[main_frame_name]
+
+    if main_frame then
+        remove_main_frame(main_frame, screen)
+        Tabs.comfy_panel_restore_left_gui(player)
+    end
+end
+
 local toggle = Public.toggle
 Public.remove_main_frame = remove_main_frame
 
@@ -592,10 +593,15 @@ Gui.on_click(
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
         local one_punch_gui_input = data.one_punch_gui_input
+        local auto_allocate_gui_input = data.auto_allocate_gui_input
 
         local rpg_t = RPG.get('rpg_t')
 
         if frame and frame.valid then
+            if auto_allocate_gui_input and auto_allocate_gui_input.valid and auto_allocate_gui_input.selected_index then
+                rpg_t[player.index].allocate_index = auto_allocate_gui_input.selected_index
+            end
+
             if one_punch_gui_input and one_punch_gui_input.valid then
                 if not one_punch_gui_input.state then
                     rpg_t[player.index].one_punch = false
@@ -659,6 +665,7 @@ Gui.on_click(
 
             if reset_gui_input and reset_gui_input.valid and reset_gui_input.state then
                 if not rpg_t[player.index].reset then
+                    rpg_t[player.index].allocate_index = 1
                     rpg_t[player.index].reset = true
                     Functions.rpg_reset_player(player, true)
                 end

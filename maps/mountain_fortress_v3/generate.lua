@@ -352,6 +352,9 @@ local function run_chart_update(data)
     local x = data.top_x / 32
     local y = data.top_y / 32
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
     if game.forces.player.is_chunk_charted(surface, {x, y}) then
         -- Don't use full area, otherwise adjacent chunks get charted
         game.forces.player.chart(

@@ -22,7 +22,7 @@ end
 
 local function set_biter_endgame_modifiers(force)
 	if force.evolution_factor ~= 1 then return end
-	local damage_mod = math.round((global.bb_evolution[force.name] - 1) * 0.25, 3)
+	local damage_mod = math.round((global.bb_evolution[force.name] - 1) * 0.50, 3)
 	force.set_ammo_damage_modifier("melee", damage_mod)
 	force.set_ammo_damage_modifier("biological", damage_mod)
 	force.set_ammo_damage_modifier("artillery-shell", damage_mod)
@@ -180,7 +180,7 @@ function set_evo_and_threat(flask_amount, food, biter_force_name)
 	end
 	
 	--SET THREAT INCOME
-	global.bb_threat_income[biter_force_name] = global.bb_evolution[biter_force_name] * 20
+	global.bb_threat_income[biter_force_name] = global.bb_evolution[biter_force_name] * 25
 	
 	set_biter_endgame_modifiers(game.forces[biter_force_name])
 end

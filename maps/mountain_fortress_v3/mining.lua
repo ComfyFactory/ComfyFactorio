@@ -15,12 +15,26 @@ local valid_rocks = {
 }
 
 local valid_trees = {
+    ['dead-tree-desert'] = true,
+    ['dead-dry-hairy-tree'] = true,
+    ['dry-hairy-tree'] = true,
+    ['tree-06'] = true,
+    ['tree-06-brown'] = true,
     ['dry-tree'] = true,
     ['tree-01'] = true,
     ['tree-02-red'] = true,
     ['tree-03'] = true,
     ['tree-04'] = true,
     ['tree-08-brown'] = true
+}
+
+local reward_wood = {
+    ['dead-tree-desert'] = true,
+    ['dead-dry-hairy-tree'] = true,
+    ['dry-hairy-tree'] = true,
+    ['tree-06'] = true,
+    ['tree-06-brown'] = true,
+    ['dry-tree'] = true
 }
 
 local rock_yield = {
@@ -153,6 +167,8 @@ local function randomness(data)
     local harvest
     local harvest_amount
 
+    harvest_amount = get_amount(data)
+
     local n = entity.name
     if n == 'tree-08-brown' then
         harvest = 'stone'
@@ -164,12 +180,12 @@ local function randomness(data)
         harvest = 'iron-ore'
     elseif n == 'tree-03' then
         harvest = 'coal'
-    elseif n == 'dry-tree' then
+    elseif reward_wood[n] then
         harvest = 'wood'
+        harvest_amount = random(1, 20)
     else
         harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
     end
-    harvest_amount = get_amount(data)
 
     local position = {x = entity.position.x, y = entity.position.y}
 

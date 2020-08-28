@@ -155,7 +155,6 @@ local function on_tick()
     local tick = game.tick
 
     if tick % 60 == 0 then
-        Functions.teleport_players_around(icw)
         Functions.item_transfer(icw)
     end
     if tick % 240 == 0 then

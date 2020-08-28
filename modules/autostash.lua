@@ -142,7 +142,7 @@ local function get_nearby_chests(player)
     else
         type = {'container', 'logistic-container'}
     end
-    for _, e in pairs(player.surface.find_entities_filtered({type = type, area = area})) do
+    for _, e in pairs(player.surface.find_entities_filtered({type = type, area = area, force = 'player'})) do
         if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
             i = i + 1
             containers[i] = e

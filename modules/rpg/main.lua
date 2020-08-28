@@ -658,6 +658,26 @@ local building_and_mining_blacklist = {
     ['item-entity'] = true
 }
 
+local function on_player_died(event)
+    local player = game.players[event.player_index]
+
+    if not player or not player.valid then
+        return
+    end
+
+    RPG_GUI.remove_frame(player)
+end
+
+local function on_pre_player_left_game(event)
+    local player = game.players[event.player_index]
+
+    if not player or not player.valid then
+        return
+    end
+
+    RPG_GUI.remove_frame(player)
+end
+
 local function on_pre_player_mined_item(event)
     local entity = event.entity
     if not entity.valid then
@@ -948,7 +968,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if mana <= object.mana_cost then
+    if mana < object.mana_cost then
         return p('You don´t have enough mana to cast this spell.', Color.fail)
     end
 
@@ -1093,6 +1113,8 @@ if _DEBUG then
     )
 end
 
+Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
+Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_gui_click, on_gui_click)

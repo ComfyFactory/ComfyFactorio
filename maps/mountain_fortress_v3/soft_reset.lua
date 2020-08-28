@@ -1,4 +1,5 @@
 local Server = require 'utils.server'
+local Session = require 'utils.datastore.session_data'
 local Modifers = require 'player_modifiers'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
@@ -50,6 +51,7 @@ local function equip_players(player_starting_items, data)
             end
         else
             data.players[player.index] = nil
+            Session.clear_player(player)
             game.remove_offline_players({player.index})
         end
     end

@@ -1,6 +1,8 @@
 local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
+local Color = require 'utils.color_presets'
+local Session = require 'utils.datastore.session_data'
 
 local random = math.random
 
@@ -58,6 +60,43 @@ local function delete_empty_surfaces(icw)
         if not icw.trains[tonumber(surface.name)] then
             game.delete_surface(surface)
             icw.surfaces[k] = nil
+        end
+    end
+end
+
+local function kick_players_from_surface(wagon)
+    if not validate_entity(wagon.surface) then
+        return print('Surface was not valid.')
+    end
+    if not wagon.entity or not wagon.entity.valid then
+        local main_surface = wagon.surface
+        if validate_entity(main_surface) then
+            for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area})) do
+                if validate_entity(e) and e.name == 'character' and e.player then
+                    e.player.teleport(
+                        main_surface.find_non_colliding_position(
+                            'character',
+                            game.forces.player.get_spawn_position(main_surface),
+                            3,
+                            0,
+                            5
+                        ),
+                        main_surface
+                    )
+                end
+            end
+        end
+        return print('Wagon entity was not valid.')
+    end
+
+    for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area})) do
+        if validate_entity(e) and e.name == 'character' and e.player then
+            local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
+            if p then
+                e.player.teleport(p, wagon.entity.surface)
+            else
+                e.player.teleport(wagon.entity.position, wagon.entity.surface)
+            end
         end
     end
 end
@@ -281,13 +320,17 @@ local function construct_wagon_doors(icw, wagon)
 
     local main_tile_name = 'black-refined-concrete'
 
-    for _, x in pairs({area.left_top.x - 1, area.right_bottom.x + 0.5}) do
-        local p = {x, area.left_top.y + 30}
-        surface.set_tiles({{name = main_tile_name, position = p}}, true)
+    for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
+        local p = {x = x, y = area.left_top.y + 30}
+        if p.x < 0 then
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
+        else
+            surface.set_tiles({{name = main_tile_name, position = {x = p.x - 1, y = p.y}}}, true)
+        end
         local e =
             surface.create_entity(
             {
-                name = 'player-port',
+                name = 'car',
                 position = {x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)},
                 force = 'neutral',
                 create_build_effect_smoke = false
@@ -296,6 +339,7 @@ local function construct_wagon_doors(icw, wagon)
         e.destructible = false
         e.minable = false
         e.operable = false
+        e.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 1})
         icw.doors[e.unit_number] = wagon.entity.unit_number
         wagon.doors[#wagon.doors + 1] = e
     end
@@ -317,7 +361,7 @@ local function get_player_data(icw, player)
 end
 
 function Public.kill_minimap(player)
-    local element = player.gui.left.icw_map
+    local element = player.gui.left.icw_main_frame
     if element then
         element.destroy()
     end
@@ -343,6 +387,7 @@ function Public.kill_wagon(icw, entity)
     end
     local wagon = icw.wagons[entity.unit_number]
     local surface = wagon.surface
+    kick_players_from_surface(wagon)
     kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
     for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
@@ -721,84 +766,6 @@ function Public.subtract_wagon_entity_count(icw, removed_entity)
     wagon.entity.minable = true
 end
 
-function Public.teleport_players_around(icw)
-    for _, player in pairs(game.connected_players) do
-        if not validate_player(player) then
-            return
-        end
-
-        if player.surface.find_entity('player-port', player.position) then
-            local door = player.surface.find_entity('player-port', player.position)
-            if door and door.valid then
-                local doors = icw.doors
-                local wagons = icw.wagons
-
-                local wagon = false
-                if doors[door.unit_number] then
-                    wagon = wagons[doors[door.unit_number]]
-                end
-                if wagons[door.unit_number] then
-                    wagon = wagons[door.unit_number]
-                end
-                if not wagon then
-                    return
-                end
-
-                local player_data = get_player_data(icw, player)
-                if player_data.state then
-                    player_data.state = player_data.state - 1
-                    if player_data.state == 0 then
-                        player_data.state = nil
-                    end
-                    return
-                end
-
-                if wagon.entity.surface.name ~= player.surface.name then
-                    local surface = wagon.entity.surface
-                    local x_vector = (door.position.x / math.abs(door.position.x)) * 2
-                    local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
-                    local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if wagon.entity.type == 'locomotive' then
-                        player.teleport(surface_position, surface)
-                        player_data.state = 2
-                        player.driving = true
-                        Public.kill_minimap(player)
-                    else
-                        player.teleport(surface_position, surface)
-                        Public.kill_minimap(player)
-                    end
-                    player_data.surface = surface.index
-                elseif wagon.entity.type == 'locomotive' and player.driving then
-                    player.driving = false
-                else
-                    local surface = wagon.surface
-                    local area = wagon.area
-                    local x_vector = door.position.x - player.position.x
-                    local position
-                    if x_vector > 0 then
-                        position = {
-                            area.left_top.x + 0.5,
-                            area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                        }
-                    else
-                        position = {
-                            area.right_bottom.x - 0.5,
-                            area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)
-                        }
-                    end
-                    local p = surface.find_non_colliding_position('character', position, 128, 0.5)
-                    if p then
-                        player.teleport(p, surface)
-                    else
-                        player.teleport(position, surface)
-                    end
-                    player_data.surface = surface.index
-                end
-            end
-        end
-    end
-end
-
 function Public.use_cargo_wagon_door_with_entity(icw, player, door)
     local player_data = get_player_data(icw, player)
     if player_data.state then
@@ -901,7 +868,7 @@ local function move_room_to_train(icw, train, wagon)
      then
         return
     end
-
+    kick_players_from_surface(wagon)
     kick_players_out_of_vehicles(wagon)
     local player_positions = {}
     teleport_char(player_positions, destination_area, wagon)
@@ -996,15 +963,20 @@ function Public.item_transfer(icw)
 end
 
 function Public.draw_minimap(icw, player, surface, position)
-    local element = player.gui.left.icw_map
+    local frame = player.gui.left.icw_main_frame
+    if not frame then
+        frame =
+            player.gui.left.add({type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap'})
+    end
+    local element = frame['icw_sub_frame']
     if not element then
         local player_data = get_player_data(icw, player)
         element =
-            player.gui.left.add(
+            player.gui.left.icw_main_frame.add(
             {
                 type = 'camera',
-                name = 'icw_map',
                 position = position,
+                name = 'icw_sub_frame',
                 surface_index = surface.index,
                 zoom = player_data.zoom,
                 tooltip = 'LMB: Increase zoom level.\nRMB: Decrease zoom level.\nMMB: Toggle camera size.'
@@ -1037,7 +1009,7 @@ function Public.toggle_minimap(icw, event)
     if not element.valid then
         return
     end
-    if element.name ~= 'icw_map' then
+    if element.name ~= 'icw_sub_frame' then
         return
     end
     local player = game.players[event.player_index]

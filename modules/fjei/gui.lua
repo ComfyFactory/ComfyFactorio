@@ -1,5 +1,6 @@
 local Functions = require "modules.fjei.functions"
 local math_ceil = math.ceil
+local math_abs = math.abs
 local string_find = string.find
 local table_remove = table.remove
 local table_insert = table.insert
@@ -7,11 +8,17 @@ local main_window_width = 278
 local recipe_window_width = 480
 local recipe_window_amount_width = 38
 local recipe_window_item_name_width = 128
-local recipe_window_position = "center"
+local recipe_window_position = "screen"
 local column_count = 6
 local line_count = 5
 local items_per_page = column_count * line_count
 local Public = {}
+
+local function save_window_location(player, frame)
+	if not global.fjei.player_data then return end
+	if not global.fjei.player_data[player.index] then return end
+	global.fjei.player_data[player.index].gui_position = {frame.location.x, frame.location.y}
+end
 
 local function get_total_page_count(player)
 	if not global.fjei.player_data[player.index].filtered_list then Functions.set_filtered_list(player) end
@@ -218,22 +225,16 @@ local function refresh_recipe_bar(player, selected_recipe)
 end
 
 local function draw_recipe_window_header(player, container, item_name, recipes, mode, recipe_name)
+	if mode == 1 then container.parent.caption = "Product of recipe: " else container.parent.caption = "Ingredient in recipe: " end
 	
-	local t = container.add({type = "table", name = "header_table", column_count = 4})
+	local t = container.add({type = "table", name = "header_table", column_count = 3})	
 	
-	add_sprite_icon(t, item_name, false)
-	
-	local element = t.add({type = "label", caption = ""})
-	if mode == 1 then element.caption = "Product\nof recipe: " else element.caption = "Ingredient\nin recipe: " end
-	element.style.single_line = false
-	element.style.font = "heading-2"
-	element.style.font_color = {222, 222, 222}
-	element.style.minimal_width = 78
-	element.style.maximal_width = 78
+	local element = t.add({type = "label", name = item_name, caption = " "})
+	element.visible = false
 	
 	local scroll_pane = t.add({ type = "scroll-pane", name = "scroll_pane", horizontal_scroll_policy = "always", vertical_scroll_policy = "never"})	
-	scroll_pane.style.minimal_width = recipe_window_width - 190
-	scroll_pane.style.maximal_width = recipe_window_width - 190
+	scroll_pane.style.minimal_width = recipe_window_width - 66
+	scroll_pane.style.maximal_width = recipe_window_width - 66
 	scroll_pane.style.minimal_height = 60
 	scroll_pane.style.maximal_height = 60
 	local tt = scroll_pane.add({type = "table", name = "fjei_recipe_window_select_table", column_count = 8192})
@@ -252,14 +253,8 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
 		end
 	end
 	
-	local element = t.add {type = "sprite-button", caption = "X", name = "fjei_close_recipe_window"}
-	element.style.font = "heading-1"
-	element.style.margin = 8
-	element.style.padding = 4
-	element.style.minimal_width = 34
-	element.style.maximal_width = 34
-	element.style.minimal_height = 34
-	element.style.maximal_height = 34
+	local element = t.add {type = "sprite-button", sprite = "utility/close_fat", name = "fjei_close_recipe_window"}
+	element.style.left_margin = 5
 	
 	local element = container.add({type = "line"})
 	element.style.right_margin = 6
@@ -317,7 +312,9 @@ local function draw_recipe(player, container, recipe_name)
 			element.style.maximal_width = recipe_window_item_name_width
 			element.style.single_line = false
 			element.style.font = "default"
+			element.style.bottom_margin = -3
 			local element = ttt.add({type = "label", caption = product.temperature .. " °C"})
+			element.style.top_margin = -3
 		else
 			local element = tt.add({type = "label", caption = get_localised_name(product.name)})
 			element.style.minimal_width = recipe_window_item_name_width
@@ -340,14 +337,16 @@ local function draw_recipe(player, container, recipe_name)
 		element.style.horizontal_align = "right"
 		
 		add_choose_elem_button(tt, ingredient.name)
-		if ingredient.temperature then
+		if ingredient.minimum_temperature and math_abs(ingredient.minimum_temperature) < 4294967296 then
 			local ttt = tt.add({type = "table", column_count = 1})
 			local element = ttt.add({type = "label", caption = get_localised_name(ingredient.name)})
 			element.style.minimal_width = recipe_window_item_name_width
 			element.style.maximal_width = recipe_window_item_name_width	
 			element.style.single_line = false
 			element.style.font = "default"
-			local element = ttt.add({type = "label", caption = ingredient.temperature .. " °C"})
+			element.style.bottom_margin = -3
+			local element = ttt.add({type = "label", caption = ingredient.minimum_temperature .. " °C"})
+			element.style.top_margin = -3
 		else		
 			local element = tt.add({type = "label", caption = get_localised_name(ingredient.name)})
 			element.style.minimal_width = recipe_window_item_name_width
@@ -448,13 +447,25 @@ local function create_recipe_window(item_name, player, button, selected_recipe)
 		for k, v in pairs(recipes) do if v == selected_recipe then recipe_name = recipes[k] end end
 	end
 	
-	if player.gui[recipe_window_position]["fjei_recipe_window"] then player.gui[recipe_window_position]["fjei_recipe_window"].destroy() end
-	local frame = player.gui[recipe_window_position].add({type = "frame", name = "fjei_recipe_window", direction = "vertical"})
+	if player.gui[recipe_window_position]["fjei_recipe_window"] then 
+		save_window_location(player, player.gui[recipe_window_position]["fjei_recipe_window"])
+		player.gui[recipe_window_position]["fjei_recipe_window"].destroy() 
+	end
+	local frame = player.gui[recipe_window_position].add({type = "frame", name = "fjei_recipe_window", direction = "vertical", caption = " "})
 	frame.style.minimal_width = recipe_window_width
 	frame.style.maximal_width = recipe_window_width
 	frame.style.padding = 4
 	frame.style.left_padding = 6
 	frame.style.right_padding = 6
+	
+	local player_data = global.fjei.player_data
+	local position
+	if player_data[player.index] and player_data[player.index].gui_position then
+		position = {x = player_data[player.index].gui_position[1], y = player_data[player.index].gui_position[2]}
+	else
+		position = {x = 2, y = 370}
+	end
+	frame.location = position
 	
 	local container = frame.add({type = "table", name = "header_container", column_count = 1})	
 	draw_recipe_window_header(player, container, item_name, recipes, mode, recipe_name)
@@ -563,6 +574,7 @@ end
 
 local function close_recipe_window(element, player, button)
 	local recipe_window = player.gui[recipe_window_position]["fjei_recipe_window"]
+	save_window_location(player, recipe_window)
 	if recipe_window then recipe_window.destroy() end
 	return true
 end
@@ -611,6 +623,7 @@ function Public.open_recipe(element, player, button)
 		if recipe_window then
 			local active_item = recipe_window.header_container.header_table.children[1].name
 			if active_item == element.name and global.fjei.player_data[player.index].last_button == button then
+				save_window_location(player, recipe_window)	
 				recipe_window.destroy()
 				return
 			end

@@ -36,7 +36,6 @@ function Public.reset_table()
     this.fullness_enabled = true
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
-    this.enable_biter_settings = true
     this.train_upgrades = 0
     this.offline_players = {}
     this.biter_pets = {}
@@ -44,6 +43,7 @@ function Public.reset_table()
     this.mined_scrap = 0
     this.biters_killed = 0
     this.locomotive_xp_aura = 40
+    this.trusted_only_car_tanks = true
     this.xp_points = 0
     this.xp_points_upgrade = 0
     --!grief prevention
@@ -98,9 +98,13 @@ function Public.reset_table()
         randomized = false
     }
     this.collapse_grace = true
+    this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
+    this.math_difficulty = 9999
     this.spidertron_unlocked_at_wave = 11
+    -- this.void_or_tile = 'lab-dark-2'
+    this.void_or_tile = 'out-of-map'
 end
 
 function Public.get(key)

@@ -205,6 +205,7 @@ function Public.extra_settings(player)
     local flame_boots_gui_input
     local stone_path_gui_input
     local one_punch_gui_input
+    local auto_allocate_gui_input
 
     if rpg_extra.enable_stone_path then
         local stone_path_label =
@@ -275,7 +276,7 @@ function Public.extra_settings(player)
             one_punch_gui_input.enabled = false
             one_punch_gui_input.tooltip = 'Enabled globally.'
         else
-            if rpg_t[player.index].level <= 50 then
+            if rpg_t[player.index].level <= 30 then 
                 one_punch_gui_input.enabled = false
                 one_punch_gui_input.tooltip = 'Level requirement: 30\nChecked = true\nUnchecked = false'
             else
@@ -431,6 +432,54 @@ function Public.extra_settings(player)
         end
     end
 
+    if rpg_extra.enable_auto_allocate then
+        local allocate_frame = inside_table.add({type = 'scroll-pane'})
+        local allocate_style = allocate_frame.style
+        allocate_style.vertically_squashable = true
+        allocate_style.bottom_padding = 5
+        allocate_style.left_padding = 5
+        allocate_style.right_padding = 5
+        allocate_style.top_padding = 5
+
+        allocate_frame.add({type = 'line'})
+
+        local a_label = allocate_frame.add({type = 'label', caption = 'Allocations Settings:'})
+        a_label.style.font = 'default-bold'
+        a_label.style.padding = 0
+        a_label.style.left_padding = 10
+        a_label.style.horizontal_align = 'left'
+        a_label.style.vertical_align = 'bottom'
+        a_label.style.font_color = {0.55, 0.55, 0.99}
+
+        allocate_frame.add({type = 'line'})
+
+        local allocate_grid = allocate_frame.add({type = 'table', column_count = 2})
+
+        local allocate_label =
+            allocate_grid.add(
+            {
+                type = 'label',
+                caption = 'Select what skill to auto-allocate.',
+                tooltip = ''
+            }
+        )
+        allocate_label.tooltip = 'This will automatically allocate all available points to the given node.'
+
+        local names = RPG.auto_allocate_nodes
+
+        local allocate_label_style = allocate_label.style
+        allocate_label_style.horizontally_stretchable = true
+        allocate_label_style.height = 35
+        allocate_label_style.vertical_align = 'center'
+
+        local name_input = allocate_grid.add({type = 'flow'})
+        local name_input_style = name_input.style
+        name_input_style.height = 35
+        name_input_style.vertical_align = 'center'
+        auto_allocate_gui_input =
+            create_input_element(name_input, 'dropdown', false, names, rpg_t[player.index].allocate_index)
+    end
+
     local data = {
         reset_gui_input = reset_gui_input,
         magic_pickup_gui_input = magic_pickup_gui_input,
@@ -456,6 +505,10 @@ function Public.extra_settings(player)
 
     if rpg_extra.enable_one_punch then
         data.one_punch_gui_input = one_punch_gui_input
+    end
+
+    if rpg_extra.enable_auto_allocate then
+        data.auto_allocate_gui_input = auto_allocate_gui_input
     end
 
     local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})

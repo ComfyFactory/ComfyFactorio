@@ -41,94 +41,37 @@ local function create_victory_gui(player)
 	l.style.font = "heading-2"
 	l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
 end
---[[
-local function create_fireworks_rocket(surface, position)
-	local particles = {"coal-particle", "copper-ore-particle", "iron-ore-particle", "stone-particle"}
-	local particle = particles[math.random(1, #particles)]
-	local m = math.random(16, 36)
-	local m2 = m * 0.005
-				
-	for i = 1, 60, 1 do 
-		surface.create_particle({
-			name = particle,
-			position = position,
-			frame_speed = 0.1,
-			vertical_speed = 0.1,
-			height = 0.1,
-			movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
-		})
-	end
-	
-	if math.random(1,10) ~= 1 then return end
-	surface.create_entity({name = "explosion", position = position})
-end
 
-local function fireworks(surface)
-	local radius = 48
-	local center_pos = global.rocket_silo[global.bb_game_won_by_team].position
-	
-	local positions = {}
-	for x = -80, 80, 1 do
-		for y = -80, 80, 1 do
-			local pos = {x = center_pos.x + x, y = center_pos.y + y}
-			local distance_to_center = math.sqrt((pos.x - center_pos.x)^2 + (pos.y - center_pos.y)^2)
-			if distance_to_center <= radius then
-				positions[#positions + 1] = pos
-			end
-		end
-	end		
-	if #positions == 0 then return end
-		
-	for t = 1, 7200, 1 do
-		if t % 2 == 0 then
-			if not global.on_tick_schedule[game.tick + t] then global.on_tick_schedule[game.tick + t] = {} end
-			local pos = positions[math.random(1, #positions)]
-			global.on_tick_schedule[game.tick + t][#global.on_tick_schedule[game.tick + t] + 1] = {
-				func = create_fireworks_rocket,
-				args = {
-					surface,
-					{x = pos.x, y = pos.y}
-				}
-			}
-		end
-	end
-end
-]]
 local function silo_kaboom(entity)
 	local surface = entity.surface
 	local center_position = entity.position
 	local force = entity.force
-	local r = 32
-	local square_distance = r ^ 2
-	local shells_square_distance = square_distance * 0.75
-	local kabooms = {"explosive-cannon-projectile", "explosive-cannon-projectile", "artillery-projectile"}
-	local size_of_kabooms = #kabooms
-	for x = r * -1, r, 0.5 do
-		for y = r * -1, r, 0.5 do
-			local position = {x = center_position.x + x, y = center_position.y + y}
-			local square_distance_to_center_position = (position.x - center_position.x) ^ 2 + (position.y - center_position.y) ^ 2
-			if square_distance_to_center_position < shells_square_distance and math_random(1, 16) == 1 then
-				surface.create_entity({	
-					name = kabooms[math_random(1, size_of_kabooms)],
-					position = center_position,
-					force = force,
-					source = center_position,
-					target = position,
-					max_range = r, 
-					speed = 0.1
-				})	
+	surface.create_entity(
+        {
+            name = "atomic-rocket",
+            position = center_position,
+            force = force,
+            source = center_position,
+            target = center_position,
+            max_range = 1,
+            speed = 0.1
+        }
+	)
+	
+	local drops = {}
+	for x = -32, 32, 1 do
+		for y = -32, 32, 1 do
+			local p = {x = center_position.x + x, y = center_position.y + y}
+			local distance_to_silo = math.sqrt((center_position.x - p.x) ^ 2 + (center_position.y - p.y) ^ 2)
+			local count = math.floor((32 - distance_to_silo * 1.2) * 0.28)
+			if distance_to_silo < 32 and count > 0 then			
+				table.insert(drops, {p, count})
 			end
-			if square_distance_to_center_position < square_distance and math_random(1, 16) == 1 then
-				surface.create_entity({	
-					name = "rocket",
-					position = center_position,
-					force = force,
-					source = center_position,
-					target = position,
-					max_range = r, 
-					speed = 0.01
-				})	
-			end
+		end
+	end
+	for _, drop in pairs(drops) do
+		for _ = 1, drop[2], 1 do
+			entity.surface.spill_item_stack({drop[1].x + math.random(0, 9) * 0.1, drop[1].y + math.random(0, 9) * 0.1}, {name = "raw-fish", count = 1}, false, nil, true)
 		end
 	end
 end
@@ -288,10 +231,13 @@ function Public.server_restart()
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		--Server.start_scenario('Biter_Battles')	
+		--Server.start_scenario('Biter_Battles')
+		
+		game.remove_offline_players()
+		
 		Init.tables()
 		Init.forces()
-		Init.load_spawn()		
+		Init.load_spawn()
 		for _, player in pairs(game.players) do
 			Functions.init_player(player)
 			for _, e in pairs(player.gui.left.children) do e.destroy() end		

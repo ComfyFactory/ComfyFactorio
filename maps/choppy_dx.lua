@@ -7,6 +7,9 @@ require 'modules.spawners_contain_biters'
 require 'functions.create_entity_chain'
 require 'functions.create_tile_chain'
 require 'tools.map_functions'
+
+require 'modules.surrounded_by_worms'
+require 'modules.biter_noms_you'
 --require "maps.choppy_map_intro"
 
 local Map = require 'modules.map_info'
@@ -266,7 +269,6 @@ local function process_chunk(area)
     local seed = game.surfaces[1].map_gen_settings.seed
     local surface = game.surfaces['nauvis']
 
-
     for _, e in pairs(surface.find_entities_filtered({area = area})) do
         process_entity(e)
     end
@@ -328,7 +330,6 @@ local function process_chunk_queue()
     end
 end
 
-
 local function get_ore_from_entpos(entity)
     local seed = game.surfaces[1].map_gen_settings.seed
     local noise_forest_location = get_noise('forest_location', entity.position, seed)
@@ -345,7 +346,9 @@ local function get_ore_from_entpos(entity)
 end
 
 local function on_chunk_generated(event)
-    if game.surfaces.nauvis.index ~= event.surface.index then return end
+    if game.surfaces.nauvis.index ~= event.surface.index then
+        return
+    end
     local area = event.area
 
     if game.tick == 0 then
@@ -414,6 +417,7 @@ local function on_player_joined_game(event)
 
     global.average_worm_amount_per_chunk = 2
     global.worm_distance = surface.map_gen_settings.starting_area * 300
+    game.forces.player.technologies["landfill"].enabled = false
 
     if global.choppy_nightmare then
         surface.daytime = 0.5
@@ -737,7 +741,7 @@ local on_init = function()
     T.main_caption_color = {r = 0, g = 120, b = 0}
     T.sub_caption_color = {r = 255, g = 0, b = 255}
     global.chunk_queue = {}
-    game.difficulty_settings.recipe_difficulty = 4
+    game.difficulty_settings.technology_price_multiplier = 4
 end
 
 Event.on_init(on_init)

@@ -12,9 +12,9 @@ local format = string.format
 local brain = {
     [1] = {'Our Discord server is at: https://getcomfy.eu/discord'},
     [2] = {
-        'Need an admin? Type @Mods in game chat to notify moderators,',
-        'or put a message in the discord help channel.',
-        'If you have played for more than 10h in our maps then,',
+        'Need an admin? Join our discord at: https://getcomfy.eu/discord,',
+        'and report it in #i-need-halp',
+        'If you have played for more than 5h in our maps then,',
         'you are eligible to run the command /jail and /free'
     },
     [3] = {'Scenario repository for download:', 'https://github.com/M3wM3w/ComfyFactorio'}
