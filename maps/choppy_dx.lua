@@ -418,6 +418,8 @@ local function on_player_joined_game(event)
     global.average_worm_amount_per_chunk = 2
     global.worm_distance = surface.map_gen_settings.starting_area * 300
     game.forces.player.technologies["landfill"].enabled = false
+    game.forces.player.technologies["spidertron"].enabled = false
+    
 
     if global.choppy_nightmare then
         surface.daytime = 0.5
