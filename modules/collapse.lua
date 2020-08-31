@@ -106,19 +106,6 @@ local function progress()
         if not tile.valid then
             return
         end
-        if collapse.specific_entities.enabled then
-            local position = {tile.position.x + 0.5, tile.position.y + 0.5}
-            local entities = collapse.specific_entities.entities
-            for _, e in pairs(
-                surface.find_entities_filtered(
-                    {area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}}
-                )
-            ) do
-                if entities[e.name] and e.valid and e.health then
-                    e.die()
-                end
-            end
-        end
         if collapse.kill then
             local position = {tile.position.x + 0.5, tile.position.y + 0.5}
             for _, e in pairs(
@@ -128,6 +115,8 @@ local function progress()
             ) do
                 if e.valid and e.health then
                     e.die()
+                elseif e.valid then
+                    e.destroy()
                 end
             end
         end
@@ -243,23 +232,12 @@ function Public.set_kill_entities(a)
     collapse.kill = a
 end
 
-function Public.set_kill_specific_entities(tbl)
-    if tbl then
-        collapse.specific_entities = tbl
-    else
-        collapse.specific_entities = {
-            enabled = false
-        }
-    end
-end
-
 local function on_init()
     Public.set_surface(game.surfaces.nauvis)
     Public.set_position({0, 32})
     Public.set_max_line_size(256)
     Public.set_direction('north')
     Public.set_kill_entities(true)
-    Public.set_kill_specific_entities()
     collapse.tiles = nil
     collapse.speed = 1
     collapse.amount = 8

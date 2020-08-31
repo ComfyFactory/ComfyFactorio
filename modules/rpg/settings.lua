@@ -18,7 +18,7 @@ local function create_input_element(frame, type, value, items, index)
         return frame.add({type = 'checkbox', state = value})
     end
     if type == 'dropdown' then
-        return frame.add({type = 'drop-down', name = 'admin_player_select', items = items, selected_index = index})
+        return frame.add({type = 'drop-down', items = items, selected_index = index})
     end
     return frame.add({type = 'text-box', text = value})
 end
@@ -276,7 +276,7 @@ function Public.extra_settings(player)
             one_punch_gui_input.enabled = false
             one_punch_gui_input.tooltip = 'Enabled globally.'
         else
-            if rpg_t[player.index].level <= 30 then 
+            if rpg_t[player.index].level <= 30 then
                 one_punch_gui_input.enabled = false
                 one_punch_gui_input.tooltip = 'Level requirement: 30\nChecked = true\nUnchecked = false'
             else

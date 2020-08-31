@@ -296,7 +296,7 @@ local function angry_tree(entity, cause)
     if random(1, 8) == 1 then
         hidden_worm(entity)
     end
-    if random(1, 16) ~= 1 then
+    if random(1, 32) ~= 1 then
         return
     end
     local position = false
@@ -809,12 +809,7 @@ function Public.loco_died()
 
         return
     end
-    -- raise_event(
-    --     HD.events.reset_game,
-    --     {
-    --         surface = surface
-    --     }
-    -- )
+
     this.locomotive_health = 0
     this.locomotive.color = {0.49, 0, 255, 1}
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)

@@ -14,7 +14,6 @@ require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.charging_station'
-require 'modules.admins_operate_biters'
 
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Autostash = require 'modules.autostash'
@@ -94,24 +93,6 @@ local init_new_force = function()
     new_force.set_friend('enemy', true)
     enemy.set_friend('protectors', true)
 end
-
-local collapse_kill = {
-    entities = {
-        ['laser-turret'] = true,
-        ['flamethrower-turret'] = true,
-        ['gun-turret'] = true,
-        ['artillery-turret'] = true,
-        ['landmine'] = true,
-        ['locomotive'] = true,
-        ['cargo-wagon'] = true,
-        ['car'] = true,
-        ['tank'] = true,
-        ['assembling-machine'] = true,
-        ['furnace'] = true,
-        ['steel-chest'] = true
-    },
-    enabled = true
-}
 
 local disable_tech = function()
     game.forces.player.technologies['landfill'].enabled = false
@@ -344,8 +325,7 @@ function Public.reset_map()
     game.map_settings.path_finder.max_work_done_per_tick = 4000
     Diff.gui_width = 20
 
-    Collapse.set_kill_entities(false)
-    Collapse.set_kill_specific_entities(collapse_kill)
+    Collapse.set_kill_entities(true)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     Collapse.set_max_line_size(Terrain.level_width)
@@ -383,18 +363,10 @@ function Public.reset_map()
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
     Task.start_queue()
-    Task.set_queue_speed(32)
+    Task.set_queue_speed(16)
 
     this.chunk_load_tick = game.tick + 1200
     this.game_lost = false
-
-    --HD.enable_auto_init = false
-
-    --local pos = {x = this.icw_area.x, y = this.icw_area.y}
-
-    --HD.init({position = pos, hd_surface = tostring(this.icw_locomotive.surface.name)})
-
-    --raise_event(HD.events.reset_game, {})
 end
 
 local on_player_changed_position = function(event)
@@ -418,18 +390,20 @@ local on_player_changed_position = function(event)
 
     local p = {x = player.position.x, y = player.position.y}
     local get_tile = surface.get_tile(p)
-
-    if get_tile.valid and get_tile.name == 'lab-dark-2' then
-        if random(1, 2) == 1 then
+    local config_tile = WPT.get('void_or_tile')
+    if config_tile == 'lab-dark-2' then
+        if get_tile.valid and get_tile.name == 'lab-dark-2' then
             if random(1, 2) == 1 then
-                show_text('This path is not for players!', p, {r = 0.98, g = 0.66, b = 0.22}, surface)
-            end
-            player.surface.create_entity({name = 'fire-flame', position = player.position})
-            player.character.health = player.character.health - tile_damage
-            if player.character.health == 0 then
-                player.character.die()
-                local message = player.name .. ' ' .. death_messages[random(1, #death_messages)]
-                game.print(message, {r = 0.98, g = 0.66, b = 0.22})
+                if random(1, 2) == 1 then
+                    show_text('This path is not for players!', p, {r = 0.98, g = 0.66, b = 0.22}, surface)
+                end
+                player.surface.create_entity({name = 'fire-flame', position = player.position})
+                player.character.health = player.character.health - tile_damage
+                if player.character.health == 0 then
+                    player.character.die()
+                    local message = player.name .. ' ' .. death_messages[random(1, #death_messages)]
+                    game.print(message, {r = 0.98, g = 0.66, b = 0.22})
+                end
             end
         end
     end
@@ -628,7 +602,7 @@ local on_research_finished = function(event)
     if not force_name then
         return
     end
-    this.flamethrower_damage[force_name] = -0.65
+    this.flamethrower_damage[force_name] = -0.85
     if research.name == 'military' then
         game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', this.flamethrower_damage[force_name])
         game.forces[force_name].set_ammo_damage_modifier('flamethrower', this.flamethrower_damage[force_name])
@@ -747,7 +721,6 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 700
         WD.set().next_wave = game.tick + 3600 * 20
         WPT.set().spidertron_unlocked_at_wave = 11
-        WPT.set().math_difficulty = 4096
         WPT.set().difficulty_set = true
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
@@ -763,7 +736,6 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 300
         WD.set().next_wave = game.tick + 3600 * 15
         WPT.set().spidertron_unlocked_at_wave = 16
-        WPT.set().math_difficulty = 3072
         WPT.set().difficulty_set = true
     elseif name == 'Hard' then
         rpg_extra.difficulty = 0
@@ -779,7 +751,6 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 50
         WD.set().next_wave = game.tick + 3600 * 10
         WPT.set().spidertron_unlocked_at_wave = 21
-        WPT.set().math_difficulty = 2048
         WPT.set().difficulty_set = true
     elseif name == 'Insane' then
         rpg_extra.difficulty = 0
@@ -795,7 +766,6 @@ local boost_difficulty = function()
         WPT.set().bonus_xp_on_join = 0
         WD.set().next_wave = game.tick + 3600 * 5
         WPT.set().spidertron_unlocked_at_wave = 26
-        WPT.set().math_difficulty = 1024
         WPT.set().difficulty_set = true
     end
 end
@@ -805,7 +775,7 @@ local chunk_load = function()
     if chunk_load_tick then
         if chunk_load_tick < game.tick then
             WPT.get().chunk_load_tick = nil
-            Task.set_queue_speed(4)
+            Task.set_queue_speed(3)
         end
     end
 end
@@ -875,10 +845,13 @@ local on_tick = function()
             boost_difficulty()
             collapse_after_wave_100()
             Entities.set_scores()
-            local collapse_pos = Collapse.get_position()
-            local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
-            if position then
-                WD.set_spawn_position(position)
+            local spawn_near_collapse = WPT.get('spawn_near_collapse')
+            if spawn_near_collapse then
+                local collapse_pos = Collapse.get_position()
+                local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
+                if position then
+                    WD.set_spawn_position(position)
+                end
             end
         end
     end
@@ -953,12 +926,11 @@ local on_init = function()
             ['mewmew'] = true,
             ['Gerkiz'] = true
         }
+        global.biter_command.enabled = false
     end
-
-    global.biter_command.enabled = false
 end
 
-Event.on_nth_tick(10, on_tick)
+Event.on_nth_tick(15, on_tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
