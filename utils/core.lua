@@ -14,6 +14,7 @@ local concat = table.concat
 
 -- local constants
 local prefix = '## - '
+local warning_prefix = '## NOTE ## - '
 local minutes_to_ticks = 60 * 60
 local hours_to_ticks = 60 * 60 * 60
 local ticks_to_minutes = 1 / minutes_to_ticks
@@ -45,13 +46,25 @@ function Public.print_except(msg, player, color)
     end
 end
 
-function Public.print_to(player_ident, msg)
+function Public.print_to(player_ident, msg, color)
     local player = Public.validate_player(player_ident)
+    color = color or Color.yellow
 
     if player then
-        player.print(prefix .. msg, Color.yellow)
+        player.print(prefix .. msg, color)
     else
-        game.print(prefix .. msg, Color.yellow)
+        game.print(prefix .. msg, color)
+    end
+end
+
+function Public.warning(player_ident, msg, color)
+    local player = Public.validate_player(player_ident)
+    color = color or Color.comfy
+
+    if player then
+        player.print(warning_prefix .. msg, color)
+    else
+        game.print(warning_prefix .. msg, color)
     end
 end
 
