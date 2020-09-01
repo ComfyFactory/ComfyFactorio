@@ -125,6 +125,9 @@ local function level_up(player)
         local index = names[node]:lower()
         rpg_t[player.index][index] = rpg_t[player.index][index] + distribute_points_gain
         rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - distribute_points_gain
+        if not rpg_t[player.index].reset then
+            rpg_t[player.index].total = rpg_t[player.index].total + distribute_points_gain
+        end
         RPG_GUI.update_player_stats(player)
     end
     if player.gui.screen[main_frame_name] then

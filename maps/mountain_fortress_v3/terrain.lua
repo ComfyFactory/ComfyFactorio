@@ -47,12 +47,6 @@ local tree_raffle = {
 }
 local size_of_tree_raffle = #tree_raffle
 
-local spawner = {
-    'biter-spawner',
-    'spitter-spawner'
-}
-local size_of_spawner = #spawner
-
 local scrap_entities = {
     'crash-site-assembling-machine-1-broken',
     'crash-site-assembling-machine-2-broken',
@@ -440,17 +434,6 @@ local function process_level_14_position(x, y, data)
         return
     end
 
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
-        return
-    end
-
     if small_caves > -0.41 and small_caves < 0.41 then
         if noise_cave_ponds > 0.35 then
             local success = place_wagon(data)
@@ -508,17 +491,6 @@ local function process_level_13_position(x, y, data)
         if random(1, 2) == 1 then
             entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
-        return
-    end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
         return
     end
 
@@ -598,17 +570,6 @@ local function process_level_12_position(x, y, data, void_or_lab)
         if random(1, 48) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
-        return
-    end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
         return
     end
 
@@ -698,17 +659,6 @@ local function process_level_11_position(x, y, data)
         return
     end
 
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
-        return
-    end
-
     if noise_1 > -0.30 and noise_1 < 0.30 then
         if noise_1 > -0.14 and noise_1 < 0.14 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
@@ -794,18 +744,6 @@ local function process_level_10_position(x, y, data)
         tiles[#tiles + 1] = {name = 'water-green', position = p}
         return
     end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
-        return
-    end
-
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 8) == 1 then
@@ -1213,17 +1151,6 @@ local function process_level_6_position(x, y, data, void_or_lab)
         if random(1, 128) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
         end
-        return
-    end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
         return
     end
 
@@ -1702,17 +1629,6 @@ local function process_level_2_position(x, y, data, void_or_lab)
             return
         end
 
-        local value = WPT.get('math_difficulty')
-
-        if random(1, value) == 1 then
-            entities[#entities + 1] = {
-                name = spawner[random(1, size_of_spawner)],
-                position = p,
-                force = 'protectors'
-            }
-            return
-        end
-
         --Market Spots
         if noise_cave_ponds < -0.80 then
             tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
@@ -1832,17 +1748,6 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
             end
             return
         end
-    end
-
-    local value = WPT.get('math_difficulty')
-
-    if random(1, value) == 1 then
-        entities[#entities + 1] = {
-            name = spawner[random(1, size_of_spawner)],
-            position = p,
-            force = 'protectors'
-        }
-        return
     end
 
     if noise_cave_ponds > 0.74 then
@@ -2127,9 +2032,9 @@ local function process_level_0_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('dungeons', p, seed + 33322)
+    local small_caves = get_noise('dungeons', p, seed + 24244)
     local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 33333)
+    local smol_areas = get_noise('smol_areas', p, seed + 23444)
 
     --Resource Spots
     if smol_areas < -0.71 then
@@ -2139,7 +2044,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 
     --Chasms
-    if noise_cave_ponds < 0.101 and noise_cave_ponds > -0.102 then
+    if noise_cave_ponds < 0.099 and noise_cave_ponds > -0.102 then
         if small_caves > 0.52 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
@@ -2151,7 +2056,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 
     --Water Ponds
-    if noise_cave_ponds > 0.790 then
+    if noise_cave_ponds > 0.770 then
         tiles[#tiles + 1] = {name = 'deepwater', position = p}
         if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
@@ -2161,7 +2066,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
 
     --Rivers
     local cave_rivers = get_noise('cave_rivers', p, seed + 200000)
-    if cave_rivers < 0.041 and cave_rivers > -0.042 then
+    if cave_rivers < 0.031 and cave_rivers > -0.032 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
             if random(1, 64) == 1 then
@@ -2171,7 +2076,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
         end
     end
 
-    if noise_cave_ponds > 0.74 then
+    if noise_cave_ponds > 0.72 then
         tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
         tiles[#tiles + 1] = {name = 'grass-1', position = p}
         if cave_rivers < -0.502 then
@@ -2184,7 +2089,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 
     --Market Spots
-    if noise_cave_ponds < -0.74 then
+    if noise_cave_ponds < -0.72 then
         tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
         if random(1, 32) == 1 then
             markets[#markets + 1] = p
@@ -2195,7 +2100,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
         return
     end
 
-    local no_rocks = get_noise('no_rocks', p, seed + 30000)
+    local no_rocks = get_noise('no_rocks', p, seed + 35000)
     --Worm oil Zones
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
@@ -2243,30 +2148,6 @@ local function process_level_0_position(x, y, data, void_or_lab)
 
     if random(1, 2048) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
-    end
-    local random_tiles = get_noise('forest_location', p, seed)
-    if random_tiles > 0.095 then
-        if random_tiles > 0.6 then
-            if random(1, 100) > 42 then
-                tiles[#tiles + 1] = {name = 'red-desert-0', position = p}
-            end
-        else
-            if random(1, 100) > 42 then
-                tiles[#tiles + 1] = {name = 'red-desert-1', position = p}
-            end
-        end
-    end
-
-    if random_tiles < -0.095 then
-        if random_tiles < -0.6 then
-            if random(1, 100) > 42 then
-                tiles[#tiles + 1] = {name = 'red-desert-2', position = p}
-            end
-        else
-            if random(1, 100) > 42 then
-                tiles[#tiles + 1] = {name = 'red-desert-3', position = p}
-            end
-        end
     end
     if random(1, 100) > 25 then
         entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}

@@ -4,7 +4,7 @@
 
 require 'maps.fish_defender.terrain'
 require 'maps.fish_defender.market'
-require 'maps.fish_defender.shotgun_buff'
+require 'maps.fish_defender.combat_balance'
 require 'maps.fish_defender.on_entity_damaged'
 
 require 'modules.rocket_launch_always_yields_science'
@@ -1270,7 +1270,7 @@ local function on_init(event)
         ['laser-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
         ['artillery-turret'] = {placed = 0, limit = 1, str = 'artillery turret', slot_price = 500},
         ['flamethrower-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
-        ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 1}
+        ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 2}
     }
 
     local map_gen_settings = {}

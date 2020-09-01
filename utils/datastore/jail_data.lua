@@ -45,6 +45,21 @@ Global.register(
 
 local Public = {}
 
+local clear_gui =
+    Token.register(
+    function(data)
+        local player = data.player
+        if player and player.valid then
+            for _, child in pairs(player.gui.center.children) do
+                child.destroy()
+            end
+            for _, child in pairs(player.gui.left.children) do
+                child.destroy()
+            end
+        end
+    end
+)
+
 local validate_playtime = function(player)
     local tracker = Session.get_session_table()
 
@@ -70,14 +85,14 @@ local validate_trusted = function(player)
 end
 
 local get_player_data = function(player, remove)
-    if remove and player_data[player.index] then
-        player_data[player.index] = nil
+    if remove and player_data[player.name] then
+        player_data[player.name] = nil
         return
     end
-    if not player_data[player.index] then
-        player_data[player.index] = {}
+    if not player_data[player.name] then
+        player_data[player.name] = {}
     end
-    return player_data[player.index]
+    return player_data[player.name]
 end
 
 local get_gulag_permission_group = function()
@@ -89,6 +104,7 @@ local get_gulag_permission_group = function()
         gulag.set_allows_action(defines.input_action.delete_permission_group, false)
         gulag.set_allows_action(defines.input_action.add_permission_group, false)
         gulag.set_allows_action(defines.input_action.admin_action, false)
+        gulag.set_allows_action(defines.input_action.gui_click, false)
         gulag.set_allows_action(defines.input_action.drop_item, false)
         gulag.set_allows_action(defines.input_action.place_equipment, false)
         gulag.set_allows_action(defines.input_action.take_equipment, false)
@@ -147,7 +163,7 @@ local create_gulag_surface = function()
         end
 
         rendering.draw_text {
-            text = 'BAAAAAD HOOOOOMAAAAAN!!',
+            text = 'The pit of despair ☹',
             surface = surface,
             target = {0, -50},
             color = {r = 0.98, g = 0.66, b = 0.22},
@@ -164,30 +180,64 @@ end
 local teleport_player_to_gulag = function(player, action)
     local p_data = get_player_data(player)
 
+    local gulag_tp = function(surface)
+        get_player_data(player, true)
+        player.teleport(
+            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 128, 1),
+            surface.name
+        )
+    end
+
     if action == 'jail' then
-        local surface = game.surfaces['gulag']
+        local gulag = game.surfaces['gulag']
         p_data.fallback_surface_index = player.surface.index
-        player.teleport(surface.find_non_colliding_position('character', {0, 0}, 2, 1), 'gulag')
+        p_data.position = player.position
+        p_data.p_group_id = player.permission_group.group_id
+        p_data.locked = true
+        player.teleport(gulag.find_non_colliding_position('character', {0, 0}, 128, 1), gulag.name)
+        local data = {
+            player = player
+        }
+        Task.set_timeout_in_ticks(5, clear_gui, data)
     elseif action == 'free' then
-        if p_data.fallback_surface_index then
-            local surface = game.surfaces[p_data.fallback_surface_index]
-            player.teleport(
-                surface.find_non_colliding_position(
-                    'character',
-                    game.forces.player.get_spawn_position(surface),
-                    3,
-                    0,
-                    5
-                ),
-                surface
-            )
+        local surface = game.surfaces[p_data.fallback_surface_index]
+        local p = p_data.position
+        local p_group = game.permissions.get_group(p_data.p_group_id)
+        p_group.add_player(player)
+        local pos = {x = p.x, y = p.y}
+        local get_tile = surface.get_tile(pos)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            gulag_tp(surface)
+        else
             get_player_data(player, true)
+            player.teleport(surface.find_non_colliding_position('character', p, 128, 1), surface.name)
         end
     end
 end
 
-local validate_args = function(player, griefer)
-    if not game.players[griefer] then
+local on_player_changed_surface = function(event)
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+    local p_data = get_player_data(player)
+    if jailed[player.name] and p_data and p_data.locked then
+        local surface = game.surfaces['gulag']
+        if player.surface.index ~= surface.index then
+            teleport_player_to_gulag(player, 'jail')
+        end
+    end
+end
+
+local validate_args = function(data)
+    local player = data.player
+    local griefer = data.griefer
+    local trusted = data.trusted
+    local playtime = data.playtime
+    local message = data.message
+    local cmd = data.cmd
+
+    if not griefer or not game.players[griefer] then
         Utils.print_to(player, 'Invalid name.')
         return false
     end
@@ -217,10 +267,30 @@ local validate_args = function(player, griefer)
         return false
     end
 
+    if not trusted and not player.admin or playtime <= settings.playtime_for_vote and not player.admin then
+        Utils.print_to(player, 'You are not trusted enough to run this command.')
+        return false
+    end
+
+    if not message then
+        Utils.print_to(player, 'No valid reason was given.')
+        return false
+    end
+
+    if cmd == 'jail' and message and string.len(message) <= 0 then
+        Utils.print_to(player, 'No valid reason was given.')
+        return false
+    end
+
+    if cmd == 'jail' and message and string.len(message) <= 10 then
+        Utils.print_to(player, 'Reason is too short.')
+        return false
+    end
+
     return true
 end
 
-local vote_to_jail = function(player, griefer)
+local vote_to_jail = function(player, griefer, msg)
     if not votejail[griefer] then
         votejail[griefer] = {index = 0, actor = player.name}
         local message = player.name .. ' has started a vote to jail player ' .. griefer
@@ -235,7 +305,7 @@ local vote_to_jail = function(player, griefer)
                 (votejail[griefer].index == #game.connected_players - 1 and
                     #game.connected_players > votejail[griefer].index)
          then
-            Public.try_ul_data(griefer, true, votejail[griefer].actor)
+            Public.try_ul_data(griefer, true, votejail[griefer].actor, msg)
         end
     else
         Utils.print_to(player, 'You have already voted to kick ' .. griefer .. '.')
@@ -268,10 +338,14 @@ local vote_to_free = function(player, griefer)
     return
 end
 
-local jail = function(player, griefer)
+local jail = function(player, griefer, msg)
     player = player or 'script'
     if jailed[griefer] then
         return false
+    end
+
+    if not msg then
+        return
     end
 
     if not game.players[griefer] then
@@ -281,23 +355,11 @@ local jail = function(player, griefer)
     local g = game.players[griefer]
     teleport_player_to_gulag(g, 'jail')
 
-    local permission_group = game.permissions.get_group('prisoner')
-    if not permission_group then
-        permission_group = game.permissions.create_group('prisoner')
-        for action_name, _ in pairs(defines.input_action) do
-            permission_group.set_allows_action(defines.input_action[action_name], false)
-        end
-        permission_group.set_allows_action(defines.input_action.write_to_console, true)
-        permission_group.set_allows_action(defines.input_action.gui_click, true)
-        permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
-    end
     if g.surface.name == 'gulag' then
         local gulag = get_gulag_permission_group()
         gulag.add_player(griefer)
-    else
-        permission_group.add_player(griefer)
     end
-    local message = griefer .. ' has been jailed by ' .. player .. '.'
+    local message = griefer .. ' has been jailed by ' .. player .. '. Cause: ' .. msg
 
     if
         game.players[griefer].character and game.players[griefer].character.valid and
@@ -306,12 +368,11 @@ local jail = function(player, griefer)
         game.players[griefer].character.driving = false
     end
 
-    jailed[griefer] = {jailed = true, actor = player}
-    set_data(jailed_data_set, griefer, {jailed = true, actor = player})
+    jailed[griefer] = {jailed = true, actor = player, reason = msg}
+    set_data(jailed_data_set, griefer, {jailed = true, actor = player, reason = msg})
 
     Utils.print_to(nil, message)
     Utils.action_warning_embed('{Jailed}', message)
-    Utils.print_admins('Jailed ' .. griefer, player)
 
     game.players[griefer].clear_console()
     Utils.print_to(griefer, message)
@@ -331,13 +392,6 @@ local free = function(player, griefer)
     local g = game.players[griefer]
     teleport_player_to_gulag(g, 'free')
 
-    local permission_group = game.permissions.get_group('Default')
-    if g.surface.name == 'gulag' then
-        local gulag = get_gulag_permission_group()
-        gulag.add_player(griefer)
-    else
-        permission_group.add_player(griefer)
-    end
     local message = griefer .. ' was set free from jail by ' .. player .. '.'
 
     jailed[griefer] = nil
@@ -353,7 +407,6 @@ local free = function(player, griefer)
 
     Utils.print_to(nil, message)
     Utils.action_warning_embed('{Jailed}', message)
-    Utils.print_admins('Free´d ' .. griefer .. ' from jail.', player)
     return true
 end
 
@@ -376,8 +429,9 @@ local update_jailed =
         local key = data.key
         local value = data.value or false
         local player = data.player or 'script'
+        local message = data.message
         if value then
-            jail(player, key)
+            jail(player, key, message)
         else
             free(player, key)
         end
@@ -400,7 +454,7 @@ end
 
 --- Tries to get data from the webpanel and updates the local table with values.
 -- @param data_set player token
-function Public.try_ul_data(key, value, player)
+function Public.try_ul_data(key, value, player, message)
     if type(key) == 'table' then
         key = key.name
     end
@@ -410,7 +464,8 @@ function Public.try_ul_data(key, value, player)
     local data = {
         key = key,
         value = value,
-        player = player
+        player = player,
+        message = message
     }
 
     Task.set_timeout_in_ticks(1, update_jailed, data)
@@ -457,22 +512,43 @@ Event.add(
     defines.events.on_console_command,
     function(event)
         local cmd = event.command
-
         if not valid_commands[cmd] then
             return
         end
 
-        local griefer = event.parameters
-        if not griefer then
-            return
-        end
+        local param = event.parameters
 
         if event.player_index then
             local player = game.players[event.player_index]
             local playtime = validate_playtime(player)
             local trusted = validate_trusted(player)
 
-            local success = validate_args(player, griefer)
+            if not param then
+                return Utils.print_to(player, 'No valid reason given.')
+            end
+
+            local message
+            local t = {}
+
+            for i in string.gmatch(param, '%S+') do
+                t[#t + 1] = i
+            end
+
+            local griefer = t[1]
+            table.remove(t, 1)
+
+            message = concat(t, ' ')
+
+            local data = {
+                player = player,
+                griefer = griefer,
+                trusted = trusted,
+                playtime = playtime,
+                message = message,
+                cmd = cmd
+            }
+
+            local success = validate_args(data)
 
             if not success then
                 return
@@ -482,16 +558,12 @@ Event.add(
                 griefer = game.players[griefer].name
             end
 
-            if not trusted and not player.admin or playtime <= settings.playtime_for_vote and not player.admin then
-                return Utils.print_to(player, 'You are not trusted enough to run this command.')
-            end
-
             if
                 trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and
                     not player.admin
              then
                 if cmd == 'jail' then
-                    vote_to_jail(player, griefer)
+                    vote_to_jail(player, griefer, message)
                     return
                 elseif cmd == 'free' then
                     vote_to_free(player, griefer)
@@ -501,7 +573,13 @@ Event.add(
 
             if player.admin or playtime >= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
-                    Public.try_ul_data(griefer, true, player.name)
+                    if player.admin then
+                        Utils.warning(
+                            player,
+                            'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is not OK!'
+                        )
+                    end
+                    Public.try_ul_data(griefer, true, player.name, message)
                     return
                 elseif cmd == 'free' then
                     Public.try_ul_data(griefer, false, player.name)
@@ -512,6 +590,7 @@ Event.add(
     end
 )
 
+Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.on_init(create_gulag_surface)
 
 Server.on_data_set_changed(
@@ -529,7 +608,7 @@ Server.on_data_set_changed(
 
 commands.add_command(
     'jail',
-    'Sends the player to gulag!',
+    'Sends the player to gulag! Valid arguments are:\n/jail <LuaPlayer> <reason>',
     function()
         return
     end
