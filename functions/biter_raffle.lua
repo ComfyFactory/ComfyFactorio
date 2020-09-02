@@ -6,78 +6,50 @@ evolution_factor 	- custom evolution factor (optional)
 ]]
 
 local Public = {}
-
 local math_random = math.random
 local math_floor = math.floor
 
-local function get_biter_raffle_table(level)
+local function get_raffle_table(level, name)
 	local raffle = {
-		["small-biter"] = 1000 - level * 1.75,		
-		["medium-biter"] = -250 + level * 1.5,		
-		["big-biter"] = 0,		
-		["behemoth-biter"] = 0,
+		["small-" .. name] = 1000 - level * 1.75,		
+		["medium-" .. name] = -250 + level * 1.5,
+		["big-" .. name] = 0,		
+		["behemoth-" .. name] = 0,
 	}
 	
 	if level > 500 then
-		raffle["medium-biter"] = 500 - (level - 500)
-		raffle["big-biter"] = (level - 500) * 2
+		raffle["medium-" .. name] = 500 - (level - 500)
+		raffle["big-" .. name] = (level - 500) * 2
 	end
 	if level > 900 then
-		raffle["behemoth-biter"] = (level - 900) * 3
+		raffle["behemoth-" .. name] = (level - 900) * 3
 	end
 	for k, v in pairs(raffle) do
 		if raffle[k] < 0 then raffle[k] = 0 end
 	end
 	return raffle
+end
+
+local function roll(evolution_factor, name)
+	local raffle = get_raffle_table(math_floor(evolution_factor * 1000), name)
+	local max_chance = 0
+	for k, v in pairs(raffle) do
+		max_chance = max_chance + v
+	end
+	local r = math_random(0, math_floor(max_chance))	
+	local current_chance = 0
+	for k, v in pairs(raffle) do
+		current_chance = current_chance + v
+		if r <= current_chance then return k end
+	end
 end
 
 local function get_biter_name(evolution_factor)
-	local raffle = get_biter_raffle_table(math_floor(evolution_factor * 1000))
-	local max_chance = 0
-	for k, v in pairs(raffle) do
-		max_chance = max_chance + v
-	end
-	local r = math.random(0, math.floor(max_chance))	
-	local current_chance = 0
-	for k, v in pairs(raffle) do
-		current_chance = current_chance + v
-		if r <= current_chance then return k end
-	end
+	return roll(evolution_factor, "biter")
 end
 
-local function get_spitter_raffle_table(level)
-	local raffle = {
-		["small-spitter"] = 1000 - level * 1.75,		
-		["medium-spitter"] = -250 + level * 1.5,
-		["big-spitter"] = 0,		
-		["behemoth-spitter"] = 0,
-	}
-	
-	if level > 500 then
-		raffle["medium-spitter"] = 500 - (level - 500)
-		raffle["big-spitter"] = (level - 500) * 2
-	end
-	if level > 900 then
-		raffle["behemoth-spitter"] = (level - 900) * 3
-	end
-	for k, v in pairs(raffle) do
-		if raffle[k] < 0 then raffle[k] = 0 end
-	end
-	return raffle
-end
-
-local function get_spitter_name(evolution_factor)
-	local raffle = get_spitter_raffle_table(math_floor(evolution_factor * 1000))
-	local max_chance = 0
-	for k, v in pairs(raffle) do
-		max_chance = max_chance + v
-	end
-	local r = math.random(0, math.floor(max_chance))	
-	local current_chance = 0
-	for k, v in pairs(raffle) do
-		current_chance = current_chance + v
-		if r <= current_chance then return k end
-	end
+local function get_spitter_name(evolution_factor)	
+	return roll(evolution_factor, "spitter")	
 end
 
 local function get_worm_raffle_table(level)
@@ -107,7 +79,7 @@ local function get_worm_name(evolution_factor)
 	for k, v in pairs(raffle) do
 		max_chance = max_chance + v
 	end
-	local r = math.random(0, math.floor(max_chance))	
+	local r = math_random(0, math_floor(max_chance))	
 	local current_chance = 0
 	for k, v in pairs(raffle) do
 		current_chance = current_chance + v
