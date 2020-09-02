@@ -1,6 +1,6 @@
 require "modules.no_turrets"
+require 'modules.no_acid_puddles'
 --require "maps.biter_hatchery.flamethrower_nerf"
-local RPG = require "modules.rpg"
 local Tabs = require 'comfy_panel.main'
 local Map_score = require "comfy_panel.map_score"
 local Unit_health_booster = require "modules.biter_health_booster"
@@ -71,8 +71,6 @@ function Public.reset_map()
 	game.forces.spectator.set_spawn_position({0, -128}, surface)
 	game.forces.west.set_spawn_position({-200, 0}, surface)
 	game.forces.east.set_spawn_position({200, 0}, surface)		
-	
-	RPG.rpg_reset_all_players()
 	
 	Team.set_force_attributes()	
 	Team.assign_random_force_to_active_players()
@@ -285,11 +283,11 @@ local function on_entity_died(event)
 		end
 	end
 		
-	game.print("Next round starting in 60 seconds..", {150, 150, 150})
+	game.print("Map will restart in 2 minutes.", {150, 150, 150})
 	
 	game.forces.spectator.play_sound{path="utility/game_won", volume_modifier=0.85}
 
-	global.game_reset_tick = game.tick + 3600
+	global.game_reset_tick = game.tick + 7200
 	game.delete_surface("mirror_terrain")
 	
 	for _, player in pairs(game.connected_players) do
@@ -374,6 +372,19 @@ local function on_entity_damaged(event)
 	entity.health = entity.health + event.final_damage_amount	
 end
 
+local function on_player_used_spider_remote(event)
+	local vehicle = event.vehicle
+	local position = event.position
+	local success = event.success
+	if not success then return end
+	if vehicle.force.name == "west" then
+		if position.x < -3 then return end
+	else
+		if position.x > 3 then return end
+	end
+	vehicle.autopilot_destination = nil
+end
+
 local function on_init()
 	game.difficulty_settings.technology_price_multiplier = 0.5 
 	game.map_settings.enemy_evolution.destroy_factor = 0
@@ -412,6 +423,7 @@ end
 local event = require 'utils.event'
 event.on_init(on_init)
 event.on_nth_tick(60, tick)
+event.add(defines.events.on_player_used_spider_remote, on_player_used_spider_remote)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
