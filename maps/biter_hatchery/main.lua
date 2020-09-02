@@ -68,8 +68,8 @@ function Public.reset_map()
 	surface.request_to_generate_chunks({0,0}, 8)
 	surface.force_generate_chunk_requests()
 	game.forces.spectator.set_spawn_position({0, -128}, surface)
-	game.forces.west.set_spawn_position({-200, 0}, surface)
-	game.forces.east.set_spawn_position({200, 0}, surface)		
+	game.forces.west.set_spawn_position({-210, 0}, surface)
+	game.forces.east.set_spawn_position({210, 0}, surface)		
 	
 	Team.set_force_attributes()	
 	Team.assign_random_force_to_active_players()
@@ -120,7 +120,7 @@ local function spawn_units(belt, food_item, removed_item_count)
 			team.unit_count = team.unit_count + 1
 		end
 	end
-	if math_random(1, 6) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
+	if math_random(1, 8) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
 end
 
 local function get_belts(spawner)
@@ -318,14 +318,17 @@ end
 
 local function tick()
 	local game_tick = game.tick
-	if game_tick % 240 == 0 then
+	if game_tick % 240 == 0 then		
 		local surface = game.surfaces[global.active_surface_index]
-		--if surface.is_chunk_generated({10, 0}) then
-			local area = {{-320, -161}, {319, 160}}
-			game.forces.west.chart(surface, area)
-			game.forces.east.chart(surface, area)
-		--end
-	end	
+		local west = game.forces.west
+		local east = game.forces.east
+		local area = {{-320, -161}, {319, 160}}
+		west.chart(surface, area)
+		east.chart(surface, area)
+		local r = 64
+		for _, player in pairs(west.connected_players) do	east.chart(surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}) end
+		for _, player in pairs(east.connected_players) do west.chart(surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}) end
+	end
 	if game_tick % 1200 == 0 then send_unit_groups() end	
 	if global.game_reset_tick then
 		if global.game_reset_tick < game_tick then
@@ -396,6 +399,9 @@ local function on_init()
 		surface.delete_chunk({chunk.x, chunk.y})		
 	end
 
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
+
 	game.difficulty_settings.technology_price_multiplier = 0.5 
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
@@ -415,7 +421,7 @@ local function on_init()
 		"Feed your hatchery science flasks to breed biters!\n",
 		"They will soon after swarm to the opposing teams nest!\n",
 		"\n",
-		"Lay transport belts to your hatchery and they will happily nom the juice off the conveyor.\n",
+		"Lay transport belts to your hatchery and they will happily nom the science juice off the conveyor.\n",
 		"Higher tier flasks will breed stronger biters!\n",
 		"\n",
 		"Player turrets are disabled.\n",
@@ -432,7 +438,7 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
-event.on_nth_tick(60, tick)
+event.on_nth_tick(30, tick)
 event.add(defines.events.on_player_used_spider_remote, on_player_used_spider_remote)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
