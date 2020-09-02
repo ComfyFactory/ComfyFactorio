@@ -21,16 +21,25 @@ local function create_nests(surface)
 	local x = hatchery_position.x
 	
 	local e = surface.create_entity({name = "biter-spawner", position = {x * -1, 0}, force = "west"})
-	surface.create_entity({name = "small-worm-turret", position = {x * -1 + 6, 0}, force = "west"})
+	for _, p in pairs({{x * -1 + 6, 0}, {x * -1 + 3, 6}, {x * -1 + 3, -5}}) do
+		surface.create_entity({name = "small-worm-turret", position = p, force = "west"})
+		surface.create_decoratives{check_collision = false, decoratives = {{name = "enemy-decal", position = p, amount = 1}}}
+	end
 	e.active = false
 	global.map_forces.west.hatchery = e
-	global.map_forces.east.target = e
+	global.map_forces.east.target = e	
+	surface.create_decoratives{check_collision = false, decoratives = {{name = "enemy-decal", position = e.position, amount = 3}}}
 	
 	local e = surface.create_entity({name = "biter-spawner", position = {x, 0}, force = "east"})
-	surface.create_entity({name = "small-worm-turret", position = {x - 6, 0}, force = "east"})
+	for _, p in pairs({{x - 6, 0}, {x - 3, 6}, {x - 3, -5}}) do
+		surface.create_entity({name = "small-worm-turret", position = p, force = "east"})
+		surface.create_decoratives{check_collision = false, decoratives = {{name = "enemy-decal", position = p, amount = 1}}}
+	end
+	
 	e.active = false
 	global.map_forces.east.hatchery = e
-	global.map_forces.west.target = e
+	global.map_forces.west.target = e	
+	surface.create_decoratives{check_collision = false, decoratives = {{name = "enemy-decal", position = e.position, amount = 3}}}
 end
 
 local function create_border_beams(surface)

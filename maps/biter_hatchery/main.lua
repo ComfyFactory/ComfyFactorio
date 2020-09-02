@@ -1,14 +1,13 @@
 require "modules.no_turrets"
 require 'modules.no_acid_puddles'
---require "maps.biter_hatchery.flamethrower_nerf"
 local Tabs = require 'comfy_panel.main'
 local Map_score = require "comfy_panel.map_score"
-local Unit_health_booster = require "modules.biter_health_booster"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local Terrain = require "maps.biter_hatchery.terrain"
 local Gui = require "maps.biter_hatchery.gui"
 require "maps.biter_hatchery.share_chat"
 local Team = require "maps.biter_hatchery.team"
+local Unit_health_booster = require "modules.biter_health_booster"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
 local math_random = math.random
@@ -38,7 +37,7 @@ local health_boost_food_values = {
 	["space-science-pack"] = 				0.00041828 * m,
 }
 
-local worm_turret_spawn_radius = 18
+local worm_turret_spawn_radius = 25
 local worm_turret_vectors = {}
 worm_turret_vectors.west = {}
 for x = 0, worm_turret_spawn_radius, 1 do
@@ -90,7 +89,7 @@ end
 
 local function spawn_worm_turret(surface, force_name, food_item)
 	local r_max = surface.count_entities_filtered({type = "turret", force = force_name}) + 1
-	if r_max >  8 then return end
+	if r_max > 256 then return end
 	if math_random(1, r_max) ~= 1 then return end
 	local vectors = worm_turret_vectors[force_name]
 	local vector = vectors[math_random(1, #vectors)]
@@ -102,6 +101,7 @@ local function spawn_worm_turret(surface, force_name, food_item)
 	if not position then return end
 	surface.create_entity({name = worm, position = position, force = force_name})
 	surface.create_entity({name = "blood-explosion-huge", position = position})
+	surface.create_decoratives{check_collision = false, decoratives = {{name = "enemy-decal", position = position, amount = 1}}}
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
@@ -120,7 +120,7 @@ local function spawn_units(belt, food_item, removed_item_count)
 			team.unit_count = team.unit_count + 1
 		end
 	end
-	if math_random(1, 32) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
+	if math_random(1, 6) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
 end
 
 local function get_belts(spawner)
@@ -365,7 +365,7 @@ local function on_entity_damaged(event)
 	if cause then
 		if cause.valid then
 			if cause.type == "unit" then
-				if math_random(1,5) == 1 then return end
+				if math_random(1, 16) == 1 then return end
 			end
 		end
 	end
@@ -386,6 +386,16 @@ local function on_player_used_spider_remote(event)
 end
 
 local function on_init()
+	--Disable Nauvis
+	local surface = game.surfaces[1]
+	local map_gen_settings = surface.map_gen_settings
+	map_gen_settings.height = 3
+	map_gen_settings.width = 3
+	surface.map_gen_settings = map_gen_settings
+	for chunk in surface.get_chunks() do		
+		surface.delete_chunk({chunk.x, chunk.y})		
+	end
+
 	game.difficulty_settings.technology_price_multiplier = 0.5 
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	

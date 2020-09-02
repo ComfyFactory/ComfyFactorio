@@ -12,6 +12,8 @@ local entity_types = {
 	["unit-spawner"] = true,
 }
 
+if package.loaded['maps.biter_hatchery.terrain'] then entity_types["unit-spawner"] = nil end
+
 local function clean_table()
 	--Perform a table cleanup every 1000 boosts
 	global.biter_health_boost_count = global.biter_health_boost_count + 1
