@@ -55,6 +55,24 @@ local tile_damage = 50
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
 
+local collapse_kill = {
+    entities = {
+        ['laser-turret'] = true,
+        ['flamethrower-turret'] = true,
+        ['gun-turret'] = true,
+        ['artillery-turret'] = true,
+        ['landmine'] = true,
+        ['locomotive'] = true,
+        ['cargo-wagon'] = true,
+        ['car'] = true,
+        ['tank'] = true,
+        ['assembling-machine'] = true,
+        ['furnace'] = true,
+        ['steel-chest'] = true
+    },
+    enabled = true
+}
+
 local death_messages = {
     'should have watched where they walked!',
     'was not careful enough!',
@@ -325,7 +343,8 @@ function Public.reset_map()
     game.map_settings.path_finder.max_work_done_per_tick = 4000
     Diff.gui_width = 20
 
-    Collapse.set_kill_entities(true)
+    Collapse.set_kill_entities(false)
+    Collapse.set_kill_specific_entities(collapse_kill)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     Collapse.set_max_line_size(Terrain.level_width)

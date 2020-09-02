@@ -819,16 +819,16 @@ function Public.create_car(ic, event)
 
     local name, mined = get_player_entity(ic, player, ce)
 
-    if
-        name == 'car' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'tank' and not mined or
-            name == 'tank' and ce.name == 'car' and not mined or
-            name == 'tank' and ce.name == 'tank' and not mined or
-            name == 'spidertron' and ce.name == 'car' and not mined or
-            name == 'spidertron' and ce.name == 'tank' and not mined or
-            name == 'spidertron' and ce.name == 'spidertron' and not mined
-     then
-        return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
-    end
+if
+    name == 'car' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'tank' and not mined or
+        name == 'tank' and ce.name == 'car' and not mined or
+        name == 'tank' and ce.name == 'tank' and not mined or
+        name == 'spidertron' and ce.name == 'car' and not mined or
+        name == 'spidertron' and ce.name == 'tank' and not mined or
+        name == 'spidertron' and ce.name == 'spidertron' and not mined
+    then
+    return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
+end
 
     if string.sub(ce.surface.name, 0, #map_name) ~= map_name then
         return player.print('Multi-surface is not supported at the moment.', Color.warning)

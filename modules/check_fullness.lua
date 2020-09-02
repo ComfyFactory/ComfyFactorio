@@ -2,7 +2,8 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 
 local this = {
-    fullness_enabled = true
+    fullness_enabled = true,
+    warned = {}
 }
 
 Global.register(
@@ -14,25 +15,46 @@ Global.register(
 
 local Public = {}
 local random = math.random
+local ceil = math.ceil
+
+local function is_player_warned(player, reset)
+    if reset and this.warned[player.index] then
+        this.warned[player.index] = nil
+        return
+    end
+    if not this.warned[player.index] then
+        this.warned[player.index] = {
+            count = 2
+        }
+    end
+    this.warned[player.index].count = this.warned[player.index].count + 1
+    return this.warned[player.index]
+end
 
 local function compute_fullness(player)
+    local warn_player = is_player_warned(player)
     local free_slots = player.get_main_inventory().count_empty_stacks()
     if free_slots == 0 then
         if player.character then
-            player.character.health = player.character.health - random(50, 100)
-            player.character.surface.create_entity({name = 'water-splash', position = player.position})
-            local messages = {
-                'Ouch.. That hurt! Better be careful now.',
-                'Just a fleshwound.',
-                'Better keep those hands to yourself or you might loose them.'
-            }
-            player.print(messages[random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
-            if player.character.health <= 0 then
+            local damage = ceil((warn_player.count / 2) * warn_player.count)
+            if player.character.health >= damage then
+                player.character.damage(damage, 'player', 'explosion')
+                player.character.surface.create_entity({name = 'water-splash', position = player.position})
+                local messages = {
+                    'Ouch.. That hurt! Better be careful now.',
+                    'Just a fleshwound.',
+                    'Better keep those hands to yourself or you might loose them.'
+                }
+                player.print(messages[random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
+            else
                 player.character.die('enemy')
+                is_player_warned(player, true)
                 game.print(player.name .. ' should have emptied their pockets.', {r = 0.75, g = 0.0, b = 0.0})
                 return free_slots
             end
         end
+    else
+        is_player_warned(player, true)
     end
     return free_slots
 end
