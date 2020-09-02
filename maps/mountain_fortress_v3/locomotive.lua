@@ -1992,7 +1992,7 @@ function Public.get_items()
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 3000,
+        price = 6000,
         tooltip = 'Portable Car Surface\nCan be killed easily.',
         upgrade = false,
         static = true
@@ -2000,7 +2000,7 @@ function Public.get_items()
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',
-        price = 10000,
+        price = 15000,
         tooltip = 'Portable Tank Surface\nChonk tank, can resist heavy damage.',
         upgrade = false,
         static = true

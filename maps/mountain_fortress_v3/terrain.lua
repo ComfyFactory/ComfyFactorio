@@ -2149,6 +2149,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     if random(1, 2048) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
     end
+    tiles[#tiles + 1] = {name = "dirt-7", position = p}
     if random(1, 100) > 25 then
         entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
     end

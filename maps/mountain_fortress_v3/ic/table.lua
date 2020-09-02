@@ -45,7 +45,7 @@ function Public.reset()
     this.car_areas = {
         ['car'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 20}},
         ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}},
-        ['spidertron'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}}
+        ['spidertron'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}}
     }
 end
 
