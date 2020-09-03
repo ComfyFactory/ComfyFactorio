@@ -14,7 +14,7 @@ local function get_replacement_tile(surface, position)
 			if not tile.collides_with("resource-layer") then return tile.name end
 		end
 	end
-	return "grass-1"
+	return "landfill"
 end
 
 local function create_nests(surface)
@@ -72,7 +72,7 @@ local function draw_spawn_ore(surface, position)
 				for _, e in pairs(surface.find_entities_filtered({position = position})) do e.destroy() end
 				local tile = surface.get_tile(position)
 				if tile.name == "water" or tile.name == "deepwater" then
-					surface.set_tiles({{name = "landfill", position = position}}, true)
+					surface.set_tiles({{name = get_replacement_tile(surface, position), position = position}}, true)
 				end				
 				surface.create_entity({name = name, position = position, amount = math_random(800, 1000)})
 			end
@@ -85,9 +85,9 @@ function Public.create_mirror_surface()
 
 	local map_gen_settings = {}
 	map_gen_settings.seed = math_random(1, 99999999)
-	map_gen_settings.water = 0.22
+	map_gen_settings.water = 1
 	map_gen_settings.starting_area = 1
-	map_gen_settings.terrain_segmentation = 8
+	map_gen_settings.terrain_segmentation = 2
 	map_gen_settings.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}	
 	map_gen_settings.autoplace_controls = {
 		["coal"] = {frequency = 8, size = 0.7, richness = 0.5,},
@@ -96,7 +96,7 @@ function Public.create_mirror_surface()
 		["iron-ore"] = {frequency = 8, size = 0.7, richness = 1,},
 		["uranium-ore"] = {frequency = 5, size = 0.5, richness = 0.5,},
 		["crude-oil"] = {frequency = 5, size = 1, richness = 1,},
-		["trees"] = {frequency = math_random(5, 12) * 0.1, size = math_random(5, 12) * 0.1, richness = math_random(1, 10) * 0.1},
+		["trees"] = {frequency = math.random(4, 32) * 0.1, size = math.random(4, 16) * 0.1, richness = math.random(1, 10) * 0.1},
 		["enemy-base"] = {frequency = 0, size = 0, richness = 0}	
 	}
 	local surface = game.create_surface("mirror_terrain", map_gen_settings)
@@ -109,13 +109,14 @@ function Public.create_mirror_surface()
 	draw_spawn_ore(surface, {x = 240, y = 0})
 	
 	local r = 32
+	local seed = surface.map_gen_settings.seed
 	for x = r * -1, r, 1 do
 		for y = r * -1, r, 1 do
 			local p = {x = hatchery_position.x + x, y = hatchery_position.y + y}
-			if math.sqrt(x ^ 2 + y ^ 2) < r then
+			if math.sqrt(x ^ 2 + y ^ 2) + math_abs(GetNoise("decoratives", p, seed) * 9) < r then
 				local tile = surface.get_tile(p)
 				if tile.name == "water" or tile.name == "deepwater" then
-					surface.set_tiles({{name = "landfill", position = p}}, true)
+					surface.set_tiles({{name = get_replacement_tile(surface, p), position = p}}, true)
 				end
 			end
 		end
@@ -129,7 +130,7 @@ local function mirror_chunk(event, source_surface, x_modifier)
 	if x_modifier == -1 then offset = 32 end
 	local mirror_left_top = {x = left_top.x * x_modifier - offset, y = left_top.y}
 	
-	source_surface.request_to_generate_chunks(mirror_left_top, 1)
+	source_surface.request_to_generate_chunks({x = mirror_left_top.x + 16, y = mirror_left_top.y + 16}, 0)
 	source_surface.force_generate_chunk_requests()
 	
 	local mirror_area = {{mirror_left_top.x, mirror_left_top.y}, {mirror_left_top.x + 32, mirror_left_top.y + 32}}
@@ -153,26 +154,15 @@ end
 local function combat_area(event)
 	local surface = event.surface
 	local left_top = event.area.left_top
-	
+	local seed = surface.map_gen_settings.seed
 	if left_top.y >= 96 then return end
 	if left_top.y < -96 then return end
 	
-	local replacement_tile = "landfill"
-	local tile = surface.get_tile({8,0})
-	if tile then replacement_tile = tile.name end	
-	for _, tile in pairs(surface.find_tiles_filtered({area = event.area})) do
-		--if tile.name == "water" or tile.name == "deepwater" then
-			--surface.set_tiles({{name = replacement_tile, position = tile.position}}, true)
-		--end
+	for _, tile in pairs(surface.find_tiles_filtered({area = event.area})) do		
 		if tile.position.x >= -4 and tile.position.x < 4 then
 			surface.set_tiles({{name = "water-shallow", position = tile.position}}, true)
-		end
+		end	
 	end
-	--[[
-	for _, entity in pairs(surface.find_entities_filtered({type = {"resource", "cliff"}, area = event.area})) do
-		entity.destroy()
-	end
-	]]			
 end
 
 local function is_out_of_map(p)
@@ -194,29 +184,26 @@ local function out_of_map_area(event)
 		end
 	end
 end
---[[
+
 local function modify_source_surface(event)
 	local surface = event.surface
 	local left_top = event.area.left_top
-	if left_top.x >= 192 then return end
+	if left_top.x >= 256 or left_top.x < 0 or left_top.y < -192 or left_top.y > 192 then return end
 	local seed = surface.map_gen_settings.seed
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local p = {x = left_top.x + x, y = left_top.y + y}
-			if p.x + math_abs(GetNoise("cave_rivers", {x = 0, y = p.y}, seed) * 16) < 64 then
-				surface.set_tiles({{name = "water", position = p}}, true) 
-				surface.set_tiles({{name = "nuclear-ground", position = p}}, true) 
+	for _, tile in pairs(surface.find_tiles_filtered({area = event.area, name = {"water", "deepwater"}})) do
+		if tile.position.x + math_abs(GetNoise("cave_rivers", {x = 0, y = tile.position.y}, seed) * 64) < 224 then		
+			if math_abs(GetNoise("n5", tile.position, seed)) < 0.25 then
+				surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = tile.position}}, true)
 			end
 		end
 	end
 end
-]]
+
 local function on_chunk_generated(event)
 	local source_surface = game.surfaces["mirror_terrain"]
 	if not source_surface then return end
 	if not source_surface.valid then return end
-	--if event.surface.index == source_surface.index then modify_source_surface(event) return end
-	if event.surface.index == source_surface.index then return end
+	if event.surface.index == source_surface.index then modify_source_surface(event) return end
 	
 	local left_top = event.area.left_top
 		

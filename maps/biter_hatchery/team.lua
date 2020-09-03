@@ -19,7 +19,7 @@ function Public.set_force_attributes()
 		global.map_forces[force_name].unit_health_boost = 1
 		global.map_forces[force_name].unit_count = 0
 		global.map_forces[force_name].units = {}
-		global.map_forces[force_name].max_unit_count = 768
+		global.map_forces[force_name].max_unit_count = 1280
 		global.map_forces[force_name].player_count = 0
 	end	
 end

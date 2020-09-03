@@ -85,6 +85,8 @@ function Public.reset_map()
 	for _, player in pairs(game.forces.spectator.players) do
 		Gui.rejoin_question(player)
 	end
+	
+	game.reset_time_played()
 end
 
 local function spawn_worm_turret(surface, force_name, food_item)
