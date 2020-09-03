@@ -11,7 +11,7 @@ local bb_config = {
 	["random_scrap"] = true,							--Generate harvestable scrap around worms randomly?
 
 	--BITER SETTINGS--
-	["max_active_biters"] = 1536,					--Maximum total amount of attacking units per side.
+	["max_active_biters"] = 1280,					--Maximum total amount of attacking units per side.
 	["max_group_size"] = 288,							--Maximum unit group size.
 	["biter_timeout"] = 162000,						--Time it takes in ticks for an attacking unit to be deleted. This prevents perma stuck units.
 	["bitera_area_distance"] = 512					--Distance to the biter area.

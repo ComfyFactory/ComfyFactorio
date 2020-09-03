@@ -1,5 +1,5 @@
 local Public = {}
-local BiterRaffle = require "functions.biter_raffle"
+local BiterRaffle = require "maps.biter_battles_v2.biter_raffle"
 local Functions = require "maps.biter_battles_v2.functions"
 local bb_config = require "maps.biter_battles_v2.config"
 local math_random = math.random
