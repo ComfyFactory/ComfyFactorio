@@ -13,10 +13,15 @@ local valid_enemies = {
 	["behemoth-worm-turret"] = true,
 }
 
-local function on_entity_damaged(event)
+local function remove_puddles(event)
 	local cause = event.cause
-	if not cause or not cause.valid then return end
-	if not valid_enemies[cause.name] then return end	
+	if not cause then return true end
+	if not cause.valid then return true end
+	if valid_enemies[cause.name] then return true end
+end
+
+local function on_entity_damaged(event)	
+	if not remove_puddles(event) then return end
 	local entity = event.entity
 	if not entity or not entity.valid then return end	
 	local position = entity.position

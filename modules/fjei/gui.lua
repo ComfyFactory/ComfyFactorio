@@ -4,12 +4,12 @@ local math_abs = math.abs
 local string_find = string.find
 local table_remove = table.remove
 local table_insert = table.insert
-local main_window_width = 278
+local main_window_width = 228
 local recipe_window_width = 480
 local recipe_window_amount_width = 38
 local recipe_window_item_name_width = 128
 local recipe_window_position = "screen"
-local column_count = 6
+local column_count = 5
 local line_count = 5
 local items_per_page = column_count * line_count
 local Public = {}
@@ -28,11 +28,17 @@ local function get_total_page_count(player)
 end
 
 local function set_page_count_caption(player)
-	if not player.gui.left.fjei_main_window then return end
 	if not global.fjei.player_data[player.index].filtered_list then Functions.set_filtered_list(player) end
 	local active_page = global.fjei.player_data[player.index].active_page
 	local element = player.gui.left.fjei_main_window.fjei_main_window_control_table.fjei_main_window_page_counter
-	element.caption = active_page .. "/" .. get_total_page_count(player)
+	local caption = active_page .. "/" .. get_total_page_count(player)
+	element.caption = caption
+	
+	--set textfield width
+	local style = player.gui.left.fjei_main_window.fjei_main_window_control_table.fjei_main_window_search_textfield.style
+	local width = 112 - string.len(caption) * 6
+	style.minimal_width = width
+	style.maximal_width = width
 end
 
 local function get_formatted_amount(amount)
@@ -159,9 +165,10 @@ local function display_history(player)
 end
 
 function Public.refresh_main_window(player)
+	if not player.gui.left.fjei_main_window then return end
 	set_page_count_caption(player)
 	display_item_list(player)
-	display_history(player)
+	display_history(player)	
 end
 
 local function draw_main_window(player)
@@ -190,9 +197,7 @@ local function draw_main_window(player)
 	if not text then text = "" end
 	local textfield = t.add({ type = "textfield", name = "fjei_main_window_search_textfield", text = text})
 	textfield.style.left_margin = 4
-	textfield.style.minimal_width = 140	
-	textfield.style.maximal_width = 140
-	
+
 	frame.add({type = "line"})
 		
 	local t = frame.add({type = "table", name = "fjei_main_window_item_list_table", column_count = column_count})
@@ -486,14 +491,24 @@ local function add_to_history(item_name, player)
 		return
 	end
 	
-	--avoid double elements
-	for _, v in pairs(player_data.history) do
-		if v == item_name then return end
+	--shift existing item forward
+	for k, v in pairs(player_data.history) do
+		if v == item_name then 
+			table_remove(player_data.history, k)
+			table_insert(player_data.history, item_name)
+			return
+		end
 	end
 	
+	--remove first item, add new item
+	if player_data.size_of_history >= column_count then
+		table_remove(player_data.history, 1)
+		player_data.history[column_count] = item_name
+		return
+	end
+
 	player_data.size_of_history = player_data.size_of_history + 1
-	player_data.history[player_data.size_of_history] = item_name	
-	if player_data.size_of_history > column_count then player_data.history[player_data.size_of_history - column_count] = nil end
+	player_data.history[player_data.size_of_history] = item_name
 end
 
 local function show_cursor_stack_item(element, player, button)

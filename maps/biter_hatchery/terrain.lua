@@ -165,6 +165,13 @@ local function combat_area(event)
 	end
 end
 
+local function is_out_of_map_chunk(p)
+	if p.y < 96 and p.y >= -96 then return end
+	if p.x * 0.5 + 32 >= math_abs(p.y) then return end
+	if p.x * -0.5 + 32 > math_abs(p.y) then return end
+	return true
+end
+
 local function is_out_of_map(p)
 	if p.y < 96 and p.y >= -96 then return end
 	if p.x * 0.5 >= math_abs(p.y) then return end
@@ -206,12 +213,14 @@ local function on_chunk_generated(event)
 	if event.surface.index == source_surface.index then modify_source_surface(event) return end
 	
 	local left_top = event.area.left_top
-		
-	if left_top.x >= 0 then
-		mirror_chunk(event, source_surface, 1)
-	else
-		mirror_chunk(event, source_surface, -1)
-	end	
+	
+	if not is_out_of_map_chunk(left_top) then
+		if left_top.x >= 0 then
+			mirror_chunk(event, source_surface, 1)
+		else
+			mirror_chunk(event, source_surface, -1)
+		end
+	end
 	
 	out_of_map_area(event)
 	

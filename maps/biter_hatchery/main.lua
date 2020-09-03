@@ -177,7 +177,7 @@ local function get_units(force_name)
 	local units = {}
 	local count = 1
 	for _, unit in pairs(global.map_forces[force_name].units) do		
-		if not unit.unit_group then
+		if unit.valid and not unit.unit_group then
 			if math_random(1, 3) ~= 1 then
 				units[count] = unit
 				count = count + 1
@@ -295,6 +295,10 @@ local function on_entity_died(event)
 	for _, player in pairs(game.connected_players) do
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
 		Tabs.comfy_panel_call_tab(player, "Map Scores")
+	end
+	
+	for _, e in pairs(entity.surface.find_entities_filtered({type = "unit"})) do
+		e.active = false
 	end
 end
 
