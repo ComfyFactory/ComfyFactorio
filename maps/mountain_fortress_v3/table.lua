@@ -24,7 +24,6 @@ function Public.reset_table()
     this.restart = false
     this.shutdown = false
     this.announced_message = false
-    this.soft_reset_counter = 0
     this.game_saved = false
     -- @end
     this.icw_locomotive = nil
