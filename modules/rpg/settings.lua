@@ -144,7 +144,7 @@ function Public.extra_settings(player)
         setting_grid.add(
         {
             type = 'label',
-            caption = 'Enable item reach distance bonus?',
+            caption = 'Enable reach bonus?',
             tooltip = 'Don´t feeling like picking up others people loot?\nYou can toggle it here.'
         }
     )

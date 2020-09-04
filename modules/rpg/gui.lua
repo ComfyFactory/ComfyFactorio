@@ -653,9 +653,21 @@ Gui.on_click(
                 end
                 if not magic_pickup_gui_input.state then
                     player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_build_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_drop_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_reach_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_loot_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_resource_reach_distance_bonus = true
                     P.update_player_modifiers(player)
                 elseif magic_pickup_gui_input.state then
                     player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = false
+                    player_modifiers.disabled_modifier[player.index].character_build_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_drop_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_reach_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_loot_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_resource_reach_distance_bonus = true
                     P.update_player_modifiers(player)
                 end
             end
