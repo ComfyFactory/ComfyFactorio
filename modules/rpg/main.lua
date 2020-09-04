@@ -353,13 +353,13 @@ local function give_player_flameboots(player)
     end
 
     if rpg_t[player.index].mana <= 0 then
-        player.print('Your flame boots have worn out.', {r = 0.22, g = 0.77, b = 0.44})
+        player.print(({'rpg_main.flame_boots_worn_out'}), {r = 0.22, g = 0.77, b = 0.44})
         rpg_t[player.index].flame_boots = false
         return
     end
 
     if rpg_t[player.index].mana % 500 == 0 then
-        player.print('Mana remaining: ' .. rpg_t[player.index].mana, {r = 0.22, g = 0.77, b = 0.44})
+        player.print(({'rpg_main.flame_mana_remaining', rpg_t[player.index].mana}), {r = 0.22, g = 0.77, b = 0.44})
     end
 
     local p = player.position
@@ -391,7 +391,7 @@ local function one_punch(character, target, damage)
         {
             name = 'flying-text',
             position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5},
-            text = 'ONE PUNCH',
+            text = ({'rpg_main.one_punch_text'}),
             color = {255, 0, 0}
         }
     )
@@ -926,11 +926,7 @@ local function on_player_used_capsule(event)
     local p = player.print
 
     if rpg_t[player.index].last_spawned >= game.tick then
-        return p(
-            'There was a lot more to magic, as ' ..
-                player.name .. ' quickly found out, than waving their wand and saying a few funny words.',
-            Color.warning
-        )
+        return p(({'rpg_main.mana_casting_too_fast', player.name}), Color.warning)
     end
 
     local mana = rpg_t[player.index].mana
@@ -942,7 +938,7 @@ local function on_player_used_capsule(event)
     end
 
     if rpg_t[player.index].level < object.level then
-        return p('You lack the level to cast this spell.', Color.fail)
+        return p(({'rpg_main.low_level'}), Color.fail)
     end
 
     if not object.enabled then
@@ -964,12 +960,12 @@ local function on_player_used_capsule(event)
     }
 
     if not Math2D.bounding_box.contains_point(area, player.position) then
-        player.print('You wave your wand but realize that it´s out of reach.', Color.fail)
+        player.print(({'rpg_main.not_inside_pos'}), Color.fail)
         return
     end
 
     if mana < object.mana_cost then
-        return p('You don´t have enough mana to cast this spell.', Color.fail)
+        return p(({'rpg_main.no_mana'}), Color.fail)
     end
 
     local target_pos
@@ -996,7 +992,7 @@ local function on_player_used_capsule(event)
     end
     if object.obj_to_create == 'suicidal_comfylatron' then
         Functions.suicidal_comfylatron(position, surface)
-        p('You wave your wand and ' .. object_name .. ' is on the run!', Color.success)
+        p(({'rpg_main.suicidal_comfylatron', object_name}), Color.success)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     elseif object.obj_to_create == 'warp-gate' then
         player.teleport(
@@ -1006,7 +1002,7 @@ local function on_player_used_capsule(event)
         rpg_t[player.index].mana = 0
         player.character.health = 10
         player.character.surface.create_entity({name = 'water-splash', position = player.position})
-        p('Warped home with minor bruises.', Color.info)
+        p(({'rpg_main.warped_ok'}), Color.info)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     elseif projectile_types[obj_name] then
         for i = 1, object.amount do
@@ -1021,16 +1017,16 @@ local function on_player_used_capsule(event)
                 end
             end
         end
-        p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+        p(({'rpg_main.object_spawned'}), Color.success)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     else
         if object.target then
             surface.create_entity({name = obj_name, position = position, force = force, target = target_pos, speed = 1})
-            p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+            p(({'rpg_main.object_spawned'}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         elseif object.obj_to_create == 'fish' then
             player.insert({name = 'raw-fish', count = object.amount})
-            p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+            p(({'rpg_main.object_spawned'}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         elseif surface.can_place_entity {name = obj_name, position = position} then
             if object.biter then
@@ -1039,10 +1035,10 @@ local function on_player_used_capsule(event)
             else
                 surface.create_entity({name = obj_name, position = position, force = force})
             end
-            p('You wave your wand and ' .. object_name .. ' appears.', Color.success)
+            p(({'rpg_main.object_spawned'}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         else
-            p('Can´t create entity at given location.', Color.fail)
+            p(({'rpg_main.out_of_reach'}), Color.fail)
             return
         end
     end

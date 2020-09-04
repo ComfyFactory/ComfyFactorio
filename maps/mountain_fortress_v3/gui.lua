@@ -221,7 +221,7 @@ local function on_player_changed_surface(event)
     local frame = player.gui.top[main_frame_name]
 
     if info then
-        info.tooltip = 'Shows statistics!'
+        info.tooltip = ({'gui.info_tooltip'})
         info.sprite = 'item/dummy-steel-axe'
     end
 
@@ -257,7 +257,7 @@ local function on_player_changed_surface(event)
             charging.visible = true
         end
 
-        info.tooltip = 'Shows statistics!'
+        info.tooltip = ({'gui.info_tooltip'})
         info.sprite = 'item/dummy-steel-axe'
         info.visible = true
     elseif player.surface == wagon_surface then
@@ -280,7 +280,7 @@ local function on_player_changed_surface(event)
             charging.visible = false
         end
         if info then
-            info.tooltip = 'Hide locomotive minimap!'
+            info.tooltip = ({'gui.hide_minimap'})
             info.sprite = 'utility/map'
             info.visible = true
         end
@@ -312,35 +312,34 @@ function Public.update_gui(player)
 
     if rpg_extra.global_pool == 0 then
         gui.global_pool.caption = 'XP: 0'
-        gui.global_pool.tooltip = 'Dig, handcraft or run to increase the pool!'
+        gui.global_pool.tooltip = ({'gui.global_pool_tooltip'})
     elseif rpg_extra.global_pool >= 0 then
         gui.global_pool.caption = 'XP: ' .. format_number(floor(rpg_extra.global_pool), true)
-        gui.global_pool.tooltip =
-            'Amount of XP that is stored inside the global xp pool.\nRaw Value: ' .. floor(rpg_extra.global_pool)
+        gui.global_pool.tooltip = ({'gui.global_pool_amount', floor(rpg_extra.global_pool)})
     end
 
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(this.mined_scrap, true)
-    gui.scrap_mined.tooltip = 'Amount of trees/rocks harvested.'
+    gui.scrap_mined.tooltip = ({'gui.amount_harvested'})
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(this.biters_killed, true)
-    gui.biters_killed.tooltip = 'Amount of biters killed.'
+    gui.biters_killed.tooltip = ({'gui.biters_killed'})
 
     gui.landmine.caption =
         ' [img=entity.land-mine]: ' ..
         format_number(this.upgrades.landmine.built, true) .. ' / ' .. format_number(this.upgrades.landmine.limit, true)
-    gui.landmine.tooltip = 'Amount of land-mines that can be built.'
+    gui.landmine.tooltip = ({'gui.land_mine_placed'})
 
     gui.flame_turret.caption =
         ' [img=entity.flamethrower-turret]: ' ..
         format_number(this.upgrades.flame_turret.built, true) ..
             ' / ' .. format_number(this.upgrades.flame_turret.limit, true)
-    gui.flame_turret.tooltip = 'Amount of flamethrower-turrets that can be built.'
+    gui.flame_turret.tooltip = ({'gui.flamethrowers_placed'})
 
     gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(this.train_upgrades, true)
-    gui.train_upgrades.tooltip = 'Amount of train upgrades.'
+    gui.train_upgrades.tooltip = ({'gui.train_upgrades'})
 
     gui.chest_upgrades.caption = ' [img=entity.steel-chest]: ' .. format_number(this.chest_limit_outside_upgrades, true)
-    gui.chest_upgrades.tooltip = 'Amount of chests that can be placed near train.'
+    gui.chest_upgrades.tooltip = ({'gui.chest_placed'})
 end
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

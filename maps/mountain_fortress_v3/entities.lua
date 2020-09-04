@@ -32,21 +32,16 @@ local abs = math.abs
 local sqrt = math.sqrt
 local round = math.round
 
---local raise_event = script.raise_event
-
-local mapkeeper = '[color=blue]Mapkeeper:[/color]\n'
-local comfylatron = '[color=blue]Comfylatron:[/color]\n'
-
 local treasure_chest_messages = {
-    "You notice an old crate within the rubble. It's filled with treasure!",
-    "You find a chest underneath the broken rocks. It's filled with goodies!",
-    'We has found the precious!'
+    ({'entity.treasure_1'}),
+    ({'entity.treasure_2'}),
+    ({'entity.treasure_3'})
 }
 
 local rare_treasure_chest_messages = {
-    'Your magic improves. You have found a chest that is filled with rare treasures!',
-    "Oh how wonderful. You found a chest underneath the broken rocks. It's filled with rare goodies!",
-    "You're a wizard! We have found the rare precious!"
+    ({'entity.treasure_rare_1'}),
+    ({'entity.treasure_rare_2'}),
+    ({'entity.treasure_rare_3'})
 }
 
 local disabled_threats = {
@@ -55,10 +50,10 @@ local disabled_threats = {
 }
 
 local defeated_messages = {
-    "Oh no, the biters nom'ed the train away!",
-    "I'm not 100% sure, but - apparently the train was chewed away.",
-    'You had one objective - defend the train *-*',
-    "Looks like we're resetting cause you did not defend the train ._."
+    ({'entity.defeated_1'}),
+    ({'entity.defeated_2'}),
+    ({'entity.defeated_3'}),
+    ({'entity.defeated_4'})
 }
 
 local protect_types = {
@@ -81,15 +76,15 @@ local reset_game =
             return
         end
         if this.restart then
-            local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
-            Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+            local message = ({'entity.reset_game'})
+            Server.to_discord_bold(message)
             Server.start_scenario('Mountain_Fortress_v3')
             this.announced_message = true
             return
         end
         if this.shutdown then
-            local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
-            Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+            local message = ({'entity.shutdown_game'})
+            Server.to_discord_bold(message)
             Server.stop_scenario()
             return
         end
@@ -117,7 +112,7 @@ local function set_objective_health(final_damage_amount)
             local p = {
                 position = this.locomotive.position
             }
-            local msg = comfylatron .. 'Train is taking heavy damage.\nDeploying defense mechanisms.'
+            local msg = ({'entity.train_taking_damage'})
             Alert.alert_all_players_location(p, msg)
             this.poison_deployed = true
         end
@@ -767,8 +762,8 @@ function Public.loco_died()
             data.position = {x = 0, y = 0}
         end
 
-        local msg = mapkeeper .. defeated_messages[random(1, #defeated_messages)] .. '\nBetter luck next time.'
-        Alert.alert_all_players_location(data, msg, nil, 6000)
+        local msg = defeated_messages[random(1, #defeated_messages)]
+        Alert.alert_all_players_location(data, msg, nil, 100)
 
         local Reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
         wave_defense_table.game_lost = true
@@ -786,10 +781,7 @@ function Public.loco_died()
         end
         if this.restart then
             if not this.announced_message then
-                game.print(
-                    'Soft-reset is disabled! Server will restart from scenario to load new changes.',
-                    {r = 0.22, g = 0.88, b = 0.22}
-                )
+                game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                 Task.set_timeout_in_ticks(60, reset_game, params)
                 this.announced_message = true
                 return
@@ -797,10 +789,7 @@ function Public.loco_died()
         end
         if this.shutdown then
             if not this.announced_message then
-                game.print(
-                    'Soft-reset is disabled! Server will shutdown. Most likely because of updates.',
-                    {r = 0.22, g = 0.88, b = 0.22}
-                )
+                game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                 Task.set_timeout_in_ticks(60, reset_game, params)
                 this.announced_message = true
                 return
@@ -816,18 +805,8 @@ function Public.loco_died()
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
     this.game_lost = true
-    local msg
-    if this.soft_reset then
-        msg =
-            mapkeeper ..
-            defeated_messages[random(1, #defeated_messages)] ..
-                '\nBetter luck next time.\nGame will soft-reset shortly.'
-    else
-        msg =
-            mapkeeper ..
-            defeated_messages[random(1, #defeated_messages)] ..
-                '\nBetter luck next time.\nGame will not soft-reset. Soft-reset is disabled.'
-    end
+    local msg = defeated_messages[random(1, #defeated_messages)]
+
     local pos = {
         position = this.locomotive.position
     }
@@ -909,7 +888,7 @@ local function on_built_entity(event)
                     {
                         name = 'flying-text',
                         position = entity.position,
-                        text = entity.name .. ' limit reached. Purchase more slots at the market!',
+                        text = ({'entity.entity_limit_reached', entity.name}),
                         color = {r = 0.82, g = 0.11, b = 0.11}
                     }
                 )
@@ -976,7 +955,7 @@ local function on_robot_built_entity(event)
                     {
                         name = 'flying-text',
                         position = entity.position,
-                        text = entity.name .. ' limit reached. Purchase more slots at the market!',
+                        text = ({'entity.entity_limit_reached', entity.name}),
                         color = {r = 0.82, g = 0.11, b = 0.11}
                     }
                 )

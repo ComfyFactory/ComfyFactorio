@@ -45,9 +45,6 @@ Public.nth_tick = 18001
 Public.visuals_delay = 1800
 Public.xp_floating_text_color = {157, 157, 157}
 
-Public.teller_global_pool = '[color=blue]Global Pool Reward:[/color] \n'
-Public.teller_level_limit = '[color=blue]Level Limit:[/color] \n'
-
 Public.enemy_types = {
     ['unit'] = true,
     ['unit-spawner'] = true,

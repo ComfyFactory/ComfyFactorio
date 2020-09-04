@@ -2,7 +2,6 @@ local RPG = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
 local P = require 'player_modifiers'
 local Session = require 'utils.datastore.session_data'
-local reset_tooltip = 'ONE-TIME reset if you picked the wrong path (this will keep your points)'
 
 local Public = {}
 
@@ -33,7 +32,7 @@ function Public.extra_settings(player)
         {
             type = 'frame',
             name = settings_frame_name,
-            caption = 'RPG Settings',
+            caption = ({'rpg_settings.name'}),
             direction = 'vertical'
         }
     )
@@ -50,8 +49,7 @@ function Public.extra_settings(player)
 
     inside_table.add({type = 'line'})
 
-    local info_text =
-        inside_table.add({type = 'label', caption = 'Common RPG settings. These settings are per player basis.'})
+    local info_text = inside_table.add({type = 'label', caption = ({'rpg_settings.info_text_label'})})
     local info_text_style = info_text.style
     info_text_style.font = 'default-bold'
     info_text_style.padding = 0
@@ -79,7 +77,7 @@ function Public.extra_settings(player)
             setting_grid.add(
             {
                 type = 'label',
-                caption = 'Show health/mana bar?'
+                caption = ({'rpg_settings.health_text_label'})
             }
         )
 
@@ -93,9 +91,9 @@ function Public.extra_settings(player)
         input_style.height = 35
         input_style.vertical_align = 'center'
         health_bar_gui_input = create_input_element(health_bar_input, 'boolean', rpg_t[player.index].show_bars)
-        health_bar_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+        health_bar_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
         if not rpg_extra.enable_mana then
-            health_bar_label.caption = 'Show health bar?'
+            health_bar_label.caption = ({'rpg_settings.health_only_text_label'})
         end
     end
 
@@ -103,7 +101,7 @@ function Public.extra_settings(player)
         setting_grid.add(
         {
             type = 'label',
-            caption = 'Reset your skillpoints?',
+            caption = ({'rpg_settings.reset_text_label'}),
             tooltip = ''
         }
     )
@@ -122,21 +120,21 @@ function Public.extra_settings(player)
     if not rpg_t[player.index].reset then
         if not trusted[player.name] then
             reset_gui_input.enabled = false
-            reset_gui_input.tooltip = 'Not trusted.\nChecked = true\nUnchecked = false'
+            reset_gui_input.tooltip = ({'rpg_settings.not_trusted'})
             goto continue
         end
         if rpg_t[player.index].level <= 50 then
             reset_gui_input.enabled = false
-            reset_gui_input.tooltip = 'Level requirement: 50\nChecked = true\nUnchecked = false'
-            reset_label.tooltip = 'Level requirement: 50\nCan only reset once.'
+            reset_gui_input.tooltip = ({'rpg_settings.low_level', 50})
+            reset_label.tooltip = ({'rpg_settings.low_level', 50})
         else
             reset_gui_input.enabled = true
-            reset_gui_input.tooltip = reset_tooltip
-            reset_label.tooltip = reset_tooltip
+            reset_gui_input.tooltip = ({'rpg_settings.reset_tooltip'})
+            reset_label.tooltip = ({'rpg_settings.reset_tooltip'})
         end
     else
         reset_gui_input.enabled = false
-        reset_gui_input.tooltip = 'All used up!'
+        reset_gui_input.tooltip = ({'rpg_settings.used_up'})
     end
 
     ::continue::
@@ -144,8 +142,8 @@ function Public.extra_settings(player)
         setting_grid.add(
         {
             type = 'label',
-            caption = 'Enable reach bonus?',
-            tooltip = 'Don´t feeling like picking up others people loot?\nYou can toggle it here.'
+            caption = ({'rpg_settings.reach_text_label'}),
+            tooltip = ({'rpg_settings.reach_text_tooltip'})
         }
     )
 
@@ -168,14 +166,14 @@ function Public.extra_settings(player)
         reach_mod = true
     end
     local magic_pickup_gui_input = create_input_element(magic_pickup_input, 'boolean', reach_mod)
-    magic_pickup_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+    magic_pickup_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
 
     local movement_speed_label =
         setting_grid.add(
         {
             type = 'label',
-            caption = 'Enable movement speed bonus?',
-            tooltip = 'Don´t feeling like running like the flash?\nYou can toggle it here.'
+            caption = ({'rpg_settings.movement_text_label'}),
+            tooltip = ({'rpg_settings.movement_text_tooltip'})
         }
     )
 
@@ -198,7 +196,7 @@ function Public.extra_settings(player)
         speed_mod = true
     end
     local movement_speed_gui_input = create_input_element(movement_speed_input, 'boolean', speed_mod)
-    movement_speed_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+    movement_speed_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
 
     local enable_entity_gui_input
     local conjure_gui_input
@@ -212,8 +210,8 @@ function Public.extra_settings(player)
             setting_grid.add(
             {
                 type = 'label',
-                caption = 'Enable stone-path when mining?',
-                tooltip = 'Enabling this will automatically create stone-path when you mine.'
+                caption = ({'rpg_settings.stone_path_label'}),
+                tooltip = ({'rpg_settings.stone_path_tooltip'})
             }
         )
 
@@ -236,11 +234,11 @@ function Public.extra_settings(player)
 
         if rpg_t[player.index].level <= 20 then
             stone_path_gui_input.enabled = false
-            stone_path_gui_input.tooltip = 'Level requirement: 20\nChecked = true\nUnchecked = false'
-            stone_path_label.tooltip = 'Level requirement: 20'
+            stone_path_gui_input.tooltip = ({'rpg_settings.low_level', 20})
+            stone_path_label.tooltip = ({'rpg_settings.low_level', 20})
         else
             stone_path_gui_input.enabled = true
-            stone_path_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+            stone_path_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
         end
     end
 
@@ -249,8 +247,8 @@ function Public.extra_settings(player)
             setting_grid.add(
             {
                 type = 'label',
-                caption = 'Enable one-punch?',
-                tooltip = 'Enabling this will have a chance of one-punching biters.'
+                caption = ({'rpg_settings.one_punch_label'}),
+                tooltip = ({'rpg_settings.one_punch_tooltip'})
             }
         )
 
@@ -274,14 +272,14 @@ function Public.extra_settings(player)
         if rpg_extra.enable_one_punch_globally then
             one_punch_gui_input.state = true
             one_punch_gui_input.enabled = false
-            one_punch_gui_input.tooltip = 'Enabled globally.'
+            one_punch_gui_input.tooltip = ({'rpg_settings.one_punch_globally'})
         else
             if rpg_t[player.index].level <= 30 then
                 one_punch_gui_input.enabled = false
-                one_punch_gui_input.tooltip = 'Level requirement: 30\nChecked = true\nUnchecked = false'
+                one_punch_gui_input.tooltip = ({'rpg_settings.low_level', 30})
             else
                 one_punch_gui_input.enabled = true
-                one_punch_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+                one_punch_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
             end
         end
     end
@@ -291,8 +289,8 @@ function Public.extra_settings(player)
             setting_grid.add(
             {
                 type = 'label',
-                caption = 'Enable flame boots?',
-                tooltip = 'When the bullets simply don´t bite.'
+                caption = ({'rpg_settings.flameboots_label'}),
+                tooltip = ({'rpg_settings.flameboots_tooltip'})
             }
         )
 
@@ -316,15 +314,15 @@ function Public.extra_settings(player)
         if rpg_t[player.index].mana > 50 then
             if rpg_t[player.index].level <= 100 then
                 flame_boots_gui_input.enabled = false
-                flame_boots_gui_input.tooltip = 'Level requirement: 100\nChecked = true\nUnchecked = false'
-                flame_boots_label.tooltip = 'Level requirement: 100'
+                flame_boots_gui_input.tooltip = ({'rpg_settings.low_level', 100})
+                flame_boots_label.tooltip = ({'rpg_settings.low_level', 100})
             else
                 flame_boots_gui_input.enabled = true
-                flame_boots_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+                flame_boots_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
             end
         else
             flame_boots_gui_input.enabled = false
-            flame_boots_gui_input.tooltip = 'Not enough mana.\nChecked = true\nUnchecked = false'
+            flame_boots_gui_input.tooltip = ({'rpg_settings.no_mana'})
         end
     end
 
@@ -339,7 +337,7 @@ function Public.extra_settings(player)
 
         mana_frame.add({type = 'line'})
 
-        local label = mana_frame.add({type = 'label', caption = 'Mana Settings:'})
+        local label = mana_frame.add({type = 'label', caption = ({'rpg_settings.mana_label'})})
         label.style.font = 'default-bold'
         label.style.padding = 0
         label.style.left_padding = 10
@@ -357,8 +355,8 @@ function Public.extra_settings(player)
             setting_grid_2.add(
             {
                 type = 'label',
-                caption = 'Enable spawning with raw-fish?',
-                tooltip = 'When simply constructing items is not enough.\nNOTE! Use Raw-fish to cast spells.'
+                caption = ({'rpg_settings.magic_label'}),
+                tooltip = ({'rpg_settings.magic_tooltip'})
             }
         )
 
@@ -382,17 +380,17 @@ function Public.extra_settings(player)
 
         if not trusted[player.name] then
             enable_entity_gui_input.enabled = false
-            enable_entity_gui_input.tooltip = 'Not trusted.\nChecked = true\nUnchecked = false'
+            enable_entity_gui_input.tooltip = ({'rpg_settings.not_trusted'})
         else
             enable_entity_gui_input.enabled = true
-            enable_entity_gui_input.tooltip = 'Checked = true\nUnchecked = false'
+            enable_entity_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
         end
 
         local conjure_label =
             mana_grid.add(
             {
                 type = 'label',
-                caption = 'Select what entity to spawn',
+                caption = ({'rpg_settings.magic_spell'}),
                 tooltip = ''
             }
         )
@@ -413,21 +411,29 @@ function Public.extra_settings(player)
 
         for _, entity in pairs(spells) do
             if entity.type == 'item' then
-                conjure_label.tooltip =
-                    conjure_label.tooltip ..
-                    '[item=' ..
-                        entity.obj_to_create ..
-                            '] requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level .. '\n'
+                conjure_label.tooltip = ({
+                    'rpg_settings.magic_item_requirement',
+                    conjure_label.tooltip,
+                    entity.obj_to_create,
+                    entity.mana_cost,
+                    entity.level
+                })
             elseif entity.type == 'entity' then
-                conjure_label.tooltip =
-                    conjure_label.tooltip ..
-                    '[entity=' ..
-                        entity.obj_to_create ..
-                            '] requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level .. '\n'
+                conjure_label.tooltip = ({
+                    'rpg_settings.magic_entity_requirement',
+                    conjure_label.tooltip,
+                    entity.obj_to_create,
+                    entity.mana_cost,
+                    entity.level
+                })
             elseif entity.type == 'special' then
-                conjure_label.tooltip =
-                    conjure_label.tooltip ..
-                    entity.name .. ' requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level .. '\n'
+                conjure_label.tooltip = ({
+                    'rpg_settings.magic_special_requirement',
+                    conjure_label.tooltip,
+                    entity.name,
+                    entity.mana_cost,
+                    entity.level
+                })
             end
         end
     end
@@ -443,7 +449,7 @@ function Public.extra_settings(player)
 
         allocate_frame.add({type = 'line'})
 
-        local a_label = allocate_frame.add({type = 'label', caption = 'Allocations Settings:'})
+        local a_label = allocate_frame.add({type = 'label', caption = ({'rpg_settings.allocation_settings_label'})})
         a_label.style.font = 'default-bold'
         a_label.style.padding = 0
         a_label.style.left_padding = 10
@@ -459,11 +465,11 @@ function Public.extra_settings(player)
             allocate_grid.add(
             {
                 type = 'label',
-                caption = 'Select what skill to auto-allocate.',
+                caption = ({'rpg_settings.allocation_label'}),
                 tooltip = ''
             }
         )
-        allocate_label.tooltip = 'This will automatically allocate all available points to the given node.'
+        allocate_label.tooltip = ({'rpg_settings.allocation_tooltip'})
 
         local names = RPG.auto_allocate_nodes
 
@@ -517,13 +523,15 @@ function Public.extra_settings(player)
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_button_name, caption = 'Discard changes'})
+    local close_button =
+        left_flow.add({type = 'button', name = discard_button_name, caption = ({'rpg_settings.discard_changes'})})
     close_button.style = 'back_button'
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = 'Save changes'})
+    local save_button =
+        right_flow.add({type = 'button', name = save_button_name, caption = ({'rpg_settings.save_changes'})})
     save_button.style = 'confirm_button'
 
     Gui.set_data(save_button, data)
