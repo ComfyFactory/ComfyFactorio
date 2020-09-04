@@ -207,7 +207,7 @@ public.permission_orbit = {
    defines.input_action.wire_dragging,
 }
 
-public.self_explode = 60 * 60 * 10
+public.self_explode = 60 * 60 * 10 -- time until main shipwreck explosion
 public.claim_markers = {
    "gun-turret",
    "laser-turret",

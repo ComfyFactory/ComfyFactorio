@@ -605,7 +605,7 @@ local function init_player(p)
 
    global.this.perks[p.name] = nil
    p.teleport(position, "arena")
-   p.name = get_random_name()
+   --p.name = get_random_name() --player name is read only
    p.force = game.create_force(p.name)
    p.force.set_friend("neutral", true)
    global.this.perks[p.name] = {

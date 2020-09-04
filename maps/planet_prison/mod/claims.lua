@@ -21,7 +21,7 @@ public.init = function(names, max_distance)
    global.this._claim_max_dist = max_distance
 end
 
-global.this._claim_new_claim = function(ent, deps)
+local function claim_new_claim(ent, deps)
    local comm = deps.common
    local point = {
       {
@@ -41,14 +41,14 @@ global.this._claim_new_claim = function(ent, deps)
    table.insert(claims[ent.force.name].collections, point)
 end
 
-global.this._claim_on_build_entity = function(ent, deps)
+local function claim_on_build_entity(ent, deps)
    local max_dist = global.this._claim_max_dist
    local force = ent.force.name
    local comm = deps.common
    local data = global.this._claims_info[force]
 
    if data == nil then
-      global.this._claim_new_claim(ent, deps)
+      claim_new_claim(ent, deps)
       return
    end
 
@@ -78,11 +78,11 @@ global.this._claim_on_build_entity = function(ent, deps)
    end
 
    if not in_range then
-      global.this._claim_new_claim(ent, deps)
+      claim_new_claim(ent, deps)
    end
 end
 
-global.this._claims_in_markers = function(name)
+local function claims_in_markers(name)
    for _, marker in pairs(global.this._claim_markers) do
       if name == marker then
          return true
@@ -97,17 +97,17 @@ on_build_entity - Event processing function.
 @param ent - Entity
 --]]
 public.on_built_entity = function(ent)
-   if not global.this._claims_in_markers(ent.name) then
+   if not claims_in_markers(ent.name) then
       return
    end
 
    local deps = {
       common = common,
    }
-   global.this._claim_on_build_entity(ent, deps)
+   claim_on_build_entity(ent, deps)
 end
 
-global.this._claim_on_entity_died = function(ent, deps)
+local function claim_on_entity_died(ent, deps)
    local comm = deps.common
    local force = ent.force.name
    local data = global.this._claims_info[force]
@@ -145,14 +145,14 @@ on_entity_died - Event processing function.
 @param ent - Entity
 --]]
 public.on_entity_died = function(ent)
-   if not global.this._claims_in_markers(ent.name) then
+   if not claims_in_markers(ent.name) then
       return
    end
 
    local deps = {
       common = common,
    }
-   global.this._claim_on_entity_died(ent, deps)
+   claim_on_entity_died(ent, deps)
 end
 
 --[[
@@ -183,7 +183,7 @@ public.get_claims = function(f_name)
    return global.this._claims_info[f_name].claims
 end
 
-global.this._claims_update_visiblity = function()
+local function claims_update_visiblity()
    if #global.this._claims_visible_to == 0 then
       for _, info in pairs(global.this._claims_info) do
          for _, id in pairs(info.polygons) do
@@ -217,7 +217,7 @@ public.set_visibility_to = function(name)
    end
 
    table.insert(global.this._claims_visible_to, name)
-   global.this._claims_update_visiblity()
+   claims_update_visiblity()
 end
 
 --[[
@@ -229,7 +229,7 @@ public.remove_visibility_from = function(name)
       local p = global.this._claims_visible_to[i]
       if p == name then
          table.remove(global.this._claims_visible_to, i)
-         global.this._claims_update_visiblity()
+         claims_update_visiblity()
          break
       end
    end
