@@ -86,7 +86,9 @@ local nth_tick_token =
     Token.register(
     function(data)
         local player = data.player
-        Public.try_ul_data(player.name)
+        if player and player.valid then
+            Public.try_ul_data(player.name)
+        end
     end
 )
 
@@ -205,7 +207,7 @@ Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.get_player(event.player_index)
-        if not player then
+        if not player or not player.valid then
             return
         end
 
@@ -217,7 +219,7 @@ Event.add(
     defines.events.on_player_left_game,
     function(event)
         local player = game.get_player(event.player_index)
-        if not player then
+        if not player or not player.valid then
             return
         end
 

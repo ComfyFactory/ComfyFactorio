@@ -20,7 +20,7 @@ local this = {
     },
     message_limit = {},
     player_settings = {},
-    globally_enabled = true
+    globally_enabled = false
 }
 
 Global.register(
@@ -115,6 +115,7 @@ local function get_highest(table)
 end
 
 local function get_valid_chest()
+    local chests = {}
     if this.globally_enabled then
         local refill_chests = this.refill_chests
 
@@ -123,7 +124,6 @@ local function get_valid_chest()
         end
 
         local chest
-        local chests = {}
 
         for i = 1, #refill_chests do
             chest = refill_chests[i]
@@ -155,16 +155,17 @@ local function get_valid_chest()
         local player = game.get_player(i)
         if player and player.valid then
             local p_data = get_player_data(player)
-            local chests = p_data.chests
-            if not next(chests) then
+            local p_chests = p_data.chests
+            if not next(p_chests) then
                 return
             end
-            for t = 1, #chests do
-                chest = chests[t]
+            for t = 1, #p_chests do
+                chest = p_chests[t]
                 if chest then
-                    return chest
-                elseif not chest.valid then
-                    fast_remove(chests, i)
+                    chests[#chests + 1] = chest
+                end
+                if not chest.valid then
+                    fast_remove(p_data.chests, i)
                     p_data.placed = p_data.placed - 1
                     if p_data.placed <= 0 then
                         p_data.placed = 0
@@ -174,6 +175,7 @@ local function get_valid_chest()
             end
         end
     end
+    return chests
 end
 
 local function get_ammo(entity_turret)
@@ -276,10 +278,9 @@ local function do_refill_turrets()
 
             if not turret.valid then
                 fast_remove(turrets, i)
-                return
+            else
+                refill(turret, chest)
             end
-
-            refill(turret, chest)
         end
         return
     end
@@ -290,25 +291,27 @@ local function do_refill_turrets()
         return
     end
 
-    for i = 1, #player_data do
-        local player = game.get_player(i)
+    for p, _ in next, player_data do
+        local player = game.get_player(p)
         if player and player.valid then
-            local turrets = player_data[i].turrets
+            local p_data = get_player_data(player)
+            if not p_data then
+                return
+            end
+            local turrets = p_data.turrets
             if not next(turrets) then
                 return
             end
-            for t = 1, #turrets do
-                local turret = turrets[t]
+            for key, turret in next, turrets do
                 if not turret then
                     return
                 end
 
                 if not turret.valid then
-                    fast_remove(turrets, t)
-                    return
+                    fast_remove(turrets, key)
+                else
+                    refill(turret, chest)
                 end
-
-                refill(turret, chest)
             end
         end
     end
@@ -548,6 +551,6 @@ end
 
 Event.add(defines.events.on_built_entity, on_entity_built)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
-Event.on_nth_tick(25, on_tick)
+Event.on_nth_tick(50, on_tick)
 
 return Public
