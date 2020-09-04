@@ -2,6 +2,8 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
+local m_gui = require 'mod-gui'
+local mod = m_gui.get_button_flow
 
 local this = {
     inf_chests = {},
@@ -30,6 +32,7 @@ local size = 35
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local stack_slider_name = Gui.uid_name()
+local delete_mode_name = Gui.uid_name()
 
 local Public = {}
 
@@ -60,12 +63,13 @@ local function clear_gui(player)
 end
 
 local function create_button(player)
-    player.gui.top.add(
+    mod(player).add(
         {
             type = 'sprite-button',
             sprite = 'item/logistic-chest-requester',
             name = main_button_name,
-            tooltip = 'Portable inventory stash!'
+            tooltip = 'Portable inventory stash!',
+            style = m_gui.button_style
         }
     )
 end
@@ -89,7 +93,7 @@ local function validate_player(player)
     return true
 end
 
-local function item(item_name, item_count, player, chest_id)
+local function item(item_name, item_count, player, storage)
     local stack_size = this.stack_size[player.index]
     local item_stack
     if stack_size then
@@ -100,17 +104,12 @@ local function item(item_name, item_count, player, chest_id)
 
     local diff = item_count - item_stack
 
-    if not this.inf_storage[chest_id] then
-        this.inf_storage[chest_id] = {}
-    end
-    local storage = this.inf_storage[chest_id]
-
     if diff > 0 then
         local count = player.remove({name = item_name, count = diff})
         if not storage[item_name] then
-            this.inf_storage[chest_id][item_name] = count
+            storage[item_name] = count
         else
-            this.inf_storage[chest_id][item_name] = storage[item_name] + count
+            storage[item_name] = storage[item_name] + count
         end
     elseif diff < 0 then
         if not storage[item_name] or storage[item_name] <= 0 then
@@ -118,18 +117,18 @@ local function item(item_name, item_count, player, chest_id)
         end
         if storage[item_name] > (diff * -1) then
             local inserted = player.insert({name = item_name, count = (diff * -1)})
-            this.inf_storage[chest_id][item_name] = storage[item_name] - inserted
+            storage[item_name] = storage[item_name] - inserted
         else
             player.insert({name = item_name, count = storage[item_name]})
-            this.inf_storage[chest_id][item_name] = 0
+            storage[item_name] = 0
         end
     end
     ::continue::
 end
 
 local function update_chest()
-    for chest_id, chest in pairs(this.inf_chests) do
-        if not chest.valid then
+    for chest_id, player in pairs(this.inf_chests) do
+        if not player.valid then
             goto continue
         end
         local storage = this.inf_storage[chest_id]
@@ -137,21 +136,21 @@ local function update_chest()
             goto continue
         end
 
-        local inv = chest.get_inventory(defines.inventory.character_main)
+        local inv = player.get_inventory(defines.inventory.character_main)
         if not inv or not inv.valid then
-            return
+            goto continue
         end
         local content = inv.get_contents()
 
         for item_name, item_count in pairs(content) do
             if storage[item_name] then
-                item(item_name, item_count, inv, chest_id)
+                item(item_name, item_count, inv, storage)
             end
         end
 
-        for item_name, _ in pairs(this.inf_storage[chest_id]) do
+        for item_name, _ in pairs(storage) do
             if not content[item_name] then
-                item(item_name, 0, inv, chest_id)
+                item(item_name, 0, inv, storage)
             end
         end
 
@@ -183,7 +182,7 @@ local function draw_main_frame(player, target, chest_id)
     local btn =
         tbl.add {
         type = 'sprite-button',
-        tooltip = '[color=blue]Info![/color]\nYou can easily remove an item by left/right-clicking it.\n\nItems selected in the table below will remove all stacks except one from the player inventory.\nIf the stack-size is bigger in the personal stash than the players inventory stack then the players inventory will automatically refill from the personal stash.\n\n[color=red]Usage[/color]\nPressing the following keys will do the following actions:\nCTRL: Retrieves all stacks from clicked item\nSHIFT:Retrieves a stack from clicked item.\nStack-Size slider will always ensure that you have <x> amounts of stacks in your inventory.',
+        tooltip = '[color=blue]Info![/color]\nYou can easily remove an item by left/right-clicking it.\n\nItems selected in the table below will remove all stacks except one from the player inventory.\nIf the stack-size is bigger in the personal stash than the players inventory stack then the players inventory will automatically refill from the personal stash.\n\n[color=red]Usage[/color]\nPressing the following keys will do the following actions:\nCTRL: Retrieves all stacks from clicked item\nSHIFT:Retrieves a stack from clicked item.\nStack-Size slider will always ensure that you have <x> amounts of stacks in your inventory.\n\n[color=red]Deleting[/color]\nDelete Mode: Will delete the clicked item instantly.',
         sprite = 'utility/questionmark'
     }
     btn.style.height = 20
@@ -191,7 +190,7 @@ local function draw_main_frame(player, target, chest_id)
     btn.enabled = false
     btn.focus()
 
-    if this.ores_only then
+    if not player.admin and this.ores_only then
         this.total_slots[player.index] = 6
     end
 
@@ -212,7 +211,7 @@ local function draw_main_frame(player, target, chest_id)
     }
     text.style.single_line = false
 
-    local tbl_2 = tbl.add {type = 'table', column_count = 2}
+    local tbl_2 = tbl.add {type = 'table', column_count = 4}
     local stack_size = this.stack_size[player.index]
 
     local stack_value = tbl_2.add({type = 'label', caption = 'Stack Size: ' .. stack_size .. ' '})
@@ -233,6 +232,13 @@ local function draw_main_frame(player, target, chest_id)
     slider.style.width = 115
     Gui.set_data(slider, data)
 
+    local delete_mode = tbl_2.add({type = 'label', caption = '  Delete Mode: '})
+    delete_mode.style.font = 'default-bold'
+    local checkbox = tbl_2.add({type = 'checkbox', name = delete_mode_name, state = false})
+    data.checkbox = checkbox
+
+    Gui.set_data(checkbox, data)
+
     tbl.add({type = 'line'})
 
     player.opened = frame
@@ -246,7 +252,8 @@ local function draw_main_frame(player, target, chest_id)
     this.inf_gui[player.index] = {
         item_frame = items,
         frame = frame,
-        updated = false
+        updated = false,
+        delete_mode = false
     }
 end
 
@@ -262,9 +269,14 @@ local function update_gui()
             goto continue
         end
 
-        local chest_id = this.player_chests[player.index].chest_id
+        local data = this.player_chests[player.index]
+        if not data then
+            goto continue
+        end
+
+        local chest_id = data.chest_id
         if not chest_id then
-            return
+            goto continue
         end
         if this.inf_gui[player.index].updated then
             goto continue
@@ -286,6 +298,8 @@ local function update_gui()
         end
         ::no_storage::
 
+        local delete_mode = this.inf_gui[player.index].delete_mode
+
         local btn
         for item_name, item_count in pairs(items) do
             btn =
@@ -299,6 +313,9 @@ local function update_gui()
             btn.enabled = true
             btn.style.height = size
             btn.style.width = size
+            if delete_mode then
+                btn.tooltip = 'Press to delete this item.'
+            end
             btn.focus()
         end
 
@@ -348,8 +365,15 @@ local function gui_click(event)
     local ctrl = event.control
     local name = element.name
     local storage = this.inf_storage[chest_id]
+    local delete_mode = this.inf_gui[player.index].delete_mode
 
     if not storage then
+        return
+    end
+
+    if delete_mode then
+        storage[name] = nil
+        this.inf_gui[player.index].updated = false
         return
     end
 
@@ -359,16 +383,15 @@ local function gui_click(event)
         end
         if ctrl then
             storage[name] = storage[name] + 5000000
+            this.inf_gui[player.index].updated = false
             goto update
         elseif shift then
             storage[name] = storage[name] - 5000000
+            this.inf_gui[player.index].updated = false
             if storage[name] <= 0 then
                 storage[name] = nil
             end
             goto update
-        end
-        if this.inf_gui[player.index] then
-            this.inf_gui[player.index].updated = false
         end
     end
 
@@ -515,7 +538,7 @@ local function on_player_joined_game(event)
         this.total_slots[player.index] = 50
     end
 
-    if not player.gui.top[main_button_name] then
+    if not mod(player)[main_button_name] then
         create_button(player)
     end
 end
@@ -566,15 +589,8 @@ Gui.on_click(
 Gui.on_value_changed(
     stack_slider_name,
     function(event)
-        local player = game.get_player(event.player_index)
-        if not player or not player.valid or not player.character then
-            return
-        end
-
+        local player = event.player
         local element = event.element
-        if not element or not element.valid then
-            return
-        end
 
         local data = Gui.get_data(element)
         local stack_value = data.stack_value
@@ -592,6 +608,28 @@ Gui.on_value_changed(
         if main_frame and main_frame.valid then
             this.stack_size[player.index] = element.slider_value
             stack_value.caption = 'Stack Size: ' .. this.stack_size[player.index] .. ' '
+            this.inf_gui[player.index].updated = false
+        end
+    end
+)
+
+Gui.on_checked_state_changed(
+    delete_mode_name,
+    function(event)
+        local player = event.player
+        local element = event.element
+
+        local data = Gui.get_data(element)
+        local checkbox = data.checkbox
+        if not checkbox or not checkbox.valid then
+            return
+        end
+
+        local screen = player.gui.screen
+        local main_frame = screen[main_frame_name]
+        if main_frame and main_frame.valid then
+            this.inf_gui[player.index].delete_mode = element.state
+            this.inf_gui[player.index].updated = false
         end
     end
 )
