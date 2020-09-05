@@ -265,12 +265,6 @@ function Public.reset_map()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
 
-    for _, player in pairs(game.players) do
-        if player.controller_type == defines.controllers.editor then
-            player.toggle_map_editor()
-        end
-    end
-
     this.active_surface_index = CS.create_surface()
 
     Autostash.insert_into_furnace(true)
@@ -390,10 +384,9 @@ local on_player_changed_position = function(event)
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
 
-    if not player.character then
-        return
-    end
-    if not player.character.valid then
+    if player.connected and not player.character or not player.character.valid then
+        player.set_controller({type = defines.controllers.god})
+        player.create_character()
         return
     end
 
@@ -434,7 +427,6 @@ local on_player_joined_game = function(event)
     local this = WPT.get()
     local player = game.players[event.player_index]
     local surface = game.surfaces[this.active_surface_index]
-    local comfy = '[color=blue]Comfylatron:[/color] \n'
 
     set_difficulty()
 
@@ -510,7 +502,6 @@ local remove_offline_players = function()
     local offline_players = WPT.get('offline_players')
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
-    local keeper = '[color=blue]Cleaner:[/color] \n'
     local player_inv = {}
     local items = {}
     if #offline_players > 0 then

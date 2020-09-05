@@ -1867,7 +1867,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 128,
-            tooltip = ({'item-name.loader'}),
+            tooltip = ({'entity-name.loader'}),
             upgrade = false,
             static = true
         }
@@ -1877,7 +1877,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 256,
-            tooltip = ({'item-name.fast-loader'}),
+            tooltip = ({'entity-name.fast-loader'}),
             upgrade = false,
             static = true
         }
@@ -1887,7 +1887,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 512,
-            tooltip = ({'item-name.express-loader'}),
+            tooltip = ({'entity-name.express-loader'}),
             upgrade = false,
             static = true
         }
