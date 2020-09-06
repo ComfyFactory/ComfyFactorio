@@ -55,14 +55,22 @@ local tile_damage = 50
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
 
-local death_messages = {
-    'should have watched where they walked!',
-    'was not careful enough!',
-    'angered the overlords!',
-    'tried to walk the simple path!',
-    'melted away!',
-    'got obliterated!',
-    'tried to cheat their way north!'
+local collapse_kill = {
+    entities = {
+        ['laser-turret'] = true,
+        ['flamethrower-turret'] = true,
+        ['gun-turret'] = true,
+        ['artillery-turret'] = true,
+        ['landmine'] = true,
+        ['locomotive'] = true,
+        ['cargo-wagon'] = true,
+        ['car'] = true,
+        ['tank'] = true,
+        ['assembling-machine'] = true,
+        ['furnace'] = true,
+        ['steel-chest'] = true
+    },
+    enabled = true
 }
 
 local disable_recipes = function()
@@ -257,12 +265,6 @@ function Public.reset_map()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
 
-    for _, player in pairs(game.players) do
-        if player.controller_type == defines.controllers.editor then
-            player.toggle_map_editor()
-        end
-    end
-
     this.active_surface_index = CS.create_surface()
 
     Autostash.insert_into_furnace(true)
@@ -325,7 +327,8 @@ function Public.reset_map()
     game.map_settings.path_finder.max_work_done_per_tick = 4000
     Diff.gui_width = 20
 
-    Collapse.set_kill_entities(true)
+    Collapse.set_kill_entities(false)
+    Collapse.set_kill_specific_entities(collapse_kill)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     Collapse.set_max_line_size(Terrain.level_width)
@@ -381,10 +384,9 @@ local on_player_changed_position = function(event)
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
 
-    if not player.character then
-        return
-    end
-    if not player.character.valid then
+    if player.connected and not player.character or not player.character.valid then
+        player.set_controller({type = defines.controllers.god})
+        player.create_character()
         return
     end
 
@@ -401,7 +403,7 @@ local on_player_changed_position = function(event)
                 player.character.health = player.character.health - tile_damage
                 if player.character.health == 0 then
                     player.character.die()
-                    local message = player.name .. ' ' .. death_messages[random(1, #death_messages)]
+                    local message = ({'main.death_message_' .. random(1, 7), player.name})
                     game.print(message, {r = 0.98, g = 0.66, b = 0.22})
                 end
             end
@@ -410,7 +412,7 @@ local on_player_changed_position = function(event)
 
     if position.y >= 74 then
         player.teleport({position.x, position.y - 1}, surface)
-        player.print('Forcefield does not approve.', {r = 0.98, g = 0.66, b = 0.22})
+        player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
         if player.character then
             player.character.health = player.character.health - 5
             player.character.surface.create_entity({name = 'water-splash', position = position})
@@ -425,7 +427,6 @@ local on_player_joined_game = function(event)
     local this = WPT.get()
     local player = game.players[event.player_index]
     local surface = game.surfaces[this.active_surface_index]
-    local comfy = '[color=blue]Comfylatron:[/color] \n'
 
     set_difficulty()
 
@@ -433,7 +434,7 @@ local on_player_joined_game = function(event)
 
     if not this.players[player.index] then
         this.players[player.index] = {}
-        local message = comfy .. 'Greetings, ' .. player.name .. '!\nPlease read the map info.'
+        local message = ({'main.greeting', player.name})
         Alert.alert_player(player, 15, message)
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
@@ -501,7 +502,6 @@ local remove_offline_players = function()
     local offline_players = WPT.get('offline_players')
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
-    local keeper = '[color=blue]Cleaner:[/color] \n'
     local player_inv = {}
     local items = {}
     if #offline_players > 0 then
@@ -551,7 +551,7 @@ local remove_offline_players = function()
                             end
                         end
 
-                        local message = keeper .. name .. ' has left his goodies!'
+                        local message = ({'main.cleaner', name})
                         local data = {
                             position = pos
                         }
@@ -641,10 +641,7 @@ local has_the_game_ended = function()
                     cause_msg = 'soft-reset'
                 end
 
-                game.print(
-                    'Game will ' .. cause_msg .. ' in ' .. this.game_reset_tick / 60 .. ' seconds!',
-                    {r = 0.22, g = 0.88, b = 0.22}
-                )
+                game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
@@ -653,10 +650,7 @@ local has_the_game_ended = function()
             end
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print(
-                        'Soft-reset is disabled! Server will restart from scenario to load new changes.',
-                        {r = 0.22, g = 0.88, b = 0.22}
-                    )
+                    game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
                     Server.start_scenario('Mountain_Fortress_v3')
@@ -666,10 +660,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    game.print(
-                        'Soft-reset is disabled! Server will shutdown. Most likely because of updates.',
-                        {r = 0.22, g = 0.88, b = 0.22}
-                    )
+                    game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
                     Server.stop_scenario()
@@ -701,7 +692,7 @@ local boost_difficulty = function()
     Difficulty.get().button_tooltip = difficulty.tooltip[difficulty.difficulty_vote_index]
     Difficulty.difficulty_gui()
 
-    local message = 'Difficulty has been set! Game has been set to: [color=green]' .. name .. '[/color]'
+    local message = ({'main.diff_set', name})
     local data = {
         position = WPT.get('locomotive').position
     }
@@ -811,16 +802,11 @@ local collapse_after_wave_100 = function()
     local wave_number = WD.get_wave()
 
     if wave_number >= 100 or name == 'Insane' then
-        local keeper = '[color=blue]Mapkeeper:[/color] \n'
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
         }
-        if name == 'Insane' then
-            data.message = keeper .. 'Warning, Collapse has begun - god speed!'
-        else
-            data.message = keeper .. 'Warning, Collapse has begun - wave limit has been reached!'
-        end
+        data.message = ({'breached_wall.collapse_start'})
         Task.set_timeout_in_ticks(550, collapse_message, data)
     end
 end
@@ -889,10 +875,10 @@ local on_init = function()
     }
 
     local tooltip = {
-        [1] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 1.\nMining speed boosted = 1.5.\nRunning speed boosted = 0.2.\nCrafting speed boosted = 0.4.\nCoin amount per harvest = 2.\nFlame Turret limit = 25.\nLandmine limit = 100.\nLocomotive health = 15000.\nHidden Treasure has higher chance to spawn.\nGrace period: 20 minutes\nSpidertrons unlocks at zone 10.',
-        [2] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.5.\nMining speed boosted = 1.\nRunning speed boosted = 0.1.\nCrafting speed boosted = 0.2.\nCoin amount per harvest = 1.\nFlame Turret limit = 10.\nLandmine limit = 50.\nLocomotive health = 10000.\nHidden Treasure has normal chance to spawn.\nGrace period: 15 minutes\nSpidertrons unlocks at zone 15.',
-        [3] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 3.\nLandmine limit = 10.\nLocomotive health = 5000.\nHidden Treasure has lower chance to spawn.\nGrace period: 10 minutes\nSpidertrons unlocks at zone 20.',
-        [4] = 'Wave Defense is based on amount of players.\nXP Extra reward points = 0.\nMining speed boosted = 0.\nRunning speed boosted = 0.\nCrafting speed boosted = 0.\nCoin amount per harvest = 1.\nFlame Turret limit = 0.\nLandmine limit = 0.\nLocomotive health = 1000.\nHidden Treasure has lower chance to spawn.\nGrace period: 5 minutes\nBiters are way more aggressive.\nCollapse starts after difficulty poll has ended.\nCollapse is much faster.\nSpidertrons unlocks at zone 25.'
+        [1] = ({'main.diff_tooltip', '1', '1.5', '0.2', '0.4', '2', '25', '100', '15000', '100%', '20', '10'}),
+        [2] = ({'main.diff_tooltip', '0.5', '1', '0.1', '0.2', '1', '10', '50', '10000', '75%', '15', '15'}),
+        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '3', '10', '5000', '50%', '10', '20'}),
+        [4] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '0', '0', '1000', '25%', '5', '25'})
     }
 
     Difficulty.set_difficulties(difficulties)

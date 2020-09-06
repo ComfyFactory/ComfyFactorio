@@ -536,8 +536,11 @@ local function construct_doors(ic, car)
         local p
         if car.name == 'car' then
             p = {x = x, y = area.left_top.y + 10}
-        else
+        elseif car.name == 'tank' then
             p = {x = x, y = area.left_top.y + 20}
+        elseif car.name == 'spidertron' then
+            p = {x = x, y = area.left_top.y + 30}
+            main_tile_name = 'tutorial-grid'
         end
         if p.x < 0 then
             surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
@@ -728,6 +731,15 @@ function Public.create_car_room(ic, car)
 
     local tiles = {}
 
+    if entity_name == 'car' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 20}})
+    elseif entity_name == 'tank' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
+    elseif entity_name == 'spidertron' then
+        surface.create_entity({name = 'sand-rock-big', position = {0, 60}})
+        main_tile_name = 'tutorial-grid'
+    end
+
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
             tiles[#tiles + 1] = {name = main_tile_name, position = {x, y}}
@@ -737,14 +749,6 @@ function Public.create_car_room(ic, car)
         for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
             tiles[#tiles + 1] = {name = main_tile_name, position = {x, y}}
         end
-    end
-
-    if entity_name == 'car' then
-        surface.create_entity({name = 'sand-rock-big', position = {0, 20}})
-    elseif entity_name == 'tank' then
-        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
-    elseif entity_name == 'spidertron' then
-        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
     end
 
     local fishes = {}
@@ -763,12 +767,8 @@ function Public.create_car_room(ic, car)
 
     construct_doors(ic, car)
 
-    local lx, ly, rx, ry
-    if car.name == 'car' then
-        lx, ly, rx, ry = 4, 1, 5, 1
-    else
-        lx, ly, rx, ry = 4, 1, 5, 1
-    end
+    local lx, ly, rx, ry = 4, 1, 5, 1
+
     local position1 = {area.left_top.x + lx, area.left_top.y + ly}
     local position2 = {area.right_bottom.x - rx, area.left_top.y + ry}
 
@@ -819,14 +819,7 @@ function Public.create_car(ic, event)
 
     local name, mined = get_player_entity(ic, player, ce)
 
-    if
-        name == 'car' and ce.name == 'car' and not mined or name == 'car' and ce.name == 'tank' and not mined or
-            name == 'tank' and ce.name == 'car' and not mined or
-            name == 'tank' and ce.name == 'tank' and not mined or
-            name == 'spidertron' and ce.name == 'car' and not mined or
-            name == 'spidertron' and ce.name == 'tank' and not mined or
-            name == 'spidertron' and ce.name == 'spidertron' and not mined
-     then
+    if entity_type[name] and not mined then
         return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
     end
 
@@ -963,7 +956,7 @@ function Public.infinity_scrap(ic, event, recreate)
     if random(1, 2) == 1 then
         reward = items
         size = #items
-        count = random(1, 10)
+        count = random(1, 15)
     else
         reward = ores
         size = #ores

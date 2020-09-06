@@ -10,9 +10,7 @@ local Public = {}
 local level_up_floating_text_color = {0, 205, 0}
 local visuals_delay = RPG.visuals_delay
 local xp_floating_text_color = RPG.xp_floating_text_color
-local teller_level_limit = RPG.teller_level_limit
 local experience_levels = RPG.experience_levels
-local teller_global_pool = RPG.teller_global_pool
 local points_per_level = RPG.points_per_level
 
 --RPG Frames
@@ -593,7 +591,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         add_to_global_pool(amount, false)
         if not rpg_t[player.index].capped then
             rpg_t[player.index].capped = true
-            local message = teller_level_limit .. 'You have hit the max level for the current zone.'
+            local message = ({'rpg_functions.max_level'})
             Alert.alert_player_warning(player, 10, message)
         end
         return
@@ -688,7 +686,7 @@ function Public.global_pool(players, count)
                 RPG.debug_log('RPG - player capped: ' .. p.name .. '. Amount to pool:' .. share)
             end
         else
-            local message = teller_global_pool .. p.name .. ' received nothing. Reason: AFK'
+            local message = ({'rpg_functions.pool_reward'})
             Alert.alert_player_warning(p, 10, message)
             share = share / 10
             rpg_extra.leftover_pool = rpg_extra.leftover_pool + share

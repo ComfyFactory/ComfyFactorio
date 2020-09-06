@@ -9,7 +9,6 @@ local Settings = require 'modules.rpg.settings'
 
 local Public = {}
 
-local gain_info_tooltip = 'XP gain from mining, moving, crafting, repairing and combat.'
 local classes = RPG.classes
 
 --RPG Settings
@@ -132,9 +131,7 @@ local function add_gui_increase_stat(element, name, player)
     e.style.vertical_align = 'center'
     e.style.padding = 0
     e.style.margin = 0
-    e.tooltip =
-        'Right-click to allocate ' ..
-        tostring(RPG.points_per_level) .. ' points.\nShift + click to allocate all points.'
+    e.tooltip = ({'rpg_gui.allocate_info', tostring(RPG.points_per_level)})
 
     return e
 end
@@ -216,19 +213,19 @@ local function draw_main_frame(player, location)
 
     --!top table
     local main_table = scroll_pane.add({type = 'table', column_count = 2})
-    local player_name = add_gui_stat(main_table, player.name, 200, 'Hello ' .. player.name .. '!')
+    local player_name = add_gui_stat(main_table, player.name, 200, ({'rpg_gui.player_name', player.name}))
     player_name.style.font_color = player.chat_color
     player_name.style.font = 'default-large-bold'
-    local rank = add_gui_stat(main_table, get_class(player), 200, 'You´re a ' .. get_class(player) .. '.')
+    local rank = add_gui_stat(main_table, get_class(player), 200, ({'rpg_gui.class_info', get_class(player)}))
     rank.style.font = 'default-large-bold'
 
     add_elem_stat(
         main_table,
-        'SETTINGS',
+        ({'rpg_gui.settings_name'}),
         200,
         35,
         nil,
-        'Configure your RPG player-settings here!',
+        ({'rpg_gui.settings_frame'}),
         settings_button_name
     )
 
@@ -238,25 +235,23 @@ local function draw_main_frame(player, location)
     local scroll_table = scroll_pane.add({type = 'table', column_count = 4})
     scroll_table.style.cell_padding = 1
 
-    add_gui_description(scroll_table, 'LEVEL', 80)
+    add_gui_description(scroll_table, ({'rpg_gui.level_name'}), 80)
     if rpg_extra.level_limit_enabled then
-        local level_tooltip =
-            'Current max level limit for this zone is: ' ..
-            Functions.level_limit_exceeded(player, true) .. '\nIncreases by breaching walls/zones.'
+        local level_tooltip = ({'rpg_gui.level_limit', Functions.level_limit_exceeded(player, true)})
         add_gui_stat(scroll_table, rpg_t[player.index].level, 80, level_tooltip)
     else
         add_gui_stat(scroll_table, rpg_t[player.index].level, 80)
     end
 
-    add_gui_description(scroll_table, 'EXPERIENCE', 100)
-    local exp_gui = add_gui_stat(scroll_table, math.floor(rpg_t[player.index].xp), 125, gain_info_tooltip)
+    add_gui_description(scroll_table, ({'rpg_gui.experience_name'}), 100)
+    local exp_gui = add_gui_stat(scroll_table, math.floor(rpg_t[player.index].xp), 125, ({'rpg_gui.gain_info_tooltip'}))
     data.exp_gui = exp_gui
 
     add_gui_description(scroll_table, ' ', 75)
     add_gui_description(scroll_table, ' ', 75)
 
-    add_gui_description(scroll_table, 'NEXT LEVEL', 100)
-    add_gui_stat(scroll_table, experience_levels[rpg_t[player.index].level + 1], 125, gain_info_tooltip)
+    add_gui_description(scroll_table, ({'rpg_gui.next_level_name'}), 100)
+    add_gui_stat(scroll_table, experience_levels[rpg_t[player.index].level + 1], 125, ({'rpg_gui.gain_info_tooltip'}))
 
     add_separator(scroll_pane, 400)
 
@@ -268,28 +263,24 @@ local function draw_main_frame(player, location)
     local w1 = 85
     local w2 = 63
 
-    local str_tip = 'Increases inventory slots, mining speed.\nIncreases melee damage and amount of robot followers.'
-    add_gui_description(left_bottom_table, 'STRENGTH', w1, str_tip)
-    add_gui_stat(left_bottom_table, rpg_t[player.index].strength, w2, str_tip)
+    add_gui_description(left_bottom_table, ({'rpg_gui.strength_name'}), w1, ({'rpg_gui.strength_tooltip'}))
+    add_gui_stat(left_bottom_table, rpg_t[player.index].strength, w2, ({'rpg_gui.strength_tooltip'}))
     add_gui_increase_stat(left_bottom_table, 'strength', player)
 
-    local mgc_tip = 'Increases reach distance.\nIncreases repair speed. Enables spawning entities.'
-    add_gui_description(left_bottom_table, 'MAGIC', w1, mgc_tip)
-    add_gui_stat(left_bottom_table, rpg_t[player.index].magicka, w2, mgc_tip)
+    add_gui_description(left_bottom_table, ({'rpg_gui.magic_name'}), w1, ({'rpg_gui.magic_tooltip'}))
+    add_gui_stat(left_bottom_table, rpg_t[player.index].magicka, w2, ({'rpg_gui.magic_tooltip'}))
     add_gui_increase_stat(left_bottom_table, 'magicka', player)
 
-    local dex_tip = 'Increases running and crafting speed.'
-    add_gui_description(left_bottom_table, 'DEXTERITY', w1, dex_tip)
-    add_gui_stat(left_bottom_table, rpg_t[player.index].dexterity, w2, dex_tip)
+    add_gui_description(left_bottom_table, ({'rpg_gui.dexterity_name'}), w1, ({'rpg_gui.dexterity_tooltip'}))
+    add_gui_stat(left_bottom_table, rpg_t[player.index].dexterity, w2, ({'rpg_gui.dexterity_tooltip'}))
 
     add_gui_increase_stat(left_bottom_table, 'dexterity', player)
 
-    local vit_tip = 'Increases health.\nIncreases melee life on-hit.'
-    add_gui_description(left_bottom_table, 'VITALITY', w1, vit_tip)
-    add_gui_stat(left_bottom_table, rpg_t[player.index].vitality, w2, vit_tip)
+    add_gui_description(left_bottom_table, ({'rpg_gui.vitality_name'}), w1, ({'rpg_gui.vitality_tooltip'}))
+    add_gui_stat(left_bottom_table, rpg_t[player.index].vitality, w2, ({'rpg_gui.vitality_tooltip'}))
     add_gui_increase_stat(left_bottom_table, 'vitality', player)
 
-    add_gui_description(left_bottom_table, 'POINTS TO\nDISTRIBUTE', w1)
+    add_gui_description(left_bottom_table, ({'rpg_gui.points_to_dist'}), w1)
     add_gui_stat(left_bottom_table, rpg_t[player.index].points_to_distribute, w2, nil, nil, {200, 0, 0})
     add_gui_description(left_bottom_table, ' ', w2)
 
@@ -297,14 +288,9 @@ local function draw_main_frame(player, location)
     add_gui_description(left_bottom_table, ' ', 40)
     add_gui_description(left_bottom_table, ' ', 40)
 
-    add_gui_description(left_bottom_table, 'LIFE', w1, 'Your current life.')
+    add_gui_description(left_bottom_table, ({'rpg_gui.life_name'}), w1, ({'rpg_gui.life_tooltip'}))
     local health_gui =
-        add_gui_stat(
-        left_bottom_table,
-        math.floor(player.character.health),
-        w2,
-        'Current life. Increase it by adding vitality.'
-    )
+        add_gui_stat(left_bottom_table, math.floor(player.character.health), w2, ({'rpg_gui.life_increase'}))
     data.health = health_gui
     add_gui_stat(
         left_bottom_table,
@@ -312,13 +298,13 @@ local function draw_main_frame(player, location)
             player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus
         ),
         w2,
-        'This is your maximum life.'
+        ({'rpg_gui.life_maximum'})
     )
 
     local shield = 0
     local shield_max = 0
-    local shield_desc_tip = 'You don`t have any shield.'
-    local shield_tip = 'This is your current shield. You aren`t wearing any armor.'
+    local shield_desc_tip = ({'rpg_gui.shield_no_shield'})
+    local shield_tip = ({'rpg_gui.shield_no_armor'})
     local shield_max_tip = shield_tip
 
     local i = player.character.get_inventory(defines.inventory.character_armor)
@@ -326,10 +312,10 @@ local function draw_main_frame(player, location)
         if i[1].grid then
             shield = math.floor(i[1].grid.shield)
             shield_max = math.floor(i[1].grid.max_shield)
-            shield_desc_tip = 'Shield protects you and heightens your resistance.'
-            shield_tip = 'Current shield value of the equipment.'
-            shield_max_tip = 'Maximum shield value.'
-            add_gui_description(left_bottom_table, 'SHIELD', w1, shield_desc_tip)
+            shield_desc_tip = ({'rpg_gui.shield_tooltip'})
+            shield_tip = ({'rpg_gui.shield_current'})
+            shield_max_tip = ({'rpg_gui.shield_max'})
+            add_gui_description(left_bottom_table, ({'rpg_gui.shield_name'}), w1, shield_desc_tip)
             local shield_gui = add_gui_stat(left_bottom_table, shield, w2, shield_tip)
             local shield_max_gui = add_gui_stat(left_bottom_table, shield_max, w2, shield_max_tip)
 
@@ -337,7 +323,7 @@ local function draw_main_frame(player, location)
             data.shield_max = shield_max_gui
         end
     else
-        add_gui_description(left_bottom_table, 'SHIELD', w1, shield_desc_tip)
+        add_gui_description(left_bottom_table, ({'rpg_gui.shield_name'}), w1, shield_desc_tip)
         add_gui_stat(left_bottom_table, shield, w2, shield_tip)
         add_gui_stat(left_bottom_table, shield_max, w2, shield_max_tip)
     end
@@ -346,14 +332,14 @@ local function draw_main_frame(player, location)
         local mana = rpg_t[player.index].mana
         local mana_max = rpg_t[player.index].mana_max
 
-        local mana_tip = 'Mana lets you spawn entities by creating a wooden-chest ghost.'
-        add_gui_description(left_bottom_table, 'MANA', w1, mana_tip)
-        local mana_regen_tip = 'This is your current mana. You can increase the regen by increasing your magic skills.'
+        local mana_tip = ({'rpg_gui.mana_tooltip'})
+        add_gui_description(left_bottom_table, ({'rpg_gui.mana_name'}), w1, mana_tip)
+        local mana_regen_tip = ({'rpg_gui.mana_regen_current'})
         local mana_max_regen_tip
         if rpg_t[player.index].mana_max >= rpg_extra.mana_limit then
-            mana_max_regen_tip = 'This is your max mana. You have reached the max mana limit.'
+            mana_max_regen_tip = ({'rpg_gui.mana_max_limit'})
         else
-            mana_max_regen_tip = 'This is your max mana. You can increase the regen by increasing your magic skills.'
+            mana_max_regen_tip = ({'rpg_gui.mana_max'})
         end
         local mana_gui = add_gui_stat(left_bottom_table, mana, w2, mana_regen_tip)
         local mana_max_gui = add_gui_stat(left_bottom_table, mana_max, w2, mana_max_regen_tip)
@@ -365,28 +351,30 @@ local function draw_main_frame(player, location)
     right_bottom_table.style.cell_padding = 1
 
     add_gui_description(right_bottom_table, ' ', w0)
-    add_gui_description(right_bottom_table, 'MINING\nSPEED', w1)
+    add_gui_description(right_bottom_table, ({'rpg_gui.mining_name'}), w1)
     local mining_speed_value =
         math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(right_bottom_table, mining_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
-    add_gui_description(right_bottom_table, 'SLOT\nBONUS', w1)
+    add_gui_description(right_bottom_table, ({'rpg_gui.slot_name'}), w1)
     local slot_bonus_value =
         '+ ' .. math.round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
     add_gui_stat(right_bottom_table, slot_bonus_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
-    add_gui_description(right_bottom_table, 'MELEE\nDAMAGE', w1)
+    add_gui_description(right_bottom_table, ({'rpg_gui.melee_name'}), w1)
     local melee_damage_value = math.round(100 * (1 + Functions.get_melee_modifier(player))) .. '%'
     local melee_damage_tooltip
     if rpg_extra.enable_one_punch then
-        melee_damage_tooltip =
-            'Life on-hit: ' ..
-            Functions.get_life_on_hit(player) .. '\nOne punch chance: ' .. Functions.get_one_punch_chance(player) .. '%'
+        melee_damage_tooltip = ({
+            'rpg_gui.one_punch_chance',
+            Functions.get_life_on_hit(player),
+            Functions.get_one_punch_chance(player)
+        })
     else
-        melee_damage_tooltip = 'One Punch is disabled.'
+        melee_damage_tooltip = ({'rpg_gui.one_punch_disabled'})
     end
     add_gui_stat(right_bottom_table, melee_damage_value, w2, melee_damage_tooltip)
 
@@ -396,20 +384,19 @@ local function draw_main_frame(player, location)
 
     local reach_distance_value =
         '+ ' .. (player.force.character_reach_distance_bonus + player.character_reach_distance_bonus)
-    local reach_bonus_tooltip = ''
-    reach_bonus_tooltip = reach_bonus_tooltip .. 'Reach distance bonus: ' .. player.character_reach_distance_bonus
-    reach_bonus_tooltip = reach_bonus_tooltip .. '\nBuild distance bonus: ' .. player.character_build_distance_bonus
-    reach_bonus_tooltip =
-        reach_bonus_tooltip .. '\nItem drop distance bonus: ' .. player.character_item_drop_distance_bonus
-    reach_bonus_tooltip =
-        reach_bonus_tooltip .. '\nLoot pickup distance bonus: ' .. player.character_loot_pickup_distance_bonus
-    reach_bonus_tooltip =
-        reach_bonus_tooltip .. '\nItem pickup distance bonus: ' .. player.character_item_pickup_distance_bonus
-    reach_bonus_tooltip =
-        reach_bonus_tooltip .. '\nResource reach distance bonus: ' .. player.character_resource_reach_distance_bonus
-    reach_bonus_tooltip = reach_bonus_tooltip .. '\nRepair speed: ' .. Functions.get_magicka(player)
+    local reach_bonus_tooltip = ({
+        'rpg_gui.bonus_tooltip',
+        player.character_reach_distance_bonus,
+        player.character_build_distance_bonus,
+        player.character_item_drop_distance_bonus,
+        player.character_loot_pickup_distance_bonus,
+        player.character_item_pickup_distance_bonus,
+        player.character_resource_reach_distance_bonus,
+        Functions.get_magicka(player)
+    })
+
     add_gui_description(right_bottom_table, ' ', w0)
-    add_gui_description(right_bottom_table, 'REACH\nDISTANCE', w1)
+    add_gui_description(right_bottom_table, ({'rpg_gui.reach_distance'}), w1)
     add_gui_stat(right_bottom_table, reach_distance_value, w2, reach_bonus_tooltip)
 
     add_gui_description(right_bottom_table, '', w0, '', nil, 10)
@@ -417,31 +404,34 @@ local function draw_main_frame(player, location)
     add_gui_description(right_bottom_table, '', w0, '', nil, 10)
 
     add_gui_description(right_bottom_table, ' ', w0)
-    add_gui_description(right_bottom_table, 'CRAFTING\nSPEED', w1)
+    add_gui_description(right_bottom_table, ({'rpg_gui.crafting_speed'}), w1)
     local crafting_speed_value =
         math.round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(right_bottom_table, crafting_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
-    add_gui_description(right_bottom_table, 'RUNNING\nSPEED', w1)
+    add_gui_description(right_bottom_table, ({'rpg_gui.running_speed'}), w1)
     local running_speed_value =
         math.round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) ..
         '%'
     add_gui_stat(right_bottom_table, running_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
-    add_gui_description(right_bottom_table, 'HEALTH\nBONUS', w1)
+    add_gui_description(right_bottom_table, ({'rpg_gui.health_bonus_name'}), w1)
     local health_bonus_value = '+ ' .. math.round((player.force.character_health_bonus + player.character_health_bonus))
-    local health_tooltip = 'Health regen bonus: ' .. Functions.get_heal_modifier(player)
+    local health_tooltip = ({'rpg_gui.health_tooltip', Functions.get_heal_modifier(player)})
     add_gui_stat(right_bottom_table, health_bonus_value, w2, health_tooltip)
 
     add_gui_description(right_bottom_table, ' ', w0)
 
     if rpg_extra.enable_mana then
-        add_gui_description(right_bottom_table, 'MANA\nBONUS', w1)
+        add_gui_description(right_bottom_table, ({'rpg_gui.mana_bonus'}), w1)
         local mana_bonus_value = '+ ' .. (math.floor(Functions.get_mana_modifier(player) * 10) / 10)
-        local mana_bonus_tooltip = 'Mana regen bonus: ' .. (math.floor(Functions.get_mana_modifier(player) * 10) / 10)
+        local mana_bonus_tooltip = ({
+            'rpg_gui.mana_regen_bonus',
+            (math.floor(Functions.get_mana_modifier(player) * 10) / 10)
+        })
         add_gui_stat(right_bottom_table, mana_bonus_value, w2, mana_bonus_tooltip)
     end
 
@@ -653,9 +643,21 @@ Gui.on_click(
                 end
                 if not magic_pickup_gui_input.state then
                     player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_build_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_drop_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_reach_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_loot_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_resource_reach_distance_bonus = true
                     P.update_player_modifiers(player)
                 elseif magic_pickup_gui_input.state then
                     player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = false
+                    player_modifiers.disabled_modifier[player.index].character_build_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_drop_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_reach_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_loot_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
+                    player_modifiers.disabled_modifier[player.index].character_resource_reach_distance_bonus = true
                     P.update_player_modifiers(player)
                 end
             end

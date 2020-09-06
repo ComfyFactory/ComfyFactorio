@@ -418,7 +418,7 @@ local function redraw_market_items(gui, player, search_text)
     gui.add(
         {
             type = 'label',
-            caption = 'Upgrades: '
+            caption = ({'locomotive.upgrades'})
         }
     )
 
@@ -473,7 +473,7 @@ local function redraw_market_items(gui, player, search_text)
     gui.add(
         {
             type = 'label',
-            caption = 'Items: '
+            caption = ({'locomotive.items'})
         }
     )
 
@@ -515,11 +515,11 @@ local function redraw_market_items(gui, player, search_text)
                 if not trusted[player.name] then
                     if item == 'tank' then
                         button.enabled = false
-                        button.tooltip = 'You need to be trusted to purchase this.'
+                        button.tooltip = ({'locomotive.not_trusted'})
                     end
                     if item == 'car' then
                         button.enabled = false
-                        button.tooltip = 'You need to be trusted to purchase this.'
+                        button.tooltip = ({'locomotive.not_trusted'})
                     end
                 end
             end
@@ -554,7 +554,7 @@ local function redraw_coins_left(gui, player)
         gui.add(
         {
             type = 'label',
-            caption = 'Coins left: ' .. format_number(player_item_count, true)
+            caption = ({'locomotive.coins_left', format_number(player_item_count, true)})
         }
     )
 
@@ -669,7 +669,7 @@ local function gui_opened(event)
         player.gui.screen.add(
         {
             type = 'frame',
-            caption = 'Market',
+            caption = ({'locomotive.market_name'}),
             direction = 'vertical',
             name = main_frame_name
         }
@@ -682,7 +682,7 @@ local function gui_opened(event)
     frame.style.minimal_height = 250
 
     local search_table = frame.add({type = 'table', column_count = 2})
-    search_table.add({type = 'label', caption = 'Search: '})
+    search_table.add({type = 'label', caption = ({'locomotive.search_text'})})
     local search_text = search_table.add({type = 'textfield'})
     search_text.style.width = 140
 
@@ -707,7 +707,8 @@ local function gui_opened(event)
     local bottom_grid = frame.add({type = 'table', column_count = 4})
     bottom_grid.style.vertically_stretchable = false
 
-    bottom_grid.add({type = 'label', caption = 'Quantity: '}).style.font = 'default-bold'
+    local bg = bottom_grid.add({type = 'label', caption = ({'locomotive.quantity_text'})})
+    bg.style.font = 'default-bold'
 
     local text_input =
         bottom_grid.add(
@@ -735,7 +736,7 @@ local function gui_opened(event)
     coinsleft.add(
         {
             type = 'label',
-            caption = 'Coins left: ' .. format_number(player_item_count, true)
+            caption = ({'locomotive.coins_left', format_number(player_item_count, true)})
         }
     )
 
@@ -799,15 +800,13 @@ local function gui_click(event)
             local main_market_items = WPT.get('main_market_items')
 
             main_market_items['chest_limit_outside'].enabled = false
-            main_market_items['chest_limit_outside'].tooltip = 'Max limit bought!'
+            main_market_items['chest_limit_outside'].tooltip = ({'locomotive.limit_reached'})
             redraw_market_items(data.item_frame, player, data.search_text)
-            return player.print("You can't purchase more chests.", {r = 0.98, g = 0.66, b = 0.22})
+            return player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
         end
         player.remove_item({name = item.value, count = item.price})
 
-        local message =
-            shopkeeper ..
-            player.name .. ' has bought the chest limit upgrade for ' .. format_number(item.price, true) .. ' coins.'
+        local message = ({'locomotive.chest_bought_info', shopkeeper, player.name, format_number(item.price, true)})
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -824,11 +823,8 @@ local function gui_click(event)
     end
     if name == 'locomotive_max_health' then
         player.remove_item({name = item.value, count = item.price})
+        local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
-        local message =
-            shopkeeper ..
-            player.name ..
-                ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -852,10 +848,8 @@ local function gui_click(event)
     if name == 'locomotive_xp_aura' then
         player.remove_item({name = item.value, count = item.price})
 
-        local message =
-            shopkeeper ..
-            player.name ..
-                ' has bought the locomotive xp aura modifier for ' .. format_number(item.price, true) .. ' coins.'
+        local message = ({'locomotive.aura_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -888,10 +882,8 @@ local function gui_click(event)
 
     if name == 'xp_points_boost' then
         player.remove_item({name = item.value, count = item.price})
+        local message = ({'locomotive.xp_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
-        local message =
-            shopkeeper ..
-            player.name .. ' has bought the XP points modifier for ' .. format_number(item.price, true) .. ' coins.'
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -910,11 +902,13 @@ local function gui_click(event)
 
     if name == 'explosive_bullets' then
         player.remove_item({name = item.value, count = item.price})
+        local message = ({
+            'locomotive.explosive_bullet_bought_info',
+            shopkeeper,
+            player.name,
+            format_number(item.price, true)
+        })
 
-        local message =
-            shopkeeper ..
-            player.name ..
-                ' has bought the explosive bullet modifier for ' .. format_number(item.price, true) .. ' coins.'
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -933,10 +927,12 @@ local function gui_click(event)
     if name == 'flamethrower_turrets' then
         player.remove_item({name = item.value, count = item.price})
         if item.stack >= 1 then
-            local message =
-                shopkeeper ..
-                player.name ..
-                    ' has bought a flamethrower-turret slot for ' .. format_number(item.price, true) .. ' coins.'
+            local message = ({
+                'locomotive.one_flamethrower_bought_info',
+                shopkeeper,
+                player.name,
+                format_number(item.price, true)
+            })
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
@@ -945,11 +941,13 @@ local function gui_click(event)
                 }
             )
         else
-            local message =
-                shopkeeper ..
-                player.name ..
-                    ' has bought ' ..
-                        item.stack .. ' flamethrower-turret slots for ' .. format_number(item.price, true) .. ' coins.'
+            local message = ({
+                'locomotive.multiple_flamethrower_bought_info',
+                shopkeeper,
+                player.name,
+                item.stack,
+                format_number(item.price, true)
+            })
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
@@ -972,9 +970,13 @@ local function gui_click(event)
         player.remove_item({name = item.value, count = item.price})
 
         if item.stack >= 1 and this.upgrades.landmine.bought % 10 == 0 then
-            local message =
-                shopkeeper ..
-                player.name .. ' has bought a landmine slot for ' .. format_number(item.price, true) .. ' coins.'
+            local message = ({
+                'locomotive.landmine_bought_info',
+                shopkeeper,
+                player.name,
+                format_number(item.price, true)
+            })
+
             Alert.alert_all_players(3, message)
 
             if item.price >= 1000 then
@@ -997,12 +999,13 @@ local function gui_click(event)
     end
     if name == 'skill_reset' then
         player.remove_item({name = item.value, count = item.price})
+        local message = ({
+            'locomotive.rpg_reset_bought_info',
+            shopkeeper,
+            player.name,
+            format_number(item.price, true)
+        })
 
-        local message =
-            shopkeeper ..
-            player.name ..
-                ' decided to recycle their RPG skills and start over for ' ..
-                    format_number(item.price, true) .. ' coins.'
         Alert.alert_all_players(10, message)
 
         Functions.rpg_reset_player(player, true)
@@ -1018,15 +1021,8 @@ local function gui_click(event)
             local inserted_count = player.insert({name = name, count = item_count})
             if inserted_count < item_count then
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
-                player.print(
-                    "Your pockets are now filled to the brim. So you've only bought " ..
-                        inserted_count .. ' ' .. name .. '(s).',
-                    {r = 0.98, g = 0.66, b = 0.22}
-                )
-                player.print(
-                    'Shopkeeper has returned your change, for which you are infinitely grateful.',
-                    {r = 0.98, g = 0.66, b = 0.22}
-                )
+                player.print(({'locomotive.full_inventory', inserted_count, name}), {r = 0.98, g = 0.66, b = 0.22})
+                player.print(({'locomotive.change_returned'}), {r = 0.98, g = 0.66, b = 0.22})
                 player.insert({name = name, count = inserted_count})
 
                 player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
@@ -1038,15 +1034,10 @@ local function gui_click(event)
         else
             player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.65})
             if (random(1, 10) > 1) then
-                player.print(
-                    'Your inventory is full. Try to stash your loot somewhere first.',
-                    {r = 0.98, g = 0.66, b = 0.22}
-                )
+                player.print(({'locomotive.notify_full_inventory_1'}), {r = 0.98, g = 0.66, b = 0.22})
+                player.print(({'locomotive.notify_full_inventory_2'}), {r = 0.98, g = 0.66, b = 0.22})
             else
-                player.print(
-                    'Your inventory is full. Join the warrior club today! Pump that STR stat some more!',
-                    {r = 0.98, g = 0.66, b = 0.22}
-                )
+                player.print(({'locomotive.notify_full_inventory_2'}), {r = 0.98, g = 0.66, b = 0.22})
             end
         end
     end
@@ -1125,7 +1116,7 @@ local function spawn_biter()
     this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
 
     rendering.draw_text {
-        text = 'please don´t shoo at me',
+        text = ({'locomotive.shoo'}),
         surface = this.locomotive_biter.surface,
         target = this.locomotive_biter,
         target_offset = {0, -3.5},
@@ -1474,7 +1465,7 @@ local function on_research_finished()
 
     local breached_wall = WPT.get('breached_wall')
     add_random_loot_to_main_market(breached_wall)
-    local message = 'New items have been unlocked at the locomotive market!'
+    local message = ({'locomotive.new_items_at_market'})
     Alert.alert_all_players(5, message, nil, 'achievement/tech-maniac', 0.1)
     Public.refresh_gui()
 end
@@ -1781,7 +1772,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = chest_limit_cost,
-            tooltip = 'Upgrades the amount of chests that can be placed outside.\nCan be purchased multiple times.',
+            tooltip = ({'main_market.chest'}),
             sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
             enabled = true,
             upgrade = true,
@@ -1792,7 +1783,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = health_cost,
-        tooltip = 'Upgrades the train health.\nCan be purchased multiple times.',
+        tooltip = ({'main_market.locomotive_max_health'}),
         sprite = 'achievement/getting-on-track',
         enabled = true,
         upgrade = true,
@@ -1802,7 +1793,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = aura_cost,
-        tooltip = 'Upgrades the XP aura that is around the train.',
+        tooltip = ({'main_market.locomotive_xp_aura'}),
         sprite = 'achievement/tech-maniac',
         enabled = true,
         upgrade = true,
@@ -1812,7 +1803,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = xp_point_boost_cost,
-        tooltip = 'Upgrades the amount of XP points you get inside the XP aura',
+        tooltip = ({'main_market.xp_points_boost'}),
         sprite = 'achievement/trans-factorio-express',
         enabled = true,
         upgrade = true,
@@ -1823,7 +1814,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = explosive_bullets_cost,
-            tooltip = 'Sold out!',
+            tooltip = ({'main_market.sold_out'}),
             sprite = 'achievement/steamrolled',
             enabled = false,
             upgrade = true,
@@ -1834,7 +1825,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = explosive_bullets_cost,
-            tooltip = 'Upgrades ordinary SMG ammo to explosive bullets.',
+            tooltip = ({'main_market.explosive_bullets'}),
             sprite = 'achievement/steamrolled',
             enabled = true,
             upgrade = true,
@@ -1845,7 +1836,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = flamethrower_turrets_cost,
-        tooltip = 'Upgrades the amount of flamethrowers that can be placed.',
+        tooltip = ({'main_market.flamethrower_turret'}),
         sprite = 'achievement/pyromaniac',
         enabled = true,
         upgrade = true,
@@ -1855,7 +1846,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = land_mine_cost,
-        tooltip = 'Upgrades the amount of landmines that can be placed.',
+        tooltip = ({'main_market.land_mine'}),
         sprite = 'achievement/watch-your-step',
         enabled = true,
         upgrade = true,
@@ -1865,7 +1856,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = skill_reset_cost,
-        tooltip = 'For when you have picked the wrong RPG path and want to start over.\nPoints will be kept.',
+        tooltip = ({'main_market.skill_reset'}),
         sprite = 'achievement/golem',
         enabled = true,
         upgrade = true,
@@ -1876,7 +1867,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 128,
-            tooltip = 'Loader',
+            tooltip = ({'entity-name.loader'}),
             upgrade = false,
             static = true
         }
@@ -1886,7 +1877,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 256,
-            tooltip = 'Fast Loader',
+            tooltip = ({'entity-name.fast-loader'}),
             upgrade = false,
             static = true
         }
@@ -1896,7 +1887,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 512,
-            tooltip = 'Express Loader',
+            tooltip = ({'entity-name.express-loader'}),
             upgrade = false,
             static = true
         }
@@ -1905,7 +1896,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 5,
-        tooltip = 'Small Sunlight',
+        tooltip = ({'entity-name.small-lamp'}),
         upgrade = false,
         static = true
     }
@@ -1913,7 +1904,7 @@ function Public.get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = 'Some fine Wood',
+        tooltip = ({'item-name.wood'}),
         upgrade = false,
         static = true
     }
@@ -1921,7 +1912,7 @@ function Public.get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = 'Some chunky iron',
+        tooltip = ({'item-name.iron-ore'}),
         upgrade = false,
         static = true
     }
@@ -1929,7 +1920,7 @@ function Public.get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = 'Some chunky copper',
+        tooltip = ({'item-name.copper-ore'}),
         upgrade = false,
         static = true
     }
@@ -1937,7 +1928,7 @@ function Public.get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = 'Some chunky stone',
+        tooltip = ({'item-name.stone'}),
         upgrade = false,
         static = true
     }
@@ -1945,7 +1936,7 @@ function Public.get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = 'Some chunky coal',
+        tooltip = ({'item-name.coal'}),
         upgrade = false,
         static = true
     }
@@ -1953,7 +1944,7 @@ function Public.get_items()
         stack = 50,
         value = 'coin',
         price = 12,
-        tooltip = 'Some chunky uranium',
+        tooltip = ({'item-name.uranium-ore'}),
         upgrade = false,
         static = true
     }
@@ -1961,7 +1952,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 10,
-        tooltip = 'Land Boom Danger',
+        tooltip = ({'entity-name.land-mine'}),
         upgrade = false,
         static = true
     }
@@ -1969,7 +1960,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 4,
-        tooltip = 'Flappy Fish',
+        tooltip = ({'item-name.raw-fish'}),
         upgrade = false,
         static = true
     }
@@ -1977,7 +1968,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 5,
-        tooltip = 'Firearm Pew',
+        tooltip = ({'item-name.firearm-magazine'}),
         upgrade = false,
         static = true
     }
@@ -1985,23 +1976,23 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = 8,
-        tooltip = 'Crude Oil Flame',
+        tooltip = ({'item-name.crude-oil-barrel'}),
         upgrade = false,
         static = true
     }
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 3000,
-        tooltip = 'Portable Car Surface\nCan be killed easily.',
+        price = 6000,
+        tooltip = ({'main_market.car'}),
         upgrade = false,
         static = true
     }
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',
-        price = 10000,
-        tooltip = 'Portable Tank Surface\nChonk tank, can resist heavy damage.',
+        price = 15000,
+        tooltip = ({'main_market.tank'}),
         upgrade = false,
         static = true
     }
@@ -2012,7 +2003,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 25000,
-            tooltip = 'Tank Cannon',
+            tooltip = ({'main_market.tank_cannon'}),
             upgrade = false,
             static = true,
             enabled = true
@@ -2022,7 +2013,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 25000,
-            tooltip = 'Tank Cannon\nAvailable after wave 650.',
+            tooltip = ({'main_market.tank_cannon_na'}),
             upgrade = false,
             static = true,
             enabled = false
@@ -2033,7 +2024,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 7000,
-            tooltip = 'Tank Machine Gun',
+            tooltip = ({'item-name.tank-machine-gun'}),
             upgrade = false,
             static = true,
             enabled = true
@@ -2043,7 +2034,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 7000,
-            tooltip = 'Tank Machine Gun\nAvailable after wave 400.',
+            tooltip = ({'main_market.tank_machine_gun_na'}),
             upgrade = false,
             static = true,
             enabled = false
@@ -2054,7 +2045,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 2000,
-            tooltip = 'Car Machine Gun',
+            tooltip = ({'item-name.vehicle-machine-gun'}),
             upgrade = false,
             static = true,
             enabled = true
@@ -2064,7 +2055,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 2000,
-            tooltip = 'Car Machine Gun\nAvailable after wave 200.',
+            tooltip = ({'main_market.vehicle_machine_gun_na'}),
             upgrade = false,
             static = true,
             enabled = false

@@ -1,26 +1,8 @@
 local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
-local Color = require 'utils.color_presets'
-local Session = require 'utils.datastore.session_data'
 
 local random = math.random
-
-local rock_raffle = {
-    'sand-rock-big',
-    'sand-rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-big',
-    'rock-huge'
-}
-
-local size_of_rock_raffle = #rock_raffle
 
 function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
@@ -390,19 +372,6 @@ function Public.kill_wagon(icw, entity)
     kick_players_from_surface(wagon)
     kick_players_out_of_vehicles(wagon)
     kill_wagon_doors(icw, wagon)
-    for _, e in pairs(surface.find_entities_filtered({area = wagon.area})) do
-        if e and e.valid and e.name == 'character' and e.player then
-            local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
-            if p then
-                e.player.teleport(p, wagon.entity.surface)
-            else
-                e.player.teleport(wagon.entity.position, wagon.entity.surface)
-            end
-            Public.kill_minimap(e.player)
-        else
-            e.destroy()
-        end
-    end
     for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
@@ -479,7 +448,7 @@ function Public.create_wagon_room(icw, wagon)
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
             if random(1, 16) == 1 then
-                fishes[#fishes + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = {x, y}}
+                fishes[#fishes + 1] = {name = 'mineable-wreckage', position = {x, y}}
             end
         end
     end
@@ -653,56 +622,6 @@ function Public.create_wagon_room(icw, wagon)
             wagon.transfer_entities = {e1, e2}
         end
         return
-    end
-end
-
-function Public.locomotive_mining(icw, event)
-    local entity = event.entity
-    if not entity or not entity.valid then
-        return
-    end
-    local player = game.players[event.player_index]
-    if not validate_player(player) then
-        return
-    end
-
-    local items = {
-        'iron-plate',
-        'iron-gear-wheel',
-        'copper-plate',
-        'copper-cable',
-        'pipe',
-        'explosives',
-        'firearm-magazine',
-        'stone-brick'
-    }
-
-    local reward = items
-    local size = #items
-    local count = random(1, 20)
-    local name = reward[random(1, size)]
-
-    for k, surface in pairs(icw.surfaces) do
-        if validate_entity(surface) then
-            if player.surface.index == surface.index then
-                if entity.type ~= 'simple-entity' then
-                    return
-                end
-                event.buffer.clear()
-                player.insert({name = name, count = count})
-                if random(1, 4) == 1 then
-                    player.insert({name = 'coin', count = 1})
-                end
-                player.surface.create_entity(
-                    {
-                        name = 'flying-text',
-                        position = entity.position,
-                        text = '+' .. count .. ' [img=item/' .. name .. ']',
-                        color = {r = 188, g = 201, b = 63}
-                    }
-                )
-            end
-        end
     end
 end
 

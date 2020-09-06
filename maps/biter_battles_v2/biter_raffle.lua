@@ -1,10 +1,3 @@
---[[
-Use roll(entity_type, evolution_factor), to get a fitting enemy for the current or custom evolution factor.
-
-entity_type 		- can be "spitter", "biter", "mixed", "worm"
-evolution_factor 	- custom evolution factor (optional)
-]]
-
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor
@@ -22,7 +15,7 @@ local function get_raffle_table(level, name)
 		raffle["big-" .. name] = (level - 500) * 2
 	end
 	if level > 900 then
-		raffle["behemoth-" .. name] = (level - 900) * 3
+		raffle["behemoth-" .. name] = (level - 900) * 8
 	end
 	for k, v in pairs(raffle) do
 		if raffle[k] < 0 then raffle[k] = 0 end

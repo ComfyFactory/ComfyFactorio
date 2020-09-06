@@ -24,6 +24,7 @@ function Public.reset_table()
     this.restart = false
     this.shutdown = false
     this.announced_message = false
+    this.game_saved = false
     -- @end
     this.icw_locomotive = nil
     this.debug = false
@@ -62,9 +63,6 @@ function Public.reset_table()
             flame_turret = {}
         }
     }
-    if this.hidden_dimension then
-        this.hidden_dimension.logistic_research_level = 0
-    end
     this.aura_upgrades = 0
     this.health_upgrades = 0
     this.breached_wall = 1
@@ -72,6 +70,10 @@ function Public.reset_table()
     this.left_top = {
         x = 0,
         y = 0
+    }
+    this.biters = {
+        amount = 0,
+        limit = 256
     }
     this.traps = {}
     this.munch_time = true
@@ -89,14 +91,14 @@ function Public.reset_table()
     this.placed_trains_in_zone = {
         placed = 0,
         positions = {},
-        limit = 5,
+        limit = 4,
         randomized = false
     }
     this.collapse_grace = true
     this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
-    this.spawn_near_collapse = false
+    this.spawn_near_collapse = true
     this.spidertron_unlocked_at_wave = 11
     -- this.void_or_tile = 'lab-dark-2'
     this.void_or_tile = 'out-of-map'

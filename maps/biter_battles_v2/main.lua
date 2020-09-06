@@ -13,7 +13,6 @@ require "maps.biter_battles_v2.map_settings_tab"
 require "maps.biter_battles_v2.sciencelogs_tab"
 require "modules.spawners_contain_biters"
 require "modules.mineable_wreckage_yields_scrap"
-require "modules.custom_death_messages"
 
 local function on_player_joined_game(event)
 	local surface = game.surfaces["biter_battles"]

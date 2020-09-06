@@ -32,8 +32,8 @@ end
 
 function Public.update_health_boost_buttons(player)
 	local gui = player.gui.top
-	gui.health_boost_west.caption = math.round(global.map_forces.west.unit_health_boost * 100, 2) .. "%"
-	gui.health_boost_east.caption = math.round(global.map_forces.east.unit_health_boost * 100, 2) .. "%"
+	gui.health_boost_west.caption = math.round(global.map_forces.west.unit_health_boost * 100, 1) .. "%"
+	gui.health_boost_east.caption = math.round(global.map_forces.east.unit_health_boost * 100, 1) .. "%"
 end
 
 local function create_spectate_confirmation(player)

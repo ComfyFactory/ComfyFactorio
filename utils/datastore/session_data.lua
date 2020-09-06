@@ -1,10 +1,12 @@
 local Global = require 'utils.global'
 local Game = require 'utils.game'
 local Token = require 'utils.token'
+local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local table = require 'utils.table'
 
+local set_timeout_in_ticks = Task.set_timeout_in_ticks
 local session_data_set = 'sessions'
 local session = {}
 local online_track = {}
@@ -80,10 +82,25 @@ local try_upload_data =
     end
 )
 
+local nth_tick_token =
+    Token.register(
+    function(data)
+        local player = data.player
+        if player and player.valid then
+            Public.try_ul_data(player.name)
+        end
+    end
+)
+
 --- Uploads each connected players play time to the dataset
 local function upload_data()
-    for _, p in pairs(game.connected_players) do
-        Public.try_ul_data(p.name)
+    local players = game.connected_players
+    local count = 0
+    for i = 1, #players do
+        count = count + 1
+        local player = players[i]
+        local random_timing = count * 5
+        set_timeout_in_ticks(random_timing, nth_tick_token, {player = player})
     end
 end
 
@@ -190,7 +207,7 @@ Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.get_player(event.player_index)
-        if not player then
+        if not player or not player.valid then
             return
         end
 
@@ -202,7 +219,7 @@ Event.add(
     defines.events.on_player_left_game,
     function(event)
         local player = game.get_player(event.player_index)
-        if not player then
+        if not player or not player.valid then
             return
         end
 

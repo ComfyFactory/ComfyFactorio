@@ -47,7 +47,8 @@ local noises = {
     ['n1'] = {{modifier = 0.0001, weight = 1}},
     ['n2'] = {{modifier = 0.001, weight = 1}},
     ['n3'] = {{modifier = 0.01, weight = 1}},
-    ['n4'] = {{modifier = 0.1, weight = 1}},
+	['n4'] = {{modifier = 0.1, weight = 1}},
+    ['n5'] = {{modifier = 0.07, weight = 1}},
     ['watery_world'] = {
         {modifier = 0.0007, weight = 1},
         {modifier = 0.01, weight = 0.02},

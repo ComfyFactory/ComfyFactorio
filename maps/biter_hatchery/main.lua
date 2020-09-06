@@ -1,14 +1,13 @@
 require "modules.no_turrets"
---require "maps.biter_hatchery.flamethrower_nerf"
-local RPG = require "modules.rpg"
+require 'modules.no_acid_puddles'
 local Tabs = require 'comfy_panel.main'
 local Map_score = require "comfy_panel.map_score"
-local Unit_health_booster = require "modules.biter_health_booster"
 local unit_raffle = require "maps.biter_hatchery.raffle_tables"
 local Terrain = require "maps.biter_hatchery.terrain"
 local Gui = require "maps.biter_hatchery.gui"
 require "maps.biter_hatchery.share_chat"
 local Team = require "maps.biter_hatchery.team"
+local Unit_health_booster = require "modules.biter_health_booster"
 local Reset = require "functions.soft_reset"
 local Map = require "modules.map_info"
 local math_random = math.random
@@ -38,7 +37,7 @@ local health_boost_food_values = {
 	["space-science-pack"] = 				0.00041828 * m,
 }
 
-local worm_turret_spawn_radius = 18
+local worm_turret_spawn_radius = 25
 local worm_turret_vectors = {}
 worm_turret_vectors.west = {}
 for x = 0, worm_turret_spawn_radius, 1 do
@@ -69,10 +68,8 @@ function Public.reset_map()
 	surface.request_to_generate_chunks({0,0}, 8)
 	surface.force_generate_chunk_requests()
 	game.forces.spectator.set_spawn_position({0, -128}, surface)
-	game.forces.west.set_spawn_position({-200, 0}, surface)
-	game.forces.east.set_spawn_position({200, 0}, surface)		
-	
-	RPG.rpg_reset_all_players()
+	game.forces.west.set_spawn_position({-210, 0}, surface)
+	game.forces.east.set_spawn_position({210, 0}, surface)		
 	
 	Team.set_force_attributes()	
 	Team.assign_random_force_to_active_players()
@@ -88,11 +85,13 @@ function Public.reset_map()
 	for _, player in pairs(game.forces.spectator.players) do
 		Gui.rejoin_question(player)
 	end
+	
+	game.reset_time_played()
 end
 
 local function spawn_worm_turret(surface, force_name, food_item)
 	local r_max = surface.count_entities_filtered({type = "turret", force = force_name}) + 1
-	if r_max >  8 then return end
+	if r_max > 256 then return end
 	if math_random(1, r_max) ~= 1 then return end
 	local vectors = worm_turret_vectors[force_name]
 	local vector = vectors[math_random(1, #vectors)]
@@ -104,6 +103,7 @@ local function spawn_worm_turret(surface, force_name, food_item)
 	if not position then return end
 	surface.create_entity({name = worm, position = position, force = force_name})
 	surface.create_entity({name = "blood-explosion-huge", position = position})
+	surface.create_decoratives{check_collision = false, decoratives = {{name = "enemy-decal", position = position, amount = 1}}}
 end
 
 local function spawn_units(belt, food_item, removed_item_count)
@@ -122,7 +122,7 @@ local function spawn_units(belt, food_item, removed_item_count)
 			team.unit_count = team.unit_count + 1
 		end
 	end
-	if math_random(1, 32) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
+	if math_random(1, 8) == 1 then spawn_worm_turret(belt.surface, belt.force.name, food_item) end
 end
 
 local function get_belts(spawner)
@@ -177,7 +177,7 @@ local function get_units(force_name)
 	local units = {}
 	local count = 1
 	for _, unit in pairs(global.map_forces[force_name].units) do		
-		if not unit.unit_group then
+		if unit.valid and not unit.unit_group then
 			if math_random(1, 3) ~= 1 then
 				units[count] = unit
 				count = count + 1
@@ -285,16 +285,20 @@ local function on_entity_died(event)
 		end
 	end
 		
-	game.print("Next round starting in 60 seconds..", {150, 150, 150})
+	game.print("Map will restart in 2 minutes.", {150, 150, 150})
 	
 	game.forces.spectator.play_sound{path="utility/game_won", volume_modifier=0.85}
 
-	global.game_reset_tick = game.tick + 3600
+	global.game_reset_tick = game.tick + 7200
 	game.delete_surface("mirror_terrain")
 	
 	for _, player in pairs(game.connected_players) do
 		for _, child in pairs(player.gui.left.children) do child.destroy() end
 		Tabs.comfy_panel_call_tab(player, "Map Scores")
+	end
+	
+	for _, e in pairs(entity.surface.find_entities_filtered({type = "unit"})) do
+		e.active = false
 	end
 end
 
@@ -320,14 +324,17 @@ end
 
 local function tick()
 	local game_tick = game.tick
-	if game_tick % 240 == 0 then
+	if game_tick % 240 == 0 then		
 		local surface = game.surfaces[global.active_surface_index]
-		--if surface.is_chunk_generated({10, 0}) then
-			local area = {{-320, -161}, {319, 160}}
-			game.forces.west.chart(surface, area)
-			game.forces.east.chart(surface, area)
-		--end
-	end	
+		local west = game.forces.west
+		local east = game.forces.east
+		local area = {{-320, -161}, {319, 160}}
+		west.chart(surface, area)
+		east.chart(surface, area)
+		local r = 64
+		for _, player in pairs(west.connected_players) do	east.chart(surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}) end
+		for _, player in pairs(east.connected_players) do west.chart(surface, {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}) end
+	end
 	if game_tick % 1200 == 0 then send_unit_groups() end	
 	if global.game_reset_tick then
 		if global.game_reset_tick < game_tick then
@@ -367,14 +374,40 @@ local function on_entity_damaged(event)
 	if cause then
 		if cause.valid then
 			if cause.type == "unit" then
-				if math_random(1,5) == 1 then return end
+				if math_random(1, 16) == 1 then return end
 			end
 		end
 	end
 	entity.health = entity.health + event.final_damage_amount	
 end
 
+local function on_player_used_spider_remote(event)
+	local vehicle = event.vehicle
+	local position = event.position
+	local success = event.success
+	if not success then return end
+	if vehicle.force.name == "west" then
+		if position.x < -3 then return end
+	else
+		if position.x > 3 then return end
+	end
+	vehicle.autopilot_destination = nil
+end
+
 local function on_init()
+	--Disable Nauvis
+	local surface = game.surfaces[1]
+	local map_gen_settings = surface.map_gen_settings
+	map_gen_settings.height = 3
+	map_gen_settings.width = 3
+	surface.map_gen_settings = map_gen_settings
+	for chunk in surface.get_chunks() do		
+		surface.delete_chunk({chunk.x, chunk.y})		
+	end
+
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)
+
 	game.difficulty_settings.technology_price_multiplier = 0.5 
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0	
@@ -394,7 +427,7 @@ local function on_init()
 		"Feed your hatchery science flasks to breed biters!\n",
 		"They will soon after swarm to the opposing teams nest!\n",
 		"\n",
-		"Lay transport belts to your hatchery and they will happily nom the juice off the conveyor.\n",
+		"Lay transport belts to your hatchery and they will happily nom the science juice off the conveyor.\n",
 		"Higher tier flasks will breed stronger biters!\n",
 		"\n",
 		"Player turrets are disabled.\n",
@@ -411,7 +444,8 @@ end
 
 local event = require 'utils.event'
 event.on_init(on_init)
-event.on_nth_tick(60, tick)
+event.on_nth_tick(30, tick)
+event.add(defines.events.on_player_used_spider_remote, on_player_used_spider_remote)
 event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 event.add(defines.events.on_entity_died, on_entity_died)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)

@@ -15,13 +15,11 @@ local random = math.random
 local sqrt = math.sqrt
 local concat = table.concat
 
-local keeper = '[color=blue]Mapkeeper:[/color] \n'
-
 local collapse_message =
     Token.register(
     function(data)
         local pos = data.position
-        local message = keeper .. 'Warning, Collapse has begun!'
+        local message = ({'breached_wall.collapse_start'})
         local collapse_position = {
             position = pos
         }
@@ -32,7 +30,7 @@ local collapse_message =
 local spidertron_unlocked =
     Token.register(
     function()
-        local message = 'Attention! Spidertron has been unlocked at the main market!'
+        local message = ({'breached_wall.spidertron_unlocked'})
         Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
     end
 )
@@ -42,7 +40,7 @@ local zone_complete =
     function(data)
         local bonus = data.bonus
         local player = data.player
-        local message = keeper .. 'Survivor! Well done. You have completed zone: ' .. bonus
+        local message = ({'breached_wall.wall_breached', bonus})
         Alert.alert_player_warning(player, 10, message)
     end
 )
@@ -52,7 +50,7 @@ local first_player_to_zone =
     function(data)
         local player = data.player
         local breached_wall = data.breached_wall
-        local message = concat {keeper .. player.name .. ' was the first to reach zone ' .. breached_wall .. '.'}
+        local message = ({'breached_wall.wall_breached', player.name, breached_wall})
         Alert.alert_all_players(10, message)
     end
 )
@@ -60,7 +58,7 @@ local first_player_to_zone =
 local artillery_warning =
     Token.register(
     function()
-        local message = keeper .. 'Warning, Artillery have been spotted north!'
+        local message = ({'breached_wall.artillery_warning'})
         Alert.alert_all_players(10, message)
     end
 )
@@ -89,6 +87,7 @@ local function distance(player)
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
             WPT.set().breached_wall = breached_wall + 1
             WPT.set().placed_trains_in_zone.placed = 0
+            WPT.set().biters.amount = 0
             WPT.set().placed_trains_in_zone.randomized = false
             WPT.set().placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})

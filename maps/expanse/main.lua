@@ -179,7 +179,7 @@ local function infini_rock(entity)
 	local a = math.floor(expanse.square_size * 0.5)		
 	if entity.position.x == a and entity.position.y == a then
 		entity.surface.create_entity({name = "rock-big", position = {a, a}})
-		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(75, 150)}, true, nil, true)
+		entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1,4)], count = math.random(80, 160)}, true, nil, true)
 		entity.surface.spill_item_stack(entity.position, {name = "stone", count = math.random(15, 30)}, true, nil, true)
 	end
 end
@@ -241,6 +241,7 @@ local function on_init(event)
 	game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
 	game.map_settings.enemy_expansion.settler_group_max_size = 8
 	game.map_settings.enemy_expansion.settler_group_min_size = 16	
+	game.map_settings.enemy_evolution.destroy_factor = 0.005
 	
 	--Settings for cave miner
 	--[[

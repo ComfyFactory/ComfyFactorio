@@ -28,8 +28,6 @@ local function on_player_mined_entity(event)
     end
     local icw = ICW.get()
 
-    Functions.locomotive_mining(icw, event)
-
     if not icw.allow_player_to_build_trains then
         return
     end

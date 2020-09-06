@@ -1,7 +1,7 @@
 local Public = {}
 local math_random = math.random
 
-Public.starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 25}
+Public.starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 25, ['pistol'] = 1, ['firearm-magazine'] = 16}
 
 function Public.set_force_attributes()
 	game.forces.west.set_friend("spectator", true)
@@ -19,7 +19,7 @@ function Public.set_force_attributes()
 		global.map_forces[force_name].unit_health_boost = 1
 		global.map_forces[force_name].unit_count = 0
 		global.map_forces[force_name].units = {}
-		global.map_forces[force_name].max_unit_count = 768
+		global.map_forces[force_name].max_unit_count = 1280
 		global.map_forces[force_name].player_count = 0
 	end	
 end

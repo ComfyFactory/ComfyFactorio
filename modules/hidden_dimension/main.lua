@@ -560,6 +560,7 @@ function Public.init(args)
         hidden_dimension.hd_surface = args.hd_surface or 'nauvis'
     else
         hidden_dimension.hd_surface = 'nauvis'
+        hidden_dimension.position = {x = 0, y = 3}
     end
 end
 
