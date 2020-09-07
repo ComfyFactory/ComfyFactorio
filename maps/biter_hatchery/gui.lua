@@ -45,13 +45,20 @@ local function create_spectate_confirmation(player)
 	frame.add({type = "button", name = "cancel_spectate", caption = "Cancel"})
 end
 
-function Public.rejoin_question(player)
-	if player.gui.center.rejoin_question_frame then return end
-	local frame = player.gui.center.add({type = "frame", name = "rejoin_question_frame", caption = "Rejoin the game?"})
-	frame.style.font = "default"
-	frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
-	frame.add({type = "button", name = "confirm_rejoin", caption = "Rejoin"})
-	frame.add({type = "button", name = "cancel_rejoin", caption = "Cancel"})
+function Public.rejoin_question(hatchery)
+	if game.tick % 60 ~= 0 then return end
+	for _, player in pairs(game.forces.spectator.players) do
+		if not player.gui.center.rejoin_question_frame then 
+			local frame = player.gui.center.add({type = "frame", name = "rejoin_question_frame", caption = "Rejoin the game?"})
+			frame.style.font = "default"
+			frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
+			frame.add({type = "button", name = "confirm_rejoin", caption = "Rejoin"})
+			frame.add({type = "button", name = "cancel_rejoin", caption = "Cancel"})
+		end
+	end
+	hatchery.reset_counter = hatchery.reset_counter + 1	
+	game.print("Biter Hatchery round #" .. hatchery.reset_counter .. " has begun!", {180, 0, 250})
+	hatchery.gamestate = "game_in_progress"
 end
 
 local function on_gui_click(event)
@@ -63,8 +70,8 @@ local function on_gui_click(event)
 	if event.element.name == "confirm_rejoin" then
 		player.gui.center["rejoin_question_frame"].destroy()
 		Team.assign_force_to_player(player)
-		Team.teleport_player_to_active_surface(player)
-		Team.put_player_into_random_team(player)
+		Team.teleport_player_to_spawn(player)
+		Team.add_player_to_team(player)
 		game.print(player.name .. " has rejoined the game!")
 		return 
 	end

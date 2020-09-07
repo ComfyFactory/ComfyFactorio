@@ -1,33 +1,40 @@
 local Public = {}
 local math_random = math.random
 
-Public.starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 25, ['pistol'] = 1, ['firearm-magazine'] = 16}
+local starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 20, ['pistol'] = 1, ['firearm-magazine'] = 16}
 
-function Public.set_force_attributes()
-	game.forces.west.set_friend("spectator", true)
-	game.forces.east.set_friend("spectator", true)
-	game.forces.spectator.set_friend("west", true)
-	game.forces.spectator.set_friend("east", true)
-	
-	for _, force_name in pairs({"west", "east"}) do
-		game.forces[force_name].share_chart = true
-		game.forces[force_name].research_queue_enabled = true
-		game.forces[force_name].technologies["artillery"].enabled = false
-		game.forces[force_name].technologies["artillery-shell-range-1"].enabled = false
-		game.forces[force_name].technologies["artillery-shell-speed-1"].enabled = false
-		game.forces[force_name].technologies["land-mine"].enabled = false	
+function Public.reset_forces()
+	for _, force_name in pairs({"west", "east"}) do		
 		global.map_forces[force_name].unit_health_boost = 1
 		global.map_forces[force_name].unit_count = 0
 		global.map_forces[force_name].units = {}
-		global.map_forces[force_name].max_unit_count = 1280
-		global.map_forces[force_name].player_count = 0
-	end	
+		global.map_forces[force_name].player_count = 0			
+		local force = game.forces[force_name]
+		force.reset()
+		force.share_chart = true
+		force.research_queue_enabled = true
+		force.technologies["artillery"].enabled = false
+		force.technologies["artillery-shell-range-1"].enabled = false
+		force.technologies["artillery-shell-speed-1"].enabled = false
+		force.technologies["land-mine"].enabled = false
+	end
+	game.forces.west.set_friend("spectator", true)
+	game.forces.east.set_friend("spectator", true)	
+	game.forces.west.set_spawn_position({-210, 0}, game.surfaces.nauvis)
+	game.forces.east.set_spawn_position({210, 0}, game.surfaces.nauvis)
 end
 
 function Public.create_forces()
 	game.create_force("west")
 	game.create_force("east")
 	game.create_force("spectator")
+	game.forces.spectator.set_friend("west", true)
+	game.forces.spectator.set_friend("east", true)
+	for _, force_name in pairs({"west", "east"}) do		
+		global.map_forces[force_name].max_unit_count = 1280
+	end	
+	local surface = game.surfaces.nauvis
+	game.forces.spectator.set_spawn_position({0, -128}, surface)
 end
 
 function Public.assign_random_force_to_active_players()
@@ -63,8 +70,8 @@ function Public.assign_force_to_player(player)
 	end
 end
 
-function Public.teleport_player_to_active_surface(player)
-	local surface = game.surfaces[global.active_surface_index]
+function Public.teleport_player_to_spawn(player)
+	local surface = game.surfaces.nauvis
 	local position	
 	if player.force.name == "spectator" then
 		position = player.force.get_spawn_position(surface)
@@ -76,27 +83,77 @@ function Public.teleport_player_to_active_surface(player)
 	player.teleport(position, surface)
 end
 
-function Public.put_player_into_random_team(player)
+function Public.add_player_to_team(player)
 	if player.character then
 		if player.character.valid then
 			player.character.destroy()
 		end
-	end		
+	end
 	player.character = nil
 	player.set_controller({type=defines.controllers.god})
 	player.create_character()
-	for item, amount in pairs(Public.starting_items) do
+	for item, amount in pairs(starting_items) do
 		player.insert({name = item, count = amount})
 	end
 	global.map_forces[player.force.name].player_count = global.map_forces[player.force.name].player_count + 1
 end
 
 function Public.set_player_to_spectator(player)
-	if player.character then player.character.die() end
+	if player.character and player.character.valid then player.character.die() end
 	player.force = game.forces.spectator	
 	player.character = nil
 	player.spectator = true
 	player.set_controller({type=defines.controllers.spectator})
+end
+
+function Public.spawn_players(hatchery)
+	if game.tick % 60 ~= 0 then return end
+	game.print("spawning characters", {150, 150, 150})
+	local surface = game.surfaces.nauvis
+	for _, player in pairs(game.connected_players) do
+		if player.force.name ~= "spectator" then
+			Public.assign_force_to_player(player)
+			Public.add_player_to_team(player)
+			Public.teleport_player_to_spawn(player)
+		end
+	end
+	hatchery.gamestate = "rejoin_question"
+end
+
+function Public.init(hatchery)
+	game.reset_time_played()	
+	Public.reset_forces()
+	
+	local players = {}
+	for _, player in pairs(game.players) do table.insert(players, player.index) end
+	
+	for k, player_index in pairs(players) do
+		local player = game.players[player_index]
+		if player.force.name == "spectator" then
+			Public.teleport_player_to_spawn(player)
+			table.remove(players, k) 
+		end
+	end
+	
+	for k, player_index in pairs(players) do
+		local player = game.players[player_index]
+		if not player.connected then
+			player.force = game.forces.player
+			table.remove(players, k) 
+		end
+	end
+	
+	for k, player_index in pairs(players) do
+		local player = game.players[player_index]		
+		if player.character and player.character.valid then player.character.destroy() end
+		player.character = nil
+		player.spectator = true
+		player.set_controller({type=defines.controllers.spectator})
+		player.force = game.forces.player
+		Public.teleport_player_to_spawn(player)
+	end
+
+	hatchery.gamestate = "reset_nauvis"
 end
 
 return Public
