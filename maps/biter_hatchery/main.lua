@@ -363,6 +363,13 @@ local function game_in_progress(hatchery)
 	nom()	
 end
 
+local no_mirror_states = {
+	["init"] = true,
+	["reset_nauvis"] = true,
+	["prepare_east"] = true,
+	["clear_west"] = true,
+}
+
 local function on_chunk_generated(event)
 	local surface = event.surface
 	if event.surface.index ~= 1 then return end
@@ -374,7 +381,7 @@ local function on_chunk_generated(event)
 		return
 	end
 
-	if left_top.x < 0 then
+	if left_top.x < 0 and not no_mirror_states[hatchery.gamestate] then
 		table.insert(hatchery.mirror_queue, {{left_top.x, left_top.y}, 1})
 		Terrain.out_of_map(surface, left_top)	
 		return

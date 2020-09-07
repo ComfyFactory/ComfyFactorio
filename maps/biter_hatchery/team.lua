@@ -118,6 +118,7 @@ function Public.spawn_players(hatchery)
 		end
 	end
 	hatchery.gamestate = "rejoin_question"
+	print(hatchery.gamestate)
 end
 
 function Public.init(hatchery)
@@ -154,6 +155,7 @@ function Public.init(hatchery)
 		end
 	end
 	hatchery.gamestate = "reset_nauvis"
+	print(hatchery.gamestate)
 end
 
 return Public

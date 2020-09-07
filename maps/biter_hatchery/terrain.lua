@@ -74,6 +74,7 @@ function Public.reset_nauvis(hatchery)
 		surface.delete_chunk({chunk.x, chunk.y})
 	end
 	hatchery.gamestate = "prepare_east"
+	print(hatchery.gamestate)
 end
 
 function Public.prepare_east(hatchery)	
@@ -99,6 +100,7 @@ function Public.prepare_east(hatchery)
 	end
 	draw_spawn_ore(surface, {x = 240, y = 0})
 	hatchery.gamestate = "clear_west"
+	print(hatchery.gamestate)
 end
 
 function Public.clear_west(hatchery)
@@ -110,6 +112,7 @@ function Public.clear_west(hatchery)
 	end
 	hatchery.mirror_queue = {}
 	hatchery.gamestate = "prepare_west"
+	print(hatchery.gamestate)
 end
 
 function Public.prepare_west(hatchery)	
@@ -117,9 +120,10 @@ function Public.prepare_west(hatchery)
 	local surface = game.surfaces.nauvis		
 	surface.request_to_generate_chunks({hatchery_position.x * -1, 0}, 7)
 	surface.force_generate_chunk_requests()
-	game.print("preparing west chunks " .. #hatchery.mirror_queue, {150, 150, 150})
-	if #hatchery.mirror_queue > 0 then return end
+	game.print("preparing west chunks " .. table_size(hatchery.mirror_queue), {150, 150, 150})
+	if hatchery.mirror_queue[1] then return end
 	hatchery.gamestate = "draw_team_nests"
+	print(hatchery.gamestate)
 end
 
 function Public.draw_team_nests(hatchery)
@@ -150,6 +154,7 @@ function Public.draw_team_nests(hatchery)
 	surface.create_decoratives{check_collision = false, decoratives = {{name = "enemy-decal", position = e.position, amount = 3}}}
 
 	hatchery.gamestate = "draw_border_beams"
+	print(hatchery.gamestate)
 end
 
 function Public.draw_border_beams(hatchery)
@@ -158,6 +163,7 @@ function Public.draw_border_beams(hatchery)
 	surface.create_entity({name = "electric-beam", position = {4, -96}, source = {4, -96}, target = {4,96}})
 	surface.create_entity({name = "electric-beam", position = {-4, -96}, source = {-4, -96}, target = {-4,96}})
 	hatchery.gamestate = "spawn_players"
+	print(hatchery.gamestate)
 end
 
 function Public.combat_area(event)
@@ -186,13 +192,10 @@ function Public.combat_area(event)
 end
 
 local function mirror_tiles(east_left_top)
-	local surface = game.surfaces.nauvis
-	
+	local surface = game.surfaces.nauvis	
 	surface.request_to_generate_chunks({x = east_left_top.x + 16, y = east_left_top.y + 16}, 0)
 	surface.force_generate_chunk_requests()
-	
 	local mirror_area = {{east_left_top.x, east_left_top.y}, {east_left_top.x + 32, east_left_top.y + 32}}
-	
 	for _, tile in pairs(surface.find_tiles_filtered({area = mirror_area})) do
 		surface.set_tiles({{name = tile.name, position = {x = tile.position.x * -1 - 1, y = tile.position.y}}}, true)
 	end	

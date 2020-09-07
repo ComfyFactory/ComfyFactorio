@@ -65,6 +65,7 @@ function Public.rejoin_question(hatchery)
 		player.play_sound{path="utility/new_objective", volume_modifier=0.85}
 	end	
 	hatchery.gamestate = "game_in_progress"
+	print(hatchery.gamestate)
 end
 
 local function on_gui_click(event)
