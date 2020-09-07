@@ -77,7 +77,7 @@ function Public.reset_nauvis(hatchery)
 end
 
 function Public.prepare_east(hatchery)	
-	if game.tick % 60 ~= 0 then return end
+	if game.tick % 90 ~= 0 then return end
 	game.print("preparing east", {150, 150, 150})
 	local surface = game.surfaces.nauvis		
 	surface.request_to_generate_chunks({hatchery_position.x, 0}, 7)
@@ -97,9 +97,14 @@ function Public.prepare_east(hatchery)
 			end
 		end
 	end
-
 	draw_spawn_ore(surface, {x = 240, y = 0})
+	hatchery.gamestate = "clear_west"
+end
 
+function Public.clear_west(hatchery)
+	if game.tick % 90 ~= 0 then return end
+	game.print("clearing west chunks", {150, 150, 150})
+	local surface = game.surfaces.nauvis		
 	for chunk in surface.get_chunks() do
 		if chunk.x < 0 then surface.delete_chunk({chunk.x, chunk.y}) end
 	end
@@ -108,17 +113,17 @@ function Public.prepare_east(hatchery)
 end
 
 function Public.prepare_west(hatchery)	
-	if game.tick % 60 ~= 0 then return end
-	game.print("preparing west " .. #hatchery.mirror_queue, {150, 150, 150})
+	if game.tick % 90 ~= 0 then return end
 	local surface = game.surfaces.nauvis		
 	surface.request_to_generate_chunks({hatchery_position.x * -1, 0}, 7)
 	surface.force_generate_chunk_requests()
+	game.print("preparing west chunks " .. #hatchery.mirror_queue, {150, 150, 150})
 	if #hatchery.mirror_queue > 0 then return end
 	hatchery.gamestate = "draw_team_nests"
 end
 
 function Public.draw_team_nests(hatchery)
-	if game.tick % 60 ~= 0 then return end
+	if game.tick % 90 ~= 0 then return end
 	game.print("placing nests", {150, 150, 150})
 	local surface = game.surfaces.nauvis
 	local x = hatchery_position.x
@@ -148,7 +153,7 @@ function Public.draw_team_nests(hatchery)
 end
 
 function Public.draw_border_beams(hatchery)
-	if game.tick % 60 ~= 0 then return end
+	if game.tick % 90 ~= 0 then return end
 	local surface = game.surfaces.nauvis
 	surface.create_entity({name = "electric-beam", position = {4, -96}, source = {4, -96}, target = {4,96}})
 	surface.create_entity({name = "electric-beam", position = {-4, -96}, source = {-4, -96}, target = {-4,96}})

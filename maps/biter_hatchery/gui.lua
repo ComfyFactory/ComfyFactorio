@@ -1,5 +1,6 @@
 local Public = {}
 local Team = require "maps.biter_hatchery.team"
+local Server = require 'utils.server'
 
 function Public.spectate_button(player)
 	if player.gui.top.spectate_button then return end
@@ -46,7 +47,7 @@ local function create_spectate_confirmation(player)
 end
 
 function Public.rejoin_question(hatchery)
-	if game.tick % 60 ~= 0 then return end
+	if game.tick % 90 ~= 0 then return end
 	for _, player in pairs(game.forces.spectator.players) do
 		if not player.gui.center.rejoin_question_frame then 
 			local frame = player.gui.center.add({type = "frame", name = "rejoin_question_frame", caption = "Rejoin the game?"})
@@ -56,8 +57,13 @@ function Public.rejoin_question(hatchery)
 			frame.add({type = "button", name = "cancel_rejoin", caption = "Cancel"})
 		end
 	end
-	hatchery.reset_counter = hatchery.reset_counter + 1	
-	game.print("Biter Hatchery round #" .. hatchery.reset_counter .. " has begun!", {180, 0, 250})
+	hatchery.reset_counter = hatchery.reset_counter + 1		
+	local message = "Biter Hatchery round #" .. hatchery.reset_counter .. " has begun!"
+	game.print(message, {180, 0, 250})
+	Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+	for _, player in pairs(game.connected_players) do
+		player.play_sound{path="utility/new_objective", volume_modifier=0.85}
+	end	
 	hatchery.gamestate = "game_in_progress"
 end
 

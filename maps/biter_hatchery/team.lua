@@ -107,7 +107,7 @@ function Public.set_player_to_spectator(player)
 end
 
 function Public.spawn_players(hatchery)
-	if game.tick % 60 ~= 0 then return end
+	if game.tick % 90 ~= 0 then return end
 	game.print("spawning characters", {150, 150, 150})
 	local surface = game.surfaces.nauvis
 	for _, player in pairs(game.connected_players) do
@@ -123,36 +123,36 @@ end
 function Public.init(hatchery)
 	game.reset_time_played()	
 	Public.reset_forces()
-	
-	local players = {}
-	for _, player in pairs(game.players) do table.insert(players, player.index) end
-	
-	for k, player_index in pairs(players) do
-		local player = game.players[player_index]
-		if player.force.name == "spectator" then
-			Public.teleport_player_to_spawn(player)
-			table.remove(players, k) 
-		end
-	end
-	
-	for k, player_index in pairs(players) do
-		local player = game.players[player_index]
-		if not player.connected then
-			player.force = game.forces.player
-			table.remove(players, k) 
-		end
-	end
-	
-	for k, player_index in pairs(players) do
-		local player = game.players[player_index]		
-		if player.character and player.character.valid then player.character.destroy() end
-		player.character = nil
-		player.spectator = true
-		player.set_controller({type=defines.controllers.spectator})
-		player.force = game.forces.player
-		Public.teleport_player_to_spawn(player)
-	end
 
+	for _, player in pairs(game.forces.spectator.players) do
+		Public.teleport_player_to_spawn(player)
+	end	
+	
+	for _, player in pairs(game.forces.west.players) do
+		if player.connected then
+			if player.character and player.character.valid then player.character.destroy() end
+			player.character = nil
+			player.spectator = true
+			player.set_controller({type=defines.controllers.spectator})
+			player.force = game.forces.player
+			Public.teleport_player_to_spawn(player)
+		else
+			player.force = game.forces.player
+		end
+	end
+	
+	for _, player in pairs(game.forces.east.players) do
+		if player.connected then
+			if player.character and player.character.valid then player.character.destroy() end
+			player.character = nil
+			player.spectator = true
+			player.set_controller({type=defines.controllers.spectator})
+			player.force = game.forces.player
+			Public.teleport_player_to_spawn(player)
+		else
+			player.force = game.forces.player
+		end
+	end
 	hatchery.gamestate = "reset_nauvis"
 end
 

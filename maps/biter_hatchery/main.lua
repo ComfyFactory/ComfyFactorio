@@ -10,6 +10,7 @@ local Team = require "maps.biter_hatchery.team"
 local Unit_health_booster = require "modules.biter_health_booster"
 local Map = require "modules.map_info"
 local Global = require 'utils.global'
+local Server = require 'utils.server'
 local Public = {}
 
 local math_random = math.random
@@ -224,7 +225,10 @@ local function on_entity_died(event)
 		game.print("East lost their Hatchery.", {100, 100, 100})
 		game.forces.east.play_sound{path="utility/game_lost", volume_modifier=0.85}
 		
-		game.print(">>>> WEST TEAM HAS WON THE GAME!!! <<<<", {250, 120, 0})	
+		local message = ">>>> WEST TEAM HAS WON THE GAME!!! <<<<"	
+		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+		game.print(message, {250, 120, 0})
+		
 		game.forces.west.play_sound{path="utility/game_won", volume_modifier=0.85}
 		
 		for _, player in pairs(game.forces.west.connected_players) do
@@ -235,8 +239,11 @@ local function on_entity_died(event)
 	else
 		game.print("West lost their Hatchery.", {100, 100, 100})
 		game.forces.west.play_sound{path="utility/game_lost", volume_modifier=0.85}
-				
-		game.print(">>>> EAST TEAM HAS WON THE GAME!!! <<<<", {250, 120, 0})
+					
+		local message = ">>>> EAST TEAM HAS WON THE GAME!!! <<<<"	
+		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+		game.print(message, {250, 120, 0})
+		
 		game.forces.east.play_sound{path="utility/game_won", volume_modifier=0.85}
 		
 		for _, player in pairs(game.forces.east.connected_players) do
@@ -246,7 +253,7 @@ local function on_entity_died(event)
 		end
 	end
 		
-	game.print("Map will restart in 2 minutes.", {150, 150, 150})
+	game.print("Map rerolling in 2 minutes.", {150, 150, 150})
 	
 	game.forces.spectator.play_sound{path="utility/game_won", volume_modifier=0.85}
 
@@ -270,10 +277,16 @@ local function on_player_joined_game(event)
 	Gui.spectate_button(player)
 	Gui.update_health_boost_buttons(player)
 	
-	if player.force.name == "player" then	
-		Team.assign_force_to_player(player)
-		Team.add_player_to_team(player)
-		Team.teleport_player_to_spawn(player)
+	if player.force.name == "player" then
+		if player.character and player.character.valid then player.character.destroy() end
+		player.character = nil
+		player.spectator = true
+		player.set_controller({type=defines.controllers.spectator})
+		if hatchery.gamestate == "game_in_progress" or hatchery.gamestate == "rejoin_question" then	
+			Team.assign_force_to_player(player)
+			Team.add_player_to_team(player)
+			Team.teleport_player_to_spawn(player)
+		end
 	end
 end
 
@@ -376,6 +389,7 @@ local gamestates = {
 	["init"] = Team.init,
 	["reset_nauvis"] = Terrain.reset_nauvis,
 	["prepare_east"] = Terrain.prepare_east,
+	["clear_west"] = Terrain.clear_west,
 	["prepare_west"] = Terrain.prepare_west,
 	["draw_team_nests"] = Terrain.draw_team_nests,
 	["draw_border_beams"] = Terrain.draw_border_beams,
