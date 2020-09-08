@@ -231,9 +231,6 @@ function Public.server_restart()
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		--Server.start_scenario('Biter_Battles')
-		
-		game.remove_offline_players()
 		
 		Init.tables()
 		Init.forces()
@@ -284,6 +281,18 @@ function Public.silo_death(event)
 			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].visible = false end
 			create_victory_gui(player)
 			show_mvps(player)
+			--[[
+			player.set_controller({
+				type = defines.controllers.cutscene,
+				waypoints = {{position = {event.entity.position.x, event.entity.position.y},
+				transition_time = 0,
+				time_to_wait = 900,
+				zoom = 0.5}},
+				start_position = {player.position.x, player.position.y},
+				start_zoom = 1,
+				final_transition_time = 180
+			})
+			]]
 		end
 
 		global.spy_fish_timeout["north"] = game.tick + 999999

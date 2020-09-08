@@ -9,7 +9,6 @@ local Mirror_terrain = require "maps.biter_battles_v2.mirror_terrain"
 local Team_manager = require "maps.biter_battles_v2.team_manager"
 local Terrain = require "maps.biter_battles_v2.terrain"
 
-require "maps.biter_battles_v2.map_settings_tab"
 require "maps.biter_battles_v2.sciencelogs_tab"
 require "modules.spawners_contain_biters"
 require "modules.mineable_wreckage_yields_scrap"
@@ -17,7 +16,7 @@ require "modules.mineable_wreckage_yields_scrap"
 local function on_player_joined_game(event)
 	local surface = game.surfaces["biter_battles"]
 	local player = game.players[event.player_index]
-	if player.online_time == 0 then
+	if player.online_time == 0 or player.force.name == "player" then
 		Functions.init_player(player)
 	end
 	Functions.create_map_intro_button(player)

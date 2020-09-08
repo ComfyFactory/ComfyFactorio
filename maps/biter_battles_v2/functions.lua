@@ -139,15 +139,23 @@ function Public.combat_balance(event)
 end
 
 function Public.init_player(player)
-	local surface = game.surfaces.biter_battles
+	if not player.connected then
+		if player.force.index ~= 1 then
+			player.force = game.forces.player
+		end
+		return
+	end	
+		
 	if player.character and player.character.valid then
 		player.character.destroy()
 		player.set_controller({type = defines.controllers.god})
-		player.create_character()
-	end	
+		player.create_character()	
+	end
 	player.clear_items_inside()
 	player.spectator = true
 	player.force = game.forces.spectator
+	
+	local surface = game.surfaces.biter_battles
 	if surface.is_chunk_generated({0,0}) then
 		player.teleport(surface.find_non_colliding_position("character", {0,0}, 4, 0.5), surface)
 	else
