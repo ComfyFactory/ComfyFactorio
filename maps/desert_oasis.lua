@@ -136,7 +136,11 @@ local function on_chunk_generated(event)
 	end
 
 	for _, entity in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do
-		if get_noise("oasis", entity.position, seed) > -0.25 then
+		if get_noise("oasis", entity.position, seed) > -0.25 then			
+			surface.destroy_decoratives({
+				area = {{entity.position.x - 10, entity.position.y - 10},{entity.position.x + 10, entity.position.y + 10}},
+				name = {"enemy-decal", "enemy-decal-transparent", "worms-decal", "shroom-decal"}
+			})
 			entity.destroy()
 		end
 	end
@@ -168,7 +172,7 @@ local function on_init()
 			["copper-ore"] = {frequency = 25, size = 0.5, richness = 0.5},
 			["iron-ore"] = {frequency = 35, size = 0.5, richness = 0.5},
 			["uranium-ore"] = {frequency = 20, size = 0.5, richness = 0.5},
-			["crude-oil"] = {frequency = 80, size = 0.55, richness = 1},
+			["crude-oil"] = {frequency = 50, size = 0.55, richness = 1},
 			["trees"] = {frequency = 0.75, size = 0.75, richness = 0.1},
 			["enemy-base"] = {frequency = 15, size = 1, richness = 1},
 		},
@@ -192,7 +196,7 @@ local function on_init()
 	local surface = game.surfaces["desert_oasis"]
 	surface.request_to_generate_chunks({0,0}, 5)
 	surface.force_generate_chunk_requests()
-	
+
 	local force = game.forces.player
 	force.research_queue_enabled = true
 	force.technologies["landfill"].enabled = false
@@ -202,6 +206,7 @@ end
 local type_whitelist = {
 	["artillery-wagon"] = true,
 	["car"] = true,
+	["spider-vehicle"] = true,
 	["cargo-wagon"] = true,
 	["construction-robot"] = true,
 	["entity-ghost"] = true,
@@ -278,17 +283,23 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
 		player.insert({name = "raw-fish", count = 3})
-		player.insert({name = "grenade", count = 1})
-		player.insert({name = "computer", count = 1})
+		player.insert({name = "grenade", count = 1})		
 		player.insert({name = "iron-plate", count = 16})
 		player.insert({name = "iron-gear-wheel", count = 8})
 		player.insert({name = "stone", count = 5})
-		player.insert({name = "pistol", count = 1})
-		player.insert({name = "repair-pack", count = 2})
-		player.insert({name = "firearm-magazine", count = 8})
-		player.insert({name = "water-barrel", count = 1})
+		player.insert({name = "pistol", count = 1})	
+		player.insert({name = "firearm-magazine", count = 16})
 		player.teleport(game.surfaces["desert_oasis"].find_non_colliding_position("character", {64, 64}, 50, 0.5), "desert_oasis")
-	end		
+	end
+	
+	if game.tick > 0 then return end
+	local p = game.surfaces["desert_oasis"].find_non_colliding_position("stone", {52, 52}, 50, 0.5)
+	if not p then return end
+	local e = game.surfaces.desert_oasis.create_entity({name = "crash-site-spaceship", position = p, force = "player", create_build_effect_smoke = false})
+	e.insert({name = "computer", count = 1})
+	e.insert({name = "repair-pack", count = 2})
+	e.insert({name = "water-barrel", count = 5})
+	e.minable = false
 end
 
 local function on_player_changed_position(event)
