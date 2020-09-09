@@ -20,6 +20,7 @@ require 'modules.corpse_markers'
 require 'modules.floaty_chat'
 require 'modules.autohotbar'
 require 'modules.show_inventory'
+require 'modules.ban_drop'
 require 'utils.debug.command'
 
 require 'comfy_panel.main'
@@ -71,6 +72,8 @@ require 'modules.autostash'
 --require 'modules.fjei.main'
 --require 'modules.charging_station'
 --require 'modules.nuclear_landmines'
+--require 'modules.crawl_into_pipes'
+--require 'modules.no_acid_puddles'
 -----------------------------
 
 ---- enable maps here ---- (maps higher up in the list may be more actually playable)
