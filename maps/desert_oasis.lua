@@ -217,6 +217,7 @@ local type_whitelist = {
 	["logistic-robot"] = true,
 	["rail-chain-signal"] = true,
 	["rail-signal"] = true,
+	["curved-rail"] = true,
 	["straight-rail"] = true,
 	["train-stop"] = true,	
 }
