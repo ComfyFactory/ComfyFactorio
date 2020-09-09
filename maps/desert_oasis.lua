@@ -26,6 +26,7 @@ local tile_to_item = {
 
 local save_tiles = {
 	["stone-path"] = true,
+	["concrete"] = true,
 	["hazard-concrete-left"] = true,
 	["hazard-concrete-right"] = true,
 	["refined-concrete"] = true,
@@ -139,7 +140,7 @@ local function on_chunk_generated(event)
 		if get_noise("oasis", entity.position, seed) > -0.25 then			
 			surface.destroy_decoratives({
 				area = {{entity.position.x - 10, entity.position.y - 10},{entity.position.x + 10, entity.position.y + 10}},
-				name = {"enemy-decal", "enemy-decal-transparent", "worms-decal", "shroom-decal"}
+				name = {"enemy-decal", "enemy-decal-transparent", "worms-decal", "shroom-decal", "lichen-decal", "light-mud-decal"}
 			})
 			entity.destroy()
 		end
