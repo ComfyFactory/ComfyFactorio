@@ -302,6 +302,55 @@ commands.add_command(
 )
 
 commands.add_command(
+    'delete-uncharted-chunks',
+    'Deletes all chunks that are not charted. Can reduce filesize of the savegame. May be unsafe to use in certain custom maps.',
+    function()
+        local player = game.player
+        local p
+        if player then
+            if player ~= nil then
+                p = player.print
+                if not player.admin then
+                    p("[ERROR] You're not admin!", Color.fail)
+                    return
+                end
+            else
+                p = log
+            end
+        end
+
+		local forces = {}
+		for _, force in pairs(game.forces) do
+			if force.index == 1 or force.index > 3 then
+				table.insert(forces, force)
+			end
+		end
+
+		local is_charted
+		local count = 0
+        for _, surface in pairs(game.surfaces) do
+			for chunk in surface.get_chunks() do
+				is_charted = false
+				for _, force in pairs(forces) do
+					if force.is_chunk_charted(surface, {chunk.x, chunk.y}) then
+						is_charted = true
+						break
+					end
+				end
+				if not is_charted then
+					surface.delete_chunk({chunk.x, chunk.y})
+					count = count + 1
+				end
+			end
+		end
+		
+		local message = player.name .. " deleted " .. count .. " uncharted chunks!"
+		game.print(message, Color.warning)
+        Server.to_discord_bold(table.concat {message})
+    end
+)
+
+commands.add_command(
     'clear-corpses',
     'Clears all the biter corpses..',
     function(cmd)
