@@ -68,6 +68,18 @@ local target_entity_types = {
 	["fluid-turret"] = true,
 }
 
+local spawn_positions = {}
+local spawn_r = 7
+local spawn_r_square = spawn_r ^ 2
+for x = spawn_r * -1, spawn_r, 0.5 do
+	for y = spawn_r * -1, spawn_r, 0.5 do
+		if x ^ 2 + y ^ 2 < spawn_r_square then
+			table.insert(spawn_positions, {x, y})
+		end
+	end
+end
+local size_of_spawn_positions = #spawn_positions
+
 local Public = {}
 
 function Public.add_target_entity(entity)
@@ -156,10 +168,11 @@ function Public.init_player(player)
 	player.force = game.forces.spectator
 	
 	local surface = game.surfaces.biter_battles
+	local p = spawn_positions[math_random(1, size_of_spawn_positions)]
 	if surface.is_chunk_generated({0,0}) then
-		player.teleport(surface.find_non_colliding_position("character", {0,0}, 4, 0.5), surface)
+		player.teleport(surface.find_non_colliding_position("character", p, 4, 0.5), surface)
 	else
-		player.teleport({0,0}, surface)
+		player.teleport(p, surface)
 	end
 	if player.character and player.character.valid then player.character.destructible = false end
 	game.permissions.get_group("spectator").add_player(player)
