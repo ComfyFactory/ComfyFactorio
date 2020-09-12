@@ -36,7 +36,6 @@ local this = {
     enable_autoban = false,
     enable_jail = false,
     enable_capsule_warning = false,
-    enable_damage_warning = false,
     enable_capsule_cursor_warning = false,
     required_playtime = 2592000,
     damage_entity_threshold = 20,
@@ -390,136 +389,6 @@ local function on_player_used_capsule(event)
         str = str .. 'surface:' .. player.surface.index
         increment(this.capsule_history, str)
     end
-end
-
--- Damage things
-local function on_entity_damaged(event)
-    if not this.enabled then
-        return
-    end
-    local cause = event.cause
-    if not cause or not cause.valid or cause.force.index ~= 1 then
-        return
-    end
-
-    local force = event.force
-    if not force.index == 1 then
-        return
-    end
-
-    if cause.name ~= 'character' then
-        return
-    end
-
-    local entity = event.entity
-    if not entity or not entity.valid then
-        return
-    end
-
-    if entity.force.index ~= 1 then
-        return
-    end
-
-    local trusted = session.get_trusted_table()
-    local tracker = session.get_session_table()
-    local player = game.get_player(event.cause.player.index)
-
-    if player.admin then
-        return
-    end
-
-    if trusted[player.name] and this.do_not_check_trusted then
-        return
-    end
-    local name = entity.name
-    local e_type = entity.type
-    local position = entity.position
-
-    local msg
-    local playtime = player.online_time
-    if tracker[player.name] then
-        playtime = player.online_time + tracker[player.name]
-    end
-
-    if playtime > this.required_playtime then
-        return
-    end
-    if not this.damage_history[player.index] then
-        this.damage_history[player.index] = {}
-        this.damage_history[player.index].targets = ''
-        this.damage_history[player.index].count = 0
-    end
-
-    if this.enable_damage_warning then
-        if name ~= 'entity-ghost' and name ~= 'character' and not blacklisted_types[e_type] then
-            if chests[e_type] then
-                local inv = entity.get_inventory(1)
-                local contents = inv.get_contents()
-                if next(contents) == nil then
-                    return
-                else
-                    for n, count in pairs(contents) do
-                        if n == 'explosives' then
-                            if count < this.explosive_threshold then
-                                return
-                            end
-                        end
-                    end
-                end
-            end
-            name = name:gsub('-', ' ')
-            local index = this.damage_history[player.index].targets:find(name)
-            if not index then
-                this.damage_history[player.index].targets = this.damage_history[player.index].targets .. name .. ', '
-            end
-            this.damage_history[player.index].count = this.damage_history[player.index].count + 1
-        end
-
-        if this.damage_history[player.index].count <= this.damage_entity_threshold then
-            return
-        end
-
-        local target_names = this.damage_history[player.index].targets
-
-        local prefix = '{Friendly Fire}'
-        msg =
-            format(
-            player.name .. ' damaged: %s counted times: %s',
-            target_names,
-            this.damage_history[player.index].count
-        )
-        local ban_msg =
-            format(
-            'Damaged: %s counted times: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
-            target_names,
-            this.damage_history[player.index].count
-        )
-
-        do_action(player, prefix, msg, ban_msg, true)
-    else
-        msg = player.name .. ' damaged ' .. name
-    end
-
-    this.damage_history[player.index].count = 0
-    this.damage_history[player.index].targets = ''
-
-    if not this.friendly_fire_history then
-        this.friendly_fire_history = {}
-    end
-    if #this.friendly_fire_history > 1000 then
-        this.friendly_fire_history = {}
-    end
-
-    local t = math.abs(math.floor((game.tick) / 3600))
-    local str = '[' .. t .. '] '
-    str = str .. msg
-    str = str .. ' at X:'
-    str = str .. math.floor(position.x)
-    str = str .. ' Y:'
-    str = str .. math.floor(position.y)
-    str = str .. ' '
-    str = str .. 'surface:' .. player.surface.index
-    increment(this.friendly_fire_history, str)
 end
 
 --Friendly Fire History
@@ -1037,18 +906,6 @@ end
 
 --- If ANY actions should be performed when a player misbehaves.
 ---@param value <string>
-function Public.enable_damage_warning(value)
-    if value then
-        this.enable_damage_warning = value
-    else
-        this.enable_damage_warning = false
-    end
-
-    return this.enable_damage_warning
-end
-
---- If ANY actions should be performed when a player misbehaves.
----@param value <string>
 function Public.enable_capsule_cursor_warning(value)
     if value then
         this.enable_capsule_cursor_warning = value
@@ -1127,7 +984,6 @@ end
 Event.on_init(on_init)
 Event.add(de.on_player_mined_entity, on_player_mined_entity)
 Event.add(de.on_entity_died, on_entity_died)
-Event.add(de.on_entity_damaged, on_entity_damaged)
 Event.add(de.on_built_entity, on_built_entity)
 Event.add(de.on_gui_opened, on_gui_opened)
 Event.add(de.on_marked_for_deconstruction, on_marked_for_deconstruction)

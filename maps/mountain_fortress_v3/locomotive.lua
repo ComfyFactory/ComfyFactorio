@@ -517,10 +517,10 @@ local function redraw_market_items(gui, player, search_text)
                         button.enabled = false
                         button.tooltip = ({'locomotive.not_trusted'})
                     end
-                    if item == 'car' then
+                --[[ if item == 'car' then
                         button.enabled = false
                         button.tooltip = ({'locomotive.not_trusted'})
-                    end
+                    end ]]
                 end
             end
 
@@ -1980,14 +1980,14 @@ function Public.get_items()
         upgrade = false,
         static = true
     }
-    main_market_items['car'] = {
+    --[[  main_market_items['car'] = {
         stack = 1,
         value = 'coin',
         price = 6000,
         tooltip = ({'main_market.car'}),
         upgrade = false,
         static = true
-    }
+    } ]]
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',

@@ -220,10 +220,15 @@ local on_player_changed_surface = function(event)
     if not player or not player.valid then
         return
     end
-    local p_data = get_player_data(player)
-    if jailed[player.name] and p_data and p_data.locked then
-        local surface = game.surfaces['gulag']
-        if player.surface.index ~= surface.index then
+
+    if not jailed[player.name] then
+        return
+    end
+
+    local surface = game.surfaces['gulag']
+    if player.surface.index ~= surface.index then
+        local p_data = get_player_data(player)
+        if jailed[player.name] and p_data and p_data.locked then
             teleport_player_to_gulag(player, 'jail')
         end
     end

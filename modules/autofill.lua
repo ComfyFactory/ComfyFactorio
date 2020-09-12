@@ -549,6 +549,15 @@ Public.add_chest_to_refill_callback = function(player, entity)
     end
 end
 
+Public.globally_enabled = function(value)
+    if value then
+        this.globally_enabled = value
+    else
+        this.globally_enabled = false
+    end
+    return this.globally_enabled
+end
+
 Event.add(defines.events.on_built_entity, on_entity_built)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.on_nth_tick(50, on_tick)

@@ -718,6 +718,15 @@ end
 local function clear_tables()
     local this = WD.get()
     this.unit_group_last_command = {}
+    for k, groups in next, this.active_biters do
+        for _, entity in next, groups do
+            if type(entity) == 'table' then
+                if not entity or not entity.valid then
+                    this.active_biters[k] = nil
+                end
+            end
+        end
+    end
 end
 
 local tick_tasks = {

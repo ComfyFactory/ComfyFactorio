@@ -4,7 +4,6 @@ require 'maps.mountain_fortress_v3.breached_wall'
 require 'maps.mountain_fortress_v3.ic.main'
 
 require 'modules.rpg.main'
-require 'modules.autofill'
 require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
@@ -309,7 +308,6 @@ function Public.reset_map()
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(false)
-    AntiGrief.enable_damage_warning(false)
     AntiGrief.enable_capsule_cursor_warning(false)
     AntiGrief.enable_jail(true)
     AntiGrief.damage_entity_threshold(20)
@@ -384,12 +382,11 @@ local on_player_changed_position = function(event)
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
 
-    if player.connected and not player.character or not player.character.valid then
+    --[[ if player.connected and not player.character or not player.character.valid then
         player.set_controller({type = defines.controllers.god})
         player.create_character()
         return
-    end
-
+    end ]]
     local p = {x = player.position.x, y = player.position.y}
     local get_tile = surface.get_tile(p)
     local config_tile = WPT.get('void_or_tile')
@@ -491,94 +488,6 @@ local on_pre_player_left_game = function(event)
             name = player.name,
             tick = tick
         }
-    end
-end
-
-local remove_offline_players = function()
-    local this = WPT.get()
-    if not this.offline_players_enabled then
-        return
-    end
-    local offline_players = WPT.get('offline_players')
-    local active_surface_index = WPT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
-    local player_inv = {}
-    local items = {}
-    if #offline_players > 0 then
-        local later = {}
-        for i = 1, #offline_players, 1 do
-            if
-                offline_players[i] and game.players[offline_players[i].index] and
-                    game.players[offline_players[i].index].connected
-             then
-                this.offline_players[i] = nil
-            else
-                if offline_players[i] and offline_players[i].tick < game.tick - 34000 then
-                    local name = offline_players[i].name
-                    player_inv[1] =
-                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
-                    player_inv[2] =
-                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_armor)
-                    player_inv[3] =
-                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_guns)
-                    player_inv[4] =
-                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_ammo)
-                    player_inv[5] =
-                        game.players[offline_players[i].index].get_inventory(defines.inventory.character_trash)
-                    local pos = game.forces.player.get_spawn_position(surface)
-                    local e =
-                        surface.create_entity(
-                        {
-                            name = 'character',
-                            position = pos,
-                            force = 'neutral'
-                        }
-                    )
-                    local inv = e.get_inventory(defines.inventory.character_main)
-                    for ii = 1, 5, 1 do
-                        if player_inv[ii].valid then
-                            for iii = 1, #player_inv[ii], 1 do
-                                if player_inv[ii][iii].valid then
-                                    items[#items + 1] = player_inv[ii][iii]
-                                end
-                            end
-                        end
-                    end
-                    if #items > 0 then
-                        for item = 1, #items, 1 do
-                            if items[item].valid then
-                                inv.insert(items[item])
-                            end
-                        end
-
-                        local message = ({'main.cleaner', name})
-                        local data = {
-                            position = pos
-                        }
-                        Alert.alert_all_players_location(data, message)
-
-                        e.die('neutral')
-                    else
-                        e.destroy()
-                    end
-
-                    for ii = 1, 5, 1 do
-                        if player_inv[ii].valid then
-                            player_inv[ii].clear()
-                        end
-                    end
-                    this.offline_players[i] = nil
-                else
-                    later[#later + 1] = offline_players[i]
-                end
-            end
-        end
-        this.offline_players = {}
-        if #later > 0 then
-            for i = 1, #later, 1 do
-                this.offline_players[#offline_players + 1] = later[i]
-            end
-        end
     end
 end
 
@@ -827,7 +736,6 @@ local on_tick = function()
         chunk_load()
 
         if tick % 1200 == 0 then
-            remove_offline_players()
             boost_difficulty()
             collapse_after_wave_100()
             Entities.set_scores()
@@ -916,7 +824,7 @@ local on_init = function()
     end
 end
 
-Event.on_nth_tick(15, on_tick)
+Event.on_nth_tick(20, on_tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
