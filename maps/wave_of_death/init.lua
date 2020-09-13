@@ -26,10 +26,10 @@ local function init_surface()
 end
 
 local function init_forces(surface)
-	game.create_force(1)
-	game.create_force(2)
-	game.create_force(3)
-	game.create_force(4)
+	game.create_force("1")
+	game.create_force("2")
+	game.create_force("3")
+	game.create_force("4")
 	
 	for _, force in pairs(game.forces) do
 		if force.name ~= "enemy" then

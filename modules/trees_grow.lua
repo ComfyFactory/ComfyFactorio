@@ -2,6 +2,7 @@
 
 local event = require 'utils.event'
 local math_random = math.random
+local Difficulty = require 'modules.difficulty_vote'
 
 local vectors = {}
 local r = 8
@@ -55,10 +56,10 @@ local function get_trees(surface)
     if not p then
         return false
     end
-    local trees =
-        surface.find_entities_filtered({type = 'tree', area = {{p.x * 32, p.y * 32}, {p.x * 32 + 32, p.y * 32 + 32}}})
+    local trees = surface.find_entities_filtered({type = 'tree', area = {{p.x * 32, p.y * 32}, {p.x * 32 + 32, p.y * 32 + 32}}})
 
     local a = 750
+	local Diff = Difficulty.get()
     if Diff.difficulty_vote_value then
         a = a / Diff.difficulty_vote_value
     end

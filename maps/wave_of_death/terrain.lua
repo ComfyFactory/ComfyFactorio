@@ -59,7 +59,7 @@ local function init(surface, left_top)
 			e.destroy()
 		end
 		
-		global.loaders[i] = surface.create_entity({name = "loader", position = position, force = i})
+		global.loaders[i] = surface.create_entity({name = "loader", position = position, force = tostring(i)})
 		global.loaders[i].minable = false
 		
 		game.forces[i].set_spawn_position({x = position.x, y = position.y + 8}, surface)

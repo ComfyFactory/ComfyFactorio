@@ -33,7 +33,7 @@ require 'comfy_panel.config'
 
 require 'modules.autostash'
 
----- enable modules here ----
+---------------- ENABLE MODULES HERE ----------------
 --require 'modules.admins_operate_biters'
 --require 'modules.the_floor_is_lava'
 --require 'modules.biters_landfill_on_death'
@@ -74,86 +74,158 @@ require 'modules.autostash'
 --require 'modules.nuclear_landmines'
 --require 'modules.crawl_into_pipes'
 --require 'modules.no_acid_puddles'
------------------------------
+---------------------------------------------------------------
 
----- enable maps here ---- (maps higher up in the list may be more actually playable)
---require 'maps.chronosphere.main'
---require 'maps.crab_defender.main'
---require 'maps.fish_defender_v2.main'
---require 'maps.fish_defender.main'
+
+---------------- ENABLE MAPS HERE ----------------
+--Make sure only one map is enabled at a time.
+--Remove the "--" in front of the line to enable.
+--All lines with the "require" keyword are different maps.
+
+--[[North VS South Survival PVP, where you feed the enemies biters with science flasks]]--
 --require 'maps.biter_battles_v2.main'
+--require 'maps.biter_battles.biter_battles'
+
+--[[Defend the market against waves of biters]]--
+--require 'maps.fish_defender_v2.main'
+--require 'maps.crab_defender.main'
+--require 'maps.fish_defender_v1.fish_defender'
+--require 'maps.fish_defender.main'
+
+--[[Comfylatron has seized the Fish Train and turned it into a time machine]]--
+--require 'maps.chronosphere.main'
+
+--[[East VS West Survival PVP, where you breed biters with science flasks]]--
+--require 'maps.biter_hatchery.main'
+
+--[[Guide a Train through rough terrain, while defending it from the biters]]--
 --require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
---require 'maps.lumberjack.main'
+--require 'maps.mountain_fortress'
+
+--[[Chop trees to gain resources]]--
 --require 'maps.choppy'
 --require 'maps.choppy_dx'
+
+--[[Infinite random dungeon with RPG]]--
 --require 'maps.dungeons.main'
 --require 'maps.dungeons.tiered_dungeon'
+
+--[[Randomly generating Islands that have to be beaten in levels to gain credits]]--
 --require 'maps.island_troopers.main'
---require 'maps.biter_hatchery.main'
---require 'maps.wave_of_death.WoD'
---require 'maps.planet_prison'
+
+--[[Infinitely expanding mazes]]--
 --require 'maps.stone_maze.main'
+--require 'maps.labyrinth'
+
+--[[Extreme survival mode with thirst and limited building room]]--
 --require 'maps.desert_oasis'
+
+--[[The trees are your enemy here]]--
 --require 'maps.overgrowth'
---require 'maps.quarters'
+
+--[[Wave Defense Map split in 4 Quarters]]--
+--'maps.quarters'
+
+--[[Flee from the collapsing map with portable base inside train]]--
 --require 'maps.railway_troopers_v2.main'
+
+--[[Another simliar version without collapsing terrain]]--
 --require 'maps.railway_troopers.main'
---require 'maps.tetris.main'
+
+--[[You fell in a dark cave, will you survive?]]--
 --require 'maps.cave_miner'
 --require 'maps.cave_choppy.cave_miner'
+
+--[[Hungry boxes eat your items, but reward you with new territory to build.]]--
 --require 'maps.expanse.main'
---require 'maps.labyrinth'
+
+--[[Crashlanding on Junk Planet]]--
 --require 'maps.junkyard'
+--require 'maps.territorial_control'
 --require 'maps.junkyard_pvp.main'
+
+--[[A green maze]]--
 --require 'maps.hedge_maze'
+
+--[[Dangerous forest that with unique map revealing]]--
 --require 'maps.spooky_forest'
+
+--[[Defeat the biters and unlock new areas]]--
+--require 'maps.spiral_troopers'
+
+--[[A green maze]]--
+--require 'maps.hedge_maze'
+
+--[[Railworld style terrains]]--
 --require 'maps.mixed_railworld'
 --require 'maps.scrap_railworld'
+
+--[[It's tetris!]]--
+--require 'maps.tetris.main'
+
+--[[4 Team Lane Surival]]--
+--require 'maps.wave_of_death.WoD'
+
+--[[PVP Battles with Tanks]]--
 --require 'maps.tank_conquest.tank_conquest'
---require 'maps.native_war.main'
---require 'maps.territorial_control'
---require 'maps.biter_battles.biter_battles'
---require 'maps.fish_defender_v1.fish_defender'
---require 'maps.mountain_fortress'
+--require 'maps.tank_battles'
+
+--[[Terrain with lots of Rocks]]--
 --require 'maps.rocky_waste'
+
+--[[Landfill is reveals the map, set resources to high when rolling the map]]--
 --require 'maps.lost'
+
+--[[A terrain layout with many rivers]]--
 --require 'maps.rivers'
+
+--[[Islands Theme]]--
 --require 'maps.atoll'
+
+--[[Placed buildings can hardly be removed]]--
+--require 'maps.refactor-io'
+
+--[[Prebuilt buildings on the map that can not be removed, you will hate this map]]--
+--require 'maps.spaghettorio'
+
+--[[Misc / WIP]]--
+--require 'maps.rainbow_road'
+--require 'maps.deep_jungle'
 --require 'maps.cratewood_forest'
 --require 'maps.maze_challenge'
---require 'maps.tank_battles'
---require 'maps.spiral_troopers'
---require 'maps.refactor-io'
 --require 'maps.lost_desert'
 --require 'maps.stoneblock'
 --require 'maps.wave_defense'
 --require 'maps.crossing'
 --require 'maps.anarchy'
---require 'maps.spaghettorio'
+--require 'maps.planet_prison'
 --require 'maps.blue_beach'
 --require 'maps.nightfall'
---require 'maps.deep_jungle'
---require 'maps.rainbow_road'
 --require 'maps.pitch_black.main'
 --require 'maps.cube'
------------------------------
+--require 'maps.native_war.main'
+---------------------------------------------------------------
 
----- more modules here ----
+
+---------------- MORE MODULES HERE ----------------
 --require 'modules.hidden_dimension.main'
 --require 'modules.towny.main'
 --require 'modules.rpg.main'
 --require 'modules.rpg'
 --require 'modules.trees_grow'
 --require 'modules.trees_randomly_die'
+---------------------------------------------------------------
 
+
+---------------- MOSTLY TERRAIN LAYOUTS HERE ----------------
 --require 'terrain_layouts.caves'
 --require 'terrain_layouts.cone_to_east'
 --require 'terrain_layouts.biters_and_resources_east'
 --require 'terrain_layouts.scrap_01'
 --require 'terrain_layouts.watery_world'
 --require 'terrain_layouts.tree_01'
-------
+---------------------------------------------------------------
 
 if _DUMP_ENV then
     require 'utils.dump_env'
