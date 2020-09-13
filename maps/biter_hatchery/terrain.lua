@@ -74,12 +74,12 @@ function Public.reset_nauvis(hatchery)
 		surface.delete_chunk({chunk.x, chunk.y})
 	end
 	hatchery.gamestate = "prepare_east"
+	game.print("preparing east", {150, 150, 150})
 	print(hatchery.gamestate)
 end
 
 function Public.prepare_east(hatchery)	
-	if game.tick % 90 ~= 0 then return end
-	game.print("preparing east", {150, 150, 150})
+	if game.tick % 90 ~= 0 then return end	
 	local surface = game.surfaces.nauvis		
 	surface.request_to_generate_chunks({hatchery_position.x, 0}, 7)
 	
@@ -100,18 +100,19 @@ function Public.prepare_east(hatchery)
 	end
 	draw_spawn_ore(surface, {x = 240, y = 0})
 	hatchery.gamestate = "clear_west"
+	game.print("clearing west chunks", {150, 150, 150})
 	print(hatchery.gamestate)
 end
 
 function Public.clear_west(hatchery)
-	if game.tick % 90 ~= 0 then return end
-	game.print("clearing west chunks", {150, 150, 150})
+	if game.tick % 90 ~= 0 then return end	
 	local surface = game.surfaces.nauvis		
 	for chunk in surface.get_chunks() do
 		if chunk.x < 0 then surface.delete_chunk({chunk.x, chunk.y}) end
 	end
 	hatchery.mirror_queue = {}
 	hatchery.gamestate = "prepare_west"
+	game.print("preparing west chunks", {150, 150, 150})
 	print(hatchery.gamestate)
 end
 
@@ -120,7 +121,6 @@ function Public.prepare_west(hatchery)
 	local surface = game.surfaces.nauvis		
 	surface.request_to_generate_chunks({hatchery_position.x * -1, 0}, 7)
 	surface.force_generate_chunk_requests()
-	game.print("preparing west chunks " .. table_size(hatchery.mirror_queue), {150, 150, 150})
 	if hatchery.mirror_queue[1] then return end
 	hatchery.gamestate = "draw_team_nests"
 	print(hatchery.gamestate)

@@ -129,7 +129,7 @@ local function get_noise(name, pos)
 	seed = seed + noise_seed_add
 	if name == 1 then
 		local noise = {}
-		noise[1] = simplex_noise(pos.x * 0.001, pos.y * 0.001, seed)
+		noise[1] = simplex_noise(pos.x * 0.002, pos.y * 0.002, seed)
 		local noise = noise[1]
 		return noise
 	end	
@@ -319,9 +319,9 @@ local function draw_ores(surface, position)
 	for x = 0, labyrinth_cell_size - 1, 1 do
 		for y = 0, labyrinth_cell_size - 1, 1 do
 			local pos = {x = position.x + x, y = position.y + y}
-			local amount = 500 + math.sqrt(pos.x^2 + pos.y^2)
+			local amount = 250 + math.sqrt(pos.x^2 + pos.y^2) * 0.5
 			if ore == "crude-oil" then
-				if math_random(1, 32) == 1 and surface.can_place_entity({name = ore, position = pos, amount = amount * 100}) then surface.create_entity({name = ore, position = pos, amount = amount * 100}) end
+				if math_random(1, 32) == 1 and surface.can_place_entity({name = ore, position = pos, amount = amount * 200}) then surface.create_entity({name = ore, position = pos, amount = amount * 200}) end
 			else
 				surface.create_entity({name = ore, position = pos, amount = amount})
 			end
@@ -401,7 +401,7 @@ local function process_chunk_charted_cell(surface, pos)
 		else
 			local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
 			if distance_to_center > 196 then
-				if math_random(1, 4) == 1 then
+				if math_random(1, 3) == 1 then
 					draw_water(surface, pos)
 				else
 					draw_enemies(surface, pos)

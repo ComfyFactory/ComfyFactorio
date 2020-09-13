@@ -11,7 +11,7 @@ local math_abs = math.abs
 local string_sub = string.sub
 
 local oasis_start = 0.50
-local water_start = 0.78
+local water_start = 0.81
 local sand_damage = oasis_start * 100 + 16
 
 local trees = {"tree-01", "tree-04", "tree-06", "tree-08-red", "tree-08", "tree-09",}
@@ -186,7 +186,7 @@ local function on_init()
 	for _ = 1, 1024 ^ 2, 1 do
 		seed = math_random(1, 999999999)
 		noise = get_noise("oasis", position, seed)
-		if noise > water_start + 0.02 then
+		if noise > 0.76 then
 			global.desert_oasis_seed = seed
 			break
 		end
@@ -295,7 +295,7 @@ local function on_player_joined_game(event)
 	end
 	
 	if game.tick > 0 then return end
-	local p = game.surfaces["desert_oasis"].find_non_colliding_position("stone", {52, 52}, 50, 0.5)
+	local p = game.surfaces["desert_oasis"].find_non_colliding_position("stone", {80, 80}, 50, 0.5)
 	if not p then return end
 	local e = game.surfaces.desert_oasis.create_entity({name = "crash-site-spaceship", position = p, force = "player", create_build_effect_smoke = false})
 	e.insert({name = "computer", count = 1})
