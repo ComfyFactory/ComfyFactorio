@@ -4,6 +4,7 @@ local math_round = math.round
 local math_abs = math.abs
 local table_insert = table.insert
 local table_remove = table.remove
+local string_find = string.find
 
 local balance_functions = {
 	["flamethrower"] = function(force_name)
@@ -214,33 +215,37 @@ function Public.no_turret_creep(event)
 	entity.destroy()
 end
 
---share chat with player and spectator force
+--Share chat with spectator force
 function Public.share_chat(event)
 	if not event.message then return end	
 	if not event.player_index then return end	
-	local player = game.players[event.player_index] 	
+	local player = game.players[event.player_index]
+	local tag = player.tag
+	if not tag then tag = "" end
 	local color = player.chat_color
 	
 	if player.force.name == "north" then
-		game.forces.spectator.print(player.name .. " (north): ".. event.message, color)
-		game.forces.player.print(player.name .. " (north): ".. event.message, color)			
+		game.forces.spectator.print(player.name .. " (north): ".. event.message .. tag, color)		
 	end
 	if player.force.name == "south" then
-		game.forces.spectator.print(player.name .. " (south): ".. event.message, color)
-		game.forces.player.print(player.name .. " (south): ".. event.message, color)
+		game.forces.spectator.print(player.name .. " (south): ".. event.message .. tag, color)
 	end
 	
 	if global.tournament_mode then return end
 	
 	if player.force.name == "player" then
-		game.forces.north.print(player.name .. " (spawn): ".. event.message, color)
-		game.forces.south.print(player.name .. " (spawn): ".. event.message, color)
-		game.forces.spectator.print(player.name .. " (spawn): ".. event.message, color)
+		game.forces.north.print(player.name .. " (spawn): ".. event.message .. tag, color)
+		game.forces.south.print(player.name .. " (spawn): ".. event.message .. tag, color)
+		game.forces.spectator.print(player.name .. " (spawn): ".. event.message .. tag, color)
 	end
-	if player.force.name == "spectator" then
-		game.forces.north.print(player.name .. " (spectator): ".. event.message, color)
-		game.forces.south.print(player.name .. " (spectator): ".. event.message, color)
-		game.forces.player.print(player.name .. " (spectator): ".. event.message, color)
+	if player.force.name == "spectator" then	
+	
+		--Skip messages that would spoil coordinates from spectators
+		local a, b = string_find(event.message, "gps=", 1, false)
+		if a then return end	
+		
+		game.forces.north.print(player.name .. " (spectator): ".. event.message .. tag, color)
+		game.forces.south.print(player.name .. " (spectator): ".. event.message .. tag, color)
 	end
 end
 
