@@ -982,6 +982,7 @@ function Public.construct_train(icw, carriages)
                   n = n + 1
                   m = m - 1
                 end
+                break
             end
         end
     end
