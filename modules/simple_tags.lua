@@ -3,15 +3,15 @@
 local Event = require 'utils.event'
 
 local icons = {	
-	{"img=item/stone-furnace", "item/stone-furnace", "Smeltery"},
-	{"img=item/big-electric-pole", "item/big-electric-pole", "Power"},
-	{"img=item/assembling-machine-1", "item/assembling-machine-1", "Production"},
-	{"img=item/chemical-science-pack", "item/chemical-science-pack", "Science"},
-	{"img=item/locomotive", "item/locomotive", "Trainman"},	
-	{"img=fluid/crude-oil", "fluid/crude-oil", "Oil processing"},	
-	{"img=item/submachine-gun", "item/submachine-gun", "Trooper"},
-	{"img=item/stone-wall", "item/stone-wall", "Fortifications"},
-	{"img=item/repair-pack", "item/repair-pack", "Support"},	
+	{"[img=item/stone-furnace]", "item/stone-furnace", "Smeltery"},
+	{"[img=item/big-electric-pole]", "item/big-electric-pole", "Power"},
+	{"[img=item/assembling-machine-1]", "item/assembling-machine-1", "Production"},
+	{"[img=item/chemical-science-pack]", "item/chemical-science-pack", "Science"},
+	{"[img=item/locomotive]", "item/locomotive", "Trainman"},	
+	{"[img=fluid/crude-oil]", "fluid/crude-oil", "Oil processing"},	
+	{"[img=item/submachine-gun]", "item/submachine-gun", "Trooper"},
+	{"[img=item/stone-wall]", "item/stone-wall", "Fortifications"},
+	{"[img=item/repair-pack]", "item/repair-pack", "Support"},	
 }
 
 local checks = {
@@ -48,6 +48,7 @@ local function draw_screen_gui(player)
 		frame.destroy()
 		return
 	end		
+	
 	local frame = player.gui.screen.add({
 		type = "frame",
 		name = "simple_tag_frame",
@@ -55,12 +56,21 @@ local function draw_screen_gui(player)
 	})	
 	frame.location = {x = get_x_offset(player), y = 39}
 	frame.style.padding = -1	
+	
 	for _, v in pairs(icons) do
 		local button = frame.add({type = "sprite-button", name = v[1], sprite = v[2], tooltip = v[3]})
 		button.style.minimal_height = 38
 		button.style.minimal_width = 38
 		button.style.padding = -1
 	end
+	
+	local tag = player.tag
+	if not tag then return end
+	if string.len(tag) < 8 then return end
+	local clear_tag_element = frame[tag]
+	if not clear_tag_element then return end
+	clear_tag_element.sprite = "utility/close_white"
+	clear_tag_element.tooltip = "Clear Tag"	
 end
 
 local function on_player_joined_game(event)
@@ -87,7 +97,7 @@ local function on_gui_click(event)
 	if parent.name ~= "simple_tag_frame" then return end	
 	
 	local player = game.players[event.player_index]	
-	local selected_tag = "[" .. element.name .. "]"
+	local selected_tag = element.name
 	
 	if player.tag == selected_tag then	selected_tag = "" end
 	player.tag = selected_tag
