@@ -2,7 +2,8 @@
 
 local Event = require 'utils.event'
 
-local icons = {	
+local icons = {
+	{"[img=item/electric-mining-drill]", "item/electric-mining-drill", "Miner"},
 	{"[img=item/stone-furnace]", "item/stone-furnace", "Smeltery"},
 	{"[img=item/big-electric-pole]", "item/big-electric-pole", "Power"},
 	{"[img=item/assembling-machine-1]", "item/assembling-machine-1", "Production"},
@@ -52,7 +53,7 @@ local function draw_screen_gui(player)
 	local frame = player.gui.screen.add({
 		type = "frame",
 		name = "simple_tag_frame",
-		caption = "Pick your duty:",
+		direction = "vertical",
 	})	
 	frame.location = {x = get_x_offset(player), y = 39}
 	frame.style.padding = -1	

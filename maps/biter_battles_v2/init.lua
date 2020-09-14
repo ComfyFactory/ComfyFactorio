@@ -31,6 +31,7 @@ function Public.initial_setup()
 		defines.input_action.activate_copy,
 		defines.input_action.activate_cut,
 		defines.input_action.activate_paste,
+		defines.input_action.change_active_quick_bar,
 		defines.input_action.clean_cursor_stack,
 		defines.input_action.edit_permission_group,
 		defines.input_action.gui_click,
@@ -44,14 +45,14 @@ function Public.initial_setup()
 		defines.input_action.gui_value_changed,
 		defines.input_action.open_character_gui,
 		defines.input_action.open_kills_gui,
+		defines.input_action.quick_bar_set_selected_page,
+		defines.input_action.quick_bar_set_slot,
 		defines.input_action.rotate_entity,
+		defines.input_action.set_filter,
+		defines.input_action.set_player_color,
 		defines.input_action.start_walking,
 		defines.input_action.toggle_show_entity_info,
 		defines.input_action.write_to_console,
-		defines.input_action.change_active_quick_bar,
-		defines.input_action.quick_bar_set_selected_page,
-		defines.input_action.quick_bar_set_slot,
-		defines.input_action.set_filter
 	}	
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end
 	

@@ -225,18 +225,18 @@ function Public.share_chat(event)
 	local color = player.chat_color
 	
 	if player.force.name == "north" then
-		game.forces.spectator.print(player.name .. " (north): ".. event.message .. tag, color)		
+		game.forces.spectator.print(player.name .. tag .. " (north): ".. event.message, color)		
 	end
 	if player.force.name == "south" then
-		game.forces.spectator.print(player.name .. " (south): ".. event.message .. tag, color)
+		game.forces.spectator.print(player.name .. tag .. " (south): ".. event.message, color)
 	end
 	
 	if global.tournament_mode then return end
 	
 	if player.force.name == "player" then
-		game.forces.north.print(player.name .. " (spawn): ".. event.message .. tag, color)
-		game.forces.south.print(player.name .. " (spawn): ".. event.message .. tag, color)
-		game.forces.spectator.print(player.name .. " (spawn): ".. event.message .. tag, color)
+		game.forces.north.print(player.name .. tag .. " (spawn): ".. event.message, color)
+		game.forces.south.print(player.name .. tag .. " (spawn): ".. event.message, color)
+		game.forces.spectator.print(player.name .. tag .. " (spawn): ".. event.message, color)
 	end
 	if player.force.name == "spectator" then	
 	
@@ -244,8 +244,8 @@ function Public.share_chat(event)
 		local a, b = string_find(event.message, "gps=", 1, false)
 		if a then return end	
 		
-		game.forces.north.print(player.name .. " (spectator): ".. event.message .. tag, color)
-		game.forces.south.print(player.name .. " (spectator): ".. event.message .. tag, color)
+		game.forces.north.print(player.name .. tag .. " (spectator): ".. event.message, color)
+		game.forces.south.print(player.name .. tag .. " (spectator): ".. event.message, color)
 	end
 end
 
