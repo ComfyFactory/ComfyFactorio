@@ -17,6 +17,8 @@ function Public.initial_setup()
 	game.create_force("south_biters")
 	game.create_force("spectator")
 
+	game.forces.spectator.research_all_technologies()
+
 	game.permissions.get_group("Default").set_allows_action(defines.input_action.open_blueprint_library_gui, false)
 	game.permissions.get_group("Default").set_allows_action(defines.input_action.import_blueprint_string, false)	
 
@@ -46,10 +48,13 @@ function Public.initial_setup()
 		defines.input_action.start_walking,
 		defines.input_action.toggle_show_entity_info,
 		defines.input_action.write_to_console,
-	}
-	
+		defines.input_action.change_active_quick_bar,
+		defines.input_action.quick_bar_set_selected_page,
+		defines.input_action.quick_bar_set_slot,
+		defines.input_action.set_filter
+	}	
 	for _, d in pairs(defs) do p.set_allows_action(d, true) end
-
+	
 	global.gui_refresh_delay = 0
 	global.game_lobby_active = true
 	global.bb_debug = false		
@@ -189,9 +194,11 @@ function Public.load_spawn()
 end
 
 function Public.forces()
-	for _, force in pairs(game.forces) do 
-		force.reset() 
-		force.reset_evolution()
+	for _, force in pairs(game.forces) do
+		if force.name ~= "spectator" then
+			force.reset() 
+			force.reset_evolution()
+		end
 	end
 	
 	local surface = game.surfaces["biter_battles"]
