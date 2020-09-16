@@ -833,7 +833,78 @@ local function move_room_to_train(icw, train, wagon)
     end
 end
 
+local function get_connected_rolling_stock(entity, direction)
+    --thanks Boskid
+    local carriages = entity.train.carriages
+    local first_stock, second_stock
+    for k, v in pairs(carriages) do
+        if v == entity then
+            first_stock = carriages[k - 1]
+            second_stock = carriages[k + 1]
+            break
+        end
+    end
+    if not first_stock then
+        first_stock, second_stock = second_stock, nil
+    end
+    if not first_stock then
+      return nil
+    end
+
+    local angle = math.atan2(-(entity.position.x - first_stock.position.x), entity.position.y - first_stock.position.y)/(2*math.pi) - entity.orientation
+    if direction == defines.rail_direction.back then
+        angle = angle + 0.5
+    end
+    while angle < -0.5 do
+        angle = angle + 1
+    end
+    while angle > 0.5 do
+        angle = angle - 1
+    end
+    local connected_stock
+    if angle > -0.25 and angle < 0.25 then
+        connected_stock = first_stock
+    else
+        connected_stock = second_stock
+    end
+    if not connected_stock then
+        return nil
+    end
+
+    angle = math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y)/(2*math.pi) - connected_stock.orientation
+    while angle < -0.5 do
+        angle = angle + 1
+    end
+    while angle > 0.5 do
+        angle = angle - 1
+    end
+    local joint_of_connected_stock
+    if angle > -0.25 and angle < 0.25 then
+        joint_of_connected_stock = defines.rail_direction.front
+    else
+        joint_of_connected_stock = defines.rail_direction.back
+    end
+    return connected_stock, joint_of_connected_stock
+end
+
 function Public.construct_train(icw, carriages)
+    local WPT = package.loaded['maps.mountain_fortress_v3.table']
+    local choochoo = WPT.get().locomotive
+    for i, carriage in pairs(carriages) do
+        if carriage == choochoo then
+            local stock = get_connected_rolling_stock(choochoo, defines.rail_direction.front)
+            if stock ~= carriages[i-1] then
+                local n = 1
+                local m = #carriages
+                while (n < m) do
+                  carriages[n],carriages[m]  = carriages[m], carriages[n]
+                  n = n + 1
+                  m = m - 1
+                end
+                break
+            end
+        end
+    end
     local unit_number = carriages[1].unit_number
 
     if icw.trains[unit_number] then
