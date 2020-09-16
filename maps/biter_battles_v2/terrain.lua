@@ -395,9 +395,9 @@ local function mixed_ore(surface, left_top_x, left_top_y)
 			local pos = {x = left_top_x + x, y = left_top_y + y}
 			if surface.can_place_entity({name = "iron-ore", position = pos}) then
 				local noise = GetNoise("bb_ore", pos, seed)
-				if noise > 0.71 then
-					local amount = math_random(1250, 1500) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 2
-					local i = math_floor(noise * 20 + math_abs(pos.x) * 0.05) % 4 + 1
+				if noise > 0.72 then
+					local amount = math_random(800, 1000) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 3
+					local i = math_floor(noise * 25 + math_abs(pos.x) * 0.05) % 4 + 1
 					surface.create_entity({name = ores[i], position = pos, amount = amount})
 				end
 			end
