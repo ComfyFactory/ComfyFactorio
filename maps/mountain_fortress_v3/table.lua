@@ -4,7 +4,6 @@ local Event = require 'utils.event'
 
 local this = {
     players = {},
-    offline_players = {},
     breached_wall = 1,
     traps = {}
 }
@@ -38,12 +37,13 @@ function Public.reset_table()
     this.flamethrower_damage = {}
     this.mined_scrap = 0
     this.biters_killed = 0
+    this.cleared_nauvis = false
     this.locomotive_xp_aura = 40
     this.trusted_only_car_tanks = true
     this.xp_points = 0
     this.xp_points_upgrade = 0
     --!grief prevention
-    this.enable_arties = 5 -- default to callback 6
+    this.enable_arties = 6 -- default to callback 6
     --!snip
     this.poison_deployed = false
     this.upgrades = {
@@ -73,7 +73,7 @@ function Public.reset_table()
     }
     this.biters = {
         amount = 0,
-        limit = 256
+        limit = 512
     }
     this.traps = {}
     this.munch_time = true

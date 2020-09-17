@@ -62,6 +62,15 @@ function Public.create_surface()
             Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
+    if not this.cleared_nauvis then
+        local mgs = game.surfaces['nauvis'].map_gen_settings
+        mgs.width = 16
+        mgs.height = 16
+        game.surfaces['nauvis'].map_gen_settings = mgs
+        game.surfaces['nauvis'].clear()
+        this.cleared_nauvis = true
+    end
+
     return this.active_surface_index
 end
 

@@ -20,10 +20,6 @@ local function on_entity_died(event)
     if entity.type == 'car' or entity.name == 'spidertron' then
         Functions.kill_car(ic, entity)
     end
-
-    if entity.name == 'sand-rock-big' then
-        Functions.infinity_scrap(ic, event, true)
-    end
 end
 
 local function on_player_mined_entity(event)
@@ -39,10 +35,6 @@ local function on_player_mined_entity(event)
     if entity.type == 'car' or entity.name == 'spidertron' then
         Functions.save_car(ic, event)
     end
-
-    if entity.name == 'sand-rock-big' then
-        Functions.infinity_scrap(ic, event)
-    end
 end
 
 local function on_robot_mined_entity(event)
@@ -55,10 +47,6 @@ local function on_robot_mined_entity(event)
 
     if entity.type == 'car' or entity.name == 'spidertron' then
         Functions.kill_car(ic, entity)
-    end
-
-    if entity.name == 'sand-rock-big' then
-        Functions.infinity_scrap(ic, event, true)
     end
 end
 

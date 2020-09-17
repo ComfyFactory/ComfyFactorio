@@ -1,8 +1,8 @@
 local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
-
 local random = math.random
+local main_tile_name = 'black-refined-concrete'
 
 function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
@@ -13,25 +13,6 @@ local function validate_entity(entity)
         return false
     end
     if not entity.valid then
-        return false
-    end
-    return true
-end
-
-local function validate_player(player)
-    if not player then
-        return false
-    end
-    if not player.valid then
-        return false
-    end
-    if not player.character then
-        return false
-    end
-    if not player.connected then
-        return false
-    end
-    if not game.players[player.name] then
         return false
     end
     return true
@@ -300,8 +281,6 @@ local function construct_wagon_doors(icw, wagon)
     local area = wagon.area
     local surface = wagon.surface
 
-    local main_tile_name = 'black-refined-concrete'
-
     for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
         local p = {x = x, y = area.left_top.y + 30}
         if p.x < 0 then
@@ -375,6 +354,11 @@ function Public.kill_wagon(icw, entity)
     for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
+    for _, x in pairs({wagon.area.left_top.x - 1.5, wagon.area.right_bottom.x + 1.5}) do
+        local p = {x = x, y = wagon.area.left_top.y + 30}
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
+    end
     wagon.entity.force.chart(surface, wagon.area)
     icw.wagons[entity.unit_number] = nil
     Public.request_reconstruction(icw)
@@ -412,8 +396,6 @@ end
 function Public.create_wagon_room(icw, wagon)
     local surface = wagon.surface
     local area = wagon.area
-
-    local main_tile_name = 'black-refined-concrete'
 
     local tiles = {}
     for x = -3, 2, 1 do
@@ -848,10 +830,13 @@ local function get_connected_rolling_stock(entity, direction)
         first_stock, second_stock = second_stock, nil
     end
     if not first_stock then
-      return nil
+        return nil
     end
 
-    local angle = math.atan2(-(entity.position.x - first_stock.position.x), entity.position.y - first_stock.position.y)/(2*math.pi) - entity.orientation
+    local angle =
+        math.atan2(-(entity.position.x - first_stock.position.x), entity.position.y - first_stock.position.y) /
+        (2 * math.pi) -
+        entity.orientation
     if direction == defines.rail_direction.back then
         angle = angle + 0.5
     end
@@ -871,7 +856,10 @@ local function get_connected_rolling_stock(entity, direction)
         return nil
     end
 
-    angle = math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y)/(2*math.pi) - connected_stock.orientation
+    angle =
+        math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) /
+        (2 * math.pi) -
+        connected_stock.orientation
     while angle < -0.5 do
         angle = angle + 1
     end
@@ -893,13 +881,13 @@ function Public.construct_train(icw, carriages)
     for i, carriage in pairs(carriages) do
         if carriage == choochoo then
             local stock = get_connected_rolling_stock(choochoo, defines.rail_direction.front)
-            if stock ~= carriages[i-1] then
+            if stock ~= carriages[i - 1] then
                 local n = 1
                 local m = #carriages
                 while (n < m) do
-                  carriages[n],carriages[m]  = carriages[m], carriages[n]
-                  n = n + 1
-                  m = m - 1
+                    carriages[n], carriages[m] = carriages[m], carriages[n]
+                    n = n + 1
+                    m = m - 1
                 end
                 break
             end

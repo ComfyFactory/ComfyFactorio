@@ -21,53 +21,6 @@ local function on_entity_died(event)
     Functions.kill_wagon(icw, entity)
 end
 
-local function on_player_mined_entity(event)
-    local entity = event.entity
-    if not entity and not entity.valid then
-        return
-    end
-    local icw = ICW.get()
-
-    if not icw.allow_player_to_build_trains then
-        return
-    end
-    Functions.subtract_wagon_entity_count(icw, entity)
-    Functions.kill_wagon(icw, entity)
-end
-
-local function on_robot_mined_entity(event)
-    local entity = event.entity
-    if not entity and not entity.valid then
-        return
-    end
-    local icw = ICW.get()
-    if not icw.allow_player_to_build_trains then
-        return
-    end
-    Functions.subtract_wagon_entity_count(icw, entity)
-    Functions.kill_wagon(icw, entity)
-end
-
-local function on_built_entity(event)
-    local icw = ICW.get()
-    if not icw.allow_player_to_build_trains then
-        return
-    end
-    local created_entity = event.created_entity
-    Functions.create_wagon(icw, created_entity)
-    Functions.add_wagon_entity_count(icw, created_entity)
-end
-
-local function on_robot_built_entity(event)
-    local icw = ICW.get()
-    if not icw.allow_player_to_build_trains then
-        return
-    end
-    local created_entity = event.created_entity
-    Functions.create_wagon(icw, created_entity)
-    Functions.add_wagon_entity_count(icw, created_entity)
-end
-
 local function on_player_driving_changed_state(event)
     local icw = ICW.get()
     local player = game.players[event.player_index]
@@ -78,16 +31,7 @@ local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
     Functions.kill_minimap(player)
 end
---[[
-local function on_player_created(event)
-	local player = game.players[event.player_index]
-	player.insert({name = "cargo-wagon", count = 5})
-	player.insert({name = "artillery-wagon", count = 5})
-	player.insert({name = "fluid-wagon", count = 5})
-	player.insert({name = "locomotive", count = 5})
-	player.insert({name = "rail", count = 100})
-end
-]]
+
 local function on_gui_closed(event)
     local entity = event.entity
     if not entity then
@@ -183,15 +127,10 @@ Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_entity_died, on_entity_died)
-Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_train_created, on_train_created)
-Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_player_died, on_player_died)
---Event.add(defines.events.on_player_created, on_player_created)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
-Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 
 return Public

@@ -14,6 +14,9 @@ local Server = require 'utils.server'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
 local Antigrief = require 'antigrief'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
+local MapFunctions = require 'tools.map_functions'
 local format_number = require 'util'.format_number
 
 local Public = {}
@@ -34,6 +37,83 @@ local space = {
     top_padding = 0,
     bottom_padding = 0
 }
+
+local function initial_cargo_boxes()
+    return {
+        {name = 'loader', count = 1},
+        {name = 'coal', count = random(32, 64)},
+        {name = 'coal', count = random(32, 64)},
+        {name = 'iron-ore', count = random(32, 128)},
+        {name = 'copper-ore', count = random(32, 128)},
+        {name = 'empty-barrel', count = random(16, 32)},
+        {name = 'submachine-gun', count = 1},
+        {name = 'submachine-gun', count = 1},
+        {name = 'submachine-gun', count = 1},
+        {name = 'submachine-gun', count = 1},
+        {name = 'submachine-gun', count = 1},
+        {name = 'shotgun', count = 1},
+        {name = 'shotgun', count = 1},
+        {name = 'shotgun', count = 1},
+        {name = 'shotgun-shell', count = random(4, 5)},
+        {name = 'shotgun-shell', count = random(4, 5)},
+        {name = 'land-mine', count = random(6, 18)},
+        {name = 'grenade', count = random(2, 3)},
+        {name = 'grenade', count = random(2, 3)},
+        {name = 'grenade', count = random(2, 3)},
+        {name = 'iron-gear-wheel', count = random(7, 15)},
+        {name = 'iron-gear-wheel', count = random(7, 15)},
+        {name = 'iron-gear-wheel', count = random(7, 15)},
+        {name = 'iron-gear-wheel', count = random(7, 15)},
+        {name = 'iron-plate', count = random(15, 23)},
+        {name = 'iron-plate', count = random(15, 23)},
+        {name = 'iron-plate', count = random(15, 23)},
+        {name = 'iron-plate', count = random(15, 23)},
+        {name = 'copper-plate', count = random(15, 23)},
+        {name = 'copper-plate', count = random(15, 23)},
+        {name = 'copper-plate', count = random(15, 23)},
+        {name = 'copper-plate', count = random(15, 23)},
+        {name = 'firearm-magazine', count = random(10, 30)},
+        {name = 'firearm-magazine', count = random(10, 30)},
+        {name = 'firearm-magazine', count = random(10, 30)},
+        {name = 'rail', count = random(16, 24)},
+        {name = 'rail', count = random(16, 24)}
+    }
+end
+
+local set_loco_tiles =
+    Token.register(
+    function(data)
+        local position = data.position
+        local surface = data.surface
+        local cargo_boxes = initial_cargo_boxes()
+
+        local p = {}
+
+        for x = position.x - 5, 1, 3 do
+            for y = 1, position.y + 5, 2 do
+                if random(1, 4) == 1 then
+                    p[#p + 1] = {x = x, y = y}
+                end
+            end
+        end
+
+        MapFunctions.draw_noise_tile_circle(position, 'stone-path', surface, 15)
+
+        for i = 1, #cargo_boxes, 1 do
+            if not p[i] then
+                break
+            end
+            if surface.can_place_entity({name = 'wooden-chest', position = p[i]}) then
+                local e =
+                    surface.create_entity(
+                    {name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false}
+                )
+                local inventory = e.get_inventory(defines.inventory.chest)
+                inventory.insert(cargo_boxes[i])
+            end
+        end
+    end
+)
 
 local function add_style(frame, style)
     for k, v in pairs(style) do
@@ -1706,6 +1786,13 @@ function Public.locomotive_spawn(surface, position)
         }
     )
 
+    local data = {
+        surface = surface,
+        position = position
+    }
+
+    Task.set_timeout_in_ticks(300, set_loco_tiles, data)
+
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
@@ -1723,7 +1810,7 @@ function Public.locomotive_spawn(surface, position)
         )
     end
 
-    this.locomotive.color = {0, 255, 0}
+    this.locomotive.color = {0, 255, random(60, 255)}
     this.locomotive.minable = false
     this.locomotive_cargo.minable = false
     this.locomotive_cargo.operable = true

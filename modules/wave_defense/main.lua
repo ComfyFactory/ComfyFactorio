@@ -480,7 +480,7 @@ local function get_commmands(group)
                     end
                 end
                 local position =
-                    group.surface.find_non_colliding_position('rocket-silo', group_position, step_length, 4)
+                    group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 4)
                 if position then
                     -- commands[#commands + 1] = {
                     -- 	type = defines.command.go_to_location,
@@ -562,7 +562,7 @@ local function get_commmands(group)
                 end
             end
         end
-        local position = group.surface.find_non_colliding_position('rocket-silo', group_position, step_length, 1)
+        local position = group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 1)
         if position then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,

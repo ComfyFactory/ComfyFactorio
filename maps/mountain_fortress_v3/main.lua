@@ -44,13 +44,11 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
---local HD = require 'modules.hidden_dimension.main'
 
 local Public = {}
 local floor = math.floor
 local random = math.random
 local tile_damage = 50
--- local raise_event = script.raise_event
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
 
@@ -71,6 +69,19 @@ local collapse_kill = {
     },
     enabled = true
 }
+
+local function get_player_data(player, remove_user_data)
+    local this = WPT.get()
+    if remove_user_data then
+        if this.players[player.index] then
+            this.players[player.index] = nil
+        end
+    end
+    if not this.players[player.index] then
+        this.players[player.index] = {}
+    end
+    return this.players[player.index]
+end
 
 local disable_recipes = function()
     local force = game.forces.player
@@ -153,6 +164,10 @@ local set_difficulty = function()
         elseif player_count >= 35 then
             Collapse.set_speed(5)
         end
+    end
+    if wave_defense_table.threat <= 0 then
+        wave_defense_table.wave_interval = 1000
+        return
     end
     if name == 'Insane' then
         wave_defense_table.wave_interval = 1800
@@ -382,11 +397,6 @@ local on_player_changed_position = function(event)
     local position = player.position
     local surface = game.surfaces[this.active_surface_index]
 
-    --[[ if player.connected and not player.character or not player.character.valid then
-        player.set_controller({type = defines.controllers.god})
-        player.create_character()
-        return
-    end ]]
     local p = {x = player.position.x, y = player.position.y}
     local get_tile = surface.get_tile(p)
     local config_tile = WPT.get('void_or_tile')
@@ -429,13 +439,15 @@ local on_player_joined_game = function(event)
 
     ICW_Func.is_minimap_valid(player, surface)
 
-    if not this.players[player.index] then
-        this.players[player.index] = {}
+    local player_data = get_player_data(player)
+
+    if not player_data.first_join then
         local message = ({'main.greeting', player.name})
         Alert.alert_player(player, 15, message)
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
         end
+        player_data.first_join = true
     end
 
     if player.surface.index ~= this.active_surface_index then
@@ -475,20 +487,24 @@ local on_player_left_game = function()
     set_difficulty()
 end
 
-local on_pre_player_left_game = function(event)
-    local this = WPT.get()
-    local player = game.players[event.player_index]
-    local tick = game.tick
-    if player.character then
-        if not this.offline_players_enabled then
-            return
-        end
-        this.offline_players[#this.offline_players + 1] = {
-            index = event.player_index,
-            name = player.name,
-            tick = tick
-        }
+local on_player_respawned = function(event)
+    local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
     end
+    local player_data = get_player_data(player)
+    if player_data.died then
+        player_data.died = nil
+    end
+end
+
+local on_player_died = function(event)
+    local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
+    end
+    local player_data = get_player_data(player)
+    player_data.died = true
 end
 
 local on_research_finished = function(event)
@@ -528,6 +544,20 @@ local is_locomotive_valid = function()
     local locomotive = WPT.get('locomotive')
     if not locomotive.valid then
         Entities.loco_died()
+    end
+end
+
+local is_player_valid = function()
+    local players = game.connected_players
+    for _, player in pairs(players) do
+        if player.connected and not player.character or not player.character.valid then
+            local player_data = get_player_data(player)
+            if player_data.died then
+                return
+            end
+            player.set_controller {type = defines.controllers.god}
+            player.create_character()
+        end
     end
 end
 
@@ -731,6 +761,7 @@ local on_tick = function()
             update_gui(player)
         end
 
+        is_player_valid()
         is_locomotive_valid()
         has_the_game_ended()
         chunk_load()
@@ -739,6 +770,7 @@ local on_tick = function()
             boost_difficulty()
             collapse_after_wave_100()
             Entities.set_scores()
+            set_difficulty()
             local spawn_near_collapse = WPT.get('spawn_near_collapse')
             if spawn_near_collapse then
                 local collapse_pos = Collapse.get_position()
@@ -813,23 +845,15 @@ local on_init = function()
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail')
     Explosives.set_whitelist_entity('character')
-
-    if global.biter_command and global.biter_command.whitelist then
-        global.biter_command.whitelist = {
-            ['Hanakocz'] = true,
-            ['mewmew'] = true,
-            ['Gerkiz'] = true
-        }
-        global.biter_command.enabled = false
-    end
 end
 
-Event.on_nth_tick(20, on_tick)
+Event.on_nth_tick(25, on_tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_research_finished, on_research_finished)
-Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 
 return Public
