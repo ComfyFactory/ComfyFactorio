@@ -616,8 +616,9 @@ local function command_unit_group(group)
             commands = get_commmands(group)
         }
     )
-
-    this.unit_group_last_command[group.group_number] = game.tick
+    if group and group.valid then
+        this.unit_group_last_command[group.group_number] = game.tick
+    end
 end
 
 local function give_commands_to_unit_groups()

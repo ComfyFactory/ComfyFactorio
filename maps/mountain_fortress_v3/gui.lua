@@ -141,6 +141,12 @@ local function on_gui_click(event)
     local name = element.name
 
     if name == main_button_name then
+        if not player or not player.valid then
+            return
+        end
+        if not player.surface or not player.surface.valid then
+            return
+        end
         if player.surface ~= locomotive.surface then
             local minimap = player.gui.left.icw_main_frame
             if minimap and minimap.visible then

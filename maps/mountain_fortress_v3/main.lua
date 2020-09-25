@@ -142,10 +142,30 @@ local set_difficulty = function()
     if amount > 10 then
         amount = 10
     end
+
     local difficulty = Difficulty.get()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+
+    if wave_defense_table.threat <= 0 then
+        wave_defense_table.wave_interval = 1000
+        return
+    end
     if name == 'Insane' then
-        Collapse.set_amount(15)
+        wave_defense_table.wave_interval = 1800
+    else
+        wave_defense_table.wave_interval = 3600 - player_count * 60
+        if wave_defense_table.wave_interval < 1800 then
+            wave_defense_table.wave_interval = 1800
+        end
+    end
+
+    local gap_between_zones = WPT.get('gap_between_zones')
+    if gap_between_zones.set then
+        return
+    end
+
+    if name == 'Insane' then
+        Collapse.set_amount(12)
     elseif collapse_amount then
         Collapse.set_amount(collapse_amount)
     else
@@ -163,18 +183,6 @@ local set_difficulty = function()
             Collapse.set_speed(6)
         elseif player_count >= 35 then
             Collapse.set_speed(5)
-        end
-    end
-    if wave_defense_table.threat <= 0 then
-        wave_defense_table.wave_interval = 1000
-        return
-    end
-    if name == 'Insane' then
-        wave_defense_table.wave_interval = 1800
-    else
-        wave_defense_table.wave_interval = 3600 - player_count * 60
-        if wave_defense_table.wave_interval < 1800 then
-            wave_defense_table.wave_interval = 1800
         end
     end
 end

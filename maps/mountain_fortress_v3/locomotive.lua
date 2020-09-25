@@ -1146,6 +1146,10 @@ local function on_player_changed_position(event)
     end
     local data = this.players[player.index].data
 
+    if not this.market or not this.market.valid then
+        return
+    end
+
     if data and data.frame and data.frame.valid then
         local position = this.market.position
         local area = {
@@ -1188,6 +1192,9 @@ local function spawn_biter()
         'big-spitter',
         'behemoth-spitter'
     }
+    if not position then
+        return
+    end
     this.locomotive_biter =
         loco_surface.create_entity(
         {name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}

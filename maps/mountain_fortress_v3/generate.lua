@@ -174,6 +174,7 @@ local function do_place_treasure(data)
     if #treasure == 0 then
         return
     end
+
     pcall(
         function()
             for _, e in ipairs(data.treasure) do
