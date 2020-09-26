@@ -243,6 +243,7 @@ function Public.server_restart()
 		game.surfaces.biter_battles.clear(true)
 		game.reset_time_played()
 		global.server_restart_timer = nil
+		game.speed = 1
 		return
 	end
 	if global.server_restart_timer % 30 == 0 then
@@ -267,12 +268,29 @@ local function freeze_all_biters(surface)
 	for _, e in pairs(surface.find_entities_filtered({force = "south_biters"})) do e.active = false end
 end
 
+local function biter_killed_the_silo(event)
+	local cause = event.cause
+	if cause and cause.valid and cause.type == "unit" then 
+		return true
+	end
+	return
+end
+
 function Public.silo_death(event)
-	if not event.entity.valid then return end
-	if event.entity.name ~= "rocket-silo" then return end
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.name ~= "rocket-silo" then return end
 	if global.bb_game_won_by_team then return end
-	if event.entity == global.rocket_silo.south or event.entity == global.rocket_silo.north then
-		global.bb_game_won_by_team = enemy_team_of[event.entity.force.name]
+	if entity == global.rocket_silo.south or entity == global.rocket_silo.north then
+	
+		--Respawn Silo in case of friendly fire
+		if not biter_killed_the_silo(event) then
+			global.rocket_silo[entity.force.name] = entity.clone({position = entity.position, surface = entity.surface, force = entity.force})
+			global.rocket_silo[entity.force.name].health = 5
+			return
+		end
+			
+		global.bb_game_won_by_team = enemy_team_of[entity.force.name]
 		
 		set_victory_time()
 		
@@ -305,9 +323,9 @@ function Public.silo_death(event)
 		Server.to_discord_embed(c .. " has won!")
 		Server.to_discord_embed(global.victory_time)
 		
-		silo_kaboom(event.entity)
+		silo_kaboom(entity)
 		
-		freeze_all_biters(event.entity.surface)
+		freeze_all_biters(entity.surface)
 	end
 end
 

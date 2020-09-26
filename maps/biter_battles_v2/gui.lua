@@ -292,7 +292,11 @@ function join_team(player, force_name, forced_join)
 				return
 			end
 		end
-		local p = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 8, 1)
+		local p = surface.find_non_colliding_position("character", game.forces[force_name].get_spawn_position(surface), 16, 0.5)
+		if not p then
+			game.print("No spawn position found for " .. player.name .. "!", {255, 0, 0})
+			return 
+		end
 		player.teleport(p, surface)
 		player.force = game.forces[force_name]
 		player.character.destructible = true

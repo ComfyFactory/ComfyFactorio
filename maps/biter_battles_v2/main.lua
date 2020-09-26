@@ -6,6 +6,7 @@ local Game_over = require "maps.biter_battles_v2.game_over"
 local Gui = require "maps.biter_battles_v2.gui"
 local Init = require "maps.biter_battles_v2.init"
 local Mirror_terrain = require "maps.biter_battles_v2.mirror_terrain"
+require 'modules.simple_tags'
 local Team_manager = require "maps.biter_battles_v2.team_manager"
 local Terrain = require "maps.biter_battles_v2.terrain"
 
