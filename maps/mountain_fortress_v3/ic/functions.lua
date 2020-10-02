@@ -782,7 +782,7 @@ function Public.create_car(ic, event)
         return
     end
 
-    local name, mined = get_player_entity(ic, player, ce)
+    local name, mined = get_player_entity(ic, player)
 
     if entity_type[name] and not mined then
         return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
