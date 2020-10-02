@@ -56,7 +56,7 @@ local function on_built_entity(event)
     if not ce or not ce.valid then
         return
     end
-    if not ce.type == 'car' or not ce.name == 'spidertron' then
+    if (ce.type == 'car' or ce.name == 'spidertron') ~= true then
         return
     end
 
