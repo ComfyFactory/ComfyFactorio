@@ -764,7 +764,7 @@ local on_tick = function()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
 
-    if tick % 60 == 0 then
+    if tick % 40 == 0 then
         for _, player in pairs(game.connected_players) do
             update_gui(player)
         end
@@ -855,7 +855,7 @@ local on_init = function()
     Explosives.set_whitelist_entity('character')
 end
 
-Event.on_nth_tick(25, on_tick)
+Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

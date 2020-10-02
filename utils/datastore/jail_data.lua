@@ -108,6 +108,7 @@ local get_gulag_permission_group = function()
         gulag.set_allows_action(defines.input_action.drop_item, false)
         gulag.set_allows_action(defines.input_action.place_equipment, false)
         gulag.set_allows_action(defines.input_action.take_equipment, false)
+        gulag.set_allows_action(defines.input_action.open_technology_gui, false)
     end
     local gulag = game.permissions.get_group('gulag')
     return gulag
