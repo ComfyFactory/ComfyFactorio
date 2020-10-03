@@ -1,4 +1,8 @@
 local Public = {}
+local math_random = math.random
+local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
+
+local wagon_raffle = {"cargo-wagon", "cargo-wagon", "cargo-wagon", "locomotive", "fluid-wagon"}
 
 local function draw_border(surface, left_x, height)
 	local tiles = {}
@@ -48,6 +52,86 @@ function Public.draw_out_of_map_chunk(surface, left_top)
 		end
 	end
 	surface.set_tiles(tiles, true) 
+end
+
+function Public.generate_spawn(mountain_race, force_name)
+	local force = game.forces[force_name]
+	local surface = game.surfaces.nauvis
+	local p = force.get_spawn_position(surface)
+	
+	local v = {{0,0}, {1,0}, {0,1}, {1,1}}
+	local teams = {
+		["north"] = {75, 75, 255},
+		["south"] = {255, 65, 65},
+	}
+			
+	for x = 0, 32, 2 do
+        surface.create_entity({name = 'straight-rail', position = {p.x + x, p.y}, direction = 2, force = force_name})
+		for k, tile in pairs(surface.find_tiles_filtered({area = {{p.x + x, p.y}, {p.x + x + 2, p.y + 2}}})) do
+			if tile.collides_with("resource-layer") then surface.set_tiles({{name = "landfill", position = tile.position}}, true) end
+		end
+    end
+	
+	local entity = surface.create_entity({name = 'locomotive', position = {p.x + 6, p.y}, force = force_name, direction = 2})
+	
+	entity.color = teams[force_name]
+	
+	rendering.draw_text({
+		text = string.upper(force_name),
+		surface = surface,
+		target = entity,
+		target_offset = {0, -3},
+		color = teams[force_name],
+		scale = 2,
+		font = "default-game",
+		alignment = "center",
+		scale_with_zoom = false,
+	})
+	
+	mountain_race.locomotives[force_name] = entity
+	
+	local wagon = Immersive_cargo_wagons.register_wagon(entity)
+	wagon.entity_count = 999
+end
+
+function Public.reroll_terrain(mountain_race)
+	if game.ticks_played % 60 ~= 0 then return end
+	
+	for _, player in pairs(game.connected_players) do 
+		if player.character then
+			if player.character.valid then
+				player.character.destroy()
+			end
+		end
+		player.character = nil
+		player.set_controller({type=defines.controllers.god})
+	end
+	
+	local surface = game.surfaces.nauvis
+	local mgs = surface.map_gen_settings
+	mgs.seed = math_random(1, 99999999)
+	mgs.water = 1
+	mgs.starting_area = 1
+	mgs.terrain_segmentation = 2
+	mgs.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}	
+	mgs.autoplace_controls = {
+		["coal"] = {frequency = 8, size = 0.7, richness = 0.5,},
+		["stone"] = {frequency = 8, size = 0.7, richness = 0.5,},
+		["copper-ore"] = {frequency = 8, size = 0.7, richness = 0.75,},
+		["iron-ore"] = {frequency = 8, size = 0.7, richness = 1,},
+		["uranium-ore"] = {frequency = 5, size = 0.5, richness = 0.5,},
+		["crude-oil"] = {frequency = 5, size = 1, richness = 1,},
+		["trees"] = {frequency = math.random(4, 32) * 0.1, size = math.random(4, 16) * 0.1, richness = math.random(1, 10) * 0.1},
+		["enemy-base"] = {frequency = 0, size = 0, richness = 0}	
+	}	
+	surface.map_gen_settings = mgs
+	surface.clear(false)
+	for chunk in surface.get_chunks() do
+		surface.delete_chunk({chunk.x, chunk.y})
+	end
+	
+	game.print("preparing terrain..")
+	mountain_race.gamestate = "prepare_terrain"
 end
 
 return Public
