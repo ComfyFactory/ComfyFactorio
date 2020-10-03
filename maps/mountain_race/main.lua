@@ -1,3 +1,6 @@
+require 'modules.biters_yield_ore'
+require "modules.rocks_yield_ore_veins"
+
 local Collapse = require "modules.collapse"
 local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
 local Terrain = require 'maps.mountain_race.terrain'
@@ -17,7 +20,7 @@ local function on_chunk_generated(event)
 	local surface = event.surface
 	if surface.index ~= 1 then return end
 	local left_top = event.area.left_top
-	if left_top.y >= mountain_race.playfield_height or left_top.y < mountain_race.playfield_height * -1 or left_top.x < 0 then
+	if left_top.y >= mountain_race.playfield_height or left_top.y < 0 or left_top.x < 0 then
 		Terrain.draw_out_of_map_chunk(surface, left_top)
 		return
 	end
@@ -42,9 +45,15 @@ local function on_entity_died(event)
 			return
 		end
 	end
+	
+	if entity.name == "character" then
+		Team.update_spawn_positions(mountain_race)
+	end
 end
 
 local function on_player_joined_game(event)
+	Team.update_spawn_positions(mountain_race)
+
 	local player = game.players[event.player_index]
 	
 	if game.tick == 0 then
@@ -59,17 +68,25 @@ local function on_player_joined_game(event)
 	end
 	
 	Team.setup_player(mountain_race, player)
+	
+	local surface = game.surfaces.nauvis
+	local tile = surface.get_tile(player.position)
+	if tile.valid then
+		if tile.name == "out-of-map" then
+			player.teleport(surface.find_non_colliding_position("character", player.force.get_spawn_position(surface), 64, 0.5), surface)
+		end
+	end
 end
 
 local function init(mountain_race)
-	if game.ticks_played % 60 ~= 30 then return end
+	if game.ticks_played % 120 ~= 30 then return end
 	game.print("game resetting..")
 	
 	Immersive_cargo_wagons.reset()
 	
 	Collapse.set_kill_entities(true)
-	Collapse.set_speed(1)
-	Collapse.set_amount(4)
+	Collapse.set_speed(4)
+	Collapse.set_amount(0)
 	Collapse.set_max_line_size(mountain_race.border_width + mountain_race.playfield_height * 2)
 	Collapse.set_surface(surface)
 	Collapse.set_position({0, 0})
@@ -86,10 +103,10 @@ local function init(mountain_race)
 end
 
 local function prepare_terrain(mountain_race)
-	if game.ticks_played % 30 ~= 0 then return end
+	if game.ticks_played % 60 ~= 30 then return end
 	Terrain.clone_south_to_north(mountain_race)
 	
-	if mountain_race.clone_x < 4 then return end	
+	if mountain_race.clone_x < 6 then return end	
 	game.print("preparing spawn..")
 	mountain_race.gamestate = "prepare_spawn"
 end
@@ -118,13 +135,38 @@ local function spawn_players(mountain_race)
 	mountain_race.gamestate = "game_in_progress"
 end
 
+local function set_collapse_speed(mountain_race)
+	if not mountain_race.locomotives.north then return end
+	if not mountain_race.locomotives.south then return end
+	local amount = math.abs(mountain_race.locomotives.north.position.x - mountain_race.locomotives.south.position.x) - 8
+	amount = math.floor(amount / 32)
+	if amount < 0 then amount = 0 end
+	Collapse.set_amount(amount)
+end
 
+local function chart(mountain_race)
+	local surface = game.surfaces.nauvis
+	local north = game.forces.north
+	local south = game.forces.south
+	local r = 128
+	local p = north.get_spawn_position(surface)
+	south.chart(surface, {{p.x - r, p.y - r}, {p.x + r, p.y + r}})
+	local p = south.get_spawn_position(surface)
+	north.chart(surface, {{p.x - r, p.y - r}, {p.x + r, p.y + r}})
+end
+
+local game_tasks = {
+	[30] = set_collapse_speed,
+	[60] = Terrain.clone_south_to_north,
+	[90] = chart,
+}
 
 local function game_in_progress(mountain_race)
 	local tick = game.ticks_played
-	if tick % 120 == 0 then
-		Terrain.clone_south_to_north(mountain_race)
-	end
+	if tick % 30 ~= 0 then return end
+	local task = tick % 120
+	if not game_tasks[task] then return end
+	game_tasks[task](mountain_race)
 end
 
 local function game_over(mountain_race)
@@ -133,6 +175,7 @@ local function game_over(mountain_race)
 	
 	if not mountain_race.reset_countdown then
 		mountain_race.reset_countdown = 10
+		Collapse.set_amount(0)
 		local message = "Team " .. mountain_race.victorious_team .. " has won the race!"
 		game.print(message, {255, 155, 0})
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})	
@@ -149,6 +192,7 @@ end
 local gamestates = {
 	["init"] = init,
 	["reroll_terrain"] = Terrain.reroll_terrain,
+	["generate_chunks"] = Terrain.generate_chunks,
 	["prepare_terrain"] = prepare_terrain,
 	["prepare_spawn"] = prepare_spawn,
 	["spawn_players"] = spawn_players,
@@ -161,6 +205,7 @@ local function on_tick()
 end
 
 local function on_init()
+	game.difficulty_settings.technology_price_multiplier = 0.5 
 	mountain_race.reset_counter = 0
 	mountain_race.gamestate = "init"
 	mountain_race.border_width = 4
@@ -178,3 +223,5 @@ Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+require "modules.rocks_yield_ore"

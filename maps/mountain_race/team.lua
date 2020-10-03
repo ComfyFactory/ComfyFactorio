@@ -1,7 +1,7 @@
 local Public = {}
 local math_random = math.random
 
-local starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 20, ['pistol'] = 1, ['firearm-magazine'] = 16}
+local starting_items = {['iron-plate'] = 32, ['iron-gear-wheel'] = 16, ['stone'] = 20, ['pistol'] = 1, ['firearm-magazine'] = 128, ['rail'] = 16}
 
 function Public.init_teams()
 	game.create_force("north")
@@ -21,6 +21,7 @@ function Public.configure_teams(mountain_race)
 		force.technologies["artillery-shell-range-1"].enabled = false
 		force.technologies["artillery-shell-speed-1"].enabled = false
 		force.technologies["land-mine"].enabled = false
+		force.technologies["railway"].researched = true
 	end
 	game.forces.north.set_friend("spectator", true)
 	game.forces.south.set_friend("spectator", true)
@@ -73,6 +74,19 @@ function Public.setup_player(mountain_race, player)
 		end
 		
 		Public.teleport_player_to_spawn(player)
+	end
+end
+
+function Public.update_spawn_positions(mountain_race)
+	if not mountain_race.locomotives.north then return end
+	if not mountain_race.locomotives.south then return end
+	
+	local surface = game.surfaces.nauvis
+	
+	for _, force_name in pairs({"north", "south"}) do		
+		local force = game.forces[force_name]
+		local p = mountain_race.locomotives[force_name].position
+		force.set_spawn_position({p.x, p.y + 2}, surface)
 	end
 end
 
