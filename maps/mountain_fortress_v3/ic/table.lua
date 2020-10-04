@@ -36,7 +36,6 @@ function Public.reset()
     this.players = {}
     this.surfaces = {}
     this.minimap = {}
-    this.infinity_scrap_enabled = true
     this.entity_type = {
         ['car'] = true,
         ['tank'] = true,

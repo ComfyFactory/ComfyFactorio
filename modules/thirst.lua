@@ -64,13 +64,13 @@ local function sip(player)
 		return
 	end
 	
-	if global.hydration[player.index] > 80 then return end
+	if global.hydration[player.index] > 90 then return end
 	
 	local inventory = player.get_main_inventory()
 	local removed_count = inventory.remove({name = "water-barrel", count = 1})
 	if removed_count == 0 then return end
 
-	global.hydration[player.index] = global.hydration[player.index] + 20	
+	global.hydration[player.index] = global.hydration[player.index] + 10	
 	player.play_sound{path="utility/armor_insert", volume_modifier=0.9}
 	
 	local inserted_count = inventory.insert({name = "empty-barrel", count = 1})

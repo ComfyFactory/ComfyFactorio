@@ -108,6 +108,7 @@ local get_gulag_permission_group = function()
         gulag.set_allows_action(defines.input_action.drop_item, false)
         gulag.set_allows_action(defines.input_action.place_equipment, false)
         gulag.set_allows_action(defines.input_action.take_equipment, false)
+        gulag.set_allows_action(defines.input_action.open_technology_gui, false)
     end
     local gulag = game.permissions.get_group('gulag')
     return gulag
@@ -220,10 +221,15 @@ local on_player_changed_surface = function(event)
     if not player or not player.valid then
         return
     end
-    local p_data = get_player_data(player)
-    if jailed[player.name] and p_data and p_data.locked then
-        local surface = game.surfaces['gulag']
-        if player.surface.index ~= surface.index then
+
+    if not jailed[player.name] then
+        return
+    end
+
+    local surface = game.surfaces['gulag']
+    if player.surface.index ~= surface.index then
+        local p_data = get_player_data(player)
+        if jailed[player.name] and p_data and p_data.locked then
             teleport_player_to_gulag(player, 'jail')
         end
     end

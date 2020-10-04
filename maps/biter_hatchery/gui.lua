@@ -1,5 +1,6 @@
 local Public = {}
 local Team = require "maps.biter_hatchery.team"
+local Server = require 'utils.server'
 
 function Public.spectate_button(player)
 	if player.gui.top.spectate_button then return end
@@ -45,13 +46,26 @@ local function create_spectate_confirmation(player)
 	frame.add({type = "button", name = "cancel_spectate", caption = "Cancel"})
 end
 
-function Public.rejoin_question(player)
-	if player.gui.center.rejoin_question_frame then return end
-	local frame = player.gui.center.add({type = "frame", name = "rejoin_question_frame", caption = "Rejoin the game?"})
-	frame.style.font = "default"
-	frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
-	frame.add({type = "button", name = "confirm_rejoin", caption = "Rejoin"})
-	frame.add({type = "button", name = "cancel_rejoin", caption = "Cancel"})
+function Public.rejoin_question(hatchery)
+	if game.tick % 90 ~= 0 then return end
+	for _, player in pairs(game.forces.spectator.players) do
+		if not player.gui.center.rejoin_question_frame then 
+			local frame = player.gui.center.add({type = "frame", name = "rejoin_question_frame", caption = "Rejoin the game?"})
+			frame.style.font = "default"
+			frame.style.font_color = {r = 0.3, g = 0.65, b = 0.3}
+			frame.add({type = "button", name = "confirm_rejoin", caption = "Rejoin"})
+			frame.add({type = "button", name = "cancel_rejoin", caption = "Cancel"})
+		end
+	end
+	hatchery.reset_counter = hatchery.reset_counter + 1		
+	local message = "Biter Hatchery round #" .. hatchery.reset_counter .. " has begun!"
+	game.print(message, {180, 0, 250})
+	Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
+	for _, player in pairs(game.connected_players) do
+		player.play_sound{path="utility/new_objective", volume_modifier=0.85}
+	end	
+	hatchery.gamestate = "game_in_progress"
+	print(hatchery.gamestate)
 end
 
 local function on_gui_click(event)
@@ -63,8 +77,8 @@ local function on_gui_click(event)
 	if event.element.name == "confirm_rejoin" then
 		player.gui.center["rejoin_question_frame"].destroy()
 		Team.assign_force_to_player(player)
-		Team.teleport_player_to_active_surface(player)
-		Team.put_player_into_random_team(player)
+		Team.teleport_player_to_spawn(player)
+		Team.add_player_to_team(player)
 		game.print(player.name .. " has rejoined the game!")
 		return 
 	end

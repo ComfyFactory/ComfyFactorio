@@ -32,6 +32,12 @@ function Public.get_table()
     return this
 end
 
+function Public.create_chest(surface, position, storage)
+    local entity = surface.create_entity {name = 'infinity-chest', position = position, force = 'player'}
+    this.inf_chests[entity.unit_number] = {entity = entity, storage = storage}
+    return entity
+end
+
 function Public.err_msg(string)
     local debug = this.debug
     if not debug then

@@ -231,9 +231,6 @@ function Public.server_restart()
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		--Server.start_scenario('Biter_Battles')
-		
-		game.remove_offline_players()
 		
 		Init.tables()
 		Init.forces()
@@ -246,6 +243,7 @@ function Public.server_restart()
 		game.surfaces.biter_battles.clear(true)
 		game.reset_time_played()
 		global.server_restart_timer = nil
+		game.speed = 1
 		return
 	end
 	if global.server_restart_timer % 30 == 0 then
@@ -270,12 +268,29 @@ local function freeze_all_biters(surface)
 	for _, e in pairs(surface.find_entities_filtered({force = "south_biters"})) do e.active = false end
 end
 
+local function biter_killed_the_silo(event)
+	local cause = event.cause
+	if cause and cause.valid and cause.type == "unit" then 
+		return true
+	end
+	return
+end
+
 function Public.silo_death(event)
-	if not event.entity.valid then return end
-	if event.entity.name ~= "rocket-silo" then return end
+	local entity = event.entity
+	if not entity.valid then return end
+	if entity.name ~= "rocket-silo" then return end
 	if global.bb_game_won_by_team then return end
-	if event.entity == global.rocket_silo.south or event.entity == global.rocket_silo.north then
-		global.bb_game_won_by_team = enemy_team_of[event.entity.force.name]
+	if entity == global.rocket_silo.south or entity == global.rocket_silo.north then
+	
+		--Respawn Silo in case of friendly fire
+		if not biter_killed_the_silo(event) then
+			global.rocket_silo[entity.force.name] = entity.clone({position = entity.position, surface = entity.surface, force = entity.force})
+			global.rocket_silo[entity.force.name].health = 5
+			return
+		end
+			
+		global.bb_game_won_by_team = enemy_team_of[entity.force.name]
 		
 		set_victory_time()
 		
@@ -284,6 +299,18 @@ function Public.silo_death(event)
 			if player.gui.left["bb_main_gui"] then player.gui.left["bb_main_gui"].visible = false end
 			create_victory_gui(player)
 			show_mvps(player)
+			--[[
+			player.set_controller({
+				type = defines.controllers.cutscene,
+				waypoints = {{position = {event.entity.position.x, event.entity.position.y},
+				transition_time = 0,
+				time_to_wait = 900,
+				zoom = 0.5}},
+				start_position = {player.position.x, player.position.y},
+				start_zoom = 1,
+				final_transition_time = 180
+			})
+			]]
 		end
 
 		global.spy_fish_timeout["north"] = game.tick + 999999
@@ -296,9 +323,9 @@ function Public.silo_death(event)
 		Server.to_discord_embed(c .. " has won!")
 		Server.to_discord_embed(global.victory_time)
 		
-		silo_kaboom(event.entity)
+		silo_kaboom(entity)
 		
-		freeze_all_biters(event.entity.surface)
+		freeze_all_biters(entity.surface)
 	end
 end
 

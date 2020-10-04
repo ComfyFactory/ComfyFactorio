@@ -115,6 +115,27 @@ function Gui.clear(element)
     element.clear()
 end
 
+local function clear_invalid_data()
+    for _, player in pairs(game.connected_players) do
+        local player_index = player.index
+        local values = data[player_index]
+        if values then
+            for _, element in next, values do
+                if type(element) == 'table' then
+                    for key, obj in next, element do
+                        if type(obj) == 'table' and obj.valid ~= nil then
+                            if not obj.valid then
+                                element[key] = nil
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+Event.on_nth_tick(300, clear_invalid_data)
+
 local function handler_factory(event_id)
     local handlers
 

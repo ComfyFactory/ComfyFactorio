@@ -187,7 +187,7 @@ local function place_wagon(data)
     end
 
     for k, tile in pairs(location) do
-        tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = tile.position}
+        tiles[#tiles + 1] = {name = 'nuclear-ground', position = tile.position}
         if tile.position.y % 1 == 0 and tile.position.x % 1 == 0 then
             entities[#entities + 1] = {
                 name = 'straight-rail',
@@ -274,7 +274,7 @@ local function wall(data)
                 entities[#entities + 1] = {name = 'fish', position = p}
             end
         else
-            tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
+            tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
 
             if random(1, 5) ~= 1 then
                 entities[#entities + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = p}
@@ -288,7 +288,7 @@ local function wall(data)
             end
         end
     else
-        tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
+        tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
 
         if
             surface.can_place_entity(
@@ -305,32 +305,31 @@ local function wall(data)
                 else
                     treasure[#treasure + 1] = {position = p, chest = 'steel-chest'}
                 end
-            else
-                if y < 4 or y > 25 then
-                    if y <= 23 then
-                        if random(1, y + 1) == 1 then
-                            entities[#entities + 1] = {
-                                name = 'stone-wall',
-                                position = p,
-                                force = 'player',
-                                callback = stone_wall
-                            }
-                        end
-                    else
-                        if random(1, 32 - y) == 1 then
-                            entities[#entities + 1] = {
-                                name = 'stone-wall',
-                                position = p,
-                                force = 'player',
-                                callback = stone_wall
-                            }
-                        end
+            end
+            if y < 4 or y > 25 then
+                if y <= 23 then
+                    if random(1, y + 1) == 1 then
+                        entities[#entities + 1] = {
+                            name = 'stone-wall',
+                            position = p,
+                            force = 'player',
+                            callback = stone_wall
+                        }
+                    end
+                else
+                    if random(1, 32 - y) == 1 then
+                        entities[#entities + 1] = {
+                            name = 'stone-wall',
+                            position = p,
+                            force = 'player',
+                            callback = stone_wall
+                        }
                     end
                 end
             end
         end
 
-        if random(1, 48) == 1 then
+        if random(1, 40) == 1 then
             if
                 surface.can_place_entity(
                     {
@@ -349,7 +348,7 @@ local function wall(data)
             end
         end
 
-        if random(1, 48) == 1 then
+        if random(1, 25) == 1 then
             if abs(p.y) < Public.level_depth * 1.5 then
                 if random(1, 16) == 1 then
                     spawn_turret(entities, p, 1)
@@ -382,7 +381,7 @@ local function wall(data)
                 end
             end
         elseif abs(p.y) > Public.level_depth * 5.5 then
-            if random(1, 32) == 1 then
+            if random(1, 15) == 1 then
                 spawn_turret(entities, p, random(3, enable_arties))
             end
         end
@@ -2149,7 +2148,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     if random(1, 2048) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
     end
-    tiles[#tiles + 1] = {name = "dirt-7", position = p}
+    tiles[#tiles + 1] = {name = 'dirt-7', position = p}
     if random(1, 100) > 25 then
         entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
     end

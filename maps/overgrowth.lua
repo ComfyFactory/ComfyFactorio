@@ -6,7 +6,6 @@ require 'modules.spawners_contain_biters'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.biters_yield_coins'
 require 'modules.rocks_yield_ore'
-require 'modules.ores_are_mixed'
 require 'modules.surrounded_by_worms'
 global.average_worm_amount_per_chunk = 1.5
 require 'modules.biters_attack_moving_players'
@@ -17,7 +16,6 @@ require 'modules.trees_randomly_die'
 require 'maps.overgrowth_map_info'
 
 local Reset = require 'functions.soft_reset'
-local rpg_t = require 'modules.rpg'
 local kaboom = require 'functions.omegakaboom'
 local Difficulty = require 'modules.difficulty_vote'
 
@@ -157,7 +155,6 @@ local function get_surface_settings()
 end
 
 function reset_map()
-    local rpg = rpg_t.get_table()
     global.trees_grow_chunk_next_visit = {}
     global.trees_grow_chunk_raffle = {}
     global.trees_grow_chunk_position = {}
@@ -174,10 +171,6 @@ function reset_map()
     global.market = spawn_market(global.current_surface, {x = 0, y = -8})
 
     game.map_settings.enemy_evolution.time_factor = difficulties_votes_evo[4]
-
-    if rpg then
-        rpg_t.rpg_reset_all_players()
-    end
 end
 
 local function on_player_joined_game(event)

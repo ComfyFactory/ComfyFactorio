@@ -65,10 +65,6 @@ function create_lane_buttons(player)
 	end
 end
 
-local function create_lane_info_frame(player, lane_number)
-	
-end
-
 local function autojoin_lane(player)
 	local lowest_player_count = 256
 	local lane_number

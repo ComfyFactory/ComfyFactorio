@@ -245,7 +245,7 @@ local function on_init()
         end
     end
 
-    Diff.difficulty_poll_closing_timeout = 3600 * 10
+    Difficulty.difficulty_poll_closing_timeout = 3600 * 10
     global.level_vectors = {}
     global.alive_boss_enemy_entities = {}
     global.current_level = 0

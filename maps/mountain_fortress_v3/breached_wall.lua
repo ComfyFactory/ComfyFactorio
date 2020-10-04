@@ -8,12 +8,12 @@ local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local BM = require 'maps.mountain_fortress_v3.blood_moon'
 
 local raise_event = script.raise_event
 local floor = math.floor
 local random = math.random
 local sqrt = math.sqrt
-local concat = table.concat
 
 local collapse_message =
     Token.register(
@@ -35,20 +35,13 @@ local spidertron_unlocked =
     end
 )
 
-local zone_complete =
-    Token.register(
-    function(data)
-        local bonus = data.bonus
-        local player = data.player
-        local message = ({'breached_wall.wall_breached', bonus})
-        Alert.alert_player_warning(player, 10, message)
-    end
-)
-
 local first_player_to_zone =
     Token.register(
     function(data)
         local player = data.player
+        if not player or not player.valid then
+            return
+        end
         local breached_wall = data.breached_wall
         local message = ({'breached_wall.wall_breached', player.name, breached_wall})
         Alert.alert_all_players(10, message)
@@ -62,6 +55,32 @@ local artillery_warning =
         Alert.alert_all_players(10, message)
     end
 )
+
+local compare_collapse_and_train = function()
+    local collapse_pos = Collapse.get_position()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local c_y = collapse_pos.y
+    local t_y = locomotive.position.y
+
+    local gap_between_zones = WPT.get('gap_between_zones')
+
+    if c_y - t_y <= gap_between_zones.gap then
+        if not gap_between_zones.set then
+            Collapse.set_speed(8)
+            Collapse.set_amount(6)
+            gap_between_zones.set = true
+        end
+        return
+    end
+
+    Collapse.set_speed(1)
+    Collapse.set_amount(11)
+    gap_between_zones.set = false
+end
 
 local function distance(player)
     local rpg_t = RPG_Settings.get('rpg_t')
@@ -108,6 +127,14 @@ local function distance(player)
                 end
             end
 
+            if breached_wall == 3 or breached_wall == 11 then
+                local t = game.tick
+                local s = player.surface
+                if t % 2 == 0 then
+                    BM.set_daytime(s, t)
+                end
+            end
+
             local data = {
                 player = player,
                 breached_wall = breached_wall
@@ -127,18 +154,15 @@ local function distance(player)
             Task.set_timeout_in_ticks(550, collapse_message, data)
         end
         rpg_t[player.index].bonus = bonus + 1
-        local data = {
-            player = player,
-            bonus = bonus
-        }
-        Task.set_timeout_in_ticks(1, zone_complete, data)
         Functions.gain_xp(player, bonus_xp_on_join * bonus)
+        local message = ({'breached_wall.wall_breached', bonus})
+        Alert.alert_player_warning(player, 10, message)
         return
     end
 end
 
 local function on_player_changed_position(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local map_name = 'mountain_fortress_v3'
 
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
@@ -148,4 +172,5 @@ local function on_player_changed_position(event)
     distance(player)
 end
 
+Event.on_nth_tick(100, compare_collapse_and_train)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

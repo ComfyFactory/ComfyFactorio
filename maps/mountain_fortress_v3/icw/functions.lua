@@ -1,8 +1,8 @@
 local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
-
 local random = math.random
+local main_tile_name = 'black-refined-concrete'
 
 function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
@@ -13,25 +13,6 @@ local function validate_entity(entity)
         return false
     end
     if not entity.valid then
-        return false
-    end
-    return true
-end
-
-local function validate_player(player)
-    if not player then
-        return false
-    end
-    if not player.valid then
-        return false
-    end
-    if not player.character then
-        return false
-    end
-    if not player.connected then
-        return false
-    end
-    if not game.players[player.name] then
         return false
     end
     return true
@@ -300,8 +281,6 @@ local function construct_wagon_doors(icw, wagon)
     local area = wagon.area
     local surface = wagon.surface
 
-    local main_tile_name = 'black-refined-concrete'
-
     for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
         local p = {x = x, y = area.left_top.y + 30}
         if p.x < 0 then
@@ -375,6 +354,11 @@ function Public.kill_wagon(icw, entity)
     for _, tile in pairs(surface.find_tiles_filtered({area = wagon.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
+    for _, x in pairs({wagon.area.left_top.x - 1.5, wagon.area.right_bottom.x + 1.5}) do
+        local p = {x = x, y = wagon.area.left_top.y + 30}
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
+    end
     wagon.entity.force.chart(surface, wagon.area)
     icw.wagons[entity.unit_number] = nil
     Public.request_reconstruction(icw)
@@ -412,8 +396,6 @@ end
 function Public.create_wagon_room(icw, wagon)
     local surface = wagon.surface
     local area = wagon.area
-
-    local main_tile_name = 'black-refined-concrete'
 
     local tiles = {}
     for x = -3, 2, 1 do
@@ -833,7 +815,84 @@ local function move_room_to_train(icw, train, wagon)
     end
 end
 
+local function get_connected_rolling_stock(entity, direction)
+    --thanks Boskid
+    local carriages = entity.train.carriages
+    local first_stock, second_stock
+    for k, v in pairs(carriages) do
+        if v == entity then
+            first_stock = carriages[k - 1]
+            second_stock = carriages[k + 1]
+            break
+        end
+    end
+    if not first_stock then
+        first_stock, second_stock = second_stock, nil
+    end
+    if not first_stock then
+        return nil
+    end
+
+    local angle =
+        math.atan2(-(entity.position.x - first_stock.position.x), entity.position.y - first_stock.position.y) /
+        (2 * math.pi) -
+        entity.orientation
+    if direction == defines.rail_direction.back then
+        angle = angle + 0.5
+    end
+    while angle < -0.5 do
+        angle = angle + 1
+    end
+    while angle > 0.5 do
+        angle = angle - 1
+    end
+    local connected_stock
+    if angle > -0.25 and angle < 0.25 then
+        connected_stock = first_stock
+    else
+        connected_stock = second_stock
+    end
+    if not connected_stock then
+        return nil
+    end
+
+    angle =
+        math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) /
+        (2 * math.pi) -
+        connected_stock.orientation
+    while angle < -0.5 do
+        angle = angle + 1
+    end
+    while angle > 0.5 do
+        angle = angle - 1
+    end
+    local joint_of_connected_stock
+    if angle > -0.25 and angle < 0.25 then
+        joint_of_connected_stock = defines.rail_direction.front
+    else
+        joint_of_connected_stock = defines.rail_direction.back
+    end
+    return connected_stock, joint_of_connected_stock
+end
+
 function Public.construct_train(icw, carriages)
+    local WPT = package.loaded['maps.mountain_fortress_v3.table']
+    local choochoo = WPT.get().locomotive
+    for i, carriage in pairs(carriages) do
+        if carriage == choochoo then
+            local stock = get_connected_rolling_stock(choochoo, defines.rail_direction.front)
+            if stock ~= carriages[i - 1] then
+                local n = 1
+                local m = #carriages
+                while (n < m) do
+                    carriages[n], carriages[m] = carriages[m], carriages[n]
+                    n = n + 1
+                    m = m - 1
+                end
+                break
+            end
+        end
+    end
     local unit_number = carriages[1].unit_number
 
     if icw.trains[unit_number] then

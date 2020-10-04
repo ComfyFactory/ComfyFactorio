@@ -480,7 +480,7 @@ local function get_commmands(group)
                     end
                 end
                 local position =
-                    group.surface.find_non_colliding_position('rocket-silo', group_position, step_length, 4)
+                    group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 4)
                 if position then
                     -- commands[#commands + 1] = {
                     -- 	type = defines.command.go_to_location,
@@ -562,7 +562,7 @@ local function get_commmands(group)
                 end
             end
         end
-        local position = group.surface.find_non_colliding_position('rocket-silo', group_position, step_length, 1)
+        local position = group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 1)
         if position then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
@@ -616,8 +616,9 @@ local function command_unit_group(group)
             commands = get_commmands(group)
         }
     )
-
-    this.unit_group_last_command[group.group_number] = game.tick
+    if group and group.valid then
+        this.unit_group_last_command[group.group_number] = game.tick
+    end
 end
 
 local function give_commands_to_unit_groups()
@@ -718,6 +719,15 @@ end
 local function clear_tables()
     local this = WD.get()
     this.unit_group_last_command = {}
+    for k, groups in next, this.active_biters do
+        for _, entity in next, groups do
+            if type(entity) == 'table' then
+                if not entity or not entity.valid then
+                    this.active_biters[k] = nil
+                end
+            end
+        end
+    end
 end
 
 local tick_tasks = {

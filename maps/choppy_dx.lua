@@ -1,7 +1,6 @@
 --choppy-- mewmew made this --
 --neko barons attempt to mix up map gen--
 
-require 'modules.dynamic_landfill'
 require 'modules.satellite_score'
 require 'modules.spawners_contain_biters'
 require 'functions.create_entity_chain'
@@ -10,7 +9,6 @@ require 'tools.map_functions'
 
 require 'modules.surrounded_by_worms'
 require 'modules.biter_noms_you'
---require "maps.choppy_map_intro"
 
 local Map = require 'modules.map_info'
 local unearthing_worm = require 'functions.unearthing_worm'

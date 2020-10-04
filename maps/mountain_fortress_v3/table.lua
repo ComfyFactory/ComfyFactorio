@@ -4,8 +4,6 @@ local Event = require 'utils.event'
 
 local this = {
     players = {},
-    offline_players = {},
-    breached_wall = 1,
     traps = {}
 }
 local Public = {}
@@ -32,18 +30,23 @@ function Public.reset_table()
     this.fullness_enabled = true
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
+    this.gap_between_zones = {
+        set = false,
+        gap = 900
+    }
     this.train_upgrades = 0
     this.offline_players = {}
     this.biter_pets = {}
     this.flamethrower_damage = {}
     this.mined_scrap = 0
     this.biters_killed = 0
+    this.cleared_nauvis = false
     this.locomotive_xp_aura = 40
     this.trusted_only_car_tanks = true
     this.xp_points = 0
     this.xp_points_upgrade = 0
     --!grief prevention
-    this.enable_arties = 5 -- default to callback 6
+    this.enable_arties = 6 -- default to callback 6
     --!snip
     this.poison_deployed = false
     this.upgrades = {
@@ -73,7 +76,7 @@ function Public.reset_table()
     }
     this.biters = {
         amount = 0,
-        limit = 256
+        limit = 512
     }
     this.traps = {}
     this.munch_time = true
@@ -102,6 +105,11 @@ function Public.reset_table()
     this.spidertron_unlocked_at_wave = 11
     -- this.void_or_tile = 'lab-dark-2'
     this.void_or_tile = 'out-of-map'
+
+    --!reset player tables
+    for _, player in pairs(this.players) do
+        player.died = false
+    end
 end
 
 function Public.get(key)

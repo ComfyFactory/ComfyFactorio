@@ -20,6 +20,17 @@ local space = {
     bottom_padding = 0
 }
 
+local function get_player_data(player, remove)
+    if remove and this.data[player.index] then
+        this.data[player.index] = nil
+        return
+    end
+    if not this.data[player.index] then
+        this.data[player.index] = {}
+    end
+    return this.data[player.index]
+end
+
 local function addStyle(guiIn, styleIn)
     for k, v in pairs(styleIn) do
         guiIn.style[k] = v
@@ -41,7 +52,7 @@ local function validate_object(obj)
 end
 
 local function player_opened(player)
-    local data = this.data[player.index]
+    local data = get_player_data(player)
 
     if not data then
         return false
@@ -57,7 +68,7 @@ local function player_opened(player)
 end
 
 local function last_tab(player)
-    local data = this.data[player.index]
+    local data = get_player_data(player)
 
     if not data then
         return false
@@ -91,7 +102,7 @@ local function validate_player(player)
 end
 
 local function close_player_inventory(player)
-    local data = this.data[player.index]
+    local data = get_player_data(player)
 
     if not data then
         return
@@ -110,7 +121,7 @@ local function close_player_inventory(player)
     end
 
     element.destroy()
-    Public.reset_table(player)
+    get_player_data(player, true)
 end
 
 local function redraw_inventory(gui, source, target, caption, panel_type)
@@ -169,7 +180,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
 end
 
 local function add_inventory(panel, source, target, caption, panel_type)
-    local data = this.data[source.index]
+    local data = get_player_data(source)
     data.panel_type = data.panel_type or {}
     local pane_name = panel.add({type = 'tab', caption = caption, name = caption})
     local scroll_pane =
@@ -231,8 +242,10 @@ local function open_inventory(source, target)
     local panel = frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
     panel.selected_tab_index = 1
 
-    this.data[source.index].player_opened = target
-    this.data[source.index].last_tab = 'Main'
+    local data = get_player_data(source)
+
+    data.player_opened = target
+    data.last_tab = 'Main'
 
     local main = target.get_main_inventory().get_contents()
     local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
@@ -278,7 +291,7 @@ local function on_gui_click(event)
         return
     end
 
-    local data = this.data[player.index]
+    local data = get_player_data(player)
     if not data then
         return
     end
@@ -312,19 +325,11 @@ local function gui_closed(event)
     local type = event.gui_type
 
     if type == defines.gui_type.custom then
-        local data = this.data[player.index]
+        local data = get_player_data(player)
         if not data then
             return
         end
         close_player_inventory(player)
-    end
-end
-
-local function on_player_joined_game(event)
-    local player = game.players[event.player_index]
-
-    if not this.data[player.index] then
-        this.data[player.index] = {}
     end
 end
 
@@ -419,19 +424,9 @@ function Public.get(key)
     end
 end
 
-function Public.reset_table(player)
-    if validate_player(player) then
-        local data = this.data[player.index]
-        for k in pairs(data) do
-            this.data[player.index][k] = nil
-        end
-    end
-end
-
 Event.add(defines.events.on_player_main_inventory_changed, update_gui)
 Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_gui_click, on_gui_click)
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 
 return Public

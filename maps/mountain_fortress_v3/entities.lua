@@ -184,25 +184,40 @@ local function hidden_biter(entity)
         position = entity.position
     end
 
+    local biters = WPT.get('biters')
+
+    if biters.amount >= biters.limit then
+        return
+    end
+
     BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
 
     for _ = 1, count, 1 do
         local unit
         if random(1, 3) == 1 then
             unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
+            biters.amount = biters.amount + 1
         else
             unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
+            biters.amount = biters.amount + 1
         end
 
         if random(1, 64) == 1 then
             BiterHealthBooster.add_boss_unit(unit, m * h * 5 + 1, 0.38)
+            biters.amount = biters.amount + 1
         end
     end
 end
 
 local function hidden_worm(entity)
+    local biters = WPT.get('biters')
+    if biters.amount >= biters.limit then
+        return
+    end
+
     BiterRolls.wave_defense_set_worm_raffle(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.20)
     entity.surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = entity.position})
+    biters.amount = biters.amount + 1
 end
 
 local function hidden_biter_pet(event)
@@ -660,6 +675,10 @@ local function on_entity_died(event)
 
     if entity.type == 'unit' or entity.type == 'unit-spawner' then
         this.biters_killed = this.biters_killed + 1
+        this.biters.amount = this.biters.amount - 1
+        if this.biters.amount <= 0 then
+            this.biters.amount = 0
+        end
         if Locomotive.is_around_train(entity) then
             entity.destroy()
             return
@@ -677,7 +696,7 @@ local function on_entity_died(event)
 
     if entity.type == 'tree' then
         for _, e in pairs(
-            event.entity.surface.find_entities_filtered(
+            entity.surface.find_entities_filtered(
                 {
                     area = {
                         {entity.position.x - 4, entity.position.y - 4},
@@ -749,6 +768,9 @@ function Public.loco_died()
     local this = WPT.get()
     local surface = game.surfaces[this.active_surface_index]
     local wave_defense_table = WD.get_table()
+    if wave_defense_table.game_lost then
+        return
+    end
     Public.set_scores()
     if not this.locomotive.valid then
         if this.announced_message then
@@ -776,13 +798,13 @@ function Public.loco_died()
 
         if this.soft_reset then
             this.game_reset_tick = nil
-            Task.set_timeout_in_ticks(60, reset_game, params)
+            Task.set_timeout_in_ticks(300, reset_game, params)
             return
         end
         if this.restart then
             if not this.announced_message then
                 game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
-                Task.set_timeout_in_ticks(60, reset_game, params)
+                Task.set_timeout_in_ticks(300, reset_game, params)
                 this.announced_message = true
                 return
             end
@@ -790,7 +812,7 @@ function Public.loco_died()
         if this.shutdown then
             if not this.announced_message then
                 game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
-                Task.set_timeout_in_ticks(60, reset_game, params)
+                Task.set_timeout_in_ticks(300, reset_game, params)
                 this.announced_message = true
                 return
             end

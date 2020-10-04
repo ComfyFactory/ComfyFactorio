@@ -4,6 +4,7 @@ local math_round = math.round
 local math_abs = math.abs
 local table_insert = table.insert
 local table_remove = table.remove
+local string_find = string.find
 
 local balance_functions = {
 	["flamethrower"] = function(force_name)
@@ -67,6 +68,18 @@ local target_entity_types = {
 	["electric-turret"] = true,
 	["fluid-turret"] = true,
 }
+
+local spawn_positions = {}
+local spawn_r = 7
+local spawn_r_square = spawn_r ^ 2
+for x = spawn_r * -1, spawn_r, 0.5 do
+	for y = spawn_r * -1, spawn_r, 0.5 do
+		if x ^ 2 + y ^ 2 < spawn_r_square then
+			table.insert(spawn_positions, {x, y})
+		end
+	end
+end
+local size_of_spawn_positions = #spawn_positions
 
 local Public = {}
 
@@ -139,19 +152,28 @@ function Public.combat_balance(event)
 end
 
 function Public.init_player(player)
-	local surface = game.surfaces.biter_battles
+	if not player.connected then
+		if player.force.index ~= 1 then
+			player.force = game.forces.player
+		end
+		return
+	end	
+		
 	if player.character and player.character.valid then
 		player.character.destroy()
 		player.set_controller({type = defines.controllers.god})
-		player.create_character()
-	end	
+		player.create_character()	
+	end
 	player.clear_items_inside()
 	player.spectator = true
 	player.force = game.forces.spectator
+	
+	local surface = game.surfaces.biter_battles
+	local p = spawn_positions[math_random(1, size_of_spawn_positions)]
 	if surface.is_chunk_generated({0,0}) then
-		player.teleport(surface.find_non_colliding_position("character", {0,0}, 4, 0.5), surface)
+		player.teleport(surface.find_non_colliding_position("character", p, 4, 0.5), surface)
 	else
-		player.teleport({0,0}, surface)
+		player.teleport(p, surface)
 	end
 	if player.character and player.character.valid then player.character.destructible = false end
 	game.permissions.get_group("spectator").add_player(player)
@@ -193,33 +215,37 @@ function Public.no_turret_creep(event)
 	entity.destroy()
 end
 
---share chat with player and spectator force
+--Share chat with spectator force
 function Public.share_chat(event)
 	if not event.message then return end	
 	if not event.player_index then return end	
-	local player = game.players[event.player_index] 	
+	local player = game.players[event.player_index]
+	local tag = player.tag
+	if not tag then tag = "" end
 	local color = player.chat_color
 	
 	if player.force.name == "north" then
-		game.forces.spectator.print(player.name .. " (north): ".. event.message, color)
-		game.forces.player.print(player.name .. " (north): ".. event.message, color)			
+		game.forces.spectator.print(player.name .. tag .. " (north): ".. event.message, color)		
 	end
 	if player.force.name == "south" then
-		game.forces.spectator.print(player.name .. " (south): ".. event.message, color)
-		game.forces.player.print(player.name .. " (south): ".. event.message, color)
+		game.forces.spectator.print(player.name .. tag .. " (south): ".. event.message, color)
 	end
 	
 	if global.tournament_mode then return end
 	
 	if player.force.name == "player" then
-		game.forces.north.print(player.name .. " (spawn): ".. event.message, color)
-		game.forces.south.print(player.name .. " (spawn): ".. event.message, color)
-		game.forces.spectator.print(player.name .. " (spawn): ".. event.message, color)
+		game.forces.north.print(player.name .. tag .. " (spawn): ".. event.message, color)
+		game.forces.south.print(player.name .. tag .. " (spawn): ".. event.message, color)
+		game.forces.spectator.print(player.name .. tag .. " (spawn): ".. event.message, color)
 	end
-	if player.force.name == "spectator" then
-		game.forces.north.print(player.name .. " (spectator): ".. event.message, color)
-		game.forces.south.print(player.name .. " (spectator): ".. event.message, color)
-		game.forces.player.print(player.name .. " (spectator): ".. event.message, color)
+	if player.force.name == "spectator" then	
+	
+		--Skip messages that would spoil coordinates from spectators
+		local a, b = string_find(event.message, "gps=", 1, false)
+		if a then return end	
+		
+		game.forces.north.print(player.name .. tag .. " (spectator): ".. event.message, color)
+		game.forces.south.print(player.name .. tag .. " (spectator): ".. event.message, color)
 	end
 end
 

@@ -5,7 +5,7 @@ local Token = require 'utils.token'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 
 local Public = {}
-local random = math.random
+local main_tile_name = 'black-refined-concrete'
 
 local function validate_entity(entity)
     if not entity then
@@ -243,13 +243,6 @@ local function remove_logistics(car)
     end
 end
 
-local function remove_simply_entity(car)
-    local surface = car.surface
-    for _, entity in pairs(surface.find_entities_filtered {name = 'sand-rock-big'}) do
-        entity.destroy()
-    end
-end
-
 local function set_new_area(ic, car)
     local new_area = ic.car_areas
     local name = car.name
@@ -276,7 +269,6 @@ local function upgrade_surface(ic, player, entity)
         elseif ce.name == 'tank' then
             car.name = 'tank'
         end
-        remove_simply_entity(car)
         set_new_area(ic, car)
         remove_logistics(car)
         replace_entity(cars, ce, index)
@@ -298,25 +290,6 @@ local function save_surface(ic, entity, player)
     car.saved_entity = entity.unit_number
 
     ic.saved_surfaces[player.index] = {saved_entity = entity.unit_number, name = entity.name}
-end
-
-local function validate_player(player)
-    if not player then
-        return false
-    end
-    if not player.valid then
-        return false
-    end
-    if not player.character then
-        return false
-    end
-    if not player.connected then
-        return false
-    end
-    if not game.players[player.name] then
-        return false
-    end
-    return true
 end
 
 local function kick_players_out_of_vehicles(car)
@@ -530,8 +503,6 @@ local function construct_doors(ic, car)
     local area = car.area
     local surface = car.surface
 
-    local main_tile_name = 'black-refined-concrete'
-
     for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
         local p
         if car.name == 'car' then
@@ -540,7 +511,6 @@ local function construct_doors(ic, car)
             p = {x = x, y = area.left_top.y + 20}
         elseif car.name == 'spidertron' then
             p = {x = x, y = area.left_top.y + 30}
-            main_tile_name = 'tutorial-grid'
         end
         if p.x < 0 then
             surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
@@ -659,7 +629,14 @@ function Public.kill_car(ic, entity)
     for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
+    for _, x in pairs({car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5}) do
+        local p = {x = x, y = car.area.left_top.y + 30}
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
+    end
     car.entity.force.chart(surface, car.area)
+    game.delete_surface(surface)
+    ic.surfaces[entity.unit_number] = nil
     ic.cars[entity.unit_number] = nil
 end
 
@@ -726,19 +703,7 @@ function Public.create_car_room(ic, car)
     local car_areas = ic.car_areas
     local entity_name = car.name
     local area = car_areas[entity_name]
-
-    local main_tile_name = 'black-refined-concrete'
-
     local tiles = {}
-
-    if entity_name == 'car' then
-        surface.create_entity({name = 'sand-rock-big', position = {0, 20}})
-    elseif entity_name == 'tank' then
-        surface.create_entity({name = 'sand-rock-big', position = {0, 40}})
-    elseif entity_name == 'spidertron' then
-        surface.create_entity({name = 'sand-rock-big', position = {0, 60}})
-        main_tile_name = 'tutorial-grid'
-    end
 
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
@@ -817,7 +782,7 @@ function Public.create_car(ic, event)
         return
     end
 
-    local name, mined = get_player_entity(ic, player, ce)
+    local name, mined = get_player_entity(ic, player)
 
     if entity_type[name] and not mined then
         return player.print('Multiple vehicles are not supported at the moment.', Color.warning)
@@ -868,123 +833,22 @@ end
 
 function Public.remove_invalid_cars(ic)
     for k, car in pairs(ic.cars) do
-        if type(car.entity) == 'boolean' then
-            return
-        end
-        if not validate_entity(car.entity) then
-            ic.cars[k] = nil
-            for key, value in pairs(ic.doors) do
-                if k == value then
-                    ic.doors[key] = nil
+        if type(car.entity) ~= 'boolean' then
+            if not validate_entity(car.entity) then
+                ic.cars[k] = nil
+                for key, value in pairs(ic.doors) do
+                    if k == value then
+                        ic.doors[key] = nil
+                    end
                 end
+                kick_players_from_surface(ic, car)
             end
-            kick_players_from_surface(ic, car)
         end
     end
     for k, surface in pairs(ic.surfaces) do
         if not ic.cars[tonumber(surface.name)] then
             game.delete_surface(surface)
             ic.surfaces[k] = nil
-        end
-    end
-end
-
-function Public.infinity_scrap(ic, event, recreate)
-    if not ic.infinity_scrap_enabled then
-        return
-    end
-
-    local entity = event.entity
-    if not validate_entity(entity) then
-        return
-    end
-
-    local player
-    if event.player_index then
-        player = game.players[event.player_index]
-    else
-        if event.cause and event.cause.name == 'character' then
-            local cause = event.cause
-            player = cause.player
-        end
-    end
-    if not validate_player(player) then
-        return
-    end
-
-    if get_player_surface(ic, player) then
-        if recreate then
-            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
-            return
-        end
-    end
-
-    if not is_owner_on_car_surface(ic, player) then
-        if get_player_surface(ic, player) then
-            if recreate then
-                entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
-                return
-            end
-            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
-            player.print('This is not your rock to mine!', Color.warning)
-            event.buffer.clear()
-            return
-        end
-    end
-
-    local items = {
-        'iron-plate',
-        'iron-gear-wheel',
-        'copper-plate',
-        'copper-cable',
-        'pipe',
-        'explosives',
-        'firearm-magazine',
-        'stone-brick'
-    }
-
-    local ores = {
-        'iron-ore',
-        'iron-ore',
-        'copper-ore',
-        'coal'
-    }
-
-    local reward
-    local size
-    local count
-    if random(1, 2) == 1 then
-        reward = items
-        size = #items
-        count = random(1, 15)
-    else
-        reward = ores
-        size = #ores
-        count = random(25, 100)
-    end
-
-    local name = reward[random(1, size)]
-
-    if entity.name ~= 'sand-rock-big' then
-        return
-    end
-
-    if get_player_surface(ic, player) then
-        if entity.position.x == 0 and entity.position.y == 20 or entity.position.y == 40 then
-            event.buffer.clear()
-            entity.surface.create_entity({name = 'sand-rock-big', position = entity.position})
-            player.insert({name = name, count = count})
-            if random(1, 4) == 1 then
-                player.insert({name = 'coin', count = 1})
-            end
-            player.surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = entity.position,
-                    text = '+' .. count .. ' [img=item/' .. name .. ']',
-                    color = {r = 188, g = 201, b = 63}
-                }
-            )
         end
     end
 end
