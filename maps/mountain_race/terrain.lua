@@ -1,8 +1,11 @@
 local Public = {}
 local math_random = math.random
 local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
+local GetNoise = require "utils.get_noise"
+local LootRaffle = require "functions.loot_raffle"
 
 local wagon_raffle = {"cargo-wagon", "cargo-wagon", "cargo-wagon", "locomotive", "fluid-wagon"}
+local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 
 local function draw_border(surface, left_x, height)
 	local tiles = {}
@@ -40,6 +43,34 @@ function Public.clone_south_to_north(mountain_race)
 	})
 	
 	mountain_race.clone_x = mountain_race.clone_x + 1
+end
+
+local function common_loot_crate(surface, position)
+	local item_stacks = LootRaffle.roll(math.abs(position.x), 16)
+	local container = surface.create_entity({name = "wooden-chest", position = position, force = "neutral"})
+	for _, item_stack in pairs(item_stacks) do
+		container.insert(item_stack)
+	end
+	container.minable = false
+end
+
+function Public.draw_terrain(surface, left_top)
+	if left_top.x < 64 then return end
+	local seed = surface.map_gen_settings.seed
+	for x = 0, 31, 1 do
+		for y = 0, 31, 1 do
+			local position = {x = left_top.x + x, y = left_top.y + y}
+			local tile = surface.get_tile(position)
+			if not tile.collides_with("resource-layer") then
+				if math_random(1, 4) == 1 and GetNoise("decoratives", position, seed) > 0 then
+					surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position})
+				end
+				if math_random(1, 756) == 1 then
+					common_loot_crate(surface, position)
+				end
+			end
+		end
+	end
 end
 
 function Public.draw_out_of_map_chunk(surface, left_top)
@@ -119,9 +150,9 @@ function Public.reroll_terrain(mountain_race)
 	local surface = game.surfaces.nauvis
 	local mgs = surface.map_gen_settings
 	mgs.seed = math_random(1, 99999999)
-	mgs.water = 0.75
+	mgs.water = 0.5
 	mgs.starting_area = 1
-	mgs.terrain_segmentation = 8
+	mgs.terrain_segmentation = 12
 	mgs.cliff_settings = {cliff_elevation_interval = 0, cliff_elevation_0 = 0}	
 	mgs.autoplace_controls = {
 		["coal"] = {frequency = 16, size = 1, richness = 0.5,},

@@ -1,10 +1,12 @@
 require 'modules.biters_yield_ore'
 require "modules.rocks_yield_ore_veins"
 
+local Map_score = require "comfy_panel.map_score"
 local Collapse = require "modules.collapse"
 local Immersive_cargo_wagons = require "modules.immersive_cargo_wagons.main"
 local Terrain = require 'maps.mountain_race.terrain'
 local Team = require 'maps.mountain_race.team'
+local Gui = require 'maps.mountain_race.gui'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 
@@ -24,6 +26,7 @@ local function on_chunk_generated(event)
 		Terrain.draw_out_of_map_chunk(surface, left_top)
 		return
 	end
+	Terrain.draw_terrain(surface, left_top)
 end
 
 local function on_entity_damaged(event)
@@ -45,16 +48,17 @@ local function on_entity_died(event)
 			return
 		end
 	end
-	
-	if entity.name == "character" then
-		Team.update_spawn_positions(mountain_race)
-	end
+end
+
+local function on_player_died(event)
+	Team.update_spawn_positions(mountain_race)
 end
 
 local function on_player_joined_game(event)
 	Team.update_spawn_positions(mountain_race)
 
-	local player = game.players[event.player_index]
+	local player = game.players[event.player_index]	
+	Gui.create_top_gui(player)
 	
 	if game.tick == 0 then
 		if player.character then
@@ -78,6 +82,35 @@ local function on_player_joined_game(event)
 	end
 end
 
+local function on_research_finished(event)
+	local force = event.research.force
+	force.character_inventory_slots_bonus = force.mining_drill_productivity_bonus * 100 -- +10 Slots / level
+	
+	local mining_speed_bonus = 1 + force.mining_drill_productivity_bonus * 10 -- +100% speed / level
+	if force.technologies["steel-axe"].researched then mining_speed_bonus = mining_speed_bonus + 1 end -- +100% speed for steel-axe research
+	force.manual_mining_speed_modifier = mining_speed_bonus
+end
+
+local function on_console_chat(event)
+	if not event.message then return end	
+	if not event.player_index then return end	
+	local player = game.players[event.player_index] 
+	
+	local color = {}
+	color = player.color
+	color.r = color.r * 0.6 + 0.35
+	color.g = color.g * 0.6 + 0.35
+	color.b = color.b * 0.6 + 0.35
+	color.a = 1	
+	
+	if player.force.name == "south" then
+		game.forces.north.print(player.name .. " (south): ".. event.message, color)		
+	end
+	if player.force.name == "north" then
+		game.forces.south.print(player.name .. " (north): ".. event.message, color)
+	end
+end
+
 local function init(mountain_race)
 	if game.ticks_played % 120 ~= 30 then return end
 	game.print("game resetting..")
@@ -85,7 +118,7 @@ local function init(mountain_race)
 	Immersive_cargo_wagons.reset()
 	
 	Collapse.set_kill_entities(true)
-	Collapse.set_speed(4)
+	Collapse.set_speed(8)
 	Collapse.set_amount(0)
 	Collapse.set_max_line_size(mountain_race.border_width + mountain_race.playfield_height * 2)
 	Collapse.set_surface(surface)
@@ -138,8 +171,8 @@ end
 local function set_collapse_speed(mountain_race)
 	if not mountain_race.locomotives.north then return end
 	if not mountain_race.locomotives.south then return end
-	local amount = math.abs(mountain_race.locomotives.north.position.x - mountain_race.locomotives.south.position.x) - 8
-	amount = math.floor(amount / 32)
+	local amount = math.abs(mountain_race.locomotives.north.position.x - mountain_race.locomotives.south.position.x) - 16
+	amount = math.floor(amount / 64)
 	if amount < 0 then amount = 0 end
 	Collapse.set_amount(amount)
 end
@@ -156,6 +189,7 @@ local function chart(mountain_race)
 end
 
 local game_tasks = {
+	[15] = Gui.update_top_gui,
 	[30] = set_collapse_speed,
 	[60] = Terrain.clone_south_to_north,
 	[90] = chart,
@@ -163,7 +197,7 @@ local game_tasks = {
 
 local function game_in_progress(mountain_race)
 	local tick = game.ticks_played
-	if tick % 30 ~= 0 then return end
+	if tick % 15 ~= 0 then return end
 	local task = tick % 120
 	if not game_tasks[task] then return end
 	game_tasks[task](mountain_race)
@@ -179,6 +213,11 @@ local function game_over(mountain_race)
 		local message = "Team " .. mountain_race.victorious_team .. " has won the race!"
 		game.print(message, {255, 155, 0})
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})	
+		
+		for _, player in pairs(game.forces[mountain_race.victorious_team].connected_players) do
+			Map_score.set_score(player, Map_score.get_score(player) + 1)
+		end
+
 		return
 	end
 	
@@ -208,13 +247,12 @@ local function on_init()
 	game.difficulty_settings.technology_price_multiplier = 0.5 
 	mountain_race.reset_counter = 0
 	mountain_race.gamestate = "init"
-	mountain_race.border_width = 4
+	mountain_race.border_width = 8
 	mountain_race.border_half_width = mountain_race.border_width * 0.5
 	mountain_race.playfield_height = 128
 	mountain_race.locomotives = {}
 	Team.init_teams()
 end
-
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
@@ -223,5 +261,8 @@ Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_console_chat, on_console_chat)
 
 require "modules.rocks_yield_ore"
