@@ -61,6 +61,7 @@ local collapse_kill = {
         ['landmine'] = true,
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
+        ['character'] = true,
         ['car'] = true,
         ['tank'] = true,
         ['assembling-machine'] = true,

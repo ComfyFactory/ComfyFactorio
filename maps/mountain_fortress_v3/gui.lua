@@ -73,6 +73,15 @@ local function create_main_frame(player)
     line.style.left_padding = 4
     line.style.right_padding = 4
 
+    label = frame.add({type = 'label', caption = ' ', name = 'pickaxe_tier'})
+    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label.style.font = 'default-bold'
+    label.style.right_padding = 4
+
+    line = frame.add({type = 'line', direction = 'vertical'})
+    line.style.left_padding = 4
+    line.style.right_padding = 4
+
     label = frame.add({type = 'label', caption = ' ', name = 'biters_killed'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
     label.style.font = 'default-bold'
@@ -326,6 +335,13 @@ function Public.update_gui(player)
 
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(this.mined_scrap, true)
     gui.scrap_mined.tooltip = ({'gui.amount_harvested'})
+
+    local pickaxe_tiers = WPT.pickaxe_upgrades
+    local tier = WPT.get('pickaxe_tier')
+    local pick_tier = pickaxe_tiers[tier]
+
+    gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier
+    gui.pickaxe_tier.tooltip = ({'gui.current_pickaxe_tier', pick_tier})
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(this.biters_killed, true)
     gui.biters_killed.tooltip = ({'gui.biters_killed'})

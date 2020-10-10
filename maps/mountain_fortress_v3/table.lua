@@ -15,6 +15,68 @@ Global.register(
     end
 )
 
+Public.pickaxe_upgrades = {
+    'Wood',
+    'Plastic',
+    'Bone',
+    'Alabaster',
+    'Lead',
+    'Zinc',
+    'Tin',
+    'Salt',
+    'Bauxite',
+    'Borax',
+    'Bismuth',
+    'Amber',
+    'Galena',
+    'Calcite',
+    'Aluminium',
+    'Silver',
+    'Gold',
+    'Copper',
+    'Marble',
+    'Brass',
+    'Flourite',
+    'Platinum',
+    'Nickel',
+    'Iron',
+    'Manganese',
+    'Apatite',
+    'Uraninite',
+    'Turquoise',
+    'Hematite',
+    'Glass',
+    'Magnetite',
+    'Concrete',
+    'Pyrite',
+    'Steel',
+    'Zircon',
+    'Titanium',
+    'Silicon',
+    'Quartz',
+    'Garnet',
+    'Flint',
+    'Tourmaline',
+    'Beryl',
+    'Topaz',
+    'Chrysoberyl',
+    'Chromium',
+    'Tungsten',
+    'Corundum',
+    'Tungsten',
+    'Diamond',
+    'Penumbrite',
+    'Meteorite',
+    'Crimtane',
+    'Obsidian',
+    'Demonite',
+    'Mythril',
+    'Adamantite',
+    'Chlorophyte',
+    'Densinium',
+    'Luminite'
+}
+
 function Public.reset_table()
     -- @start
     -- these 3 are in case of stop/start/reloading the instance.
@@ -67,6 +129,8 @@ function Public.reset_table()
         }
     }
     this.aura_upgrades = 0
+    this.reroll_amounts = 0
+    this.pickaxe_tier = 1
     this.health_upgrades = 0
     this.breached_wall = 1
     this.offline_players_enabled = true
