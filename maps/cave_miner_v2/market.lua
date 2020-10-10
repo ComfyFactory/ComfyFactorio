@@ -1,68 +1,11 @@
 local Public = {}
 
+local Constants = require 'maps.cave_miner_v2.constants'
 local Functions = require 'maps.cave_miner_v2.functions'
 local LootRaffle = require "functions.loot_raffle"
 
-local pickaxe_tiers = {
-	"wood",
-	"plastic",
-	"bone",
-	"alabaster",
-	"lead",
-	"zinc",	
-	"tin",
-	"salt",	
-	"bauxite",
-	"borax",
-	"bismuth",
-	"amber",
-	"galena",	
-	"calcite",
-	"aluminium",
-	"silver",
-	"gold",
-	"copper",
-	"marble",
-	"brass",
-	"flourite",
-	"platinum",
-	"nickel",	
-	"iron",	
-	"manganese",
-	"apatite",
-	"uraninite",
-	"turquoise",
-	"hematite",
-	"glass",
-	"magnetite",
-	"concrete",
-	"pyrite",
-	"steel",
-	"zircon",
-	"titanium",
-	"silicon",
-	"quartz",
-	"garnet",
-	"flint",
-	"tourmaline",
-	"beryl",
-	"topaz",
-	"chrysoberyl",
-	"chromium",
-	"tungsten",
-	"corundum",
-	"tungsten",
-	"diamond",	
-	"penumbrite",
-	"meteorite",
-	"crimtane",
-	"obsidian",
-	"demonite",
-	"mythril",
-	"adamantite",
-	"chlorophyte",
-	"densinium",
-	"luminite",
+local loot_blacklist = {
+	["landfill"] = true,	
 }
 
 function Public.refresh_offers(market, cave_miner)
@@ -72,15 +15,20 @@ function Public.refresh_offers(market, cave_miner)
             break
         end
     end
+	local pickaxe_tiers = Constants.pickaxe_tiers
 	local tier = cave_miner.pickaxe_tier + 1
-	if not pickaxe_tiers[tier] then return end
-	local item_stacks = LootRaffle.roll(tier ^ 4 + 8, 8)
-	local price = {}
-	for _, item_stack in pairs(item_stacks) do
-		table.insert(price, {name = item_stack.name, amount = item_stack.count})
+	if pickaxe_tiers[tier] then
+		local item_stacks = LootRaffle.roll(tier ^ 4 + 8, 80, loot_blacklist)
+		local price = {}
+		for _, item_stack in pairs(item_stacks) do
+			table.insert(price, {name = item_stack.name, amount = item_stack.count})
+		end	
+		market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe tier to: ' .. pickaxe_tiers[tier]}})
+		market.add_market_item({price = {{name = "raw-fish", amount = tier * 2}}, offer = {type = 'nothing', effect_description = 'Reroll offer'}})
 	end	
-	market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe tier to ' .. pickaxe_tiers[tier]}})
-	market.add_market_item({price = {{name = "raw-fish", amount = tier * 2}}, offer = {type = 'nothing', effect_description = 'reroll offers'}})
+	for _, item in pairs(Constants.spawn_market_items) do
+		market.add_market_item(item)
+	end	
 end
 
 function Public.spawn(cave_miner)
@@ -101,8 +49,9 @@ function Public.offer_bought(event, cave_miner)
 	if offer_index == 1 then
 		cave_miner.pickaxe_tier = cave_miner.pickaxe_tier + 1
 		local speed = Functions.set_mining_speed(cave_miner, player.force)
-		game.print("Pickaxe material has been upgraded to " .. pickaxe_tiers[cave_miner.pickaxe_tier] .. "!")
+		game.print("Pickaxe has been upgraded to: " .. Constants.pickaxe_tiers[cave_miner.pickaxe_tier] .. "!")
 		Public.refresh_offers(market, cave_miner)
+		Functions.update_top_gui(cave_miner)
 		return
 	end
 	if offer_index == 2 then

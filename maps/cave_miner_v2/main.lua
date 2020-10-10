@@ -7,6 +7,11 @@ local Market = require 'maps.cave_miner_v2.market'
 local Server = require 'utils.server'
 local Terrain = require 'maps.cave_miner_v2.terrain'
 
+require 'modules.no_deconstruction_of_neutral_entities'
+require "modules.rocks_broken_paint_tiles"
+require "modules.rocks_heal_over_time"
+require "modules.rocks_yield_ore_veins"
+
 local math_floor = math.floor
 
 local cave_miner = {}
@@ -19,6 +24,10 @@ Global.register(
 
 local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
+	
+	Functions.create_top_gui(player)
+	Functions.update_top_gui(cave_miner)
+	
 	local tick = game.ticks_played
 	if tick == 0 then
 		if player.character and player.character.valid then
@@ -55,6 +64,42 @@ local function on_market_item_purchased(event)
 	Market.offer_bought(event, cave_miner)
 end
 
+local function on_player_mined_entity(event)
+	local entity = event.entity
+	if not entity then return end
+	if not entity.valid then return end
+	local surface = entity.surface
+	local position = entity.position	
+	if entity.type == "simple-entity" then
+		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
+		if math.random(1, 16) == 1 then
+			Functions.spawn_random_biter(surface, position, 1)
+		end
+	end
+end
+
+local function on_entity_died(event)
+	local entity = event.entity
+	if not entity then return end
+	if not entity.valid then return end
+	local surface = entity.surface
+	local position = entity.position	
+	if entity.type == "simple-entity" then
+		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
+		if math.random(1, 2) == 1 then
+			Functions.spawn_random_biter(surface, position, 1)
+		end
+	end
+end
+
+local function on_entity_spawned(event)
+	local spawner = event.spawner
+	local unit = event.entity
+	local surface = spawner.surface
+	Functions.spawn_random_biter(surface, unit.position, 1)
+	unit.destroy()
+end
+
 local function init(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
@@ -67,12 +112,15 @@ local function init(cave_miner)
 	surface.freeze_daytime = true
 	surface.solar_power_multiplier = 999
 	
-	cave_miner.pickaxe_tier = 0
+	cave_miner.rocks_broken = 0
+	cave_miner.pickaxe_tier = 1
 	
 	local force = game.forces.player
-	Functions.set_mining_speed(cave_miner, force)
-	
+	Functions.set_mining_speed(cave_miner, force)	
 	force.technologies["steel-axe"].enabled = false
+	force.technologies["landfill"].enabled = false
+	force.technologies["spidertron"].enabled = false
+	force.technologies["artillery"].enabled = false
 	
 	cave_miner.gamestate = "spawn_players"
 end
@@ -91,6 +139,7 @@ end
 local function game_in_progress(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
+	Functions.update_top_gui(cave_miner)
 end
 
 local gamestates = {
@@ -107,6 +156,8 @@ local function on_init()
 	cave_miner.reset_counter = 0
 	cave_miner.gamestate = "init"
 	cave_miner.mining_speed_bonus = 100
+	cave_miner.pickaxe_tier = 1
+	cave_miner.rocks_broken = 0
 	
 	global.rocks_yield_ore_maximum_amount = 256
 	global.rocks_yield_ore_base_amount = 32
@@ -119,6 +170,10 @@ local function on_init()
 	Explosives.set_destructible_tile("deepwater", 1000)
 	Explosives.set_destructible_tile("water-shallow", 1000)
 	Explosives.set_destructible_tile("water-mud", 1000)
+	
+	game.map_settings.enemy_evolution.destroy_factor = 0
+	game.map_settings.enemy_evolution.pollution_factor = 0
+	game.map_settings.enemy_evolution.time_factor = 0
 end
 
 Event.on_init(on_init)
@@ -127,5 +182,8 @@ Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_entity_spawned, on_entity_spawned)
+Event.add(defines.events.on_entity_died, on_entity_died)
 
 require "modules.rocks_yield_ore" 

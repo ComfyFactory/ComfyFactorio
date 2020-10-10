@@ -18,9 +18,7 @@ require 'commands'
 require 'antigrief'
 require 'modules.corpse_markers'
 require 'modules.floaty_chat'
-require 'modules.autohotbar'
 require 'modules.show_inventory'
-require 'modules.ban_drop'
 require 'utils.debug.command'
 
 require 'comfy_panel.main'
@@ -74,6 +72,7 @@ require 'modules.autostash'
 --require 'modules.nuclear_landmines'
 --require 'modules.crawl_into_pipes'
 --require 'modules.no_acid_puddles'
+--require 'modules.simple_tags'
 ---------------------------------------------------------------
 
 
@@ -82,7 +81,7 @@ require 'modules.autostash'
 --Remove the "--" in front of the line to enable.
 --All lines with the "require" keyword are different maps.
 
---[[North VS South Survival PVP, where you feed the enemies biters with science flasks]]--
+--[[North VS South Survival PVP, feed the opposing team's biters with science flasks. Disable Autostash, Group and Poll modules.]]--
 --require 'maps.biter_battles_v2.main'
 --require 'maps.biter_battles.biter_battles'
 
@@ -148,14 +147,11 @@ require 'modules.autostash'
 --[[A green maze]]--
 --require 'maps.hedge_maze'
 
---[[Dangerous forest that with unique map revealing]]--
+--[[Dangerous forest with unique map revealing]]--
 --require 'maps.spooky_forest'
 
 --[[Defeat the biters and unlock new areas]]--
 --require 'maps.spiral_troopers'
-
---[[A green maze]]--
---require 'maps.hedge_maze'
 
 --[[Railworld style terrains]]--
 --require 'maps.mixed_railworld'
@@ -204,6 +200,8 @@ require 'modules.autostash'
 --require 'maps.nightfall'
 --require 'maps.pitch_black.main'
 --require 'maps.cube'
+--require 'maps.mountain_race.main'
+--require 'maps.cave_miner_v2.main'
 --require 'maps.native_war.main'
 ---------------------------------------------------------------
 

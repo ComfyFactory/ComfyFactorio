@@ -1,8 +1,14 @@
 local Public = {}
 
 local GetNoise = require "utils.get_noise"
+local Functions = require 'maps.cave_miner_v2.functions'
+
 local math_abs = math.abs
 local math_random = math.random
+
+local loot_blacklist = {
+	["landfill"] = true,	
+}
 
 function Public.roll_source_surface()
 	local map_gen_settings = {
@@ -74,7 +80,7 @@ end
 
 local function get_biome(surface, seed, position)
 	local d = position.x ^ 2 + position.y ^ 2	
-	if d < 128 then return "spawn" end
+	if d < 32 then return "spawn" end
 	if d < 1024 then return "cave" end
 
 	local noise = GetNoise("smol_areas", position, seed)
@@ -90,17 +96,23 @@ end
 
 local biomes = {}
 function biomes.worms(surface, seed, position)	
-	if math_random(1, 16) == 1 then surface.create_entity({name = "small-worm-turret", position = position, force = "enemy"}) end	
+	if math_random(1, 16) == 1 then Functions.place_worm(surface, position, 1) end	
 end
 
 function biomes.nests(surface, seed, position)	
 	if math_random(1, 32) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) end	
 end
 
-function biomes.green(surface, seed, position, noise)		
+function biomes.green(surface, seed, position, noise)
+	if noise < 0.8 then
+		surface.set_tiles({{name = "deepwater", position = position}}, true) 
+		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
+		return
+	end
 	local noise_decoratives = GetNoise("decoratives", position, seed + 50000)
 	surface.set_tiles({{name = "grass-1", position = position}}, true)
-	if math_random(1, 32) == 1 and math_abs(noise_decoratives) > 0.07 then surface.create_entity({name = "tree-04", position = position}) end
+	if math_random(1, 48) == 1 and math_abs(noise_decoratives) > 0.07 then surface.create_entity({name = "tree-04", position = position}) end
+	if math_random(1, 32) == 1 then Functions.place_crude_oil(surface, position, 1) end
 	return
 end
 
@@ -117,7 +129,7 @@ function biomes.cave(surface, seed, position)
 	local noise_cave_rivers2 = GetNoise("cave_rivers_3", position, seed + 100000)
 	
 	if math_abs(noise_cave_rivers2) < 0.05 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
-	if math_abs(noise_cave_rivers1) < 0.035 then
+	if math_abs(noise_cave_rivers1) < 0.025 then
 		surface.set_tiles({{name = "water", position = position}}, true) 
 		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
 		return 
@@ -130,6 +142,10 @@ function biomes.cave(surface, seed, position)
 		local noise_rock_2 = GetNoise("decoratives", position, seed + 50000)
 		if math_random(1, 3) > 1 and math_abs(noise_rock_2) > 0.15 then surface.create_entity({name = "rock-big", position = position}) end
 	end
+	
+	if math_random(1, 512) == 1 then Functions.loot_crate(surface, position, 1, 8, "wooden-chest") end
+	if math_random(1, 2048) == 2 then Functions.loot_crate(surface, position, 2, 8, "iron-chest") end
+	if math_random(1, 4096) == 4 then Functions.loot_crate(surface, position, 3, 8, "steel-chest") end
 end
 
 function Public.generate_cave(event)
