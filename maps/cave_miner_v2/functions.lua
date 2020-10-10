@@ -46,6 +46,7 @@ function Public.spawn_random_biter(surface, position, multiplier)
 	end
 	unit.ai_settings.allow_try_return_to_spawner = true
 	unit.ai_settings.allow_destroy_when_commands_fail = false
+	return unit
 end
 
 function Public.loot_crate(surface, position, multiplier, slots, container_name)

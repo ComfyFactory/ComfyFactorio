@@ -6,7 +6,10 @@ local Global = require 'utils.global'
 local Market = require 'maps.cave_miner_v2.market'
 local Server = require 'utils.server'
 local Terrain = require 'maps.cave_miner_v2.terrain'
+local Pets = require "modules.biter_pets"
 
+require "modules.satellite_score"
+require "modules.hunger"
 require 'modules.no_deconstruction_of_neutral_entities'
 require "modules.rocks_broken_paint_tiles"
 require "modules.rocks_heal_over_time"
@@ -45,7 +48,7 @@ local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if not player.character.valid then return end
-	Terrain.reveal(game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 8)
+	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 8)
 end
 
 local function on_chunk_generated(event)
@@ -73,7 +76,10 @@ local function on_player_mined_entity(event)
 	if entity.type == "simple-entity" then
 		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
 		if math.random(1, 16) == 1 then
-			Functions.spawn_random_biter(surface, position, 1)
+			local unit = Functions.spawn_random_biter(surface, position, 1)
+			if math.random(1, 64) == 1 then
+				Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
+			end
 		end
 	end
 end
@@ -89,6 +95,17 @@ local function on_entity_died(event)
 		if math.random(1, 2) == 1 then
 			Functions.spawn_random_biter(surface, position, 1)
 		end
+		return
+	end
+	
+	if entity.type == "unit-spawner" then
+		local a = 64 * 0.0001
+		local b = math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)
+		local c = math_floor(a * b) + 1	
+		for _ = 1, c, 1 do			
+			Functions.spawn_random_biter(surface, position, 1)
+		end
+		return		
 	end
 end
 
@@ -112,6 +129,7 @@ local function init(cave_miner)
 	surface.freeze_daytime = true
 	surface.solar_power_multiplier = 999
 	
+	cave_miner.reveal_queue = {}
 	cave_miner.rocks_broken = 0
 	cave_miner.pickaxe_tier = 1
 	
@@ -128,7 +146,7 @@ end
 local function spawn_players(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
-	Terrain.reveal(game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
+	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
 	Market.spawn(cave_miner)
 	for _, player in pairs(game.connected_players) do
 		Functions.spawn_player(player)
@@ -140,6 +158,19 @@ local function game_in_progress(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
 	Functions.update_top_gui(cave_miner)
+	
+	local reveal = cave_miner.reveal_queue[1]
+	if not reveal then return end
+	local brush_size = 3
+	if Constants.reveal_chain_brush_sizes[reveal[1]] then brush_size = Constants.reveal_chain_brush_sizes[reveal[1]] end
+	Terrain.reveal(
+		cave_miner,
+		game.surfaces.nauvis,
+		game.surfaces.cave_miner_source,
+		{x = reveal[2], y = reveal[3]},
+		brush_size
+	)	
+	table.remove(cave_miner.reveal_queue, 1)
 end
 
 local gamestates = {
@@ -158,6 +189,7 @@ local function on_init()
 	cave_miner.mining_speed_bonus = 100
 	cave_miner.pickaxe_tier = 1
 	cave_miner.rocks_broken = 0
+	cave_miner.reveal_queue = {}
 	
 	global.rocks_yield_ore_maximum_amount = 256
 	global.rocks_yield_ore_base_amount = 32

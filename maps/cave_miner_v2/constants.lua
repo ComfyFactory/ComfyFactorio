@@ -7,6 +7,12 @@ Public.starting_items = {
 	["raw-fish"] = 8,	
 }
 
+Public.reveal_chain_brush_sizes = {
+	["unit"] = 7,
+	["unit-spawner"] = 15,
+	["turret"] = 9,
+}
+
 Public.spawn_market_items = {
 	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'rail', count = 4}},
 	{price = {{"raw-fish", 5}}, offer = {type = 'give-item', item = 'rail-signal', count = 2}},
