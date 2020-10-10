@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Terrain = require 'maps.cave_miner_v2.terrain'
 local Functions = require 'maps.cave_miner_v2.functions'
+local Market = require 'maps.cave_miner_v2.market'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 
@@ -43,12 +44,21 @@ local function on_chunk_generated(event)
 	end
 end
 
+local function on_market_item_purchased(event)
+	Market.offer_bought(event, cave_miner)
+end
+
 local function init(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
 	Terrain.roll_source_surface()
 	
-	game.forces.player.manual_mining_speed_modifier = cave_miner.mining_speed_bonus
+	cave_miner.pickaxe_tier = 0
+	
+	local force = game.forces.player
+	Functions.set_mining_speed(cave_miner, force)
+	
+	force.technologies["steel-axe"].enabled = false
 	
 	cave_miner.gamestate = "spawn_players"
 end
@@ -57,6 +67,7 @@ local function spawn_players(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
 	Terrain.reveal(game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
+	Market.spawn(cave_miner)
 	for _, player in pairs(game.connected_players) do
 		Functions.spawn_player(player)
 	end
@@ -80,8 +91,13 @@ end
 
 local function on_init()
 	cave_miner.reset_counter = 0
+	cave_miner.pickaxe_boost_per_level = 0.25
 	cave_miner.gamestate = "init"
 	cave_miner.mining_speed_bonus = 100
+	
+	global.rocks_yield_ore_maximum_amount = 256
+	global.rocks_yield_ore_base_amount = 32
+	global.rocks_yield_ore_distance_modifier = 0.01
 end
 
 Event.on_init(on_init)
@@ -89,3 +105,6 @@ Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+
+require "modules.rocks_yield_ore" 
