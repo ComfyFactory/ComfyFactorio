@@ -1,31 +1,30 @@
 local DebugView = require 'utils.debug.main_view'
-local Model = require 'model'
-
-local loadstring = loadstring
-local pcall = pcall
-local dump = Model.dump
-local log = log
 
 commands.add_command(
     'debug',
     'Opens the debugger',
     function(_)
         local player = game.player
-        local p
-        if player then
-            p = player.print
-            if not player.admin then
-                p('Only admins can use this command.')
-                return
-            end
-        else
-            p = player.print
+        if not player or not player.valid then
+            return
         end
-        DebugView.open_dubug(player)
+
+        if not player.admin then
+            player.print('Only admins can use this command.')
+            return
+        end
+        DebugView.open_debug(player)
     end
 )
 
 if _DEBUG then
+    local Model = require 'model'
+
+    local loadstring = loadstring
+    local pcall = pcall
+    local dump = Model.dump
+    local log = log
+
     commands.add_command(
         'dump-log',
         'Dumps value to log',

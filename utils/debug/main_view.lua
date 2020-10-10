@@ -20,7 +20,7 @@ local main_frame_name = Gui.uid_name()
 local close_name = Gui.uid_name()
 local tab_name = Gui.uid_name()
 
-function Public.open_dubug(player)
+function Public.open_debug(player)
     for i = 1, #pages do
         local page = pages[i]
         local callback = page.on_open_debug
@@ -35,7 +35,7 @@ function Public.open_dubug(player)
         return
     end
 
-    frame = screen.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3002', direction = 'vertical'}
+    frame = screen.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3003', direction = 'vertical'}
     frame.auto_center = true
     local frame_style = frame.style
     frame_style.height = 600
@@ -68,32 +68,6 @@ function Public.open_dubug(player)
 
     frame.add {type = 'button', name = close_name, caption = 'Close'}
 end
-
-Event.add(
-    defines.events.on_player_left_game,
-    function(event)
-        local player = game.players[event.player_index]
-        local frame = player.gui.screen[main_frame_name]
-        if frame then
-            Gui.destroy(frame)
-        end
-    end
-)
-
-Event.add(
-    defines.events.on_gui_closed,
-    function(event)
-        local type = event.gui_type
-
-        if type == defines.gui_type.custom then
-            local player = game.players[event.player_index]
-            local frame = player.gui.screen[main_frame_name]
-            if frame then
-                Gui.destroy(frame)
-            end
-        end
-    end
-)
 
 Gui.on_click(
     tab_name,
