@@ -1,6 +1,7 @@
 local Public = {}
 
 local GetNoise = require "utils.get_noise"
+local math_abs = math.abs
 
 function Public.roll_source_surface()
 	local map_gen_settings = {
@@ -70,19 +71,46 @@ function Public.reveal(surface, source_surface, position, brushsize)
 	source_surface.request_to_generate_chunks(position, 2)
 end
 
+local function get_biome(surface, seed, position)
+	local d = position.x ^ 2 + position.y ^ 2	
+	if d < 128 then return "spawn" end
+	if d < 1024 then return "cave" end
+	local noise = GetNoise("smol_areas", position, seed)
+	if noise > 0.75 then return "worms" end
+	if noise < -0.75 then return "nests" end
+	return "cave"
+end
+
+local biomes = {}
+function biomes.worms(surface, seed, position)	
+	if math.random(1, 16) == 1 then surface.create_entity({name = "small-worm-turret", position = position, force = "enemy"}) end	
+end
+
+function biomes.nests(surface, seed, position)	
+	if math.random(1, 32) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) end	
+end
+
+function biomes.spawn(surface, seed, position)
+
+end
+
+function biomes.cave(surface, seed, position)
+	local noise_decoratives = GetNoise("decoratives", position, seed)
+	local noise_cave_rivers = GetNoise("cave_rivers", position, seed)
+	local noise_cave_rivers2 = GetNoise("cave_rivers_2", position, seed + 100000)
+	local noise_cave_rivers3 = GetNoise("cave_rivers_3", position, seed + 200000)
+	
+	if math.abs(noise_cave_rivers3) < 0.1 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
+	if math.abs(noise_cave_rivers2) < 0.05 then surface.set_tiles({{name = "water", position = position}}, true) return end
+	if math.abs(noise_cave_rivers) < 0.05 then surface.set_tiles({{name = "water-shallow", position = position}}, true) return end
+	if math.random(1, 3) > 1 and math.abs(noise_decoratives) > 0.2 then surface.create_entity({name = "rock-big", position = position}) end
+end
+
 function Public.generate_cave(event)
 	local surface = event.surface
 	local left_top_x = event.area.left_top.x
 	local left_top_y = event.area.left_top.y
 	local seed = surface.map_gen_settings.seed
-	
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do
-			local position = {x = left_top_x + x, y = left_top_y + y}
-			local noise = GetNoise("decoratives", position, seed)
-			if math.random(1, 3) > 1 and math.abs(noise) > 0.2 then surface.create_entity({name = "rock-big", position = position}) end
-		end
-	end
 	
 	local tiles = {}
 	local i = 0
@@ -92,9 +120,14 @@ function Public.generate_cave(event)
 			tiles[i] = {name = "dirt-7", position = {left_top_x + x, left_top_y + y}}
 		end
 	end
-	event.surface.set_tiles(tiles, false)
+	surface.set_tiles(tiles, true)	
 	
-	
+	for x = 0.5, 31.5, 1 do
+		for y = 0.5, 31.5, 1 do
+			local position = {x = left_top_x + x, y = left_top_y + y}			
+			biomes[get_biome(surface, seed, position)](surface, seed, position)
+		end
+	end
 end
 
 return Public

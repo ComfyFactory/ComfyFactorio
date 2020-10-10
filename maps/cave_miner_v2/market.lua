@@ -71,8 +71,9 @@ function Public.refresh_offers(market, cave_miner)
         if a == false then
             break
         end
-    end	
+    end
 	local tier = cave_miner.pickaxe_tier + 1
+	if not pickaxe_tiers[tier] then return end
 	local item_stacks = LootRaffle.roll(tier ^ 4 + 8, 8)
 	local price = {}
 	for _, item_stack in pairs(item_stacks) do
