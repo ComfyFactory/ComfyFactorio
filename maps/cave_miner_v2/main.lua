@@ -1,9 +1,11 @@
+local Constants = require 'maps.cave_miner_v2.constants'
 local Event = require 'utils.event'
-local Terrain = require 'maps.cave_miner_v2.terrain'
+local Explosives = require "modules.explosives"
 local Functions = require 'maps.cave_miner_v2.functions'
-local Market = require 'maps.cave_miner_v2.market'
 local Global = require 'utils.global'
+local Market = require 'maps.cave_miner_v2.market'
 local Server = require 'utils.server'
+local Terrain = require 'maps.cave_miner_v2.terrain'
 
 local math_floor = math.floor
 
@@ -21,8 +23,13 @@ local function on_player_joined_game(event)
 	if tick == 0 then
 		if player.character and player.character.valid then
 			player.character.destroy()
+			return
 		end
-	end	
+	end
+	
+	for name, count in pairs(Constants.starting_items) do
+		player.insert({name = name, count = count})
+	end
 end
 
 local function on_player_changed_position(event)
@@ -52,6 +59,13 @@ local function init(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
 	Terrain.roll_source_surface()
+	
+	local surface = game.surfaces.nauvis
+	surface.min_brightness = 0.01
+	surface.brightness_visual_weights = {0.99, 0.99, 0.99}
+	surface.daytime = 0.42
+	surface.freeze_daytime = true
+	surface.solar_power_multiplier = 999
 	
 	cave_miner.pickaxe_tier = 0
 	
@@ -91,13 +105,20 @@ end
 
 local function on_init()
 	cave_miner.reset_counter = 0
-	cave_miner.pickaxe_boost_per_level = 0.25
 	cave_miner.gamestate = "init"
 	cave_miner.mining_speed_bonus = 100
 	
 	global.rocks_yield_ore_maximum_amount = 256
 	global.rocks_yield_ore_base_amount = 32
 	global.rocks_yield_ore_distance_modifier = 0.01
+	
+	Explosives.set_destructible_tile("out-of-map", 1500)
+	Explosives.set_destructible_tile("water", 1000)
+	Explosives.set_destructible_tile("water-green", 1000)
+	Explosives.set_destructible_tile("deepwater-green", 1000)
+	Explosives.set_destructible_tile("deepwater", 1000)
+	Explosives.set_destructible_tile("water-shallow", 1000)
+	Explosives.set_destructible_tile("water-mud", 1000)
 end
 
 Event.on_init(on_init)

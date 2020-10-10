@@ -2,6 +2,7 @@ local Public = {}
 
 local GetNoise = require "utils.get_noise"
 local math_abs = math.abs
+local math_random = math.random
 
 function Public.roll_source_surface()
 	local map_gen_settings = {
@@ -75,19 +76,36 @@ local function get_biome(surface, seed, position)
 	local d = position.x ^ 2 + position.y ^ 2	
 	if d < 128 then return "spawn" end
 	if d < 1024 then return "cave" end
+
 	local noise = GetNoise("smol_areas", position, seed)
 	if noise > 0.75 then return "worms" end
 	if noise < -0.75 then return "nests" end
+	
+	local noise = GetNoise("cave_rivers", position, seed)
+	if noise > 0.72 then return "green", noise end
+	if noise < -0.5 then return "void", noise end
+	
 	return "cave"
 end
 
 local biomes = {}
 function biomes.worms(surface, seed, position)	
-	if math.random(1, 16) == 1 then surface.create_entity({name = "small-worm-turret", position = position, force = "enemy"}) end	
+	if math_random(1, 16) == 1 then surface.create_entity({name = "small-worm-turret", position = position, force = "enemy"}) end	
 end
 
 function biomes.nests(surface, seed, position)	
-	if math.random(1, 32) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) end	
+	if math_random(1, 32) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) end	
+end
+
+function biomes.green(surface, seed, position, noise)		
+	local noise_decoratives = GetNoise("decoratives", position, seed + 50000)
+	surface.set_tiles({{name = "grass-1", position = position}}, true)
+	if math_random(1, 32) == 1 and math_abs(noise_decoratives) > 0.07 then surface.create_entity({name = "tree-04", position = position}) end
+	return
+end
+
+function biomes.void(surface, seed, position, noise)
+	surface.set_tiles({{name = "out-of-map", position = position}}, true)
 end
 
 function biomes.spawn(surface, seed, position)
@@ -95,15 +113,23 @@ function biomes.spawn(surface, seed, position)
 end
 
 function biomes.cave(surface, seed, position)
-	local noise_decoratives = GetNoise("decoratives", position, seed)
-	local noise_cave_rivers = GetNoise("cave_rivers", position, seed)
-	local noise_cave_rivers2 = GetNoise("cave_rivers_2", position, seed + 100000)
-	local noise_cave_rivers3 = GetNoise("cave_rivers_3", position, seed + 200000)
+	local noise_cave_rivers1 = GetNoise("cave_rivers_2", position, seed)
+	local noise_cave_rivers2 = GetNoise("cave_rivers_3", position, seed + 100000)
 	
-	if math.abs(noise_cave_rivers3) < 0.1 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
-	if math.abs(noise_cave_rivers2) < 0.05 then surface.set_tiles({{name = "water", position = position}}, true) return end
-	if math.abs(noise_cave_rivers) < 0.05 then surface.set_tiles({{name = "water-shallow", position = position}}, true) return end
-	if math.random(1, 3) > 1 and math.abs(noise_decoratives) > 0.2 then surface.create_entity({name = "rock-big", position = position}) end
+	if math_abs(noise_cave_rivers2) < 0.05 then surface.set_tiles({{name = "out-of-map", position = position}}, true) return end
+	if math_abs(noise_cave_rivers1) < 0.035 then
+		surface.set_tiles({{name = "water", position = position}}, true) 
+		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
+		return 
+	end
+	
+	local noise_rock = GetNoise("decoratives", position, seed)	
+	if noise_rock > 0 then	
+		if math_random(1, 3) > 1 then surface.create_entity({name = "rock-big", position = position}) end
+	else
+		local noise_rock_2 = GetNoise("decoratives", position, seed + 50000)
+		if math_random(1, 3) > 1 and math_abs(noise_rock_2) > 0.15 then surface.create_entity({name = "rock-big", position = position}) end
+	end
 end
 
 function Public.generate_cave(event)
@@ -117,15 +143,16 @@ function Public.generate_cave(event)
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			i = i + 1
-			tiles[i] = {name = "dirt-7", position = {left_top_x + x, left_top_y + y}}
+			tiles[i] = {name = "nuclear-ground", position = {left_top_x + x, left_top_y + y}}
 		end
 	end
 	surface.set_tiles(tiles, true)	
 	
 	for x = 0.5, 31.5, 1 do
 		for y = 0.5, 31.5, 1 do
-			local position = {x = left_top_x + x, y = left_top_y + y}			
-			biomes[get_biome(surface, seed, position)](surface, seed, position)
+			local position = {x = left_top_x + x, y = left_top_y + y}
+			local biome, noise = get_biome(surface, seed, position)
+			biomes[biome](surface, seed, position, noise)
 		end
 	end
 end

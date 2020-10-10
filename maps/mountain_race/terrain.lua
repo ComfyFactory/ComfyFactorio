@@ -62,7 +62,7 @@ function Public.draw_terrain(surface, left_top)
 			local position = {x = left_top.x + x, y = left_top.y + y}
 			local tile = surface.get_tile(position)
 			if not tile.collides_with("resource-layer") then
-				if math_random(1, 4) == 1 and GetNoise("decoratives", position, seed) > 0 then
+				if math_random(1, 3) > 1 and surface.can_place_entity({name = "coal", position = position, amount =  1}) and GetNoise("decoratives", position, seed) > 0.2 then
 					surface.create_entity({name = rock_raffle[math_random(1, #rock_raffle)], position = position})
 				end
 				if math_random(1, 756) == 1 then

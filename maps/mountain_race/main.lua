@@ -171,7 +171,7 @@ end
 local function set_collapse_speed(mountain_race)
 	if not mountain_race.locomotives.north then return end
 	if not mountain_race.locomotives.south then return end
-	local amount = math.abs(mountain_race.locomotives.north.position.x - mountain_race.locomotives.south.position.x) - 16
+	local amount = math.abs(mountain_race.locomotives.north.position.x - mountain_race.locomotives.south.position.x)
 	amount = math.floor(amount / 64)
 	if amount < 0 then amount = 0 end
 	Collapse.set_amount(amount)
@@ -183,9 +183,20 @@ local function chart(mountain_race)
 	local south = game.forces.south
 	local r = 128
 	local p = north.get_spawn_position(surface)
-	south.chart(surface, {{p.x - r, p.y - r}, {p.x + r, p.y + r}})
+	local area = {{p.x - r, p.y - r}, {p.x + r, p.y + r}}
+	north.chart(surface, area)
+	south.chart(surface, area)
+	
 	local p = south.get_spawn_position(surface)
-	north.chart(surface, {{p.x - r, p.y - r}, {p.x + r, p.y + r}})
+	local area = {{p.x - r, p.y - r}, {p.x + r, p.y + r}}
+	north.chart(surface, area)
+	south.chart(surface, area)
+	
+	local p = Collapse.get_position()
+	local h = mountain_race.playfield_height + mountain_race.border_half_width
+	local area = {{p.x - 32, p.y - h}, {p.x + 32, p.y + h}}
+	north.chart(surface, area)
+	south.chart(surface, area)
 end
 
 local game_tasks = {
@@ -247,10 +258,11 @@ local function on_init()
 	game.difficulty_settings.technology_price_multiplier = 0.5 
 	mountain_race.reset_counter = 0
 	mountain_race.gamestate = "init"
-	mountain_race.border_width = 8
+	mountain_race.border_width = 32
 	mountain_race.border_half_width = mountain_race.border_width * 0.5
 	mountain_race.playfield_height = 128
 	mountain_race.locomotives = {}
+	Collapse.set_amount(0)
 	Team.init_teams()
 end
 
