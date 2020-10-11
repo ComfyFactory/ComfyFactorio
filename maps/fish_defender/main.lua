@@ -356,7 +356,7 @@ local function spawn_biter(pos, biter_pool)
         return false
     end
 
-    local surface = this.active_surface
+    local surface = game.surfaces[this.active_surface_index]
     biter_pool = shuffle(biter_pool)
     this.attack_wave_threat = this.attack_wave_threat - biter_pool[1].threat
     local valid_pos = surface.find_non_colliding_position(biter_pool[1].name, pos, 100, 2)
@@ -592,7 +592,7 @@ local function biter_attack_wave()
     if this.wave_grace_period then
         return
     end
-    local surface = this.active_surface
+    local surface = game.surfaces[this.active_surface_index]
 
     clear_corpses(surface)
     wake_up_the_biters(surface)
@@ -1007,7 +1007,7 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     local show_floating_killscore = FDT.get('show_floating_killscore')
-    local active_surface = FDT.get('active_surface')
+    local active_surface_index = FDT.get('active_surface_index')
 
     if player.online_time == 0 then
         player.insert({name = 'pistol', count = 1})
@@ -1020,15 +1020,19 @@ local function on_player_joined_game(event)
         end
     end
 
-    local surface = active_surface
-    if player.surface.index ~= surface.index and surface.is_chunk_generated({0, 0}) then
+    local surface = game.surfaces[active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
+
+    if player.surface.index ~= active_surface_index and surface.is_chunk_generated({0, 0}) then
         player.teleport(
             surface.find_non_colliding_position('character', game.forces['player'].get_spawn_position(surface), 50, 1),
-            'fish_defender'
+            active_surface_index
         )
     else
-        if player.surface.index ~= surface.index then
-            player.teleport(game.forces['player'].get_spawn_position(surface), 'fish_defender')
+        if player.surface.index ~= active_surface_index then
+            player.teleport(game.forces['player'].get_spawn_position(surface), active_surface_index)
         end
     end
 
@@ -1124,7 +1128,7 @@ local function on_robot_built_entity(event)
     end
 end
 
-local function on_init()
+local function on_init(reset)
     local Diff = Difficulty.get()
     local get_score = Score.get_table()
 
@@ -1182,14 +1186,12 @@ local function on_init()
 
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('fish_defender', map_gen_settings).index
-        this.active_surface = game.surfaces[this.active_surface_index]
-    else
+    elseif reset then
         this.active_surface_index =
             Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
-        this.active_surface = game.surfaces[this.active_surface_index]
     end
 
-    local surface = this.active_surface
+    local surface = game.surfaces[this.active_surface_index]
 
     surface.peaceful_mode = false
 
@@ -1240,9 +1242,11 @@ end
 
 local function on_tick()
     local Diff = Difficulty.get()
-    local active_surface = FDT.get('active_surface')
     local this = FDT.get()
-    local surface = active_surface
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
     if game.tick % 30 == 0 then
         if this.market and this.market.valid then
             for _, player in pairs(game.connected_players) do
@@ -1279,7 +1283,7 @@ local function on_tick()
                     )
                 end
                 if this.game_restart_timer == 0 then
-                    on_init()
+                    on_init(true)
                 end
             end
         end
@@ -1302,9 +1306,13 @@ end
 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    local active_surface = FDT.get('active_surface')
+    local active_surface_index = FDT.get('active_surface_index')
     local map_height = FDT.get('map_height')
-    local surface = active_surface
+    local surface = game.surfaces[active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
+
     if player.position.x + player.position.y < 0 then
         return
     end

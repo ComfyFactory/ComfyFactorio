@@ -467,7 +467,8 @@ local function plankton_territory(surface, position, seed)
 end
 
 local function process_chunk(left_top)
-    local surface = FDT.get('active_surface')
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
     if not surface or not surface.valid then
         return
     end
