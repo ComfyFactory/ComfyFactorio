@@ -54,20 +54,26 @@ function Public.out_of_map(event)
 	event.surface.set_tiles(tiles, false)
 end
 
+--lab-dark-1 > position has been copied
+--lab-dark-2 > position has been visited
+
 function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 	local tile = source_surface.get_tile(position)
-	if tile.name == "lab-dark-1" then return end
+	if tile.name == "lab-dark-2" then return end
 	local tiles = {}
+	local copied_tiles = {}
 	local i = 0
 	local brushsize_square = brushsize ^ 2
 	for _, tile in pairs(source_surface.find_tiles_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
 		local tile_position = tile.position
-		if tile.name ~= "lab-dark-1" and surface.get_tile(tile_position).name ~= tile.name and (position.x - tile_position.x) ^ 2 + (position.y - tile_position.y) ^ 2 < brushsize_square then
+		if tile.name ~= "lab-dark-2" and tile.name ~= "lab-dark-1" and (position.x - tile_position.x) ^ 2 + (position.y - tile_position.y) ^ 2 < brushsize_square then
 			i = i + 1
+			copied_tiles[i] = {name = "lab-dark-1", position = tile.position}
 			tiles[i] = {name = tile.name, position = tile.position}
 		end
 	end
 	surface.set_tiles(tiles, true)
+	source_surface.set_tiles(copied_tiles, false)
 	
 	for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
 		local entity_position = entity.position
@@ -80,7 +86,7 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 		end
 	end
 	
-	source_surface.set_tiles({{name = "lab-dark-1", position = position}}, true)
+	source_surface.set_tiles({{name = "lab-dark-2", position = position}}, false)
 	source_surface.request_to_generate_chunks(position, 2)
 end
 
@@ -139,7 +145,7 @@ function biomes.cave(surface, seed, position)
 		if math_random(1, 4096) == 4 then Functions.loot_crate(surface, position, 3, 8, "steel-chest") return end
 	else
 		local d = position.x ^ 2 + position.y ^ 2	
-		if d < 16000 then return end
+		if d < 14000 then return end
 		if math_random(1, 48) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) end
 		if math_random(1, 48) == 1 then Functions.place_worm(surface, position, 1) end
 	end
