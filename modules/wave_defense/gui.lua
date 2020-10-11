@@ -79,7 +79,7 @@ local function update_gui(player)
     gui.progressbar.value = 1 - (wave_defense_table.next_wave - game.tick) / interval
 
     gui.threat.caption = {'wave_defense.gui_3'}
-    gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100}
+    gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100, wave_defense_table.max_active_biters}
     gui.threat_value.caption = math.floor(wave_defense_table.threat)
     gui.threat_value.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100}
 

@@ -1021,13 +1021,13 @@ local function on_player_joined_game(event)
     end
 
     local surface = active_surface
-    if player.online_time < 2 and surface.is_chunk_generated({0, 0}) then
+    if player.surface.index ~= surface.index and surface.is_chunk_generated({0, 0}) then
         player.teleport(
             surface.find_non_colliding_position('character', game.forces['player'].get_spawn_position(surface), 50, 1),
             'fish_defender'
         )
     else
-        if player.online_time < 2 then
+        if player.surface.index ~= surface.index then
             player.teleport(game.forces['player'].get_spawn_position(surface), 'fish_defender')
         end
     end
