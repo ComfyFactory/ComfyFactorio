@@ -88,7 +88,7 @@ function Public.update_top_gui(cave_miner)
 	for _, player in pairs(game.connected_players) do
 		local element = player.gui.top.cave_miner
 		if element and element.valid then		
-			element.children[1].caption = "Tier: " .. pickaxe_tiers[cave_miner.pickaxe_tier] .. "  | "
+			element.children[1].caption = "Tier " .. cave_miner.pickaxe_tier .. " - " .. pickaxe_tiers[cave_miner.pickaxe_tier] .. "  | "
 			element.children[1].tooltip = "Mining speed " .. (1 + game.forces.player.manual_mining_speed_modifier) * 100 .. "%"
 			
 			element.children[2].caption = "Rocks broken: " .. cave_miner.rocks_broken

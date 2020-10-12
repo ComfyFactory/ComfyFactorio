@@ -39,6 +39,7 @@ local function on_player_joined_game(event)
 		end
 	end
 	
+	if player.online_time > 0 then return end
 	for name, count in pairs(Constants.starting_items) do
 		player.insert({name = name, count = count})
 	end
@@ -125,9 +126,9 @@ local function init(cave_miner)
 	local surface = game.surfaces.nauvis
 	surface.min_brightness = 0.01
 	surface.brightness_visual_weights = {0.99, 0.99, 0.99}
-	surface.daytime = 0.42
+	surface.daytime = 0.43
 	surface.freeze_daytime = true
-	surface.solar_power_multiplier = 999
+	surface.solar_power_multiplier = 5
 	
 	cave_miner.reveal_queue = {}
 	cave_miner.rocks_broken = 0
@@ -206,6 +207,9 @@ local function on_init()
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
 	game.map_settings.enemy_evolution.time_factor = 0
+	
+	global.rocks_yield_ore_veins.amount_modifier = 0.25
+	global.rocks_yield_ore_veins.chance = 756
 end
 
 Event.on_init(on_init)

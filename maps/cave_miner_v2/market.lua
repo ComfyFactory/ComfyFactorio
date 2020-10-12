@@ -6,6 +6,13 @@ local LootRaffle = require "functions.loot_raffle"
 
 local loot_blacklist = {
 	["landfill"] = true,	
+	["loader"] = true,
+	["fast-loader"] = true,
+	["express-loader"] = true,
+	["wood"] = true,
+	["raw-fish"] = true,
+	["discharge-defense-remote"] = true,
+	["railgun-dart"] = true,
 }
 
 function Public.refresh_offers(market, cave_miner)

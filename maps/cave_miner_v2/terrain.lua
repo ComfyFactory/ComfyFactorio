@@ -36,7 +36,7 @@ function Public.roll_source_surface()
 		},
 	}
 	local surface = game.create_surface("cave_miner_source", map_gen_settings)
-	surface.request_to_generate_chunks({x = 0, y = 0}, 2)
+	surface.request_to_generate_chunks({x = 0, y = 0}, 1)
 	surface.force_generate_chunk_requests()
 end
 

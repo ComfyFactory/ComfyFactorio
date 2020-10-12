@@ -54,7 +54,8 @@ local function set_raffle()
 end
 
 local function get_amount(position)
-	local distance_to_center = math.sqrt(position.x^2 + position.y^2) * 4 + 1500	
+	local distance_to_center = math.sqrt(position.x^2 + position.y^2) * 2 + 1500
+	distance_to_center = distance_to_center * global.rocks_yield_ore_veins.amount_modifier
 	local m = (75 + math_random(0, 50)) * 0.01
 	return distance_to_center * m
 end
@@ -154,6 +155,7 @@ local function on_init()
 	global.rocks_yield_ore_veins.raffle = {}
 	global.rocks_yield_ore_veins.mixed_ores = {}
 	global.rocks_yield_ore_veins.chance = 768
+	global.rocks_yield_ore_veins.amount_modifier = 1
 	set_raffle()
 end
 
