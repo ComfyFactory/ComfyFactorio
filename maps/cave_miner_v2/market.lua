@@ -25,7 +25,7 @@ function Public.refresh_offers(market, cave_miner)
 	local pickaxe_tiers = Constants.pickaxe_tiers
 	local tier = cave_miner.pickaxe_tier + 1
 	if pickaxe_tiers[tier] then
-		local item_stacks = LootRaffle.roll(tier ^ 4 + 8, 80, loot_blacklist)
+		local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.75) + 8, 80, loot_blacklist)
 		local price = {}
 		for _, item_stack in pairs(item_stacks) do
 			table.insert(price, {name = item_stack.name, amount = item_stack.count})

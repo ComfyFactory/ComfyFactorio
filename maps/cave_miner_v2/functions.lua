@@ -24,7 +24,7 @@ function Public.spawn_player(player)
 end
 
 function Public.set_mining_speed(cave_miner, force)
-	force.manual_mining_speed_modifier = -0.50 + cave_miner.pickaxe_tier * 0.25
+	force.manual_mining_speed_modifier = -0.50 + cave_miner.pickaxe_tier * 0.35
 	return force.manual_mining_speed_modifier
 end
 
@@ -60,7 +60,7 @@ end
 function Public.place_crude_oil(surface, position, multiplier)
 	if not surface.can_place_entity({name = "crude-oil", position = position, amount = 1}) then return end
 	local d = math_sqrt(position.x ^ 2 + position.y ^ 2)
-	local amount = math_random(100000, 200000) + d * 100 * multiplier
+	local amount = math_random(50000, 100000) + d * 100 * multiplier
 	surface.create_entity({name = "crude-oil", position = position, amount = amount})
 end
 

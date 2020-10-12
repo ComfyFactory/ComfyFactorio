@@ -49,7 +49,7 @@ local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if not player.character.valid then return end
-	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 8)
+	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 9)
 end
 
 local function on_chunk_generated(event)
