@@ -22,6 +22,7 @@ function Public.configure_teams(mountain_race)
 		force.technologies["artillery-shell-speed-1"].enabled = false
 		force.technologies["land-mine"].enabled = false
 		force.technologies["railway"].researched = true
+		force.manual_mining_speed_modifier = 1
 	end
 	game.forces.north.set_friend("spectator", true)
 	game.forces.south.set_friend("spectator", true)
@@ -59,7 +60,7 @@ end
 function Public.setup_player(mountain_race, player)
 	if player.force.name == "player" then
 		assign_force_to_player(player)
-		player.print("You have been assigned to team " .. player.force.name .. "!")
+		--player.print("You have been assigned to team " .. player.force.name .. "!")
 		
 		if player.character then
 			if player.character.valid then
@@ -88,6 +89,9 @@ function Public.update_spawn_positions(mountain_race)
 		local p = mountain_race.locomotives[force_name].position
 		force.set_spawn_position({p.x, p.y + 2}, surface)
 	end
+	
+	local p = mountain_race.locomotives["north"].position
+	game.forces.player.set_spawn_position({p.x, p.y + 2}, surface)
 end
 
 return Public

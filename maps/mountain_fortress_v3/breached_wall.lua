@@ -77,7 +77,7 @@ local compare_collapse_and_train = function()
         return
     end
 
-    Collapse.set_speed(1)
+    Collapse.set_speed(6)
     Collapse.set_amount(11)
     gap_between_zones.set = false
 end

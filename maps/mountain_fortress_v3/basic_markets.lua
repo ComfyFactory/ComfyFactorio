@@ -255,14 +255,14 @@ function Public.get_random_item(rarity, sell, buy)
 
     if sell then
         local sells = get_resource_market_sells()
-        for i = 1, random(1, 3), 1 do
+        for i = 1, random(1, 20), 1 do
             items_return[#items_return + 1] = sells[i]
         end
     end
 
     if buy then
         local buys = get_resource_market_buys()
-        for i = 1, random(1, 3), 1 do
+        for i = 1, random(1, 20), 1 do
             items_return[#items_return + 1] = buys[i]
         end
     end

@@ -61,6 +61,7 @@ local collapse_kill = {
         ['landmine'] = true,
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
+        ['character'] = true,
         ['car'] = true,
         ['tank'] = true,
         ['assembling-machine'] = true,
@@ -133,6 +134,10 @@ local set_difficulty = function()
     end
 
     wave_defense_table.max_active_biters = 888 + player_count * (90 * Diff.difficulty_vote_value)
+
+    if wave_defense_table.max_active_biters >= 1600 then
+        wave_defense_table.max_active_biters = 1600
+    end
 
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1

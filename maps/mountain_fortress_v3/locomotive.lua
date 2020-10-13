@@ -80,6 +80,48 @@ local function initial_cargo_boxes()
     }
 end
 
+local function add_random_loot_to_main_market(rarity)
+    local main_market_items = WPT.get('main_market_items')
+    local items = Market.get_random_item(rarity, true, false)
+
+    local types = game.item_prototypes
+    local ticker = 0
+
+    for k, v in pairs(main_market_items) do
+        if not v.static then
+            main_market_items[k] = nil
+        end
+    end
+
+    for k, v in pairs(items) do
+        local price = v.price[1][2] + random(1, 15) * rarity
+        local value = v.price[1][1]
+        local stack = 1
+        ticker = ticker + 1
+        if v.offer.item == 'coin' then
+            price = v.price[1][2]
+            stack = v.offer.count
+            if not stack then
+                stack = v.price[1][2]
+            end
+        end
+
+        if main_market_items[v.offer.item] then
+            main_market_items[v.offer.item] = nil
+        end
+        main_market_items[v.offer.item] = {
+            stack = stack,
+            value = value,
+            price = price,
+            tooltip = types[v.offer.item].localised_name,
+            upgrade = false
+        }
+        if ticker >= 48 then
+            break
+        end
+    end
+end
+
 local set_loco_tiles =
     Token.register(
     function(data)
@@ -597,10 +639,10 @@ local function redraw_market_items(gui, player, search_text)
                         button.enabled = false
                         button.tooltip = ({'locomotive.not_trusted'})
                     end
-                --[[ if item == 'car' then
+                    if item == 'car' then
                         button.enabled = false
                         button.tooltip = ({'locomotive.not_trusted'})
-                    end ]]
+                    end
                 end
             end
 
@@ -875,6 +917,58 @@ local function gui_click(event)
     local cost = (item.price * slider_value)
     local item_count = item.stack * slider_value
 
+    if name == 'reroll_market_items' then
+        player.remove_item({name = item.value, count = item.price})
+
+        local message = ({'locomotive.reroll_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name .. ' has rerolled the market items for ' .. format_number(item.price, true) .. ' coins.'
+            }
+        )
+        this.reroll_amounts = this.reroll_amounts + item.stack
+
+        local breached_wall = WPT.get('breached_wall')
+        add_random_loot_to_main_market(breached_wall + random(1, 3))
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+    if name == 'upgrade_pickaxe' then
+        player.remove_item({name = item.value, count = item.price})
+
+        this.pickaxe_tier = this.pickaxe_tier + item.stack
+
+        local pickaxe_tiers = WPT.pickaxe_upgrades
+        local tier = this.pickaxe_tier
+        local offer = pickaxe_tiers[tier]
+
+        local message = ({
+            'locomotive.pickaxe_bought_info',
+            shopkeeper,
+            player.name,
+            offer,
+            format_number(item.price, true)
+        })
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name ..
+                    ' has upgraded the teams pickaxe to tier ' ..
+                        tier .. ' for ' .. format_number(item.price, true) .. ' coins.'
+            }
+        )
+
+        game.forces.player.manual_mining_speed_modifier = -0.25 + tier * 0.25
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
     if name == 'chest_limit_outside' then
         if this.chest_limit_outside_upgrades == 8 then
             local main_market_items = WPT.get('main_market_items')
@@ -1497,48 +1591,6 @@ local function place_market()
     end
 end
 
-local function add_random_loot_to_main_market(rarity)
-    local main_market_items = WPT.get('main_market_items')
-    local items = Market.get_random_item(rarity, true, false)
-
-    local types = game.item_prototypes
-    local ticker = 0
-
-    for k, v in pairs(main_market_items) do
-        if not v.static then
-            main_market_items[k] = nil
-        end
-    end
-
-    for k, v in pairs(items) do
-        local price = v.price[1][2] + random(1, 15) * rarity
-        local value = v.price[1][1]
-        local stack = 1
-        ticker = ticker + 1
-        if v.offer.item == 'coin' then
-            price = v.price[1][2]
-            stack = v.offer.count
-            if not stack then
-                stack = v.price[1][2]
-            end
-        end
-
-        if main_market_items[v.offer.item] then
-            main_market_items[v.offer.item] = nil
-        end
-        main_market_items[v.offer.item] = {
-            stack = stack,
-            value = value,
-            price = price,
-            tooltip = types[v.offer.item].localised_name,
-            upgrade = false
-        }
-        if ticker >= 28 then
-            return
-        end
-    end
-end
-
 local function on_research_finished()
     local game_lost = WPT.get('game_lost')
     if game_lost then
@@ -1835,7 +1887,9 @@ end
 function Public.get_items()
     local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
     local health_upgrades = WPT.get('health_upgrades')
+    local pickaxe_tier = WPT.get('pickaxe_tier')
     local aura_upgrades = WPT.get('aura_upgrades')
+    local reroll_amounts = WPT.get('reroll_amounts')
     local main_market_items = WPT.get('main_market_items')
     local xp_points_upgrade = WPT.get('xp_points_upgrade')
     local flame_turret = WPT.get('upgrades').flame_turret.bought
@@ -1843,13 +1897,39 @@ function Public.get_items()
 
     local chest_limit_cost = 2500 * (1 + chest_limit_outside_upgrades)
     local health_cost = 10000 * (1 + health_upgrades)
+    local pickaxe_cost = 2500 * (1 + pickaxe_tier)
+    local reroll_cost = 1000 * (1 + reroll_amounts)
     local aura_cost = 4000 * (1 + aura_upgrades)
     local xp_point_boost_cost = 5000 * (1 + xp_points_upgrade)
     local explosive_bullets_cost = 20000
     local flamethrower_turrets_cost = 2500 * (1 + flame_turret)
     local land_mine_cost = 2 * (1 + landmine)
     local skill_reset_cost = 100000
+    main_market_items['reroll_market_items'] = {
+        stack = 1,
+        value = 'coin',
+        price = reroll_cost,
+        tooltip = ({'main_market.reroll_market_items'}),
+        sprite = 'achievement/logistic-network-embargo',
+        enabled = true,
+        upgrade = true,
+        static = true
+    }
 
+    local pickaxe_tiers = WPT.pickaxe_upgrades
+    local tier = WPT.get('pickaxe_tier')
+    local offer = pickaxe_tiers[tier]
+
+    main_market_items['upgrade_pickaxe'] = {
+        stack = 1,
+        value = 'coin',
+        price = pickaxe_cost,
+        tooltip = ({'main_market.purchase_pickaxe', offer}),
+        sprite = 'achievement/delivery-service',
+        enabled = true,
+        upgrade = true,
+        static = true
+    }
     if main_market_items['chest_limit_outside'] then
         main_market_items['chest_limit_outside'] = {
             stack = 1,
@@ -1873,6 +1953,7 @@ function Public.get_items()
             static = true
         }
     end
+
     main_market_items['locomotive_max_health'] = {
         stack = 1,
         value = 'coin',
@@ -1992,7 +2073,7 @@ function Public.get_items()
         price = 5,
         tooltip = ({'entity-name.small-lamp'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['wood'] = {
         stack = 50,
@@ -2000,7 +2081,7 @@ function Public.get_items()
         price = 12,
         tooltip = ({'item-name.wood'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['iron-ore'] = {
         stack = 50,
@@ -2008,7 +2089,7 @@ function Public.get_items()
         price = 12,
         tooltip = ({'item-name.iron-ore'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['copper-ore'] = {
         stack = 50,
@@ -2016,7 +2097,7 @@ function Public.get_items()
         price = 12,
         tooltip = ({'item-name.copper-ore'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['stone'] = {
         stack = 50,
@@ -2024,7 +2105,7 @@ function Public.get_items()
         price = 12,
         tooltip = ({'item-name.stone'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['coal'] = {
         stack = 50,
@@ -2032,7 +2113,7 @@ function Public.get_items()
         price = 12,
         tooltip = ({'item-name.coal'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['uranium-ore'] = {
         stack = 50,
@@ -2040,7 +2121,7 @@ function Public.get_items()
         price = 12,
         tooltip = ({'item-name.uranium-ore'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['land-mine'] = {
         stack = 1,
@@ -2048,7 +2129,7 @@ function Public.get_items()
         price = 10,
         tooltip = ({'entity-name.land-mine'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['raw-fish'] = {
         stack = 1,
@@ -2056,7 +2137,7 @@ function Public.get_items()
         price = 4,
         tooltip = ({'item-name.raw-fish'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['firearm-magazine'] = {
         stack = 1,
@@ -2064,7 +2145,7 @@ function Public.get_items()
         price = 5,
         tooltip = ({'item-name.firearm-magazine'}),
         upgrade = false,
-        static = true
+        static = false
     }
     main_market_items['crude-oil-barrel'] = {
         stack = 1,
@@ -2072,16 +2153,16 @@ function Public.get_items()
         price = 8,
         tooltip = ({'item-name.crude-oil-barrel'}),
         upgrade = false,
-        static = true
+        static = false
     }
-    --[[  main_market_items['car'] = {
+    main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 6000,
+        price = 8000,
         tooltip = ({'main_market.car'}),
         upgrade = false,
         static = true
-    } ]]
+    }
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',
@@ -2108,27 +2189,6 @@ function Public.get_items()
             value = 'coin',
             price = 25000,
             tooltip = ({'main_market.tank_cannon_na'}),
-            upgrade = false,
-            static = true,
-            enabled = false
-        }
-    end
-    if wave_number >= 400 then
-        main_market_items['tank-machine-gun'] = {
-            stack = 1,
-            value = 'coin',
-            price = 7000,
-            tooltip = ({'item-name.tank-machine-gun'}),
-            upgrade = false,
-            static = true,
-            enabled = true
-        }
-    else
-        main_market_items['tank-machine-gun'] = {
-            stack = 1,
-            value = 'coin',
-            price = 7000,
-            tooltip = ({'main_market.tank_machine_gun_na'}),
             upgrade = false,
             static = true,
             enabled = false

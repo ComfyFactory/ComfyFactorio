@@ -284,8 +284,10 @@ local function set_cells(surface, cell_position)
 end
 
 local function on_player_changed_position(event)
-	local position = game.players[event.player_index].position
-	local surface = game.players[event.player_index].surface
+	local player = game.players[event.player_index]
+
+	local position = player.position
+	local surface = player.surface
 	
 	local cell_x = math.floor(position.x / grid_size)
 	local cell_y = math.floor(position.y / grid_size)	
@@ -300,6 +302,7 @@ local function on_player_changed_position(event)
 	init_cell(cell_position)
 	
 	if global.maze_cells[coord_to_string(cell_position)].visited then return end
+	if not global.maze_cells[coord_to_string(cell_position)].occupied then return end
 	
 	set_cells(surface, cell_position)
 	
