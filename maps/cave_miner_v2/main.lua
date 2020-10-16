@@ -75,13 +75,19 @@ local function on_player_mined_entity(event)
 	local surface = entity.surface
 	local position = entity.position	
 	if entity.type == "simple-entity" then
-		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
-		if math.random(1, 16) == 1 then
-			local unit = Functions.spawn_random_biter(surface, position, 1)
-			if math.random(1, 64) == 1 then
-				Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
+		cave_miner.rocks_broken = cave_miner.rocks_broken + 1			
+		if math.random(1, 12) == 1 then
+			local amount = Functions.roll_biter_amount()
+			for _ = 1, amount, 1 do
+				Functions.spawn_random_biter(surface, position, 1)
 			end
+			return
 		end
+		if math.random(1, 1024) == 1 then
+			local unit = Functions.spawn_random_biter(surface, position, 1)
+			Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
+			return
+		end	
 	end
 end
 
