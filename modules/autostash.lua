@@ -49,6 +49,16 @@ local function create_floaty_text(surface, position, name, count)
 end
 
 local function chest_is_valid(chest)
+    if chest.type == 'cargo-wagon' then
+        local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
+        for index=1, 40 do
+            if chest_inventory.get_filter(index) == nil then
+                return false
+            end
+        end
+        return true
+    end
+
     for _, e in pairs(
         chest.surface.find_entities_filtered(
             {
@@ -216,19 +226,10 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
     end
 
     -- Attempt to load filtered cargo wagon
-    for _, chest in pairs(chests) do
+    for _, chest in pairs(filtered_chests) do
         if chest.type == 'cargo-wagon' then
             local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
-
-            fully_filtered = true
-            for index=1, 40 do
-                if chest_inventory.get_filter(index) == nil then
-                    fully_filtered = false
-                    break
-                end
-            end
-
-            if fully_filtered and chest_inventory.can_insert({name = name, count = count}) then
+            if chest_inventory.can_insert({name = name, count = count}) then
                 local inserted_count = chest_inventory.insert({name = name, count = count})
                 player_inventory.remove({name = name, count = inserted_count})
                 create_floaty_text(chest.surface, chest.position, name, inserted_count)
