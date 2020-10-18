@@ -76,30 +76,31 @@ local function get_biome(position, surface_index)
 end
 
 local locked_researches = {
-	[2] = "steel-axe",
-	[3] = "heavy-armor",
-	[4] = "military-2",
-	[5] = "physical-projectile-damage-2",
-	[6] = "oil-processing",
-	[7] = "stronger-explosives-2",
-	[8] = "military-science-pack",
-	[9] = "rocketry",
-	[10] = "chemical-science-pack",
-	[11] = "military-3",
-	[12] = "flamethrower",
-	[13] = "combat-robotics-2",
-	[14] = "laser",
-	[15] = "laser-turret-speed-3",
-	[16] = "power-armor",
-	[17] = "nuclear-power",
-	[18] = "production-science-pack",
-	[19] = "energy-weapons-damage-3",
-	[20] = "utility-science-pack",
-	[21] = "kovarex-enrichment-process",
-	[22] = "power-armor-mk2",
-	[24] = "fusion-reactor-equipment",
-	[26] = "discharge-defense-equipment",
-	[30] = "atomic-bomb"
+	[0] = "steel-axe",
+	[1] = "heavy-armor",
+	[2] = "military-2",
+	[3] = "physical-projectile-damage-2",
+	[4] = "oil-processing",
+	[5] = "stronger-explosives-2",
+	[6] = "military-science-pack",
+	[7] = "rocketry",
+	[8] = "chemical-science-pack",
+	[9] = "military-3",
+	[10] = "flamethrower",
+	[11] = "combat-robotics-2",
+	[12] = "laser",
+	[13] = "laser-turret-speed-3",
+	[14] = "power-armor",
+	[15] = "nuclear-power",
+	[16] = "production-science-pack",
+	[17] = "energy-weapons-damage-3",
+	[18] = "utility-science-pack",
+	[19] = "kovarex-enrichment-process",
+	[20] = "power-armor-mk2",
+	[22] = "fusion-reactor-equipment",
+	[24] = "discharge-defense-equipment",
+	[30] = "atomic-bomb",
+	[35] = "spidertron"
 }
 
 local function draw_arrows_gui()
@@ -113,15 +114,20 @@ local function draw_arrows_gui()
 	end
 end
 
+local function get_surface_research(index)
+	return locked_researches[index - global.dungeons.original_surface_index]
+end
+
 local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
 		local surface = player.surface
 		local techs = 0
-		if locked_researches[surface.index] and game.forces.player.technologies[locked_researches[surface.index]].enabled == false then techs = 1 end
+		if get_surface_research(surface.index) and game.forces.player.technologies[get_surface_research(surface.index)].enabled == false then techs = 1 end
 		local enemy_force = global.enemy_forces[surface.index]
 		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
+		if surface.name == "gulag" or surface.name == "nauvis" then return end
 		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth"})
-		element.caption = {"dungeons_tiered.depth", surface.index - 2, global.dungeons.depth[surface.index]}
+		element.caption = {"dungeons_tiered.depth", surface.index - global.dungeons.original_surface_index, global.dungeons.depth[surface.index]}
 		element.tooltip = {
 			"dungeons_tiered.depth_tooltip",
 			Functions.get_dungeon_evolution_factor(surface.index) * 100,
@@ -147,9 +153,9 @@ end
 
 local function unlock_researches(surface_index)
 	local tech = game.forces.player.technologies
-	if locked_researches[surface_index] and tech[locked_researches[surface_index]].enabled == false then
-		tech[locked_researches[surface_index]].enabled = true
-		game.print({"dungeons_tiered.tech_unlock", "[technology=" .. locked_researches[surface_index] .. "]", surface_index - 2})
+	if get_surface_research(surface_index) and tech[get_surface_research(surface_index)].enabled == false then
+		tech[get_surface_research(surface_index)].enabled = true
+		game.print({"dungeons_tiered.tech_unlock", "[technology=" .. get_surface_research(surface_index) .. "]", surface_index - 2})
 	end
 end
 
@@ -172,7 +178,7 @@ local function expand(surface, position)
 		Biomes["treasure"](surface, room)
 		if room.room_tiles[1] then
 			global.dungeons.treasures[surface.index] = global.dungeons.treasures[surface.index] + 1
-			game.print({"dungeons_tiered.treasure_room", surface.index - 2}, {r = 0.88, g = 0.22, b = 0})
+			game.print({"dungeons_tiered.treasure_room", surface.index - global.dungeons.original_surface_index}, {r = 0.88, g = 0.22, b = 0})
 		end
 	elseif math_random(1,256) == 1 then
 		Biomes["market"](surface, room)
@@ -184,7 +190,7 @@ local function expand(surface, position)
 	if not room.room_tiles[1] then return end
 
 	global.dungeons.depth[surface.index] = global.dungeons.depth[surface.index] + 1
-	global.dungeons.surface_size[surface.index] = 200 + (global.dungeons.depth[surface.index] - 100 * (surface.index - 2)) / 4
+	global.dungeons.surface_size[surface.index] = 200 + (global.dungeons.depth[surface.index] - 100 * (surface.index - global.dungeons.original_surface_index)) / 4
 	if global.dungeons.surface_size[surface.index] >= 225 and math.random(1,50) == 1 then unlock_researches(surface.index) end
 
 	local evo = Functions.get_dungeon_evolution_factor(surface.index)
@@ -285,7 +291,7 @@ end
 
 local function on_chunk_generated(event)
 	local surface = event.surface
-	if surface.name == "nauvis" then return end
+	if surface.name == "nauvis" or surface.name == "gulag" then return end
 
 	local left_top = event.area.left_top
 
@@ -447,7 +453,7 @@ local function get_lowest_safe_floor(player)
 	local rpg = RPG_T.get("rpg_t")
 	local level = rpg[player.index].level
 	local sizes = global.dungeons.surface_size
-	local safe = 2
+	local safe = global.dungeons.original_surface_index
 	for key, size in pairs(sizes) do
 		if size > 215 and level >= key * 10 - 10 and game.surfaces[key + 1] then
 			safe = key + 1
@@ -455,13 +461,13 @@ local function get_lowest_safe_floor(player)
 			break
 		end
 	end
-	if safe >= 52 then safe = 52 end
+	if safe >= global.dungeons.original_surface_index + 50 then safe = global.dungeons.original_surface_index + 50 end
 	return safe
 end
 
 local function descend(player, button, shift)
 	local rpg = RPG_T.get("rpg_t")
-	if player.surface.index >= 52 then
+	if player.surface.index >= global.dungeons.original_surface_index + 50 then
 		player.print({"dungeons_tiered.max_depth"})
 		return
 	end
@@ -469,8 +475,8 @@ local function descend(player, button, shift)
 		player.print({"dungeons_tiered.only_on_spawn"})
 		return
 	end
-	if rpg[player.index].level < player.surface.index * 10 - 10 then
-		player.print({"dungeons_tiered.level_required", player.surface.index * 10 - 10})
+	if rpg[player.index].level < (player.surface.index - global.dungeons.original_surface_index) * 10 + 10 then
+		player.print({"dungeons_tiered.level_required", (player.surface.index - global.dungeons.original_surface_index) * 10 + 10})
 		return
 	end
 	local surface = game.surfaces[player.surface.index + 1]
@@ -479,17 +485,17 @@ local function descend(player, button, shift)
 			player.print({"dungeons_tiered.floor_size_required"})
 			return
 		end
-		surface = game.create_surface("dungeons_floor" .. player.surface.index - 1, map_gen_settings())
-		if surface.index % 5 == 2 then global.dungeons.spawn_size = 60 else global.dungeons.spawn_size = 42 end
+		surface = game.create_surface("dungeons_floor" .. player.surface.index - global.dungeons.original_surface_index + 1, map_gen_settings())
+		if surface.index % 5 == global.dungeons.original_surface_index then global.dungeons.spawn_size = 60 else global.dungeons.spawn_size = 42 end
 		surface.request_to_generate_chunks({0,0}, 2)
 		surface.force_generate_chunk_requests()
-		surface.daytime = 0.25 + 0.30 * (surface.index / 52)
+		surface.daytime = 0.25 + 0.30 * (surface.index / (global.dungeons.original_surface_index + 50))
 		surface.freeze_daytime = true
 		surface.min_brightness = 0
 		surface.brightness_visual_weights = {1, 1, 1}
 		global.dungeons.surface_size[surface.index] = 200
 		global.dungeons.treasures[surface.index] = 0
-		game.print({"dungeons_tiered.first_visit", player.name, rpg[player.index].level, surface.index - 2}, {r = 0.8, g = 0.5, b = 0})
+		game.print({"dungeons_tiered.first_visit", player.name, rpg[player.index].level, surface.index - global.dungeons.original_surface_index}, {r = 0.8, g = 0.5, b = 0})
 		--Alert.alert_all_players(15, {"dungeons_tiered.first_visit", player.name, rpg[player.index].level, surface.index - 2}, {r=0.8,g=0.2,b=0},"recipe/artillery-targeting-remote", 0.7)
 
 	end
@@ -500,7 +506,7 @@ local function descend(player, button, shift)
 end
 
 local function ascend(player, button, shift)
-	if player.surface.index <= 2 then
+	if player.surface.index <= global.dungeons.original_surface_index then
 		player.print({"dungeons_tiered.min_depth"})
 		return
 	end
@@ -509,10 +515,23 @@ local function ascend(player, button, shift)
 		return
 	end
 	local surface = game.surfaces[player.surface.index - 1]
-	if button == defines.mouse_button_type.right then surface = game.surfaces[math.max(2, player.surface.index - 5)] end
-	if shift then surface = game.surfaces[2] end
+	if button == defines.mouse_button_type.right then surface = game.surfaces[math.max(global.dungeons.original_surface_index, player.surface.index - 5)] end
+	if shift then surface = game.surfaces[global.dungeons.original_surface_index] end
 	player.teleport(surface.find_non_colliding_position("character", {0, 0}, 50, 0.5), surface)
 	--player.print({"dungeons_tiered.travel_up"})
+end
+
+local function on_built_entity(event)
+	local entity = event.created_entity
+	if not entity or not entity.valid then return end
+	if entity.name == "spidertron" then
+		if entity.surface.index < global.dungeons.original_surface_index + 20 then
+			entity.destroy()
+			local player = game.players[event.player_index]
+			Alert.alert_player_warning(player, 8, {"dungeons_tiered.spidertron_not_allowed"})
+			player.insert({name = "spidertron", count = 1})
+		end
+	end
 end
 
 local function on_gui_click(event)
@@ -535,7 +554,7 @@ local function on_surface_created(event)
 	local force = game.create_force("enemy" .. event.surface_index)
 	global.enemy_forces[event.surface_index] = force
 	global.biter_health_boost_forces[force.index] = 1
-	global.dungeons.depth[event.surface_index] = 100 * event.surface_index - 200
+	global.dungeons.depth[event.surface_index] = 100 * event.surface_index - (global.dungeons.original_surface_index * 100)
 end
 
 local function on_player_changed_surface(event)
@@ -559,7 +578,7 @@ end
 -- end
 
 local function transfer_items(surface_index)
-	if surface_index > 2 then
+	if surface_index > global.dungeons.original_surface_index then
 		local inputs = global.dungeons.transport_chests_inputs[surface_index]
 		local outputs = global.dungeons.transport_chests_outputs[surface_index - 1]
 		for i = 1, 2, 1 do
@@ -580,7 +599,7 @@ local function transfer_items(surface_index)
 end
 
 local function transfer_signals(surface_index)
-	if surface_index > 2 then
+	if surface_index > global.dungeons.original_surface_index then
 		local inputs = global.dungeons.transport_poles_inputs[surface_index - 1]
 		local outputs = global.dungeons.transport_poles_outputs[surface_index]
 		for i = 1, 2, 1 do
@@ -658,6 +677,7 @@ local function on_init()
 	global.dungeons.treasures = {}
 	global.dungeons.treasures[surface.index] = 0
 	global.dungeons.item_blacklist = true
+	global.dungeons.original_surface_index = surface.index
 	global.enemy_forces = {}
 	global.enemy_forces[nauvis.index] = game.forces.enemy
 	global.enemy_forces[surface.index] = game.create_force("enemy" .. surface.index)
@@ -720,6 +740,7 @@ Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_built_entity, on_built_entity)
 -- Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)

@@ -14,7 +14,7 @@ local math_floor = math.floor
 function Public.get_dungeon_evolution_factor(surface_index)
 	local e = global.dungeons.depth[surface_index] * 0.0005
 	if global.dungeons.tiered then
-		e = math.min(e, surface_index * 0.05 - 0.05)
+		e = math.min(e, (surface_index - global.dungeons.original_surface_index) * 0.05 + 0.05)
 	end
 	return e
 end
@@ -362,7 +362,7 @@ function Public.draw_spawn(surface)
 	end
 
 	if global.dungeons.tiered then
-		if surface.index > 2 then
+		if surface.index > global.dungeons.original_surface_index then
 			table.insert(global.dungeons.transport_surfaces, surface.index)
 			global.dungeons.transport_chests_inputs[surface.index] = {}
 			for i = 1, 2, 1 do

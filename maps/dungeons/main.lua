@@ -72,6 +72,7 @@ local function draw_depth_gui()
 	for _, player in pairs(game.connected_players) do
 		local surface = player.surface
 		if player.gui.top.dungeon_depth then player.gui.top.dungeon_depth.destroy() end
+		if surface.name == "gulag" then return end
 		local element = player.gui.top.add({type = "sprite-button", name = "dungeon_depth"})
 		element.caption = {"dungeons.depth", global.dungeons.depth[surface.index]}
 		element.tooltip = {
