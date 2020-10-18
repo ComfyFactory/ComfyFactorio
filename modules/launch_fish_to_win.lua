@@ -153,6 +153,39 @@ local function on_gui_click(event)
 	end
 end
 
+local function on_init()
+	global.fish_autolaunch = true
+	global.rocket_silos = {}
+end
+
+local function tick()
+	if not global.fish_autolaunch then return end
+	if game.tick % 6000 == 0 then
+		local found_silos = {}
+		for _, surface in pairs(game.surfaces) do
+			local objects = surface.find_entities_filtered{name = "rocket-silo"}
+			for _,object in pairs(objects) do
+				table.insert(found_silos, object)
+			end
+		end
+		global.rocket_silos = found_silos
+	end
+	for index, silo in pairs(global.rocket_silos) do
+		if silo.valid and silo.name == "rocket-silo" then
+			local rocket_inventory = silo.get_inventory(defines.inventory.rocket_silo_rocket)
+			local fish
+			if rocket_inventory and rocket_inventory.valid then fish = rocket_inventory[1] end
+			if fish and fish.valid_for_read and fish.count == 100 and fish.name == "raw-fish" then
+				silo.launch_rocket()
+			end
+		else
+			global.rocket_silos[index] = nil
+		end
+	end
+end
+
+event.on_nth_tick(60, tick)
+event.on_init(on_init)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)	
 event.add(defines.events.on_rocket_launched, on_rocket_launched)
