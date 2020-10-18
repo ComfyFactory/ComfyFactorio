@@ -11,6 +11,15 @@ local event_handlers = {}
 -- map of nth_tick to handlers[]
 local on_nth_tick_event_handlers = {}
 
+--[[ local interface = {
+    get_handler = function()
+        return event_handlers
+    end
+}
+
+if not remote.interfaces['interface'] then
+    remote.add_interface('interface', interface)
+end ]]
 local pcall = pcall
 local log = log
 local script_on_event = script.on_event
@@ -19,6 +28,9 @@ local script_on_nth_tick = script.on_nth_tick
 local call_handlers
 if _DEBUG then
     function call_handlers(handlers, event)
+        if not handlers then
+            return log('Handlers was nil!')
+        end
         for i = 1, #handlers do
             local handler = handlers[i]
             handler(event)
@@ -26,6 +38,9 @@ if _DEBUG then
     end
 else
     function call_handlers(handlers, event)
+        if not handlers then
+            return log('Handlers was nil!')
+        end
         for i = 1, #handlers do
             local handler = handlers[i]
             local success, error = pcall(handler, event)
@@ -38,6 +53,9 @@ end
 
 local function on_event(event)
     local handlers = event_handlers[event.name]
+    if not handlers then
+        handlers = event_handlers[event.input_name]
+    end
     call_handlers(handlers, event)
 end
 

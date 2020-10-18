@@ -339,9 +339,11 @@ function Public.update_gui(player)
     local pickaxe_tiers = WPT.pickaxe_upgrades
     local tier = WPT.get('pickaxe_tier')
     local pick_tier = pickaxe_tiers[tier]
+    local speed =
+        math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
 
     gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier
-    gui.pickaxe_tier.tooltip = ({'gui.current_pickaxe_tier', pick_tier})
+    gui.pickaxe_tier.tooltip = ({'gui.current_pickaxe_tier', pick_tier, speed})
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(this.biters_killed, true)
     gui.biters_killed.tooltip = ({'gui.biters_killed'})

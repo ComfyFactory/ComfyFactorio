@@ -529,12 +529,8 @@ local on_research_finished = function(event)
     local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
     if research.force.technologies['steel-axe'].researched then
         mining_speed_bonus = mining_speed_bonus + 0.5
+        research.force.manual_mining_speed_modifier = mining_speed_bonus + this.force_mining_speed.speed
     end -- +50% speed for steel-axe research
-    if this.breached_wall <= 2 then
-        research.force.manual_mining_speed_modifier = this.force_mining_speed.speed + mining_speed_bonus
-    else
-        research.force.manual_mining_speed_modifier = mining_speed_bonus
-    end
 
     local force_name = research.force.name
     if not force_name then
