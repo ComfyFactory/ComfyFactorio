@@ -962,7 +962,10 @@ local function gui_click(event)
             }
         )
 
-        game.forces.player.manual_mining_speed_modifier = -0.25 + tier * 0.25
+        game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 0.25
+
+        local force_mining_speed = WPT.get('force_mining_speed')
+        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)

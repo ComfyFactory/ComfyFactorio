@@ -594,11 +594,13 @@ local function command_unit_group(group)
     if not this.unit_group_last_command[group.group_number] then
         this.unit_group_last_command[group.group_number] = game.tick - (this.unit_group_command_delay + 1)
     end
+
     if this.unit_group_last_command[group.group_number] then
         if this.unit_group_last_command[group.group_number] + this.unit_group_command_delay > game.tick then
             return
         end
     end
+
     local tile = group.surface.get_tile(group.position)
     if tile.valid and tile.collides_with('player-layer') then
         group = reform_group(group)
@@ -716,20 +718,6 @@ local function log_threat()
     end
 end
 
-local function clear_tables()
-    local this = WD.get()
-    this.unit_group_last_command = {}
-    for k, groups in next, this.active_biters do
-        for _, entity in next, groups do
-            if type(entity) == 'table' then
-                if not entity or not entity.valid then
-                    this.active_biters[k] = nil
-                end
-            end
-        end
-    end
-end
-
 local tick_tasks = {
     [30] = set_main_target,
     [60] = set_enemy_evolution,
@@ -738,8 +726,7 @@ local tick_tasks = {
     [150] = ThreatEvent.build_nest,
     [180] = ThreatEvent.build_worm,
     [3600] = time_out_biters,
-    [7200] = refresh_active_unit_threat,
-    [7400] = clear_tables
+    [7200] = refresh_active_unit_threat
 }
 
 local function on_tick()

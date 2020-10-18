@@ -81,7 +81,11 @@ local function update_gui(player)
     gui.threat.caption = {'wave_defense.gui_3'}
     gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100, wave_defense_table.max_active_biters}
     gui.threat_value.caption = math.floor(wave_defense_table.threat)
-    gui.threat_value.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100}
+    gui.threat_value.tooltip = {
+        'wave_defense.tooltip_1',
+        biter_health_boost * 100,
+        wave_defense_table.max_active_biters
+    }
 
     if wave_defense_table.wave_number == 0 then
         gui.threat_gains.caption = ''

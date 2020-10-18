@@ -119,31 +119,38 @@ local create_gulag_surface = function()
     if not surface then
         local walls = {}
         local tiles = {}
-        surface =
-            game.create_surface(
-            'gulag',
-            {
-                autoplace_controls = {
-                    ['coal'] = {frequency = 23, size = 3, richness = 3},
-                    ['stone'] = {frequency = 20, size = 3, richness = 3},
-                    ['copper-ore'] = {frequency = 25, size = 3, richness = 3},
-                    ['iron-ore'] = {frequency = 35, size = 3, richness = 3},
-                    ['uranium-ore'] = {frequency = 20, size = 3, richness = 3},
-                    ['crude-oil'] = {frequency = 80, size = 3, richness = 1},
-                    ['trees'] = {frequency = 0.75, size = 2, richness = 0.1},
-                    ['enemy-base'] = {frequency = 15, size = 0, richness = 1}
-                },
-                cliff_settings = {cliff_elevation_0 = 1024, cliff_elevation_interval = 10, name = 'cliff'},
-                height = 64,
-                width = 256,
-                peaceful_mode = false,
-                seed = 1337,
-                starting_area = 'very-low',
-                starting_points = {{x = 0, y = 0}},
-                terrain_segmentation = 'normal',
-                water = 'normal'
-            }
+        pcall(
+            function()
+                surface =
+                    game.create_surface(
+                    'gulag',
+                    {
+                        autoplace_controls = {
+                            ['coal'] = {frequency = 23, size = 3, richness = 3},
+                            ['stone'] = {frequency = 20, size = 3, richness = 3},
+                            ['copper-ore'] = {frequency = 25, size = 3, richness = 3},
+                            ['iron-ore'] = {frequency = 35, size = 3, richness = 3},
+                            ['uranium-ore'] = {frequency = 20, size = 3, richness = 3},
+                            ['crude-oil'] = {frequency = 80, size = 3, richness = 1},
+                            ['trees'] = {frequency = 0.75, size = 2, richness = 0.1},
+                            ['enemy-base'] = {frequency = 15, size = 0, richness = 1}
+                        },
+                        cliff_settings = {cliff_elevation_0 = 1024, cliff_elevation_interval = 10, name = 'cliff'},
+                        height = 64,
+                        width = 256,
+                        peaceful_mode = false,
+                        seed = 1337,
+                        starting_area = 'very-low',
+                        starting_points = {{x = 0, y = 0}},
+                        terrain_segmentation = 'normal',
+                        water = 'normal'
+                    }
+                )
+            end
         )
+        if not surface then
+            surface = game.create_surface('gulag', {width = 40, height = 40})
+        end
         surface.always_day = true
         surface.request_to_generate_chunks({0, 0}, 9)
         surface.force_generate_chunk_requests()

@@ -6,6 +6,23 @@ local LootRaffle = require "functions.loot_raffle"
 
 local math_sqrt = math.sqrt
 local math_random = math.random
+local math_floor = math.floor
+
+local spawn_amount_rolls = {}
+for a = 48, 1, -1 do table.insert(spawn_amount_rolls, math_floor(a ^ 5)) end
+
+function Public.roll_biter_amount()
+	local max_chance = 0
+	for k, v in pairs(spawn_amount_rolls) do
+		max_chance = max_chance + v
+	end
+	local r = math_random(0, max_chance)	
+	local current_chance = 0
+	for k, v in pairs(spawn_amount_rolls) do
+		current_chance = current_chance + v
+		if r <= current_chance then return k end
+	end
+end
 
 function Public.spawn_player(player)
 	if not player.character then
