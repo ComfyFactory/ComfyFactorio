@@ -8,7 +8,8 @@ local print_color = {r = 120, g = 255, b = 0}
 
 local autostash = {
     floating_text_y_offsets = {},
-    insert_into_furnace = false
+    insert_into_furnace = false,
+    insert_into_wagon = false
 }
 
 local Public = {}
@@ -48,6 +49,16 @@ local function create_floaty_text(surface, position, name, count)
 end
 
 local function chest_is_valid(chest)
+    if chest.type == 'cargo-wagon' then
+        local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
+        for index=1, 40 do
+            if chest_inventory.get_filter(index) == nil then
+                return false
+            end
+        end
+        return true
+    end
+
     for _, e in pairs(
         chest.surface.find_entities_filtered(
             {
@@ -133,15 +144,17 @@ local function get_nearby_chests(player)
     local size_of_chests = 0
     local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
 
-    local type
-
+    local type = {'container', 'logistic-container'}
     local containers = {}
     local i = 0
+
     if autostash.insert_into_furnace then
-        type = {'furnace', 'container', 'logistic-container'}
-    else
-        type = {'container', 'logistic-container'}
+        table.insert(type, 'furnace')
     end
+    if autostash.insert_into_wagon then
+        table.insert(type, 'cargo-wagon')
+    end
+
     for _, e in pairs(player.surface.find_entities_filtered({type = type, area = area, force = 'player'})) do
         if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
             i = i + 1
@@ -207,6 +220,22 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
                     local inserted_count = chest_inventory.insert({name = name, count = amount})
                     player_inventory.remove({name = name, count = inserted_count})
                     create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                end
+            end
+        end
+    end
+
+    -- Attempt to load filtered cargo wagon
+    for _, chest in pairs(filtered_chests) do
+        if chest.type == 'cargo-wagon' then
+            local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
+            if chest_inventory.can_insert({name = name, count = count}) then
+                local inserted_count = chest_inventory.insert({name = name, count = count})
+                player_inventory.remove({name = name, count = inserted_count})
+                create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                count = count - inserted_count
+                if count <= 0 then
+                    return
                 end
             end
         end
@@ -400,6 +429,12 @@ end
 function Public.insert_into_furnace(value)
     if value then
         autostash.insert_into_furnace = value or false
+    end
+end
+
+function Public.insert_into_wagon(value)
+    if value then
+        autostash.insert_into_wagon = value or false
     end
 end
 
