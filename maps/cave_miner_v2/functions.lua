@@ -3,6 +3,7 @@ local Public = {}
 local Constants = require 'maps.cave_miner_v2.constants'
 local BiterRaffle = require "functions.biter_raffle"
 local LootRaffle = require "functions.loot_raffle"
+local Esq = require "modules.entity_spawn_queue"
 
 local math_sqrt = math.sqrt
 local math_random = math.random
@@ -41,7 +42,7 @@ function Public.spawn_player(player)
 end
 
 function Public.set_mining_speed(cave_miner, force)
-	force.manual_mining_speed_modifier = -0.50 + cave_miner.pickaxe_tier * 0.35
+	force.manual_mining_speed_modifier = -0.50 + cave_miner.pickaxe_tier * 0.40
 	return force.manual_mining_speed_modifier
 end
 
@@ -64,6 +65,17 @@ function Public.spawn_random_biter(surface, position, multiplier)
 	unit.ai_settings.allow_try_return_to_spawner = true
 	unit.ai_settings.allow_destroy_when_commands_fail = false
 	return unit
+end
+
+function Public.rock_spawns_biters(cave_miner, position)
+	local amount = Public.roll_biter_amount()
+	local surface = game.surfaces.nauvis
+	local d = math_sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
+	local tick = game.tick	
+	for _ = 1, amount, 1 do
+		tick = tick + math_random(30, 120)
+		Esq.add_to_queue(tick, surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)		
+	end
 end
 
 function Public.loot_crate(surface, position, multiplier, slots, container_name)

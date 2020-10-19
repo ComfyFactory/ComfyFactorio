@@ -135,6 +135,7 @@ require 'modules.autostash'
 --![[You fell in a dark cave, will you survive?]]--
 --require 'maps.cave_miner'
 --require 'maps.cave_choppy.cave_miner'
+--require 'maps.cave_miner_v2.main'
 
 --![[Hungry boxes eat your items, but reward you with new territory to build.]]--
 --require 'maps.expanse.main'
@@ -201,7 +202,6 @@ require 'modules.autostash'
 --require 'maps.pitch_black.main'
 --require 'maps.cube'
 --require 'maps.mountain_race.main'
---require 'maps.cave_miner_v2.main'
 --require 'maps.native_war.main'
 ---------------------------------------------------------------
 

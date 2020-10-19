@@ -76,11 +76,8 @@ local function on_player_mined_entity(event)
 	local position = entity.position	
 	if entity.type == "simple-entity" then
 		cave_miner.rocks_broken = cave_miner.rocks_broken + 1			
-		if math.random(1, 12) == 1 then
-			local amount = Functions.roll_biter_amount()
-			for _ = 1, amount, 1 do
-				Functions.spawn_random_biter(surface, position, 1)
-			end
+		if math.random(1, 16) == 1 then
+			Functions.rock_spawns_biters(cave_miner, position)
 			return
 		end
 		if math.random(1, 1024) == 1 then
@@ -99,8 +96,8 @@ local function on_entity_died(event)
 	local position = entity.position	
 	if entity.type == "simple-entity" then
 		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
-		if math.random(1, 2) == 1 then
-			Functions.spawn_random_biter(surface, position, 1)
+		if math.random(1, 4) == 1 then
+			Functions.rock_spawns_biters(cave_miner, position)
 		end
 		return
 	end
@@ -146,6 +143,8 @@ local function init(cave_miner)
 	force.technologies["landfill"].enabled = false
 	force.technologies["spidertron"].enabled = false
 	force.technologies["artillery"].enabled = false
+	force.technologies["artillery-shell-range-1"].enabled = false
+	force.technologies["artillery-shell-speed-1"].enabled = false
 	
 	cave_miner.gamestate = "spawn_players"
 end
@@ -163,6 +162,7 @@ end
 
 local function game_in_progress(cave_miner)
 	local tick = game.ticks_played
+		
 	if tick % 60 ~= 0 then return end
 	Functions.update_top_gui(cave_miner)
 	
