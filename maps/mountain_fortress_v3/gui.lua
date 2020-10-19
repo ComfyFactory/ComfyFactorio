@@ -316,6 +316,10 @@ function Public.update_gui(player)
     local rpg_extra = RPG_Settings.get('rpg_extra')
     local this = WPT.get()
 
+    if not validate_player(player) then
+        return
+    end
+
     if not player.gui.top[main_frame_name] then
         return
     end

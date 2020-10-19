@@ -3,13 +3,15 @@
 --require "modules.rpg"
 
 require 'maps.fish_defender.market'
+require 'maps.fish_defender.commands'
 require 'maps.fish_defender.on_entity_damaged'
 require 'modules.rocket_launch_always_yields_science'
-require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
 require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
+require 'modules.launch_fish_to_win'
 
+local AntiGrief = require 'antigrief'
 local Terrain = require 'maps.fish_defender.terrain'
 local Unit_health_booster = require 'modules.biter_health_booster'
 local Difficulty = require 'modules.difficulty_vote'
@@ -1134,8 +1136,10 @@ local function on_init(reset)
 
     local this = FDT.get()
 
+    AntiGrief.reset_tables()
     FDT.reset_table()
     Poll.reset()
+    global.fish_in_space = 0
 
     local difficulties = {
         [1] = {
@@ -1168,9 +1172,12 @@ local function on_init(reset)
     Diff.difficulty_poll_closing_timeout = this.wave_grace_period
     get_score.score_table = {}
 
+    game.remove_offline_players()
+
     local map_gen_settings = {}
     map_gen_settings.height = 2048
     map_gen_settings.water = 0.10
+    map_gen_settings.seed = math_random(10000, 99999)
     map_gen_settings.terrain_segmentation = 3
     map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
     map_gen_settings.autoplace_controls = {

@@ -326,7 +326,7 @@ local vote_to_jail = function(player, griefer, msg)
 end
 
 local vote_to_free = function(player, griefer)
-    if votefree[griefer] and not votefree[griefer] then
+    if not votefree[griefer] then
         votefree[griefer] = {index = 0, actor = player.name}
         local message = player.name .. ' has started a vote to free player ' .. griefer
         Utils.print_to(nil, message)
