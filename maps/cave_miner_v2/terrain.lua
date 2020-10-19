@@ -112,6 +112,13 @@ end
 function biomes.spawn(surface, seed, position, square_distance)
 	if square_distance < 32 then return end
 	local noise = GetNoise("decoratives", position, seed)
+	
+	if math_abs(noise) > 0.5 then
+		surface.set_tiles({{name = "water", position = position}}, true, false, false, false)
+		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
+		return
+	end
+	
 	if math_abs(noise) > 0.15 and math_random(1, 2) > 1 then
 		local a = (-49 + math_random(0, 98)) * 0.01
 		local b = (-49 + math_random(0, 98)) * 0.01

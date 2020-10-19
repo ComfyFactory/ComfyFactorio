@@ -125,4 +125,41 @@ function Public.update_top_gui(cave_miner)
 	end
 end
 
+local function is_entity_in_darkness(entity)
+	if not entity then return end
+	if not entity.valid then return end
+	local position = entity.position
+
+	local d = position.x ^ 2 + position.y ^ 2
+	if d < 512 then return false end
+	
+	for _, lamp in pairs(entity.surface.find_entities_filtered({area={{position.x - 16, position.y - 16},{position.x + 16, position.y + 16}}, name = "small-lamp"})) do
+		local circuit = lamp.get_or_create_control_behavior()
+		if circuit then
+			if lamp.energy > 25 and circuit.disabled == false then								
+				return
+			end
+		else
+			if lamp.energy > 25 then								
+				return
+			end
+		end
+	end
+	
+	return true
+end
+
+function Public.darkness(cave_miner)
+	for _, player in pairs(game.connected_players) do
+		local character = player.character
+		if character and character.valid then
+			character.disable_flashlight()
+			if is_entity_in_darkness(character) then
+				local d = math_sqrt(character.position.x ^ 2 + character.position.y ^ 2) * 0.0001
+				Esq.add_to_queue(game.tick + 60, player.surface, {name = BiterRaffle.roll("mixed", d), position = character.position, force = "enemy"}, 8)
+			end
+		end
+	end
+end
+
 return Public
