@@ -257,20 +257,28 @@ function Public.add_player_to_permission_group(player, group, forced)
     if enable_permission_group_disconnect then
         local locomotive_group = game.permissions.get_group('locomotive')
         local plebs_group = game.permissions.get_group('plebs')
+        local default_group = game.permissions.get_group('Default')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
         if plebs_group then
             plebs_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
         end
+        if default_group then
+            default_group.set_allows_action(defines.input_action.disconnect_rolling_stock, true)
+        end
     else
         local locomotive_group = game.permissions.get_group('locomotive')
         local plebs_group = game.permissions.get_group('plebs')
+        local default_group = game.permissions.get_group('Default')
         if locomotive_group then
             locomotive_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         end
         if plebs_group then
             plebs_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        end
+        if default_group then
+            default_group.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         end
     end
 
@@ -962,10 +970,12 @@ local function gui_click(event)
             }
         )
 
-        game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 0.25
+        local force = game.forces.player
+
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.05
 
         local force_mining_speed = WPT.get('force_mining_speed')
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
+        force_mining_speed.speed = force.manual_mining_speed_modifier
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1898,14 +1908,14 @@ function Public.get_items()
     local flame_turret = WPT.get('upgrades').flame_turret.bought
     local landmine = WPT.get('upgrades').landmine.bought
 
-    local chest_limit_cost = 2500 * (1 + chest_limit_outside_upgrades)
+    local chest_limit_cost = 3000 * (1 + chest_limit_outside_upgrades)
     local health_cost = 10000 * (1 + health_upgrades)
-    local pickaxe_cost = 2500 * (1 + pickaxe_tier)
+    local pickaxe_cost = 3000 * (1 + pickaxe_tier)
     local reroll_cost = 1000 * (1 + reroll_amounts)
     local aura_cost = 4000 * (1 + aura_upgrades)
     local xp_point_boost_cost = 5000 * (1 + xp_points_upgrade)
     local explosive_bullets_cost = 20000
-    local flamethrower_turrets_cost = 2500 * (1 + flame_turret)
+    local flamethrower_turrets_cost = 3000 * (1 + flame_turret)
     local land_mine_cost = 2 * (1 + landmine)
     local skill_reset_cost = 100000
     main_market_items['reroll_market_items'] = {

@@ -39,12 +39,14 @@ function Public.reset()
     this.entity_type = {
         ['car'] = true,
         ['tank'] = true,
-        ['spidertron'] = true
+        ['spidertron'] = true,
+        ['spider-vehicle'] = true
     }
     this.car_areas = {
         ['car'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 20}},
         ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}},
-        ['spidertron'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}}
+        ['spidertron'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}},
+        ['spider-vehicle'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}}
     }
 end
 
