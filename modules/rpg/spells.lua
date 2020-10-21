@@ -8,7 +8,7 @@ function Public.conjure_items()
         obj_to_create = 'stone-wall',
         level = 10,
         type = 'item',
-        mana_cost = 35,
+        mana_cost = 60,
         tick = 100,
         enabled = true
     }
@@ -18,7 +18,7 @@ function Public.conjure_items()
         obj_to_create = 'wooden-chest',
         level = 2,
         type = 'item',
-        mana_cost = 30,
+        mana_cost = 50,
         tick = 100,
         enabled = true
     }
@@ -27,7 +27,7 @@ function Public.conjure_items()
         obj_to_create = 'iron-chest',
         level = 10,
         type = 'item',
-        mana_cost = 40,
+        mana_cost = 110,
         tick = 200,
         enabled = true
     }
@@ -36,7 +36,7 @@ function Public.conjure_items()
         obj_to_create = 'steel-chest',
         level = 15,
         type = 'item',
-        mana_cost = 50,
+        mana_cost = 150,
         tick = 300,
         enabled = true
     }
@@ -45,7 +45,7 @@ function Public.conjure_items()
         obj_to_create = 'transport-belt',
         level = 3,
         type = 'item',
-        mana_cost = 40,
+        mana_cost = 80,
         tick = 100,
         enabled = true
     }
@@ -54,7 +54,7 @@ function Public.conjure_items()
         obj_to_create = 'fast-transport-belt',
         level = 20,
         type = 'item',
-        mana_cost = 50,
+        mana_cost = 110,
         tick = 200,
         enabled = true
     }
@@ -63,7 +63,7 @@ function Public.conjure_items()
         obj_to_create = 'express-transport-belt',
         level = 60,
         type = 'item',
-        mana_cost = 60,
+        mana_cost = 150,
         tick = 300,
         enabled = true
     }
@@ -72,7 +72,7 @@ function Public.conjure_items()
         obj_to_create = 'underground-belt',
         level = 3,
         type = 'item',
-        mana_cost = 40,
+        mana_cost = 80,
         tick = 100,
         enabled = true
     }
@@ -81,7 +81,7 @@ function Public.conjure_items()
         obj_to_create = 'fast-underground-belt',
         level = 20,
         type = 'item',
-        mana_cost = 50,
+        mana_cost = 110,
         tick = 200,
         enabled = true
     }
@@ -90,7 +90,7 @@ function Public.conjure_items()
         obj_to_create = 'express-underground-belt',
         level = 60,
         type = 'item',
-        mana_cost = 60,
+        mana_cost = 150,
         tick = 300,
         enabled = true
     }
@@ -110,7 +110,7 @@ function Public.conjure_items()
         biter = true,
         type = 'entity',
         mana_cost = 55,
-        tick = 100,
+        tick = 200,
         enabled = true
     }
     spells[#spells + 1] = {
@@ -120,7 +120,7 @@ function Public.conjure_items()
         biter = true,
         type = 'entity',
         mana_cost = 55,
-        tick = 100,
+        tick = 200,
         enabled = true
     }
     spells[#spells + 1] = {
@@ -130,7 +130,7 @@ function Public.conjure_items()
         biter = true,
         type = 'entity',
         mana_cost = 100,
-        tick = 200,
+        tick = 300,
         enabled = true
     }
     spells[#spells + 1] = {
@@ -139,7 +139,7 @@ function Public.conjure_items()
         level = 70,
         type = 'entity',
         mana_cost = 100,
-        tick = 200,
+        tick = 300,
         enabled = true
     }
     spells[#spells + 1] = {
@@ -148,7 +148,7 @@ function Public.conjure_items()
         level = 100,
         biter = true,
         type = 'entity',
-        mana_cost = 600,
+        mana_cost = 800,
         tick = 1420,
         enabled = true
     }
@@ -268,7 +268,7 @@ function Public.conjure_items()
         force = 'player',
         level = 50,
         type = 'special',
-        mana_cost = 200,
+        mana_cost = 300,
         tick = 320,
         enabled = true
     }

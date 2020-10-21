@@ -41,8 +41,13 @@ end
 function Public.spawn(cave_miner)
 	local surface = game.surfaces.nauvis
 	local market = surface.create_entity({name = "market", position = {0,0}})
+	rendering.draw_light({
+		sprite = "utility/light_medium", scale = 7, intensity = 0.8, minimum_darkness = 0,
+		oriented = true, color = {255,255,255}, target = market,
+		surface = surface, visible = true, only_in_alt_mode = false,
+	})
 	market.destructible = false
-	Public.refresh_offers(market, cave_miner)
+	Public.refresh_offers(market, cave_miner)	
 end
 
 function Public.offer_bought(event, cave_miner)

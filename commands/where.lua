@@ -3,6 +3,8 @@
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 
+local Public = {}
+
 local function validate_player(player)
     if not player then
         return false
@@ -80,4 +82,8 @@ local function on_gui_click(event)
     end
 end
 
+Public.create_mini_camera_gui = create_mini_camera_gui
+
 Event.add(defines.events.on_gui_click, on_gui_click)
+
+return Public

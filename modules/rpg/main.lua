@@ -7,6 +7,7 @@ local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
 
 --RPG Modules
+require 'modules.rpg.commands'
 local RPG = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
 local RPG_GUI = require 'modules.rpg.gui'

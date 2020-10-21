@@ -316,6 +316,10 @@ function Public.update_gui(player)
     local rpg_extra = RPG_Settings.get('rpg_extra')
     local this = WPT.get()
 
+    if not validate_player(player) then
+        return
+    end
+
     if not player.gui.top[main_frame_name] then
         return
     end
@@ -342,7 +346,7 @@ function Public.update_gui(player)
     local speed =
         math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
 
-    gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier
+    gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier .. ' (' .. tier .. ')'
     gui.pickaxe_tier.tooltip = ({'gui.current_pickaxe_tier', pick_tier, speed})
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(this.biters_killed, true)

@@ -73,6 +73,11 @@ local noises = {
         {modifier = 0.05, weight = 0.23},
         {modifier = 0.1, weight = 0.11}
     },
+	['big_cave'] = {
+        {modifier = 0.003, weight = 1},
+        {modifier = 0.02, weight = 0.05},
+        {modifier = 0.15, weight = 0.02}
+    },
     ['small_caves'] = {
         {modifier = 0.008, weight = 1},
         {modifier = 0.03, weight = 0.15},
@@ -93,7 +98,7 @@ local noises = {
         {modifier = 0.01, weight = 1},
         {modifier = 0.05, weight = 0.5},
         {modifier = 0.1, weight = 0.025}
-    }
+    },
 }
 
 --returns a float number between -1 and 1

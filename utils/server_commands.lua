@@ -1,4 +1,7 @@
-local Poll = {send_poll_result_to_discord = function () end}
+local Poll = {
+    send_poll_result_to_discord = function()
+    end
+}
 local Token = require 'utils.token'
 local Server = require 'utils.server'
 
@@ -8,7 +11,6 @@ local Server = require 'utils.server'
 ServerCommands = {}
 
 ServerCommands.get_poll_result = Poll.send_poll_result_to_discord
-
 
 function ServerCommands.raise_callback(func_token, data)
     local func = Token.get(func_token)
@@ -23,6 +25,25 @@ function ServerCommands.server_started()
 end
 
 ServerCommands.set_time = Server.set_time
+ServerCommands.set_ups = Server.set_ups
+ServerCommands.get_ups = Server.get_ups
 ServerCommands.query_online_players = Server.query_online_players
+
+local SC_Interface = {
+    get_ups = function()
+        return ServerCommands.get_ups()
+    end,
+    set_ups = function(tick)
+        if tick then
+            ServerCommands.set_ups(tick)
+        else
+            error("Remote call parameter to ServerCommands set_ups can't be nil.")
+        end
+    end
+}
+
+if not remote.interfaces['ServerCommands'] then
+    remote.add_interface('ServerCommands', SC_Interface)
+end
 
 return ServerCommands

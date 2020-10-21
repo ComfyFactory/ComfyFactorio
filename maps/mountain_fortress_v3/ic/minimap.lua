@@ -229,6 +229,7 @@ function Public.changed_surface(event)
 
     if Functions.get_player_surface(ic, player) then
         Public.toggle_button(player)
+        Public.minimap(player, surface)
         if wd and wd.visible then
             wd.visible = false
         end

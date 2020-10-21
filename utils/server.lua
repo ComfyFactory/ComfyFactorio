@@ -16,15 +16,18 @@ local serialize_options = {sparse = true, compact = true}
 local Public = {}
 
 local server_time = {secs = nil, tick = 0}
+local server_ups = {ups = 60}
 local requests = {}
 
 Global.register(
     {
         server_time = server_time,
+        server_ups = server_ups,
         requests = requests
     },
     function(tbl)
         server_time = tbl.server_time
+        server_ups = tbl.server_ups
         requests = tbl.requests
     end
 )
@@ -661,6 +664,19 @@ end
 -- @return table
 function Public.get_time_data_raw()
     return server_time
+end
+
+--- Called by the web server to set the ups value.
+-- @param  tick<number> tick
+function Public.set_ups(tick)
+    server_ups.ups = tick
+end
+
+--- Gets a the estimated UPS from the web panel that is sent to the server.
+-- This is calculated and measured in the wrapper.
+-- @return number
+function Public.get_ups()
+    return server_ups.ups
 end
 
 --- Gets an estimate of the current server time as a unix epoch timestamp.

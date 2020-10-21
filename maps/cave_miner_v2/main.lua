@@ -7,6 +7,7 @@ local Market = require 'maps.cave_miner_v2.market'
 local Server = require 'utils.server'
 local Terrain = require 'maps.cave_miner_v2.terrain'
 local Pets = require "modules.biter_pets"
+local Map_info = require "modules.map_info"
 
 require "modules.satellite_score"
 require "modules.hunger"
@@ -76,11 +77,8 @@ local function on_player_mined_entity(event)
 	local position = entity.position	
 	if entity.type == "simple-entity" then
 		cave_miner.rocks_broken = cave_miner.rocks_broken + 1			
-		if math.random(1, 12) == 1 then
-			local amount = Functions.roll_biter_amount()
-			for _ = 1, amount, 1 do
-				Functions.spawn_random_biter(surface, position, 1)
-			end
+		if math.random(1, 16) == 1 then
+			Functions.rock_spawns_biters(cave_miner, position)
 			return
 		end
 		if math.random(1, 1024) == 1 then
@@ -96,11 +94,19 @@ local function on_entity_died(event)
 	if not entity then return end
 	if not entity.valid then return end
 	local surface = entity.surface
-	local position = entity.position	
+	local position = entity.position
+	
+	if entity.type == "unit" then
+		if math.random(1, 8) == 1 then
+			surface.spill_item_stack(position, {name = "raw-fish", count = 1}, true)
+		end		
+		return
+	end
+	
 	if entity.type == "simple-entity" then
 		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
-		if math.random(1, 2) == 1 then
-			Functions.spawn_random_biter(surface, position, 1)
+		if math.random(1, 4) == 1 then
+			Functions.rock_spawns_biters(cave_miner, position)
 		end
 		return
 	end
@@ -146,6 +152,8 @@ local function init(cave_miner)
 	force.technologies["landfill"].enabled = false
 	force.technologies["spidertron"].enabled = false
 	force.technologies["artillery"].enabled = false
+	force.technologies["artillery-shell-range-1"].enabled = false
+	force.technologies["artillery-shell-speed-1"].enabled = false
 	
 	cave_miner.gamestate = "spawn_players"
 end
@@ -161,23 +169,29 @@ local function spawn_players(cave_miner)
 	cave_miner.gamestate = "game_in_progress"
 end
 
+local game_tasks = {
+	[15] = Functions.update_top_gui,
+	[30] = function()
+		local reveal = cave_miner.reveal_queue[1]
+		if not reveal then return end
+		local brush_size = 3
+		if Constants.reveal_chain_brush_sizes[reveal[1]] then brush_size = Constants.reveal_chain_brush_sizes[reveal[1]] end
+		Terrain.reveal(
+			cave_miner,
+			game.surfaces.nauvis,
+			game.surfaces.cave_miner_source,
+			{x = reveal[2], y = reveal[3]},
+			brush_size
+		)	
+		table.remove(cave_miner.reveal_queue, 1)
+	end,
+	[45] = Functions.darkness,
+}
+
 local function game_in_progress(cave_miner)
-	local tick = game.ticks_played
-	if tick % 60 ~= 0 then return end
-	Functions.update_top_gui(cave_miner)
-	
-	local reveal = cave_miner.reveal_queue[1]
-	if not reveal then return end
-	local brush_size = 3
-	if Constants.reveal_chain_brush_sizes[reveal[1]] then brush_size = Constants.reveal_chain_brush_sizes[reveal[1]] end
-	Terrain.reveal(
-		cave_miner,
-		game.surfaces.nauvis,
-		game.surfaces.cave_miner_source,
-		{x = reveal[2], y = reveal[3]},
-		brush_size
-	)	
-	table.remove(cave_miner.reveal_queue, 1)
+	local tick = game.ticks_played % 60		
+	if not game_tasks[tick] then return end
+	game_tasks[tick](cave_miner)
 end
 
 local gamestates = {
@@ -199,7 +213,7 @@ local function on_init()
 	cave_miner.reveal_queue = {}
 	
 	global.rocks_yield_ore_maximum_amount = 256
-	global.rocks_yield_ore_base_amount = 32
+	global.rocks_yield_ore_base_amount = 28
 	global.rocks_yield_ore_distance_modifier = 0.01
 	
 	Explosives.set_destructible_tile("out-of-map", 1500)
@@ -216,6 +230,11 @@ local function on_init()
 	
 	global.rocks_yield_ore_veins.amount_modifier = 0.25
 	global.rocks_yield_ore_veins.chance = 756
+	
+	local T = Map_info.Pop_info()
+	T.localised_category = "cave_miner"
+	T.main_caption_color = {r = 200, g = 100, b = 0}
+	T.sub_caption_color = {r = 0, g = 175, b = 175}
 end
 
 Event.on_init(on_init)

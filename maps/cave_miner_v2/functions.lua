@@ -3,6 +3,7 @@ local Public = {}
 local Constants = require 'maps.cave_miner_v2.constants'
 local BiterRaffle = require "functions.biter_raffle"
 local LootRaffle = require "functions.loot_raffle"
+local Esq = require "modules.entity_spawn_queue"
 
 local math_sqrt = math.sqrt
 local math_random = math.random
@@ -41,7 +42,7 @@ function Public.spawn_player(player)
 end
 
 function Public.set_mining_speed(cave_miner, force)
-	force.manual_mining_speed_modifier = -0.50 + cave_miner.pickaxe_tier * 0.35
+	force.manual_mining_speed_modifier = -0.50 + cave_miner.pickaxe_tier * 0.40
 	return force.manual_mining_speed_modifier
 end
 
@@ -64,6 +65,17 @@ function Public.spawn_random_biter(surface, position, multiplier)
 	unit.ai_settings.allow_try_return_to_spawner = true
 	unit.ai_settings.allow_destroy_when_commands_fail = false
 	return unit
+end
+
+function Public.rock_spawns_biters(cave_miner, position)
+	local amount = Public.roll_biter_amount()
+	local surface = game.surfaces.nauvis
+	local d = math_sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
+	local tick = game.tick	
+	for _ = 1, amount, 1 do
+		tick = tick + math_random(30, 120)
+		Esq.add_to_queue(tick, surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)		
+	end
 end
 
 function Public.loot_crate(surface, position, multiplier, slots, container_name)
@@ -109,6 +121,43 @@ function Public.update_top_gui(cave_miner)
 			element.children[1].tooltip = "Mining speed " .. (1 + game.forces.player.manual_mining_speed_modifier) * 100 .. "%"
 			
 			element.children[2].caption = "Rocks broken: " .. cave_miner.rocks_broken
+		end
+	end
+end
+
+local function is_entity_in_darkness(entity)
+	if not entity then return end
+	if not entity.valid then return end
+	local position = entity.position
+
+	local d = position.x ^ 2 + position.y ^ 2
+	if d < 512 then return false end
+	
+	for _, lamp in pairs(entity.surface.find_entities_filtered({area={{position.x - 16, position.y - 16},{position.x + 16, position.y + 16}}, name = "small-lamp"})) do
+		local circuit = lamp.get_or_create_control_behavior()
+		if circuit then
+			if lamp.energy > 25 and circuit.disabled == false then								
+				return
+			end
+		else
+			if lamp.energy > 25 then								
+				return
+			end
+		end
+	end
+	
+	return true
+end
+
+function Public.darkness(cave_miner)
+	for _, player in pairs(game.connected_players) do
+		local character = player.character
+		if character and character.valid then
+			character.disable_flashlight()
+			if is_entity_in_darkness(character) then
+				local d = math_sqrt(character.position.x ^ 2 + character.position.y ^ 2) * 0.0001
+				Esq.add_to_queue(game.tick + 60, player.surface, {name = BiterRaffle.roll("mixed", d), position = character.position, force = "enemy"}, 8)
+			end
 		end
 	end
 end

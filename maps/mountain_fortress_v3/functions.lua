@@ -33,7 +33,11 @@ local artillery_target_entities = {
     'car',
     'furnace',
     'straight-rail',
-    'curved-rail'
+    'curved-rail',
+    'locomotive',
+    'cargo-wagon',
+    'fluid-wagon',
+    'artillery-wagon'
 }
 
 local function fast_remove(tbl, index)
