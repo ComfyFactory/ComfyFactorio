@@ -686,7 +686,7 @@ function Public.global_pool(players, count)
                 RPG.debug_log('RPG - player capped: ' .. p.name .. '. Amount to pool:' .. share)
             end
         else
-            local message = ({'rpg_functions.pool_reward'})
+            local message = ({'rpg_functions.pool_reward', p.name})
             Alert.alert_player_warning(p, 10, message)
             share = share / 10
             rpg_extra.leftover_pool = rpg_extra.leftover_pool + share

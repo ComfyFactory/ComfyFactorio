@@ -31,7 +31,7 @@ ServerCommands.query_online_players = Server.query_online_players
 
 local SC_Interface = {
     get_ups = function()
-        return ServerCommands.get_ups
+        return ServerCommands.get_ups()
     end,
     set_ups = function(tick)
         if tick then

@@ -13,6 +13,7 @@ local blacklist = {
     ['spidertron'] = true,
     ['locomotive'] = true,
     ['artillery-wagon'] = true,
+    ['artillery-turret'] = true,
     ['fluid-wagon'] = true
 }
 
