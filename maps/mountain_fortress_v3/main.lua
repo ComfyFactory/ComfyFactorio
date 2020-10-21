@@ -4,7 +4,6 @@ require 'maps.mountain_fortress_v3.breached_wall'
 require 'maps.mountain_fortress_v3.ic.main'
 
 require 'modules.rpg.main'
-require 'modules.dynamic_landfill'
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.rocks_yield_ore_veins'
@@ -530,7 +529,10 @@ local on_research_finished = function(event)
     local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
     if research.force.technologies['steel-axe'].researched then
         mining_speed_bonus = mining_speed_bonus + 0.5
-        research.force.manual_mining_speed_modifier = mining_speed_bonus + this.force_mining_speed.speed
+        research.force.manual_mining_speed_modifier = mining_speed_bonus
+        local msg =
+            'Steel-axe technology has been researched, nerfing mining-speed.\nBuy Pickaxe-upgrades in the market!'
+        Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
     end -- +50% speed for steel-axe research
 
     local force_name = research.force.name
@@ -561,12 +563,14 @@ local is_player_valid = function()
     local players = game.connected_players
     for _, player in pairs(players) do
         if player.connected and not player.character or not player.character.valid then
-            local player_data = get_player_data(player)
-            if player_data.died then
-                return
+            if not player.admin then
+                local player_data = get_player_data(player)
+                if player_data.died then
+                    return
+                end
+                player.set_controller {type = defines.controllers.god}
+                player.create_character()
             end
-            player.set_controller {type = defines.controllers.god}
-            player.create_character()
         end
     end
 end

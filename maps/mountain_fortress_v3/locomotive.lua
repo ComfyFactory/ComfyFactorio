@@ -127,6 +127,10 @@ local set_loco_tiles =
     function(data)
         local position = data.position
         local surface = data.surface
+        if not surface or not surface.valid then
+            return
+        end
+
         local cargo_boxes = initial_cargo_boxes()
 
         local p = {}
@@ -935,10 +939,10 @@ local function gui_click(event)
                 player.name .. ' has rerolled the market items for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
-        this.reroll_amounts = this.reroll_amounts + item.stack
 
         local breached_wall = WPT.get('breached_wall')
         add_random_loot_to_main_market(breached_wall + random(1, 3))
+        Public.get_items(true)
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1897,27 +1901,51 @@ function Public.locomotive_spawn(surface, position)
     game.forces.player.set_spawn_position({0, 19}, locomotive.surface)
 end
 
-function Public.get_items()
+function Public.get_items(reroll)
     local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
     local health_upgrades = WPT.get('health_upgrades')
     local pickaxe_tier = WPT.get('pickaxe_tier')
     local aura_upgrades = WPT.get('aura_upgrades')
-    local reroll_amounts = WPT.get('reroll_amounts')
     local main_market_items = WPT.get('main_market_items')
     local xp_points_upgrade = WPT.get('xp_points_upgrade')
     local flame_turret = WPT.get('upgrades').flame_turret.bought
     local landmine = WPT.get('upgrades').landmine.bought
+    local fixed_prices = WPT.get('marked_fixed_prices')
 
-    local chest_limit_cost = 3000 * (1 + chest_limit_outside_upgrades)
-    local health_cost = 10000 * (1 + health_upgrades)
-    local pickaxe_cost = 3000 * (1 + pickaxe_tier)
-    local reroll_cost = 1000 * (1 + reroll_amounts)
-    local aura_cost = 4000 * (1 + aura_upgrades)
-    local xp_point_boost_cost = 5000 * (1 + xp_points_upgrade)
-    local explosive_bullets_cost = 20000
-    local flamethrower_turrets_cost = 3000 * (1 + flame_turret)
-    local land_mine_cost = 2 * (1 + landmine)
-    local skill_reset_cost = 100000
+    local chest_limit_cost = fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades)
+    local health_cost = fixed_prices.health_cost * (1 + health_upgrades)
+    local pickaxe_cost = fixed_prices.pickaxe_cost * (1 + pickaxe_tier)
+    local reroll_cost = fixed_prices.reroll_cost
+    local aura_cost = fixed_prices.aura_cost * (1 + aura_upgrades)
+    local xp_point_boost_cost = fixed_prices.xp_point_boost_cost * (1 + xp_points_upgrade)
+    local explosive_bullets_cost = fixed_prices.explosive_bullets_cost
+    local flamethrower_turrets_cost = fixed_prices.flamethrower_turrets_cost * (1 + flame_turret)
+    local land_mine_cost = fixed_prices.land_mine_cost * (1 + landmine)
+    local skill_reset_cost = fixed_prices.skill_reset_cost
+
+    if reroll then
+        fixed_prices.chest_limit_cost = random(2000, 3000) * (1 + chest_limit_outside_upgrades)
+        fixed_prices.health_cost = random(7000, 10000) * (1 + health_upgrades)
+        fixed_prices.pickaxe_cost = random(2500, 4000) * (1 + pickaxe_tier)
+        fixed_prices.reroll_cost = random(4000, 6000)
+        fixed_prices.aura_cost = random(3000, 6000) * (1 + aura_upgrades)
+        fixed_prices.xp_point_boost_cost = random(4000, 6000) * (1 + xp_points_upgrade)
+        fixed_prices.explosive_bullets_cost = random(18000, 21000)
+        fixed_prices.flamethrower_turrets_cost = random(2500, 4000) * (1 + flame_turret)
+        fixed_prices.land_mine_cost = random(1, 8) * (1 + landmine)
+        fixed_prices.skill_reset_cost = random(90000, 110000)
+        if main_market_items['spidertron'] then
+            local rng = random(70000, 120000)
+            main_market_items['spidertron'] = {
+                stack = 1,
+                value = 'coin',
+                price = rng,
+                tooltip = 'Chonk Spidertron',
+                upgrade = false,
+                static = true
+            }
+        end
+    end
     main_market_items['reroll_market_items'] = {
         stack = 1,
         value = 'coin',

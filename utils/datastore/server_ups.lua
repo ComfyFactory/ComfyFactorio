@@ -21,26 +21,33 @@ local function set_location(event)
     label.location = {x = res.width - 423 * uis, y = 30 * uis}
 end
 
+local function create_label(player, label)
+    local ups = Server.get_ups()
+    local sUPS = 'SUPS = ' .. ups
+    if not label or not label.valid then
+        label =
+            player.gui.screen.add(
+            {
+                type = 'label',
+                name = ups_label,
+                caption = sUPS
+            }
+        )
+        local style = label.style
+        style.font = 'default-game'
+        return label
+    end
+end
+
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.get_player(event.player_index)
-        local ups = Server.get_ups()
-        local sUPS = 'SUPS = ' .. ups
 
         local label = player.gui.screen[ups_label]
 
         if not label or not label.valid then
-            label =
-                player.gui.screen.add(
-                {
-                    type = 'label',
-                    name = ups_label,
-                    caption = sUPS
-                }
-            )
-            local style = label.style
-            style.font = 'default-game'
+            label = create_label(player, label)
         end
         set_location(event)
         label.visible = false
@@ -78,7 +85,7 @@ commands.add_command(
 
             local label = player.gui.screen[ups_label]
             if not label or not label.valid then
-                return
+                label = create_label(player, label)
             end
 
             if label.visible then

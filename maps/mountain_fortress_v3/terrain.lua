@@ -138,7 +138,7 @@ end
 local function place_wagon(data)
     local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     if not placed_trains_in_zone.randomized then
-        placed_trains_in_zone.limit = random(1, 5)
+        placed_trains_in_zone.limit = random(1, 3)
         placed_trains_in_zone.randomized = true
         placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     end
