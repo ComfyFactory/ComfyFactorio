@@ -293,7 +293,6 @@ function Public.reset_map()
 
     this.active_surface_index = CS.create_surface()
 
-    Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
 
     Poll.reset()
