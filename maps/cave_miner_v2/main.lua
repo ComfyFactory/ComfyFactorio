@@ -1,6 +1,7 @@
 local Constants = require 'maps.cave_miner_v2.constants'
 local Event = require 'utils.event'
 local Explosives = require "modules.explosives"
+local Autostash = require "modules.autostash"
 local Functions = require 'maps.cave_miner_v2.functions'
 local Global = require 'utils.global'
 local Market = require 'maps.cave_miner_v2.market'
@@ -50,7 +51,7 @@ local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if not player.character.valid then return end
-	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 9)
+	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 11)
 end
 
 local function on_chunk_generated(event)
@@ -141,7 +142,8 @@ local function init(cave_miner)
 	surface.daytime = 0.43
 	surface.freeze_daytime = true
 	surface.solar_power_multiplier = 5
-	
+
+	cave_miner.last_reroll_player_name = ""
 	cave_miner.reveal_queue = {}
 	cave_miner.rocks_broken = 0
 	cave_miner.pickaxe_tier = 1
@@ -154,6 +156,7 @@ local function init(cave_miner)
 	force.technologies["artillery"].enabled = false
 	force.technologies["artillery-shell-range-1"].enabled = false
 	force.technologies["artillery-shell-speed-1"].enabled = false
+	force.character_inventory_slots_bonus = 0
 	
 	cave_miner.gamestate = "spawn_players"
 end
@@ -213,7 +216,7 @@ local function on_init()
 	cave_miner.reveal_queue = {}
 	
 	global.rocks_yield_ore_maximum_amount = 256
-	global.rocks_yield_ore_base_amount = 28
+	global.rocks_yield_ore_base_amount = 16
 	global.rocks_yield_ore_distance_modifier = 0.01
 	
 	Explosives.set_destructible_tile("out-of-map", 1500)
@@ -228,13 +231,16 @@ local function on_init()
 	game.map_settings.enemy_evolution.pollution_factor = 0
 	game.map_settings.enemy_evolution.time_factor = 0
 	
-	global.rocks_yield_ore_veins.amount_modifier = 0.25
-	global.rocks_yield_ore_veins.chance = 756
+	global.rocks_yield_ore_veins.amount_modifier = 0.20
+	global.rocks_yield_ore_veins.chance = 1024
 	
 	local T = Map_info.Pop_info()
 	T.localised_category = "cave_miner"
 	T.main_caption_color = {r = 200, g = 100, b = 0}
 	T.sub_caption_color = {r = 0, g = 175, b = 175}
+	
+	Autostash.insert_into_furnace(true)
+	Autostash.insert_into_wagon(true)
 end
 
 Event.on_init(on_init)

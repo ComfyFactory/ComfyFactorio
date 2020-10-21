@@ -73,7 +73,7 @@ function Public.rock_spawns_biters(cave_miner, position)
 	local d = math_sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
 	local tick = game.tick	
 	for _ = 1, amount, 1 do
-		tick = tick + math_random(30, 120)
+		tick = tick + math_random(30, 90)
 		Esq.add_to_queue(tick, surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)		
 	end
 end
