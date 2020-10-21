@@ -1,4 +1,5 @@
-local Poll = {send_poll_result_to_discord = function () end}
+local Poll = {send_poll_result_to_discord = function()
+    end}
 local Token = require 'utils.token'
 local Server = require 'utils.server'
 
@@ -8,7 +9,6 @@ local Server = require 'utils.server'
 ServerCommands = {}
 
 ServerCommands.get_poll_result = Poll.send_poll_result_to_discord
-
 
 function ServerCommands.raise_callback(func_token, data)
     local func = Token.get(func_token)
@@ -23,6 +23,7 @@ function ServerCommands.server_started()
 end
 
 ServerCommands.set_time = Server.set_time
+ServerCommands.set_ups = Server.set_ups
 ServerCommands.query_online_players = Server.query_online_players
 
 return ServerCommands
