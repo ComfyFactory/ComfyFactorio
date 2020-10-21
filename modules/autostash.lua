@@ -9,7 +9,7 @@ local print_color = {r = 120, g = 255, b = 0}
 local autostash = {
     floating_text_y_offsets = {},
     whitelist = {},
-    insert_into_wagon = true
+    insert_into_wagon = false
 }
 
 local Public = {}
@@ -318,7 +318,7 @@ end
 
 local function auto_stash(player, event)
     local button = event.button
-    local shift = event.control
+    local shift = event.shift
     if not player.character then
         player.print('It seems that you are not in the realm of the living.', print_color)
         return
@@ -382,7 +382,7 @@ local function auto_stash(player, event)
                     end
                 end
                 if button == defines.mouse_button_type.right then
-                    if is_resource and filtered_allowed[name] then
+                    if filtered_allowed and is_resource and filtered_allowed[name] then
                         insert_item_into_chest(inventory, chests, filtered_chests, name, count, true)
                     end
                 end
