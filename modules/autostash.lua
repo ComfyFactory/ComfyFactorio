@@ -233,10 +233,12 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
                 return
             end
             local chest_inventory = chest.get_inventory(defines.inventory.chest)
-            if chest_inventory.can_insert({name = name, count = amount}) then
-                local inserted_count = chest_inventory.insert({name = name, count = amount})
-                player_inventory.remove({name = name, count = inserted_count})
-                create_floaty_text(chest.surface, chest.position, name, inserted_count)
+            if chest_inventory then
+                if chest_inventory.can_insert({name = name, count = amount}) then
+                    local inserted_count = chest_inventory.insert({name = name, count = amount})
+                    player_inventory.remove({name = name, count = inserted_count})
+                    create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                end
             end
         end
     end
