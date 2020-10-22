@@ -47,6 +47,21 @@ local function debug_print(msg)
     print('WaveDefense: ' .. msg)
 end
 
+local function is_closer(pos1, pos2, pos)
+    return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
+end
+
+local function shuffle_distance(tbl, position)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = math_random(size)
+        if is_closer(tbl[i].position, tbl[rand].position, position) and i > rand then
+            tbl[i], tbl[rand] = tbl[rand], tbl[i]
+        end
+    end
+    return tbl
+end
+
 local function remove_trees(entity)
     local surface = entity.surface
     local radius = 10
@@ -478,9 +493,10 @@ local function get_commmands(group)
             position = old_position,
             radius = step_length / 2,
             type = {'simple-entity', 'tree'},
-            limit = 1
+            limit = 50
         }
         if obstacles then
+            shuffle_distance(obstacles, old_position)
             for i = 1, #obstacles, 1 do
                 if obstacles[i].valid then
                     commands[#commands + 1] = {
@@ -539,7 +555,7 @@ local function command_unit_group(group)
     group.set_command(
         {
             type = defines.command.compound,
-            structure_type = defines.compound_command.logical_and,
+            structure_type = defines.compound_command.return_last,
             commands = get_commmands(group)
         }
     )

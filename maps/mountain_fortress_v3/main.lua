@@ -377,7 +377,7 @@ function Public.reset_map()
     wave_defense_table.spawn_position = {x = 0, y = 100}
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
-    WD.remove_entities(false)
+    WD.remove_entities(true)
     WD.enable_threat_log(true)
     WD.check_collapse_position(true)
 

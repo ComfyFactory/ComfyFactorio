@@ -54,7 +54,7 @@ function Public.reset_wave_defense()
     this.worm_raffle = {}
     this.clear_corpses = false
     this.alert_boss_wave = false
-    this.remove_entities = true
+    this.remove_entities = false
     this.enable_threat_log = true
     this.check_collapse_position = true
 end

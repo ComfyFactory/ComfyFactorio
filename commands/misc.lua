@@ -267,23 +267,28 @@ commands.add_command(
 
         for k, v in pairs(game.connected_players) do
             v.cheat_mode = true
-            v.insert {name = 'power-armor-mk2', count = 1}
             if v.character ~= nil then
+                if v.get_inventory(defines.inventory.character_armor) then
+                    v.get_inventory(defines.inventory.character_armor).clear()
+                end
+                v.insert {name = 'power-armor-mk2', count = 1}
                 local p_armor = v.get_inventory(5)[1].grid
-                p_armor.put({name = 'fusion-reactor-equipment'})
-                p_armor.put({name = 'fusion-reactor-equipment'})
-                p_armor.put({name = 'fusion-reactor-equipment'})
-                p_armor.put({name = 'exoskeleton-equipment'})
-                p_armor.put({name = 'exoskeleton-equipment'})
-                p_armor.put({name = 'exoskeleton-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'personal-roboport-mk2-equipment'})
-                p_armor.put({name = 'night-vision-equipment'})
-                p_armor.put({name = 'battery-mk2-equipment'})
-                p_armor.put({name = 'battery-mk2-equipment'})
+                if p_armor and p_armor.valid then
+                    p_armor.put({name = 'fusion-reactor-equipment'})
+                    p_armor.put({name = 'fusion-reactor-equipment'})
+                    p_armor.put({name = 'fusion-reactor-equipment'})
+                    p_armor.put({name = 'exoskeleton-equipment'})
+                    p_armor.put({name = 'exoskeleton-equipment'})
+                    p_armor.put({name = 'exoskeleton-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'personal-roboport-mk2-equipment'})
+                    p_armor.put({name = 'night-vision-equipment'})
+                    p_armor.put({name = 'battery-mk2-equipment'})
+                    p_armor.put({name = 'battery-mk2-equipment'})
+                end
                 local item = game.item_prototypes
                 local i = 0
                 for _k, _v in pairs(item) do
@@ -319,33 +324,33 @@ commands.add_command(
             end
         end
 
-		local forces = {}
-		for _, force in pairs(game.forces) do
-			if force.index == 1 or force.index > 3 then
-				table.insert(forces, force)
-			end
-		end
+        local forces = {}
+        for _, force in pairs(game.forces) do
+            if force.index == 1 or force.index > 3 then
+                table.insert(forces, force)
+            end
+        end
 
-		local is_charted
-		local count = 0
+        local is_charted
+        local count = 0
         for _, surface in pairs(game.surfaces) do
-			for chunk in surface.get_chunks() do
-				is_charted = false
-				for _, force in pairs(forces) do
-					if force.is_chunk_charted(surface, {chunk.x, chunk.y}) then
-						is_charted = true
-						break
-					end
-				end
-				if not is_charted then
-					surface.delete_chunk({chunk.x, chunk.y})
-					count = count + 1
-				end
-			end
-		end
-		
-		local message = player.name .. " deleted " .. count .. " uncharted chunks!"
-		game.print(message, Color.warning)
+            for chunk in surface.get_chunks() do
+                is_charted = false
+                for _, force in pairs(forces) do
+                    if force.is_chunk_charted(surface, {chunk.x, chunk.y}) then
+                        is_charted = true
+                        break
+                    end
+                end
+                if not is_charted then
+                    surface.delete_chunk({chunk.x, chunk.y})
+                    count = count + 1
+                end
+            end
+        end
+
+        local message = player.name .. ' deleted ' .. count .. ' uncharted chunks!'
+        game.print(message, Color.warning)
         Server.to_discord_bold(table.concat {message})
     end
 )
