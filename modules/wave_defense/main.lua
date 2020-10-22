@@ -203,7 +203,7 @@ local function get_random_close_spawner()
         end
         local k = math_random(1, #spawners)
         local spawner_2 = spawners[k]
-        if not spawner_2.valid then
+        if not spawner_2 or not spawner_2.valid then
             this.nests[k] = nil
             goto retry
         end

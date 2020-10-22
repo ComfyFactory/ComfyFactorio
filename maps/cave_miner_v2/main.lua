@@ -239,6 +239,7 @@ local function on_init()
 	T.main_caption_color = {r = 200, g = 100, b = 0}
 	T.sub_caption_color = {r = 0, g = 175, b = 175}
 	
+	Autostash.insert_into_furnace(true)
 	Autostash.insert_into_wagon(true)
 end
 
