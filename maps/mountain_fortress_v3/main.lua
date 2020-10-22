@@ -526,7 +526,7 @@ local on_research_finished = function(event)
 
     research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
     local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
-    if research.force.technologies['steel-axe'].researched then
+    if research.name == 'steel-axe' then
         mining_speed_bonus = mining_speed_bonus + 0.5
         research.force.manual_mining_speed_modifier = mining_speed_bonus
         local msg =

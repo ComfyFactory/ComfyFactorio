@@ -16,6 +16,9 @@ local function set_location(event)
     local player = game.get_player(event.player_index)
     local gui = player.gui
     local label = gui.screen[ups_label]
+    if not label or not label.valid then
+        return
+    end
     local res = player.display_resolution
     local uis = player.display_scale
     label.location = {x = res.width - 423 * uis, y = 30 * uis}
