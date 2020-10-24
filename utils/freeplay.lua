@@ -18,6 +18,17 @@ Global.register(
     end
 )
 
+local function is_game_modded()
+    local i = 0
+    for k, _ in pairs(game.active_mods) do
+        i = i + 1
+        if i > 1 then
+            return true
+        end
+    end
+    return false
+end
+
 local util = require('util')
 local crash_site = require('crash-site')
 
@@ -191,17 +202,14 @@ end
 Event.on_init(
     function()
         local i = 0
-        for k, _ in pairs(game.active_mods) do
-            i = i + 1
-            if i > 1 then
-                this.modded = true
-                this.disable_crashsite = false
-                this.created_items = created_items()
-                this.respawn_items = respawn_items()
-                this.crashed_ship_items = ship_items()
-                this.crashed_debris_items = debris_items()
-                return true
-            end
+        local game_has_mods = is_game_modded()
+        if game_has_mods then
+            this.modded = true
+            this.disable_crashsite = false
+            this.created_items = created_items()
+            this.respawn_items = respawn_items()
+            this.crashed_ship_items = ship_items()
+            this.crashed_debris_items = debris_items()
         end
     end
 )

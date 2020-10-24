@@ -11,6 +11,12 @@ Global.register(
     end
 )
 
+function Public.debug_module()
+    this.next_wave = 1000
+    this.wave_interval = 500
+    this.wave_enforced = true
+end
+
 function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false
@@ -48,6 +54,7 @@ function Public.reset_wave_defense()
     this.unit_group_command_step_length = 15
     this.unit_group_last_command = {}
     this.wave_interval = 3600
+    this.wave_enforced = false
     this.wave_number = 0
     this.worm_building_chance = 3
     this.worm_building_density = 16

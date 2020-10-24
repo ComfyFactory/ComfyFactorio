@@ -5,7 +5,7 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local Session = require 'utils.datastore.session_data'
-local Difficulty = require 'modules.difficulty_vote'
+local Difficulty = require 'maps.mountain_fortress_v3.difficulty_vote'
 local Jailed = require 'utils.datastore.jail_data'
 local RPG_Settings = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
@@ -83,9 +83,11 @@ end
 local function add_random_loot_to_main_market(rarity)
     local main_market_items = WPT.get('main_market_items')
     local items = Market.get_random_item(rarity, true, false)
+    if not items then
+        return false
+    end
 
     local types = game.item_prototypes
-    local ticker = 0
 
     for k, v in pairs(main_market_items) do
         if not v.static then
@@ -97,7 +99,6 @@ local function add_random_loot_to_main_market(rarity)
         local price = v.price[1][2] + random(1, 15) * rarity
         local value = v.price[1][1]
         local stack = 1
-        ticker = ticker + 1
         if v.offer.item == 'coin' then
             price = v.price[1][2]
             stack = v.offer.count
@@ -106,18 +107,14 @@ local function add_random_loot_to_main_market(rarity)
             end
         end
 
-        if main_market_items[v.offer.item] then
-            main_market_items[v.offer.item] = nil
-        end
-        main_market_items[v.offer.item] = {
-            stack = stack,
-            value = value,
-            price = price,
-            tooltip = types[v.offer.item].localised_name,
-            upgrade = false
-        }
-        if ticker >= 48 then
-            break
+        if not main_market_items[v.offer.item] then
+            main_market_items[v.offer.item] = {
+                stack = stack,
+                value = value,
+                price = price,
+                tooltip = types[v.offer.item].localised_name,
+                upgrade = false
+            }
         end
     end
 end
@@ -976,7 +973,7 @@ local function gui_click(event)
 
         local force = game.forces.player
 
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.05
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
 
         local force_mining_speed = WPT.get('force_mining_speed')
         force_mining_speed.speed = force.manual_mining_speed_modifier
@@ -1926,8 +1923,8 @@ function Public.get_items(reroll)
     if reroll then
         fixed_prices.chest_limit_cost = random(2000, 3000) * (1 + chest_limit_outside_upgrades)
         fixed_prices.health_cost = random(7000, 10000) * (1 + health_upgrades)
-        fixed_prices.pickaxe_cost = random(2500, 4000) * (1 + pickaxe_tier)
-        fixed_prices.reroll_cost = random(4000, 6000)
+        fixed_prices.pickaxe_cost = random(1500, 2000)
+        fixed_prices.reroll_cost = random(2000, 3000)
         fixed_prices.aura_cost = random(3000, 6000) * (1 + aura_upgrades)
         fixed_prices.xp_point_boost_cost = random(4000, 6000) * (1 + xp_points_upgrade)
         fixed_prices.explosive_bullets_cost = random(18000, 21000)

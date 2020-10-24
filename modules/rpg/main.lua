@@ -1061,6 +1061,11 @@ local function on_player_used_capsule(event)
     return
 end
 
+local function on_player_changed_surface(event)
+    local player = game.get_player(event.player_index)
+    RPG_GUI.draw_level_text(player)
+end
+
 local function tick()
     local ticker = game.tick
     local count = #game.connected_players
@@ -1123,4 +1128,5 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
+Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.on_nth_tick(10, tick)

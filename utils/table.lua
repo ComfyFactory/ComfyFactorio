@@ -1,4 +1,5 @@
 --luacheck: globals table
+local Stats = require 'utils.stats'
 local random = math.random
 local floor = math.floor
 local remove = table.remove
@@ -275,5 +276,10 @@ table.merge = util.merge
 -- @param tbl2 <table>
 -- @return <boolean>
 table.equals = table.compare
+
+--- Gets the median value out of a table.
+-- @param tbl1 <table>
+-- @return <int>
+table.mean = Stats.mean
 
 return table

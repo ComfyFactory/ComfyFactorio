@@ -64,7 +64,7 @@ end
 
 local function remove_trees(entity)
     local surface = entity.surface
-    local radius = 10
+    local radius = 15
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local trees = surface.find_entities_filtered {area = area, type = 'tree'}
@@ -79,7 +79,7 @@ end
 
 local function remove_rocks(entity)
     local surface = entity.surface
-    local radius = 10
+    local radius = 15
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
@@ -289,10 +289,8 @@ local function set_enemy_evolution()
         evolution_factor = 1
     end
 
-    if this.threat > 50000 then
-        biter_health_boost = math_round(biter_health_boost + (this.threat - 50000) * 0.000033, 3)
+    biter_health_boost = math_round(biter_health_boost + (this.threat - 5000) * 0.000033, 3)
     --damage_increase = math_round(damage_increase + this.threat * 0.0000025, 3)
-    end
 
     global.biter_health_boost = biter_health_boost
     --game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
@@ -392,8 +390,10 @@ local function set_next_wave()
     end
 
     this.threat = this.threat + math_floor(threat_gain)
-    this.last_wave = this.next_wave
-    this.next_wave = game.tick + this.wave_interval
+    if not this.wave_enforced then
+        this.last_wave = this.next_wave
+        this.next_wave = game.tick + this.wave_interval
+    end
     if this.clear_corpses then
         local surface = game.surfaces[this.surface_index]
         for _, entity in pairs(surface.find_entities_filtered {type = 'corpse'}) do

@@ -38,7 +38,7 @@ local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
-local Difficulty = require 'modules.difficulty_vote'
+local Difficulty = require 'maps.mountain_fortress_v3.difficulty_vote'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
@@ -125,7 +125,6 @@ end
 local set_difficulty = function()
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
-    local collapse_speed = WPT.get('collapse_speed')
     local collapse_amount = WPT.get('collapse_amount')
     local player_count = #game.connected_players
     if not Diff.difficulty_vote_value then
@@ -141,10 +140,13 @@ local set_difficulty = function()
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
-    local amount = player_count * 0.25 + 6
+    local amount = player_count * 0.1
     amount = floor(amount)
-    if amount > 10 then
-        amount = 10
+    if amount <= 0 then
+        amount = 1
+    end
+    if amount > 5 then
+        amount = 5
     end
 
     local difficulty = Difficulty.get()
@@ -152,7 +154,6 @@ local set_difficulty = function()
 
     if wave_defense_table.threat <= 0 then
         wave_defense_table.wave_interval = 1000
-        return
     end
     if name == 'Insane' then
         wave_defense_table.wave_interval = 1800
@@ -169,26 +170,14 @@ local set_difficulty = function()
     end
 
     if name == 'Insane' then
-        Collapse.set_amount(12)
+        Collapse.set_amount(10)
     elseif collapse_amount then
         Collapse.set_amount(collapse_amount)
     else
         Collapse.set_amount(amount)
     end
 
-    if name == 'Insane' then
-        Collapse.set_speed(5)
-    elseif collapse_speed then
-        Collapse.set_speed(collapse_speed)
-    else
-        if player_count >= 8 and player_count <= 12 then
-            Collapse.set_speed(8)
-        elseif player_count >= 20 and player_count <= 24 then
-            Collapse.set_speed(6)
-        elseif player_count >= 35 then
-            Collapse.set_speed(5)
-        end
-    end
+    Collapse.set_speed(1)
 end
 
 local render_direction = function(surface)
@@ -303,7 +292,9 @@ function Public.reset_map()
     Functions.reset_table()
     game.reset_time_played()
     WPT.reset_table()
+
     Map_score.reset_score()
+
     RPG_Func.rpg_reset_all_players()
     RPG_Settings.set_surface_name('mountain_fortress_v3')
     RPG_Settings.enable_health_and_mana_bars(true)
@@ -333,6 +324,7 @@ function Public.reset_map()
 
     global.custom_highscore.description = 'Wagon distance reached:'
     Entities.set_scores()
+
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(false)
@@ -530,9 +522,6 @@ local on_research_finished = function(event)
     if research.name == 'steel-axe' then
         mining_speed_bonus = mining_speed_bonus + 0.5
         research.force.manual_mining_speed_modifier = mining_speed_bonus
-        local msg =
-            'Steel-axe technology has been researched, nerfing mining-speed.\nBuy Pickaxe-upgrades in the market!'
-        Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
     end -- +50% speed for steel-axe research
 
     local force_name = research.force.name
@@ -736,6 +725,31 @@ local collapse_message =
     end
 )
 
+local compare_collapse_and_train = function()
+    local collapse_pos = Collapse.get_position()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local c_y = collapse_pos.y
+    local t_y = locomotive.position.y
+
+    local gap_between_zones = WPT.get('gap_between_zones')
+
+    if c_y - t_y <= gap_between_zones.gap then
+        if gap_between_zones.set then
+            set_difficulty()
+            gap_between_zones.set = false
+        end
+        return
+    end
+
+    Collapse.set_speed(1)
+    Collapse.set_amount(4)
+    gap_between_zones.set = true
+end
+
 local collapse_after_wave_100 = function()
     local collapse_grace = WPT.get('collapse_grace')
     if not collapse_grace then
@@ -779,19 +793,23 @@ local on_tick = function()
         is_locomotive_valid()
         has_the_game_ended()
         chunk_load()
+    end
 
-        if tick % 1200 == 0 then
-            boost_difficulty()
-            collapse_after_wave_100()
-            Entities.set_scores()
-            set_difficulty()
-            local spawn_near_collapse = WPT.get('spawn_near_collapse')
-            if spawn_near_collapse then
-                local collapse_pos = Collapse.get_position()
-                local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
-                if position then
-                    WD.set_spawn_position(position)
-                end
+    if tick % 250 == 0 then
+        compare_collapse_and_train()
+    end
+
+    if tick % 1200 == 0 then
+        boost_difficulty()
+        collapse_after_wave_100()
+        Entities.set_scores()
+        set_difficulty()
+        local spawn_near_collapse = WPT.get('spawn_near_collapse')
+        if spawn_near_collapse then
+            local collapse_pos = Collapse.get_position()
+            local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
+            if position then
+                WD.set_spawn_position(position)
             end
         end
     end
@@ -804,27 +822,35 @@ local on_init = function()
     local difficulties = {
         [1] = {
             name = 'Easy',
+            index = 1,
             value = 0.75,
             color = {r = 0.00, g = 0.25, b = 0.00},
-            print_color = {r = 0.00, g = 0.4, b = 0.00}
+            print_color = {r = 0.00, g = 0.4, b = 0.00},
+            count = 0
         },
         [2] = {
             name = 'Normal',
+            index = 2,
             value = 1,
             color = {r = 0.00, g = 0.00, b = 0.25},
-            print_color = {r = 0.0, g = 0.0, b = 0.5}
+            print_color = {r = 0.0, g = 0.0, b = 0.5},
+            count = 0
         },
         [3] = {
             name = 'Hard',
+            index = 3,
             value = 1.5,
             color = {r = 0.25, g = 0.25, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00}
+            print_color = {r = 0.4, g = 0.0, b = 0.00},
+            count = 0
         },
         [4] = {
             name = 'Insane',
+            index = 4,
             value = 3,
             color = {r = 0.25, g = 0.00, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00}
+            print_color = {r = 0.4, g = 0.0, b = 0.00},
+            count = 0
         }
     }
 

@@ -3,8 +3,8 @@ local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 
-local quickbar_dataset = 'quickbar'
-local quickbar_dataset_modded = 'quickbar_modded'
+local logistics_dataset = 'logistics'
+local logistics_dataset_modded = 'logistics_modded'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
@@ -33,7 +33,7 @@ local fetch =
         if value then
             for i, item_name in pairs(value) do
                 if item_name ~= nil and item_name ~= '' then
-                    player.set_quick_bar_slot(i, item_name)
+                    player.set_personal_logistic_slot(i, item_name)
                 end
             end
         end
@@ -44,7 +44,7 @@ local fetch =
 -- @param data_set player token
 function Public.fetch(key)
     local secs = Server.get_current_time()
-    local dataset = quickbar_dataset
+    local dataset = logistics_dataset
     if not secs then
         local player = game.players[key]
         if not player or not player.valid then
@@ -54,7 +54,7 @@ function Public.fetch(key)
     else
         local game_has_mods = is_game_modded()
         if game_has_mods then
-            dataset = quickbar_dataset_modded
+            dataset = logistics_dataset_modded
         end
 
         try_get_data(dataset, key, fetch)
@@ -62,8 +62,8 @@ function Public.fetch(key)
 end
 
 commands.add_command(
-    'save-quickbar',
-    'Save your quickbar preset so it´s always the same.',
+    'save-logistics',
+    'Save your personal logistics preset so it´s always the same.',
     function()
         local player = game.player
         if not player or not player.valid then
@@ -75,46 +75,46 @@ commands.add_command(
             return
         end
 
-        local dataset = quickbar_dataset
+        local dataset = logistics_dataset
 
         local game_has_mods = is_game_modded()
         if game_has_mods then
-            dataset = quickbar_dataset_modded
+            dataset = logistics_dataset_modded
         end
 
         local slots = {}
 
         for i = 1, 100 do
-            local slot = player.get_quick_bar_slot(i)
+            local slot = player.get_personal_logistic_slot(i)
             if slot ~= nil then
                 slots[i] = slot.name
             end
         end
         if next(slots) then
             set_data(dataset, player.name, slots)
-            player.print('Your quickbar has been saved.', Color.success)
+            player.print('Your personal logistics has been saved.', Color.success)
         end
     end
 )
 
 commands.add_command(
-    'remove-quickbar',
-    'Removes your quickbar preset from the datastore.',
+    'remove-logistics',
+    'Removes your personal logistics preset from the datastore.',
     function()
         local player = game.player
         if not player or not player.valid then
             return
         end
 
-        local dataset = quickbar_dataset
+        local dataset = logistics_dataset
 
         local game_has_mods = is_game_modded()
         if game_has_mods then
-            dataset = quickbar_dataset_modded
+            dataset = logistics_dataset_modded
         end
 
         set_data(dataset, player.name, nil)
-        player.print('Your quickbar has been removed.', Color.success)
+        player.print('Your personal logistics has been removed.', Color.success)
     end
 )
 

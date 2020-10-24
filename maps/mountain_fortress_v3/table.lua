@@ -130,6 +130,7 @@ function Public.reset_table()
     }
     this.aura_upgrades = 0
     this.pickaxe_tier = 1
+    this.pickaxe_speed_per_purchase = 0.10
     this.health_upgrades = 0
     this.breached_wall = 1
     this.offline_players_enabled = true
