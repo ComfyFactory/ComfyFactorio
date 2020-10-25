@@ -83,7 +83,7 @@ local function on_player_mined_entity(event)
 			return
 		end
 		if math.random(1, 1024) == 1 then
-			local unit = Functions.spawn_random_biter(surface, position, 1)
+			local unit = Functions.spawn_random_biter(surface, position, 2)
 			Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
 			return
 		end	

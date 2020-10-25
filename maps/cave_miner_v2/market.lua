@@ -85,6 +85,7 @@ function Public.offer_bought(event, cave_miner)
 	local bought_offer = offers[offer_index].offer
 	if bought_offer.type ~= "nothing" then return end
 	if offer_index == 1 then
+		market.force.play_sound({path = 'utility/new_objective', volume_modifier = 0.75})
 		cave_miner.pickaxe_tier = cave_miner.pickaxe_tier + 1
 		local speed = Functions.set_mining_speed(cave_miner, player.force)
 		game.print("Pickaxe has been upgraded to: " .. Constants.pickaxe_tiers[cave_miner.pickaxe_tier] .. "!")
@@ -95,10 +96,11 @@ function Public.offer_bought(event, cave_miner)
 	end
 	if offer_index == 2 then
 		market.force.character_inventory_slots_bonus = market.force.character_inventory_slots_bonus + 2
+		market.force.play_sound({path = 'utility/new_objective', volume_modifier = 0.75})
 		game.print("Backpack has been upgraded to tier " .. (market.force.character_inventory_slots_bonus + 2) * 0.5 .. "!")
 		Public.refresh_offer(market, cave_miner, 2)
 		Public.refresh_offer(market, cave_miner, 3)
-		Functions.update_top_gui(cave_miner, 2)
+		Functions.update_top_gui(cave_miner, 2)	
 		return
 	end	
 	if offer_index == 3 then
