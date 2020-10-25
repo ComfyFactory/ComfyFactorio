@@ -35,6 +35,10 @@ local spidertron_unlocked =
     end
 )
 
+local calculate_hp = function(zone)
+    return 2 + 0.2 * zone - 1 * floor(zone / 20)
+end
+
 local first_player_to_zone =
     Token.register(
     function(data)
@@ -55,32 +59,6 @@ local artillery_warning =
         Alert.alert_all_players(10, message)
     end
 )
-
-local compare_collapse_and_train = function()
-    local collapse_pos = Collapse.get_position()
-    local locomotive = WPT.get('locomotive')
-    if not locomotive or not locomotive.valid then
-        return
-    end
-
-    local c_y = collapse_pos.y
-    local t_y = locomotive.position.y
-
-    local gap_between_zones = WPT.get('gap_between_zones')
-
-    if c_y - t_y <= gap_between_zones.gap then
-        if not gap_between_zones.set then
-            Collapse.set_speed(8)
-            Collapse.set_amount(6)
-            gap_between_zones.set = true
-        end
-        return
-    end
-
-    Collapse.set_speed(6)
-    Collapse.set_amount(11)
-    gap_between_zones.set = false
-end
 
 local function distance(player)
     local rpg_t = RPG_Settings.get('rpg_t')
@@ -110,7 +88,7 @@ local function distance(player)
             WPT.set().placed_trains_in_zone.randomized = false
             WPT.set().placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})
-
+            --[[ global.biter_health_boost = calculate_hp(breached_wall) ]]
             if WPT.get('breached_wall') == WPT.get('spidertron_unlocked_at_wave') then
                 local main_market_items = WPT.get('main_market_items')
                 if not main_market_items['spidertron'] then
@@ -172,5 +150,4 @@ local function on_player_changed_position(event)
     distance(player)
 end
 
-Event.on_nth_tick(100, compare_collapse_and_train)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

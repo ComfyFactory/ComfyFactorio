@@ -198,16 +198,18 @@ local function get_resource_market_buys()
     return buys
 end
 
-local function get_market_item_list(market_types, rarity)
+local function get_market_item_list(rarity)
     if rarity < 1 then
         rarity = 1
     end
     if rarity > 10 then
         rarity = 10
     end
+    local types = get_types()
     local list = {}
-    for _, market_type in pairs(market_types) do
-        for k, item in pairs(market[market_type]) do
+    for i = 1, 9 do
+        local branch = market[types[i]]
+        for k, item in pairs(branch) do
             --if item.rarity <= rarity and item.rarity + 7 >= rarity then
             if item.rarity <= rarity then
                 local price = random(floor(item.value * 0.75), floor(item.value * 1.25))
@@ -229,12 +231,7 @@ end
 
 function Public.get_random_item(rarity, sell, buy)
     rarity = rarity or 0
-    local types = get_types()
-    table.shuffle_table(types)
-    local items
-    for i = 1, 9 do
-        items = get_market_item_list({types[i]}, rarity)
-    end
+    local items = get_market_item_list(rarity)
     if not items then
         return
     end
@@ -244,7 +241,7 @@ function Public.get_random_item(rarity, sell, buy)
 
     local items_return = {}
 
-    for i = 1, random(5, 10), 1 do
+    for i = 1, 25, 1 do
         local item = items[i]
         if not item then
             break
@@ -256,14 +253,14 @@ function Public.get_random_item(rarity, sell, buy)
 
     if sell then
         local sells = get_resource_market_sells()
-        for i = 1, random(1, 20), 1 do
+        for i = 1, random(1, 25), 1 do
             items_return[#items_return + 1] = sells[i]
         end
     end
 
     if buy then
         local buys = get_resource_market_buys()
-        for i = 1, random(1, 20), 1 do
+        for i = 1, random(1, 25), 1 do
             items_return[#items_return + 1] = buys[i]
         end
     end
@@ -274,7 +271,7 @@ end
 function Public.mountain_market(surface, position, rarity, buy)
     local types = get_types()
     table.shuffle_table(types)
-    local items = get_market_item_list({types[1], types[2], types[3]}, rarity)
+    local items = get_market_item_list(rarity)
     if not items then
         return
     end

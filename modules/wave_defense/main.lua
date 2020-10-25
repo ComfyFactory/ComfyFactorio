@@ -62,20 +62,9 @@ local function shuffle_distance(tbl, position)
     return tbl
 end
 
-local function fast_remove(tbl, index)
-    local count = #tbl
-    if index > count then
-        return
-    elseif index < count then
-        tbl[index] = tbl[count]
-    end
-
-    tbl[count] = nil
-end
-
 local function remove_trees(entity)
     local surface = entity.surface
-    local radius = 10
+    local radius = 15
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local trees = surface.find_entities_filtered {area = area, type = 'tree'}
@@ -90,7 +79,7 @@ end
 
 local function remove_rocks(entity)
     local surface = entity.surface
-    local radius = 10
+    local radius = 15
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
@@ -202,19 +191,26 @@ local function time_out_biters()
     end
 end
 
-local function get_random_close_spawner(surface)
+local function get_random_close_spawner()
     local this = WD.get()
-    local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = 'enemy'})
-    if not spawners[1] then
-        return false
-    end
+    local spawners = this.nests
     local center = this.target.position
-    local spawner = spawners[math_random(1, #spawners)]
+    local spawner
     for i = 1, this.get_random_close_spawner_attempts, 1 do
-        local spawner_2 = spawners[math_random(1, #spawners)]
+        ::retry::
+        if #spawners < 1 then
+            return false
+        end
+        local k = math_random(1, #spawners)
+        local spawner_2 = spawners[k]
+        if not spawner_2 or not spawner_2.valid then
+            this.nests[k] = nil
+            goto retry
+        end
         if
-            (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 <
-                (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2
+            not spawner or
+                (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 <
+                    (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2
          then
             spawner = spawner_2
         end
@@ -225,7 +221,8 @@ end
 
 local function get_random_character(this)
     local characters = {}
-    for _, player in pairs(game.connected_players) do
+    local p = game.connected_players
+    for _, player in pairs(p) do
         if player.character then
             if player.character.valid then
                 if player.character.surface.index == this.surface_index then
@@ -265,7 +262,7 @@ end
 
 local function set_group_spawn_position(surface)
     local this = WD.get()
-    local spawner = get_random_close_spawner(surface)
+    local spawner = get_random_close_spawner()
     if not spawner then
         return
     end
@@ -292,10 +289,8 @@ local function set_enemy_evolution()
         evolution_factor = 1
     end
 
-    if this.threat > 50000 then
-        biter_health_boost = math_round(biter_health_boost + (this.threat - 50000) * 0.000033, 3)
+    biter_health_boost = math_round(biter_health_boost + (this.threat - 5000) * 0.000033, 3)
     --damage_increase = math_round(damage_increase + this.threat * 0.0000025, 3)
-    end
 
     global.biter_health_boost = biter_health_boost
     --game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
@@ -395,8 +390,10 @@ local function set_next_wave()
     end
 
     this.threat = this.threat + math_floor(threat_gain)
-    this.last_wave = this.next_wave
-    this.next_wave = game.tick + this.wave_interval
+    if not this.wave_enforced then
+        this.last_wave = this.next_wave
+        this.next_wave = game.tick + this.wave_interval
+    end
     if this.clear_corpses then
         local surface = game.surfaces[this.surface_index]
         for _, entity in pairs(surface.find_entities_filtered {type = 'corpse'}) do
@@ -418,11 +415,19 @@ local function reform_group(group)
             new_group.add_member(biter)
         end
         debug_print('Creating new unit group, because old one was stuck.')
-        table_insert(this.unit_groups, new_group)
+        this.unit_groups[new_group.group_number] = new_group
+        this.index = this.index + 1
+
         return new_group
     else
         debug_print('Destroying stuck group.')
-        --table.remove(this.unit_groups, group) --need group id instead to work, so as of now, groups are removed only by regular remove checks :( !
+        if this.unit_groups[group.group_number] then
+            table.remove(this.unit_groups, group.group_number)
+            this.index = this.index - 1
+            if this.index <= 0 then
+                this.index = 0
+            end
+        end
         group.destroy()
     end
     return nil
@@ -454,66 +459,6 @@ local function get_commmands(group)
                 )
                 debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
                 debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
-            end
-
-            for i = 1, steps, 1 do
-                local old_position = group_position
-                group_position.x = group_position.x + vector[1]
-                group_position.y = group_position.y + vector[2]
-                local obstacles =
-                    group.surface.find_entities_filtered {
-                    position = old_position,
-                    radius = step_length,
-                    type = {'simple-entity', 'tree'},
-                    limit = 50
-                }
-                if obstacles then
-                    shuffle_distance(obstacles, old_position)
-                    for i = 1, #obstacles, 1 do
-                        if obstacles[i].valid then
-                            commands[#commands + 1] = {
-                                type = defines.command.attack,
-                                target = obstacles[i],
-                                distraction = defines.distraction.by_enemy
-                            }
-                        end
-                    end
-                end
-                local position =
-                    group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 4)
-                if position then
-                    -- commands[#commands + 1] = {
-                    -- 	type = defines.command.go_to_location,
-                    -- 	destination = {x = position.x, y = position.y},
-                    -- 	distraction = defines.distraction.by_anything
-                    -- }
-                    commands[#commands + 1] = {
-                        type = defines.command.attack_area,
-                        destination = {x = position.x, y = position.y},
-                        radius = 16,
-                        distraction = defines.distraction.by_anything
-                    }
-                else
-                    local obstacles =
-                        group.surface.find_entities_filtered {
-                        position = group_position,
-                        radius = step_length,
-                        type = {'simple-entity', 'tree'},
-                        limit = 50
-                    }
-                    if obstacles then
-                        shuffle_distance(obstacles, old_position)
-                        for i = 1, #obstacles, 1 do
-                            if obstacles[i].valid then
-                                commands[#commands + 1] = {
-                                    type = defines.command.attack,
-                                    target = obstacles[i],
-                                    distraction = defines.distraction.by_enemy
-                                }
-                            end
-                        end
-                    end
-                end
             end
 
             commands[#commands + 1] = {
@@ -598,18 +543,14 @@ local function command_unit_group(group)
     if this.unit_group_last_command[group.group_number] then
         if this.unit_group_last_command[group.group_number] + this.unit_group_command_delay > game.tick then
             return
+        else
+            this.unit_group_last_command[group.group_number] = game.tick
         end
     end
 
     local tile = group.surface.get_tile(group.position)
     if tile.valid and tile.collides_with('player-layer') then
         group = reform_group(group)
-    end
-    if not group then
-        return
-    end
-    if not group.valid then
-        return
     end
     group.set_command(
         {
@@ -618,14 +559,11 @@ local function command_unit_group(group)
             commands = get_commmands(group)
         }
     )
-    if group and group.valid then
-        this.unit_group_last_command[group.group_number] = game.tick
-    end
 end
 
 local function give_commands_to_unit_groups()
     local this = WD.get()
-    if #this.unit_groups == 0 then
+    if this.index == 0 then
         return
     end
     if not this.target then
@@ -635,10 +573,20 @@ local function give_commands_to_unit_groups()
         return
     end
     for k, group in pairs(this.unit_groups) do
-        if group.valid then
-            command_unit_group(group, this)
-        else
-            fast_remove(this.unit_groups, k)
+        if not group.valid then
+            this.unit_groups[k] = nil
+            this.index = this.index - 1
+            if this.index <= 0 then
+                this.index = 0
+            end
+            if this.unit_group_last_command[k] then
+                this.unit_group_last_command[k] = nil
+            end
+        end
+        if type(group) ~= 'number' then
+            if group.valid then
+                command_unit_group(group, this)
+            end
         end
     end
 end
@@ -660,7 +608,7 @@ local function spawn_unit_group()
     local surface = game.surfaces[this.surface_index]
     set_group_spawn_position(surface)
     local pos = this.spawn_position
-    if not surface.can_place_entity({name = 'small-biter', position = pos}) then
+    if not surface.can_place_entity({name = 'behemoth-biter', position = pos}) then
         return
     end
 
@@ -704,8 +652,11 @@ local function spawn_unit_group()
         end
         this.boss_wave = false
     end
-
-    table_insert(this.unit_groups, unit_group)
+    this.unit_groups[unit_group.group_number] = unit_group
+    if math_random(1, 2) == 1 then
+        this.random_group = unit_group.group_number
+    end
+    this.index = this.index + 1
     return true
 end
 
@@ -754,7 +705,8 @@ local function on_tick()
             log_threat()
         end
     end
-    for _, player in pairs(game.connected_players) do
+    local players = game.connected_players
+    for _, player in pairs(players) do
         update_gui(player)
     end
 end

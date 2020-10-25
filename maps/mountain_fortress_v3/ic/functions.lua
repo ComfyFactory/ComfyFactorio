@@ -659,7 +659,9 @@ function Public.validate_owner(ic, player, entity)
             if p then
                 if car.owner ~= player.index and player.driving then
                     player.driving = false
-                    return Utils.print_to(nil, '{Car} ' .. player.name .. ' tried to drive ' .. p.name .. '´s car.')
+                    if not player.admin then
+                        return Utils.print_to(nil, '{Car} ' .. player.name .. ' tried to drive ' .. p.name .. '´s car.')
+                    end
                 end
             end
         end

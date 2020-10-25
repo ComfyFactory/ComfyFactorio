@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local Difficulty = require 'modules.difficulty_vote'
+local Difficulty = require 'maps.mountain_fortress_v3.difficulty_vote'
 
 local Public = {}
 

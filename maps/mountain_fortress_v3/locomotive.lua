@@ -5,7 +5,7 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local Session = require 'utils.datastore.session_data'
-local Difficulty = require 'modules.difficulty_vote'
+local Difficulty = require 'maps.mountain_fortress_v3.difficulty_vote'
 local Jailed = require 'utils.datastore.jail_data'
 local RPG_Settings = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
@@ -83,9 +83,11 @@ end
 local function add_random_loot_to_main_market(rarity)
     local main_market_items = WPT.get('main_market_items')
     local items = Market.get_random_item(rarity, true, false)
+    if not items then
+        return false
+    end
 
     local types = game.item_prototypes
-    local ticker = 0
 
     for k, v in pairs(main_market_items) do
         if not v.static then
@@ -97,7 +99,6 @@ local function add_random_loot_to_main_market(rarity)
         local price = v.price[1][2] + random(1, 15) * rarity
         local value = v.price[1][1]
         local stack = 1
-        ticker = ticker + 1
         if v.offer.item == 'coin' then
             price = v.price[1][2]
             stack = v.offer.count
@@ -106,18 +107,14 @@ local function add_random_loot_to_main_market(rarity)
             end
         end
 
-        if main_market_items[v.offer.item] then
-            main_market_items[v.offer.item] = nil
-        end
-        main_market_items[v.offer.item] = {
-            stack = stack,
-            value = value,
-            price = price,
-            tooltip = types[v.offer.item].localised_name,
-            upgrade = false
-        }
-        if ticker >= 48 then
-            break
+        if not main_market_items[v.offer.item] then
+            main_market_items[v.offer.item] = {
+                stack = stack,
+                value = value,
+                price = price,
+                tooltip = types[v.offer.item].localised_name,
+                upgrade = false
+            }
         end
     end
 end
@@ -127,6 +124,10 @@ local set_loco_tiles =
     function(data)
         local position = data.position
         local surface = data.surface
+        if not surface or not surface.valid then
+            return
+        end
+
         local cargo_boxes = initial_cargo_boxes()
 
         local p = {}
@@ -935,10 +936,10 @@ local function gui_click(event)
                 player.name .. ' has rerolled the market items for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
-        this.reroll_amounts = this.reroll_amounts + item.stack
 
         local breached_wall = WPT.get('breached_wall')
         add_random_loot_to_main_market(breached_wall + random(1, 3))
+        Public.get_items(true)
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -972,7 +973,7 @@ local function gui_click(event)
 
         local force = game.forces.player
 
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.05
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
 
         local force_mining_speed = WPT.get('force_mining_speed')
         force_mining_speed.speed = force.manual_mining_speed_modifier
@@ -1897,27 +1898,51 @@ function Public.locomotive_spawn(surface, position)
     game.forces.player.set_spawn_position({0, 19}, locomotive.surface)
 end
 
-function Public.get_items()
+function Public.get_items(reroll)
     local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
     local health_upgrades = WPT.get('health_upgrades')
     local pickaxe_tier = WPT.get('pickaxe_tier')
     local aura_upgrades = WPT.get('aura_upgrades')
-    local reroll_amounts = WPT.get('reroll_amounts')
     local main_market_items = WPT.get('main_market_items')
     local xp_points_upgrade = WPT.get('xp_points_upgrade')
     local flame_turret = WPT.get('upgrades').flame_turret.bought
     local landmine = WPT.get('upgrades').landmine.bought
+    local fixed_prices = WPT.get('marked_fixed_prices')
 
-    local chest_limit_cost = 3000 * (1 + chest_limit_outside_upgrades)
-    local health_cost = 10000 * (1 + health_upgrades)
-    local pickaxe_cost = 3000 * (1 + pickaxe_tier)
-    local reroll_cost = 1000 * (1 + reroll_amounts)
-    local aura_cost = 4000 * (1 + aura_upgrades)
-    local xp_point_boost_cost = 5000 * (1 + xp_points_upgrade)
-    local explosive_bullets_cost = 20000
-    local flamethrower_turrets_cost = 3000 * (1 + flame_turret)
-    local land_mine_cost = 2 * (1 + landmine)
-    local skill_reset_cost = 100000
+    local chest_limit_cost = fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades)
+    local health_cost = fixed_prices.health_cost * (1 + health_upgrades)
+    local pickaxe_cost = fixed_prices.pickaxe_cost * (1 + pickaxe_tier)
+    local reroll_cost = fixed_prices.reroll_cost
+    local aura_cost = fixed_prices.aura_cost * (1 + aura_upgrades)
+    local xp_point_boost_cost = fixed_prices.xp_point_boost_cost * (1 + xp_points_upgrade)
+    local explosive_bullets_cost = fixed_prices.explosive_bullets_cost
+    local flamethrower_turrets_cost = fixed_prices.flamethrower_turrets_cost * (1 + flame_turret)
+    local land_mine_cost = fixed_prices.land_mine_cost * (1 + landmine)
+    local skill_reset_cost = fixed_prices.skill_reset_cost
+
+    if reroll then
+        fixed_prices.chest_limit_cost = random(2000, 3000) * (1 + chest_limit_outside_upgrades)
+        fixed_prices.health_cost = random(7000, 10000) * (1 + health_upgrades)
+        fixed_prices.pickaxe_cost = random(1500, 2000)
+        fixed_prices.reroll_cost = random(2000, 3000)
+        fixed_prices.aura_cost = random(3000, 6000) * (1 + aura_upgrades)
+        fixed_prices.xp_point_boost_cost = random(4000, 6000) * (1 + xp_points_upgrade)
+        fixed_prices.explosive_bullets_cost = random(18000, 21000)
+        fixed_prices.flamethrower_turrets_cost = random(2500, 4000) * (1 + flame_turret)
+        fixed_prices.land_mine_cost = random(1, 8) * (1 + landmine)
+        fixed_prices.skill_reset_cost = random(90000, 110000)
+        if main_market_items['spidertron'] then
+            local rng = random(70000, 120000)
+            main_market_items['spidertron'] = {
+                stack = 1,
+                value = 'coin',
+                price = rng,
+                tooltip = 'Chonk Spidertron',
+                upgrade = false,
+                static = true
+            }
+        end
+    end
     main_market_items['reroll_market_items'] = {
         stack = 1,
         value = 'coin',

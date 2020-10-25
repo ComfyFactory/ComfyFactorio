@@ -53,6 +53,8 @@ function Public.fetch(key)
     end
 end
 
+local fetcher = Public.fetch
+
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
@@ -61,7 +63,7 @@ Event.add(
             return
         end
 
-        Public.fetch(player.name)
+        fetcher(player.name)
     end
 )
 

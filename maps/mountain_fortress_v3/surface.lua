@@ -1,4 +1,3 @@
-require 'util'
 local Global = require 'utils.global'
 local surface_name = 'mountain_fortress_v3'
 local level_width = require 'maps.mountain_fortress_v3.terrain'.level_width

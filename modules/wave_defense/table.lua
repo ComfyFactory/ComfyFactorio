@@ -11,6 +11,12 @@ Global.register(
     end
 )
 
+function Public.debug_module()
+    this.next_wave = 1000
+    this.wave_interval = 500
+    this.wave_enforced = true
+end
+
 function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false
@@ -18,7 +24,7 @@ function Public.reset_wave_defense()
     this.active_biters = {}
     this.active_biter_count = 0
     this.active_biter_threat = 0
-    this.average_unit_group_size = 168
+    this.average_unit_group_size = 128
     this.biter_raffle = {}
     this.debug = false
     this.game_lost = false
@@ -26,12 +32,13 @@ function Public.reset_wave_defense()
     this.group_size = 2
     this.last_wave = game.tick
     this.max_active_biters = 1280
-    this.max_active_unit_groups = 8
+    this.max_active_unit_groups = 6
     this.max_biter_age = 3600 * 60
+    this.nests = {}
     this.nest_building_density = 48
     this.next_wave = game.tick + 3600 * 15
     this.side_targets = {}
-    this.simple_entity_shredding_cost_modifier = 0.005
+    this.simple_entity_shredding_cost_modifier = 0.009
     this.spawn_position = {x = 0, y = 64}
     this.spitter_raffle = {}
     this.surface_index = 1
@@ -41,10 +48,13 @@ function Public.reset_wave_defense()
     this.threat_log = {}
     this.threat_log_index = 0
     this.unit_groups = {}
-    this.unit_group_command_delay = 3600 * 15
-    this.unit_group_command_step_length = 20
+    this.index = 0
+    this.random_group = nil
+    this.unit_group_command_delay = 3600 * 25
+    this.unit_group_command_step_length = 15
     this.unit_group_last_command = {}
     this.wave_interval = 3600
+    this.wave_enforced = false
     this.wave_number = 0
     this.worm_building_chance = 3
     this.worm_building_density = 16

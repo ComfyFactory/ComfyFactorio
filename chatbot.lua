@@ -17,7 +17,12 @@ local brain = {
         'If you have played for more than 5h in our maps then,',
         'you are eligible to run the command /jail and /free'
     },
-    [3] = {'Scenario repository for download:', 'https://github.com/M3wM3w/ComfyFactorio'}
+    [3] = {'Scenario repository for download:', 'https://github.com/M3wM3w/ComfyFactorio'},
+    [4] = {
+        'If you feel like the server is lagging, run the following command:',
+        '/server-ups',
+        'This will display the server UPS on your top right screen.'
+    }
 }
 
 local links = {
@@ -36,7 +41,8 @@ local links = {
     ['stealing'] = brain[2],
     ['stole'] = brain[2],
     ['troll'] = brain[2],
-    ['trolling'] = brain[2]
+    ['lag'] = brain[4],
+    ['lagging'] = brain[4]
 }
 
 local function on_player_created(event)
@@ -152,9 +158,6 @@ commands.add_command(
 
 local function process_bot_answers(event)
     local player = game.players[event.player_index]
-    if player.admin == true then
-        return
-    end
     local message = event.message
     message = string.lower(message)
     for word in string.gmatch(message, '%g+') do
@@ -169,6 +172,10 @@ end
 
 local function on_console_chat(event)
     if not event.player_index then
+        return
+    end
+    local secs = Server.get_current_time()
+    if not secs then
         return
     end
     process_bot_answers(event)

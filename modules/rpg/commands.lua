@@ -98,6 +98,13 @@ commands.add_command(
         end
 
         local param = cmd.parameter
+        if not param then
+            return
+        end
+
+        if param == '' then
+            return
+        end
 
         local target = game.players[param]
         if not target or not target.valid then

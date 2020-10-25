@@ -129,8 +129,8 @@ function Public.reset_table()
         }
     }
     this.aura_upgrades = 0
-    this.reroll_amounts = 0
     this.pickaxe_tier = 1
+    this.pickaxe_speed_per_purchase = 0.10
     this.health_upgrades = 0
     this.breached_wall = 1
     this.offline_players_enabled = true
@@ -158,8 +158,20 @@ function Public.reset_table()
     this.placed_trains_in_zone = {
         placed = 0,
         positions = {},
-        limit = 4,
+        limit = 3,
         randomized = false
+    }
+    this.marked_fixed_prices = {
+        chest_limit_cost = 3000,
+        health_cost = 10000,
+        pickaxe_cost = 3000,
+        reroll_cost = 5000,
+        aura_cost = 4000,
+        xp_point_boost_cost = 5000,
+        explosive_bullets_cost = 20000,
+        flamethrower_turrets_cost = 3000,
+        land_mine_cost = 2,
+        skill_reset_cost = 100000
     }
     this.collapse_grace = true
     this.explosive_bullets = false

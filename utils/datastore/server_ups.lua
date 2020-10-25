@@ -6,43 +6,54 @@ local Color = require 'utils.color_presets'
 local ups_label = GUI.uid_name()
 
 local function validate_player(player)
-    if not player or not player.valid then
+    if not player then
+        return false
+    end
+    if not player.valid then
         return false
     end
     return true
 end
 
-local function set_location(event)
-    local player = game.get_player(event.player_index)
+local function set_location(player)
     local gui = player.gui
     local label = gui.screen[ups_label]
+    if not label or not label.valid then
+        return
+    end
     local res = player.display_resolution
     local uis = player.display_scale
     label.location = {x = res.width - 423 * uis, y = 30 * uis}
+end
+
+local function create_label(player)
+    local ups = Server.get_ups()
+    local sUPS = 'SUPS = ' .. ups
+
+    local label =
+        player.gui.screen.add(
+        {
+            type = 'label',
+            name = ups_label,
+            caption = sUPS
+        }
+    )
+    local style = label.style
+    style.font = 'default-game'
+    return label
 end
 
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.get_player(event.player_index)
-        local ups = Server.get_ups()
-        local sUPS = 'SUPS = ' .. ups
 
         local label = player.gui.screen[ups_label]
 
         if not label or not label.valid then
-            label =
-                player.gui.screen.add(
-                {
-                    type = 'label',
-                    name = ups_label,
-                    caption = sUPS
-                }
-            )
-            local style = label.style
-            style.font = 'default-game'
+            label = create_label(player)
         end
-        set_location(event)
+        set_location(player)
         label.visible = false
     end
 )
@@ -54,10 +65,12 @@ Event.on_nth_tick(
         local ups = Server.get_ups()
         local caption = 'SUPS = ' .. ups
         local players = game.connected_players
-        for _, player in pairs(players) do
+        for i = 1, #players do
+            local player = players[i]
             local label = player.gui.screen[ups_label]
             if label and label.valid then
                 label.caption = caption
+                set_location(player)
             end
         end
     end
@@ -78,17 +91,33 @@ commands.add_command(
 
             local label = player.gui.screen[ups_label]
             if not label or not label.valid then
-                return
+                label = create_label(player)
             end
 
             if label.visible then
                 label.visible = false
+                player.print('Removed Server-UPS label.', Color.warning)
             else
                 label.visible = true
+                set_location(player)
+                player.print('Added Server-UPS label.', Color.success)
             end
         end
     end
 )
 
-Event.add(defines.events.on_player_display_resolution_changed, set_location)
-Event.add(defines.events.on_player_display_scale_changed, set_location)
+Event.add(
+    defines.events.on_player_display_resolution_changed,
+    function(event)
+        local player = game.get_player(event.player_index)
+        set_location(player)
+    end
+)
+
+Event.add(
+    defines.events.on_player_display_scale_changed,
+    function(event)
+        local player = game.get_player(event.player_index)
+        set_location(player)
+    end
+)
