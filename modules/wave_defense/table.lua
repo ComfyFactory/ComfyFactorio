@@ -60,6 +60,7 @@ function Public.reset_wave_defense()
     this.worm_building_density = 16
     this.worm_raffle = {}
     this.clear_corpses = false
+    this.biter_health_boost = 1
     this.alert_boss_wave = false
     this.remove_entities = false
     this.enable_threat_log = true
@@ -140,6 +141,15 @@ function Public.check_collapse_position(value)
         this.check_collapse_position = false
     end
     return this.check_collapse_position
+end
+
+function Public.set_biter_health_boost(value)
+    if value and type(value) == 'number' then
+        this.biter_health_boost = value
+    else
+        this.biter_health_boost = 1
+    end
+    return this.biter_health_boost
 end
 
 local on_init = function()

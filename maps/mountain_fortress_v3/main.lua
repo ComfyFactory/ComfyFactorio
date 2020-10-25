@@ -140,13 +140,13 @@ local set_difficulty = function()
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
-    local amount = player_count * 0.1
+    local amount = player_count * 0.05
     amount = floor(amount)
     if amount <= 0 then
         amount = 1
     end
-    if amount > 5 then
-        amount = 5
+    if amount > 4 then
+        amount = 4
     end
 
     local difficulty = Difficulty.get()
@@ -517,11 +517,10 @@ local on_research_finished = function(event)
     local research = event.research
     local this = WPT.get()
 
-    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
-    local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
     if research.name == 'steel-axe' then
-        mining_speed_bonus = mining_speed_bonus + 0.5
-        research.force.manual_mining_speed_modifier = mining_speed_bonus
+        local msg =
+            'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
+        Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
     end -- +50% speed for steel-axe research
 
     local force_name = research.force.name
@@ -617,6 +616,7 @@ end
 local boost_difficulty = function()
     local difficulty_set = WPT.get('difficulty_set')
     local force_mining_speed = WPT.get('force_mining_speed')
+    local wave_defense = WD.g
     if difficulty_set then
         return
     end
@@ -642,7 +642,7 @@ local boost_difficulty = function()
 
     if name == 'Easy' then
         rpg_extra.difficulty = 1
-        game.forces.player.manual_mining_speed_modifier = 1
+        game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 1
         force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0.2
         game.forces.player.manual_crafting_speed_modifier = 0.3
@@ -655,9 +655,10 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 20
         WPT.set().spidertron_unlocked_at_wave = 11
         WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(1)
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
-        game.forces.player.manual_mining_speed_modifier = 0.5
+        game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 0.5
         force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0.1
         game.forces.player.manual_crafting_speed_modifier = 0.1
@@ -670,9 +671,9 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 15
         WPT.set().spidertron_unlocked_at_wave = 16
         WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(1.5)
     elseif name == 'Hard' then
         rpg_extra.difficulty = 0
-        game.forces.player.manual_mining_speed_modifier = 0
         force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0
         game.forces.player.manual_crafting_speed_modifier = 0
@@ -685,9 +686,9 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 10
         WPT.set().spidertron_unlocked_at_wave = 21
         WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(2)
     elseif name == 'Insane' then
         rpg_extra.difficulty = 0
-        game.forces.player.manual_mining_speed_modifier = 0
         force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
         game.forces.player.character_running_speed_modifier = 0
         game.forces.player.manual_crafting_speed_modifier = 0
@@ -700,6 +701,7 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 5
         WPT.set().spidertron_unlocked_at_wave = 26
         WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(3)
     end
 end
 

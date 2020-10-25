@@ -289,7 +289,11 @@ local function set_enemy_evolution()
         evolution_factor = 1
     end
 
-    biter_health_boost = math_round(biter_health_boost + (this.threat - 5000) * 0.000033, 3)
+    if this.biter_health_boost then
+        biter_health_boost = math_round(this.biter_health_boost + (this.threat - 5000) * 0.000033, 3)
+    else
+        biter_health_boost = math_round(biter_health_boost + (this.threat - 5000) * 0.000033, 3)
+    end
     --damage_increase = math_round(damage_increase + this.threat * 0.0000025, 3)
 
     global.biter_health_boost = biter_health_boost

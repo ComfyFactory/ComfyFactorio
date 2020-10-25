@@ -354,7 +354,7 @@ local function auto_stash(player, event)
         end
     elseif shift then
         if
-            button == defines.mouse_button_type.right or
+            button == defines.mouse_button_type.right and this.insert_into_wagon or
                 button == defines.mouse_button_type.left and this.insert_into_wagon
          then
             chests = get_nearby_chests(player, area, false, true)
@@ -363,7 +363,7 @@ local function auto_stash(player, event)
         chests = get_nearby_chests(player)
     end
 
-    if not chests[1] then
+    if not chests or not chests[1] then
         player.print('No valid nearby containers found.', print_color)
         return
     end
