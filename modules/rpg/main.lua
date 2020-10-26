@@ -745,6 +745,17 @@ local function on_player_crafted_item(event)
         return
     end
 
+    local rpg_extra = RPG.get('rpg_extra')
+    local is_blacklisted = rpg_extra.blacklisted_crafting_items
+
+    local item = event.item_stack
+
+    if item and item.valid then
+        if is_blacklisted[item.name] then
+            return
+        end
+    end
+
     local amount = 0.30 * math.random(1, 2)
 
     Functions.gain_xp(player, event.recipe.energy * amount)

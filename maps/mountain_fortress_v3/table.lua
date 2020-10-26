@@ -96,8 +96,8 @@ function Public.reset_table()
         set = false,
         gap = 900
     }
+    this.force_chunk = false
     this.train_upgrades = 0
-    this.offline_players = {}
     this.biter_pets = {}
     this.flamethrower_damage = {}
     this.mined_scrap = 0
@@ -133,7 +133,6 @@ function Public.reset_table()
     this.pickaxe_speed_per_purchase = 0.10
     this.health_upgrades = 0
     this.breached_wall = 1
-    this.offline_players_enabled = true
     this.left_top = {
         x = 0,
         y = 0
@@ -152,9 +151,6 @@ function Public.reset_table()
     this.outside_chests = {}
     this.chests_linked_to = {}
     this.chest_limit_outside_upgrades = 1
-    this.force_mining_speed = {
-        speed = 0
-    }
     this.placed_trains_in_zone = {
         placed = 0,
         positions = {},

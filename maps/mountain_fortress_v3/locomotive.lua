@@ -25,6 +25,7 @@ local main_frame_name = Gui.uid_name()
 local rpg_main_frame = RPG_Settings.main_frame_name
 local random = math.random
 local floor = math.floor
+local round = math.round
 local rad = math.rad
 local sin = math.sin
 local cos = math.cos
@@ -975,9 +976,6 @@ local function gui_click(event)
 
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
 
-        local force_mining_speed = WPT.get('force_mining_speed')
-        force_mining_speed.speed = force.manual_mining_speed_modifier
-
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
 
@@ -1909,30 +1907,30 @@ function Public.get_items(reroll)
     local landmine = WPT.get('upgrades').landmine.bought
     local fixed_prices = WPT.get('marked_fixed_prices')
 
-    local chest_limit_cost = fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades)
-    local health_cost = fixed_prices.health_cost * (1 + health_upgrades)
-    local pickaxe_cost = fixed_prices.pickaxe_cost * (1 + pickaxe_tier)
-    local reroll_cost = fixed_prices.reroll_cost
-    local aura_cost = fixed_prices.aura_cost * (1 + aura_upgrades)
-    local xp_point_boost_cost = fixed_prices.xp_point_boost_cost * (1 + xp_points_upgrade)
-    local explosive_bullets_cost = fixed_prices.explosive_bullets_cost
-    local flamethrower_turrets_cost = fixed_prices.flamethrower_turrets_cost * (1 + flame_turret)
-    local land_mine_cost = fixed_prices.land_mine_cost * (1 + landmine)
-    local skill_reset_cost = fixed_prices.skill_reset_cost
+    local chest_limit_cost = round(fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades))
+    local health_cost = round(fixed_prices.health_cost * (1 + health_upgrades))
+    local pickaxe_cost = round(fixed_prices.pickaxe_cost * (0.1 + pickaxe_tier / 2))
+    local reroll_cost = round(fixed_prices.reroll_cost)
+    local aura_cost = round(fixed_prices.aura_cost * (1 + aura_upgrades))
+    local xp_point_boost_cost = round(fixed_prices.xp_point_boost_cost * (1 + xp_points_upgrade))
+    local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
+    local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
+    local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + landmine))
+    local skill_reset_cost = round(fixed_prices.skill_reset_cost)
 
     if reroll then
-        fixed_prices.chest_limit_cost = random(2000, 3000) * (1 + chest_limit_outside_upgrades)
-        fixed_prices.health_cost = random(7000, 10000) * (1 + health_upgrades)
-        fixed_prices.pickaxe_cost = random(1500, 2000)
-        fixed_prices.reroll_cost = random(2000, 3000)
-        fixed_prices.aura_cost = random(3000, 6000) * (1 + aura_upgrades)
-        fixed_prices.xp_point_boost_cost = random(4000, 6000) * (1 + xp_points_upgrade)
-        fixed_prices.explosive_bullets_cost = random(18000, 21000)
-        fixed_prices.flamethrower_turrets_cost = random(2500, 4000) * (1 + flame_turret)
-        fixed_prices.land_mine_cost = random(1, 8) * (1 + landmine)
-        fixed_prices.skill_reset_cost = random(90000, 110000)
+        fixed_prices.chest_limit_cost = round(random(2000, 3000) * (1 + chest_limit_outside_upgrades))
+        fixed_prices.health_cost = round(random(7000, 10000) * (1 + health_upgrades))
+        fixed_prices.pickaxe_cost = round(random(3500, 8000))
+        fixed_prices.reroll_cost = round(random(2000, 3000))
+        fixed_prices.aura_cost = round(random(3000, 6000) * (1 + aura_upgrades))
+        fixed_prices.xp_point_boost_cost = round(random(4000, 6000) * (1 + xp_points_upgrade))
+        fixed_prices.explosive_bullets_cost = round(random(18000, 21000))
+        fixed_prices.flamethrower_turrets_cost = round(random(2500, 4000) * (1 + flame_turret))
+        fixed_prices.land_mine_cost = round(random(1, 8) * (1 + landmine))
+        fixed_prices.skill_reset_cost = round(random(90000, 110000))
         if main_market_items['spidertron'] then
-            local rng = random(70000, 120000)
+            local rng = round(random(70000, 120000))
             main_market_items['spidertron'] = {
                 stack = 1,
                 value = 'coin',

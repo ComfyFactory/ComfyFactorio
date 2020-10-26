@@ -145,8 +145,8 @@ local set_difficulty = function()
     if amount <= 0 then
         amount = 1
     end
-    if amount > 4 then
-        amount = 4
+    if amount > 3 then
+        amount = 3
     end
 
     local difficulty = Difficulty.get()
@@ -319,6 +319,7 @@ function Public.reset_map()
     Explosives.set_surface_whitelist({[surface.name] = true})
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
+    game.forces.player.manual_mining_speed_modifier = 0
 
     Balance.init_enemy_weapon_damage()
 
@@ -342,7 +343,6 @@ function Public.reset_map()
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
-    game.map_settings.path_finder.max_work_done_per_tick = 4000
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
@@ -615,8 +615,6 @@ end
 
 local boost_difficulty = function()
     local difficulty_set = WPT.get('difficulty_set')
-    local force_mining_speed = WPT.get('force_mining_speed')
-    local wave_defense = WD.g
     if difficulty_set then
         return
     end
@@ -640,12 +638,13 @@ local boost_difficulty = function()
     }
     Alert.alert_all_players_location(data, message)
 
+    local force = game.forces.player
+
     if name == 'Easy' then
         rpg_extra.difficulty = 1
-        game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 1
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0.2
-        game.forces.player.manual_crafting_speed_modifier = 0.3
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
+        force.character_running_speed_modifier = 0.2
+        force.manual_crafting_speed_modifier = 0.3
         WPT.set().coin_amount = 2
         WPT.set('upgrades').flame_turret.limit = 25
         WPT.set('upgrades').landmine.limit = 100
@@ -655,13 +654,12 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 20
         WPT.set().spidertron_unlocked_at_wave = 11
         WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(1)
+        WD.set_biter_health_boost(1.2)
     elseif name == 'Normal' then
         rpg_extra.difficulty = 0.5
-        game.forces.player.manual_mining_speed_modifier = game.forces.player.manual_mining_speed_modifier + 0.5
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0.1
-        game.forces.player.manual_crafting_speed_modifier = 0.1
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
+        force.character_running_speed_modifier = 0.1
+        force.manual_crafting_speed_modifier = 0.1
         WPT.set().coin_amount = 1
         WPT.set('upgrades').flame_turret.limit = 10
         WPT.set('upgrades').landmine.limit = 50
@@ -671,12 +669,11 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 15
         WPT.set().spidertron_unlocked_at_wave = 16
         WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(1.5)
+        WD.set_biter_health_boost(1.7)
     elseif name == 'Hard' then
         rpg_extra.difficulty = 0
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0
-        game.forces.player.manual_crafting_speed_modifier = 0
+        force.character_running_speed_modifier = 0
+        force.manual_crafting_speed_modifier = 0
         WPT.set().coin_amount = 1
         WPT.set('upgrades').flame_turret.limit = 3
         WPT.set('upgrades').landmine.limit = 10
@@ -686,12 +683,11 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 10
         WPT.set().spidertron_unlocked_at_wave = 21
         WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(2)
+        WD.set_biter_health_boost(2.2)
     elseif name == 'Insane' then
         rpg_extra.difficulty = 0
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0
-        game.forces.player.manual_crafting_speed_modifier = 0
+        force.character_running_speed_modifier = 0
+        force.manual_crafting_speed_modifier = 0
         WPT.set().coin_amount = 1
         WPT.set('upgrades').flame_turret.limit = 0
         WPT.set('upgrades').landmine.limit = 0

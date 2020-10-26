@@ -27,6 +27,7 @@ end
 ServerCommands.set_time = Server.set_time
 ServerCommands.set_ups = Server.set_ups
 ServerCommands.get_ups = Server.get_ups
+ServerCommands.export_stats = Server.export_stats
 ServerCommands.query_online_players = Server.query_online_players
 
 local SC_Interface = {
