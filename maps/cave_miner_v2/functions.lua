@@ -25,6 +25,41 @@ function Public.roll_biter_amount()
 	end
 end
 
+--lab-dark-1 > position has been copied
+--lab-dark-2 > position has been visited
+function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
+	local tile = source_surface.get_tile(position)
+	if tile.name == "lab-dark-2" then return end
+	local tiles = {}
+	local copied_tiles = {}
+	local i = 0
+	local brushsize_square = brushsize ^ 2
+	for _, tile in pairs(source_surface.find_tiles_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
+		local tile_position = tile.position
+		if tile.name ~= "lab-dark-2" and tile.name ~= "lab-dark-1" and (position.x - tile_position.x) ^ 2 + (position.y - tile_position.y) ^ 2 < brushsize_square then
+			i = i + 1
+			copied_tiles[i] = {name = "lab-dark-1", position = tile.position}
+			tiles[i] = {name = tile.name, position = tile.position}
+		end
+	end
+	surface.set_tiles(tiles, true, false, false, false)
+	source_surface.set_tiles(copied_tiles, false, false, false, false)
+	
+	for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
+		local entity_position = entity.position
+		if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
+			entity.clone({position = entity_position, surface = surface})
+			if entity.force.index == 2 then
+				table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
+			end
+			entity.destroy()
+		end
+	end
+	
+	source_surface.set_tiles({{name = "lab-dark-2", position = position}}, false)
+	source_surface.request_to_generate_chunks(position, 3)
+end
+
 function Public.spawn_player(player)
 	if not player.character then
 		player.create_character()
@@ -149,17 +184,73 @@ local function is_entity_in_darkness(entity)
 	return true
 end
 
+local function darkness_event(cave_miner, entity)
+	local index = tostring(entity.unit_number)
+	local darkness = cave_miner.darkness
+	
+	if darkness[index] then
+		darkness[index] = darkness[index] + 1
+	else
+		darkness[index] = -3
+	end
+	
+	if darkness[index] <= 0 then return end
+	
+	local position = entity.position
+	local d = math_sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
+	
+	local count = math_floor(darkness[index] * 0.33) + 1
+	if count > 16 then count = 16 end
+	for c = 1, count, 1 do
+		Esq.add_to_queue(game.tick + 10 * c, entity.surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)
+	end
+	
+	entity.damage(darkness[index] * 2, "neutral", "poison")
+end
+
 function Public.darkness(cave_miner)
 	for _, player in pairs(game.connected_players) do
 		local character = player.character
 		if character and character.valid then
 			character.disable_flashlight()
 			if is_entity_in_darkness(character) then
-				local d = math_sqrt(character.position.x ^ 2 + character.position.y ^ 2) * 0.0001
-				Esq.add_to_queue(game.tick + 60, player.surface, {name = BiterRaffle.roll("mixed", d), position = character.position, force = "enemy"}, 8)
+				darkness_event(cave_miner, character)
+			else
+				cave_miner.darkness[tostring(character.unit_number)] = nil
 			end
 		end
 	end
 end
+
+Public.on_entity_died = {
+	["unit"] = function(cave_miner, entity)
+		local position = entity.position
+		local surface = entity.surface
+		if math.random(1, 8) == 1 then
+			surface.spill_item_stack(position, {name = "raw-fish", count = 1}, true)
+		end
+	end,
+	["unit-spawner"] = function(cave_miner, entity)
+		local position = entity.position
+		local surface = entity.surface
+		local a = 64 * 0.0001
+		local b = math.sqrt(position.x ^ 2 + position.y ^ 2)
+		local c = math_floor(a * b) + 1	
+		for _ = 1, c, 1 do			
+			Public.spawn_random_biter(surface, position, 1)
+		end
+	end,
+	["simple-entity"] = function(cave_miner, entity)
+		local position = entity.position
+		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
+		if math.random(1, 4) == 1 then
+			Public.rock_spawns_biters(cave_miner, position)
+		end
+	end,
+	["container"] = function(cave_miner, entity)
+		local position = entity.position
+		Public.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, position, 16)
+	end,
+}
 
 return Public

@@ -54,42 +54,6 @@ function Public.out_of_map(event)
 	event.surface.set_tiles(tiles, false)
 end
 
---lab-dark-1 > position has been copied
---lab-dark-2 > position has been visited
-
-function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
-	local tile = source_surface.get_tile(position)
-	if tile.name == "lab-dark-2" then return end
-	local tiles = {}
-	local copied_tiles = {}
-	local i = 0
-	local brushsize_square = brushsize ^ 2
-	for _, tile in pairs(source_surface.find_tiles_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
-		local tile_position = tile.position
-		if tile.name ~= "lab-dark-2" and tile.name ~= "lab-dark-1" and (position.x - tile_position.x) ^ 2 + (position.y - tile_position.y) ^ 2 < brushsize_square then
-			i = i + 1
-			copied_tiles[i] = {name = "lab-dark-1", position = tile.position}
-			tiles[i] = {name = tile.name, position = tile.position}
-		end
-	end
-	surface.set_tiles(tiles, true, false, false, false)
-	source_surface.set_tiles(copied_tiles, false, false, false, false)
-	
-	for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
-		local entity_position = entity.position
-		if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
-			entity.clone({position = entity_position, surface = surface})
-			if entity.force.index == 2 then
-				table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
-			end
-			entity.destroy()
-		end
-	end
-	
-	source_surface.set_tiles({{name = "lab-dark-2", position = position}}, false)
-	source_surface.request_to_generate_chunks(position, 3)
-end
-
 local biomes = {}
 
 function biomes.oasis(surface, seed, position, square_distance, noise)
@@ -193,7 +157,7 @@ local function get_biome(surface, seed, position)
 	
 	if abs_noise > 0.25 then	
 		local noise = GetNoise("cave_rivers", position, seed)
-		if noise > 0.72 then return biomes.oasis, d, noise end	
+		if noise > 0.72 then return biomes.oasis, d, noise end
 	end
 	
 	local noise = GetNoise("cm_ocean", position, seed + 100000)

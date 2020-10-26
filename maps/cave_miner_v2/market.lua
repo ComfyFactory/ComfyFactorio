@@ -24,7 +24,7 @@ local special_slots = {
 			local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.65) + 8, 100, loot_blacklist)
 			local price = {}
 			for _, item_stack in pairs(item_stacks) do table.insert(price, {name = item_stack.name, amount = item_stack.count}) end	
-			market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe tier to: ' .. pickaxe_tiers[tier]}})		
+			market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe to tier ' .. tier .. ': ' .. pickaxe_tiers[tier]}})		
 		else
 			market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Maximum pickaxe upgrade reached!'}})		
 		end

@@ -51,7 +51,7 @@ local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if not player.character.valid then return end
-	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 11)
+	Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 11)
 end
 
 local function on_chunk_generated(event)
@@ -94,32 +94,8 @@ local function on_entity_died(event)
 	local entity = event.entity
 	if not entity then return end
 	if not entity.valid then return end
-	local surface = entity.surface
-	local position = entity.position
-	
-	if entity.type == "unit" then
-		if math.random(1, 8) == 1 then
-			surface.spill_item_stack(position, {name = "raw-fish", count = 1}, true)
-		end		
-		return
-	end
-	
-	if entity.type == "simple-entity" then
-		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
-		if math.random(1, 4) == 1 then
-			Functions.rock_spawns_biters(cave_miner, position)
-		end
-		return
-	end
-	
-	if entity.type == "unit-spawner" then
-		local a = 64 * 0.0001
-		local b = math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)
-		local c = math_floor(a * b) + 1	
-		for _ = 1, c, 1 do			
-			Functions.spawn_random_biter(surface, position, 1)
-		end
-		return		
+	if Functions.on_entity_died[entity.type] then
+		Functions.on_entity_died[entity.type](cave_miner, entity)
 	end
 end
 
@@ -145,6 +121,7 @@ local function init(cave_miner)
 
 	cave_miner.last_reroll_player_name = ""
 	cave_miner.reveal_queue = {}
+	cave_miner.darkness = {}
 	cave_miner.rocks_broken = 0
 	cave_miner.pickaxe_tier = 1
 	
@@ -164,7 +141,7 @@ end
 local function spawn_players(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
-	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
+	Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
 	Market.spawn(cave_miner)
 	for _, player in pairs(game.connected_players) do
 		Functions.spawn_player(player)
@@ -179,7 +156,7 @@ local game_tasks = {
 		if not reveal then return end
 		local brush_size = 3
 		if Constants.reveal_chain_brush_sizes[reveal[1]] then brush_size = Constants.reveal_chain_brush_sizes[reveal[1]] end
-		Terrain.reveal(
+		Functions.reveal(
 			cave_miner,
 			game.surfaces.nauvis,
 			game.surfaces.cave_miner_source,
