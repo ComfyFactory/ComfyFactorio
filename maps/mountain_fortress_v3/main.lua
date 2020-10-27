@@ -517,6 +517,8 @@ local on_research_finished = function(event)
     local research = event.research
     local this = WPT.get()
 
+    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+
     if research.name == 'steel-axe' then
         local msg =
             'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
