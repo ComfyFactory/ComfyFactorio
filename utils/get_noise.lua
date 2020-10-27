@@ -99,6 +99,22 @@ local noises = {
         {modifier = 0.05, weight = 0.5},
         {modifier = 0.1, weight = 0.025}
     },
+	['cave_miner_01'] = {
+        {modifier = 0.002, weight = 1},
+		{modifier = 0.003, weight = 0.5},
+        {modifier = 0.01, weight = 0.01},
+        {modifier = 0.1, weight = 0.015}
+    },
+	['cave_miner_02'] = {
+        {modifier = 0.006, weight = 1},
+        {modifier = 0.02, weight = 0.15},
+        {modifier = 0.25, weight = 0.025}
+    },
+	['cm_ocean'] = {
+		{modifier = 0.002, weight = 1},
+		{modifier = 0.004, weight = 1},
+		{modifier = 0.02, weight = 0.05},
+    },
 }
 
 --returns a float number between -1 and 1

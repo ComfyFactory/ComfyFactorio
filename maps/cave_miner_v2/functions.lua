@@ -4,6 +4,7 @@ local Constants = require 'maps.cave_miner_v2.constants'
 local BiterRaffle = require "functions.biter_raffle"
 local LootRaffle = require "functions.loot_raffle"
 local Esq = require "modules.entity_spawn_queue"
+local Pets = require "modules.biter_pets"
 
 local math_sqrt = math.sqrt
 local math_random = math.random
@@ -115,7 +116,11 @@ end
 
 function Public.loot_crate(surface, position, multiplier, slots, container_name)
 	local d = math_sqrt(position.x ^ 2 + position.y ^ 2)
-	local item_stacks = LootRaffle.roll(d * multiplier, slots, loot_blacklist)
+	
+	local blacklist = LootRaffle.get_tech_blacklist(d * 0.0001 + 0.1)
+	blacklist["landfill"] = true
+	
+	local item_stacks = LootRaffle.roll(d * multiplier, slots, blacklist)
 	local container = surface.create_entity({name = container_name, position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do container.insert(item_stack) end
 	container.minable = false
@@ -202,7 +207,7 @@ local function darkness_event(cave_miner, entity)
 	local count = math_floor(darkness[index] * 0.33) + 1
 	if count > 16 then count = 16 end
 	for c = 1, count, 1 do
-		Esq.add_to_queue(game.tick + 10 * c, entity.surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)
+		Esq.add_to_queue(game.tick + math_random(5, 45) * c, entity.surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)
 	end
 	
 	entity.damage(darkness[index] * 2, "neutral", "poison")
@@ -211,7 +216,7 @@ end
 function Public.darkness(cave_miner)
 	for _, player in pairs(game.connected_players) do
 		local character = player.character
-		if character and character.valid then
+		if character and character.valid and not character.driving then
 			character.disable_flashlight()
 			if is_entity_in_darkness(character) then
 				darkness_event(cave_miner, character)
@@ -221,6 +226,20 @@ function Public.darkness(cave_miner)
 		end
 	end
 end
+
+Public.mining_events = {
+	{function(cave_miner, entity, player_index)
+	end, 100000, "Nothing"},
+	{function(cave_miner, entity, player_index)
+		Public.rock_spawns_biters(cave_miner, entity.position)
+	end, 6000, "Biters"},
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		local unit = Public.spawn_random_biter(surface, position, 2)
+		Pets.biter_pets_tame_unit(game.players[player_index], unit, true)
+	end, 300, "Pet"},
+}
 
 Public.on_entity_died = {
 	["unit"] = function(cave_miner, entity)

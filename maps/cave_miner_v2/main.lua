@@ -7,7 +7,6 @@ local Global = require 'utils.global'
 local Market = require 'maps.cave_miner_v2.market'
 local Server = require 'utils.server'
 local Terrain = require 'maps.cave_miner_v2.terrain'
-local Pets = require "modules.biter_pets"
 local Map_info = require "modules.map_info"
 
 require "modules.satellite_score"
@@ -75,18 +74,14 @@ local function on_player_mined_entity(event)
 	if not entity then return end
 	if not entity.valid then return end
 	local surface = entity.surface
-	local position = entity.position	
+	local position = entity.position
 	if entity.type == "simple-entity" then
-		cave_miner.rocks_broken = cave_miner.rocks_broken + 1			
-		if math.random(1, 16) == 1 then
-			Functions.rock_spawns_biters(cave_miner, position)
-			return
-		end
-		if math.random(1, 1024) == 1 then
-			local unit = Functions.spawn_random_biter(surface, position, 2)
-			Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
-			return
-		end	
+		cave_miner.rocks_broken = cave_miner.rocks_broken + 1		
+		local f = table.get_random_weighted(Functions.mining_events)
+		f(cave_miner, entity, event.player_index)
+		
+		--print chances
+		--for k, v in pairs(table.get_random_weighted_chances(Functions.mining_events)) do game.print(Functions.mining_events[k][3] .. " " .. math.round(v, 3)) end
 	end
 end
 
