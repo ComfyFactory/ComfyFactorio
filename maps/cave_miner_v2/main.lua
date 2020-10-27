@@ -81,7 +81,7 @@ local function on_player_mined_entity(event)
 		f(cave_miner, entity, event.player_index)
 		
 		--print chances
-		--for k, v in pairs(table.get_random_weighted_chances(Functions.mining_events)) do game.print(Functions.mining_events[k][3] .. " " .. math.round(v, 3)) end
+		--for k, v in pairs(table.get_random_weighted_chances(Functions.mining_events)) do game.print(Functions.mining_events[k][3] .. " | " .. math.round(v, 4) .. " | 1 in " .. math_floor(1 / v)) end
 	end
 end
 

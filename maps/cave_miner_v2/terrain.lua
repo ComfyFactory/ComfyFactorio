@@ -136,9 +136,9 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 			local b = (-49 + math_random(0, 98)) * 0.01
 			surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
 		end
-		if math_random(1, 512) == 1 then Functions.loot_crate(surface, position, 1, 8, "wooden-chest") return end
-		if math_random(1, 2048) == 2 then Functions.loot_crate(surface, position, 2, 8, "iron-chest") return end
-		if math_random(1, 4096) == 4 then Functions.loot_crate(surface, position, 3, 8, "steel-chest") return end
+		if math_random(1, 2048) == 1 then Functions.loot_crate(surface, position, "wooden-chest") return end
+		if math_random(1, 4096) == 1 then Functions.loot_crate(surface, position, "iron-chest") return end
+		if math_random(1, 8192) == 1 then Functions.loot_crate(surface, position, "steel-chest") return end
 		return
 	end
 

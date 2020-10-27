@@ -13,6 +13,11 @@ local math_floor = math.floor
 local spawn_amount_rolls = {}
 for a = 48, 1, -1 do table.insert(spawn_amount_rolls, math_floor(a ^ 5)) end
 
+function Public.get_difficulty_modifier(position)
+	local difficulty = math_sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
+	return difficulty
+end
+
 function Public.roll_biter_amount()
 	local max_chance = 0
 	for k, v in pairs(spawn_amount_rolls) do
@@ -83,14 +88,12 @@ function Public.set_mining_speed(cave_miner, force)
 end
 
 function Public.place_worm(surface, position, multiplier)
-	local d = math_sqrt(position.x ^ 2 + position.y ^ 2)
-	surface.create_entity({name = BiterRaffle.roll("worm", d * 0.0001 * multiplier), position = position, force = "enemy"})
+	surface.create_entity({name = BiterRaffle.roll("worm", Public.get_difficulty_modifier(position) * multiplier), position = position, force = "enemy"})
 	return 
 end
 
 function Public.spawn_random_biter(surface, position, multiplier)
-	local d = math_sqrt(position.x ^ 2 + position.y ^ 2)
-	local name = BiterRaffle.roll("mixed", d * 0.0001 * multiplier)
+	local name = BiterRaffle.roll("mixed", Public.get_difficulty_modifier(position) * multiplier)
 	local non_colliding_position = surface.find_non_colliding_position(name, position, 16, 1)
 	local unit
 	if non_colliding_position then
@@ -98,7 +101,7 @@ function Public.spawn_random_biter(surface, position, multiplier)
 	else
 		unit = surface.create_entity({name = name, position = position, force = "enemy"})
 	end
-	unit.ai_settings.allow_try_return_to_spawner = true
+	unit.ai_settings.allow_try_return_to_spawner = false
 	unit.ai_settings.allow_destroy_when_commands_fail = false
 	return unit
 end
@@ -106,21 +109,24 @@ end
 function Public.rock_spawns_biters(cave_miner, position)
 	local amount = Public.roll_biter_amount()
 	local surface = game.surfaces.nauvis
-	local d = math_sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
+	local difficulty_modifier = Public.get_difficulty_modifier(position)
 	local tick = game.tick	
 	for _ = 1, amount, 1 do
 		tick = tick + math_random(30, 90)
-		Esq.add_to_queue(tick, surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)		
+		Esq.add_to_queue(tick, surface, {name = BiterRaffle.roll("mixed", difficulty_modifier), position = position, force = "enemy"}, 8)		
 	end
 end
 
-function Public.loot_crate(surface, position, multiplier, slots, container_name)
-	local d = math_sqrt(position.x ^ 2 + position.y ^ 2)
+function Public.loot_crate(surface, position, container_name)
+	local amount_multiplier = Constants.treasures[container_name].amount_multiplier
+	local difficulty_modifier = Public.get_difficulty_modifier(position)
+	local slots = game.entity_prototypes[container_name].item_slot_count
+	local tech_bonus = Constants.treasures[container_name].tech_bonus
 	
-	local blacklist = LootRaffle.get_tech_blacklist(d * 0.0001 + 0.1)
+	local blacklist = LootRaffle.get_tech_blacklist(difficulty_modifier + tech_bonus)
 	blacklist["landfill"] = true
-	
-	local item_stacks = LootRaffle.roll(d * multiplier, slots, blacklist)
+
+	local item_stacks = LootRaffle.roll(difficulty_modifier * amount_multiplier, slots, blacklist)
 	local container = surface.create_entity({name = container_name, position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do container.insert(item_stack) end
 	container.minable = false
@@ -156,10 +162,9 @@ function Public.update_top_gui(cave_miner)
 	local pickaxe_tiers = Constants.pickaxe_tiers
 	for _, player in pairs(game.connected_players) do
 		local element = player.gui.top.cave_miner
-		if element and element.valid then		
+		if element and element.valid then
 			element.children[1].caption = pickaxe_tiers[cave_miner.pickaxe_tier] .. " Pickaxe  | "
 			element.children[1].tooltip = "Mining speed " .. (1 + game.forces.player.manual_mining_speed_modifier) * 100 .. "%"
-			
 			element.children[2].caption = "Rocks broken: " .. cave_miner.rocks_broken
 		end
 	end
@@ -202,12 +207,12 @@ local function darkness_event(cave_miner, entity)
 	if darkness[index] <= 0 then return end
 	
 	local position = entity.position
-	local d = math_sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
+	local difficulty_modifier = Public.get_difficulty_modifier(position)
 	
 	local count = math_floor(darkness[index] * 0.33) + 1
 	if count > 16 then count = 16 end
 	for c = 1, count, 1 do
-		Esq.add_to_queue(game.tick + math_random(5, 45) * c, entity.surface, {name = BiterRaffle.roll("mixed", d), position = position, force = "enemy"}, 8)
+		Esq.add_to_queue(game.tick + math_random(5, 45) * c, entity.surface, {name = BiterRaffle.roll("mixed", difficulty_modifier), position = position, force = "enemy"}, 8)
 	end
 	
 	entity.damage(darkness[index] * 2, "neutral", "poison")
@@ -227,18 +232,73 @@ function Public.darkness(cave_miner)
 	end
 end
 
+
+
+
+
+
 Public.mining_events = {
 	{function(cave_miner, entity, player_index)
-	end, 100000, "Nothing"},
+	end, 20000, "Nothing"},
+	
 	{function(cave_miner, entity, player_index)
 		Public.rock_spawns_biters(cave_miner, entity.position)
-	end, 6000, "Biters"},
+	end, 2048, "Biters"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "wooden-chest")
+	end, 1024, "Treasuer_Tier_1"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "iron-chest")
+	end, 512, "Treasuer_Tier_2"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "steel-chest")
+	end, 256, "Treasuer_Tier_3"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-medium-" .. math_random(1,3))
+	end, 128, "Treasuer_Tier_4"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-big-" .. math_random(1,2))
+	end, 64, "Treasuer_Tier_5"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "big-ship-wreck-" .. math_random(1,3))
+	end, 32, "Treasuer_Tier_6"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "crash-site-chest-" .. math_random(1,2))
+	end, 16, "Treasuer_Tier_7"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.loot_crate(surface, position, "crash-site-spaceship")
+	end, 8, "Treasuer_Tier_8"},
+	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		local unit = Public.spawn_random_biter(surface, position, 2)
 		Pets.biter_pets_tame_unit(game.players[player_index], unit, true)
-	end, 300, "Pet"},
+	end, 64, "Pet"},
 }
 
 Public.on_entity_died = {

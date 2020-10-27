@@ -1,5 +1,64 @@
 local Public = {}
 
+Public.treasures = {
+	["wooden-chest"] = {
+		tech_bonus = 0.1,
+		amount_multiplier = 1,
+	},
+	["iron-chest"] = {
+		tech_bonus = 0.15,
+		amount_multiplier = 1.5,		
+	},
+	["steel-chest"] = {
+		tech_bonus = 0.2,
+		amount_multiplier = 2,		
+	},
+	["crash-site-spaceship-wreck-medium-1"] = {
+		tech_bonus = 0.25,
+		amount_multiplier = 2.5,		
+	},
+	["crash-site-spaceship-wreck-medium-2"] = {
+		tech_bonus = 0.25,
+		amount_multiplier = 2.5,		
+	},
+	["crash-site-spaceship-wreck-medium-3"] = {
+		tech_bonus = 0.25,
+		amount_multiplier = 2.5,		
+	},
+	["crash-site-spaceship-wreck-big-1"] = {
+		tech_bonus = 0.30,
+		amount_multiplier = 3,		
+	},
+	["crash-site-spaceship-wreck-big-2"] = {
+		tech_bonus = 0.30,
+		amount_multiplier = 3,		
+	},
+	["big-ship-wreck-1"] = {
+		tech_bonus = 0.35,
+		amount_multiplier = 3.5,		
+	},
+	["big-ship-wreck-2"] = {
+		tech_bonus = 0.35,
+		amount_multiplier = 3.5,		
+	},
+	["big-ship-wreck-3"] = {
+		tech_bonus = 0.35,
+		amount_multiplier = 3.5,		
+	},
+	["crash-site-chest-1"] = {
+		tech_bonus = 0.40,
+		amount_multiplier = 4,		
+	},
+	["crash-site-chest-2"] = {
+		tech_bonus = 0.40,
+		amount_multiplier = 4,		
+	},
+	["crash-site-spaceship"] = {
+		tech_bonus = 0.5,
+		amount_multiplier = 5,		
+	},
+}
+
 Public.starting_items = {
 	["pistol"] = 1,
 	["firearm-magazine"] = 8,
