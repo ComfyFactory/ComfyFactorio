@@ -351,6 +351,14 @@ local tech_tier_list = {
 	"piercing-shotgun-shell",
 	"cluster-grenade",
 	"destroyer-capsule",
+	"poison-capsule",
+	"slowdown-capsule",
+	"combat-shotgun",
+	"tank",
+	"cannon-shell",
+	"explosive-cannon-shell",
+	"explosive-rocket",
+	"distractor-capsule",
 	"nuclear-reactor",
 	"heat-exchanger",
 	"heat-pipe",
@@ -379,14 +387,6 @@ local tech_tier_list = {
 	"logistic-chest-requester",
 	"logistic-chest-buffer",
 	"personal-roboport-mk2-equipment",
-	"poison-capsule",
-	"slowdown-capsule",
-	"combat-shotgun",
-	"tank",
-	"cannon-shell",
-	"explosive-cannon-shell",
-	"explosive-rocket",
-	"distractor-capsule",
 	"nuclear-fuel",
 	"energy-shield-mk2-equipment",
 	"personal-laser-defense-equipment",
@@ -398,6 +398,7 @@ local tech_tier_list = {
 	"space-science-pack",
 	"beacon",
 	"rocket-control-unit",
+	"fusion-reactor-equipment",
 	"artillery-wagon",
 	"artillery-turret",
 	"artillery-shell",
@@ -406,8 +407,7 @@ local tech_tier_list = {
 	"uranium-cannon-shell",
 	"explosive-uranium-cannon-shell",
 	"atomic-bomb",
-	"power-armor-mk2",
-	"fusion-reactor-equipment",
+	"power-armor-mk2",	
 	"satellite",
 	"rocket-silo",
 }
@@ -504,8 +504,7 @@ end
 function Public.get_tech_blacklist(tier)
 	local blacklist = {}	
 	local size_of_tech_tier_list = #tech_tier_list
-	local min_index = math_floor(size_of_tech_tier_list * tier)
-	if min_index < 1 then min_index = 1 end	
+	local min_index = math_floor(size_of_tech_tier_list * tier)	
 	for i = size_of_tech_tier_list, min_index, -1 do
 		blacklist[tech_tier_list[i]] = true
 	end
