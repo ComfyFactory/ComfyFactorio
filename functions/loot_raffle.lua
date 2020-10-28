@@ -37,7 +37,7 @@ local item_worths = {
 	["filter-inserter"] = 40,
 	["stack-inserter"] = 128,
 	["stack-filter-inserter"] = 160,
-	["small-electric-pole"] = 4,
+	["small-electric-pole"] = 2,
 	["medium-electric-pole"] = 32,
 	["big-electric-pole"] = 64,
 	["substation"] = 256,
@@ -62,7 +62,7 @@ local item_worths = {
 	["logistic-chest-buffer"] = 512,
 	["logistic-chest-requester"] = 512,
 	["roboport"] = 2048,
-	["small-lamp"] = 16,
+	["small-lamp"] = 8,
 	["red-wire"] = 4,
 	["green-wire"] = 4,
 	["arithmetic-combinator"] = 16,
@@ -301,6 +301,7 @@ local tech_tier_list = {
 	"pumpjack",
 	"oil-refinery",
 	"chemical-plant",
+	"solid-fuel",
 	"storage-tank",
 	"pump",
 	"empty-barrel",
@@ -509,6 +510,11 @@ function Public.get_tech_blacklist(tier)
 		blacklist[tech_tier_list[i]] = true
 	end
 	return blacklist
+end
+
+function Public.get_item_value(item)
+	local value = item_worths[item]
+	return value
 end
 
 return Public

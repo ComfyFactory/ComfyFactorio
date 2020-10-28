@@ -110,6 +110,7 @@ local noises = {
         {modifier = 0.02, weight = 0.15},
         {modifier = 0.25, weight = 0.025}
     },
+	['cm_ponds'] = {{modifier = 0.025, weight = 1}, {modifier = 0.05, weight = 0.25}, {modifier = 0.1, weight = 0.05}},
 	['cm_ocean'] = {
 		{modifier = 0.002, weight = 1},
 		{modifier = 0.004, weight = 1},

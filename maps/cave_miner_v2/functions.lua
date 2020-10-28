@@ -359,6 +359,15 @@ Public.mining_events = {
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
+		surface.create_entity({name = "car", position = position, force = "player"})
+		Public.unstuck_player(player_index)	
+		local player = game.players[player_index]
+		game.print(player.name .. " has finally found their car!!")
+	end, 32, "Car"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
 		local tick = game.tick
 		
 		local trees = {}

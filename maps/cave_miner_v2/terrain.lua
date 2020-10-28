@@ -2,6 +2,7 @@ local Public = {}
 
 local GetNoise = require "utils.get_noise"
 local Functions = require 'maps.cave_miner_v2.functions'
+local Market = require 'maps.cave_miner_v2.market'
 
 local math_abs = math.abs
 local math_random = math.random
@@ -57,27 +58,59 @@ end
 local biomes = {}
 
 function biomes.oasis(surface, seed, position, square_distance, noise)
-	if noise < 0.79 then
+	if noise > 0.83 then
 		surface.set_tiles({{name = "deepwater", position = position}}, true) 
 		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
 		return
 	end
 	local noise_decoratives = GetNoise("decoratives", position, seed + 50000)
 	surface.set_tiles({{name = "grass-1", position = position}}, true)
-	if math_random(1, 48) == 1 and math_abs(noise_decoratives) > 0.07 then surface.create_entity({name = "tree-04", position = position}) end
-	if math_random(1, 48) == 1 then Functions.place_crude_oil(surface, position, 1) end
-	return
+	if math_random(1, 16) == 1 and math_abs(noise_decoratives) > 0.17 then surface.create_entity({name = "tree-04", position = position}) end
+	if math_random(1, 128) == 1 then Functions.place_crude_oil(surface, position, 1) end
+	
+	if noise < 0.73 then
+		local a = (-49 + math_random(0, 98)) * 0.01
+		local b = (-49 + math_random(0, 98)) * 0.01
+		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+	end
 end
 
 function biomes.void(surface, seed, position)
 	surface.set_tiles({{name = "out-of-map", position = position}}, false, false, false, false)
 end
 
+function biomes.pond_cave(surface, seed, position, square_distance, noise)
+	local noise_2 = GetNoise("cm_ponds", position, seed)
+	
+	if math_abs(noise_2) > 0.60 then
+		surface.set_tiles({{name = "water", position = position}}, true, false, false, false)
+		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
+		return
+	end
+	
+	if math_abs(noise_2) > 0.25 and math_random(1, 2) > 1 then
+		local a = (-49 + math_random(0, 98)) * 0.01
+		local b = (-49 + math_random(0, 98)) * 0.01
+		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+		return
+	end
+	
+	if noise > -0.53 then
+		local a = (-49 + math_random(0, 98)) * 0.01
+		local b = (-49 + math_random(0, 98)) * 0.01
+		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+	else
+		if math_random(1, 128) == 1 then			
+			Market.spawn_random_cave_market(surface, position)
+		end
+	end
+end
+
 function biomes.spawn(surface, seed, position, square_distance)
 	if square_distance < 32 then return end
 	local noise = GetNoise("decoratives", position, seed)
 	
-	if math_abs(noise) > 0.60 and square_distance > 1250 then
+	if math_abs(noise) > 0.60 and square_distance < 1250 then
 		surface.set_tiles({{name = "water", position = position}}, true, false, false, false)
 		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
 		return
@@ -120,7 +153,7 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 	if math_abs(noise_cave_rivers1) < 0.025 then
 		local noise_cave_rivers2 = GetNoise("cave_rivers_3", position, seed + 200000)
 		if noise_cave_rivers2 > 0 then
-			surface.set_tiles({{name = "water", position = position}}, true, false, false, false) 
+			surface.set_tiles({{name = "water-shallow", position = position}}, true, false, false, false) 
 			if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
 			return 
 		end
@@ -138,13 +171,13 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 		end
 		if math_random(1, 2048) == 1 then Functions.loot_crate(surface, position, "wooden-chest") return end
 		if math_random(1, 4096) == 1 then Functions.loot_crate(surface, position, "iron-chest") return end
-		if math_random(1, 8192) == 1 then Functions.loot_crate(surface, position, "steel-chest") return end
 		return
 	end
 
 	if square_distance < 4096 then return end
-	if math_random(1, 48) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) end
-	if math_random(1, 48) == 1 then Functions.place_worm(surface, position, 1) end
+	if math_random(1, 4096) == 1 then Market.spawn_random_cave_market(surface, position) return end
+	if math_random(1, 64) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) return end
+	if math_random(1, 64) == 1 then Functions.place_worm(surface, position, 1) return end
 end
 
 local function get_biome(surface, seed, position)
@@ -157,7 +190,8 @@ local function get_biome(surface, seed, position)
 	
 	if abs_noise > 0.25 then	
 		local noise = GetNoise("cave_rivers", position, seed)
-		if noise > 0.72 then return biomes.oasis, d, noise end
+		if noise > 0.72 then return biomes.oasis, d, noise end	
+		if noise < -0.5 then return biomes.pond_cave, d, noise end	
 	end
 	
 	local noise = GetNoise("cm_ocean", position, seed + 100000)
