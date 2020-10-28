@@ -119,7 +119,8 @@ function Public.offer_bought(event, cave_miner)
 end
 
 function Public.spawn_random_cave_market(surface, position)
-	if surface.count_entities_filtered({name = "market", area = {{position.x - 32, position.y - 32}, {position.x + 32, position.y + 32}}}) > 0 then return end
+	local r = 48
+	if surface.count_entities_filtered({name = "market", area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}}) > 0 then return end
 
 	local difficulty_modifier = Functions.get_difficulty_modifier(position)
 	local market = surface.create_entity({name = "market", position = position, force = "player"})

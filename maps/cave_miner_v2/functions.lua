@@ -265,8 +265,37 @@ Public.mining_events = {
 	end, 300000, "Nothing"},
 	
 	{function(cave_miner, entity, player_index)
-		Public.rock_spawns_biters(cave_miner, entity.position)
-	end, 20000, "Biters"},
+		local amount = Public.roll_biter_amount()
+		local position = entity.position
+		local surface = entity.surface	
+		local difficulty_modifier = Public.get_difficulty_modifier(position)
+		local tick = game.tick
+		for c = 1, amount, 1 do
+			Esq.add_to_queue(tick + c * 25, surface, {name = BiterRaffle.roll("mixed", difficulty_modifier), position = position, force = "enemy"}, 8)		
+		end
+	end, 20000, "Mixed_Biters"},
+	
+	{function(cave_miner, entity, player_index)
+		local amount = Public.roll_biter_amount()
+		local position = entity.position
+		local surface = entity.surface	
+		local difficulty_modifier = Public.get_difficulty_modifier(position)
+		local tick = game.tick
+		for c = 1, amount, 1 do
+			Esq.add_to_queue(tick + c * 25, surface, {name = BiterRaffle.roll("biter", difficulty_modifier), position = position, force = "enemy"}, 8)		
+		end
+	end, 2048, "Biters"},
+	
+		{function(cave_miner, entity, player_index)
+		local amount = Public.roll_biter_amount()
+		local position = entity.position
+		local surface = entity.surface	
+		local difficulty_modifier = Public.get_difficulty_modifier(position)
+		local tick = game.tick
+		for c = 1, amount, 1 do
+			Esq.add_to_queue(tick + c * 25, surface, {name = BiterRaffle.roll("spitter", difficulty_modifier), position = position, force = "enemy"}, 8)		
+		end
+	end, 2048, "Spitters"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
