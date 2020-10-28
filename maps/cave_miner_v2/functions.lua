@@ -151,6 +151,7 @@ function Public.loot_crate(surface, position, container_name, player_index)
 	for _, item_stack in pairs(item_stacks) do container.insert(item_stack) end
 	container.minable = false
 	
+	if not description then return end
 	if not player_index then return end
 	local player = game.players[player_index]
 	if math_random(1, 2) == 1 then
@@ -273,7 +274,7 @@ Public.mining_events = {
 		for c = 1, amount, 1 do
 			Esq.add_to_queue(tick + c * 25, surface, {name = BiterRaffle.roll("mixed", difficulty_modifier), position = position, force = "enemy"}, 8)		
 		end
-	end, 20000, "Mixed_Biters"},
+	end, 16384, "Mixed_Biters"},
 	
 	{function(cave_miner, entity, player_index)
 		local amount = Public.roll_biter_amount()
@@ -301,50 +302,50 @@ Public.mining_events = {
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "wooden-chest", player_index)
-	end, 4096, "Treasure_Tier_1"},
+	end, 2048, "Treasure_Tier_1"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "iron-chest", player_index)
-	end, 2048, "Treasure_Tier_2"},
+	end, 1024, "Treasure_Tier_2"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "steel-chest", player_index)
-	end, 1024, "Treasure_Tier_3"},
+	end, 512, "Treasure_Tier_3"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-medium-" .. math_random(1,3), player_index)
-	end, 512, "Treasure_Tier_4"},
+	end, 256, "Treasure_Tier_4"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-big-" .. math_random(1,2), player_index)
-	end, 256, "Treasure_Tier_5"},
+	end, 128, "Treasure_Tier_5"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "big-ship-wreck-" .. math_random(1,3), player_index)
-	end, 128, "Treasure_Tier_6"},
+	end, 64, "Treasure_Tier_6"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-chest-" .. math_random(1,2), player_index)
-	end, 64, "Treasure_Tier_7"},
+	end, 32, "Treasure_Tier_7"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-spaceship", player_index)
 		Public.unstuck_player(player_index)		
-	end, 32, "Treasure_Tier_8"},
+	end, 16, "Treasure_Tier_8"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position

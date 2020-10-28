@@ -4,12 +4,12 @@ Public.treasures = {
 	["wooden-chest"] = {
 		tech_bonus = 0.1,
 		amount_multiplier = 1,
-		description = "an old crate, containing some useful goods.",
+		--description = "an old crate, containing some useful goods.",
 	},
 	["iron-chest"] = {
 		tech_bonus = 0.15,
 		amount_multiplier = 1.5,
-		description = "an iron crate, filled with goodies.",
+		description = "an iron crate!",
 	},
 	["steel-chest"] = {
 		tech_bonus = 0.2,
@@ -24,7 +24,7 @@ Public.treasures = {
 	["crash-site-spaceship-wreck-medium-2"] = {
 		tech_bonus = 0.25,
 		amount_multiplier = 2.5,		
-		description = "a space station wreck piece, containing some prescious scrap!",
+		description = "a space station wreck piece, containing some precious scrap!",
 	},
 	["crash-site-spaceship-wreck-medium-3"] = {
 		tech_bonus = 0.25,
@@ -44,12 +44,12 @@ Public.treasures = {
 	["big-ship-wreck-1"] = {
 		tech_bonus = 0.35,
 		amount_multiplier = 3.5,
-		description = "a crashed space ship! There are some goodies in the cargo!",
+		description = "a crashed space ship! The cargo is still intact!",
 	},
 	["big-ship-wreck-2"] = {
 		tech_bonus = 0.35,
 		amount_multiplier = 3.5,
-		description = "a crashed space ship! There are some goodies in the cargo!",
+		description = "a crashed space ship! The cargo is still intact!",
 	},
 	["big-ship-wreck-3"] = {
 		tech_bonus = 0.35,
