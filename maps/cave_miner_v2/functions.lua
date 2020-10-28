@@ -129,10 +129,9 @@ function Public.rock_spawns_biters(cave_miner, position)
 	local amount = Public.roll_biter_amount()
 	local surface = game.surfaces.nauvis
 	local difficulty_modifier = Public.get_difficulty_modifier(position)
-	local tick = game.tick	
-	for _ = 1, amount, 1 do
-		tick = tick + math_random(30, 90)
-		Esq.add_to_queue(tick, surface, {name = BiterRaffle.roll("mixed", difficulty_modifier), position = position, force = "enemy"}, 8)		
+	local tick = game.tick
+	for c = 1, amount, 1 do
+		Esq.add_to_queue(tick + c * 25, surface, {name = BiterRaffle.roll("mixed", difficulty_modifier), position = position, force = "enemy"}, 8)		
 	end
 end
 
