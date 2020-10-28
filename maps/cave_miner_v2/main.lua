@@ -27,6 +27,9 @@ Global.register(
 )
 
 local function on_player_joined_game(event)
+	--print mining chances
+	--for k, v in pairs(table.get_random_weighted_chances(Functions.mining_events)) do game.print(Functions.mining_events[k][3] .. " | " .. math.round(v, 4) .. " | 1 in " .. math_floor(1 / v)) end
+
 	local player = game.players[event.player_index]
 	
 	Functions.create_top_gui(player)
@@ -79,9 +82,6 @@ local function on_player_mined_entity(event)
 		cave_miner.rocks_broken = cave_miner.rocks_broken + 1		
 		local f = table.get_random_weighted(Functions.mining_events)
 		f(cave_miner, entity, event.player_index)
-		
-		--print chances
-		--for k, v in pairs(table.get_random_weighted_chances(Functions.mining_events)) do game.print(Functions.mining_events[k][3] .. " | " .. math.round(v, 4) .. " | 1 in " .. math_floor(1 / v)) end
 	end
 end
 

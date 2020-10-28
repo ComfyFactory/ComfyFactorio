@@ -117,19 +117,29 @@ function Public.rock_spawns_biters(cave_miner, position)
 	end
 end
 
-function Public.loot_crate(surface, position, container_name)
+function Public.loot_crate(surface, position, container_name, player_index)
 	local amount_multiplier = Constants.treasures[container_name].amount_multiplier
+	local base_amount = 16 * amount_multiplier
 	local difficulty_modifier = Public.get_difficulty_modifier(position)
-	local slots = game.entity_prototypes[container_name].item_slot_count
+	local slots = game.entity_prototypes[container_name].get_inventory_size(defines.inventory.chest)
 	local tech_bonus = Constants.treasures[container_name].tech_bonus
+	local description = Constants.treasures[container_name].description
 	
 	local blacklist = LootRaffle.get_tech_blacklist(difficulty_modifier + tech_bonus)
 	blacklist["landfill"] = true
 
-	local item_stacks = LootRaffle.roll(difficulty_modifier * amount_multiplier, slots, blacklist)
+	local item_stacks = LootRaffle.roll(base_amount + difficulty_modifier * amount_multiplier * 5000, slots, blacklist)
 	local container = surface.create_entity({name = container_name, position = position, force = "neutral"})
 	for _, item_stack in pairs(item_stacks) do container.insert(item_stack) end
 	container.minable = false
+	
+	if not player_index then return end
+	local player = game.players[player_index]
+	if math_random(1, 2) == 1 then
+		game.print(player.name .. " found " .. description, {200, 200, 200})
+	else
+		game.print(player.name .. " uncovered " .. description, {200, 200, 200})
+	end
 end
 
 function Public.place_crude_oil(surface, position, multiplier)
@@ -232,73 +242,91 @@ function Public.darkness(cave_miner)
 	end
 end
 
-
-
-
-
-
 Public.mining_events = {
 	{function(cave_miner, entity, player_index)
-	end, 20000, "Nothing"},
+	end, 300000, "Nothing"},
 	
 	{function(cave_miner, entity, player_index)
 		Public.rock_spawns_biters(cave_miner, entity.position)
-	end, 2048, "Biters"},
+	end, 20000, "Biters"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "wooden-chest")
-	end, 1024, "Treasuer_Tier_1"},
+		Public.loot_crate(surface, position, "wooden-chest", player_index)
+	end, 4096, "Treasure_Tier_1"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "iron-chest")
-	end, 512, "Treasuer_Tier_2"},
+		Public.loot_crate(surface, position, "iron-chest", player_index)
+	end, 2048, "Treasure_Tier_2"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "steel-chest")
-	end, 256, "Treasuer_Tier_3"},
+		Public.loot_crate(surface, position, "steel-chest", player_index)
+	end, 1024, "Treasure_Tier_3"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-medium-" .. math_random(1,3))
-	end, 128, "Treasuer_Tier_4"},
+		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-medium-" .. math_random(1,3), player_index)
+	end, 512, "Treasure_Tier_4"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-big-" .. math_random(1,2))
-	end, 64, "Treasuer_Tier_5"},
+		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-big-" .. math_random(1,2), player_index)
+	end, 256, "Treasure_Tier_5"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "big-ship-wreck-" .. math_random(1,3))
-	end, 32, "Treasuer_Tier_6"},
+		Public.loot_crate(surface, position, "big-ship-wreck-" .. math_random(1,3), player_index)
+	end, 128, "Treasure_Tier_6"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "crash-site-chest-" .. math_random(1,2))
-	end, 16, "Treasuer_Tier_7"},
+		Public.loot_crate(surface, position, "crash-site-chest-" .. math_random(1,2), player_index)
+	end, 64, "Treasure_Tier_7"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "crash-site-spaceship")
-	end, 8, "Treasuer_Tier_8"},
+		Public.loot_crate(surface, position, "crash-site-spaceship", player_index)	
+		local player = game.players[player_index]		
+		local position_2 = surface.find_non_colliding_position("character", position, 16, 0.5)
+		if not position_2 then return end	
+		player.teleport(position_2, surface)
+	end, 32, "Treasure_Tier_8"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		local unit = Public.spawn_random_biter(surface, position, 2)
 		Pets.biter_pets_tame_unit(game.players[player_index], unit, true)
-	end, 64, "Pet"},
+	end, 256, "Pet"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		local tick = game.tick
+		
+		local trees = {}
+		for k, prototype in pairs(game.entity_prototypes) do
+			if prototype.type == "tree" then table.insert(trees, k) end
+		end
+		table.shuffle_table(trees)
+		local tree = game.entity_prototypes[trees[1]].name
+		
+		for c = 1, math_random(4, 128), 1 do
+			Esq.add_to_queue(tick + c * 5, surface, {name = tree, position = position, force = "neutral"}, 64)
+		end
+		local player = game.players[player_index]
+		game.print(player.name .. " found a whole forest!")
+	end, 128, "Forest"},
 }
 
 Public.on_entity_died = {

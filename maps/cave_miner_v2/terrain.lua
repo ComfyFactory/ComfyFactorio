@@ -153,7 +153,7 @@ local function get_biome(surface, seed, position)
 
 	local noise = GetNoise("cave_miner_01", position, seed)
 	local abs_noise = math_abs(noise)
-	if abs_noise < 0.09 then return biomes.cave, d, noise end
+	if abs_noise < 0.088 then return biomes.cave, d, noise end
 	
 	if abs_noise > 0.25 then	
 		local noise = GetNoise("cave_rivers", position, seed)

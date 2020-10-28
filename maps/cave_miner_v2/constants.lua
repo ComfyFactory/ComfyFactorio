@@ -4,58 +4,72 @@ Public.treasures = {
 	["wooden-chest"] = {
 		tech_bonus = 0.1,
 		amount_multiplier = 1,
+		description = "an old crate, containing some useful goods.",
 	},
 	["iron-chest"] = {
 		tech_bonus = 0.15,
-		amount_multiplier = 1.5,		
+		amount_multiplier = 1.5,
+		description = "an iron crate, filled with goodies.",
 	},
 	["steel-chest"] = {
 		tech_bonus = 0.2,
-		amount_multiplier = 2,		
+		amount_multiplier = 2,
+		description = "a shiny metal box filled with treasure!",
 	},
 	["crash-site-spaceship-wreck-medium-1"] = {
 		tech_bonus = 0.25,
-		amount_multiplier = 2.5,		
+		amount_multiplier = 2.5,
+		description = "a spaceship wreck piece, containing some shiny scrap!",
 	},
 	["crash-site-spaceship-wreck-medium-2"] = {
 		tech_bonus = 0.25,
 		amount_multiplier = 2.5,		
+		description = "a space station wreck piece, containing some prescious scrap!",
 	},
 	["crash-site-spaceship-wreck-medium-3"] = {
 		tech_bonus = 0.25,
-		amount_multiplier = 2.5,		
+		amount_multiplier = 2.5,
+		description = "a wreck piece, filled with rare scrap!",
 	},
 	["crash-site-spaceship-wreck-big-1"] = {
 		tech_bonus = 0.30,
-		amount_multiplier = 3,		
+		amount_multiplier = 3,
+		description = "a big wreck piece, filled with items!",
 	},
 	["crash-site-spaceship-wreck-big-2"] = {
 		tech_bonus = 0.30,
-		amount_multiplier = 3,		
+		amount_multiplier = 3,
+		description = "a station wreck piece, containing some useful items!",
 	},
 	["big-ship-wreck-1"] = {
 		tech_bonus = 0.35,
-		amount_multiplier = 3.5,		
+		amount_multiplier = 3.5,
+		description = "a crashed space ship! There are some goodies in the cargo!",
 	},
 	["big-ship-wreck-2"] = {
 		tech_bonus = 0.35,
-		amount_multiplier = 3.5,		
+		amount_multiplier = 3.5,
+		description = "a crashed space ship! There are some goodies in the cargo!",
 	},
 	["big-ship-wreck-3"] = {
 		tech_bonus = 0.35,
-		amount_multiplier = 3.5,		
+		amount_multiplier = 3.5,
+		description = "a crashed starship! The cargo is still intact!",
 	},
 	["crash-site-chest-1"] = {
 		tech_bonus = 0.40,
-		amount_multiplier = 4,		
+		amount_multiplier = 4,
+		description = "a drop pod capsule! It is filled with useful loot!",
 	},
 	["crash-site-chest-2"] = {
 		tech_bonus = 0.40,
-		amount_multiplier = 4,		
+		amount_multiplier = 4,
+		description = "a cargo pod capsule! It is filled with nice things!",
 	},
 	["crash-site-spaceship"] = {
 		tech_bonus = 0.5,
-		amount_multiplier = 5,		
+		amount_multiplier = 5,
+		description = "a big crashed spaceship! There are treasures inside..",
 	},
 }
 
