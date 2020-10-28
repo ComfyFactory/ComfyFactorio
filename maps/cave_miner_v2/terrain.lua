@@ -6,6 +6,7 @@ local Market = require 'maps.cave_miner_v2.market'
 
 local math_abs = math.abs
 local math_random = math.random
+local math_floor = math.floor
 
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local size_of_rock_raffle = #rock_raffle
@@ -159,7 +160,14 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 		end
 	end
 
-	if GetNoise("no_rocks_2", position, seed) > 0.7 then return end
+	local no_rocks_2 = GetNoise("no_rocks_2", position, seed)
+	if no_rocks_2 > 0.7 then
+		if no_rocks_2 > 0.73 then
+			if math_random(1, 128) == 1 then Market.spawn_random_cave_market(surface, position) end
+		end
+		surface.set_tiles({{name = "dirt-" .. math_floor(no_rocks_2 * 16) % 4 + 3, position = position}}, true, false, false, false) 
+		return
+	end
 
 	local noise_rock = GetNoise("small_caves", position, seed)	
 

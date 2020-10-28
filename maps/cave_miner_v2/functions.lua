@@ -340,6 +340,7 @@ Public.mining_events = {
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
+		if position.x ^ 2 + position.y ^ 2 < 8000 then return end
 		local surface = entity.surface	
 		Public.place_worm(surface, position, 1)
 		Public.unstuck_player(player_index)	

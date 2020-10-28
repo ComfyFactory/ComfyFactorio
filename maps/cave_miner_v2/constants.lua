@@ -76,8 +76,8 @@ Public.treasures = {
 Public.starting_items = {
 	["pistol"] = 1,
 	["firearm-magazine"] = 8,
-	["explosives"] = 16,
-	["raw-fish"] = 8,	
+	["wood"] = 8,
+	["raw-fish"] = 3,	
 }
 
 Public.reveal_chain_brush_sizes = {
