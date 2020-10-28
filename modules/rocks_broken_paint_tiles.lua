@@ -7,13 +7,14 @@ local valid_entities = {
 	["sand-rock-big"] = true	
 }
 
-local replacement_tiles = {		
-		["dirt-7"] = "dirt-6",
-		["dirt-6"] = "dirt-5",
-		["dirt-5"] = "dirt-4",
-		["dirt-4"] = "dirt-3",	
-		["dirt-3"] = "dirt-2"
-	}
+local replacement_tiles = {
+	["nuclear-ground"] = "dirt-7",
+	["dirt-7"] = "dirt-6",
+	["dirt-6"] = "dirt-5",
+	["dirt-5"] = "dirt-4",
+	["dirt-4"] = "dirt-3",	
+	["dirt-3"] = "dirt-2"
+}
 
 local coords = {
 		{x = 0, y = 0},{x = -1, y = -1},{x = 1, y = -1},

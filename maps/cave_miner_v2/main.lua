@@ -225,4 +225,4 @@ Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 Event.add(defines.events.on_entity_died, on_entity_died)
 
-require "modules.rocks_yield_ore" 
+require "maps.cave_miner_v2.rocks_yield_ore" 

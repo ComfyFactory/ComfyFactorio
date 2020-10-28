@@ -214,7 +214,8 @@ function Public.generate_cave(event)
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			i = i + 1
-			tiles[i] = {name = "dirt-7", position = {left_top_x + x, left_top_y + y}}
+			local position = {x = left_top_x + x, y = left_top_y + y}
+			tiles[i] = {name = Functions.get_base_ground_tile(position, seed), position = position}
 		end
 	end
 	surface.set_tiles(tiles, true)	

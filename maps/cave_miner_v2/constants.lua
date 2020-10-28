@@ -111,12 +111,12 @@ Public.spawn_market_items = {
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'stone', count = 10}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'coal', count = 10}},	
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = 5}},
-	{price = {{'wood', 12}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},	
-	{price = {{'iron-ore', 12}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
-	{price = {{'copper-ore', 12}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
-	{price = {{'stone', 12}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
-	{price = {{'coal', 12}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},	
-	{price = {{'uranium-ore', 6}}, offer = {type = 'give-item', item = "raw-fish", count = 1}}
+	{price = {{'wood', 15}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},	
+	{price = {{'iron-ore', 15}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
+	{price = {{'copper-ore', 15}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
+	{price = {{'stone', 15}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},
+	{price = {{'coal', 15}}, offer = {type = 'give-item', item = "raw-fish", count = 1}},	
+	{price = {{'uranium-ore', 7}}, offer = {type = 'give-item', item = "raw-fish", count = 1}}
 }
 
 Public.pickaxe_tiers = {

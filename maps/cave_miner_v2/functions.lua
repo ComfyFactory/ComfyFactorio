@@ -1,5 +1,6 @@
 local Public = {}
 
+local GetNoise = require "utils.get_noise"
 local Constants = require 'maps.cave_miner_v2.constants'
 local BiterRaffle = require "functions.biter_raffle"
 local LootRaffle = require "functions.loot_raffle"
@@ -58,7 +59,7 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 	end
 	surface.set_tiles(tiles, true, false, false, false)
 	source_surface.set_tiles(copied_tiles, false, false, false, false)
-	
+
 	for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
 		local entity_position = entity.position
 		if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
@@ -72,6 +73,17 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 	
 	source_surface.set_tiles({{name = "lab-dark-2", position = position}}, false)
 	source_surface.request_to_generate_chunks(position, 3)
+end
+
+function Public.get_base_ground_tile(position, seed)
+	local noise = GetNoise("large_caves", position, seed)
+	local name
+	if noise < 0.1 then
+		name = "dirt-7"
+	else
+		name = "nuclear-ground"
+	end
+	return name
 end
 
 function Public.spawn_player(player)
@@ -91,7 +103,7 @@ function Public.spawn_player(player)
 end
 
 function Public.set_mining_speed(cave_miner, force)
-	force.manual_mining_speed_modifier = -0.50 + cave_miner.pickaxe_tier * 0.40
+	force.manual_mining_speed_modifier = -0.60 + cave_miner.pickaxe_tier * 0.40
 	return force.manual_mining_speed_modifier
 end
 
