@@ -18,6 +18,14 @@ function Public.get_difficulty_modifier(position)
 	return difficulty
 end
 
+function Public.unstuck_player(player_index)
+	local player = game.players[player_index]
+	local surface = player.surface
+	local position = surface.find_non_colliding_position("character", player.position, 32, 0.5)
+	if not position then return end	
+	player.teleport(position, surface)
+end
+
 function Public.roll_biter_amount()
 	local max_chance = 0
 	for k, v in pairs(spawn_amount_rolls) do
@@ -88,8 +96,7 @@ function Public.set_mining_speed(cave_miner, force)
 end
 
 function Public.place_worm(surface, position, multiplier)
-	surface.create_entity({name = BiterRaffle.roll("worm", Public.get_difficulty_modifier(position) * multiplier), position = position, force = "enemy"})
-	return 
+	surface.create_entity({name = BiterRaffle.roll("worm", Public.get_difficulty_modifier(position) * multiplier), position = position, force = "enemy"}) 
 end
 
 function Public.spawn_random_biter(surface, position, multiplier)
@@ -295,11 +302,8 @@ Public.mining_events = {
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
-		Public.loot_crate(surface, position, "crash-site-spaceship", player_index)	
-		local player = game.players[player_index]		
-		local position_2 = surface.find_non_colliding_position("character", position, 16, 0.5)
-		if not position_2 then return end	
-		player.teleport(position_2, surface)
+		Public.loot_crate(surface, position, "crash-site-spaceship", player_index)
+		Public.unstuck_player(player_index)		
 	end, 32, "Treasure_Tier_8"},
 	
 	{function(cave_miner, entity, player_index)
@@ -308,6 +312,49 @@ Public.mining_events = {
 		local unit = Public.spawn_random_biter(surface, position, 2)
 		Pets.biter_pets_tame_unit(game.players[player_index], unit, true)
 	end, 256, "Pet"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		surface.create_entity({name = "biter-spawner", position = position, force = "enemy"})
+		Public.unstuck_player(player_index)
+	end, 1024, "Nest"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		Public.place_worm(surface, position, 1)
+		Public.unstuck_player(player_index)
+	end, 2048, "Worm"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface	
+		Public.place_worm(surface, position, 1)
+		Public.unstuck_player(player_index)	
+		local difficulty_modifier = Public.get_difficulty_modifier(position)
+		local tick = game.tick	
+		for c = 1, math_random(1, 9), 1 do
+			Esq.add_to_queue(
+				tick + c * 90 + math_random(0, 90),
+				surface,
+				{name = BiterRaffle.roll("worm", difficulty_modifier), position = {position.x + (-5 + math_random(0, 10)), position.y + (-5 + math_random(0, 10))}, force = "enemy"},
+				32
+			)			
+		end
+	end, 256, "Worms"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		surface.create_entity({name = "compilatron", position = position, force = "player"})
+	end, 64, "Friendly Compilatron"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
+		surface.create_entity({name = "compilatron", position = position, force = "enemy"})
+	end, 128, "Enemy Compilatron"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
