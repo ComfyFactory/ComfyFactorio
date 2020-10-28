@@ -35,6 +35,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
 end
 
 local function charge(player)
+	if not player.character then return end
   local armor_inventory = player.get_inventory(defines.inventory.character_armor)
   if not armor_inventory.valid then return end
   local armor = armor_inventory[1]

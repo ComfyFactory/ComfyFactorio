@@ -29,6 +29,7 @@ Biomes.acid_zone = require "maps.dungeons.biome_acid_zone"
 Biomes.rainbow = require "maps.dungeons.biome_rainbow"
 Biomes.treasure = require "maps.dungeons.biome_treasure"
 Biomes.market = require "maps.dungeons.biome_market"
+Biomes.laboratory = require "maps.dungeons.biome_laboratory"
 
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
@@ -155,7 +156,7 @@ local function unlock_researches(surface_index)
 	local tech = game.forces.player.technologies
 	if get_surface_research(surface_index) and tech[get_surface_research(surface_index)].enabled == false then
 		tech[get_surface_research(surface_index)].enabled = true
-		game.print({"dungeons_tiered.tech_unlock", "[technology=" .. get_surface_research(surface_index) .. "]", surface_index - 2})
+		game.print({"dungeons_tiered.tech_unlock", "[technology=" .. get_surface_research(surface_index) .. "]", surface_index - global.dungeons.original_surface_index})
 	end
 end
 
@@ -180,6 +181,11 @@ local function expand(surface, position)
 			global.dungeons.treasures[surface.index] = global.dungeons.treasures[surface.index] + 1
 			game.print({"dungeons_tiered.treasure_room", surface.index - global.dungeons.original_surface_index}, {r = 0.88, g = 0.22, b = 0})
 		end
+	elseif global.dungeons.surface_size[surface.index] >= 225 and math.random(1,50) == 1 and get_surface_research(surface.index) and game.forces.player.technologies[get_surface_research(surface.index)].enabled == false then
+		Biomes["laboratory"](surface, room)
+		if room.room_tiles[1] then
+			unlock_researches(surface.index)
+		end
 	elseif math_random(1,256) == 1 then
 		Biomes["market"](surface, room)
 	else
@@ -191,7 +197,6 @@ local function expand(surface, position)
 
 	global.dungeons.depth[surface.index] = global.dungeons.depth[surface.index] + 1
 	global.dungeons.surface_size[surface.index] = 200 + (global.dungeons.depth[surface.index] - 100 * (surface.index - global.dungeons.original_surface_index)) / 4
-	if global.dungeons.surface_size[surface.index] >= 225 and math.random(1,50) == 1 then unlock_researches(surface.index) end
 
 	local evo = Functions.get_dungeon_evolution_factor(surface.index)
 
@@ -455,7 +460,7 @@ local function get_lowest_safe_floor(player)
 	local sizes = global.dungeons.surface_size
 	local safe = global.dungeons.original_surface_index
 	for key, size in pairs(sizes) do
-		if size > 215 and level >= key * 10 - 10 and game.surfaces[key + 1] then
+		if size > 215 and level >= (key + 1 - global.dungeons.original_surface_index) * 10 and game.surfaces[key + 1] then
 			safe = key + 1
 		else
 			break
@@ -684,7 +689,7 @@ local function on_init()
 	global.biter_health_boost_forces[game.forces.enemy.index] = 1
 	global.biter_health_boost_forces[global.enemy_forces[surface.index].index] = 1
 
-	global.rocks_yield_ore_base_amount = 100
+	global.rocks_yield_ore_base_amount = 50
 	global.rocks_yield_ore_distance_modifier = 0.001
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
