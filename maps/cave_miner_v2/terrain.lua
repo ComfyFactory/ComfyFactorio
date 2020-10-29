@@ -111,7 +111,7 @@ function biomes.spawn(surface, seed, position, square_distance)
 	if square_distance < 32 then return end
 	local noise = GetNoise("decoratives", position, seed)
 	
-	if math_abs(noise) > 0.60 and square_distance < 1250 then
+	if math_abs(noise) > 0.60 and square_distance < 900 then
 		surface.set_tiles({{name = "water", position = position}}, true, false, false, false)
 		if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
 		return
@@ -171,7 +171,7 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 
 	local noise_rock = GetNoise("small_caves", position, seed)	
 
-	if noise_rock < 0.5 then
+	if noise_rock < 0.6 then
 		if math_random(1, 3) > 1 then 
 			local a = (-49 + math_random(0, 98)) * 0.01
 			local b = (-49 + math_random(0, 98)) * 0.01
@@ -190,7 +190,7 @@ end
 
 local function get_biome(surface, seed, position)
 	local d = position.x ^ 2 + position.y ^ 2
-	if d < 2048 then return biomes.spawn, d end
+	if d < 1024 then return biomes.spawn, d end
 
 	local noise = GetNoise("cave_miner_01", position, seed)
 	local abs_noise = math_abs(noise)

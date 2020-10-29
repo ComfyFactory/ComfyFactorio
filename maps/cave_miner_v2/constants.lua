@@ -4,12 +4,12 @@ Public.treasures = {
 	["wooden-chest"] = {
 		tech_bonus = 0.1,
 		amount_multiplier = 1,
-		--description = "an old crate, containing some useful goods.",
+		description = "an old wooden crate.",
 	},
 	["iron-chest"] = {
 		tech_bonus = 0.15,
 		amount_multiplier = 1.5,
-		--description = "an iron crate.",
+		description = "an antique iron crate.",
 	},
 	["steel-chest"] = {
 		tech_bonus = 0.2,

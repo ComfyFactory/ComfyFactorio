@@ -153,10 +153,15 @@ function Public.loot_crate(surface, position, container_name, player_index)
 	if not description then return end
 	if not player_index then return end
 	local player = game.players[player_index]
+	local text
 	if math_random(1, 2) == 1 then
-		game.print(player.name .. " found " .. description, {200, 200, 200})
+		text = player.name .. " found " .. description
 	else
-		game.print(player.name .. " uncovered " .. description, {200, 200, 200})
+		text = player.name .. " uncovered " .. description
+	end
+
+	for _, player in pairs(game.forces.player.connected_players) do
+		player.add_custom_alert(container, {type = "item", name = container.name}, text, true)
 	end
 end
 
@@ -262,7 +267,7 @@ end
 
 Public.mining_events = {
 	{function(cave_miner, entity, player_index)
-	end, 300000, "Nothing"},
+	end, 320000, "Nothing"},
 	
 	{function(cave_miner, entity, player_index)
 		local amount = Public.roll_biter_amount()
@@ -365,7 +370,7 @@ Public.mining_events = {
 		local surface = entity.surface
 		Public.place_worm(surface, position, 1)
 		Public.unstuck_player(player_index)
-	end, 2048, "Worm"},
+	end, 1024, "Worm"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
@@ -375,15 +380,15 @@ Public.mining_events = {
 		Public.unstuck_player(player_index)	
 		local difficulty_modifier = Public.get_difficulty_modifier(position)
 		local tick = game.tick	
-		for c = 1, math_random(1, 9), 1 do
+		for c = 1, math_random(1, 7), 1 do
 			Esq.add_to_queue(
 				tick + c * 90 + math_random(0, 90),
 				surface,
-				{name = BiterRaffle.roll("worm", difficulty_modifier), position = {position.x + (-5 + math_random(0, 10)), position.y + (-5 + math_random(0, 10))}, force = "enemy"},
-				32
+				{name = BiterRaffle.roll("worm", difficulty_modifier), position = {position.x + (-4 + math_random(0, 8)), position.y + (-4 + math_random(0, 8))}, force = "enemy"},
+				16
 			)			
 		end
-	end, 256, "Worms"},
+	end, 128, "Worms"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
