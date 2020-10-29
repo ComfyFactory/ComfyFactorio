@@ -144,7 +144,6 @@ function Public.loot_crate(surface, position, container_name, player_index)
 	local description = Constants.treasures[container_name].description
 	
 	local blacklist = LootRaffle.get_tech_blacklist(difficulty_modifier + tech_bonus)
-	blacklist["landfill"] = true
 
 	local item_stacks = LootRaffle.roll(base_amount + difficulty_modifier * amount_multiplier * 5000, slots, blacklist)
 	local container = surface.create_entity({name = container_name, position = position, force = "neutral"})
@@ -419,12 +418,12 @@ Public.mining_events = {
 		table.shuffle_table(trees)
 		local tree = game.entity_prototypes[trees[1]].name
 		
-		for c = 1, math_random(4, 128), 1 do
+		for c = 1, math_random(4, 96), 1 do
 			Esq.add_to_queue(tick + c * 5, surface, {name = tree, position = position, force = "neutral"}, 64)
 		end
 		local player = game.players[player_index]
 		game.print(player.name .. " found a whole forest!")
-	end, 128, "Forest"},
+	end, 64, "Forest"},
 }
 
 Public.on_entity_died = {
@@ -448,7 +447,7 @@ Public.on_entity_died = {
 	["simple-entity"] = function(cave_miner, entity)
 		local position = entity.position
 		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
-		if math.random(1, 4) == 1 then
+		if math.random(1, 6) == 1 then
 			Public.rock_spawns_biters(cave_miner, position)
 		end
 	end,

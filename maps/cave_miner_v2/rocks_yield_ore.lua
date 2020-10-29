@@ -142,7 +142,7 @@ local function on_entity_died(event)
 	if not rock_yield[entity.name] then return end
 	
 	local surface = entity.surface
-	local ore = global.rocks_yield_ore["raffle"][math_random(1, global.rocks_yield_ore["size_of_raffle"])]
+	local ore = get_ore_name(entity.position)
 	local pos = {entity.position.x, entity.position.y}		
 	create_particles(surface, particles[ore], pos, 16, false)
 	
@@ -157,11 +157,11 @@ local function on_entity_died(event)
 		
 	entity.destroy()
 	
-	local count = math_random(6,9)
+	local count = math_random(7,15)
 	global.rocks_yield_ore["ores_mined"] = global.rocks_yield_ore["ores_mined"] + count	
 	surface.spill_item_stack(pos,{name = ore, count = count}, true)
 	
-	local count = math_random(1,3)
+	local count = math_random(2,8)
 	global.rocks_yield_ore["ores_mined"] = global.rocks_yield_ore["ores_mined"] + count	
 	surface.spill_item_stack(pos,{name = "stone", count = math_random(1,3)}, true)
 	

@@ -1,6 +1,6 @@
 local Constants = require 'maps.cave_miner_v2.constants'
 local Event = require 'utils.event'
-local Explosives = require "modules.explosives"
+local Explosives = require "modules.explosives_2"
 local Autostash = require "modules.autostash"
 local Functions = require 'maps.cave_miner_v2.functions'
 local Global = require 'utils.global'
@@ -191,13 +191,13 @@ local function on_init()
 	global.rocks_yield_ore_base_amount = 16
 	global.rocks_yield_ore_distance_modifier = 0.0128
 	
-	Explosives.set_destructible_tile("out-of-map", 1500)
-	Explosives.set_destructible_tile("water", 1000)
-	Explosives.set_destructible_tile("water-green", 1000)
-	Explosives.set_destructible_tile("deepwater-green", 1000)
-	Explosives.set_destructible_tile("deepwater", 1000)
-	Explosives.set_destructible_tile("water-shallow", 1000)
-	Explosives.set_destructible_tile("water-mud", 1000)
+	Explosives.set_destructible_tile("out-of-map", 5000)
+	Explosives.set_destructible_tile("water", 2000)
+	Explosives.set_destructible_tile("water-green", 2000)
+	Explosives.set_destructible_tile("deepwater-green", 2500)
+	Explosives.set_destructible_tile("deepwater", 2500)
+	Explosives.set_destructible_tile("water-shallow", 1500)
+	Explosives.set_destructible_tile("water-mud", 1500)
 	
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
