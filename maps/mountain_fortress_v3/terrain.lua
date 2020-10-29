@@ -22,6 +22,7 @@ local wagon_raffle = {
     'locomotive',
     'fluid-wagon'
 }
+
 local rock_raffle = {
     'sand-rock-big',
     'sand-rock-big',
@@ -954,7 +955,7 @@ local function process_level_8_position(x, y, data, void_or_lab)
                 }
             end
             if random(1, 5) > 1 then
-                entities[#entities + 1] = {name = 'mineable-wreckage', position = p}
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
             if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}

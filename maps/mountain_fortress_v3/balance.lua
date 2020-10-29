@@ -40,7 +40,7 @@ local function enemy_weapon_damage()
     local e = game.forces.enemy
 
     local data = {
-        ['artillery-shell'] = 0.001,
+        ['artillery-shell'] = 0.05,
         ['biological'] = 0.08,
         ['bullet'] = 0.08,
         ['capsule'] = 0.08,

@@ -474,7 +474,7 @@ end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.
 -- amount (integer) -- 10 levels
--- local Public = require 'modules.rpg_v2' Public.give_xp(512)
+-- local Public = require 'modules.rpg.functions' Public.give_xp(512)
 function Public.give_xp(amount)
     for _, player in pairs(game.connected_players) do
         if not Public.validate_player(player) then

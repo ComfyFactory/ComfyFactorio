@@ -221,13 +221,15 @@ local function output_cargo(wagon, passive_chest)
     if not passive_chest.valid then
         return
     end
-    local chest1 = passive_chest.get_inventory(defines.inventory.cargo_wagon)
+    local chest1 = passive_chest.get_inventory(defines.inventory.chest)
     local chest2 = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
-    for k, v in pairs(chest1.get_contents()) do
-        local t = {name = k, count = v}
-        local c = chest2.insert(t)
-        if (c > 0) then
-            chest1.remove({name = k, count = c})
+    for i = 1, #chest1 do
+        local t = chest1[i]
+        if t and t.valid then
+            local c = chest2.insert(t)
+            if (c > 0) then
+                chest1.remove(t)
+            end
         end
     end
 end
@@ -427,14 +429,13 @@ function Public.create_wagon_room(icw, wagon)
         end
     end
 
-    for x = area.left_top.x, area.right_bottom.x - 1, 1 do
+    --[[  for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
             if random(1, 16) == 1 then
-                fishes[#fishes + 1] = {name = 'mineable-wreckage', position = {x, y}}
+                fishes[#fishes + 1] = {name = crash_site[random(1, size_of_crash)], position = {x, y}, force = 'player'}
             end
         end
-    end
-
+    end ]]
     surface.set_tiles(tiles, true)
 
     for _, fish in pairs(fishes) do
