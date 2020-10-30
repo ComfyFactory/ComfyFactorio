@@ -401,6 +401,9 @@ local function on_player_mined_entity(event)
             return
         end
 
+        hidden_biter_pet(event)
+        hidden_treasure(event)
+
         if random(1, 32) == 1 then
             hidden_biter(event.entity)
             entity.destroy()
@@ -415,8 +418,7 @@ local function on_player_mined_entity(event)
             Traps(entity.surface, entity.position)
             return
         end
-        hidden_biter_pet(event)
-        hidden_treasure(event)
+
         angry_tree(event.entity, game.players[event.player_index].character)
         entity.destroy()
     end

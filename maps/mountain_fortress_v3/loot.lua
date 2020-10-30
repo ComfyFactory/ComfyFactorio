@@ -14,6 +14,7 @@ local blacklist = {
     ['locomotive'] = true,
     ['artillery-wagon'] = true,
     ['artillery-turret'] = true,
+    ['landfill'] = true,
     ['fluid-wagon'] = true
 }
 
