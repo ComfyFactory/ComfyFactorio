@@ -10,7 +10,6 @@ require 'modules.rocks_yield_ore_veins'
 require 'modules.spawners_contain_biters'
 require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
-require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.charging_station'
 
 local IC = require 'maps.mountain_fortress_v3.ic.table'
@@ -155,7 +154,7 @@ local set_difficulty = function()
     if wave_defense_table.threat <= 0 then
         wave_defense_table.wave_interval = 1000
     end
-    if name == 'Insane' then
+    if name == 'Nightmare' then
         wave_defense_table.wave_interval = 1800
     else
         wave_defense_table.wave_interval = 3600 - player_count * 60
@@ -169,7 +168,7 @@ local set_difficulty = function()
         return
     end
 
-    if name == 'Insane' then
+    if name == 'Nightmare' then
         Collapse.set_amount(10)
     elseif collapse_amount then
         Collapse.set_amount(collapse_amount)
@@ -642,7 +641,7 @@ local boost_difficulty = function()
 
     local force = game.forces.player
 
-    if name == 'Easy' then
+    if name == "I'm too young to die" then
         rpg_extra.difficulty = 1
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
         force.character_running_speed_modifier = 0.2
@@ -657,7 +656,7 @@ local boost_difficulty = function()
         WPT.set().spidertron_unlocked_at_wave = 11
         WPT.set().difficulty_set = true
         WD.set_biter_health_boost(1.2)
-    elseif name == 'Normal' then
+    elseif name == 'Hurt me plenty' then
         rpg_extra.difficulty = 0.5
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
         force.character_running_speed_modifier = 0.1
@@ -672,7 +671,7 @@ local boost_difficulty = function()
         WPT.set().spidertron_unlocked_at_wave = 16
         WPT.set().difficulty_set = true
         WD.set_biter_health_boost(1.7)
-    elseif name == 'Hard' then
+    elseif name == 'Ultra-violence' then
         rpg_extra.difficulty = 0
         force.character_running_speed_modifier = 0
         force.manual_crafting_speed_modifier = 0
@@ -686,7 +685,7 @@ local boost_difficulty = function()
         WPT.set().spidertron_unlocked_at_wave = 21
         WPT.set().difficulty_set = true
         WD.set_biter_health_boost(2.2)
-    elseif name == 'Insane' then
+    elseif name == 'Nightmare' then
         rpg_extra.difficulty = 0
         force.character_running_speed_modifier = 0
         force.manual_crafting_speed_modifier = 0
@@ -762,13 +761,13 @@ local collapse_after_wave_100 = function()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
 
     local difficulty_set = WPT.get('difficulty_set')
-    if not difficulty_set and name == 'Insane' then
+    if not difficulty_set and name == 'Nightmare' then
         return
     end
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 100 or name == 'Insane' then
+    if wave_number >= 100 or name == 'Nightmare' then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
@@ -819,41 +818,6 @@ local on_init = function()
     local this = WPT.get()
     Public.reset_map()
 
-    local difficulties = {
-        [1] = {
-            name = 'Easy',
-            index = 1,
-            value = 0.75,
-            color = {r = 0.00, g = 0.25, b = 0.00},
-            print_color = {r = 0.00, g = 0.4, b = 0.00},
-            count = 0
-        },
-        [2] = {
-            name = 'Normal',
-            index = 2,
-            value = 1,
-            color = {r = 0.00, g = 0.00, b = 0.25},
-            print_color = {r = 0.0, g = 0.0, b = 0.5},
-            count = 0
-        },
-        [3] = {
-            name = 'Hard',
-            index = 3,
-            value = 1.5,
-            color = {r = 0.25, g = 0.25, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00},
-            count = 0
-        },
-        [4] = {
-            name = 'Insane',
-            index = 4,
-            value = 3,
-            color = {r = 0.25, g = 0.00, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00},
-            count = 0
-        }
-    }
-
     local tooltip = {
         [1] = ({'main.diff_tooltip', '1', '1.5', '0.2', '0.4', '2', '25', '100', '15000', '100%', '20', '10'}),
         [2] = ({'main.diff_tooltip', '0.5', '1', '0.1', '0.2', '1', '10', '50', '10000', '75%', '15', '15'}),
@@ -861,12 +825,11 @@ local on_init = function()
         [4] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '0', '0', '1000', '25%', '5', '25'})
     }
 
-    Difficulty.set_difficulties(difficulties)
     Difficulty.set_tooltip(tooltip)
 
     this.rocks_yield_ore_maximum_amount = 500
     this.type_modifier = 1
-    this.rocks_yield_ore_base_amount = 100
+    this.rocks_yield_ore_base_amount = 50
     this.rocks_yield_ore_distance_modifier = 0.025
 
     local T = Map.Pop_info()

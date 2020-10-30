@@ -107,8 +107,8 @@ local dot_product = {
         return -y - z
     end
 }
-local function grad(hash, x, y, z)
-    return dot_product[band(hash, 0xF)](x, y, z)
+local function grad(hash, x, y, z, bit)
+    return dot_product[band(hash, bit)](x, y, z)
 end
 
 -- Fade function is used to smooth final output
@@ -121,7 +121,7 @@ local function lerp(t, a, b)
 end
 
 -- Return range: [-1, 1]
-function Perlin.noise(x, y, z)
+function Perlin.noise(x, y, z, bit)
     y = y or 0
     z = z or 0
 
@@ -168,13 +168,13 @@ function Perlin.noise(x, y, z)
         w,
         lerp(
             v,
-            lerp(u, grad(AAA, x, y, z), grad(BAA, x - 1, y, z)),
-            lerp(u, grad(ABA, x, y - 1, z), grad(BBA, x - 1, y - 1, z))
+            lerp(u, grad(AAA, x, y, z, bit), grad(BAA, x - 1, y, z, bit)),
+            lerp(u, grad(ABA, x, y - 1, z), grad(BBA, x - 1, y - 1, z, bit))
         ),
         lerp(
             v,
-            lerp(u, grad(AAB, x, y, z - 1), grad(BAB, x - 1, y, z - 1)),
-            lerp(u, grad(ABB, x, y - 1, z - 1), grad(BBB, x - 1, y - 1, z - 1))
+            lerp(u, grad(AAB, x, y, z - 1, bit), grad(BAB, x - 1, y, z - 1)),
+            lerp(u, grad(ABB, x, y - 1, z - 1, bit), grad(BBB, x - 1, y - 1, z - 1, bit))
         )
     )
 end

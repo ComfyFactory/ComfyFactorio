@@ -8,6 +8,110 @@ local sqrt = math.sqrt
 
 local max_spill = 60
 
+local mining_chance_weights = {
+    {name = 'iron-plate', chance = 1000},
+    {name = 'iron-gear-wheel', chance = 750},
+    {name = 'copper-plate', chance = 750},
+    {name = 'copper-cable', chance = 500},
+    {name = 'electronic-circuit', chance = 300},
+    {name = 'steel-plate', chance = 200},
+    {name = 'solid-fuel', chance = 150},
+    {name = 'pipe', chance = 100},
+    {name = 'iron-stick', chance = 50},
+    {name = 'battery', chance = 20},
+    {name = 'empty-barrel', chance = 10},
+    {name = 'crude-oil-barrel', chance = 30},
+    {name = 'lubricant-barrel', chance = 20},
+    {name = 'petroleum-gas-barrel', chance = 15},
+    {name = 'sulfuric-acid-barrel', chance = 15},
+    {name = 'heavy-oil-barrel', chance = 15},
+    {name = 'light-oil-barrel', chance = 15},
+    {name = 'water-barrel', chance = 10},
+    {name = 'green-wire', chance = 10},
+    {name = 'red-wire', chance = 10},
+    {name = 'explosives', chance = 5},
+    {name = 'advanced-circuit', chance = 5},
+    {name = 'nuclear-fuel', chance = 1},
+    {name = 'pipe-to-ground', chance = 10},
+    {name = 'plastic-bar', chance = 5},
+    {name = 'processing-unit', chance = 2},
+    {name = 'used-up-uranium-fuel-cell', chance = 1},
+    {name = 'uranium-fuel-cell', chance = 1},
+    {name = 'rocket-fuel', chance = 3},
+    {name = 'rocket-control-unit', chance = 1},
+    {name = 'low-density-structure', chance = 1},
+    {name = 'heat-pipe', chance = 1},
+    {name = 'engine-unit', chance = 4},
+    {name = 'electric-engine-unit', chance = 2},
+    {name = 'logistic-robot', chance = 1},
+    {name = 'construction-robot', chance = 1},
+    {name = 'land-mine', chance = 3},
+    {name = 'grenade', chance = 10},
+    {name = 'rocket', chance = 3},
+    {name = 'explosive-rocket', chance = 3},
+    {name = 'cannon-shell', chance = 2},
+    {name = 'explosive-cannon-shell', chance = 2},
+    {name = 'uranium-cannon-shell', chance = 1},
+    {name = 'explosive-uranium-cannon-shell', chance = 1},
+    {name = 'artillery-shell', chance = 1},
+    {name = 'cluster-grenade', chance = 2},
+    {name = 'defender-capsule', chance = 5},
+    {name = 'destroyer-capsule', chance = 1},
+    {name = 'distractor-capsule', chance = 2}
+}
+
+local scrap_yield_amounts = {
+    ['iron-plate'] = 16,
+    ['iron-gear-wheel'] = 8,
+    ['iron-stick'] = 16,
+    ['copper-plate'] = 16,
+    ['copper-cable'] = 24,
+    ['electronic-circuit'] = 8,
+    ['steel-plate'] = 4,
+    ['pipe'] = 8,
+    ['solid-fuel'] = 4,
+    ['empty-barrel'] = 3,
+    ['crude-oil-barrel'] = 3,
+    ['lubricant-barrel'] = 3,
+    ['petroleum-gas-barrel'] = 3,
+    ['sulfuric-acid-barrel'] = 3,
+    ['heavy-oil-barrel'] = 3,
+    ['light-oil-barrel'] = 3,
+    ['water-barrel'] = 3,
+    ['battery'] = 2,
+    ['explosives'] = 4,
+    ['advanced-circuit'] = 2,
+    ['nuclear-fuel'] = 0.1,
+    ['pipe-to-ground'] = 1,
+    ['plastic-bar'] = 4,
+    ['processing-unit'] = 1,
+    ['used-up-uranium-fuel-cell'] = 1,
+    ['uranium-fuel-cell'] = 0.3,
+    ['rocket-fuel'] = 0.3,
+    ['rocket-control-unit'] = 0.3,
+    ['low-density-structure'] = 0.3,
+    ['heat-pipe'] = 1,
+    ['green-wire'] = 8,
+    ['red-wire'] = 8,
+    ['engine-unit'] = 2,
+    ['electric-engine-unit'] = 2,
+    ['logistic-robot'] = 0.3,
+    ['construction-robot'] = 0.3,
+    ['land-mine'] = 1,
+    ['grenade'] = 2,
+    ['rocket'] = 2,
+    ['explosive-rocket'] = 2,
+    ['cannon-shell'] = 2,
+    ['explosive-cannon-shell'] = 2,
+    ['uranium-cannon-shell'] = 2,
+    ['explosive-uranium-cannon-shell'] = 2,
+    ['artillery-shell'] = 0.3,
+    ['cluster-grenade'] = 0.3,
+    ['defender-capsule'] = 2,
+    ['destroyer-capsule'] = 0.3,
+    ['distractor-capsule'] = 0.3
+}
+
 local valid_rocks = {
     ['sand-rock-big'] = true,
     ['rock-big'] = true,
@@ -102,6 +206,15 @@ end
 
 local size_of_ore_raffle = #harvest_raffle_ores
 
+local scrap_raffle = {}
+for _, t in pairs(mining_chance_weights) do
+    for _ = 1, t.chance, 1 do
+        scrap_raffle[#scrap_raffle + 1] = t.name
+    end
+end
+
+local size_of_scrap_raffle = #scrap_raffle
+
 local function get_amount(data)
     local entity = data.entity
     local this = data.this
@@ -129,6 +242,10 @@ local function get_amount(data)
     end
 
     type_modifier = rock_yield[entity.name] or type_modifier
+
+    if data.size then
+        base_amount = data.size
+    end
 
     amount = base_amount + (distance_to_center * distance_modifier)
     second_amount = floor((second_base_amount + (distance_to_center * distance_modifier)) / 3)
@@ -193,8 +310,57 @@ local function randomness(data)
         {
             name = 'flying-text',
             position = position,
-            text = '+' .. harvest_amount .. ' [img=item/' .. harvest .. ']',
-            color = {r = 188, g = 201, b = 63}
+            text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
+            color = {r = 200, g = 160, b = 30}
+        }
+    )
+
+    if harvest_amount > max_spill then
+        if this.spill_items_to_surface then
+            player.surface.spill_item_stack(position, {name = harvest, count = max_spill}, true)
+        else
+            player.insert({name = harvest, count = max_spill})
+        end
+        harvest_amount = harvest_amount - max_spill
+        local inserted_count = player.insert({name = harvest, count = harvest_amount})
+        harvest_amount = harvest_amount - inserted_count
+        if harvest_amount > 0 then
+            if this.spill_items_to_surface then
+                player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
+            else
+                player.insert({name = harvest, count = harvest_amount})
+            end
+        end
+    else
+        if this.spill_items_to_surface then
+            player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
+        else
+            player.insert({name = harvest, count = harvest_amount})
+        end
+    end
+    local particle = particles[harvest]
+    create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})
+end
+
+local function randomness_scrap(data)
+    local entity = data.entity
+    local player = data.player
+    local this = data.this
+    local harvest_amount
+    data.size = 15
+
+    harvest_amount = get_amount(data)
+
+    local harvest = scrap_raffle[random(1, size_of_scrap_raffle)]
+
+    local position = {x = entity.position.x, y = entity.position.y}
+
+    player.surface.create_entity(
+        {
+            name = 'flying-text',
+            position = position,
+            text = '+' .. harvest_amount .. '  [img=item/' .. harvest .. ']',
+            color = {r = 200, g = 160, b = 30}
         }
     )
 
@@ -240,13 +406,17 @@ function Public.on_player_mined_entity(event)
 
     if valid_rocks[entity.name] or valid_trees[entity.name] then
         event.buffer.clear()
+
         local data = {
             this = this,
             entity = entity,
             player = player
         }
-
-        randomness(data)
+        if this.breached_wall == 6 then
+            randomness_scrap(data)
+        else
+            randomness(data)
+        end
     end
 end
 

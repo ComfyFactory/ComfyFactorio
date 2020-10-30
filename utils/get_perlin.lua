@@ -1,6 +1,13 @@
-local perlin = require 'utils.perlin_noise'.noise
+local simplex_noise = require 'utils.simplex_noise'.d2
 
+--add or use noise templates from here
 local noises = {
+    ['bb_biterland'] = {
+        {modifier = 0.001, weight = 1},
+        {modifier = 0.01, weight = 0.35},
+        {modifier = 0.1, weight = 0.015}
+    },
+    ['bb_ore'] = {{modifier = 0.0042, weight = 1}, {modifier = 0.031, weight = 0.08}, {modifier = 0.1, weight = 0.025}},
     ['cave_ponds'] = {{modifier = 0.01, weight = 1}, {modifier = 0.1, weight = 0.06}},
     ['smol_areas'] = {{modifier = 0.01, weight = 1}, {modifier = 0.1, weight = 0.02}, {modifier = 0.1, weight = 0.03}},
     ['cave_worms'] = {{modifier = 0.001, weight = 1}, {modifier = 0.1, weight = 0.06}},
@@ -102,6 +109,12 @@ local noises = {
         {modifier = 0.006, weight = 1},
         {modifier = 0.02, weight = 0.15},
         {modifier = 0.25, weight = 0.025}
+    },
+    ['cm_ponds'] = {{modifier = 0.025, weight = 1}, {modifier = 0.05, weight = 0.25}, {modifier = 0.1, weight = 0.05}},
+    ['cm_ocean'] = {
+        {modifier = 0.002, weight = 1},
+        {modifier = 0.004, weight = 1},
+        {modifier = 0.02, weight = 0.05}
     }
 }
 
@@ -111,9 +124,9 @@ local function get_noise(name, pos, seed)
     local d = 0
     for i = 1, #noises[name] do
         local mod = noises[name]
-        noise = noise + perlin(pos.x * mod[i].modifier, pos.y * mod[i].modifier, seed) * mod[i].weight
+        noise = noise + simplex_noise(pos.x * mod[i].modifier, pos.y * mod[i].modifier, seed, 0xF) * mod[i].weight
         d = d + mod[i].weight
-        seed = seed + 10000
+        seed = seed + seed / seed
     end
     noise = noise / d
     return noise

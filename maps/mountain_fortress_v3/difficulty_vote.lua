@@ -2,65 +2,38 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
 
-local insert = table.insert
-local max = math.max
-
 local this = {
     difficulties = {
         [1] = {
-            name = 'Peaceful',
+            name = "I'm too young to die",
             index = 1,
-            value = 0.25,
-            color = {r = 0.00, g = 0.45, b = 0.00},
-            print_color = {r = 0.00, g = 0.8, b = 0.00},
-            count = 0
-        },
-        [2] = {
-            name = 'Piece of cake',
-            index = 2,
-            value = 0.5,
-            color = {r = 0.00, g = 0.35, b = 0.00},
-            print_color = {r = 0.00, g = 0.6, b = 0.00},
-            count = 0
-        },
-        [3] = {
-            name = 'Easy',
-            index = 3,
             value = 0.75,
             color = {r = 0.00, g = 0.25, b = 0.00},
             print_color = {r = 0.00, g = 0.4, b = 0.00},
             count = 0
         },
-        [4] = {
-            name = 'Normal',
+        [2] = {
+            name = 'Hurt me plenty',
+            index = 2,
             value = 1,
-            index = 4,
             color = {r = 0.00, g = 0.00, b = 0.25},
             print_color = {r = 0.0, g = 0.0, b = 0.5},
             count = 0
         },
-        [5] = {
-            name = 'Hard',
-            index = 5,
+        [3] = {
+            name = 'Ultra-violence',
+            index = 3,
             value = 1.5,
-            color = {r = 0.25, g = 0.00, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00},
+            color = {r = 255, g = 128, b = 0.00},
+            print_color = {r = 255, g = 128, b = 0.00},
             count = 0
         },
-        [6] = {
+        [4] = {
             name = 'Nightmare',
-            index = 6,
+            index = 4,
             value = 3,
-            color = {r = 0.35, g = 0.00, b = 0.00},
-            print_color = {r = 0.6, g = 0.0, b = 0.00},
-            count = 0
-        },
-        [7] = {
-            name = 'Impossible',
-            index = 7,
-            value = 5,
-            color = {r = 0.45, g = 0.00, b = 0.00},
-            print_color = {r = 0.8, g = 0.0, b = 0.00},
+            color = {r = 255, g = 0.00, b = 0.00},
+            print_color = {r = 255, g = 0.0, b = 0.00},
             count = 0
         }
     },
@@ -78,7 +51,7 @@ local this = {
     difficulty_poll_closing_timeout = 54000,
     difficulty_player_votes = {},
     gui_width = 108,
-    name = 'Easy',
+    name = "I'm too young to die",
     button_tooltip = nil
 }
 
