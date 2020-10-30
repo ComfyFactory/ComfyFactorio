@@ -1879,11 +1879,20 @@ local function process_level_1_position(x, y, data, void_or_lab)
     local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
     local smol_areas = get_perlin('smol_areas', p, seed)
 
-    --Resource Spots
-    if smol_areas < -0.72 then
-        -- if random(1, 8) == 1 then
-        Generate_resources(buildings, p, Public.level_depth)
-    -- end
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+        if random(1, 32) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Chasms
@@ -2035,22 +2044,20 @@ local function process_level_0_position(x, y, data, void_or_lab)
     local cave_rivers = get_perlin('cave_rivers', p, seed)
     local no_rocks = get_perlin('no_rocks', p, seed)
 
-    if smol_areas < -0.71 then
-        if smol_areas > 0.750 then
-            tiles[#tiles + 1] = {name = 'stone-path', position = p}
-            if random(1, 4) == 1 then
-                Generate_resources(buildings, p, Public.level_depth)
-            end
-            if random(1, 4) == 1 then
-                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-                entities[#entities + 1] = {
-                    name = Biters.wave_defense_roll_worm_name(),
-                    position = p,
-                    force = 'enemy'
-                }
-            end
-            return
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Chasms

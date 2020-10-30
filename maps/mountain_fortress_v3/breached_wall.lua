@@ -47,7 +47,7 @@ local first_player_to_zone =
             return
         end
         local breached_wall = data.breached_wall
-        local message = ({'breached_wall.wall_breached', player.name, breached_wall})
+        local message = ({'breached_wall.first_to_reach', player.name, breached_wall})
         Alert.alert_all_players(10, message)
     end
 )

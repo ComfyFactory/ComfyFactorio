@@ -37,7 +37,7 @@ local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
-local Difficulty = require 'maps.mountain_fortress_v3.difficulty_vote'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
@@ -150,6 +150,15 @@ local set_difficulty = function()
 
     local difficulty = Difficulty.get()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+
+    if name ~= 'Nightmare' then
+        local zone = WPT.get('breached_wall')
+        if zone >= 5 then
+            WPT.set().coin_amount = random(1, 2)
+        elseif zone >= 10 then
+            WPT.set().coin_amount = random(1, 3)
+        end
+    end
 
     if wave_defense_table.threat <= 0 then
         wave_defense_table.wave_interval = 1000
@@ -655,7 +664,7 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 20
         WPT.set().spidertron_unlocked_at_wave = 11
         WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(1.2)
+        WD.set_biter_health_boost(1.35)
     elseif name == 'Hurt me plenty' then
         rpg_extra.difficulty = 0.5
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
@@ -670,7 +679,7 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 15
         WPT.set().spidertron_unlocked_at_wave = 16
         WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(1.7)
+        WD.set_biter_health_boost(1.75)
     elseif name == 'Ultra-violence' then
         rpg_extra.difficulty = 0
         force.character_running_speed_modifier = 0
@@ -684,7 +693,7 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 10
         WPT.set().spidertron_unlocked_at_wave = 21
         WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(2.2)
+        WD.set_biter_health_boost(2.25)
     elseif name == 'Nightmare' then
         rpg_extra.difficulty = 0
         force.character_running_speed_modifier = 0
@@ -698,7 +707,7 @@ local boost_difficulty = function()
         WD.set().next_wave = game.tick + 3600 * 5
         WPT.set().spidertron_unlocked_at_wave = 26
         WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(3)
+        WD.set_biter_health_boost(3.5)
     end
 end
 

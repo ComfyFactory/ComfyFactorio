@@ -6,13 +6,14 @@ local update_gui = require 'modules.wave_defense.gui'
 local threat_values = require 'modules.wave_defense.threat_values'
 local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
+local Event = require 'utils.event'
+
+local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 local table_insert = table.insert
 local math_sqrt = math.sqrt
 local math_round = math.round
-local Event = require 'utils.event'
-local Public = {}
 
 local group_size_modifier_raffle = {}
 local group_size_chances = {
@@ -33,7 +34,7 @@ local group_size_chances = {
     {2, 1.8}
 }
 for _, v in pairs(group_size_chances) do
-    for c = 1, v[1], 1 do
+    for _ = 1, v[1], 1 do
         table_insert(group_size_modifier_raffle, v[2])
     end
 end
@@ -91,50 +92,7 @@ local function remove_rocks(entity)
         end
     end
 end
---[[
-local function create_tiles(entity)
-    local collapse
-    local check_collapse_position = WD.get('check_collapse_position')
-    if check_collapse_position and package.loaded['modules.collapse'] then
-        collapse = require 'modules.collapse'.get_position()
-    end
-    local function get_replacement_tile(surface, position)
-        for i = 1, 128, 1 do
-            local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
-            table.shuffle_table(vectors)
-            for k, v in pairs(vectors) do
-                local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-                if not tile.collides_with('resource-layer') then
-                    return tile.name
-                end
-            end
-        end
-        return 'grass-1'
-    end
-    local surface = entity.surface
-    local radius = 5
-    local pos = entity.position
-    local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
-    local tile = surface.find_tiles_filtered {area = area, name = 'out-of-map'}
-    if #tile > 0 then
-        for i, t in pairs(tile) do
-            if t and t.valid then
-                if check_collapse_position and collapse then
-                    if t.position.y <= collapse.y then
-                        if t.position.x <= collapse.x then
-                            surface.set_tiles(
-                                {{name = get_replacement_tile(surface, t.position), position = t.position}},
-                                true
-                            )
-                        end
-                    end
-                else
-                    surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}}, true)
-                end
-            end
-        end
-    end
-end ]]
+
 local function is_unit_valid(biter)
     local this = WD.get()
     if not biter.entity then
@@ -293,6 +251,9 @@ local function set_enemy_evolution()
         biter_health_boost = math_round(this.biter_health_boost + (this.threat - 5000) * 0.000033, 3)
     else
         biter_health_boost = math_round(biter_health_boost + (this.threat - 5000) * 0.000033, 3)
+    end
+    if biter_health_boost <= 1 then
+        biter_health_boost = 1
     end
     --damage_increase = math_round(damage_increase + this.threat * 0.0000025, 3)
 
@@ -465,6 +426,61 @@ local function get_commmands(group)
                 debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
             end
 
+            for i = 1, steps, 1 do
+                local old_position = group_position
+                group_position.x = group_position.x + vector[1]
+                group_position.y = group_position.y + vector[2]
+                local obstacles =
+                    group.surface.find_entities_filtered {
+                    position = old_position,
+                    radius = step_length,
+                    type = {'simple-entity', 'tree'},
+                    limit = 50
+                }
+                if obstacles then
+                    shuffle_distance(obstacles, old_position)
+                    for v = 1, #obstacles, 1 do
+                        if obstacles[v].valid then
+                            commands[#commands + 1] = {
+                                type = defines.command.attack,
+                                target = obstacles[v],
+                                distraction = defines.distraction.by_enemy
+                            }
+                        end
+                    end
+                end
+                local position =
+                    group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 4)
+                if position then
+                    commands[#commands + 1] = {
+                        type = defines.command.attack_area,
+                        destination = {x = position.x, y = position.y},
+                        radius = 16,
+                        distraction = defines.distraction.by_anything
+                    }
+                else
+                    local obst =
+                        group.surface.find_entities_filtered {
+                        position = group_position,
+                        radius = step_length,
+                        type = {'simple-entity', 'tree'},
+                        limit = 50
+                    }
+                    if obst then
+                        shuffle_distance(obst, old_position)
+                        for v = 1, #obst, 1 do
+                            if obst[v].valid then
+                                commands[#commands + 1] = {
+                                    type = defines.command.attack,
+                                    target = obst[v],
+                                    distraction = defines.distraction.by_enemy
+                                }
+                            end
+                        end
+                    end
+                end
+            end
+
             commands[#commands + 1] = {
                 type = defines.command.attack,
                 target = side_target,
@@ -474,38 +490,22 @@ local function get_commmands(group)
     end
 
     local target_position = this.target.position
-    local distance_to_target =
-        math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
-    local steps = math_floor(distance_to_target / step_length) + 1
-    local vector = {
-        math_round((target_position.x - group_position.x) / steps, 3),
-        math_round((target_position.y - group_position.y) / steps, 3)
-    }
 
-    if this.debug then
-        debug_print('get_commmands - to main target x' .. target_position.x .. ' y' .. target_position.y)
-        debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
-        debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
-    end
-
-    for i = 1, steps, 1 do
-        local old_position = group_position
-        group_position.x = group_position.x + vector[1]
-        group_position.y = group_position.y + vector[2]
+    for i = 1, 4, 1 do
         local obstacles =
             group.surface.find_entities_filtered {
-            position = old_position,
+            position = group_position,
             radius = step_length / 2,
             type = {'simple-entity', 'tree'},
             limit = 50
         }
         if obstacles then
-            shuffle_distance(obstacles, old_position)
-            for i = 1, #obstacles, 1 do
-                if obstacles[i].valid then
+            shuffle_distance(obstacles, group_position)
+            for v = 1, #obstacles, 1 do
+                if obstacles[v].valid then
                     commands[#commands + 1] = {
                         type = defines.command.attack,
-                        target = obstacles[i],
+                        target = obstacles[v],
                         distraction = defines.distraction.by_enemy
                     }
                 end
@@ -516,7 +516,7 @@ local function get_commmands(group)
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
                 destination = {x = position.x, y = position.y},
-                radius = 16,
+                radius = step_length,
                 distraction = defines.distraction.by_anything
             }
         end
@@ -525,7 +525,7 @@ local function get_commmands(group)
     commands[#commands + 1] = {
         type = defines.command.attack_area,
         destination = {x = target_position.x, y = target_position.y},
-        radius = 8,
+        radius = step_length,
         distraction = defines.distraction.by_enemy
     }
 
@@ -547,8 +547,6 @@ local function command_unit_group(group)
     if this.unit_group_last_command[group.group_number] then
         if this.unit_group_last_command[group.group_number] + this.unit_group_command_delay > game.tick then
             return
-        else
-            this.unit_group_last_command[group.group_number] = game.tick
         end
     end
 
@@ -563,6 +561,8 @@ local function command_unit_group(group)
             commands = get_commmands(group)
         }
     )
+
+    this.unit_group_last_command[group.group_number] = game.tick
 end
 
 local function give_commands_to_unit_groups()

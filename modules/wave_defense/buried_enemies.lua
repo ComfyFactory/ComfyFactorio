@@ -2,6 +2,8 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local BiterHealthBooster = require 'modules.biter_health_booster'
+local WD = require 'modules.wave_defense.table'
+local Diff = require 'modules.difficulty_vote_by_amount'
 
 local traps = {}
 
@@ -60,6 +62,8 @@ local function spawn_biters(data)
     local surface = data.surface
     local position = data.position
     local h = floor(abs(position.y))
+    local wave_number = WD.get('wave_number')
+    local d = Diff.get()
 
     if not position then
         position = surface.find_non_colliding_position('small-biter', position, 10, 1)
@@ -68,17 +72,28 @@ local function spawn_biters(data)
         end
     end
 
+    local m = 0.0015
+    if d.difficulty_vote_index then
+        m = m * d.strength_modifier
+    end
+
+    local boosted_health = 1 + (wave_number * (m * 2))
+
+    if wave_number >= 100 then
+        boosted_health = boosted_health * 2
+    end
+
     BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
 
     local unit
-    if random(1, 2) == 1 then
+    if random(1, 3) == 1 then
         unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
     else
         unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
     end
 
     if random(1, 128) == 1 then
-        BiterHealthBooster.add_boss_unit(unit, h * 5 + 1, 0.38)
+        BiterHealthBooster.add_boss_unit(unit, boosted_health, 0.38)
     end
 end
 

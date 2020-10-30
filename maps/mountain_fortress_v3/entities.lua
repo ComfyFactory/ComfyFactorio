@@ -323,13 +323,16 @@ local function angry_tree(entity, cause)
 end
 
 local function give_coin(player)
-    local breached_wall = WPT.get('breached_wall')
-    local coin = breached_wall
-    if breached_wall >= 10 then
-        coin = random(5, 10)
-    end
+    local coin_amount = WPT.get('coin_amount')
+    local coin_override = WPT.get('coin_override')
 
-    player.insert({name = 'coin', count = coin})
+    if coin_amount >= 1 then
+        if coin_override then
+            player.insert({name = 'coin', count = coin_override})
+        else
+            player.insert({name = 'coin', count = coin_amount})
+        end
+    end
 end
 
 local mining_events = {
@@ -343,18 +346,6 @@ local mining_events = {
         function()
         end,
         16384,
-        'Nothing'
-    },
-    {
-        function()
-        end,
-        16384,
-        'Nothing'
-    },
-    {
-        function()
-        end,
-        8192,
         'Nothing'
     },
     {
@@ -375,12 +366,6 @@ local mining_events = {
         end,
         4096,
         'Angry Biter #2'
-    },
-    {
-        function()
-        end,
-        2048,
-        'Nothing'
     },
     {
         function(entity)
@@ -444,7 +429,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         1024,
-        'Treasure_Tier_2'
+        'Treasure_Tier_1'
     },
     {
         function(entity, index)
@@ -452,7 +437,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         512,
-        'Treasure_Tier_3'
+        'Treasure_Tier_2'
     },
     {
         function(entity, index)
@@ -460,7 +445,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         256,
-        'Treasure_Tier_4'
+        'Treasure_Tier_3'
     },
     {
         function(entity, index)
@@ -468,7 +453,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         128,
-        'Treasure_Tier_5'
+        'Treasure_Tier_4'
     },
     {
         function(entity, index)
@@ -476,7 +461,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         64,
-        'Treasure_Tier_6'
+        'Treasure_Tier_5'
     },
     {
         function(entity, index)
@@ -484,7 +469,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         32,
-        'Treasure_Tier_7'
+        'Treasure_Tier_6'
     },
     {
         function(entity, index)
@@ -492,7 +477,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         16,
-        'Treasure_Tier_8'
+        'Treasure_Tier_7'
     },
     {
         function(entity, index)
@@ -755,14 +740,14 @@ local function on_entity_damaged(event)
     end
 
     local wave_number = WD.get_wave()
-    local boss_wave_warning = WD.alert_boss_wave()
+    local boss_wave_warning = WD.get_alert_boss_wave()
     local munch_time = WPT.get('munch_time')
 
     protect_entities(event)
     biters_chew_rocks_faster(event)
 
     if munch_time then
-        if boss_wave_warning or wave_number >= 1500 then
+        if boss_wave_warning or wave_number >= 1000 then
             if random(0, 512) == 1 then
                 boss_puncher(event)
             end

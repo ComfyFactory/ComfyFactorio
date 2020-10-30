@@ -50,7 +50,7 @@ function Public.reset_wave_defense()
     this.unit_groups = {}
     this.index = 0
     this.random_group = nil
-    this.unit_group_command_delay = 3600 * 25
+    this.unit_group_command_delay = 3600 * 30
     this.unit_group_command_step_length = 15
     this.unit_group_last_command = {}
     this.wave_interval = 3600
@@ -96,6 +96,10 @@ end
 
 function Public.get_wave()
     return this.wave_number
+end
+
+function Public.get_alert_boss_wave()
+    return this.get_alert_boss_wave
 end
 
 function Public.alert_boss_wave(value)
@@ -155,6 +159,8 @@ end
 local on_init = function()
     Public.reset_wave_defense()
 end
+
+-- Event.on_nth_tick(30, Public.debug_module)
 
 Event.on_init(on_init)
 

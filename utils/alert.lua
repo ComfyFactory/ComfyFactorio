@@ -112,7 +112,7 @@ local function alert_to(player, duration, sound, volume)
     active_alerts[id] = frame_holder
 
     if sound then
-        volume = volume or 0.80
+        volume = volume or 0.60
         player.play_sound({path = sound, volume_modifier = volume})
     end
 
