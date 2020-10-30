@@ -77,7 +77,7 @@ end
 
 function Public.get_common_resource_amount(surface_index)
 	local amount = math_random(350, 700) + Public.get_dungeon_evolution_factor(surface_index) * 16000
-	if global.dungeons.tiered then amount = amount / 4 end
+	if global.dungeons.tiered then amount = amount / 8 end
 	return amount
 end
 
@@ -127,46 +127,64 @@ end
 
 function Public.market(surface, position)
 	local offers = {
-		{price = {{'pistol', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(1,4)}},
-		{price = {{'submachine-gun', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(5,20)}},
-		{price = {{'shotgun', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(5,18)}},
-		{price = {{'combat-shotgun', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(3,10)}},
-		{price = {{'rocket-launcher', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(4,10)}},
-		{price = {{'flamethrower', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(5,18)}},
-		{price = {{'light-armor', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(5,20)}},
-		{price = {{'heavy-armor', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(5,20)}},
-		{price = {{'modular-armor', 1}}, offer = {type = 'give-item', item = "advanced-circuit", count = math_random(10,20)}},
-		{price = {{'night-vision-equipment', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(1,4)}},
-		{price = {{'solar-panel-equipment', 1}}, offer = {type = 'give-item', item = "copper-plate", count = math_random(10,25)}},
-		{price = {{'red-wire', 100}}, offer = {type = 'give-item', item = "copper-cable", count = math_random(50,100)}},
-		{price = {{'green-wire', 100}}, offer = {type = 'give-item', item = "copper-cable", count = math_random(50,100)}},
-		{price = {{'empty-barrel', 10}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(4,8)}},
-		{price = {{'arithmetic-combinator', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(10,25)}},
-		{price = {{'decider-combinator', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(10,25)}},
-		{price = {{'constant-combinator', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(3,12)}},
-		{price = {{'power-switch', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(3,12)}},
-		{price = {{'programmable-speaker', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(8,30)}},
-		{price = {{'belt-immunity-equipment', 1}}, offer = {type = 'give-item', item = "advanced-circuit", count = math_random(1,3)}},
+		{price = {{'pistol', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(3,4)}},
+		{price = {{'submachine-gun', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(15,20)}},
+		{price = {{'shotgun', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(12,18)}},
+		{price = {{'combat-shotgun', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(7,10)}},
+		{price = {{'rocket-launcher', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(7,10)}},
+		{price = {{'flamethrower', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(12,18)}},
+		{price = {{'light-armor', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(15,20)}},
+		{price = {{'heavy-armor', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(15,20)}},
+		{price = {{'modular-armor', 1}}, offer = {type = 'give-item', item = "advanced-circuit", count = math_random(15,20)}},
+		{price = {{'night-vision-equipment', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(3,4)}},
+		{price = {{'solar-panel-equipment', 1}}, offer = {type = 'give-item', item = "copper-plate", count = math_random(15,25)}},
+		{price = {{'red-wire', 100}}, offer = {type = 'give-item', item = "copper-cable", count = math_random(75,100)}},
+		{price = {{'green-wire', 100}}, offer = {type = 'give-item', item = "copper-cable", count = math_random(75,100)}},
+		{price = {{'empty-barrel', 10}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(6,8)}},
+		{price = {{'arithmetic-combinator', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(15,25)}},
+		{price = {{'decider-combinator', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(15,25)}},
+		{price = {{'constant-combinator', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(9,12)}},
+		{price = {{'power-switch', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(9,12)}},
+		{price = {{'programmable-speaker', 10}}, offer = {type = 'give-item', item = "electronic-circuit", count = math_random(20,30)}},
+		{price = {{'belt-immunity-equipment', 1}}, offer = {type = 'give-item', item = "advanced-circuit", count = math_random(2,3)}},
 		{price = {{'discharge-defense-remote', 1}}, offer = {type = 'give-item', item = "electronic-circuit", count = 1}},
-		{price = {{'rail-signal', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(20,40)}},
-		{price = {{'rail-chain-signal', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(20,40)}},
-		{price = {{'train-stop', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(50,100)}},
-		{price = {{'locomotive', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(20,40)}},
-		{price = {{'cargo-wagon', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(20,40)}},
-		{price = {{'fluid-wagon', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(20,40)}},
-		{price = {{'car', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(10,20)}},
-		{price = {{'radar', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(10,20)}},
-		{price = {{'cannon-shell', 10}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(5,10)}},
-		{price = {{'uranium-cannon-shell', 10}}, offer = {type = 'give-item', item = "uranium-238", count = math_random(5,10)}},
+		{price = {{'rail-signal', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(30,40)}},
+		{price = {{'rail-chain-signal', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(30,40)}},
+		{price = {{'train-stop', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(75,100)}},
+		{price = {{'locomotive', 1}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(30,40)}},
+		{price = {{'cargo-wagon', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(30,40)}},
+		{price = {{'fluid-wagon', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(30,40)}},
+		{price = {{'car', 1}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(15,20)}},
+		{price = {{'radar', 10}}, offer = {type = 'give-item', item = "iron-plate", count = math_random(15,20)}},
+		{price = {{'cannon-shell', 10}}, offer = {type = 'give-item', item = "steel-plate", count = math_random(7,10)}},
+		{price = {{'uranium-cannon-shell', 10}}, offer = {type = 'give-item', item = "uranium-238", count = math_random(7,10)}},
 
 	}
 	table.shuffle_table(offers)
 	local market = surface.create_entity({name = "market", position = position, force = "neutral"})
 	market.destructible = false
 	market.minable = false
+	local text = "Buys: "
 	for i = 1, math.random(6, 10), 1 do
 		market.add_market_item(offers[i])
+		text = text .. "[item=" .. offers[i].price[1][1] .. "],"
 	end
+	game.forces.player.add_chart_tag(surface, {position = position, text = text})
+end
+
+function Public.laboratory(surface, position)
+	local lab = surface.create_entity({name = "lab", position = position, force = "neutral"})
+	lab.destructible = false
+	lab.minable = false
+	local evo = Public.get_dungeon_evolution_factor(surface.index)
+	local amount = math.min(200, math_floor(evo * 100))
+	lab.insert({name = "automation-science-pack", count = math.min(200, math_floor(amount * 5))})
+	if evo >= 0.1 then lab.insert({name = "logistic-science-pack", count = math.min(200, math_floor(amount * 4))}) end
+	if evo >= 0.2 then lab.insert({name = "military-science-pack", count = math.min(200, math_floor(amount * 3))}) end
+	if evo >= 0.4 then lab.insert({name = "chemical-science-pack", count = math.min(200, math_floor(amount * 2))}) end
+	if evo >= 0.6 then lab.insert({name = "production-science-pack", count = amount}) end
+	if evo >= 0.8 then lab.insert({name = "utility-science-pack", count = amount}) end
+	if evo >= 1 then lab.insert({name = "space-science-pack", count = amount}) end
 end
 
 function Public.add_room_loot_crates(surface, room)

@@ -185,7 +185,9 @@ end
 local function player_died(arena, player)
 	wipedown_arena(arena)
 	global.arena.active_player[arena] = nil
-	global.arena.active_boss[arena].destroy()
+  if global.arena.active_boss[arena] and global.arena.active_boss[arena].valid then
+    global.arena.active_boss[arena].destroy()
+  end
 	global.arena.active_boss[arena] = nil
 	global.arena.timer[arena] = -100
   
@@ -310,11 +312,25 @@ local function on_entity_died(event)
 end
 
 local function shoot(surface, biter, player)
+  if player.surface ~= surface then return end
   surface.create_entity({name = "destroyer-capsule", position = biter.position, target = player.character, source = biter, speed = 1, force = biter.force})
 end
 
 local function slow(surface, biter, player)
+  if player.surface ~= surface then return end
   surface.create_entity({name = "slowdown-capsule", position = biter.position, target = player.character, source = biter, speed = 1, max_range = 100})
+end
+
+local function acid_spit(surface, biter, player, tier)
+  if player.surface ~= surface then return end
+  local acids = {
+    "acid-stream-spitter-small",
+    "acid-stream-spitter-medium",
+    "acid-stream-spitter-big",
+    "acid-stream-spitter-behemoth"
+  }
+  surface.create_entity({name = acids[tier], position = biter.position, target = player.character, source = biter})
+  surface.create_entity({name = acids[tier], position = biter.position, target = player.character, source = biter})
 end
 
 local function boss_attacks(i)
@@ -332,17 +348,13 @@ local function boss_attacks(i)
   if global.arena.timer[i] + 3600 < game.tick and game.tick %120 == 0 then slow(surface, biter, player) end
   if global.arena.timer[i] + 7200 < game.tick and game.tick %120 == 0 then shoot(surface, biter, player) end
   if biter.name == "small-spitter" then
-    surface.create_entity({name = "acid-stream-spitter-small", position = biter.position, target = player.character, source = biter})
-    surface.create_entity({name = "acid-stream-spitter-small", position = biter.position, target = player.character, source = biter})
+    acid_spit(surface, biter, player, 1)
   elseif biter.name == "medium-spitter" then
-    surface.create_entity({name = "acid-stream-spitter-medium", position = biter.position, target = player.character, source = biter})
-    surface.create_entity({name = "acid-stream-spitter-medium", position = biter.position, target = player.character, source = biter})
+    acid_spit(surface, biter, player, 2)
   elseif biter.name == "big-spitter" then
-    surface.create_entity({name = "acid-stream-spitter-big", position = biter.position, target = player.character, source = biter})
-    surface.create_entity({name = "acid-stream-spitter-big", position = biter.position, target = player.character, source = biter})
+    acid_spit(surface, biter, player, 3)
   elseif biter.name == "behemoth-spitter" then
-    surface.create_entity({name = "acid-stream-spitter-behemoth", position = biter.position, target = player.character, source = biter})
-    surface.create_entity({name = "acid-stream-spitter-behemoth", position = biter.position, target = player.character, source = biter})
+    acid_spit(surface, biter, player, 4)
   end
 end
 
