@@ -58,9 +58,9 @@ local function place_nest_near_unit_group(wave_defense_table)
         ) > 0
      then
         return
-	end
-	local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
-	wave_defense_table.nests[#wave_defense_table.nests+1] = spawner
+    end
+    local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
+    wave_defense_table.nests[#wave_defense_table.nests + 1] = spawner
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
     unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
     remove_unit(unit)
@@ -259,9 +259,18 @@ local function on_entity_died(event)
         if not threat_values[entity.name] then
             return
         end
-        wave_defense_table.threat =
-            math.round(wave_defense_table.threat - threat_values[entity.name] * global.biter_health_boost, 2)
-        remove_unit(entity)
+        if wave_defense_table.disable_threat_below_zero then
+            if wave_defense_table.threat <= 0 then
+                wave_defense_table.threat = 0
+            end
+            wave_defense_table.threat =
+                math.round(wave_defense_table.threat - threat_values[entity.name] * global.biter_health_boost, 2)
+            remove_unit(entity)
+        else
+            wave_defense_table.threat =
+                math.round(wave_defense_table.threat - threat_values[entity.name] * global.biter_health_boost, 2)
+            remove_unit(entity)
+        end
     else
         if entity.force.index == 2 then
             if entity.health then

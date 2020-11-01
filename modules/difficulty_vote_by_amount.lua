@@ -64,6 +64,7 @@ local this = {
     difficulty_player_votes = {},
     gui_width = 108,
     name = "I'm too young to die",
+    strength_modifier = 1.00,
     button_tooltip = nil
 }
 

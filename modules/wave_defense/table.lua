@@ -64,6 +64,7 @@ function Public.reset_wave_defense()
     this.alert_boss_wave = false
     this.remove_entities = false
     this.enable_threat_log = true
+    this.disable_threat_below_zero = false
     this.check_collapse_position = true
 end
 
@@ -96,6 +97,19 @@ end
 
 function Public.get_wave()
     return this.wave_number
+end
+
+function Public.get_disable_threat_below_zero()
+    return this.disable_threat_below_zero
+end
+
+function Public.set_disable_threat_below_zero(value)
+    if value then
+        this.disable_threat_below_zero = value
+    else
+        this.disable_threat_below_zero = false
+    end
+    return this.disable_threat_below_zero
 end
 
 function Public.get_alert_boss_wave()

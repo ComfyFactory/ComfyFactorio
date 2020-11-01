@@ -74,7 +74,11 @@ local function spawn_biters(data)
 
     local m = 0.0015
     if d.difficulty_vote_index then
-        m = m * d.strength_modifier
+        if not d.strength_modifier then
+            m = m * 1.05
+        else
+            m = m * d.strength_modifier
+        end
     end
 
     local boosted_health = 1 + (wave_number * (m * 2))

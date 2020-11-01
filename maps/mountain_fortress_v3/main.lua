@@ -381,6 +381,7 @@ function Public.reset_map()
     WD.remove_entities(true)
     WD.enable_threat_log(true)
     WD.check_collapse_position(true)
+    WD.set_disable_threat_below_zero(true)
 
     set_difficulty()
 
