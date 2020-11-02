@@ -111,7 +111,7 @@ local function process_explosion(instance)
 	return true
 end
 
-function spawn_explosion(surface, position, amount)
+local function spawn_explosion(surface, position, amount)
 	if not explosives.instances then explosives.instances = {} end
 	table_insert(explosives.instances, {
 		surface_index = surface.index,

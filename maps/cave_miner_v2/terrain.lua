@@ -169,6 +169,10 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 		return
 	end
 
+	if math_abs(no_rocks_2) < 0.05 then
+		return
+	end
+
 	local noise_rock = GetNoise("small_caves", position, seed)	
 
 	if noise_rock < 0.6 then

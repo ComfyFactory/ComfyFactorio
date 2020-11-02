@@ -108,8 +108,8 @@ local function init(cave_miner)
 	Terrain.roll_source_surface()
 	
 	local surface = game.surfaces.nauvis
-	surface.min_brightness = 0.10
-	surface.brightness_visual_weights = {0.90, 0.90, 0.90}
+	surface.min_brightness = 0.08
+	surface.brightness_visual_weights = {0.92, 0.92, 0.92}
 	surface.daytime = 0.43
 	surface.freeze_daytime = true
 	surface.solar_power_multiplier = 5
