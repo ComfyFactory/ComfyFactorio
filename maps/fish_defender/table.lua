@@ -43,7 +43,7 @@ function Public.reset_table()
     this.game_restart_timer = nil
     this.wave_count = 1
     this.market = nil
-    this.wave_limit = 2000
+    this.wave_limit = 9999
     this.market_age = nil
     this.last_reset = game.tick
     this.wave_interval = 3600

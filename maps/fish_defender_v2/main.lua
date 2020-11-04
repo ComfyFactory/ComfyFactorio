@@ -23,12 +23,10 @@ local Poll = require 'comfy_panel.poll'
 local boss_biter = require 'maps.fish_defender_v2.boss_biters'
 local FDT = require 'maps.fish_defender_v2.table'
 local Score = require 'comfy_panel.score'
+local AntiGrief = require 'antigrief'
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
-
-local branch_version = '0.18.35'
-local sub = string.sub
 
 local Public = {}
 
@@ -56,7 +54,7 @@ local function create_wave_gui(player)
         player.gui.top['fish_defense_waves'].destroy()
     end
     local this = FDT.get()
-    local frame = player.gui.top.add({type = 'frame', name = 'fish_defense_waves', tooltip = 'Click to show map info'})
+    local frame = player.gui.top.add({type = 'frame', name = 'fish_defense_waves'})
     frame.style.maximal_height = 38
 
     local wave_count = 0
@@ -326,6 +324,32 @@ local function get_biter_initial_pool()
     end
 end
 
+local function fish_eye(surface, position)
+    surface.request_to_generate_chunks(position, 2)
+    surface.force_generate_chunk_requests()
+    for x = -48, 48, 1 do
+        for y = -48, 48, 1 do
+            local p = {x = position.x + x, y = position.y + y}
+            --local distance = math_sqrt(((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2))
+            --if distance < 44 then
+            --	surface.set_tiles({{name = "water-green", position = p}}, true)
+            --end
+            --if distance < 22 then
+            --	surface.set_tiles({{name = "out-of-map", position = p}}, true)
+            --end
+
+            local distance = ((position.x - p.x) ^ 2) + ((position.y - p.y) ^ 2)
+            if distance < 1936 then
+                if distance < 484 then
+                    surface.set_tiles({{name = 'out-of-map', position = p}}, true)
+                else
+                    surface.set_tiles({{name = 'water-green', position = p}}, true)
+                end
+            end
+        end
+    end
+end
+
 local function get_biter_pool()
     local biter_pool = get_biter_initial_pool()
     local biter_raffle = {}
@@ -420,8 +444,7 @@ local function send_unit_group(unit_group)
     local commands = {}
     local this = FDT.get()
     for x = unit_group.position.x, this.market.position.x, -48 do
-        local destination =
-            unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
+        local destination = unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
         if destination then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
@@ -572,8 +595,7 @@ local function damage_entity_outside_and_inside_of_fence(e)
     e.surface.create_entity({name = 'water-splash', position = e.position})
 
     if e.type == 'land-mine' then
-        e.health =
-            e.health - math_random(math.floor(e.prototype.max_health * 0.2), math.floor(e.prototype.max_health * 0.4))
+        e.health = e.health - math_random(math.floor(e.prototype.max_health * 0.2), math.floor(e.prototype.max_health * 0.4))
         if e.health <= 0 then
             e.die('enemy')
         end
@@ -585,8 +607,7 @@ local function damage_entity_outside_and_inside_of_fence(e)
         return
     end
 
-    e.health =
-        e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
+    e.health = e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
     if e.health <= 0 then
         e.die('enemy')
     end
@@ -801,8 +822,7 @@ local function is_game_lost()
                 market_age_label.style.font = 'default-bold'
                 market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
             else
-                market_age_label =
-                    t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
+                market_age_label = t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
                 market_age_label.style.font = 'default-bold'
                 market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
             end
@@ -814,8 +834,7 @@ local function is_game_lost()
             mvp_defender_label.style.font = 'default-listbox'
             mvp_defender_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
 
-            local mvp_killscore_label =
-                t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+            local mvp_killscore_label = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
             mvp_killscore_label.style.font = 'default-bold'
             mvp_killscore_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -837,8 +856,7 @@ local function is_game_lost()
             mvp_deaths_label.style.font = 'default-listbox'
             mvp_deaths_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
 
-            local mvp_deaths_name_label =
-                t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+            local mvp_deaths_name_label = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
             mvp_deaths_name_label.style.font = 'default-bold'
             mvp_deaths_name_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -871,9 +889,7 @@ end
 
 local function damage_entities_in_radius(surface, position, radius, damage)
     local entities_to_damage =
-        surface.find_entities_filtered(
-        {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
-    )
+        surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
     for _, entity in pairs(entities_to_damage) do
         if entity.valid then
             if entity.health and entity.name ~= 'land-mine' then
@@ -899,9 +915,6 @@ local function market_kill_visuals()
         return
     end
 
-    local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
-
     if not surface or not surface.valid then
         return
     end
@@ -912,33 +925,19 @@ local function market_kill_visuals()
 
     local m = 32
     local m2 = m * 0.005
-    if get_active_version >= is_branch_18 then
-        for i = 1, 1024, 1 do
-            surface.create_particle(
-                {
-                    name = 'branch-particle',
-                    position = this.market.position,
-                    frame_speed = 0.1,
-                    vertical_speed = 0.1,
-                    height = 0.1,
-                    movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
-                }
-            )
-        end
-    else
-        for i = 1, 1024, 1 do
-            surface.create_entity(
-                {
-                    name = 'branch-particle',
-                    position = this.market.position,
-                    frame_speed = 0.1,
-                    vertical_speed = 0.1,
-                    height = 0.1,
-                    movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
-                }
-            )
-        end
+    for i = 1, 1024, 1 do
+        surface.create_particle(
+            {
+                name = 'branch-particle',
+                position = this.market.position,
+                frame_speed = 0.1,
+                vertical_speed = 0.1,
+                height = 0.1,
+                movement = {m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01)}
+            }
+        )
     end
+
     for x = -5, 5, 0.5 do
         for y = -5, 5, 0.5 do
             if math_random(1, 2) == 1 then
@@ -1006,12 +1005,7 @@ local function on_entity_died(event)
                 for _, visual in pairs(splash.visuals) do
                     surface.create_entity({name = visual, position = event.entity.position})
                 end
-                damage_entities_in_radius(
-                    surface,
-                    event.entity.position,
-                    splash.radius,
-                    math_random(splash.damage_min, splash.damage_max)
-                )
+                damage_entities_in_radius(surface, event.entity.position, splash.radius, math_random(splash.damage_min, splash.damage_max))
                 return
             end
         end
@@ -1105,8 +1099,7 @@ local function on_built_entity(event)
                     name = 'flying-text',
                     position = entity.position,
                     text = this.entity_limits[entity.name].placed ..
-                        ' / ' ..
-                            this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
+                        ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1147,8 +1140,7 @@ local function on_robot_built_entity(event)
                     name = 'flying-text',
                     position = entity.position,
                     text = this.entity_limits[entity.name].placed ..
-                        ' / ' ..
-                            this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
+                        ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1283,14 +1275,46 @@ local function has_the_game_ended()
 end
 
 function Public.reset_game()
-    FDT.reset_table()
+    local get_score = Score.get_table()
     Poll.reset()
     local this = FDT.get()
-    local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
 
     Difficulty.reset_difficulty_poll()
-    Difficulty.set_poll_closing_timeout = game.tick + 36000
+    Difficulty.set_poll_closing_timeout(this.wave_grace_period)
+
+    AntiGrief.reset_tables()
+    FDT.reset_table()
+
+    global.fish_in_space = 0
+    get_score.score_table = {}
+
+    local difficulties = {
+        [1] = {
+            name = 'Normal',
+            value = 1,
+            color = {r = 0.00, g = 0.00, b = 0.25},
+            print_color = {r = 0.0, g = 0.0, b = 0.5}
+        },
+        [2] = {
+            name = 'Hard',
+            value = 1.5,
+            color = {r = 0.25, g = 0.00, b = 0.00},
+            print_color = {r = 0.4, g = 0.0, b = 0.00}
+        },
+        [3] = {
+            name = 'Nightmare',
+            value = 3,
+            color = {r = 0.35, g = 0.00, b = 0.00},
+            print_color = {r = 0.6, g = 0.0, b = 0.00}
+        },
+        [4] = {
+            name = 'Impossible',
+            value = 5,
+            color = {r = 0.45, g = 0.00, b = 0.00},
+            print_color = {r = 0.8, g = 0.0, b = 0.00}
+        }
+    }
+    Difficulty.set_difficulties(difficulties)
 
     local players = game.connected_players
     for i = 1, #players do
@@ -1321,8 +1345,7 @@ function Public.reset_game()
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('fish_defender', map_gen_settings).index
     else
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
     local surface = game.surfaces[this.active_surface_index]
@@ -1331,8 +1354,6 @@ function Public.reset_game()
     end
 
     surface.peaceful_mode = false
-
-    -- Terrain.fish_eye(surface, {x = -1442, y = -59})
 
     --[[ local radius = 200
     --local pos = {x = 419, y = -308} -- fish
@@ -1356,13 +1377,13 @@ function Public.reset_game()
             {pos.x + radius, pos.y + radius}
         }
     ) ]]
-    local r = 750
+    local r = 200
     local p = {x = -131, y = 5}
     game.forces.player.chart(
         surface,
         {
-            {p.x - r - 200, p.y - r},
-            {p.x + r + 600, p.y + r}
+            {p.x - r - 100, p.y - r},
+            {p.x + r + 400, p.y + r}
         }
     )
 
@@ -1385,16 +1406,92 @@ function Public.reset_game()
     game.remove_offline_players()
 
     game.map_settings.enemy_expansion.enabled = false
-    game.forces['player'].technologies['artillery'].researched = false
+    game.forces.player.technologies['artillery'].researched = false
+    game.forces.player.technologies['spidertron'].enabled = false
+    game.forces.player.technologies['spidertron'].researched = false
+    game.reset_time_played()
 
-    is_branch_18 = is_branch_18 .. sub(branch_version, 6, 7)
-    get_active_version = get_active_version .. sub(game.active_mods.base, 6, 7)
-    if get_active_version >= is_branch_18 then
-        game.reset_time_played()
+    fish_eye(surface, {x = -1667, y = -50})
+
+    if not global.catplanet_goals then
+        global.catplanet_goals = {
+            {goal = 0, rank = false, achieved = true},
+            {
+                goal = 100,
+                rank = 'Copper',
+                color = {r = 201, g = 133, b = 6},
+                msg = 'You have saved the first container of fish!',
+                msg2 = 'However, this is only the beginning.',
+                achieved = false
+            },
+            {
+                goal = 1000,
+                rank = 'Bronze',
+                color = {r = 186, g = 115, b = 39},
+                msg = 'Thankful for the fish, they sent back a toy mouse made of solid bronze!',
+                msg2 = 'They are demanding more.',
+                achieved = false
+            },
+            {
+                goal = 10000,
+                rank = 'Silver',
+                color = {r = 186, g = 178, b = 171},
+                msg = 'In gratitude for the fish, they left you a silver furball!',
+                msg2 = 'They are still longing for more.',
+                achieved = false
+            },
+            {
+                goal = 25000,
+                rank = 'Gold',
+                color = {r = 255, g = 214, b = 33},
+                msg = 'Pleased about the delivery, they sent back a golden audiotape with cat purrs.',
+                msg2 = 'They still demand more.',
+                achieved = false
+            },
+            {
+                goal = 50000,
+                rank = 'Platinum',
+                color = {r = 224, g = 223, b = 215},
+                msg = 'To express their infinite love, they sent back a yarnball made of shiny material.',
+                msg2 = 'Defying all logic, they still demand more fish.',
+                achieved = false
+            },
+            {
+                goal = 100000,
+                rank = 'Diamond',
+                color = {r = 237, g = 236, b = 232},
+                msg = 'A box arrives with a mewing kitten, it a has a diamond collar.',
+                msg2 = 'More fish? Why? What..',
+                achieved = false
+            },
+            {
+                goal = 250000,
+                rank = 'Anti-matter',
+                color = {r = 100, g = 100, b = 245},
+                msg = 'The obese cat colapses and forms a black hole!',
+                msg2 = ':obese:',
+                achieved = false
+            },
+            {
+                goal = 500000,
+                rank = 'Black Hole',
+                color = {r = 100, g = 100, b = 245},
+                msg = 'A letter arrives, it reads: Go to bed hooman!',
+                msg2 = 'Not yet...',
+                achieved = false
+            },
+            {
+                goal = 1000000,
+                rank = 'Blue Screen',
+                color = {r = 100, g = 100, b = 245},
+                msg = 'Cat error #4721',
+                msg2 = '....',
+                achieved = false
+            },
+            {goal = 10000000, rank = 'Blue Screen', color = {r = 100, g = 100, b = 245}, msg = '....', msg2 = '....', achieved = false}
+        }
     end
 
-    this.market_health = 500
-    this.market_max_health = 500
     this.spawn_area_generated = false
 end
 
@@ -1402,8 +1499,7 @@ function Public.on_init()
     Public.reset_game()
 
     local T = Map.Pop_info()
-    T.localised_category = 'fish_defender_v2'
-    T.main_caption = '-- Chonk Defender -- '
+    T.localised_category = 'fish_defender'
     T.main_caption_color = {r = 0.11, g = 0.8, b = 0.44}
     T.sub_caption_color = {r = 0.33, g = 0.66, b = 0.9}
 end
@@ -1426,11 +1522,18 @@ local function on_tick()
         end
         if game.tick % 180 == 0 then
             if surface then
-                game.forces.player.chart(surface, {{-160, -160}, {192, 300}})
+                game.forces.player.chart(surface, {{-160, -130}, {160, 179}})
                 if Diff.difficulty_vote_index then
                     this.wave_interval = this.difficulties_votes[Diff.difficulty_vote_index].wave_interval
                 end
             end
+        end
+    end
+
+    if this.wave_count >= this.wave_limit then
+        if this.market and this.market.valid then
+            this.market.die()
+            game.print('Game wave limit reached! Game will soft-reset shortly.', {r = 0.22, g = 0.88, b = 0.22})
         end
     end
 

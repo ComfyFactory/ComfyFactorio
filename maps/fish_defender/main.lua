@@ -423,8 +423,7 @@ local function send_unit_group(unit_group)
     local commands = {}
     local market = FDT.get('market')
     for x = unit_group.position.x, market.position.x, -48 do
-        local destination =
-            unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
+        local destination = unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
         if destination then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
@@ -459,10 +458,7 @@ local function spawn_boss_units(surface)
     local Diff = Difficulty.get()
     local this = FDT.get()
     if this.wave_count <= 2000 then
-        game.print(
-            {'fish_defender.boss_message', this.wave_count, {'fish_defender.' .. this.wave_count}},
-            {r = 0.8, g = 0.1, b = 0.1}
-        )
+        game.print({'fish_defender.boss_message', this.wave_count, {'fish_defender.' .. this.wave_count}}, {r = 0.8, g = 0.1, b = 0.1})
     else
         game.print({'fish_defender.boss_message', this.wave_count}, {r = 0.8, g = 0.1, b = 0.1})
     end
@@ -577,8 +573,7 @@ local function damage_entity_outside_of_fence(e)
         return
     end
 
-    e.health =
-        e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
+    e.health = e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
     if e.health <= 0 then
         e.die('enemy')
     end
@@ -806,8 +801,7 @@ local function is_game_lost()
             local l = t.add({type = 'label', caption = 'MVP Defender >> '})
             l.style.font = 'default-listbox'
             l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            local l =
-                t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+            local l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
             l.style.font = 'default-bold'
             l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -862,9 +856,7 @@ end
 
 local function damage_entities_in_radius(surface, position, radius, damage)
     local entities_to_damage =
-        surface.find_entities_filtered(
-        {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
-    )
+        surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
     for _, entity in pairs(entities_to_damage) do
         if entity.valid then
             if entity.health and entity.name ~= 'land-mine' then
@@ -966,12 +958,7 @@ local function on_entity_died(event)
                 for _, visual in pairs(splash.visuals) do
                     surface.create_entity({name = visual, position = event.entity.position})
                 end
-                damage_entities_in_radius(
-                    surface,
-                    event.entity.position,
-                    splash.radius,
-                    math_random(splash.damage_min, splash.damage_max)
-                )
+                damage_entities_in_radius(surface, event.entity.position, splash.radius, math_random(splash.damage_min, splash.damage_max))
                 return
             end
         end
@@ -1067,8 +1054,7 @@ local function on_built_entity(event)
                     name = 'flying-text',
                     position = entity.position,
                     text = this.entity_limits[entity.name].placed ..
-                        ' / ' ..
-                            this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
+                        ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1194,8 +1180,7 @@ local function on_init(reset)
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('fish_defender', map_gen_settings).index
     elseif reset then
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
     local surface = game.surfaces[this.active_surface_index]
@@ -1284,10 +1269,7 @@ local function on_tick()
                 if this.game_restart_timer > 0 then
                     this.game_reset = true
                     this.game_has_ended = true
-                    game.print(
-                        'Map will restart in ' .. this.game_restart_timer / 60 .. ' seconds!',
-                        {r = 0.22, g = 0.88, b = 0.22}
-                    )
+                    game.print('Map will restart in ' .. this.game_restart_timer / 60 .. ' seconds!', {r = 0.22, g = 0.88, b = 0.22})
                 end
                 if this.game_restart_timer == 0 then
                     on_init(true)

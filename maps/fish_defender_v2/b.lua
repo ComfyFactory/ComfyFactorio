@@ -1,6 +1,6 @@
 local simplex_noise = require 'utils.simplex_noise'.d2
 -- local map_data = require 'maps.fish_defender_v2.fish_defender_layout'
-local map_data = require 'maps.fish_defender_v2.cat_defender_layout_v2'
+local map_data = require 'maps.fish_defender_v2.map'
 
 local random = math.random
 local abs = math.abs
@@ -109,10 +109,7 @@ local function plankton_territory(position, seed, ent)
         return
     end
 
-    if
-        position.x + position.y > (d * -1) - (abs(noise) * d * 3) and
-            position.x > position.y - (d + (abs(noise) * d * 3))
-     then
+    if position.x + position.y > (d * -1) - (abs(noise) * d * 3) and position.x > position.y - (d + (abs(noise) * d * 3)) then
         return 'out-of-map'
     end
 

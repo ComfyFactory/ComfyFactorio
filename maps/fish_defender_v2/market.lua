@@ -41,28 +41,22 @@ local function refresh_market_offers()
         end
     end
 
-    local str1 =
-        'Gun Turret Slot for ' ..
-        tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
+    local str1 = 'Gun Turret Slot for ' .. tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
     str1 = str1 .. ' Coins.'
 
     local str2 =
-        'Laser Turret Slot for ' ..
-        tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
+        'Laser Turret Slot for ' .. tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
     str2 = str2 .. ' Coins.'
 
     local str3 =
-        'Artillery Slot for ' ..
-        tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
+        'Artillery Slot for ' .. tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
     str3 = str3 .. ' Coins.'
 
     local current_limit = 1
     if this.entity_limits['flamethrower-turret'].limit ~= 0 then
         current_limit = current_limit + this.entity_limits['flamethrower-turret'].limit
     end
-    local str4 =
-        'Flamethrower Turret Slot for ' ..
-        tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
+    local str4 = 'Flamethrower Turret Slot for ' .. tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
     str4 = str4 .. ' Coins.'
 
     local str5 =
@@ -81,6 +75,8 @@ local function refresh_market_offers()
         {price = {{'coin', 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
         {price = {{'coin', 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
         {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
+        {price = {{'small-plane', 40}}, offer = {type = 'give-item', item = 'spidertron', count = 1}},
+        {price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'small-plane', count = 1}},
         {price = {{'coin', 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
         {price = {{'coin', 1200}}, offer = {type = 'give-item', item = 'tank', count = 1}},
         {price = {{'coin', 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
@@ -190,8 +186,7 @@ end
 local function slot_upgrade(player, offer_index)
     local this = FDT.get()
     local price =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit *
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
 
     local gain = 1
     if offer_index == 5 then
@@ -218,19 +213,19 @@ local function slot_upgrade(player, offer_index)
         return false
     end
 
-    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
+    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit = this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
     game.print(
         player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
         {r = 0.22, g = 0.77, b = 0.44}
     )
-    if math.random(1, 2) == 1 then
+    if
+        (slot_upgrade_offers[offer_index][2] < 10) or
+            ((slot_upgrade_offers[offer_index][2] < 50) and ((slot_upgrade_offers[offer_index][2] % 5) == 0)) or
+            ((slot_upgrade_offers[offer_index][2] % 25) == 0)
+     then
         Server.to_discord_bold(
             table.concat {
-                '*** ' ..
-                    player.name ..
-                        ' has bought a ' ..
-                            slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
+                '*** ' .. player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
             }
         )
     end
