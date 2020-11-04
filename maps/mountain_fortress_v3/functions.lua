@@ -367,8 +367,7 @@ Public.disable_minable_and_ICW_callback =
     function(entity)
         if entity and entity.valid then
             entity.minable = false
-            local wagon = ICW.register_wagon(entity, true)
-            wagon.entity_count = 999
+            ICW.register_wagon(entity, true)
         end
     end
 )
@@ -454,8 +453,7 @@ Public.power_source_callback =
         local power_sources = this.power_sources
         local callback_data = data.callback_data
 
-        local power_source =
-            turret.surface.create_entity {name = 'hidden-electric-energy-interface', position = turret.position}
+        local power_source = turret.surface.create_entity {name = 'hidden-electric-energy-interface', position = turret.position}
         power_source.electric_buffer_size = callback_data.buffer_size
         power_source.power_production = callback_data.power_production
         power_source.destructible = false

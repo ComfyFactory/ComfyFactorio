@@ -17,7 +17,6 @@ local function on_entity_died(event)
         return
     end
     local icw = ICW.get()
-    Functions.subtract_wagon_entity_count(icw, entity)
     Functions.kill_wagon(icw, entity)
 end
 
@@ -132,5 +131,13 @@ Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(
+    defines.events.on_built_entity,
+    function(event)
+        local created_entity = event.created_entity
+        local icw = ICW.get()
+        Functions.create_wagon(icw, created_entity)
+    end
+)
 
 return Public

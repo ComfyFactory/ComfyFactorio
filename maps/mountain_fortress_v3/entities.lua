@@ -148,16 +148,42 @@ local function on_entity_removed(data)
     end
 end
 
+local function check_health(this)
+    local m = this.locomotive_health / this.locomotive_max_health
+    if this.carriages then
+        for i = 1, #this.carriages do
+            local entity = this.carriages[i]
+            if not (entity and entity.valid) then
+                return
+            end
+            if entity.type == 'locomotive' then
+                entity.health = 1000 * m
+            else
+                entity.health = 600 * m
+            end
+        end
+    end
+end
+
+local function check_health_final_damage(this, final_damage_amount)
+    if this.carriages then
+        for i = 1, #this.carriages do
+            local entity = this.carriages[i]
+            if not (entity and entity.valid) then
+                return
+            end
+            entity.health = entity.health + final_damage_amount
+        end
+    end
+end
+
 local function set_objective_health(final_damage_amount)
     local this = WPT.get()
     if final_damage_amount == 0 then
         return
     end
 
-    if not this.locomotive then
-        return
-    end
-    if not this.locomotive.valid then
+    if not (this.locomotive and this.locomotive.valid) then
         return
     end
 
@@ -178,7 +204,7 @@ local function set_objective_health(final_damage_amount)
     end
 
     if this.locomotive_health <= 0 then
-        this.locomotive.health = this.locomotive.health + final_damage_amount
+        check_health_final_damage(this, final_damage_amount)
         return
     end
 
@@ -191,8 +217,7 @@ local function set_objective_health(final_damage_amount)
         Public.loco_died()
     end
 
-    local m = this.locomotive_health / this.locomotive_max_health
-    this.locomotive.health = 1000 * m
+    check_health(this)
 
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
 end
@@ -217,9 +242,23 @@ local function protect_entities(event)
         return false
     end
 
+    local function exists()
+        local t = {}
+        for i = 1, #this.carriages do
+            local e = this.carriages[i]
+            if not (e and e.valid) then
+                return
+            end
+            t[e.unit_number] = true
+        end
+        return t
+    end
+
+    local units = exists()
+
     if is_protected(entity) then
         if event.cause and event.cause.valid then
-            if event.cause.force.index == 2 and entity.unit_number == this.locomotive.unit_number then
+            if event.cause.force.index == 2 and units[entity.unit_number] then
                 set_objective_health(event.final_damage_amount)
             elseif event.cause.force.index == 2 then
                 return
@@ -991,8 +1030,7 @@ function Public.loco_died()
     game.forces.enemy.set_friend('player', true)
     game.forces.player.set_friend('enemy', true)
 
-    local fake_shooter =
-        surface.create_entity({name = 'character', position = this.locomotive.position, force = 'enemy'})
+    local fake_shooter = surface.create_entity({name = 'character', position = this.locomotive.position, force = 'enemy'})
     surface.create_entity(
         {
             name = 'atomic-rocket',

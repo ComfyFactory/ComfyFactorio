@@ -1,7 +1,7 @@
 local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
-local random = math.random
+local WPT = require 'maps.mountain_fortress_v3.table'
 local main_tile_name = 'black-refined-concrete'
 
 function Public.request_reconstruction(icw)
@@ -37,13 +37,7 @@ local function kick_players_from_surface(wagon)
             for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
                     e.player.teleport(
-                        main_surface.find_non_colliding_position(
-                            'character',
-                            game.forces.player.get_spawn_position(main_surface),
-                            3,
-                            0,
-                            5
-                        ),
+                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
                         main_surface
                     )
                 end
@@ -130,8 +124,7 @@ local function equal_fluid(source_tank, target_tank)
         return
     end
 
-    local inserted_amount =
-        target_tank.insert_fluid({name = source_fluid.name, amount = amount, temperature = source_fluid.temperature})
+    local inserted_amount = target_tank.insert_fluid({name = source_fluid.name, amount = amount, temperature = source_fluid.temperature})
     if inserted_amount > 0 then
         source_tank.remove_fluid({name = source_fluid.name, amount = inserted_amount})
     end
@@ -174,18 +167,18 @@ end
 
 local function input_cargo(wagon, chest)
     if not chest.request_from_buffers then
-        return
+        goto continue
     end
 
     local wagon_entity = wagon.entity
     if not validate_entity(wagon_entity) then
         wagon.transfer_entities = nil
-        return
+        goto continue
     end
 
     local wagon_inventory = wagon_entity.get_inventory(defines.inventory.cargo_wagon)
     if wagon_inventory.is_empty() then
-        return
+        goto continue
     end
 
     local chest_inventory = chest.get_inventory(defines.inventory.chest)
@@ -198,12 +191,12 @@ local function input_cargo(wagon, chest)
 
     if chest.get_request_slot(1) then
         input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
-        return
+        goto continue
     end
 
     for i = 1, wagon_inventory.get_bar() - 1, 1 do
         if free_slots <= 0 then
-            return
+            goto continue
         end
         if wagon_inventory[i].valid_for_read then
             chest_inventory.insert(wagon_inventory[i])
@@ -211,15 +204,17 @@ local function input_cargo(wagon, chest)
             free_slots = free_slots - 1
         end
     end
+
+    ::continue::
 end
 
 local function output_cargo(wagon, passive_chest)
     if not validate_entity(wagon.entity) then
-        return
+        goto continue
     end
 
     if not passive_chest.valid then
-        return
+        goto continue
     end
     local chest1 = passive_chest.get_inventory(defines.inventory.chest)
     local chest2 = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
@@ -232,6 +227,7 @@ local function output_cargo(wagon, passive_chest)
             end
         end
     end
+    ::continue::
 end
 
 local transfer_functions = {
@@ -257,10 +253,7 @@ local function get_wagon_for_entity(icw, entity)
         if wagon then
             local left_top = wagon.area.left_top
             local right_bottom = wagon.area.right_bottom
-            if
-                position.x >= left_top.x and position.y >= left_top.y and position.x <= right_bottom.x and
-                    position.y <= right_bottom.y
-             then
+            if position.x >= left_top.x and position.y >= left_top.y and position.x <= right_bottom.x and position.y <= right_bottom.y then
                 return wagon
             end
         end
@@ -429,13 +422,6 @@ function Public.create_wagon_room(icw, wagon)
         end
     end
 
-    --[[  for x = area.left_top.x, area.right_bottom.x - 1, 1 do
-        for y = area.left_top.y + 2, area.right_bottom.y - 3, 1 do
-            if random(1, 16) == 1 then
-                fishes[#fishes + 1] = {name = crash_site[random(1, size_of_crash)], position = {x, y}, force = 'player'}
-            end
-        end
-    end ]]
     surface.set_tiles(tiles, true)
 
     for _, fish in pairs(fishes) do
@@ -633,8 +619,7 @@ function Public.create_wagon(icw, created_entity, delay_surface)
             left_top = {x = wagon_area.left_top.x, y = wagon_area.left_top.y},
             right_bottom = {x = wagon_area.right_bottom.x, y = wagon_area.right_bottom.y}
         },
-        doors = {},
-        entity_count = 0
+        doors = {}
     }
     local wagon = icw.wagons[created_entity.unit_number]
 
@@ -645,27 +630,6 @@ function Public.create_wagon(icw, created_entity, delay_surface)
 
     Public.request_reconstruction(icw)
     return wagon
-end
-
-function Public.add_wagon_entity_count(icw, added_entity)
-    local wagon = get_wagon_for_entity(icw, added_entity)
-    if not wagon then
-        return
-    end
-    wagon.entity_count = wagon.entity_count + 1
-    wagon.entity.minable = false
-end
-
-function Public.subtract_wagon_entity_count(icw, removed_entity)
-    local wagon = get_wagon_for_entity(icw, removed_entity)
-    if not wagon then
-        return
-    end
-    wagon.entity_count = wagon.entity_count - 1
-    if wagon.entity_count > 0 then
-        return
-    end
-    wagon.entity.minable = true
 end
 
 function Public.use_cargo_wagon_door_with_entity(icw, player, door)
@@ -703,6 +667,9 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
 
     if wagon.entity.surface.name ~= player.surface.name then
         local surface = wagon.entity.surface
+        if not (surface and surface.valid) then
+            return
+        end
         local x_vector = (door.position.x / math.abs(door.position.x)) * 2
         local position = {wagon.entity.position.x + x_vector, wagon.entity.position.y}
         local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
@@ -730,6 +697,9 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
         player_data.surface = surface.index
     else
         local surface = wagon.surface
+        if not (surface and surface.valid) then
+            return
+        end
         local area = wagon.area
         local x_vector = door.position.x - player.position.x
         local position
@@ -816,9 +786,8 @@ local function move_room_to_train(icw, train, wagon)
     end
 end
 
-local function get_connected_rolling_stock(entity, direction)
+local function get_connected_rolling_stock(entity, direction, carriages)
     --thanks Boskid
-    local carriages = entity.train.carriages
     local first_stock, second_stock
     for k, v in pairs(carriages) do
         if v == entity then
@@ -835,8 +804,7 @@ local function get_connected_rolling_stock(entity, direction)
     end
 
     local angle =
-        math.atan2(-(entity.position.x - first_stock.position.x), entity.position.y - first_stock.position.y) /
-        (2 * math.pi) -
+        math.atan2(-(entity.position.x - first_stock.position.x), entity.position.y - first_stock.position.y) / (2 * math.pi) -
         entity.orientation
     if direction == defines.rail_direction.back then
         angle = angle + 0.5
@@ -858,8 +826,7 @@ local function get_connected_rolling_stock(entity, direction)
     end
 
     angle =
-        math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) /
-        (2 * math.pi) -
+        math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) / (2 * math.pi) -
         connected_stock.orientation
     while angle < -0.5 do
         angle = angle + 1
@@ -876,17 +843,16 @@ local function get_connected_rolling_stock(entity, direction)
     return connected_stock, joint_of_connected_stock
 end
 
-function Public.construct_train(icw, carriages)
-    local WPT = package.loaded['maps.mountain_fortress_v3.table']
-    local choochoo = WPT.get().locomotive
-    for i, carriage in pairs(carriages) do
-        if carriage == choochoo then
-            local stock = get_connected_rolling_stock(choochoo, defines.rail_direction.front)
-            if stock ~= carriages[i - 1] then
+function Public.construct_train(icw, locomotive, carriages)
+    local locomotive_carriages = locomotive.train.carriages
+    for i, carriage in pairs(locomotive_carriages) do
+        if carriage == locomotive then
+            local stock = get_connected_rolling_stock(locomotive, defines.rail_direction.front, locomotive_carriages)
+            if stock ~= locomotive_carriages[i - 1] then
                 local n = 1
-                local m = #carriages
+                local m = #locomotive_carriages
                 while (n < m) do
-                    carriages[n], carriages[m] = carriages[m], carriages[n]
+                    locomotive_carriages[n], locomotive_carriages[m] = locomotive_carriages[m], locomotive_carriages[n]
                     n = n + 1
                     m = m - 1
                 end
@@ -917,13 +883,21 @@ function Public.reconstruct_all_trains(icw)
             return
         end
 
+        local locomotive = WPT.get('locomotive')
+        if not (locomotive and locomotive.valid) then
+            return
+        end
+
         if not wagon.surface then
             wagon.surface = Public.create_room_surface(icw, unit_number)
             Public.create_wagon_room(icw, wagon)
         end
-
         local carriages = wagon.entity.train.carriages
-        Public.construct_train(icw, carriages)
+        local locomotive_carriages = locomotive.train.carriages
+
+        WPT.set().carriages = locomotive_carriages
+
+        Public.construct_train(icw, locomotive, carriages)
     end
     delete_empty_surfaces(icw)
 end
@@ -935,17 +909,21 @@ function Public.item_transfer(icw)
         end
         if wagon.transfer_entities then
             for k, e in pairs(wagon.transfer_entities) do
-                transfer_functions[e.name](wagon, e)
+                if validate_entity(e) then
+                    transfer_functions[e.name](wagon, e)
+                end
             end
         end
     end
 end
 
 function Public.draw_minimap(icw, player, surface, position)
+    if not (surface and surface.valid) then
+        return
+    end
     local frame = player.gui.left.icw_main_frame
     if not frame then
-        frame =
-            player.gui.left.add({type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap'})
+        frame = player.gui.left.add({type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap'})
     end
     local element = frame['icw_sub_frame']
     if not element then

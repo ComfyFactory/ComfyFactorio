@@ -232,6 +232,10 @@ local function open_inventory(source, target)
         }
     )
 
+    if not validate_object(frame) then
+        return
+    end
+
     frame.auto_center = true
     source.opened = frame
     frame.style.minimal_width = 500

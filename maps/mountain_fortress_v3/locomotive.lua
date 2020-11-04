@@ -149,9 +149,7 @@ local set_loco_tiles =
             end
             if surface.can_place_entity({name = 'wooden-chest', position = p[i]}) then
                 local e =
-                    surface.create_entity(
-                    {name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false}
-                )
+                    surface.create_entity({name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false})
                 local inventory = e.get_inventory(defines.inventory.chest)
                 inventory.insert(cargo_boxes[i])
             end
@@ -321,10 +319,7 @@ local function property_boost(data)
             return
         end
         if player.afk_time < 200 then
-            if
-                Math2D.bounding_box.contains_point(area, player.position) or
-                    player.surface.index == locomotive_surface.index
-             then
+            if Math2D.bounding_box.contains_point(area, player.position) or player.surface.index == locomotive_surface.index then
                 Public.add_player_to_permission_group(player, 'locomotive')
                 local pos = player.position
                 Functions.gain_xp(player, 0.5 * (rpg[player.index].bonus + this.xp_points))
@@ -437,15 +432,28 @@ local function set_locomotive_health()
         return
     end
 
-    if not this.locomotive.valid then
+    local function check_health()
+        local m = this.locomotive_health / this.locomotive_max_health
+        if this.carriages then
+            for i = 1, #this.carriages do
+                local entity = this.carriages[i]
+                if not (entity and entity.valid) then
+                    return
+                end
+                if entity.type == 'locomotive' then
+                    entity.health = 1000 * m
+                else
+                    entity.health = 600 * m
+                end
+            end
+        end
+    end
+
+    if not (this.locomotive and this.locomotive.valid) then
         return
     end
 
-    local locomotive_health = WPT.get('locomotive_health')
-    local locomotive_max_health = WPT.get('locomotive_max_health')
-    local m = locomotive_health / locomotive_max_health
-    this.locomotive.health = 1000 * m
-    rendering.set_text(this.health_text, 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health)
+    check_health()
 end
 
 local function validate_index()
@@ -966,9 +974,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name ..
-                    ' has upgraded the teams pickaxe to tier ' ..
-                        tier .. ' for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the teams pickaxe to tier ' .. tier .. ' for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
 
@@ -996,8 +1002,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name ..
-                    ' has bought the chest limit upgrade for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has bought the chest limit upgrade for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.chest_limit_outside_upgrades = this.chest_limit_outside_upgrades + item.stack
@@ -1014,13 +1019,25 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name ..
-                    ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.locomotive_max_health = this.locomotive_max_health + 2500 * item.stack
         local m = this.locomotive_health / this.locomotive_max_health
-        this.locomotive.health = 1000 * m
+
+        if this.carriages then
+            for i = 1, #this.carriages do
+                local entity = this.carriages[i]
+                if not (entity and entity.valid) then
+                    return
+                end
+                if entity.type == 'locomotive' then
+                    entity.health = 1000 * m
+                else
+                    entity.health = 600 * m
+                end
+            end
+        end
 
         this.train_upgrades = this.train_upgrades + item.stack
         this.health_upgrades = this.health_upgrades + item.stack
@@ -1039,8 +1056,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name ..
-                    ' has bought the locomotive xp aura modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has bought the locomotive xp aura modifier for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.locomotive_xp_aura = this.locomotive_xp_aura + 5
@@ -1098,8 +1114,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name ..
-                    ' has bought the explosive bullet modifier for ' .. format_number(item.price) .. ' coins.'
+                player.name .. ' has bought the explosive bullet modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
         this.explosive_bullets = true
@@ -1122,8 +1137,7 @@ local function gui_click(event)
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
-                    player.name ..
-                        ' has bought a flamethrower-turret slot for ' .. format_number(item.price, true) .. ' coins.'
+                    player.name .. ' has bought a flamethrower-turret slot for ' .. format_number(item.price, true) .. ' coins.'
                 }
             )
         else
@@ -1138,9 +1152,7 @@ local function gui_click(event)
             Server.to_discord_bold(
                 table.concat {
                     player.name ..
-                        ' has bought ' ..
-                            item.stack ..
-                                ' flamethrower-turret slots for ' .. format_number(item.price, true) .. ' coins.'
+                        ' has bought ' .. item.stack .. ' flamethrower-turret slots for ' .. format_number(item.price, true) .. ' coins.'
                 }
             )
         end
@@ -1169,8 +1181,7 @@ local function gui_click(event)
                 Server.to_discord_bold(
                     table.concat {
                         player.name ..
-                            ' has bought ' ..
-                                item.stack .. ' landmine slots for ' .. format_number(item.price, true) .. ' coins.'
+                            ' has bought ' .. item.stack .. ' landmine slots for ' .. format_number(item.price, true) .. ' coins.'
                     }
                 )
             end
@@ -1302,9 +1313,7 @@ local function spawn_biter()
         return
     end
     this.locomotive_biter =
-        loco_surface.create_entity(
-        {name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false}
-    )
+        loco_surface.create_entity({name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false})
     this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
     this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
 
@@ -1339,9 +1348,7 @@ local function create_market(data, rebuild)
         for _, entity in pairs(surface.find_entities_filtered {area = area, name = 'market'}) do
             entity.destroy()
         end
-        for _, entity in pairs(
-            surface.find_entities_filtered {area = area, type = 'item-entity', name = 'item-on-ground'}
-        ) do
+        for _, entity in pairs(surface.find_entities_filtered {area = area, type = 'item-entity', name = 'item-on-ground'}) do
             entity.destroy()
         end
         for _, entity in pairs(surface.find_entities_filtered {area = area, type = 'unit'}) do
@@ -1386,11 +1393,7 @@ local function create_market(data, rebuild)
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack(
-                    {x + random(0, 9) * 0.1, y + random(0, 9) * 0.1},
-                    {name = 'raw-fish', count = 1},
-                    false
-                )
+                loco_surface.spill_item_stack({x + random(0, 9) * 0.1, y + random(0, 9) * 0.1}, {name = 'raw-fish', count = 1}, false)
             end
             loco_surface.set_tiles({{name = 'blue-refined-concrete', position = {x, y}}}, true)
         end
@@ -1398,11 +1401,7 @@ local function create_market(data, rebuild)
     for x = center_position.x - 3, center_position.x + 3, 1 do
         for y = center_position.y - 3, center_position.y + 3, 1 do
             if random(1, 2) == 1 then
-                loco_surface.spill_item_stack(
-                    {x + random(0, 9) * 0.1, y + random(0, 9) * 0.1},
-                    {name = 'raw-fish', count = 1},
-                    false
-                )
+                loco_surface.spill_item_stack({x + random(0, 9) * 0.1, y + random(0, 9) * 0.1}, {name = 'raw-fish', count = 1}, false)
             end
             loco_surface.set_tiles({{name = 'cyan-refined-concrete', position = {x, y}}}, true)
         end
@@ -1688,10 +1687,7 @@ local function on_player_changed_surface(event)
         if not surface or not surface.valid then
             return
         end
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-            surface
-        )
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
     end
 
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
@@ -1829,17 +1825,13 @@ end
 
 function Public.locomotive_spawn(surface, position)
     local this = WPT.get()
-    for y = -6, 6, 2 do
-        surface.create_entity(
-            {name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0}
-        )
+    for y = -6, 14, 2 do
+        surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
     end
-    this.locomotive =
-        surface.create_entity({name = 'locomotive', position = {position.x, position.y + -3}, force = 'player'})
+    this.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + -3}, force = 'player'})
     this.locomotive.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 100})
 
-    this.locomotive_cargo =
-        surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + 3}, force = 'player'})
+    this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + 3}, force = 'player'})
     this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 8})
 
     rendering.draw_light(
@@ -1851,6 +1843,21 @@ function Public.locomotive_spawn(surface, position)
             oriented = true,
             color = {255, 255, 255},
             target = this.locomotive,
+            surface = surface,
+            visible = true,
+            only_in_alt_mode = false
+        }
+    )
+
+    rendering.draw_light(
+        {
+            sprite = 'utility/light_medium',
+            scale = 5.5,
+            intensity = 1,
+            minimum_darkness = 0,
+            oriented = true,
+            color = {255, 255, 255},
+            target = this.locomotive_cargo,
             surface = surface,
             visible = true,
             only_in_alt_mode = false
@@ -1887,9 +1894,7 @@ function Public.locomotive_spawn(surface, position)
     this.locomotive_cargo.operable = true
 
     local locomotive = ICW.register_wagon(this.locomotive)
-    local wagon = ICW.register_wagon(this.locomotive_cargo)
-    locomotive.entity_count = 999
-    wagon.entity_count = 999
+    ICW.register_wagon(this.locomotive_cargo)
 
     this.icw_locomotive = locomotive
 
