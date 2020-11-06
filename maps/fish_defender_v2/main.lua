@@ -10,7 +10,6 @@ require 'maps.fish_defender_v2.on_entity_damaged'
 require 'modules.rocket_launch_always_yields_science'
 require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
-require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
 
 local Unit_health_booster = require 'modules.biter_health_booster'
@@ -29,6 +28,7 @@ local insert = table.insert
 local enable_start_grace_period = true
 
 local Public = {}
+local random = math.random
 
 local starting_items = {
     ['pistol'] = 1,
@@ -324,9 +324,10 @@ local function get_biter_initial_pool()
     end
 end
 
-local function fish_eye(surface, position)
+local function fish_eye(this, surface, position)
     surface.request_to_generate_chunks(position, 2)
     surface.force_generate_chunk_requests()
+
     for x = -48, 48, 1 do
         for y = -48, 48, 1 do
             local p = {x = position.x + x, y = position.y + y}
@@ -348,6 +349,7 @@ local function fish_eye(surface, position)
             end
         end
     end
+    this.fish_eye = true
 end
 
 local function get_biter_pool()
@@ -382,17 +384,11 @@ local function spawn_biter(pos, biter_pool)
 end
 
 local function get_y_coord_raffle_table()
-    local this = FDT.get()
     local t = {}
-
-    --for y = -96, 96, 8 do -- fish
-    for y = -96, 240, 8 do -- cat
-        if this.wave_count <= 80 then
-            y = 0
-        end
+    for y = -96, 96, 8 do
         t[#t + 1] = y
     end
-    shuffle(t)
+    table.shuffle_table(t)
     return t
 end
 
@@ -540,8 +536,8 @@ local function wake_up_the_biters(surface)
             break
         end
         local x = units[i].position.x
-        if x > 256 then
-            x = 256
+        if x > 300 then
+            x = 300
         end
         local y = units[i].position.y
         if y > 96 or y < -96 then
@@ -692,11 +688,11 @@ local function biter_attack_wave()
     local unit_groups = {}
     if this.wave_count > 50 and math_random(1, 8) == 1 then
         for i = 1, 10, 1 do
-            unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
+            unit_groups[i] = surface.create_unit_group({position = {x = 300, y = y_raffle[i]}})
         end
     else
         for i = 1, get_number_of_attack_groups(), 1 do
-            unit_groups[i] = surface.create_unit_group({position = {x = 256, y = y_raffle[i]}})
+            unit_groups[i] = surface.create_unit_group({position = {x = 300, y = y_raffle[i]}})
         end
     end
 
@@ -1169,7 +1165,7 @@ local function on_player_changed_position(event)
         return
     end
 
-    if player.position.x >= 160 then
+    if player.position.x >= 254 then
         player.teleport({player.position.x - 1, 0}, surface)
 
         if player.character then
@@ -1355,38 +1351,6 @@ function Public.reset_game()
 
     surface.peaceful_mode = false
 
-    --[[ local radius = 200
-    --local pos = {x = 419, y = -308} -- fish
-    local pos = {x = -27, y = -308} -- cat
-    game.forces.player.chart(
-        surface,
-        {
-            {pos.x - radius - 100, pos.y - radius - 40},
-            {pos.x + radius + 250, pos.y + radius}
-        }
-    )
-
-    radius = 50
-    -- pos = {x = -1575, y = 2}
-    -- pos = {x = -1246, y = 74} -- fish
-    pos = {x = -748, y = -309} -- cat
-    game.forces.player.chart(
-        surface,
-        {
-            {pos.x - radius, pos.y - radius},
-            {pos.x + radius, pos.y + radius}
-        }
-    ) ]]
-    local r = 200
-    local p = {x = -131, y = 5}
-    game.forces.player.chart(
-        surface,
-        {
-            {p.x - r - 100, p.y - r},
-            {p.x + r + 400, p.y + r}
-        }
-    )
-
     game.map_settings.enemy_expansion.enabled = false
     game.map_settings.enemy_evolution.destroy_factor = 0
     game.map_settings.enemy_evolution.time_factor = 0
@@ -1410,8 +1374,6 @@ function Public.reset_game()
     game.forces.player.technologies['spidertron'].enabled = false
     game.forces.player.technologies['spidertron'].researched = false
     game.reset_time_played()
-
-    fish_eye(surface, {x = -1667, y = -50})
 
     if not global.catplanet_goals then
         global.catplanet_goals = {
@@ -1491,8 +1453,6 @@ function Public.reset_game()
             {goal = 10000000, rank = 'Blue Screen', color = {r = 100, g = 100, b = 245}, msg = '....', msg2 = '....', achieved = false}
         }
     end
-
-    this.spawn_area_generated = false
 end
 
 function Public.on_init()
@@ -1511,7 +1471,8 @@ local function on_tick()
     if not surface or not surface.valid then
         return
     end
-    if game.tick % 30 == 0 then
+    local tick = game.tick
+    if tick % 30 == 0 then
         has_the_game_ended()
         if this.market then
             for _, player in pairs(game.connected_players) do
@@ -1520,7 +1481,7 @@ local function on_tick()
                 end
             end
         end
-        if game.tick % 180 == 0 then
+        if tick % 180 == 0 then
             if surface then
                 game.forces.player.chart(surface, {{-160, -130}, {160, 179}})
                 if Diff.difficulty_vote_index then
@@ -1528,16 +1489,31 @@ local function on_tick()
                 end
             end
         end
-    end
 
-    if this.wave_count >= this.wave_limit then
-        if this.market and this.market.valid then
-            this.market.die()
-            game.print('Game wave limit reached! Game will soft-reset shortly.', {r = 0.22, g = 0.88, b = 0.22})
+        if this.wave_count >= this.wave_limit then
+            if this.market and this.market.valid then
+                this.market.die()
+                game.print('Game wave limit reached! Game will soft-reset shortly.', {r = 0.22, g = 0.88, b = 0.22})
+            end
+        end
+        if not this.spawn_area_generated then
+            if tick % 2 == 0 then
+                local players = game.connected_players
+                for i = 1, #players do
+                    local player = players[i]
+                    if (player.character and player.character.valid) then
+                        player.character.rotate()
+                    end
+                end
+            end
+        end
+
+        if this.spawn_area_generated and not this.fish_eye then
+            fish_eye(this, surface, {x = -1667, y = -50})
         end
     end
 
-    if game.tick % this.wave_interval == this.wave_interval - 1 then
+    if tick % this.wave_interval == this.wave_interval - 1 then
         if surface.peaceful_mode == true then
             return
         end

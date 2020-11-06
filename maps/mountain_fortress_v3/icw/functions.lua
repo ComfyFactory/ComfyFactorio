@@ -844,15 +844,14 @@ local function get_connected_rolling_stock(entity, direction, carriages)
 end
 
 function Public.construct_train(icw, locomotive, carriages)
-    local locomotive_carriages = locomotive.train.carriages
-    for i, carriage in pairs(locomotive_carriages) do
+    for i, carriage in pairs(carriages) do
         if carriage == locomotive then
-            local stock = get_connected_rolling_stock(locomotive, defines.rail_direction.front, locomotive_carriages)
-            if stock ~= locomotive_carriages[i - 1] then
+            local stock = get_connected_rolling_stock(locomotive, defines.rail_direction.front, carriages)
+            if stock ~= carriages[i - 1] then
                 local n = 1
-                local m = #locomotive_carriages
+                local m = #carriages
                 while (n < m) do
-                    locomotive_carriages[n], locomotive_carriages[m] = locomotive_carriages[m], locomotive_carriages[n]
+                    carriages[n], carriages[m] = carriages[m], carriages[n]
                     n = n + 1
                     m = m - 1
                 end
@@ -893,9 +892,6 @@ function Public.reconstruct_all_trains(icw)
             Public.create_wagon_room(icw, wagon)
         end
         local carriages = wagon.entity.train.carriages
-        local locomotive_carriages = locomotive.train.carriages
-
-        WPT.set().carriages = locomotive_carriages
 
         Public.construct_train(icw, locomotive, carriages)
     end

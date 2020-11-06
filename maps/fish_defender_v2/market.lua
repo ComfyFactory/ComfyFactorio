@@ -218,17 +218,7 @@ local function slot_upgrade(player, offer_index)
         player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
         {r = 0.22, g = 0.77, b = 0.44}
     )
-    if
-        (slot_upgrade_offers[offer_index][2] < 10) or
-            ((slot_upgrade_offers[offer_index][2] < 50) and ((slot_upgrade_offers[offer_index][2] % 5) == 0)) or
-            ((slot_upgrade_offers[offer_index][2] % 25) == 0)
-     then
-        Server.to_discord_bold(
-            table.concat {
-                '*** ' .. player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
-            }
-        )
-    end
+
     refresh_market_offers()
 end
 

@@ -35,7 +35,7 @@ local function is_enemy_territory(p)
         return false
     end
     --if p.x - 64 < p.y then return false end
-    if p.x < 160 then
+    if p.x < 256 then
         return false
     end
     if p.x > 1024 then
@@ -58,7 +58,7 @@ local function place_fish_market(surface, position)
 end
 
 local function enemy_territory(surface, left_top)
-    if left_top.x < 160 then
+    if left_top.x < 256 then
         return
     end
     if left_top.x > 750 then
@@ -67,13 +67,13 @@ local function enemy_territory(surface, left_top)
     if left_top.y > 766 then
         return
     end
-    if left_top.y < -160 then
+    if left_top.y < -256 then
         return
     end
 
     local area = {{left_top.x, left_top.y}, {left_top.x + 32, left_top.y + 32}}
 
-    if left_top.x > 256 then
+    if left_top.x > 300 then
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
                 local pos = {x = left_top.x + x, y = left_top.y + y}
@@ -142,36 +142,30 @@ local function generate_spawn_area(this, surface)
         return
     end
 
-    surface.request_to_generate_chunks({x = 0, y = 0}, 7)
-    surface.request_to_generate_chunks({x = 160, y = 0}, 4)
+    surface.request_to_generate_chunks({0, 0}, 8)
 
-    if not surface.is_chunk_generated({-7, 0}) then
-        return
-    end
-    if not surface.is_chunk_generated({5, 0}) then
+    if this.chunk_load_tick > game.tick then
         return
     end
 
     local spawn_position_x = -128
 
-    surface.create_entity({name = 'electric-beam', position = {160, -132}, source = {160, -132}, target = {160, 179}}) -- fish
+    surface.create_entity({name = 'electric-beam', position = {254, -143}, source = {254, -143}, target = {254, 193}}) -- fish
     --surface.create_entity({name = 'electric-beam', position = {160, -101}, source = {160, -101}, target = {160, 248}}) -- fish
     --surface.create_entity({name = 'electric-beam', position = {160, -88}, source = {160, -88}, target = {160, 185}})
 
-    for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-160, -160}, {160, 160}}})) do
+    for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-300, -256}, {300, 300}}})) do
         local noise = math_abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
         if tile.position.x > -160 + noise then
             surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true)
         end
     end
 
-    for _, entity in pairs(
-        surface.find_entities_filtered({type = {'resource', 'cliff'}, area = {{spawn_position_x - 32, -256}, {160, 256}}})
-    ) do
+    for _, entity in pairs(surface.find_entities_filtered({type = {'resource', 'cliff'}, area = {{-300, -256}, {300, 300}}})) do
         if
             entity.position.x >
-                spawn_position_x - 32 +
-                    math_abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
+                -300 +
+                    math_abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 32)
          then
             entity.destroy()
         end
@@ -258,6 +252,17 @@ local function generate_spawn_area(this, surface)
         local spawn_pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, 4}, 50, 1)
         player.teleport(spawn_pos, surface)
     end
+
+    local rr = 200
+    local p = {x = -131, y = 5}
+    game.forces.player.chart(
+        surface,
+        {
+            {p.x - rr - 100, p.y - rr},
+            {p.x + rr + 400, p.y + rr}
+        }
+    )
+
     this.spawn_area_generated = true
 end
 

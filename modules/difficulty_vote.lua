@@ -86,8 +86,8 @@ function Public.set_difficulties(...)
     end
 end
 
-function Public.set_poll_closing_timeout(...)
-    this.difficulty_poll_closing_timeout = ...
+function Public.set_poll_closing_timeout(value)
+    this.difficulty_poll_closing_timeout = value
 end
 
 function Public.get(key)
@@ -105,8 +105,7 @@ function Public.difficulty_gui()
         if player.gui.top['difficulty_gui'] then
             player.gui.top['difficulty_gui'].caption = this.difficulties[this.difficulty_vote_index].name
             player.gui.top['difficulty_gui'].tooltip = this.button_tooltip or tooltip
-            player.gui.top['difficulty_gui'].style.font_color =
-                this.difficulties[this.difficulty_vote_index].print_color
+            player.gui.top['difficulty_gui'].style.font_color = this.difficulties[this.difficulty_vote_index].print_color
         else
             local b =
                 player.gui.top.add {
@@ -165,8 +164,7 @@ local function poll_difficulty(player)
         {
             type = 'button',
             name = 'close',
-            caption = 'Close (' ..
-                math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) .. ' minutes left)'
+            caption = 'Close (' .. math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) .. ' minutes left)'
         }
     )
     b.style.font_color = {r = 0.66, g = 0.0, b = 0.66}
@@ -187,8 +185,7 @@ local function set_difficulty()
     a = a / vote_count
     local new_index = math.round(a, 0)
     if this.difficulty_vote_index ~= new_index then
-        local message =
-            table.concat({'>> Map difficulty has changed to ', this.difficulties[new_index].name, ' difficulty!'})
+        local message = table.concat({'>> Map difficulty has changed to ', this.difficulties[new_index].name, ' difficulty!'})
         game.print(message, this.difficulties[new_index].print_color)
         Server.to_discord_embed(message)
     end
@@ -281,10 +278,7 @@ local function on_gui_click(event)
         return
     end
     local i = tonumber(event.element.name)
-    game.print(
-        player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty!',
-        this.difficulties[i].print_color
-    )
+    game.print(player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty!', this.difficulties[i].print_color)
     this.difficulty_player_votes[player.name] = i
     set_difficulty()
     Public.difficulty_gui()

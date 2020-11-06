@@ -11,6 +11,7 @@ local Team_manager = require "maps.biter_battles_v2.team_manager"
 local Terrain = require "maps.biter_battles_v2.terrain"
 
 require "maps.biter_battles_v2.sciencelogs_tab"
+require 'maps.biter_battles_v2.commands'
 require "modules.spawners_contain_biters"
 require "modules.mineable_wreckage_yields_scrap"
 
