@@ -188,8 +188,16 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 
 	if square_distance < 4096 then return end
 	if math_random(1, 4096) == 1 then Market.spawn_random_cave_market(surface, position) return end
-	if math_random(1, 64) == 1 then surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) return end
-	if math_random(1, 64) == 1 then Functions.place_worm(surface, position, 1) return end
+	if math_random(1, 64) == 1 then
+		local e = surface.create_entity({name = "biter-spawner", position = position, force = "enemy"}) 
+		e.active = false
+		return 
+	end
+	if math_random(1, 64) == 1 then 
+		local e = Functions.place_worm(surface, position, 1)
+		e.active = false
+		return 
+	end
 end
 
 local function get_biome(surface, seed, position)

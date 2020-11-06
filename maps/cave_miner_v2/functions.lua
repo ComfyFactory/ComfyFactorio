@@ -63,8 +63,9 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 	for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
 		local entity_position = entity.position
 		if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
-			entity.clone({position = entity_position, surface = surface})
+			local e = entity.clone({position = entity_position, surface = surface})
 			if entity.force.index == 2 then
+				e.active = true
 				table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
 			end
 			entity.destroy()
@@ -108,7 +109,8 @@ function Public.set_mining_speed(cave_miner, force)
 end
 
 function Public.place_worm(surface, position, multiplier)
-	surface.create_entity({name = BiterRaffle.roll("worm", Public.get_difficulty_modifier(position) * multiplier), position = position, force = "enemy"}) 
+	local e = surface.create_entity({name = BiterRaffle.roll("worm", Public.get_difficulty_modifier(position) * multiplier), position = position, force = "enemy"})
+	return e
 end
 
 function Public.spawn_random_biter(surface, position, multiplier)
@@ -161,7 +163,7 @@ function Public.loot_crate(surface, position, container_name, player_index)
 	end
 
 	for _, player in pairs(game.forces.player.connected_players) do
-		player.add_custom_alert(container, {type = "item", name = container.name}, text, true)
+		player.add_custom_alert(container, {type = "item", name = "wooden-chest"}, text, true)
 	end
 end
 
@@ -267,7 +269,10 @@ end
 
 Public.mining_events = {
 	{function(cave_miner, entity, player_index)
-	end, 320000, "Nothing"},
+		if math.random(1, 8) == 1 then
+			entity.surface.spill_item_stack(entity.position, {name = "raw-fish", count = 1}, true)
+		end
+	end, 350000, "Nothing"},
 	
 	{function(cave_miner, entity, player_index)
 		local amount = Public.roll_biter_amount()
