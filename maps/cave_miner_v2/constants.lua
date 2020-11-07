@@ -73,6 +73,8 @@ Public.treasures = {
 	},
 }
 
+Public.chat_color = {200, 200, 200}
+
 Public.starting_items = {
 	["pistol"] = 1,
 	["firearm-magazine"] = 8,

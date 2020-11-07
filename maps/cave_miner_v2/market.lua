@@ -127,18 +127,11 @@ function Public.spawn_random_cave_market(surface, position)
 	local worth = math_floor(difficulty_modifier * 10000) + 256
 	local blacklist = LootRaffle.get_tech_blacklist(difficulty_modifier + 0.20)
 	blacklist["discharge-defense-remote"] = true
-	blacklist["express-loader"] = true
-	blacklist["fast-loader"] = true
 	blacklist["landfill"] = true
-	blacklist["loader"] = true
 	blacklist["copper-cable"] = true
 	blacklist["iron-stick"] = true
-	blacklist["railgun"] = true
-	blacklist["railgun-dart"] = true
 	blacklist["raw-fish"] = true
-	blacklist["wood"] = true
-	
-	
+		
 	local items = {}	
 	for _ = 1, 2, 1 do
 		local item_sells = LootRaffle.roll(worth, 3, blacklist)
@@ -156,6 +149,13 @@ function Public.spawn_random_cave_market(surface, position)
 		value = math_floor(value)
 		market.add_market_item({price = {{"raw-fish", value}}, offer = {type = 'give-item', item = name, count = count}})
 	end
+
+	blacklist["railgun"] = true
+	blacklist["railgun-dart"] = true
+	blacklist["wood"] = true
+	blacklist["express-loader"] = true
+	blacklist["fast-loader"] = true
+	blacklist["loader"] = true
 
 	local items = {}	
 	for _ = 1, 2, 1 do

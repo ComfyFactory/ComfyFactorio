@@ -19,6 +19,12 @@ function Public.get_difficulty_modifier(position)
 	return difficulty
 end
 
+function Public.get_colored_name(player_index)
+	local player = game.players[player_index]
+	local colored_name = table.concat({"[color=", player.chat_color.r, ",", player.chat_color.g, ",", player.chat_color.b, "]", player.name, "[/color]"})
+	return colored_name
+end
+
 function Public.unstuck_player(player_index)
 	local player = game.players[player_index]
 	local surface = player.surface
@@ -410,10 +416,19 @@ Public.mining_events = {
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
+		local entity = surface.create_entity({name = cave_miner.buildings_raffle[math_random(1, #cave_miner.buildings_raffle)], position = position, force = "player"})
+		entity.health = math_random(1, entity.prototype.max_health)
+		local player = game.players[player_index]
+		game.print(Public.get_colored_name(player_index) .. " discovered an abandoned building", Constants.chat_color)
+	end, 128, "Abandoned Building"},
+	
+	{function(cave_miner, entity, player_index)
+		local position = entity.position
+		local surface = entity.surface
 		surface.create_entity({name = "car", position = position, force = "player"})
 		Public.unstuck_player(player_index)	
 		local player = game.players[player_index]
-		game.print(player.name .. " has finally found their car!!")
+		game.print(player.name .. " has finally found their car!!", Constants.chat_color)
 	end, 32, "Car"},
 	
 	{function(cave_miner, entity, player_index)
@@ -432,7 +447,7 @@ Public.mining_events = {
 			Esq.add_to_queue(tick + c * 5, surface, {name = tree, position = position, force = "neutral"}, 64)
 		end
 		local player = game.players[player_index]
-		game.print(player.name .. " found a whole forest!")
+		game.print(player.name .. " found a whole forest!", Constants.chat_color)
 	end, 64, "Forest"},
 }
 

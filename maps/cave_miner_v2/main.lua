@@ -185,7 +185,17 @@ local function on_init()
 	cave_miner.mining_speed_bonus = 100
 	cave_miner.pickaxe_tier = 1
 	cave_miner.rocks_broken = 0
-	cave_miner.reveal_queue = {}
+	cave_miner.reveal_queue = {}	
+	cave_miner.buildings_raffle = {}
+
+	local types = {"furnace", "assembling-machine", "reactor", "artillery-turret", "boiler", "beacon", "generator", "storage-tank", "roboport"}
+	for _, e in pairs(game.entity_prototypes) do
+		for _, t in pairs(types) do
+			if e.type == t then
+				table.insert(cave_miner.buildings_raffle, e.name)				
+			end
+		end
+	end
 	
 	global.rocks_yield_ore_maximum_amount = 256
 	global.rocks_yield_ore_base_amount = 16
