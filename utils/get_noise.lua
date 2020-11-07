@@ -100,10 +100,10 @@ local noises = {
         {modifier = 0.1, weight = 0.025}
     },
 	['cave_miner_01'] = {
-        {modifier = 0.002, weight = 1},
-		{modifier = 0.003, weight = 0.5},
-        {modifier = 0.01, weight = 0.01},
-        {modifier = 0.1, weight = 0.015}
+        {modifier = 0.0015, weight = 1},
+		{modifier = 0.0030, weight = 0.15},
+        {modifier = 0.0100, weight = 0.025},
+        {modifier = 0.1000, weight = 0.01}
     },
 	['cave_miner_02'] = {
         {modifier = 0.006, weight = 1},

@@ -56,6 +56,12 @@ function Public.out_of_map(event)
 	event.surface.set_tiles(tiles, false)
 end
 
+local function place_rock(surface, position)
+	local a = (-49 + math_random(0, 98)) * 0.01
+	local b = (-49 + math_random(0, 98)) * 0.01
+	surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+end
+
 local biomes = {}
 
 function biomes.oasis(surface, seed, position, square_distance, noise)
@@ -69,11 +75,7 @@ function biomes.oasis(surface, seed, position, square_distance, noise)
 	if math_random(1, 16) == 1 and math_abs(noise_decoratives) > 0.17 then surface.create_entity({name = "tree-04", position = position}) end
 	if math_random(1, 128) == 1 then Functions.place_crude_oil(surface, position, 1) end
 	
-	if noise < 0.73 then
-		local a = (-49 + math_random(0, 98)) * 0.01
-		local b = (-49 + math_random(0, 98)) * 0.01
-		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
-	end
+	if noise < 0.73 then	place_rock(surface, position) end
 end
 
 function biomes.void(surface, seed, position)
@@ -90,18 +92,14 @@ function biomes.pond_cave(surface, seed, position, square_distance, noise)
 	end
 	
 	if math_abs(noise_2) > 0.25 and math_random(1, 2) > 1 then
-		local a = (-49 + math_random(0, 98)) * 0.01
-		local b = (-49 + math_random(0, 98)) * 0.01
-		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+		place_rock(surface, position)
 		return
 	end
 	
 	if noise > -0.53 then
-		local a = (-49 + math_random(0, 98)) * 0.01
-		local b = (-49 + math_random(0, 98)) * 0.01
-		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+		--place_rock(surface, position)
 	else
-		if math_random(1, 128) == 1 then			
+		if math_random(1, 256) == 1 then			
 			Market.spawn_random_cave_market(surface, position)
 		end
 	end
@@ -118,21 +116,17 @@ function biomes.spawn(surface, seed, position, square_distance)
 	end
 	
 	if math_abs(noise) > 0.25 and math_random(1, 2) > 1 then
-		local a = (-49 + math_random(0, 98)) * 0.01
-		local b = (-49 + math_random(0, 98)) * 0.01
-		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+		place_rock(surface, position)
 		return
 	end
 	
 	if square_distance > 1750 then
-		local a = (-49 + math_random(0, 98)) * 0.01
-		local b = (-49 + math_random(0, 98)) * 0.01
-		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+		place_rock(surface, position)
 	end
 end
 
 function biomes.ocean(surface, seed, position, square_distance, noise)
-	if noise > 0.68 then
+	if noise > 0.66 then
 		surface.set_tiles({{name = "deepwater", position = position}}, true, false, false, false) 
 		if math_random(1, 32) == 1 then surface.create_entity({name = "fish", position = position}) end
 		return 
@@ -143,10 +137,37 @@ function biomes.ocean(surface, seed, position, square_distance, noise)
 		return 
 	end
 	if math_random(1, 3) > 1 then 
-		local a = (-49 + math_random(0, 98)) * 0.01
-		local b = (-49 + math_random(0, 98)) * 0.01
-		surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
+		place_rock(surface, position)
 	end
+end
+
+function biomes.worm_desert(surface, seed, position, square_distance, noise)
+	if noise > -0.65 then 	
+		if math_random(1, 3) > 1 then 
+			place_rock(surface, position)
+		end
+		return 
+	end
+	
+	local i = math_floor((GetNoise("decoratives", position, seed) * 8) % 3) + 1
+	surface.set_tiles({{name = "sand-" .. i, position = position}}, true, false, false, false)
+	
+	if math_random(1, 64) == 1 then
+		local e = Functions.place_worm(surface, position, 1)
+		e.active = false
+		return
+	end
+	
+	if math_random(1, 32) == 1 then
+		local n = GetNoise("decoratives", position, seed + 10000)
+		if n > 0.2 then
+			local trees = {"dead-grey-trunk", "dead-grey-trunk", "dry-tree"}
+			surface.create_entity({name = trees[math_random(1, 3)], position = position})
+			return
+		end
+	end	
+	if math_random(1, 512) == 1 then Functions.loot_crate(surface, position, "wooden-chest") return end
+	if math_random(1, 1024) == 1 then Functions.loot_crate(surface, position, "iron-chest") return end
 end
 
 function biomes.cave(surface, seed, position, square_distance, noise)
@@ -154,7 +175,7 @@ function biomes.cave(surface, seed, position, square_distance, noise)
 	if math_abs(noise_cave_rivers1) < 0.025 then
 		local noise_cave_rivers2 = GetNoise("cave_rivers_3", position, seed + 200000)
 		if noise_cave_rivers2 > 0 then
-			surface.set_tiles({{name = "water-shallow", position = position}}, true, false, false, false) 
+			surface.set_tiles({{name = "water-shallow", position = position}}, true, false, false, false)
 			if math_random(1, 16) == 1 then surface.create_entity({name = "fish", position = position}) end
 			return 
 		end
@@ -204,21 +225,22 @@ local function get_biome(surface, seed, position)
 	local d = position.x ^ 2 + position.y ^ 2
 	if d < 1024 then return biomes.spawn, d end
 
+	local cm_ocean = GetNoise("cm_ocean", position, seed + 100000)
+	if cm_ocean > 0.6 then return biomes.ocean, d, cm_ocean end
+
 	local noise = GetNoise("cave_miner_01", position, seed)
 	local abs_noise = math_abs(noise)
-	if abs_noise < 0.088 then return biomes.cave, d, noise end
+	if abs_noise < 0.075 then return biomes.cave, d, noise end
 	
-	if abs_noise > 0.25 then	
+	if abs_noise > 0.25 then
 		local noise = GetNoise("cave_rivers", position, seed)
-		if noise > 0.72 then return biomes.oasis, d, noise end	
-		if noise < -0.5 then return biomes.pond_cave, d, noise end	
+		if noise > 0.72 then return biomes.oasis, d, noise end
+		if cm_ocean < -0.6 then return biomes.worm_desert, d, cm_ocean end
+		if noise < -0.5 then return biomes.pond_cave, d, noise end
 	end
 	
-	local noise = GetNoise("cm_ocean", position, seed + 100000)
-	if noise > 0.6 then return biomes.ocean, d, noise end
-	
 	local noise = GetNoise("cave_miner_02", position, seed)
-	if math_abs(noise) < 0.1 then return biomes.cave, d, noise end
+	if math_abs(noise) < 0.085 then return biomes.cave, d, noise end
 	
 	return biomes.void
 end

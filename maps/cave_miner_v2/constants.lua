@@ -104,7 +104,7 @@ Public.spawn_market_items = {
 	{price = {{"raw-fish", 2}}, offer = {type = 'give-item', item = 'small-lamp'}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 2}},
 	{price = {{"raw-fish", 2}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine'}},
-	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'grenade'}},
+	{price = {{"raw-fish", 2}}, offer = {type = 'give-item', item = 'grenade'}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'land-mine'}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'explosives', count = 4}},
 	{price = {{"raw-fish", 1}}, offer = {type = 'give-item', item = 'wood', count = 10}},
