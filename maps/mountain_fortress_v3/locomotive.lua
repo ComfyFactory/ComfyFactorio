@@ -428,12 +428,10 @@ end
 
 local function set_locomotive_health()
     local this = WPT.get()
-    if not this.locomotive then
-        return
-    end
 
     local function check_health()
         local m = this.locomotive_health / this.locomotive_max_health
+        this.carriages = this.locomotive.train.carriages
         if this.carriages then
             for i = 1, #this.carriages do
                 local entity = this.carriages[i]

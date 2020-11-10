@@ -465,22 +465,13 @@ local on_player_joined_game = function(event)
     end
 
     if player.surface.index ~= this.active_surface_index then
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-            surface
-        )
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
     else
         local p = {x = player.position.x, y = player.position.y}
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'out-of-map' then
             player.teleport(
-                surface.find_non_colliding_position(
-                    'character',
-                    game.forces.player.get_spawn_position(surface),
-                    3,
-                    0,
-                    5
-                ),
+                surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
                 surface
             )
         end
@@ -490,10 +481,7 @@ local on_player_joined_game = function(event)
         return
     end
     if player.position.y > this.locomotive.position.y then
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-            surface
-        )
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
     end
 end
 
@@ -737,8 +725,13 @@ local collapse_message =
 local compare_collapse_and_train = function()
     local collapse_pos = Collapse.get_position()
     local locomotive = WPT.get('locomotive')
+    local carriages = WPT.get('carriages')
     if not locomotive or not locomotive.valid then
         return
+    end
+
+    if not carriages then
+        WPT.set().carriages = locomotive.train.carriages
     end
 
     local c_y = collapse_pos.y
