@@ -137,14 +137,17 @@ local function fish_mouth(surface, left_top)
     end
 end
 
-local function generate_spawn_area(this, surface)
-    if this.spawn_area_generated then
+local function generate_spawn_area(surface)
+    local spawn_area_generated = FDT.get('spawn_area_generated')
+    if spawn_area_generated then
         return
     end
 
     surface.request_to_generate_chunks({0, 0}, 8)
 
-    if this.chunk_load_tick > game.tick then
+    local chunk_load_tick = FDT.get('chunk_load_tick')
+
+    if chunk_load_tick > game.tick then
         return
     end
 
@@ -200,22 +203,21 @@ local function generate_spawn_area(this, surface)
     map_functions.draw_oil_circle(ore_positions[5], 'crude-oil', surface, 8, 200000)
 
     local pos = surface.find_non_colliding_position('market', {spawn_position_x, 0}, 50, 1)
-    this.market = place_fish_market(surface, pos)
+    local market = FDT.set('market', place_fish_market(surface, pos))
 
     local r = 16
     for _, entity in pairs(
         surface.find_entities_filtered(
             {
                 area = {
-                    {this.market.position.x - r, this.market.position.y - r},
-                    {this.market.position.x + r, this.market.position.y + r}
+                    {market.position.x - r, market.position.y - r},
+                    {market.position.x + r, market.position.y + r}
                 },
                 type = 'tree'
             }
         )
     ) do
-        local distance_to_center =
-            math_sqrt((entity.position.x - this.market.position.x) ^ 2 + (entity.position.y - this.market.position.y) ^ 2)
+        local distance_to_center = math_sqrt((entity.position.x - market.position.x) ^ 2 + (entity.position.y - market.position.y) ^ 2)
         if distance_to_center < r then
             if math_random(1, r) > distance_to_center then
                 entity.destroy()
@@ -229,7 +231,7 @@ local function generate_spawn_area(this, surface)
 
     for x = -20, 20, 1 do
         for y = -20, 20, 1 do
-            local market_pos = {x = this.market.position.x + x, y = this.market.position.y + y}
+            local market_pos = {x = market.position.x + x, y = market.position.y + y}
             local distance_to_center = x ^ 2 + y ^ 2
             if distance_to_center > 64 and distance_to_center < 225 then
                 if math_random(1, 3) == 1 and surface.can_place_entity({name = 'wooden-chest', position = market_pos, force = 'player'}) then
@@ -263,23 +265,29 @@ local function generate_spawn_area(this, surface)
         }
     )
 
-    this.spawn_area_generated = true
+    local fish_eye_location = FDT.get('fish_eye_location')
+
+    surface.request_to_generate_chunks(fish_eye_location, 2)
+
+    FDT.set('spawn_area_generated', true)
 end
 
 local function process_chunk(left_top)
-    local this = FDT.get()
-    local surface = game.surfaces[this.active_surface_index]
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
     if not surface or not surface.valid then
         return
     end
 
-    generate_spawn_area(this, surface, left_top)
+    generate_spawn_area(surface, left_top)
     enemy_territory(surface, left_top)
     fish_mouth(surface, left_top)
 
+    local market = FDT.get('market')
+
     game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
-    if this.market and this.market.valid then
-        this.game_reset = false
+    if market and market.valid then
+        FDT.set('game_reset', false)
     end
 end
 
@@ -287,6 +295,10 @@ local function on_chunk_generated(event)
     local map_name = 'fish_defender'
 
     if string.sub(event.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    if FDT.get('stop_generating_map') then
         return
     end
 
