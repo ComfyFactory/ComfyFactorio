@@ -199,7 +199,7 @@ local function on_init()
 	
 	global.rocks_yield_ore_maximum_amount = 256
 	global.rocks_yield_ore_base_amount = 16
-	global.rocks_yield_ore_distance_modifier = 0.0128
+	global.rocks_yield_ore_distance_modifier = 0.0064
 	
 	Explosives.set_destructible_tile("out-of-map", 5000)
 	Explosives.set_destructible_tile("water", 2000)
