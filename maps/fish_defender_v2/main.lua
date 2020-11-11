@@ -1242,7 +1242,10 @@ function Public.reset_game()
 
     Difficulty.reset_difficulty_poll()
     local wave_grace_period = FDT.get('wave_grace_period')
-    Difficulty.set_poll_closing_timeout(wave_grace_period)
+    if not wave_grace_period then
+        wave_grace_period = game.tick + 3600 * 20
+    end
+    Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = wave_grace_period})
 
     AntiGrief.reset_tables()
     FDT.reset_table()
