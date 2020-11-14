@@ -96,7 +96,8 @@ function Public.reset_table()
         ['wooden-chest'] = true,
         ['copper-cable'] = true,
         ['iron-stick'] = true,
-        ['iron-gear-wheel'] = true
+        ['iron-gear-wheel'] = true,
+        ['pipe'] = true
     }
     this.rpg_t = {}
     this.rpg_extra.rpg_xp_yield = {
