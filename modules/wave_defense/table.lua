@@ -76,8 +76,11 @@ function Public.get(key)
     end
 end
 
-function Public.set(key)
+function Public.set(key, value)
     if key then
+        return this[key]
+    elseif key and value then
+        this[key] = value
         return this[key]
     else
         return this

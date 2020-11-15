@@ -223,6 +223,7 @@ local artillery_target_callback =
                 name = 'artillery-projectile',
                 position = position,
                 target = entity,
+                force = 'enemy',
                 speed = 1.5
             }
         end

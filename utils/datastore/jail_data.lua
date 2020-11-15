@@ -96,21 +96,15 @@ local get_player_data = function(player, remove)
 end
 
 local get_gulag_permission_group = function()
-    if not game.permissions.get_group('gulag') then
-        local gulag = game.permissions.create_group('gulag')
-        gulag.set_allows_action(defines.input_action.cancel_craft, false)
-        gulag.set_allows_action(defines.input_action.edit_permission_group, false)
-        gulag.set_allows_action(defines.input_action.import_permissions_string, false)
-        gulag.set_allows_action(defines.input_action.delete_permission_group, false)
-        gulag.set_allows_action(defines.input_action.add_permission_group, false)
-        gulag.set_allows_action(defines.input_action.admin_action, false)
-        gulag.set_allows_action(defines.input_action.gui_click, false)
-        gulag.set_allows_action(defines.input_action.drop_item, false)
-        gulag.set_allows_action(defines.input_action.place_equipment, false)
-        gulag.set_allows_action(defines.input_action.take_equipment, false)
-        gulag.set_allows_action(defines.input_action.open_technology_gui, false)
-    end
     local gulag = game.permissions.get_group('gulag')
+    if not gulag then
+        gulag = game.permissions.create_group('gulag')
+        for action_name, _ in pairs(defines.input_action) do
+            gulag.set_allows_action(defines.input_action[action_name], false)
+        end
+        gulag.set_allows_action(defines.input_action.write_to_console, true)
+    end
+
     return gulag
 end
 
@@ -315,8 +309,7 @@ local vote_to_jail = function(player, griefer, msg)
         Utils.print_to(player, 'You have voted to jail player ' .. griefer .. '.')
         if
             votejail[griefer].index >= settings.votejail_count or
-                (votejail[griefer].index == #game.connected_players - 1 and
-                    #game.connected_players > votejail[griefer].index)
+                (votejail[griefer].index == #game.connected_players - 1 and #game.connected_players > votejail[griefer].index)
          then
             Public.try_ul_data(griefer, true, votejail[griefer].actor, msg)
         end
@@ -338,8 +331,7 @@ local vote_to_free = function(player, griefer)
         Utils.print_to(player, 'You have voted to free player ' .. griefer .. '.')
         if
             votefree[griefer].index >= settings.votejail_count or
-                (votefree[griefer].index == #game.connected_players - 1 and
-                    #game.connected_players > votefree[griefer].index)
+                (votefree[griefer].index == #game.connected_players - 1 and #game.connected_players > votefree[griefer].index)
          then
             Public.try_ul_data(griefer, false, votefree[griefer].actor)
             votejail[griefer] = nil
@@ -374,10 +366,7 @@ local jail = function(player, griefer, msg)
     end
     local message = griefer .. ' has been jailed by ' .. player .. '. Cause: ' .. msg
 
-    if
-        game.players[griefer].character and game.players[griefer].character.valid and
-            game.players[griefer].character.driving
-     then
+    if game.players[griefer].character and game.players[griefer].character.valid and game.players[griefer].character.driving then
         game.players[griefer].character.driving = false
     end
 
@@ -571,10 +560,7 @@ Event.add(
                 griefer = game.players[griefer].name
             end
 
-            if
-                trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and
-                    not player.admin
-             then
+            if trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and not player.admin then
                 if cmd == 'jail' then
                     vote_to_jail(player, griefer, message)
                     return
@@ -648,5 +634,7 @@ function Public.required_playtime_for_vote(value)
     end
     return settings.playtime_for_vote
 end
+
+Event.on_init(get_gulag_permission_group)
 
 return Public

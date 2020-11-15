@@ -139,7 +139,7 @@ end
 local function place_wagon(data)
     local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     if not placed_trains_in_zone.randomized then
-        placed_trains_in_zone.limit = random(1, 3)
+        placed_trains_in_zone.limit = random(1, 2)
         placed_trains_in_zone.randomized = true
         placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     end
@@ -178,12 +178,10 @@ local function place_wagon(data)
     local r2 = random(2, 4) * 2
 
     if random(1, 2) == 1 then
-        location =
-            surface.find_tiles_filtered({area = {{position.x, position.y - r1}, {position.x + 2, position.y + r2}}})
+        location = surface.find_tiles_filtered({area = {{position.x, position.y - r1}, {position.x + 2, position.y + r2}}})
         direction = 0
     else
-        location =
-            surface.find_tiles_filtered({area = {{position.x - r1, position.y}, {position.x + r2, position.y + 2}}})
+        location = surface.find_tiles_filtered({area = {{position.x - r1, position.y}, {position.x + r2, position.y + 2}}})
         direction = 2
     end
 
@@ -1155,10 +1153,20 @@ local function process_level_6_position(x, y, data, void_or_lab)
     end
 
     --Resource Spots
-    if smol_areas < -0.72 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
     local noise_forest_location = get_perlin('forest_location', p, seed)
     if cave_rivers > -0.1 and cave_rivers < 0.1 then
@@ -1272,10 +1280,20 @@ local function process_level_5_position(x, y, data, void_or_lab)
     end
 
     --Resource Spots
-    if smol_areas < -0.72 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     if small_caves > -0.40 and small_caves < 0.40 then
@@ -1390,10 +1408,20 @@ local function process_level_4_position(x, y, data, void_or_lab)
     end
 
     --Resource Spots
-    if smol_areas < -0.72 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     if noise_large_caves > -0.2 and noise_large_caves < 0.2 then
@@ -1436,10 +1464,20 @@ local function process_level_3_position(x, y, data, void_or_lab)
     local smol_areas = get_perlin('smol_areas', p, seed + 60000)
 
     --Resource Spots
-    if smol_areas < -0.72 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Market Spots
@@ -1581,10 +1619,20 @@ local function process_level_2_position(x, y, data, void_or_lab)
     local smol_areas = get_perlin('smol_areas', p, seed + 15000)
 
     --Resource Spots
-    if smol_areas < -0.72 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 8) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     if noise_large_caves > -0.75 and noise_large_caves < 0.75 then
@@ -1711,10 +1759,20 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
     local smol_areas = get_perlin('smol_areas', p, seed + 33333)
 
     --Resource Spots
-    if smol_areas < -0.71 then
-        -- if random(1, 8) == 1 then
-        Generate_resources(buildings, p, Public.level_depth)
-    -- end
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 8) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Chasms
@@ -2260,8 +2318,7 @@ local function biter_chunk(data)
     }
 
     if random(1, 128) == 1 then
-        local position =
-            surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)
+        local position = surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)
         if position then
             entities[#entities + 1] = {
                 name = spawner_raffle[random(1, #spawner_raffle)],
@@ -2273,8 +2330,7 @@ local function biter_chunk(data)
     end
 
     if random(1, 128) == 1 then
-        local position =
-            surface.find_non_colliding_position('big-worm-turret', tile_positions[random(1, #tile_positions)], 16, 2)
+        local position = surface.find_non_colliding_position('big-worm-turret', tile_positions[random(1, #tile_positions)], 16, 2)
         if position then
             entities[#entities + 1] = {
                 name = 'big-worm-turret',
@@ -2363,9 +2419,7 @@ Event.add(
         if left_top.y == -128 and left_top.x == -128 then
             local pl = WPT.get().locomotive.position
             for _, entity in pairs(
-                surface.find_entities_filtered(
-                    {area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'}
-                )
+                surface.find_entities_filtered({area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'})
             ) do
                 entity.destroy()
             end

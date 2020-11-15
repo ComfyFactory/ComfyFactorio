@@ -313,9 +313,6 @@ local function on_player_changed_surface(event)
 end
 
 function Public.update_gui(player)
-    local rpg_extra = RPG_Settings.get('rpg_extra')
-    local this = WPT.get()
-
     if not validate_player(player) then
         return
     end
@@ -329,6 +326,13 @@ function Public.update_gui(player)
     end
     local gui = player.gui.top[main_frame_name]
 
+    local rpg_extra = RPG_Settings.get('rpg_extra')
+    local mined_scrap = WPT.get('mined_scrap')
+    local biters_killed = WPT.get('biters_killed')
+    local upgrades = WPT.get('upgrades')
+    local train_upgrades = WPT.get('train_upgrades')
+    local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
+
     if rpg_extra.global_pool == 0 then
         gui.global_pool.caption = 'XP: 0'
         gui.global_pool.tooltip = ({'gui.global_pool_tooltip'})
@@ -337,36 +341,33 @@ function Public.update_gui(player)
         gui.global_pool.tooltip = ({'gui.global_pool_amount', floor(rpg_extra.global_pool)})
     end
 
-    gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(this.mined_scrap, true)
+    gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(mined_scrap, true)
     gui.scrap_mined.tooltip = ({'gui.amount_harvested'})
 
     local pickaxe_tiers = WPT.pickaxe_upgrades
     local tier = WPT.get('pickaxe_tier')
     local pick_tier = pickaxe_tiers[tier]
-    local speed =
-        math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
+    local speed = math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
 
     gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier .. ' (' .. tier .. ')'
     gui.pickaxe_tier.tooltip = ({'gui.current_pickaxe_tier', pick_tier, speed})
 
-    gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(this.biters_killed, true)
+    gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(biters_killed, true)
     gui.biters_killed.tooltip = ({'gui.biters_killed'})
 
     gui.landmine.caption =
-        ' [img=entity.land-mine]: ' ..
-        format_number(this.upgrades.landmine.built, true) .. ' / ' .. format_number(this.upgrades.landmine.limit, true)
+        ' [img=entity.land-mine]: ' .. format_number(upgrades.landmine.built, true) .. ' / ' .. format_number(upgrades.landmine.limit, true)
     gui.landmine.tooltip = ({'gui.land_mine_placed'})
 
     gui.flame_turret.caption =
         ' [img=entity.flamethrower-turret]: ' ..
-        format_number(this.upgrades.flame_turret.built, true) ..
-            ' / ' .. format_number(this.upgrades.flame_turret.limit, true)
+        format_number(upgrades.flame_turret.built, true) .. ' / ' .. format_number(upgrades.flame_turret.limit, true)
     gui.flame_turret.tooltip = ({'gui.flamethrowers_placed'})
 
-    gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(this.train_upgrades, true)
+    gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(train_upgrades, true)
     gui.train_upgrades.tooltip = ({'gui.train_upgrades'})
 
-    gui.chest_upgrades.caption = ' [img=entity.steel-chest]: ' .. format_number(this.chest_limit_outside_upgrades, true)
+    gui.chest_upgrades.caption = ' [img=entity.steel-chest]: ' .. format_number(chest_limit_outside_upgrades, true)
     gui.chest_upgrades.tooltip = ({'gui.chest_placed'})
 end
 

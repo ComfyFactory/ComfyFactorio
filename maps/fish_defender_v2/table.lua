@@ -46,7 +46,7 @@ function Public.reset_table()
     this.last_reset = game.tick
     global.biter_health_boost = 4
     this.wave_interval = 3600
-    this.wave_grace_period = game.tick + 3600 * 20
+    this.wave_grace_period = game.tick + 72000
     this.biter_health_boost = 1
     -- this.wave_grace_period = game.tick + 3600
     this.boss_biters = {}

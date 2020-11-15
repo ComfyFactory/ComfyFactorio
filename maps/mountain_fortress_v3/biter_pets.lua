@@ -25,9 +25,7 @@ local function floaty_hearts(entity, c)
             (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
             position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
-        entity.surface.create_entity(
-            {name = 'flying-text', position = p, text = '♥', color = {random(150, 255), 0, 255}}
-        )
+        entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {random(150, 255), 0, 255}})
     end
 end
 
@@ -88,9 +86,9 @@ local function is_valid_player(player, unit)
 end
 
 function Public.biter_pets_tame_unit(player, unit, forced)
-    local this = WPT.get()
+    local biter_pets = WPT.get('biter_pets')
 
-    if this.biter_pets[player.index] then
+    if biter_pets[player.index] then
         return false
     end
 
@@ -107,7 +105,7 @@ function Public.biter_pets_tame_unit(player, unit, forced)
     unit.ai_settings.allow_try_return_to_spawner = false
     unit.force = player.force
     unit.set_command({type = defines.command.wander, distraction = defines.distraction.by_enemy})
-    this.biter_pets[player.index] = {last_command = 0, entity = unit}
+    biter_pets[player.index] = {last_command = 0, entity = unit}
     tame_unit_effects(player, unit)
     return true
 end
@@ -150,31 +148,31 @@ local function command_unit(entity, player)
 end
 
 local function on_player_changed_position(event)
-    local this = WPT.get()
+    local biter_pets = WPT.get('biter_pets')
 
     if random(1, 100) ~= 1 then
         return
     end
     local player = game.players[event.player_index]
-    if not this.biter_pets[player.index] then
+    if not biter_pets[player.index] then
         return
     end
-    if not this.biter_pets[player.index].entity then
-        this.biter_pets[player.index] = nil
+    if not biter_pets[player.index].entity then
+        biter_pets[player.index] = nil
         return
     end
-    if not this.biter_pets[player.index].entity.valid then
-        this.biter_pets[player.index] = nil
+    if not biter_pets[player.index].entity.valid then
+        biter_pets[player.index] = nil
         return
     end
     if not player.character then
         return
     end
-    if this.biter_pets[player.index].last_command + 600 > game.tick then
+    if biter_pets[player.index].last_command + 600 > game.tick then
         return
     end
-    this.biter_pets[player.index].last_command = game.tick
-    command_unit(this.biter_pets[player.index].entity, player)
+    biter_pets[player.index].last_command = game.tick
+    command_unit(biter_pets[player.index].entity, player)
 end
 
 local function on_player_dropped_item(event)

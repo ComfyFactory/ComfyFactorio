@@ -31,8 +31,7 @@ Public.points_per_level = 5
 
 Public.experience_levels = {0}
 for a = 1, 9999, 1 do
-    Public.experience_levels[#Public.experience_levels + 1] =
-        Public.experience_levels[#Public.experience_levels] + a * 8
+    Public.experience_levels[#Public.experience_levels + 1] = Public.experience_levels[#Public.experience_levels] + a * 8
 end
 
 Public.die_cause = {
@@ -89,7 +88,7 @@ function Public.reset_table()
     this.rpg_extra.enable_auto_allocate = false
     this.rpg_extra.enable_one_punch = true
     this.rpg_extra.enable_one_punch_globally = false
-    this.rpg_extra.blacklisted_crafting_items = {
+    this.rpg_extra.tweaked_crafting_items = {
         ['red-wire'] = true,
         ['green-wire'] = true,
         ['stone-furnace'] = true,
@@ -395,8 +394,7 @@ function Public.disable_cooldowns_on_spells()
     return new_spells
 end
 
---- This will disable the cooldown of all spells.
-function Public.blacklisted_crafting_items(tbl)
+function Public.tweaked_crafting_items(tbl)
     if not tbl then
         return
     end
@@ -405,9 +403,9 @@ function Public.blacklisted_crafting_items(tbl)
         return
     end
 
-    this.blacklisted_crafting_items = tbl
+    this.tweaked_crafting_items = tbl
 
-    return this.blacklisted_crafting_items
+    return this.tweaked_crafting_items
 end
 
 Public.get_projectiles = Spells.projectile_types

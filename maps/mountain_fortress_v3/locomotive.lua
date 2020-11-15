@@ -304,11 +304,13 @@ end
 local function property_boost(data)
     local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
-    local this = data.this
-    local locomotive_surface = data.locomotive_surface
-    local aura = this.locomotive_xp_aura
+    local locomotive_surface = WPT.get('locomotive_surface')
+    local locomotive_xp_aura = WPT.get('locomotive_xp_aura')
+    local locomotive = WPT.get('locomotive')
+    local xp_points = WPT.get('xp_points')
+    local aura = locomotive_xp_aura
     local rpg = data.rpg
-    local loco = this.locomotive.position
+    local loco = locomotive.position
     local area = {
         left_top = {x = loco.x - aura, y = loco.y - aura},
         right_bottom = {x = loco.x + aura, y = loco.y + aura}
@@ -322,7 +324,7 @@ local function property_boost(data)
             if Math2D.bounding_box.contains_point(area, player.position) or player.surface.index == locomotive_surface.index then
                 Public.add_player_to_permission_group(player, 'locomotive')
                 local pos = player.position
-                Functions.gain_xp(player, 0.5 * (rpg[player.index].bonus + this.xp_points))
+                Functions.gain_xp(player, 0.5 * (rpg[player.index].bonus + xp_points))
 
                 player.create_local_flying_text {
                     text = '+' .. '',
@@ -364,36 +366,30 @@ local function is_around_train(data)
 end
 
 local function fish_tag()
-    local this = WPT.get()
-    if not this.locomotive_cargo then
+    local locomotive_cargo = WPT.get('locomotive_cargo')
+    if not (locomotive_cargo and locomotive_cargo.valid) then
         return
     end
-    if not this.locomotive_cargo.valid then
+    if not (locomotive_cargo.surface and locomotive_cargo.surface.valid) then
         return
     end
-    if not this.locomotive_cargo.surface then
-        return
-    end
-    if not this.locomotive_cargo.surface.valid then
-        return
-    end
-    if this.locomotive_tag then
-        if this.locomotive_tag.valid then
-            if
-                this.locomotive_tag.position.x == this.locomotive_cargo.position.x and
-                    this.locomotive_tag.position.y == this.locomotive_cargo.position.y
-             then
+
+    local locomotive_tag = WPT.get('locomotive_tag')
+
+    if locomotive_tag then
+        if locomotive_tag.valid then
+            if locomotive_tag.position.x == locomotive_cargo.position.x and locomotive_tag.position.y == locomotive_cargo.position.y then
                 return
             end
-            this.locomotive_tag.destroy()
+            locomotive_tag.destroy()
         end
     end
-    this.locomotive_tag =
-        this.locomotive_cargo.force.add_chart_tag(
-        this.locomotive_cargo.surface,
+    WPT.set().locomotive_tag =
+        locomotive_cargo.force.add_chart_tag(
+        locomotive_cargo.surface,
         {
             icon = {type = 'item', name = 'raw-fish'},
-            position = this.locomotive_cargo.position,
+            position = locomotive_cargo.position,
             text = ' '
         }
     )
@@ -427,14 +423,17 @@ local function refill_fish()
 end
 
 local function set_locomotive_health()
-    local this = WPT.get()
+    local locomotive_health = WPT.get('locomotive_health')
+    local locomotive_max_health = WPT.get('locomotive_max_health')
+    local locomotive = WPT.get('locomotive')
 
     local function check_health()
-        local m = this.locomotive_health / this.locomotive_max_health
-        this.carriages = this.locomotive.train.carriages
-        if this.carriages then
-            for i = 1, #this.carriages do
-                local entity = this.carriages[i]
+        local m = locomotive_health / locomotive_max_health
+        WPT.set().carriages = locomotive.train.carriages
+        local carriages = WPT.get('carriages')
+        if carriages then
+            for i = 1, #carriages do
+                local entity = carriages[i]
                 if not (entity and entity.valid) then
                     return
                 end
@@ -447,7 +446,7 @@ local function set_locomotive_health()
         end
     end
 
-    if not (this.locomotive and this.locomotive.valid) then
+    if not (locomotive and locomotive.valid) then
         return
     end
 
@@ -701,10 +700,10 @@ end
 
 local function slider_changed(event)
     local player = game.players[event.player_index]
-    local this = WPT.get()
+    local players = WPT.get('players')
     local slider_value
 
-    slider_value = this.players
+    slider_value = players
     if not slider_value then
         return
     end
@@ -721,8 +720,8 @@ local function slider_changed(event)
         return
     end
     slider_value = ceil(slider_value)
-    this.players[player.index].data.text_input.text = slider_value
-    redraw_market_items(this.players[player.index].data.item_frame, player, this.players[player.index].data.search_text)
+    players[player.index].data.text_input.text = slider_value
+    redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
 end
 
 local function text_changed(event)
@@ -734,10 +733,10 @@ local function text_changed(event)
         return
     end
 
-    local this = WPT.get()
+    local players = WPT.get('players')
     local player = game.players[event.player_index]
 
-    local data = this.players[player.index].data
+    local data = players[player.index].data
     if not data then
         return
     end
@@ -770,7 +769,7 @@ local function text_changed(event)
 end
 
 local function gui_opened(event)
-    local this = WPT.get()
+    local market = WPT.get('market')
 
     if not event.gui_type == defines.gui_type.entity then
         return
@@ -781,7 +780,7 @@ local function gui_opened(event)
         return
     end
 
-    if entity ~= this.market then
+    if entity ~= market then
         return
     end
 
@@ -794,11 +793,13 @@ local function gui_opened(event)
     local inventory = player.get_main_inventory()
     local player_item_count = inventory.get_item_count('coin')
 
-    if not this.players[player.index].data then
-        this.players[player.index].data = {}
+    local players = WPT.get('players')
+
+    if not players[player.index].data then
+        players[player.index].data = {}
     end
 
-    local data = this.players[player.index].data
+    local data = players[player.index].data
 
     if data.frame then
         data.frame = nil
@@ -878,18 +879,18 @@ local function gui_opened(event)
         }
     )
 
-    this.players[player.index].data.search_text = search_text
-    this.players[player.index].data.text_input = text_input
-    this.players[player.index].data.slider = slider
-    this.players[player.index].data.frame = frame
-    this.players[player.index].data.item_frame = pane
-    this.players[player.index].data.coins_left = coinsleft
+    players[player.index].data.search_text = search_text
+    players[player.index].data.text_input = text_input
+    players[player.index].data.slider = slider
+    players[player.index].data.frame = frame
+    players[player.index].data.item_frame = pane
+    players[player.index].data.coins_left = coinsleft
 
     redraw_market_items(pane, player, search_text)
 end
 
 local function gui_click(event)
-    local this = WPT.get()
+    local players = WPT.get('players')
 
     local element = event.element
     local player = game.players[event.player_index]
@@ -897,11 +898,11 @@ local function gui_click(event)
         return
     end
 
-    if not this.players[player.index] then
+    if not players[player.index] then
         return
     end
 
-    local data = this.players[player.index].data
+    local data = players[player.index].data
     if not data then
         return
     end
@@ -953,6 +954,8 @@ local function gui_click(event)
 
         return
     end
+
+    local this = WPT.get()
     if name == 'upgrade_pickaxe' then
         player.remove_item({name = item.value, count = item.price})
 
@@ -1240,12 +1243,12 @@ end
 
 local function gui_closed(event)
     local player = game.players[event.player_index]
-    local this = WPT.get()
+    local players = WPT.get('players')
 
     local type = event.gui_type
 
     if type == defines.gui_type.custom then
-        local data = this.players[player.index].data
+        local data = players[player.index].data
         if not data then
             return
         end
@@ -1254,19 +1257,21 @@ local function gui_closed(event)
 end
 
 local function on_player_changed_position(event)
-    local this = WPT.get()
+    local players = WPT.get('players')
     local player = game.players[event.player_index]
-    if not this.players[player.index] then
+    if not players[player.index] then
         return
     end
-    local data = this.players[player.index].data
+    local data = players[player.index].data
 
-    if not this.market or not this.market.valid then
+    local market = WPT.get('market')
+
+    if not (market and market.valid) then
         return
     end
 
     if data and data.frame and data.frame.valid then
-        local position = this.market.position
+        local position = market.position
         local area = {
             left_top = {x = position.x - 10, y = position.y - 10},
             right_bottom = {x = position.x + 10, y = position.y + 10}
@@ -1724,23 +1729,20 @@ end
 
 function Public.boost_players_around_train()
     local rpg = RPG_Settings.get('rpg_t')
-    local this = WPT.get()
-    if not this.active_surface_index then
+    local active_surface_index = WPT.get('active_surface_index')
+    if not active_surface_index then
         return
     end
-    if not this.locomotive then
+    local locomotive = WPT.get('locomotive')
+    if not (locomotive and locomotive.valid) then
         return
     end
-    if not this.locomotive.valid then
-        return
-    end
-    local surface = game.surfaces[this.active_surface_index]
+    local surface = game.surfaces[active_surface_index]
     local icw_table = ICW.get_table()
-    local unit_surface = this.locomotive.unit_number
+    local unit_surface = locomotive.unit_number
     local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
 
     local data = {
-        this = this,
         surface = surface,
         locomotive_surface = locomotive_surface,
         rpg = rpg
@@ -1781,49 +1783,54 @@ function Public.is_around_train(entity)
 end
 
 function Public.render_train_hp()
-    local this = WPT.get()
-    local surface = game.surfaces[this.active_surface_index]
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
 
-    this.health_text =
+    local locomotive_health = WPT.get('locomotive_health')
+    local locomotive_max_health = WPT.get('locomotive_max_health')
+    local locomotive = WPT.get('locomotive')
+    local locomotive_xp_aura = WPT.get('locomotive_xp_aura')
+
+    WPT.set().health_text =
         rendering.draw_text {
-        text = 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health,
+        text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
         surface = surface,
-        target = this.locomotive,
+        target = locomotive,
         target_offset = {0, -4.5},
-        color = this.locomotive.color,
+        color = locomotive.color,
         scale = 1.40,
         font = 'default-game',
         alignment = 'center',
         scale_with_zoom = false
     }
 
-    this.caption =
+    WPT.set().caption =
         rendering.draw_text {
         text = 'Comfy Choo Choo',
         surface = surface,
-        target = this.locomotive,
+        target = locomotive,
         target_offset = {0, -6.25},
-        color = this.locomotive.color,
+        color = locomotive.color,
         scale = 1.80,
         font = 'default-game',
         alignment = 'center',
         scale_with_zoom = false
     }
 
-    this.circle =
+    WPT.set().circle =
         rendering.draw_circle {
         surface = surface,
-        target = this.locomotive,
-        color = this.locomotive.color,
+        target = locomotive,
+        color = locomotive.color,
         filled = false,
-        radius = this.locomotive_xp_aura,
+        radius = locomotive_xp_aura,
         only_in_alt_mode = true
     }
 end
 
 function Public.locomotive_spawn(surface, position)
     local this = WPT.get()
-    for y = -6, 14, 2 do
+    for y = -6, 6, 2 do
         surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
     end
     this.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + -3}, force = 'player'})

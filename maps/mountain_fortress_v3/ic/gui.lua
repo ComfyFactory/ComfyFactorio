@@ -26,13 +26,13 @@ local function decrement(t, k)
 end
 
 local function create_player_table(player)
-    local this = ICT.get()
-    if not this.trust_system[player.index] then
-        this.trust_system[player.index] = {
+    local trust_system = ICT.get('trust_system')
+    if not trust_system[player.index] then
+        trust_system[player.index] = {
             [player.name] = true
         }
     end
-    return this.trust_system[player.index]
+    return trust_system[player.index]
 end
 
 local function remove_main_frame(main_frame)

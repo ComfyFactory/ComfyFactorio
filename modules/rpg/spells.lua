@@ -158,7 +158,7 @@ function Public.conjure_items()
         level = 100,
         biter = true,
         type = 'entity',
-        mana_cost = 600,
+        mana_cost = 800,
         tick = 1420,
         enabled = true
     }
@@ -171,7 +171,7 @@ function Public.conjure_items()
         force = 'player',
         level = 30,
         type = 'special',
-        mana_cost = 100,
+        mana_cost = 110,
         tick = 150,
         enabled = true
     }
@@ -226,7 +226,7 @@ function Public.conjure_items()
         force = 'player',
         level = 50,
         type = 'special',
-        mana_cost = 66,
+        mana_cost = 75,
         tick = 200,
         enabled = true
     }
@@ -240,7 +240,7 @@ function Public.conjure_items()
         force = 'player',
         level = 50,
         type = 'special',
-        mana_cost = 120,
+        mana_cost = 140,
         tick = 320,
         enabled = true
     }
@@ -268,7 +268,7 @@ function Public.conjure_items()
         force = 'player',
         level = 50,
         type = 'special',
-        mana_cost = 300,
+        mana_cost = 340,
         tick = 320,
         enabled = true
     }
@@ -279,7 +279,7 @@ function Public.conjure_items()
         force = 'player',
         level = 60,
         type = 'special',
-        mana_cost = 300,
+        mana_cost = 340,
         tick = 2000,
         enabled = true
     }

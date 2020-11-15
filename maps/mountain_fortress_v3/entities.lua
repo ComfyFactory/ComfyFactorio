@@ -125,12 +125,11 @@ end
 
 local function on_entity_removed(data)
     local entity = data.entity
-    local this = data.this
-    local upg = this.upgrades
+    local upgrades = WPT.get('upgrades')
 
     local built = {
-        ['land-mine'] = upg.landmine.built,
-        ['flamethrower-turret'] = upg.flame_turret.built
+        ['land-mine'] = upgrades.landmine.built,
+        ['flamethrower-turret'] = upgrades.flame_turret.built
     }
 
     local validator = {
@@ -141,18 +140,21 @@ local function on_entity_removed(data)
     local name = validator[entity.name]
 
     if built[entity.name] and entity.force.index == 1 then
-        this.upgrades[name].built = this.upgrades[name].built - 1
-        if this.upgrades[name].built <= 0 then
-            this.upgrades[name].built = 0
+        upgrades[name].built = upgrades[name].built - 1
+        if upgrades[name].built <= 0 then
+            upgrades[name].built = 0
         end
     end
 end
 
-local function check_health(this)
-    local m = this.locomotive_health / this.locomotive_max_health
-    if this.carriages then
-        for i = 1, #this.carriages do
-            local entity = this.carriages[i]
+local function check_health()
+    local locomotive_health = WPT.get('locomotive_health')
+    local locomotive_max_health = WPT.get('locomotive_max_health')
+    local carriages = WPT.get('carriages')
+    local m = locomotive_health / locomotive_max_health
+    if carriages then
+        for i = 1, #carriages do
+            local entity = carriages[i]
             if not (entity and entity.valid) then
                 return
             end
@@ -165,10 +167,11 @@ local function check_health(this)
     end
 end
 
-local function check_health_final_damage(this, final_damage_amount)
-    if this.carriages then
-        for i = 1, #this.carriages do
-            local entity = this.carriages[i]
+local function check_health_final_damage(final_damage_amount)
+    local carriages = WPT.get('carriages')
+    if carriages then
+        for i = 1, #carriages do
+            local entity = carriages[i]
             if not (entity and entity.valid) then
                 return
             end
@@ -178,52 +181,57 @@ local function check_health_final_damage(this, final_damage_amount)
 end
 
 local function set_objective_health(final_damage_amount)
-    local this = WPT.get()
     if final_damage_amount == 0 then
         return
     end
 
-    if not (this.locomotive and this.locomotive.valid) then
+    local locomotive = WPT.get('locomotive')
+    if not (locomotive and locomotive.valid) then
         return
     end
 
-    if this.locomotive_health <= 5000 then
-        if not this.poison_deployed then
+    local locomotive_health = WPT.get('locomotive_health')
+    local locomotive_max_health = WPT.get('locomotive_max_health')
+    local poison_deployed = WPT.get('poison_deployed')
+
+    if locomotive_health <= 5000 then
+        if not poison_deployed then
             for i = 1, 2, 1 do
                 Locomotive.enable_poison_defense()
             end
             local p = {
-                position = this.locomotive.position
+                position = locomotive.position
             }
             local msg = ({'entity.train_taking_damage'})
             Alert.alert_all_players_location(p, msg)
-            this.poison_deployed = true
+            WPT.set().poison_deployed = true
         end
-    elseif this.locomotive_health >= this.locomotive_max_health then
-        this.poison_deployed = false
+    elseif locomotive_health >= locomotive_max_health then
+        WPT.set().poison_deployed = false
     end
 
-    if this.locomotive_health <= 0 then
-        check_health_final_damage(this, final_damage_amount)
+    if locomotive_health <= 0 then
+        check_health_final_damage(final_damage_amount)
         return
     end
 
-    this.locomotive_health = floor(this.locomotive_health - final_damage_amount)
-    if this.locomotive_health > this.locomotive_max_health then
-        this.locomotive_health = this.locomotive_max_health
+    locomotive_health = floor(locomotive_health - final_damage_amount)
+    if locomotive_health > locomotive_max_health then
+        locomotive_health = locomotive_max_health
     end
 
-    if this.locomotive_health <= 0 then
+    if locomotive_health <= 0 then
         Public.loco_died()
     end
 
-    check_health(this)
+    check_health()
 
-    rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
+    local health_text = WPT.get('health_text')
+
+    rendering.set_text(health_text, 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health)
 end
 
 local function protect_entities(event)
-    local this = WPT.get()
     local entity = event.entity
 
     if entity.force.index ~= 1 then
@@ -243,9 +251,10 @@ local function protect_entities(event)
     end
 
     local function exists()
+        local carriages = WPT.get('carriages')
         local t = {}
-        for i = 1, #this.carriages do
-            local e = this.carriages[i]
+        for i = 1, #carriages do
+            local e = carriages[i]
             if not (e and e.valid) then
                 return
             end
@@ -586,7 +595,6 @@ local mining_events = {
 }
 
 local function on_player_mined_entity(event)
-    local this = WPT.get()
     local entity = event.entity
     local player = game.players[event.player_index]
     if not player.valid then
@@ -605,8 +613,7 @@ local function on_player_mined_entity(event)
     end
 
     local d = {
-        entity = entity,
-        this = this
+        entity = entity
     }
 
     on_entity_removed(d)
@@ -615,8 +622,10 @@ local function on_player_mined_entity(event)
         return
     end
 
+    local mined_scrap = WPT.get('mined_scrap')
+
     if entity.type == 'simple-entity' or entity.type == 'tree' then
-        this.mined_scrap = this.mined_scrap + 1
+        WPT.set().mined_scrap = mined_scrap + 1
         Mining.on_player_mined_entity(event)
         if entity.type == 'tree' then
             if random(1, 3) == 1 then
@@ -635,7 +644,6 @@ local function on_player_mined_entity(event)
 end
 
 local function on_robot_mined_entity(event)
-    local this = WPT.get()
     local entity = event.entity
 
     if not entity.valid then
@@ -649,8 +657,7 @@ local function on_robot_mined_entity(event)
     end
 
     local d = {
-        entity = entity,
-        this = this
+        entity = entity
     }
 
     on_entity_removed(d)
@@ -799,7 +806,6 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    local this = WPT.get()
     if not event.entity then
         return
     end
@@ -810,7 +816,8 @@ local function on_player_repaired_entity(event)
         return
     end
     local entity = event.entity
-    if entity == this.locomotive then
+    local locomotive = WPT.get('locomotive')
+    if entity == locomotive then
         local player = game.players[event.player_index]
         local repair_speed = Functions.get_magicka(player)
         if repair_speed <= 0 then
@@ -824,8 +831,6 @@ local function on_player_repaired_entity(event)
 end
 
 local function on_entity_died(event)
-    local this = WPT.get()
-
     local entity = event.entity
     if not entity.valid then
         return
@@ -838,8 +843,7 @@ local function on_entity_died(event)
     end
 
     local d = {
-        entity = entity,
-        this = this
+        entity = entity
     }
 
     on_entity_removed(d)
@@ -857,11 +861,14 @@ local function on_entity_died(event)
         return
     end
 
+    local biters_killed = WPT.get('biters_killed')
+    local biters = WPT.get('biters')
+
     if entity.type == 'unit' or entity.type == 'unit-spawner' then
-        this.biters_killed = this.biters_killed + 1
-        this.biters.amount = this.biters.amount - 1
-        if this.biters.amount <= 0 then
-            this.biters.amount = 0
+        WPT.set().biters_killed = biters_killed + 1
+        biters.amount = biters.amount - 1
+        if biters.amount <= 0 then
+            biters.amount = 0
         end
         if Locomotive.is_around_train(entity) then
             entity.destroy()
@@ -932,15 +939,11 @@ local function on_entity_died(event)
 end
 
 function Public.set_scores()
-    local this = WPT.get()
-    local loco = this.locomotive
-    if not loco then
+    local locomotive = WPT.get('locomotive')
+    if not (locomotive and locomotive.valid) then
         return
     end
-    if not loco.valid then
-        return
-    end
-    local score = floor(loco.position.y * -1)
+    local score = floor(locomotive.position.y * -1)
     for _, player in pairs(game.connected_players) do
         if score > Map_score.get_score(player) then
             Map_score.set_score(player, score)
@@ -959,14 +962,16 @@ function Public.unstuck_player(index)
 end
 
 function Public.loco_died()
-    local this = WPT.get()
-    local surface = game.surfaces[this.active_surface_index]
+    local active_surface_index = WPT.get('active_surface_index')
+    local locomotive = WPT.get('locomotive')
+    local surface = game.surfaces[active_surface_index]
     local wave_defense_table = WD.get_table()
     if wave_defense_table.game_lost then
         return
     end
     Public.set_scores()
-    if not this.locomotive.valid then
+    if not locomotive.valid then
+        local this = WPT.get()
         if this.announced_message then
             return
         end
@@ -1015,6 +1020,8 @@ function Public.loco_died()
         return
     end
 
+    local this = WPT.get()
+
     this.locomotive_health = 0
     this.locomotive.color = {0.49, 0, 255, 1}
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
@@ -1051,7 +1058,6 @@ function Public.loco_died()
 end
 
 local function on_built_entity(event)
-    local this = WPT.get()
     local entity = event.created_entity
     if not entity.valid then
         return
@@ -1063,7 +1069,9 @@ local function on_built_entity(event)
         return
     end
 
-    local upg = this.upgrades
+    local upgrades = WPT.get('upgrades')
+
+    local upg = upgrades
     local surface = entity.surface
 
     local built = {
@@ -1085,20 +1093,20 @@ local function on_built_entity(event)
 
     if built[entity.name] and entity.force.index == 1 then
         if built[entity.name] < limit[entity.name] then
-            this.upgrades[name].built = built[entity.name] + 1
-            this.upgrades.unit_number[name][entity] = entity
-            this.upgrades.showed_text = false
+            upgrades[name].built = built[entity.name] + 1
+            upgrades.unit_number[name][entity] = entity
+            upgrades.showed_text = false
 
             surface.create_entity(
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = this.upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
+                    text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
                     color = {r = 0.82, g = 0.11, b = 0.11}
                 }
             )
         else
-            if not this.upgrades.showed_text then
+            if not upgrades.showed_text then
                 surface.create_entity(
                     {
                         name = 'flying-text',
@@ -1108,7 +1116,7 @@ local function on_built_entity(event)
                     }
                 )
 
-                this.upgrades.showed_text = true
+                upgrades.showed_text = true
             end
             local player = game.players[event.player_index]
             player.insert({name = entity.name, count = 1})
@@ -1118,7 +1126,6 @@ local function on_built_entity(event)
 end
 
 local function on_robot_built_entity(event)
-    local this = WPT.get()
     local entity = event.created_entity
     if not entity.valid then
         return
@@ -1130,7 +1137,9 @@ local function on_robot_built_entity(event)
         return
     end
 
-    local upg = this.upgrades
+    local upgrades = WPT.get('upgrades')
+
+    local upg = upgrades
     local surface = entity.surface
 
     local built = {
@@ -1152,20 +1161,20 @@ local function on_robot_built_entity(event)
 
     if built[entity.name] and entity.force.index == 1 then
         if built[entity.name] < limit[entity.name] then
-            this.upgrades[name].built = built[entity.name] + 1
-            this.upgrades.unit_number[name][entity] = entity
-            this.upgrades.showed_text = false
+            upgrades[name].built = built[entity.name] + 1
+            upgrades.unit_number[name][entity] = entity
+            upgrades.showed_text = false
 
             surface.create_entity(
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = this.upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
+                    text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
                     color = {r = 0.82, g = 0.11, b = 0.11}
                 }
             )
         else
-            if not this.upgrades.showed_text then
+            if not upgrades.showed_text then
                 surface.create_entity(
                     {
                         name = 'flying-text',
@@ -1175,7 +1184,7 @@ local function on_robot_built_entity(event)
                     }
                 )
 
-                this.upgrades.showed_text = true
+                upgrades.showed_text = true
             end
             local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
             inventory.insert({name = entity.name, count = 1})

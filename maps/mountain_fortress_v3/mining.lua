@@ -217,7 +217,10 @@ local size_of_scrap_raffle = #scrap_raffle
 
 local function get_amount(data)
     local entity = data.entity
-    local this = data.this
+    local t_modifier = WPT.get('type_modifier')
+    local rocks_yield_ore_distance_modifier = WPT.get('rocks_yield_ore_distance_modifier')
+    local rocks_yield_ore_base_amount = WPT.get('rocks_yield_ore_base_amount')
+    local rocks_yield_ore_maximum_amount = WPT.get('rocks_yield_ore_maximum_amount')
     local distance_to_center = floor(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
     local type_modifier = 1
     local amount
@@ -227,18 +230,18 @@ local function get_amount(data)
     local base_amount = 25
     local second_base_amount = 10
     local maximum_amount = 100
-    if this.type_modifier then
-        type_modifier = this.type_modifier
+    if t_modifier then
+        type_modifier = t_modifier
     end
-    if this.rocks_yield_ore_distance_modifier then
-        distance_modifier = this.rocks_yield_ore_distance_modifier
+    if rocks_yield_ore_distance_modifier then
+        distance_modifier = rocks_yield_ore_distance_modifier
     end
 
-    if this.rocks_yield_ore_base_amount then
-        base_amount = this.rocks_yield_ore_base_amount
+    if rocks_yield_ore_base_amount then
+        base_amount = rocks_yield_ore_base_amount
     end
-    if this.rocks_yield_ore_maximum_amount then
-        maximum_amount = this.rocks_yield_ore_maximum_amount
+    if rocks_yield_ore_maximum_amount then
+        maximum_amount = rocks_yield_ore_maximum_amount
     end
 
     type_modifier = rock_yield[entity.name] or type_modifier
@@ -280,7 +283,7 @@ end
 local function randomness(data)
     local entity = data.entity
     local player = data.player
-    local this = data.this
+    local spill_items_to_surface = WPT.get('spill_items_to_surface')
     local harvest
     local harvest_amount
 
@@ -316,7 +319,7 @@ local function randomness(data)
     )
 
     if harvest_amount > max_spill then
-        if this.spill_items_to_surface then
+        if spill_items_to_surface then
             player.surface.spill_item_stack(position, {name = harvest, count = max_spill}, true)
         else
             player.insert({name = harvest, count = max_spill})
@@ -325,14 +328,14 @@ local function randomness(data)
         local inserted_count = player.insert({name = harvest, count = harvest_amount})
         harvest_amount = harvest_amount - inserted_count
         if harvest_amount > 0 then
-            if this.spill_items_to_surface then
+            if spill_items_to_surface then
                 player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
             else
                 player.insert({name = harvest, count = harvest_amount})
             end
         end
     else
-        if this.spill_items_to_surface then
+        if spill_items_to_surface then
             player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
         else
             player.insert({name = harvest, count = harvest_amount})
@@ -345,11 +348,10 @@ end
 local function randomness_scrap(data)
     local entity = data.entity
     local player = data.player
-    local this = data.this
+    local spill_items_to_surface = WPT.get('spill_items_to_surface')
 
     local harvest = scrap_raffle[random(1, size_of_scrap_raffle)]
-    local amount_bonus =
-        (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
+    local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
     local r1 = math.ceil(scrap_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
     local r2 = math.ceil(scrap_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
     local harvest_amount = math.random(r1, r2)
@@ -366,7 +368,7 @@ local function randomness_scrap(data)
     )
 
     if harvest_amount > max_spill then
-        if this.spill_items_to_surface then
+        if spill_items_to_surface then
             player.surface.spill_item_stack(position, {name = harvest, count = max_spill}, true)
         else
             player.insert({name = harvest, count = max_spill})
@@ -375,14 +377,14 @@ local function randomness_scrap(data)
         local inserted_count = player.insert({name = harvest, count = harvest_amount})
         harvest_amount = harvest_amount - inserted_count
         if harvest_amount > 0 then
-            if this.spill_items_to_surface then
+            if spill_items_to_surface then
                 player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
             else
                 player.insert({name = harvest, count = harvest_amount})
             end
         end
     else
-        if this.spill_items_to_surface then
+        if spill_items_to_surface then
             player.surface.spill_item_stack(position, {name = harvest, count = harvest_amount}, true)
         else
             player.insert({name = harvest, count = harvest_amount})
@@ -403,22 +405,19 @@ function Public.on_player_mined_entity(event)
         return
     end
 
-    local this = WPT.get()
-
     if valid_rocks[entity.name] or valid_trees[entity.name] then
         event.buffer.clear()
 
         local data = {
-            this = this,
             entity = entity,
             player = player
         }
 
-        if this.breached_wall == 6 then
-            randomness_scrap(data)
-        else
-            randomness(data)
-        end
+        -- if this.breached_wall == 6 then
+        -- randomness_scrap(data)
+        -- else
+        randomness(data)
+    -- end
     end
 end
 

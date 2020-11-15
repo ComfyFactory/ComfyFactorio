@@ -437,11 +437,7 @@ function Public.try_get_data_timeout(data_set, key, callback_token, timeout_tick
 
     try_get_data_cancelable(data_set, key, callback_token)
 
-    Task.set_timeout_in_ticks(
-        timeout_ticks,
-        timeout_token,
-        {data_set = data_set, key = key, callback_token = callback_token}
-    )
+    Task.set_timeout_in_ticks(timeout_ticks, timeout_token, {data_set = data_set, key = key, callback_token = callback_token})
 end
 
 --- Gets all the data for the data_set from the web server's persistent data storage.
@@ -814,6 +810,41 @@ Event.add(
         end
 
         raw_print(player_leave_tag .. player.name)
+    end
+)
+
+Event.add(
+    defines.events.on_console_command,
+    function(event)
+        local cmd = event.command
+        if not event.player_index then
+            return
+        end
+        local player = game.players[event.player_index]
+        local reason = event.parameters
+        if not reason then
+            return
+        end
+        if not player.admin then
+            return
+        end
+        if cmd == 'ban' then
+            if player then
+                Public.to_banned_embed(table.concat {player.name .. ' banned ' .. reason})
+                return
+            else
+                Public.to_banned_embed(table.concat {'Server banned ' .. reason})
+                return
+            end
+        elseif cmd == 'unban' then
+            if player then
+                Public.to_banned_embed(table.concat {player.name .. ' unbanned ' .. reason})
+                return
+            else
+                Public.to_banned_embed(table.concat {'Server unbanned ' .. reason})
+                return
+            end
+        end
     end
 )
 

@@ -154,7 +154,7 @@ function Public.reset_table()
     this.placed_trains_in_zone = {
         placed = 0,
         positions = {},
-        limit = 3,
+        limit = 2,
         randomized = false
     }
     this.marked_fixed_prices = {
