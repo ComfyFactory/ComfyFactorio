@@ -571,7 +571,7 @@ local function on_entity_damaged(event)
     event.entity.health = event.entity.health + event.final_damage_amount
     event.entity.health = event.entity.health - damage
     if event.entity.health <= 0 then
-        event.entity.die(event.entity.force.name, event.cause)
+        event.entity.die(event.cause.force.name, event.cause)
     end
 end
 
