@@ -52,6 +52,15 @@ local function is_closer(pos1, pos2, pos)
     return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
 end
 
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = math_random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
+    end
+    return tbl
+end
+
 local function shuffle_distance(tbl, position)
     local size = #tbl
     for i = size, 1, -1 do
@@ -320,11 +329,17 @@ local function spawn_biter(surface, is_boss_biter)
     else
         name = BiterRolls.wave_defense_roll_biter_name()
     end
-    local spawn_position = WD.get('spawn_position')
+    local position = WD.get('spawn_position')
 
-    local position = spawn_position
+    local pos = {
+        {x = position.x - 2, y = position.y - 2},
+        {x = position.x + 2, y = position.y + 2},
+        {x = position.x - 2, y = position.y - 2},
+        {x = position.x + 2, y = position.y - 2}
+    }
+    local p = shuffle(pos)
 
-    local biter = surface.create_entity({name = name, position = position, force = 'enemy'})
+    local biter = surface.create_entity({name = name, position = {p[1].x, p[2].y}, force = 'enemy'})
     biter.ai_settings.allow_destroy_when_commands_fail = true
     biter.ai_settings.allow_try_return_to_spawner = false
     biter.ai_settings.do_separation = true
@@ -343,7 +358,7 @@ local function spawn_biter(surface, is_boss_biter)
             if boosted_health == 1 then
                 boosted_health = 1.25
             end
-            boosted_health = boosted_health * (wave_number * 0.05)
+            boosted_health = boosted_health * (wave_number * 0.04)
             local sum = boosted_health * 5
             debug_print('Boss Health Boosted: ' .. sum)
             if sum >= 150 then
