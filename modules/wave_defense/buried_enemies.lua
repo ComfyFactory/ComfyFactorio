@@ -96,7 +96,7 @@ local function spawn_biters(data)
         unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
     end
 
-    if random(1, 128) == 1 then
+    if random(1, 64) == 1 then
         BiterHealthBooster.add_boss_unit(unit, boosted_health, 0.38)
     end
 end

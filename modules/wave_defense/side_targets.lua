@@ -17,28 +17,35 @@ local side_target_types = {
     ['solar-panel'] = true
 }
 
-local function get_random_target(wave_defense_table)
-    local r = math.random(1, wave_defense_table.side_target_count)
-    if not wave_defense_table.side_targets[r] then
-        table.remove(wave_defense_table.side_targets, r)
-        wave_defense_table.side_target_count = wave_defense_table.side_target_count - 1
+local function get_random_target()
+    local side_target_count = WD.get('side_target_count')
+    local side_targets = WD.get('side_targets')
+    local r = math.random(1, side_target_count)
+    if not side_targets[r] then
+        table.remove(side_targets, r)
+        WD.set('side_target_count', side_target_count - 1)
         return
     end
-    if not wave_defense_table.side_targets[r].valid then
-        table.remove(wave_defense_table.side_targets, r)
-        wave_defense_table.side_target_count = wave_defense_table.side_target_count - 1
+    if not side_targets[r].valid then
+        table.remove(side_targets, r)
+        WD.set('side_target_count', side_target_count - 1)
         return
     end
-    return wave_defense_table.side_targets[r]
+    side_targets = WD.get('side_targets')
+    return side_targets[r]
 end
 
 function Public.get_side_target()
-    local wave_defense_table = WD.get_table()
+    local enable_side_target = WD.get('enable_side_target')
+    if not enable_side_target then
+        return
+    end
+    local side_target_count = WD.get('side_target_count')
     for _ = 1, 512, 1 do
-        if wave_defense_table.side_target_count == 0 then
+        if side_target_count == 0 then
             return
         end
-        local target = get_random_target(wave_defense_table)
+        local target = get_random_target()
         if target then
             return target
         end
@@ -46,19 +53,27 @@ function Public.get_side_target()
 end
 
 local function add_entity(entity)
-    local wave_defense_table = WD.get_table()
+    local enable_side_target = WD.get('enable_side_target')
 
+    if not enable_side_target then
+        return
+    end
+
+    local surface_index = WD.get('surface_index')
     --skip entities that are on another surface
-    if entity.surface.index ~= wave_defense_table.surface_index then
-        return
-    end
-    if wave_defense_table.side_target_count >= 512 then
+    if entity.surface.index ~= surface_index then
         return
     end
 
+    local side_target_count = WD.get('side_target_count')
+    if side_target_count >= 512 then
+        return
+    end
+
+    local side_targets = WD.get('side_targets')
     --add entity to the side target list
-    table.insert(wave_defense_table.side_targets, entity)
-    wave_defense_table.side_target_count = wave_defense_table.side_target_count + 1
+    table.insert(side_targets, entity)
+    WD.set('side_target_count', side_target_count + 1)
 end
 
 local function on_built_entity(event)
