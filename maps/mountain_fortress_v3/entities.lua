@@ -351,10 +351,10 @@ local function angry_tree(entity, cause, player)
     if abs(entity.position.y) < Terrain.level_depth then
         return
     end
-    if random(1, 16) == 1 then
+    if random(1, 32) == 1 then
         BuriedEnemies.buried_biter(entity.surface, entity.position)
     end
-    if random(1, 16) == 1 then
+    if random(1, 32) == 1 then
         BuriedEnemies.buried_worm(entity.surface, entity.position)
     end
     if random(1, 32) ~= 1 then
@@ -407,7 +407,7 @@ local function give_coin(player)
     local forest_zone = RPG_Settings.get_value_from_player(player.index, 'forest_zone')
 
     if forest_zone then
-        if random(1, 32) ~= 1 then
+        if random(1, 3) ~= 1 then
             return
         end
     end

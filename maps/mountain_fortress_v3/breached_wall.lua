@@ -69,6 +69,39 @@ local artillery_warning =
     end
 )
 
+local spidertron_too_far =
+    Token.register(
+    function(data)
+        local player = data.player
+        local message = ({'breached_wall.cheating_through', player.name})
+        Alert.alert_all_players(30, message)
+    end
+)
+
+local compare_player_and_train = function(player, entity)
+    local position = player.position
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local c_y = position.y
+    local t_y = locomotive.position.y
+
+    local gap_between_zones = WPT.get('gap_between_zones')
+
+    if c_y - t_y <= gap_between_zones.neg_gap then
+        if entity.health then
+            entity.health = entity.health - 500
+            if entity.health <= 0 then
+                entity.die('enemy')
+                Task.set_timeout_in_ticks(30, spidertron_too_far, {player = player})
+                return
+            end
+        end
+    end
+end
+
 local function distance(player)
     local index = player.index
     local bonus = RPG_Settings.get_value_from_player(index, 'bonus')
@@ -76,6 +109,15 @@ local function distance(player)
     local breached_wall = WPT.get('breached_wall')
     local bonus_xp_on_join = WPT.get('bonus_xp_on_join')
     local enable_arties = WPT.get('enable_arties')
+
+    local s = WPT.get('validate_spider')
+    if s[index] then
+        local e = s[index]
+        if not (e and e.valid) then
+            s[index] = nil
+        end
+        compare_player_and_train(player, s[index])
+    end
 
     local distance_to_center = floor(sqrt(player.position.x ^ 2 + player.position.y ^ 2))
     local location = distance_to_center
@@ -94,6 +136,7 @@ local function distance(player)
             WPT.set().breached_wall = breached_wall + 1
             WPT.set().placed_trains_in_zone.placed = 0
             WPT.set().biters.amount = 0
+            WPT.set('blood_moon', false)
             WPT.set().placed_trains_in_zone.randomized = false
             WPT.set().placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})
@@ -114,12 +157,24 @@ local function distance(player)
                 end
             end
 
-            if breached_wall == 3 or breached_wall == 11 then
+            if breached_wall % 2 == 0 then
+                local blood_moon = WPT.get('blood_moon')
                 local t = game.tick
                 local s = player.surface
-                if t % 2 == 0 then
-                    BM.set_daytime(s, t)
+                if not blood_moon then
+                    BM.set_daytime(s, t, true)
+                    WPT.set('blood_moon', true)
                 end
+            else
+                local s = player.surface
+                s.brightness_visual_weights = {
+                    a = 1,
+                    b = 0,
+                    g = 0,
+                    r = 0
+                }
+                s.daytime = 0.7
+                s.freeze_daytime = false
             end
 
             local data = {
@@ -133,6 +188,7 @@ local function distance(player)
                 end
             end
         end
+
         if not Collapse.start_now() then
             Collapse.start_now(true)
             local data = {
@@ -140,6 +196,7 @@ local function distance(player)
             }
             Task.set_timeout_in_ticks(550, collapse_message, data)
         end
+
         RPG_Settings.set_value_to_player(index, 'bonus', bonus + 1)
 
         local b = RPG_Settings.get_value_from_player(index, 'bonus')
@@ -176,4 +233,26 @@ local function on_player_changed_position(event)
     distance(player)
 end
 
+local function on_player_driving_changed_state(event)
+    local player = game.players[event.player_index]
+    if not (player and player.valid) then
+        return
+    end
+    local entity = event.entity
+    if not (entity and entity.valid) then
+        return
+    end
+    local s = WPT.get('validate_spider')
+    if entity.name == 'spidertron' then
+        if not s[player.index] then
+            s[player.index] = entity
+        end
+    else
+        if s[player.index] then
+            s[player.index] = nil
+        end
+    end
+end
+
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)

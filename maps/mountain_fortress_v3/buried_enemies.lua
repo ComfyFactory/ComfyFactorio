@@ -78,19 +78,33 @@ local function spawn_biters(data)
         end
     end
 
-    local m = 0.0015
-    if d.difficulty_vote_index then
-        if not d.strength_modifier then
-            m = m * 1.05
-        else
-            m = m * d.strength_modifier
+    local function trigger_health()
+        local m = 0.0015
+        if d.difficulty_vote_index then
+            if not d.strength_modifier then
+                m = m * 1.05
+            else
+                m = m * d.strength_modifier
+            end
         end
-    end
 
-    local boosted_health = 1 + (wave_number * (m * 2))
+        local boosted_health = 1.25
 
-    if wave_number >= 100 then
-        boosted_health = boosted_health * 2
+        if wave_number <= 10 then
+            wave_number = 10
+        end
+
+        boosted_health = boosted_health * (wave_number * 0.02)
+
+        local sum = boosted_health * 5
+
+        sum = sum + m
+
+        if sum >= 100 then
+            sum = 100
+        end
+
+        return sum
     end
 
     BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
@@ -104,9 +118,10 @@ local function spawn_biters(data)
         max_biters.amount = max_biters.amount + 1
     end
 
-    if random(1, 64) == 1 then
+    if random(1, 32) == 1 then
+        local sum = trigger_health()
         max_biters.amount = max_biters.amount + 1
-        BiterHealthBooster.add_boss_unit(unit, boosted_health, 0.38)
+        BiterHealthBooster.add_boss_unit(unit, sum, 0.38)
     end
 end
 

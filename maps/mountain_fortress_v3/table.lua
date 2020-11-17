@@ -94,7 +94,8 @@ function Public.reset_table()
     this.locomotive_max_health = 10000
     this.gap_between_zones = {
         set = false,
-        gap = 900
+        gap = 900,
+        neg_gap = -300
     }
     this.force_chunk = false
     this.train_upgrades = 0
@@ -177,6 +178,7 @@ function Public.reset_table()
     this.spidertron_unlocked_at_wave = 11
     -- this.void_or_tile = 'lab-dark-2'
     this.void_or_tile = 'out-of-map'
+    this.validate_spider = {}
 
     --!reset player tables
     for _, player in pairs(this.players) do
@@ -193,7 +195,7 @@ function Public.get(key)
 end
 
 function Public.set(key, value)
-    if key and value then
+    if key and (value or value == false) then
         this[key] = value
         return this[key]
     elseif key then
