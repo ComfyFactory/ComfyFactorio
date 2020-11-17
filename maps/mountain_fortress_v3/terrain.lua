@@ -401,7 +401,7 @@ local function process_level_14_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.71 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -476,7 +476,7 @@ local function process_level_13_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -552,7 +552,7 @@ local function process_level_12_position(x, y, data, void_or_lab)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -646,7 +646,7 @@ local function process_level_11_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -744,7 +744,7 @@ local function process_level_10_position(x, y, data)
     end
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -869,7 +869,7 @@ local function process_level_9_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -974,7 +974,7 @@ local function process_level_8_position(x, y, data, void_or_lab)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -1102,7 +1102,7 @@ local function process_level_7_position(x, y, data, void_or_lab)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -1155,7 +1155,7 @@ local function process_level_6_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 128) == 1 then
@@ -1282,7 +1282,7 @@ local function process_level_5_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 128) == 1 then
@@ -1410,7 +1410,7 @@ local function process_level_4_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 128) == 1 then
@@ -1466,7 +1466,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 128) == 1 then
@@ -1621,7 +1621,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 128) == 1 then
@@ -1761,7 +1761,7 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 128) == 1 then
@@ -1939,7 +1939,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 32) == 1 then
@@ -2104,7 +2104,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
         if random(1, 128) == 1 then

@@ -304,7 +304,10 @@ end
 local function property_boost(data)
     local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
-    local locomotive_surface = WPT.get('locomotive_surface')
+    local loco_surface = WPT.get('loco_surface')
+    if not (loco_surface and loco_surface.valid) then
+        return
+    end
     local locomotive_xp_aura = WPT.get('locomotive_xp_aura')
     local locomotive = WPT.get('locomotive')
     local xp_points = WPT.get('xp_points')
@@ -321,7 +324,7 @@ local function property_boost(data)
             return
         end
         if player.afk_time < 200 then
-            if Math2D.bounding_box.contains_point(area, player.position) or player.surface.index == locomotive_surface.index then
+            if Math2D.bounding_box.contains_point(area, player.position) or player.surface.index == loco_surface.index then
                 Public.add_player_to_permission_group(player, 'locomotive')
                 local pos = player.position
                 Functions.gain_xp(player, 0.5 * (rpg[player.index].bonus + xp_points))

@@ -32,8 +32,6 @@ local artillery_target_entities = {
     'tank',
     'car',
     'furnace',
-    'straight-rail',
-    'curved-rail',
     'locomotive',
     'cargo-wagon',
     'fluid-wagon',
@@ -141,6 +139,10 @@ local function do_magic_crafters()
 
             local fcount = floor(count)
 
+            if fcount > 1 then
+                fcount = 1
+            end
+
             if fcount > 0 then
                 entity.get_output_inventory().insert {name = data.item, count = fcount}
                 data.last_tick = tick - (count - fcount) / rate
@@ -218,7 +220,7 @@ local artillery_target_callback =
         local x, y = pos.x, pos.y
         local dx, dy = tx - x, ty - y
         local d = dx * dx + dy * dy
-        if d >= 1024 then -- 32 ^ 2
+        if d >= 1024 and d <= 441398 then -- 704 in depth~
             entity.surface.create_entity {
                 name = 'artillery-projectile',
                 position = position,

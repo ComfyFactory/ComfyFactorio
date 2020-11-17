@@ -15,6 +15,16 @@ local floor = math.floor
 local random = math.random
 local sqrt = math.sqrt
 
+local z = {
+    [3] = true,
+    [6] = true,
+    [12] = true,
+    [15] = true,
+    [16] = true,
+    [18] = true,
+    [22] = true
+}
+
 local collapse_message =
     Token.register(
     function(data)
@@ -34,11 +44,10 @@ local spidertron_unlocked =
         Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
     end
 )
-
+--[[
 local calculate_hp = function(zone)
     return 2 + 0.2 * zone - 1 * floor(zone / 20)
-end
-
+end ]]
 local first_player_to_zone =
     Token.register(
     function(data)
@@ -61,9 +70,9 @@ local artillery_warning =
 )
 
 local function distance(player)
-    local rpg_t = RPG_Settings.get('rpg_t')
+    local index = player.index
+    local bonus = RPG_Settings.get_value_from_player(index, 'bonus')
     local rpg_extra = RPG_Settings.get('rpg_extra')
-    local bonus = rpg_t[player.index].bonus
     local breached_wall = WPT.get('breached_wall')
     local bonus_xp_on_join = WPT.get('bonus_xp_on_join')
     local enable_arties = WPT.get('enable_arties')
@@ -131,7 +140,24 @@ local function distance(player)
             }
             Task.set_timeout_in_ticks(550, collapse_message, data)
         end
-        rpg_t[player.index].bonus = bonus + 1
+        RPG_Settings.set_value_to_player(index, 'bonus', bonus + 1)
+
+        local b = RPG_Settings.get_value_from_player(index, 'bonus')
+        if b == 6 or b == 16 then
+            RPG_Settings.set_value_to_player(index, 'scrap_zone', true)
+        elseif not (b == 6 or b == 16) then
+            local has_scrap = RPG_Settings.get_value_from_player(index, 'scrap_zone')
+            if has_scrap then
+                RPG_Settings.set_value_to_player(index, 'scrap_zone', false)
+            end
+        end
+
+        if z[b] then
+            RPG_Settings.set_value_to_player(index, 'forest_zone', true)
+        elseif not z[b] then
+            RPG_Settings.set_value_to_player(index, 'forest_zone', false)
+        end
+
         Functions.gain_xp(player, bonus_xp_on_join * bonus)
         local message = ({'breached_wall.wall_breached', bonus})
         Alert.alert_player_warning(player, 10, message)

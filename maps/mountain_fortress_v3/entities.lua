@@ -2,13 +2,13 @@ require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local Map_score = require 'comfy_panel.map_score'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
-local BuriedEnemies = require 'modules.wave_defense.buried_enemies'
+local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 local Loot = require 'maps.mountain_fortress_v3.loot'
 local Pets = require 'maps.mountain_fortress_v3.biter_pets'
 local RPG_Settings = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
+local Callbacks = require 'maps.mountain_fortress_v3.functions'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Traps = require 'maps.mountain_fortress_v3.traps'
@@ -215,10 +215,11 @@ local function set_objective_health(final_damage_amount)
         return
     end
 
-    locomotive_health = floor(locomotive_health - final_damage_amount)
+    WPT.set('locomotive_health', floor(locomotive_health - final_damage_amount))
     if locomotive_health > locomotive_max_health then
-        locomotive_health = locomotive_max_health
+        WPT.set('locomotive_health', locomotive_max_health)
     end
+    locomotive_health = WPT.get('locomotive_health')
 
     if locomotive_health <= 0 then
         Public.loco_died()
@@ -233,6 +234,14 @@ end
 
 local function protect_entities(event)
     local entity = event.entity
+    local dmg = event.final_damage_amount
+    if not dmg then
+        return
+    end
+
+    if entity.type == 'simple-entity' and dmg >= 300 then
+        entity.health = entity.health + dmg
+    end
 
     if entity.force.index ~= 1 then
         return
@@ -264,18 +273,22 @@ local function protect_entities(event)
     end
 
     local units = exists()
-
     if is_protected(entity) then
-        if event.cause and event.cause.valid then
+        if (event.cause and event.cause.valid) then
             if event.cause.force.index == 2 and units[entity.unit_number] then
-                set_objective_health(event.final_damage_amount)
+                return set_objective_health(dmg)
             elseif event.cause.force.index == 2 then
                 return
             else
-                event.entity.health = event.entity.health + event.final_damage_amount
+                entity.health = entity.health + dmg
+            end
+        elseif not (event.cause and event.cause.valid) then
+            if event.force.index == 2 and units[entity.unit_number] then
+                return set_objective_health(dmg)
             end
         end
-        event.entity.health = event.entity.health + event.final_damage_amount
+
+        entity.health = entity.health + dmg
     end
 end
 
@@ -330,7 +343,7 @@ end
 
 local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
 
-local function angry_tree(entity, cause)
+local function angry_tree(entity, cause, player)
     if entity.type ~= 'tree' then
         return
     end
@@ -338,10 +351,10 @@ local function angry_tree(entity, cause)
     if abs(entity.position.y) < Terrain.level_depth then
         return
     end
-    if random(1, 4) == 1 then
+    if random(1, 16) == 1 then
         BuriedEnemies.buried_biter(entity.surface, entity.position)
     end
-    if random(1, 8) == 1 then
+    if random(1, 16) == 1 then
         BuriedEnemies.buried_worm(entity.surface, entity.position)
     end
     if random(1, 32) ~= 1 then
@@ -355,6 +368,24 @@ local function angry_tree(entity, cause)
     end
     if not position then
         position = {entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40))}
+    end
+    if player then
+        local forest_zone = RPG_Settings.get_value_from_player(player.index, 'forest_zone')
+        if forest_zone and random(1, 32) == 1 then
+            local cbl = Callbacks.power_source_callback
+            local data = {callback_data = Callbacks.laser_turrent_power_source}
+            local e =
+                entity.surface.create_entity(
+                {
+                    name = 'laser-turret',
+                    position = entity.position,
+                    force = 'enemy'
+                }
+            )
+            local callback = Token.get(cbl)
+            callback(e, data)
+            return
+        end
     end
 
     entity.surface.create_entity(
@@ -373,6 +404,13 @@ end
 local function give_coin(player)
     local coin_amount = WPT.get('coin_amount')
     local coin_override = WPT.get('coin_override')
+    local forest_zone = RPG_Settings.get_value_from_player(player.index, 'forest_zone')
+
+    if forest_zone then
+        if random(1, 32) ~= 1 then
+            return
+        end
+    end
 
     if coin_amount >= 1 then
         if coin_override then
@@ -408,6 +446,8 @@ local mining_events = {
                 entity.destroy()
                 return
             end
+
+            local max_biters = WPT.get('biters')
 
             BuriedEnemies.buried_biter(entity.surface, entity.position, 1)
             entity.destroy()
@@ -464,7 +504,7 @@ local mining_events = {
             local player = game.get_player(index)
 
             if entity.type == 'tree' then
-                angry_tree(entity, player.character)
+                angry_tree(entity, player.character, player)
                 entity.destroy()
             end
         end,
@@ -777,11 +817,7 @@ end
 local function on_entity_damaged(event)
     local entity = event.entity
 
-    if not entity then
-        return
-    end
-
-    if not entity.valid then
+    if not (entity and entity.valid) then
         return
     end
 
@@ -836,6 +872,8 @@ local function on_entity_died(event)
         return
     end
 
+    local cause = event.cause
+
     local map_name = 'mountain_fortress_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
@@ -848,9 +886,14 @@ local function on_entity_died(event)
 
     on_entity_removed(d)
 
-    if event.cause then
-        if event.cause.valid then
-            if event.cause.force.index == 2 or event.cause.force.index == 3 then
+    local player
+
+    if cause then
+        if cause.valid then
+            if (cause and cause.name == 'character' and cause.player) then
+                player = cause.player
+            end
+            if cause.force.index == 2 or cause.force.index == 3 then
                 entity.destroy()
                 return
             end
@@ -906,7 +949,7 @@ local function on_entity_died(event)
             entity.destroy()
             return
         end
-        angry_tree(entity, event.cause)
+        angry_tree(entity, cause, player)
         return
     end
 
@@ -938,19 +981,6 @@ local function on_entity_died(event)
     end
 end
 
-function Public.set_scores()
-    local locomotive = WPT.get('locomotive')
-    if not (locomotive and locomotive.valid) then
-        return
-    end
-    local score = floor(locomotive.position.y * -1)
-    for _, player in pairs(game.connected_players) do
-        if score > Map_score.get_score(player) then
-            Map_score.set_score(player, score)
-        end
-    end
-end
-
 function Public.unstuck_player(index)
     local player = game.get_player(index)
     local surface = player.surface
@@ -969,7 +999,6 @@ function Public.loco_died()
     if wave_defense_table.game_lost then
         return
     end
-    Public.set_scores()
     if not locomotive.valid then
         local this = WPT.get()
         if this.announced_message then

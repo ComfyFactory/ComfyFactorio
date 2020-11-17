@@ -12,12 +12,12 @@ require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
 require 'modules.charging_station'
 
+-- local HS = require 'maps.mountain_fortress_v3.highscore'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Autostash = require 'modules.autostash'
 local Group = require 'comfy_panel.group'
 local PL = require 'comfy_panel.player_list'
 local CS = require 'maps.mountain_fortress_v3.surface'
-local Map_score = require 'comfy_panel.map_score'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Balance = require 'maps.mountain_fortress_v3.balance'
@@ -301,8 +301,6 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
 
-    Map_score.reset_score()
-
     RPG_Func.rpg_reset_all_players()
     RPG_Settings.set_surface_name('mountain_fortress_v3')
     RPG_Settings.enable_health_and_mana_bars(true)
@@ -330,9 +328,6 @@ function Public.reset_map()
     game.forces.player.manual_mining_speed_modifier = 0
 
     Balance.init_enemy_weapon_damage()
-
-    global.custom_highscore.description = 'Wagon distance reached:'
-    Entities.set_scores()
 
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
@@ -574,7 +569,7 @@ local has_the_game_ended = function()
             return
         end
 
-        local this = WPT.get('this')
+        local this = WPT.get()
 
         this.game_reset_tick = this.game_reset_tick - 30
         if this.game_reset_tick % 1800 == 0 then
@@ -812,14 +807,14 @@ local on_tick = function()
 
     if tick % 1000 == 0 then
         collapse_after_wave_100()
-        Entities.set_scores()
         set_difficulty()
+
         local spawn_near_collapse = WPT.get('spawn_near_collapse')
         if spawn_near_collapse then
             local collapse_pos = Collapse.get_position()
             local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
             if position then
-                WD.set_spawn_position({position.x, position.y - 50})
+                WD.set_spawn_position({x = position.x, y = position.y - 50})
             end
         end
     end
@@ -840,8 +835,8 @@ local on_init = function()
 
     this.rocks_yield_ore_maximum_amount = 500
     this.type_modifier = 1
-    this.rocks_yield_ore_base_amount = 50
-    this.rocks_yield_ore_distance_modifier = 0.025
+    this.rocks_yield_ore_base_amount = 40
+    this.rocks_yield_ore_distance_modifier = 0.020
 
     local T = Map.Pop_info()
     T.localised_category = 'mountain_fortress_v3'

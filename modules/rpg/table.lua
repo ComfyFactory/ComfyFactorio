@@ -130,6 +130,38 @@ function Public.get(key)
     end
 end
 
+--- Gets value from player rpg_t table
+---@param key <string>
+---@param value <string>
+function Public.get_value_from_player(key, value)
+    if key and value then
+        if (this.rpg_t[key] and this.rpg_t[key][value]) then
+            return this.rpg_t[key][value]
+        end
+        return false
+    end
+    if key then
+        if this.rpg_t[key] then
+            return this.rpg_t[key]
+        end
+        return false
+    end
+    return false
+end
+--- Sets value to player rpg_t table
+---@param key <string>
+---@param value <string>
+---@param setter <string>
+function Public.set_value_to_player(key, value, setter)
+    if key and value then
+        if (this.rpg_t[key] and this.rpg_t[key][value]) then
+            this.rpg_t[key][value] = setter or false
+        elseif (this.rpg_t[key] and not this.rpg_t[key][value]) then
+            this.rpg_t[key][value] = setter or false
+        end
+    end
+end
+
 --- Sets value to table
 ---@param key <string>
 function Public.set(key)

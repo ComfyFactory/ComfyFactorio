@@ -39,7 +39,7 @@ function Public.reset_table()
     this.vehicle_nanobots_unlocked = false
     this.game_restart_timer = nil
     this.wave_count = 0
-    this.wave_limit = 9999
+    this.wave_limit = 2000
     this.attack_wave_threat = nil
     this.market = nil
     this.market_age = nil
