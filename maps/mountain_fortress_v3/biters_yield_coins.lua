@@ -111,7 +111,7 @@ local function on_entity_died(event)
                     forest_zone = RPG_Settings.get_value_from_player(p.index, 'forest_zone')
                 end
                 if forest_zone then
-                    if random(1, 6) == 1 then
+                    if random(1, 12) == 1 then
                         player.insert({name = 'coin', count = coin_count})
                     end
                 else

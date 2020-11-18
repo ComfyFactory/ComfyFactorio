@@ -48,17 +48,14 @@ local function debug_print(msg)
     print('WaveDefense: ' .. msg)
 end
 
-local function is_closer(pos1, pos2, pos)
-    return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
+local function get_spawn_pos()
+    local position = WD.get('spawn_position')
+
+    return position
 end
 
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math_random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
-    end
-    return tbl
+local function is_closer(pos1, pos2, pos)
+    return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
 end
 
 local function shuffle_distance(tbl, position)
@@ -74,7 +71,7 @@ end
 
 local function remove_trees(entity)
     local surface = entity.surface
-    local radius = 15
+    local radius = 10
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local trees = surface.find_entities_filtered {area = area, type = 'tree'}
@@ -89,7 +86,7 @@ end
 
 local function remove_rocks(entity)
     local surface = entity.surface
-    local radius = 15
+    local radius = 10
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
@@ -100,6 +97,28 @@ local function remove_rocks(entity)
             end
         end
     end
+end
+
+local function fill_void(entity)
+    local surface = entity.surface
+    local radius = 10
+    local pos = entity.position
+    local t = {
+        'water',
+        'water-green',
+        'water-mud',
+        'water-shallow',
+        'deepwater',
+        'deepwater-green'
+    }
+    local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
+    local tiles = surface.find_tiles_filtered {area = area, name = t}
+    if #tiles > 0 then
+        for _, tile in pairs(tiles) do
+            surface.set_tiles({{name = 'sand-1', position = tile.position}}, true)
+        end
+    end
+    debug_print('fill_void - filled void cause we found void.')
 end
 
 local function is_unit_valid(biter)
@@ -143,20 +162,20 @@ local function time_out_biters()
     local active_biters = WD.get('active_biters')
     local active_biter_count = WD.get('active_biter_count')
     local active_biter_threat = WD.get('active_biter_threat')
+    log(serpent.block(#active_biters))
     for k, biter in pairs(active_biters) do
         if not is_unit_valid(biter) then
-            active_biter_count = active_biter_count - 1
-            if biter.entity then
-                if biter.entity.valid then
-                    WD.set(
-                        'active_biter_threat',
-                        active_biter_threat - math_round(threat_values[biter.entity.name] * global.biter_health_boost, 2)
-                    )
-                    if biter.entity.force.index == 2 then
-                        biter.entity.destroy()
-                    end
+            WD.set('active_biter_count', active_biter_count - 1)
+            if (biter.entity and biter.entity.valid) then
+                WD.set(
+                    'active_biter_threat',
+                    active_biter_threat - math_round(threat_values[biter.entity.name] * global.biter_health_boost, 2)
+                )
+                if biter.entity.force.index == 2 then
+                    biter.entity.destroy()
                 end
             end
+            debug_print('time_out_biters: ' .. k .. ' got deleted.')
             active_biters[k] = nil
         end
     end
@@ -168,6 +187,7 @@ local function get_random_close_spawner()
     local get_random_close_spawner_attempts = WD.get('get_random_close_spawner_attempts')
     local center = target.position
     local spawner
+    local retries = 0
     for i = 1, get_random_close_spawner_attempts, 1 do
         ::retry::
         if #nests < 1 then
@@ -177,6 +197,10 @@ local function get_random_close_spawner()
         local spawner_2 = nests[k]
         if not spawner_2 or not spawner_2.valid then
             nests[k] = nil
+            retries = retries + 1
+            if retries == 5 then
+                break
+            end
             goto retry
         end
         if
@@ -243,7 +267,7 @@ local function set_group_spawn_position(surface)
         return
     end
     WD.set('spawn_position', {x = position.x, y = position.y})
-    local spawn_position = WD.get('spawn_position')
+    local spawn_position = get_spawn_pos()
     debug_print('set_group_spawn_position -- Changed position to x' .. spawn_position.x .. ' y' .. spawn_position.y .. '.')
 end
 
@@ -329,28 +353,14 @@ local function spawn_biter(surface, is_boss_biter)
     else
         name = BiterRolls.wave_defense_roll_biter_name()
     end
-    local position = WD.get('spawn_position')
+    local position = get_spawn_pos()
 
-    local pos = {
-        {x = position.x - 2, y = position.y - 2},
-        {x = position.x + 2, y = position.y + 2},
-        {x = position.x - 2, y = position.y - 2},
-        {x = position.x + 2, y = position.y - 2}
-    }
-    local p = shuffle(pos)
-
-    local biter = surface.create_entity({name = name, position = {p[1].x, p[2].y}, force = 'enemy'})
+    local biter = surface.create_entity({name = name, position = position, force = 'enemy'})
     biter.ai_settings.allow_destroy_when_commands_fail = true
     biter.ai_settings.allow_try_return_to_spawner = false
     biter.ai_settings.do_separation = true
-    biter.ai_settings.path_resolution_modifier = -5
+    biter.ai_settings.path_resolution_modifier = 1
 
-    local remove_entities = WD.get('remove_entities')
-
-    if remove_entities then
-        remove_trees(biter)
-        remove_rocks(biter)
-    end
     if is_boss_biter then
         local modified_boss_health = WD.get('modified_boss_health')
         if modified_boss_health then
@@ -393,7 +403,7 @@ local function set_next_wave()
         WD.set('boss_wave', true)
         WD.set('boss_wave_warning', true)
         local alert_boss_wave = WD.get('alert_boss_wave')
-        local spawn_position = WD.get('spawn_position')
+        local spawn_position = get_spawn_pos()
         if alert_boss_wave then
             local msg = 'Boss Wave: ' .. wave_number
             local pos = {
@@ -674,33 +684,122 @@ local function give_commands_to_unit_groups()
     end
 end
 
+local function did_pathing_resolve()
+    debug_print('did_pathing_resolve - running')
+    local target = WD.get('target')
+    if not (target and target.valid) then
+        debug_print('did_pathing_resolve - no target?')
+        return
+    end
+
+    local commands = {}
+
+    local function retry_attack(group)
+        local tile = group.surface.get_tile(group.position)
+        if tile.valid and tile.collides_with('player-layer') then
+            group = reform_group(group)
+        end
+        local step_length = WD.get('unit_group_command_step_length')
+
+        local obstacles =
+            group.surface.find_entities_filtered {
+            position = group.position,
+            radius = step_length / 2,
+            type = {'simple-entity', 'tree'},
+            limit = 50
+        }
+        if obstacles then
+            shuffle_distance(obstacles, group.position)
+            for v = 1, #obstacles, 1 do
+                if obstacles[v].valid then
+                    commands[#commands + 1] = {
+                        type = defines.command.attack,
+                        target = obstacles[v],
+                        distraction = defines.distraction.by_enemy
+                    }
+                end
+            end
+        end
+        commands[#commands + 1] = {
+            type = defines.command.attack,
+            target = target,
+            distraction = defines.distraction.by_enemy
+        }
+
+        fill_void(group)
+
+        group.set_command(
+            {
+                type = defines.command.compound,
+                structure_type = defines.compound_command.return_last,
+                commands = commands
+            }
+        )
+
+        debug_print('did_pathing_resolve - sent commands')
+    end
+
+    local unit_groups = WD.get('unit_groups')
+    debug_print('did_pathing_resolve - unit groups size: ' .. #unit_groups)
+    for k, group in pairs(unit_groups) do
+        if group.valid then
+            if group.state == defines.group_state.finished then
+                debug_print('did_pathing_resolve - state is finished - giving attack params')
+                if type(group) ~= 'number' then
+                    retry_attack(group)
+                    debug_print('did_pathing_resolve - retrying attack')
+                end
+            end
+        end
+    end
+end
+
 local function spawn_unit_group()
     if not can_units_spawn() then
+        debug_print('spawn_unit_group - Cant spawn units?')
         return
     end
     local target = WD.get('target')
     if not (target and target.valid) then
+        debug_print('spawn_unit_group - Target was not valid?')
         return
     end
 
     local max_active_unit_groups = WD.get('max_active_unit_groups')
     if get_active_unit_groups_count() >= max_active_unit_groups then
+        debug_print('spawn_unit_group - unit_groups at max')
         return
     end
     local surface_index = WD.get('surface_index')
     local surface = game.surfaces[surface_index]
     set_group_spawn_position(surface)
+    local retries = 0
 
-    local spawn_position = WD.get('spawn_position')
-    local pos = spawn_position
-    if not surface.can_place_entity({name = 'behemoth-biter', position = pos}) then
-        return
+    ::retry::
+    local spawn_position = get_spawn_pos()
+    if not surface.can_place_entity({name = 'behemoth-biter', position = spawn_position}) then
+        debug_print('spawn_unit_group - can´t place entity?')
+        local remove_entities = WD.get('remove_entities')
+        if remove_entities then
+            remove_trees({surface = surface, position = spawn_position})
+            remove_rocks({surface = surface, position = spawn_position})
+            fill_void({surface = surface, position = spawn_position})
+        end
+        retries = retries + 1
+        if retries == 5 then
+            return
+        end
+        goto retry
     end
 
     local radius = 10
-    local area = {left_top = {pos.x - radius, pos.y - radius}, right_bottom = {pos.x + radius, pos.y + radius}}
+    local area = {
+        left_top = {spawn_position.x - radius, spawn_position.y - radius},
+        right_bottom = {spawn_position.x + radius, spawn_position.y + radius}
+    }
     for k, v in pairs(surface.find_entities_filtered {area = area, name = 'land-mine'}) do
         if v and v.valid then
+            debug_print('spawn_unit_group - found land-mines')
             v.die()
         end
     end
@@ -717,6 +816,7 @@ local function spawn_unit_group()
     for _ = 1, group_size, 1 do
         local biter = spawn_biter(surface)
         if not biter then
+            debug_print('spawn_unit_group - No biters were found?')
             break
         end
         unit_group.add_member(biter)
@@ -734,15 +834,12 @@ local function spawn_unit_group()
         for _ = 1, count, 1 do
             local biter = spawn_biter(surface, true)
             if not biter then
+                debug_print('spawn_unit_group - No biters were found?')
                 break
             end
             unit_group.add_member(biter)
         end
         WD.set('boss_wave', false)
-    end
-
-    if unit_group then
-        unit_group.start_moving()
     end
 
     local unit_groups = WD.get('unit_groups')
@@ -792,6 +889,13 @@ local function on_tick()
 
     local t = tick % 300
     local t2 = tick % 18000
+
+    if t == 0 then
+        local resolve_pathing = WD.get('resolve_pathing')
+        if resolve_pathing then
+            did_pathing_resolve()
+        end
+    end
 
     if tick_tasks[t] then
         tick_tasks[t]()

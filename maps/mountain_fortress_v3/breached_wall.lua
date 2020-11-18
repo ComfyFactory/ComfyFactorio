@@ -85,13 +85,19 @@ local compare_player_and_train = function(player, entity)
         return
     end
 
-    local c_y = position.y
-    local t_y = locomotive.position.y
-
     local gap_between_zones = WPT.get('gap_between_zones')
+    gap_between_zones.highest_pos = locomotive.position
+    gap_between_zones = WPT.get('gap_between_zones')
+
+    local c_y = position.y
+    local t_y = gap_between_zones.highest_pos.y
 
     if c_y - t_y <= gap_between_zones.neg_gap then
         if entity.health then
+            if entity.speed then
+                entity.speed = 0
+                return
+            end
             entity.health = entity.health - 500
             if entity.health <= 0 then
                 entity.die('enemy')

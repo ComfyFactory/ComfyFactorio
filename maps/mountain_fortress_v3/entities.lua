@@ -351,10 +351,10 @@ local function angry_tree(entity, cause, player)
     if abs(entity.position.y) < Terrain.level_depth then
         return
     end
-    if random(1, 32) == 1 then
+    if random(1, 6) == 1 then
         BuriedEnemies.buried_biter(entity.surface, entity.position)
     end
-    if random(1, 32) == 1 then
+    if random(1, 8) == 1 then
         BuriedEnemies.buried_worm(entity.surface, entity.position)
     end
     if random(1, 32) ~= 1 then
@@ -446,8 +446,6 @@ local mining_events = {
                 entity.destroy()
                 return
             end
-
-            local max_biters = WPT.get('biters')
 
             BuriedEnemies.buried_biter(entity.surface, entity.position, 1)
             entity.destroy()

@@ -68,6 +68,7 @@ function Public.reset_wave_defense()
     this.disable_threat_below_zero = false
     this.check_collapse_position = true
     this.modified_boss_health = true
+    this.resolve_pathing = true
 end
 
 function Public.get(key)
@@ -166,6 +167,13 @@ function Public.modified_boss_health(boolean)
         this.modified_boss_health = boolean
     end
     return this.modified_boss_health
+end
+
+function Public.resolve_pathing(boolean)
+    if (boolean or boolean == false) then
+        this.resolve_pathing = boolean
+    end
+    return this.resolve_pathing
 end
 
 function Public.set_biter_health_boost(number)

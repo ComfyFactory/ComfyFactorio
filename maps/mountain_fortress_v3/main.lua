@@ -12,6 +12,7 @@ require 'modules.spawners_contain_biters'
 require 'modules.wave_defense.main'
 require 'modules.charging_station'
 
+local math2d = require 'math2d'
 -- local HS = require 'maps.mountain_fortress_v3.highscore'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Autostash = require 'modules.autostash'
@@ -46,6 +47,7 @@ local AntiGrief = require 'antigrief'
 local Public = {}
 local floor = math.floor
 local random = math.random
+local remove = table.remove
 local tile_damage = 50
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -119,6 +121,34 @@ local disable_tech = function()
     game.forces.player.technologies['railway'].researched = true
     game.forces.player.technologies['land-mine'].enabled = false
     disable_recipes()
+end
+
+local is_position_near = function(pos_to_check, check_against)
+    local status = false
+    local function inside(pos)
+        return pos.x >= pos_to_check.x and pos.y >= pos_to_check.y and pos.x <= pos_to_check.x and pos.y <= pos_to_check.y
+    end
+
+    if inside(check_against) then
+        status = true
+    end
+
+    return status
+end
+
+local is_position_near_tbl = function(position, tbl)
+    local status = false
+    local function inside(pos)
+        return pos.x >= position.x and pos.y >= position.y and pos.x <= position.x and pos.y <= position.y
+    end
+
+    for i = 1, #tbl do
+        if inside(tbl[i]) then
+            status = true
+        end
+    end
+
+    return status
 end
 
 local set_difficulty = function()
@@ -726,6 +756,93 @@ local collapse_message =
     end
 )
 
+local lock_locomotive_positions = function(lock)
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local locomotive_positions = WPT.get('locomotive_pos')
+    local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
+    local p = locomotive.position
+    if not (success and lock) then
+        if lock then
+            locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y + 50)}
+        else
+            locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y)}
+        end
+    end
+
+    local total_pos = #locomotive_positions.tbl
+    if total_pos > 50 then
+        remove(locomotive_positions.tbl, total_pos - total_pos + 1)
+    end
+end
+
+local set_spawn_position = function()
+    local collapse_pos = Collapse.get_position()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+    local l = locomotive.position
+
+    local retries = 0
+
+    ::retry::
+
+    local locomotive_positions = WPT.get('locomotive_pos')
+    local total_pos = #locomotive_positions.tbl
+
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+
+    local spawn_near_collapse = WPT.get('spawn_near_collapse')
+    if spawn_near_collapse then
+        local collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 128, 1)
+        local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
+        local get_tile = surface.get_tile(sizeof)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            remove(locomotive_positions.tbl, total_pos - total_pos + 1)
+            retries = retries + 1
+
+            if retries == 2 then
+                goto continue
+            end
+            goto retry
+        end
+
+        local locomotive_position = surface.find_non_colliding_position('small-biter', sizeof, 128, 1)
+        local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
+        local l_y = l.y
+        local t_y = locomotive_position.y
+        local c_y = collapse_pos.y
+        if total_pos > 35 then
+            if l_y - t_y <= -150 then
+                if locomotive_position then
+                    WD.set_spawn_position(locomotive_position)
+                end
+            elseif c_y - t_y <= 100 then
+                if distance_from >= 10 then
+                    WD.set_spawn_position(locomotive_position)
+                else
+                    WD.set_spawn_position({x = locomotive_position.x, y = locomotive_position.y + 50})
+                end
+            else
+                if collapse_position then
+                    WD.set_spawn_position(collapse_position)
+                end
+            end
+        else
+            if collapse_position then
+                WD.set_spawn_position(collapse_position)
+            end
+        end
+    end
+
+    ::continue::
+end
+
 local compare_collapse_and_train = function()
     local collapse_pos = Collapse.get_position()
     local locomotive = WPT.get('locomotive')
@@ -785,8 +902,6 @@ local collapse_after_wave_100 = function()
 end
 
 local on_tick = function()
-    local active_surface_index = WPT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
 
@@ -794,6 +909,7 @@ local on_tick = function()
         for _, player in pairs(game.connected_players) do
             update_gui(player)
         end
+        lock_locomotive_positions()
         is_player_valid()
         is_locomotive_valid()
         has_the_game_ended()
@@ -802,21 +918,13 @@ local on_tick = function()
 
     if tick % 250 == 0 then
         compare_collapse_and_train()
+        set_spawn_position()
         boost_difficulty()
     end
 
     if tick % 1000 == 0 then
         collapse_after_wave_100()
         set_difficulty()
-
-        local spawn_near_collapse = WPT.get('spawn_near_collapse')
-        if spawn_near_collapse then
-            local collapse_pos = Collapse.get_position()
-            local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
-            if position then
-                WD.set_spawn_position({x = position.x, y = position.y - 50})
-            end
-        end
     end
 end
 
