@@ -11,6 +11,7 @@ Global.register(
 
 local explosives_effects = {"explosion", "grenade-explosion", "explosion", "grenade-explosion", "big-artillery-explosion", "massive-explosion", "land-mine-explosion", "storage-tank-explosion"}
 local table_insert = table.insert
+local table_remove = table.remove
 local math_floor = math.floor
 local math_sqrt = math.sqrt
 local math_random = math.random
@@ -40,10 +41,8 @@ local function draw_effects(surface, instance)
 	if not vectors then return end
 	local center_position_x = instance.position.x
 	local center_position_y = instance.position.y
-	local r = 1
-	if instance.current_r > 3 then r = 2 end
 	for _, v in pairs(vectors) do
-		if math_random(1,r) == 1 then
+		if math_random(0, instance.current_r * 0.15 * (explosives.instance_count * 0.5)) == 0 then
 			local position = {center_position_x + v[1], center_position_y + v[2]}
 			local name = explosives_effects[math_random(1, 8)]
 			surface.create_entity({name = name, position = position, target = position})
@@ -66,8 +65,8 @@ local function damage_entities(surface, instance)
 	local center_position_x = instance.position.x
 	local center_position_y = instance.position.y
 	for _, v in pairs(vectors) do		
-		local position = {center_position_x + v[1], center_position_y + v[2]}	
-		for _, entity in pairs(surface.find_entities({position, {position[1] + 1, position[2] + 1}})) do			
+		local position = {center_position_x + v[1], center_position_y + v[2]}
+		for _, entity in pairs(surface.find_entities_filtered({area = {position, {position[1] + 1, position[2] + 1}}, type = {"corpse", "explosion"}, invert = true,})) do
 			if instance.damage_remaining < 200 then
 				if damage_entity(entity, instance.damage_remaining) then return end
 			else
@@ -111,7 +110,7 @@ local function process_explosion(instance)
 	return true
 end
 
-local function spawn_explosion(surface, position, amount)
+function spawn_explosion(surface, position, amount)
 	if not explosives.instances then explosives.instances = {} end
 	table_insert(explosives.instances, {
 		surface_index = surface.index,
@@ -124,9 +123,10 @@ end
 
 local function on_tick()
 	if not explosives.instances then return end
+	explosives.instance_count = #explosives.instances
     for k, instance in pairs(explosives.instances) do
         local success = process_explosion(instance)
-		if not success then explosives.instances[k] = nil end
+		if not success then table_remove(explosives.instances, k) end
     end
 	if #explosives.instances == 0 then explosives.instances = nil end
 end
