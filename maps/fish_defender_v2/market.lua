@@ -7,7 +7,6 @@ require 'maps.fish_defender_v2.laser_pointer'
 
 local Event = require 'utils.event'
 local FDT = require 'maps.fish_defender_v2.table'
-local Server = require 'utils.server'
 
 local slot_upgrade_offers = {
     [1] = {'gun-turret', 'gun turret'},
@@ -18,7 +17,6 @@ local slot_upgrade_offers = {
 }
 
 local special_descriptions = {
-    ['flame-boots'] = 'Flame Boots - Get yourself some hot boots.',
     ['explosive-bullets'] = 'Unlock Explosive Bullets - Submachine-Gun and Pistol gains a chance to deal splash damage.',
     ['bouncy-shells'] = 'Unlock Bouncy Shells - Shotgun projectiles may bounce to multiple targets.',
     ['trapped-capsules'] = 'Unlock Trapped Capsules - Combat robots will send a last deadly projectile to a nearby enemy when killed.',
@@ -30,44 +28,36 @@ local special_descriptions = {
 }
 
 local function refresh_market_offers()
-    local this = FDT.get()
-    if not this.market or not this.market.valid then
+    local market = FDT.get('market')
+    if not market or not market.valid then
         return
     end
     for i = 1, 100, 1 do
-        local a = this.market.remove_market_item(1)
+        local a = market.remove_market_item(1)
         if a == false then
             break
         end
     end
 
-    local str1 =
-        'Gun Turret Slot for ' ..
-        tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
+    local entity_limits = FDT.get('entity_limits')
+
+    local str1 = 'Gun Turret Slot for ' .. tostring(entity_limits['gun-turret'].limit * entity_limits['gun-turret'].slot_price)
     str1 = str1 .. ' Coins.'
 
-    local str2 =
-        'Laser Turret Slot for ' ..
-        tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
+    local str2 = 'Laser Turret Slot for ' .. tostring(entity_limits['laser-turret'].limit * entity_limits['laser-turret'].slot_price)
     str2 = str2 .. ' Coins.'
 
-    local str3 =
-        'Artillery Slot for ' ..
-        tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
+    local str3 = 'Artillery Slot for ' .. tostring(entity_limits['artillery-turret'].limit * entity_limits['artillery-turret'].slot_price)
     str3 = str3 .. ' Coins.'
 
     local current_limit = 1
-    if this.entity_limits['flamethrower-turret'].limit ~= 0 then
-        current_limit = current_limit + this.entity_limits['flamethrower-turret'].limit
+    if entity_limits['flamethrower-turret'].limit ~= 0 then
+        current_limit = current_limit + entity_limits['flamethrower-turret'].limit
     end
-    local str4 =
-        'Flamethrower Turret Slot for ' ..
-        tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
+    local str4 = 'Flamethrower Turret Slot for ' .. tostring(current_limit * entity_limits['flamethrower-turret'].slot_price)
     str4 = str4 .. ' Coins.'
 
-    local str5 =
-        'Landmine Slot for ' ..
-        tostring(math.ceil((this.entity_limits['land-mine'].limit / 3) * this.entity_limits['land-mine'].slot_price))
+    local str5 = 'Landmine Slot for ' .. tostring(math.ceil((entity_limits['land-mine'].limit / 3) * entity_limits['land-mine'].slot_price))
     str5 = str5 .. ' Coins.'
 
     local market_items = {
@@ -81,6 +71,8 @@ local function refresh_market_offers()
         {price = {{'coin', 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
         {price = {{'coin', 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
         {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
+        {price = {{'small-plane', 40}}, offer = {type = 'give-item', item = 'spidertron', count = 1}},
+        {price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'small-plane', count = 1}},
         {price = {{'coin', 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
         {price = {{'coin', 1200}}, offer = {type = 'give-item', item = 'tank', count = 1}},
         {price = {{'coin', 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
@@ -121,48 +113,47 @@ local function refresh_market_offers()
         {price = {{'coin', 200}}, offer = {type = 'give-item', item = 'belt-immunity-equipment', count = 1}},
         {price = {{'coin', 250}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}},
         {price = {{'coin', 35}}, offer = {type = 'give-item', item = 'construction-robot', count = 1}},
-        {price = {{'coin', 25}}, offer = {type = 'give-item', item = 'cliff-explosives', count = 1}},
-        {price = {{'coin', 80}}, offer = {type = 'nothing', effect_description = special_descriptions['flame-boots']}}
+        {price = {{'coin', 25}}, offer = {type = 'give-item', item = 'cliff-explosives', count = 1}}
     }
 
     for _, item in pairs(market_items) do
-        this.market.add_market_item(item)
+        market.add_market_item(item)
     end
 
-    if not this.railgun_enhancer_unlocked then
-        this.market.add_market_item(
+    if not FDT.get('railgun_enhancer_unlocked') then
+        market.add_market_item(
             {
                 price = {{'coin', 1500}},
                 offer = {type = 'nothing', effect_description = special_descriptions['railgun-enhancer']}
             }
         )
     end
-    if not this.trapped_capsules_unlocked then
-        this.market.add_market_item(
+    if not FDT.get('trapped_capsules_unlocked') then
+        market.add_market_item(
             {
                 price = {{'coin', 3500}},
                 offer = {type = 'nothing', effect_description = special_descriptions['trapped-capsules']}
             }
         )
     end
-    if not this.explosive_bullets_unlocked then
-        this.market.add_market_item(
+    if not FDT.get('explosive_bullets_unlocked') then
+        market.add_market_item(
             {
                 price = {{'coin', 4500}},
                 offer = {type = 'nothing', effect_description = special_descriptions['explosive-bullets']}
             }
         )
     end
-    if not this.bouncy_shells_unlocked then
-        this.market.add_market_item(
+    if not FDT.get('bouncy_shells_unlocked') then
+        market.add_market_item(
             {
                 price = {{'coin', 10000}},
                 offer = {type = 'nothing', effect_description = special_descriptions['bouncy-shells']}
             }
         )
     end
-    if not this.vehicle_nanobots_unlocked then
-        this.market.add_market_item(
+    if not FDT.get('vehicle_nanobots_unlocked') then
+        market.add_market_item(
             {
                 price = {{'coin', 15000}},
                 offer = {type = 'nothing', effect_description = special_descriptions['vehicle-nanobots']}
@@ -170,15 +161,15 @@ local function refresh_market_offers()
         )
     end
     --[[
-	if not this.crumbly_walls_unlocked then
-		this.market.add_market_item({price = {{"coin", 35000}}, offer = {type = 'nothing', effect_description = special_descriptions["crumbly-walls"]}})
+	if not crumbly_walls_unlocked then
+		market.add_market_item({price = {{"coin", 35000}}, offer = {type = 'nothing', effect_description = special_descriptions["crumbly-walls"]}})
 	end
-	if not this.ultra_mines_unlocked then
-		this.market.add_market_item({price = {{"coin", 45000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
+	if not ultra_mines_unlocked then
+		market.add_market_item({price = {{"coin", 45000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
 	end
 	]]
-    if not this.laser_pointer_unlocked then
-        this.market.add_market_item(
+    if not FDT.get('laser_pointer_unlocked') then
+        market.add_market_item(
             {
                 price = {{'coin', 65000}},
                 offer = {type = 'nothing', effect_description = special_descriptions['laser-pointer']}
@@ -188,25 +179,21 @@ local function refresh_market_offers()
 end
 
 local function slot_upgrade(player, offer_index)
-    local this = FDT.get()
-    local price =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit *
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+    local entity_limits = FDT.get('entity_limits')
+    local price = entity_limits[slot_upgrade_offers[offer_index][1]].limit * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
 
     local gain = 1
     if offer_index == 5 then
         price =
             math.ceil(
-            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) *
-                this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+            (entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
         )
         gain = 3
     end
 
     if slot_upgrade_offers[offer_index][1] == 'flamethrower-turret' then
         price =
-            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) *
-            this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+            (entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
     end
 
     local coins_removed = player.remove_item({name = 'coin', count = price})
@@ -218,22 +205,12 @@ local function slot_upgrade(player, offer_index)
         return false
     end
 
-    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
+    entity_limits[slot_upgrade_offers[offer_index][1]].limit = entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
     game.print(
         player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
         {r = 0.22, g = 0.77, b = 0.44}
     )
-    if math.random(1, 2) == 1 then
-        Server.to_discord_bold(
-            table.concat {
-                '*** ' ..
-                    player.name ..
-                        ' has bought a ' ..
-                            slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
-            }
-        )
-    end
+
     refresh_market_offers()
 end
 
@@ -246,7 +223,6 @@ local function on_market_item_purchased(event)
     if bought_offer.type ~= 'nothing' then
         return
     end
-    local this = FDT.get()
 
     if slot_upgrade_offers[offer_index] then
         if slot_upgrade(player, offer_index) then
@@ -258,71 +234,58 @@ local function on_market_item_purchased(event)
         return
     end
 
-    if bought_offer.effect_description == special_descriptions['flame-boots'] then
-        game.print(player.name .. ' has bought themselves some flame boots.', {r = 0.22, g = 0.77, b = 0.44})
-        if not this.flame_boots[player.index].fuel then
-            this.flame_boots[player.index].fuel = math.random(1500, 3000)
-        else
-            this.flame_boots[player.index].fuel = this.flame_boots[player.index].fuel + math.random(1500, 3000)
-        end
-
-        player.print('Fuel remaining: ' .. this.flame_boots[player.index].fuel, {r = 0.22, g = 0.77, b = 0.44})
-        refresh_market_offers()
-        return
-    end
-
     if bought_offer.effect_description == special_descriptions['explosive-bullets'] then
         game.print(player.name .. ' has unlocked explosive bullets.', {r = 0.22, g = 0.77, b = 0.44})
-        this.explosive_bullets_unlocked = true
+        FDT.set('explosive_bullets_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['bouncy-shells'] then
         game.print(player.name .. ' has unlocked bouncy shells.', {r = 0.22, g = 0.77, b = 0.44})
-        this.bouncy_shells_unlocked = true
+        FDT.set('bouncy_shells_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['trapped-capsules'] then
         game.print(player.name .. ' has unlocked trapped capsules!', {r = 0.22, g = 0.77, b = 0.44})
-        this.trapped_capsules_unlocked = true
+        FDT.set('trapped_capsules_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['ultra-mines'] then
         game.print(player.name .. ' has unlocked ultra mines!', {r = 0.22, g = 0.77, b = 0.44})
-        this.ultra_mines_unlocked = true
+        FDT.set('ultra_mines_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['laser-pointer'] then
         game.print(player.name .. ' has unleashed the quest to slay the red dot!', {r = 0.22, g = 0.77, b = 0.44})
-        this.laser_pointer_unlocked = true
+        FDT.set('laser_pointer_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['railgun-enhancer'] then
         game.print(player.name .. ' has unlocked the enhanced railgun!', {r = 0.22, g = 0.77, b = 0.44})
-        this.railgun_enhancer_unlocked = true
+        FDT.set('railgun_enhancer_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['crumbly-walls'] then
         game.print(player.name .. ' has unlocked crumbly walls!', {r = 0.22, g = 0.77, b = 0.44})
-        this.crumbly_walls_unlocked = true
+        FDT.set('crumbly_walls_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['vehicle-nanobots'] then
         game.print(player.name .. ' has unlocked vehicle nanobots!', {r = 0.22, g = 0.77, b = 0.44})
-        this.vehicle_nanobots_unlocked = true
+        FDT.set('vehicle_nanobots_unlocked', true)
         refresh_market_offers()
         return
     end

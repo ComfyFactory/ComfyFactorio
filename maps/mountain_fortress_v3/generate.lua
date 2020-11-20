@@ -1,4 +1,5 @@
 local Market = require 'maps.mountain_fortress_v3.basic_markets'
+local WPT = require 'maps.mountain_fortress_v3.table'
 local Loot = require 'maps.mountain_fortress_v3.loot'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
@@ -14,7 +15,6 @@ local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
 local regen_decoratives = false
-local force_chunk = false
 
 -- Set to false by modules that want to control the on_chunk_generated event themselves.
 Public.enable_register_events = true
@@ -516,6 +516,7 @@ local do_chunk = Public.do_chunk
 local schedule_chunk = Public.schedule_chunk
 
 local function on_chunk(event)
+    local force_chunk = WPT.get('force_chunk')
     if force_chunk then
         do_chunk(event)
     elseif event.tick == 0 then

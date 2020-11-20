@@ -3,35 +3,39 @@ local Public = {}
 local Constants = require 'maps.cave_miner_v2.constants'
 local Functions = require 'maps.cave_miner_v2.functions'
 local LootRaffle = require "functions.loot_raffle"
+local math_floor = math.floor
+local math_random = math.random
 
-local loot_blacklist = {
-	["discharge-defense-remote"] = true,
-	["express-loader"] = true,
-	["fast-loader"] = true,
-	["landfill"] = true,	
-	["loader"] = true,
-	["railgun"] = true,
-	["railgun-dart"] = true,
-	["raw-fish"] = true,
-	["wood"] = true,
-}
+local function get_item_blacklist(tier)	
+	local blacklist = LootRaffle.get_tech_blacklist(tier * 0.05)
+	blacklist["discharge-defense-remote"] = true
+	blacklist["express-loader"] = true
+	blacklist["fast-loader"] = true
+	blacklist["landfill"] = true
+	blacklist["loader"] = true
+	blacklist["railgun"] = true
+	blacklist["railgun-dart"] = true
+	blacklist["raw-fish"] = true
+	blacklist["wood"] = true
+	return blacklist
+end
 
 local special_slots = {
 	[1] = function(market, cave_miner)
 		local pickaxe_tiers = Constants.pickaxe_tiers
 		local tier = cave_miner.pickaxe_tier + 1
 		if pickaxe_tiers[tier] then
-			local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.65) + 8, 100, loot_blacklist)
+			local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.65) + 8, 100, get_item_blacklist(tier))
 			local price = {}
 			for _, item_stack in pairs(item_stacks) do table.insert(price, {name = item_stack.name, amount = item_stack.count}) end	
-			market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe tier to: ' .. pickaxe_tiers[tier]}})		
+			market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade pickaxe to tier ' .. tier .. ': ' .. pickaxe_tiers[tier]}})		
 		else
 			market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Maximum pickaxe upgrade reached!'}})		
 		end
 	end,
 	[2] = function(market, cave_miner)
 		local tier = (market.force.character_inventory_slots_bonus + 2) * 0.5
-		local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.50) + 8, 100, loot_blacklist)
+		local item_stacks = LootRaffle.roll(math.floor(tier ^ 3.50) + 8, 100, get_item_blacklist(tier))
 		local price = {}
 		for _, item_stack in pairs(item_stacks) do table.insert(price, {name = item_stack.name, amount = item_stack.count}) end	
 		market.add_market_item({price = price, offer = {type = 'nothing', effect_description = 'Upgrade backpack to tier ' .. tier}})
@@ -85,6 +89,7 @@ function Public.offer_bought(event, cave_miner)
 	local bought_offer = offers[offer_index].offer
 	if bought_offer.type ~= "nothing" then return end
 	if offer_index == 1 then
+		market.force.play_sound({path = 'utility/new_objective', volume_modifier = 0.75})
 		cave_miner.pickaxe_tier = cave_miner.pickaxe_tier + 1
 		local speed = Functions.set_mining_speed(cave_miner, player.force)
 		game.print("Pickaxe has been upgraded to: " .. Constants.pickaxe_tiers[cave_miner.pickaxe_tier] .. "!")
@@ -95,10 +100,11 @@ function Public.offer_bought(event, cave_miner)
 	end
 	if offer_index == 2 then
 		market.force.character_inventory_slots_bonus = market.force.character_inventory_slots_bonus + 2
+		market.force.play_sound({path = 'utility/new_objective', volume_modifier = 0.75})
 		game.print("Backpack has been upgraded to tier " .. (market.force.character_inventory_slots_bonus + 2) * 0.5 .. "!")
 		Public.refresh_offer(market, cave_miner, 2)
 		Public.refresh_offer(market, cave_miner, 3)
-		Functions.update_top_gui(cave_miner, 2)
+		Functions.update_top_gui(cave_miner, 2)	
 		return
 	end	
 	if offer_index == 3 then
@@ -110,6 +116,72 @@ function Public.offer_bought(event, cave_miner)
 		Public.refresh_offer(market, cave_miner, 2)
 		Public.refresh_offer(market, cave_miner, 3)
 	end
+end
+
+function Public.spawn_random_cave_market(surface, position)
+	local r = 64
+	if surface.count_entities_filtered({name = "market", area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}}) > 0 then return end
+
+	local difficulty_modifier = Functions.get_difficulty_modifier(position)
+	local market = surface.create_entity({name = "market", position = position, force = "player"})
+	local worth = math_floor(difficulty_modifier * 10000) + 256
+	local blacklist = LootRaffle.get_tech_blacklist(difficulty_modifier + 0.20)
+	blacklist["discharge-defense-remote"] = true
+	blacklist["landfill"] = true
+	blacklist["copper-cable"] = true
+	blacklist["iron-stick"] = true
+	blacklist["raw-fish"] = true
+		
+	local items = {}	
+	for _ = 1, 2, 1 do
+		local item_sells = LootRaffle.roll(worth, 3, blacklist)
+		for _, item_stack in pairs(item_sells) do
+			items[item_stack.name] = LootRaffle.get_item_value(item_stack.name)
+		end
+	end
+	for name, value in pairs(items) do
+		local value = value * math_random(16, 32) * 0.01
+		local count = 1
+		if value < 1 then
+			count = math_floor(1 / value)
+			value = 1			
+		end
+		value = math_floor(value)
+		market.add_market_item({price = {{"raw-fish", value}}, offer = {type = 'give-item', item = name, count = count}})
+	end
+
+	blacklist["railgun"] = true
+	blacklist["railgun-dart"] = true
+	blacklist["wood"] = true
+	blacklist["express-loader"] = true
+	blacklist["fast-loader"] = true
+	blacklist["loader"] = true
+
+	local items = {}	
+	for _ = 1, 2, 1 do
+		local item_buys = LootRaffle.roll(worth, 3, blacklist)
+		for _, item_stack in pairs(item_buys) do
+			items[item_stack.name] = LootRaffle.get_item_value(item_stack.name)
+		end
+	end
+	for name, value in pairs(items) do
+		local value = value * math_random(5, 10) * 0.01
+		local count = 1
+		if value < 1 then
+			count = math_floor(1 / value)
+			value = 1			
+		end
+		value = math_floor(value)
+		market.add_market_item({price = {{name, count}}, offer = {type = 'give-item', item = "raw-fish", count = value}})
+	end
+	
+	rendering.draw_light({
+		sprite = "utility/light_medium", scale = 3, intensity = 0.8, minimum_darkness = 0,
+		oriented = true, color = {255,255,255}, target = market,
+		surface = surface, visible = true, only_in_alt_mode = false,
+	})
+	market.destructible = false
+	market.minable = false
 end
 
 return Public

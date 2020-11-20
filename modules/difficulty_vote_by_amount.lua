@@ -2,66 +2,50 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
 
-local insert = table.insert
 local max = math.max
+local round = math.round
 
 local this = {
     difficulties = {
         [1] = {
-            name = 'Peaceful',
+            name = "I'm too young to die",
             index = 1,
-            value = 0.25,
-            color = {r = 0.00, g = 0.45, b = 0.00},
-            print_color = {r = 0.00, g = 0.8, b = 0.00},
-            count = 0
-        },
-        [2] = {
-            name = 'Piece of cake',
-            index = 2,
-            value = 0.5,
-            color = {r = 0.00, g = 0.35, b = 0.00},
-            print_color = {r = 0.00, g = 0.6, b = 0.00},
-            count = 0
-        },
-        [3] = {
-            name = 'Easy',
-            index = 3,
             value = 0.75,
             color = {r = 0.00, g = 0.25, b = 0.00},
             print_color = {r = 0.00, g = 0.4, b = 0.00},
-            count = 0
+            count = 0,
+            strength_modifier = 1.00,
+            boss_modifier = 6.0
         },
-        [4] = {
-            name = 'Normal',
+        [2] = {
+            name = 'Hurt me plenty',
+            index = 2,
             value = 1,
-            index = 4,
             color = {r = 0.00, g = 0.00, b = 0.25},
             print_color = {r = 0.0, g = 0.0, b = 0.5},
-            count = 0
+            count = 0,
+            strength_modifier = 1.25,
+            boss_modifier = 7.0
         },
-        [5] = {
-            name = 'Hard',
-            index = 5,
+        [3] = {
+            name = 'Ultra-violence',
+            index = 3,
             value = 1.5,
-            color = {r = 0.25, g = 0.00, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00},
-            count = 0
+            color = {r = 255, g = 128, b = 0.00},
+            print_color = {r = 255, g = 128, b = 0.00},
+            count = 0,
+            strength_modifier = 1.75,
+            boss_modifier = 8.0
         },
-        [6] = {
+        [4] = {
             name = 'Nightmare',
-            index = 6,
+            index = 4,
             value = 3,
-            color = {r = 0.35, g = 0.00, b = 0.00},
-            print_color = {r = 0.6, g = 0.0, b = 0.00},
-            count = 0
-        },
-        [7] = {
-            name = 'Impossible',
-            index = 7,
-            value = 5,
-            color = {r = 0.45, g = 0.00, b = 0.00},
-            print_color = {r = 0.8, g = 0.0, b = 0.00},
-            count = 0
+            color = {r = 255, g = 0.00, b = 0.00},
+            print_color = {r = 255, g = 0.0, b = 0.00},
+            count = 0,
+            strength_modifier = 2.50,
+            boss_modifier = 9.0
         }
     },
     tooltip = {
@@ -75,10 +59,12 @@ local this = {
     },
     difficulty_vote_value = 1,
     difficulty_vote_index = 1,
+    fair_vote = true,
     difficulty_poll_closing_timeout = 54000,
     difficulty_player_votes = {},
     gui_width = 108,
-    name = 'Easy',
+    name = "I'm too young to die",
+    strength_modifier = 1.00,
     button_tooltip = nil
 }
 
@@ -90,30 +76,6 @@ Global.register(
         this = t
     end
 )
-
-function Public.set_tooltip(...)
-    if type(...) == 'table' then
-        this.tooltip = ...
-    end
-end
-
-function Public.set_difficulties(...)
-    if type(...) == 'table' then
-        this.difficulties = ...
-    end
-end
-
-function Public.set_poll_closing_timeout(...)
-    this.difficulty_poll_closing_timeout = ...
-end
-
-function Public.get(key)
-    if key then
-        return this[key]
-    else
-        return this
-    end
-end
 
 function Public.difficulty_gui()
     local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.difficulty_vote_index].name .. '.'
@@ -150,12 +112,23 @@ local function highest_count(tbl)
         init.index[#init.index + 1] = tbl[i].index
     end
 
-    local highest = math.max(unpack(init.count))
+    local highest = max(unpack(init.count))
 
     local pre = {}
-    for x = 1, #init.count do
-        if init.count[x] == highest then
-            pre[#pre + 1] = {i = init.index[x], c = init.count[x]}
+
+    if this.fair_vote then
+        for x = 1, #init.count do
+            if init.count[x] == highest then
+                pre[#pre + 1] = {i = init.index[x], c = init.count[x]}
+            end
+        end
+    else
+        for x = 1, #init.count do
+            if init.count[x] ~= 0 then
+                if round(init.count[x] / highest) == 1 then
+                    pre[#pre + 1] = {i = init.index[x], c = init.count[x]}
+                end
+            end
         end
     end
 
@@ -164,7 +137,7 @@ local function highest_count(tbl)
         post[#post + 1] = pre[i].i
     end
 
-    highest = math.round(table.mean(post))
+    highest = round(table.mean(post))
 
     return highest
 end
@@ -201,9 +174,6 @@ local function poll_difficulty(player)
         b.style.font = 'heading-2'
         b.style.minimal_width = 160
         b.tooltip = this.tooltip[i]
-        --[[ if this.difficulties[i].disabled then
-            b.enabled = false
-        end ]]
     end
     local b = frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
     local b =
@@ -231,6 +201,8 @@ local function set_difficulty()
     end
     this.difficulty_vote_index = index
     this.difficulty_vote_value = this.difficulties[index].value
+    this.boss_modifier = this.difficulties[index].boss_modifier
+    this.strength_modifier = this.difficulties[index].strength_modifier
 end
 
 function Public.reset_difficulty_poll(tbl)
@@ -336,7 +308,7 @@ local function on_gui_click(event)
             'You have already voted for ' .. this.difficulties[i].name .. '.',
             this.difficulties[i].print_color
         )
-        return
+        return event.element.parent.destroy()
     end
 
     if this.difficulty_player_votes[player.name] then
@@ -357,6 +329,38 @@ local function on_gui_click(event)
         player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty!',
         this.difficulties[i].print_color
     )
+end
+
+function Public.set_tooltip(...)
+    if type(...) == 'table' then
+        this.tooltip = ...
+    end
+end
+
+function Public.set_difficulties(...)
+    if type(...) == 'table' then
+        this.difficulties = ...
+    end
+end
+
+function Public.set_poll_closing_timeout(...)
+    this.difficulty_poll_closing_timeout = ...
+end
+
+function Public.get_fair_vote()
+    return this.fair_vote
+end
+
+function Public.set_fair_vote(value)
+    this.fair_vote = value or false
+end
+
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
 end
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

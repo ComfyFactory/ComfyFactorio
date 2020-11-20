@@ -1,7 +1,31 @@
+local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
-local FDT = require 'maps.fish_defender_v2.table'
+local Global = require 'utils.globals'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
+
+local Public = {}
+
+local this = {
+    scenarioname = '',
+    reset_are_you_sure = false,
+    restart = false,
+    soft_reset = false,
+    shutdown = false,
+    accepted_params = {
+        ['restart'] = true,
+        ['resetnow'] = true,
+        ['shutdown'] = true,
+        ['restartnow'] = true
+    }
+}
+
+Global.register(
+    this,
+    function(t)
+        this = t
+    end
+)
 
 commands.add_command(
     'scenario',
@@ -21,21 +45,20 @@ commands.add_command(
 
         local param = cmd.parameter
 
-        if param == 'restart' or param == 'shutdown' or param == 'reset' or param == 'restartnow' then
+        if this.accepted_params[param] then
             goto continue
         else
-            p('[ERROR] Arguments are:\nrestart\nshutdown\nreset\nrestartnow')
+            p('[ERROR] Arguments was invalid.')
             return
         end
 
         ::continue::
 
-        local this = FDT.get()
-        local reset_map = require 'maps.fish_defender_v2.main'.reset_game
-
         if not this.reset_are_you_sure then
             this.reset_are_you_sure = true
-            p('[WARNING] This command will disable the soft-reset feature, run this command again if you really want to do this!')
+            p(
+                '[WARNING] This command will disable the soft-reset feature, run this command again if you really want to do this!'
+            )
             return
         end
 
@@ -44,7 +67,7 @@ commands.add_command(
                 this.reset_are_you_sure = nil
                 this.restart = false
                 this.soft_reset = true
-                p('[SUCCESS] Soft-reset is enabled.')
+                p('[SUCCESS] Soft-reset is once again enabled.')
                 return
             else
                 this.reset_are_you_sure = nil
@@ -53,20 +76,20 @@ commands.add_command(
                 if this.shutdown then
                     this.shutdown = false
                 end
-                p('[WARNING] Soft-reset is disabled! Server will restart from scenario.')
+                p('[WARNING] Soft-reset is disabled! Server will restart from scenario to load new changes.')
                 return
             end
         elseif param == 'restartnow' then
             this.reset_are_you_sure = nil
-            p(player.name .. ' has restarted the game.')
-            Server.start_scenario('Fish_Defender')
+            p(player.name .. ' restarted the game.')
+            Server.start_scenario(this.scenarioname)
             return
         elseif param == 'shutdown' then
             if this.shutdown then
                 this.reset_are_you_sure = nil
                 this.shutdown = false
                 this.soft_reset = true
-                p('[SUCCESS] Soft-reset is enabled.')
+                p('[SUCCESS] Soft-reset is once again enabled.')
                 return
             else
                 this.reset_are_you_sure = nil
@@ -75,7 +98,7 @@ commands.add_command(
                 if this.restart then
                     this.restart = false
                 end
-                p('[WARNING] Soft-reset is disabled! Server will shutdown.')
+                p('[WARNING] Soft-reset is disabled! Server will shutdown. Most likely because of updates.')
                 return
             end
         elseif param == 'reset' then
@@ -91,28 +114,26 @@ commands.add_command(
         end
     end
 )
-commands.add_command(
-    'stop_generate_map',
-    'Usable only for admins - controls the scenario!',
-    function()
-        local p
-        local player = game.player
 
-        if not player or not player.valid then
-            p = log
-        else
-            p = player.print
-            if not player.admin then
-                return
-            end
-        end
-        local stop_generating_map = FDT.get('stop_generating_map')
-        if not stop_generating_map then
-            FDT.set('stop_generating_map', true)
-            player.print('Stopped generating the map!')
-        else
-            FDT.set('stop_generating_map', false)
-            player.print('Resumed the generation of map!')
-        end
+function Public.map_reset_callback(data, callback)
+    if not data then
+        return
     end
-)
+    if not callback then
+        return
+    end
+
+    if not string.find(callback, '%s') and not string.find(callback, 'return') then
+        callback = 'return ' .. callback
+    end
+
+    if type(callback) == 'function' then
+        local success, err = pcall(callback, data)
+        return success, err
+    else
+        local success, err = pcall(loadstring(callback), data)
+        return success, err
+    end
+end
+
+return Public

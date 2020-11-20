@@ -22,6 +22,9 @@ local brain = {
         'If you feel like the server is lagging, run the following command:',
         '/server-ups',
         'This will display the server UPS on your top right screen.'
+    },
+    [5] = {
+        "If you're not trusted - ask a trusted player or an admin to trust you."
     }
 }
 
@@ -42,7 +45,10 @@ local links = {
     ['stole'] = brain[2],
     ['troll'] = brain[2],
     ['lag'] = brain[4],
-    ['lagging'] = brain[4]
+    ['lagging'] = brain[4],
+    ['trust'] = brain[5],
+    ['trusted'] = brain[5],
+    ['untrusted'] = brain[5]
 }
 
 local function on_player_created(event)
@@ -76,10 +82,7 @@ commands.add_command(
                 game.print(target_player.name .. ' is now a trusted player.', {r = 0.22, g = 0.99, b = 0.99})
                 for _, a in pairs(game.connected_players) do
                     if a.admin and a.name ~= player.name then
-                        a.print(
-                            '[ADMIN]: ' .. player.name .. ' trusted ' .. target_player.name,
-                            {r = 1, g = 0.5, b = 0.1}
-                        )
+                        a.print('[ADMIN]: ' .. player.name .. ' trusted ' .. target_player.name, {r = 1, g = 0.5, b = 0.1})
                     end
                 end
             end
@@ -132,10 +135,7 @@ commands.add_command(
                 game.print(target_player.name .. ' is now untrusted.', {r = 0.22, g = 0.99, b = 0.99})
                 for _, a in pairs(game.connected_players) do
                     if a.admin == true and a.name ~= player.name then
-                        a.print(
-                            '[ADMIN]: ' .. player.name .. ' untrusted ' .. target_player.name,
-                            {r = 1, g = 0.5, b = 0.1}
-                        )
+                        a.print('[ADMIN]: ' .. player.name .. ' untrusted ' .. target_player.name, {r = 1, g = 0.5, b = 0.1})
                     end
                 end
             end
@@ -220,10 +220,7 @@ local function on_console_command(event)
         for _, p in pairs(game.connected_players) do
             if p.admin == true and p.name ~= player.name then
                 if param then
-                    p.print(
-                        player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time,
-                        {r = 0.22, g = 0.99, b = 0.99}
-                    )
+                    p.print(player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time, {r = 0.22, g = 0.99, b = 0.99})
                 else
                     p.print(player.name .. ' ran: ' .. cmd .. server_time, {r = 0.22, g = 0.99, b = 0.99})
                 end

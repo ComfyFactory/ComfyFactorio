@@ -50,7 +50,7 @@ function Public.reset_wave_defense()
     this.unit_groups = {}
     this.index = 0
     this.random_group = nil
-    this.unit_group_command_delay = 3600 * 25
+    this.unit_group_command_delay = 3600 * 30
     this.unit_group_command_step_length = 15
     this.unit_group_last_command = {}
     this.wave_interval = 3600
@@ -60,10 +60,15 @@ function Public.reset_wave_defense()
     this.worm_building_density = 16
     this.worm_raffle = {}
     this.clear_corpses = false
+    this.biter_health_boost = 1
     this.alert_boss_wave = false
     this.remove_entities = false
+    this.enable_side_target = false
     this.enable_threat_log = true
+    this.disable_threat_below_zero = false
     this.check_collapse_position = true
+    this.modified_boss_health = true
+    this.resolve_pathing = true
 end
 
 function Public.get(key)
@@ -74,8 +79,11 @@ function Public.get(key)
     end
 end
 
-function Public.set(key)
-    if key then
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this
@@ -85,10 +93,8 @@ end
 Public.get_table = Public.get
 
 function Public.clear_corpses(value)
-    if value then
+    if (value or value == false) then
         this.clear_corpses = value
-    else
-        this.clear_corpses = false
     end
     return this.clear_corpses
 end
@@ -97,54 +103,93 @@ function Public.get_wave()
     return this.wave_number
 end
 
-function Public.alert_boss_wave(value)
-    if value then
-        this.alert_boss_wave = value
-    else
-        this.alert_boss_wave = false
+function Public.get_disable_threat_below_zero()
+    return this.disable_threat_below_zero
+end
+
+function Public.set_disable_threat_below_zero(boolean)
+    if (boolean or boolean == false) then
+        this.disable_threat_below_zero = boolean
+    end
+    return this.disable_threat_below_zero
+end
+
+function Public.get_alert_boss_wave()
+    return this.get_alert_boss_wave
+end
+
+function Public.alert_boss_wave(boolean)
+    if (boolean or boolean == false) then
+        this.alert_boss_wave = boolean
     end
     return this.alert_boss_wave
 end
 
-function Public.set_spawn_position(value)
-    if type(value) == 'table' then
-        this.spawn_position = value
+function Public.set_spawn_position(tbl)
+    if type(tbl) == 'table' then
+        this.spawn_position = tbl
     else
-        error('Value must be of type table.')
+        error('Tbl must be of type table.')
     end
     return this.spawn_position
 end
 
-function Public.remove_entities(value)
-    if value then
-        this.remove_entities = value
-    else
-        this.remove_entities = false
+function Public.remove_entities(boolean)
+    if (boolean or boolean == false) then
+        this.remove_entities = boolean
     end
     return this.remove_entities
 end
 
-function Public.enable_threat_log(value)
-    if value then
-        this.enable_threat_log = value
-    else
-        this.enable_threat_log = false
+function Public.enable_threat_log(boolean)
+    if (boolean or boolean == false) then
+        this.enable_threat_log = boolean
     end
     return this.enable_threat_log
 end
 
-function Public.check_collapse_position(value)
-    if value then
-        this.check_collapse_position = value
-    else
-        this.check_collapse_position = false
+function Public.check_collapse_position(boolean)
+    if (boolean or boolean == false) then
+        this.check_collapse_position = boolean
     end
     return this.check_collapse_position
+end
+
+function Public.enable_side_target(boolean)
+    if (boolean or boolean == false) then
+        this.enable_side_target = boolean
+    end
+    return this.enable_side_target
+end
+
+function Public.modified_boss_health(boolean)
+    if (boolean or boolean == false) then
+        this.modified_boss_health = boolean
+    end
+    return this.modified_boss_health
+end
+
+function Public.resolve_pathing(boolean)
+    if (boolean or boolean == false) then
+        this.resolve_pathing = boolean
+    end
+    return this.resolve_pathing
+end
+
+function Public.set_biter_health_boost(number)
+    if number and type(number) == 'number' then
+        this.biter_health_boost = number
+    else
+        this.biter_health_boost = 1
+    end
+    return this.biter_health_boost
 end
 
 local on_init = function()
     Public.reset_wave_defense()
 end
+
+-- Event.on_nth_tick(30, Public.debug_module)
 
 Event.on_init(on_init)
 

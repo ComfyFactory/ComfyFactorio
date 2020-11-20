@@ -6,13 +6,14 @@ local update_gui = require 'modules.wave_defense.gui'
 local threat_values = require 'modules.wave_defense.threat_values'
 local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
+local Event = require 'utils.event'
+
+local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 local table_insert = table.insert
 local math_sqrt = math.sqrt
 local math_round = math.round
-local Event = require 'utils.event'
-local Public = {}
 
 local group_size_modifier_raffle = {}
 local group_size_chances = {
@@ -33,7 +34,7 @@ local group_size_chances = {
     {2, 1.8}
 }
 for _, v in pairs(group_size_chances) do
-    for c = 1, v[1], 1 do
+    for _ = 1, v[1], 1 do
         table_insert(group_size_modifier_raffle, v[2])
     end
 end
@@ -45,6 +46,12 @@ local function debug_print(msg)
         return
     end
     print('WaveDefense: ' .. msg)
+end
+
+local function get_spawn_pos()
+    local position = WD.get('spawn_position')
+
+    return position
 end
 
 local function is_closer(pos1, pos2, pos)
@@ -64,7 +71,7 @@ end
 
 local function remove_trees(entity)
     local surface = entity.surface
-    local radius = 15
+    local radius = 10
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local trees = surface.find_entities_filtered {area = area, type = 'tree'}
@@ -79,7 +86,7 @@ end
 
 local function remove_rocks(entity)
     local surface = entity.surface
-    local radius = 15
+    local radius = 10
     local pos = entity.position
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
@@ -91,52 +98,31 @@ local function remove_rocks(entity)
         end
     end
 end
---[[
-local function create_tiles(entity)
-    local collapse
-    local check_collapse_position = WD.get('check_collapse_position')
-    if check_collapse_position and package.loaded['modules.collapse'] then
-        collapse = require 'modules.collapse'.get_position()
-    end
-    local function get_replacement_tile(surface, position)
-        for i = 1, 128, 1 do
-            local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
-            table.shuffle_table(vectors)
-            for k, v in pairs(vectors) do
-                local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-                if not tile.collides_with('resource-layer') then
-                    return tile.name
-                end
-            end
-        end
-        return 'grass-1'
-    end
+
+local function fill_void(entity)
     local surface = entity.surface
-    local radius = 5
+    local radius = 10
     local pos = entity.position
+    local t = {
+        'water',
+        'water-green',
+        'water-mud',
+        'water-shallow',
+        'deepwater',
+        'deepwater-green'
+    }
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
-    local tile = surface.find_tiles_filtered {area = area, name = 'out-of-map'}
-    if #tile > 0 then
-        for i, t in pairs(tile) do
-            if t and t.valid then
-                if check_collapse_position and collapse then
-                    if t.position.y <= collapse.y then
-                        if t.position.x <= collapse.x then
-                            surface.set_tiles(
-                                {{name = get_replacement_tile(surface, t.position), position = t.position}},
-                                true
-                            )
-                        end
-                    end
-                else
-                    surface.set_tiles({{name = get_replacement_tile(surface, t.position), position = t.position}}, true)
-                end
-            end
+    local tiles = surface.find_tiles_filtered {area = area, name = t}
+    if #tiles > 0 then
+        for _, tile in pairs(tiles) do
+            surface.set_tiles({{name = 'sand-1', position = tile.position}}, true)
         end
     end
-end ]]
+    debug_print('fill_void - filled void cause we found void.')
+end
+
 local function is_unit_valid(biter)
-    local this = WD.get()
+    local max_biter_age = WD.get('max_biter_age')
     if not biter.entity then
         debug_print('is_unit_valid - unit destroyed - does no longer exist')
         return false
@@ -149,7 +135,7 @@ local function is_unit_valid(biter)
         debug_print('is_unit_valid - unit destroyed - no unitgroup')
         return false
     end
-    if biter.spawn_tick + this.max_biter_age < game.tick then
+    if biter.spawn_tick + max_biter_age < game.tick then
         debug_print('is_unit_valid - unit destroyed - timed out')
         return false
     end
@@ -157,54 +143,64 @@ local function is_unit_valid(biter)
 end
 
 local function refresh_active_unit_threat()
-    local this = WD.get()
-    debug_print('refresh_active_unit_threat - current value ' .. this.active_biter_threat)
-    local active_biter_threat = 0
-    for k, biter in pairs(this.active_biters) do
+    local active_biter_threat = WD.get('active_biter_threat')
+    local active_biters = WD.get('active_biters')
+    debug_print('refresh_active_unit_threat - current value ' .. active_biter_threat)
+    local biter_threat = 0
+    for k, biter in pairs(active_biters) do
         if biter.entity then
             if biter.entity.valid then
-                active_biter_threat = active_biter_threat + threat_values[biter.entity.name]
+                biter_threat = biter_threat + threat_values[biter.entity.name]
             end
         end
     end
-    this.active_biter_threat = math_round(active_biter_threat * global.biter_health_boost, 2)
-    debug_print('refresh_active_unit_threat - new value ' .. this.active_biter_threat)
+    active_biter_threat = math_round(biter_threat * global.biter_health_boost, 2)
+    debug_print('refresh_active_unit_threat - new value ' .. active_biter_threat)
 end
 
 local function time_out_biters()
-    local this = WD.get()
-    for k, biter in pairs(this.active_biters) do
+    local active_biters = WD.get('active_biters')
+    local active_biter_count = WD.get('active_biter_count')
+    local active_biter_threat = WD.get('active_biter_threat')
+    log(serpent.block(#active_biters))
+    for k, biter in pairs(active_biters) do
         if not is_unit_valid(biter) then
-            this.active_biter_count = this.active_biter_count - 1
-            if biter.entity then
-                if biter.entity.valid then
-                    this.active_biter_threat =
-                        this.active_biter_threat -
-                        math_round(threat_values[biter.entity.name] * global.biter_health_boost, 2)
-                    if biter.entity.force.index == 2 then
-                        biter.entity.destroy()
-                    end
+            WD.set('active_biter_count', active_biter_count - 1)
+            if (biter.entity and biter.entity.valid) then
+                WD.set(
+                    'active_biter_threat',
+                    active_biter_threat - math_round(threat_values[biter.entity.name] * global.biter_health_boost, 2)
+                )
+                if biter.entity.force.index == 2 then
+                    biter.entity.destroy()
                 end
             end
-            this.active_biters[k] = nil
+            debug_print('time_out_biters: ' .. k .. ' got deleted.')
+            active_biters[k] = nil
         end
     end
 end
 
 local function get_random_close_spawner()
-    local this = WD.get()
-    local spawners = this.nests
-    local center = this.target.position
+    local nests = WD.get('nests')
+    local target = WD.get('target')
+    local get_random_close_spawner_attempts = WD.get('get_random_close_spawner_attempts')
+    local center = target.position
     local spawner
-    for i = 1, this.get_random_close_spawner_attempts, 1 do
+    local retries = 0
+    for i = 1, get_random_close_spawner_attempts, 1 do
         ::retry::
-        if #spawners < 1 then
+        if #nests < 1 then
             return false
         end
-        local k = math_random(1, #spawners)
-        local spawner_2 = spawners[k]
+        local k = math_random(1, #nests)
+        local spawner_2 = nests[k]
         if not spawner_2 or not spawner_2.valid then
-            this.nests[k] = nil
+            nests[k] = nil
+            retries = retries + 1
+            if retries == 5 then
+                break
+            end
             goto retry
         end
         if
@@ -219,13 +215,14 @@ local function get_random_close_spawner()
     return spawner
 end
 
-local function get_random_character(this)
+local function get_random_character()
     local characters = {}
+    local surface_index = WD.get('surface_index')
     local p = game.connected_players
     for _, player in pairs(p) do
         if player.character then
             if player.character.valid then
-                if player.character.surface.index == this.surface_index then
+                if player.character.surface.index == surface_index then
                     characters[#characters + 1] = player.character
                 end
             end
@@ -238,30 +235,29 @@ local function get_random_character(this)
 end
 
 local function set_main_target()
-    local this = WD.get()
-    if this.target then
-        if this.target.valid then
+    local target = WD.get('target')
+    if target then
+        if target.valid then
             return
         end
     end
 
-    local target = SideTargets.get_side_target()
-    if not target then
-        target = get_random_character(this)
+    local sec_target = SideTargets.get_side_target()
+    if not sec_target then
+        sec_target = get_random_character()
     end
-    if not target then
+    if not sec_target then
         return
     end
 
-    this.target = target
+    WD.set('target', sec_target)
     debug_print(
         'set_main_target -- New main target ' ..
-            target.name .. ' at position x' .. target.position.x .. ' y' .. target.position.y .. ' selected.'
+            sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.'
     )
 end
 
 local function set_group_spawn_position(surface)
-    local this = WD.get()
     local spawner = get_random_close_spawner()
     if not spawner then
         return
@@ -270,55 +266,66 @@ local function set_group_spawn_position(surface)
     if not position then
         return
     end
-    this.spawn_position = {x = position.x, y = position.y}
-    debug_print(
-        'set_group_spawn_position -- Changed position to x' ..
-            this.spawn_position.x .. ' y' .. this.spawn_position.y .. '.'
-    )
+    WD.set('spawn_position', {x = position.x, y = position.y})
+    local spawn_position = get_spawn_pos()
+    debug_print('set_group_spawn_position -- Changed position to x' .. spawn_position.x .. ' y' .. spawn_position.y .. '.')
 end
 
 local function set_enemy_evolution()
-    local this = WD.get()
-    local evolution_factor = this.wave_number * 0.001
-    local biter_health_boost = 1
+    local wave_number = WD.get('wave_number')
+    local biter_health_boost = WD.get('biter_health_boost')
+    local threat = WD.get('threat')
+    local evolution_factor = wave_number * 0.001
+    local biter_h_boost = 1
     --local damage_increase = 0
 
     if evolution_factor > 1 then
-        --damage_increase = damage_increase + (evolution_factor - 1)
-        --biter_health_boost = biter_health_boost + (evolution_factor - 1) * 2
         evolution_factor = 1
     end
 
-    biter_health_boost = math_round(biter_health_boost + (this.threat - 5000) * 0.000033, 3)
-    --damage_increase = math_round(damage_increase + this.threat * 0.0000025, 3)
+    if biter_health_boost then
+        biter_h_boost = math_round(biter_health_boost + (threat - 5000) * 0.000033, 3)
+    else
+        biter_h_boost = math_round(biter_h_boost + (threat - 5000) * 0.000033, 3)
+    end
+    if biter_h_boost <= 1 then
+        biter_h_boost = 1
+    end
+    --damage_increase = math_round(damage_increase + threat * 0.0000025, 3)
 
-    global.biter_health_boost = biter_health_boost
+    global.biter_health_boost = biter_h_boost
     --game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
     --game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
     game.forces.enemy.evolution_factor = evolution_factor
 end
 
 local function can_units_spawn()
-    local this = WD.get()
-    if this.threat <= 0 then
+    local threat = WD.get('threat')
+
+    if threat <= 0 then
         debug_print('can_units_spawn - threat too low')
         return false
     end
-    if this.active_biter_count >= this.max_active_biters then
+
+    local active_biter_count = WD.get('active_biter_count')
+    local max_active_biters = WD.get('max_active_biters')
+    if active_biter_count >= max_active_biters then
         debug_print('can_units_spawn - active biter count too high')
         return false
     end
-    if this.active_biter_threat >= this.threat then
-        debug_print('can_units_spawn - active biter threat too high (' .. this.active_biter_threat .. ')')
+
+    local active_biter_threat = WD.get('active_biter_threat')
+    if active_biter_threat >= threat then
+        debug_print('can_units_spawn - active biter threat too high (' .. active_biter_threat .. ')')
         return false
     end
     return true
 end
 
 local function get_active_unit_groups_count()
-    local this = WD.get()
+    local unit_groups = WD.get('unit_groups')
     local count = 0
-    for _, g in pairs(this.unit_groups) do
+    for _, g in pairs(unit_groups) do
         if g.valid then
             if #g.members > 0 then
                 count = count + 1
@@ -332,12 +339,13 @@ local function get_active_unit_groups_count()
 end
 
 local function spawn_biter(surface, is_boss_biter)
-    local this = WD.get()
     if not is_boss_biter then
         if not can_units_spawn() then
             return
         end
     end
+
+    local boosted_health = global.biter_health_boost
 
     local name
     if math_random(1, 100) > 73 then
@@ -345,57 +353,87 @@ local function spawn_biter(surface, is_boss_biter)
     else
         name = BiterRolls.wave_defense_roll_biter_name()
     end
-    local position = this.spawn_position
+    local position = get_spawn_pos()
 
     local biter = surface.create_entity({name = name, position = position, force = 'enemy'})
     biter.ai_settings.allow_destroy_when_commands_fail = true
     biter.ai_settings.allow_try_return_to_spawner = false
     biter.ai_settings.do_separation = true
-    if this.remove_entities then
-        remove_trees(biter)
-        remove_rocks(biter)
-    end
+    biter.ai_settings.path_resolution_modifier = 1
+
     if is_boss_biter then
-        BiterHealthBooster.add_boss_unit(biter, global.biter_health_boost * 5, 0.35)
+        local modified_boss_health = WD.get('modified_boss_health')
+        if modified_boss_health then
+            local wave_number = WD.get('wave_number')
+            if boosted_health == 1 then
+                boosted_health = 1.25
+            end
+            boosted_health = boosted_health * (wave_number * 0.04)
+            local sum = boosted_health * 5
+            debug_print('Boss Health Boosted: ' .. sum)
+            if sum >= 150 then
+                sum = 150
+            end
+            BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
+        else
+            local sum = boosted_health * 5
+            debug_print('Boss Health Boosted: ' .. sum)
+            BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
+        end
     end
-    this.active_biters[biter.unit_number] = {entity = biter, spawn_tick = game.tick}
-    this.active_biter_count = this.active_biter_count + 1
-    this.active_biter_threat = this.active_biter_threat + math_round(threat_values[name] * global.biter_health_boost, 2)
+    WD.set('active_biters')[biter.unit_number] = {entity = biter, spawn_tick = game.tick}
+    local active_biter_count = WD.get('active_biter_count')
+    WD.set('active_biter_count', active_biter_count + 1)
+    local active_biter_threat = WD.get('active_biter_threat')
+    WD.set('active_biter_threat', active_biter_threat + math_round(threat_values[name] * boosted_health, 2))
     return biter
 end
 
 local function set_next_wave()
-    local this = WD.get()
-    this.wave_number = this.wave_number + 1
+    local wave_number = WD.get('wave_number')
+    WD.set('wave_number', wave_number + 1)
+    wave_number = WD.get('wave_number')
 
-    local threat_gain = this.wave_number * this.threat_gain_multiplier
-    if this.wave_number > 1000 then
-        threat_gain = threat_gain * (this.wave_number * 0.001)
+    local threat_gain_multiplier = WD.get('threat_gain_multiplier')
+    local threat_gain = wave_number * threat_gain_multiplier
+    if wave_number > 1000 then
+        threat_gain = threat_gain * (wave_number * 0.001)
     end
-    if this.wave_number % 25 == 0 then
-        this.boss_wave = true
-        this.boss_wave_warning = true
-        if this.alert_boss_wave then
-            local msg = 'Boss Wave: ' .. this.wave_number
+    if wave_number % 25 == 0 then
+        WD.set('boss_wave', true)
+        WD.set('boss_wave_warning', true)
+        local alert_boss_wave = WD.get('alert_boss_wave')
+        local spawn_position = get_spawn_pos()
+        if alert_boss_wave then
+            local msg = 'Boss Wave: ' .. wave_number
             local pos = {
-                position = this.spawn_position
+                position = spawn_position
             }
             Alert.alert_all_players_location(pos, msg, {r = 0.8, g = 0.1, b = 0.1})
         end
         threat_gain = threat_gain * 2
     else
-        if this.boss_wave_warning then
-            this.boss_wave_warning = false
+        local boss_wave_warning = WD.get('boss_wave_warning')
+        if boss_wave_warning then
+            WD.set('boss_wave_warning', false)
         end
     end
 
-    this.threat = this.threat + math_floor(threat_gain)
-    if not this.wave_enforced then
-        this.last_wave = this.next_wave
-        this.next_wave = game.tick + this.wave_interval
+    local threat = WD.get('threat')
+    WD.set('threat', threat + math_floor(threat_gain))
+
+    local wave_enforced = WD.get('wave_enforced')
+    local next_wave = WD.get('next_wave')
+    local wave_interval = WD.get('wave_interval')
+    if not wave_enforced then
+        WD.set('last_wave', next_wave)
+        WD.set('next_wave', game.tick + wave_interval)
     end
-    if this.clear_corpses then
-        local surface = game.surfaces[this.surface_index]
+
+    local clear_corpses = WD.get('clear_corpses')
+    if clear_corpses then
+        local surface_index = WD.get('surface_index')
+        local surface = game.surfaces[surface_index]
         for _, entity in pairs(surface.find_entities_filtered {type = 'corpse'}) do
             if math_random(1, 2) == 1 then
                 entity.destroy()
@@ -405,9 +443,9 @@ local function set_next_wave()
 end
 
 local function reform_group(group)
-    local this = WD.get()
+    local unit_group_command_step_length = WD.get('unit_group_command_step_length')
     local group_position = {x = group.position.x, y = group.position.y}
-    local step_length = this.unit_group_command_step_length
+    local step_length = unit_group_command_step_length
     local position = group.surface.find_non_colliding_position('biter-spawner', group_position, step_length, 4)
     if position then
         local new_group = group.surface.create_unit_group {position = position, force = group.force}
@@ -415,17 +453,22 @@ local function reform_group(group)
             new_group.add_member(biter)
         end
         debug_print('Creating new unit group, because old one was stuck.')
-        this.unit_groups[new_group.group_number] = new_group
-        this.index = this.index + 1
+        local unit_groups = WD.get('unit_groups')
+        unit_groups[new_group.group_number] = new_group
+        local index = WD.get('index')
+        WD.set('index', index + 1)
 
         return new_group
     else
         debug_print('Destroying stuck group.')
-        if this.unit_groups[group.group_number] then
-            table.remove(this.unit_groups, group.group_number)
-            this.index = this.index - 1
-            if this.index <= 0 then
-                this.index = 0
+        local unit_groups = WD.get('unit_groups')
+        if unit_groups[group.group_number] then
+            table.remove(unit_groups, group.group_number)
+            local index = WD.get('index')
+            WD.set('index', index - 1)
+            index = WD.get('index')
+            if index <= 0 then
+                WD.set('index', 0)
             end
         end
         group.destroy()
@@ -434,31 +477,87 @@ local function reform_group(group)
 end
 
 local function get_commmands(group)
-    local this = WD.get()
+    local unit_group_command_step_length = WD.get('unit_group_command_step_length')
+    local enable_side_target = WD.get('enable_side_target')
     local commands = {}
     local group_position = {x = group.position.x, y = group.position.y}
-    local step_length = this.unit_group_command_step_length
+    local step_length = unit_group_command_step_length
 
     if math_random(1, 2) == 1 then
+        if not enable_side_target then
+            goto continue
+        end
         local side_target = SideTargets.get_side_target()
         if side_target then
             local target_position = side_target.position
             local distance_to_target =
-                math_floor(
-                math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2)
-            )
+                math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
             local steps = math_floor(distance_to_target / step_length) + 1
             local vector = {
                 math_round((target_position.x - group_position.x) / steps, 3),
                 math_round((target_position.y - group_position.y) / steps, 3)
             }
 
-            if this.debug then
-                debug_print(
-                    'get_commmands - to side_target x' .. side_target.position.x .. ' y' .. side_target.position.y
-                )
+            local d = WD.get('debug')
+
+            if d then
+                debug_print('get_commmands - to side_target x' .. side_target.position.x .. ' y' .. side_target.position.y)
                 debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
                 debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
+            end
+
+            for i = 1, steps, 1 do
+                local old_position = group_position
+                group_position.x = group_position.x + vector[1]
+                group_position.y = group_position.y + vector[2]
+                local obstacles =
+                    group.surface.find_entities_filtered {
+                    position = old_position,
+                    radius = step_length,
+                    type = {'simple-entity', 'tree'},
+                    limit = 50
+                }
+                if obstacles then
+                    shuffle_distance(obstacles, old_position)
+                    for v = 1, #obstacles, 1 do
+                        if obstacles[v].valid then
+                            commands[#commands + 1] = {
+                                type = defines.command.attack,
+                                target = obstacles[v],
+                                distraction = defines.distraction.by_enemy
+                            }
+                        end
+                    end
+                end
+                local position = group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 4)
+                if position then
+                    commands[#commands + 1] = {
+                        type = defines.command.attack_area,
+                        destination = {x = position.x, y = position.y},
+                        radius = 16,
+                        distraction = defines.distraction.by_anything
+                    }
+                else
+                    local obst =
+                        group.surface.find_entities_filtered {
+                        position = group_position,
+                        radius = step_length,
+                        type = {'simple-entity', 'tree'},
+                        limit = 50
+                    }
+                    if obst then
+                        shuffle_distance(obst, old_position)
+                        for v = 1, #obst, 1 do
+                            if obst[v].valid then
+                                commands[#commands + 1] = {
+                                    type = defines.command.attack,
+                                    target = obst[v],
+                                    distraction = defines.distraction.by_enemy
+                                }
+                            end
+                        end
+                    end
+                end
             end
 
             commands[#commands + 1] = {
@@ -469,39 +568,30 @@ local function get_commmands(group)
         end
     end
 
-    local target_position = this.target.position
-    local distance_to_target =
-        math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
-    local steps = math_floor(distance_to_target / step_length) + 1
-    local vector = {
-        math_round((target_position.x - group_position.x) / steps, 3),
-        math_round((target_position.y - group_position.y) / steps, 3)
-    }
+    ::continue::
 
-    if this.debug then
-        debug_print('get_commmands - to main target x' .. target_position.x .. ' y' .. target_position.y)
-        debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
-        debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
+    local target = WD.get('target')
+    if not (target and target.valid) then
+        return
     end
 
-    for i = 1, steps, 1 do
-        local old_position = group_position
-        group_position.x = group_position.x + vector[1]
-        group_position.y = group_position.y + vector[2]
+    local target_position = target.position
+
+    for i = 1, 4, 1 do
         local obstacles =
             group.surface.find_entities_filtered {
-            position = old_position,
+            position = group_position,
             radius = step_length / 2,
             type = {'simple-entity', 'tree'},
             limit = 50
         }
         if obstacles then
-            shuffle_distance(obstacles, old_position)
-            for i = 1, #obstacles, 1 do
-                if obstacles[i].valid then
+            shuffle_distance(obstacles, group_position)
+            for v = 1, #obstacles, 1 do
+                if obstacles[v].valid then
                     commands[#commands + 1] = {
                         type = defines.command.attack,
-                        target = obstacles[i],
+                        target = obstacles[v],
                         distraction = defines.distraction.by_enemy
                     }
                 end
@@ -512,7 +602,7 @@ local function get_commmands(group)
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
                 destination = {x = position.x, y = position.y},
-                radius = 16,
+                radius = step_length,
                 distraction = defines.distraction.by_anything
             }
         end
@@ -521,13 +611,13 @@ local function get_commmands(group)
     commands[#commands + 1] = {
         type = defines.command.attack_area,
         destination = {x = target_position.x, y = target_position.y},
-        radius = 8,
+        radius = step_length,
         distraction = defines.distraction.by_enemy
     }
 
     commands[#commands + 1] = {
         type = defines.command.attack,
-        target = this.target,
+        target = target,
         distraction = defines.distraction.by_enemy
     }
 
@@ -535,16 +625,15 @@ local function get_commmands(group)
 end
 
 local function command_unit_group(group)
-    local this = WD.get()
-    if not this.unit_group_last_command[group.group_number] then
-        this.unit_group_last_command[group.group_number] = game.tick - (this.unit_group_command_delay + 1)
+    local unit_group_last_command = WD.get('unit_group_last_command')
+    local unit_group_command_delay = WD.get('unit_group_command_delay')
+    if not unit_group_last_command[group.group_number] then
+        unit_group_last_command[group.group_number] = game.tick - (unit_group_command_delay + 1)
     end
 
-    if this.unit_group_last_command[group.group_number] then
-        if this.unit_group_last_command[group.group_number] + this.unit_group_command_delay > game.tick then
+    if unit_group_last_command[group.group_number] then
+        if unit_group_last_command[group.group_number] + unit_group_command_delay > game.tick then
             return
-        else
-            this.unit_group_last_command[group.group_number] = game.tick
         end
     end
 
@@ -559,113 +648,219 @@ local function command_unit_group(group)
             commands = get_commmands(group)
         }
     )
+
+    unit_group_last_command[group.group_number] = game.tick
 end
 
 local function give_commands_to_unit_groups()
-    local this = WD.get()
-    if this.index == 0 then
+    local index = WD.get('index')
+    if index == 0 then
         return
     end
-    if not this.target then
+    local target = WD.get('target')
+    if not (target and target.valid) then
         return
     end
-    if not this.target.valid then
-        return
-    end
-    for k, group in pairs(this.unit_groups) do
+
+    local unit_groups = WD.get('unit_groups')
+    for k, group in pairs(unit_groups) do
         if not group.valid then
-            this.unit_groups[k] = nil
-            this.index = this.index - 1
-            if this.index <= 0 then
-                this.index = 0
+            unit_groups[k] = nil
+            WD.set('index', index - 1)
+            index = WD.get('index')
+            if index <= 0 then
+                WD.set('index', 0)
             end
-            if this.unit_group_last_command[k] then
-                this.unit_group_last_command[k] = nil
+            local unit_group_last_command = WD.get('unit_group_last_command')
+            if unit_group_last_command[k] then
+                unit_group_last_command[k] = nil
             end
         end
         if type(group) ~= 'number' then
             if group.valid then
-                command_unit_group(group, this)
+                command_unit_group(group)
+            end
+        end
+    end
+end
+
+local function did_pathing_resolve()
+    debug_print('did_pathing_resolve - running')
+    local target = WD.get('target')
+    if not (target and target.valid) then
+        debug_print('did_pathing_resolve - no target?')
+        return
+    end
+
+    local commands = {}
+
+    local function retry_attack(group)
+        local tile = group.surface.get_tile(group.position)
+        if tile.valid and tile.collides_with('player-layer') then
+            group = reform_group(group)
+        end
+        local step_length = WD.get('unit_group_command_step_length')
+
+        local obstacles =
+            group.surface.find_entities_filtered {
+            position = group.position,
+            radius = step_length / 2,
+            type = {'simple-entity', 'tree'},
+            limit = 50
+        }
+        if obstacles then
+            shuffle_distance(obstacles, group.position)
+            for v = 1, #obstacles, 1 do
+                if obstacles[v].valid then
+                    commands[#commands + 1] = {
+                        type = defines.command.attack,
+                        target = obstacles[v],
+                        distraction = defines.distraction.by_enemy
+                    }
+                end
+            end
+        end
+        commands[#commands + 1] = {
+            type = defines.command.attack,
+            target = target,
+            distraction = defines.distraction.by_enemy
+        }
+
+        fill_void(group)
+
+        group.set_command(
+            {
+                type = defines.command.compound,
+                structure_type = defines.compound_command.return_last,
+                commands = commands
+            }
+        )
+
+        debug_print('did_pathing_resolve - sent commands')
+    end
+
+    local unit_groups = WD.get('unit_groups')
+    debug_print('did_pathing_resolve - unit groups size: ' .. #unit_groups)
+    for k, group in pairs(unit_groups) do
+        if group.valid then
+            if group.state == defines.group_state.finished then
+                debug_print('did_pathing_resolve - state is finished - giving attack params')
+                if type(group) ~= 'number' then
+                    retry_attack(group)
+                    debug_print('did_pathing_resolve - retrying attack')
+                end
             end
         end
     end
 end
 
 local function spawn_unit_group()
-    local this = WD.get()
     if not can_units_spawn() then
+        debug_print('spawn_unit_group - Cant spawn units?')
         return
     end
-    if not this.target then
-        return
-    end
-    if not this.target.valid then
-        return
-    end
-    if get_active_unit_groups_count() >= this.max_active_unit_groups then
-        return
-    end
-    local surface = game.surfaces[this.surface_index]
-    set_group_spawn_position(surface)
-    local pos = this.spawn_position
-    if not surface.can_place_entity({name = 'behemoth-biter', position = pos}) then
+    local target = WD.get('target')
+    if not (target and target.valid) then
+        debug_print('spawn_unit_group - Target was not valid?')
         return
     end
 
+    local max_active_unit_groups = WD.get('max_active_unit_groups')
+    if get_active_unit_groups_count() >= max_active_unit_groups then
+        debug_print('spawn_unit_group - unit_groups at max')
+        return
+    end
+    local surface_index = WD.get('surface_index')
+    local surface = game.surfaces[surface_index]
+    set_group_spawn_position(surface)
+    local retries = 0
+
+    ::retry::
+    local spawn_position = get_spawn_pos()
+    if not surface.can_place_entity({name = 'behemoth-biter', position = spawn_position}) then
+        debug_print('spawn_unit_group - can´t place entity?')
+        local remove_entities = WD.get('remove_entities')
+        if remove_entities then
+            remove_trees({surface = surface, position = spawn_position})
+            remove_rocks({surface = surface, position = spawn_position})
+            fill_void({surface = surface, position = spawn_position})
+        end
+        retries = retries + 1
+        if retries == 5 then
+            return
+        end
+        goto retry
+    end
+
     local radius = 10
-    local area = {left_top = {pos.x - radius, pos.y - radius}, right_bottom = {pos.x + radius, pos.y + radius}}
+    local area = {
+        left_top = {spawn_position.x - radius, spawn_position.y - radius},
+        right_bottom = {spawn_position.x + radius, spawn_position.y + radius}
+    }
     for k, v in pairs(surface.find_entities_filtered {area = area, name = 'land-mine'}) do
         if v and v.valid then
+            debug_print('spawn_unit_group - found land-mines')
             v.die()
         end
     end
 
-    BiterRolls.wave_defense_set_unit_raffle(this.wave_number)
+    local wave_number = WD.get('wave_number')
+    BiterRolls.wave_defense_set_unit_raffle(wave_number)
 
-    debug_print('Spawning unit group at x' .. this.spawn_position.x .. ' y' .. this.spawn_position.y)
-    local position = this.spawn_position
+    debug_print('Spawning unit group at x' .. spawn_position.x .. ' y' .. spawn_position.y)
+    local position = spawn_position
 
     local unit_group = surface.create_unit_group({position = position, force = 'enemy'})
-    local group_size =
-        math_floor(
-        this.average_unit_group_size * group_size_modifier_raffle[math_random(1, group_size_modifier_raffle_size)]
-    )
+    local average_unit_group_size = WD.get('average_unit_group_size')
+    local group_size = math_floor(average_unit_group_size * group_size_modifier_raffle[math_random(1, group_size_modifier_raffle_size)])
     for _ = 1, group_size, 1 do
         local biter = spawn_biter(surface)
         if not biter then
+            debug_print('spawn_unit_group - No biters were found?')
             break
         end
         unit_group.add_member(biter)
     end
 
-    if this.boss_wave then
-        local count = math_random(1, math_floor(this.wave_number * 0.01) + 2)
-        if count > 8 then
-            count = 8
+    local boss_wave = WD.get('boss_wave')
+    if boss_wave then
+        local count = math_random(1, math_floor(wave_number * 0.01) + 2)
+        if count > 16 then
+            count = 16
+        end
+        if count <= 1 then
+            count = 4
         end
         for _ = 1, count, 1 do
             local biter = spawn_biter(surface, true)
             if not biter then
+                debug_print('spawn_unit_group - No biters were found?')
                 break
             end
             unit_group.add_member(biter)
         end
-        this.boss_wave = false
+        WD.set('boss_wave', false)
     end
-    this.unit_groups[unit_group.group_number] = unit_group
+
+    local unit_groups = WD.get('unit_groups')
+    unit_groups[unit_group.group_number] = unit_group
     if math_random(1, 2) == 1 then
-        this.random_group = unit_group.group_number
+        WD.set('random_group', unit_group.group_number)
     end
-    this.index = this.index + 1
+    local index = WD.get('index')
+    WD.set('index', index + 1)
     return true
 end
 
 local function log_threat()
-    local this = WD.get()
-    this.threat_log_index = this.threat_log_index + 1
-    this.threat_log[this.threat_log_index] = this.threat
-    if this.threat_log_index > 900 then
-        this.threat_log[this.threat_log_index - 901] = nil
+    local threat_log_index = WD.get('threat_log_index')
+    WD.set('threat_log_index', threat_log_index + 1)
+    local threat_log = WD.get('threat_log')
+    local threat = WD.get('threat')
+    threat_log_index = WD.get('threat_log_index')
+    threat_log[threat_log_index] = threat
+    if threat_log_index > 900 then
+        threat_log[threat_log_index - 901] = nil
     end
 end
 
@@ -681,17 +876,26 @@ local tick_tasks = {
 }
 
 local function on_tick()
-    local this = WD.get()
-    if this.game_lost then
+    local tick = game.tick
+    local game_lost = WD.get('game_lost')
+    if game_lost then
         return
     end
 
-    if game.tick > this.next_wave then
+    local next_wave = WD.get('next_wave')
+    if tick > next_wave then
         set_next_wave()
     end
 
-    local t = game.tick % 300
-    local t2 = game.tick % 18000
+    local t = tick % 300
+    local t2 = tick % 18000
+
+    if t == 0 then
+        local resolve_pathing = WD.get('resolve_pathing')
+        if resolve_pathing then
+            did_pathing_resolve()
+        end
+    end
 
     if tick_tasks[t] then
         tick_tasks[t]()
@@ -700,8 +904,9 @@ local function on_tick()
         tick_tasks[t2]()
     end
 
-    if this.enable_threat_log then
-        if game.tick % 60 == 0 then
+    local enable_threat_log = WD.get('enable_threat_log')
+    if enable_threat_log then
+        if tick % 60 == 0 then
             log_threat()
         end
     end

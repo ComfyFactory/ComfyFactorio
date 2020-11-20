@@ -226,18 +226,38 @@ function Public.server_restart()
 	if global.server_restart_timer == 150 then return end
 	if global.server_restart_timer == 10 then game.delete_surface(game.surfaces.bb_source) return end
 	if global.server_restart_timer == 5 then Init.source_surface() return end
-	
+
 	if global.server_restart_timer == 0 then
+		if global.restart then
+			if not global.announced_message then
+				local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
+				game.print(message, {r = 0.22, g = 0.88, b = 0.22})
+				Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+				Server.start_scenario('Biter_Battles')
+				global.announced_message = true
+				return
+			end
+		end
+		if global.shutdown then
+			if not global.announced_message then
+				local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
+				game.print(message, {r = 0.22, g = 0.88, b = 0.22})
+				Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+				Server.stop_scenario()
+				global.announced_message = true
+				return
+			end
+		end
 		game.print("Map is restarting!", {r=0.22, g=0.88, b=0.22})
 		local message = 'Map is restarting! '
 		Server.to_discord_bold(table.concat{'*** ', message, ' ***'})
-		
+
 		Init.tables()
 		Init.forces()
 		Init.load_spawn()
 		for _, player in pairs(game.players) do
 			Functions.init_player(player)
-			for _, e in pairs(player.gui.left.children) do e.destroy() end		
+			for _, e in pairs(player.gui.left.children) do e.destroy() end
 			Gui.create_main_gui(player)
 		end
 		game.surfaces.biter_battles.clear(true)

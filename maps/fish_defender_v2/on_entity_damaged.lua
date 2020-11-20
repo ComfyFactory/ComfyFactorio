@@ -37,12 +37,6 @@ local function on_entity_damaged(event)
     local explosive_bullets_unlocked = FDT.get('explosive_bullets_unlocked')
     local bouncy_shells_unlocked = FDT.get('bouncy_shells_unlocked')
 
-    --if event.cause.unit_number then
-    --	if this.boss_biters[event.cause.unit_number] then
-    --		boss_biter.damaged_entity(event)
-    --	end
-    --end
-
     if event.cause.name ~= 'character' then
         return
     end

@@ -437,11 +437,7 @@ function Public.try_get_data_timeout(data_set, key, callback_token, timeout_tick
 
     try_get_data_cancelable(data_set, key, callback_token)
 
-    Task.set_timeout_in_ticks(
-        timeout_ticks,
-        timeout_token,
-        {data_set = data_set, key = key, callback_token = callback_token}
-    )
+    Task.set_timeout_in_ticks(timeout_ticks, timeout_token, {data_set = data_set, key = key, callback_token = callback_token})
 end
 
 --- Gets all the data for the data_set from the web server's persistent data storage.
@@ -567,6 +563,41 @@ end
 
 local function escape(str)
     return str:gsub('\\', '\\\\'):gsub('"', '\\"')
+end
+
+local statistics = {
+    'item_production_statistics',
+    'fluid_production_statistics',
+    'kill_count_statistics',
+    'entity_build_count_statistics'
+}
+function Public.export_stats()
+    local table_to_json = game.table_to_json
+    local stats = {
+        game_tick = game.tick,
+        player_count = #game.connected_players,
+        game_flow_statistics = {
+            pollution_statistics = {
+                input = game.pollution_statistics.input_counts,
+                output = game.pollution_statistics.output_counts
+            }
+        },
+        rockets_launched = {},
+        force_flow_statistics = {}
+    }
+    for _, force in pairs(game.forces) do
+        local flow_statistics = {}
+        for _, statName in pairs(statistics) do
+            flow_statistics[statName] = {
+                input = force[statName].input_counts,
+                output = force[statName].output_counts
+            }
+        end
+        stats.rockets_launched[force.name] = force.rockets_launched
+
+        stats.force_flow_statistics[force.name] = flow_statistics
+    end
+    rcon.print(table_to_json(stats))
 end
 
 --- If the player exists bans the player.
@@ -762,7 +793,7 @@ Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = Game.get_player_by_index(event.player_index)
-        if not player then
+        if not player or not player.valid then
             return
         end
 
@@ -774,11 +805,46 @@ Event.add(
     defines.events.on_player_left_game,
     function(event)
         local player = Game.get_player_by_index(event.player_index)
-        if not player then
+        if not player or not player.valid then
             return
         end
 
         raw_print(player_leave_tag .. player.name)
+    end
+)
+
+Event.add(
+    defines.events.on_console_command,
+    function(event)
+        local cmd = event.command
+        if not event.player_index then
+            return
+        end
+        local player = game.players[event.player_index]
+        local reason = event.parameters
+        if not reason then
+            return
+        end
+        if not player.admin then
+            return
+        end
+        if cmd == 'ban' then
+            if player then
+                Public.to_banned_embed(table.concat {player.name .. ' banned ' .. reason})
+                return
+            else
+                Public.to_banned_embed(table.concat {'Server banned ' .. reason})
+                return
+            end
+        elseif cmd == 'unban' then
+            if player then
+                Public.to_banned_embed(table.concat {player.name .. ' unbanned ' .. reason})
+                return
+            else
+                Public.to_banned_embed(table.concat {'Server unbanned ' .. reason})
+                return
+            end
+        end
     end
 )
 

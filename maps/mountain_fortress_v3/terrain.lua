@@ -3,7 +3,7 @@ local Biters = require 'modules.wave_defense.biter_rolls'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local Generate_resources = require 'maps.mountain_fortress_v3.resource_generator'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local get_noise = require 'utils.get_noise'
+local get_perlin = require 'utils.get_perlin'
 
 local Public = {}
 local random = math.random
@@ -22,6 +22,7 @@ local wagon_raffle = {
     'locomotive',
     'fluid-wagon'
 }
+
 local rock_raffle = {
     'sand-rock-big',
     'sand-rock-big',
@@ -138,7 +139,7 @@ end
 local function place_wagon(data)
     local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     if not placed_trains_in_zone.randomized then
-        placed_trains_in_zone.limit = random(1, 3)
+        placed_trains_in_zone.limit = random(1, 2)
         placed_trains_in_zone.randomized = true
         placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     end
@@ -177,12 +178,10 @@ local function place_wagon(data)
     local r2 = random(2, 4) * 2
 
     if random(1, 2) == 1 then
-        location =
-            surface.find_tiles_filtered({area = {{position.x, position.y - r1}, {position.x + 2, position.y + r2}}})
+        location = surface.find_tiles_filtered({area = {{position.x, position.y - r1}, {position.x + 2, position.y + r2}}})
         direction = 0
     else
-        location =
-            surface.find_tiles_filtered({area = {{position.x - r1, position.y}, {position.x + r2, position.y + 2}}})
+        location = surface.find_tiles_filtered({area = {{position.x - r1, position.y}, {position.x + r2, position.y + 2}}})
         direction = 2
     end
 
@@ -254,8 +253,8 @@ local function wall(data)
     local seed = data.seed
     local p = {x = x + data.top_x, y = y + data.top_y}
 
-    local small_caves = get_noise('small_caves', p, seed + 300000)
-    local cave_ponds = get_noise('cave_rivers', p, seed + 150000)
+    local small_caves = get_perlin('small_caves', p, seed + 300000)
+    local cave_ponds = get_perlin('cave_rivers', p, seed + 150000)
     if y > 9 + cave_ponds * 6 and y < 23 + small_caves * 6 then
         if small_caves > 0.02 or cave_ponds > 0.02 then
             if small_caves > 0.005 then
@@ -396,13 +395,13 @@ local function process_level_14_position(x, y, data)
     local buildings = data.buildings
     local treasure = data.treasure
 
-    local small_caves = get_noise('small_caves', p, seed)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 40000)
+    local small_caves = get_perlin('small_caves', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 40000)
 
     --Resource Spots
     if smol_areas < -0.71 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -471,13 +470,13 @@ local function process_level_13_position(x, y, data)
     local buildings = data.buildings
     local treasure = data.treasure
 
-    local small_caves = get_noise('small_caves', p, seed)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 70000)
+    local small_caves = get_perlin('small_caves', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 70000)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -547,13 +546,13 @@ local function process_level_12_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local noise_1 = get_noise('small_caves', p, seed)
-    local noise_2 = get_noise('no_rocks_2', p, seed + 20000)
-    local smol_areas = get_noise('smol_areas', p, seed + 60000)
+    local noise_1 = get_perlin('small_caves', p, seed)
+    local noise_2 = get_perlin('no_rocks_2', p, seed + 20000)
+    local smol_areas = get_perlin('smol_areas', p, seed + 60000)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -633,9 +632,9 @@ local function process_level_11_position(x, y, data)
     local markets = data.markets
     local treasure = data.treasure
 
-    local noise_1 = get_noise('small_caves', p, seed)
-    local noise_2 = get_noise('no_rocks_2', p, seed + 10000)
-    local smol_areas = get_noise('smol_areas', p, seed + 50000)
+    local noise_1 = get_perlin('small_caves', p, seed)
+    local noise_2 = get_perlin('no_rocks_2', p, seed + 10000)
+    local smol_areas = get_perlin('smol_areas', p, seed + 50000)
 
     if noise_1 > 0.7 then
         tiles[#tiles + 1] = {name = 'water', position = p}
@@ -647,7 +646,7 @@ local function process_level_11_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -692,7 +691,7 @@ local function process_level_11_position(x, y, data)
         return
     end
 
-    local noise_forest_location = get_noise('forest_location', p, seed)
+    local noise_forest_location = get_perlin('forest_location', p, seed)
     if noise_forest_location > 0.095 then
         if noise_forest_location > 0.6 then
             if random(1, 100) > 42 then
@@ -728,8 +727,8 @@ local function process_level_10_position(x, y, data)
     local buildings = data.buildings
     local treasure = data.treasure
 
-    local scrapyard = get_noise('scrapyard', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 45000)
+    local scrapyard = get_perlin('scrapyard', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 45000)
 
     if scrapyard < -0.70 or scrapyard > 0.70 then
         tiles[#tiles + 1] = {name = 'grass-3', position = p}
@@ -745,7 +744,7 @@ local function process_level_10_position(x, y, data)
     end
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -773,7 +772,7 @@ local function process_level_10_position(x, y, data)
         tiles[#tiles + 1] = {name = 'water-shallow', position = p}
         return
     end
-    local noise_forest_location = get_noise('forest_location', p, seed)
+    local noise_forest_location = get_perlin('forest_location', p, seed)
     if scrapyard > -0.15 and scrapyard < 0.15 then
         if noise_forest_location > 0.095 then
             if random(1, 256) == 1 then
@@ -832,12 +831,12 @@ local function process_level_9_position(x, y, data)
     local treasure = data.treasure
 
     local maze_p = {x = floor(p.x - p.x % 10), y = floor(p.y - p.y % 10)}
-    local maze_noise = get_noise('no_rocks_2', maze_p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 40000)
+    local maze_noise = get_perlin('no_rocks_2', maze_p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 40000)
 
     if maze_noise > -0.35 and maze_noise < 0.35 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
-        local no_rocks_2 = get_noise('no_rocks_2', p, seed)
+        local no_rocks_2 = get_perlin('no_rocks_2', p, seed)
         if random(1, 2) == 1 and no_rocks_2 > -0.5 then
             entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         end
@@ -870,7 +869,7 @@ local function process_level_9_position(x, y, data)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -897,12 +896,12 @@ local function process_level_8_position(x, y, data, void_or_lab)
     local entities = data.entities
     local buildings = data.buildings
 
-    local scrapyard = get_noise('scrapyard', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 35000)
+    local scrapyard = get_perlin('scrapyard', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 35000)
 
     --Chasms
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local small_caves = get_noise('small_caves', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local small_caves = get_perlin('small_caves', p, seed)
     if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
         if small_caves > 0.35 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
@@ -954,7 +953,7 @@ local function process_level_8_position(x, y, data, void_or_lab)
                 }
             end
             if random(1, 5) > 1 then
-                entities[#entities + 1] = {name = 'mineable-wreckage', position = p}
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
             if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
@@ -964,7 +963,7 @@ local function process_level_8_position(x, y, data, void_or_lab)
         return
     end
 
-    local cave_ponds = get_noise('cave_ponds', p, seed)
+    local cave_ponds = get_perlin('cave_ponds', p, seed)
     if cave_ponds < -0.6 and scrapyard > -0.2 and scrapyard < 0.2 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 128) == 1 then
@@ -975,12 +974,12 @@ local function process_level_8_position(x, y, data, void_or_lab)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
 
-    local large_caves = get_noise('large_caves', p, seed)
+    local large_caves = get_perlin('large_caves', p, seed)
     if scrapyard > -0.15 and scrapyard < 0.15 then
         if floor(large_caves * 10) % 4 < 3 then
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
@@ -1010,10 +1009,10 @@ local function process_level_7_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local cave_rivers_3 = get_noise('cave_rivers_3', p, seed)
-    local cave_rivers_4 = get_noise('cave_rivers_4', p, seed + 50000)
-    local no_rocks_2 = get_noise('no_rocks_2', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 30000)
+    local cave_rivers_3 = get_perlin('cave_rivers_3', p, seed)
+    local cave_rivers_4 = get_perlin('cave_rivers_4', p, seed + 50000)
+    local no_rocks_2 = get_perlin('no_rocks_2', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 30000)
 
     if cave_rivers_3 > -0.025 and cave_rivers_3 < 0.025 and no_rocks_2 > -0.6 then
         tiles[#tiles + 1] = {name = 'water', position = p}
@@ -1031,7 +1030,7 @@ local function process_level_7_position(x, y, data, void_or_lab)
         return
     end
 
-    local noise_ores = get_noise('no_rocks_2', p, seed + 25000)
+    local noise_ores = get_perlin('no_rocks_2', p, seed + 25000)
 
     if cave_rivers_3 > -0.20 and cave_rivers_3 < 0.20 then
         tiles[#tiles + 1] = {name = 'grass-' .. floor(cave_rivers_3 * 32) % 3 + 1, position = p}
@@ -1086,8 +1085,8 @@ local function process_level_7_position(x, y, data, void_or_lab)
     end
 
     --Chasms
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local small_caves = get_noise('small_caves', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local small_caves = get_perlin('small_caves', p, seed)
     if noise_cave_ponds < 0.25 and noise_cave_ponds > -0.25 then
         if small_caves > 0.55 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
@@ -1103,7 +1102,7 @@ local function process_level_7_position(x, y, data, void_or_lab)
 
     --Resource Spots
     if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
     end
@@ -1126,13 +1125,13 @@ local function process_level_6_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local large_caves = get_noise('large_caves', p, seed)
-    local cave_rivers = get_noise('cave_rivers', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 25000)
+    local large_caves = get_perlin('large_caves', p, seed)
+    local cave_rivers = get_perlin('cave_rivers', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 25000)
 
     --Chasms
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local small_caves = get_noise('small_caves', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local small_caves = get_perlin('small_caves', p, seed)
     if noise_cave_ponds < 0.45 and noise_cave_ponds > -0.45 then
         if small_caves > 0.45 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
@@ -1154,12 +1153,22 @@ local function process_level_6_position(x, y, data, void_or_lab)
     end
 
     --Resource Spots
-    if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
-    local noise_forest_location = get_noise('forest_location', p, seed)
+    local noise_forest_location = get_perlin('forest_location', p, seed)
     if cave_rivers > -0.1 and cave_rivers < 0.1 then
         local success = place_wagon(data)
         if success then
@@ -1240,9 +1249,9 @@ local function process_level_5_position(x, y, data, void_or_lab)
     local buildings = data.buildings
     local treasure = data.treasure
 
-    local small_caves = get_noise('small_caves', p, seed)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 20000)
+    local small_caves = get_perlin('small_caves', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 20000)
 
     if small_caves > -0.24 and small_caves < 0.24 then
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
@@ -1271,10 +1280,20 @@ local function process_level_5_position(x, y, data, void_or_lab)
     end
 
     --Resource Spots
-    if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     if small_caves > -0.40 and small_caves < 0.40 then
@@ -1315,10 +1334,10 @@ local function process_level_4_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local noise_large_caves = get_noise('large_caves', p, seed)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local small_caves = get_noise('dungeons', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 15000)
+    local noise_large_caves = get_perlin('large_caves', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local small_caves = get_perlin('dungeons', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 15000)
 
     if abs(noise_large_caves) > 0.7 then
         tiles[#tiles + 1] = {name = 'water', position = p}
@@ -1389,15 +1408,25 @@ local function process_level_4_position(x, y, data, void_or_lab)
     end
 
     --Resource Spots
-    if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     if noise_large_caves > -0.2 and noise_large_caves < 0.2 then
         --Main Rock Terrain
-        local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
+        local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
             tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
             if random(1, 512) == 1 then
@@ -1428,17 +1457,27 @@ local function process_level_3_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('dungeons', p, seed + 50000)
-    local small_caves_2 = get_noise('small_caves_2', p, seed + 70000)
-    local noise_large_caves = get_noise('large_caves', p, seed + 60000)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 60000)
+    local small_caves = get_perlin('dungeons', p, seed + 50000)
+    local small_caves_2 = get_perlin('small_caves_2', p, seed + 70000)
+    local noise_large_caves = get_perlin('large_caves', p, seed + 60000)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 60000)
 
     --Resource Spots
-    if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Market Spots
@@ -1484,7 +1523,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
         end
 
         --Rivers
-        local cave_rivers = get_noise('cave_rivers', p, seed + 100000)
+        local cave_rivers = get_perlin('cave_rivers', p, seed + 100000)
         if cave_rivers < 0.024 and cave_rivers > -0.024 then
             if noise_cave_ponds > 0.2 then
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
@@ -1494,7 +1533,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
                 return
             end
         end
-        local cave_rivers_2 = get_noise('cave_rivers_2', p, seed)
+        local cave_rivers_2 = get_perlin('cave_rivers_2', p, seed)
         if cave_rivers_2 < 0.024 and cave_rivers_2 > -0.024 then
             if noise_cave_ponds < 0.4 then
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
@@ -1510,7 +1549,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
             return
         end
 
-        local no_rocks = get_noise('no_rocks', p, seed + 25000)
+        local no_rocks = get_perlin('no_rocks', p, seed + 25000)
         --Worm oil Zones
         if no_rocks < 0.20 and no_rocks > -0.20 then
             if small_caves > 0.35 then
@@ -1540,7 +1579,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
         end
 
         --Main Rock Terrain
-        local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
+        local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
             local success = place_wagon(data)
             if success then
@@ -1575,19 +1614,29 @@ local function process_level_2_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('dungeons', p, seed)
-    local noise_large_caves = get_noise('large_caves', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 15000)
+    local small_caves = get_perlin('dungeons', p, seed)
+    local noise_large_caves = get_perlin('large_caves', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 15000)
 
     --Resource Spots
-    if smol_areas < -0.72 then
-        if random(1, 8) == 1 then
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     if noise_large_caves > -0.75 and noise_large_caves < 0.75 then
-        local noise_cave_ponds = get_noise('cave_ponds', p, seed)
+        local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
 
         --Chasms
         if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
@@ -1612,7 +1661,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
         end
 
         --Rivers
-        local cave_rivers = get_noise('cave_rivers', p, seed + 100000)
+        local cave_rivers = get_perlin('cave_rivers', p, seed + 100000)
         if cave_rivers < 0.037 and cave_rivers > -0.037 then
             if noise_cave_ponds < 0.1 then
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
@@ -1640,7 +1689,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
             return
         end
 
-        local no_rocks = get_noise('no_rocks', p, seed + 25000)
+        local no_rocks = get_perlin('no_rocks', p, seed + 25000)
         --Worm oil Zones
         if no_rocks < 0.20 and no_rocks > -0.20 then
             if small_caves > 0.30 then
@@ -1670,7 +1719,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
         end
 
         --Main Rock Terrain
-        local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
+        local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
             local success = place_wagon(data)
             if success then
@@ -1705,15 +1754,25 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('dungeons', p, seed + 33322)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 33333)
+    local small_caves = get_perlin('dungeons', p, seed + 33322)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed + 33333)
 
     --Resource Spots
-    if smol_areas < -0.71 then
-        -- if random(1, 8) == 1 then
-        Generate_resources(buildings, p, Public.level_depth)
-    -- end
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Chasms
@@ -1729,7 +1788,17 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
     end
 
     --Water Ponds
-    if noise_cave_ponds > 0.790 then
+    if noise_cave_ponds > 0.670 then
+        if noise_cave_ponds > 0.750 then
+            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            if random(1, 4) == 1 then
+                markets[#markets + 1] = p
+            end
+            if random(1, 4) == 1 then
+                entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+            end
+            return
+        end
         tiles[#tiles + 1] = {name = 'deepwater', position = p}
         if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
@@ -1738,7 +1807,7 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
     end
 
     --Rivers
-    local cave_rivers = get_noise('cave_rivers', p, seed + 200000)
+    local cave_rivers = get_perlin('cave_rivers', p, seed + 200000)
     if cave_rivers < 0.041 and cave_rivers > -0.042 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
@@ -1761,19 +1830,7 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
         return
     end
 
-    --Market Spots
-    if noise_cave_ponds < -0.74 then
-        tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-        if random(1, 32) == 1 then
-            markets[#markets + 1] = p
-        end
-        if random(1, 32) == 1 then
-            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
-        end
-        return
-    end
-
-    local no_rocks = get_noise('no_rocks', p, seed + 30000)
+    local no_rocks = get_perlin('no_rocks', p, seed + 30000)
     --Worm oil Zones
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
@@ -1803,7 +1860,7 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
     end
 
     --Main Rock Terrain
-    local no_rocks_2 = get_noise('no_rocks_2', p, seed + 85000)
+    local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 5000)
     if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
         local success = place_wagon(data)
         if success then
@@ -1823,7 +1880,7 @@ local function process_level_1_2_position(x, y, data, void_or_lab)
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
     end
     tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-    local noise_forest_location = get_noise('forest_location', p, seed)
+    local noise_forest_location = get_perlin('forest_location', p, seed)
     if noise_forest_location > 0.095 then
         if random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1876,15 +1933,24 @@ local function process_level_1_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('dungeons', p, seed)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed)
+    local small_caves = get_perlin('dungeons', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed)
 
-    --Resource Spots
-    if smol_areas < -0.72 then
-        -- if random(1, 8) == 1 then
-        Generate_resources(buildings, p, Public.level_depth)
-    -- end
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+        if random(1, 32) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Chasms
@@ -1900,7 +1966,17 @@ local function process_level_1_position(x, y, data, void_or_lab)
     end
 
     --Water Ponds
-    if noise_cave_ponds > 0.810 then
+    if noise_cave_ponds > 0.670 then
+        if noise_cave_ponds > 0.750 then
+            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            if random(1, 4) == 1 then
+                markets[#markets + 1] = p
+            end
+            if random(1, 4) == 1 then
+                entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+            end
+            return
+        end
         tiles[#tiles + 1] = {name = 'deepwater', position = p}
         if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
@@ -1909,7 +1985,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     end
 
     --Rivers
-    local cave_rivers = get_noise('cave_rivers', p, seed + 300000)
+    local cave_rivers = get_perlin('cave_rivers', p, seed + 300000)
     if cave_rivers < 0.042 and cave_rivers > -0.042 then
         if noise_cave_ponds > 0 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
@@ -1932,19 +2008,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
         return
     end
 
-    --Market Spots
-    if noise_cave_ponds < -0.74 then
-        tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-        if random(1, 32) == 1 then
-            markets[#markets + 1] = p
-        end
-        if random(1, 32) == 1 then
-            entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
-        end
-        return
-    end
-
-    local no_rocks = get_noise('no_rocks', p, seed + 50000)
+    local no_rocks = get_perlin('no_rocks', p, seed + 50000)
     --Worm oil Zones
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.12 and no_rocks > -0.12 then
@@ -1974,7 +2038,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     end
 
     --Main Rock Terrain
-    local no_rocks_2 = get_noise('no_rocks_2', p, seed + 75000)
+    local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 75000)
     if no_rocks_2 > 0.66 or no_rocks_2 < -0.66 then
         local success = place_wagon(data)
         if success then
@@ -1993,7 +2057,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     if random(1, 2048) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
     end
-    local random_tiles = get_noise('forest_location', p, seed)
+    local random_tiles = get_perlin('forest_location', p, seed)
     if random_tiles > 0.095 then
         if random_tiles > 0.6 then
             if random(1, 100) > 42 then
@@ -2031,31 +2095,53 @@ local function process_level_0_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_noise('dungeons', p, seed + 24244)
-    local noise_cave_ponds = get_noise('cave_ponds', p, seed)
-    local smol_areas = get_noise('smol_areas', p, seed + 23444)
+    local small_caves = get_perlin('dungeons', p, seed)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local smol_areas = get_perlin('smol_areas', p, seed)
+    local no_rocks_2 = get_perlin('no_rocks_2', p, seed)
+    local cave_rivers = get_perlin('cave_rivers', p, seed)
+    local no_rocks = get_perlin('no_rocks', p, seed)
 
-    --Resource Spots
-    if smol_areas < -0.71 then
-        -- if random(1, 8) == 1 then
-        Generate_resources(buildings, p, Public.level_depth)
-    -- end
+    if smol_areas < 0.055 and smol_areas > -0.025 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 32) == 1 then
+            Generate_resources(buildings, p, Public.level_depth)
+        end
+        if random(1, 128) == 1 then
+            Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy'
+            }
+        end
+        return
     end
 
     --Chasms
-    if noise_cave_ponds < 0.099 and noise_cave_ponds > -0.102 then
-        if small_caves > 0.52 then
+    if noise_cave_ponds < 0.111 and noise_cave_ponds > -0.112 then
+        if small_caves > 0.53 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
-        if small_caves < -0.52 then
+        if small_caves < -0.53 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
 
     --Water Ponds
-    if noise_cave_ponds > 0.770 then
+    if noise_cave_ponds > 0.670 then
+        if noise_cave_ponds > 0.750 then
+            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            if random(1, 4) == 1 then
+                markets[#markets + 1] = p
+            end
+            if random(1, 4) == 1 then
+                entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
+            end
+            return
+        end
         tiles[#tiles + 1] = {name = 'deepwater', position = p}
         if random(1, 16) == 1 then
             entities[#entities + 1] = {name = 'fish', position = p}
@@ -2064,9 +2150,8 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 
     --Rivers
-    local cave_rivers = get_noise('cave_rivers', p, seed + 200000)
-    if cave_rivers < 0.031 and cave_rivers > -0.032 then
-        if noise_cave_ponds > 0 then
+    if cave_rivers < 0.044 and cave_rivers > -0.062 then
+        if noise_cave_ponds > 0.1 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
             if random(1, 64) == 1 then
                 entities[#entities + 1] = {name = 'fish', position = p}
@@ -2075,11 +2160,11 @@ local function process_level_0_position(x, y, data, void_or_lab)
         end
     end
 
-    if noise_cave_ponds > 0.72 then
-        tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
-        tiles[#tiles + 1] = {name = 'grass-1', position = p}
-        if cave_rivers < -0.502 then
-            tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
+    if noise_cave_ponds > 0.632 then
+        if noise_cave_ponds > 0.542 then
+            if cave_rivers > -0.302 then
+                tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
+            end
         end
         if random(1, 64) == 1 then
             entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
@@ -2087,50 +2172,34 @@ local function process_level_0_position(x, y, data, void_or_lab)
         return
     end
 
-    --Market Spots
-    if noise_cave_ponds < -0.72 then
-        tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-        if random(1, 32) == 1 then
-            markets[#markets + 1] = p
-        end
-        if random(1, 32) == 1 then
-            entities[#entities + 1] = {name = tree_raffle[random(1, size_of_tree_raffle)], position = p}
-        end
-        return
-    end
-
-    local no_rocks = get_noise('no_rocks', p, seed + 35000)
     --Worm oil Zones
-    if p.y < -64 + noise_cave_ponds * 10 then
-        if no_rocks < 0.11 and no_rocks > -0.11 then
-            if small_caves > 0.31 then
-                tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
-                if random(1, 450) == 1 then
-                    entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
-                end
-                if random(1, 96) == 1 then
-                    Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-                    entities[#entities + 1] = {
-                        name = Biters.wave_defense_roll_worm_name(),
-                        position = p,
-                        force = 'enemy'
-                    }
-                end
-
-                if random(1, 1024) == 1 then
-                    treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
-                end
-                if random(1, 64) == 1 then
-                    entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
-                end
-                return
+    if no_rocks < 0.031 and no_rocks > -0.141 then
+        if small_caves > 0.081 then
+            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            if random(1, 250) == 1 then
+                entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
             end
+            if random(1, 96) == 1 then
+                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                entities[#entities + 1] = {
+                    name = Biters.wave_defense_roll_worm_name(),
+                    position = p,
+                    force = 'enemy'
+                }
+            end
+
+            if random(1, 1024) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
+            end
+            if random(1, 64) == 1 then
+                entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
+            end
+            return
         end
     end
 
     --Main Rock Terrain
-    local no_rocks_2 = get_noise('no_rocks_2', p, seed + 85000)
-    if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
+    if no_rocks_2 > 0.334 and no_rocks_2 < 0.544 then
         local success = place_wagon(data)
         if success then
             return
@@ -2249,8 +2318,7 @@ local function biter_chunk(data)
     }
 
     if random(1, 128) == 1 then
-        local position =
-            surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)
+        local position = surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)
         if position then
             entities[#entities + 1] = {
                 name = spawner_raffle[random(1, #spawner_raffle)],
@@ -2262,8 +2330,7 @@ local function biter_chunk(data)
     end
 
     if random(1, 128) == 1 then
-        local position =
-            surface.find_non_colliding_position('big-worm-turret', tile_positions[random(1, #tile_positions)], 16, 2)
+        local position = surface.find_non_colliding_position('big-worm-turret', tile_positions[random(1, #tile_positions)], 16, 2)
         if position then
             entities[#entities + 1] = {
                 name = 'big-worm-turret',
@@ -2352,9 +2419,7 @@ Event.add(
         if left_top.y == -128 and left_top.x == -128 then
             local pl = WPT.get().locomotive.position
             for _, entity in pairs(
-                surface.find_entities_filtered(
-                    {area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'}
-                )
+                surface.find_entities_filtered({area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'})
             ) do
                 entity.destroy()
             end

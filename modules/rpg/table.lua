@@ -31,8 +31,7 @@ Public.points_per_level = 5
 
 Public.experience_levels = {0}
 for a = 1, 9999, 1 do
-    Public.experience_levels[#Public.experience_levels + 1] =
-        Public.experience_levels[#Public.experience_levels] + a * 8
+    Public.experience_levels[#Public.experience_levels + 1] = Public.experience_levels[#Public.experience_levels] + a * 8
 end
 
 Public.die_cause = {
@@ -89,6 +88,16 @@ function Public.reset_table()
     this.rpg_extra.enable_auto_allocate = false
     this.rpg_extra.enable_one_punch = true
     this.rpg_extra.enable_one_punch_globally = false
+    this.rpg_extra.tweaked_crafting_items = {
+        ['red-wire'] = true,
+        ['green-wire'] = true,
+        ['stone-furnace'] = true,
+        ['wooden-chest'] = true,
+        ['copper-cable'] = true,
+        ['iron-stick'] = true,
+        ['iron-gear-wheel'] = true,
+        ['pipe'] = true
+    }
     this.rpg_t = {}
     this.rpg_extra.rpg_xp_yield = {
         ['behemoth-biter'] = 16,
@@ -118,6 +127,38 @@ function Public.get(key)
         return this[key]
     else
         return this
+    end
+end
+
+--- Gets value from player rpg_t table
+---@param key <string>
+---@param value <string>
+function Public.get_value_from_player(key, value)
+    if key and value then
+        if (this.rpg_t[key] and this.rpg_t[key][value]) then
+            return this.rpg_t[key][value]
+        end
+        return false
+    end
+    if key then
+        if this.rpg_t[key] then
+            return this.rpg_t[key]
+        end
+        return false
+    end
+    return false
+end
+--- Sets value to player rpg_t table
+---@param key <string>
+---@param value <string>
+---@param setter <string>
+function Public.set_value_to_player(key, value, setter)
+    if key and value then
+        if (this.rpg_t[key] and this.rpg_t[key][value]) then
+            this.rpg_t[key][value] = setter or false
+        elseif (this.rpg_t[key] and not this.rpg_t[key][value]) then
+            this.rpg_t[key][value] = setter or false
+        end
     end
 end
 
@@ -383,6 +424,20 @@ function Public.disable_cooldowns_on_spells()
     this.rpg_spells = new_spells
 
     return new_spells
+end
+
+function Public.tweaked_crafting_items(tbl)
+    if not tbl then
+        return
+    end
+
+    if type(type) ~= 'table' then
+        return
+    end
+
+    this.tweaked_crafting_items = tbl
+
+    return this.tweaked_crafting_items
 end
 
 Public.get_projectiles = Spells.projectile_types

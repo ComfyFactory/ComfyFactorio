@@ -1,13 +1,12 @@
 local Constants = require 'maps.cave_miner_v2.constants'
 local Event = require 'utils.event'
-local Explosives = require "modules.explosives"
+local Explosives = require "modules.explosives_2"
 local Autostash = require "modules.autostash"
 local Functions = require 'maps.cave_miner_v2.functions'
 local Global = require 'utils.global'
 local Market = require 'maps.cave_miner_v2.market'
 local Server = require 'utils.server'
 local Terrain = require 'maps.cave_miner_v2.terrain'
-local Pets = require "modules.biter_pets"
 local Map_info = require "modules.map_info"
 
 require "modules.satellite_score"
@@ -28,6 +27,9 @@ Global.register(
 )
 
 local function on_player_joined_game(event)
+	--print mining chances
+	--for k, v in pairs(table.get_random_weighted_chances(Functions.mining_events)) do game.print(Functions.mining_events[k][3] .. " | " .. math.round(v, 4) .. " | 1 in " .. math_floor(1 / v)) end
+
 	local player = game.players[event.player_index]
 	
 	Functions.create_top_gui(player)
@@ -51,7 +53,7 @@ local function on_player_changed_position(event)
 	local player = game.players[event.player_index]
 	if not player.character then return end
 	if not player.character.valid then return end
-	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 11)
+	Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = math_floor(player.position.x), y = math_floor(player.position.y)}, 11)
 end
 
 local function on_chunk_generated(event)
@@ -75,18 +77,11 @@ local function on_player_mined_entity(event)
 	if not entity then return end
 	if not entity.valid then return end
 	local surface = entity.surface
-	local position = entity.position	
+	local position = entity.position
 	if entity.type == "simple-entity" then
-		cave_miner.rocks_broken = cave_miner.rocks_broken + 1			
-		if math.random(1, 16) == 1 then
-			Functions.rock_spawns_biters(cave_miner, position)
-			return
-		end
-		if math.random(1, 1024) == 1 then
-			local unit = Functions.spawn_random_biter(surface, position, 1)
-			Pets.biter_pets_tame_unit(game.players[event.player_index], unit, true)
-			return
-		end	
+		cave_miner.rocks_broken = cave_miner.rocks_broken + 1		
+		local f = table.get_random_weighted(Functions.mining_events)
+		f(cave_miner, entity, event.player_index)
 	end
 end
 
@@ -94,32 +89,8 @@ local function on_entity_died(event)
 	local entity = event.entity
 	if not entity then return end
 	if not entity.valid then return end
-	local surface = entity.surface
-	local position = entity.position
-	
-	if entity.type == "unit" then
-		if math.random(1, 8) == 1 then
-			surface.spill_item_stack(position, {name = "raw-fish", count = 1}, true)
-		end		
-		return
-	end
-	
-	if entity.type == "simple-entity" then
-		cave_miner.rocks_broken = cave_miner.rocks_broken + 1
-		if math.random(1, 4) == 1 then
-			Functions.rock_spawns_biters(cave_miner, position)
-		end
-		return
-	end
-	
-	if entity.type == "unit-spawner" then
-		local a = 64 * 0.0001
-		local b = math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)
-		local c = math_floor(a * b) + 1	
-		for _ = 1, c, 1 do			
-			Functions.spawn_random_biter(surface, position, 1)
-		end
-		return		
+	if Functions.on_entity_died[entity.type] then
+		Functions.on_entity_died[entity.type](cave_miner, entity)
 	end
 end
 
@@ -137,14 +108,15 @@ local function init(cave_miner)
 	Terrain.roll_source_surface()
 	
 	local surface = game.surfaces.nauvis
-	surface.min_brightness = 0.01
-	surface.brightness_visual_weights = {0.99, 0.99, 0.99}
+	surface.min_brightness = 0.08
+	surface.brightness_visual_weights = {0.92, 0.92, 0.92}
 	surface.daytime = 0.43
 	surface.freeze_daytime = true
 	surface.solar_power_multiplier = 5
 
 	cave_miner.last_reroll_player_name = ""
 	cave_miner.reveal_queue = {}
+	cave_miner.darkness = {}
 	cave_miner.rocks_broken = 0
 	cave_miner.pickaxe_tier = 1
 	
@@ -164,7 +136,7 @@ end
 local function spawn_players(cave_miner)
 	local tick = game.ticks_played
 	if tick % 60 ~= 0 then return end
-	Terrain.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
+	Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, {x = 0, y = 0}, 8)
 	Market.spawn(cave_miner)
 	for _, player in pairs(game.connected_players) do
 		Functions.spawn_player(player)
@@ -179,7 +151,7 @@ local game_tasks = {
 		if not reveal then return end
 		local brush_size = 3
 		if Constants.reveal_chain_brush_sizes[reveal[1]] then brush_size = Constants.reveal_chain_brush_sizes[reveal[1]] end
-		Terrain.reveal(
+		Functions.reveal(
 			cave_miner,
 			game.surfaces.nauvis,
 			game.surfaces.cave_miner_source,
@@ -213,19 +185,29 @@ local function on_init()
 	cave_miner.mining_speed_bonus = 100
 	cave_miner.pickaxe_tier = 1
 	cave_miner.rocks_broken = 0
-	cave_miner.reveal_queue = {}
+	cave_miner.reveal_queue = {}	
+	cave_miner.buildings_raffle = {}
+
+	local types = {"furnace", "assembling-machine", "reactor", "artillery-turret", "boiler", "beacon", "generator", "storage-tank", "roboport"}
+	for _, e in pairs(game.entity_prototypes) do
+		for _, t in pairs(types) do
+			if e.type == t then
+				table.insert(cave_miner.buildings_raffle, e.name)				
+			end
+		end
+	end
 	
 	global.rocks_yield_ore_maximum_amount = 256
 	global.rocks_yield_ore_base_amount = 16
-	global.rocks_yield_ore_distance_modifier = 0.01
+	global.rocks_yield_ore_distance_modifier = 0.0064
 	
-	Explosives.set_destructible_tile("out-of-map", 1500)
-	Explosives.set_destructible_tile("water", 1000)
-	Explosives.set_destructible_tile("water-green", 1000)
-	Explosives.set_destructible_tile("deepwater-green", 1000)
-	Explosives.set_destructible_tile("deepwater", 1000)
-	Explosives.set_destructible_tile("water-shallow", 1000)
-	Explosives.set_destructible_tile("water-mud", 1000)
+	Explosives.set_destructible_tile("out-of-map", 5000)
+	Explosives.set_destructible_tile("water", 2000)
+	Explosives.set_destructible_tile("water-green", 2000)
+	Explosives.set_destructible_tile("deepwater-green", 2500)
+	Explosives.set_destructible_tile("deepwater", 2500)
+	Explosives.set_destructible_tile("water-shallow", 1500)
+	Explosives.set_destructible_tile("water-mud", 1500)
 	
 	game.map_settings.enemy_evolution.destroy_factor = 0
 	game.map_settings.enemy_evolution.pollution_factor = 0
@@ -253,4 +235,4 @@ Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 Event.add(defines.events.on_entity_died, on_entity_died)
 
-require "modules.rocks_yield_ore" 
+require "maps.cave_miner_v2.rocks_yield_ore" 

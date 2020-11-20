@@ -94,16 +94,19 @@ function Public.reset_table()
     this.locomotive_max_health = 10000
     this.gap_between_zones = {
         set = false,
-        gap = 900
+        gap = 900,
+        neg_gap = -500,
+        highest_pos = 0
     }
+    this.force_chunk = false
     this.train_upgrades = 0
-    this.offline_players = {}
     this.biter_pets = {}
     this.flamethrower_damage = {}
     this.mined_scrap = 0
     this.biters_killed = 0
     this.cleared_nauvis = false
     this.locomotive_xp_aura = 40
+    this.locomotive_pos = {tbl = {}}
     this.trusted_only_car_tanks = true
     this.xp_points = 0
     this.xp_points_upgrade = 0
@@ -133,7 +136,6 @@ function Public.reset_table()
     this.pickaxe_speed_per_purchase = 0.10
     this.health_upgrades = 0
     this.breached_wall = 1
-    this.offline_players_enabled = true
     this.left_top = {
         x = 0,
         y = 0
@@ -152,13 +154,10 @@ function Public.reset_table()
     this.outside_chests = {}
     this.chests_linked_to = {}
     this.chest_limit_outside_upgrades = 1
-    this.force_mining_speed = {
-        speed = 0
-    }
     this.placed_trains_in_zone = {
         placed = 0,
         positions = {},
-        limit = 3,
+        limit = 2,
         randomized = false
     }
     this.marked_fixed_prices = {
@@ -181,6 +180,7 @@ function Public.reset_table()
     this.spidertron_unlocked_at_wave = 11
     -- this.void_or_tile = 'lab-dark-2'
     this.void_or_tile = 'out-of-map'
+    this.validate_spider = {}
 
     --!reset player tables
     for _, player in pairs(this.players) do
@@ -196,8 +196,11 @@ function Public.get(key)
     end
 end
 
-function Public.set(key)
-    if key then
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this

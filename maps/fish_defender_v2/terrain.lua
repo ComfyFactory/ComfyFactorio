@@ -35,7 +35,7 @@ local function is_enemy_territory(p)
         return false
     end
     --if p.x - 64 < p.y then return false end
-    if p.x < 160 then
+    if p.x < 256 then
         return false
     end
     if p.x > 1024 then
@@ -53,11 +53,12 @@ end
 local function place_fish_market(surface, position)
     local market = surface.create_entity({name = 'market', position = position, force = 'player'})
     market.minable = false
+
     return market
 end
 
 local function enemy_territory(surface, left_top)
-    if left_top.x < 160 then
+    if left_top.x < 256 then
         return
     end
     if left_top.x > 750 then
@@ -66,13 +67,13 @@ local function enemy_territory(surface, left_top)
     if left_top.y > 766 then
         return
     end
-    if left_top.y < -160 then
+    if left_top.y < -256 then
         return
     end
 
     local area = {{left_top.x, left_top.y}, {left_top.x + 32, left_top.y + 32}}
 
-    if left_top.x > 256 then
+    if left_top.x > 300 then
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
                 local pos = {x = left_top.x + x, y = left_top.y + y}
@@ -81,15 +82,9 @@ local function enemy_territory(surface, left_top)
                         if surface.can_place_entity({name = 'biter-spawner', force = 'decoratives', position = pos}) then
                             local entity
                             if math_random(1, 4) == 1 then
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'spitter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'spitter-spawner', force = 'decoratives', position = pos})
                             else
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'biter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'biter-spawner', force = 'decoratives', position = pos})
                             end
                             entity.active = false
                             entity.destructible = false
@@ -112,86 +107,68 @@ local function enemy_territory(surface, left_top)
     end
     for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = area})) do
         if is_enemy_territory(tile.position) then
-            surface.set_tiles(
-                {{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}},
-                true
-            )
+            surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true)
         end
     end
 end
 
-local function render_market_hp()
-    local this = FDT.get()
-    local surface = game.surfaces[this.active_surface_index]
-    if not surface or not surface.valid then
+local function fish_mouth(surface, left_top)
+    if left_top.x > -1800 then
+        return
+    end
+    if left_top.y > 64 then
+        return
+    end
+    if left_top.y < -64 then
+        return
+    end
+    if left_top.x < -2200 then
         return
     end
 
-    this.caption =
-        rendering.draw_text {
-        text = 'Fish Market',
-        surface = surface,
-        target = this.market,
-        target_offset = {0, -3.4},
-        color = {0, 255, 0},
-        scale = 1.80,
-        font = 'default-game',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            local pos = {x = left_top.x + x, y = left_top.y + y}
+            local noise = simplex_noise(pos.x * 0.006, 0, game.surfaces[1].map_gen_settings.seed) * 20
+            if pos.y <= 12 + noise and pos.y >= -12 + noise then
+                surface.set_tiles({{name = 'water', position = pos}})
+            end
+        end
+    end
 end
 
-local function generate_spawn_area(this, surface)
-    if this.spawn_area_generated then
+local function generate_spawn_area(surface)
+    local spawn_area_generated = FDT.get('spawn_area_generated')
+    if spawn_area_generated then
         return
     end
 
-    surface.request_to_generate_chunks({x = 0, y = 0}, 7)
-    surface.request_to_generate_chunks({x = 160, y = 0}, 4)
+    surface.request_to_generate_chunks({0, 0}, 8)
 
-    if not surface.is_chunk_generated({-7, 0}) then
-        return
-    end
-    if not surface.is_chunk_generated({5, 0}) then
+    local chunk_load_tick = FDT.get('chunk_load_tick')
+
+    if chunk_load_tick > game.tick then
         return
     end
 
     local spawn_position_x = -128
 
-    surface.create_entity({name = 'electric-beam', position = {160, -132}, source = {160, -132}, target = {160, 305}}) -- cat
+    surface.create_entity({name = 'electric-beam', position = {254, -143}, source = {254, -143}, target = {254, 193}}) -- fish
     --surface.create_entity({name = 'electric-beam', position = {160, -101}, source = {160, -101}, target = {160, 248}}) -- fish
     --surface.create_entity({name = 'electric-beam', position = {160, -88}, source = {160, -88}, target = {160, 185}})
 
-    for _, tile in pairs(
-        surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-160, -160}, {160, 160}}})
-    ) do
-        local noise =
-            math_abs(
-            simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16
-        )
+    for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-300, -256}, {300, 300}}})) do
+        local noise = math_abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
         if tile.position.x > -160 + noise then
-            surface.set_tiles(
-                {{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}},
-                true
-            )
+            surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true)
         end
     end
 
-    for _, entity in pairs(
-        surface.find_entities_filtered(
-            {type = {'resource', 'cliff'}, area = {{spawn_position_x - 32, -256}, {160, 256}}}
-        )
-    ) do
+    for _, entity in pairs(surface.find_entities_filtered({type = {'resource', 'cliff'}, area = {{-300, -256}, {300, 300}}})) do
         if
             entity.position.x >
-                spawn_position_x - 32 +
-                    math_abs(
-                        simplex_noise(
-                            entity.position.x * 0.02,
-                            entity.position.y * 0.02,
-                            game.surfaces[1].map_gen_settings.seed
-                        ) * 16
-                    )
+                -300 +
+                    math_abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 32)
          then
             entity.destroy()
         end
@@ -226,26 +203,21 @@ local function generate_spawn_area(this, surface)
     map_functions.draw_oil_circle(ore_positions[5], 'crude-oil', surface, 8, 200000)
 
     local pos = surface.find_non_colliding_position('market', {spawn_position_x, 0}, 50, 1)
-    this.market = place_fish_market(surface, pos)
-
-    render_market_hp()
+    local market = FDT.set('market', place_fish_market(surface, pos))
 
     local r = 16
     for _, entity in pairs(
         surface.find_entities_filtered(
             {
                 area = {
-                    {this.market.position.x - r, this.market.position.y - r},
-                    {this.market.position.x + r, this.market.position.y + r}
+                    {market.position.x - r, market.position.y - r},
+                    {market.position.x + r, market.position.y + r}
                 },
                 type = 'tree'
             }
         )
     ) do
-        local distance_to_center =
-            math_sqrt(
-            (entity.position.x - this.market.position.x) ^ 2 + (entity.position.y - this.market.position.y) ^ 2
-        )
+        local distance_to_center = math_sqrt((entity.position.x - market.position.x) ^ 2 + (entity.position.y - market.position.y) ^ 2)
         if distance_to_center < r then
             if math_random(1, r) > distance_to_center then
                 entity.destroy()
@@ -259,13 +231,10 @@ local function generate_spawn_area(this, surface)
 
     for x = -20, 20, 1 do
         for y = -20, 20, 1 do
-            local market_pos = {x = this.market.position.x + x, y = this.market.position.y + y}
+            local market_pos = {x = market.position.x + x, y = market.position.y + y}
             local distance_to_center = x ^ 2 + y ^ 2
             if distance_to_center > 64 and distance_to_center < 225 then
-                if
-                    math_random(1, 3) == 1 and
-                        surface.can_place_entity({name = 'wooden-chest', position = market_pos, force = 'player'})
-                 then
+                if math_random(1, 3) == 1 and surface.can_place_entity({name = 'wooden-chest', position = market_pos, force = 'player'}) then
                     surface.create_entity({name = 'wooden-chest', position = market_pos, force = 'player'})
                 end
             end
@@ -285,22 +254,40 @@ local function generate_spawn_area(this, surface)
         local spawn_pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, 4}, 50, 1)
         player.teleport(spawn_pos, surface)
     end
-    this.spawn_area_generated = true
+
+    local rr = 200
+    local p = {x = -131, y = 5}
+    game.forces.player.chart(
+        surface,
+        {
+            {p.x - rr - 100, p.y - rr},
+            {p.x + rr + 400, p.y + rr}
+        }
+    )
+
+    local fish_eye_location = FDT.get('fish_eye_location')
+
+    surface.request_to_generate_chunks(fish_eye_location, 2)
+
+    FDT.set('spawn_area_generated', true)
 end
 
 local function process_chunk(left_top)
-    local this = FDT.get()
-    local surface = game.surfaces[this.active_surface_index]
+    local active_surface_index = FDT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
     if not surface or not surface.valid then
         return
     end
 
-    generate_spawn_area(this, surface, left_top)
+    generate_spawn_area(surface, left_top)
     enemy_territory(surface, left_top)
+    fish_mouth(surface, left_top)
+
+    local market = FDT.get('market')
 
     game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
-    if this.market and this.market.valid then
-        this.game_reset = false
+    if market and market.valid then
+        FDT.set('game_reset', false)
     end
 end
 
@@ -308,6 +295,10 @@ local function on_chunk_generated(event)
     local map_name = 'fish_defender'
 
     if string.sub(event.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    if FDT.get('stop_generating_map') then
         return
     end
 

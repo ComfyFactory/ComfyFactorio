@@ -32,8 +32,6 @@ local artillery_target_entities = {
     'tank',
     'car',
     'furnace',
-    'straight-rail',
-    'curved-rail',
     'locomotive',
     'cargo-wagon',
     'fluid-wagon',
@@ -141,6 +139,10 @@ local function do_magic_crafters()
 
             local fcount = floor(count)
 
+            if fcount > 1 then
+                fcount = 1
+            end
+
             if fcount > 0 then
                 entity.get_output_inventory().insert {name = data.item, count = fcount}
                 data.last_tick = tick - (count - fcount) / rate
@@ -218,11 +220,12 @@ local artillery_target_callback =
         local x, y = pos.x, pos.y
         local dx, dy = tx - x, ty - y
         local d = dx * dx + dy * dy
-        if d >= 1024 then -- 32 ^ 2
+        if d >= 1024 and d <= 441398 then -- 704 in depth~
             entity.surface.create_entity {
                 name = 'artillery-projectile',
                 position = position,
                 target = entity,
+                force = 'enemy',
                 speed = 1.5
             }
         end
@@ -367,8 +370,7 @@ Public.disable_minable_and_ICW_callback =
     function(entity)
         if entity and entity.valid then
             entity.minable = false
-            local wagon = ICW.register_wagon(entity, true)
-            wagon.entity_count = 999
+            ICW.register_wagon(entity, true)
         end
     end
 )
@@ -454,8 +456,7 @@ Public.power_source_callback =
         local power_sources = this.power_sources
         local callback_data = data.callback_data
 
-        local power_source =
-            turret.surface.create_entity {name = 'hidden-electric-energy-interface', position = turret.position}
+        local power_source = turret.surface.create_entity {name = 'hidden-electric-energy-interface', position = turret.position}
         power_source.electric_buffer_size = callback_data.buffer_size
         power_source.power_production = callback_data.power_production
         power_source.destructible = false

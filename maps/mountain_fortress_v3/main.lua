@@ -2,23 +2,23 @@ require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
 require 'maps.mountain_fortress_v3.breached_wall'
 require 'maps.mountain_fortress_v3.ic.main'
+require 'maps.mountain_fortress_v3.biters_yield_coins'
 
 require 'modules.rpg.main'
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.rocks_yield_ore_veins'
 require 'modules.spawners_contain_biters'
-require 'modules.biters_yield_coins'
 require 'modules.wave_defense.main'
-require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.charging_station'
 
+local math2d = require 'math2d'
+-- local HS = require 'maps.mountain_fortress_v3.highscore'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Autostash = require 'modules.autostash'
 local Group = require 'comfy_panel.group'
 local PL = require 'comfy_panel.player_list'
 local CS = require 'maps.mountain_fortress_v3.surface'
-local Map_score = require 'comfy_panel.map_score'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local Balance = require 'maps.mountain_fortress_v3.balance'
@@ -38,7 +38,7 @@ local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
-local Difficulty = require 'maps.mountain_fortress_v3.difficulty_vote'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
@@ -47,6 +47,7 @@ local AntiGrief = require 'antigrief'
 local Public = {}
 local floor = math.floor
 local random = math.random
+local remove = table.remove
 local tile_damage = 50
 
 local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
@@ -71,16 +72,16 @@ local collapse_kill = {
 }
 
 local function get_player_data(player, remove_user_data)
-    local this = WPT.get()
+    local players = WPT.get('players')
     if remove_user_data then
-        if this.players[player.index] then
-            this.players[player.index] = nil
+        if players[player.index] then
+            players[player.index] = nil
         end
     end
-    if not this.players[player.index] then
-        this.players[player.index] = {}
+    if not players[player.index] then
+        players[player.index] = {}
     end
-    return this.players[player.index]
+    return players[player.index]
 end
 
 local disable_recipes = function()
@@ -122,6 +123,34 @@ local disable_tech = function()
     disable_recipes()
 end
 
+local is_position_near = function(pos_to_check, check_against)
+    local status = false
+    local function inside(pos)
+        return pos.x >= pos_to_check.x and pos.y >= pos_to_check.y and pos.x <= pos_to_check.x and pos.y <= pos_to_check.y
+    end
+
+    if inside(check_against) then
+        status = true
+    end
+
+    return status
+end
+
+local is_position_near_tbl = function(position, tbl)
+    local status = false
+    local function inside(pos)
+        return pos.x >= position.x and pos.y >= position.y and pos.x <= position.x and pos.y <= position.y
+    end
+
+    for i = 1, #tbl do
+        if inside(tbl[i]) then
+            status = true
+        end
+    end
+
+    return status
+end
+
 local set_difficulty = function()
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
@@ -140,22 +169,31 @@ local set_difficulty = function()
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
-    local amount = player_count * 0.1
+    local amount = player_count * 0.05
     amount = floor(amount)
     if amount <= 0 then
         amount = 1
     end
-    if amount > 5 then
-        amount = 5
+    if amount > 3 then
+        amount = 3
     end
 
     local difficulty = Difficulty.get()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
 
+    if name ~= 'Nightmare' then
+        local zone = WPT.get('breached_wall')
+        if zone >= 5 then
+            WPT.set().coin_amount = random(1, 2)
+        elseif zone >= 10 then
+            WPT.set().coin_amount = random(1, 3)
+        end
+    end
+
     if wave_defense_table.threat <= 0 then
         wave_defense_table.wave_interval = 1000
     end
-    if name == 'Insane' then
+    if name == 'Nightmare' then
         wave_defense_table.wave_interval = 1800
     else
         wave_defense_table.wave_interval = 3600 - player_count * 60
@@ -169,7 +207,7 @@ local set_difficulty = function()
         return
     end
 
-    if name == 'Insane' then
+    if name == 'Nightmare' then
         Collapse.set_amount(10)
     elseif collapse_amount then
         Collapse.set_amount(collapse_amount)
@@ -293,8 +331,6 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
 
-    Map_score.reset_score()
-
     RPG_Func.rpg_reset_all_players()
     RPG_Settings.set_surface_name('mountain_fortress_v3')
     RPG_Settings.enable_health_and_mana_bars(true)
@@ -319,11 +355,9 @@ function Public.reset_map()
     Explosives.set_surface_whitelist({[surface.name] = true})
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
+    game.forces.player.manual_mining_speed_modifier = 0
 
     Balance.init_enemy_weapon_damage()
-
-    global.custom_highscore.description = 'Wagon distance reached:'
-    Entities.set_scores()
 
     AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
@@ -342,7 +376,6 @@ function Public.reset_map()
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
-    game.map_settings.path_finder.max_work_done_per_tick = 4000
     Diff.gui_width = 20
 
     Collapse.set_kill_entities(false)
@@ -373,6 +406,7 @@ function Public.reset_map()
     WD.remove_entities(true)
     WD.enable_threat_log(true)
     WD.check_collapse_position(true)
+    WD.set_disable_threat_below_zero(true)
 
     set_difficulty()
 
@@ -391,7 +425,10 @@ function Public.reset_map()
 end
 
 local on_player_changed_position = function(event)
-    local this = WPT.get()
+    local active_surface_index = WPT.get('active_surface_index')
+    if not active_surface_index then
+        return
+    end
     local player = game.players[event.player_index]
     local map_name = 'mountain_fortress_v3'
 
@@ -400,7 +437,7 @@ local on_player_changed_position = function(event)
     end
 
     local position = player.position
-    local surface = game.surfaces[this.active_surface_index]
+    local surface = game.surfaces[active_surface_index]
 
     local p = {x = player.position.x, y = player.position.y}
     local get_tile = surface.get_tile(p)
@@ -436,9 +473,9 @@ local on_player_changed_position = function(event)
 end
 
 local on_player_joined_game = function(event)
-    local this = WPT.get()
+    local active_surface_index = WPT.get('active_surface_index')
     local player = game.players[event.player_index]
-    local surface = game.surfaces[this.active_surface_index]
+    local surface = game.surfaces[active_surface_index]
 
     set_difficulty()
 
@@ -455,36 +492,26 @@ local on_player_joined_game = function(event)
         player_data.first_join = true
     end
 
-    if player.surface.index ~= this.active_surface_index then
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-            surface
-        )
+    if player.surface.index ~= active_surface_index then
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
     else
         local p = {x = player.position.x, y = player.position.y}
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'out-of-map' then
             player.teleport(
-                surface.find_non_colliding_position(
-                    'character',
-                    game.forces.player.get_spawn_position(surface),
-                    3,
-                    0,
-                    5
-                ),
+                surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
                 surface
             )
         end
     end
 
-    if not this.locomotive or not this.locomotive.valid then
+    local locomotive = WPT.get('locomotive')
+
+    if not locomotive or not locomotive.valid then
         return
     end
-    if player.position.y > this.locomotive.position.y then
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-            surface
-        )
+    if player.position.y > locomotive.position.y then
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
     end
 end
 
@@ -515,29 +542,30 @@ end
 local on_research_finished = function(event)
     disable_tech()
     local research = event.research
-    local this = WPT.get()
 
-    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots / level
-    local mining_speed_bonus = game.forces.player.mining_drill_productivity_bonus * 5 -- +50% speed / level
+    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+
     if research.name == 'steel-axe' then
-        mining_speed_bonus = mining_speed_bonus + 0.5
-        research.force.manual_mining_speed_modifier = mining_speed_bonus
+        local msg =
+            'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
+        Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
     end -- +50% speed for steel-axe research
 
     local force_name = research.force.name
     if not force_name then
         return
     end
-    this.flamethrower_damage[force_name] = -0.85
+    local flamethrower_damage = WPT.get('flamethrower_damage')
+    flamethrower_damage[force_name] = -0.85
     if research.name == 'military' then
-        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', this.flamethrower_damage[force_name])
-        game.forces[force_name].set_ammo_damage_modifier('flamethrower', this.flamethrower_damage[force_name])
+        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', flamethrower_damage[force_name])
+        game.forces[force_name].set_ammo_damage_modifier('flamethrower', flamethrower_damage[force_name])
     end
 
     if string.sub(research.name, 0, 18) == 'refined-flammables' then
-        this.flamethrower_damage[force_name] = this.flamethrower_damage[force_name] + 0.10
-        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', this.flamethrower_damage[force_name])
-        game.forces[force_name].set_ammo_damage_modifier('flamethrower', this.flamethrower_damage[force_name])
+        flamethrower_damage[force_name] = flamethrower_damage[force_name] + 0.10
+        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', flamethrower_damage[force_name])
+        game.forces[force_name].set_ammo_damage_modifier('flamethrower', flamethrower_damage[force_name])
     end
 end
 
@@ -565,11 +593,13 @@ local is_player_valid = function()
 end
 
 local has_the_game_ended = function()
-    local this = WPT.get()
-    if this.game_reset_tick then
-        if this.game_reset_tick < 0 then
+    local game_reset_tick = WPT.get('game_reset_tick')
+    if game_reset_tick then
+        if game_reset_tick < 0 then
             return
         end
+
+        local this = WPT.get()
 
         this.game_reset_tick = this.game_reset_tick - 30
         if this.game_reset_tick % 1800 == 0 then
@@ -616,20 +646,21 @@ end
 
 local boost_difficulty = function()
     local difficulty_set = WPT.get('difficulty_set')
-    local force_mining_speed = WPT.get('force_mining_speed')
     if difficulty_set then
         return
     end
 
+    local breached_wall = WPT.get('breached_wall')
+
     local difficulty = Difficulty.get()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
 
-    if game.tick < difficulty.difficulty_poll_closing_timeout then
+    if game.tick < difficulty.difficulty_poll_closing_timeout and breached_wall <= 1 then
         return
     end
 
-    local rpg_extra = RPG_Settings.get('rpg_extra')
     Difficulty.get().name = name
+    Difficulty.get().difficulty_poll_closing_timeout = game.tick
 
     Difficulty.get().button_tooltip = difficulty.tooltip[difficulty.difficulty_vote_index]
     Difficulty.difficulty_gui()
@@ -640,66 +671,66 @@ local boost_difficulty = function()
     }
     Alert.alert_all_players_location(data, message)
 
-    if name == 'Easy' then
-        rpg_extra.difficulty = 1
-        game.forces.player.manual_mining_speed_modifier = 1
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0.2
-        game.forces.player.manual_crafting_speed_modifier = 0.3
-        WPT.set().coin_amount = 2
-        WPT.set('upgrades').flame_turret.limit = 25
-        WPT.set('upgrades').landmine.limit = 100
-        WPT.set().locomotive_health = 15000
-        WPT.set().locomotive_max_health = 15000
-        WPT.set().bonus_xp_on_join = 700
-        WD.set().next_wave = game.tick + 3600 * 20
-        WPT.set().spidertron_unlocked_at_wave = 11
-        WPT.set().difficulty_set = true
-    elseif name == 'Normal' then
-        rpg_extra.difficulty = 0.5
-        game.forces.player.manual_mining_speed_modifier = 0.5
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0.1
-        game.forces.player.manual_crafting_speed_modifier = 0.1
+    local force = game.forces.player
+
+    if name == "I'm too young to die" then
+        -- rpg_extra.difficulty = 1
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
+        force.character_running_speed_modifier = 0.15
+        force.manual_crafting_speed_modifier = 0.15
         WPT.set().coin_amount = 1
-        WPT.set('upgrades').flame_turret.limit = 10
+        WPT.set('upgrades').flame_turret.limit = 12
         WPT.set('upgrades').landmine.limit = 50
         WPT.set().locomotive_health = 10000
         WPT.set().locomotive_max_health = 10000
-        WPT.set().bonus_xp_on_join = 300
+        WPT.set().bonus_xp_on_join = 500
         WD.set().next_wave = game.tick + 3600 * 15
+        WPT.set().spidertron_unlocked_at_wave = 14
+        WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(1.50)
+    elseif name == 'Hurt me plenty' then
+        -- rpg_extra.difficulty = 0.5
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
+        force.character_running_speed_modifier = 0.1
+        force.manual_crafting_speed_modifier = 0.1
+        WPT.set().coin_amount = 1
+        WPT.set('upgrades').flame_turret.limit = 10
+        WPT.set('upgrades').landmine.limit = 50
+        WPT.set().locomotive_health = 7000
+        WPT.set().locomotive_max_health = 7000
+        WPT.set().bonus_xp_on_join = 300
+        WD.set().next_wave = game.tick + 3600 * 10
         WPT.set().spidertron_unlocked_at_wave = 16
         WPT.set().difficulty_set = true
-    elseif name == 'Hard' then
-        rpg_extra.difficulty = 0
-        game.forces.player.manual_mining_speed_modifier = 0
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0
-        game.forces.player.manual_crafting_speed_modifier = 0
+        WD.set_biter_health_boost(2)
+    elseif name == 'Ultra-violence' then
+        -- rpg_extra.difficulty = 0
+        force.character_running_speed_modifier = 0
+        force.manual_crafting_speed_modifier = 0
         WPT.set().coin_amount = 1
         WPT.set('upgrades').flame_turret.limit = 3
         WPT.set('upgrades').landmine.limit = 10
         WPT.set().locomotive_health = 5000
         WPT.set().locomotive_max_health = 5000
         WPT.set().bonus_xp_on_join = 50
-        WD.set().next_wave = game.tick + 3600 * 10
-        WPT.set().spidertron_unlocked_at_wave = 21
+        WD.set().next_wave = game.tick + 3600 * 5
+        WPT.set().spidertron_unlocked_at_wave = 18
         WPT.set().difficulty_set = true
-    elseif name == 'Insane' then
-        rpg_extra.difficulty = 0
-        game.forces.player.manual_mining_speed_modifier = 0
-        force_mining_speed.speed = game.forces.player.manual_mining_speed_modifier
-        game.forces.player.character_running_speed_modifier = 0
-        game.forces.player.manual_crafting_speed_modifier = 0
+        WD.set_biter_health_boost(3)
+    elseif name == 'Nightmare' then
+        -- rpg_extra.difficulty = 0
+        force.character_running_speed_modifier = 0
+        force.manual_crafting_speed_modifier = 0
         WPT.set().coin_amount = 1
         WPT.set('upgrades').flame_turret.limit = 0
         WPT.set('upgrades').landmine.limit = 0
         WPT.set().locomotive_health = 1000
         WPT.set().locomotive_max_health = 1000
         WPT.set().bonus_xp_on_join = 0
-        WD.set().next_wave = game.tick + 3600 * 5
-        WPT.set().spidertron_unlocked_at_wave = 26
+        WD.set().next_wave = game.tick + 3600 * 2
+        WPT.set().spidertron_unlocked_at_wave = 22
         WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(4)
     end
 end
 
@@ -725,11 +756,103 @@ local collapse_message =
     end
 )
 
-local compare_collapse_and_train = function()
+local lock_locomotive_positions = function(lock)
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local locomotive_positions = WPT.get('locomotive_pos')
+    local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
+    local p = locomotive.position
+    if not (success and lock) then
+        if lock then
+            locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y + 50)}
+        else
+            locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y)}
+        end
+    end
+
+    local total_pos = #locomotive_positions.tbl
+    if total_pos > 50 then
+        remove(locomotive_positions.tbl, total_pos - total_pos + 1)
+    end
+end
+
+local set_spawn_position = function()
     local collapse_pos = Collapse.get_position()
     local locomotive = WPT.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
+    end
+    local l = locomotive.position
+
+    local retries = 0
+
+    ::retry::
+
+    local locomotive_positions = WPT.get('locomotive_pos')
+    local total_pos = #locomotive_positions.tbl
+
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+
+    local spawn_near_collapse = WPT.get('spawn_near_collapse')
+    if spawn_near_collapse then
+        local collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 128, 1)
+        local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
+        local get_tile = surface.get_tile(sizeof)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            remove(locomotive_positions.tbl, total_pos - total_pos + 1)
+            retries = retries + 1
+
+            if retries == 2 then
+                goto continue
+            end
+            goto retry
+        end
+
+        local locomotive_position = surface.find_non_colliding_position('small-biter', sizeof, 128, 1)
+        local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
+        local l_y = l.y
+        local t_y = locomotive_position.y
+        local c_y = collapse_pos.y
+        if total_pos > 35 then
+            if l_y - t_y <= -150 then
+                if locomotive_position then
+                    WD.set_spawn_position(locomotive_position)
+                end
+            elseif c_y - t_y <= 100 then
+                if distance_from >= 10 then
+                    WD.set_spawn_position(locomotive_position)
+                else
+                    WD.set_spawn_position({x = locomotive_position.x, y = locomotive_position.y + 50})
+                end
+            else
+                if collapse_position then
+                    WD.set_spawn_position(collapse_position)
+                end
+            end
+        else
+            if collapse_position then
+                WD.set_spawn_position(collapse_position)
+            end
+        end
+    end
+
+    ::continue::
+end
+
+local compare_collapse_and_train = function()
+    local collapse_pos = Collapse.get_position()
+    local locomotive = WPT.get('locomotive')
+    local carriages = WPT.get('carriages')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    if not carriages then
+        WPT.set().carriages = locomotive.train.carriages
     end
 
     local c_y = collapse_pos.y
@@ -762,13 +885,13 @@ local collapse_after_wave_100 = function()
     local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
 
     local difficulty_set = WPT.get('difficulty_set')
-    if not difficulty_set and name == 'Insane' then
+    if not difficulty_set and name == 'Nightmare' then
         return
     end
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 100 or name == 'Insane' then
+    if wave_number >= 100 or name == 'Nightmare' then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
@@ -779,8 +902,6 @@ local collapse_after_wave_100 = function()
 end
 
 local on_tick = function()
-    local active_surface_index = WPT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
 
@@ -788,7 +909,7 @@ local on_tick = function()
         for _, player in pairs(game.connected_players) do
             update_gui(player)
         end
-
+        lock_locomotive_positions()
         is_player_valid()
         is_locomotive_valid()
         has_the_game_ended()
@@ -797,21 +918,13 @@ local on_tick = function()
 
     if tick % 250 == 0 then
         compare_collapse_and_train()
+        set_spawn_position()
+        boost_difficulty()
     end
 
-    if tick % 1200 == 0 then
-        boost_difficulty()
+    if tick % 1000 == 0 then
         collapse_after_wave_100()
-        Entities.set_scores()
         set_difficulty()
-        local spawn_near_collapse = WPT.get('spawn_near_collapse')
-        if spawn_near_collapse then
-            local collapse_pos = Collapse.get_position()
-            local position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 128, 1)
-            if position then
-                WD.set_spawn_position(position)
-            end
-        end
     end
 end
 
@@ -819,55 +932,19 @@ local on_init = function()
     local this = WPT.get()
     Public.reset_map()
 
-    local difficulties = {
-        [1] = {
-            name = 'Easy',
-            index = 1,
-            value = 0.75,
-            color = {r = 0.00, g = 0.25, b = 0.00},
-            print_color = {r = 0.00, g = 0.4, b = 0.00},
-            count = 0
-        },
-        [2] = {
-            name = 'Normal',
-            index = 2,
-            value = 1,
-            color = {r = 0.00, g = 0.00, b = 0.25},
-            print_color = {r = 0.0, g = 0.0, b = 0.5},
-            count = 0
-        },
-        [3] = {
-            name = 'Hard',
-            index = 3,
-            value = 1.5,
-            color = {r = 0.25, g = 0.25, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00},
-            count = 0
-        },
-        [4] = {
-            name = 'Insane',
-            index = 4,
-            value = 3,
-            color = {r = 0.25, g = 0.00, b = 0.00},
-            print_color = {r = 0.4, g = 0.0, b = 0.00},
-            count = 0
-        }
-    }
-
     local tooltip = {
-        [1] = ({'main.diff_tooltip', '1', '1.5', '0.2', '0.4', '2', '25', '100', '15000', '100%', '20', '10'}),
-        [2] = ({'main.diff_tooltip', '0.5', '1', '0.1', '0.2', '1', '10', '50', '10000', '75%', '15', '15'}),
-        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '3', '10', '5000', '50%', '10', '20'}),
-        [4] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '0', '0', '1000', '25%', '5', '25'})
+        [1] = ({'main.diff_tooltip', '0', '0.5', '0.2', '0.4', '1', '12', '50', '10000', '100%', '15', '14'}),
+        [2] = ({'main.diff_tooltip', '0', '0.25', '0.1', '0.1', '1', '10', '50', '7000', '75%', '10', '16'}),
+        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '3', '10', '5000', '50%', '10', '18'}),
+        [4] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '0', '0', '1000', '25%', '5', '22'})
     }
 
-    Difficulty.set_difficulties(difficulties)
     Difficulty.set_tooltip(tooltip)
 
     this.rocks_yield_ore_maximum_amount = 500
     this.type_modifier = 1
-    this.rocks_yield_ore_base_amount = 100
-    this.rocks_yield_ore_distance_modifier = 0.025
+    this.rocks_yield_ore_base_amount = 40
+    this.rocks_yield_ore_distance_modifier = 0.020
 
     local T = Map.Pop_info()
     T.localised_category = 'mountain_fortress_v3'

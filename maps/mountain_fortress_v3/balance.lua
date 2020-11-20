@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local Difficulty = require 'maps.mountain_fortress_v3.difficulty_vote'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
 
 local Public = {}
 
@@ -40,7 +40,7 @@ local function enemy_weapon_damage()
     local e = game.forces.enemy
 
     local data = {
-        ['artillery-shell'] = 0.001,
+        ['artillery-shell'] = 0.05,
         ['biological'] = 0.08,
         ['bullet'] = 0.08,
         ['capsule'] = 0.08,

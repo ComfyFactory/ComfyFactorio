@@ -1,5 +1,6 @@
 -- one table to rule them all!
 local Global = require 'utils.global'
+local Difficulty = require 'modules.difficulty_vote'
 local Event = require 'utils.event'
 
 local this = {}
@@ -20,6 +21,8 @@ function Public.reset_table()
     this.shutdown = false
     this.announced_message = false
     this.force_chunk = false
+    this.fish_eye = false
+    this.chunk_load_tick = game.tick + 600
     -- @end
     this.game_has_ended = false
     this.game_reset = false
@@ -36,12 +39,15 @@ function Public.reset_table()
     this.vehicle_nanobots_unlocked = false
     this.game_restart_timer = nil
     this.wave_count = 0
+    this.wave_limit = 2000
     this.attack_wave_threat = nil
     this.market = nil
     this.market_age = nil
     this.last_reset = game.tick
+    global.biter_health_boost = 4
     this.wave_interval = 3600
-    this.wave_grace_period = game.tick + 3600 * 20
+    this.wave_grace_period = game.tick + 72000
+    this.biter_health_boost = 1
     -- this.wave_grace_period = game.tick + 3600
     this.boss_biters = {}
     this.acid_lines_delay = {}
@@ -82,7 +88,8 @@ function Public.reset_table()
         right_bottom = {x = -80, y = 1500}
     }
     this.shotgun_shell_damage_modifier_old = {}
-    this.flame_boots = {}
+    this.fish_eye = false
+    this.stop_generating_map = false
 end
 
 function Public.get(key)
@@ -90,6 +97,53 @@ function Public.get(key)
         return this[key]
     else
         return this
+    end
+end
+
+function Public.set(key, value)
+    if key and value == false then
+        if this[key] then
+            this[key] = false
+            return this[key]
+        end
+    end
+    if key and not value then
+        if this[key] then
+            this[key] = nil
+            return
+        end
+    end
+    if key and value then
+        this[key] = value
+        return this[key]
+    end
+end
+
+function Public.get_current_difficulty_wave_interval()
+    local diff_index = Difficulty.get_difficulty_vote_index()
+    if this.difficulties_votes[diff_index] then
+        return this.difficulties_votes[diff_index].wave_interval
+    end
+end
+
+function Public.get_current_difficulty_boss_modifier()
+    local diff_index = Difficulty.get_difficulty_vote_index()
+    if this.difficulties_votes[diff_index] then
+        return this.difficulties_votes[diff_index].boss_modifier
+    end
+end
+
+function Public.get_current_difficulty_strength_modifier()
+    local diff_index = Difficulty.get_difficulty_vote_index()
+    if this.difficulties_votes[diff_index] then
+        return this.difficulties_votes[diff_index].strength_modifier
+    end
+end
+
+function Public.get_current_difficulty_amount_modifier()
+    local diff_index = Difficulty.get_difficulty_vote_index()
+    if this.difficulties_votes[diff_index] then
+        return this.difficulties_votes[diff_index].amount_modifier
     end
 end
 

@@ -70,7 +70,7 @@ commands.add_command(
 local function on_gui_click(event)
     local player = game.players[event.player_index]
 
-    if not event.element.valid then
+    if not (event.element and event.element.valid) then
         return
     end
 

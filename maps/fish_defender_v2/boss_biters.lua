@@ -40,14 +40,14 @@ local function acid_nova(event)
 end
 
 boss_biter.died = function(event)
-    local this = FDT.get()
+    local acid_lines_delay = FDT.get('acid_lines_delay')
     if acid_splashes[event.entity.name] then
         acid_nova(event)
     end
-    if this.acid_lines_delay[event.entity.unit_number] then
-        this.acid_lines_delay[event.entity.unit_number] = nil
+    if acid_lines_delay[event.entity.unit_number] then
+        FDT.get('acid_lines_delay')[event.entity.unit_number] = nil
     end
-    this.boss_biters[event.entity.unit_number] = nil
+    FDT.get('boss_biters')[event.entity.unit_number] = nil
 end
 
 local function acid_line(surface, name, source, target)
@@ -83,14 +83,14 @@ end
 
 boss_biter.damaged_entity = function(event)
     if acid_lines[event.cause.name] then
-        local this = FDT.get()
-        if not this.acid_lines_delay[event.cause.unit_number] then
-            this.acid_lines_delay[event.cause.unit_number] = 0
+        local acid_lines_delay = FDT.get('acid_lines_delay')
+        if not acid_lines_delay[event.cause.unit_number] then
+            FDT.set('acid_lines_delay')[event.cause.unit_number] = 0
         end
 
-        if this.acid_lines_delay[event.cause.unit_number] < game.tick then
+        if acid_lines_delay[event.cause.unit_number] < game.tick then
             if acid_line(event.cause.surface, acid_lines[event.cause.name], event.cause.position, event.entity.position) then
-                this.acid_lines_delay[event.cause.unit_number] = game.tick + 180
+                FDT.set('acid_lines_delay')[event.cause.unit_number] = game.tick + 180
             end
         end
     end

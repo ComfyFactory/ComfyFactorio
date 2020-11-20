@@ -26,13 +26,13 @@ local function decrement(t, k)
 end
 
 local function create_player_table(player)
-    local this = ICT.get()
-    if not this.trust_system[player.index] then
-        this.trust_system[player.index] = {
+    local trust_system = ICT.get('trust_system')
+    if not trust_system[player.index] then
+        trust_system[player.index] = {
             [player.name] = true
         }
     end
-    return this.trust_system[player.index]
+    return trust_system[player.index]
 end
 
 local function remove_main_frame(main_frame)
@@ -397,15 +397,17 @@ Gui.on_click(
     discard_button_name,
     function(event)
         local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
         if not frame or not frame.valid then
             return
         end
         local player_frame = frame[draw_add_player_frame_name]
-        if not player or not player.valid or not player.character then
-            return
-        end
+
         if player_frame and player_frame.valid then
             player_frame.destroy()
         end
@@ -416,11 +418,12 @@ Gui.on_click(
     main_toolbar_name,
     function(event)
         local player = event.player
-        local screen = player.gui.screen
-        local frame = screen[main_frame_name]
         if not player or not player.valid or not player.character then
             return
         end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
 
         if frame and frame.valid then
             frame.destroy()
@@ -439,11 +442,12 @@ Event.add(
     defines.events.on_gui_closed,
     function(event)
         local player = game.get_player(event.player_index)
-        local screen = player.gui.screen
-        local frame = screen[main_frame_name]
         if not player or not player.valid or not player.character then
             return
         end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
 
         if frame and frame.valid then
             frame.destroy()
