@@ -8,7 +8,7 @@ local string_find = string.find
 
 local balance_functions = {
 	["flamethrower"] = function(force_name)
-		global.combat_balance[force_name].flamethrower_damage = -0.80
+		global.combat_balance[force_name].flamethrower_damage = -0.65
 		game.forces[force_name].set_turret_attack_modifier("flamethrower-turret", global.combat_balance[force_name].flamethrower_damage)
 		game.forces[force_name].set_ammo_damage_modifier("flamethrower", global.combat_balance[force_name].flamethrower_damage)
 	end,
