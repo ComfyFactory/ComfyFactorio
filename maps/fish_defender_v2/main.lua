@@ -28,7 +28,6 @@ local insert = table.insert
 local enable_start_grace_period = true
 
 local Public = {}
-local random = math.random
 
 local starting_items = {
     ['pistol'] = 1,
@@ -1160,7 +1159,7 @@ end
 
 local function on_research_finished(event)
     local research = event.research.name
-    if research ~= 'tanks' then
+    if research ~= 'tank' then
         return
     end
     game.forces['player'].technologies['artillery'].researched = true
@@ -1208,7 +1207,7 @@ local function has_the_game_ended()
             end
             if soft_reset and game_restart_timer == 0 then
                 FDT.set('game_reset_tick', nil)
-                Public.reset_game()
+                Server.start_scenario('Fish_Defender')
                 return
             end
             local announced_message = FDT.get('announced_message')
@@ -1237,23 +1236,24 @@ local function has_the_game_ended()
 end
 
 function Public.reset_game()
+    FDT.reset_table()
     local get_score = Score.get_table()
     Poll.reset()
 
     Difficulty.reset_difficulty_poll()
-    local wave_grace_period = FDT.get('wave_grace_period')
-    if not wave_grace_period then
-        wave_grace_period = game.tick + 72000
-    end
-    Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = wave_grace_period})
 
     AntiGrief.reset_tables()
-    FDT.reset_table()
 
     FDT.set('fish_eye_location', {x = -1667, y = -50})
 
     global.fish_in_space = 0
     get_score.score_table = {}
+
+    local wave_grace_period = FDT.get('wave_grace_period')
+    if not wave_grace_period then
+        wave_grace_period = game.tick + 72000
+    end
+    Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = wave_grace_period})
 
     local difficulties = {
         [1] = {
@@ -1289,6 +1289,9 @@ function Public.reset_game()
         Score.init_player_table(player)
         if player.gui.left['fish_defense_game_lost'] then
             player.gui.left['fish_defense_game_lost'].destroy()
+        end
+        if player.gui.left['fish_in_space'] then
+            player.gui.left['fish_in_space'].destroy()
         end
     end
 

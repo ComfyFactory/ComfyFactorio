@@ -404,8 +404,6 @@ local function treasure_chest(position, distance_to_center)
             evolution_min = 0.5,
             evolution_max = 1
         },
-        {{name = 'railgun', count = 1}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-        {{name = 'railgun-dart', count = math.random(16, 32)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
         {{name = 'defender-capsule', count = math.random(8, 16)}, weight = 2, evolution_min = 0.0, evolution_max = 0.7},
         {{name = 'distractor-capsule', count = math.random(8, 16)}, weight = 2, evolution_min = 0.2, evolution_max = 1},
         {{name = 'destroyer-capsule', count = math.random(8, 16)}, weight = 2, evolution_min = 0.3, evolution_max = 1},
@@ -453,7 +451,6 @@ local function treasure_chest(position, distance_to_center)
         {{name = 'explosives', count = math.random(40, 50)}, weight = 10, evolution_min = 0.0, evolution_max = 1},
         {{name = 'lubricant-barrel', count = math.random(4, 10)}, weight = 1, evolution_min = 0.3, evolution_max = 0.5},
         {{name = 'rocket-fuel', count = math.random(4, 10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},
-        --{{name = "computer", count = 1}, weight = 2, evolution_min = 0, evolution_max = 1},
         {{name = 'steel-plate', count = math.random(25, 75)}, weight = 2, evolution_min = 0.1, evolution_max = 0.3},
         {{name = 'nuclear-fuel', count = 1}, weight = 2, evolution_min = 0.7, evolution_max = 1},
         {{name = 'burner-inserter', count = math.random(8, 16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
@@ -650,8 +647,6 @@ local function rare_treasure_chest(position)
         rare_treasure_chest_loot_weights,
         {{name = 'piercing-rounds-magazine', count = math.random(64, 128)}, 3}
     )
-    table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun', count = 1}, 4})
-    table.insert(rare_treasure_chest_loot_weights, {{name = 'railgun-dart', count = math.random(16, 48)}, 4})
     table.insert(rare_treasure_chest_loot_weights, {{name = 'exoskeleton-equipment', count = 1}, 2})
     table.insert(rare_treasure_chest_loot_weights, {{name = 'defender-capsule', count = math.random(8, 16)}, 5})
     table.insert(rare_treasure_chest_loot_weights, {{name = 'distractor-capsule', count = math.random(4, 8)}, 4})
@@ -715,8 +710,6 @@ local function secret_shop(pos)
             price = {{'raw-fish', math.random(350, 550)}},
             offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}
         },
-        {price = {{'raw-fish', math.random(125, 250)}}, offer = {type = 'give-item', item = 'railgun'}},
-        {price = {{'raw-fish', math.random(2, 4)}}, offer = {type = 'give-item', item = 'railgun-dart'}},
         {price = {{'raw-fish', math.random(100, 175)}}, offer = {type = 'give-item', item = 'loader'}},
         {price = {{'raw-fish', math.random(200, 350)}}, offer = {type = 'give-item', item = 'fast-loader'}},
         {price = {{'raw-fish', math.random(400, 600)}}, offer = {type = 'give-item', item = 'express-loader'}}

@@ -19,7 +19,7 @@ function Public.wave_defense_roll_biter_name()
 end
 
 function Public.wave_defense_roll_spitter_name()
-    local spitter_raffle = WD.get('biter_raffle')
+    local spitter_raffle = WD.get('spitter_raffle')
     local max_chance = 0
     for k, v in pairs(spitter_raffle) do
         max_chance = max_chance + v

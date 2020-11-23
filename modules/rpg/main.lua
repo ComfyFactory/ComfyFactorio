@@ -1023,16 +1023,16 @@ local function on_player_used_capsule(event)
                 end
             end
         end
-        p(({'rpg_main.object_spawned'}), Color.success)
+        p(({'rpg_main.object_spawned', obj_name}), Color.success)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     else
         if object.target then
             surface.create_entity({name = obj_name, position = position, force = force, target = target_pos, speed = 1})
-            p(({'rpg_main.object_spawned'}), Color.success)
+            p(({'rpg_main.object_spawned', obj_name}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         elseif object.obj_to_create == 'fish' then
             player.insert({name = 'raw-fish', count = object.amount})
-            p(({'rpg_main.object_spawned'}), Color.success)
+            p(({'rpg_main.object_spawned', 'raw-fish'}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         elseif surface.can_place_entity {name = obj_name, position = position} then
             if object.biter then
@@ -1041,7 +1041,7 @@ local function on_player_used_capsule(event)
             else
                 surface.create_entity({name = obj_name, position = position, force = force})
             end
-            p(({'rpg_main.object_spawned'}), Color.success)
+            p(({'rpg_main.object_spawned', obj_name}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
         else
             p(({'rpg_main.out_of_reach'}), Color.fail)

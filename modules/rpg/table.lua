@@ -148,6 +148,7 @@ function Public.get_value_from_player(key, value)
     end
     return false
 end
+
 --- Sets value to player rpg_t table
 ---@param key <string>
 ---@param value <string>

@@ -40,8 +40,8 @@ local save_tiles = {
 	["deepwater"] = true,
 }
 
-local function get_moisture(position)	
-	local moisture = get_noise("oasis", position, global.desert_oasis_seed)	
+local function get_moisture(position)
+	local moisture = get_noise("oasis", position, global.desert_oasis_seed)
 	moisture = moisture * 128
 	moisture = math.round(moisture, 1)
 	return moisture
@@ -49,11 +49,11 @@ end
 
 local function moisture_meter(player, moisture)
 	local moisture_meter = player.gui.top.moisture_meter
-	
+
 	if not moisture_meter then
 		moisture_meter = player.gui.top.add({type = "frame", name = "moisture_meter"})
 		moisture_meter.style.padding = 3
-		
+
 		local label = moisture_meter.add({type = "label", caption = "Moisture Meter:"})
 		label.style.font = "heading-2"
 		label.style.font_color = {0, 150, 0}
@@ -61,7 +61,7 @@ local function moisture_meter(player, moisture)
 		label.style.font = "heading-2"
 		label.style.font_color = {175, 175, 175}
 	end
-	
+
 	moisture_meter.children[2].caption = moisture
 end
 
@@ -72,21 +72,21 @@ local function draw_oasis(surface, left_top, seed)
 	local size_of_entities = 0
 	local left_top_x = left_top.x
 	local left_top_y = left_top.y
-	
+
 	for x = 0, 31, 1 do
 		for y = 0, 31, 1 do
 			local position = {x = left_top_x + x, y = left_top_y + y}
 			local noise = get_noise("oasis", position, seed)
-			if noise >= oasis_start then		
+			if noise >= oasis_start then
 				if noise > water_start or noise > oasis_start + 0.035 and get_noise("cave_ponds", position, seed) > 0.72 then
 					size_of_tiles = size_of_tiles + 1
-					
+
 					if noise > 0.85 then
 						tiles[size_of_tiles] = {name = "deepwater", position = position}
 					else
 						tiles[size_of_tiles] = {name = "water", position = position}
 					end
-					
+
 					if math_random(1, 64) == 1 then
 						size_of_entities = size_of_entities + 1
 						entities[size_of_entities] = {name = "fish", position = position}
@@ -94,11 +94,11 @@ local function draw_oasis(surface, left_top, seed)
 				else
 					size_of_tiles = size_of_tiles + 1
 					tiles[size_of_tiles] = {name = "grass-" .. math_floor(noise * 32) % 3 + 1, position = position}
-					
+
 					for _, cliff in pairs(surface.find_entities_filtered({type = "cliff", position = position})) do
 						cliff.destroy()
 					end
-	
+
 					if math_random(1, 12) == 1 and surface.can_place_entity({name = "coal", position = position, amount = 1}) then
 						size_of_entities = size_of_entities + 1
 						if math_abs(get_noise("n3", position, seed)) > 0.50 then
@@ -109,9 +109,9 @@ local function draw_oasis(surface, left_top, seed)
 			end
 		end
 	end
-	
+
 	surface.set_tiles(tiles, true)
-	
+
 	for _, entity in pairs(entities) do
 		if surface.can_place_entity(entity) then
 			surface.create_entity(entity)
@@ -137,7 +137,7 @@ local function on_chunk_generated(event)
 	end
 
 	for _, entity in pairs(surface.find_entities_filtered({area = event.area, force = "enemy"})) do
-		if get_noise("oasis", entity.position, seed) > -0.25 then			
+		if get_noise("oasis", entity.position, seed) > -0.25 then
 			surface.destroy_decoratives({
 				area = {{entity.position.x - 10, entity.position.y - 10},{entity.position.x + 10, entity.position.y + 10}},
 				name = {"enemy-decal", "enemy-decal-transparent", "worms-decal", "shroom-decal", "lichen-decal", "light-mud-decal"}
@@ -152,14 +152,14 @@ end
 
 local function on_init()
 	if game.surfaces["desert_oasis"] then return end
-	
+
 	local T = Map_info.Pop_info()
 	T.localised_category = "desert_oasis"
 	T.main_caption_color = {r = 170, g = 170, b = 0}
 	T.sub_caption_color = {r = 120, g = 120, b = 0}
-	
+
 	local map_gen_settings = {
-		water = 0.0,		
+		water = 0.0,
 		property_expression_names = {
 			temperature = 50,
 			moisture = 0,
@@ -178,7 +178,7 @@ local function on_init()
 			["enemy-base"] = {frequency = 15, size = 1, richness = 1},
 		},
 	}
-	
+
 	global.desert_oasis_seed = 0
 	local noise
 	local seed = 0
@@ -191,9 +191,9 @@ local function on_init()
 			break
 		end
 	end
-	
+
 	game.create_surface("desert_oasis", map_gen_settings)
-	
+
 	local surface = game.surfaces["desert_oasis"]
 	surface.request_to_generate_chunks({0,0}, 5)
 	surface.force_generate_chunk_requests()
@@ -219,31 +219,31 @@ local type_whitelist = {
 	["rail-signal"] = true,
 	["curved-rail"] = true,
 	["straight-rail"] = true,
-	["train-stop"] = true,	
+	["train-stop"] = true,
 }
 
 local function deny_building(event)
 	local entity = event.created_entity
 	if not entity.valid then return end
-	
+
 	if type_whitelist[event.created_entity.type] then return end
 
 	if save_tiles[entity.surface.get_tile(entity.position).name] then return end
 
 	if event.player_index then
-		game.players[event.player_index].insert({name = entity.name, count = 1})		
-	else	
+		game.players[event.player_index].insert({name = entity.name, count = 1})
+	else
 		local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-		inventory.insert({name = entity.name, count = 1})													
+		inventory.insert({name = entity.name, count = 1})
 	end
-	
+
 	event.created_entity.surface.create_entity({
 		name = "flying-text",
 		position = entity.position,
 		text = "Can not be built in the sands!",
 		color = {r=0.98, g=0.66, b=0.22}
 	})
-	
+
 	entity.destroy()
 end
 
@@ -266,9 +266,9 @@ local function deny_tile_building(surface, inventory, tiles, tile)
 					inventory.insert({name = tile_to_item[tile.name], count = 1})
 				else
 					inventory.insert({name = "stone-brick", count = 1})
-				end				
+				end
 			end
-		end		
+		end
 	end
 end
 
@@ -285,20 +285,19 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if player.online_time == 0 then
 		player.insert({name = "raw-fish", count = 3})
-		player.insert({name = "grenade", count = 1})		
+		player.insert({name = "grenade", count = 1})
 		player.insert({name = "iron-plate", count = 16})
 		player.insert({name = "iron-gear-wheel", count = 8})
 		player.insert({name = "stone", count = 5})
-		player.insert({name = "pistol", count = 1})	
+		player.insert({name = "pistol", count = 1})
 		player.insert({name = "firearm-magazine", count = 16})
 		player.teleport(game.surfaces["desert_oasis"].find_non_colliding_position("character", {64, 64}, 50, 0.5), "desert_oasis")
 	end
-	
+
 	if game.tick > 0 then return end
 	local p = game.surfaces["desert_oasis"].find_non_colliding_position("stone", {80, 80}, 50, 0.5)
 	if not p then return end
 	local e = game.surfaces.desert_oasis.create_entity({name = "crash-site-spaceship", position = p, force = "player", create_build_effect_smoke = false})
-	e.insert({name = "computer", count = 1})
 	e.insert({name = "repair-pack", count = 2})
 	e.insert({name = "water-barrel", count = 5})
 	e.minable = false
@@ -307,17 +306,17 @@ end
 local function on_player_changed_position(event)
 	if math_random(1, 4) ~= 1 then return end
 	local player = game.players[event.player_index]
-	
+
 	local moisture = get_moisture(player.position)
 	moisture_meter(player, moisture)
-	
+
 	if not player.character then return end
 	if not player.character.valid then return end
 	if player.vehicle then return end
-	
+
 	if save_tiles[player.surface.get_tile(player.position).name] then return end
 
-	if math_random(1, 64) == 1 then 
+	if math_random(1, 64) == 1 then
 		player.surface.create_entity({name = "fire-flame", position = player.position})
 	end
 
@@ -325,7 +324,7 @@ local function on_player_changed_position(event)
 	if player.character.health == 0 then player.character.die() end
 end
 
-local Event = require 'utils.event' 
+local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)

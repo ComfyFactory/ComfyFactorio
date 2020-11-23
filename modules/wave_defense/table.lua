@@ -24,7 +24,7 @@ function Public.reset_wave_defense()
     this.active_biters = {}
     this.active_biter_count = 0
     this.active_biter_threat = 0
-    this.average_unit_group_size = 128
+    this.average_unit_group_size = 24
     this.biter_raffle = {}
     this.debug = false
     this.game_lost = false
@@ -32,7 +32,7 @@ function Public.reset_wave_defense()
     this.group_size = 2
     this.last_wave = game.tick
     this.max_active_biters = 1280
-    this.max_active_unit_groups = 6
+    this.max_active_unit_groups = 32
     this.max_biter_age = 3600 * 60
     this.nests = {}
     this.nest_building_density = 48
@@ -48,9 +48,12 @@ function Public.reset_wave_defense()
     this.threat_log = {}
     this.threat_log_index = 0
     this.unit_groups = {}
+    this.unit_group_pos = {
+        positions = {}
+    }
     this.index = 0
     this.random_group = nil
-    this.unit_group_command_delay = 3600 * 30
+    this.unit_group_command_delay = 3600 * 20
     this.unit_group_command_step_length = 15
     this.unit_group_last_command = {}
     this.wave_interval = 3600
@@ -69,6 +72,7 @@ function Public.reset_wave_defense()
     this.check_collapse_position = true
     this.modified_boss_health = true
     this.resolve_pathing = true
+    this.fill_tiles_so_biter_can_path = true
 end
 
 function Public.get(key)
@@ -80,8 +84,12 @@ function Public.get(key)
 end
 
 function Public.set(key, value)
-    if key and (value or value == false) then
-        this[key] = value
+    if key and (value or value == false or value == 'nil') then
+        if value == 'nil' then
+            this[key] = nil
+        else
+            this[key] = value
+        end
         return this[key]
     elseif key then
         return this[key]
@@ -174,6 +182,13 @@ function Public.resolve_pathing(boolean)
         this.resolve_pathing = boolean
     end
     return this.resolve_pathing
+end
+
+function Public.fill_tiles_so_biter_can_path(boolean)
+    if (boolean or boolean == false) then
+        this.fill_tiles_so_biter_can_path = boolean
+    end
+    return this.fill_tiles_so_biter_can_path
 end
 
 function Public.set_biter_health_boost(number)

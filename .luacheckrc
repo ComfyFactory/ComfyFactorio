@@ -1076,7 +1076,7 @@ stds.factorio_defines = {
                         'on_pre_robot_exploded_cliff',
                         'on_pre_surface_cleared',
                         'on_pre_surface_deleted',
-                        'on_put_item',
+                        'on_pre_build',
                         'on_research_finished',
                         'on_research_started',
                         'on_resource_depleted',

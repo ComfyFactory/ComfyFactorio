@@ -1,7 +1,6 @@
 require 'maps.crab_defender.boss_biters'
 
 local Event = require 'utils.event'
-local enhance_railgun = require 'maps.crab_defender.railgun_enhancer'
 local explosive_bullets = require 'maps.crab_defender.explosive_gun_bullets'
 local bouncy_shells = require 'maps.crab_defender.bouncy_shells'
 local FDT = require 'maps.crab_defender.table'
@@ -47,9 +46,6 @@ local function on_entity_damaged(event)
         return
     end
 
-    if enhance_railgun(event) then
-        return
-    end
     if explosive_bullets_unlocked then
         if explosive_bullets(event) then
             return

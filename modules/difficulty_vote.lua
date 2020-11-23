@@ -134,9 +134,6 @@ local function poll_difficulty(player)
         player.gui.center['difficulty_poll'].destroy()
         return
     end
-    if not this.difficulty_poll_closing_timeout then
-        this.difficulty_poll_closing_timeout = game.tick + 3600 * 20
-    end
     if game.tick > this.difficulty_poll_closing_timeout then
         if player.online_time ~= 0 then
             local t = math.abs(math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600))
@@ -237,9 +234,6 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    if not this.difficulty_poll_closing_timeout then
-        this.difficulty_poll_closing_timeout = game.tick + 3600 * 20
-    end
     if game.tick < this.difficulty_poll_closing_timeout then
         if not this.difficulty_player_votes[player.name] then
             poll_difficulty(player)
@@ -253,9 +247,6 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_left_game(event)
-    if not this.difficulty_poll_closing_timeout then
-        this.difficulty_poll_closing_timeout = game.tick + 3600 * 20
-    end
     if game.tick > this.difficulty_poll_closing_timeout then
         return
     end
@@ -292,9 +283,6 @@ local function on_gui_click(event)
     if event.element.name == 'close' then
         event.element.parent.destroy()
         return
-    end
-    if not this.difficulty_poll_closing_timeout then
-        this.difficulty_poll_closing_timeout = game.tick + 3600 * 20
     end
     if game.tick > this.difficulty_poll_closing_timeout then
         event.element.parent.destroy()
