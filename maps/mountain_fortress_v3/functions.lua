@@ -462,7 +462,7 @@ Public.power_source_callback =
         power_source.destructible = false
         local power_pole =
             turret.surface.create_entity {
-            name = 'crash-site-electric-pole',
+            name = 'small-electric-pole',
             position = {x = turret.position.x, y = turret.position.y}
         }
         power_pole.destructible = false

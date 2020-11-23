@@ -14,6 +14,7 @@ local raise_event = script.raise_event
 local floor = math.floor
 local random = math.random
 local sqrt = math.sqrt
+local level_depth = WPT.level_depth
 
 local z = {
     [3] = true,
@@ -78,6 +79,26 @@ local spidertron_too_far =
     end
 )
 
+local compare_player_pos = function(player)
+    local p = player.position
+    local index = player.index
+    if p.y <= -level_depth * 5 and p.y >= -level_depth * 6 then
+        RPG_Settings.set_value_to_player(index, 'scrap_zone', true)
+    elseif p.y <= -level_depth * 15 and p.y >= -level_depth * 16 then
+        RPG_Settings.set_value_to_player(index, 'scrap_zone', true)
+    elseif not (p.y <= -level_depth * 5 and p.y >= -level_depth * 6) then
+        local has_scrap = RPG_Settings.get_value_from_player(index, 'scrap_zone')
+        if has_scrap then
+            RPG_Settings.set_value_to_player(index, 'scrap_zone', false)
+        end
+    elseif not (p.y <= -level_depth * 15 and p.y >= -level_depth * 16) then
+        local has_scrap = RPG_Settings.get_value_from_player(index, 'scrap_zone')
+        if has_scrap then
+            RPG_Settings.set_value_to_player(index, 'scrap_zone', false)
+        end
+    end
+end
+
 local compare_player_and_train = function(player, entity)
     local position = player.position
     local locomotive = WPT.get('locomotive')
@@ -116,6 +137,8 @@ local function distance(player)
     local bonus_xp_on_join = WPT.get('bonus_xp_on_join')
     local enable_arties = WPT.get('enable_arties')
 
+    local p = player.position
+
     local s = WPT.get('validate_spider')
     if s[index] then
         local e = s[index]
@@ -125,7 +148,9 @@ local function distance(player)
         compare_player_and_train(player, s[index])
     end
 
-    local distance_to_center = floor(sqrt(player.position.x ^ 2 + player.position.y ^ 2))
+    compare_player_pos(player)
+
+    local distance_to_center = floor(sqrt(p.x ^ 2 + p.y ^ 2))
     local location = distance_to_center
     if location < Terrain.level_depth * bonus - 10 then
         return
@@ -206,14 +231,6 @@ local function distance(player)
         RPG_Settings.set_value_to_player(index, 'bonus', bonus + 1)
 
         local b = RPG_Settings.get_value_from_player(index, 'bonus')
-        if b == 6 or b == 16 then
-            RPG_Settings.set_value_to_player(index, 'scrap_zone', true)
-        elseif not (b == 6 or b == 16) then
-            local has_scrap = RPG_Settings.get_value_from_player(index, 'scrap_zone')
-            if has_scrap then
-                RPG_Settings.set_value_to_player(index, 'scrap_zone', false)
-            end
-        end
 
         if z[b] then
             RPG_Settings.set_value_to_player(index, 'forest_zone', true)

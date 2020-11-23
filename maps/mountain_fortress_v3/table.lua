@@ -15,6 +15,8 @@ Global.register(
     end
 )
 
+Public.level_depth = 704
+
 Public.pickaxe_upgrades = {
     'Wood',
     'Plastic',
@@ -176,7 +178,13 @@ function Public.reset_table()
     this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
-    this.spawn_near_collapse = true
+    this.spawn_near_collapse = {
+        active = true,
+        total_pos = 35,
+        compare = -150,
+        compare_next = 200,
+        distance_from = 2
+    }
     this.spidertron_unlocked_at_wave = 11
     -- this.void_or_tile = 'lab-dark-2'
     this.void_or_tile = 'out-of-map'
