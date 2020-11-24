@@ -1,5 +1,5 @@
 local Public = {}
---local LootRaffle = require "functions.loot_raffle"
+local LootRaffle = require "functions.loot_raffle"
 local BiterRaffle = require "functions.biter_raffle"
 local bb_config = require "maps.biter_battles_v2.config"
 
@@ -27,6 +27,23 @@ local loading_chunk_vectors = {}
 for k, v in pairs(chunk_tile_vectors) do
 	if v[1] == 0 or v[1] == 31 or v[2] == 0 or v[2] == 31 then table_insert(loading_chunk_vectors, v) end
 end
+
+local wrecks = {"crash-site-spaceship-wreck-big-1", "crash-site-spaceship-wreck-big-2", "crash-site-spaceship-wreck-medium-1", "crash-site-spaceship-wreck-medium-2", "crash-site-spaceship-wreck-medium-3"}
+local size_of_wrecks = #wrecks
+local valid_wrecks = {}
+for _, wreck in pairs(wrecks) do valid_wrecks[wreck] = true end
+local loot_blacklist = {
+	["automation-science-pack"] = true,
+	["logistic-science-pack"] = true,
+	["military-science-pack"] = true,
+	["chemical-science-pack"] = true,
+	["production-science-pack"] = true,
+	["utility-science-pack"] = true,
+	["space-science-pack"] = true,
+	["loader"] = true,
+	["fast-loader"] = true,
+	["express-loader"] = true,		
+}
 
 local function shuffle(tbl)
 	local size = #tbl
@@ -265,9 +282,9 @@ local function generate_river(surface, left_top_x, left_top_y)
 end
 
 local scrap_vectors = {}
-for x = -5, 5, 1 do
-	for y = -5, 5, 1 do
-		if math_sqrt(x^2 + y^2) <= 5 then
+for x = -8, 8, 1 do
+	for y = -8, 8, 1 do
+		if math_sqrt(x^2 + y^2) <= 8 then
 			scrap_vectors[#scrap_vectors + 1] = {x, y}
 		end
 	end
@@ -294,18 +311,17 @@ local function generate_extra_worm_turrets(surface, left_top)
 			local worm = surface.create_entity({name = worm_turret_name, position = position, force = "enemy"})
 			worm.active = false
 			
-			-- add some scrap piles
-			if math_random(1,2) == 1 then
-				for c = 1, math_random(2,12), 1 do
-					local vector = scrap_vectors[math_random(1, size_of_scrap_vectors)]
-					local position = {position.x + vector[1], position.y + vector[2]}
-					if surface.can_place_entity({name = "mineable-wreckage", position = position, force = "neutral"}) then
-						local e = surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})
-						e.active = false
-					end
+			-- add some scrap			
+			for c = 1, math_random(0, 4), 1 do
+				local vector = scrap_vectors[math_random(1, size_of_scrap_vectors)]
+				local position = {worm.position.x + vector[1], worm.position.y + vector[2]}
+				local name = wrecks[math_random(1, size_of_wrecks)]					
+				position = surface.find_non_colliding_position(name, position, 16, 1)									
+				if position then
+					local e = surface.create_entity({name = name, position = position, force = "neutral"})
+					e.active = false
 				end
-			end
-			
+			end		
 		end
 	end
 end
@@ -359,21 +375,13 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
 		end
 	end
 
-	local e = (math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.0005	
-	for _ = 1, math_random(3, 6), 1 do
+	local e = (math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.0015	
+	for _ = 1, math_random(5, 10), 1 do
 		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
 		local position = {x = left_top_x + v[1], y = left_top_y + v[2]}
 		local worm_turret_name = BiterRaffle.roll("worm", e)
 		if is_biter_area(position) and surface.can_place_entity({name = worm_turret_name, position = position}) then			
 			surface.create_entity({name = worm_turret_name, position = position, force = "enemy"})			
-		end
-	end
-	
-	for _ = 1, math_random(8, 16), 1 do
-		local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
-		local position = {x = left_top_x + v[1], y = left_top_y + v[2]}
-		if is_biter_area(position) and surface.can_place_entity({name = "mineable-wreckage", position = position}) then
-			surface.create_entity({name = "mineable-wreckage", position = position, force = "neutral"})		
 		end
 	end
 end
@@ -598,6 +606,42 @@ function Public.generate_spawn_goodies(surface)
 	end
 end
 ]]
+
+function Public.minable_wrecks(event)
+	local entity = event.entity
+	if not entity then return end
+	if not entity.valid then return end
+	if not valid_wrecks[entity.name] then return end
+	
+	local surface = entity.surface
+	local player = game.players[event.player_index]
+	
+	local loot_worth = math_floor(math_abs(entity.position.x * 0.02)) + math_random(16, 32)	
+	local blacklist = LootRaffle.get_tech_blacklist(math_abs(entity.position.x * 0.0001) + 0.10)
+	for k, v in pairs(blacklist) do print(k) end
+	for k, v in pairs(loot_blacklist) do blacklist[k] = true end		
+	local item_stacks = LootRaffle.roll(loot_worth, math_random(1, 3), blacklist)
+		
+	for k, stack in pairs(item_stacks) do	
+		local amount = stack.count
+		local name = stack.name
+		
+		local inserted_count = player.insert({name = name, count = amount})	
+		if inserted_count ~= amount then
+			local amount_to_spill = amount - inserted_count			
+			surface.spill_item_stack(entity.position, {name = name, count = amount_to_spill}, true)
+		end
+		
+		surface.create_entity({
+			name = "flying-text",
+			position = {entity.position.x, entity.position.y - 0.5 * k},
+			text = "+" .. amount .. " [img=item/" .. name .. "]",
+			color = {r=0.98, g=0.66, b=0.22}
+		})	
+	end
+end
+
+
 --Landfill Restriction
 function Public.restrict_landfill(surface, inventory, tiles)
 	for _, t in pairs(tiles) do

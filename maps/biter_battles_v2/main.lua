@@ -13,7 +13,6 @@ local Terrain = require "maps.biter_battles_v2.terrain"
 require "maps.biter_battles_v2.sciencelogs_tab"
 require 'maps.biter_battles_v2.commands'
 require "modules.spawners_contain_biters"
-require "modules.mineable_wreckage_yields_scrap"
 
 local function on_player_joined_game(event)
 	local surface = game.surfaces["biter_battles"]
@@ -116,8 +115,13 @@ local function on_player_built_tile(event)
 	Terrain.restrict_landfill(player.surface, player, event.tiles)
 end
 
-local function on_robot_built_tile(event)
-	Terrain.restrict_landfill(event.robot.surface, event.robot.get_inventory(defines.inventory.robot_cargo), event.tiles)
+local function on_player_built_tile(event)
+	local player = game.players[event.player_index]
+	Terrain.restrict_landfill(player.surface, player, event.tiles)
+end
+
+local function on_player_mined_entity(event)
+	Terrain.minable_wrecks(event)
 end
 
 local function on_chunk_generated(event)
@@ -142,6 +146,7 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
