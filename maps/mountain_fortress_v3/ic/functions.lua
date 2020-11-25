@@ -8,12 +8,10 @@ local Public = {}
 local main_tile_name = 'black-refined-concrete'
 
 local function validate_entity(entity)
-    if not entity then
+    if not (entity and entity.valid) then
         return false
     end
-    if not entity.valid then
-        return false
-    end
+
     return true
 end
 
@@ -39,24 +37,43 @@ local function upperCase(str)
     return (str:gsub('^%l', string.upper))
 end
 
-local function render_owner_text(player, entity)
+local function render_owner_text(renders, player, entity, new_owner)
     local color = {
         r = player.color.r * 0.6 + 0.25,
         g = player.color.g * 0.6 + 0.25,
         b = player.color.b * 0.6 + 0.25,
         a = 1
     }
-    rendering.draw_text {
-        text = '## - ' .. player.name .. "'s " .. entity.name .. ' - ##',
-        surface = entity.surface,
-        target = entity,
-        target_offset = {0, -2.6},
-        color = color,
-        scale = 1.05,
-        font = 'default-large-semibold',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+    if renders[player.index] then
+        rendering.destroy(renders[player.index])
+    end
+    if new_owner then
+        renders[new_owner.index] =
+            rendering.draw_text {
+            text = '## - ' .. new_owner.name .. "'s " .. entity.name .. ' - ##',
+            surface = entity.surface,
+            target = entity,
+            target_offset = {0, -2.6},
+            color = color,
+            scale = 1.05,
+            font = 'default-large-semibold',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    else
+        renders[player.index] =
+            rendering.draw_text {
+            text = '## - ' .. player.name .. "'s " .. entity.name .. ' - ##',
+            surface = entity.surface,
+            target = entity,
+            target_offset = {0, -2.6},
+            color = color,
+            scale = 1.05,
+            font = 'default-large-semibold',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    end
     entity.color = color
 end
 
@@ -134,18 +151,6 @@ local function get_player_entity(ic, player)
     return false, false
 end
 
-local function is_owner_on_car_surface(ic, player)
-    local cars = ic.cars
-    for k, car in pairs(cars) do
-        if validate_entity(car.surface) then
-            if car.owner == player.index and car.surface.index == player.surface.index then
-                return true
-            end
-        end
-    end
-    return false
-end
-
 local function get_owner_car_name(ic, player)
     local cars = ic.cars
     local saved_surfaces = ic.saved_surfaces
@@ -168,8 +173,7 @@ local function get_saved_entity(cars, entity, index)
                 table.concat(
                 {
                     'The built entity is not the same as the saved one. ',
-                    'Saved entity is: ' ..
-                        upperCase(car.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
+                    'Saved entity is: ' .. upperCase(car.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
                 }
             )
             return false, msg
@@ -188,7 +192,6 @@ local function replace_entity(cars, entity, index)
             cars[unit_number].saved_entity = nil
             cars[unit_number].transfer_entities = car.transfer_entities
             cars[k] = nil
-            break
         end
     end
 end
@@ -213,7 +216,7 @@ local function replace_surface(surfaces, entity, index)
         local unit_number = entity.unit_number
         if tostring(index.saved_entity) == surface.name then
             if validate_entity(surface) then
-                surface.name = unit_number
+                surface.name = tostring(unit_number)
                 surfaces[unit_number] = surface
                 surfaces[k] = nil
             end
@@ -229,7 +232,7 @@ local function replace_surface_entity(cars, entity, index)
         local unit_number = entity.unit_number
         if index and index.saved_entity == car.saved_entity then
             if validate_entity(car.surface) then
-                car.surface.name = unit_number
+                car.surface.name = tostring(unit_number)
             end
         end
     end
@@ -313,13 +316,7 @@ local function kick_players_from_surface(ic, car)
             for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
                     e.player.teleport(
-                        main_surface.find_non_colliding_position(
-                            'character',
-                            game.forces.player.get_spawn_position(main_surface),
-                            3,
-                            0,
-                            5
-                        ),
+                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
                         main_surface
                     )
                 end
@@ -364,13 +361,7 @@ local function kick_player_from_surface(ic, player, target)
                     target.teleport(p, car.entity.surface)
                 else
                     target.teleport(
-                        main_surface.find_non_colliding_position(
-                            'character',
-                            game.forces.player.get_spawn_position(main_surface),
-                            3,
-                            0,
-                            5
-                        ),
+                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
                         main_surface
                     )
                 end
@@ -385,6 +376,7 @@ local function restore_surface(ic, player, entity)
     local saved_surfaces = ic.saved_surfaces
     local cars = ic.cars
     local door = ic.doors
+    local renders = ic.renders
     local surfaces = ic.surfaces
     local index = saved_surfaces[player.index]
     if not index then
@@ -402,7 +394,7 @@ local function restore_surface(ic, player, entity)
         replace_surface(surfaces, ce, index)
         replace_surface_entity(cars, ce, index)
         saved_surfaces[player.index] = nil
-        render_owner_text(player, ce)
+        render_owner_text(renders, player, ce)
         return true
     end
     return false
@@ -795,12 +787,11 @@ function Public.create_car(ic, event)
     end
 
     if
-        get_owner_car_name(ic, player) == 'car' and ce.name == 'tank' or
-            get_owner_car_name(ic, player) == 'car' and ce.name == 'spidertron' or
+        get_owner_car_name(ic, player) == 'car' and ce.name == 'tank' or get_owner_car_name(ic, player) == 'car' and ce.name == 'spidertron' or
             get_owner_car_name(ic, player) == 'tank' and ce.name == 'spidertron'
      then
         upgrade_surface(ic, player, ce)
-        render_owner_text(player, ce)
+        render_owner_text(ic.renders, player, ce)
         player.print('Your car-surface has been upgraded!', Color.success)
         return
     end
@@ -828,7 +819,7 @@ function Public.create_car(ic, event)
 
     car.surface = Public.create_room_surface(ic, un)
     Public.create_car_room(ic, car)
-    render_owner_text(player, ce)
+    render_owner_text(ic.renders, player, ce)
 
     return car
 end
@@ -887,10 +878,7 @@ function Public.use_door_with_entity(ic, player, door)
     if owner and owner.valid and player.connected then
         if not list[player.name] and not player.admin then
             player.driving = false
-            return player.print(
-                'You have not been approved by ' .. owner.name .. ' to enter their vehicle.',
-                Color.warning
-            )
+            return player.print('You have not been approved by ' .. owner.name .. ' to enter their vehicle.', Color.warning)
         end
     end
 
@@ -960,5 +948,7 @@ end
 Public.kick_player_from_surface = kick_player_from_surface
 Public.get_player_surface = get_player_surface
 Public.get_entity_from_player_surface = get_entity_from_player_surface
+Public.get_owner_car_object = get_owner_car_object
+Public.render_owner_text = render_owner_text
 
 return Public
