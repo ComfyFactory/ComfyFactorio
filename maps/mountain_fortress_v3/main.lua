@@ -797,6 +797,8 @@ local set_spawn_position = function()
     end
     local l = locomotive.position
 
+    local retries = 0
+
     local function check_tile(surface, tile, tbl, inc)
         if not (surface and surface.valid) then
             return false
@@ -829,11 +831,8 @@ local set_spawn_position = function()
     if spawn_near_collapse.active then
         local collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
         local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
-        local get_tile = surface.get_tile(sizeof)
-        if get_tile.valid and get_tile.name == 'out-of-map' then
-            remove(locomotive_positions.tbl, total_pos - total_pos + 1)
+        if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
             retries = retries + 1
-
             if retries == 2 then
                 goto continue
             end
@@ -848,9 +847,13 @@ local set_spawn_position = function()
         if total_pos > spawn_near_collapse.total_pos then
             if l_y - t_y <= spawn_near_collapse.compare then
                 if locomotive_position then
-                    if oom then
+                    if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
                         debug_str('total_pos was higher - found oom')
-                        return
+                        retries = retries + 1
+                        if retries == 2 then
+                            goto continue
+                        end
+                        goto retry
                     end
                     debug_str('total_pos was higher - spawning at locomotive_position')
                     WD.set_spawn_position(locomotive_position)

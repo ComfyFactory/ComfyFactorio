@@ -723,8 +723,10 @@ local function slider_changed(event)
         return
     end
     slider_value = ceil(slider_value)
-    players[player.index].data.text_input.text = slider_value
-    redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
+    if players[player.index] and players[player.index].data and players[player.index].data.text_input then
+        players[player.index].data.text_input.text = slider_value
+        redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
+    end
 end
 
 local function text_changed(event)
