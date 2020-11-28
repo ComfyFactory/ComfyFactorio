@@ -1341,7 +1341,7 @@ end
 
 local function on_research_finished(event)
     local research = event.research.name
-    if research ~= 'tanks' then
+    if research ~= 'tank' then
         return
     end
     game.forces['player'].technologies['artillery'].researched = true

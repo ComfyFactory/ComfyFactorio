@@ -34,7 +34,6 @@ function Public.reset_table()
     this.trapped_capsules_unlocked = false
     this.ultra_mines_unlocked = false
     this.laser_pointer_unlocked = false
-    this.railgun_enhancer_unlocked = false
     this.crumbly_walls_unlocked = false
     this.vehicle_nanobots_unlocked = false
     this.game_restart_timer = nil

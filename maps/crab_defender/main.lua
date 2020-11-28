@@ -1361,7 +1361,7 @@ end
 local on_research_finished = function(event)
     disable_tech()
     local research = event.research.name
-    if research ~= 'tanks' then
+    if research ~= 'tank' then
         return
     end
     game.forces['player'].technologies['artillery'].researched = true

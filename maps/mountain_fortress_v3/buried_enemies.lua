@@ -61,6 +61,9 @@ end
 
 local function spawn_biters(data)
     local surface = data.surface
+    if not (surface and surface.valid) then
+        return
+    end
     local position = data.position
     local h = floor(abs(position.y))
     local wave_number = WD.get('wave_number')
@@ -133,6 +136,9 @@ local function spawn_worms(data)
     end
 
     local surface = data.surface
+    if not (surface and surface.valid) then
+        return
+    end
     local position = data.position
     BiterRolls.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
     surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position})
@@ -140,10 +146,7 @@ local function spawn_worms(data)
 end
 
 function Public.buried_biter(surface, position, max)
-    if not surface then
-        return
-    end
-    if not surface.valid then
+    if not (surface and surface.valid) then
         return
     end
     if not position then
@@ -188,10 +191,7 @@ function Public.buried_biter(surface, position, max)
 end
 
 function Public.buried_worm(surface, position)
-    if not surface then
-        return
-    end
-    if not surface.valid then
+    if not (surface and surface.valid) then
         return
     end
     if not position then
@@ -249,6 +249,12 @@ local function on_tick()
         end
     end
     traps[t] = nil
+end
+
+function Public.reset()
+    for k, _ in pairs(traps) do
+        traps[k] = nil
+    end
 end
 
 Event.add(defines.events.on_tick, on_tick)

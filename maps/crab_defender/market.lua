@@ -23,7 +23,6 @@ local special_descriptions = {
     ['bouncy-shells'] = 'Unlock Bouncy Shells - Shotgun projectiles may bounce to multiple targets.',
     ['trapped-capsules'] = 'Unlock Trapped Capsules - Combat robots will send a last deadly projectile to a nearby enemy when killed.',
     ['ultra-mines'] = 'Unlock Ultra Mines - Careful with these...',
-    ['railgun-enhancer'] = 'Unlock Railgun Enhancer - Turns the railgun into a powerful forking gun.',
     ['crumbly-walls'] = 'Unlock Crumbly Walls - Fortifications which crumble, may turn into rocks.',
     ['vehicle-nanobots'] = 'Unlock Vehicle Nanobots - Vehicles repair rapidly while driving.',
     ['laser-pointer'] = 'Unlock Laser Pointer - The biters are on a quest to slay the red (artillery) dot.'
@@ -41,28 +40,22 @@ local function refresh_market_offers()
         end
     end
 
-    local str1 =
-        'Gun Turret Slot for ' ..
-        tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
+    local str1 = 'Gun Turret Slot for ' .. tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
     str1 = str1 .. ' Coins.'
 
     local str2 =
-        'Laser Turret Slot for ' ..
-        tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
+        'Laser Turret Slot for ' .. tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
     str2 = str2 .. ' Coins.'
 
     local str3 =
-        'Artillery Slot for ' ..
-        tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
+        'Artillery Slot for ' .. tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
     str3 = str3 .. ' Coins.'
 
     local current_limit = 1
     if this.entity_limits['flamethrower-turret'].limit ~= 0 then
         current_limit = current_limit + this.entity_limits['flamethrower-turret'].limit
     end
-    local str4 =
-        'Flamethrower Turret Slot for ' ..
-        tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
+    local str4 = 'Flamethrower Turret Slot for ' .. tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
     str4 = str4 .. ' Coins.'
 
     local str5 =
@@ -83,8 +76,6 @@ local function refresh_market_offers()
         {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
         {price = {{'coin', 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
         {price = {{'coin', 1200}}, offer = {type = 'give-item', item = 'tank', count = 1}},
-        {price = {{'small-plane', 40}}, offer = {type = 'give-item', item = 'spidertron', count = 1}},
-        {price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'small-plane', count = 1}},
         {price = {{'coin', 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
         {price = {{'coin', 7}}, offer = {type = 'give-item', item = 'explosive-cannon-shell', count = 1}},
         {price = {{'coin', 50}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
@@ -104,8 +95,6 @@ local function refresh_market_offers()
         {price = {{'coin', 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},
         {price = {{'coin', 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
         {price = {{'coin', 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},
-        {price = {{'coin', 325}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
-        {price = {{'coin', 8}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},
         {price = {{'coin', 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
         {price = {{'coin', 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},
         {price = {{'coin', 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},
@@ -131,14 +120,6 @@ local function refresh_market_offers()
         this.market.add_market_item(item)
     end
 
-    if not this.railgun_enhancer_unlocked then
-        this.market.add_market_item(
-            {
-                price = {{'coin', 1500}},
-                offer = {type = 'nothing', effect_description = special_descriptions['railgun-enhancer']}
-            }
-        )
-    end
     if not this.trapped_capsules_unlocked then
         this.market.add_market_item(
             {
@@ -192,8 +173,7 @@ end
 local function slot_upgrade(player, offer_index)
     local this = FDT.get()
     local price =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit *
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
 
     local gain = 1
     if offer_index == 5 then
@@ -220,8 +200,7 @@ local function slot_upgrade(player, offer_index)
         return false
     end
 
-    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
+    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit = this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
     game.print(
         player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
         {r = 0.22, g = 0.77, b = 0.44}
@@ -229,10 +208,7 @@ local function slot_upgrade(player, offer_index)
     if math.random(1, 2) == 1 then
         Server.to_discord_bold(
             table.concat {
-                '*** ' ..
-                    player.name ..
-                        ' has bought a ' ..
-                            slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
+                '*** ' .. player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
             }
         )
     end
@@ -304,13 +280,6 @@ local function on_market_item_purchased(event)
     if bought_offer.effect_description == special_descriptions['laser-pointer'] then
         game.print(player.name .. ' has unleashed the quest to slay the red dot!', {r = 0.22, g = 0.77, b = 0.44})
         this.laser_pointer_unlocked = true
-        refresh_market_offers()
-        return
-    end
-
-    if bought_offer.effect_description == special_descriptions['railgun-enhancer'] then
-        game.print(player.name .. ' has unlocked the enhanced railgun!', {r = 0.22, g = 0.77, b = 0.44})
-        this.railgun_enhancer_unlocked = true
         refresh_market_offers()
         return
     end

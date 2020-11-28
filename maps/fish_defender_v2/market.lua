@@ -21,7 +21,6 @@ local special_descriptions = {
     ['bouncy-shells'] = 'Unlock Bouncy Shells - Shotgun projectiles may bounce to multiple targets.',
     ['trapped-capsules'] = 'Unlock Trapped Capsules - Combat robots will send a last deadly projectile to a nearby enemy when killed.',
     ['ultra-mines'] = 'Unlock Ultra Mines - Careful with these...',
-    ['railgun-enhancer'] = 'Unlock Railgun Enhancer - Turns the railgun into a powerful forking gun.',
     ['crumbly-walls'] = 'Unlock Crumbly Walls - Fortifications which crumble, may turn into rocks.',
     ['vehicle-nanobots'] = 'Unlock Vehicle Nanobots - Vehicles repair rapidly while driving.',
     ['laser-pointer'] = 'Unlock Laser Pointer - The biters are on a quest to slay the red (artillery) dot.'
@@ -71,8 +70,6 @@ local function refresh_market_offers()
         {price = {{'coin', 8}}, offer = {type = 'give-item', item = 'grenade', count = 1}},
         {price = {{'coin', 32}}, offer = {type = 'give-item', item = 'cluster-grenade', count = 1}},
         {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
-        {price = {{'small-plane', 40}}, offer = {type = 'give-item', item = 'spidertron', count = 1}},
-        {price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'small-plane', count = 1}},
         {price = {{'coin', 80}}, offer = {type = 'give-item', item = 'car', count = 1}},
         {price = {{'coin', 1200}}, offer = {type = 'give-item', item = 'tank', count = 1}},
         {price = {{'coin', 3}}, offer = {type = 'give-item', item = 'cannon-shell', count = 1}},
@@ -94,8 +91,6 @@ local function refresh_market_offers()
         {price = {{'coin', 2}}, offer = {type = 'give-item', item = 'rocket', count = 1}},
         {price = {{'coin', 7}}, offer = {type = 'give-item', item = 'explosive-rocket', count = 1}},
         {price = {{'coin', 7500}}, offer = {type = 'give-item', item = 'atomic-bomb', count = 1}},
-        {price = {{'coin', 325}}, offer = {type = 'give-item', item = 'railgun', count = 1}},
-        {price = {{'coin', 8}}, offer = {type = 'give-item', item = 'railgun-dart', count = 1}},
         {price = {{'coin', 40}}, offer = {type = 'give-item', item = 'poison-capsule', count = 1}},
         {price = {{'coin', 4}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},
         {price = {{'coin', 10}}, offer = {type = 'give-item', item = 'light-armor', count = 1}},
@@ -120,14 +115,6 @@ local function refresh_market_offers()
         market.add_market_item(item)
     end
 
-    if not FDT.get('railgun_enhancer_unlocked') then
-        market.add_market_item(
-            {
-                price = {{'coin', 1500}},
-                offer = {type = 'nothing', effect_description = special_descriptions['railgun-enhancer']}
-            }
-        )
-    end
     if not FDT.get('trapped_capsules_unlocked') then
         market.add_market_item(
             {
@@ -265,13 +252,6 @@ local function on_market_item_purchased(event)
     if bought_offer.effect_description == special_descriptions['laser-pointer'] then
         game.print(player.name .. ' has unleashed the quest to slay the red dot!', {r = 0.22, g = 0.77, b = 0.44})
         FDT.set('laser_pointer_unlocked', true)
-        refresh_market_offers()
-        return
-    end
-
-    if bought_offer.effect_description == special_descriptions['railgun-enhancer'] then
-        game.print(player.name .. ' has unlocked the enhanced railgun!', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('railgun_enhancer_unlocked', true)
         refresh_market_offers()
         return
     end

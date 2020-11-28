@@ -406,8 +406,7 @@ function Public.extra_settings(player)
         local conjure_input_style = conjure_input.style
         conjure_input_style.height = 35
         conjure_input_style.vertical_align = 'center'
-        conjure_gui_input =
-            create_input_element(conjure_input, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index)
+        conjure_gui_input = create_input_element(conjure_input, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index)
 
         for _, entity in pairs(spells) do
             if entity.type == 'item' then
@@ -482,8 +481,7 @@ function Public.extra_settings(player)
         local name_input_style = name_input.style
         name_input_style.height = 35
         name_input_style.vertical_align = 'center'
-        auto_allocate_gui_input =
-            create_input_element(name_input, 'dropdown', false, names, rpg_t[player.index].allocate_index)
+        auto_allocate_gui_input = create_input_element(name_input, 'dropdown', false, names, rpg_t[player.index].allocate_index)
     end
 
     local data = {
@@ -523,15 +521,13 @@ function Public.extra_settings(player)
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button =
-        left_flow.add({type = 'button', name = discard_button_name, caption = ({'rpg_settings.discard_changes'})})
+    local close_button = left_flow.add({type = 'button', name = discard_button_name, caption = ({'rpg_settings.discard_changes'})})
     close_button.style = 'back_button'
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
-    local save_button =
-        right_flow.add({type = 'button', name = save_button_name, caption = ({'rpg_settings.save_changes'})})
+    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = ({'rpg_settings.save_changes'})})
     save_button.style = 'confirm_button'
 
     Gui.set_data(save_button, data)

@@ -109,8 +109,6 @@ local function secret_shop(pos, surface)
     {price = {{"coin", math_random(3,9)}}, offer = {type = 'give-item', item = 'construction-robot'}},
     {price = {{"coin", math_random(100,200)}}, offer = {type = 'give-item', item = 'energy-shield-equipment'}},
     {price = {{"coin", math_random(200,400)}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment'}},
-    {price = {{"coin", math_random(25,50)}}, offer = {type = 'give-item', item = 'railgun'}},
-    {price = {{"coin", math_random(1,2)}}, offer = {type = 'give-item', item = 'railgun-dart', count = 2}},
 	{price = {{"coin", math_random(30,60)}}, offer = {type = 'give-item', item = 'loader'}},
 	{price = {{"coin", math_random(50,80)}}, offer = {type = 'give-item', item = 'fast-loader'}},
 	{price = {{"coin", math_random(70,100)}}, offer = {type = 'give-item', item = 'express-loader'}},

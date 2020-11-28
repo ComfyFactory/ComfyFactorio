@@ -334,16 +334,11 @@ local function on_player_used_capsule(event)
     if ammo_names[name] then
         local msg
         if this.enable_capsule_warning then
-            if
-                surface.count_entities_filtered(
-                    {force = 'enemy', area = {{x - 10, y - 10}, {x + 10, y + 10}}, limit = 1}
-                ) > 0
-             then
+            if surface.count_entities_filtered({force = 'enemy', area = {{x - 10, y - 10}, {x + 10, y + 10}}, limit = 1}) > 0 then
                 return
             end
             local count = 0
-            local entities =
-                player.surface.find_entities_filtered {force = player.force, area = {{x - 5, y - 5}, {x + 5, y + 5}}}
+            local entities = player.surface.find_entities_filtered {force = player.force, area = {{x - 5, y - 5}, {x + 5, y + 5}}}
 
             for i = 1, #entities do
                 local e = entities[i]
@@ -716,8 +711,7 @@ local function on_player_cancelled_crafting(event)
                     ' canceled their craft of item ' ..
                         event.recipe.name ..
                             ' of total count ' ..
-                                crafting_queue_item_count ..
-                                    ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
+                                crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
             )
         end
 
@@ -822,8 +816,7 @@ local function on_permission_group_edited(event)
         if other_player and other_player.valid then
             Utils.log_msg(
                 '{Permission_Group}',
-                player.name ..
-                    ' moved ' .. other_player.name .. ' with type: ' .. event.type .. ' to group: ' .. group.name
+                player.name .. ' moved ' .. other_player.name .. ' with type: ' .. event.type .. ' to group: ' .. group.name
             )
         end
     end

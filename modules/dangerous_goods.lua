@@ -53,7 +53,6 @@ local projectile_types = {
         force = 'enemy'
     },
     ['lubricant-barrel'] = {name = 'acid-stream-spitter-big', count = 3, max_range = 16, tick_speed = 1},
-    ['railgun-dart'] = {name = 'railgun-beam', count = 5, max_range = 40, tick_speed = 5},
     ['shotgun-shell'] = {name = 'shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},
     ['piercing-shotgun-shell'] = {name = 'piercing-shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},
     ['firearm-magazine'] = {name = 'shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},

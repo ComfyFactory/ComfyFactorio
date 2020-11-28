@@ -11,7 +11,7 @@ local abs = math.abs
 local floor = math.floor
 local ceil = math.ceil
 
-Public.level_depth = 704
+Public.level_depth = WPT.level_depth
 Public.level_width = 512
 local worm_level_modifier = 0.19
 
@@ -49,11 +49,6 @@ local tree_raffle = {
 local size_of_tree_raffle = #tree_raffle
 
 local scrap_entities = {
-    'crash-site-assembling-machine-1-broken',
-    'crash-site-assembling-machine-2-broken',
-    'crash-site-assembling-machine-1-broken',
-    'crash-site-assembling-machine-2-broken',
-    'crash-site-lab-broken',
     'medium-ship-wreck',
     'small-ship-wreck',
     'medium-ship-wreck',

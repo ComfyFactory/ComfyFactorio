@@ -14,14 +14,14 @@ global.map_info.text = [[
 	You cannot mine things.
 	You cannot deconstruct things ... except for with your railgun.
 	You cannot destroy things ... except the biters, who have been known to hoard railgun darts in their nests.
-	
+
 	Have fun <3
 ]]
 
 local math_random = math.random
 
 -- noobs spawn with things
-local function on_player_joined_game(event)	
+local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	local surface = game.surfaces["refactor-io"]
 
@@ -34,13 +34,11 @@ local function on_player_joined_game(event)
 		player.insert{name = 'stone', count = 50}
 		player.insert{name = 'pistol', count = 1}
 		player.insert{name = 'firearm-magazine', count = 16}
-		player.insert{name = 'railgun', count = 1}
-		player.insert{name = 'railgun-dart', count = 1}
 	end
 end
 
 -- players always spawn with railgun
-local function on_player_respawned(event)  
+local function on_player_respawned(event)
 	local player = game.players[event.player_index]
     player.insert{name = 'railgun', count = 1}
     player.insert{name = 'wood', count = 25}
@@ -48,7 +46,7 @@ end
 
 -- decon planner doesn't work
 local function on_marked_for_deconstruction(event)
-	event.entity.cancel_deconstruction(game.players[event.player_index].force.name)	
+	event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
 end
 
 local function on_entity_damaged(event)
@@ -64,22 +62,22 @@ local function on_entity_damaged(event)
 					return
 				end
 			end
-		end		
+		end
 	end
-	event.entity.health = event.entity.health + event.final_damage_amount			
+	event.entity.health = event.entity.health + event.final_damage_amount
 end
 
 local function on_entity_died(event)
 	if not event.entity.valid then return end
 	if event.entity.type == "unit-spawner" or event.entity.type == "turret" then
 		event.entity.surface.spill_item_stack({event.entity.position.x, event.entity.position.y + 2}, {name = "railgun-dart", count = math.random(0, 3)}, false)
-	end	
+	end
 end
 
 local function on_init()
 	game.forces.player.technologies["steel-axe"].researched=true
 	game.forces.player.manual_mining_speed_modifier = -1000000
-	
+
 	local map_gen_settings = {}
 	map_gen_settings.seed = math.random(1, 999999999)
 	map_gen_settings.water = 1.25
@@ -94,12 +92,12 @@ local function on_init()
 		["uranium-ore"] = {frequency = 3.5, size = 0.95, richness = 0.85},
 		["crude-oil"] = {frequency = 3, size = 0.85, richness = 1},
 		["trees"] = {frequency = 2.5, size = 0.85, richness = 1},
-		["enemy-base"] = {frequency = 8, size = 1.5, richness = 1}	
-	}	
+		["enemy-base"] = {frequency = 8, size = 1.5, richness = 1}
+	}
 	local surface = game.create_surface("refactor-io", map_gen_settings)
 	surface.request_to_generate_chunks({0,0}, 5)
 	surface.force_generate_chunk_requests()
-	
+
 	game.forces.player.set_spawn_position(surface.find_non_colliding_position("character", {0,0}, 96, 1), surface)
 end
 

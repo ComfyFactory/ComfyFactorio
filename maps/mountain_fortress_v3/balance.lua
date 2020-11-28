@@ -12,15 +12,13 @@ function Public.init_enemy_weapon_damage()
         ['bullet'] = 0,
         ['cannon-shell'] = 0,
         ['capsule'] = 0,
-        ['combat-robot-beam'] = 0,
-        ['combat-robot-laser'] = 0,
+        ['beam'] = 0,
+        ['laser'] = 0,
         ['electric'] = 0,
         ['flamethrower'] = 0,
         ['grenade'] = 0,
         ['landmine'] = 0,
-        ['laser-turret'] = 0,
         ['melee'] = 0,
-        ['railgun'] = 0,
         ['rocket'] = 0,
         ['shotgun-shell'] = 0
     }
@@ -44,15 +42,13 @@ local function enemy_weapon_damage()
         ['biological'] = 0.08,
         ['bullet'] = 0.08,
         ['capsule'] = 0.08,
-        ['combat-robot-beam'] = 0.08,
-        ['combat-robot-laser'] = 0.08,
+        ['beam'] = 0.08,
+        ['laser'] = 0.08,
         ['electric'] = 0.08,
         ['flamethrower'] = 0.08,
         --['grenade'] = 0.08,
         ['landmine'] = 0.08,
-        ['laser-turret'] = 0.08,
         ['melee'] = 0.08
-        --['railgun'] = 0.08,
         --['rocket'] = 0.08,
         --['shotgun-shell'] = 0.08
     }

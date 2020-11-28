@@ -108,7 +108,7 @@ function Public.forces()
 		defines.input_action.activate_copy,
 		defines.input_action.activate_cut,
 		defines.input_action.activate_paste,
-		defines.input_action.clean_cursor_stack,
+		defines.input_action.clear_cursor,
 		defines.input_action.edit_permission_group,
 		defines.input_action.gui_click,
 		defines.input_action.gui_confirmed,

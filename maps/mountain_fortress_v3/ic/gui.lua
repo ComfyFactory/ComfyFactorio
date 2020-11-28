@@ -7,15 +7,21 @@ local Event = require 'utils.event'
 local Public = {}
 
 --! Gui Frames
-local save_button_name = Gui.uid_name()
-local discard_button_name = Gui.uid_name()
+local save_add_player_button_name = Gui.uid_name()
+local save_transfer_car_button_name = Gui.uid_name()
+local discard_add_player_button_name = Gui.uid_name()
+local discard_transfer_car_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local draw_add_player_frame_name = Gui.uid_name()
+local draw_transfer_car_frame_name = Gui.uid_name()
 local main_toolbar_name = Gui.uid_name()
 local add_player_name = Gui.uid_name()
+local transfer_car_name = Gui.uid_name()
 local kick_player_name = Gui.uid_name()
 
 local raise_event = script.raise_event
+local add_toolbar
+local remove_toolbar
 
 local function increment(t, k)
     t[k] = true
@@ -35,6 +41,54 @@ local function create_player_table(player)
     return trust_system[player.index]
 end
 
+local function does_player_table_exist(player)
+    local trust_system = ICT.get('trust_system')
+    if not trust_system[player.index] then
+        return false
+    else
+        return true
+    end
+end
+
+local function transfer_player_table(player, new_player)
+    local trust_system = ICT.get('trust_system')
+    if not trust_system[player.index] then
+        return false
+    end
+
+    if player.index == new_player.index then
+        return false
+    end
+
+    if not trust_system[new_player.index] then
+        local Functions = require 'maps.mountain_fortress_v3.ic.functions'
+
+        trust_system[new_player.index] = trust_system[player.index]
+        local name = new_player.name
+
+        if not trust_system[new_player.index][name] then
+            increment(trust_system[new_player.index], name)
+        end
+
+        local cars = ICT.get('cars')
+        local renders = ICT.get('renders')
+        local c = Functions.get_owner_car_object(cars, player)
+        local car = cars[c]
+        car.owner = new_player.index
+
+        Functions.render_owner_text(renders, player, car.entity, new_player)
+
+        remove_toolbar(player)
+        add_toolbar(new_player)
+
+        trust_system[player.index] = nil
+    else
+        return false
+    end
+
+    return trust_system[new_player.index]
+end
+
 local function remove_main_frame(main_frame)
     Gui.remove_data_recursively(main_frame)
     main_frame.destroy()
@@ -51,7 +105,7 @@ local function draw_add_player(frame)
         }
     )
     local main_frame_style = main_frame.style
-    main_frame_style.width = 325
+    main_frame_style.width = 370
     main_frame_style.use_header_filler = true
 
     local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
@@ -75,18 +129,69 @@ local function draw_add_player(frame)
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_button_name, caption = 'Discard'})
+    local close_button = left_flow.add({type = 'button', name = discard_add_player_button_name, caption = 'Discard'})
     close_button.style = 'back_button'
     close_button.style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = 'Save'})
+    local save_button = right_flow.add({type = 'button', name = save_add_player_button_name, caption = 'Save'})
     save_button.style = 'confirm_button'
     save_button.style.maximal_width = 100
 
     Gui.set_data(save_button, add_player_frame)
+end
+
+local function draw_transfer_car(frame)
+    local main_frame =
+        frame.add(
+        {
+            type = 'frame',
+            name = draw_transfer_car_frame_name,
+            caption = 'Transfer Car',
+            direction = 'vertical'
+        }
+    )
+    local main_frame_style = main_frame.style
+    main_frame_style.width = 370
+    main_frame_style.use_header_filler = true
+
+    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame_style = inside_frame.style
+    inside_frame_style.padding = 0
+    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table_style = inside_table.style
+    inside_table_style.vertical_spacing = 5
+    inside_table_style.top_padding = 10
+    inside_table_style.left_padding = 10
+    inside_table_style.right_padding = 0
+    inside_table_style.bottom_padding = 10
+    inside_table_style.width = 325
+
+    local transfer_car_alert_frame = main_frame.add({type = 'label', caption = "Warning, this action can't be undone!"})
+    transfer_car_alert_frame.style.font_color = {r = 255, g = 0, b = 0}
+    local transfer_car_frame = main_frame.add({type = 'textfield', text = 'Name of the player.'})
+    transfer_car_frame.style.width = 140
+
+    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+
+    local left_flow = bottom_flow.add({type = 'flow'})
+    left_flow.style.horizontal_align = 'left'
+    left_flow.style.horizontally_stretchable = true
+
+    local close_button = left_flow.add({type = 'button', name = discard_transfer_car_button_name, caption = 'Discard'})
+    close_button.style = 'back_button'
+    close_button.style.maximal_width = 100
+
+    local right_flow = bottom_flow.add({type = 'flow'})
+    right_flow.style.horizontal_align = 'right'
+
+    local save_button = right_flow.add({type = 'button', name = save_transfer_car_button_name, caption = 'Save'})
+    save_button.style = 'confirm_button'
+    save_button.style.maximal_width = 100
+
+    Gui.set_data(save_button, transfer_car_frame)
 end
 
 local function draw_players(data)
@@ -149,7 +254,7 @@ local function draw_main_frame(player)
 
     main_frame.auto_center = true
     local main_frame_style = main_frame.style
-    main_frame_style.width = 350
+    main_frame_style.width = 400
     main_frame_style.use_header_filler = true
 
     local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
@@ -166,6 +271,7 @@ local function draw_main_frame(player)
     inside_table_style.width = 350
 
     local add_player_frame = inside_table.add({type = 'button', caption = 'Add Player', name = add_player_name})
+    local transfer_car_frame = inside_table.add({type = 'button', caption = 'Transfer Car', name = transfer_car_name})
 
     local player_table =
         inside_table.add {
@@ -216,6 +322,7 @@ local function draw_main_frame(player)
     local data = {
         player_table = player_table,
         add_player_frame = add_player_frame,
+        transfer_car_frame = transfer_car_frame,
         player = player
     }
     draw_players(data)
@@ -242,7 +349,7 @@ local function toggle(player, recreate)
     end
 end
 
-local function add_toolbar(player, remove)
+add_toolbar = function(player, remove)
     if remove then
         if player.gui.top[main_toolbar_name] then
             player.gui.top[main_toolbar_name].destroy()
@@ -264,7 +371,7 @@ local function add_toolbar(player, remove)
     )
 end
 
-local function remove_toolbar(player)
+remove_toolbar = function(player)
     local screen = player.gui.screen
     local main_frame = screen[main_frame_name]
 
@@ -301,7 +408,29 @@ Gui.on_click(
 )
 
 Gui.on_click(
-    save_button_name,
+    transfer_car_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        if not frame or not frame.valid then
+            return
+        end
+        local player_frame = frame[draw_transfer_car_frame_name]
+        if not player_frame or not player_frame.valid then
+            draw_transfer_car(frame)
+        else
+            player_frame.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    save_add_player_button_name,
     function(event)
         local player = event.player
         if not player or not player.valid or not player.character then
@@ -339,6 +468,58 @@ Gui.on_click(
 
                 if player.gui.screen[main_frame_name] then
                     toggle(player, true)
+                end
+            end
+        end
+    end
+)
+
+Gui.on_click(
+    save_transfer_car_button_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        local transfer_car_frame = Gui.get_data(event.element)
+
+        if frame and frame.valid then
+            if transfer_car_frame and transfer_car_frame.valid and transfer_car_frame.text then
+                local text = transfer_car_frame.text
+                if not text then
+                    return
+                end
+                local player_to_add = game.get_player(text)
+                if not player_to_add or not player_to_add.valid then
+                    return player.print('Target player was not valid.', Color.warning)
+                end
+
+                local name = player_to_add.name
+                local does_player_have_a_car = does_player_table_exist(name)
+                if does_player_have_a_car then
+                    return player.print(name .. ' already has a vehicle.', Color.warning)
+                end
+
+                local to_add = game.get_player(name)
+                if not (to_add and to_add.valid) then
+                    return player.print(name .. ' does not exist.', Color.warning)
+                end
+
+                local success = transfer_player_table(player, to_add)
+                if not success then
+                    player.print('Please try again.', Color.warning)
+                else
+                    player.print('You have successfully transferred your car to ' .. name, Color.success)
+                    to_add.print('You have become the rightfully owner of ' .. player.name .. "'s car!", Color.success)
+                end
+
+                remove_main_frame(event.element)
+
+                if player.gui.screen[main_frame_name] then
+                    player.gui.screen[main_frame_name].destroy()
                 end
             end
         end
@@ -394,7 +575,7 @@ Gui.on_click(
 )
 
 Gui.on_click(
-    discard_button_name,
+    discard_add_player_button_name,
     function(event)
         local player = event.player
         if not player or not player.valid or not player.character then
@@ -407,6 +588,27 @@ Gui.on_click(
             return
         end
         local player_frame = frame[draw_add_player_frame_name]
+
+        if player_frame and player_frame.valid then
+            player_frame.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    discard_transfer_car_button_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        if not frame or not frame.valid then
+            return
+        end
+        local player_frame = frame[draw_transfer_car_frame_name]
 
         if player_frame and player_frame.valid then
             player_frame.destroy()

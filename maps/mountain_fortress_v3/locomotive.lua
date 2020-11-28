@@ -470,7 +470,7 @@ local function validate_index()
     local loco_surface = icw_locomotive.surface
     local unit_surface = locomotive.unit_number
     local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
-    if not loco_surface.valid then
+    if loco_surface.valid then
         WPT.set().loco_surface = locomotive_surface
     end
 end
@@ -526,10 +526,10 @@ local function create_poison_cloud(position)
 end
 
 local function close_market_gui(player)
-    local this = WPT.get()
+    local players = WPT.get('players')
 
     local element = player.gui.screen
-    local data = this.players[player.index].data
+    local data = players[player.index].data
     if not data then
         return
     end
@@ -537,7 +537,7 @@ local function close_market_gui(player)
     local frame = element[main_frame_name]
     Public.close_gui_player(frame)
     if data then
-        this.players[player.index].data = nil
+        players[player.index].data = nil
     end
 end
 
@@ -723,8 +723,10 @@ local function slider_changed(event)
         return
     end
     slider_value = ceil(slider_value)
-    players[player.index].data.text_input.text = slider_value
-    redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
+    if players[player.index] and players[player.index].data and players[player.index].data.text_input then
+        players[player.index].data.text_input.text = slider_value
+        redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
+    end
 end
 
 local function text_changed(event)

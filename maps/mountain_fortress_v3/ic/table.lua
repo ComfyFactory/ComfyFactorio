@@ -30,6 +30,7 @@ function Public.reset()
     this.restore_on_theft = false
     this.doors = {}
     this.cars = {}
+    this.renders = {}
     this.saved_surfaces = {}
     this.allowed_surface = 'nauvis'
     this.trust_system = {}
