@@ -115,8 +115,12 @@ end
 
 --- Sends a embed message to the linked discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> the content of the embed.
-function Public.to_discord_embed(message)
-    raw_print(discord_embed_tag .. message)
+function Public.to_discord_embed(message, loc)
+    if loc then
+        somefunc that includes loc
+    else
+        raw_print(discord_embed_tag .. message)
+    end
 end
 
 --- Sends a embed message to the linked discord channel. The message is not sanitized of markdown.
