@@ -33,7 +33,7 @@ local function custom_surface()
     local i = 0
     for k, _ in pairs(game.surfaces) do
         i = i + 1
-        if i > 1 then
+        if i > 2 then
             return true
         end
     end
