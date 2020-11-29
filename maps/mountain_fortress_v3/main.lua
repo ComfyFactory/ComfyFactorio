@@ -132,19 +132,6 @@ local disable_tech = function()
     disable_recipes()
 end
 
-local is_position_near = function(pos_to_check, check_against)
-    local status = false
-    local function inside(pos)
-        return pos.x >= pos_to_check.x and pos.y >= pos_to_check.y and pos.x <= pos_to_check.x and pos.y <= pos_to_check.y
-    end
-
-    if inside(check_against) then
-        status = true
-    end
-
-    return status
-end
-
 local is_position_near_tbl = function(position, tbl)
     local status = false
     local function inside(pos)
@@ -508,10 +495,7 @@ local on_player_joined_game = function(event)
         local p = {x = player.position.x, y = player.position.y}
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'out-of-map' then
-            player.teleport(
-                surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-                surface
-            )
+            player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
         end
     end
 
@@ -556,8 +540,7 @@ local on_research_finished = function(event)
     research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots /
 
     if research.name == 'steel-axe' then
-        local msg =
-            'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
+        local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
         Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
     end -- +50% speed for steel-axe research
 
@@ -766,7 +749,7 @@ local collapse_message =
     end
 )
 
-local lock_locomotive_positions = function(lock)
+local lock_locomotive_positions = function()
     local locomotive = WPT.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -775,12 +758,8 @@ local lock_locomotive_positions = function(lock)
     local locomotive_positions = WPT.get('locomotive_pos')
     local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
     local p = locomotive.position
-    if not (success and lock) then
-        if lock then
-            locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y + 50)}
-        else
-            locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y)}
-        end
+    if not success then
+        locomotive_positions.tbl[#locomotive_positions.tbl + 1] = {x = floor(p.x), y = floor(p.y)}
     end
 
     local total_pos = #locomotive_positions.tbl

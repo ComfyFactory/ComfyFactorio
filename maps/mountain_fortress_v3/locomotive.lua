@@ -1971,16 +1971,29 @@ function Public.get_items(reroll)
     local tier = WPT.get('pickaxe_tier')
     local offer = pickaxe_tiers[tier]
 
-    main_market_items['upgrade_pickaxe'] = {
-        stack = 1,
-        value = 'coin',
-        price = pickaxe_cost,
-        tooltip = ({'main_market.purchase_pickaxe', offer}),
-        sprite = 'achievement/delivery-service',
-        enabled = true,
-        upgrade = true,
-        static = true
-    }
+    if pickaxe_tier >= 59 then
+        main_market_items['upgrade_pickaxe'] = {
+            stack = 1,
+            value = 'coin',
+            price = pickaxe_cost,
+            tooltip = ({'main_market.sold_out'}),
+            sprite = 'achievement/delivery-service',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['upgrade_pickaxe'] = {
+            stack = 1,
+            value = 'coin',
+            price = pickaxe_cost,
+            tooltip = ({'main_market.purchase_pickaxe', offer}),
+            sprite = 'achievement/delivery-service',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
     if main_market_items['chest_limit_outside'] then
         main_market_items['chest_limit_outside'] = {
             stack = 1,
