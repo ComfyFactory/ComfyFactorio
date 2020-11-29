@@ -29,6 +29,17 @@ local function is_game_modded()
     return false
 end
 
+local function custom_surface()
+    local i = 0
+    for k, _ in pairs(game.surfaces) do
+        i = i + 1
+        if i > 2 then
+            return true
+        end
+    end
+    return false
+end
+
 local util = require('util')
 local crash_site = require('crash-site')
 
@@ -86,12 +97,7 @@ local on_player_created = function(event)
         if not this.disable_crashsite then
             local surface = player.surface
             surface.daytime = 0.7
-            crash_site.create_crash_site(
-                surface,
-                {-5, -6},
-                util.copy(this.crashed_ship_items),
-                util.copy(this.crashed_debris_items)
-            )
+            crash_site.create_crash_site(surface, {-5, -6}, util.copy(this.crashed_ship_items), util.copy(this.crashed_debris_items))
             util.remove_safe(player, this.crashed_ship_items)
             util.remove_safe(player, this.crashed_debris_items)
             player.get_main_inventory().sort_and_merge()
@@ -123,6 +129,10 @@ local on_cutscene_waypoint_reached = function(event)
     local player = game.get_player(event.player_index)
 
     player.exit_cutscene()
+
+    if custom_surface() then
+        player.teleport(game.surfaces[3].find_non_colliding_position('character', {64, 64}, 50, 0.5), game.surfaces[3].name)
+    end
 end
 
 local skip_crash_site_cutscene = function(event)
@@ -141,6 +151,9 @@ local skip_crash_site_cutscene = function(event)
     if player.controller_type == defines.controllers.cutscene then
         player.exit_cutscene()
     end
+    if custom_surface() then
+        player.teleport(game.surfaces[3].find_non_colliding_position('character', {64, 64}, 50, 0.5), game.surfaces[3].name)
+    end
 end
 
 local on_cutscene_cancelled = function(event)
@@ -155,6 +168,10 @@ local on_cutscene_cancelled = function(event)
     if player.character then
         player.character.destructible = true
     end
+    if custom_surface() then
+        player.teleport(game.surfaces[3].find_non_colliding_position('character', {64, 64}, 50, 0.5), game.surfaces[3].name)
+    end
+
     player.zoom = 1.5
 end
 
@@ -175,8 +192,7 @@ local freeplay_interface = {
         this.skip_intro = bool
     end,
     set_chart_distance = function(value)
-        this.chart_distance =
-            tonumber(value) or error('Remote call parameter to freeplay set chart distance must be a number')
+        this.chart_distance = tonumber(value) or error('Remote call parameter to freeplay set chart distance must be a number')
     end,
     set_disable_crashsite = function(bool)
         this.disable_crashsite = bool
@@ -201,7 +217,6 @@ end
 
 Event.on_init(
     function()
-        local i = 0
         local game_has_mods = is_game_modded()
         if game_has_mods then
             this.modded = true

@@ -115,10 +115,6 @@ local compare_player_and_train = function(player, entity)
 
     if c_y - t_y <= gap_between_zones.neg_gap then
         if entity.health then
-            if entity.speed then
-                entity.speed = 0
-                return
-            end
             entity.health = entity.health - 500
             if entity.health <= 0 then
                 entity.die('enemy')

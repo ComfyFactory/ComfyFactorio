@@ -25,8 +25,7 @@ Global.register(
 
 local function create_floaty_text(surface, position, name, count)
     if this.floating_text_y_offsets[position.x .. '_' .. position.y] then
-        this.floating_text_y_offsets[position.x .. '_' .. position.y] =
-            this.floating_text_y_offsets[position.x .. '_' .. position.y] - 0.5
+        this.floating_text_y_offsets[position.x .. '_' .. position.y] = this.floating_text_y_offsets[position.x .. '_' .. position.y] - 0.5
     else
         this.floating_text_y_offsets[position.x .. '_' .. position.y] = 0
     end
@@ -43,18 +42,17 @@ local function create_floaty_text(surface, position, name, count)
     )
 end
 
-local function chest_is_valid(chest)
+local function chest_is_valid(chest, count)
     if chest.type == 'cargo-wagon' then
         local t = {}
         local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
         for index = 1, 40 do
             if chest_inventory.get_filter(index) ~= nil then
                 local n = chest_inventory.get_filter(index)
-                local item_stack = game.item_prototypes[n].stack_size
                 if (t[n] and t[n].valid) then
-                    t[n].count = t[n].count + item_stack
+                    t[n].count = t[n].count + count
                 else
-                    t[n] = {count = item_stack, valid = true}
+                    t[n] = {count = count, valid = true}
                 end
             end
         end
@@ -367,28 +365,27 @@ local function auto_stash(player, event)
         player.print('No valid nearby containers found.', print_color)
         return
     end
-
-    local filtered_chests = {}
-    local filtered_allowed
-    for _, e in pairs(chests) do
-        local is_valid, t = chest_is_valid(e)
-        filtered_allowed = t
-        if is_valid then
-            filtered_chests[#filtered_chests + 1] = e
-        end
-    end
-
-    this.floating_text_y_offsets = {}
-
-    local hotbar_items = {}
-    for i = 1, 100, 1 do
-        local prototype = player.get_quick_bar_slot(i)
-        if prototype then
-            hotbar_items[prototype.name] = true
-        end
-    end
-
     for name, count in pairs(inventory.get_contents()) do
+        local filtered_chests = {}
+        local filtered_allowed
+        for _, e in pairs(chests) do
+            local is_valid, t = chest_is_valid(e, count)
+            filtered_allowed = t
+            if is_valid then
+                filtered_chests[#filtered_chests + 1] = e
+            end
+        end
+
+        this.floating_text_y_offsets = {}
+
+        local hotbar_items = {}
+        for i = 1, 100, 1 do
+            local prototype = player.get_quick_bar_slot(i)
+            if prototype then
+                hotbar_items[prototype.name] = true
+            end
+        end
+
         local is_resource = this.whitelist[name]
 
         if not inventory.find_item_stack(name).grid and not hotbar_items[name] then
@@ -441,8 +438,7 @@ local function create_gui_button(player)
         tooltip =
             'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
     else
-        tooltip =
-            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests.'
+        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests.'
     end
     local b =
         player.gui.top.add(
