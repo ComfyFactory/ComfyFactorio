@@ -9,6 +9,7 @@ function print(str, tag)
     else
         locale_string[2] = '[PRINT]'
     end
+
     locale_string[3] = str
     log(locale_string)
 end

@@ -79,45 +79,76 @@ Public.events = {on_server_started = Event.generate_event_name('on_server_starte
 -- @usage
 -- local Server = require 'utils.server'
 -- Server.to_discord('Hello from scenario script!')
-function Public.to_discord(message)
-    raw_print(discord_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_discord(message, locale)
+    if locale then
+        print(message, discord_tag)
+    else
+        raw_print(discord_tag .. message)
+    end
 end
 
 --- Sends a message to the linked discord channel. The message is not sanitized of markdown.
 -- @param  message<string> message to send.
-function Public.to_discord_raw(message)
-    raw_print(discord_raw_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_discord_raw(message, locale)
+    if locale then
+        print(message, discord_raw_tag)
+    else
+        raw_print(discord_raw_tag .. message)
+    end
 end
 
 --- Sends a message to the linked discord channel. The message is sanitized of markdown server side, then made bold.
 -- @param  message<string> message to send.
-function Public.to_discord_bold(message)
-    raw_print(discord_bold_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_discord_bold(message, locale)
+    if locale then
+        print(message, discord_bold_tag)
+    else
+        raw_print(discord_bold_tag .. message)
+    end
 end
 
 --- Sends a message to the linked admin discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.
-function Public.to_admin(message)
-    raw_print(discord_admin_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_admin(message, locale)
+    if locale then
+        print(message, discord_admin_tag)
+    else
+        raw_print(discord_admin_tag .. message)
+    end
 end
 
 --- Sends a message to the linked banend discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.
-function Public.to_banned(message)
-    raw_print(discord_banned_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_banned(message, locale)
+    if locale then
+        print(message, discord_banned_tag)
+    else
+        raw_print(discord_banned_tag .. message)
+    end
 end
 
 --- Sends a message to the linked admin discord channel. The message is not sanitized of markdown.
 -- @param  message<string> message to send.
-function Public.to_admin_raw(message)
-    raw_print(discord_admin_raw_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_admin_raw(message, locale)
+    if locale then
+        print(message, discord_admin_raw_tag)
+    else
+        raw_print(discord_admin_raw_tag .. message)
+    end
 end
 
 --- Sends a embed message to the linked discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> the content of the embed.
-function Public.to_discord_embed(message, loc)
-    if loc then
-        somefunc that includes loc
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_discord_embed(message, locale)
+    if locale then
+        print(message, discord_embed_tag)
     else
         raw_print(discord_embed_tag .. message)
     end
@@ -125,26 +156,46 @@ end
 
 --- Sends a embed message to the linked discord channel. The message is not sanitized of markdown.
 -- @param  message<string> the content of the embed.
-function Public.to_discord_embed_raw(message)
-    raw_print(discord_embed_raw_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_discord_embed_raw(message, locale)
+    if locale then
+        print(message, discord_embed_raw_tag)
+    else
+        raw_print(discord_embed_raw_tag .. message)
+    end
 end
 
 --- Sends a embed message to the linked admin discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> the content of the embed.
-function Public.to_admin_embed(message)
-    raw_print(discord_admin_embed_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_admin_embed(message, locale)
+    if locale then
+        print(message, discord_admin_embed_tag)
+    else
+        raw_print(discord_admin_embed_tag .. message)
+    end
 end
 
 --- Sends a embed message to the linked banned discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> the content of the embed.
-function Public.to_banned_embed(message)
-    raw_print(discord_banned_embed_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_banned_embed(message, locale)
+    if locale then
+        print(message, discord_banned_embed_tag)
+    else
+        raw_print(discord_banned_embed_tag .. message)
+    end
 end
 
 --- Sends a embed message to the linked admin discord channel. The message is not sanitized of markdown.
 -- @param  message<string> the content of the embed.
-function Public.to_admin_embed_raw(message)
-    raw_print(discord_admin_embed_raw_tag .. message)
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_admin_embed_raw(message, locale)
+    if locale then
+        print(message, discord_admin_embed_raw_tag)
+    else
+        raw_print(discord_admin_embed_raw_tag .. message)
+    end
 end
 
 --- Stops and saves the factorio server and starts the named scenario.
