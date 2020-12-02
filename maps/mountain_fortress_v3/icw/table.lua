@@ -23,6 +23,7 @@ function Public.reset()
     end
     this.doors = {}
     this.wagons = {}
+    this.current_wagon_index = nil
     this.trains = {}
     this.players = {}
     this.surfaces = {}

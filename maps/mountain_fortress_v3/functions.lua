@@ -109,14 +109,12 @@ local function do_turret_energy()
 
     for index = 1, #power_sources do
         local ps_data = power_sources[index]
-        if not (ps_data or ps_data.valid) then
+        if not (ps_data and ps_data.valid) then
             fast_remove(power_sources, index)
             return
         end
 
-        if ps_data and ps_data.valid then
-            ps_data.energy = 0xfffff
-        end
+        ps_data.energy = 0xfffff
     end
 end
 

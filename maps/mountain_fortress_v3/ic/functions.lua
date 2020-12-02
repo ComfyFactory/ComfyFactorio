@@ -315,10 +315,7 @@ local function kick_players_from_surface(ic, car)
         if validate_entity(main_surface) then
             for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(
-                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
-                        main_surface
-                    )
+                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
             end
         end
@@ -360,10 +357,7 @@ local function kick_player_from_surface(ic, player, target)
                 if p then
                     target.teleport(p, car.entity.surface)
                 else
-                    target.teleport(
-                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
-                        main_surface
-                    )
+                    target.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
                 target.print('You were kicked out of ' .. player.name .. ' vehicle.', Color.warning)
             end
@@ -590,10 +584,7 @@ function Public.save_car(ic, event)
         }
         Task.set_timeout_in_ticks(10, remove_car, params)
         if ic.restore_on_theft then
-            local e =
-                player.surface.create_entity(
-                {name = car.name, position = position, force = player.force, create_build_effect_smoke = false}
-            )
+            local e = player.surface.create_entity({name = car.name, position = position, force = player.force, create_build_effect_smoke = false})
             e.health = health
             restore_surface(ic, p, e)
         else
@@ -932,13 +923,16 @@ function Public.use_door_with_entity(ic, player, door)
 end
 
 function Public.item_transfer(ic)
-    for _, car in pairs(ic.cars) do
-        if validate_entity(car.entity) then
-            if car.transfer_entities then
-                for k, e in pairs(car.transfer_entities) do
-                    if validate_entity(e) then
-                        transfer_functions[e.name](car, e)
-                    end
+    local car
+    ic.current_car_index, car = next(ic.cars, ic.current_car_index)
+    if not car then
+        return
+    end
+    if validate_entity(car.entity) then
+        if car.transfer_entities then
+            for k, e in pairs(car.transfer_entities) do
+                if validate_entity(e) then
+                    transfer_functions[e.name](car, e)
                 end
             end
         end

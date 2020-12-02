@@ -95,7 +95,7 @@ local function on_tick()
     local icw = ICW.get()
     local tick = game.tick
 
-    if tick % 60 == 0 then
+    if tick % 10 == 1 then
         Functions.item_transfer(icw)
     end
     if tick % 240 == 0 then
