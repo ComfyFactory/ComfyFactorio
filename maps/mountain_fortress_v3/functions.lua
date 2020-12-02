@@ -76,34 +76,6 @@ local function do_refill_turrets()
     end
 end
 
--- local function turret_died(event)
---     local entity = event.entity
---     if not entity or not entity.valid then
---         return
---     end
-
---     local number = entity.unit_number
---     if not number then
---         return
---     end
---     local power_sources = this.power_sources
-
---     local ps_data = power_sources[number]
---     if ps_data then
---         power_sources[number] = nil
-
---         --[[  local ps_entity = ps_data.entity
---         local ps_pole = ps_data.pole ]]
---         if ps_data and ps_data.valid then
---             ps_data.destroy()
---         end
-
---     --[[ if ps_pole and ps_pole.valid then
---             ps_pole.destroy()
---         end ]]
---     end
--- end
-
 local function do_turret_energy()
     local power_sources = this.power_sources
 
@@ -465,21 +437,8 @@ Public.refill_liquid_turret_callback =
 
 Public.power_source_callback =
     Token.register(
-    function(turret, data)
+    function(turret)
         local power_sources = this.power_sources
-        -- local callback_data = data.callback_data
-
-        --[[         local power_source = turret.surface.create_entity {name = 'hidden-electric-energy-interface', position = turret.position}
-        power_source.electric_buffer_size = callback_data.buffer_size
-        power_source.power_production = callback_data.power_production
-        power_source.destructible = false
-        local power_pole =
-            turret.surface.create_entity {
-            name = 'small-electric-pole',
-            position = {x = turret.position.x, y = turret.position.y}
-        }
-        power_pole.destructible = false
-        power_pole.disconnect_neighbour() ]]
         power_sources[#power_sources + 1] = turret
     end
 )

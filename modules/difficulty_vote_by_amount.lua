@@ -36,30 +36,16 @@ local this = {
             count = 0,
             strength_modifier = 1.75,
             boss_modifier = 8.0
-        },
-        [4] = {
-            name = 'Nightmare',
-            index = 4,
-            value = 3,
-            color = {r = 255, g = 0.00, b = 0.00},
-            print_color = {r = 255, g = 0.0, b = 0.00},
-            count = 0,
-            strength_modifier = 2.50,
-            boss_modifier = 9.0
         }
     },
     tooltip = {
         [1] = '',
         [2] = '',
-        [3] = '',
-        [4] = '',
-        [5] = '',
-        [6] = '',
-        [7] = ''
+        [3] = ''
     },
     difficulty_vote_value = 1,
     difficulty_vote_index = 1,
-    fair_vote = true,
+    fair_vote = false,
     difficulty_poll_closing_timeout = 54000,
     difficulty_player_votes = {},
     gui_width = 108,
@@ -84,8 +70,7 @@ function Public.difficulty_gui()
         if player.gui.top['difficulty_gui'] then
             player.gui.top['difficulty_gui'].caption = this.difficulties[this.difficulty_vote_index].name
             player.gui.top['difficulty_gui'].tooltip = this.button_tooltip or tooltip
-            player.gui.top['difficulty_gui'].style.font_color =
-                this.difficulties[this.difficulty_vote_index].print_color
+            player.gui.top['difficulty_gui'].style.font_color = this.difficulties[this.difficulty_vote_index].print_color
         else
             local b =
                 player.gui.top.add {
@@ -181,8 +166,7 @@ local function poll_difficulty(player)
         {
             type = 'button',
             name = 'close',
-            caption = 'Close (' ..
-                math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) .. ' minutes left)'
+            caption = 'Close (' .. math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) .. ' minutes left)'
         }
     )
     b.style.font_color = {r = 0.66, g = 0.0, b = 0.66}
@@ -194,8 +178,7 @@ local function set_difficulty()
     local index = highest_count(this.difficulties)
 
     if this.difficulty_vote_index ~= index then
-        local message =
-            table.concat({'>> Map difficulty has changed to ', this.difficulties[index].name, ' difficulty!'})
+        local message = table.concat({'>> Map difficulty has changed to ', this.difficulties[index].name, ' difficulty!'})
         game.print(message, this.difficulties[index].print_color)
         Server.to_discord_embed(message)
     end
@@ -304,10 +287,7 @@ local function on_gui_click(event)
     local i = tonumber(event.element.name)
 
     if this.difficulty_player_votes[player.name] and this.difficulty_player_votes[player.name].index == i then
-        player.print(
-            'You have already voted for ' .. this.difficulties[i].name .. '.',
-            this.difficulties[i].print_color
-        )
+        player.print('You have already voted for ' .. this.difficulties[i].name .. '.', this.difficulties[i].print_color)
         return event.element.parent.destroy()
     end
 
@@ -325,10 +305,7 @@ local function on_gui_click(event)
     set_difficulty()
     Public.difficulty_gui()
     event.element.parent.destroy()
-    game.print(
-        player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty!',
-        this.difficulties[i].print_color
-    )
+    game.print(player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty!', this.difficulties[i].print_color)
 end
 
 function Public.set_tooltip(...)

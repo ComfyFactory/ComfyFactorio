@@ -174,28 +174,13 @@ local set_difficulty = function()
         amount = 3
     end
 
-    local difficulty = Difficulty.get()
-    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
-
-    if name ~= 'Nightmare' then
-        local zone = WPT.get('breached_wall')
-        if zone >= 5 then
-            WPT.set().coin_amount = random(1, 2)
-        elseif zone >= 10 then
-            WPT.set().coin_amount = random(1, 3)
-        end
-    end
-
     if wave_defense_table.threat <= 0 then
         wave_defense_table.wave_interval = 1000
     end
-    if name == 'Nightmare' then
+
+    wave_defense_table.wave_interval = 3600 - player_count * 60
+    if wave_defense_table.wave_interval < 1800 then
         wave_defense_table.wave_interval = 1800
-    else
-        wave_defense_table.wave_interval = 3600 - player_count * 60
-        if wave_defense_table.wave_interval < 1800 then
-            wave_defense_table.wave_interval = 1800
-        end
     end
 
     local gap_between_zones = WPT.get('gap_between_zones')
@@ -203,9 +188,7 @@ local set_difficulty = function()
         return
     end
 
-    if name == 'Nightmare' then
-        Collapse.set_amount(10)
-    elseif collapse_amount then
+    if collapse_amount then
         Collapse.set_amount(collapse_amount)
     else
         Collapse.set_amount(amount)
@@ -710,20 +693,6 @@ local boost_difficulty = function()
         WPT.set().spidertron_unlocked_at_wave = 18
         WPT.set().difficulty_set = true
         WD.set_biter_health_boost(3)
-    elseif name == 'Nightmare' then
-        -- rpg_extra.difficulty = 0
-        force.character_running_speed_modifier = 0
-        force.manual_crafting_speed_modifier = 0
-        WPT.set().coin_amount = 1
-        WPT.set('upgrades').flame_turret.limit = 0
-        WPT.set('upgrades').landmine.limit = 0
-        WPT.set().locomotive_health = 1000
-        WPT.set().locomotive_max_health = 1000
-        WPT.set().bonus_xp_on_join = 0
-        WD.set().next_wave = game.tick + 3600 * 2
-        WPT.set().spidertron_unlocked_at_wave = 22
-        WPT.set().difficulty_set = true
-        WD.set_biter_health_boost(4)
     end
 end
 
@@ -905,17 +874,10 @@ local collapse_after_wave_100 = function()
     if Collapse.start_now() then
         return
     end
-    local difficulty = Difficulty.get()
-    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
-
-    local difficulty_set = WPT.get('difficulty_set')
-    if not difficulty_set and name == 'Nightmare' then
-        return
-    end
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 100 or name == 'Nightmare' then
+    if wave_number >= 100 then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
@@ -959,8 +921,7 @@ local on_init = function()
     local tooltip = {
         [1] = ({'main.diff_tooltip', '0', '0.5', '0.2', '0.4', '1', '12', '50', '10000', '100%', '15', '14'}),
         [2] = ({'main.diff_tooltip', '0', '0.25', '0.1', '0.1', '1', '10', '50', '7000', '75%', '10', '16'}),
-        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '3', '10', '5000', '50%', '10', '18'}),
-        [4] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '0', '0', '1000', '25%', '5', '22'})
+        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '1', '3', '10', '5000', '50%', '10', '18'})
     }
 
     Difficulty.set_tooltip(tooltip)

@@ -166,7 +166,6 @@ function Public.reset_table()
         chest_limit_cost = 3000,
         health_cost = 10000,
         pickaxe_cost = 3000,
-        reroll_cost = 5000,
         aura_cost = 4000,
         xp_point_boost_cost = 5000,
         explosive_bullets_cost = 20000,
