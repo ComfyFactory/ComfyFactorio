@@ -2,7 +2,7 @@ local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local main_tile_name = 'black-refined-concrete'
+local main_tile_name = 'tutorial-grid'
 
 function Public.request_reconstruction(icw)
     icw.rebuild_tick = game.tick + 30
@@ -274,7 +274,7 @@ local function construct_wagon_doors(icw, wagon)
     local surface = wagon.surface
 
     for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
-        local p = {x = x, y = area.left_top.y + 30}
+        local p = {x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
         if p.x < 0 then
             surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
         else
@@ -930,6 +930,28 @@ function Public.toggle_minimap(icw, event)
         element.style.maximal_height = player_data.map_size
         element.style.maximal_width = player_data.map_size
         return
+    end
+end
+
+function Public.on_player_or_robot_built_tile(event)
+    local surface = game.surfaces[event.surface_index]
+
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(surface.name, 0, #map_name) == map_name then
+        return
+    end
+
+    local tiles = event.tiles
+    if not tiles then
+        return
+    end
+
+    for k, v in pairs(tiles) do
+        local old_tile = v.old_tile
+        if old_tile.name == 'water' then
+            surface.set_tiles({{name = 'water', position = v.position}}, true)
+        end
     end
 end
 

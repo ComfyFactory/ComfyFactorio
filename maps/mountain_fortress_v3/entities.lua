@@ -662,7 +662,7 @@ local function on_player_mined_entity(event)
 
     local mined_scrap = WPT.get('mined_scrap')
 
-    if entity.type == 'simple-entity' or entity.type == 'tree' then
+    if entity.type == 'simple-entity' or entity.type == 'simple-entity-with-owner' or entity.type == 'tree' then
         WPT.set().mined_scrap = mined_scrap + 1
         Mining.on_player_mined_entity(event)
         if entity.type == 'tree' then

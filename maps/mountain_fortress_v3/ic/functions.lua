@@ -490,14 +490,7 @@ local function construct_doors(ic, car)
     local surface = car.surface
 
     for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
-        local p
-        if car.name == 'car' then
-            p = {x = x, y = area.left_top.y + 10}
-        elseif car.name == 'tank' then
-            p = {x = x, y = area.left_top.y + 20}
-        elseif car.name == 'spidertron' then
-            p = {x = x, y = area.left_top.y + 30}
-        end
+        local p = {x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
         if p.x < 0 then
             surface.set_tiles({{name = main_tile_name, position = {x = p.x + 0.5, y = p.y}}}, true)
         else

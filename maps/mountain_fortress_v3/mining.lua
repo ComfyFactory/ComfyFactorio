@@ -133,6 +133,15 @@ local valid_trees = {
     ['tree-08-brown'] = true
 }
 
+local valid_scrap = {
+    ['crash-site-spaceship-wreck-small-1'] = true,
+    ['crash-site-spaceship-wreck-small-2'] = true,
+    ['crash-site-spaceship-wreck-small-3'] = true,
+    ['crash-site-spaceship-wreck-small-4'] = true,
+    ['crash-site-spaceship-wreck-small-5'] = true,
+    ['crash-site-spaceship-wreck-small-6'] = true
+}
+
 local reward_wood = {
     ['dead-tree-desert'] = true,
     ['dead-dry-hairy-tree'] = true,
@@ -406,7 +415,13 @@ function Public.on_player_mined_entity(event)
         return
     end
 
-    if valid_rocks[entity.name] or valid_trees[entity.name] then
+    local is_scrap = false
+
+    if valid_scrap[entity.name] then
+        is_scrap = true
+    end
+
+    if valid_rocks[entity.name] or valid_trees[entity.name] or is_scrap then
         event.buffer.clear()
 
         local data = {
@@ -417,7 +432,7 @@ function Public.on_player_mined_entity(event)
         local index = player.index
 
         local scrap_zone = RPG_Settings.get_value_from_player(index, 'scrap_zone')
-        if scrap_zone then
+        if scrap_zone or is_scrap then
             randomness_scrap(data)
         else
             randomness(data)

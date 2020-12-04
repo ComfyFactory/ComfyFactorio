@@ -3,6 +3,13 @@ local Task = require 'utils.task'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Alert = require 'utils.alert'
+local WPT = require 'maps.mountain_fortress_v3.table'
+local WD = require 'modules.wave_defense.table'
+local Collapse = require 'modules.collapse'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
+local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
+local math2d = require 'math2d'
 
 local this = {
     power_sources = {index = 1},
@@ -13,6 +20,8 @@ local this = {
     surface_cleared = false
 }
 
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
+
 Global.register(
     this,
     function(t)
@@ -21,11 +30,14 @@ Global.register(
 )
 
 local Public = {}
+
 local random = math.random
 local floor = math.floor
+local remove = table.remove
 local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
+local tile_damage = 50
 
 local artillery_target_entities = {
     'character',
@@ -37,6 +49,35 @@ local artillery_target_entities = {
     'fluid-wagon',
     'artillery-wagon'
 }
+
+local function get_player_data(player, remove_user_data)
+    local players = WPT.get('players')
+    if remove_user_data then
+        if players[player.index] then
+            players[player.index] = nil
+        end
+    end
+    if not players[player.index] then
+        players[player.index] = {}
+    end
+    return players[player.index]
+end
+
+local function debug_str(msg)
+    local debug = WPT.get('debug')
+    if not debug then
+        return
+    end
+    print('Mtn: ' .. msg)
+end
+
+local function show_text(msg, pos, color, surface)
+    if color == nil then
+        surface.create_entity({name = 'flying-text', position = pos, text = msg})
+    else
+        surface.create_entity({name = 'flying-text', position = pos, text = msg, color = color})
+    end
+end
 
 local function fast_remove(tbl, index)
     local count = #tbl
@@ -447,10 +488,23 @@ Public.magic_item_crafting_callback =
     Token.register(
     function(entity, data)
         local callback_data = data.callback_data
+        if not (entity and entity.valid) then
+            return
+        end
 
         entity.minable = false
         entity.destructible = false
         entity.operable = false
+
+        local force = game.forces.player
+
+        local tech = callback_data.tech
+        if tech then
+            if not force.technologies[tech].researched then
+                entity.destroy()
+                return
+            end
+        end
 
         local recipe = callback_data.recipe
         if recipe then
@@ -487,6 +541,9 @@ Public.magic_item_crafting_callback_weighted =
     Token.register(
     function(entity, data)
         local callback_data = data.callback_data
+        if not (entity and entity.valid) then
+            return
+        end
 
         entity.minable = false
         entity.destructible = false
@@ -507,6 +564,16 @@ Public.magic_item_crafting_callback_weighted =
         local stack = loot[index].stack
         if not stack then
             return
+        end
+
+        local force = game.forces.player
+
+        local tech = stack.tech
+        if tech then
+            if not force.technologies[tech].researched then
+                entity.destroy()
+                return
+            end
         end
 
         local recipe = stack.recipe
@@ -589,6 +656,586 @@ function Public.do_random_loot(entity, weights, loot)
     entity.insert {name = stack.name, count = count}
 end
 
+function Public.remove_offline_players()
+    local offline_players_enabled = WPT.get('offline_players_enabled')
+    if not offline_players_enabled then
+        return
+    end
+    local offline_players = WPT.get('offline_players')
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+    local player_inv = {}
+    local items = {}
+    if #offline_players > 0 then
+        local later = {}
+        for i = 1, #offline_players, 1 do
+            if offline_players[i] and game.players[offline_players[i].index] and game.players[offline_players[i].index].connected then
+                offline_players[i] = nil
+            else
+                if offline_players[i] and offline_players[i].tick < game.tick - 34000 then
+                    local name = offline_players[i].name
+                    player_inv[1] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
+                    player_inv[2] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_armor)
+                    player_inv[3] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_guns)
+                    player_inv[4] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_ammo)
+                    player_inv[5] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_trash)
+                    local pos = game.forces.player.get_spawn_position(surface)
+                    local e =
+                        surface.create_entity(
+                        {
+                            name = 'character',
+                            position = pos,
+                            force = 'neutral'
+                        }
+                    )
+                    local inv = e.get_inventory(defines.inventory.character_main)
+                    for ii = 1, 5, 1 do
+                        if player_inv[ii].valid then
+                            for iii = 1, #player_inv[ii], 1 do
+                                if player_inv[ii][iii].valid then
+                                    items[#items + 1] = player_inv[ii][iii]
+                                end
+                            end
+                        end
+                    end
+                    if #items > 0 then
+                        for item = 1, #items, 1 do
+                            if items[item].valid then
+                                inv.insert(items[item])
+                            end
+                        end
+
+                        local message = ({'main.cleaner', name})
+                        local data = {
+                            position = pos
+                        }
+                        Alert.alert_all_players_location(data, message)
+
+                        e.die('neutral')
+                    else
+                        e.destroy()
+                    end
+
+                    for ii = 1, 5, 1 do
+                        if player_inv[ii].valid then
+                            player_inv[ii].clear()
+                        end
+                    end
+                    offline_players[i] = nil
+                else
+                    later[#later + 1] = offline_players[i]
+                end
+            end
+        end
+        for k, _ in pairs(offline_players) do
+            offline_players[k] = nil
+        end
+        if #later > 0 then
+            for i = 1, #later, 1 do
+                offline_players[#offline_players + 1] = later[i]
+            end
+        end
+    end
+end
+
+function Public.set_difficulty()
+    local Diff = Difficulty.get()
+    local wave_defense_table = WD.get_table()
+    local collapse_amount = WPT.get('collapse_amount')
+    local player_count = #game.connected_players
+    if not Diff.difficulty_vote_value then
+        Diff.difficulty_vote_value = 0.1
+    end
+
+    wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
+
+    if wave_defense_table.max_active_biters >= 2500 then
+        wave_defense_table.max_active_biters = 2500
+    end
+
+    -- threat gain / wave
+    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
+
+    local amount = player_count * 0.25 + 2
+    amount = floor(amount)
+    if amount > 6 then
+        amount = 6
+    end
+
+    if wave_defense_table.threat <= 0 then
+        wave_defense_table.wave_interval = 1000
+    end
+
+    wave_defense_table.wave_interval = 3600 - player_count * 60
+    if wave_defense_table.wave_interval < 1800 then
+        wave_defense_table.wave_interval = 1800
+    end
+
+    local gap_between_zones = WPT.get('gap_between_zones')
+    if gap_between_zones.set then
+        return
+    end
+
+    if collapse_amount then
+        Collapse.set_amount(collapse_amount)
+    else
+        Collapse.set_amount(amount)
+    end
+end
+
+function Public.render_direction(surface)
+    local counter = WPT.get('soft_reset_counter')
+    if counter then
+        rendering.draw_text {
+            text = 'Welcome to Mountain Fortress v3!\nRun: ' .. counter,
+            surface = surface,
+            target = {-0, 10},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    else
+        rendering.draw_text {
+            text = 'Welcome to Mountain Fortress v3!',
+            surface = surface,
+            target = {-0, 10},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    end
+
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 20},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 30},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 40},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 50},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+    rendering.draw_text {
+        text = '▼',
+        surface = surface,
+        target = {-0, 60},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+    rendering.draw_text {
+        text = 'Biters will attack this area.',
+        surface = surface,
+        target = {-0, 70},
+        color = {r = 0.98, g = 0.66, b = 0.22},
+        scale = 3,
+        font = 'heading-1',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
+    local x_min = -WPT.level_width / 2
+    local x_max = WPT.level_width / 2
+
+    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+    surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
+end
+
+function Public.boost_difficulty()
+    local difficulty_set = WPT.get('difficulty_set')
+    if difficulty_set then
+        return
+    end
+
+    local breached_wall = WPT.get('breached_wall')
+
+    local difficulty = Difficulty.get()
+    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
+
+    if game.tick < difficulty.difficulty_poll_closing_timeout and breached_wall <= 1 then
+        return
+    end
+
+    Difficulty.get().name = name
+    Difficulty.get().difficulty_poll_closing_timeout = game.tick
+
+    Difficulty.get().button_tooltip = difficulty.tooltip[difficulty.difficulty_vote_index]
+    Difficulty.difficulty_gui()
+
+    local message = ({'main.diff_set', name})
+    local data = {
+        position = WPT.get('locomotive').position
+    }
+    Alert.alert_all_players_location(data, message)
+
+    local force = game.forces.player
+
+    if name == "I'm too young to die" then
+        -- rpg_extra.difficulty = 1
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
+        force.character_running_speed_modifier = 0.15
+        force.manual_crafting_speed_modifier = 0.15
+        WPT.set().coin_amount = 1
+        WPT.set('upgrades').flame_turret.limit = 12
+        WPT.set('upgrades').landmine.limit = 50
+        WPT.set().locomotive_health = 10000
+        WPT.set().locomotive_max_health = 10000
+        WPT.set().bonus_xp_on_join = 500
+        WD.set().next_wave = game.tick + 3600 * 15
+        WPT.set().spidertron_unlocked_at_wave = 14
+        WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(1.50)
+    elseif name == 'Hurt me plenty' then
+        -- rpg_extra.difficulty = 0.5
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
+        force.character_running_speed_modifier = 0.1
+        force.manual_crafting_speed_modifier = 0.1
+        WPT.set().coin_amount = 1
+        WPT.set('upgrades').flame_turret.limit = 10
+        WPT.set('upgrades').landmine.limit = 50
+        WPT.set().locomotive_health = 7000
+        WPT.set().locomotive_max_health = 7000
+        WPT.set().bonus_xp_on_join = 300
+        WD.set().next_wave = game.tick + 3600 * 10
+        WPT.set().spidertron_unlocked_at_wave = 16
+        WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(2)
+    elseif name == 'Ultra-violence' then
+        -- rpg_extra.difficulty = 0
+        force.character_running_speed_modifier = 0
+        force.manual_crafting_speed_modifier = 0
+        WPT.set().coin_amount = 1
+        WPT.set('upgrades').flame_turret.limit = 3
+        WPT.set('upgrades').landmine.limit = 10
+        WPT.set().locomotive_health = 5000
+        WPT.set().locomotive_max_health = 5000
+        WPT.set().bonus_xp_on_join = 50
+        WD.set().next_wave = game.tick + 3600 * 5
+        WPT.set().spidertron_unlocked_at_wave = 18
+        WPT.set().difficulty_set = true
+        WD.set_biter_health_boost(3)
+    end
+end
+
+function Public.set_spawn_position()
+    local collapse_pos = Collapse.get_position()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+    local l = locomotive.position
+
+    local retries = 0
+
+    local function check_tile(surface, tile, tbl, inc)
+        if not (surface and surface.valid) then
+            return false
+        end
+        if not tile then
+            return false
+        end
+        local get_tile = surface.get_tile(tile)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            remove(tbl.tbl, inc - inc + 1)
+            return true
+        else
+            return false
+        end
+    end
+
+    ::retry::
+
+    local locomotive_positions = WPT.get('locomotive_pos')
+    local total_pos = #locomotive_positions.tbl
+
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+    if not (surface and surface.valid) then
+        return
+    end
+
+    local spawn_near_collapse = WPT.get('spawn_near_collapse')
+
+    if spawn_near_collapse.active then
+        local collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
+        local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
+        if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
+            retries = retries + 1
+            if retries == 2 then
+                goto continue
+            end
+            goto retry
+        end
+
+        local locomotive_position = surface.find_non_colliding_position('small-biter', sizeof, 128, 1)
+        local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
+        local l_y = l.y
+        local t_y = locomotive_position.y
+        local c_y = collapse_pos.y
+        if total_pos > spawn_near_collapse.total_pos then
+            if l_y - t_y <= spawn_near_collapse.compare then
+                if locomotive_position then
+                    if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
+                        debug_str('total_pos was higher - found oom')
+                        retries = retries + 1
+                        if retries == 2 then
+                            goto continue
+                        end
+                        goto retry
+                    end
+                    debug_str('total_pos was higher - spawning at locomotive_position')
+                    WD.set_spawn_position(locomotive_position)
+                end
+            elseif c_y - t_y <= spawn_near_collapse.compare_next then
+                if distance_from >= spawn_near_collapse.distance_from then
+                    local success = check_tile(surface, locomotive_position, locomotive_positions.tbl, total_pos)
+                    if success then
+                        debug_str('distance_from was higher - found oom')
+                        return
+                    end
+                    debug_str('distance_from was higher - spawning at locomotive_position')
+                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - 20})
+                else
+                    debug_str('distance_from was lower - spawning at locomotive_position')
+                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - 20})
+                end
+            else
+                if collapse_position then
+                    debug_str('total_pos was higher - spawning at collapse_position')
+                    WD.set_spawn_position(collapse_position)
+                end
+            end
+        else
+            if collapse_position then
+                debug_str('total_pos was lower - spawning at collapse_position')
+                WD.set_spawn_position(collapse_position)
+            end
+        end
+    end
+
+    ::continue::
+end
+
+function Public.on_player_joined_game(event)
+    local active_surface_index = WPT.get('active_surface_index')
+    local player = game.players[event.player_index]
+    local surface = game.surfaces[active_surface_index]
+
+    Public.set_difficulty()
+
+    ICW_Func.is_minimap_valid(player, surface)
+
+    local player_data = get_player_data(player)
+
+    if not player_data.first_join then
+        local message = ({'main.greeting', player.name})
+        Alert.alert_player(player, 15, message)
+        for item, amount in pairs(starting_items) do
+            player.insert({name = item, count = amount})
+        end
+        player_data.first_join = true
+    end
+
+    if player.surface.index ~= active_surface_index then
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+    else
+        local p = {x = player.position.x, y = player.position.y}
+        local get_tile = surface.get_tile(p)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+        end
+    end
+
+    local locomotive = WPT.get('locomotive')
+
+    if not locomotive or not locomotive.valid then
+        return
+    end
+    if player.position.y > locomotive.position.y then
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+    end
+end
+
+function Public.on_player_left_game()
+    Public.set_difficulty()
+end
+
+function Public.on_pre_player_left_game(event)
+    local offline_players_enabled = WPT.get('offline_players_enabled')
+    if not offline_players_enabled then
+        return
+    end
+
+    local offline_players = WPT.get('offline_players')
+    local player = game.players[event.player_index]
+    local ticker = game.tick
+    if player.character then
+        offline_players[#offline_players + 1] = {
+            index = event.player_index,
+            name = player.name,
+            tick = ticker
+        }
+    end
+end
+
+function Public.on_player_respawned(event)
+    local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
+    end
+    local player_data = get_player_data(player)
+    if player_data.died then
+        player_data.died = nil
+    end
+end
+
+function Public.on_player_died(event)
+    local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
+    end
+    local player_data = get_player_data(player)
+    player_data.died = true
+end
+
+function Public.on_player_changed_position(event)
+    local active_surface_index = WPT.get('active_surface_index')
+    if not active_surface_index then
+        return
+    end
+    local player = game.players[event.player_index]
+    local map_name = 'mountain_fortress_v3'
+
+    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    local position = player.position
+    local surface = game.surfaces[active_surface_index]
+
+    local p = {x = player.position.x, y = player.position.y}
+    local get_tile = surface.get_tile(p)
+    local config_tile = WPT.get('void_or_tile')
+    if config_tile == 'lab-dark-2' then
+        if get_tile.valid and get_tile.name == 'lab-dark-2' then
+            if random(1, 2) == 1 then
+                if random(1, 2) == 1 then
+                    show_text('This path is not for players!', p, {r = 0.98, g = 0.66, b = 0.22}, surface)
+                end
+                player.surface.create_entity({name = 'fire-flame', position = player.position})
+                player.character.health = player.character.health - tile_damage
+                if player.character.health == 0 then
+                    player.character.die()
+                    local message = ({'main.death_message_' .. random(1, 7), player.name})
+                    game.print(message, {r = 0.98, g = 0.66, b = 0.22})
+                end
+            end
+        end
+    end
+
+    if position.y >= 74 then
+        player.teleport({position.x, position.y - 1}, surface)
+        player.print(({'main.forcefield'}), {r = 0.98, g = 0.66, b = 0.22})
+        if player.character then
+            player.character.health = player.character.health - 5
+            player.character.surface.create_entity({name = 'water-splash', position = position})
+            if player.character.health <= 0 then
+                player.character.die('enemy')
+            end
+        end
+    end
+end
+
+local disable_recipes = function()
+    local force = game.forces.player
+    force.recipes['cargo-wagon'].enabled = false
+    force.recipes['fluid-wagon'].enabled = false
+    force.recipes['car'].enabled = false
+    force.recipes['tank'].enabled = false
+    force.recipes['artillery-wagon'].enabled = false
+    force.recipes['locomotive'].enabled = false
+    force.recipes['pistol'].enabled = false
+end
+
+function Public.disable_tech()
+    game.forces.player.technologies['landfill'].enabled = false
+    game.forces.player.technologies['spidertron'].enabled = false
+    game.forces.player.technologies['spidertron'].researched = false
+    game.forces.player.technologies['optics'].researched = true
+    game.forces.player.technologies['railway'].researched = true
+    game.forces.player.technologies['land-mine'].enabled = false
+    disable_recipes()
+end
+
+local disable_tech = Public.disable_tech
+
+function Public.on_research_finished(event)
+    disable_tech()
+
+    local research = event.research
+
+    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+
+    if research.name == 'steel-axe' then
+        local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
+        Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
+    end -- +50% speed for steel-axe research
+
+    local force_name = research.force.name
+    if not force_name then
+        return
+    end
+    local flamethrower_damage = WPT.get('flamethrower_damage')
+    flamethrower_damage[force_name] = -0.85
+    if research.name == 'military' then
+        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', flamethrower_damage[force_name])
+        game.forces[force_name].set_ammo_damage_modifier('flamethrower', flamethrower_damage[force_name])
+    end
+
+    if string.sub(research.name, 0, 18) == 'refined-flammables' then
+        flamethrower_damage[force_name] = flamethrower_damage[force_name] + 0.10
+        game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', flamethrower_damage[force_name])
+        game.forces[force_name].set_ammo_damage_modifier('flamethrower', flamethrower_damage[force_name])
+    end
+end
+
 Public.firearm_magazine_ammo = {name = 'firearm-magazine', count = 200}
 Public.piercing_rounds_magazine_ammo = {name = 'piercing-rounds-magazine', count = 200}
 Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count = 200}
@@ -603,9 +1250,22 @@ function Public.reset_table()
     this.magic_fluid_crafters = {index = 1}
 end
 
+local on_player_joined_game = Public.on_player_joined_game
+local on_player_left_game = Public.on_player_left_game
+local on_player_respawned = Public.on_player_respawned
+local on_player_died = Public.on_player_died
+local on_research_finished = Public.on_research_finished
+local on_player_changed_position = Public.on_player_changed_position
+local on_pre_player_left_game = Public.on_pre_player_left_game
+
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_research_finished, on_research_finished)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.on_nth_tick(10, tick)
 Event.on_nth_tick(5, do_turret_energy)
---Event.add(defines.events.on_tick, tick)
--- Event.add(defines.events.on_entity_died, turret_died)
 
 return Public

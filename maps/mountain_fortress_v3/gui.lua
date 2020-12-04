@@ -271,10 +271,11 @@ local function on_player_changed_surface(event)
         if charging and not charging.visible then
             charging.visible = true
         end
-
-        info.tooltip = ({'gui.info_tooltip'})
-        info.sprite = 'item/dummy-steel-axe'
-        info.visible = true
+        if info then
+            info.tooltip = ({'gui.info_tooltip'})
+            info.sprite = 'item/dummy-steel-axe'
+            info.visible = true
+        end
     elseif player.surface == wagon_surface then
         if wd then
             wd.visible = false
@@ -355,13 +356,11 @@ function Public.update_gui(player)
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(biters_killed, true)
     gui.biters_killed.tooltip = ({'gui.biters_killed'})
 
-    gui.landmine.caption =
-        ' [img=entity.land-mine]: ' .. format_number(upgrades.landmine.built, true) .. ' / ' .. format_number(upgrades.landmine.limit, true)
+    gui.landmine.caption = ' [img=entity.land-mine]: ' .. format_number(upgrades.landmine.built, true) .. ' / ' .. format_number(upgrades.landmine.limit, true)
     gui.landmine.tooltip = ({'gui.land_mine_placed'})
 
     gui.flame_turret.caption =
-        ' [img=entity.flamethrower-turret]: ' ..
-        format_number(upgrades.flame_turret.built, true) .. ' / ' .. format_number(upgrades.flame_turret.limit, true)
+        ' [img=entity.flamethrower-turret]: ' .. format_number(upgrades.flame_turret.built, true) .. ' / ' .. format_number(upgrades.flame_turret.limit, true)
     gui.flame_turret.tooltip = ({'gui.flamethrowers_placed'})
 
     gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(train_upgrades, true)

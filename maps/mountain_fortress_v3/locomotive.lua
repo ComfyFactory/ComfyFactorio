@@ -141,7 +141,7 @@ local set_loco_tiles =
             end
         end
 
-        MapFunctions.draw_noise_tile_circle(position, 'stone-path', surface, 15)
+        MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 15)
 
         for i = 1, #cargo_boxes, 1 do
             if not p[i] then
@@ -149,6 +149,7 @@ local set_loco_tiles =
             end
             if surface.can_place_entity({name = 'wooden-chest', position = p[i]}) then
                 local e = surface.create_entity({name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false})
+                e.minable = false
                 local inventory = e.get_inventory(defines.inventory.chest)
                 inventory.insert(cargo_boxes[i])
             end
@@ -723,7 +724,7 @@ local function slider_changed(event)
     end
     slider_value = ceil(slider_value)
     if players[player.index] and players[player.index].data and players[player.index].data.text_input then
-        players[player.index].data.text_input.text = slider_value
+        players[player.index].data.text_input.text = tostring(slider_value)
         redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
     end
 end
@@ -767,7 +768,7 @@ local function text_changed(event)
         value = 1
     end
 
-    data.slider.slider_value = value
+    data.slider.slider_value = tostring(value)
 
     redraw_market_items(data.item_frame, player, data.search_text)
 end

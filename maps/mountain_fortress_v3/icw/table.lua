@@ -36,10 +36,10 @@ function Public.reset()
     }
 
     this.wagon_areas = {
-        ['cargo-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
-        ['artillery-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
-        ['fluid-wagon'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}},
-        ['locomotive'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 60}}
+        ['cargo-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
+        ['artillery-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
+        ['fluid-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
+        ['locomotive'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}}
     }
 end
 

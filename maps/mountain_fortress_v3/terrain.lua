@@ -12,7 +12,7 @@ local floor = math.floor
 local ceil = math.ceil
 
 Public.level_depth = WPT.level_depth
-Public.level_width = 512
+Public.level_width = WPT.level_width
 local worm_level_modifier = 0.19
 
 local wagon_raffle = {
@@ -47,6 +47,22 @@ local tree_raffle = {
     'tree-08-brown'
 }
 local size_of_tree_raffle = #tree_raffle
+
+local scrap_mineable_entities = {
+    'crash-site-spaceship-wreck-small-1',
+    'crash-site-spaceship-wreck-small-1',
+    'crash-site-spaceship-wreck-small-2',
+    'crash-site-spaceship-wreck-small-2',
+    'crash-site-spaceship-wreck-small-3',
+    'crash-site-spaceship-wreck-small-3',
+    'crash-site-spaceship-wreck-small-4',
+    'crash-site-spaceship-wreck-small-4',
+    'crash-site-spaceship-wreck-small-5',
+    'crash-site-spaceship-wreck-small-5',
+    'crash-site-spaceship-wreck-small-6'
+}
+
+local scrap_mineable_entities_index = #scrap_mineable_entities
 
 local scrap_entities = {
     'medium-ship-wreck',
@@ -948,7 +964,7 @@ local function process_level_8_position(x, y, data, void_or_lab)
                 }
             end
             if random(1, 5) > 1 then
-                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+                entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p}
             end
             if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
@@ -2098,7 +2114,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     local no_rocks = get_perlin('no_rocks', p, seed)
 
     if smol_areas < 0.055 and smol_areas > -0.025 then
-        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
@@ -2277,7 +2293,7 @@ local function border_chunk(data)
     end
     if not is_out_of_map(pos) then
         if random(1, ceil(pos.y + pos.y) + 32) == 1 then
-            entities[#entities + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = pos}
+            entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = pos, force = 'neutral'}
         end
         if random(1, pos.y + 2) == 1 then
             decoratives[#decoratives + 1] = {
@@ -2413,9 +2429,7 @@ Event.add(
 
         if left_top.y == -128 and left_top.x == -128 then
             local pl = WPT.get().locomotive.position
-            for _, entity in pairs(
-                surface.find_entities_filtered({area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'})
-            ) do
+            for _, entity in pairs(surface.find_entities_filtered({area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'})) do
                 entity.destroy()
             end
         end
