@@ -689,6 +689,7 @@ function Public.remove_offline_players()
                         }
                     )
                     local inv = e.get_inventory(defines.inventory.character_main)
+                    e.character_inventory_slots_bonus = #player_inv[1]
                     for ii = 1, 5, 1 do
                         if player_inv[ii].valid then
                             for iii = 1, #player_inv[ii], 1 do
