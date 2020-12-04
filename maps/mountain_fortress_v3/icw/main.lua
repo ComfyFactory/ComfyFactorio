@@ -95,7 +95,7 @@ local function on_tick()
     local icw = ICW.get()
     local tick = game.tick
 
-    if tick % 60 == 0 then
+    if tick % 10 == 1 then
         Functions.item_transfer(icw)
     end
     if tick % 240 == 0 then
@@ -121,6 +121,8 @@ function Public.register_wagon(wagon_entity)
     return Functions.create_wagon(icw, wagon_entity)
 end
 
+local on_player_or_robot_built_tile = Functions.on_player_or_robot_built_tile
+
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
@@ -131,13 +133,7 @@ Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
-Event.add(
-    defines.events.on_built_entity,
-    function(event)
-        local created_entity = event.created_entity
-        local icw = ICW.get()
-        Functions.create_wagon(icw, created_entity)
-    end
-)
+Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
+Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 
 return Public

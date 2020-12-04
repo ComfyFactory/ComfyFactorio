@@ -16,6 +16,7 @@ Global.register(
 )
 
 Public.level_depth = 704
+Public.level_width = 512
 
 Public.pickaxe_upgrades = {
     'Wood',
@@ -166,7 +167,6 @@ function Public.reset_table()
         chest_limit_cost = 3000,
         health_cost = 10000,
         pickaxe_cost = 3000,
-        reroll_cost = 5000,
         aura_cost = 4000,
         xp_point_boost_cost = 5000,
         explosive_bullets_cost = 20000,
@@ -178,6 +178,8 @@ function Public.reset_table()
     this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
+    this.offline_players_enabled = true
+    this.offline_players = {}
     this.spawn_near_collapse = {
         active = true,
         total_pos = 35,

@@ -81,7 +81,7 @@ local function on_tick()
     local ic = IC.get()
     local tick = game.tick
 
-    if tick % 60 == 0 then
+    if tick % 10 == 1 then
         Functions.item_transfer(ic)
     end
 

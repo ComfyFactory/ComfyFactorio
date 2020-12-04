@@ -1,6 +1,6 @@
 local Global = require 'utils.global'
 local surface_name = 'mountain_fortress_v3'
-local level_width = require 'maps.mountain_fortress_v3.terrain'.level_width
+local WPT = require 'maps.mountain_fortress_v3.table'
 local Reset = require 'maps.mountain_fortress_v3.soft_reset'
 
 local Public = {}
@@ -22,7 +22,7 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16
 function Public.create_surface()
     local map_gen_settings = {
         ['seed'] = math.random(10000, 99999),
-        ['width'] = level_width,
+        ['width'] = WPT.level_width,
         ['water'] = 0.001,
         ['starting_area'] = 1,
         ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
@@ -57,8 +57,7 @@ function Public.create_surface()
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface(surface_name, map_gen_settings).index
     else
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
     if not this.cleared_nauvis then

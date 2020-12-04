@@ -343,6 +343,10 @@ local function auto_stash(player, event)
         player.print('Inventory is empty.', print_color)
         return
     end
+    local inventory_tbl = {}
+    for name, count in pairs(inventory.get_contents()) do
+        inventory_tbl[name] = count
+    end
     local chests
     local r = this.small_radius
     local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
@@ -351,10 +355,7 @@ local function auto_stash(player, event)
             chests = get_nearby_chests(player, nil, true, false)
         end
     elseif shift then
-        if
-            button == defines.mouse_button_type.right and this.insert_into_wagon or
-                button == defines.mouse_button_type.left and this.insert_into_wagon
-         then
+        if button == defines.mouse_button_type.right and this.insert_into_wagon or button == defines.mouse_button_type.left and this.insert_into_wagon then
             chests = get_nearby_chests(player, area, false, true)
         end
     else
@@ -365,7 +366,7 @@ local function auto_stash(player, event)
         player.print('No valid nearby containers found.', print_color)
         return
     end
-    for name, count in pairs(inventory.get_contents()) do
+    for name, count in pairs(inventory_tbl) do
         local filtered_chests = {}
         local filtered_allowed
         for _, e in pairs(chests) do
@@ -432,8 +433,7 @@ local function create_gui_button(player)
         tooltip =
             'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
     elseif this.insert_into_furnace then
-        tooltip =
-            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests.\nCTRL+RMB: Fill nearby furnaces.'
+        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests.\nCTRL+RMB: Fill nearby furnaces.'
     elseif this.insert_into_wagon then
         tooltip =
             'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'

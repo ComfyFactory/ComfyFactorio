@@ -100,6 +100,14 @@ local compare_player_pos = function(player)
 end
 
 local compare_player_and_train = function(player, entity)
+    if not player.driving then
+        return
+    end
+
+    if not (entity and entity.valid) then
+        return
+    end
+
     local position = player.position
     local locomotive = WPT.get('locomotive')
     if not locomotive or not locomotive.valid then
@@ -187,21 +195,21 @@ local function distance(player)
             if breached_wall % 2 == 0 then
                 local blood_moon = WPT.get('blood_moon')
                 local t = game.tick
-                local s = player.surface
+                local surface = player.surface
                 if not blood_moon then
-                    BM.set_daytime(s, t, true)
+                    BM.set_daytime(surface, t, true)
                     WPT.set('blood_moon', true)
                 end
             else
-                local s = player.surface
-                s.brightness_visual_weights = {
+                local surface = player.surface
+                surface.brightness_visual_weights = {
                     a = 1,
                     b = 0,
                     g = 0,
                     r = 0
                 }
-                s.daytime = 0.7
-                s.freeze_daytime = false
+                surface.daytime = 0.7
+                surface.freeze_daytime = false
             end
 
             local data = {

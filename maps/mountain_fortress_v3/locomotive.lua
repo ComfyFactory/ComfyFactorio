@@ -141,15 +141,15 @@ local set_loco_tiles =
             end
         end
 
-        MapFunctions.draw_noise_tile_circle(position, 'stone-path', surface, 15)
+        MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 15)
 
         for i = 1, #cargo_boxes, 1 do
             if not p[i] then
                 break
             end
             if surface.can_place_entity({name = 'wooden-chest', position = p[i]}) then
-                local e =
-                    surface.create_entity({name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false})
+                local e = surface.create_entity({name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false})
+                e.minable = false
                 local inventory = e.get_inventory(defines.inventory.chest)
                 inventory.insert(cargo_boxes[i])
             end
@@ -724,7 +724,7 @@ local function slider_changed(event)
     end
     slider_value = ceil(slider_value)
     if players[player.index] and players[player.index].data and players[player.index].data.text_input then
-        players[player.index].data.text_input.text = slider_value
+        players[player.index].data.text_input.text = tostring(slider_value)
         redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
     end
 end
@@ -768,7 +768,7 @@ local function text_changed(event)
         value = 1
     end
 
-    data.slider.slider_value = value
+    data.slider.slider_value = tostring(value)
 
     redraw_market_items(data.item_frame, player, data.search_text)
 end
@@ -938,27 +938,6 @@ local function gui_click(event)
     local slider_value = ceil(data.slider.slider_value)
     local cost = (item.price * slider_value)
     local item_count = item.stack * slider_value
-
-    if name == 'reroll_market_items' then
-        player.remove_item({name = item.value, count = item.price})
-
-        local message = ({'locomotive.reroll_bought_info', shopkeeper, player.name, format_number(item.price, true)})
-        Alert.alert_all_players(5, message)
-        Server.to_discord_bold(
-            table.concat {
-                player.name .. ' has rerolled the market items for ' .. format_number(item.price, true) .. ' coins.'
-            }
-        )
-
-        local breached_wall = WPT.get('breached_wall')
-        add_random_loot_to_main_market(breached_wall + random(1, 3))
-        Public.get_items(true)
-
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
 
     local this = WPT.get()
     if name == 'upgrade_pickaxe' then
@@ -1157,8 +1136,7 @@ local function gui_click(event)
             Alert.alert_all_players(5, message)
             Server.to_discord_bold(
                 table.concat {
-                    player.name ..
-                        ' has bought ' .. item.stack .. ' flamethrower-turret slots for ' .. format_number(item.price, true) .. ' coins.'
+                    player.name .. ' has bought ' .. item.stack .. ' flamethrower-turret slots for ' .. format_number(item.price, true) .. ' coins.'
                 }
             )
         end
@@ -1186,8 +1164,7 @@ local function gui_click(event)
             if item.price >= 1000 then
                 Server.to_discord_bold(
                     table.concat {
-                        player.name ..
-                            ' has bought ' .. item.stack .. ' landmine slots for ' .. format_number(item.price, true) .. ' coins.'
+                        player.name .. ' has bought ' .. item.stack .. ' landmine slots for ' .. format_number(item.price, true) .. ' coins.'
                     }
                 )
             end
@@ -1320,8 +1297,7 @@ local function spawn_biter()
     if not position then
         return
     end
-    this.locomotive_biter =
-        loco_surface.create_entity({name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false})
+    this.locomotive_biter = loco_surface.create_entity({name = biters[random(1, 4)], position = position, force = 'player', create_build_effect_smoke = false})
     this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
     this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
 
@@ -1911,7 +1887,7 @@ function Public.locomotive_spawn(surface, position)
     game.forces.player.set_spawn_position({0, 19}, locomotive.surface)
 end
 
-function Public.get_items(reroll)
+function Public.get_items()
     local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
     local health_upgrades = WPT.get('health_upgrades')
     local pickaxe_tier = WPT.get('pickaxe_tier')
@@ -1925,47 +1901,12 @@ function Public.get_items(reroll)
     local chest_limit_cost = round(fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades))
     local health_cost = round(fixed_prices.health_cost * (1 + health_upgrades))
     local pickaxe_cost = round(fixed_prices.pickaxe_cost * (0.1 + pickaxe_tier / 2))
-    local reroll_cost = round(fixed_prices.reroll_cost)
     local aura_cost = round(fixed_prices.aura_cost * (1 + aura_upgrades))
     local xp_point_boost_cost = round(fixed_prices.xp_point_boost_cost * (1 + xp_points_upgrade))
     local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + landmine))
     local skill_reset_cost = round(fixed_prices.skill_reset_cost)
-
-    if reroll then
-        fixed_prices.chest_limit_cost = round(random(2000, 3000) * (1 + chest_limit_outside_upgrades))
-        fixed_prices.health_cost = round(random(7000, 10000) * (1 + health_upgrades))
-        fixed_prices.pickaxe_cost = round(random(3500, 8000))
-        fixed_prices.reroll_cost = round(random(2000, 3000))
-        fixed_prices.aura_cost = round(random(3000, 6000) * (1 + aura_upgrades))
-        fixed_prices.xp_point_boost_cost = round(random(4000, 6000) * (1 + xp_points_upgrade))
-        fixed_prices.explosive_bullets_cost = round(random(18000, 21000))
-        fixed_prices.flamethrower_turrets_cost = round(random(2500, 4000) * (1 + flame_turret))
-        fixed_prices.land_mine_cost = round(random(1, 8) * (1 + landmine))
-        fixed_prices.skill_reset_cost = round(random(90000, 110000))
-        if main_market_items['spidertron'] then
-            local rng = round(random(70000, 120000))
-            main_market_items['spidertron'] = {
-                stack = 1,
-                value = 'coin',
-                price = rng,
-                tooltip = 'Chonk Spidertron',
-                upgrade = false,
-                static = true
-            }
-        end
-    end
-    main_market_items['reroll_market_items'] = {
-        stack = 1,
-        value = 'coin',
-        price = reroll_cost,
-        tooltip = ({'main_market.reroll_market_items'}),
-        sprite = 'achievement/logistic-network-embargo',
-        enabled = true,
-        upgrade = true,
-        static = true
-    }
 
     local pickaxe_tiers = WPT.pickaxe_upgrades
     local tier = WPT.get('pickaxe_tier')
