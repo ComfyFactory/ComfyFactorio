@@ -5,7 +5,9 @@ local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 
-local this = {}
+local this = {
+    players = {}
+}
 
 Global.register(
     this,
@@ -13,6 +15,8 @@ Global.register(
         this = t
     end
 )
+
+local Public = {}
 
 commands.add_command(
     'spaghetti',
@@ -242,11 +246,10 @@ commands.add_command(
             return
         end
 
-        game.print(player.name .. ' has activated creative-mode!', Color.warning)
+        game.print('[CREATIVE] ' .. player.name .. ' has activated creative-mode!', Color.warning)
         Server.to_discord_bold(table.concat {'[Creative] ' .. player.name .. ' has activated creative-mode!'})
 
         for k, v in pairs(game.connected_players) do
-            v.cheat_mode = true
             if v.character ~= nil then
                 if v.get_inventory(defines.inventory.character_armor) then
                     v.get_inventory(defines.inventory.character_armor).clear()
@@ -275,13 +278,17 @@ commands.add_command(
                 for _k, _v in pairs(item) do
                     i = i + 1
                     if _k and _v.type ~= 'mining-tool' then
-                        p_modifer[k].character_inventory_slots_bonus['creative'] = tonumber(i)
+                        p_modifer[player.index].character_inventory_slots_bonus['creative'] = tonumber(i)
+                        p_modifer[player.index].character_mining_speed_modifier['creative'] = 50
+                        p_modifer[player.index].character_health_bonus['creative'] = 2000
+                        p_modifer[player.index].character_crafting_speed_modifier['creative'] = 50
                         v.character_inventory_slots_bonus = p_modifer[k].character_inventory_slots_bonus['creative']
                         v.insert {name = _k, count = _v.stack_size}
-                        v.print('Inserted all base items.', Color.success)
-                        p_modifer.creative_enabled = true
+                        v.print('[CREATIVE] Inserted all base items.', Color.success)
+                        Modifiers.update_player_modifiers(player)
                     end
                 end
+                this.creative_enabled = true
             end
         end
     end
@@ -379,43 +386,80 @@ local on_player_joined_game = function(event)
     local player = game.players[event.player_index]
 
     if this.creative_enabled then
-        player.cheat_mode = true
-        if player.character ~= nil then
-            if player.get_inventory(defines.inventory.character_armor) then
-                player.get_inventory(defines.inventory.character_armor).clear()
-            end
-            player.insert {name = 'power-armor-mk2', count = 1}
-            local p_armor = player.get_inventory(5)[1].grid
-            if p_armor and p_armor.valid then
-                p_armor.put({name = 'fusion-reactor-equipment'})
-                p_armor.put({name = 'fusion-reactor-equipment'})
-                p_armor.put({name = 'fusion-reactor-equipment'})
-                p_armor.put({name = 'exoskeleton-equipment'})
-                p_armor.put({name = 'exoskeleton-equipment'})
-                p_armor.put({name = 'exoskeleton-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'energy-shield-mk2-equipment'})
-                p_armor.put({name = 'personal-roboport-mk2-equipment'})
-                p_armor.put({name = 'night-vision-equipment'})
-                p_armor.put({name = 'battery-mk2-equipment'})
-                p_armor.put({name = 'battery-mk2-equipment'})
-            end
-            local item = game.item_prototypes
-            local i = 0
-            local p_modifer = Modifiers.get_table()
-            for _k, _v in pairs(item) do
-                i = i + 1
-                if _k and _v.type ~= 'mining-tool' then
-                    p_modifer[player.index].character_inventory_slots_bonus['creative'] = tonumber(i)
-                    player.character_inventory_slots_bonus = p_modifer[player.index].character_inventory_slots_bonus['creative']
-                    player.insert {name = _k, count = _v.stack_size}
-                    player.print('[CREATIVE] Inserted all base items.', Color.success)
-                end
+        if not this.players[player.index] then
+            Public.insert_all_items(player)
+            this.players[player.index] = true
+        end
+    end
+end
+
+function Public.insert_all_items(player)
+    if player.character ~= nil then
+        if player.get_inventory(defines.inventory.character_armor) then
+            player.get_inventory(defines.inventory.character_armor).clear()
+        end
+        player.insert {name = 'power-armor-mk2', count = 1}
+        local p_armor = player.get_inventory(5)[1].grid
+        if p_armor and p_armor.valid then
+            p_armor.put({name = 'fusion-reactor-equipment'})
+            p_armor.put({name = 'fusion-reactor-equipment'})
+            p_armor.put({name = 'fusion-reactor-equipment'})
+            p_armor.put({name = 'exoskeleton-equipment'})
+            p_armor.put({name = 'exoskeleton-equipment'})
+            p_armor.put({name = 'exoskeleton-equipment'})
+            p_armor.put({name = 'energy-shield-mk2-equipment'})
+            p_armor.put({name = 'energy-shield-mk2-equipment'})
+            p_armor.put({name = 'energy-shield-mk2-equipment'})
+            p_armor.put({name = 'energy-shield-mk2-equipment'})
+            p_armor.put({name = 'personal-roboport-mk2-equipment'})
+            p_armor.put({name = 'night-vision-equipment'})
+            p_armor.put({name = 'battery-mk2-equipment'})
+            p_armor.put({name = 'battery-mk2-equipment'})
+        end
+        local item = game.item_prototypes
+        local i = 0
+        local p_modifer = Modifiers.get_table()
+        for _k, _v in pairs(item) do
+            i = i + 1
+            if _k and _v.type ~= 'mining-tool' then
+                p_modifer[player.index].character_inventory_slots_bonus['creative'] = tonumber(i)
+                p_modifer[player.index].character_mining_speed_modifier['creative'] = 50
+                p_modifer[player.index].character_health_bonus['creative'] = 2000
+                p_modifer[player.index].character_crafting_speed_modifier['creative'] = 50
+                player.character_inventory_slots_bonus = p_modifer[player.index].character_inventory_slots_bonus['creative']
+                player.insert {name = _k, count = _v.stack_size}
+                player.print('[CREATIVE] Inserted all base items.', Color.success)
+                Modifiers.update_player_modifiers(player)
             end
         end
     end
 end
 
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+Event.on_init(
+    function()
+        this.creative_are_you_sure = false
+        this.creative_enabled = false
+        this.spaghetti_are_you_sure = false
+        this.spaghetti_enabled = false
+    end
+)
+
+function Public.reset()
+    this.creative_are_you_sure = false
+    this.creative_enabled = false
+    this.spaghetti_are_you_sure = false
+    this.spaghetti_enabled = false
+    this.players = {}
+end
+
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+return Public
