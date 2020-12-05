@@ -1,3 +1,4 @@
+local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local SideTargets = require 'modules.wave_defense.side_targets'
@@ -6,7 +7,6 @@ local update_gui = require 'modules.wave_defense.gui'
 local threat_values = require 'modules.wave_defense.threat_values'
 local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
-local Event = require 'utils.event'
 
 local Public = {}
 local math_random = math.random
@@ -60,6 +60,16 @@ local function find_initial_spot(surface, position)
     local spot = WD.get('spot')
     if not spot then
         local pos = surface.find_non_colliding_position('rocket-silo', position, 128, 1)
+        if not pos then
+            pos = surface.find_non_colliding_position('rocket-silo', position, 148, 1)
+        end
+        if not pos then
+            pos = surface.find_non_colliding_position('rocket-silo', position, 164, 1)
+        end
+        if not pos then
+            pos = position
+        end
+
         WD.set('spot', pos)
         return pos
     else
@@ -246,10 +256,7 @@ local function time_out_biters()
             WD.set('active_biter_count', active_biter_count - 1)
             if biter.entity then
                 if biter.entity.valid then
-                    WD.set(
-                        'active_biter_threat',
-                        active_biter_threat - math_round(threat_values[biter.entity.name] * global.biter_health_boost, 2)
-                    )
+                    WD.set('active_biter_threat', active_biter_threat - math_round(threat_values[biter.entity.name] * global.biter_health_boost, 2))
                     if biter.entity.force.index == 2 then
                         biter.entity.destroy()
                     end
@@ -283,11 +290,7 @@ local function get_random_close_spawner()
             end
             goto retry
         end
-        if
-            not spawner or
-                (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 <
-                    (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2
-         then
+        if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
             spawner = spawner_2
         end
     end
@@ -331,10 +334,7 @@ local function set_main_target()
     end
 
     WD.set('target', sec_target)
-    debug_print(
-        'set_main_target -- New main target ' ..
-            sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.'
-    )
+    debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
 end
 
 local function set_group_spawn_position(surface)
@@ -483,6 +483,26 @@ local function spawn_biter(surface, is_boss_biter)
     return biter
 end
 
+local function increase_biter_damage()
+    local Difficulty
+    if package.loaded['modules.difficulty_vote_by_amount'] then
+        Difficulty = require 'modules.difficulty_vote_by_amount'
+    elseif package.loaded['modules.difficulty_vote'] then
+        Difficulty = require 'modules.difficulty_vote'
+    end
+    if not Difficulty then
+        return
+    end
+
+    local e = game.forces.enemy
+    local new = Difficulty.get().difficulty_vote_value * 0.08
+    local e_old_melee = e.get_ammo_damage_modifier('melee')
+    local e_old_biological = e.get_ammo_damage_modifier('biological')
+
+    e.set_ammo_damage_modifier('melee', new + e_old_melee)
+    e.set_ammo_damage_modifier('biological', new + e_old_biological)
+end
+
 local function set_next_wave()
     local wave_number = WD.get('wave_number')
     WD.set('wave_number', wave_number + 1)
@@ -494,6 +514,7 @@ local function set_next_wave()
         threat_gain = threat_gain * (wave_number * 0.001)
     end
     if wave_number % 25 == 0 then
+        increase_biter_damage()
         WD.set('boss_wave', true)
         WD.set('boss_wave_warning', true)
         local alert_boss_wave = WD.get('alert_boss_wave')
@@ -580,8 +601,7 @@ local function get_side_targets(group)
 
     local side_target = SideTargets.get_side_target()
     local target_position = side_target.position
-    local distance_to_target =
-        math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+    local distance_to_target = math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
     local steps = math_floor(distance_to_target / step_length) + 1
 
     for i = 1, steps, 1 do
@@ -629,8 +649,7 @@ local function get_main_command(group)
     debug_print('get_main_command - starting')
 
     local target_position = target.position
-    local distance_to_target =
-        math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+    local distance_to_target = math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
     local steps = math_floor(distance_to_target / step_length) + 1
     local vector = {
         math_round((target_position.x - group_position.x) / steps, 3),
