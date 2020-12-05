@@ -29,7 +29,8 @@ local function validate_player(player)
 end
 
 local function create_button(player)
-    player.gui.top.add(
+    local b =
+        player.gui.top.add(
         {
             type = 'sprite-button',
             name = main_button_name,
@@ -37,6 +38,8 @@ local function create_button(player)
             tooltip = 'Shows statistics!'
         }
     )
+    b.style.minimal_height = 38
+    b.style.maximal_height = 38
 end
 
 local function create_main_frame(player)
@@ -48,8 +51,8 @@ local function create_main_frame(player)
 
     local frame = player.gui.top.add({type = 'frame', name = main_frame_name})
     frame.location = {x = 1, y = 40}
-    frame.style.minimal_height = 38
-    frame.style.maximal_height = 38
+    frame.style.minimal_height = 37
+    frame.style.maximal_height = 37
 
     label = frame.add({type = 'label', caption = ' ', name = 'label'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}

@@ -8,22 +8,27 @@ local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
-local BM = require 'maps.mountain_fortress_v3.blood_moon'
+-- local BM = require 'maps.mountain_fortress_v3.blood_moon'
 
 local raise_event = script.raise_event
 local floor = math.floor
+local abs = math.abs
 local random = math.random
 local sqrt = math.sqrt
 local level_depth = WPT.level_depth
 
-local z = {
-    [3] = true,
-    [6] = true,
-    [12] = true,
-    [15] = true,
-    [16] = true,
-    [18] = true,
-    [22] = true
+local forest = {
+    [2] = true,
+    [10] = true,
+    [13] = true,
+    [17] = true,
+    [19] = true,
+    [21] = true
+}
+
+local scrap = {
+    [5] = true,
+    [15] = true
 }
 
 local collapse_message =
@@ -82,19 +87,22 @@ local spidertron_too_far =
 local compare_player_pos = function(player)
     local p = player.position
     local index = player.index
-    if p.y <= -level_depth * 5 and p.y >= -level_depth * 6 then
+    local zone = floor((abs(p.y / level_depth)) % 22)
+    if scrap[zone] then
         RPG_Settings.set_value_to_player(index, 'scrap_zone', true)
-    elseif p.y <= -level_depth * 15 and p.y >= -level_depth * 16 then
-        RPG_Settings.set_value_to_player(index, 'scrap_zone', true)
-    elseif not (p.y <= -level_depth * 5 and p.y >= -level_depth * 6) then
+    else
         local has_scrap = RPG_Settings.get_value_from_player(index, 'scrap_zone')
         if has_scrap then
             RPG_Settings.set_value_to_player(index, 'scrap_zone', false)
         end
-    elseif not (p.y <= -level_depth * 15 and p.y >= -level_depth * 16) then
-        local has_scrap = RPG_Settings.get_value_from_player(index, 'scrap_zone')
-        if has_scrap then
-            RPG_Settings.set_value_to_player(index, 'scrap_zone', false)
+    end
+
+    if forest[zone] then
+        RPG_Settings.set_value_to_player(index, 'forest_zone', true)
+    else
+        local is_in_forest = RPG_Settings.get_value_from_player(index, 'forest_zone')
+        if is_in_forest then
+            RPG_Settings.set_value_to_player(index, 'forest_zone', false)
         end
     end
 end
@@ -192,7 +200,7 @@ local function distance(player)
                 end
             end
 
-            if breached_wall % 2 == 0 then
+            --[[ if breached_wall % 2 == 0 then
                 local blood_moon = WPT.get('blood_moon')
                 local t = game.tick
                 local surface = player.surface
@@ -210,8 +218,7 @@ local function distance(player)
                 }
                 surface.daytime = 0.7
                 surface.freeze_daytime = false
-            end
-
+            end ]]
             local data = {
                 player = player,
                 breached_wall = breached_wall
@@ -235,12 +242,6 @@ local function distance(player)
         RPG_Settings.set_value_to_player(index, 'bonus', bonus + 1)
 
         local b = RPG_Settings.get_value_from_player(index, 'bonus')
-
-        if z[b] then
-            RPG_Settings.set_value_to_player(index, 'forest_zone', true)
-        elseif not z[b] then
-            RPG_Settings.set_value_to_player(index, 'forest_zone', false)
-        end
 
         Functions.gain_xp(player, bonus_xp_on_join * bonus)
         local message = ({'breached_wall.wall_breached', bonus})

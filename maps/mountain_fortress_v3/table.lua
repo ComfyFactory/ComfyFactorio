@@ -180,6 +180,8 @@ function Public.reset_table()
     this.disconnect_wagon = false
     this.offline_players_enabled = true
     this.offline_players = {}
+    this.collapse_amount = false
+    this.collapse_speed = false
     this.spawn_near_collapse = {
         active = true,
         total_pos = 35,

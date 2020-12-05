@@ -14,6 +14,7 @@ local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local ExplosiveBullets = require 'maps.mountain_fortress_v3.explosive_gun_bullets'
+local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
@@ -75,7 +76,8 @@ local protect_types = {
     ['fluid-wagon'] = true,
     ['locomotive'] = true,
     ['reactor'] = true,
-    ['car'] = true
+    ['car'] = true,
+    ['spidertron'] = true
 }
 
 local reset_game =
@@ -180,7 +182,7 @@ local function check_health_final_damage(final_damage_amount)
     end
 end
 
-local function set_objective_health(final_damage_amount)
+local function set_train_final_health(final_damage_amount)
     if final_damage_amount == 0 then
         return
     end
@@ -275,16 +277,22 @@ local function protect_entities(event)
     local units = exists()
     if is_protected(entity) then
         if (event.cause and event.cause.valid) then
-            if event.cause.force.index == 2 and units[entity.unit_number] then
-                return set_objective_health(dmg)
+            if event.cause.force.index == 2 then
+                if units and units[entity.unit_number] then
+                    return set_train_final_health(dmg)
+                end
             elseif event.cause.force.index == 2 then
                 return
             else
                 entity.health = entity.health + dmg
             end
         elseif not (event.cause and event.cause.valid) then
-            if event.force.index == 2 and units[entity.unit_number] then
-                return set_objective_health(dmg)
+            if event.force.index == 2 then
+                if units and units[entity.unit_number] then
+                    return set_train_final_health(dmg)
+                end
+                entity.health = entity.health - dmg
+                return
             end
         end
 
@@ -855,10 +863,10 @@ local function on_player_repaired_entity(event)
         local player = game.players[event.player_index]
         local repair_speed = Functions.get_magicka(player)
         if repair_speed <= 0 then
-            set_objective_health(-1)
+            set_train_final_health(-1)
             return
         else
-            set_objective_health(-repair_speed)
+            set_train_final_health(-repair_speed)
             return
         end
     end
@@ -921,11 +929,6 @@ local function on_entity_died(event)
         end
     end
 
-    local data = {
-        entity = entity,
-        surface = entity.surface
-    }
-
     if entity.type == 'tree' then
         for _, e in pairs(
             entity.surface.find_entities_filtered(
@@ -958,22 +961,18 @@ local function on_entity_died(event)
         end
         if random(1, 32) == 1 then
             BuriedEnemies.buried_biter(entity.surface, entity.position)
-            Mining.entity_died_randomness(data)
             entity.destroy()
             return
         end
         if random(1, 64) == 1 then
             BuriedEnemies.buried_worm(entity.surface, entity.position)
-            Mining.entity_died_randomness(data)
             entity.destroy()
             return
         end
         if random(1, 512) == 1 then
             Traps(entity.surface, entity.position)
-            Mining.entity_died_randomness(data)
             return
         end
-        Mining.entity_died_randomness(data)
         entity.destroy()
         return
     end
@@ -997,6 +996,7 @@ function Public.loco_died()
     if wave_defense_table.game_lost then
         return
     end
+    Collapse.start_now(false)
     if not locomotive.valid then
         local this = WPT.get()
         if this.announced_message then
@@ -1024,13 +1024,13 @@ function Public.loco_died()
 
         if this.soft_reset then
             this.game_reset_tick = nil
-            Task.set_timeout_in_ticks(300, reset_game, params)
+            Task.set_timeout_in_ticks(600, reset_game, params)
             return
         end
         if this.restart then
             if not this.announced_message then
                 game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
-                Task.set_timeout_in_ticks(300, reset_game, params)
+                Task.set_timeout_in_ticks(600, reset_game, params)
                 this.announced_message = true
                 return
             end
@@ -1038,7 +1038,7 @@ function Public.loco_died()
         if this.shutdown then
             if not this.announced_message then
                 game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
-                Task.set_timeout_in_ticks(300, reset_game, params)
+                Task.set_timeout_in_ticks(600, reset_game, params)
                 this.announced_message = true
                 return
             end

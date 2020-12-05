@@ -347,7 +347,7 @@ function Public.kill_wagon(icw, entity)
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
     for _, x in pairs({wagon.area.left_top.x - 1.5, wagon.area.right_bottom.x + 1.5}) do
-        local p = {x = x, y = wagon.area.left_top.y + 30}
+        local p = {x = x, y = wagon.area.left_top.y + ((wagon.area.right_bottom.y - wagon.area.left_top.y) * 0.5)}
         surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
         surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
     end
@@ -461,7 +461,7 @@ function Public.create_wagon_room(icw, wagon)
         local position4 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.right_bottom.y - 2}
 
         if multiple_chests then
-            local e1 =
+            local left_1 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-requester',
@@ -470,10 +470,10 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e1.destructible = false
-            e1.minable = false
+            left_1.destructible = false
+            left_1.minable = false
 
-            local e2 =
+            local left_2 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-requester',
@@ -482,10 +482,22 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e2.destructible = false
-            e2.minable = false
+            left_2.destructible = false
+            left_2.minable = false
 
-            local e3 =
+            local left_3 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = {position1[1] - 2, position1[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            left_3.destructible = false
+            left_3.minable = false
+
+            local right_1 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-passive-provider',
@@ -494,10 +506,10 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e3.destructible = false
-            e3.minable = false
+            right_1.destructible = false
+            right_1.minable = false
 
-            local e4 =
+            local right_2 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-passive-provider',
@@ -506,10 +518,22 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e4.destructible = false
-            e4.minable = false
+            right_2.destructible = false
+            right_2.minable = false
 
-            local e5 =
+            local right_3 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = {position2[1] + 2, position2[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            right_3.destructible = false
+            right_3.minable = false
+
+            local bottom_left_1 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-requester',
@@ -518,10 +542,10 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e5.destructible = false
-            e5.minable = false
+            bottom_left_1.destructible = false
+            bottom_left_1.minable = false
 
-            local e6 =
+            local bottom_left_2 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-requester',
@@ -530,10 +554,22 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e6.destructible = false
-            e6.minable = false
+            bottom_left_2.destructible = false
+            bottom_left_2.minable = false
 
-            local e7 =
+            local bottom_left_3 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = {position3[1] - 2, position3[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            bottom_left_3.destructible = false
+            bottom_left_3.minable = false
+
+            local bottom_right_1 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-passive-provider',
@@ -542,10 +578,10 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e7.destructible = false
-            e7.minable = false
+            bottom_right_1.destructible = false
+            bottom_right_1.minable = false
 
-            local e8 =
+            local bottom_right_2 =
                 surface.create_entity(
                 {
                     name = 'logistic-chest-passive-provider',
@@ -554,13 +590,27 @@ function Public.create_wagon_room(icw, wagon)
                     create_build_effect_smoke = false
                 }
             )
-            e8.destructible = false
-            e8.minable = false
+            bottom_right_2.destructible = false
+            bottom_right_2.minable = false
 
-            wagon.transfer_entities = {e1, e3}
-            wagon.transfer_entities = {e2, e4}
-            wagon.transfer_entities = {e5, e7}
-            wagon.transfer_entities = {e6, e8}
+            local bottom_right_3 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = {position4[1] + 2, position4[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            bottom_right_3.destructible = false
+            bottom_right_3.minable = false
+
+            wagon.transfer_entities = {left_1, right_1}
+            wagon.transfer_entities = {left_2, right_2}
+            wagon.transfer_entities = {left_3, right_3}
+            wagon.transfer_entities = {bottom_left_1, bottom_right_1}
+            wagon.transfer_entities = {bottom_left_2, bottom_right_2}
+            wagon.transfer_entities = {bottom_left_3, bottom_right_3}
         else
             local e1 =
                 surface.create_entity(

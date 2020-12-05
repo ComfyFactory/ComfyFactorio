@@ -10,6 +10,7 @@ local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local math2d = require 'math2d'
+local Commands = require 'commands.misc'
 
 local this = {
     power_sources = {index = 1},
@@ -43,14 +44,22 @@ local artillery_target_entities = {
     'character',
     'tank',
     'car',
+    'radar',
+    'lab',
     'furnace',
     'locomotive',
     'cargo-wagon',
     'fluid-wagon',
-    'artillery-wagon'
+    'artillery-wagon',
+    'artillery-turret',
+    'laser-turret',
+    'gun-turret',
+    'flamethrower-turret',
+    'silo',
+    'spidertron'
 }
 
-local function get_player_data(player, remove_user_data)
+function Public.get_player_data(player, remove_user_data)
     local players = WPT.get('players')
     if remove_user_data then
         if players[player.index] then
@@ -62,6 +71,8 @@ local function get_player_data(player, remove_user_data)
     end
     return players[player.index]
 end
+
+local get_player_data = Public.get_player_data
 
 local function debug_str(msg)
     local debug = WPT.get('debug')
@@ -247,13 +258,23 @@ local artillery_target_callback =
         local dx, dy = tx - x, ty - y
         local d = dx * dx + dy * dy
         if d >= 1024 and d <= 441398 then -- 704 in depth~
-            entity.surface.create_entity {
-                name = 'artillery-projectile',
-                position = position,
-                target = entity,
-                force = 'enemy',
-                speed = 1.5
-            }
+            if entity.name == 'character' then
+                entity.surface.create_entity {
+                    name = 'artillery-projectile',
+                    position = position,
+                    target = entity,
+                    force = 'enemy',
+                    speed = 1.5
+                }
+            elseif entity.name ~= 'character' then
+                entity.surface.create_entity {
+                    name = 'rocket',
+                    position = position,
+                    target = entity,
+                    force = 'enemy',
+                    speed = 1.5
+                }
+            end
         end
     end
 )
@@ -296,7 +317,7 @@ local function do_artillery_turrets_targets()
     local area = outpost.artillery_area
     local surface = turret.surface
 
-    local entities = surface.find_entities_filtered {area = area, name = artillery_target_entities}
+    local entities = surface.find_entities_filtered {area = area, name = artillery_target_entities, force = 'player'}
 
     if #entities == 0 then
         return
@@ -439,6 +460,7 @@ Public.refill_artillery_turret_callback =
         local art_table = this.art_table
         local index = art_table.index
 
+        turret.active = false
         turret.direction = 3
 
         refill_turrets[#refill_turrets + 1] = {turret = turret, data = data.callback_data}
@@ -672,7 +694,7 @@ function Public.remove_offline_players()
             if offline_players[i] and game.players[offline_players[i].index] and game.players[offline_players[i].index].connected then
                 offline_players[i] = nil
             else
-                if offline_players[i] and offline_players[i].tick < game.tick - 34000 then
+                if offline_players[i] and game.players[offline_players[i].index] and offline_players[i].tick < game.tick - 54000 then
                     local name = offline_players[i].name
                     player_inv[1] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
                     player_inv[2] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_armor)
@@ -740,9 +762,14 @@ function Public.remove_offline_players()
 end
 
 function Public.set_difficulty()
+    local game_lost = WPT.get('game_lost')
+    if game_lost then
+        return
+    end
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
     local collapse_amount = WPT.get('collapse_amount')
+    local collapse_speed = WPT.get('collapse_speed')
     local player_count = #game.connected_players
     if not Diff.difficulty_vote_value then
         Diff.difficulty_vote_value = 0.1
@@ -750,17 +777,17 @@ function Public.set_difficulty()
 
     wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
 
-    if wave_defense_table.max_active_biters >= 2500 then
-        wave_defense_table.max_active_biters = 2500
+    if wave_defense_table.max_active_biters >= 4000 then
+        wave_defense_table.max_active_biters = 4000
     end
 
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
-    local amount = player_count * 0.25 + 2
+    local amount = player_count * 0.40 + 2
     amount = floor(amount)
-    if amount > 6 then
-        amount = 6
+    if amount > 20 then
+        amount = 20
     end
 
     if wave_defense_table.threat <= 0 then
@@ -772,15 +799,21 @@ function Public.set_difficulty()
         wave_defense_table.wave_interval = 1800
     end
 
-    local gap_between_zones = WPT.get('gap_between_zones')
-    if gap_between_zones.set then
-        return
-    end
-
     if collapse_amount then
         Collapse.set_amount(collapse_amount)
     else
         Collapse.set_amount(amount)
+    end
+    if collapse_speed then
+        Collapse.set_speed(collapse_speed)
+    else
+        if player_count >= 8 and player_count <= 12 then
+            Collapse.set_speed(8)
+        elseif player_count >= 20 and player_count <= 24 then
+            Collapse.set_speed(6)
+        elseif player_count >= 35 then
+            Collapse.set_speed(5)
+        end
     end
 end
 
@@ -974,7 +1007,7 @@ function Public.set_spawn_position()
         end
         local get_tile = surface.get_tile(tile)
         if get_tile.valid and get_tile.name == 'out-of-map' then
-            remove(tbl.tbl, inc - inc + 1)
+            remove(tbl, inc - inc + 1)
             return true
         else
             return false
@@ -1098,6 +1131,15 @@ function Public.on_player_left_game()
     Public.set_difficulty()
 end
 
+function Public.is_creativity_mode_on()
+    local creative_enabled = Commands.get('creative_enabled')
+    if creative_enabled then
+        WD.set('next_wave', 1000)
+        Collapse.start_now(true)
+        Public.set_difficulty()
+    end
+end
+
 function Public.on_pre_player_left_game(event)
     local offline_players_enabled = WPT.get('offline_players_enabled')
     if not offline_players_enabled then
@@ -1193,6 +1235,7 @@ local disable_recipes = function()
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
+    force.recipes['spidertron-remote'].enabled = false
 end
 
 function Public.disable_tech()

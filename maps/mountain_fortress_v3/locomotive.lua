@@ -432,6 +432,9 @@ local function set_locomotive_health()
 
     local function check_health()
         local m = locomotive_health / locomotive_max_health
+        if locomotive_health > locomotive_max_health then
+            WPT.set('locomotive_health', locomotive_max_health)
+        end
         WPT.set().carriages = locomotive.train.carriages
         local carriages = WPT.get('carriages')
         if carriages then

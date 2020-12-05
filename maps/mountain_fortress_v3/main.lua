@@ -19,7 +19,6 @@ local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG_Settings = require 'modules.rpg.table'
 local RPG_Func = require 'modules.rpg.functions'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
@@ -31,6 +30,8 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
+local Commands = require 'commands.misc'
+require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 require 'maps.mountain_fortress_v3.generate'
 require 'maps.mountain_fortress_v3.commands'
@@ -40,7 +41,6 @@ require 'maps.mountain_fortress_v3.biters_yield_coins'
 
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.rocks_yield_ore_veins'
 require 'modules.spawners_contain_biters'
 require 'modules.wave_defense.main'
 require 'modules.charging_station'
@@ -103,6 +103,7 @@ function Public.reset_map()
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
     BuriedEnemies.reset()
+    Commands.reset()
 
     Poll.reset()
     ICW.reset()
@@ -154,6 +155,7 @@ function Public.reset_map()
     for i = 1, #players do
         local player = players[i]
         Score.init_player_table(player)
+        Commands.insert_all_items(player)
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
@@ -339,16 +341,13 @@ local compare_collapse_and_train = function()
     local gap_between_zones = WPT.get('gap_between_zones')
 
     if c_y - t_y <= gap_between_zones.gap then
-        if gap_between_zones.set then
-            Functions.set_difficulty()
-            gap_between_zones.set = false
-        end
+        Functions.set_difficulty()
+        gap_between_zones.set = false
         return
     end
 
     Collapse.set_speed(1)
     Collapse.set_amount(4)
-    gap_between_zones.set = true
 end
 
 local collapse_after_wave_100 = function()
@@ -397,6 +396,7 @@ local on_tick = function()
         collapse_after_wave_100()
         Functions.remove_offline_players()
         Functions.set_difficulty()
+        Functions.is_creativity_mode_on()
     end
 end
 
@@ -433,6 +433,9 @@ local on_init = function()
     Explosives.set_whitelist_entity('straight-rail')
     Explosives.set_whitelist_entity('curved-rail')
     Explosives.set_whitelist_entity('character')
+    Explosives.set_whitelist_entity('spidertron')
+    Explosives.set_whitelist_entity('car')
+    Explosives.set_whitelist_entity('tank')
 end
 
 Event.on_nth_tick(10, on_tick)

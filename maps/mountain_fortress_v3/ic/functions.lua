@@ -597,6 +597,7 @@ function Public.kill_car(ic, entity)
     if not entity_type[entity.type] then
         return
     end
+
     local car = ic.cars[entity.unit_number]
     local surface = car.surface
     kick_players_out_of_vehicles(car)
@@ -606,7 +607,7 @@ function Public.kill_car(ic, entity)
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
     for _, x in pairs({car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5}) do
-        local p = {x = x, y = car.area.left_top.y + 30}
+        local p = {x = x, y = car.area.left_top.y + ((car.area.right_bottom.y - car.area.left_top.y) * 0.5)}
         surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
         surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
     end

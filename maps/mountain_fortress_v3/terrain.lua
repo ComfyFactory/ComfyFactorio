@@ -900,7 +900,7 @@ local function process_level_9_position(x, y, data)
 end
 
 --SCRAPYARD
-local function process_level_8_position(x, y, data, void_or_lab)
+local function process_scrap_zone_1(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -964,7 +964,7 @@ local function process_level_8_position(x, y, data, void_or_lab)
                 }
             end
             if random(1, 5) > 1 then
-                entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p}
+                entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p, force = 'neutral'}
             end
             if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
@@ -1127,7 +1127,7 @@ local function process_level_7_position(x, y, data, void_or_lab)
     end
 end
 
-local function process_level_6_position(x, y, data, void_or_lab)
+local function process_forest_zone_2(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1756,7 +1756,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_level_1_2_position(x, y, data, void_or_lab)
+local function process_forest_zone_1(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -2237,20 +2237,20 @@ end
 Public.levels = {
     process_level_0_position,
     process_level_1_position,
-    process_level_1_2_position,
+    process_forest_zone_1, -- zone 3
     process_level_3_position,
     process_level_5_position,
-    process_level_8_position,
+    process_scrap_zone_1, -- zone 6
     process_level_9_position,
     process_level_4_position,
     process_level_2_position,
     process_level_3_position,
-    process_level_6_position,
+    process_forest_zone_2, -- zone 11
     process_level_4_position,
     process_level_5_position,
-    process_level_6_position,
+    process_forest_zone_2, -- zone 14
     process_level_7_position,
-    process_level_8_position,
+    process_scrap_zone_1, -- zone 16
     process_level_9_position,
     process_level_10_position,
     process_level_11_position,
