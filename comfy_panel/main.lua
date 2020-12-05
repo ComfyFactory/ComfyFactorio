@@ -65,10 +65,10 @@ local function top_button(player)
     if player.gui.top['comfy_panel_top_button'] then
         return
     end
-    local button =
-        player.gui.top.add({type = 'sprite-button', name = 'comfy_panel_top_button', sprite = 'item/raw-fish'})
+    local button = player.gui.top.add({type = 'sprite-button', name = 'comfy_panel_top_button', sprite = 'item/raw-fish'})
     button.style.minimal_height = 38
-    button.style.minimal_width = 38
+    button.style.maximal_height = 38
+    button.style.minimal_width = 40
     button.style.padding = -2
 end
 
@@ -144,7 +144,7 @@ local function on_gui_click(event)
     if event.element.name == 'comfy_panel_top_button' then
         if player.gui.left.comfy_panel then
             player.gui.left.comfy_panel.destroy()
-			Public.comfy_panel_restore_left_gui(player)
+            Public.comfy_panel_restore_left_gui(player)
             return
         else
             Public.comfy_panel_clear_screen_gui(player)
@@ -155,7 +155,7 @@ local function on_gui_click(event)
 
     if event.element.caption == 'X' and event.element.name == 'comfy_panel_close' then
         player.gui.left.comfy_panel.destroy()
-		Public.comfy_panel_restore_left_gui(player)
+        Public.comfy_panel_restore_left_gui(player)
         return
     end
 
