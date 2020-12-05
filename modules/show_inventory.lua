@@ -206,6 +206,7 @@ local function open_inventory(source, target)
     if not validate_player(source) then
         return
     end
+    source.opened = nil
 
     if not validate_player(target) then
         return
@@ -232,12 +233,11 @@ local function open_inventory(source, target)
         }
     )
 
-    if not validate_object(frame) then
+    if not (frame and frame.valid) then
         return
     end
 
     frame.auto_center = true
-    source.opened = frame
     frame.style.minimal_width = 500
     frame.style.minimal_height = 250
 
@@ -270,6 +270,7 @@ local function open_inventory(source, target)
             add_inventory(panel, source, target, k, v)
         end
     end
+    source.opened = frame
 end
 
 local function on_gui_click(event)
@@ -392,7 +393,6 @@ commands.add_command(
             if target_player == player then
                 return player.print('Cannot open self.', Color.warning)
             end
-
             local valid, opened = player_opened(player)
             if valid then
                 if target_player == opened then
@@ -415,9 +415,7 @@ function Public.get_active_frame(player)
     if not player.gui.screen.inventory_gui then
         return false
     end
-    return player.gui.screen.inventory_gui.tabbed_pane.tabs[
-        player.gui.screen.inventory_gui.tabbed_pane.selected_tab_index
-    ].content
+    return player.gui.screen.inventory_gui.tabbed_pane.tabs[player.gui.screen.inventory_gui.tabbed_pane.selected_tab_index].content
 end
 
 function Public.get(key)
