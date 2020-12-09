@@ -282,7 +282,7 @@ commands.add_command(
                         p_modifer[player.index].character_mining_speed_modifier['creative'] = 50
                         p_modifer[player.index].character_health_bonus['creative'] = 2000
                         p_modifer[player.index].character_crafting_speed_modifier['creative'] = 50
-                        v.character_inventory_slots_bonus = p_modifer[k].character_inventory_slots_bonus['creative']
+                        v.character_inventory_slots_bonus = p_modifer[player.index].character_inventory_slots_bonus['creative']
                         v.insert {name = _k, count = _v.stack_size}
                         v.print('[CREATIVE] Inserted all base items.', Color.success)
                         Modifiers.update_player_modifiers(player)
@@ -394,42 +394,46 @@ local on_player_joined_game = function(event)
 end
 
 function Public.insert_all_items(player)
-    if player.character ~= nil then
-        if player.get_inventory(defines.inventory.character_armor) then
-            player.get_inventory(defines.inventory.character_armor).clear()
-        end
-        player.insert {name = 'power-armor-mk2', count = 1}
-        local p_armor = player.get_inventory(5)[1].grid
-        if p_armor and p_armor.valid then
-            p_armor.put({name = 'fusion-reactor-equipment'})
-            p_armor.put({name = 'fusion-reactor-equipment'})
-            p_armor.put({name = 'fusion-reactor-equipment'})
-            p_armor.put({name = 'exoskeleton-equipment'})
-            p_armor.put({name = 'exoskeleton-equipment'})
-            p_armor.put({name = 'exoskeleton-equipment'})
-            p_armor.put({name = 'energy-shield-mk2-equipment'})
-            p_armor.put({name = 'energy-shield-mk2-equipment'})
-            p_armor.put({name = 'energy-shield-mk2-equipment'})
-            p_armor.put({name = 'energy-shield-mk2-equipment'})
-            p_armor.put({name = 'personal-roboport-mk2-equipment'})
-            p_armor.put({name = 'night-vision-equipment'})
-            p_armor.put({name = 'battery-mk2-equipment'})
-            p_armor.put({name = 'battery-mk2-equipment'})
-        end
-        local item = game.item_prototypes
-        local i = 0
-        local p_modifer = Modifiers.get_table()
-        for _k, _v in pairs(item) do
-            i = i + 1
-            if _k and _v.type ~= 'mining-tool' then
-                p_modifer[player.index].character_inventory_slots_bonus['creative'] = tonumber(i)
-                p_modifer[player.index].character_mining_speed_modifier['creative'] = 50
-                p_modifer[player.index].character_health_bonus['creative'] = 2000
-                p_modifer[player.index].character_crafting_speed_modifier['creative'] = 50
-                player.character_inventory_slots_bonus = p_modifer[player.index].character_inventory_slots_bonus['creative']
-                player.insert {name = _k, count = _v.stack_size}
-                player.print('[CREATIVE] Inserted all base items.', Color.success)
-                Modifiers.update_player_modifiers(player)
+    if this.creative_enabled then
+        if not this.players[player.index] then
+            if player.character ~= nil then
+                if player.get_inventory(defines.inventory.character_armor) then
+                    player.get_inventory(defines.inventory.character_armor).clear()
+                end
+                player.insert {name = 'power-armor-mk2', count = 1}
+                local p_armor = player.get_inventory(5)[1].grid
+                if p_armor and p_armor.valid then
+                    p_armor.put({name = 'fusion-reactor-equipment'})
+                    p_armor.put({name = 'fusion-reactor-equipment'})
+                    p_armor.put({name = 'fusion-reactor-equipment'})
+                    p_armor.put({name = 'exoskeleton-equipment'})
+                    p_armor.put({name = 'exoskeleton-equipment'})
+                    p_armor.put({name = 'exoskeleton-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'energy-shield-mk2-equipment'})
+                    p_armor.put({name = 'personal-roboport-mk2-equipment'})
+                    p_armor.put({name = 'night-vision-equipment'})
+                    p_armor.put({name = 'battery-mk2-equipment'})
+                    p_armor.put({name = 'battery-mk2-equipment'})
+                end
+                local item = game.item_prototypes
+                local i = 0
+                local p_modifer = Modifiers.get_table()
+                for _k, _v in pairs(item) do
+                    i = i + 1
+                    if _k and _v.type ~= 'mining-tool' then
+                        p_modifer[player.index].character_inventory_slots_bonus['creative'] = tonumber(i)
+                        p_modifer[player.index].character_mining_speed_modifier['creative'] = 50
+                        p_modifer[player.index].character_health_bonus['creative'] = 2000
+                        p_modifer[player.index].character_crafting_speed_modifier['creative'] = 50
+                        player.character_inventory_slots_bonus = p_modifer[player.index].character_inventory_slots_bonus['creative']
+                        player.insert {name = _k, count = _v.stack_size}
+                        player.print('[CREATIVE] Inserted all base items.', Color.success)
+                        Modifiers.update_player_modifiers(player)
+                    end
+                end
             end
         end
     end
