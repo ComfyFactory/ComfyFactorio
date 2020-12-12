@@ -396,8 +396,7 @@ local function draw_main_frame(left, player)
     right_flow.style.horizontal_align = 'right'
 
     if (trusted[player.name] or player.admin) or global.comfy_panel_config.poll_trusted == false then
-        local create_poll_button =
-            right_flow.add {type = 'button', name = create_poll_button_name, caption = 'Create Poll'}
+        local create_poll_button = right_flow.add {type = 'button', name = create_poll_button_name, caption = 'Create Poll'}
         apply_button_style(create_poll_button)
     else
         local create_poll_button =
@@ -498,11 +497,9 @@ local function redraw_create_poll_content(data)
     update_duration(duration_slider)
 
     grid.add {type = 'flow'}
-    local question_label =
-        grid.add({type = 'flow'}).add {type = 'label', name = create_poll_label_name, caption = 'Question:'}
+    local question_label = grid.add({type = 'flow'}).add {type = 'label', name = create_poll_label_name, caption = 'Question:'}
 
-    local question_textfield =
-        grid.add({type = 'flow'}).add {type = 'textfield', name = create_poll_question_name, text = data.question}
+    local question_textfield = grid.add({type = 'flow'}).add {type = 'textfield', name = create_poll_question_name, text = data.question}
     question_textfield.style.width = 170
 
     Gui.set_data(question_label, question_textfield)
@@ -587,8 +584,7 @@ local function draw_create_poll_frame(parent, player, previous_data)
         confirm_name = create_poll_confirm_name
     end
 
-    local frame =
-        parent.add {type = 'frame', name = create_poll_frame_name, caption = title_text, direction = 'vertical'}
+    local frame = parent.add {type = 'frame', name = create_poll_frame_name, caption = title_text, direction = 'vertical'}
     frame.style.maximal_width = 320
 
     local scroll_pane = frame.add {type = 'scroll-pane', vertical_scroll_policy = 'always'}
@@ -649,8 +645,7 @@ local function draw_create_poll_frame(parent, player, previous_data)
 end
 
 local function show_new_poll(poll_data)
-    local message =
-        table.concat {poll_data.created_by.name, ' has created a new Poll #', poll_data.id, ': ', poll_data.question}
+    local message = table.concat {poll_data.created_by.name, ' has created a new Poll #', poll_data.id, ': ', poll_data.question}
 
     for _, p in pairs(game.connected_players) do
         local left = p.gui.left
@@ -826,12 +821,14 @@ local function player_joined(event)
             update_poll_viewer(data)
         end
     else
-        player.gui.top.add {
+        local b =
+            player.gui.top.add {
             type = 'sprite-button',
             name = main_button_name,
             sprite = 'item/programmable-speaker',
             tooltip = 'Let your question be heard!'
         }
+        b.style.maximal_height = 38
     end
 end
 

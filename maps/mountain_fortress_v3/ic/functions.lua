@@ -166,18 +166,16 @@ local function get_owner_car_name(ic, player)
     return false
 end
 
-local function get_saved_entity(cars, entity, index)
-    for k, car in pairs(cars) do
-        if index and index.name ~= entity.name then
-            local msg =
-                table.concat(
-                {
-                    'The built entity is not the same as the saved one. ',
-                    'Saved entity is: ' .. upperCase(car.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
-                }
-            )
-            return false, msg
-        end
+local function get_saved_entity(entity, index)
+    if index and index.name ~= entity.name then
+        local msg =
+            table.concat(
+            {
+                'The built entity is not the same as the saved one. ',
+                'Saved entity is: ' .. upperCase(index.name) .. ' - Built entity is: ' .. upperCase(entity.name) .. '. '
+            }
+        )
+        return false, msg
     end
     return true
 end
@@ -378,7 +376,7 @@ local function restore_surface(ic, player, entity)
     end
 
     if saved_surfaces[player.index] then
-        local success, msg = get_saved_entity(cars, ce, index)
+        local success, msg = get_saved_entity(ce, index)
         if not success then
             player.print(msg, Color.warning)
             return true
@@ -597,6 +595,7 @@ function Public.kill_car(ic, entity)
     if not entity_type[entity.type] then
         return
     end
+
     local car = ic.cars[entity.unit_number]
     local surface = car.surface
     kick_players_out_of_vehicles(car)
@@ -606,7 +605,7 @@ function Public.kill_car(ic, entity)
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
     for _, x in pairs({car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5}) do
-        local p = {x = x, y = car.area.left_top.y + 30}
+        local p = {x = x, y = car.area.left_top.y + ((car.area.right_bottom.y - car.area.left_top.y) * 0.5)}
         surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
         surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
     end

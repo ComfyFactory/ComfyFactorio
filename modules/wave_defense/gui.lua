@@ -2,7 +2,7 @@ local WD = require 'modules.wave_defense.table'
 
 local function create_gui(player)
     local frame = player.gui.top.add({type = 'frame', name = 'wave_defense'})
-    frame.style.maximal_height = 38
+    frame.style.maximal_height = 37
 
     local label = frame.add({type = 'label', caption = ' ', name = 'label'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}

@@ -81,7 +81,8 @@ function Public.difficulty_gui()
             }
             b.style.font = 'heading-2'
             b.style.font_color = this.difficulties[this.difficulty_vote_index].print_color
-            b.style.minimal_height = 38
+            b.style.minimal_height = 37
+            b.style.maximal_height = 37
             b.style.minimal_width = this.gui_width
         end
     end

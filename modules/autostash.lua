@@ -42,17 +42,20 @@ local function create_floaty_text(surface, position, name, count)
     )
 end
 
-local function chest_is_valid(chest, count)
+local function chest_is_valid(chest, inventory)
     if chest.type == 'cargo-wagon' then
         local t = {}
         local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
+        inventory = inventory.get_contents()
         for index = 1, 40 do
             if chest_inventory.get_filter(index) ~= nil then
                 local n = chest_inventory.get_filter(index)
-                if (t[n] and t[n].valid) then
-                    t[n].count = t[n].count + count
-                else
-                    t[n] = {count = count, valid = true}
+                if inventory[n] then
+                    if (t[n] and t[n].valid) then
+                        t[n].count = t[n].count + inventory[n]
+                    else
+                        t[n] = {count = inventory[n], valid = true}
+                    end
                 end
             end
         end
@@ -192,7 +195,6 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
         ['container'] = true,
         ['logistic-container'] = true
     }
-
     local to_insert = math.floor(count / #chests)
     local variator = count % #chests
 
@@ -343,10 +345,7 @@ local function auto_stash(player, event)
         player.print('Inventory is empty.', print_color)
         return
     end
-    local inventory_tbl = {}
-    for name, count in pairs(inventory.get_contents()) do
-        inventory_tbl[name] = count
-    end
+
     local chests
     local r = this.small_radius
     local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
@@ -366,27 +365,27 @@ local function auto_stash(player, event)
         player.print('No valid nearby containers found.', print_color)
         return
     end
-    for name, count in pairs(inventory_tbl) do
-        local filtered_chests = {}
-        local filtered_allowed
-        for _, e in pairs(chests) do
-            local is_valid, t = chest_is_valid(e, count)
-            filtered_allowed = t
-            if is_valid then
-                filtered_chests[#filtered_chests + 1] = e
-            end
+    local filtered_chests = {}
+    local filtered_allowed
+    for _, e in pairs(chests) do
+        local is_valid, t = chest_is_valid(e, inventory)
+        filtered_allowed = t
+        if is_valid then
+            filtered_chests[#filtered_chests + 1] = e
         end
+    end
 
-        this.floating_text_y_offsets = {}
+    this.floating_text_y_offsets = {}
 
-        local hotbar_items = {}
-        for i = 1, 100, 1 do
-            local prototype = player.get_quick_bar_slot(i)
-            if prototype then
-                hotbar_items[prototype.name] = true
-            end
+    local hotbar_items = {}
+    for i = 1, 100, 1 do
+        local prototype = player.get_quick_bar_slot(i)
+        if prototype then
+            hotbar_items[prototype.name] = true
         end
+    end
 
+    for name, count in pairs(inventory.get_contents()) do
         local is_resource = this.whitelist[name]
 
         if not inventory.find_item_stack(name).grid and not hotbar_items[name] then
@@ -451,10 +450,10 @@ local function create_gui_button(player)
     )
     b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
     b.style.font = 'heading-1'
-    b.style.minimal_height = 38
+    b.style.minimal_height = 40
+    b.style.maximal_width = 40
     b.style.minimal_width = 38
     b.style.maximal_height = 38
-    b.style.maximal_width = 38
     b.style.padding = 1
     b.style.margin = 0
 end
