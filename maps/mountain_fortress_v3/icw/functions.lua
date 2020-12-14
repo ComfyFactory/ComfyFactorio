@@ -833,7 +833,13 @@ end
 function Public.construct_train(icw, locomotive, carriages)
     for i, carriage in pairs(carriages) do
         if carriage == locomotive then
-            local stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            local stock
+            local experimental = get_game_version()
+            if experimental then
+                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            else
+                stock = get_connected_rolling_stock(locomotive, defines.rail_direction.front, carriages)
+            end
             if stock ~= carriages[i - 1] then
                 local n = 1
                 local m = #carriages

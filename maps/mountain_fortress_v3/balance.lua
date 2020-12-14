@@ -12,8 +12,6 @@ function Public.init_enemy_weapon_damage()
         ['bullet'] = 0,
         ['cannon-shell'] = 0,
         ['capsule'] = 0,
-        ['beam'] = 0,
-        ['laser'] = 0,
         ['electric'] = 0,
         ['flamethrower'] = 0,
         ['grenade'] = 0,
@@ -22,6 +20,17 @@ function Public.init_enemy_weapon_damage()
         ['rocket'] = 0,
         ['shotgun-shell'] = 0
     }
+
+    local experimental = get_game_version()
+    if experimental then
+        data['beam'] = 0
+        data['laser'] = 0
+    else
+        data['railgun'] = 0
+        data['combat-robot-beam'] = 0
+        data['combat-robot-laser'] = 0
+        data['laser-turret'] = 0
+    end
 
     local e = game.forces.enemy
 
@@ -42,8 +51,6 @@ local function enemy_weapon_damage()
         ['biological'] = 0.08,
         ['bullet'] = 0.08,
         ['capsule'] = 0.08,
-        ['beam'] = 0.08,
-        ['laser'] = 0.08,
         ['electric'] = 0.08,
         ['flamethrower'] = 0.08,
         --['grenade'] = 0.08,
@@ -52,6 +59,16 @@ local function enemy_weapon_damage()
         --['rocket'] = 0.08,
         --['shotgun-shell'] = 0.08
     }
+
+    local experimental = get_game_version()
+    if experimental then
+        data['beam'] = 0.08
+        data['laser'] = 0.08
+    else
+        data['combat-robot-beam'] = 0.08
+        data['combat-robot-laser'] = 0.08
+        data['laser-turret'] = 0.08
+    end
 
     for k, v in pairs(data) do
         local new = Difficulty.get().difficulty_vote_value * v
