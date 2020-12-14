@@ -592,9 +592,11 @@ Public.magic_item_crafting_callback_weighted =
 
         local tech = stack.tech
         if tech then
-            if not force.technologies[tech].researched then
-                entity.destroy()
-                return
+            if force.technologies[tech] then
+                if not force.technologies[tech].researched then
+                    entity.destroy()
+                    return
+                end
             end
         end
 
@@ -790,12 +792,9 @@ function Public.set_difficulty()
         amount = 20
     end
 
-    if wave_defense_table.threat <= 0 then
-        wave_defense_table.wave_interval = 1000
-    end
-
     wave_defense_table.wave_interval = 3600 - player_count * 60
-    if wave_defense_table.wave_interval < 1800 then
+
+    if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
         wave_defense_table.wave_interval = 1800
     end
 

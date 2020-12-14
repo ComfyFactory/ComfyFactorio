@@ -168,7 +168,7 @@ local resource_loot = {
     {
         stack = {
             recipe = 'stone-wall',
-            tech = 'stone-wall',
+            tech = 'stone-walls',
             output = {item = 'stone-wall', min_rate = 0.6 / 60, distance_factor = 1 / 6 / 60 / 512}
         },
         weight = 10

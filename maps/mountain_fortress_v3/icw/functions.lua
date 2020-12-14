@@ -220,7 +220,7 @@ local function output_cargo(wagon, passive_chest)
         if t and t.valid then
             local c = chest2.insert(t)
             if (c > 0) then
-                chest1.remove(t)
+                chest1[i].count = chest1[i].count - c
             end
         end
     end

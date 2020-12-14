@@ -622,11 +622,6 @@ local mining_events = {
     },
     {
         function(entity, index)
-            if Locomotive.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
             local position = entity.position
             local surface = entity.surface
             surface.create_entity({name = 'car', position = position, force = 'player'})
@@ -920,7 +915,6 @@ local function on_entity_died(event)
             biters.amount = 0
         end
         if Locomotive.is_around_train(entity) then
-            entity.destroy()
             return
         end
         if random(1, 512) == 1 then
@@ -947,7 +941,6 @@ local function on_entity_died(event)
             end
         end
         if Locomotive.is_around_train(entity) then
-            entity.destroy()
             return
         end
         angry_tree(entity, cause, player)
