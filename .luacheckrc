@@ -48,7 +48,7 @@ local STD_BASE_CONTROL = 'lua52c+factorio+factorio_control+factorio_defines+fact
 --[Assume Factorio Control stage as default]--
 -------------------------------------------------------------------------------
 std = STD_CONTROL
-globals = {'print', '_DEBUG', '_CHEATS', '_DUMP_ENV', 'ServerCommands', 'Debug', '_LIFECYCLE', '_STAGE'}
+globals = {'print', '_DEBUG', '_CHEATS', '_DUMP_ENV', 'ServerCommands', 'Debug', '_LIFECYCLE', '_STAGE', 'get_game_version'}
 max_line_length = LINE_LENGTH
 
 not_globals = NOT_GLOBALS
@@ -199,8 +199,10 @@ stds.factorio_control = {
         -- (http://lua-api.factorio.com/latest/LuaBootstrap.html)
         script = {
             fields = {
+                "on_nth_tick", "on_event", "on_init", "on_load",
                 "on_configuration_changed", "raise_event",
-                "get_event_handler", "mod_name", "get_event_order"
+                "get_event_handler", "mod_name", "get_event_order",
+                "generate_event_name",
             },
             other_fields = false,
         },
@@ -1076,7 +1078,13 @@ stds.factorio_defines = {
                         'on_pre_robot_exploded_cliff',
                         'on_pre_surface_cleared',
                         'on_pre_surface_deleted',
-                        'on_pre_build',
+                        'on_put_item',
+                        'on_permission_group_added',
+                        'on_permission_group_deleted',
+                        'on_permission_group_edited',
+                        'on_permission_string_imported',
+                        'on_pre_permission_group_deleted',
+                        'on_pre_permission_string_imported',
                         'on_research_finished',
                         'on_research_started',
                         'on_resource_depleted',
@@ -1196,7 +1204,7 @@ stds.factorio_defines = {
                         'change_train_stop_station',
                         'change_train_wait_condition',
                         'change_train_wait_condition_data',
-                        'clear_cursor_stack',
+                        'clean_cursor_stack',
                         'clear_selected_blueprint',
                         'clear_selected_deconstruction_item',
                         'clear_selected_upgrade_item',
