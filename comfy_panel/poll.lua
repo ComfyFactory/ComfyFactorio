@@ -6,6 +6,7 @@ local Server = require 'utils.server'
 local Tabs = require 'comfy_panel.main'
 local session = require 'utils.datastore.session_data'
 
+
 local Class = {}
 
 local insert = table.insert
@@ -1206,7 +1207,6 @@ function Class.reset()
         local main_frame = p.gui.left[main_frame_name]
         if main_frame and main_frame.valid then
             local main_frame_data = Gui.get_data(main_frame)
-            local poll_index = main_frame_data.poll_index
             update_poll_viewer(main_frame_data)
             remove_main_frame(main_frame, p.gui.left, p)
         end

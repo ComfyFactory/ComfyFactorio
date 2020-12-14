@@ -17,6 +17,8 @@ local Antigrief = require 'antigrief'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local MapFunctions = require 'tools.map_functions'
+local SpamProtection = require 'utils.spam_protection'
+
 local format_number = require 'util'.format_number
 
 local Public = {}
@@ -717,6 +719,11 @@ local function slider_changed(event)
     if not slider_value then
         return
     end
+
+    local is_spamming = SpamProtection.is_spamming(player, 2)
+    if is_spamming then
+        return
+    end
     slider_value = slider_value.slider
     if not slider_value then
         return
@@ -746,6 +753,11 @@ local function text_changed(event)
 
     local data = players[player.index].data
     if not data then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player, 2)
+    if is_spamming then
         return
     end
 
@@ -925,6 +937,11 @@ local function gui_click(event)
     end
 
     if not player.opened == main_frame_name then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
         return
     end
 

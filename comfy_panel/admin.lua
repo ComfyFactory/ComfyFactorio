@@ -4,6 +4,7 @@ local Event = require 'utils.event'
 local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
 local AntiGrief = require 'antigrief'
+local SpamProtection = require 'utils.spam_protection'
 
 local lower = string.lower
 
@@ -47,9 +48,7 @@ local function bring_player(player, source_player)
     if pos then
         player.teleport(pos, source_player.surface)
         game.print(
-            player.name ..
-                ' has been teleported to ' ..
-                    source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)],
+            player.name .. ' has been teleported to ' .. source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)],
             {r = 0.98, g = 0.66, b = 0.22}
         )
     end
@@ -66,11 +65,7 @@ local function go_to_player(player, source_player)
     local pos = player.surface.find_non_colliding_position('character', player.position, 50, 1)
     if pos then
         source_player.teleport(pos, player.surface)
-        game.print(
-            source_player.name ..
-                ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)],
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+        game.print(source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
     end
 end
 
@@ -102,10 +97,7 @@ local function damage(player, source_player)
         end
         player.character.health = player.character.health - 125
         player.surface.create_entity({name = 'big-explosion', position = player.position})
-        game.print(
-            player.name .. damage_messages[math.random(1, #damage_messages)] .. source_player.name,
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+        game.print(player.name .. damage_messages[math.random(1, #damage_messages)] .. source_player.name, {r = 0.98, g = 0.66, b = 0.22})
     end
 end
 
@@ -139,10 +131,7 @@ local function enemy(player, source_player)
         game.create_force('enemy_players')
     end
     player.force = game.forces.enemy_players
-    game.print(
-        player.name .. ' is now an enemy! ' .. enemy_messages[math.random(1, #enemy_messages)],
-        {r = 0.95, g = 0.15, b = 0.15}
-    )
+    game.print(player.name .. ' is now an enemy! ' .. enemy_messages[math.random(1, #enemy_messages)], {r = 0.95, g = 0.15, b = 0.15})
     admin_only_message(source_player.name .. ' has turned ' .. player.name .. ' into an enemy')
 end
 
@@ -339,6 +328,11 @@ local function text_changed(event)
         return
     end
 
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
+        return
+    end
+
     local data = {
         frame = frame,
         antigrief = antigrief,
@@ -367,10 +361,7 @@ local create_admin_panel = (function(player, frame)
         end
     end
 
-    local drop_down =
-        frame.add(
-        {type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index}
-    )
+    local drop_down = frame.add({type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index})
     drop_down.style.minimal_width = 326
     drop_down.style.right_padding = 12
     drop_down.style.left_padding = 12
@@ -518,10 +509,7 @@ local create_admin_panel = (function(player, frame)
         end
     end
 
-    local drop_down_2 =
-        frame.add(
-        {type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2}
-    )
+    local drop_down_2 = frame.add({type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2})
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
@@ -621,6 +609,7 @@ end
 
 local function on_gui_click(event)
     local player = game.players[event.player_index]
+
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
         return
@@ -638,6 +627,11 @@ local function on_gui_click(event)
     end
 
     if frame.name ~= 'Admin' then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
         return
     end
 
@@ -706,6 +700,11 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
+
         create_admin_panel(player, frame)
     end
     if name == 'admin_player_select' then
@@ -719,6 +718,11 @@ local function on_gui_selection_state_changed(event)
             return
         end
         if frame.name ~= 'Admin' then
+            return
+        end
+
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
             return
         end
 

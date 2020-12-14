@@ -18,6 +18,7 @@ local Session = require 'utils.datastore.session_data'
 local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
+local SpamProtection = require 'utils.spam_protection'
 
 local Public = {}
 
@@ -477,8 +478,7 @@ local function player_list_show(player, frame, sort_by)
     }
     player_list_panel_table.style.maximal_height = 530
 
-    player_list_panel_table =
-        player_list_panel_table.add {type = 'table', name = 'player_list_panel_table', column_count = 5}
+    player_list_panel_table = player_list_panel_table.add {type = 'table', name = 'player_list_panel_table', column_count = 5}
 
     local player_list = get_sorted_list(sort_by)
     for i = 1, #player_list, 1 do
@@ -564,8 +564,7 @@ local function player_list_show(player, frame, sort_by)
         -- Poke
         local flow = player_list_panel_table.add {type = 'flow', name = 'button_flow_' .. i, direction = 'horizontal'}
         flow.add {type = 'label', name = 'button_spacer_' .. i, caption = ''}
-        local button =
-            flow.add {type = 'button', name = 'poke_player_' .. player_list[i].name, caption = player_list[i].pokes}
+        local button = flow.add {type = 'button', name = 'poke_player_' .. player_list[i].name, caption = player_list[i].pokes}
         button.style.font = 'default'
         button.tooltip = 'Poke ' .. player_list[i].name .. ' with a random message!'
         label.style.font_color = {r = 0.83, g = 0.83, b = 0.83}
@@ -584,6 +583,7 @@ local function on_gui_click(event)
     if not event then
         return
     end
+
     if not event.element then
         return
     end
@@ -593,13 +593,18 @@ local function on_gui_click(event)
     if not event.element.name then
         return
     end
-    local player = game.players[event.element.player_index]
 
+    local player = game.players[event.player_index]
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
         return
     end
     if frame.name ~= 'Players' then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
         return
     end
 

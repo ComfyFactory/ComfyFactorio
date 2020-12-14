@@ -2,6 +2,7 @@ local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local SpamProtection = require 'utils.spam_protection'
 local main_tile_name = 'tutorial-grid'
 
 function Public.request_reconstruction(icw)
@@ -1012,6 +1013,10 @@ function Public.toggle_minimap(icw, event)
         return
     end
     local player = game.players[event.player_index]
+    local is_spamming = SpamProtection.is_spamming(player, 5)
+    if is_spamming then
+        return
+    end
     local player_data = get_player_data(icw, player)
     if event.button == defines.mouse_button_type.right then
         player_data.zoom = player_data.zoom - 0.07

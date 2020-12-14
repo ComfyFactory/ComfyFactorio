@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
+local SpamProtection = require 'utils.spam_protection'
 
 local max = math.max
 local round = math.round
@@ -259,14 +260,20 @@ local function on_gui_click(event)
     if not event then
         return
     end
+    local player = game.players[event.player_index]
+
     if not event.element then
         return
     end
     if not event.element.valid then
         return
     end
-    local player = game.players[event.element.player_index]
+
     if event.element.name == 'difficulty_gui' then
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
         poll_difficulty(player)
         return
     end
@@ -282,6 +289,11 @@ local function on_gui_click(event)
     end
     if game.tick > this.difficulty_poll_closing_timeout then
         event.element.parent.destroy()
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
         return
     end
 

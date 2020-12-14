@@ -1,6 +1,7 @@
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local SpamProtection = require 'utils.spam_protection'
 
 local tostring = tostring
 local next = next
@@ -151,9 +152,14 @@ local function handler_factory(event_id)
         end
 
         local player = game.get_player(event.player_index)
-        if not player or not player.valid then
+        if not (player and player.valid) then
             return
         end
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
+
         event.player = player
 
         handler(event)
