@@ -305,8 +305,12 @@ function Public.alphanumeric_only(value)
 end
 
 function Public.reset_groups()
-    this.player_group = {}
-    this.join_spam_protection = {}
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        this.player_group[player.name] = '[Group]'
+        this.join_spam_protection[player.name] = game.tick
+    end
     this.tag_groups = {}
 end
 
