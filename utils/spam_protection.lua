@@ -16,6 +16,7 @@ Global.register(
 
 function Public.reset_spam_table()
     local players = game.connected_players
+    this.prevent_spam = {}
     for i = 1, #players do
         local player = players[i]
         this.prevent_spam[player.index] = game.tick
