@@ -112,7 +112,7 @@ local function init(cave_miner)
 	surface.brightness_visual_weights = {0.92, 0.92, 0.92}
 	surface.daytime = 0.43
 	surface.freeze_daytime = true
-	surface.solar_power_multiplier = 5
+	surface.solar_power_multiplier = 3
 
 	cave_miner.last_reroll_player_name = ""
 	cave_miner.reveal_queue = {}

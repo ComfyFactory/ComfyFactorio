@@ -317,50 +317,50 @@ Public.mining_events = {
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "wooden-chest", player_index)
-	end, 2048, "Treasure_Tier_1"},
+	end, 1024, "Treasure_Tier_1"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "iron-chest", player_index)
-	end, 1024, "Treasure_Tier_2"},
+	end, 512, "Treasure_Tier_2"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "steel-chest", player_index)
-	end, 512, "Treasure_Tier_3"},
+	end, 256, "Treasure_Tier_3"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-medium-" .. math_random(1,3), player_index)
-	end, 256, "Treasure_Tier_4"},
+	end, 128, "Treasure_Tier_4"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-spaceship-wreck-big-" .. math_random(1,2), player_index)
-	end, 128, "Treasure_Tier_5"},
+	end, 64, "Treasure_Tier_5"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "big-ship-wreck-" .. math_random(1,3), player_index)
-	end, 64, "Treasure_Tier_6"},
+	end, 32, "Treasure_Tier_6"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-chest-" .. math_random(1,2), player_index)
-	end, 32, "Treasure_Tier_7"},
+	end, 16, "Treasure_Tier_7"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
 		local surface = entity.surface
 		Public.loot_crate(surface, position, "crash-site-spaceship", player_index)
 		Public.unstuck_player(player_index)		
-	end, 16, "Treasure_Tier_8"},
+	end, 8, "Treasure_Tier_8"},
 	
 	{function(cave_miner, entity, player_index)
 		local position = entity.position
@@ -478,7 +478,7 @@ Public.on_entity_died = {
 	end,
 	["container"] = function(cave_miner, entity)
 		local position = entity.position
-		Public.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, position, 16)
+		Public.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, position, 20)
 	end,
 }
 
