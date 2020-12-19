@@ -16,11 +16,18 @@ local function create_gui(player)
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
     local progressbar = frame.add({type = 'progressbar', name = 'progressbar', value = 0})
-    progressbar.style = 'achievement_progressbar'
-    progressbar.style.minimal_width = 96
-    progressbar.style.maximal_width = 96
-    progressbar.style.padding = -1
-    progressbar.style.top_padding = 1
+    local experimental = get_game_version()
+    if experimental then
+        progressbar.style = 'achievement_progressbar'
+        progressbar.style.minimal_width = 96
+        progressbar.style.maximal_width = 96
+        progressbar.style.padding = -1
+        progressbar.style.top_padding = 1
+    else
+        progressbar.style.minimal_width = 96
+        progressbar.style.maximal_width = 96
+        progressbar.style.top_padding = 10
+    end
 
     local line = frame.add({type = 'line', direction = 'vertical'})
     line.style.left_padding = 4

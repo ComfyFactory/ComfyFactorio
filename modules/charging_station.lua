@@ -2,6 +2,7 @@
 --charge your armor equipment from nearby accumulators!
 --change global.charging_station_multiplier if you want different conversion rate than 1:1.
 local Event = require 'utils.event'
+local SpamProtection = require 'utils.spam_protection'
 
 local function draw_charging_gui()
     for _, player in pairs(game.connected_players) do
@@ -84,8 +85,12 @@ local function on_gui_click(event)
     if not event.element.valid then
         return
     end
-    local player = game.players[event.element.player_index]
     if event.element.name == 'charging_station' then
+        local player = game.players[event.player_index]
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
         charge(player)
         return
     end

@@ -2,6 +2,7 @@ local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local AntiGrief = require 'antigrief'
 local Color = require 'utils.color_presets'
+local SpamProtection = require 'utils.spam_protection'
 
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
@@ -24,6 +25,14 @@ local main_frame_name = RPG.main_frame_name
 local sub = string.sub
 
 local function on_gui_click(event)
+    if not event then
+        return
+    end
+    local player = game.players[event.player_index]
+    if not (player and player.valid) then
+        return
+    end
+
     if not event.element then
         return
     end
@@ -31,9 +40,11 @@ local function on_gui_click(event)
         return
     end
     local element = event.element
-    local player = game.players[event.player_index]
-    if not player or not player.valid then
-        return
+    if player.gui.screen[main_frame_name] then
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
     end
 
     local surface_name = RPG.get('rpg_extra').surface_name
@@ -701,10 +712,7 @@ local function on_pre_player_mined_item(event)
     end
 
     local rpg_t = RPG.get('rpg_t')
-    if
-        rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and
-            rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y
-     then
+    if rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y then
         return
     end
     rpg_t[player.index].last_mined_entity_position.x = entity.position.x

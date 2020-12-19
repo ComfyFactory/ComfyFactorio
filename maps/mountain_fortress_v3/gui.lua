@@ -2,6 +2,8 @@ local Event = require 'utils.event'
 local RPG_Settings = require 'modules.rpg.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Gui = require 'utils.gui'
+local SpamProtection = require 'utils.spam_protection'
+
 local format_number = require 'util'.format_number
 
 local Public = {}
@@ -140,19 +142,23 @@ end
 
 local function on_gui_click(event)
     local element = event.element
-    local player = game.players[event.player_index]
-    if not validate_player(player) then
-        return
-    end
     if not element.valid then
         return
     end
 
-    local locomotive = WPT.get('locomotive')
-
     local name = element.name
 
     if name == main_button_name then
+        local player = game.players[event.player_index]
+        if not validate_player(player) then
+            return
+        end
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
+
+        local locomotive = WPT.get('locomotive')
         if not player or not player.valid then
             return
         end

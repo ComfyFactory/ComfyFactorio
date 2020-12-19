@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
+local SpamProtection = require 'utils.spam_protection'
 
 local max = math.max
 local round = math.round
@@ -44,13 +45,13 @@ local this = {
         [3] = ''
     },
     difficulty_vote_value = 1,
-    difficulty_vote_index = 1,
+    difficulty_vote_index = 2,
     fair_vote = false,
     difficulty_poll_closing_timeout = 54000,
     difficulty_player_votes = {},
     gui_width = 108,
-    name = "I'm too young to die",
-    strength_modifier = 1.00,
+    name = 'Hurt me plenty',
+    strength_modifier = 1.25,
     button_tooltip = nil
 }
 
@@ -192,7 +193,7 @@ end
 function Public.reset_difficulty_poll(tbl)
     if tbl then
         this.difficulty_vote_value = tbl.difficulty_vote_value or 1
-        this.difficulty_vote_index = tbl.difficulty_vote_index or 1
+        this.difficulty_vote_index = tbl.difficulty_vote_index or 2
         this.difficulty_player_votes = {}
         this.difficulty_poll_closing_timeout = tbl.difficulty_poll_closing_timeout or game.tick + 54000
         for _, p in pairs(game.connected_players) do
@@ -207,7 +208,7 @@ function Public.reset_difficulty_poll(tbl)
         Public.difficulty_gui()
     else
         this.difficulty_vote_value = 1
-        this.difficulty_vote_index = 1
+        this.difficulty_vote_index = 2
         this.difficulty_player_votes = {}
         this.difficulty_poll_closing_timeout = game.tick + 54000
         for _, p in pairs(game.connected_players) do
@@ -259,14 +260,20 @@ local function on_gui_click(event)
     if not event then
         return
     end
+    local player = game.players[event.player_index]
+
     if not event.element then
         return
     end
     if not event.element.valid then
         return
     end
-    local player = game.players[event.element.player_index]
+
     if event.element.name == 'difficulty_gui' then
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
         poll_difficulty(player)
         return
     end
@@ -282,6 +289,11 @@ local function on_gui_click(event)
     end
     if game.tick > this.difficulty_poll_closing_timeout then
         event.element.parent.destroy()
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
         return
     end
 

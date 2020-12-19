@@ -9,7 +9,8 @@ if admin = true, then tab is visible only for admins (usable for map-specific se
 draw_map_scores would be a function with the player and the frame as arguments
 
 ]]
-local event = require 'utils.event'
+local Event = require 'utils.event'
+local SpamProtection = require 'utils.spam_protection'
 
 comfy_panel_tabs = {}
 
@@ -133,15 +134,24 @@ local function on_player_joined_game(event)
 end
 
 local function on_gui_click(event)
+    if not event then
+        return
+    end
+
+    local player = game.players[event.player_index]
+
     if not event.element then
         return
     end
     if not event.element.valid then
         return
     end
-    local player = game.players[event.player_index]
 
     if event.element.name == 'comfy_panel_top_button' then
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
         if player.gui.left.comfy_panel then
             player.gui.left.comfy_panel.destroy()
             Public.comfy_panel_restore_left_gui(player)
@@ -154,6 +164,10 @@ local function on_gui_click(event)
     end
 
     if event.element.caption == 'X' and event.element.name == 'comfy_panel_close' then
+        local is_spamming = SpamProtection.is_spamming(player)
+        if is_spamming then
+            return
+        end
         player.gui.left.comfy_panel.destroy()
         Public.comfy_panel_restore_left_gui(player)
         return
@@ -165,10 +179,14 @@ local function on_gui_click(event)
     if event.element.type ~= 'tab' then
         return
     end
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
+        return
+    end
     Public.comfy_panel_refresh_active_tab(player)
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)
 
 return Public

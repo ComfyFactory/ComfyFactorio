@@ -3,6 +3,7 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
+local SpamProtection = require 'utils.spam_protection'
 
 local Public = {}
 local this = {
@@ -265,6 +266,7 @@ local function on_gui_click(event)
     if not event then
         return
     end
+
     if not event.element then
         return
     end
@@ -272,12 +274,17 @@ local function on_gui_click(event)
         return
     end
 
-    local player = game.players[event.element.player_index]
+    local player = game.players[event.player_index]
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
         return
     end
     if frame.name ~= 'Scoreboard' then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player)
+    if is_spamming then
         return
     end
 

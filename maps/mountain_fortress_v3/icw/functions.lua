@@ -2,6 +2,7 @@ local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local SpamProtection = require 'utils.spam_protection'
 local main_tile_name = 'tutorial-grid'
 
 function Public.request_reconstruction(icw)
@@ -220,7 +221,7 @@ local function output_cargo(wagon, passive_chest)
         if t and t.valid then
             local c = chest2.insert(t)
             if (c > 0) then
-                chest1.remove(t)
+                chest1[i].count = chest1[i].count - c
             end
         end
     end
@@ -830,10 +831,69 @@ local function move_room_to_train(icw, train, wagon)
     end
 end
 
+local function get_connected_rolling_stock(entity, direction, carriages)
+    --thanks Boskid
+    local first_stock, second_stock
+    for k, v in pairs(carriages) do
+        if v == entity then
+            first_stock = carriages[k - 1]
+            second_stock = carriages[k + 1]
+            break
+        end
+    end
+    if not first_stock then
+        first_stock, second_stock = second_stock, nil
+    end
+    if not first_stock then
+        return nil
+    end
+
+    local angle = math.atan2(-(entity.position.x - first_stock.position.x), entity.position.y - first_stock.position.y) / (2 * math.pi) - entity.orientation
+    if direction == defines.rail_direction.back then
+        angle = angle + 0.5
+    end
+    while angle < -0.5 do
+        angle = angle + 1
+    end
+    while angle > 0.5 do
+        angle = angle - 1
+    end
+    local connected_stock
+    if angle > -0.25 and angle < 0.25 then
+        connected_stock = first_stock
+    else
+        connected_stock = second_stock
+    end
+    if not connected_stock then
+        return nil
+    end
+
+    angle = math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) / (2 * math.pi) - connected_stock.orientation
+    while angle < -0.5 do
+        angle = angle + 1
+    end
+    while angle > 0.5 do
+        angle = angle - 1
+    end
+    local joint_of_connected_stock
+    if angle > -0.25 and angle < 0.25 then
+        joint_of_connected_stock = defines.rail_direction.front
+    else
+        joint_of_connected_stock = defines.rail_direction.back
+    end
+    return connected_stock, joint_of_connected_stock
+end
+
 function Public.construct_train(icw, locomotive, carriages)
     for i, carriage in pairs(carriages) do
         if carriage == locomotive then
-            local stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            local stock
+            local experimental = get_game_version()
+            if experimental then
+                stock = locomotive.get_connected_rolling_stock(defines.rail_direction.front)
+            else
+                stock = get_connected_rolling_stock(locomotive, defines.rail_direction.front, carriages)
+            end
             if stock ~= carriages[i - 1] then
                 local n = 1
                 local m = #carriages
@@ -953,6 +1013,10 @@ function Public.toggle_minimap(icw, event)
         return
     end
     local player = game.players[event.player_index]
+    local is_spamming = SpamProtection.is_spamming(player, 5)
+    if is_spamming then
+        return
+    end
     local player_data = get_player_data(icw, player)
     if event.button == defines.mouse_button_type.right then
         player_data.zoom = player_data.zoom - 0.07

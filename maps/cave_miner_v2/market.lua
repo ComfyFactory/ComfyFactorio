@@ -140,7 +140,7 @@ function Public.spawn_random_cave_market(surface, position)
 		end
 	end
 	for name, value in pairs(items) do
-		local value = value * math_random(16, 32) * 0.01
+		local value = value * math_random(20, 36) * 0.01
 		local count = 1
 		if value < 1 then
 			count = math_floor(1 / value)
@@ -150,8 +150,6 @@ function Public.spawn_random_cave_market(surface, position)
 		market.add_market_item({price = {{"raw-fish", value}}, offer = {type = 'give-item', item = name, count = count}})
 	end
 
-	blacklist["railgun"] = true
-	blacklist["railgun-dart"] = true
 	blacklist["wood"] = true
 	blacklist["express-loader"] = true
 	blacklist["fast-loader"] = true
@@ -165,7 +163,7 @@ function Public.spawn_random_cave_market(surface, position)
 		end
 	end
 	for name, value in pairs(items) do
-		local value = value * math_random(5, 10) * 0.01
+		local value = value * math_random(4, 8) * 0.01
 		local count = 1
 		if value < 1 then
 			count = math_floor(1 / value)
