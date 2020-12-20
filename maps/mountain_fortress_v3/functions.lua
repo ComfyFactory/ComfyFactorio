@@ -765,6 +765,10 @@ end
 
 local function calc_players()
     local players = game.connected_players
+    local check_afk_players = WPT.get('check_afk_players')
+    if not check_afk_players then
+        return #players
+    end
     local total = 0
     for i = 1, #players do
         local player = players[i]
@@ -787,11 +791,8 @@ function Public.set_difficulty()
     local wave_defense_table = WD.get_table()
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
-    local player_count = #game.connected_players
-    local check_afk_players = WPT.get('check_afk_players')
-    if check_afk_players then
-        player_count = calc_players()
-    end
+    local player_count = calc_players()
+
     if not Diff.difficulty_vote_value then
         Diff.difficulty_vote_value = 0.1
     end

@@ -19,6 +19,7 @@ local wintery_type = {
     ['simple-entity'] = true,
     ['tree'] = true,
     ['fish'] = true,
+    ['market'] = true,
     ['locomotive'] = true,
     ['cargo-wagon'] = true
 }

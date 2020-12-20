@@ -1381,6 +1381,8 @@ local function create_market(data, rebuild)
 
     this.market = surface.create_entity {name = 'market', position = center_position, force = 'player'}
 
+    Generate.wintery(this.market, 5.5)
+
     rendering.draw_text {
         text = 'Market',
         surface = surface,
