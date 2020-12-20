@@ -123,7 +123,7 @@ function Public.extra_settings(player)
             reset_gui_input.tooltip = ({'rpg_settings.not_trusted'})
             goto continue
         end
-        if rpg_t[player.index].level <= 50 then
+        if rpg_t[player.index].level < 50 then
             reset_gui_input.enabled = false
             reset_gui_input.tooltip = ({'rpg_settings.low_level', 50})
             reset_label.tooltip = ({'rpg_settings.low_level', 50})
@@ -157,10 +157,7 @@ function Public.extra_settings(player)
     magic_pickup_input_style.height = 35
     magic_pickup_input_style.vertical_align = 'center'
     local reach_mod
-    if
-        player_modifiers.disabled_modifier[player.index] and
-            player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus
-     then
+    if player_modifiers.disabled_modifier[player.index] and player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus then
         reach_mod = not player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus
     else
         reach_mod = true
@@ -187,10 +184,7 @@ function Public.extra_settings(player)
     movement_speed_input_style.height = 35
     movement_speed_input_style.vertical_align = 'center'
     local speed_mod
-    if
-        player_modifiers.disabled_modifier[player.index] and
-            player_modifiers.disabled_modifier[player.index].character_running_speed_modifier
-     then
+    if player_modifiers.disabled_modifier[player.index] and player_modifiers.disabled_modifier[player.index].character_running_speed_modifier then
         speed_mod = not player_modifiers.disabled_modifier[player.index].character_running_speed_modifier
     else
         speed_mod = true
@@ -232,7 +226,7 @@ function Public.extra_settings(player)
         end
         stone_path_gui_input = create_input_element(stone_path_input, 'boolean', stone_path)
 
-        if rpg_t[player.index].level <= 20 then
+        if rpg_t[player.index].level < 20 then
             stone_path_gui_input.enabled = false
             stone_path_gui_input.tooltip = ({'rpg_settings.low_level', 20})
             stone_path_label.tooltip = ({'rpg_settings.low_level', 20})
@@ -274,7 +268,7 @@ function Public.extra_settings(player)
             one_punch_gui_input.enabled = false
             one_punch_gui_input.tooltip = ({'rpg_settings.one_punch_globally'})
         else
-            if rpg_t[player.index].level <= 30 then
+            if rpg_t[player.index].level < 30 then
                 one_punch_gui_input.enabled = false
                 one_punch_gui_input.tooltip = ({'rpg_settings.low_level', 30})
             else
@@ -312,7 +306,7 @@ function Public.extra_settings(player)
         flame_boots_gui_input = create_input_element(flame_boots_input, 'boolean', flame_mod)
 
         if rpg_t[player.index].mana > 50 then
-            if rpg_t[player.index].level <= 100 then
+            if rpg_t[player.index].level < 100 then
                 flame_boots_gui_input.enabled = false
                 flame_boots_gui_input.tooltip = ({'rpg_settings.low_level', 100})
                 flame_boots_label.tooltip = ({'rpg_settings.low_level', 100})

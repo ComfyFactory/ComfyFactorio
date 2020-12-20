@@ -193,6 +193,8 @@ function Public.reset_table()
     -- this.void_or_tile = 'lab-dark-2'
     this.void_or_tile = 'out-of-map'
     this.validate_spider = {}
+    this.check_afk_players = true
+    this.winter_mode = true
 
     --!reset player tables
     for _, player in pairs(this.players) do

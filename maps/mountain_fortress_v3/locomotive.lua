@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 --local Power = require 'maps.mountain_fortress_v3.power'
 local Market = require 'maps.mountain_fortress_v3.basic_markets'
+local Generate = require 'maps.mountain_fortress_v3.generate'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
@@ -1840,35 +1841,42 @@ function Public.locomotive_spawn(surface, position)
     this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + 3}, force = 'player'})
     this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 8})
 
-    rendering.draw_light(
-        {
-            sprite = 'utility/light_medium',
-            scale = 5.5,
-            intensity = 1,
-            minimum_darkness = 0,
-            oriented = true,
-            color = {255, 255, 255},
-            target = this.locomotive,
-            surface = surface,
-            visible = true,
-            only_in_alt_mode = false
-        }
-    )
+    local winter_mode_locomotive = Generate.wintery(this.locomotive, 5.5)
+    if not winter_mode_locomotive then
+        rendering.draw_light(
+            {
+                sprite = 'utility/light_medium',
+                scale = 5.5,
+                intensity = 1,
+                minimum_darkness = 0,
+                oriented = true,
+                color = {255, 255, 255},
+                target = this.locomotive,
+                surface = surface,
+                visible = true,
+                only_in_alt_mode = false
+            }
+        )
+    end
 
-    rendering.draw_light(
-        {
-            sprite = 'utility/light_medium',
-            scale = 5.5,
-            intensity = 1,
-            minimum_darkness = 0,
-            oriented = true,
-            color = {255, 255, 255},
-            target = this.locomotive_cargo,
-            surface = surface,
-            visible = true,
-            only_in_alt_mode = false
-        }
-    )
+    local winter_mode_cargo = Generate.wintery(this.locomotive_cargo, 5.5)
+
+    if not winter_mode_cargo then
+        rendering.draw_light(
+            {
+                sprite = 'utility/light_medium',
+                scale = 5.5,
+                intensity = 1,
+                minimum_darkness = 0,
+                oriented = true,
+                color = {255, 255, 255},
+                target = this.locomotive_cargo,
+                surface = surface,
+                visible = true,
+                only_in_alt_mode = false
+            }
+        )
+    end
 
     local data = {
         surface = surface,

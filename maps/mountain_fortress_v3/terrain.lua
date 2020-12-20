@@ -2427,6 +2427,11 @@ Event.add(
             return
         end
 
+        local winter_mode = WPT.get('winter_mode')
+        if winter_mode then
+            rendering.draw_sprite({sprite = "tile/lab-white", x_scale = 32, y_scale = 32, target = left_top, surface = surface, tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6}, render_layer = "ground"})
+        end
+
         if left_top.y == -128 and left_top.x == -128 then
             local pl = WPT.get().locomotive.position
             for _, entity in pairs(surface.find_entities_filtered({area = {{pl.x - 5, pl.y - 6}, {pl.x + 5, pl.y + 10}}, type = 'simple-entity'})) do

@@ -134,6 +134,10 @@ function Public.reset_map()
 
     local surface = game.surfaces[this.active_surface_index]
 
+    if this.winter_mode then
+        surface.daytime = 0.45
+    end
+
     Explosives.set_surface_whitelist({[surface.name] = true})
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
