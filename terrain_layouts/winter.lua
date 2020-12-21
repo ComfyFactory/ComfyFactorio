@@ -12,9 +12,11 @@ local function on_chunk_generated(event)
 	local set_tiles = surface.set_tiles
 	local get_tile = surface.get_tile
 	
-	
-	for _, e in pairs(surface.find_entities_filtered({type = {"simple-entity", "tree", "fish"}, area = event.area})) do
+	local entities = surface.find_entities_filtered({type = {"simple-entity", "tree", "fish"}, area = event.area})
+	if #entities > 1 then table.shuffle_table(entities) end
+	for k, e in pairs(entities) do
 		add_light(e)
+		if k > 7 then break end
 	end
 	
 	rendering.draw_sprite({sprite = "tile/lab-white", x_scale = 32, y_scale = 32, target = event.area.left_top, surface = surface, tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6}, render_layer = "ground"})
@@ -22,7 +24,7 @@ end
 
 local function on_init()
 	local surface = game.surfaces.nauvis
-	surface.daytime = 0.45
+	surface.daytime = 0.43
 	surface.freeze_daytime = true
 end
 
