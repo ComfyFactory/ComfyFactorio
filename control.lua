@@ -216,6 +216,7 @@ require 'modules.autostash'
 ---------------------------------------------------------------
 
 ---------------- MOSTLY TERRAIN LAYOUTS HERE ----------------
+--require 'terrain_layouts.winter'
 --require 'terrain_layouts.caves'
 --require 'terrain_layouts.cone_to_east'
 --require 'terrain_layouts.biters_and_resources_east'
