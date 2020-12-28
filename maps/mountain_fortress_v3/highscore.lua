@@ -549,7 +549,7 @@ Server.on_data_set_changed(
     end
 )
 
-comfy_panel_tabs['Last Run'] = {gui = show_score, admin = false, only_server_sided = false}
+comfy_panel_tabs['Last Run'] = {gui = show_score, admin = false, only_server_sided = true}
 
 Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
