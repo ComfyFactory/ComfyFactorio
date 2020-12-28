@@ -447,6 +447,17 @@ function Public.get(key)
     end
 end
 
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
+        return this[key]
+    else
+        return this
+    end
+end
+
 Event.on_init(
     function()
         this.creative_are_you_sure = false
