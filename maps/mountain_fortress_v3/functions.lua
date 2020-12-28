@@ -809,8 +809,8 @@ function Public.set_difficulty()
     -- local amount = player_count * 0.40 + 2 -- too high?
     local amount = player_count * 0.25 + 2
     amount = floor(amount)
-    if amount > 20 then
-        amount = 20
+    if amount > 8 then
+        amount = 8 -- lowered from 20 to 8
     end
 
     wave_defense_table.wave_interval = 3600 - player_count * 60
@@ -1162,6 +1162,13 @@ function Public.is_creativity_mode_on()
         WD.set('next_wave', 1000)
         Collapse.start_now(true)
         Public.set_difficulty()
+    end
+end
+
+function Public.disable_creative()
+    local creative_enabled = Commands.get('creative_enabled')
+    if creative_enabled then
+        Commands.set('creative_enabled', false)
     end
 end
 

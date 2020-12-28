@@ -305,9 +305,14 @@ local function get_player_data(icw, player)
         return player_data
     end
 
+    local fallback = WPT.get('active_surface_index')
+    if not fallback then
+        fallback = 1
+    end
+
     icw.players[player.index] = {
         surface = 1,
-        fallback_surface = 1,
+        fallback_surface = tonumber(fallback),
         zoom = 0.30,
         map_size = 360
     }

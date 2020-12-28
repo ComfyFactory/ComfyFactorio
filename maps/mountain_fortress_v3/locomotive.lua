@@ -561,6 +561,10 @@ local function redraw_market_items(gui, player, search_text)
     local inventory = player.get_main_inventory()
     local player_item_count
 
+    if not (gui and gui.valid) then
+        return
+    end
+
     gui.add(
         {
             type = 'label',
@@ -1476,7 +1480,7 @@ local function on_built_entity(event)
                 if linked_to == chest_limit_outside_upgrades then
                     return
                 end
-                outside_chests[entity.unit_number] = entity
+                outside_chests[entity.unit_number] = {chest = entity, position = entity.position, linked = train.unit_number}
 
                 if not increased then
                     chests_linked_to[train.unit_number].count = linked_to + 1
@@ -1485,7 +1489,7 @@ local function on_built_entity(event)
                     goto continue
                 end
             else
-                outside_chests[entity.unit_number] = entity
+                outside_chests[entity.unit_number] = {chest = entity, position = entity.position, linked = train.unit_number}
                 chests_linked_to[train.unit_number] = {count = 1}
             end
 
@@ -1508,7 +1512,7 @@ local function on_built_entity(event)
     end
 
     if next(outside_chests) == nil then
-        outside_chests[entity.unit_number] = entity
+        outside_chests[entity.unit_number] = {chest = entity, position = entity.position, linked = train.unit_number}
         chests_linked_to[train.unit_number] = {count = 1}
         chests_linked_to[train.unit_number][entity.unit_number] = true
 
@@ -1553,22 +1557,47 @@ end
 
 local function divide_contents()
     local outside_chests = WPT.get('outside_chests')
+    local chests_linked_to = WPT.get('chests_linked_to')
     local target_chest
 
-    for key, chest in pairs(outside_chests) do
-        if not chest or not chest.valid then
-            return
+    if not next(outside_chests) then
+        goto final
+    end
+
+    for key, data in pairs(outside_chests) do
+        local chest = data.chest
+        local area = {
+            left_top = {x = data.position.x - 4, y = data.position.y - 4},
+            right_bottom = {x = data.position.x + 4, y = data.position.y + 4}
+        }
+        if not (chest and chest.valid) then
+            if chests_linked_to[data.linked] then
+                if chests_linked_to[data.linked][key] then
+                    chests_linked_to[data.linked][key] = nil
+                    chests_linked_to[data.linked].count = chests_linked_to[data.linked].count - 1
+                    if chests_linked_to[data.linked].count <= 0 then
+                        chests_linked_to[data.linked] = nil
+                    end
+                end
+            end
+            outside_chests[key] = nil
+            goto continue
         end
 
-        local area = {
-            left_top = {x = chest.position.x - 4, y = chest.position.y - 4},
-            right_bottom = {x = chest.position.x + 4, y = chest.position.y + 4}
-        }
         local success, entity = contains_positions(area)
         if success then
             target_chest = entity
         else
-            return
+            if chests_linked_to[data.linked] then
+                if chests_linked_to[data.linked][key] then
+                    chests_linked_to[data.linked][key] = nil
+                    chests_linked_to[data.linked].count = chests_linked_to[data.linked].count - 1
+                    if chests_linked_to[data.linked].count <= 0 then
+                        chests_linked_to[data.linked] = nil
+                    end
+                end
+            end
+            goto continue
         end
 
         local chest1 = chest.get_inventory(defines.inventory.chest)
@@ -1581,7 +1610,9 @@ local function divide_contents()
                 chest1.remove({name = item, count = c})
             end
         end
+        ::continue::
     end
+    ::final::
 end
 
 local function place_market()

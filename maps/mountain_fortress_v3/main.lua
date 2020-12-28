@@ -3,7 +3,7 @@ require 'modules.rpg.main'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
--- local HS = require 'maps.mountain_fortress_v3.highscore'
+local HS = require 'maps.mountain_fortress_v3.highscore'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Autostash = require 'modules.autostash'
 local Group = require 'comfy_panel.group'
@@ -31,6 +31,7 @@ local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
 local Commands = require 'commands.misc'
+local Modifiers = require 'player_modifiers'
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 require 'maps.mountain_fortress_v3.generate'
@@ -155,11 +156,14 @@ function Public.reset_map()
 
     PL.show_roles_in_list(true)
 
+    Score.reset_tbl()
+
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-        Score.init_player_table(player)
+        Score.init_player_table(player, true)
         Commands.insert_all_items(player)
+        Modifiers.reset_player_modifiers(player)
         if player.gui.left['mvps'] then
             player.gui.left['mvps'].destroy()
         end
@@ -199,6 +203,7 @@ function Public.reset_map()
     WD.set_disable_threat_below_zero(true)
 
     Functions.set_difficulty()
+    Functions.disable_creative()
 
     if not surface.is_chunk_generated({-20, 22}) then
         surface.request_to_generate_chunks({-20, 22}, 0.1)
@@ -209,6 +214,8 @@ function Public.reset_map()
 
     Task.start_queue()
     Task.set_queue_speed(16)
+
+    HS.get_scores()
 
     this.chunk_load_tick = game.tick + 1200
     this.game_lost = false
@@ -260,8 +267,10 @@ local has_the_game_ended = function()
 
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
+
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
+                HS.set_scores()
                 Public.reset_map()
                 return
             end

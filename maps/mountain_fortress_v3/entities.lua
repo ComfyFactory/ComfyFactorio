@@ -1000,10 +1000,6 @@ local function get_mvps(force)
             if score.players[p.name].killscore then
                 killscore = score.players[p.name].killscore
             end
-            local deaths = 0
-            if score.players[p.name].deaths then
-                deaths = score.players[p.name].deaths
-            end
             local built_entities = 0
             if score.players[p.name].built_entities then
                 built_entities = score.players[p.name].built_entities
@@ -1012,14 +1008,14 @@ local function get_mvps(force)
             if score.players[p.name].mined_entities then
                 mined_entities = score.players[p.name].mined_entities
             end
-            table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})
+            table.insert(score_list, {name = p.name, killscore = killscore, built_entities = built_entities, mined_entities = mined_entities})
         end
     end
     local mvp = {}
     score_list = get_sorted_list('killscore', score_list)
     mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
-    score_list = get_sorted_list('deaths', score_list)
-    mvp.deaths = {name = score_list[1].name, score = score_list[1].deaths}
+    score_list = get_sorted_list('mined_entities', score_list)
+    mvp.mined_entities = {name = score_list[1].name, score = score_list[1].mined_entities}
     score_list = get_sorted_list('built_entities', score_list)
     mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
     return mvp
@@ -1052,23 +1048,23 @@ local function show_mvps(player)
         local defender_label = t.add({type = 'label', caption = 'Defender >> '})
         defender_label.style.font = 'default-listbox'
         defender_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local defender_label_text = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+        local defender_label_text = t.add({type = 'label', caption = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!'})
         defender_label_text.style.font = 'default-bold'
         defender_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
         local builder_label = t.add({type = 'label', caption = 'Builder >> '})
         builder_label.style.font = 'default-listbox'
         builder_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local builder_label_text = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'})
+        local builder_label_text = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!'})
         builder_label_text.style.font = 'default-bold'
         builder_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-        local death_label = t.add({type = 'label', caption = 'Deaths >> '})
-        death_label.style.font = 'default-listbox'
-        death_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local death_label_text = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
-        death_label_text.style.font = 'default-bold'
-        death_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        local miners_label = t.add({type = 'label', caption = 'Miners >> '})
+        miners_label.style.font = 'default-listbox'
+        miners_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local miners_label_text = t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
+        miners_label_text.style.font = 'default-bold'
+        miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
         local sent_to_discord = WPT.get('sent_to_discord')
 
@@ -1078,13 +1074,13 @@ local function show_mvps(player)
             table.insert(result, wave_defense_table.wave_number .. '\\n')
             table.insert(result, '\\n')
             table.insert(result, 'MVP Defender: \\n')
-            table.insert(result, mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score .. '\\n')
+            table.insert(result, mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!\\n')
             table.insert(result, '\\n')
             table.insert(result, 'MVP Builder: \\n')
-            table.insert(result, mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things\\n')
+            table.insert(result, mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!\\n')
             table.insert(result, '\\n')
-            table.insert(result, 'MVP Deaths: \\n')
-            table.insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times')
+            table.insert(result, 'MVP Miners: \\n')
+            table.insert(result, mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!\\n')
             local message = table.concat(result)
             Server.to_discord_embed(message)
             WPT.set('sent_to_discord', true)
