@@ -29,16 +29,29 @@ function Public.get_table()
     return this
 end
 
-function Public.init_player_table(player)
+function Public.reset_tbl()
+    this.score_table['player'] = {
+        players = {}
+    }
+end
+
+function Public.init_player_table(player, reset)
     if not player then
         return
     end
-    if not this.score_table[player.force.name] then
-        this.score_table[player.force.name] = {}
+    if reset then
+        this.score_table[player.force.name].players[player.name] = {
+            built_entities = 0,
+            deaths = 0,
+            killscore = 0,
+            mined_entities = 0
+        }
     end
+
     if not this.score_table[player.force.name].players then
         this.score_table[player.force.name].players = {}
     end
+
     if not this.score_table[player.force.name].players[player.name] then
         this.score_table[player.force.name].players[player.name] = {
             built_entities = 0,
