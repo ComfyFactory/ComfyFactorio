@@ -10,6 +10,7 @@ draw_map_scores would be a function with the player and the frame as arguments
 
 ]]
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
 
 comfy_panel_tabs = {}
@@ -83,7 +84,18 @@ local function main_frame(player)
     local tabbed_pane = frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
     for name, func in pairs(tabs) do
-        if func.admin == true then
+        if func.only_server_sided then
+            local secs = Server.get_current_time()
+            if secs then
+                local tab = tabbed_pane.add({type = 'tab', caption = name})
+                local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                frame.style.minimal_height = 480
+                frame.style.maximal_height = 480
+                frame.style.minimal_width = 800
+                frame.style.maximal_width = 800
+                tabbed_pane.add_tab(tab, frame)
+            end
+        elseif func.admin == true then
             if player.admin then
                 local tab = tabbed_pane.add({type = 'tab', caption = name})
                 local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
