@@ -160,6 +160,9 @@ function Public.reset_map()
         local player = players[i]
         Score.init_player_table(player)
         Commands.insert_all_items(player)
+        if player.gui.left['mvps'] then
+            player.gui.left['mvps'].destroy()
+        end
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})

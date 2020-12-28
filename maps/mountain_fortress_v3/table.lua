@@ -194,7 +194,8 @@ function Public.reset_table()
     this.void_or_tile = 'out-of-map'
     this.validate_spider = {}
     this.check_afk_players = true
-    this.winter_mode = true
+    this.winter_mode = false
+    this.sent_to_discord = false
 
     --!reset player tables
     for _, player in pairs(this.players) do

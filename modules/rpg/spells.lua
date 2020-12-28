@@ -4,7 +4,7 @@ function Public.conjure_items()
     local spells = {}
 
     spells[#spells + 1] = {
-        name = 'Stone Wall',
+        name = {'entity-name.stone-wall'},
         obj_to_create = 'stone-wall',
         level = 10,
         type = 'item',
@@ -14,7 +14,7 @@ function Public.conjure_items()
     }
 
     spells[#spells + 1] = {
-        name = 'Wooden Chest',
+        name = {'entity-name.wooden-chest'},
         obj_to_create = 'wooden-chest',
         level = 2,
         type = 'item',
@@ -23,7 +23,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Iron Chest',
+        name = {'entity-name.iron-chest'},
         obj_to_create = 'iron-chest',
         level = 10,
         type = 'item',
@@ -32,7 +32,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Steel Chest',
+        name = {'entity-name.steel-chest'},
         obj_to_create = 'steel-chest',
         level = 15,
         type = 'item',
@@ -41,7 +41,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Transport Belt',
+        name = {'entity-name.transport-belt'},
         obj_to_create = 'transport-belt',
         level = 3,
         type = 'item',
@@ -50,7 +50,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Fast Transport Belt',
+        name = {'entity-name.fast-transport-belt'},
         obj_to_create = 'fast-transport-belt',
         level = 20,
         type = 'item',
@@ -59,7 +59,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Express Transport Belt',
+        name = {'entity-name.express-transport-belt'},
         obj_to_create = 'express-transport-belt',
         level = 60,
         type = 'item',
@@ -68,7 +68,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Underground Belt',
+        name = {'entity-name.underground-belt'},
         obj_to_create = 'underground-belt',
         level = 3,
         type = 'item',
@@ -77,7 +77,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Fast Underground Belt',
+        name = {'entity-name.fast-underground-belt'},
         obj_to_create = 'fast-underground-belt',
         level = 20,
         type = 'item',
@@ -86,7 +86,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Express Underground Belt',
+        name = {'entity-name.express-underground-belt'},
         obj_to_create = 'express-underground-belt',
         level = 60,
         type = 'item',
@@ -95,7 +95,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Sandy Rock',
+        name = {'entity-name.sand-rock-big'},
         obj_to_create = 'sand-rock-big',
         level = 80,
         type = 'entity',
@@ -104,7 +104,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Smol Biter',
+        name = {'entity-name.small-biter'},
         obj_to_create = 'small-biter',
         level = 50,
         biter = true,
@@ -114,7 +114,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Smol Spitter',
+        name = {'entity-name.small-spitter'},
         obj_to_create = 'small-spitter',
         level = 50,
         biter = true,
@@ -124,7 +124,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Medium Biter',
+        name = {'entity-name.medium-biter'},
         obj_to_create = 'medium-biter',
         level = 70,
         biter = true,
@@ -134,7 +134,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Medium Spitter',
+        name = {'entity-name.medium-spitter'},
         obj_to_create = 'medium-spitter',
         level = 70,
         type = 'entity',
@@ -143,7 +143,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Bitter Spawner',
+        name = {'entity-name.biter-spawner'},
         obj_to_create = 'biter-spawner',
         level = 100,
         biter = true,
@@ -153,7 +153,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Spitter Spawner',
+        name = {'entity-name.spitter-spawner'},
         obj_to_create = 'spitter-spawner',
         level = 100,
         biter = true,
@@ -163,7 +163,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'AOE Grenade',
+        name = {'item-name.grenade'},
         obj_to_create = 'grenade',
         target = true,
         amount = 1,
@@ -176,7 +176,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Big AOE Grenade',
+        name = {'item-name.cluster-grenade'},
         obj_to_create = 'cluster-grenade',
         target = true,
         amount = 2,
@@ -189,7 +189,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Pointy Rocket',
+        name = {'item-name.rocket'},
         obj_to_create = 'rocket',
         range = 240,
         target = true,
@@ -203,7 +203,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Bitter Spew',
+        name = {'spells.acid_stream'},
         obj_to_create = 'acid-stream-spitter-big',
         target = true,
         amount = 2,
@@ -217,7 +217,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Shoop Da Whoop!!',
+        name = {'spells.railgun_beam'},
         obj_to_create = 'railgun-beam',
         target = false,
         amount = 3,
@@ -231,7 +231,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Conjure Raw-fish',
+        name = {'spells.raw_fish'},
         obj_to_create = 'fish',
         target = false,
         amount = 4,
@@ -245,7 +245,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Suicidal Comfylatron',
+        name = {'spells.comfylatron'},
         obj_to_create = 'suicidal_comfylatron',
         target = false,
         amount = 4,
@@ -259,7 +259,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Distractor Capsule',
+        name = {'spells.distractor'},
         obj_to_create = 'distractor-capsule',
         target = true,
         amount = 1,
@@ -273,7 +273,7 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = 'Warp Gate',
+        name = {'spells.warp'},
         obj_to_create = 'warp-gate',
         target = true,
         force = 'player',

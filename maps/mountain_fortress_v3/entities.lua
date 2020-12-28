@@ -17,6 +17,7 @@ local ExplosiveBullets = require 'maps.mountain_fortress_v3.explosive_gun_bullet
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
+local Score = require 'comfy_panel.score'
 local Token = require 'utils.token'
 
 -- tables
@@ -76,7 +77,6 @@ local protect_types = {
     ['fluid-wagon'] = true,
     ['locomotive'] = true,
     ['reactor'] = true,
-    ['car'] = true,
     ['spidertron'] = true
 }
 
@@ -971,6 +971,127 @@ local function on_entity_died(event)
     end
 end
 
+local function get_sorted_list(column_name, score_list)
+    for _ = 1, #score_list, 1 do
+        for y = 1, #score_list, 1 do
+            if not score_list[y + 1] then
+                break
+            end
+            if score_list[y][column_name] < score_list[y + 1][column_name] then
+                local key = score_list[y]
+                score_list[y] = score_list[y + 1]
+                score_list[y + 1] = key
+            end
+        end
+    end
+    return score_list
+end
+
+local function get_mvps(force)
+    local get_score = Score.get_table().score_table
+    if not get_score[force] then
+        return false
+    end
+    local score = get_score[force]
+    local score_list = {}
+    for _, p in pairs(game.players) do
+        if score.players[p.name] then
+            local killscore = 0
+            if score.players[p.name].killscore then
+                killscore = score.players[p.name].killscore
+            end
+            local deaths = 0
+            if score.players[p.name].deaths then
+                deaths = score.players[p.name].deaths
+            end
+            local built_entities = 0
+            if score.players[p.name].built_entities then
+                built_entities = score.players[p.name].built_entities
+            end
+            local mined_entities = 0
+            if score.players[p.name].mined_entities then
+                mined_entities = score.players[p.name].mined_entities
+            end
+            table.insert(score_list, {name = p.name, killscore = killscore, deaths = deaths, built_entities = built_entities, mined_entities = mined_entities})
+        end
+    end
+    local mvp = {}
+    score_list = get_sorted_list('killscore', score_list)
+    mvp.killscore = {name = score_list[1].name, score = score_list[1].killscore}
+    score_list = get_sorted_list('deaths', score_list)
+    mvp.deaths = {name = score_list[1].name, score = score_list[1].deaths}
+    score_list = get_sorted_list('built_entities', score_list)
+    mvp.built_entities = {name = score_list[1].name, score = score_list[1].built_entities}
+    return mvp
+end
+
+local function show_mvps(player)
+    local get_score = Score.get_table().score_table
+    local wave_defense_table = WD.get_table()
+    if not get_score then
+        return
+    end
+    if player.gui.left['mvps'] then
+        return
+    end
+    local frame = player.gui.left.add({type = 'frame', name = 'mvps', direction = 'vertical'})
+    local l = frame.add({type = 'label', caption = 'MVPs:'})
+    l.style.font = 'default-listbox'
+    l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
+
+    local t = frame.add({type = 'table', column_count = 2})
+    local mvp = get_mvps('player')
+    if mvp then
+        local wave_defense = t.add({type = 'label', caption = 'Highest Wave >> '})
+        wave_defense.style.font = 'default-listbox'
+        wave_defense.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local wave_defense_text = t.add({type = 'label', caption = 'This rounds highest wave was: ' .. wave_defense_table.wave_number})
+        wave_defense_text.style.font = 'default-bold'
+        wave_defense_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local defender_label = t.add({type = 'label', caption = 'Defender >> '})
+        defender_label.style.font = 'default-listbox'
+        defender_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local defender_label_text = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+        defender_label_text.style.font = 'default-bold'
+        defender_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local builder_label = t.add({type = 'label', caption = 'Builder >> '})
+        builder_label.style.font = 'default-listbox'
+        builder_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local builder_label_text = t.add({type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things'})
+        builder_label_text.style.font = 'default-bold'
+        builder_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local death_label = t.add({type = 'label', caption = 'Deaths >> '})
+        death_label.style.font = 'default-listbox'
+        death_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local death_label_text = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+        death_label_text.style.font = 'default-bold'
+        death_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local sent_to_discord = WPT.get('sent_to_discord')
+
+        if not sent_to_discord then
+            local result = {}
+            table.insert(result, 'HIGHEST WAVE: \\n')
+            table.insert(result, wave_defense_table.wave_number .. '\\n')
+            table.insert(result, '\\n')
+            table.insert(result, 'MVP Defender: \\n')
+            table.insert(result, mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score .. '\\n')
+            table.insert(result, '\\n')
+            table.insert(result, 'MVP Builder: \\n')
+            table.insert(result, mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things\\n')
+            table.insert(result, '\\n')
+            table.insert(result, 'MVP Deaths: \\n')
+            table.insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times')
+            local message = table.concat(result)
+            Server.to_discord_embed(message)
+            WPT.set('sent_to_discord', true)
+        end
+    end
+end
+
 function Public.unstuck_player(index)
     local player = game.get_player(index)
     local surface = player.surface
@@ -990,6 +1111,7 @@ function Public.loco_died()
         return
     end
     Collapse.start_now(false)
+
     if not locomotive.valid then
         local this = WPT.get()
         if this.announced_message then
@@ -1054,6 +1176,7 @@ function Public.loco_died()
         position = this.locomotive.position
     }
     Alert.alert_all_players_location(pos, msg)
+    Server.to_discord_bold(msg, true)
     game.forces.enemy.set_friend('player', true)
     game.forces.player.set_friend('enemy', true)
 
@@ -1074,6 +1197,7 @@ function Public.loco_died()
     this.game_reset_tick = 5400
     for _, player in pairs(game.connected_players) do
         player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
+        show_mvps(player)
     end
 end
 

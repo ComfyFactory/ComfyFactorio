@@ -59,11 +59,11 @@ Public.classes = {
 }
 
 Public.auto_allocate_nodes = {
-    'Deactivated',
-    'Strength',
-    'Magicka',
-    'Dexterity',
-    'Vitality'
+    {'allocations.deactivated'},
+    {'allocations.str'},
+    {'allocations.mag'},
+    {'allocations.dex'},
+    {'allocations.vit'}
 }
 
 function Public.reset_table()
