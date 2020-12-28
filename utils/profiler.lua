@@ -2,11 +2,19 @@ local table_sort = table.sort
 local string_rep = string.rep
 local string_format = string.format
 local debug_getinfo = debug.getinfo
+local Color = require 'utils.color_presets'
 
 local Profiler = {
     --	Call
     CallTree = nil,
     IsRunning = false
+}
+
+-- we can have this on runtime,
+-- but never ever can a player run this without notifying us.
+local allowed = {
+    ['Gerkiz'] = true,
+    ['mewmew'] = true
 }
 
 local ignoredFunctions = {
@@ -18,10 +26,40 @@ local namedSources = {
 }
 
 local function startCommand(command)
-    Profiler.Start(command.parameter ~= nil)
+    local player = game.player
+    if player then
+        if player ~= nil then
+            if not player.admin then
+                local p = player.print
+                p('[ERROR] Only admins are allowed to run this command!', Color.fail)
+                return
+            else
+                if allowed[player.name] then
+                    Profiler.Start(command.parameter ~= nil)
+                elseif _DEBUG then
+                    Profiler.Start(command.parameter ~= nil)
+                end
+            end
+        end
+    end
 end
 local function stopCommand(command)
-    Profiler.Stop(command.parameter ~= nil, nil)
+    local player = game.player
+    if player then
+        if player ~= nil then
+            if not player.admin then
+                local p = player.print
+                p('[ERROR] Only admins are allowed to run this command!', Color.fail)
+                return
+            else
+                if allowed[player.name] then
+                    Profiler.Stop(command.parameter ~= nil, nil)
+                elseif _DEBUG then
+                    Profiler.Stop(command.parameter ~= nil, nil)
+                end
+            end
+        end
+    end
 end
 ignoredFunctions[startCommand] = true
 ignoredFunctions[stopCommand] = true
@@ -167,8 +205,7 @@ local function DumpTree(averageMs)
                 call.profiler.divide(call.calls)
             end
 
-            str[line + 1] =
-                string_format('\n%s%dx %s. %s ', string_rep('\t', depth), call.calls, call.name, averageMs and 'Average' or 'Total')
+            str[line + 1] = string_format('\n%s%dx %s. %s ', string_rep('\t', depth), call.calls, call.name, averageMs and 'Average' or 'Total')
             str[line + 2] = call.profiler
             line = line + 2
 
