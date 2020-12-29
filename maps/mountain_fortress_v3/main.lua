@@ -106,6 +106,7 @@ function Public.reset_map()
     Autostash.bottom_button(true)
     BuriedEnemies.reset()
     Commands.reset()
+    Commands.activate_custom_buttons(true)
 
     Poll.reset()
     ICW.reset()

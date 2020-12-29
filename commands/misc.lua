@@ -7,7 +7,8 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 
 local this = {
-    players = {}
+    players = {},
+    activate_custom_buttons = false
 }
 
 Global.register(
@@ -554,9 +555,17 @@ local function set_location(player)
     local scale = player.display_scale
 
     frame.location = {
-        x = (resolution.width / 2) - ((54 + 258) * scale),
+        x = (resolution.width / 2) - ((54 + -528) * scale),
         y = (resolution.height - (96 * scale))
     }
+end
+
+function Public.activate_custom_buttons(value)
+    if value then
+        this.activate_custom_buttons = value
+    else
+        this.activate_custom_buttons = false
+    end
 end
 
 Gui.on_click(
@@ -572,7 +581,9 @@ Event.add(
         local player = game.players[event.player_index]
         on_player_joined_game(player)
 
-        set_location(player)
+        if this.activate_custom_buttons then
+            set_location(player)
+        end
     end
 )
 
@@ -580,7 +591,9 @@ Event.add(
     defines.events.on_player_display_resolution_changed,
     function(event)
         local player = game.get_player(event.player_index)
-        set_location(player)
+        if this.activate_custom_buttons then
+            set_location(player)
+        end
     end
 )
 
@@ -588,7 +601,9 @@ Event.add(
     defines.events.on_player_display_scale_changed,
     function(event)
         local player = game.get_player(event.player_index)
-        set_location(player)
+        if this.activate_custom_buttons then
+            set_location(player)
+        end
     end
 )
 
