@@ -4,6 +4,7 @@ local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Gui = require 'utils.gui'
 
 local this = {
     players = {}
@@ -17,6 +18,10 @@ Global.register(
 )
 
 local Public = {}
+
+local clear_corpse_main_button_name = Gui.uid_name()
+local clear_corpse_button_name = Gui.uid_name()
+local bottom_quickbar_button_name = Gui.uid_name()
 
 commands.add_command(
     'spaghetti',
@@ -340,51 +345,73 @@ commands.add_command(
     end
 )
 
+local function clear_corpses(cmd)
+    local player
+    local trusted = Session.get_trusted_table()
+    local param
+    if cmd and cmd.player then
+        player = cmd.player
+        param = 50
+    elseif cmd then
+        player = game.player
+        param = tonumber(cmd.parameter)
+    end
+
+    if not player or not player.valid then
+        return
+    end
+    local p = player.print
+    if not trusted[player.name] then
+        if not player.admin then
+            p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
+            return
+        end
+    end
+    if param == nil then
+        player.print('[ERROR] Must specify radius!', Color.fail)
+        return
+    end
+    if param < 0 then
+        player.print('[ERROR] Value is too low.', Color.fail)
+        return
+    end
+    if param > 500 then
+        player.print('[ERROR] Value is too big.', Color.fail)
+        return
+    end
+    local pos = player.position
+
+    local i = 0
+
+    local radius = {{x = (pos.x + -param), y = (pos.y + -param)}, {x = (pos.x + param), y = (pos.y + param)}}
+
+    for _, entity in pairs(player.surface.find_entities_filtered {area = radius, type = 'corpse'}) do
+        if entity.corpse_expires then
+            entity.destroy()
+            i = i + 1
+        end
+    end
+    local corpse = 'corpse'
+
+    if i > 1 then
+        corpse = 'corpses'
+    end
+    if i == 0 then
+        player.print('[color=blue][Cleaner][/color] No corpses to clear!', Color.warning)
+    else
+        player.print('[color=blue][Cleaner][/color] Cleared ' .. i .. ' ' .. corpse .. '!', Color.success)
+    end
+end
+
 commands.add_command(
     'clear-corpses',
     'Clears all the biter corpses..',
     function(cmd)
-        local player = game.player
-        local trusted = Session.get_trusted_table()
-        local param = tonumber(cmd.parameter)
-
-        if not player or not player.valid then
-            return
-        end
-        local p = player.print
-        if not trusted[player.name] then
-            if not player.admin then
-                p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
-                return
-            end
-        end
-        if param == nil then
-            player.print('[ERROR] Must specify radius!', Color.fail)
-            return
-        end
-        if param < 0 then
-            player.print('[ERROR] Value is too low.', Color.fail)
-            return
-        end
-        if param > 500 then
-            player.print('[ERROR] Value is too big.', Color.fail)
-            return
-        end
-        local pos = player.position
-
-        local radius = {{x = (pos.x + -param), y = (pos.y + -param)}, {x = (pos.x + param), y = (pos.y + param)}}
-        for _, entity in pairs(player.surface.find_entities_filtered {area = radius, type = 'corpse'}) do
-            if entity.corpse_expires then
-                entity.destroy()
-            end
-        end
-        player.print('Cleared biter-corpses.', Color.success)
+        clear_corpses(cmd)
     end
 )
 
-local on_player_joined_game = function(event)
-    local player = game.players[event.player_index]
-
+local on_player_joined_game = function(player)
     if this.creative_enabled then
         if not this.players[player.index] then
             Public.insert_all_items(player)
@@ -475,6 +502,94 @@ function Public.reset()
     this.players = {}
 end
 
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+----! Gui Functions ! ----
+
+local function create_frame(player)
+    local gui = player.gui
+    local frame = gui.screen[clear_corpse_main_button_name]
+    if frame and frame.valid then
+        return frame
+    end
+
+    frame =
+        player.gui.screen.add {
+        type = 'frame',
+        name = clear_corpse_main_button_name,
+        direction = 'vertical'
+    }
+    frame.style.padding = 3
+    frame.style.minimal_height = 96
+    frame.style.top_padding = 4
+
+    local inner_frame =
+        frame.add {
+        type = 'frame',
+        direction = 'vertical'
+    }
+    inner_frame.style = 'quick_bar_inner_panel'
+
+    inner_frame.add {
+        type = 'sprite-button',
+        sprite = 'entity/character',
+        name = clear_corpse_button_name,
+        tooltip = 'Click to clear corpses!',
+        style = 'quick_bar_page_button'
+    }
+
+    local bottom_quickbar_button =
+        inner_frame.add {
+        type = 'sprite-button',
+        name = bottom_quickbar_button_name,
+        style = 'quick_bar_page_button'
+    }
+
+    this.bottom_quickbar_button = {name = bottom_quickbar_button_name, frame = bottom_quickbar_button}
+
+    return frame
+end
+
+local function set_location(player)
+    local frame = create_frame(player)
+    local resolution = player.display_resolution
+    local scale = player.display_scale
+
+    frame.location = {
+        x = (resolution.width / 2) - ((54 + 258) * scale),
+        y = (resolution.height - (96 * scale))
+    }
+end
+
+Gui.on_click(
+    clear_corpse_button_name,
+    function(event)
+        clear_corpses(event)
+    end
+)
+
+Event.add(
+    defines.events.on_player_joined_game,
+    function(event)
+        local player = game.players[event.player_index]
+        on_player_joined_game(player)
+
+        set_location(player)
+    end
+)
+
+Event.add(
+    defines.events.on_player_display_resolution_changed,
+    function(event)
+        local player = game.get_player(event.player_index)
+        set_location(player)
+    end
+)
+
+Event.add(
+    defines.events.on_player_display_scale_changed,
+    function(event)
+        local player = game.get_player(event.player_index)
+        set_location(player)
+    end
+)
 
 return Public
