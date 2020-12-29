@@ -146,11 +146,16 @@ local function get_mvps()
                 if not mvp[score_list[i].name] then
                     mvp[score_list[i].name] = {}
                 end
+                if killscore >= 50 and mined_ents > 10 and build_ents > 1 then
+                    mvp[score_list[i].name].killscore = killscore
+                    mvp[score_list[i].name].mined_entities = mined_ents
+                    mvp[score_list[i].name].built_entities = build_ents
+                end
 
-                mvp[score_list[i].name].killscore = killscore
-                mvp[score_list[i].name].mined_entities = mined_ents
-                mvp[score_list[i].name].built_entities = build_ents
                 mvp[score_list[i].name].deaths = deaths
+                if #mvp[score_list[i].name] <= 1 then
+                    mvp[score_list[i].name] = nil
+                end
             end
         end
 
@@ -189,6 +194,7 @@ local function write_additional_stats(key)
         local old_breached_zone = this.score_table['player'].breached_zone
         local old_rockets_launched = this.score_table['player'].rockets_launched
         local old_total_time = this.score_table['player'].total_time
+        local old_players = this.score_table['player'].players
         if new_wave_number > old_wave then
             t.wave_number = new_wave_number
         else
@@ -218,6 +224,8 @@ local function write_additional_stats(key)
         local new_stats = get_mvps()
         if new_stats then
             t.players = new_stats
+        else
+            t.players = old_players
         end
     end
 
@@ -363,7 +371,7 @@ local show_score = (function(player, frame)
     sFlow.horizontal_align = 'center'
     sFlow.vertical_align = 'center'
 
-    local stats = flow.add {type = 'label', caption = 'Previous game statistics!'}
+    local stats = flow.add {type = 'label', caption = 'Highest score so far:'}
     local s_stats = stats.style
     s_stats.font = 'heading-1'
     s_stats.font_color = {r = 0.98, g = 0.66, b = 0.22}
@@ -549,7 +557,7 @@ Server.on_data_set_changed(
     end
 )
 
-comfy_panel_tabs['Last Run'] = {gui = show_score, admin = false, only_server_sided = true}
+comfy_panel_tabs['Highscore'] = {gui = show_score, admin = false, only_server_sided = true}
 
 Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

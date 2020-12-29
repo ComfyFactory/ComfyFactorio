@@ -827,11 +827,13 @@ function Public.set_difficulty()
     if collapse_speed then
         Collapse.set_speed(collapse_speed)
     else
-        if player_count >= 8 and player_count <= 12 then
+        if player_count >= 1 and player_count <= 8 then
+            Collapse.set_speed(9)
+        elseif player_count > 8 and player_count <= 20 then
             Collapse.set_speed(8)
-        elseif player_count >= 20 and player_count <= 24 then
+        elseif player_count > 20 and player_count <= 35 then
             Collapse.set_speed(6)
-        elseif player_count >= 35 then
+        elseif player_count > 35 then
             Collapse.set_speed(5)
         end
     end

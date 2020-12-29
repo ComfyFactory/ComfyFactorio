@@ -20,7 +20,7 @@ end
 local function floaty_hearts(entity, c)
     local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
     local b = 1.35
-    for a = 1, c, 1 do
+    for _ = 1, c, 1 do
         local p = {
             (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
             position.y + (b * -1 + random(0, b * 20) * 0.1)

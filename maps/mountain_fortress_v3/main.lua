@@ -103,6 +103,7 @@ function Public.reset_map()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
+    Autostash.bottom_button(true)
     BuriedEnemies.reset()
     Commands.reset()
 
@@ -343,7 +344,7 @@ local compare_collapse_and_train = function()
     local collapse_pos = Collapse.get_position()
     local locomotive = WPT.get('locomotive')
     local carriages = WPT.get('carriages')
-    if not locomotive or not locomotive.valid then
+    if not (locomotive and locomotive.valid) then
         return
     end
 
@@ -358,12 +359,10 @@ local compare_collapse_and_train = function()
 
     if c_y - t_y <= gap_between_zones.gap then
         Functions.set_difficulty()
-        gap_between_zones.set = false
-        return
+    else
+        Collapse.set_speed(1)
+        Collapse.set_amount(4)
     end
-
-    Collapse.set_speed(1)
-    Collapse.set_amount(4)
 end
 
 local collapse_after_wave_100 = function()
