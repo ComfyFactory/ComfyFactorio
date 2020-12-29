@@ -66,6 +66,14 @@ Public.auto_allocate_nodes = {
     {'allocations.vit'}
 }
 
+Public.auto_allocate_nodes_func = {
+    'Deactivated',
+    'Strength',
+    'Magicka',
+    'Dexterity',
+    'Vitality'
+}
+
 function Public.reset_table()
     this.rpg_extra.debug = false
     this.rpg_extra.breached_walls = 1

@@ -101,7 +101,7 @@ end
 local function level_up(player)
     local rpg_t = RPG.get('rpg_t')
     local RPG_GUI = package.loaded['modules.rpg.gui']
-    local names = RPG.auto_allocate_nodes
+    local names = RPG.auto_allocate_nodes_func
 
     local distribute_points_gain = 0
     for i = rpg_t[player.index].level + 1, #experience_levels, 1 do
@@ -173,8 +173,7 @@ function Public.suicidal_comfylatron(pos, surface)
             text = text
         }
     )
-    local nearest_player_unit =
-        surface.find_nearest_enemy({position = e.position, max_distance = 512, force = 'player'})
+    local nearest_player_unit = surface.find_nearest_enemy({position = e.position, max_distance = 512, force = 'player'})
 
     if nearest_player_unit and nearest_player_unit.active and nearest_player_unit.force.name ~= 'player' then
         e.set_command(
@@ -337,11 +336,7 @@ function Public.update_health(player)
 
     if rpg_extra.enable_health_and_mana_bars then
         if rpg_t[player.index].show_bars then
-            local max_life =
-                math.floor(
-                player.character.prototype.max_health + player.character_health_bonus +
-                    player.force.character_health_bonus
-            )
+            local max_life = math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
             if not rpg_t[player.index].health_bar then
                 rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
             elseif not rendering.is_valid(rpg_t[player.index].health_bar) then
@@ -395,36 +390,28 @@ end
 
 function Public.level_up_effects(player)
     local position = {x = player.position.x - 0.75, y = player.position.y - 1}
-    player.surface.create_entity(
-        {name = 'flying-text', position = position, text = '+LVL ', color = level_up_floating_text_color}
-    )
+    player.surface.create_entity({name = 'flying-text', position = position, text = '+LVL ', color = level_up_floating_text_color})
     local b = 0.75
     for _ = 1, 5, 1 do
         local p = {
             (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
             position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
-        player.surface.create_entity(
-            {name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}}
-        )
+        player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
 end
 
 function Public.xp_effects(player)
     local position = {x = player.position.x - 0.75, y = player.position.y - 1}
-    player.surface.create_entity(
-        {name = 'flying-text', position = position, text = '+XP', color = level_up_floating_text_color}
-    )
+    player.surface.create_entity({name = 'flying-text', position = position, text = '+XP', color = level_up_floating_text_color})
     local b = 0.75
     for _ = 1, 5, 1 do
         local p = {
             (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
             position.y + (b * -1 + math.random(0, b * 20) * 0.1)
         }
-        player.surface.create_entity(
-            {name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}}
-        )
+        player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
 end
