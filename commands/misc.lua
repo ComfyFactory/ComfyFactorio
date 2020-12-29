@@ -533,7 +533,7 @@ local function create_frame(player)
         type = 'sprite-button',
         sprite = 'entity/behemoth-biter',
         name = clear_corpse_button_name,
-        tooltip = 'Click to clear corpses!',
+        tooltip = {'commands.clear_corpse'},
         style = 'quick_bar_page_button'
     }
 
