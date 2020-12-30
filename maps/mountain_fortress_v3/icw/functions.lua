@@ -314,6 +314,7 @@ local function get_player_data(icw, player)
         surface = 1,
         fallback_surface = tonumber(fallback),
         zoom = 0.30,
+        auto = true,
         map_size = 360
     }
     return icw.players[player.index]
@@ -965,17 +966,30 @@ function Public.item_transfer(icw)
     end
 end
 
+function Public.toggle_auto(icw, player)
+    local player_data = get_player_data(icw, player)
+    local switch = player.gui.left.icw_main_frame['icw_auto_switch']
+    if switch.switch_state == 'left' then
+        player_data.auto = true
+    elseif switch.switch_state == 'right' then
+        player_data.auto = false
+    end
+end
+
 function Public.draw_minimap(icw, player, surface, position)
     if not (surface and surface.valid) then
         return
     end
+    local player_data = get_player_data(icw, player)
     local frame = player.gui.left.icw_main_frame
     if not frame then
         frame = player.gui.left.add({type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap'})
     end
     local element = frame['icw_sub_frame']
+    if not frame.icw_auto_switch then
+        frame.add({type = 'switch', name = 'icw_auto_switch', allow_none_state = false, left_label_caption = {'gui.map_on'}, right_label_caption = {'gui.map_off'}})
+    end
     if not element then
-        local player_data = get_player_data(icw, player)
         element =
             player.gui.left.icw_main_frame.add(
             {
@@ -992,14 +1006,16 @@ function Public.draw_minimap(icw, player, surface, position)
         element.style.minimal_width = player_data.map_size
         return
     end
+
     element.position = position
 end
 
 function Public.update_minimap(icw)
     for k, player in pairs(game.connected_players) do
+        local player_data = get_player_data(icw, player)
         if player.character and player.character.valid then
             local wagon = get_wagon_for_entity(icw, player.character)
-            if wagon then
+            if wagon and player_data.auto then
                 Public.draw_minimap(icw, player, wagon.entity.surface, wagon.entity.position)
             end
         end
@@ -1073,5 +1089,7 @@ function Public.on_player_or_robot_built_tile(event)
         end
     end
 end
+
+Public.get_player_data = get_player_data
 
 return Public

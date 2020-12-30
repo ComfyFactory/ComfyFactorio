@@ -198,7 +198,7 @@ function Public.reset_table()
     this.sent_to_discord = false
     this.difficulty = {
         multiply = 0.25,
-        highest = 15
+        highest = 10
     }
 
     --!reset player tables

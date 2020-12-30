@@ -116,6 +116,23 @@ local function on_init()
     Public.reset()
 end
 
+local function on_gui_switch_state_changed(event)
+    local element = event.element
+    local player = game.players[event.player_index]
+    if not (player and player.valid) then
+        return
+    end
+
+    if not element.valid then
+        return
+    end
+
+    if element.name == 'icw_auto_switch' then
+        local icw = ICW.get()
+        Functions.toggle_auto(icw, player)
+    end
+end
+
 function Public.register_wagon(wagon_entity)
     local icw = ICW.get()
     return Functions.create_wagon(icw, wagon_entity)
@@ -135,5 +152,6 @@ Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
+Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
 
 return Public
