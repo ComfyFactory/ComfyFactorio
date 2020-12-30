@@ -443,8 +443,17 @@ local function create_gui_button(player)
     end
     if this.bottom_button then
         local data = Misc.get('bottom_quickbar_button')
-        data.frame.sprite = 'item/wooden-chest'
-        data.frame.tooltip = tooltip
+        -- save it for later use
+        data.tooltip = tooltip
+        data.sprite = 'item/wooden-chest'
+
+        if data[player.index] then
+            data = data[player.index]
+            if data.frame and data.frame.valid then
+                data.frame.sprite = 'item/wooden-chest'
+                data.frame.tooltip = tooltip
+            end
+        end
     else
         local b =
             player.gui.top.add(
@@ -493,14 +502,18 @@ local function on_gui_click(event)
     if not event.element.valid then
         return
     end
+    local player = game.players[event.player_index]
     local name = 'auto_stash'
     if this.bottom_button then
         local data = Misc.get('bottom_quickbar_button')
-        name = data.name
+        if data[player.index] then
+            data = data[player.index]
+            name = data.name
+        end
     end
 
     if event.element.name == name then
-        auto_stash(game.players[event.player_index], event)
+        auto_stash(player, event)
     end
 end
 

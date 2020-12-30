@@ -158,7 +158,7 @@ end
 
 local function shred_simple_entities(entity)
     local threat = WD.get('threat')
-    if threat < 25000 then
+    if threat < 5000 then
         return
     end
     local simple_entities =

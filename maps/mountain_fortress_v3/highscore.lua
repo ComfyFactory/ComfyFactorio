@@ -39,25 +39,81 @@ local biters = {
     'behemoth-spitter'
 }
 
-local function get_sorted_list(column_name, score_list, limit)
-    local i = 0
-    for _ = 1, #score_list, 1 do
-        for y = 1, #score_list, 1 do
-            if not score_list[y + 1] then
-                break
-            end
-            if score_list[y][column_name] < score_list[y + 1][column_name] then
-                local key = score_list[y]
-                score_list[y] = score_list[y + 1]
-                score_list[y + 1] = key
-                i = i + 1
-                if limit and i == limit then
-                    return score_list
-                end
+local function get_lowest(tbl, column_name)
+    local t = {}
+    for _, value in pairs(tbl) do
+        insert(t, value[column_name])
+    end
+    table.sort(
+        t,
+        function(a, b)
+            return a < b
+        end
+    )
+    if t[1] then
+        return t[1]
+    else
+        return 100
+    end
+end
+
+local function get_highest(tbl, column_name)
+    local t = {}
+    for _, value in pairs(tbl) do
+        insert(t, value[column_name])
+    end
+    table.sort(
+        t,
+        function(a, b)
+            return a > b
+        end
+    )
+    if t[1] then
+        return t[1]
+    else
+        return 10
+    end
+end
+
+local function contains(tbl, key, string, rtn)
+    for index, value in pairs(tbl) do
+        if value[key] and value[key] == string then
+            if rtn then
+                return index
+            else
+                return true
             end
         end
     end
+    return false
+end
+
+local function sort_list(method, column_name, score_list)
+    local comparators = {
+        ['ascending'] = function(a, b)
+            return a[column_name] < b[column_name]
+        end,
+        ['descending'] = function(a, b)
+            return a[column_name] > b[column_name]
+        end
+    }
+    table.sort(score_list, comparators[method])
     return score_list
+end
+
+local function get_sorted_list(column_name, score_list)
+    local sl = {}
+    local i = 0
+    score_list = sort_list('descending', column_name, score_list)
+
+    for key, player in ipairs(score_list) do
+        sl[key] = player
+        i = i + 1
+        if i == 20 then
+            return sl
+        end
+    end
+    return sl
 end
 
 local function get_mvps()
@@ -93,68 +149,120 @@ local function get_mvps()
         end
     end
 
-    local score_list_k = get_sorted_list('killscore', score_list, 20)
-    local score_list_m = get_sorted_list('mined_entities', score_list, 20)
-    local score_list_b = get_sorted_list('built_entities', score_list, 20)
-    local score_list_d = get_sorted_list('deaths', score_list, 20)
+    local score_list_k = get_sorted_list('killscore', score_list)
+    local score_list_m = get_sorted_list('mined_entities', score_list)
+    local score_list_b = get_sorted_list('built_entities', score_list)
+    local score_list_d = get_sorted_list('deaths', score_list)
+    local lowest_k = get_lowest(mvp, 'killscore')
+    local lowest_m = get_lowest(mvp, 'mined_entities')
+    local lowest_b = get_lowest(mvp, 'built_entities')
+    local highest_d = get_highest(mvp, 'deaths')
 
-    for i = 1, 20 do
-        if score_list_k[i] then
-            local killscore = score_list_k[i].killscore
-            local mined_ents = score_list_m[i].mined_entities
-            local build_ents = score_list_b[i].built_entities
-            local deaths = score_list_d[i].deaths
+    for i = 1, 30 do
+        local kill_list = score_list_k[i]
+        local mined_list = score_list_m[i]
+        local build_list = score_list_b[i]
+        local death_list = score_list_d[i]
 
-            if old_score.players[score_list[i].name] and score.players[score_list[i].name] then
-                if not mvp[score_list[i].name] then
-                    mvp[score_list[i].name] = {}
+        if kill_list then
+            if not contains(mvp, 'name', kill_list.name) then
+                if kill_list.killscore >= lowest_k then
+                    if death_list and death_list.deaths < highest_d then
+                        insert(
+                            mvp,
+                            {
+                                name = kill_list.name,
+                                killscore = kill_list.killscore,
+                                deaths = death_list.deaths
+                            }
+                        )
+                    else
+                        insert(
+                            mvp,
+                            {
+                                name = kill_list.name,
+                                killscore = kill_list.killscore
+                            }
+                        )
+                    end
                 end
-
-                local old_score_p = old_score.players[score_list[i].name]
-                if killscore > old_score_p.killscore then
-                    mvp[score_list[i].name].killscore = killscore
-                else
-                    mvp[score_list[i].name].killscore = old_score_p.killscore
-                end
-                if mined_ents > old_score_p.mined_entities then
-                    mvp[score_list[i].name].mined_entities = mined_ents
-                else
-                    mvp[score_list[i].name].mined_entities = old_score_p.mined_entities
-                end
-                if build_ents > old_score_p.built_entities then
-                    mvp[score_list[i].name].built_entities = build_ents
-                else
-                    mvp[score_list[i].name].built_entities = old_score_p.built_entities
-                end
-                if deaths > old_score_p.deaths then
-                    mvp[score_list[i].name].deaths = deaths
-                else
-                    mvp[score_list[i].name].deaths = old_score_p.deaths
+            else
+                local index = contains(mvp, 'name', kill_list.name, true)
+                if index then
+                    if mvp[index].killscore and kill_list.killscore > mvp[index].killscore then
+                        mvp[index].killscore = kill_list.killscore
+                    end
+                    if death_list and mvp[index].deaths and death_list.deaths < mvp[index].deaths then
+                        mvp[index].deaths = death_list.deaths
+                    end
                 end
             end
         end
-    end
-
-    if #mvp <= 0 then
-        for i = 1, 20 do
-            if score_list_k[i] and not mvp[score_list[i].name] then
-                local killscore = score_list_k[i].killscore
-                local mined_ents = score_list_m[i].mined_entities
-                local build_ents = score_list_b[i].built_entities
-                local deaths = score_list_d[i].deaths
-
-                if not mvp[score_list[i].name] then
-                    mvp[score_list[i].name] = {}
+        if mined_list then
+            if not contains(mvp, 'name', mined_list.name) then
+                if mined_list.mined_entities >= lowest_m then
+                    if death_list and death_list.deaths < highest_d then
+                        insert(
+                            mvp,
+                            {
+                                name = mined_list.name,
+                                mined_entities = mined_list.mined_entities,
+                                deaths = death_list.deaths
+                            }
+                        )
+                    else
+                        insert(
+                            mvp,
+                            {
+                                name = mined_list.name,
+                                mined_entities = mined_list.mined_entities
+                            }
+                        )
+                    end
                 end
-                if killscore >= 50 and mined_ents > 10 and build_ents > 1 then
-                    mvp[score_list[i].name].killscore = killscore
-                    mvp[score_list[i].name].mined_entities = mined_ents
-                    mvp[score_list[i].name].built_entities = build_ents
+            else
+                local index = contains(mvp, 'name', mined_list.name, true)
+                if index then
+                    if mvp[index].mined_entities and mined_list.mined_entities > mvp[index].mined_entities then
+                        mvp[index].mined_entities = mined_list.mined_entities
+                    end
+                    if death_list and mvp[index].deaths and death_list.deaths < mvp[index].deaths then
+                        mvp[index].deaths = death_list.deaths
+                    end
                 end
-
-                mvp[score_list[i].name].deaths = deaths
-                if #mvp[score_list[i].name] <= 1 then
-                    mvp[score_list[i].name] = nil
+            end
+        end
+        if build_list then
+            if not contains(mvp, 'name', build_list.name) then
+                if build_list.built_entities >= lowest_b then
+                    if death_list and death_list.deaths < highest_d then
+                        insert(
+                            mvp,
+                            {
+                                name = build_list.name,
+                                built_entities = build_list.built_entities,
+                                deaths = death_list.deaths
+                            }
+                        )
+                    else
+                        insert(
+                            mvp,
+                            {
+                                name = build_list.name,
+                                built_entities = build_list.built_entities
+                            }
+                        )
+                    end
+                end
+            else
+                local index = contains(mvp, 'name', build_list.name, true)
+                if index then
+                    if mvp[index].built_entities and build_list.built_entities > mvp[index].built_entities then
+                        mvp[index].built_entities = build_list.built_entities
+                    end
+                    if death_list and mvp[index].deaths and death_list.deaths < mvp[index].deaths then
+                        mvp[index].deaths = death_list.deaths
+                    end
                 end
             end
         end
@@ -229,6 +337,8 @@ local function write_additional_stats(key)
         end
     end
 
+    this.score_table['player'] = t
+
     if key then
         set_data(score_dataset, key, t)
     end
@@ -292,9 +402,9 @@ local function get_score_list()
         insert(
             score_list,
             {
-                name = p,
+                name = score and score.name,
                 killscore = score and score.killscore or 0,
-                deaths = score and score.deaths or 0,
+                deaths = score and score.deaths or 20,
                 built_entities = score and score.built_entities or 0,
                 mined_entities = score and score.mined_entities or 0
             }
@@ -424,9 +534,7 @@ local show_score = (function(player, frame)
     -- Score list
     local score_list = get_score_list()
 
-    if #game.connected_players > 1 then
-        score_list = get_sorted_list(sorting_pref.method, sorting_pref.column, score_list)
-    end
+    score_list = sort_list(sorting_pref.method, sorting_pref.column, score_list)
 
     -- New pane for scores (while keeping headers at same position)
     local scroll_pane =
@@ -459,12 +567,18 @@ local show_score = (function(player, frame)
             b = p.color.b * 0.6 + 0.4,
             a = 1
         }
+
+        local k = entry.killscore > 0 and entry.killscore or 'Not MVP'
+        local d = entry.deaths < 10 and entry.deaths or 'Not MVP'
+        local b = entry.built_entities > 0 and entry.built_entities or 'Not MVP'
+        local m = entry.mined_entities > 0 and entry.mined_entities or 'Not MVP'
+
         local line = {
             {caption = entry.name, color = special_color},
-            {caption = tostring(entry.killscore)},
-            {caption = tostring(entry.deaths)},
-            {caption = tostring(entry.built_entities)},
-            {caption = tostring(entry.mined_entities)}
+            {caption = tostring(k)},
+            {caption = tostring(d)},
+            {caption = tostring(b)},
+            {caption = tostring(m)}
         }
         local default_color = {r = 0.9, g = 0.9, b = 0.9}
 
@@ -499,17 +613,11 @@ local function on_gui_click(event)
     if not frame then
         return
     end
-    if frame.name ~= 'HighScore' then
+    if frame.name ~= 'Highscore' then
         return
     end
 
     local name = event.element.name
-
-    -- Handles click on the checkbox, for floating score
-    if name == 'show_floating_killscore_texts' then
-        global.show_floating_killscore[player.name] = event.element.state
-        return
-    end
 
     -- Handles click on a score header
     local element_to_column = {

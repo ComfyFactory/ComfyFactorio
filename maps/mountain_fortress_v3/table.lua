@@ -196,6 +196,10 @@ function Public.reset_table()
     this.check_afk_players = true
     this.winter_mode = false
     this.sent_to_discord = false
+    this.difficulty = {
+        multiply = 0.25,
+        highest = 15
+    }
 
     --!reset player tables
     for _, player in pairs(this.players) do

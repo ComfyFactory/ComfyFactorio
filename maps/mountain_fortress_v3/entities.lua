@@ -19,6 +19,7 @@ local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Score = require 'comfy_panel.score'
 local Token = require 'utils.token'
+local HS = require 'maps.mountain_fortress_v3.highscore'
 
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -86,25 +87,40 @@ local reset_game =
         local this = data.this
         local Reset_map = data.reset_map
         if this.soft_reset then
+            HS.set_scores()
             this.game_reset_tick = nil
             Reset_map()
             return
         end
         if this.restart then
+            HS.set_scores()
             local message = ({'entity.reset_game'})
-            Server.to_discord_bold(message)
+            Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
             this.announced_message = true
             return
         end
         if this.shutdown then
+            HS.set_scores()
             local message = ({'entity.shutdown_game'})
-            Server.to_discord_bold(message)
+            Server.to_discord_bold(message, true)
             Server.stop_scenario()
             return
         end
     end
 )
+
+local function exists()
+    local carriages = WPT.get('carriages')
+    local t = {}
+    for i = 1, #carriages do
+        local e = carriages[i]
+        if (e and e.valid) then
+            t[e.unit_number] = true
+        end
+    end
+    return t
+end
 
 local function get_random_weighted(weighted_table, item_index, weight_index)
     local total_weight = 0
@@ -259,19 +275,6 @@ local function protect_entities(event)
             return true
         end
         return false
-    end
-
-    local function exists()
-        local carriages = WPT.get('carriages')
-        local t = {}
-        for i = 1, #carriages do
-            local e = carriages[i]
-            if not (e and e.valid) then
-                return
-            end
-            t[e.unit_number] = true
-        end
-        return t
     end
 
     local units = exists()
@@ -853,8 +856,9 @@ local function on_player_repaired_entity(event)
         return
     end
     local entity = event.entity
-    local locomotive = WPT.get('locomotive')
-    if entity == locomotive then
+    local units = exists()
+
+    if units[entity.unit_number] then
         local player = game.players[event.player_index]
         local repair_speed = Functions.get_magicka(player)
         if repair_speed <= 0 then

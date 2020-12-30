@@ -962,7 +962,6 @@ local function on_player_used_capsule(event)
         return
     end
 
-    local object_name = object.name
     local obj_name = object.obj_to_create
 
     local position = event.position
@@ -1009,7 +1008,7 @@ local function on_player_used_capsule(event)
     end
     if object.obj_to_create == 'suicidal_comfylatron' then
         Functions.suicidal_comfylatron(position, surface)
-        p(({'rpg_main.suicidal_comfylatron', object_name}), Color.success)
+        p(({'rpg_main.suicidal_comfylatron', 'Suicidal Comfylatron'}), Color.success)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     elseif object.obj_to_create == 'warp-gate' then
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
@@ -1057,7 +1056,7 @@ local function on_player_used_capsule(event)
         end
     end
 
-    local msg = player.name .. ' casted ' .. object.name .. '. '
+    local msg = player.name .. ' casted ' .. object.obj_to_create .. '. '
 
     rpg_t[player.index].last_spawned = game.tick + object.tick
     Functions.update_mana(player)

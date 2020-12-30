@@ -107,6 +107,7 @@ function Public.reset_map()
     BuriedEnemies.reset()
     Commands.reset()
     Commands.activate_custom_buttons(true)
+    Commands.bottom_right(false)
 
     Poll.reset()
     ICW.reset()
@@ -278,6 +279,7 @@ local has_the_game_ended = function()
             end
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
+                    HS.set_scores()
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -288,6 +290,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
+                    HS.set_scores()
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})

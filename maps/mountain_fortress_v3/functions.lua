@@ -791,6 +791,7 @@ function Public.set_difficulty()
     local wave_defense_table = WD.get_table()
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
+    local difficulty = WPT.get('difficulty')
     local player_count = calc_players()
 
     if not Diff.difficulty_vote_value then
@@ -807,10 +808,10 @@ function Public.set_difficulty()
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
     -- local amount = player_count * 0.40 + 2 -- too high?
-    local amount = player_count * 0.25 + 2
+    local amount = player_count * difficulty.multiply + 2
     amount = floor(amount)
-    if amount > 8 then
-        amount = 8 -- lowered from 20 to 8
+    if amount > difficulty.highest then
+        amount = difficulty.highest -- lowered from 20 to 15
     end
 
     wave_defense_table.wave_interval = 3600 - player_count * 60
