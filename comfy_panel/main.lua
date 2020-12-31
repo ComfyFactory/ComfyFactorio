@@ -11,6 +11,7 @@ draw_map_scores would be a function with the player and the frame as arguments
 ]]
 local Event = require 'utils.event'
 local Server = require 'utils.server'
+local CommandFrame = require 'commands.misc'
 local SpamProtection = require 'utils.spam_protection'
 
 comfy_panel_tabs = {}
@@ -35,7 +36,9 @@ end
 
 function Public.comfy_panel_clear_screen_gui(player)
     for _, child in pairs(player.gui.screen.children) do
-        child.visible = false
+        if child.name ~= CommandFrame.bottom_guis_frame then
+            child.visible = false
+        end
     end
 end
 

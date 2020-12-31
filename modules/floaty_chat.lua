@@ -1,19 +1,19 @@
 local event = require 'utils.event'
 
 local function on_console_chat(event)
-	if not event.message then return end	
-	if not event.player_index then return end	
+	if not event.message then return end
+	if not event.player_index then return end
 	local player = game.players[event.player_index]
 	if not player.character then return end
-	
+
 	local y_offset = -4
-	if package.loaded['modules.rpg'] then y_offset = -4.5 end
-	
+	if is_loaded('modules.rpg') then y_offset = -4.5 end
+
 	if global.player_floaty_chat[player.index] then
 		rendering.destroy(global.player_floaty_chat[player.index])
 		global.player_floaty_chat[player.index] = nil
 	end
-	
+
 	local players = {}
 	for _, p in pairs(game.connected_players) do
 		if player.force.index == p.force.index then
@@ -21,7 +21,7 @@ local function on_console_chat(event)
 		end
 	end
 	if #players == 0 then return end
-	
+
 	global.player_floaty_chat[player.index] = rendering.draw_text{
 		text = event.message,
 		surface = player.surface,

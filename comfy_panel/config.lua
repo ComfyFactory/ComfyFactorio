@@ -160,7 +160,7 @@ local poll_function = {
         end
     end,
     ['comfy_panel_poll_no_notify_toggle'] = function(event)
-        local poll = package.loaded['comfy_panel.poll']
+        local poll = is_loaded('comfy_panel.poll')
         local poll_table = poll.get_no_notify_players()
         if event.element.switch_state == 'left' then
             poll_table[event.player_index] = false
@@ -186,7 +186,7 @@ local antigrief_functions = {
 
 local fortress_functions = {
     ['comfy_panel_disable_fullness'] = function(event)
-        local Fullness = package.loaded['modules.check_fullness']
+        local Fullness = is_loaded('modules.check_fullness')
         local this = Fullness.get()
         if event.element.switch_state == 'left' then
             this.fullness_enabled = true
@@ -197,7 +197,7 @@ local fortress_functions = {
         end
     end,
     ['comfy_panel_offline_players'] = function(event)
-        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local this = WPT.get()
         if event.element.switch_state == 'left' then
             this.offline_players_enabled = true
@@ -208,7 +208,7 @@ local fortress_functions = {
         end
     end,
     ['comfy_panel_collapse_grace'] = function(event)
-        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local this = WPT.get()
         if event.element.switch_state == 'left' then
             this.collapse_grace = true
@@ -219,7 +219,7 @@ local fortress_functions = {
         end
     end,
     ['comfy_panel_spill_items_to_surface'] = function(event)
-        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local this = WPT.get()
         if event.element.switch_state == 'left' then
             this.spill_items_to_surface = true
@@ -230,7 +230,7 @@ local fortress_functions = {
         end
     end,
     ['comfy_panel_void_or_tile'] = function(event)
-        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local this = WPT.get()
         if event.element.switch_state == 'left' then
             this.void_or_tile = 'out-of-map'
@@ -241,7 +241,7 @@ local fortress_functions = {
         end
     end,
     ['comfy_panel_trusted_only_car_tanks'] = function(event)
-        local WPT = package.loaded['maps.mountain_fortress_v3.table']
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
         local this = WPT.get()
         if event.element.switch_state == 'left' then
             this.trusted_only_car_tanks = true
@@ -337,8 +337,8 @@ local build_config_gui = (function(player, frame)
         scroll_pane.add({type = 'line'})
     end
 
-    if package.loaded['comfy_panel.poll'] then
-        local poll = package.loaded['comfy_panel.poll']
+    local poll = is_loaded('comfy_panel.poll')
+    if poll then
         local poll_table = poll.get_no_notify_players()
         switch_state = 'right'
         if not poll_table[player.index] then
@@ -380,7 +380,7 @@ local build_config_gui = (function(player, frame)
             'Disables the Logistic System research.\nRequester, buffer or active-provider containers can not be built.'
         )
 
-        if package.loaded['comfy_panel.poll'] then
+        if poll then
             scroll_pane.add({type = 'line'})
             switch_state = 'right'
             if global.comfy_panel_config.poll_trusted then
@@ -407,7 +407,7 @@ local build_config_gui = (function(player, frame)
         add_switch(scroll_pane, switch_state, 'comfy_panel_disable_antigrief', 'Antigrief', 'Left = Enables antigrief / Right = Disables antigrief')
         scroll_pane.add({type = 'line'})
 
-        if package.loaded['maps.biter_battles_v2.main'] then
+        if is_loaded('maps.biter_battles_v2.main') then
             label = scroll_pane.add({type = 'label', caption = 'Biter Battles Settings'})
             label.style.font = 'default-bold'
             label.style.padding = 0
@@ -450,7 +450,7 @@ local build_config_gui = (function(player, frame)
             scroll_pane.add({type = 'line'})
         end
 
-        if package.loaded['maps.mountain_fortress_v3.main'] then
+        if is_loaded('maps.mountain_fortress_v3.main') then
             label = scroll_pane.add({type = 'label', caption = 'Mountain Fortress Settings'})
             label.style.font = 'default-bold'
             label.style.padding = 0
@@ -460,7 +460,7 @@ local build_config_gui = (function(player, frame)
             label.style.vertical_align = 'bottom'
             label.style.font_color = Color.green
 
-            local Fullness = package.loaded['modules.check_fullness']
+            local Fullness = is_loaded('modules.check_fullness')
             local full = Fullness.get()
             switch_state = 'right'
             if full.fullness_enabled then
@@ -470,7 +470,7 @@ local build_config_gui = (function(player, frame)
 
             scroll_pane.add({type = 'line'})
 
-            local WPT = package.loaded['maps.mountain_fortress_v3.table']
+            local WPT = is_loaded('maps.mountain_fortress_v3.table')
             local this = WPT.get()
             switch_state = 'right'
             if this.offline_players_enabled then
@@ -576,7 +576,7 @@ local function on_gui_switch_state_changed(event)
         end
         fortress_functions[event.element.name](event)
         return
-    elseif package.loaded['comfy_panel.poll'] then
+    elseif is_loaded('comfy_panel.poll') then
         local is_spamming = SpamProtection.is_spamming(player)
         if is_spamming then
             return

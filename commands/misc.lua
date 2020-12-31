@@ -22,7 +22,7 @@ Global.register(
 
 local Public = {}
 
-local clear_corpse_main_button_name = Gui.uid_name()
+local bottom_guis_frame = Gui.uid_name()
 local clear_corpse_button_name = Gui.uid_name()
 local bottom_quickbar_button_name = Gui.uid_name()
 
@@ -509,7 +509,7 @@ end
 
 local function create_frame(player, rebuild)
     local gui = player.gui
-    local frame = gui.screen[clear_corpse_main_button_name]
+    local frame = gui.screen[bottom_guis_frame]
     if frame and frame.valid then
         if rebuild then
             frame.destroy()
@@ -521,7 +521,7 @@ local function create_frame(player, rebuild)
     frame =
         player.gui.screen.add {
         type = 'frame',
-        name = clear_corpse_main_button_name,
+        name = bottom_guis_frame,
         direction = 'vertical'
     }
     frame.style.padding = 3
@@ -650,7 +650,7 @@ Event.add(
     function(event)
         local player = game.get_player(event.player_index)
         if this.activate_custom_buttons then
-            local frame = player.gui.screen[clear_corpse_main_button_name]
+            local frame = player.gui.screen[bottom_guis_frame]
             if frame and frame.valid then
                 frame.destroy()
             end
@@ -667,5 +667,7 @@ Event.add(
         end
     end
 )
+
+Public.bottom_guis_frame = bottom_guis_frame
 
 return Public

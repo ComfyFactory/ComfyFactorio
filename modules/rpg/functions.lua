@@ -100,7 +100,7 @@ end
 
 local function level_up(player)
     local rpg_t = RPG.get('rpg_t')
-    local RPG_GUI = package.loaded['modules.rpg.gui']
+    local RPG_GUI = is_loaded('modules.rpg.gui')
     local names = RPG.auto_allocate_nodes_func
 
     local distribute_points_gain = 0
@@ -476,7 +476,7 @@ function Public.rpg_reset_player(player, one_time_reset)
         player.set_controller({type = defines.controllers.god})
         player.create_character()
     end
-    local RPG_GUI = package.loaded['modules.rpg.gui']
+    local RPG_GUI = is_loaded('modules.rpg.gui')
     local rpg_t = RPG.get('rpg_t')
     local rpg_extra = RPG.get('rpg_extra')
     if one_time_reset then
