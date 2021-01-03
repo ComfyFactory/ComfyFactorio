@@ -198,7 +198,7 @@ function Public.add_player_to_permission_group(player, group, forced)
     if not AG.enabled then
         local default_group = game.permissions.get_group('Default')
         default_group.add_player(player)
-        return  
+        return
     end
 
     local gulag = game.permissions.get_group('gulag')
