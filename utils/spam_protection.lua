@@ -36,6 +36,10 @@ function Public.is_spamming(player, value_to_compare)
         return
     end
 
+    if game.tick_paused then
+        return -- game is paused - shoo
+    end
+
     local tick = game.tick
     local value = value_to_compare or this.default_tick
     if this.prevent_spam[player.index] then
