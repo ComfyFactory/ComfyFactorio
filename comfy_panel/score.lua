@@ -48,6 +48,10 @@ function Public.init_player_table(player, reset)
         }
     end
 
+    if not this.score_table[player.force.name] then
+        this.score_table[player.force.name] = {}
+    end
+
     if not this.score_table[player.force.name].players then
         this.score_table[player.force.name].players = {}
     end
