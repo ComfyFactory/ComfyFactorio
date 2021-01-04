@@ -88,7 +88,7 @@ function Public.offer_bought(event, cave_miner)
 	local offers = market.get_market_items()	
 	local bought_offer = offers[offer_index].offer
 	if bought_offer.type ~= "nothing" then return end
-	if offer_index == 1 then
+	if offer_index == 1 and Constants.pickaxe_tiers[cave_miner.pickaxe_tier + 1] then
 		market.force.play_sound({path = 'utility/new_objective', volume_modifier = 0.75})
 		cave_miner.pickaxe_tier = cave_miner.pickaxe_tier + 1
 		local speed = Functions.set_mining_speed(cave_miner, player.force)
