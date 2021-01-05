@@ -23,3 +23,12 @@ function get_game_version()
         return false
     end
 end
+
+function is_loaded(module)
+    local res = package.loaded[module]
+    if res then
+        return res
+    else
+        return false
+    end
+end

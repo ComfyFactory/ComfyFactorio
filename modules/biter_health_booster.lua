@@ -12,7 +12,7 @@ local entity_types = {
 	["unit-spawner"] = true,
 }
 
-if package.loaded['maps.biter_hatchery.terrain'] then entity_types["unit-spawner"] = nil end
+if is_loaded('maps.biter_hatchery.terrain') then entity_types["unit-spawner"] = nil end
 
 local function clean_table()
 	--Perform a table cleanup every 1000 boosts
@@ -84,7 +84,7 @@ local function on_entity_damaged(event)
 	local biter = event.entity
 	if not (biter and biter.valid) then return end
 	if not entity_types[biter.type] then return end
-	
+
 	local biter_health_boost_units = global.biter_health_boost_units
 
 	local unit_number = biter.unit_number
@@ -111,7 +111,7 @@ local function on_entity_damaged(event)
 
 	--Reduce health pool
 	health_pool[1] = health_pool[1] - event.final_damage_amount
-	
+
 	--Set entity health relative to health pool
 	biter.health = health_pool[1] * health_pool[2]
 

@@ -158,6 +158,9 @@ commands.add_command(
 
 local function process_bot_answers(event)
     local player = game.players[event.player_index]
+    if player.admin then
+        return
+    end
     local message = event.message
     message = string.lower(message)
     for word in string.gmatch(message, '%g+') do

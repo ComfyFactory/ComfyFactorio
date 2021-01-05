@@ -3,7 +3,7 @@ require 'modules.rpg.main'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
--- local HS = require 'maps.mountain_fortress_v3.highscore'
+local HS = require 'maps.mountain_fortress_v3.highscore'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Autostash = require 'modules.autostash'
 local Group = require 'comfy_panel.group'
@@ -31,6 +31,7 @@ local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
 local Commands = require 'commands.misc'
+local Modifiers = require 'player_modifiers'
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 require 'maps.mountain_fortress_v3.generate'
@@ -102,8 +103,11 @@ function Public.reset_map()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
+    Autostash.bottom_button(true)
     BuriedEnemies.reset()
     Commands.reset()
+    Commands.activate_custom_buttons(true)
+    Commands.bottom_right(false)
 
     Poll.reset()
     ICW.reset()
@@ -134,6 +138,10 @@ function Public.reset_map()
 
     local surface = game.surfaces[this.active_surface_index]
 
+    if this.winter_mode then
+        surface.daytime = 0.45
+    end
+
     Explosives.set_surface_whitelist({[surface.name] = true})
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
@@ -151,11 +159,17 @@ function Public.reset_map()
 
     PL.show_roles_in_list(true)
 
+    Score.reset_tbl()
+
     local players = game.connected_players
     for i = 1, #players do
         local player = players[i]
-        Score.init_player_table(player)
+        Score.init_player_table(player, true)
         Commands.insert_all_items(player)
+        Modifiers.reset_player_modifiers(player)
+        if player.gui.left['mvps'] then
+            player.gui.left['mvps'].destroy()
+        end
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
@@ -192,6 +206,7 @@ function Public.reset_map()
     WD.set_disable_threat_below_zero(true)
 
     Functions.set_difficulty()
+    Functions.disable_creative()
 
     if not surface.is_chunk_generated({-20, 22}) then
         surface.request_to_generate_chunks({-20, 22}, 0.1)
@@ -202,6 +217,8 @@ function Public.reset_map()
 
     Task.start_queue()
     Task.set_queue_speed(16)
+
+    HS.get_scores()
 
     this.chunk_load_tick = game.tick + 1200
     this.game_lost = false
@@ -253,13 +270,16 @@ local has_the_game_ended = function()
 
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
+
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
+                HS.set_scores()
                 Public.reset_map()
                 return
             end
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
+                    HS.set_scores()
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -270,6 +290,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
+                    HS.set_scores()
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -327,7 +348,7 @@ local compare_collapse_and_train = function()
     local collapse_pos = Collapse.get_position()
     local locomotive = WPT.get('locomotive')
     local carriages = WPT.get('carriages')
-    if not locomotive or not locomotive.valid then
+    if not (locomotive and locomotive.valid) then
         return
     end
 
@@ -342,12 +363,10 @@ local compare_collapse_and_train = function()
 
     if c_y - t_y <= gap_between_zones.gap then
         Functions.set_difficulty()
-        gap_between_zones.set = false
-        return
+    else
+        Collapse.set_speed(1)
+        Collapse.set_amount(4)
     end
-
-    Collapse.set_speed(1)
-    Collapse.set_amount(4)
 end
 
 local collapse_after_wave_100 = function()

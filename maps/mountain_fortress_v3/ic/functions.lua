@@ -3,6 +3,7 @@ local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
+local WPT = require 'maps.mountain_fortress_v3.table'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -517,10 +518,14 @@ local function get_player_data(ic, player)
     if ic.players[player.index] then
         return player_data
     end
+    local fallback = WPT.get('active_surface_index')
+    if not fallback then
+        fallback = 1
+    end
 
     ic.players[player.index] = {
         surface = 1,
-        fallback_surface = 1,
+        fallback_surface = tonumber(fallback),
         notified = false
     }
     return ic.players[player.index]

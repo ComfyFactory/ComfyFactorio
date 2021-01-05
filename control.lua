@@ -15,6 +15,7 @@ require 'utils.datastore.jail_data'
 require 'utils.datastore.quickbar_data'
 require 'utils.datastore.message_on_join_data'
 require 'utils.datastore.player_tag_data'
+require 'utils.profiler'
 require 'chatbot'
 require 'commands'
 require 'antigrief'
@@ -216,6 +217,7 @@ require 'modules.autostash'
 ---------------------------------------------------------------
 
 ---------------- MOSTLY TERRAIN LAYOUTS HERE ----------------
+--require 'terrain_layouts.winter'
 --require 'terrain_layouts.caves'
 --require 'terrain_layouts.cone_to_east'
 --require 'terrain_layouts.biters_and_resources_east'

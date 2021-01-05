@@ -51,15 +51,26 @@ function Public.update_player_modifiers(player)
     end
 end
 
+function Public.reset_player_modifiers(player)
+    if player and player.valid then
+        this[player.index] = {}
+        if this.disabled_modifier[player.index] then
+            this.disabled_modifier[player.index] = {}
+        end
+        for _, modifier in pairs(modifiers) do
+            this[player.index][modifier] = {}
+        end
+        Public.update_player_modifiers(player)
+    end
+end
+
 local function on_player_joined_game(event)
-    if this[event.player_index] then
-        Public.update_player_modifiers(game.players[event.player_index])
+    local player = game.get_player(event.player_index)
+    if this[player.index] then
+        Public.update_player_modifiers(player)
         return
     end
-    this[event.player_index] = {}
-    for _, modifier in pairs(modifiers) do
-        this[event.player_index][modifier] = {}
-    end
+    Public.reset_player_modifiers(player)
 end
 
 local function on_player_respawned(event)

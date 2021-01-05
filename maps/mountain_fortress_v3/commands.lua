@@ -36,9 +36,7 @@ commands.add_command(
 
         if not this.reset_are_you_sure then
             this.reset_are_you_sure = true
-            p(
-                '[WARNING] This command will disable the soft-reset feature, run this command again if you really want to do this!'
-            )
+            p('[WARNING] This command will disable the soft-reset feature, run this command again if you really want to do this!')
             return
         end
 
@@ -61,7 +59,6 @@ commands.add_command(
             end
         elseif param == 'restartnow' then
             this.reset_are_you_sure = nil
-            p(player.name .. ' has restarted the game.')
             Server.start_scenario('Mountain_Fortress_v3')
             return
         elseif param == 'shutdown' then

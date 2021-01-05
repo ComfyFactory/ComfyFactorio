@@ -41,8 +41,7 @@ function Public.show(container)
 
     for name, file in pairs(loaded) do
         if not ignore[name] then
-            local file_label =
-                left_panel.add({type = 'flow'}).add {type = 'label', name = file_label_name, caption = name}
+            local file_label = left_panel.add({type = 'flow'}).add {type = 'label', name = file_label_name, caption = name}
             Gui.set_data(file_label, file)
         end
     end
@@ -107,8 +106,7 @@ Gui.on_click(
 
         if file_type == 'table' then
             for k, v in pairs(file) do
-                local label =
-                    top_panel.add({type = 'flow'}).add {type = 'label', name = variable_label_name, caption = k}
+                local label = top_panel.add({type = 'flow'}).add {type = 'label', name = variable_label_name, caption = k}
                 Gui.set_data(label, v)
             end
         elseif file_type == 'function' then
@@ -134,8 +132,7 @@ Gui.on_click(
         if variable_type == 'table' then
             Gui.clear(top_panel)
             for k, v in pairs(variable) do
-                local label =
-                    top_panel.add({type = 'flow'}).add {type = 'label', name = variable_label_name, caption = k}
+                local label = top_panel.add({type = 'flow'}).add {type = 'label', name = variable_label_name, caption = k}
                 Gui.set_data(label, v)
             end
             return

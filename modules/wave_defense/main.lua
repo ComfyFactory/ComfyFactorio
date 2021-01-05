@@ -485,10 +485,10 @@ end
 
 local function increase_biter_damage()
     local Difficulty
-    if package.loaded['modules.difficulty_vote_by_amount'] then
-        Difficulty = require 'modules.difficulty_vote_by_amount'
-    elseif package.loaded['modules.difficulty_vote'] then
-        Difficulty = require 'modules.difficulty_vote'
+    if is_loaded('modules.difficulty_vote_by_amount') then
+        Difficulty = is_loaded('modules.difficulty_vote_by_amount')
+    elseif is_loaded('modules.difficulty_vote') then
+        Difficulty = is_loaded('modules.difficulty_vote')
     end
     if not Difficulty then
         return

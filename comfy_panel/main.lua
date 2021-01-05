@@ -10,6 +10,8 @@ draw_map_scores would be a function with the player and the frame as arguments
 
 ]]
 local Event = require 'utils.event'
+local Server = require 'utils.server'
+local CommandFrame = require 'commands.misc'
 local SpamProtection = require 'utils.spam_protection'
 
 comfy_panel_tabs = {}
@@ -34,7 +36,9 @@ end
 
 function Public.comfy_panel_clear_screen_gui(player)
     for _, child in pairs(player.gui.screen.children) do
-        child.destroy()
+        if child.name ~= CommandFrame.bottom_guis_frame then
+            child.visible = false
+        end
     end
 end
 
@@ -83,7 +87,18 @@ local function main_frame(player)
     local tabbed_pane = frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
     for name, func in pairs(tabs) do
-        if func.admin == true then
+        if func.only_server_sided then
+            local secs = Server.get_current_time()
+            if secs then
+                local tab = tabbed_pane.add({type = 'tab', caption = name})
+                local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                frame.style.minimal_height = 480
+                frame.style.maximal_height = 480
+                frame.style.minimal_width = 800
+                frame.style.maximal_width = 800
+                tabbed_pane.add_tab(tab, frame)
+            end
+        elseif func.admin == true then
             if player.admin then
                 local tab = tabbed_pane.add({type = 'tab', caption = name})
                 local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
@@ -155,6 +170,7 @@ local function on_gui_click(event)
         if player.gui.left.comfy_panel then
             player.gui.left.comfy_panel.destroy()
             Public.comfy_panel_restore_left_gui(player)
+            Public.comfy_panel_restore_screen_gui(player)
             return
         else
             Public.comfy_panel_clear_screen_gui(player)

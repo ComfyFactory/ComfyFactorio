@@ -763,6 +763,25 @@ function Public.remove_offline_players()
     end
 end
 
+local function calc_players()
+    local players = game.connected_players
+    local check_afk_players = WPT.get('check_afk_players')
+    if not check_afk_players then
+        return #players
+    end
+    local total = 0
+    for i = 1, #players do
+        local player = players[i]
+        if player.afk_time < 36000 then
+            total = total + 1
+        end
+    end
+    if total <= 0 then
+        total = 1
+    end
+    return total
+end
+
 function Public.set_difficulty()
     local game_lost = WPT.get('game_lost')
     if game_lost then
@@ -772,7 +791,9 @@ function Public.set_difficulty()
     local wave_defense_table = WD.get_table()
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
-    local player_count = #game.connected_players
+    local difficulty = WPT.get('difficulty')
+    local player_count = calc_players()
+
     if not Diff.difficulty_vote_value then
         Diff.difficulty_vote_value = 0.1
     end
@@ -786,10 +807,11 @@ function Public.set_difficulty()
     -- threat gain / wave
     wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
 
-    local amount = player_count * 0.40 + 2
+    -- local amount = player_count * 0.40 + 2 -- too high?
+    local amount = player_count * difficulty.multiply + 2
     amount = floor(amount)
-    if amount > 20 then
-        amount = 20
+    if amount > difficulty.highest then
+        amount = difficulty.highest -- lowered from 20 to 15
     end
 
     wave_defense_table.wave_interval = 3600 - player_count * 60
@@ -806,11 +828,13 @@ function Public.set_difficulty()
     if collapse_speed then
         Collapse.set_speed(collapse_speed)
     else
-        if player_count >= 8 and player_count <= 12 then
+        if player_count >= 1 and player_count <= 8 then
+            Collapse.set_speed(9)
+        elseif player_count > 8 and player_count <= 20 then
             Collapse.set_speed(8)
-        elseif player_count >= 20 and player_count <= 24 then
+        elseif player_count > 20 and player_count <= 35 then
             Collapse.set_speed(6)
-        elseif player_count >= 35 then
+        elseif player_count > 35 then
             Collapse.set_speed(5)
         end
     end
@@ -818,9 +842,14 @@ end
 
 function Public.render_direction(surface)
     local counter = WPT.get('soft_reset_counter')
+    local winter_mode = WPT.get('winter_mode')
+    local text = 'Welcome to Mountain Fortress v3!'
+    if winter_mode then
+        text = 'Welcome to Wintery Mountain Fortress v3!'
+    end
     if counter then
         rendering.draw_text {
-            text = 'Welcome to Mountain Fortress v3!\nRun: ' .. counter,
+            text = text .. '\nRun: ' .. counter,
             surface = surface,
             target = {-0, 10},
             color = {r = 0.98, g = 0.66, b = 0.22},
@@ -831,7 +860,7 @@ function Public.render_direction(surface)
         }
     else
         rendering.draw_text {
-            text = 'Welcome to Mountain Fortress v3!',
+            text = text,
             surface = surface,
             target = {-0, 10},
             color = {r = 0.98, g = 0.66, b = 0.22},
@@ -1136,6 +1165,13 @@ function Public.is_creativity_mode_on()
         WD.set('next_wave', 1000)
         Collapse.start_now(true)
         Public.set_difficulty()
+    end
+end
+
+function Public.disable_creative()
+    local creative_enabled = Commands.get('creative_enabled')
+    if creative_enabled then
+        Commands.set('creative_enabled', false)
     end
 end
 

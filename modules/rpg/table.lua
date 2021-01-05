@@ -59,6 +59,14 @@ Public.classes = {
 }
 
 Public.auto_allocate_nodes = {
+    {'allocations.deactivated'},
+    {'allocations.str'},
+    {'allocations.mag'},
+    {'allocations.dex'},
+    {'allocations.vit'}
+}
+
+Public.auto_allocate_nodes_func = {
     'Deactivated',
     'Strength',
     'Magicka',
