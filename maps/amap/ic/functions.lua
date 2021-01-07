@@ -562,22 +562,21 @@ function Public.save_car(ic, event)
     if car.owner == player.index then
         save_surface(ic, entity, player)
         if not ic.players[player.index].notified then
-            player.print(player.name .. ', the ' .. car.name .. ' 空间已保存.', Color.success)
+            player.print(player.name .. ', the ' .. car.name .. ' has benn saved.', Color.success)
 			
             ic.players[player.index].notified = true
 			
 			local wave_number = WD.get('wave_number')
-			--game.print(type(wave_number))
 			local a = 100
 			
             if ( wave_number <= a ) then
-			player.print('你在前一百波中使用了汽车，失去了领取奖励的资格，下次继续努力',Color.warning)
+			player.print('You used your car in the first 100 waves, so you are not eligible for the reward. Continue to work hard next time',Color.warning)
 			
 			else
 			
 			local rpg_t = RPG.get('rpg_t')
 			rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+75
-			player.print('达成挑战，获得75点技能点奖励，恭喜！',Color.success)
+			player.print('Achieve the challenge and get 75 skill points reward. Congratulations!',Color.success)
 			end 
         end
     else

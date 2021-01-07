@@ -366,7 +366,7 @@ add_toolbar = function(player, remove)
         return
     end
 
-    local tooltip = '控制谁可以进你的汽车.'
+    local tooltip = 'Control who can get into your car.'
     player.gui.top.add(
         {
             type = 'sprite-button',
@@ -375,23 +375,23 @@ add_toolbar = function(player, remove)
             tooltip = tooltip
         }
     )
-	
+	player.gui.top.add(
+        {
+            type = 'sprite-button',
+            sprite = 'item/rocket-part',
+            name = buyxp,
+            tooltip = 'Spend 5000 coin to buy 500xp'
+        }
+    )
     player.gui.top.add(
         {
             type = 'sprite-button',
             sprite = 'item/logistic-chest-storage',
             name = cool,
-            tooltip = '花费2千金币来开包，你有机会获得MK2！注意角色附近的建筑物，防止你的损失！'
+            tooltip = 'Spend 3000 coin to open the chest, you have a chance to get MK2! Pay attention to the buildings near the character to prevent your loss!'
         }
     )
-	    player.gui.top.add(
-        {
-            type = 'sprite-button',
-            sprite = 'item/rocket-part',
-            name = buyxp,
-            tooltip = '花5000金币，购买500点经验'
-        }
-    )
+	
 end
 
 remove_toolbar = function(player)
@@ -463,15 +463,15 @@ Gui.on_click(
      for k, v in pairs(something.get_contents()) do
         local t = {name = k, count = v}
  if t.name == 'coin' then
- if v > 1999 then 
- player.remove_item{name='coin', count = '2000'}
+ if v > 2999 then 
+ player.remove_item{name='coin', count = '3000'}
  local rpg = asdasd.get('rpg_t')
     local magic = rpg[player.index].magicka+100
-       local msg = '哦，你开出了什么呢？（质量与魔法挂钩！）'
+       local msg = 'Oh, what will you get? (quality is linked to magic!)'
 	Loot.cool(player.surface, player.position, 'steel-chest', magic)
 		  Alert.alert_player(player, 5, msg)
 		  else 
-		  player.print('你没有足够的钱')
+		  player.print('you dont have enough coin!')
  end
  end
    end
@@ -490,10 +490,10 @@ Gui.on_click(
  local rpg_t = asdasd.get('rpg_t')
 
  rpg_t[player.index].xp = rpg_t[player.index].xp +500
-       local msg = '你成功购买了500点经验'
+       local msg = 'You already buy 500 xp'
 		  Alert.alert_player(player, 5, msg)
 		  else 
-		  player.print('你没有足够的钱')
+		  player.print('you dont have enough coin!')
  end
  end
    end
