@@ -153,6 +153,7 @@ this.active_surface_index = CS.create_surface()
     WD.set_disable_threat_below_zero(true)
 	WD.set_biter_health_boost(2.5)
 	WD.set().next_wave = game.tick + 7000* 15
+	
 	--初始化虫子科技
 	biter.d=false
 	biter.c=false
@@ -175,7 +176,7 @@ end
 local setting = function()
 local map_gen_settings = {}
 game.map_settings.enemy_evolution.destroy_factor = 0.001
-		game.map_settings.enemy_evolution.pollution_factor = 0.000001
+		game.map_settings.enemy_evolution.pollution_factor = 0.0001
 		game.map_settings.enemy_expansion.enabled = true
 		game.map_settings.enemy_expansion.min_expansion_cooldown = 6000
 		game.map_settings.enemy_expansion.max_expansion_cooldown = 24000
@@ -265,49 +266,46 @@ local chunk_load = function()
 end
 local biterbuff = function()
 if h ~= 5 then 
-h=h+0.2
+h=h+0.03
 WD.set_biter_health_boost(h)
-
-
-game.print('虫子已获得增强，强度系数为:' .. h .. '.')
+game.print('The biters has evolved, and the coefficient of evolution is' .. h .. '.')
 end
 end
 local rondom = function(player)
 local rpg_t = RPG.get('rpg_t')
 local q = math.random(0,8)
 if q == 7 then 
-player.print('你的数字为7，哦，很抱歉，什么都没有。')
+player.print('Your number is seven. Oh, sorry, you get nothing.')
 elseif q == 6 then 
 rpg_t[player.index].strength = rpg_t[player.index].strength + 15
-player.print('你的数字为6，你获得了15点力量点奖励！')
+player.print('Your number is 6, you got 15 strength points reward!')
 elseif q == 5 then 
-player.print('你的数字为5，你获得了15点魔法点奖励！')
+player.print('Your number is 5, and you get 15 magic points！')
 rpg_t[player.index].magicka =rpg_t[player.index].magicka +15
 elseif q == 4 then 
-player.print('你的数字为4，你获得了15点敏捷点奖励！')
+player.print('Your number is 4, and you get 15 dex points!')
 rpg_t[player.index].dexterity = rpg_t[player.index].dexterity+15
 elseif q == 3 then 
-player.print('你的数字为3，你获得了15点活力点奖励！')
+player.print('Your number is 3, and you get 15 vitality points!')
 rpg_t[player.index].vitality = rpg_t[player.index].vitality+15
 elseif q == 2 then 
-player.print('你的数字为2，你获得了10点技能点奖励！')
+player.print('Your number is 2, and you get 10 distribute points!')
 rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+10
 elseif q == 1 then 
-player.print('你的数字为1，你获得了2000金币奖励！')
+player.print('Your number is 1, and you get 2000 coin!')
 player.insert{name='coin', count = '2000'}
 elseif q == 0 then 
-player.print('你的数字为0，哦，你真倒霉，你失去了1000金币！如果你连1K都没有，我就不拿了吧。')
+player.print('Your number is 0, You are out of luck and you lost 2000 coin!')
 player.remove_item{name='coin', count = '1000'}
 else
-player.print('?发生什么事了（你因为开小差没有参与转盘抽奖！）')
+player.print('? what is the matter (you did not take part in the lottery because of your desertion!)')
 end
 end
 local timereward = function()
 	local wave_number = WD.get('wave_number')
 	if last < wave_number then 
 	if wave_number % 25 == 0 then 
-	game.print('是时候转动命运之轮了，看看你会获得什么吧！',{r = 0.22, g = 0.88, b = 0.22})
-	--biterbuff()
+	game.print('Its time to turn the wheel of destiny and see what you will get!',{r = 0.22, g = 0.88, b = 0.22})
   for k, p in pairs(game.connected_players) do
 	 local player = game.connected_players[k]
 rondom(player)
@@ -391,7 +389,7 @@ function on_research_finished(Event)
 
 	rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+3
     player.insert{name='coin', count = '100'}
-	game.print('科技研发完成，所有玩家奖励3技能点，100金币。', {r = 0.22, g = 0.88, b = 0.22})
+	game.print('research was finish, all players will be rewarded with 3 RPG points and 100 gold coins.', {r = 0.22, g = 0.88, b = 0.22})
 	k=k+1
  end
     end

@@ -55,7 +55,7 @@ end
 local function on_rocket_launched(Event)
 local wave_number = WD.get('wave_number')
 for _, p in pairs(game.connected_players) do
-	Alert.alert_player(player, 25, '你通关了，你一定是第一个通关的吧？通关波数：' .. wave_number .. '。NB 就完事了')
+	Alert.alert_player(player, 25, 'You won the game at ' .. wave_number .. '.')
     end
 local rpg_t = RPG.get('rpg_t')
   for k, p in pairs(game.connected_players) do
@@ -63,19 +63,19 @@ local rpg_t = RPG.get('rpg_t')
 
 	rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+100
     player.insert{name='coin', count = '3000'}
-	game.print('科技研发完成，所有玩家奖励100技能点，3000金币。', {r = 0.22, g = 0.88, b = 0.22})
+	game.print('rocket was launch, all players will be rewarded with 100 skill points and 3000 gold coins.', {r = 0.22, g = 0.88, b = 0.22})
  end	
 end
 local function on_entity_died(Event)
 local this = WPT.get()
 if Event.entity == this.rock then
 
-	game.print('游戏失败！游戏稍后将自动重启',{r = 1, g = 0, b = 0, a = 0.5})
+	--game.print('游戏失败！游戏稍后将自动重启',{r = 1, g = 0, b = 0, a = 0.5})
 	local wave_number = WD.get('wave_number')
 
 	for _, p in pairs(game.connected_players) do
 
-	Alert.alert_player(p, 25, '火箭发射井被摧毁了，游戏失败！你存活了' .. wave_number .. '波，下次好运。')
+	Alert.alert_player(p, 25, 'Rocket silo destroyed, game failed! You survived' .. wave_number .. 'wave，good luck next time')
 	
     end
 	 local Reset_map = require 'maps.amap.main'.reset_map

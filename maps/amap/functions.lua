@@ -618,12 +618,14 @@ function Public.on_player_joined_game(event)
     local player = game.players[event.player_index]
     local surface = game.surfaces[active_surface_index]
 
-    player.print('保护火箭发射井，当火箭发射被摧毁时游戏则失败。抵御虫子进攻，建造产线，通过发射火箭来赢得游戏！')
-	player.print('地图纪录: \n 通关纪录：无 \n 最久存活：290波 \n 瓶子科技：红绿灰蓝瓶 \n 最高等级：117级 \n 纪录编写时间：1.7')
-	player.print('QQ群：701077913')
+    player.print('Protect the rocket silo. When the rocket launch is destroyed, the game fails. Resist insect attacks, build production lines, and win the game by launching rockets!')
+	
 	local reward = require 'maps.amap.main'.reward
     local player_data = get_player_data(player)
     if not player_data.first_join then
+        local message = ({'main.greeting', player.name})
+        Alert.alert_player(player, 15, message)
+
 		
         for item, amount in pairs(starting_items) do
            player.insert({name = item, count = amount})

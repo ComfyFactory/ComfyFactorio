@@ -54,7 +54,7 @@ local function hidden_treasure(player, entity)
 
     local magic = rpg[player.index].magicka
 
-       local msg = '哦，看啊，你找到了一个宝藏！'
+       local msg = 'Oh, look, we found a treasure！'
    
 	   Alert.alert_player(player, 5, msg)
         
