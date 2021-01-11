@@ -3,6 +3,7 @@
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Gui = require 'utils.gui'
 
 local this = {
     players = {}
@@ -17,18 +18,32 @@ Global.register(
 
 local Public = {}
 
-local function get_player_data(player, remove)
+local locate_player_frame_name = Gui.uid_name()
+local player_frame_name = Gui.uid_name()
+
+local function create_player_data(player)
     local player_data = this.players[player.index]
     if player_data then
-        if not remove then
-            return player_data
-        else
-            this.players[player.index] = nil
-        end
+        return this.players[player.index]
+    else
+        this.players[player.index] = {}
+        return this.players[player.index]
     end
+end
 
-    this.players[player.index] = {}
-    return this.players[player.index]
+local function remove_player_data(player)
+    local player_data = this.players[player.index]
+    if player_data then
+        this.players[player.index] = nil
+    end
+end
+
+local function remove_camera_frame(player)
+    if player.gui.center[locate_player_frame_name] then
+        player.gui.center[locate_player_frame_name].destroy()
+        remove_player_data(player)
+        return
+    end
 end
 
 local function validate_player(player)
@@ -50,38 +65,51 @@ local function validate_player(player)
     return true
 end
 
-local function create_mini_camera_gui(player, caption, position, surface, refresh)
+local function validate_frame(frame)
+    if not frame then
+        return false
+    end
+    if not frame.valid then
+        return false
+    end
+
+    return true
+end
+
+local function create_mini_camera_gui(player, caption, position, surface)
+    if player.gui.center[locate_player_frame_name] then
+        player.gui.center[locate_player_frame_name].destroy()
+        remove_player_data(player)
+        return
+    end
+
     local target_player = game.players[caption]
 
     if validate_player(target_player) then
-        local player_data = get_player_data(player)
+        local player_data = create_player_data(player)
         player_data.target_player = target_player
     else
-        get_player_data(player, true)
+        remove_player_data(player)
         player.print('Please type a name of a player who is connected.', Color.warning)
         return
     end
 
-    if player.gui.center['where_camera'] and not refresh then
-        player.gui.center['where_camera'].destroy()
-    end
-
-    local frame = player.gui.center.where_camera
-    if not frame then
-        frame = player.gui.center.add({type = 'frame', name = 'where_camera', caption = caption})
+    local frame = player.gui.center[locate_player_frame_name]
+    if not validate_frame(frame) then
+        frame = player.gui.center.add({type = 'frame', name = locate_player_frame_name, caption = caption})
     end
 
     surface = tonumber(surface)
 
-    if frame.where_camera then
-        frame.where_camera.destroy()
+    if frame[player_frame_name] and frame[player_frame_name].valid then
+        frame[player_frame_name].destroy()
     end
 
     local camera =
         frame.add(
         {
             type = 'camera',
-            name = 'where_camera',
+            name = player_frame_name,
             position = position,
             zoom = 0.4,
             surface_index = surface
@@ -89,6 +117,8 @@ local function create_mini_camera_gui(player, caption, position, surface, refres
     )
     camera.style.minimal_width = 740
     camera.style.minimal_height = 580
+    local player_data = create_player_data(player)
+    player_data.camera_frame = camera
 end
 
 commands.add_command(
@@ -104,11 +134,11 @@ commands.add_command(
             local target_player = game.players[cmd.parameter]
 
             if validate_player(target_player) then
-                local player_data = get_player_data(player)
+                local player_data = create_player_data(player)
                 player_data.target_player = target_player
                 create_mini_camera_gui(player, target_player.name, target_player.position, target_player.surface.index)
             else
-                get_player_data(player, true)
+                remove_player_data(player)
                 player.print('Please type a name of a player who is connected.', Color.warning)
             end
         else
@@ -117,46 +147,48 @@ commands.add_command(
     end
 )
 
-local function on_gui_click(event)
-    local player = game.players[event.player_index]
-
-    if not (event.element and event.element.valid) then
-        return
-    end
-
-    local name = event.element.name
-
-    if name == 'where_camera' then
-        player.gui.center['where_camera'].destroy()
-        get_player_data(player, true)
-        return
-    end
-end
-
 local function on_nth_tick()
-    local players = game.connected_players
-    for i = 1, #players do
-        local player = players[i]
+    for p, data in pairs(this.players) do
+        if data and data.target_player and data.target_player.valid then
+            local target_player = data.target_player
+            local camera_frame = data.camera_frame
+            local player = game.get_player(p)
 
-        local player_data = get_player_data(player)
-        if player_data and player_data.target_player then
-            local target_player = player_data.target_player
-
-            if not validate_player(target_player) then
-                get_player_data(player, true)
+            if not (validate_player(player) and validate_player(target_player)) then
+                remove_player_data(player)
                 goto continue
             end
 
-            create_mini_camera_gui(player, target_player.name, target_player.position, target_player.surface.index, true)
+            if not validate_frame(camera_frame) then
+                remove_player_data(player)
+                goto continue
+            end
+
+            camera_frame.position = target_player.position
+            camera_frame.surface_index = target_player.surface.index
 
             ::continue::
         end
     end
 end
 
-Public.create_mini_camera_gui = create_mini_camera_gui
+Gui.on_click(
+    locate_player_frame_name,
+    function(event)
+        remove_camera_frame(event.player)
+    end
+)
 
-Event.add(defines.events.on_gui_click, on_gui_click)
+Gui.on_click(
+    player_frame_name,
+    function(event)
+        remove_camera_frame(event.player)
+    end
+)
+
+Public.create_mini_camera_gui = create_mini_camera_gui
+Public.remove_camera_frame = remove_camera_frame
+
 Event.on_nth_tick(2, on_nth_tick)
 
 return Public
