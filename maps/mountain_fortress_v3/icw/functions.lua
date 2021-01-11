@@ -983,7 +983,7 @@ function Public.draw_minimap(icw, player, surface, position)
     local player_data = get_player_data(icw, player)
     local frame = player.gui.left.icw_main_frame
     if not frame then
-        frame = player.gui.left.add({type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap'})
+        frame = player.gui.left.add({type =     'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap'})
     end
     local element = frame['icw_sub_frame']
     if not frame.icw_auto_switch then
