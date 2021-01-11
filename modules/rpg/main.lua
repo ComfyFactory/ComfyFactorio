@@ -754,14 +754,17 @@ local function on_player_crafted_item(event)
 
     local rpg_extra = RPG.get('rpg_extra')
     local is_blacklisted = rpg_extra.tweaked_crafting_items
+    local tweaked_crafting_items_enabled = rpg_extra.tweaked_crafting_items_enabled
 
     local item = event.item_stack
 
     local amount = 0.30 * math.random(1, 2)
 
-    if item and item.valid then
-        if is_blacklisted[item.name] then
-            amount = 0.2
+    if tweaked_crafting_items_enabled then
+        if item and item.valid then
+            if is_blacklisted[item.name] then
+                amount = 0.2
+            end
         end
     end
 
@@ -1061,7 +1064,7 @@ local function on_player_used_capsule(event)
     rpg_t[player.index].last_spawned = game.tick + object.tick
     Functions.update_mana(player)
 
-    local reward_xp = object.mana_cost * 0.009
+    local reward_xp = object.mana_cost * 0.045
     if reward_xp < 1 then
         reward_xp = 1
     end
