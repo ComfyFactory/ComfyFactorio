@@ -1,9 +1,8 @@
 local Server = require 'utils.server'
-local GUI = require 'utils.gui'
 local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 
-local ups_label = GUI.uid_name()
+local ups_label = 'ups_label'
 
 local function validate_player(player)
     if not player then
