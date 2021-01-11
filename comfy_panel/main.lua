@@ -44,7 +44,9 @@ end
 
 function Public.comfy_panel_restore_screen_gui(player)
     for _, child in pairs(player.gui.screen.children) do
-        child.visible = true
+        if child.name ~= 'ups_label' then
+            child.visible = true
+        end
     end
 end
 
