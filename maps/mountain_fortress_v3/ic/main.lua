@@ -18,6 +18,7 @@ local function on_entity_died(event)
     local ic = IC.get()
 
     if entity.type == 'car' or entity.name == 'spidertron' then
+        Minimap.kill_minimap(game.players[event.player_index])
         Functions.kill_car(ic, entity)
     end
 end
@@ -30,9 +31,8 @@ local function on_player_mined_entity(event)
 
     local ic = IC.get()
 
-    Minimap.kill_minimap(game.players[event.player_index])
-
     if entity.type == 'car' or entity.name == 'spidertron' then
+        Minimap.kill_minimap(game.players[event.player_index])
         Functions.save_car(ic, event)
     end
 end

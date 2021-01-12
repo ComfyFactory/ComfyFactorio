@@ -175,6 +175,8 @@ function Public.update_minimap()
         if Functions.get_player_surface(ic, player) and player.gui.left.minimap_toggle_frame and player_data.auto then
             kill_frame(player)
             draw_minimap(player)
+        else
+            kill_minimap(player)
         end
     end
 end
