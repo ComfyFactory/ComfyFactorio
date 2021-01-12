@@ -87,7 +87,7 @@ local function on_gui_click(event)
     end
     if event.element.name == 'charging_station' then
         local player = game.players[event.player_index]
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Charging Station Gui Click')
         if is_spamming then
             return
         end

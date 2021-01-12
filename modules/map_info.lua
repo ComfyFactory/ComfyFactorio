@@ -115,7 +115,7 @@ local function on_gui_click(event)
     end
 
     if event.element.name == 'close_map_intro' then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Map Info Gui Click')
         if is_spamming then
             return
         end

@@ -300,7 +300,7 @@ local function on_gui_click(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player)
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'Score Gui Click')
     if is_spamming then
         return
     end

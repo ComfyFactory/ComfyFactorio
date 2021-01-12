@@ -41,7 +41,7 @@ local function on_gui_click(event)
     end
     local element = event.element
     if player.gui.screen[main_frame_name] then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG Gui Click')
         if is_spamming then
             return
         end
