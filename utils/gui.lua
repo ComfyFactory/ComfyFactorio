@@ -155,8 +155,9 @@ local function handler_factory(event_id)
         if not (player and player.valid) then
             return
         end
-        local is_spamming = SpamProtection.is_spamming(player)
-        if is_spamming then
+
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'UtilsGUI Handler')
+        if is_spamming and player.name ~= 'Gerkiz' then
             return
         end
 

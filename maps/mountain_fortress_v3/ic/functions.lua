@@ -317,8 +317,8 @@ local function kick_players_from_surface(ic, car)
                     e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
             end
+            return log_err('Car entity was not valid.')
         end
-        return log_err('Car entity was not valid.')
     end
 
     for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do

@@ -328,7 +328,7 @@ local function text_changed(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player)
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Text Changed')
     if is_spamming then
         return
     end
@@ -630,7 +630,7 @@ local function on_gui_click(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player)
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Gui Click')
     if is_spamming then
         return
     end
@@ -700,7 +700,7 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Selection Changed')
         if is_spamming then
             return
         end
@@ -721,7 +721,7 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Player Select')
         if is_spamming then
             return
         end

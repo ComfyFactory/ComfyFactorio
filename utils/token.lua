@@ -2,7 +2,7 @@ local Token = {}
 
 local tokens = {}
 
-local counter = 0
+local counter = 200
 
 --- Assigns a unquie id for the given var.
 -- This function cannot be called after on_init() or on_load() has run as that is a desync risk.

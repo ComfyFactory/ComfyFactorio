@@ -556,28 +556,28 @@ local function on_gui_switch_state_changed(event)
     end
 
     if functions[event.element.name] then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Functions Elem')
         if is_spamming then
             return
         end
         functions[event.element.name](event)
         return
     elseif antigrief_functions[event.element.name] then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config AntiGrief Elem')
         if is_spamming then
             return
         end
         antigrief_functions[event.element.name](event)
         return
     elseif fortress_functions[event.element.name] then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Fortress Elem')
         if is_spamming then
             return
         end
         fortress_functions[event.element.name](event)
         return
     elseif is_loaded('comfy_panel.poll') then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Poll Elem')
         if is_spamming then
             return
         end

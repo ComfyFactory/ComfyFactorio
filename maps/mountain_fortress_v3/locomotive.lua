@@ -731,7 +731,7 @@ local function slider_changed(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player, 2)
+    local is_spamming = SpamProtection.is_spamming(player, 2, 'Locomotive Slider Change')
     if is_spamming then
         return
     end
@@ -767,7 +767,7 @@ local function text_changed(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player, 2)
+    local is_spamming = SpamProtection.is_spamming(player, 2, 'Locomotive Text Changed')
     if is_spamming then
         return
     end
@@ -951,7 +951,7 @@ local function gui_click(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player)
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'Locomotive Gui Clicked')
     if is_spamming then
         return
     end

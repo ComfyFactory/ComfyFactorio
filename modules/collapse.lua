@@ -84,6 +84,7 @@ local function progress()
     local surface = collapse.surface
 
     if not collapse.start_now then
+        collapse.tiles = nil
         return
     end
 
@@ -109,11 +110,7 @@ local function progress()
         if collapse.specific_entities.enabled then
             local position = {tile.position.x + 0.5, tile.position.y + 0.5}
             local entities = collapse.specific_entities.entities
-            for _, e in pairs(
-                surface.find_entities_filtered(
-                    {area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}}
-                )
-            ) do
+            for _, e in pairs(surface.find_entities_filtered({area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}})) do
                 if entities[e.name] and e.valid and e.health then
                     e.die()
                 elseif e.valid then
@@ -123,11 +120,7 @@ local function progress()
         end
         if collapse.kill then
             local position = {tile.position.x + 0.5, tile.position.y + 0.5}
-            for _, e in pairs(
-                surface.find_entities_filtered(
-                    {area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}}
-                )
-            ) do
+            for _, e in pairs(surface.find_entities_filtered({area = {{position[1] - 2, position[2] - 2}, {position[1] + 2, position[2] + 2}}})) do
                 if e.valid and e.health then
                     e.die()
                 end

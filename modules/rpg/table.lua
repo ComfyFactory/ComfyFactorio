@@ -106,6 +106,7 @@ function Public.reset_table()
         ['iron-gear-wheel'] = true,
         ['pipe'] = true
     }
+    this.tweaked_crafting_items_enabled = false
     this.rpg_t = {}
     this.rpg_extra.rpg_xp_yield = {
         ['behemoth-biter'] = 16,

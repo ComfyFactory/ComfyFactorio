@@ -153,7 +153,7 @@ local function on_gui_click(event)
         if not validate_player(player) then
             return
         end
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Mtn Gui Click')
         if is_spamming then
             return
         end

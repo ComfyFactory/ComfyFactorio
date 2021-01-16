@@ -18,6 +18,7 @@ local function on_entity_died(event)
     local ic = IC.get()
 
     if entity.type == 'car' or entity.name == 'spidertron' then
+        Minimap.kill_minimap(game.players[event.player_index])
         Functions.kill_car(ic, entity)
     end
 end
@@ -30,9 +31,8 @@ local function on_player_mined_entity(event)
 
     local ic = IC.get()
 
-    Minimap.kill_minimap(game.players[event.player_index])
-
     if entity.type == 'car' or entity.name == 'spidertron' then
+        Minimap.kill_minimap(game.players[event.player_index])
         Functions.save_car(ic, event)
     end
 end
@@ -169,6 +169,22 @@ local function on_init()
     Public.reset()
 end
 
+local function on_gui_switch_state_changed(event)
+    local element = event.element
+    local player = game.players[event.player_index]
+    if not (player and player.valid) then
+        return
+    end
+
+    if not element.valid then
+        return
+    end
+
+    if element.name == 'ic_auto_switch' then
+        Minimap.toggle_auto(player)
+    end
+end
+
 local changed_surface = Minimap.changed_surface
 
 Event.on_init(on_init)
@@ -183,4 +199,6 @@ Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, changed_surface)
 Event.add(IC.events.on_player_kicked_from_surface, trigger_on_player_kicked_from_surface)
+Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
+
 return Public

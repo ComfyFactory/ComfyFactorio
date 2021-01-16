@@ -4,7 +4,8 @@ local Public = {}
 
 local this = {
     prevent_spam = {}, -- the default table where all player indexes will be stored
-    default_tick = 15 -- this defines the default tick to check weather or not a user is spamming a button.
+    default_tick = 15, -- this defines the default tick to check weather or not a user is spamming a button.
+    _DEBUG = false
 }
 
 Global.register(
@@ -13,6 +14,13 @@ Global.register(
         this = t
     end
 )
+
+local function debug_str(str)
+    if not this._DEBUG then
+        return
+    end
+    print(str)
+end
 
 function Public.reset_spam_table()
     local players = game.connected_players
@@ -31,9 +39,13 @@ function Public.set_new_value(player)
     return false
 end
 
-function Public.is_spamming(player, value_to_compare)
+function Public.is_spamming(player, value_to_compare, text)
     if not this.prevent_spam[player.index] then
         return false
+    end
+
+    if text then
+        debug_str('Frame: ' .. text)
     end
 
     if game.tick_paused then
@@ -45,8 +57,10 @@ function Public.is_spamming(player, value_to_compare)
     if this.prevent_spam[player.index] then
         if (tick - this.prevent_spam[player.index]) > value then
             Public.set_new_value(player)
+            debug_str(player.name .. ' is not spamming.')
             return false -- is not spamming
         else
+            debug_str(player.name .. ' is spamming.')
             return true -- is spamming
         end
     end
