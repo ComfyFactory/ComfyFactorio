@@ -1049,12 +1049,12 @@ local function show_mvps(player)
         wave_defense_text.style.font = 'default-bold'
         wave_defense_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-        local defender_label = t.add({type = 'label', caption = 'Defender >> '})
-        defender_label.style.font = 'default-listbox'
-        defender_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local defender_label_text = t.add({type = 'label', caption = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!'})
-        defender_label_text.style.font = 'default-bold'
-        defender_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+        local fighter_label = t.add({type = 'label', caption = 'Fighter >> '})
+        fighter_label.style.font = 'default-listbox'
+        fighter_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local fighter_label_text = t.add({type = 'label', caption = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!'})
+        fighter_label_text.style.font = 'default-bold'
+        fighter_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
         local builder_label = t.add({type = 'label', caption = 'Builder >> '})
         builder_label.style.font = 'default-listbox'
@@ -1077,7 +1077,7 @@ local function show_mvps(player)
             table.insert(result, 'HIGHEST WAVE: \\n')
             table.insert(result, wave_defense_table.wave_number .. '\\n')
             table.insert(result, '\\n')
-            table.insert(result, 'MVP Defender: \\n')
+            table.insert(result, 'MVP Fighter: \\n')
             table.insert(result, mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!\\n')
             table.insert(result, '\\n')
             table.insert(result, 'MVP Builder: \\n')

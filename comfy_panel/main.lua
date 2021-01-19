@@ -44,7 +44,9 @@ end
 
 function Public.comfy_panel_restore_screen_gui(player)
     for _, child in pairs(player.gui.screen.children) do
-        child.visible = true
+        if child.name ~= 'ups_label' then
+            child.visible = true
+        end
     end
 end
 
@@ -163,7 +165,7 @@ local function on_gui_click(event)
     end
 
     if event.element.name == 'comfy_panel_top_button' then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Comfy Main GUI Click')
         if is_spamming then
             return
         end
@@ -180,7 +182,7 @@ local function on_gui_click(event)
     end
 
     if event.element.caption == 'X' and event.element.name == 'comfy_panel_close' then
-        local is_spamming = SpamProtection.is_spamming(player)
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Comfy Main Gui Close Button')
         if is_spamming then
             return
         end
@@ -195,7 +197,7 @@ local function on_gui_click(event)
     if event.element.type ~= 'tab' then
         return
     end
-    local is_spamming = SpamProtection.is_spamming(player)
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'Comfy Main Gui No Func')
     if is_spamming then
         return
     end

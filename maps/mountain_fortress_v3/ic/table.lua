@@ -60,6 +60,17 @@ function Public.get(key)
     end
 end
 
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
+        return this[key]
+    else
+        return this
+    end
+end
+
 function Public.set_car_area(tbl)
     if not tbl then
         return

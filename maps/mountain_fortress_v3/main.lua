@@ -5,6 +5,7 @@ local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
 local HS = require 'maps.mountain_fortress_v3.highscore'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
+local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Autostash = require 'modules.autostash'
 local Group = require 'comfy_panel.group'
 local PL = require 'comfy_panel.player_list'
@@ -112,13 +113,13 @@ function Public.reset_map()
     Poll.reset()
     ICW.reset()
     IC.reset()
-    IC.allowed_surface('mountain_fortress_v3')
+    IC.allowed_surface(game.surfaces[this.active_surface_index].name)
     Functions.reset_table()
     game.reset_time_played()
     WPT.reset_table()
 
     RPG_Func.rpg_reset_all_players()
-    RPG_Settings.set_surface_name('mountain_fortress_v3')
+    RPG_Settings.set_surface_name(game.surfaces[this.active_surface_index].name)
     RPG_Settings.enable_health_and_mana_bars(true)
     RPG_Settings.enable_wave_defense(true)
     RPG_Settings.enable_mana(true)
@@ -170,6 +171,7 @@ function Public.reset_map()
         if player.gui.left['mvps'] then
             player.gui.left['mvps'].destroy()
         end
+        ICMinimap.kill_minimap(player)
     end
 
     Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})

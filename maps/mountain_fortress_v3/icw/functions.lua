@@ -1034,7 +1034,7 @@ function Public.toggle_minimap(icw, event)
         return
     end
     local player = game.players[event.player_index]
-    local is_spamming = SpamProtection.is_spamming(player, 5)
+    local is_spamming = SpamProtection.is_spamming(player, 5, 'ICW Toggle Minimap')
     if is_spamming then
         return
     end

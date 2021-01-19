@@ -603,11 +603,6 @@ local function on_gui_click(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player)
-    if is_spamming then
-        return
-    end
-
     local name = event.element.name
     local actions = {
         ['player_list_panel_header_2'] = function()
@@ -641,6 +636,11 @@ local function on_gui_click(event)
     }
 
     if actions[name] then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Gui Click')
+        if is_spamming then
+            return
+        end
+
         actions[name]()
         return
     end
