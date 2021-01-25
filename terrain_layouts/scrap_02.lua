@@ -1,4 +1,3 @@
-require "modules.mineable_wreckage_yields_scrap"
 require "modules.no_deconstruction_of_neutral_entities"
 
 local get_noise = require "utils.get_noise"
