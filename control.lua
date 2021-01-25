@@ -222,6 +222,7 @@ require 'modules.autostash'
 --require 'terrain_layouts.cone_to_east'
 --require 'terrain_layouts.biters_and_resources_east'
 --require 'terrain_layouts.scrap_01'
+--require 'terrain_layouts.scrap_02'
 --require 'terrain_layouts.watery_world'
 --require 'terrain_layouts.tree_01'
 ---------------------------------------------------------------
