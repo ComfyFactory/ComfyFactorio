@@ -5,6 +5,19 @@ local WD = require "modules.wave_defense.table"
 local simplex_noise = require 'utils.simplex_noise'.d2
 local spawn_size = 96
 local wall_thickness = 3
+local small_scraps = {
+  "crash-site-spaceship-wreck-small-1",
+  "crash-site-spaceship-wreck-small-1",
+  "crash-site-spaceship-wreck-small-2",
+  "crash-site-spaceship-wreck-small-2",
+  "crash-site-spaceship-wreck-small-3",
+  "crash-site-spaceship-wreck-small-3",
+  "crash-site-spaceship-wreck-small-4",
+  "crash-site-spaceship-wreck-small-4",
+  "crash-site-spaceship-wreck-small-5",
+  "crash-site-spaceship-wreck-small-5",
+  "crash-site-spaceship-wreck-small-6"
+}
 
 local function clone_chunk(event, source_surface_name)
 	local source_surface = game.surfaces[source_surface_name]
@@ -60,7 +73,7 @@ local function spawn_area(event)
 						if math.random(1, 3) ~= 1 then
 							local noise = simplex_noise(p.x * 0.015, p.y * 0.015, game.surfaces[1].map_gen_settings.seed) + simplex_noise(p.x * 0.055, p.y * 0.055, game.surfaces[1].map_gen_settings.seed) * 0.5
 							if noise > 0.6 then
-								event.surface.create_entity({name = "mineable-wreckage", position = p, force = "neutral"})
+								event.surface.create_entity({name = small_scraps[math.random(1, #small_scraps)], position = p, force = "neutral"})
 							end
 							if noise < -0.75 then
 								if math.random(1, 16) == 1 then
@@ -73,9 +86,9 @@ local function spawn_area(event)
 			end					
 		end
 	end
-	
-	if left_top.x == -64 and left_top.y == -64 then 
-		local wreck = event.surface.create_entity({name = "big-ship-wreck-1", position = {0, -4}, force = "player"})
+
+	if left_top.x == -64 and left_top.y == -64 then
+		local wreck = event.surface.create_entity({name = "crash-site-spaceship", position = {0, -6}, force = "player"})
 		wreck.insert({name = "submachine-gun", count = 3})
 		wreck.insert({name = "firearm-magazine", count = 32})
 		wreck.insert({name = "grenade", count = 8})
