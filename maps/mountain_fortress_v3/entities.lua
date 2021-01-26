@@ -240,6 +240,7 @@ local function set_train_final_health(final_damage_amount)
     locomotive_health = WPT.get('locomotive_health')
 
     if locomotive_health <= 0 then
+        WPT.set('game_lost', true)
         Public.loco_died()
     end
 
@@ -1103,6 +1104,11 @@ function Public.unstuck_player(index)
 end
 
 function Public.loco_died()
+    local game_lost = WPT.get('game_lost')
+    if not game_lost then
+        return
+    end
+
     local active_surface_index = WPT.get('active_surface_index')
     local locomotive = WPT.get('locomotive')
     local surface = game.surfaces[active_surface_index]
@@ -1169,14 +1175,12 @@ function Public.loco_died()
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
-    this.game_lost = true
     local msg = defeated_messages[random(1, #defeated_messages)]
 
     local pos = {
         position = this.locomotive.position
     }
     Alert.alert_all_players_location(pos, msg)
-    Server.to_discord_bold(msg, true)
     game.forces.enemy.set_friend('player', true)
     game.forces.player.set_friend('enemy', true)
 

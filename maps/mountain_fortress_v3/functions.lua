@@ -1058,6 +1058,10 @@ function Public.set_spawn_position()
     if spawn_near_collapse.active then
         local collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
         local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
+        if not sizeof then
+            goto continue
+        end
+
         if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
             retries = retries + 1
             if retries == 2 then

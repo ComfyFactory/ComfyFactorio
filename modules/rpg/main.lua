@@ -159,6 +159,22 @@ local get_cause_player = {
         end
         return players
     end,
+    ['spider-vehicle'] = function(cause)
+        local players = {}
+        local driver = cause.get_driver()
+        if driver then
+            if driver.player then
+                players[#players + 1] = driver.player
+            end
+        end
+        local passenger = cause.get_passenger()
+        if passenger then
+            if passenger.player then
+                players[#players + 1] = passenger.player
+            end
+        end
+        return players
+    end,
     ['locomotive'] = train_type_cause,
     ['cargo-wagon'] = train_type_cause,
     ['artillery-wagon'] = train_type_cause,
