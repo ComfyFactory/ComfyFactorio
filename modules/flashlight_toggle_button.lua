@@ -3,34 +3,34 @@
 local event = require 'utils.event'
 local message_color = {r = 200, g = 200, b = 0}
 
-local function on_gui_click(event)	
-	if not event.element then return end	
+local function on_gui_click(event)
+	if not event.element then return end
 	if not event.element.valid then return end
 	if not event.element.name then return end
 	if event.element.name ~= "flashlight_toggle" then return end
 	local player = game.players[event.player_index]
-	
+
 	if global.flashlight_enabled[player.name] == true then
 		player.character.disable_flashlight()
 		player.print("Flashlight disabled.", message_color)
 		global.flashlight_enabled[player.name] = false
 		return
 	end
-	
+
 	if global.flashlight_enabled[player.name] == false then
 		player.character.enable_flashlight()
 		player.print("Flashlight enabled.", message_color)
 		global.flashlight_enabled[player.name] = true
 		return
-	end	
+	end
 end
 
 local function on_player_respawned(event)
-	local player = game.players[event.player_index]	
+	local player = game.players[event.player_index]
 	if global.flashlight_enabled[player.name] == false then
 		player.character.disable_flashlight()
 		return
-	end	
+	end
 	if global.flashlight_enabled[player.name] == true then
 		player.character.enable_flashlight()
 		return
@@ -41,9 +41,10 @@ local function on_player_joined_game(event)
 	if not global.flashlight_enabled then global.flashlight_enabled = {} end
 	local player = game.players[event.player_index]
 	global.flashlight_enabled[player.name] = true
-	if player.gui.top["flashlight_toggle"] then return end	
+	if player.gui.top["flashlight_toggle"] then return end
 	local b = player.gui.top.add({type = "sprite-button", name = "flashlight_toggle", sprite = "item/small-lamp", tooltip = "Toggle flashlight" })
 	b.style.minimal_height = 38
+	b.style.maximal_height = 38
 	b.style.minimal_width = 38
 	b.style.top_padding = 2
 	b.style.left_padding = 4
