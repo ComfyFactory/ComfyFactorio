@@ -1,6 +1,5 @@
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
-local Event = require 'utils.event'
 
 local Public = {}
 

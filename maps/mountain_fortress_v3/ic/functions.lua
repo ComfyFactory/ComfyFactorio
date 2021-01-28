@@ -870,10 +870,12 @@ function Public.use_door_with_entity(ic, player, door)
         end
     end
 
-    player_data.fallback_surface = car.entity.surface.index
-    player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
+    if validate_entity(car.entity) then
+        player_data.fallback_surface = car.entity.surface.index
+        player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
+    end
 
-    if car.entity.surface.name == player.surface.name then
+    if validate_entity(car.entity) and car.entity.surface.name == player.surface.name then
         local surface = car.surface
         if validate_entity(car.entity) and car.owner == player.index then
             IC_Gui.add_toolbar(player)

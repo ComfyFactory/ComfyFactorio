@@ -6,7 +6,6 @@ local Server = require 'utils.server'
 local Tabs = require 'comfy_panel.main'
 local session = require 'utils.datastore.session_data'
 
-
 local Class = {}
 
 local insert = table.insert
@@ -945,6 +944,10 @@ Gui.on_click(
     create_poll_add_answer_name,
     function(event)
         local data = Gui.get_data(event.element)
+
+        if not data then
+            return
+        end
 
         insert(data.answers, {text = ''})
         redraw_create_poll_content(data)
