@@ -644,7 +644,6 @@ function Public.create_wagon_room(icw, wagon)
             e2.minable = false
             wagon.transfer_entities = {e1, e2}
         end
-        return
     end
 end
 

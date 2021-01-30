@@ -86,13 +86,6 @@ local function on_train_created()
     Functions.request_reconstruction(icw)
 end
 
-local function on_built_entity(event)
-    local icw = ICW.get()
-    local created_entity = event.created_entity
-    Functions.create_wagon(icw, created_entity)
-    Functions.add_wagon_entity_count(icw, created_entity)
-end
-
 local function on_gui_click(event)
     local icw = ICW.get()
     Functions.toggle_minimap(icw, event)
@@ -160,6 +153,5 @@ Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
-Event.add(defines.events.on_built_entity, on_built_entity)
 
 return Public
