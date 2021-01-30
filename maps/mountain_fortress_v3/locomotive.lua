@@ -1479,8 +1479,8 @@ local function on_built_entity(event)
     local chest_created
     local increased = false
 
-    for k, v in pairs(outside_chests) do
-        if v and v.valid then
+    for k, data in pairs(outside_chests) do
+        if data and data.chest and data.chest.valid then
             if chests_linked_to[train.unit_number] then
                 local linked_to = chests_linked_to[train.unit_number].count
                 if linked_to == chest_limit_outside_upgrades then
@@ -1492,6 +1492,7 @@ local function on_built_entity(event)
                     chests_linked_to[train.unit_number].count = linked_to + 1
                     chests_linked_to[train.unit_number][entity.unit_number] = true
                     increased = true
+
                     goto continue
                 end
             else
