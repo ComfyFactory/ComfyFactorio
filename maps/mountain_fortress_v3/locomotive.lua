@@ -238,7 +238,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         locomotive_group.set_allows_action(defines.input_action.admin_action, false)
         locomotive_group.set_allows_action(defines.input_action.drop_item, false)
         locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
-        locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
     end
 
     if not game.permissions.get_group('plebs') then
@@ -260,7 +259,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         not_trusted.set_allows_action(defines.input_action.admin_action, false)
         not_trusted.set_allows_action(defines.input_action.drop_item, false)
         not_trusted.set_allows_action(defines.input_action.place_equipment, false)
-        not_trusted.set_allows_action(defines.input_action.take_equipment, false)
         not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
     end
