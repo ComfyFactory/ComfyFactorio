@@ -217,20 +217,6 @@ function Public.conjure_items()
         enabled = true
     }
     spells[#spells + 1] = {
-        name = {'spells.railgun_beam'},
-        obj_to_create = 'railgun-beam',
-        target = false,
-        amount = 3,
-        damage = true,
-        range = 240,
-        force = 'player',
-        level = 50,
-        type = 'special',
-        mana_cost = 75,
-        tick = 200,
-        enabled = true
-    }
-    spells[#spells + 1] = {
         name = {'spells.raw_fish'},
         obj_to_create = 'fish',
         target = false,
@@ -317,7 +303,6 @@ Public.projectile_types = {
         force = 'enemy'
     },
     ['lubricant-barrel'] = {name = 'acid-stream-spitter-big', count = 3, max_range = 16, tick_speed = 1},
-    ['railgun-beam'] = {name = 'railgun-beam', count = 5, max_range = 40, tick_speed = 5},
     ['shotgun-shell'] = {name = 'shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},
     ['piercing-shotgun-shell'] = {name = 'piercing-shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},
     ['firearm-magazine'] = {name = 'shotgun-pellet', count = 16, max_range = 24, tick_speed = 1},

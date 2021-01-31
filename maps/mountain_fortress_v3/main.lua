@@ -108,7 +108,7 @@ function Public.reset_map()
     BuriedEnemies.reset()
     Commands.reset()
     Commands.activate_custom_buttons(true)
-    Commands.bottom_right(false)
+    Commands.bottom_right(true)
 
     Poll.reset()
     ICW.reset()

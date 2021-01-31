@@ -117,7 +117,6 @@ local function level_up(player)
     end
     RPG_GUI.draw_level_text(player)
     rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
-    RPG_GUI.update_char_button(player)
     if rpg_t[player.index].allocate_index ~= 1 then
         local node = rpg_t[player.index].allocate_index
         local index = names[node]:lower()
@@ -127,6 +126,8 @@ local function level_up(player)
             rpg_t[player.index].total = rpg_t[player.index].total + distribute_points_gain
         end
         RPG_GUI.update_player_stats(player)
+    else
+        RPG_GUI.update_char_button(player)
     end
     if player.gui.screen[main_frame_name] then
         RPG_GUI.toggle(player, true)

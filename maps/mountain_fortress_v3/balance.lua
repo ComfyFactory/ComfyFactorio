@@ -48,7 +48,7 @@ local function enemy_weapon_damage()
 
     local data = {
         ['artillery-shell'] = 0.05,
-        ['biological'] = 0.08,
+        ['biological'] = 0.06,
         ['bullet'] = 0.08,
         ['capsule'] = 0.08,
         ['electric'] = 0.08,
