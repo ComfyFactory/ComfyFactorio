@@ -2254,7 +2254,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 25000,
-            tooltip = ({'main_market.tank_cannon_na'}),
+            tooltip = ({'main_market.tank_cannon_na', 650}),
             upgrade = false,
             static = true,
             enabled = false
@@ -2275,7 +2275,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 2000,
-            tooltip = ({'main_market.vehicle_machine_gun_na'}),
+            tooltip = ({'main_market.vehicle_machine_gun_na', 100}),
             upgrade = false,
             static = true,
             enabled = false
