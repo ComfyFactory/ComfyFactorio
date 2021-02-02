@@ -822,7 +822,9 @@ local function give_main_command_to_group()
     for k, group in pairs(unit_groups) do
         if type(group) ~= 'number' then
             if group.valid then
-                command_to_main_target(group)
+                if group.surface.index == target.surface.index then
+                    command_to_main_target(group)
+                end
             else
                 get_active_unit_groups_count()
             end

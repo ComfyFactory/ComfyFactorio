@@ -516,6 +516,10 @@ local function on_entity_damaged(event)
         return
     end
 
+    if event.entity.force.index == event.cause.force.index then
+        return
+    end
+
     Functions.reward_mana(event.cause.player, 2)
 
     --Grant the player life-on-hit.

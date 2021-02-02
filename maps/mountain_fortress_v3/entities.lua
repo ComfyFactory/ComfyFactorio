@@ -78,7 +78,8 @@ local protect_types = {
     ['fluid-wagon'] = true,
     ['locomotive'] = true,
     ['reactor'] = true,
-    ['spidertron'] = true
+    ['spider-vehicle'] = true,
+    ['car'] = true
 }
 
 local reset_game =
@@ -211,18 +212,44 @@ local function set_train_final_health(final_damage_amount)
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
     local poison_deployed = WPT.get('poison_deployed')
+    local robotics_deployed = WPT.get('robotics_deployed')
 
-    if locomotive_health <= 5000 then
+    if locomotive_health >= 4000 and locomotive_health <= 6000 then
         if not poison_deployed then
-            for i = 1, 2, 1 do
-                Locomotive.enable_poison_defense()
+            local carriages = WPT.get('carriages')
+
+            if carriages then
+                for i = 1, #carriages do
+                    local entity = carriages[i]
+                    Locomotive.enable_poison_defense(entity.position)
+                end
             end
+
             local p = {
                 position = locomotive.position
             }
             local msg = ({'entity.train_taking_damage'})
             Alert.alert_all_players_location(p, msg)
             WPT.set().poison_deployed = true
+        end
+    elseif locomotive_health >= 1500 and locomotive_health <= 3900 then
+        if not robotics_deployed then
+            local carriages = WPT.get('carriages')
+
+            if carriages then
+                for _ = 1, 10 do
+                    for i = 1, #carriages do
+                        local entity = carriages[i]
+                        Locomotive.enable_robotic_defense(entity.position)
+                    end
+                end
+            end
+            local p = {
+                position = locomotive.position
+            }
+            local msg = ({'entity.train_taking_damage'})
+            Alert.alert_all_players_location(p, msg)
+            WPT.set().robotics_deployed = true
         end
     elseif locomotive_health >= locomotive_max_health then
         WPT.set().poison_deployed = false
@@ -283,20 +310,22 @@ local function protect_entities(event)
         if (event.cause and event.cause.valid) then
             if event.cause.force.index == 2 then
                 if units and units[entity.unit_number] then
-                    return set_train_final_health(dmg)
+                    set_train_final_health(dmg)
+                    return
+                else
+                    entity.health = entity.health - dmg
+                    return
                 end
-            elseif event.cause.force.index == 2 then
-                return
-            else
-                entity.health = entity.health + dmg
             end
         elseif not (event.cause and event.cause.valid) then
-            if event.force.index == 2 then
+            if event.force and event.force.index == 2 then
                 if units and units[entity.unit_number] then
-                    return set_train_final_health(dmg)
+                    set_train_final_health(dmg)
+                    return
+                else
+                    entity.health = entity.health - dmg
+                    return
                 end
-                entity.health = entity.health - dmg
-                return
             end
         end
 

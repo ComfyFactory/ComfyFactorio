@@ -350,25 +350,27 @@ local function update_gui()
 
         if valid then
             if success then
-                local main = target.get_main_inventory().get_contents()
-                local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
-                local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
-                local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()
-                local trash = target.get_inventory(defines.inventory.character_trash).get_contents()
+                if target then
+                    local main = target.get_main_inventory().get_contents()
+                    local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
+                    local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
+                    local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()
+                    local trash = target.get_inventory(defines.inventory.character_trash).get_contents()
 
-                local types = {
-                    ['Main'] = main,
-                    ['Armor'] = armor,
-                    ['Guns'] = guns,
-                    ['Ammo'] = ammo,
-                    ['Trash'] = trash
-                }
+                    local types = {
+                        ['Main'] = main,
+                        ['Armor'] = armor,
+                        ['Guns'] = guns,
+                        ['Ammo'] = ammo,
+                        ['Trash'] = trash
+                    }
 
-                local frame = Public.get_active_frame(player)
-                local panel_type = types[tab]
-                if frame then
-                    if frame.name == tab .. 'tab' then
-                        redraw_inventory(frame, player, target, tab, panel_type)
+                    local frame = Public.get_active_frame(player)
+                    local panel_type = types[tab]
+                    if frame then
+                        if frame.name == tab .. 'tab' then
+                            redraw_inventory(frame, player, target, tab, panel_type)
+                        end
                     end
                 end
             end

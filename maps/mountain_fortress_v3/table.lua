@@ -117,6 +117,7 @@ function Public.reset_table()
     this.enable_arties = 6 -- default to callback 6
     --!snip
     this.poison_deployed = false
+    this.robotics_deployed = false
     this.upgrades = {
         showed_text = false,
         landmine = {
@@ -165,14 +166,13 @@ function Public.reset_table()
     }
     this.marked_fixed_prices = {
         chest_limit_cost = 3000,
-        health_cost = 10000,
+        health_cost = 7000,
         pickaxe_cost = 3000,
         aura_cost = 4000,
         xp_point_boost_cost = 5000,
-        explosive_bullets_cost = 20000,
+        explosive_bullets_cost = 10000,
         flamethrower_turrets_cost = 3000,
-        land_mine_cost = 2,
-        skill_reset_cost = 100000
+        land_mine_cost = 2
     }
     this.collapse_grace = true
     this.explosive_bullets = false
