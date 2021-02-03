@@ -714,9 +714,9 @@ function Public.create_car_room(ic, car)
 
     construct_doors(ic, car)
     local mgs = surface.map_gen_settings
-  	mgs.width = area.right_bottom.x * 2
-  	mgs.height = area.right_bottom.y * 2
-  	surface.map_gen_settings = mgs
+    mgs.width = area.right_bottom.x * 2
+    mgs.height = area.right_bottom.y * 2
+    surface.map_gen_settings = mgs
 
     local lx, ly, rx, ry = 4, 1, 5, 1
 
@@ -926,16 +926,13 @@ function Public.use_door_with_entity(ic, player, door)
 end
 
 function Public.item_transfer(ic)
-    local car
-    ic.current_car_index, car = next(ic.cars, ic.current_car_index)
-    if not car then
-        return
-    end
-    if validate_entity(car.entity) then
-        if car.transfer_entities then
-            for k, e in pairs(car.transfer_entities) do
-                if validate_entity(e) then
-                    transfer_functions[e.name](car, e)
+    for _, car in pairs(ic.cars) do
+        if validate_entity(car.entity) then
+            if car.transfer_entities then
+                for k, e in pairs(car.transfer_entities) do
+                    if validate_entity(e) then
+                        transfer_functions[e.name](car, e)
+                    end
                 end
             end
         end

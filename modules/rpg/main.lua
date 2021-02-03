@@ -511,6 +511,10 @@ local function on_entity_damaged(event)
 
     local p = event.cause.player
 
+    if p.shooting_state.state ~= defines.shooting.not_shooting then
+        return
+    end
+
     local surface_name = RPG.get('rpg_extra').surface_name
     if sub(p.surface.name, 0, #surface_name) ~= surface_name then
         return
