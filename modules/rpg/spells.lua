@@ -10,7 +10,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 60,
         tick = 100,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/stone-wall'
     }
 
     spells[#spells + 1] = {
@@ -20,7 +21,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 50,
         tick = 100,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/wooden-chest'
     }
     spells[#spells + 1] = {
         name = {'entity-name.iron-chest'},
@@ -29,7 +31,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 110,
         tick = 200,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/iron-chest'
     }
     spells[#spells + 1] = {
         name = {'entity-name.steel-chest'},
@@ -38,7 +41,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 150,
         tick = 300,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/steel-chest'
     }
     spells[#spells + 1] = {
         name = {'entity-name.transport-belt'},
@@ -47,7 +51,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 80,
         tick = 100,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/transport-belt'
     }
     spells[#spells + 1] = {
         name = {'entity-name.fast-transport-belt'},
@@ -56,7 +61,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 110,
         tick = 200,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/fast-transport-belt'
     }
     spells[#spells + 1] = {
         name = {'entity-name.express-transport-belt'},
@@ -65,7 +71,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 150,
         tick = 300,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/express-transport-belt'
     }
     spells[#spells + 1] = {
         name = {'entity-name.underground-belt'},
@@ -74,7 +81,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 80,
         tick = 100,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/underground-belt'
     }
     spells[#spells + 1] = {
         name = {'entity-name.fast-underground-belt'},
@@ -83,7 +91,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 110,
         tick = 200,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/fast-underground-belt'
     }
     spells[#spells + 1] = {
         name = {'entity-name.express-underground-belt'},
@@ -92,7 +101,8 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 150,
         tick = 300,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/express-underground-belt'
     }
     spells[#spells + 1] = {
         name = {'entity-name.sand-rock-big'},
@@ -101,7 +111,8 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 80,
         tick = 350,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/sand-rock-big'
     }
     spells[#spells + 1] = {
         name = {'entity-name.small-biter'},
@@ -111,7 +122,8 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 55,
         tick = 200,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/small-biter'
     }
     spells[#spells + 1] = {
         name = {'entity-name.small-spitter'},
@@ -121,7 +133,8 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 55,
         tick = 200,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/small-spitter'
     }
     spells[#spells + 1] = {
         name = {'entity-name.medium-biter'},
@@ -131,7 +144,8 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 100,
         tick = 300,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/medium-biter'
     }
     spells[#spells + 1] = {
         name = {'entity-name.medium-spitter'},
@@ -140,7 +154,8 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 100,
         tick = 300,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/medium-spitter'
     }
     spells[#spells + 1] = {
         name = {'entity-name.biter-spawner'},
@@ -150,7 +165,8 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 800,
         tick = 1420,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/biter-spawner'
     }
     spells[#spells + 1] = {
         name = {'entity-name.spitter-spawner'},
@@ -160,7 +176,8 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 800,
         tick = 1420,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/spitter-spawner'
     }
     spells[#spells + 1] = {
         name = {'item-name.grenade'},
@@ -173,7 +190,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 110,
         tick = 150,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/grenade'
     }
     spells[#spells + 1] = {
         name = {'item-name.cluster-grenade'},
@@ -186,7 +204,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 150,
         tick = 200,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/cluster-grenade'
     }
     spells[#spells + 1] = {
         name = {'item-name.rocket'},
@@ -200,7 +219,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 60,
         tick = 320,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/rocket'
     }
     spells[#spells + 1] = {
         name = {'spells.acid_stream'},
@@ -214,7 +234,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 90,
         tick = 100,
-        enabled = true
+        enabled = true,
+        sprite = 'virtual-signal/signal-S'
     }
     spells[#spells + 1] = {
         name = {'spells.raw_fish'},
@@ -228,7 +249,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 140,
         tick = 320,
-        enabled = true
+        enabled = true,
+        sprite = 'item/raw-fish'
     }
     spells[#spells + 1] = {
         name = {'spells.comfylatron'},
@@ -242,7 +264,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 250,
         tick = 320,
-        enabled = true
+        enabled = true,
+        sprite = 'entity/compilatron'
     }
     spells[#spells + 1] = {
         name = {'spells.distractor'},
@@ -256,7 +279,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 340,
         tick = 320,
-        enabled = true
+        enabled = true,
+        sprite = 'recipe/distractor-capsule'
     }
     spells[#spells + 1] = {
         name = {'spells.warp'},
@@ -267,7 +291,8 @@ function Public.conjure_items()
         type = 'special',
         mana_cost = 340,
         tick = 2000,
-        enabled = true
+        enabled = true,
+        sprite = 'virtual-signal/signal-W'
     }
     return spells
 end

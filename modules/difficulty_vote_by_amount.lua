@@ -178,7 +178,7 @@ end
 
 local function set_difficulty()
     local index = highest_count(this.difficulties)
-    if not index then
+    if not index or not this.difficulties[index] then
         return
     end
 
