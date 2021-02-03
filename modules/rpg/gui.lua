@@ -21,6 +21,11 @@ local settings_button_name = RPG.settings_button_name
 local settings_frame_name = RPG.settings_frame_name
 local discard_button_name = RPG.discard_button_name
 local save_button_name = RPG.save_button_name
+local spell_gui_button_name = RPG.spell_gui_button_name
+local spell_gui_frame_name = RPG.spell_gui_frame_name
+local spell1_button_name = RPG.spell1_button_name
+local spell2_button_name = RPG.spell2_button_name
+local spell3_button_name = RPG.spell3_button_name
 
 local sub = string.sub
 
@@ -554,6 +559,9 @@ Gui.on_click(
         local health_bar_gui_input = data.health_bar_gui_input
         local reset_gui_input = data.reset_gui_input
         local conjure_gui_input = data.conjure_gui_input
+        local spell_gui_input1 = data.spell_gui_input1
+        local spell_gui_input2 = data.spell_gui_input2
+        local spell_gui_input3 = data.spell_gui_input3
         local magic_pickup_gui_input = data.magic_pickup_gui_input
         local movement_speed_gui_input = data.movement_speed_gui_input
         local flame_boots_gui_input = data.flame_boots_gui_input
@@ -641,6 +649,18 @@ Gui.on_click(
             if conjure_gui_input and conjure_gui_input.valid and conjure_gui_input.selected_index then
                 rpg_t[player.index].dropdown_select_index = conjure_gui_input.selected_index
             end
+            if spell_gui_input1 and spell_gui_input1.valid and spell_gui_input1.selected_index then
+                rpg_t[player.index].dropdown_select_index1 = spell_gui_input1.selected_index
+            end
+            if spell_gui_input2 and spell_gui_input2.valid and spell_gui_input2.selected_index then
+                rpg_t[player.index].dropdown_select_index2 = spell_gui_input2.selected_index
+            end
+            if spell_gui_input3 and spell_gui_input3.valid and spell_gui_input3.selected_index then
+                rpg_t[player.index].dropdown_select_index3 = spell_gui_input3.selected_index
+            end
+            if player.gui.screen[spell_gui_frame_name] then
+                Settings.update_spell_gui(player, nil)
+            end
 
             if reset_gui_input and reset_gui_input.valid and reset_gui_input.state then
                 if not rpg_t[player.index].reset then
@@ -704,6 +724,92 @@ Gui.on_click(
             frame.destroy()
         else
             Settings.extra_settings(player)
+        end
+    end
+)
+
+Gui.on_click(
+    spell_gui_button_name,
+    function(event)
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local surface_name = RPG.get('rpg_extra').surface_name
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return
+        end
+
+        if frame and frame.valid then
+            frame.destroy()
+        else
+            Settings.spell_gui_settings(player)
+        end
+    end
+)
+
+Gui.on_click(
+    spell1_button_name,
+    function(event)
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local surface_name = RPG.get('rpg_extra').surface_name
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return
+        end
+
+        if frame and frame.valid then
+            Settings.update_spell_gui(player, 1)
+        end
+    end
+)
+
+Gui.on_click(
+    spell2_button_name,
+    function(event)
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local surface_name = RPG.get('rpg_extra').surface_name
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return
+        end
+
+        if frame and frame.valid then
+            Settings.update_spell_gui(player, 2)
+        end
+    end
+)
+
+Gui.on_click(
+    spell3_button_name,
+    function(event)
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local surface_name = RPG.get('rpg_extra').surface_name
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return
+        end
+
+        if frame and frame.valid then
+            Settings.update_spell_gui(player, 3)
         end
     end
 )

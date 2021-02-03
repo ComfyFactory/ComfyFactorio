@@ -15,6 +15,7 @@ local points_per_level = RPG.points_per_level
 
 --RPG Frames
 local main_frame_name = RPG.main_frame_name
+local spell_gui_frame_name = RPG.spell_gui_frame_name
 
 local travelings = {
     'bzzZZrrt',
@@ -240,6 +241,17 @@ function Public.update_mana(player)
             data.mana.caption = rpg_t[player.index].mana
         end
     end
+    if player.gui.screen[spell_gui_frame_name] then
+        local f = player.gui.screen[spell_gui_frame_name]
+        if f['spell_table'] then
+            if f['spell_table']['mana'] then
+                f['spell_table']['mana'].caption = math.floor(rpg_t[player.index].mana)
+            end
+            if f['spell_table']['maxmana'] then
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t[player.index].mana_max)
+            end
+        end
+    end
 
     if rpg_t[player.index].mana < 1 then
         return
@@ -286,6 +298,18 @@ function Public.reward_mana(player, mana_to_add)
             data.mana.caption = rpg_t[player.index].mana
         end
     end
+    if player.gui.screen[spell_gui_frame_name] then
+        local f = player.gui.screen[spell_gui_frame_name]
+        if f['spell_table'] then
+            if f['spell_table']['mana'] then
+                f['spell_table']['mana'].caption = math.floor(rpg_t[player.index].mana)
+            end
+            if f['spell_table']['maxmana'] then
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t[player.index].mana_max)
+            end
+        end
+    end
+
     if rpg_t[player.index].mana_max < 1 then
         return
     end
@@ -499,6 +523,9 @@ function Public.rpg_reset_player(player, one_time_reset)
             mana_max = 0,
             last_spawned = 0,
             dropdown_select_index = 1,
+            dropdown_select_index1 = 1,
+            dropdown_select_index2 = 1,
+            dropdown_select_index3 = 1,
             allocate_index = 1,
             flame_boots = false,
             enable_entity_spawn = false,
@@ -531,6 +558,9 @@ function Public.rpg_reset_player(player, one_time_reset)
             mana_max = 0,
             last_spawned = 0,
             dropdown_select_index = 1,
+            dropdown_select_index1 = 1,
+            dropdown_select_index2 = 1,
+            dropdown_select_index3 = 1,
             allocate_index = 1,
             flame_boots = false,
             enable_entity_spawn = false,
