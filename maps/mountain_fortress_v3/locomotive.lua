@@ -1238,7 +1238,6 @@ local function gui_click(event)
                 player.print(({'locomotive.full_inventory', inserted_count, name}), {r = 0.98, g = 0.66, b = 0.22})
                 player.print(({'locomotive.change_returned'}), {r = 0.98, g = 0.66, b = 0.22})
                 player.insert({name = name, count = inserted_count})
-
                 player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
             else
                 player.remove_item({name = item.value, count = cost})
@@ -1745,6 +1744,23 @@ local function on_player_changed_surface(event)
     end
 end
 
+local function on_player_driving_changed_state(event)
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+    local trusted = Session.get_trusted_table()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+    if not trusted[player.name] then
+        if player.character and player.character.valid and player.character.driving then
+            player.character.driving = false
+        end
+    end
+end
+
 function Public.close_gui_player(frame)
     if not frame then
         return
@@ -2224,7 +2240,7 @@ function Public.get_items()
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 8000,
+        price = 6000,
         tooltip = ({'main_market.car'}),
         upgrade = false,
         static = true
@@ -2232,7 +2248,7 @@ function Public.get_items()
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',
-        price = 15000,
+        price = 12000,
         tooltip = ({'main_market.tank'}),
         upgrade = false,
         static = true
@@ -2388,5 +2404,6 @@ Event.add(defines.events.on_pre_player_mined_item, on_player_and_robot_mined_ent
 Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
+Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 
 return Public

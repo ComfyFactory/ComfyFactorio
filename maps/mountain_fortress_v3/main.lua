@@ -206,6 +206,7 @@ function Public.reset_map()
     WD.enable_threat_log(true)
     WD.check_collapse_position(true)
     WD.set_disable_threat_below_zero(true)
+    WD.increase_damage_per_wave(false)
 
     Functions.set_difficulty()
     Functions.disable_creative()

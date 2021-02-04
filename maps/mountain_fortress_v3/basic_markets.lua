@@ -49,9 +49,9 @@ market.caspules = {
     ['cluster-grenade'] = {value = 64, rarity = 5},
     ['poison-capsule'] = {value = 32, rarity = 6},
     ['slowdown-capsule'] = {value = 8, rarity = 1},
-    ['defender-capsule'] = {value = 8, rarity = 1},
-    ['distractor-capsule'] = {value = 20, rarity = 5},
-    ['destroyer-capsule'] = {value = 32, rarity = 7},
+    ['defender-capsule'] = {value = 18, rarity = 1},
+    ['distractor-capsule'] = {value = 68, rarity = 5},
+    ['destroyer-capsule'] = {value = 74, rarity = 7},
     ['discharge-defense-remote'] = {value = 2000, rarity = 8},
     ['artillery-targeting-remote'] = {value = 32, rarity = 7},
     ['raw-fish'] = {value = 6, rarity = 1}
