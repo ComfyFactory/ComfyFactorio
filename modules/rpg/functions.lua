@@ -448,7 +448,7 @@ end
 
 function Public.get_heal_modifier(player)
     local rpg_t = RPG.get('rpg_t')
-    return (rpg_t[player.index].vitality - 10) * 0.02
+    return (rpg_t[player.index].vitality - 10) * 0.06
 end
 
 function Public.get_mana_modifier(player)
