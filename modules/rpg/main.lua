@@ -1117,7 +1117,7 @@ local function on_player_used_capsule(event)
     rpg_t[player.index].last_spawned = game.tick + object.tick
     Functions.update_mana(player)
 
-    local reward_xp = object.mana_cost * 0.045
+    local reward_xp = object.mana_cost * 0.085
     if reward_xp < 1 then
         reward_xp = 1
     end
