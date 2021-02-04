@@ -484,12 +484,18 @@ local function spawn_biter(surface, is_boss_biter)
 end
 
 local function increase_biter_damage()
+    local increase_damage_per_wave = WD.get('increase_damage_per_wave')
+    if not increase_damage_per_wave then
+        return
+    end
+
     local Difficulty
     if is_loaded('modules.difficulty_vote_by_amount') then
         Difficulty = is_loaded('modules.difficulty_vote_by_amount')
     elseif is_loaded('modules.difficulty_vote') then
         Difficulty = is_loaded('modules.difficulty_vote')
     end
+
     if not Difficulty then
         return
     end
