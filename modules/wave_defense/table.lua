@@ -72,6 +72,7 @@ function Public.reset_wave_defense()
     this.check_collapse_position = true
     this.modified_boss_health = true
     this.resolve_pathing = true
+    this.increase_damage_per_wave = false
     this.fill_tiles_so_biter_can_path = true
 end
 
@@ -189,6 +190,13 @@ function Public.fill_tiles_so_biter_can_path(boolean)
         this.fill_tiles_so_biter_can_path = boolean
     end
     return this.fill_tiles_so_biter_can_path
+end
+
+function Public.increase_damage_per_wave(boolean)
+    if (boolean or boolean == false) then
+        this.increase_damage_per_wave = boolean
+    end
+    return this.increase_damage_per_wave
 end
 
 function Public.set_biter_health_boost(number)

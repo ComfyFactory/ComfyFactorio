@@ -696,7 +696,7 @@ function Public.remove_offline_players()
             if offline_players[i] and game.players[offline_players[i].index] and game.players[offline_players[i].index].connected then
                 offline_players[i] = nil
             else
-                if offline_players[i] and game.players[offline_players[i].index] and offline_players[i].tick < game.tick - 54000 then
+                if offline_players[i] and game.players[offline_players[i].index] and offline_players[i].tick < game.tick - 108000 then
                     local name = offline_players[i].name
                     player_inv[1] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
                     player_inv[2] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_armor)
@@ -1058,6 +1058,10 @@ function Public.set_spawn_position()
     if spawn_near_collapse.active then
         local collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
         local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
+        if not sizeof then
+            goto continue
+        end
+
         if check_tile(surface, sizeof, locomotive_positions.tbl, total_pos) then
             retries = retries + 1
             if retries == 2 then

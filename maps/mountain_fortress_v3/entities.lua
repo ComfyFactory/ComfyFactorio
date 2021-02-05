@@ -78,7 +78,8 @@ local protect_types = {
     ['fluid-wagon'] = true,
     ['locomotive'] = true,
     ['reactor'] = true,
-    ['spidertron'] = true
+    ['spider-vehicle'] = true,
+    ['car'] = true
 }
 
 local reset_game =
@@ -211,18 +212,44 @@ local function set_train_final_health(final_damage_amount)
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
     local poison_deployed = WPT.get('poison_deployed')
+    local robotics_deployed = WPT.get('robotics_deployed')
 
-    if locomotive_health <= 5000 then
+    if locomotive_health >= 4000 and locomotive_health <= 6000 then
         if not poison_deployed then
-            for i = 1, 2, 1 do
-                Locomotive.enable_poison_defense()
+            local carriages = WPT.get('carriages')
+
+            if carriages then
+                for i = 1, #carriages do
+                    local entity = carriages[i]
+                    Locomotive.enable_poison_defense(entity.position)
+                end
             end
+
             local p = {
                 position = locomotive.position
             }
             local msg = ({'entity.train_taking_damage'})
             Alert.alert_all_players_location(p, msg)
             WPT.set().poison_deployed = true
+        end
+    elseif locomotive_health >= 1500 and locomotive_health <= 3900 then
+        if not robotics_deployed then
+            local carriages = WPT.get('carriages')
+
+            if carriages then
+                for _ = 1, 10 do
+                    for i = 1, #carriages do
+                        local entity = carriages[i]
+                        Locomotive.enable_robotic_defense(entity.position)
+                    end
+                end
+            end
+            local p = {
+                position = locomotive.position
+            }
+            local msg = ({'entity.train_taking_damage'})
+            Alert.alert_all_players_location(p, msg)
+            WPT.set().robotics_deployed = true
         end
     elseif locomotive_health >= locomotive_max_health then
         WPT.set().poison_deployed = false
@@ -240,6 +267,7 @@ local function set_train_final_health(final_damage_amount)
     locomotive_health = WPT.get('locomotive_health')
 
     if locomotive_health <= 0 then
+        WPT.set('game_lost', true)
         Public.loco_died()
     end
 
@@ -282,20 +310,22 @@ local function protect_entities(event)
         if (event.cause and event.cause.valid) then
             if event.cause.force.index == 2 then
                 if units and units[entity.unit_number] then
-                    return set_train_final_health(dmg)
+                    set_train_final_health(dmg)
+                    return
+                else
+                    entity.health = entity.health - dmg
+                    return
                 end
-            elseif event.cause.force.index == 2 then
-                return
-            else
-                entity.health = entity.health + dmg
             end
         elseif not (event.cause and event.cause.valid) then
-            if event.force.index == 2 then
+            if event.force and event.force.index == 2 then
                 if units and units[entity.unit_number] then
-                    return set_train_final_health(dmg)
+                    set_train_final_health(dmg)
+                    return
+                else
+                    entity.health = entity.health - dmg
+                    return
                 end
-                entity.health = entity.health - dmg
-                return
             end
         end
 
@@ -431,6 +461,17 @@ local function give_coin(player)
         end
     end
 end
+
+local immunity_spawner =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        if not entity or not entity.valid then
+            return
+        end
+        entity.destructible = true
+    end
+)
 
 local mining_events = {
     {
@@ -594,7 +635,9 @@ local mining_events = {
 
             local position = entity.position
             local surface = entity.surface
-            surface.create_entity({name = 'biter-spawner', position = position, force = 'enemy'})
+            local e = surface.create_entity({name = 'biter-spawner', position = position, force = 'enemy'})
+            e.destructible = false
+            Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
             Public.unstuck_player(index)
         end,
         512,
@@ -1103,6 +1146,11 @@ function Public.unstuck_player(index)
 end
 
 function Public.loco_died()
+    local game_lost = WPT.get('game_lost')
+    if not game_lost then
+        return
+    end
+
     local active_surface_index = WPT.get('active_surface_index')
     local locomotive = WPT.get('locomotive')
     local surface = game.surfaces[active_surface_index]
@@ -1169,14 +1217,12 @@ function Public.loco_died()
     rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
-    this.game_lost = true
     local msg = defeated_messages[random(1, #defeated_messages)]
 
     local pos = {
         position = this.locomotive.position
     }
     Alert.alert_all_players_location(pos, msg)
-    Server.to_discord_bold(msg, true)
     game.forces.enemy.set_friend('player', true)
     game.forces.player.set_friend('enemy', true)
 

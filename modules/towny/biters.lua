@@ -1,4 +1,5 @@
 local Public = {}
+local Table = require "modules.towny.table"
 local math_random = math.random
 local math_floor = math.floor
 local math_sqrt = math.sqrt
@@ -46,9 +47,10 @@ local function get_commmands(target, group)
 end
 
 local function roll_market()
+	local townytable = Table.get_table()
 	local r_max = 0
-	local town_centers = global.towny.town_centers
-	
+	local town_centers = townytable.town_centers
+
 	--Skip Towns that are too low in reserach for the current biter evolution.
 	local research_threshold = game.forces.enemy.evolution_factor * #game.technology_prototypes * 0.175
 
@@ -57,9 +59,9 @@ local function roll_market()
 			r_max = r_max + town_center.research_counter
 		end
 	end
-	if r_max == 0 then return end	
+	if r_max == 0 then return end
 	local r = math_random(0, r_max)
-	
+
 	local chance = 0
 	for k, town_center in pairs(town_centers) do
 		if town_center.research_counter >= research_threshold then
@@ -88,17 +90,18 @@ local function is_swarm_valid(swarm)
 	local group = swarm.group
 	if not group then return end
 	if not group.valid then return end
-	if game.tick >= swarm.timeout then	
-		group.destroy()		
+	if game.tick >= swarm.timeout then
+		group.destroy()
 		return
 	end
 	return true
 end
 
 function Public.validate_swarms()
-	for k, swarm in pairs(global.towny.swarms) do
+	local townytable = Table.get_table()
+	for k, swarm in pairs(townytable.swarms) do
 		if not is_swarm_valid(swarm) then
-			table_remove(global.towny.swarms, k)
+			table_remove(townytable.swarms, k)
 		end
 	end
 end
@@ -106,18 +109,18 @@ end
 --Destroy biters that are out of the current evolution range.
 function Public.wipe_units_out_of_evo_range()
 	local units_to_wipe = {}
-	local evo = game.forces.enemy.evolution_factor	
+	local evo = game.forces.enemy.evolution_factor
 	if evo > 0.80 then return end
 		units_to_wipe[#units_to_wipe + 1] = "behemoth-biter"
 		units_to_wipe[#units_to_wipe + 1] = "behemoth-spitter"
-	if evo < 0.40 then 
+	if evo < 0.40 then
 		units_to_wipe[#units_to_wipe + 1] = "big-biter"
 		units_to_wipe[#units_to_wipe + 1] = "big-spitter"
 	end
-	if evo < 0.10 then 
+	if evo < 0.10 then
 		units_to_wipe[#units_to_wipe + 1] = "medium-biter"
 		units_to_wipe[#units_to_wipe + 1] = "medium-spitter"
-	end	
+	end
 	for k, surface in pairs(game.surfaces) do
 		for k2, unit in pairs(surface.find_entities_filtered({name = units_to_wipe, force = "enemy"})) do
 			unit.destroy()
@@ -133,7 +136,8 @@ function Public.clear_spawn_for_player(player)
 end
 
 function Public.unit_groups_start_moving()
-	for k, swarm in pairs(global.towny.swarms) do
+	local townytable = Table.get_table()
+	for k, swarm in pairs(townytable.swarms) do
 		if swarm.group then
 			if swarm.group.valid then
 				swarm.group.start_moving()
@@ -143,18 +147,19 @@ function Public.unit_groups_start_moving()
 end
 
 function Public.swarm()
+	local townytable = Table.get_table()
 	local count = 0
-	for k, swarm in pairs(global.towny.swarms) do
+	for k, swarm in pairs(townytable.swarms) do
 		count = count + 1
-	end	
+	end
 	if count > 6 then return end
-	
+
 	local town_center = roll_market()
 	if not town_center then return end
 	local market = town_center.market
 	local surface = market.surface
 	local spawner = get_random_close_spawner(surface, market)
-	if not spawner then return end	
+	if not spawner then return end
 	local units = spawner.surface.find_enemy_units(spawner.position, 160, market.force)
 	if not units[1] then return end
 	local unit_group_position = surface.find_non_colliding_position("market", units[1].position, 256, 1)
@@ -163,33 +168,34 @@ function Public.swarm()
 	local count = (town_center.research_counter * 1.5) + 4
 	for key, unit in pairs(units) do
 		if key > count then break end
-		unit_group.add_member(unit) 
+		unit_group.add_member(unit)
 	end
 	unit_group.set_command({
 		type = defines.command.compound,
 		structure_type = defines.compound_command.return_last,
 		commands = get_commmands(market, unit_group)
 	})
-	table_insert(global.towny.swarms, {group = unit_group, timeout = game.tick + 36000})
+	table_insert(townytable.swarms, {group = unit_group, timeout = game.tick + 36000})
 end
 
 function Public.set_evolution()
-	local town_center_count = global.towny.size_of_town_centers
-	if town_center_count == 0 then 
+	local townytable = Table.get_table()
+	local town_center_count = townytable.size_of_town_centers
+	if town_center_count == 0 then
 		game.forces.enemy.evolution_factor = 0
-		return 
+		return
 	end
-		
+
 	local max_research_count = math_floor(#game.technology_prototypes * 0.30)
-	
+
 	local evo = 0
-	for _, town_center in pairs(global.towny.town_centers) do
+	for _, town_center in pairs(townytable.town_centers) do
 		evo = evo + town_center.research_counter
 	end
 	evo = evo / town_center_count
 	evo = evo / max_research_count
 	if evo > 1 then evo = 1 end
-	
+
 	game.forces.enemy.evolution_factor = evo
 end
 

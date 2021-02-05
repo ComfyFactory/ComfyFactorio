@@ -203,8 +203,10 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     local gulag = game.permissions.get_group('gulag')
     local tbl = gulag and gulag.players
-    if tbl[player.index] then
-        return
+    for i = 1, #tbl do
+        if tbl[i].index == player.index then
+            return
+        end
     end
 
     if player.admin then
@@ -236,7 +238,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         locomotive_group.set_allows_action(defines.input_action.admin_action, false)
         locomotive_group.set_allows_action(defines.input_action.drop_item, false)
         locomotive_group.set_allows_action(defines.input_action.place_equipment, false)
-        locomotive_group.set_allows_action(defines.input_action.take_equipment, false)
     end
 
     if not game.permissions.get_group('plebs') then
@@ -258,7 +259,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         not_trusted.set_allows_action(defines.input_action.admin_action, false)
         not_trusted.set_allows_action(defines.input_action.drop_item, false)
         not_trusted.set_allows_action(defines.input_action.place_equipment, false)
-        not_trusted.set_allows_action(defines.input_action.take_equipment, false)
         not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
     end
@@ -487,7 +487,7 @@ local function validate_index()
     end
 end
 
-local function create_poison_cloud(position)
+local function create_defense_system(position, name, target)
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
 
@@ -498,41 +498,61 @@ local function create_poison_cloud(position)
         rad(random(359))
     }
 
-    surface.create_entity({name = 'poison-cloud', position = {x = position.x, y = position.y}})
     surface.create_entity(
         {
-            name = 'poison-cloud',
+            name = name,
+            position = {x = position.x, y = position.y},
+            target = target,
+            speed = 1.5,
+            force = 'player'
+        }
+    )
+    surface.create_entity(
+        {
+            name = name,
             position = {
                 x = position.x + 12 * cos(random_angles[1]),
                 y = position.y + 12 * sin(random_angles[1])
-            }
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
         }
     )
     surface.create_entity(
         {
-            name = 'poison-cloud',
+            name = name,
             position = {
                 x = position.x + 12 * cos(random_angles[2]),
                 y = position.y + 12 * sin(random_angles[2])
-            }
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
         }
     )
     surface.create_entity(
         {
-            name = 'poison-cloud',
+            name = name,
             position = {
                 x = position.x + 12 * cos(random_angles[3]),
                 y = position.y + 12 * sin(random_angles[3])
-            }
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
         }
     )
     surface.create_entity(
         {
-            name = 'poison-cloud',
+            name = name,
             position = {
                 x = position.x + 12 * cos(random_angles[4]),
                 y = position.y + 12 * sin(random_angles[4])
-            }
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
         }
     )
 end
@@ -1038,7 +1058,7 @@ local function gui_click(event)
                 player.name .. ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
-        this.locomotive_max_health = this.locomotive_max_health + 2500 * item.stack
+        this.locomotive_max_health = this.locomotive_max_health + 4000 * item.stack
         local m = this.locomotive_health / this.locomotive_max_health
 
         if this.carriages then
@@ -1208,23 +1228,6 @@ local function gui_click(event)
         redraw_coins_left(data.coins_left, player)
         return
     end
-    if name == 'skill_reset' then
-        player.remove_item({name = item.value, count = item.price})
-        local message = ({
-            'locomotive.rpg_reset_bought_info',
-            shopkeeper,
-            player.name,
-            format_number(item.price, true)
-        })
-
-        Alert.alert_all_players(10, message)
-
-        Functions.rpg_reset_player(player, true)
-
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-        return
-    end
 
     if player_item_count >= cost then
         if player.can_insert({name = name, count = item_count}) then
@@ -1235,7 +1238,6 @@ local function gui_click(event)
                 player.print(({'locomotive.full_inventory', inserted_count, name}), {r = 0.98, g = 0.66, b = 0.22})
                 player.print(({'locomotive.change_returned'}), {r = 0.98, g = 0.66, b = 0.22})
                 player.insert({name = name, count = inserted_count})
-
                 player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
             else
                 player.remove_item({name = item.value, count = cost})
@@ -1479,8 +1481,8 @@ local function on_built_entity(event)
     local chest_created
     local increased = false
 
-    for k, v in pairs(outside_chests) do
-        if v and v.valid then
+    for k, data in pairs(outside_chests) do
+        if data and data.chest and data.chest.valid then
             if chests_linked_to[train.unit_number] then
                 local linked_to = chests_linked_to[train.unit_number].count
                 if linked_to == chest_limit_outside_upgrades then
@@ -1492,6 +1494,7 @@ local function on_built_entity(event)
                     chests_linked_to[train.unit_number].count = linked_to + 1
                     chests_linked_to[train.unit_number][entity.unit_number] = true
                     increased = true
+
                     goto continue
                 end
             else
@@ -1546,10 +1549,10 @@ local function on_player_and_robot_mined_entity(event)
     local chests_linked_to = WPT.get('chests_linked_to')
 
     if outside_chests[entity.unit_number] then
-        for k, v in pairs(chests_linked_to) do
-            if v[entity.unit_number] then
-                v.count = v.count - 1
-                if v.count <= 0 then
+        for k, data in pairs(chests_linked_to) do
+            if data[entity.unit_number] then
+                data.count = data.count - 1
+                if data.count <= 0 then
                     chests_linked_to[k] = nil
                 end
             end
@@ -1738,6 +1741,23 @@ local function on_player_changed_surface(event)
         return Public.add_player_to_permission_group(player, 'locomotive')
     else
         return Public.add_player_to_permission_group(player, 'plebs')
+    end
+end
+
+local function on_player_driving_changed_state(event)
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+    local trusted = Session.get_trusted_table()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+    if not trusted[player.name] then
+        if player.character and player.character.valid and player.character.driving then
+            player.character.driving = false
+        end
     end
 end
 
@@ -1973,7 +1993,6 @@ function Public.get_items()
     local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + landmine))
-    local skill_reset_cost = round(fixed_prices.skill_reset_cost)
 
     local pickaxe_tiers = WPT.pickaxe_upgrades
     local tier = WPT.get('pickaxe_tier')
@@ -2099,16 +2118,7 @@ function Public.get_items()
         upgrade = true,
         static = true
     }
-    main_market_items['skill_reset'] = {
-        stack = 1,
-        value = 'coin',
-        price = skill_reset_cost,
-        tooltip = ({'main_market.skill_reset'}),
-        sprite = 'achievement/golem',
-        enabled = true,
-        upgrade = true,
-        static = true
-    }
+
     if game.forces.player.technologies['logistics'].researched then
         main_market_items['loader'] = {
             stack = 1,
@@ -2230,7 +2240,7 @@ function Public.get_items()
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 8000,
+        price = 6000,
         tooltip = ({'main_market.car'}),
         upgrade = false,
         static = true
@@ -2238,7 +2248,7 @@ function Public.get_items()
     main_market_items['tank'] = {
         stack = 1,
         value = 'coin',
-        price = 15000,
+        price = 12000,
         tooltip = ({'main_market.tank'}),
         upgrade = false,
         static = true
@@ -2250,7 +2260,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 25000,
-            tooltip = ({'main_market.tank_cannon'}),
+            tooltip = ({'item-name.tank-cannon'}),
             upgrade = false,
             static = true,
             enabled = true
@@ -2260,13 +2270,13 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 25000,
-            tooltip = ({'main_market.tank_cannon_na'}),
+            tooltip = ({'main_market.tank_cannon_na', 650}),
             upgrade = false,
             static = true,
             enabled = false
         }
     end
-    if wave_number >= 200 then
+    if wave_number >= 100 then
         main_market_items['vehicle-machine-gun'] = {
             stack = 1,
             value = 'coin',
@@ -2281,7 +2291,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = 2000,
-            tooltip = ({'main_market.vehicle_machine_gun_na'}),
+            tooltip = ({'main_market.vehicle_machine_gun_na', 100}),
             upgrade = false,
             static = true,
             enabled = false
@@ -2316,7 +2326,7 @@ function Public.transfer_pollution()
     surface.clear_pollution()
 end
 
-function Public.enable_poison_defense()
+function Public.enable_poison_defense(pos)
     local locomotive = WPT.get('locomotive')
     if not locomotive then
         return
@@ -2324,11 +2334,27 @@ function Public.enable_poison_defense()
     if not locomotive.valid then
         return
     end
-    local pos = locomotive.position
-    create_poison_cloud({x = pos.x, y = pos.y})
+    pos = pos or locomotive.position
+    create_defense_system({x = pos.x, y = pos.y}, 'poison-cloud', pos)
     if random(1, 4) == 1 then
-        local random_angles = {rad(random(359))}
-        create_poison_cloud({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])})
+        local random_angles = {rad(random(344))}
+        create_defense_system({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])}, 'poison-cloud', pos)
+    end
+end
+
+function Public.enable_robotic_defense(pos)
+    local locomotive = WPT.get('locomotive')
+    if not locomotive then
+        return
+    end
+    if not locomotive.valid then
+        return
+    end
+    pos = pos or locomotive.position
+    create_defense_system({x = pos.x, y = pos.y}, 'destroyer-capsule', pos)
+    if random(1, 4) == 1 then
+        local random_angles = {rad(random(324))}
+        create_defense_system({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])}, 'destroyer-capsule', pos)
     end
 end
 
@@ -2378,5 +2404,6 @@ Event.add(defines.events.on_pre_player_mined_item, on_player_and_robot_mined_ent
 Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity)
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
+Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 
 return Public

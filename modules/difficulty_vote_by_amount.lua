@@ -178,6 +178,9 @@ end
 
 local function set_difficulty()
     local index = highest_count(this.difficulties)
+    if not index or not this.difficulties[index] then
+        return
+    end
 
     if this.difficulty_vote_index ~= index then
         local message = table.concat({'>> Map difficulty has changed to ', this.difficulties[index].name, ' difficulty!'})

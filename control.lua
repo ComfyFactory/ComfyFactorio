@@ -126,7 +126,7 @@ require 'modules.autostash'
 --require 'maps.overgrowth'
 
 --![[Wave Defense Map split in 4 Quarters]]--
---'maps.quarters'
+--require 'maps.quarters'
 
 --![[Flee from the collapsing map with portable base inside train]]--
 --require 'maps.railway_troopers_v2.main'
@@ -222,6 +222,7 @@ require 'modules.autostash'
 --require 'terrain_layouts.cone_to_east'
 --require 'terrain_layouts.biters_and_resources_east'
 --require 'terrain_layouts.scrap_01'
+--require 'terrain_layouts.scrap_02'
 --require 'terrain_layouts.watery_world'
 --require 'terrain_layouts.tree_01'
 ---------------------------------------------------------------

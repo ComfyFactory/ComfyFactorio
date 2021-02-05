@@ -8,11 +8,7 @@ local Public = {}
 local function splash_damage(surface, position, final_damage_amount)
     local create = surface.create_entity
     local damage = random(floor(final_damage_amount * 3), floor(final_damage_amount * 4))
-    for _, e in pairs(
-        surface.find_entities_filtered(
-            {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
-        )
-    ) do
+    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})) do
         if e.valid and e.health then
             local distance_from_center = sqrt((e.position.x - position.x) ^ 2 + (e.position.y - position.y) ^ 2)
             if distance_from_center <= radius then
@@ -55,10 +51,7 @@ function Public.explosive_bullets(event)
     if not weapon.valid_for_read or not ammo.valid_for_read then
         return
     end
-    if
-        ammo.name ~= 'firearm-magazine' and ammo.name ~= 'piercing-rounds-magazine' and
-            ammo.name ~= 'uranium-rounds-magazine'
-     then
+    if ammo.name ~= 'firearm-magazine' and ammo.name ~= 'piercing-rounds-magazine' and ammo.name ~= 'uranium-rounds-magazine' then
         return
     end
     local entity = event.entity

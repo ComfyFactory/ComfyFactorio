@@ -56,23 +56,23 @@ local function is_position_isolated(surface, force, position)
 	local position_y = position.y
 	local area = {{position_x - connection_radius, position_y - connection_radius}, {position_x + connection_radius, position_y + connection_radius}}
 	local count = 0
-	
+
 	for _, e in pairs(surface.find_entities_filtered({area = area, force = force.name})) do
 		if entity_type_whitelist[e.type] then
 			count = count + 1
 			if count > 1 then return end
 		end
 	end
-	
+
 	return true
 end
 
 local function refund_item(event, item_name)
-	if event.player_index then 
+	if event.player_index then
 		game.players[event.player_index].insert({name = item_name, count = 1})
-		return 
-	end	
-	
+		return
+	end
+
 	if event.robot then
 		local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
 		inventory.insert({name = item_name, count = 1})
@@ -105,35 +105,35 @@ function Public.prevent_isolation(event)
 	if entity.force.index == 1 then return end
 	if not entity_type_whitelist[entity.type] then return end
 	local surface = event.created_entity.surface
-	
+
 	if is_position_isolated(surface, entity.force, entity.position) then
-		error_floaty(surface, entity.position, "Building is not connected to town!")
-		refund_item(event, event.stack.name)	
+		error_floaty(surface, entity.position, {"modules_towny.message_error_building"})
+		refund_item(event, event.stack.name)
 		entity.destroy()
 		return true
-	end	
+	end
 end
 
 function Public.prevent_isolation_landfill(event)
 	if event.item.name ~= "landfill" then return end
 	local surface = game.surfaces[event.surface_index]
 	local tiles = event.tiles
-	
+
 	local force
 	if event.player_index then
 		force = game.players[event.player_index].force
 	else
 		force = event.robot.force
 	end
-	
+
 	for _, placed_tile in pairs(tiles) do
 		local position = placed_tile.position
 		if is_position_isolated(surface, force, position) then
-			error_floaty(surface, position, "Tile is not connected to town!")
-			surface.set_tiles({{name = "water", position = position}}, true)			
-			refund_item(event, "landfill")		
+			error_floaty(surface, position, {"modules_towny.message_error_tile"})
+			surface.set_tiles({{name = "water", position = position}}, true)
+			refund_item(event, "landfill")
 		end
-	end	
+	end
 end
 
 local square_min_distance_to_spawn = 80 ^ 2
@@ -141,20 +141,20 @@ local square_min_distance_to_spawn = 80 ^ 2
 function Public.restrictions(event)
 	local entity = event.created_entity
 	if not entity.valid then return end
-	
+
 	if entity.force.index == 1 then
 		if is_town_market_nearby(entity) then
 			refund_item(event, event.stack.name)
-			error_floaty(entity.surface, entity.position, "Building too close to a town center!")
+			error_floaty(entity.surface, entity.position, {"modules_towny.message_error_close_town"})
 			entity.destroy()
-		end	
-		return 
+		end
+		return
 	end
-	
+
 	if not entity_type_whitelist[entity.type] then return end
 	if entity.position.x ^ 2 + entity.position.y ^ 2 > square_min_distance_to_spawn then return end
 	refund_item(event, event.stack.name)
-	error_floaty(entity.surface, entity.position, "Building too close to spawn!")
+	error_floaty(entity.surface, entity.position, {"modules_towny.message_error_close_spawn"})
 	entity.destroy()
 end
 

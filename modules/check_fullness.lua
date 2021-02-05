@@ -35,7 +35,7 @@ local function compute_fullness(player)
     local warn_player = is_player_warned(player)
     local free_slots = player.get_main_inventory().count_empty_stacks()
     if free_slots == 0 or free_slots == 1 then
-        if player.character then
+        if player.character and player.character.valid then
             local damage = ceil((warn_player.count / 2) * warn_player.count)
             if player.character.health >= damage then
                 player.character.damage(damage, 'player', 'explosion')

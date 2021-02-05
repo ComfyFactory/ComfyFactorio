@@ -17,6 +17,11 @@ local discard_button_name = Gui.uid_name()
 local draw_main_frame_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local settings_button_name = Gui.uid_name()
+local spell_gui_button_name = Gui.uid_name()
+local spell_gui_frame_name = Gui.uid_name()
+local spell1_button_name = Gui.uid_name()
+local spell2_button_name = Gui.uid_name()
+local spell3_button_name = Gui.uid_name()
 
 Global.register(
     this,
@@ -457,6 +462,11 @@ Public.discard_button_name = discard_button_name
 Public.draw_main_frame_name = draw_main_frame_name
 Public.main_frame_name = main_frame_name
 Public.settings_button_name = settings_button_name
+Public.spell_gui_button_name = spell_gui_button_name
+Public.spell_gui_frame_name = spell_gui_frame_name
+Public.spell1_button_name = spell1_button_name
+Public.spell2_button_name = spell2_button_name
+Public.spell3_button_name = spell3_button_name
 
 local on_init = function()
     Public.reset_table()

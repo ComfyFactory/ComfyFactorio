@@ -15,6 +15,7 @@ local points_per_level = RPG.points_per_level
 
 --RPG Frames
 local main_frame_name = RPG.main_frame_name
+local spell_gui_frame_name = RPG.spell_gui_frame_name
 
 local travelings = {
     'bzzZZrrt',
@@ -117,7 +118,6 @@ local function level_up(player)
     end
     RPG_GUI.draw_level_text(player)
     rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
-    RPG_GUI.update_char_button(player)
     if rpg_t[player.index].allocate_index ~= 1 then
         local node = rpg_t[player.index].allocate_index
         local index = names[node]:lower()
@@ -127,6 +127,8 @@ local function level_up(player)
             rpg_t[player.index].total = rpg_t[player.index].total + distribute_points_gain
         end
         RPG_GUI.update_player_stats(player)
+    else
+        RPG_GUI.update_char_button(player)
     end
     if player.gui.screen[main_frame_name] then
         RPG_GUI.toggle(player, true)
@@ -239,6 +241,17 @@ function Public.update_mana(player)
             data.mana.caption = rpg_t[player.index].mana
         end
     end
+    if player.gui.screen[spell_gui_frame_name] then
+        local f = player.gui.screen[spell_gui_frame_name]
+        if f['spell_table'] then
+            if f['spell_table']['mana'] then
+                f['spell_table']['mana'].caption = math.floor(rpg_t[player.index].mana)
+            end
+            if f['spell_table']['maxmana'] then
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t[player.index].mana_max)
+            end
+        end
+    end
 
     if rpg_t[player.index].mana < 1 then
         return
@@ -285,6 +298,18 @@ function Public.reward_mana(player, mana_to_add)
             data.mana.caption = rpg_t[player.index].mana
         end
     end
+    if player.gui.screen[spell_gui_frame_name] then
+        local f = player.gui.screen[spell_gui_frame_name]
+        if f['spell_table'] then
+            if f['spell_table']['mana'] then
+                f['spell_table']['mana'].caption = math.floor(rpg_t[player.index].mana)
+            end
+            if f['spell_table']['maxmana'] then
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t[player.index].mana_max)
+            end
+        end
+    end
+
     if rpg_t[player.index].mana_max < 1 then
         return
     end
@@ -423,7 +448,7 @@ end
 
 function Public.get_heal_modifier(player)
     local rpg_t = RPG.get('rpg_t')
-    return (rpg_t[player.index].vitality - 10) * 0.02
+    return (rpg_t[player.index].vitality - 10) * 0.06
 end
 
 function Public.get_mana_modifier(player)
@@ -498,6 +523,9 @@ function Public.rpg_reset_player(player, one_time_reset)
             mana_max = 0,
             last_spawned = 0,
             dropdown_select_index = 1,
+            dropdown_select_index1 = 1,
+            dropdown_select_index2 = 1,
+            dropdown_select_index3 = 1,
             allocate_index = 1,
             flame_boots = false,
             enable_entity_spawn = false,
@@ -530,6 +558,9 @@ function Public.rpg_reset_player(player, one_time_reset)
             mana_max = 0,
             last_spawned = 0,
             dropdown_select_index = 1,
+            dropdown_select_index1 = 1,
+            dropdown_select_index2 = 1,
+            dropdown_select_index3 = 1,
             allocate_index = 1,
             flame_boots = false,
             enable_entity_spawn = false,

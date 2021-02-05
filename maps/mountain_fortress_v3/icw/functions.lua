@@ -433,6 +433,10 @@ function Public.create_wagon_room(icw, wagon)
     end
 
     construct_wagon_doors(icw, wagon)
+    local mgs = surface.map_gen_settings
+  	mgs.width = area.right_bottom.x * 2
+  	mgs.height = area.right_bottom.y * 2
+  	surface.map_gen_settings = mgs
 
     if wagon.entity.type == 'fluid-wagon' then
         local height = area.right_bottom.y - area.left_top.y
@@ -644,7 +648,6 @@ function Public.create_wagon_room(icw, wagon)
             e2.minable = false
             wagon.transfer_entities = {e1, e2}
         end
-        return
     end
 end
 

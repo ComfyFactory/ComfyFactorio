@@ -305,8 +305,18 @@ local function kick_players_out_of_vehicles(car)
     end
 end
 
+local function check_if_players_are_in_nauvis(ic)
+    for _, player in pairs(game.connected_players) do
+        local main_surface = game.surfaces[ic.allowed_surface]
+        if player.surface.name == 'nauvis' then
+            player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+        end
+    end
+end
+
 local function kick_players_from_surface(ic, car)
     if not validate_entity(car.surface) then
+        check_if_players_are_in_nauvis(ic)
         return log_err('Car surface was not valid.')
     end
     if not car.entity or not car.entity.valid then
@@ -317,6 +327,7 @@ local function kick_players_from_surface(ic, car)
                     e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
             end
+            check_if_players_are_in_nauvis(ic)
             return log_err('Car entity was not valid.')
         end
     end
@@ -331,6 +342,7 @@ local function kick_players_from_surface(ic, car)
             end
         end
     end
+    check_if_players_are_in_nauvis(ic)
 end
 
 local function kick_player_from_surface(ic, player, target)
@@ -713,6 +725,10 @@ function Public.create_car_room(ic, car)
     end
 
     construct_doors(ic, car)
+    local mgs = surface.map_gen_settings
+    mgs.width = area.right_bottom.x * 2
+    mgs.height = area.right_bottom.y * 2
+    surface.map_gen_settings = mgs
 
     local lx, ly, rx, ry = 4, 1, 5, 1
 
@@ -870,10 +886,12 @@ function Public.use_door_with_entity(ic, player, door)
         end
     end
 
-    player_data.fallback_surface = car.entity.surface.index
-    player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
+    if validate_entity(car.entity) then
+        player_data.fallback_surface = car.entity.surface.index
+        player_data.fallback_position = {car.entity.position.x, car.entity.position.y}
+    end
 
-    if car.entity.surface.name == player.surface.name then
+    if validate_entity(car.entity) and car.entity.surface.name == player.surface.name then
         local surface = car.surface
         if validate_entity(car.entity) and car.owner == player.index then
             IC_Gui.add_toolbar(player)
@@ -920,16 +938,13 @@ function Public.use_door_with_entity(ic, player, door)
 end
 
 function Public.item_transfer(ic)
-    local car
-    ic.current_car_index, car = next(ic.cars, ic.current_car_index)
-    if not car then
-        return
-    end
-    if validate_entity(car.entity) then
-        if car.transfer_entities then
-            for k, e in pairs(car.transfer_entities) do
-                if validate_entity(e) then
-                    transfer_functions[e.name](car, e)
+    for _, car in pairs(ic.cars) do
+        if validate_entity(car.entity) then
+            if car.transfer_entities then
+                for k, e in pairs(car.transfer_entities) do
+                    if validate_entity(e) then
+                        transfer_functions[e.name](car, e)
+                    end
                 end
             end
         end
