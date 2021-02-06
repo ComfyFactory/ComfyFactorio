@@ -3,7 +3,7 @@ local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
 local Tabs = require 'comfy_panel.main'
 local Event = require 'utils.event'
-local asdasd = require 'modules.rpg.table'
+local rpgtable = require 'modules.rpg.table'
 local Loot = require'maps.amap.loot'
 local Public = {}
 local Alert = require 'utils.alert'
@@ -17,6 +17,7 @@ local draw_add_player_frame_name = Gui.uid_name()
 local draw_transfer_car_frame_name = Gui.uid_name()
 local main_toolbar_name = Gui.uid_name()
 local cool = Gui.uid_name()
+local gambel = Gui.uid_name()
 local buyxp = Gui.uid_name()
 local add_player_name = Gui.uid_name()
 local transfer_car_name = Gui.uid_name()
@@ -64,7 +65,7 @@ local function transfer_player_table(player, new_player)
     end
 
     if not trust_system[new_player.index] then
-        local Functions = require 'maps.mountain_fortress_v3.ic.functions'
+        local Functions = require 'maps.amap.ic.functions'
 
         trust_system[new_player.index] = trust_system[player.index]
         local name = new_player.name
@@ -357,8 +358,9 @@ add_toolbar = function(player, remove)
         if player.gui.top[main_toolbar_name] then
 		player.gui.top[cool].destroy()
 		player.gui.top[buyxp].destroy()
+    player.gui.top[gambel].destroy()
             player.gui.top[main_toolbar_name].destroy()
-			
+
             return
         end
     end
@@ -366,7 +368,7 @@ add_toolbar = function(player, remove)
         return
     end
 
-    local tooltip = 'Control who can get into your car.'
+    local tooltip = 'contorl who can enter your car.'
     player.gui.top.add(
         {
             type = 'sprite-button',
@@ -375,23 +377,31 @@ add_toolbar = function(player, remove)
             tooltip = tooltip
         }
     )
-	player.gui.top.add(
-        {
-            type = 'sprite-button',
-            sprite = 'item/rocket-part',
-            name = buyxp,
-            tooltip = 'Spend 5000 coin to buy 500xp'
-        }
-    )
+
     player.gui.top.add(
         {
             type = 'sprite-button',
             sprite = 'item/logistic-chest-storage',
             name = cool,
-            tooltip = 'Spend 3000 coin to open the chest, you have a chance to get MK2! Pay attention to the buildings near the character to prevent your loss!'
+            tooltip = {'amap.openchest'}
         }
     )
-	
+    player.gui.top.add(
+        {
+            type = 'sprite-button',
+            sprite = 'item/coin',
+            name = gambel,
+            tooltip = {'amap.gambel'}
+        }
+    )
+	    player.gui.top.add(
+        {
+            type = 'sprite-button',
+            sprite = 'item/rocket-part',
+            name = buyxp,
+            tooltip = {'amap.buyxp'}
+        }
+    )
 end
 
 remove_toolbar = function(player)
@@ -406,6 +416,7 @@ remove_toolbar = function(player)
         player.gui.top[main_toolbar_name].destroy()
 		player.gui.top[cool].destroy()
 		player.gui.top[buyxp].destroy()
+    player.gui.top[gambel].destroy()
         return
     end
 end
@@ -453,7 +464,33 @@ Gui.on_click(
         end
     end
 )
-
+Gui.on_click(
+    gambel ,
+    function(event)
+        local player = event.player
+        local something = player.get_inventory(defines.inventory.chest)
+          for k, v in pairs(something.get_contents()) do
+             local t = {name = k, count = v}
+      if t.name == 'coin' then
+      if v > 999 then
+        player.remove_item{name='coin', count = '1000'}
+	   local roll = math.random(1,100)
+     if roll <= 36 then
+       player.insert{name='coin', count = '2500'}
+	   player.print({'amap.gambel1'})
+	   return
+	   else
+	   player.print({'amap.gambel2'})
+	   return
+    end
+	else
+		player.print({'amap.noenough'})
+		return
+	end
+	end
+	end
+    end
+)
 
 Gui.on_click(
     cool ,
@@ -463,15 +500,19 @@ Gui.on_click(
      for k, v in pairs(something.get_contents()) do
         local t = {name = k, count = v}
  if t.name == 'coin' then
- if v > 2999 then 
+ if v > 2999 then
  player.remove_item{name='coin', count = '3000'}
- local rpg = asdasd.get('rpg_t')
-    local magic = rpg[player.index].magicka+100
-       local msg = 'Oh, what will you get? (quality is linked to magic!)'
-	Loot.cool(player.surface, player.position, 'steel-chest', magic)
+ local luck = math.floor(math.random(1,130))
+ player.print({'amap.lucknb'})
+ player.print(luck)
+    local magic = luck*5+100
+       local msg = {'amap.whatopen'}
+	Loot.cool(player.surface, player.surface.find_non_colliding_position("steel-chest", player.position, 20, 1, true) or player.position, 'steel-chest', magic)
 		  Alert.alert_player(player, 5, msg)
-		  else 
-		  player.print('you dont have enough coin!')
+		  return
+		  else
+		  player.print({'amap.noenough'})
+		  return
  end
  end
    end
@@ -485,15 +526,17 @@ Gui.on_click(
      for k, v in pairs(something.get_contents()) do
         local t = {name = k, count = v}
  if t.name == 'coin' then
- if v > 4999 then 
+ if v > 4999 then
  player.remove_item{name='coin', count = '5000'}
- local rpg_t = asdasd.get('rpg_t')
+ local rpg_t = rpgtable.get('rpg_t')
 
- rpg_t[player.index].xp = rpg_t[player.index].xp +500
-       local msg = 'You already buy 500 xp'
+ rpg_t[player.index].xp = rpg_t[player.index].xp +1000
+       local msg = {'amap.buyover'}
 		  Alert.alert_player(player, 5, msg)
-		  else 
-		  player.print('you dont have enough coin!')
+		  return
+		  else
+		  player.print({'amap.noenough'})
+		  return
  end
  end
    end

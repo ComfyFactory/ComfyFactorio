@@ -562,22 +562,23 @@ function Public.save_car(ic, event)
     if car.owner == player.index then
         save_surface(ic, entity, player)
         if not ic.players[player.index].notified then
-            player.print(player.name .. ', the ' .. car.name .. ' has benn saved.', Color.success)
-			
+            player.print(player.name .. ', the ' .. car.name .. ' has been saved', Color.success)
+
             ic.players[player.index].notified = true
-			
+
 			local wave_number = WD.get('wave_number')
+			--game.print(type(wave_number))
 			local a = 100
-			
+
             if ( wave_number <= a ) then
-			player.print('You used your car in the first 100 waves, so you are not eligible for the reward. Continue to work hard next time',Color.warning)
-			
+			player.print({'amap.usecar'},Color.warning)
+
 			else
-			
+
 			local rpg_t = RPG.get('rpg_t')
-			rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+75
-			player.print('Achieve the challenge and get 75 skill points reward. Congratulations!',Color.success)
-			end 
+			rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+50
+			player.print({'amap.usecar2'},Color.success)
+			end
         end
     else
         local p = game.players[car.owner]
@@ -728,7 +729,10 @@ function Public.create_car_room(ic, car)
     end
 
     construct_doors(ic, car)
-
+    local mgs = surface.map_gen_settings
+      	mgs.width = area.right_bottom.x * 2
+      	mgs.height = area.right_bottom.y * 2
+      	surface.map_gen_settings = mgs
     local lx, ly, rx, ry = 4, 1, 5, 1
 
     local position1 = {area.left_top.x + lx, area.left_top.y + ly}
@@ -935,20 +939,17 @@ function Public.use_door_with_entity(ic, player, door)
 end
 
 function Public.item_transfer(ic)
-    local car
-    ic.current_car_index, car = next(ic.cars, ic.current_car_index)
-    if not car then
-        return
-    end
-    if validate_entity(car.entity) then
-        if car.transfer_entities then
-            for k, e in pairs(car.transfer_entities) do
-                if validate_entity(e) then
-                    transfer_functions[e.name](car, e)
-                end
-            end
-        end
-    end
+  for _, car in pairs(ic.cars) do
+      if validate_entity(car.entity) then
+          if car.transfer_entities then
+              for k, e in pairs(car.transfer_entities) do
+                  if validate_entity(e) then
+                      transfer_functions[e.name](car, e)
+                  end
+              end
+          end
+      end
+  end
 end
 
 Public.kick_player_from_surface = kick_player_from_surface

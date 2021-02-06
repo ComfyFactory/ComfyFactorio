@@ -89,6 +89,8 @@ local function kill_minimap(player)
     end
 end
 
+
+
 local function kill_frame(player)
     if player.gui.left.minimap_toggle_frame then
         local element = player.gui.left.minimap_toggle_frame.minimap_frame
@@ -167,6 +169,8 @@ function Public.update_minimap()
         if Functions.get_player_surface(ic, player) and player.gui.left.minimap_toggle_frame then
             kill_frame(player)
             draw_minimap(player)
+          else
+          kill_minimap(player)
         end
     end
 end
