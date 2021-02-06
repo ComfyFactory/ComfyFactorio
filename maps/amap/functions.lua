@@ -18,7 +18,7 @@ local this = {
     surface_cleared = false
 }
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16,  ['car'] = 1}
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16,  ['wood'] = 16}
 
 Global.register(
     this,
@@ -618,30 +618,46 @@ function Public.on_player_joined_game(event)
     local player = game.players[event.player_index]
     local surface = game.surfaces[active_surface_index]
 
-    player.print('Protect the rocket silo. When the rocket launch is destroyed, the game fails. Resist insect attacks, build production lines, and win the game by launching rockets!')
-	
+
 	local reward = require 'maps.amap.main'.reward
     local player_data = get_player_data(player)
     if not player_data.first_join then
-        local message = ({'main.greeting', player.name})
-        Alert.alert_player(player, 15, message)
 
-		
         for item, amount in pairs(starting_items) do
            player.insert({name = item, count = amount})
         end
+        local rpg_t = RPG.get('rpg_t')
+        local wave_number = WD.get('wave_number')
+        local this = WPT.get()
+
+        for i=0,this.science do
+          local point = math.floor(math.random(1,5))
+          local money = math.floor(math.random(1,100))
+          	rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+point
+              player.insert{name='coin', count = money}
+          	player.print({'amap.science',point,money}, {r = 0.22, g = 0.88, b = 0.22})
+        end
+
+        	rpg_t[player.index].xp = rpg_t[player.index].xp + wave_number*10
+
+
+
         player_data.first_join = true
+        player.print({'amap.joingame'})
     end
     if player.surface.index ~= active_surface_index then
-        player.teleport({x=0,y=0}, surface)
+--player.teleport(surface.find_non_colliding_position("character", game.forces.player.get_spawn_position(surface), 20, 1, false) or {x=0,y=0}, surface)
+
+  player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 20, 1, false) or {x=0,y=0}, surface)
     else
         local p = {x = player.position.x, y = player.position.y}
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'out-of-map' then
-            player.teleport({x=0,y=0}, surface)
+player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 20, 1, false) or {x=0,y=0}, surface)
+            --player.teleport({x=0,y=0}, surface)
         end
     end
-	
+
 end
 
 
@@ -653,7 +669,18 @@ function Public.is_creativity_mode_on()
         Public.set_difficulty()
     end
 end
+local function on_player_mined_entity(event)
+  local name = event.entity.name
+  local entity = event.entity
+  local this = WPT.get()
+  if name == 'flamethrower-turret' then
+    this.flame = this.flame - 1
 
+     if this.flame <= 0 then
+       this.flame = 0
+     end
+  end
+end
 function Public.disable_creative()
     local creative_enabled = Commands.get('creative_enabled')
     if creative_enabled then
@@ -677,6 +704,48 @@ function Public.on_pre_player_left_game(event)
             tick = ticker
         }
     end
+end
+local on_player_or_robot_built_entity = function(event)
+--change_pos  改变位置
+local name = event.created_entity.name
+local entity = event.created_entity
+local this = WPT.get()
+if name == 'flamethrower-turret' then
+  if this.flame >= 12 then
+    game.print({'amap.too_many'})
+    entity.destroy()
+  else
+    this.flame = this.flame + 1
+    game.print({'amap.ok_many',this.flame})
+  end
+end
+if name == "stone-wall" then
+  local this = WPT.get()
+  if not this.change then
+   local wave_defense_table = WD.get_table()
+   local dx = entity.position.x-this.pos.x
+   local dy = entity.position.y-this.pos.y
+
+   if dx < 0 then
+      dx=-dx
+   end
+   if dy < 0 then
+      dy=-dy
+   end
+   local d = dx+dy
+   if d < 100 then
+  this.change = true
+  end
+end
+
+--game.print(dx)
+--game.print(dy)
+--game.print('差值为')
+--game.print(d)
+--game.print('出生地为')
+--game.print(this.pos)
+end
+
 end
 
 function Public.on_player_respawned(event)
@@ -752,7 +821,9 @@ local disable_recipes = function()
     force.recipes['car'].enabled = false
     force.recipes['tank'].enabled = false
     force.recipes['pistol'].enabled = false
+    force.recipes['land-mine'].enabled = false
     force.recipes['spidertron-remote'].enabled = false
+  --  force.recipes['flamethrower-turret'].enabled = false
 end
 
 function Public.disable_tech()
@@ -763,8 +834,24 @@ function Public.disable_tech()
 end
 
 local disable_tech = Public.disable_tech
+function Public.on_research_finished(event)
+    disable_tech()
+end
 
+local function on_entity_died(event)
 
+  local name = event.entity.name
+
+  local entity = event.entity
+  local this = WPT.get()
+  if name == 'flamethrower-turret' then
+    this.flame = this.flame - 1
+
+     if this.flame <= 0 then
+       this.flame = 0
+     end
+  end
+end
 Public.firearm_magazine_ammo = {name = 'firearm-magazine', count = 200}
 Public.piercing_rounds_magazine_ammo = {name = 'piercing-rounds-magazine', count = 200}
 Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count = 200}
@@ -779,15 +866,22 @@ function Public.reset_table()
     this.magic_fluid_crafters = {index = 1}
 end
 
+local on_research_finished = Public.on_research_finished
 local on_player_joined_game = Public.on_player_joined_game
 local on_player_respawned = Public.on_player_respawned
 local on_player_died = Public.on_player_died
 local on_player_changed_position = Public.on_player_changed_position
 local on_pre_player_left_game = Public.on_pre_player_left_game
 
+Event.add(defines.events.on_built_entity, on_player_or_robot_built_entity)
+Event.add(defines.events.on_robot_built_entity, on_player_or_robot_built_entity)
+Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_robot_mined_entity, on_player_mined_entity)
 --Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.on_nth_tick(10, tick)

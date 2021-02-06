@@ -1,7 +1,7 @@
 local Server = require 'utils.server'
 local Session = require 'utils.datastore.session_data'
 local Modifers = require 'player_modifiers'
-local WPT = require 'maps.mountain_fortress_v3.table'
+local WPT = require 'maps.amap.table'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 

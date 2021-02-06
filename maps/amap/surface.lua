@@ -7,7 +7,7 @@ local Public = {}
 
 local this = {
     active_surface_index = nil,
-    surface_name = surface_name
+    surface_name = surface_name,
 }
 
 Global.register(
@@ -17,21 +17,22 @@ Global.register(
     end
 )
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16,  ['car'] = 1}
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16,  ['wood'] = 16}
 
 function Public.create_surface()
         local map_gen_settings = {
         ['seed'] = math.random(10000, 99999),
-        ['starting_area'] = 1.1,
-        ['default_enable_all_autoplace_controls'] = true
-       
+        ['starting_area'] = 1.2,
+        ['default_enable_all_autoplace_controls'] = true,
+        ['water'] = 0.65
+
     }
 	map_gen_settings.autoplace_controls = {
-			["coal"] = {frequency = "1", size = "1", richness = "0.7"},
-			["stone"] = {frequency = "1", size = "1", richness = "0.7"},
-			["copper-ore"] = {frequency = "1", size = "2", richness = "0.7"},
-			["iron-ore"] = {frequency = "1", size = "2", richness = "0.7"},
-			["crude-oil"] = {frequency = "1", size = "2", richness = "1"},
+			["coal"] = {frequency = "1", size = "1", richness = "1"},
+			["stone"] = {frequency = "1", size = "1", richness = "1"},
+			["copper-ore"] = {frequency = "1", size = "2", richness = "1"},
+			["iron-ore"] = {frequency = "1", size = "2", richness = "1"},
+			["crude-oil"] = {frequency = "2", size = "2", richness = "1"},
 			["trees"] = {frequency = "1", size = "0.5", richness = "0.7"},
 			["enemy-base"] = {frequency = "4", size = "2", richness = "1"},
 			--["starting_area"] = 1.2,
@@ -42,6 +43,9 @@ function Public.create_surface()
         this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
+
+
+
     if not this.cleared_nauvis then
         local mgs = game.surfaces['nauvis'].map_gen_settings
         mgs.width = 16
@@ -50,7 +54,10 @@ function Public.create_surface()
         game.surfaces['nauvis'].clear()
         this.cleared_nauvis = true
     end
-
+--local size = game.surfaces[this.active_surface_index].map_gen_settings
+  --  size.width = 512
+   -- size.height = 512
+    --game.surfaces[this.active_surface_index].map_gen_settings = size
     return this.active_surface_index
 end
 

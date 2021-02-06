@@ -5,14 +5,14 @@ local random = math.random
 local floor = math.floor
 
 local blacklist = {
-    ['cargo-wagon'] = true,
-    ['locomotive'] = true,
-    ['artillery-wagon'] = true,
-    ['artillery-turret'] = true,
-    ['fluid-wagon'] = true,
-    ['land-mine'] = true,
-    ['car'] = true,
-    ['tank'] = true,
+  --  ['cargo-wagon'] = true,
+  --  ['locomotive'] = true,
+  --  ['artillery-wagon'] = true,
+  --  ['artillery-turret'] = true,
+  --  ['fluid-wagon'] = true,
+  --  ['land-mine'] = true,
+   ['car'] = true,
+   ['tank'] = true,
     ['spidertron'] = true
 }
 
@@ -22,8 +22,8 @@ market.weapons = {
     ['shotgun'] = {value = 40, rarity = 2},
     ['combat-shotgun'] = {value = 400, rarity = 5},
     ['rocket-launcher'] = {value = 500, rarity = 6},
-    ['flamethrower'] = {value = 750, rarity = 6},
-    ['land-mine'] = {value = 3, rarity = 5}
+    ['flamethrower-turret'] = {value = 2000, rarity = 5},
+    ['land-mine'] = {value = 16, rarity = 4}
 }
 
 market.ammo = {
@@ -50,11 +50,11 @@ market.caspules = {
     ['poison-capsule'] = {value = 32, rarity = 6},
     ['slowdown-capsule'] = {value = 8, rarity = 1},
     ['defender-capsule'] = {value = 8, rarity = 1},
-    ['distractor-capsule'] = {value = 20, rarity = 9},
-    ['destroyer-capsule'] = {value = 32, rarity = 12},
-    ['discharge-defense-remote'] = {value = 2000, rarity = 8},
+    ['distractor-capsule'] = {value = 40, rarity = 3},
+    ['destroyer-capsule'] = {value = 80, rarity = 5},
+    ['discharge-defense-remote'] = {value = 300, rarity = 8},
     ['artillery-targeting-remote'] = {value = 32, rarity = 7},
-    ['raw-fish'] = {value = 6, rarity = 1}
+    ['raw-fish'] = {value = 10, rarity = 1}
 }
 
 market.armor = {
@@ -73,7 +73,7 @@ market.equipment = {
     ['battery-equipment'] = {value = 160, rarity = 2},
     ['battery-mk2-equipment'] = {value = 2000, rarity = 8},
     ['personal-laser-defense-equipment'] = {value = 2500, rarity = 7},
-    ['discharge-defense-equipment'] = {value = 8000, rarity = 7},
+    ['discharge-defense-equipment'] = {value = 5000, rarity = 7},
     ['belt-immunity-equipment'] = {value = 200, rarity = 1},
     ['exoskeleton-equipment'] = {value = 800, rarity = 3},
     ['personal-roboport-equipment'] = {value = 500, rarity = 3},
@@ -154,7 +154,8 @@ market.wire = {
     ['decider-combinator'] = {value = 16, rarity = 1},
     ['constant-combinator'] = {value = 16, rarity = 1},
     ['power-switch'] = {value = 16, rarity = 1},
-    ['programmable-speaker'] = {value = 24, rarity = 1}
+    ['programmable-speaker'] = {value = 24, rarity = 1},
+    ['landfill'] = {value = 5, rarity = 3}
 }
 
 local function get_types()
@@ -269,6 +270,11 @@ function Public.get_random_item(rarity, sell, buy)
 end
 
 function Public.mountain_market(surface, position, rarity, buy)
+    if (rarity <= 1)
+	then
+	rarity = 1
+	end
+--  game.print(rarity)
     local types = get_types()
     table.shuffle_table(types)
     local items = get_market_item_list(rarity)
@@ -279,7 +285,7 @@ function Public.mountain_market(surface, position, rarity, buy)
         table.shuffle_table(items)
     end
     local mrk = surface.create_entity({name = 'market', position = position, force = 'neutral'})
-
+    mrk.destructible = false
     for i = 1, random(5, 10), 1 do
         local item = items[i]
         if not item then
