@@ -478,6 +478,23 @@ local function one_punch(character, target, damage)
     end
 end
 
+local function is_position_near(area, entity)
+    local status = false
+
+    local function inside(pos)
+        local lt = area.left_top
+        local rb = area.right_bottom
+
+        return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+    end
+
+    if inside(entity, area) then
+        status = true
+    end
+
+    return status
+end
+
 local function on_entity_damaged(event)
     if not event.cause then
         return
@@ -499,38 +516,54 @@ local function on_entity_damaged(event)
     if not event.entity.valid then
         return
     end
+
+    local entity = event.entity
+    local cause = event.cause
+
     if
-        event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].valid_for_read and
-            event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].valid_for_read
+        cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
+            cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
      then
         return
     end
-    if not event.cause.player then
+
+    if not cause.player then
         return
     end
 
-    local p = event.cause.player
+    local p = cause.player
 
     local surface_name = RPG.get('rpg_extra').surface_name
     if sub(p.surface.name, 0, #surface_name) ~= surface_name then
         return
     end
 
-    if event.entity.force.index == event.cause.force.index then
+    if entity.force.index == cause.force.index then
         return
     end
 
-    Functions.reward_mana(event.cause.player, 2)
+    local position = p.position
+
+    local area = {
+        left_top = {x = position.x - 4, y = position.y - 4},
+        right_bottom = {x = position.x + 4, y = position.y + 4}
+    }
+
+    if not is_position_near(area, entity.position) then
+        return
+    end
+
+    Functions.reward_mana(cause.player, 2)
 
     --Grant the player life-on-hit.
-    event.cause.health = event.cause.health + Functions.get_life_on_hit(event.cause.player)
+    cause.health = cause.health + Functions.get_life_on_hit(cause.player)
 
     --Calculate modified damage.
-    local damage = event.original_damage_amount + event.original_damage_amount * Functions.get_melee_modifier(event.cause.player)
-    if event.entity.prototype.resistances then
-        if event.entity.prototype.resistances.physical then
-            damage = damage - event.entity.prototype.resistances.physical.decrease
-            damage = damage - damage * event.entity.prototype.resistances.physical.percent
+    local damage = event.original_damage_amount + event.original_damage_amount * Functions.get_melee_modifier(cause.player)
+    if entity.prototype.resistances then
+        if entity.prototype.resistances.physical then
+            damage = damage - entity.prototype.resistances.physical.decrease
+            damage = damage - damage * entity.prototype.resistances.physical.percent
         end
     end
     damage = math.round(damage, 3)
@@ -543,11 +576,11 @@ local function on_entity_damaged(event)
 
     --Cause a one punch.
     if enable_one_punch then
-        if rpg_t[event.cause.player.index].one_punch then
-            if math.random(0, 999) < Functions.get_one_punch_chance(event.cause.player) * 10 then
-                one_punch(event.cause, event.entity, damage)
-                if event.entity.valid then
-                    event.entity.die(event.entity.force.name, event.cause)
+        if rpg_t[cause.player.index].one_punch then
+            if math.random(0, 999) < Functions.get_one_punch_chance(cause.player) * 10 then
+                one_punch(cause, entity, damage)
+                if entity.valid then
+                    entity.die(entity.force.name, cause)
                 end
                 return
             end
@@ -557,21 +590,21 @@ local function on_entity_damaged(event)
     --Floating messages and particle effects.
     if math.random(1, 7) == 1 then
         damage = damage * math.random(250, 350) * 0.01
-        event.cause.surface.create_entity(
+        cause.surface.create_entity(
             {
                 name = 'flying-text',
-                position = event.entity.position,
+                position = entity.position,
                 text = '‼' .. math.floor(damage),
                 color = {255, 0, 0}
             }
         )
-        event.cause.surface.create_entity({name = 'blood-explosion-huge', position = event.entity.position})
+        cause.surface.create_entity({name = 'blood-explosion-huge', position = entity.position})
     else
         damage = damage * math.random(100, 125) * 0.01
-        event.cause.player.create_local_flying_text(
+        cause.player.create_local_flying_text(
             {
                 text = math.floor(damage),
-                position = event.entity.position,
+                position = entity.position,
                 color = {150, 150, 150},
                 time_to_live = 90,
                 speed = 2
@@ -581,17 +614,17 @@ local function on_entity_damaged(event)
 
     --Handle the custom health pool of the biter health booster, if it is used in the map.
     if global.biter_health_boost then
-        local health_pool = global.biter_health_boost_units[event.entity.unit_number]
+        local health_pool = global.biter_health_boost_units[entity.unit_number]
         if health_pool then
             health_pool[1] = health_pool[1] + event.final_damage_amount
             health_pool[1] = health_pool[1] - damage
 
             --Set entity health relative to health pool
-            event.entity.health = health_pool[1] * health_pool[2]
+            entity.health = health_pool[1] * health_pool[2]
 
             if health_pool[1] <= 0 then
-                local entity_number = event.entity.unit_number
-                event.entity.die(event.entity.force.name, event.cause)
+                local entity_number = entity.unit_number
+                entity.die(entity.force.name, cause)
                 global.biter_health_boost_units[entity_number] = nil
             end
             return
@@ -599,10 +632,10 @@ local function on_entity_damaged(event)
     end
 
     --Handle vanilla damage.
-    event.entity.health = event.entity.health + event.final_damage_amount
-    event.entity.health = event.entity.health - damage
-    if event.entity.health <= 0 then
-        event.entity.die(event.cause.force.name, event.cause)
+    entity.health = entity.health + event.final_damage_amount
+    entity.health = entity.health - damage
+    if entity.health <= 0 then
+        entity.die(cause.force.name, cause)
     end
 end
 
@@ -1084,7 +1117,7 @@ local function on_player_used_capsule(event)
     rpg_t[player.index].last_spawned = game.tick + object.tick
     Functions.update_mana(player)
 
-    local reward_xp = object.mana_cost * 0.045
+    local reward_xp = object.mana_cost * 0.085
     if reward_xp < 1 then
         reward_xp = 1
     end

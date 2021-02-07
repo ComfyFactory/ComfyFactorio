@@ -462,6 +462,17 @@ local function give_coin(player)
     end
 end
 
+local immunity_spawner =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        if not entity or not entity.valid then
+            return
+        end
+        entity.destructible = true
+    end
+)
+
 local mining_events = {
     {
         function()
@@ -624,7 +635,9 @@ local mining_events = {
 
             local position = entity.position
             local surface = entity.surface
-            surface.create_entity({name = 'biter-spawner', position = position, force = 'enemy'})
+            local e = surface.create_entity({name = 'biter-spawner', position = position, force = 'enemy'})
+            e.destructible = false
+            Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
             Public.unstuck_player(index)
         end,
         512,
