@@ -2,6 +2,7 @@ local Public = {}
 
 local Table = require 'modules.scrap_towny_ffa.table'
 
+local town_radius = 27
 local connection_radius = 7
 
 local neutral_whitelist = {
@@ -61,7 +62,7 @@ local entity_type_whitelist = {
 	["wall"] = true,
 }
 
-local function is_position_isolated(surface, force, position)
+local function isolated(surface, force, position)
 	local position_x = position.x
 	local position_y = position.y
 	local area = { { position_x - connection_radius, position_y - connection_radius }, { position_x + connection_radius, position_y + connection_radius } }
@@ -70,7 +71,7 @@ local function is_position_isolated(surface, force, position)
 	for _, e in pairs(surface.find_entities_filtered({ area = area, force = force.name })) do
 		if entity_type_whitelist[e.type] then
 			count = count + 1
-			if count > 1 then return end
+			if count > 1 then return false end		-- are there more than one team entities in the area?
 		end
 	end
 
@@ -119,42 +120,54 @@ function Public.near_town(position, surface, radius)
 		if town_center ~= nil then
 			local market = town_center.market
 			if in_range(position, market.position, radius) and market.surface == surface then
-				--log("near town")
 				return true
 			end
 		end
 	end
-	--log("not near town")
+	return false
+end
+
+local function in_town(force, position)
+	local ffatable = Table.get_table()
+	local town_center = ffatable.town_centers[force.name]
+	if town_center ~= nil then
+		local center = town_center.market.position
+		if position.x >= center.x - town_radius and position.x <= center.x + town_radius then
+			if position.y >= center.y - town_radius and position.y <= center.y + town_radius then
+				return true
+			end
+		end
+	end
 	return false
 end
 
 local function prevent_isolation_entity(event, player)
 	local p = player or nil
 	local entity = event.created_entity
+	local position = entity.position
 	if not entity.valid then return end
 	local entity_name = entity.name
 	local item = event.item
 	if item == nil then return end
 	local item_name = item.name
 	local force = entity.force
-	if force == game.forces["player"] then return end
+	if force == game.forces.player then return end
 	if force == game.forces["rogue"] then return end
 	local surface = entity.surface
 	local error = false
-	if is_position_isolated(surface, force, entity.position) then
+	if not in_town(force, position) and isolated(surface, force, position) then
 		error = true
 		entity.destroy()
 		if entity_name ~= "entity-ghost" and entity_name ~= "tile-ghost" then
 			refund_item(event, item_name)
 		end
-		return true
+		--return true
 	end
 	if error == true then
 		if p ~= nil then
 			p.play_sound({ path = "utility/cannot_build", position = p.position, volume_modifier = 0.75 })
-		else
-			error_floaty(surface, entity.position, "Building is not connected to town!")
 		end
+		error_floaty(surface, position, "Building is not connected to town!")
 	end
 end
 
@@ -176,7 +189,7 @@ local function prevent_isolation_tile(event, player)
 	for _, t in pairs(tiles) do
 		local old_tile = t.old_tile
 		position = t.position
-		if is_position_isolated(surface, force, position) then
+		if not in_town(force, position) and isolated(surface, force, position) then
 			error = true
 			surface.set_tiles({ { name = old_tile.name, position = position } }, true)
 			if tile.name ~= "tile-ghost" then
@@ -187,9 +200,8 @@ local function prevent_isolation_tile(event, player)
 	if error == true then
 		if p ~= nil then
 			p.play_sound({ path = "utility/cannot_build", position = p.position, volume_modifier = 0.75 })
-		else
-			error_floaty(surface, position, "Tile is not connected to town!")
 		end
+		error_floaty(surface, position, "Tile is not connected to town!")
 	end
 end
 
@@ -216,9 +228,8 @@ local function restrictions(event, player)
 	if error == true then
 		if p ~= nil then
 			p.play_sound({ path = "utility/cannot_build", position = p.position, volume_modifier = 0.75 })
-		else
-			error_floaty(surface, position, "Can't build near town!")
 		end
+		error_floaty(surface, position, "Can't build near town!")
 	end
 
 	if not neutral_whitelist[entity.type] then return end

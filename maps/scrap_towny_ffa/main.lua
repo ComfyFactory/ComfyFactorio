@@ -37,12 +37,13 @@ local function on_player_joined_game(event)
 
 	player.game_view_settings.show_minimap = false
 	player.game_view_settings.show_map_view_options = false
+	player.game_view_settings.show_entity_info = true
 	--player.game_view_settings.show_side_menu = false
 
 	Info.toggle_button(player)
 	Info.show(player)
 	Team.set_player_color(player)
-	if player.force ~= game.forces["player"] then return end
+	if player.force ~= game.forces.player then return end
 
 	-- setup outlanders
 	Team.set_player_to_outlander(player)
@@ -108,15 +109,15 @@ local function on_init()
 end
 
 local tick_actions = {
-	[60 * 0] = Radar.reset,							-- each minute, at 00 seconds
-	[60 * 5] = Team.update_town_chart_tags, 		-- each minute, at 05 seconds
-	[60 * 10] = Team.set_all_player_colors, 		-- each minute, at 10 seconds
-	[60 * 15] = Fish.reproduce, 					-- each minute, at 15 seconds
+	[60 * 0] = Radar.reset,												-- each minute, at 00 seconds
+	[60 * 5] = Team.update_town_chart_tags, 			-- each minute, at 05 seconds
+	[60 * 10] = Team.set_all_player_colors, 			-- each minute, at 10 seconds
+	[60 * 15] = Fish.reproduce, 									-- each minute, at 15 seconds
 	[60 * 25] = Biters.unit_groups_start_moving, 	-- each minute, at 25 seconds
-	[60 * 30] = Radar.reset,						-- each minute, at 30 seconds
-	[60 * 45] = Biters.validate_swarms, 			-- each minute, at 45 seconds
-	[60 * 50] = Biters.swarm, 						-- each minute, at 50 seconds
-	[60 * 55] = Pollution.market_scent            	-- each minute, at 55 seconds
+	[60 * 30] = Radar.reset,											-- each minute, at 30 seconds
+	[60 * 45] = Biters.validate_swarms, 					-- each minute, at 45 seconds
+	[60 * 50] = Biters.swarm, 										-- each minute, at 50 seconds
+	[60 * 55] = Pollution.market_scent            -- each minute, at 55 seconds
 }
 
 local function on_nth_tick(event)

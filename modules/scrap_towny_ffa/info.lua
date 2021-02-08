@@ -9,7 +9,9 @@ The local inhabitants are indifferent to you at first, so long as you don't buil
 by foreign technology.  In fact, they get quite aggressive at the scent of it. If you were to hurt any of the natives you will be
 brandished a rogue until your untimely death or until you find better digs.
 
-To create a new town or outpost simply place a furnace down in a suitable spot while possessing a "small-plane" token item.
+To create a new town or outpost simply place a furnace down in a suitable spot that is not near any other towns or obstructed.
+The world seems to be limited in size with uninhabitable zones on four sides.  News towns can only be built within these
+borders and you must leave room for the town's size (radius of 27) when placing a new town.
 TIP: It's best to find a spot far from existing towns and pollution, as enemies will become aggressive once you form a town.
 
 Once a town is formed, members may invite other players and teams using a raw fish. To invite another player, drop a fish

@@ -93,8 +93,6 @@ end
 additional_resource_vectors[4] = {}
 for _, vector in pairs(additional_resource_vectors[3]) do table_insert(additional_resource_vectors[4], { vector[1], vector[2] * -1 }) end
 
-local market_collide_vectors = { { -1, 1 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 } }
-
 local clear_whitelist_types = {
 	["simple-entity"] = true,
 	["resource"] = true,
@@ -257,31 +255,26 @@ local function draw_town_spawn(player_name)
 	--end
 end
 
-local function is_valid_location(surface, entity)
+local function is_valid_location(surface, position)
 	local ffatable = Table.get_table()
 
-
-
-	for _, vector in pairs(market_collide_vectors) do
-		local p = { x = entity.position.x + vector[1], y = entity.position.y + vector[2] }
-		if not surface.can_place_entity({ name = "iron-chest", position = p }) then
-			surface.create_entity({
-				name = "flying-text",
-				position = entity.position,
-				text = "Position is obstructed!",
-				color = { r = 0.77, g = 0.0, b = 0.0 }
-			})
-			return false
-		end
+	if not surface.can_place_entity({ name = "market", position = position }) then
+		surface.create_entity({
+			name = "flying-text",
+			position = position,
+			text = "Position is obstructed - no room for market!",
+			color = { r = 0.77, g = 0.0, b = 0.0 }
+		})
+		return false
 	end
 
 	for _, vector in pairs(town_wall_vectors) do
-		local p = { x = entity.position.x + vector[1], y = entity.position.y + vector[2] }
-		local tile = surface.get_tile(math_floor(p.x), math_floor(p.y))
+		local p = { x = math_floor(position.x + vector[1]), y = math_floor(position.y + vector[2]) }
+		local tile = surface.get_tile(p.x, p.y)
 		if tile.name == "out-of-map" then
 			surface.create_entity({
 				name = "flying-text",
-				position = entity.position,
+				position = position,
 				text = "Town would be off-map!",
 				color = { r = 0.77, g = 0.0, b = 0.0 }
 			})
@@ -289,28 +282,27 @@ local function is_valid_location(surface, entity)
 		end
 	end
 
-
 	if ffatable.size_of_town_centers > 48 then
 		surface.create_entity({
 			name = "flying-text",
-			position = entity.position,
+			position = position,
 			text = "Too many town centers on the map!",
 			color = { r = 0.77, g = 0.0, b = 0.0 }
 		})
 		return false
 	end
 
-	if Building.near_town(entity.position, entity.surface, radius_between_towns) then
+	if Building.near_town(position, surface, radius_between_towns) then
 		surface.create_entity({
 			name = "flying-text",
-			position = entity.position,
+			position = position,
 			text = "Town location is too close to another town center!",
 			color = { r = 0.77, g = 0.0, b = 0.0 }
 		})
 		return false
 	end
 
-	local area = { { entity.position.x - town_radius, entity.position.y - town_radius }, { entity.position.x + town_radius, entity.position.y + town_radius } }
+	local area = { { position.x - town_radius, position.y - town_radius }, { position.x + town_radius, position.y + town_radius } }
 	local count = 0
 	for _, e in pairs(surface.find_entities_filtered({ area = area })) do
 		if e.force.name == "enemy" then
@@ -321,11 +313,10 @@ local function is_valid_location(surface, entity)
 	if count > 1 then
 		surface.create_entity({
 			name = "flying-text",
-			position = entity.position,
-			text = "I got a bad feeling about this!",
+			position = position,
+			text = "I got a bad feeling about this!  There are enemies nearby.",
 			color = { r = 0.77, g = 0.0, b = 0.0 }
 		})
-		return false
 	end
 
 	return true
@@ -373,18 +364,17 @@ local function get_color()
 end
 
 local function found_town(event)
-	local ffatable = Table.get_table()
 	local entity = event.created_entity
-	if entity == nil or not entity.valid then return true end    -- end checks, do nothing
-	if entity.name ~= "stone-furnace" then return false end        -- continue building checks
+	if entity == nil or not entity.valid then return true end    -- cancel, not a valid entity placed
+	if entity.name ~= "stone-furnace" then return false end      -- cancel, player did not place a stone-furnace
 	local player = game.players[event.player_index]
-	if player.force ~= game.forces["player"] and player.force ~= game.forces["rogue"] then return false end        -- return false means to continue checks
+	if player.force ~= game.forces.player and player.force ~= game.forces["rogue"] then return false end		-- cancel, player is in a team already
 	local force_name = tostring(player.name)
-	if game.forces[force_name] then return end
-
-	if Team.has_key(player) == false then return false end	-- no plane, continue building checks
+	if game.forces[force_name] then return end							-- cancel, player is mayor of town
+	if Team.has_key(player) == false then return false end	-- cancel, player has already placed a town
 
 	local surface = entity.surface
+	local ffatable = Table.get_table()
 
 	if ffatable.cooldowns_town_placement[player.index] then
 		if game.tick < ffatable.cooldowns_town_placement[player.index] then
@@ -400,9 +390,11 @@ local function found_town(event)
 		end
 	end
 
-	if not is_valid_location(surface, entity) then
+	local position = entity.position
+	entity.destroy()
+
+	if not is_valid_location(surface, position) then
 		player.insert({ name = "stone-furnace", count = 1 })
-		entity.destroy()
 		return true
 	end
 
@@ -410,7 +402,7 @@ local function found_town(event)
 
 	ffatable.town_centers[force_name] = {}
 	local town_center = ffatable.town_centers[force_name]
-	town_center.market = surface.create_entity({ name = "market", position = entity.position, force = force_name })
+	town_center.market = surface.create_entity({ name = "market", position = position, force = force_name })
 	town_center.chunk_position = { math.floor(town_center.market.position.x / 32), math.floor(town_center.market.position.y / 32) }
 	town_center.max_health = 1000
 	town_center.coin_balance = 0
@@ -466,8 +458,6 @@ local function found_town(event)
 	}
 
 	ffatable.size_of_town_centers = ffatable.size_of_town_centers + 1
-
-	entity.destroy()
 
 	draw_town_spawn(force_name)
 

@@ -68,17 +68,17 @@ local function set_offers(town_center)
 	if town_center.max_health < 500000 then
 		special_offers[1] = { { { "coin", town_center.max_health * 0.1 } }, "Upgrade Town Center Health" }
 	else
-		special_offers[1] = { { { "computer", 1 } }, "Maximum Health upgrades reached!" }
+		special_offers[1] = { { { "coin", 1 } }, "Maximum Health upgrades reached!" }
 	end
 	if force.character_inventory_slots_bonus <= 100 then
 		special_offers[2] = { { { "coin", (force.character_inventory_slots_bonus / 5 + 1) * 50 } }, "Upgrade Backpack +5 Slot" }
 	else
-		special_offers[2] = { { { "computer", 1 } }, "Maximum Backpack upgrades reached!" }
+		special_offers[2] = { { { "coin", 1 } }, "Maximum Backpack upgrades reached!" }
 	end
 	if town_center.upgrades.mining_prod < 10 then
 		special_offers[3] = { { { "coin", (town_center.upgrades.mining_prod + 1) * 400 } }, "Upgrade Mining Productivity +10%" }
 	else
-		special_offers[3] = { { { "computer", 1 } }, "Maximum Mining upgrades reached!" }
+		special_offers[3] = { { { "coin", 1 } }, "Maximum Mining upgrades reached!" }
 	end
 	local laser_turret = "Laser Turret Slot [#" .. tostring(town_center.upgrades.laser_turret.slots + 1) .. "]"
 	special_offers[4] = { { { "coin", 1000 + (town_center.upgrades.laser_turret.slots * 50) } }, laser_turret }
@@ -185,9 +185,7 @@ local function on_tick(_)
 		local area = { left_top = { bb.left_top.x - 2, bb.left_top.y - 2 }, right_bottom = { bb.right_bottom.x + 2, bb.right_bottom.y + 2 } }
 		local entities = s.find_entities_filtered({ area = area, name = items })
 		for _, e in pairs(entities) do
-			if e.name == "loader" or e.name == "fast-loader" or e.name == "express-loader" then
-				local loader_type = e.loader_type
-			else
+			if e.name ~= "loader" and e.name ~= "fast-loader" and e.name ~= "express-loader" then
 				local ppos = e.pickup_position
 				local dpos = e.drop_position
 				-- pulling an item from the market

@@ -1,9 +1,11 @@
 local Public = {}
 
 function Public.reset()
-	for index = 1, #game.forces, 1 do
+	for index = 1, table.size(game.forces), 1 do
 		local force = game.forces[index]
-		force.clear_chart("nauvis")
+		if force ~= nil then
+			force.clear_chart("nauvis")
+		end
 	end
 end
 
