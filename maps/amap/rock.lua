@@ -132,7 +132,9 @@ end
 local function on_entity_died(Event)
   local this = WPT.get()
   if Event.entity == this.rock then
-
+    for _, player in pairs(game.connected_players) do
+        player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
+    end
     --game.print({'amap.lost',wave_number}),{r = 1, g = 0, b = 0, a = 0.5})
     local wave_number = WD.get('wave_number')
     local msg = {'amap.lost',wave_number}
@@ -142,14 +144,18 @@ local function on_entity_died(Event)
 
     end
     Server.to_discord_embed(table.concat({'** we lost the game ! Record is ', wave_number}))
-    local Reset_map = require 'maps.amap.main'.reset_map
+   local Reset_map = require 'maps.amap.main'.reset_map
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
     --  game.forces.enemy.set_friend('player', true)
     --game.print('设置右军友好')
-    --game.forces.player.set_friend('enemy', true)
+  --  game.forces.player.set_friend('enemy', true)
     --game.print('设置敌军友好')
-    Reset_map()
+    --local game_reset_tick = WPT.get('game_reset_tick')
+  --  game.print('GG,游戏结束，稍后自动重启',{r = 0.99, g = 0.00, b = 0.22})
+  --  this.game_reset_tick = 5400
+
+  Reset_map()
 
     --abc()
   end
@@ -226,6 +232,9 @@ local function on_market_item_purchased(event)
   if offer_index == 5 then
     local wave_number = WD.get('wave_number')
     local times = math.floor(wave_number/100)+this.cap+1
+    if times >= 30 then
+      times = 30
+    end
     if this.biter_dam >= times then
       player.print({'amap.cap_upgrad'})
       local pirce_biter_dam=this.biter_dam*1000 +7000

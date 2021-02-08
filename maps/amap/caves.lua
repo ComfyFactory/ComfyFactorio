@@ -250,8 +250,8 @@ local function on_chunk_generated(event)
 							if x == 1 then
 								local a = math_random(1,8)
 								if a == 1 then
-									local q =math_abs(position.x)/100
-									local w =math_abs(position.y)/100
+									local q =math_abs(position.x)/80
+									local w =math_abs(position.y)/80
 									local maxs =math.floor(q+w)
 									-- game.print(maxs)
 									MT.mountain_market(surface,position,maxs)

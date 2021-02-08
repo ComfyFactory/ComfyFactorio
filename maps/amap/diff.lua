@@ -3,7 +3,7 @@ local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local WPT = require 'maps.amap.table'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
-
+local atry_talbe = require "maps.amap.enemy_arty"
 local function calc_players()
   local players = game.connected_players
   local check_afk_players = WPT.get('check_afk_players')
@@ -34,22 +34,19 @@ local easy = function()
     wave_defense_table.max_active_biters = 4000
   end
   local wave_number = WD.get('wave_number')
-  local heath = 1 + player_count * 0.05
-  if heath >= 3 then
-    heath = 3
+  if wave_number >= 1500 then
+    wave_number = 1500
   end
-  WD.set_biter_health_boost(wave_number * 0.003+1)
   -- threat gain / wave
   local max_threat = 1 + player_count * 0.1
   if max_threat >= 4 then
     max_threat = 4
   end
 
-  if wave_number > 850 then
     max_threat = max_threat + wave_number * 0.0013
+
     WD.set_biter_health_boost(wave_number * 0.002+1)
     wave_defense_table.threat_gain_multiplier =  max_threat
-  end
 
   wave_defense_table.wave_interval = 4200 - player_count * 30
   if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
@@ -74,22 +71,18 @@ local med = function()
     wave_defense_table.max_active_biters = 4000
   end
   local wave_number = WD.get('wave_number')
-  local heath = 1 + player_count * 0.15
-  if heath >= 3 then
-    heath = 3
-  end
-WD.set_biter_health_boost(wave_number * 0.003+1)
   -- threat gain / wave
+  if wave_number >= 1500 then
+    wave_number = 1500
+  end
   local max_threat = 1 + player_count * 0.1
   if max_threat >= 4 then
     max_threat = 4
   end
 
-  if wave_number > 850 then
-    max_threat = max_threat + wave_number * 0.004
-    WD.set_biter_health_boost(wave_number * 0.003+1)
+    max_threat = max_threat + wave_number * 0.0013
+    WD.set_biter_health_boost(wave_number * 0.002+1)
     wave_defense_table.threat_gain_multiplier =  max_threat
-  end
 
   wave_defense_table.wave_interval = 4200 - player_count * 45
   if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
@@ -112,23 +105,20 @@ local hard = function()
   if wave_defense_table.max_active_biters >= 4000 then
     wave_defense_table.max_active_biters = 4000
   end
+
   local wave_number = WD.get('wave_number')
-  local heath = 1.2 + player_count * 0.1
-  if heath >= 4 then
-    heath = 4
-  end
-  WD.set_biter_health_boost(wave_number * 0.003+1)
   -- threat gain / wave
-  local max_threat = 1 + player_count * 0.2
+  if wave_number >= 1500 then
+    wave_number = 1500
+  end
+  local max_threat = 1 + player_count * 0.1
   if max_threat >= 4 then
     max_threat = 4
   end
 
-  if wave_number > 850 then
-    max_threat = max_threat + wave_number * 0.005
-    WD.set_biter_health_boost(wave_number * 0.003+1)
+    max_threat = max_threat + wave_number * 0.0013
+    WD.set_biter_health_boost(wave_number * 0.002+1)
     wave_defense_table.threat_gain_multiplier =  max_threat
-  end
 
   wave_defense_table.wave_interval = 3900 - player_count * 60
   if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
@@ -177,11 +167,21 @@ local set_diff = function()
   if k <= 1 then
     k =1
   end
+  k=math.floor(k)
   damage_increase = wave_number * 0.001*k
-
+game.forces.enemy.set_ammo_damage_modifier("artillery-shell", damage_increase)
+game.forces.enemy.set_ammo_damage_modifier("rocket", damage_increase)
   game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
   game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
 
+  local table = atry_talbe.get()
+  local radius=math.floor(wave_number*0.15)*k
+table.radius=350+radius
+local pace=wave_number*0.0002*k+1
+if pace >= 2 then
+  pace = 2
+end
+table.pace=pace
 
 end
-Event.on_nth_tick(1000, set_diff)
+Event.on_nth_tick(600, set_diff)

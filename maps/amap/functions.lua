@@ -711,7 +711,7 @@ local name = event.created_entity.name
 local entity = event.created_entity
 local this = WPT.get()
 if name == 'flamethrower-turret' then
-  if this.flame >= 12 then
+  if this.flame >= 15 then
     game.print({'amap.too_many'})
     entity.destroy()
   else

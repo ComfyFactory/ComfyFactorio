@@ -608,12 +608,15 @@ local on_tick = function()
 
   if tick % 40 == 0 then
     --	pos()
-    timereward()
+
     --bigermap()
-    getrawrad()
-    is_player_valid()
+
+
     --  has_the_game_ended()
+is_player_valid()
     chunk_load()
+    timereward()
+    getrawrad()
     --	biterup()
   end
   if tick % 500 == 0 then
