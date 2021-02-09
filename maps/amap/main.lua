@@ -27,7 +27,7 @@ local Loot = require'maps.amap.loot'
 local RPG = require 'modules.rpg.table'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 --local arty = require "maps.amap.enemy_arty"
-require 'maps.amap.burden'
+--require 'maps.amap.burden'
 require "modules.spawners_contain_biters"
 require 'maps.amap.biters_yield_coins'
 --require 'maps.amap.sort'
