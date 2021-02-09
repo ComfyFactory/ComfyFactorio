@@ -192,7 +192,8 @@ local function prevent_isolation_tile(event, player)
 		if not in_town(force, position) and isolated(surface, force, position) then
 			error = true
 			surface.set_tiles({ { name = old_tile.name, position = position } }, true)
-			if tile.name ~= "tile-ghost" then
+			if tile_name ~= "tile-ghost" then
+				if tile_name == "stone-path" then tile_name = "stone-brick" end
 				refund_item(event, tile_name)
 			end
 		end
