@@ -1650,8 +1650,8 @@ local function place_market()
 end
 
 local function on_research_finished()
-    local game_lost = WPT.get('game_lost')
-    if game_lost then
+    local chunk_load_tick = WPT.get('chunk_load_tick')
+    if chunk_load_tick > game.tick then
         return
     end
 
@@ -1749,14 +1749,22 @@ local function on_player_driving_changed_state(event)
     if not player or not player.valid then
         return
     end
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
     local trusted = Session.get_trusted_table()
     local locomotive = WPT.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
-    if not trusted[player.name] then
-        if player.character and player.character.valid and player.character.driving then
-            player.character.driving = false
+
+    if entity.unit_number == locomotive.unit_number then
+        if not trusted[player.name] then
+            if player.character and player.character.valid and player.character.driving then
+                player.character.driving = false
+            end
         end
     end
 end
