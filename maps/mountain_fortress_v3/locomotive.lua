@@ -1650,8 +1650,8 @@ local function place_market()
 end
 
 local function on_research_finished()
-    local chunk_load_tick = WPT.get('chunk_load_tick')
-    if chunk_load_tick > game.tick then
+    local market_announce = WPT.get('market_announce')
+    if market_announce > game.tick then
         return
     end
 

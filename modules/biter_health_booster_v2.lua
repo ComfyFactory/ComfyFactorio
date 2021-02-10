@@ -180,6 +180,25 @@ local function on_entity_damaged(event)
     biter.die(biter.force)
 end
 
+local function on_entity_died(event)
+    local biter = event.entity
+    if not (biter and biter.valid) then
+        return
+    end
+    if not entity_types[biter.type] then
+        return
+    end
+
+    local biter_health_boost_units = this.biter_health_boost_units
+
+    local unit_number = biter.unit_number
+
+    local health_pool = biter_health_boost_units[unit_number]
+    if health_pool then
+        biter_health_boost_units[unit_number] = nil
+    end
+end
+
 function Public.get(key)
     if key then
         return this[key]
@@ -199,11 +218,19 @@ function Public.set(key, value)
     end
 end
 
+function Public.set_active_surface(str)
+    if str and type(str) == 'string' then
+        this.active_surface = str
+    end
+    return this.active_surface
+end
+
 local on_init = function()
     Public.reset_table()
 end
 
 Event.on_init(on_init)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_died, on_entity_died)
 
 return Public

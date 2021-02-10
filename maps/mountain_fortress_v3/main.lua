@@ -232,6 +232,7 @@ function Public.reset_map()
     HS.get_scores()
 
     this.chunk_load_tick = game.tick + 1200
+    this.market_announce = game.tick + 1200
     this.game_lost = false
 end
 

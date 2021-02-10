@@ -522,8 +522,8 @@ local function increase_biters_health()
 
     -- this sets normal units health
     local modified_unit_health = WD.get('modified_unit_health')
-    if modified_unit_health > 10 then
-        modified_unit_health = 10
+    if modified_unit_health > 30 then
+        modified_unit_health = 30
     end
     debug_print('[HEALTHBOOSTER] > Normal Units Health Boosted: ' .. modified_unit_health)
     WD.set('modified_unit_health', modified_unit_health + 0.02)
@@ -533,7 +533,7 @@ local function increase_biters_health()
         boosted_health = 1.20
     end
     boosted_health = boosted_health * (wave_number * 0.03)
-    local sum = boosted_health * 5
+    local sum = boosted_health * 4
     debug_print('[HEALTHBOOSTER] > Boss Health Boosted: ' .. sum)
     if sum >= 100 then
         sum = 100

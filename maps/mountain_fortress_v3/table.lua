@@ -200,6 +200,7 @@ function Public.reset_table()
         multiply = 0.25,
         highest = 10
     }
+    this.market_announce = game.tick + 1200
 
     --!reset player tables
     for _, player in pairs(this.players) do
