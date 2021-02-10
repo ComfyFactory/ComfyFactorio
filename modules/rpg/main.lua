@@ -557,6 +557,14 @@ local function on_entity_damaged(event)
         return
     end
 
+    local item = p.cursor_stack
+
+    if item and item.valid_for_read then
+        if item.name == 'discharge-defense-remote' then
+            return
+        end
+    end
+
     Functions.reward_mana(cause.player, 2)
 
     --Grant the player life-on-hit.
