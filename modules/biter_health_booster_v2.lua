@@ -32,6 +32,7 @@ function Public.reset_table()
     this.biter_health_boost_units = {}
     this.biter_health_boost_count = 0
     this.active_surface = 'nauvis'
+    this.check_on_entity_died = false
 end
 
 local entity_types = {
@@ -181,6 +182,10 @@ local function on_entity_damaged(event)
 end
 
 local function on_entity_died(event)
+    if not this.check_on_entity_died then
+        return
+    end
+
     local biter = event.entity
     if not (biter and biter.valid) then
         return
@@ -223,6 +228,12 @@ function Public.set_active_surface(str)
         this.active_surface = str
     end
     return this.active_surface
+end
+
+function Public.check_on_entity_died(boolean)
+    this.check_on_entity_died = boolean or false
+
+    return this.check_on_entity_died
 end
 
 local on_init = function()
