@@ -347,8 +347,8 @@ local function property_boost(data)
                 }
                 rpg[player.index].xp_since_last_floaty_text = 0
                 rpg[player.index].last_floaty_text = game.tick + visuals_delay
-                if player.gui.left[rpg_main_frame] then
-                    local f = player.gui.left[rpg_main_frame]
+                if player.gui.screen[rpg_main_frame] then
+                    local f = player.gui.screen[rpg_main_frame]
                     local d = Gui.get_data(f)
                     if d.exp_gui and d.exp_gui.valid then
                         d.exp_gui.caption = floor(rpg[player.index].xp)

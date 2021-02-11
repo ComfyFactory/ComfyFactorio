@@ -201,6 +201,7 @@ function Public.reset_table()
         highest = 10
     }
     this.market_announce = game.tick + 1200
+    this.check_heavy_damage = true
 
     --!reset player tables
     for _, player in pairs(this.players) do

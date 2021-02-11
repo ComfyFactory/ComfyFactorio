@@ -237,7 +237,7 @@ local function on_entity_died(event)
                 local amount = rpg_extra.rpg_xp_yield[event.entity.name]
                 amount = amount / 5
                 if biter_health_boost then
-                    local health_pool = biter_health_boost_units and biter_health_boost_units[event.entity.unit_number]
+                    local health_pool = biter_health_boost_units[event.entity.unit_number]
                     if health_pool then
                         amount = amount * (1 / health_pool[2])
                     end
@@ -274,7 +274,7 @@ local function on_entity_died(event)
     --Grant modified XP for health boosted units
     if biter_health_boost then
         if enemy_types[event.entity.type] then
-            local health_pool = biter_health_boost_units and biter_health_boost_units[event.entity.unit_number]
+            local health_pool = biter_health_boost_units[event.entity.unit_number]
             if health_pool then
                 for _, player in pairs(players) do
                     if rpg_extra.rpg_xp_yield[event.entity.name] then
@@ -629,7 +629,7 @@ local function on_entity_damaged(event)
 
     --Handle the custom health pool of the biter health booster, if it is used in the map.
     if biter_health_boost then
-        local health_pool = biter_health_boost_units and biter_health_boost_units[entity.unit_number]
+        local health_pool = biter_health_boost_units[entity.unit_number]
         if health_pool then
             health_pool[1] = health_pool[1] + event.final_damage_amount
             health_pool[1] = health_pool[1] - damage
