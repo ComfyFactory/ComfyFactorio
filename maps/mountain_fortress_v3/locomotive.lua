@@ -1755,6 +1755,10 @@ local function on_player_driving_changed_state(event)
     end
 
     local trusted = Session.get_trusted_table()
+    if #trusted == 0 then
+        return
+    end
+
     local locomotive = WPT.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
@@ -1766,6 +1770,18 @@ local function on_player_driving_changed_state(event)
                 player.character.driving = false
             end
         end
+    end
+end
+
+local function on_player_left_game(event)
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+
+    local trusted = Session.get_trusted_table()
+    if trusted[player.name] then
+        trusted[player.name] = nil
     end
 end
 
@@ -2413,5 +2429,6 @@ Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
 
 return Public
