@@ -479,6 +479,13 @@ function Public.get_one_punch_chance(player)
     return chance
 end
 
+function Public.get_extra_following_robots(player)
+    local rpg_t = RPG.get('rpg_t')
+    local strength = rpg_t[player.index].strength
+    local count = math.round(strength / 2 * 0.03, 3)
+    return count
+end
+
 function Public.get_magicka(player)
     local rpg_t = RPG.get('rpg_t')
     return (rpg_t[player.index].magicka - 10) * 0.10
