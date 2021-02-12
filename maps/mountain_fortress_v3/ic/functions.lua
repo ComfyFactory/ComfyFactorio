@@ -882,7 +882,7 @@ function Public.use_door_with_entity(ic, player, door)
 
     local owner = game.players[car.owner]
     local list = get_trusted_system(ic, owner)
-    if owner and owner.valid and player.connected then
+    if owner and owner.valid and owner.index ~= player.index and player.connected then
         if list.allow_anyone == 'right' then
             if not list.players[player.name] and not player.admin then
                 player.driving = false
