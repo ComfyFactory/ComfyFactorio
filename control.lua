@@ -87,6 +87,9 @@ require 'modules.autostash'
 --require 'maps.biter_battles_v2.main'
 --require 'maps.biter_battles.biter_battles'
 
+--![[A map that imitating MF, defending rocket silos instead of trains]]--
+-- require 'maps.amap.main'
+
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
 -- require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
@@ -205,6 +208,7 @@ require 'modules.autostash'
 --require 'maps.cube'
 --require 'maps.mountain_race.main'
 --require 'maps.native_war.main'
+--require 'maps.scrap_towny_ffa.main'
 ---------------------------------------------------------------
 
 ---------------- MORE MODULES HERE ----------------
@@ -225,6 +229,7 @@ require 'modules.autostash'
 --require 'terrain_layouts.scrap_02'
 --require 'terrain_layouts.watery_world'
 --require 'terrain_layouts.tree_01'
+--require 'terrain_layouts.scrap_towny_ffa'
 ---------------------------------------------------------------
 
 if _DUMP_ENV then
