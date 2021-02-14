@@ -503,12 +503,17 @@ local function increase_biter_damage()
     end
 
     local e = game.forces.enemy
-    local new = Difficulty.get().difficulty_vote_value * 0.08
+    local new = Difficulty.get().difficulty_vote_value * 0.04
+    local melee = new
+    local bio = new - 0.02
     local e_old_melee = e.get_ammo_damage_modifier('melee')
     local e_old_biological = e.get_ammo_damage_modifier('biological')
 
-    e.set_ammo_damage_modifier('melee', new + e_old_melee)
-    e.set_ammo_damage_modifier('biological', new + e_old_biological)
+    debug_print('Melee: ' .. melee + e_old_melee)
+    debug_print('Biological: ' .. bio + e_old_biological)
+
+    e.set_ammo_damage_modifier('melee', melee + e_old_melee)
+    e.set_ammo_damage_modifier('biological', bio + e_old_biological)
 end
 
 local function increase_biters_health()
