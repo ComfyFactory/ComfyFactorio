@@ -25,7 +25,7 @@ function Public.reset_wave_defense()
     this.active_biters = {}
     this.active_biter_count = 0
     this.active_biter_threat = 0
-    this.average_unit_group_size = 24
+    this.average_unit_group_size = 48
     this.biter_raffle = {}
     this.debug = false
     this.game_lost = false
