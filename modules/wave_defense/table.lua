@@ -76,7 +76,11 @@ function Public.reset_wave_defense()
     this.increase_boss_health_per_wave = true
     this.increase_health_per_wave = false
     this.fill_tiles_so_biter_can_path = true
-    this.modified_unit_health = 1.02
+    this.modified_unit_health = {
+        current_value = 1.02,
+        limit_value = 30,
+        health_increase_per_boss_wave = 0.04
+    }
 end
 
 function Public.get(key)

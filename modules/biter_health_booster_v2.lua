@@ -337,7 +337,7 @@ local function on_entity_died(event)
     local health_pool = biter_health_boost_units[unit_number]
     if health_pool and health_pool[3] then
         if this.enable_boss_loot then
-            if random(1, 128) == 1 then
+            if random(1, 128) == 1 then 
                 LootDrop.drop_loot(biter, wave_count)
             end
         end

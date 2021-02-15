@@ -462,7 +462,7 @@ local function spawn_biter(surface, is_boss_biter)
 
     if increase_health_per_wave and not is_boss_biter then
         local modified_unit_health = WD.get('modified_unit_health')
-        BiterHealthBooster.add_unit(biter, modified_unit_health)
+        BiterHealthBooster.add_unit(biter, modified_unit_health.current_value)
     end
 
     if is_boss_biter then
@@ -527,11 +527,11 @@ local function increase_biters_health()
 
     -- this sets normal units health
     local modified_unit_health = WD.get('modified_unit_health')
-    if modified_unit_health > 30 then
-        modified_unit_health = 30
+    if modified_unit_health.current_value > modified_unit_health.limit_value then
+        modified_unit_health.current_value = modified_unit_health.limit_value
     end
-    debug_print('[HEALTHBOOSTER] > Normal Units Health Boosted: ' .. modified_unit_health)
-    WD.set('modified_unit_health', modified_unit_health + 0.04)
+    debug_print('[HEALTHBOOSTER] > Normal Units Health Boosted: ' .. modified_unit_health.current_value)
+    WD.set('modified_unit_health').current_value = modified_unit_health.current_value + modified_unit_health.health_increase_per_boss_wave
 
     -- this sets boss units health
     if boosted_health == 1 then
