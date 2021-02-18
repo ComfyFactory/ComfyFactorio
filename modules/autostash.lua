@@ -54,7 +54,7 @@ local function chest_is_valid(chest, inventory)
                 local n = chest_inventory.get_filter(index)
                 if inventory[n] then
                     if (t[n] and t[n].valid) then
-                        t[n].count = t[n].count + inventory[n]
+                        t[n].count = inventory[n]
                     else
                         t[n] = {count = inventory[n], valid = true}
                     end

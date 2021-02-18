@@ -2297,6 +2297,14 @@ function Public.get_items()
             upgrade = false,
             static = false
         }
+        main_market_items['kr-creep-collector'] = {
+            price = 50,
+            stack = 1,
+            tooltip = ({'item-name.kr-creep-collector'}),
+            upgrade = false,
+            static = true,
+            value = "coin"
+          }
     end
     main_market_items['land-mine'] = {
         stack = 1,
