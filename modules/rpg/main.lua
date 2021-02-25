@@ -10,6 +10,7 @@ local Math2D = require 'math2d'
 
 --RPG Modules
 require 'modules.rpg.commands'
+local ExplosiveBullets = require 'modules.rpg.explosive_gun_bullets'
 local RPG = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
 local RPG_GUI = require 'modules.rpg.gui'
@@ -528,6 +529,10 @@ local function on_entity_damaged(event)
         cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
             cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
      then
+        local is_explosive_bullets_enabled = RPG.get_explosive_bullets()
+        if is_explosive_bullets_enabled then
+            ExplosiveBullets.explosive_bullets(event)
+        end
         return
     end
 
@@ -654,6 +659,11 @@ local function on_entity_damaged(event)
     entity.health = entity.health - damage
     if entity.health <= 0 then
         entity.die(cause.force.name, cause)
+    end
+
+    local is_explosive_bullets_enabled = RPG.get_explosive_bullets()
+    if is_explosive_bullets_enabled then
+        ExplosiveBullets.explosive_bullets(event)
     end
 end
 
