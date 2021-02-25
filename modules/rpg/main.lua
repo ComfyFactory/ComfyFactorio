@@ -239,7 +239,7 @@ local function on_entity_died(event)
                 if biter_health_boost then
                     local health_pool = biter_health_boost_units[event.entity.unit_number]
                     if health_pool then
-                        amount = amount * (1 / health_pool[2])
+                        amount = amount * (health_pool[2] * 0.5 / 2)
                     end
                 end
 
@@ -278,7 +278,7 @@ local function on_entity_died(event)
             if health_pool then
                 for _, player in pairs(players) do
                     if rpg_extra.rpg_xp_yield[event.entity.name] then
-                        local amount = rpg_extra.rpg_xp_yield[event.entity.name] * (1 / health_pool[2])
+                        local amount = rpg_extra.rpg_xp_yield[event.entity.name] * (health_pool[2] * 0.5 / 2)
                         if rpg_extra.turret_kills_to_global_pool then
                             local inserted = Functions.add_to_global_pool(amount, true)
                             Functions.gain_xp(player, inserted, true)
@@ -286,7 +286,7 @@ local function on_entity_died(event)
                             Functions.gain_xp(player, amount)
                         end
                     else
-                        Functions.gain_xp(player, 0.5 * (1 / health_pool[2]))
+                        Functions.gain_xp(player, 0.5 * (health_pool[2] * 0.5 / 2))
                     end
                 end
                 return
