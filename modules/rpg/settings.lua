@@ -31,7 +31,9 @@ function Public.update_spell_gui(player, spell_index)
     local rpg_t = RPG.get('rpg_t')
     local spells, names = RPG.rebuild_spells()
     local main_frame = player.gui.screen[spell_gui_frame_name]
-    if not main_frame then return end
+    if not main_frame then
+        return
+    end
     local spell_table = main_frame['spell_table']
     if spell_index then
         if spell_index == 1 then
@@ -90,9 +92,30 @@ function Public.spell_gui_settings(player)
         )
         main_frame.auto_center = true
         local table = main_frame.add({type = 'table', column_count = 3, name = 'spell_table'})
-        table.add({type = 'sprite-button', sprite = spells[rpg_t[player.index].dropdown_select_index1].sprite, name = spell1_button_name, tooltip = names[rpg_t[player.index].dropdown_select_index1] or '---'})
-        table.add({type = 'sprite-button', sprite = spells[rpg_t[player.index].dropdown_select_index2].sprite, name = spell2_button_name, tooltip = names[rpg_t[player.index].dropdown_select_index2] or '---'})
-        table.add({type = 'sprite-button', sprite = spells[rpg_t[player.index].dropdown_select_index3].sprite, name = spell3_button_name, tooltip = names[rpg_t[player.index].dropdown_select_index3] or '---'})
+        table.add(
+            {
+                type = 'sprite-button',
+                sprite = spells[rpg_t[player.index].dropdown_select_index1].sprite,
+                name = spell1_button_name,
+                tooltip = names[rpg_t[player.index].dropdown_select_index1] or '---'
+            }
+        )
+        table.add(
+            {
+                type = 'sprite-button',
+                sprite = spells[rpg_t[player.index].dropdown_select_index2].sprite,
+                name = spell2_button_name,
+                tooltip = names[rpg_t[player.index].dropdown_select_index2] or '---'
+            }
+        )
+        table.add(
+            {
+                type = 'sprite-button',
+                sprite = spells[rpg_t[player.index].dropdown_select_index3].sprite,
+                name = spell3_button_name,
+                tooltip = names[rpg_t[player.index].dropdown_select_index3] or '---'
+            }
+        )
         local b1 = table.add({type = 'sprite-button', name = 'mana-cost', tooltip = {'rpg_settings.mana_cost'}, caption = 0})
         local b2 = table.add({type = 'sprite-button', name = 'mana', tooltip = {'rpg_settings.mana'}, caption = 0})
         local b3 = table.add({type = 'sprite-button', name = 'maxmana', tooltip = {'rpg_settings.mana_max'}, caption = 0})
@@ -281,6 +304,7 @@ function Public.extra_settings(player)
     local spell_gui_input2
     local spell_gui_input3
     local flame_boots_gui_input
+    local explosive_bullets_gui_input
     local stone_path_gui_input
     local one_punch_gui_input
     local auto_allocate_gui_input
@@ -406,6 +430,43 @@ function Public.extra_settings(player)
         end
     end
 
+    if rpg_extra.enable_explosive_bullets_globally then
+        local explosive_bullets_label =
+            setting_grid.add(
+            {
+                type = 'label',
+                caption = ({'rpg_settings.explosive_bullets_label'}),
+                tooltip = ({'rpg_settings.explosive_bullets_tooltip'})
+            }
+        )
+
+        local explosive_bullets_label_style = explosive_bullets_label.style
+        explosive_bullets_label_style.horizontally_stretchable = true
+        explosive_bullets_label_style.height = 35
+        explosive_bullets_label_style.vertical_align = 'center'
+
+        local explosive_bullet_input = setting_grid.add({type = 'flow'})
+        local explosive_bullet_input_style = explosive_bullet_input.style
+        explosive_bullet_input_style.height = 35
+        explosive_bullet_input_style.vertical_align = 'center'
+        local explosive_bullets
+        if rpg_t[player.index].explosive_bullets then
+            explosive_bullets = rpg_t[player.index].explosive_bullets
+        else
+            explosive_bullets = false
+        end
+        explosive_bullets_gui_input = create_input_element(explosive_bullet_input, 'boolean', explosive_bullets)
+
+        if rpg_t[player.index].level < 50 then
+            explosive_bullets_gui_input.enabled = false
+            explosive_bullets_gui_input.tooltip = ({'rpg_settings.low_level', 50})
+            explosive_bullets_label.tooltip = ({'rpg_settings.low_level', 50})
+        else
+            explosive_bullets_gui_input.enabled = true
+            explosive_bullets_gui_input.tooltip = ({'rpg_settings.explosive_bullets_tooltip'})
+        end
+    end
+
     if rpg_extra.enable_mana then
         local mana_frame = inside_table.add({type = 'scroll-pane'})
         local mana_style = mana_frame.style
@@ -515,6 +576,16 @@ function Public.extra_settings(player)
                 })
             end
         end
+        if not spells[rpg_t[player.index].dropdown_select_index1] then
+            rpg_t[player.index].dropdown_select_index1 = 1
+        end
+        if not spells[rpg_t[player.index].dropdown_select_index2] then
+            rpg_t[player.index].dropdown_select_index2 = 1
+        end
+        if not spells[rpg_t[player.index].dropdown_select_index3] then
+            rpg_t[player.index].dropdown_select_index3 = 1
+        end
+
         mana_frame.add({type = 'label', caption = {'rpg_settings.spell_gui_setup'}, tooltip = {'rpg_settings.spell_gui_tooltip'}})
         local spell_grid = mana_frame.add({type = 'table', column_count = 4, name = 'spell_grid_table'})
         spell_gui_input1 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index1)
@@ -523,7 +594,7 @@ function Public.extra_settings(player)
         spell_gui_input2.style.maximal_width = 135
         spell_gui_input3 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index3)
         spell_gui_input3.style.maximal_width = 135
-        spell_select_button = spell_grid.add({type = 'sprite-button', name = spell_gui_button_name, sprite = 'item/raw-fish'})
+        spell_grid.add({type = 'sprite-button', name = spell_gui_button_name, sprite = 'item/raw-fish'})
     end
 
     if rpg_extra.enable_auto_allocate then
@@ -593,6 +664,10 @@ function Public.extra_settings(player)
 
     if rpg_extra.enable_flame_boots then
         data.flame_boots_gui_input = flame_boots_gui_input
+    end
+
+    if rpg_extra.enable_explosive_bullets_globally then
+        data.explosive_bullets_gui_input = explosive_bullets_gui_input
     end
 
     if rpg_extra.enable_stone_path then

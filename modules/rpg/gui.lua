@@ -1,4 +1,4 @@
-local Tabs = require 'comfy_panel.main'
+local ComfyGui = require 'comfy_panel.main'
 local P = require 'player_modifiers'
 local Gui = require 'utils.gui'
 
@@ -513,9 +513,9 @@ function Public.toggle(player, recreate)
     end
     if main_frame then
         remove_main_frame(main_frame, screen)
-        Tabs.comfy_panel_restore_left_gui(player)
+        ComfyGui.comfy_panel_restore_left_gui(player)
     else
-        Tabs.comfy_panel_clear_left_gui(player)
+        ComfyGui.comfy_panel_clear_left_gui(player)
         draw_main_frame(player)
     end
 end
@@ -526,7 +526,7 @@ function Public.remove_frame(player)
 
     if main_frame then
         remove_main_frame(main_frame, screen)
-        Tabs.comfy_panel_restore_left_gui(player)
+        ComfyGui.comfy_panel_restore_left_gui(player)
     end
 end
 
@@ -566,6 +566,7 @@ Gui.on_click(
         local magic_pickup_gui_input = data.magic_pickup_gui_input
         local movement_speed_gui_input = data.movement_speed_gui_input
         local flame_boots_gui_input = data.flame_boots_gui_input
+        local explosive_bullets_gui_input = data.explosive_bullets_gui_input
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
         local one_punch_gui_input = data.one_punch_gui_input
@@ -607,6 +608,14 @@ Gui.on_click(
                     rpg_t[player.index].flame_boots = false
                 elseif flame_boots_gui_input.state then
                     rpg_t[player.index].flame_boots = true
+                end
+            end
+
+            if explosive_bullets_gui_input and explosive_bullets_gui_input.valid then
+                if not explosive_bullets_gui_input.state then
+                    rpg_t[player.index].explosive_bullets = false
+                elseif explosive_bullets_gui_input.state then
+                    rpg_t[player.index].explosive_bullets = true
                 end
             end
 
@@ -814,5 +823,7 @@ Gui.on_click(
         end
     end
 )
+
+ComfyGui.screen_to_bypass(spell_gui_frame_name)
 
 return Public

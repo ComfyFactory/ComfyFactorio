@@ -10,6 +10,7 @@ local Math2D = require 'math2d'
 
 --RPG Modules
 require 'modules.rpg.commands'
+local ExplosiveBullets = require 'modules.rpg.explosive_gun_bullets'
 local RPG = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
 local RPG_GUI = require 'modules.rpg.gui'
@@ -239,7 +240,7 @@ local function on_entity_died(event)
                 if biter_health_boost then
                     local health_pool = biter_health_boost_units[event.entity.unit_number]
                     if health_pool then
-                        amount = amount * (1 / health_pool[2])
+                        amount = amount * (health_pool[2] * 0.5 / 2)
                     end
                 end
 
@@ -278,7 +279,7 @@ local function on_entity_died(event)
             if health_pool then
                 for _, player in pairs(players) do
                     if rpg_extra.rpg_xp_yield[event.entity.name] then
-                        local amount = rpg_extra.rpg_xp_yield[event.entity.name] * (1 / health_pool[2])
+                        local amount = rpg_extra.rpg_xp_yield[event.entity.name] * (health_pool[2] * 0.5 / 2)
                         if rpg_extra.turret_kills_to_global_pool then
                             local inserted = Functions.add_to_global_pool(amount, true)
                             Functions.gain_xp(player, inserted, true)
@@ -286,7 +287,7 @@ local function on_entity_died(event)
                             Functions.gain_xp(player, amount)
                         end
                     else
-                        Functions.gain_xp(player, 0.5 * (1 / health_pool[2]))
+                        Functions.gain_xp(player, 0.5 * (health_pool[2] * 0.5 / 2))
                     end
                 end
                 return
@@ -528,6 +529,10 @@ local function on_entity_damaged(event)
         cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
             cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
      then
+        local is_explosive_bullets_enabled = RPG.get_explosive_bullets()
+        if is_explosive_bullets_enabled then
+            ExplosiveBullets.explosive_bullets(event)
+        end
         return
     end
 
@@ -654,6 +659,11 @@ local function on_entity_damaged(event)
     entity.health = entity.health - damage
     if entity.health <= 0 then
         entity.die(cause.force.name, cause)
+    end
+
+    local is_explosive_bullets_enabled = RPG.get_explosive_bullets()
+    if is_explosive_bullets_enabled then
+        ExplosiveBullets.explosive_bullets(event)
     end
 end
 
@@ -1091,7 +1101,7 @@ local function on_player_used_capsule(event)
         player.character.surface.create_entity({name = 'water-splash', position = player.position})
         p(({'rpg_main.warped_ok'}), Color.info)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
-    elseif projectile_types[obj_name] then
+    elseif projectile_types[obj_name] then -- projectiles
         for i = 1, object.amount do
             local damage_area = {
                 left_top = {x = position.x - 2, y = position.y - 2},
@@ -1107,11 +1117,11 @@ local function on_player_used_capsule(event)
         p(({'rpg_main.object_spawned', obj_name}), Color.success)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     else
-        if object.target then
+        if object.target then -- rockets and such
             surface.create_entity({name = obj_name, position = position, force = force, target = target_pos, speed = 1})
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
-        elseif object.obj_to_create == 'fish' then
+        elseif object.obj_to_create == 'fish' then -- spawn in some fish
             player.insert({name = 'raw-fish', count = object.amount})
             p(({'rpg_main.object_spawned', 'raw-fish'}), Color.success)
             rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost

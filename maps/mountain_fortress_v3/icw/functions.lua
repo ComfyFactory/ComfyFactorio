@@ -2,11 +2,31 @@ local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 local SpamProtection = require 'utils.spam_protection'
-local main_tile_name = 'tutorial-grid'
+
+local reconstruct_all_trains =
+    Token.register(
+    function(data)
+        local icw = data.icw
+        Public.reconstruct_all_trains(icw)
+    end
+)
+
+local function get_tile_name()
+    local main_tile_name = 'tutorial-grid'
+    local modded = is_game_modded()
+    if modded then
+        if game.active_mods['Krastorio2'] then
+            main_tile_name = 'kr-black-reinforced-plate'
+        end
+    end
+    return main_tile_name
+end
 
 function Public.request_reconstruction(icw)
-    icw.rebuild_tick = game.tick + 30
+    Task.set_timeout_in_ticks(60, reconstruct_all_trains, {icw = icw})
 end
 
 local function validate_entity(entity)
@@ -273,6 +293,7 @@ end
 local function construct_wagon_doors(icw, wagon)
     local area = wagon.area
     local surface = wagon.surface
+    local main_tile_name = get_tile_name()
 
     for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
         local p = {x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
@@ -395,6 +416,7 @@ end
 function Public.create_wagon_room(icw, wagon)
     local surface = wagon.surface
     local area = wagon.area
+    local main_tile_name = get_tile_name()
 
     local tiles = {}
     for x = -3, 2, 1 do
@@ -434,9 +456,9 @@ function Public.create_wagon_room(icw, wagon)
 
     construct_wagon_doors(icw, wagon)
     local mgs = surface.map_gen_settings
-  	mgs.width = area.right_bottom.x * 2
-  	mgs.height = area.right_bottom.y * 2
-  	surface.map_gen_settings = mgs
+    mgs.width = area.right_bottom.x * 2
+    mgs.height = area.right_bottom.y * 2
+    surface.map_gen_settings = mgs
 
     if wagon.entity.type == 'fluid-wagon' then
         local height = area.right_bottom.y - area.left_top.y
