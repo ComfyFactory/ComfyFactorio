@@ -12,7 +12,7 @@ require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
 require 'modules.custom_death_messages'
 
-local Unit_health_booster = require 'modules.biter_health_booster'
+local Unit_health_booster = require 'modules.biter_health_booster_v2'
 local Difficulty = require 'modules.difficulty_vote'
 local Map = require 'modules.map_info'
 local Event = require 'utils.event'
@@ -76,9 +76,11 @@ local function create_wave_gui(player)
         local next_level_progress = game.tick % wave_interval / wave_interval
 
         local progressbar = frame.add({type = 'progressbar', value = next_level_progress})
-        progressbar.style.minimal_width = 120
-        progressbar.style.maximal_width = 120
-        progressbar.style.top_padding = 10
+        progressbar.style = 'achievement_progressbar'
+        progressbar.style.minimal_width = 96
+        progressbar.style.maximal_width = 96
+        progressbar.style.padding = -1
+        progressbar.style.top_padding = 1
     else
         local time_remaining = math.floor(((wave_grace_period - (game.tick % wave_grace_period)) / 60) / 60)
         if time_remaining <= 0 then
@@ -771,8 +773,7 @@ local function is_game_lost()
                     t.add(
                     {
                         type = 'label',
-                        caption = math.floor(((market_age / 60) / 60) / 60) ..
-                            ' hours ' .. math.ceil((market_age % 216000 / 60) / 60) .. ' minutes'
+                        caption = math.floor(((market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((market_age % 216000 / 60) / 60) .. ' minutes'
                     }
                 )
                 market_age_label.style.font = 'default-bold'
@@ -845,8 +846,7 @@ local function is_game_lost()
 end
 
 local function damage_entities_in_radius(surface, position, radius, damage)
-    local entities_to_damage =
-        surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
+    local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
     for _, entity in pairs(entities_to_damage) do
         if entity.valid then
             if entity.health and entity.name ~= 'land-mine' then
@@ -1053,8 +1053,7 @@ local function on_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].placed ..
-                        ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
+                    text = entity_limits[entity.name].placed .. ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1073,8 +1072,7 @@ local function on_built_entity(event)
             if get_score then
                 if get_score[player.force.name] then
                     if get_score[player.force.name].players[player.name] then
-                        get_score[player.force.name].players[player.name].built_entities =
-                            get_score[player.force.name].players[player.name].built_entities - 1
+                        get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
                     end
                 end
             end
@@ -1096,8 +1094,7 @@ local function on_robot_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].placed ..
-                        ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
+                    text = entity_limits[entity.name].placed .. ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1207,7 +1204,8 @@ local function has_the_game_ended()
             end
             if soft_reset and game_restart_timer == 0 then
                 FDT.set('game_reset_tick', nil)
-                Server.start_scenario('Fish_Defender')
+                -- Server.start_scenario('Fish_Defender')
+                Public.reset_game()
                 return
             end
             local announced_message = FDT.get('announced_message')
@@ -1245,6 +1243,8 @@ function Public.reset_game()
     AntiGrief.reset_tables()
 
     FDT.set('fish_eye_location', {x = -1667, y = -50})
+
+    game.speed = 1
 
     global.fish_in_space = 0
     get_score.score_table = {}
@@ -1334,6 +1334,9 @@ function Public.reset_game()
     if not surface or not surface.valid then
         return
     end
+
+    Unit_health_booster.set_active_surface(surface.name)
+    Unit_health_booster.set('biter_health_boost', 4)
 
     surface.peaceful_mode = false
 

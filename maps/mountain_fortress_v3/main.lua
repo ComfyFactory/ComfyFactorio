@@ -32,6 +32,7 @@ local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
 local BottomFrame = require 'comfy_panel.bottom_frame'
+local Misc = require 'commands.misc'
 local Modifiers = require 'player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
@@ -177,7 +178,7 @@ function Public.reset_map()
     for i = 1, #players do
         local player = players[i]
         Score.init_player_table(player, true)
-        BottomFrame.insert_all_items(player)
+        Misc.insert_all_items(player)
         Modifiers.reset_player_modifiers(player)
         if player.gui.left['mvps'] then
             player.gui.left['mvps'].destroy()

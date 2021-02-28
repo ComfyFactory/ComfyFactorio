@@ -160,7 +160,7 @@ local function poll_difficulty(player)
         name = 'difficulty_poll',
         direction = 'vertical'
     }
-    frame.location = {x = 850, y = 400}
+    frame.force_auto_center()
     for i = 1, #this.difficulties, 1 do
         local b = frame.add({type = 'button', name = tostring(i), caption = this.difficulties[i].name})
         b.style.font_color = this.difficulties[i].color
