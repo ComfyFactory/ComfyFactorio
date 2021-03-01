@@ -92,7 +92,7 @@ function Public.reset_table()
     this.rpg_extra.surface_name = 'nauvis'
     this.rpg_extra.enable_health_and_mana_bars = false
     this.rpg_extra.enable_mana = false
-    this.rpg_extra.mana_limit = 1500
+    this.rpg_extra.mana_limit = 2500
     this.rpg_extra.enable_wave_defense = false
     this.rpg_extra.enable_flame_boots = false
     this.rpg_extra.enable_explosive_bullets = false
