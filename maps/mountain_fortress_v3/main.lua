@@ -212,7 +212,7 @@ function Public.reset_map()
     wave_defense_table.target = this.locomotive
     wave_defense_table.nest_building_density = 32
     wave_defense_table.game_lost = false
-    wave_defense_table.spawn_position = {x = 0, y = 100}
+    wave_defense_table.spawn_position = {x = 0, y = 84}
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
     WD.remove_entities(true)

@@ -16,6 +16,7 @@ local insert = table.insert
 local random = math.random
 local sqrt = math.sqrt
 local ceil = math.ceil
+local round = math.round
 local Public = {}
 
 local this = {
@@ -279,9 +280,9 @@ local function on_entity_damaged(event)
         return
     end
 
-    if event.cause then
-        if event.cause.valid then
-            event.entity.die(event.cause.force, event.cause)
+    if cause then
+        if cause.valid then
+            event.entity.die(cause.force, cause)
             return
         end
     end
@@ -377,9 +378,10 @@ function Public.add_unit(unit, health_multiplier)
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
     end
+    local xp_modifier = round(1 / health_multiplier, 5)
     this.biter_health_boost_units[unit.unit_number] = {
         floor(unit.prototype.max_health * health_multiplier),
-        ceil(sqrt(health_multiplier))
+        xp_modifier
     }
 end
 
@@ -394,10 +396,11 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     if not health_bar_size then
         health_bar_size = 0.5
     end
+    local xp_modifier = round(1 / health_multiplier, 5)
     local health = floor(unit.prototype.max_health * health_multiplier)
     this.biter_health_boost_units[unit.unit_number] = {
         health,
-        ceil(sqrt(health_multiplier)),
+        xp_modifier,
         {max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size), last_update = game.tick}
     }
 end
