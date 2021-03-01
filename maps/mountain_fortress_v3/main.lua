@@ -242,7 +242,8 @@ function Public.reset_map()
         game.difficulty_settings.technology_price_multiplier = 0.5
     end
 
-    this.chunk_load_tick = game.tick + 1200
+    this.chunk_load_tick = game.tick + 200
+    this.force_chunk = true
     this.market_announce = game.tick + 1200
     this.game_lost = false
 end
@@ -331,9 +332,11 @@ end
 
 local chunk_load = function()
     local chunk_load_tick = WPT.get('chunk_load_tick')
+    local tick = game.tick
     if chunk_load_tick then
-        if chunk_load_tick < game.tick then
-            WPT.get().chunk_load_tick = nil
+        if chunk_load_tick < tick then
+            WPT.set('force_chunk', false)
+            WPT.remove('chunk_load_tick')
             Task.set_queue_speed(3)
         end
     end

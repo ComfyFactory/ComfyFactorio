@@ -228,6 +228,12 @@ function Public.set(key, value)
     end
 end
 
+function Public.remove(key)
+    if key then
+        this[key] = nil
+    end
+end
+
 local on_init = function()
     Public.reset_table()
 end
