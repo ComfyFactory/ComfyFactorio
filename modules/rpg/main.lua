@@ -555,8 +555,8 @@ local function on_entity_damaged(event)
     local position = p.position
 
     local area = {
-        left_top = {x = position.x - 4, y = position.y - 4},
-        right_bottom = {x = position.x + 4, y = position.y + 4}
+        left_top = {x = position.x - 5, y = position.y - 5},
+        right_bottom = {x = position.x + 5, y = position.y + 5}
     }
 
     if not is_position_near(area, entity.position) then
