@@ -32,6 +32,7 @@ local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
 local BottomFrame = require 'comfy_panel.bottom_frame'
+local Misc = require 'commands.misc'
 local Modifiers = require 'player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
@@ -177,7 +178,7 @@ function Public.reset_map()
     for i = 1, #players do
         local player = players[i]
         Score.init_player_table(player, true)
-        BottomFrame.insert_all_items(player)
+        Misc.insert_all_items(player)
         Modifiers.reset_player_modifiers(player)
         if player.gui.left['mvps'] then
             player.gui.left['mvps'].destroy()
@@ -211,7 +212,7 @@ function Public.reset_map()
     wave_defense_table.target = this.locomotive
     wave_defense_table.nest_building_density = 32
     wave_defense_table.game_lost = false
-    wave_defense_table.spawn_position = {x = 0, y = 100}
+    wave_defense_table.spawn_position = {x = 0, y = 84}
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
     WD.remove_entities(true)
@@ -241,7 +242,8 @@ function Public.reset_map()
         game.difficulty_settings.technology_price_multiplier = 0.5
     end
 
-    this.chunk_load_tick = game.tick + 1200
+    this.chunk_load_tick = game.tick + 200
+    this.force_chunk = true
     this.market_announce = game.tick + 1200
     this.game_lost = false
 end
@@ -330,9 +332,11 @@ end
 
 local chunk_load = function()
     local chunk_load_tick = WPT.get('chunk_load_tick')
+    local tick = game.tick
     if chunk_load_tick then
-        if chunk_load_tick < game.tick then
-            WPT.get().chunk_load_tick = nil
+        if chunk_load_tick < tick then
+            WPT.set('force_chunk', false)
+            WPT.remove('chunk_load_tick')
             Task.set_queue_speed(3)
         end
     end

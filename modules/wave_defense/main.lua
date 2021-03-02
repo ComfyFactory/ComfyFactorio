@@ -177,21 +177,31 @@ local function get_spawn_pos()
 
     ::retry::
 
-    local position = WD.get('spawn_position')
+    local initial_position = WD.get('spawn_position')
+    debug_print(serpent.block('initial_pos - x:' .. initial_position.x .. ' y:' .. initial_position.y))
 
-    position = find_initial_spot(surface, position)
-    position = surface.find_non_colliding_position('behemoth-biter', position, 32, 1)
-    -- local x = position.x
-    -- local y = position.y
-    -- game.print('[gps=' .. x .. ',' .. y .. ',' .. surface.name .. ']')
-    if not position then
+    local located_position = find_initial_spot(surface, initial_position)
+    debug_print(serpent.block('located_position - x:' .. located_position.x .. ' y:' .. located_position.y))
+    local valid_position = surface.find_non_colliding_position('behemoth-biter', located_position, 32, 1)
+    debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
+    local debug = WD.get('debug')
+    if debug then
+        if valid_position then
+            local x = valid_position.x
+            local y = valid_position.y
+            game.print('[gps=' .. x .. ',' .. y .. ',' .. surface.name .. ']')
+        end
+    end
+
+    if not valid_position then
         local remove_entities = WD.get('remove_entities')
         if remove_entities then
             c = c + 1
-            position = WD.get('spawn_position')
-            remove_trees({surface = surface, position = position, valid = true})
-            remove_rocks({surface = surface, position = position, valid = true})
-            fill_tiles({surface = surface, position = position, valid = true})
+            valid_position = WD.get('spawn_position')
+            debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
+            remove_trees({surface = surface, position = valid_position, valid = true})
+            remove_rocks({surface = surface, position = valid_position, valid = true})
+            fill_tiles({surface = surface, position = valid_position, valid = true})
             WD.set('spot', 'nil')
             if c == 5 then
                 return debug_print('get_spawn_pos - we could not find a spawning pos?')
@@ -202,7 +212,9 @@ local function get_spawn_pos()
         end
     end
 
-    return position
+    debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
+
+    return valid_position
 end
 
 local function is_unit_valid(biter)
@@ -535,10 +547,10 @@ local function increase_biters_health()
 
     -- this sets boss units health
     if boosted_health == 1 then
-        boosted_health = 1.20
+        boosted_health = 1.25
     end
-    boosted_health = boosted_health * (wave_number * 0.03)
-    local sum = boosted_health * 4
+    boosted_health = boosted_health * (wave_number * 0.04)
+    local sum = boosted_health * 5
     debug_print('[HEALTHBOOSTER] > Boss Health Boosted: ' .. sum)
     if sum >= 300 then
         sum = 300

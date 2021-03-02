@@ -184,22 +184,24 @@ local get_cause_player = {
 }
 
 local function on_entity_died(event)
-    if not event.entity.valid then
+    if not event.entity or not event.entity.valid then
         return
     end
 
+    local entity = event.entity
+
     --Grant XP for hand placed land mines
-    if event.entity.last_user then
-        if event.entity.type == 'land-mine' then
+    if entity.last_user then
+        if entity.type == 'land-mine' then
             if event.cause then
                 if event.cause.valid then
-                    if event.cause.force.index == event.entity.force.index then
+                    if event.cause.force.index == entity.force.index then
                         return
                     end
                 end
             end
-            Functions.gain_xp(event.entity.last_user, 1)
-            Functions.reward_mana(event.entity.last_user, 1)
+            Functions.gain_xp(entity.last_user, 1)
+            Functions.reward_mana(entity.last_user, 1)
             return
         end
     end
@@ -219,28 +221,25 @@ local function on_entity_died(event)
     local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
 
-    if not event.cause then
+    if not event.cause or not event.cause.valid then
         return
     end
 
-    if not event.cause.valid then
-        return
-    end
-
-    local type = event.cause.type
+    local cause = event.cause
+    local type = cause.type
     if not type then
         goto continue
     end
 
-    if event.cause.force.index == 1 then
+    if cause.force.index == 1 then
         if die_cause[type] then
-            if rpg_extra.rpg_xp_yield[event.entity.name] then
-                local amount = rpg_extra.rpg_xp_yield[event.entity.name]
+            if rpg_extra.rpg_xp_yield[entity.name] then
+                local amount = rpg_extra.rpg_xp_yield[entity.name]
                 amount = amount / 5
                 if biter_health_boost then
-                    local health_pool = biter_health_boost_units[event.entity.unit_number]
+                    local health_pool = biter_health_boost_units[entity.unit_number]
                     if health_pool then
-                        amount = amount * (health_pool[2] * 0.5 / 2)
+                        amount = amount * (1 / health_pool[2])
                     end
                 end
 
@@ -256,15 +255,15 @@ local function on_entity_died(event)
 
     ::continue::
 
-    if event.cause.force.index == event.entity.force.index then
+    if cause.force.index == entity.force.index then
         return
     end
 
-    if not get_cause_player[event.cause.type] then
+    if not get_cause_player[cause.type] then
         return
     end
 
-    local players = get_cause_player[event.cause.type](event.cause)
+    local players = get_cause_player[cause.type](cause)
     if not players then
         return
     end
@@ -274,12 +273,15 @@ local function on_entity_died(event)
 
     --Grant modified XP for health boosted units
     if biter_health_boost then
-        if enemy_types[event.entity.type] then
-            local health_pool = biter_health_boost_units[event.entity.unit_number]
+        if enemy_types[entity.type] then
+            local health_pool = biter_health_boost_units[entity.unit_number]
             if health_pool then
                 for _, player in pairs(players) do
-                    if rpg_extra.rpg_xp_yield[event.entity.name] then
-                        local amount = rpg_extra.rpg_xp_yield[event.entity.name] * (health_pool[2] * 0.5 / 2)
+                    if rpg_extra.rpg_xp_yield[entity.name] then
+                        local amount = rpg_extra.rpg_xp_yield[entity.name] * (1 / health_pool[2])
+                        if amount < rpg_extra.rpg_xp_yield[entity.name] then
+                            amount = rpg_extra.rpg_xp_yield[entity.name]
+                        end
                         if rpg_extra.turret_kills_to_global_pool then
                             local inserted = Functions.add_to_global_pool(amount, true)
                             Functions.gain_xp(player, inserted, true)
@@ -287,7 +289,7 @@ local function on_entity_died(event)
                             Functions.gain_xp(player, amount)
                         end
                     else
-                        Functions.gain_xp(player, 0.5 * (health_pool[2] * 0.5 / 2))
+                        Functions.gain_xp(player, 0.5 * (1 / health_pool[2]))
                     end
                 end
                 return
@@ -297,8 +299,8 @@ local function on_entity_died(event)
 
     --Grant normal XP
     for _, player in pairs(players) do
-        if rpg_extra.rpg_xp_yield[event.entity.name] then
-            local amount = rpg_extra.rpg_xp_yield[event.entity.name]
+        if rpg_extra.rpg_xp_yield[entity.name] then
+            local amount = rpg_extra.rpg_xp_yield[entity.name]
             if rpg_extra.turret_kills_to_global_pool then
                 local inserted = Functions.add_to_global_pool(amount, true)
                 Functions.gain_xp(player, inserted, true)
@@ -535,7 +537,6 @@ local function on_entity_damaged(event)
         end
         return
     end
-
     if not cause.player then
         return
     end
@@ -554,8 +555,8 @@ local function on_entity_damaged(event)
     local position = p.position
 
     local area = {
-        left_top = {x = position.x - 4, y = position.y - 4},
-        right_bottom = {x = position.x + 4, y = position.y + 4}
+        left_top = {x = position.x - 5, y = position.y - 5},
+        right_bottom = {x = position.x + 5, y = position.y + 5}
     }
 
     if not is_position_near(area, entity.position) then

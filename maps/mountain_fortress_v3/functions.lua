@@ -1082,7 +1082,13 @@ function Public.set_spawn_position()
     local spawn_near_collapse = WPT.get('spawn_near_collapse')
 
     if spawn_near_collapse.active then
-        local collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
+        local collapse_position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 64, 2)
+        if not collapse_position then
+            collapse_position = surface.find_non_colliding_position('solar-panel', collapse_pos, 32, 2)
+        end
+        if not collapse_position then
+            collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
+        end
         local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
         if not sizeof then
             goto continue

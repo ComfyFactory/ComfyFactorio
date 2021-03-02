@@ -43,10 +43,9 @@ function Public.reset_table()
     this.market = nil
     this.market_age = nil
     this.last_reset = game.tick
-    global.biter_health_boost = 4
     this.wave_interval = 3600
     this.wave_grace_period = game.tick + 72000
-    this.biter_health_boost = 1
+    this.biter_health_boost = 4
     -- this.wave_grace_period = game.tick + 3600
     this.boss_biters = {}
     this.acid_lines_delay = {}
@@ -58,13 +57,11 @@ function Public.reset_table()
         ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 20}
     }
     this.difficulties_votes = {
-        [1] = {wave_interval = 4500, amount_modifier = 0.52, strength_modifier = 0.40, boss_modifier = 3.0},
-        [2] = {wave_interval = 4100, amount_modifier = 0.76, strength_modifier = 0.65, boss_modifier = 4.0},
-        [3] = {wave_interval = 3800, amount_modifier = 0.92, strength_modifier = 0.85, boss_modifier = 5.0},
-        [4] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0},
-        [5] = {wave_interval = 3400, amount_modifier = 1.08, strength_modifier = 1.25, boss_modifier = 7.0},
-        [6] = {wave_interval = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0},
-        [7] = {wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
+        [1] = {wave_interval = 3800, amount_modifier = 0.92, strength_modifier = 0.85, boss_modifier = 5.0},
+        [2] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0},
+        [3] = {wave_interval = 3400, amount_modifier = 1.08, strength_modifier = 1.25, boss_modifier = 7.0},
+        [4] = {wave_interval = 3100, amount_modifier = 1.24, strength_modifier = 1.75, boss_modifier = 8.0},
+        [5] = {wave_interval = 2700, amount_modifier = 1.48, strength_modifier = 2.50, boss_modifier = 9.0}
     }
     this.boss_waves = {
         [50] = {{name = 'big-biter', count = 3}},
