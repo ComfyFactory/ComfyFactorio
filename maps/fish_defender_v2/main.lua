@@ -48,6 +48,17 @@ end
 
 local biter_count_limit = 1024 --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 
+local function check_timer()
+    local wave_grace_period = FDT.get('wave_grace_period')
+    if not wave_grace_period then
+        return
+    end
+
+    if wave_grace_period < game.tick then
+        FDT.set('wave_grace_period', 72000)
+    end
+end
+
 local function create_wave_gui(player)
     if player.gui.top['fish_defense_waves'] then
         player.gui.top['fish_defense_waves'].destroy()
@@ -86,6 +97,8 @@ local function create_wave_gui(player)
         if time_remaining <= 0 then
             FDT.set('wave_grace_period', nil)
             return
+        else
+            check_timer()
         end
 
         local label = frame.add({type = 'label', caption = 'Waves will start in ' .. time_remaining .. ' minutes.'})
