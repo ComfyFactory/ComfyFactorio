@@ -35,6 +35,7 @@ local BottomFrame = require 'comfy_panel.bottom_frame'
 local Misc = require 'commands.misc'
 local Modifiers = require 'player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Reset = require 'functions.soft_reset'
 
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
@@ -104,7 +105,10 @@ function Public.reset_map()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
 
+    Reset.enable_mapkeeper(true)
+
     this.active_surface_index = CS.create_surface()
+    this.soft_reset_counter = CS.get_reset_counter()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
