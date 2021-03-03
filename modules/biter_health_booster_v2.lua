@@ -15,15 +15,16 @@ local floor = math.floor
 local insert = table.insert
 local random = math.random
 local sqrt = math.sqrt
-local ceil = math.ceil
 local round = math.round
 local Public = {}
 
 local this = {
     biter_health_boost = 1,
+    biter_health_boost_forced = false,
     biter_health_boost_forces = {},
     biter_health_boost_units = {},
     biter_health_boost_count = 0,
+    make_normal_unit_mini_bosses = false,
     active_surface = 'nauvis',
     acid_lines_delay = {},
     acid_nova = false,
@@ -251,13 +252,17 @@ local function on_entity_damaged(event)
         return
     end
 
-    if not health_pool then
+    if not health_pool and this.make_normal_unit_mini_bosses then
         if this.biter_health_boost_forces[biter.force.index] then
             Public.add_unit(biter, this.biter_health_boost_forces[biter.force.index])
         else
             Public.add_unit(biter, this.biter_health_boost)
         end
         health_pool = this.biter_health_boost_units[unit_number]
+    end
+
+    if not health_pool then
+        return
     end
 
     --Process boss unit health bars
@@ -360,9 +365,11 @@ end
 --- Use this function to reset the global table to it's init values.
 function Public.reset_table()
     this.biter_health_boost = 1
+    this.biter_health_boost_forces = false
     this.biter_health_boost_forces = {}
     this.biter_health_boost_units = {}
     this.biter_health_boost_count = 0
+    this.make_normal_unit_mini_bosses = false
     this.active_surface = 'nauvis'
     this.check_on_entity_died = false
     this.acid_lines_delay = {}
@@ -442,6 +449,22 @@ function Public.enable_boss_loot(boolean)
     this.enable_boss_loot = boolean or false
 
     return this.enable_boss_loot
+end
+
+--- Forces a value of biter_health_boost
+---@param boolean
+function Public.enable_biter_health_boost_forced(boolean)
+    this.biter_health_boost_forced = boolean or false
+
+    return this.biter_health_boost_forced
+end
+
+--- Enables that normal units have boosted health.
+---@param boolean
+function Public.enable_make_normal_unit_mini_bosses(boolean)
+    this.make_normal_unit_mini_bosses = boolean or false
+
+    return this.make_normal_unit_mini_bosses
 end
 
 Event.on_init(
