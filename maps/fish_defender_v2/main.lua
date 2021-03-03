@@ -48,6 +48,17 @@ end
 
 local biter_count_limit = 1024 --maximum biters on the east side of the map, next wave will be delayed if the maximum has been reached
 
+local function check_timer()
+    local wave_grace_period = FDT.get('wave_grace_period')
+    if not wave_grace_period then
+        return
+    end
+
+    if wave_grace_period < game.tick then
+        FDT.set('wave_grace_period', 72000)
+    end
+end
+
 local function create_wave_gui(player)
     if player.gui.top['fish_defense_waves'] then
         player.gui.top['fish_defense_waves'].destroy()
@@ -86,6 +97,8 @@ local function create_wave_gui(player)
         if time_remaining <= 0 then
             FDT.set('wave_grace_period', nil)
             return
+        else
+            check_timer()
         end
 
         local label = frame.add({type = 'label', caption = 'Waves will start in ' .. time_remaining .. ' minutes.'})
@@ -496,7 +509,7 @@ local function spawn_boss_units(surface)
         health_factor = health_factor * 2
     end
 
-    local biter_health_boost = FDT.get('biter_health_boost')
+    local biter_health_boost = Unit_health_booster.get('biter_health_boost')
     local boss_biters = FDT.get('boss_biters')
 
     local position = {x = 216, y = 0}
@@ -612,9 +625,19 @@ local function biter_attack_wave()
     if Diff.difficulty_vote_index then
         m = m * FDT.get_current_difficulty_strength_modifier()
     end
+
     game.forces.enemy.set_ammo_damage_modifier('melee', wave_count * m)
     game.forces.enemy.set_ammo_damage_modifier('biological', wave_count * m)
-    FDT.set('biter_health_boost', 1 + (wave_count * (m * 2)))
+    local biter_health_boost_forced = Unit_health_booster.get('biter_health_boost_forced')
+    if not biter_health_boost_forced then
+        Unit_health_booster.set('biter_health_boost', 1 + (wave_count * (m * 2)))
+    end
+
+    local make_normal_unit_mini_bosses = Unit_health_booster.get('make_normal_unit_mini_bosses')
+
+    if wave_count > 500 and not make_normal_unit_mini_bosses then
+        Unit_health_booster.enable_make_normal_unit_mini_bosses(true)
+    end
 
     m = 4
     if Diff.difficulty_vote_index then
@@ -1336,6 +1359,9 @@ function Public.reset_game()
     end
 
     Unit_health_booster.set_active_surface(surface.name)
+    Unit_health_booster.check_on_entity_died(true)
+    Unit_health_booster.acid_nova(true)
+    Unit_health_booster.boss_spawns_projectiles(true)
     Unit_health_booster.set('biter_health_boost', 4)
 
     surface.peaceful_mode = false
