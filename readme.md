@@ -1,10 +1,29 @@
+<p align="center">
+  <a href="https://getcomfy.eu/">
+    <img alt="logo" src="https://cdn.discordapp.com/icons/433039858794233858/a_ca6daa1189d44955478d0e0ba6e2effb.gif?size=128" width="120">
+  </a>
+  <br>
+  <a href="https://github.com/M3wM3w/ComfyFactorio/tags">
+    <img src="https://img.shields.io/github/tag/M3wM3w/ComfyFactorio.svg?label=Release" alt="Release">
+  </a>
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/m3wm3w/ComfyFactorio.svg">
+  <a href="http://github.com/M3wM3w/ComfyFactorio/fork">
+    <img src="https://img.shields.io/github/forks/M3wM3w/ComfyFactorio.svg?label=Forks" alt="Fork">
+  </a>
+  <a href="https://getcomfy.eu/discord">
+    <img src="https://discordapp.com/api/guilds/433039858794233858/widget.png?style=shield" alt="Discord">
+  </a>
+</p>
+<h2 align="center">Comfy Repository</h2>
+
+
 # ComfyFactorio
 A factorio scenario.
 
-How to install and choose a map:
-1. Clone or Download the whole repository.
-2. Copy the extracted folder into your scenario folder. (../factorio/scenarios/comfyfactorio)
-3. Choose a map to play by opening control.lua with your favorite text editor.
-4. Find the line "---- enable maps here ----" and remove the "--" in front of the map that you want to activate.
-    Make sure only 1 map is activated.    
-5. Launch it in the game: >>Play >>Scenarios
+## Using Comfy maps
+- Check out the [wiki](https://github.com/M3wM3w/ComfyFactorio/wiki) for getting started.
+- We're also live at [discord](https://getcomfy.eu/discord). Don't hesitate to reach out if you're having issues getting started!
+- The scenario is free to play, host or modify, however, you are welcome to visit our servers.
+
+### Factorio Version
+- We always try to use the latest experimental branch, meaning - if you want to play our maps then you need to be on the experimental branch.

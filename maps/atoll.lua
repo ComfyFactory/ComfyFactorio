@@ -1,12 +1,14 @@
 --atoll-- mewmew made this --
 
-require "maps.tools.map_pregen"
+require "modules.spawners_contain_biters"
+require "modules.surrounded_by_worms"
+
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 
 local function get_noise(name, pos)	
 	local seed = game.surfaces[1].map_gen_settings.seed
@@ -31,11 +33,12 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if not global.map_init_done then
 		game.forces["player"].technologies["landfill"].researched=true
-		global.map_init_done = true						
+		global.average_worm_amount_per_chunk = 6
+		global.map_init_done = true	
 	end	
 	
 	if player.online_time == 0 then		
-		player.insert{name = 'iron-axe', count = 1}
+		--player.insert{name = 'iron-axe', count = 1}
 		player.insert{name = 'landfill', count = 200}
 		player.insert{name = 'iron-plate', count = 32}
 		player.insert{name = 'iron-gear-wheel', count = 16}

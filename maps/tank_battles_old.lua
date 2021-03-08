@@ -3,7 +3,7 @@
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local arena_size = 160
 
 local function shuffle(tbl)
@@ -380,7 +380,7 @@ local function render_spawn_chunk(event)
 	local left_top = event.area.left_top
 	
 	for _, entity in pairs(surface.find_entities_filtered({area = event.area})) do
-		if entity.name ~= "player" then
+		if entity.name ~= "character" then
 			entity.destroy()
 		end
 	end
@@ -485,7 +485,7 @@ local function lobby()
 		permissions_group.add_player(player.name)		
 		if not player.character and player.ticks_to_respawn == nil then
 			player.create_character()
-			local pos = player.surface.find_non_colliding_position("player", {0,0}, 16, 3)
+			local pos = player.surface.find_non_colliding_position("character", {0,0}, 16, 3)
 			player.insert({name = "concrete", count = 500})
 			player.insert({name = "hazard-concrete", count = 500})
 			player.insert({name = "stone-brick", count = 500})		
@@ -543,7 +543,7 @@ local function on_player_died(event)
 	local str = " "
 	if event.cause then
 		if event.cause.name ~= nil then str = " by " .. event.cause.name end	
-		if event.cause.name == "player" then str = " by " .. event.cause.player.name end
+		if event.cause.name == "character" then str = " by " .. event.cause.player.name end
 		if event.cause.name == "tank" then
 			local driver = event.cause.get_driver()
 			if driver.player then 

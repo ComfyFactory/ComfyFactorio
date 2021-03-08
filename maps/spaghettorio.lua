@@ -3,7 +3,6 @@
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event'
-require "maps.tools.map_pregen"
 
 local function disable_recipes()
 	game.forces.player.recipes["splitter"].enabled = false
@@ -35,15 +34,12 @@ local function on_player_joined_game(event)
 	end	
 	local surface = game.surfaces["spaghettorio"]
 	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {0,0}, 2, 1), "spaghettorio")
+		player.teleport(surface.find_non_colliding_position("character", {0,0}, 2, 1), "spaghettorio")
 	else
 		if player.online_time < 5 then
 			player.teleport({0,0}, "spaghettorio")
 		end
-	end	
-	if player.online_time < 10 then				
-		player.insert {name = 'iron-axe', count = 1}
-	end
+	end		
 	disable_recipes()
 end
 

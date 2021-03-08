@@ -1,15 +1,13 @@
 local event = require 'utils.event'
 
 local main_caption = " --Nightfall-- "
-local sub_caption = "*can you make it through the night*"
+local sub_caption = "*can you make it through*"
 local info = [[
-	They come out at night. 
-	Trying to nom your rocket silo.
-	Maybe they just like the taste of the alloys, who knows.
+	They come out at night, trying to nom your rocket silo.
 	
 	Fend them off as long as possible!
 		
-	There seem to be shipwrecks of misfortunate explorers all over this place.
+	There seem to be shipwrecks of unfortunate explorers all over this place.
 	It might be worth scavenging a few.
 	
 	Wreck loot quality increases with distance.
@@ -22,7 +20,7 @@ local function create_map_intro(player)
 	
 	local tt = t.add {type = "table", column_count = 3}
 	local l = tt.add {type = "label", caption = main_caption}
-	l.style.font = "default-frame"
+	l.style.font = "default-listbox"
 	l.style.font_color = {r=0.85, g=0.0, b=0.25}
 	l.style.top_padding = 6	
 	l.style.bottom_padding = 6

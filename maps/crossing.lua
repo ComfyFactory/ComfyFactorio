@@ -3,7 +3,7 @@
 local event = require 'utils.event'
 local math_random = math.random
 local insert = table.insert
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'
 local simplex_noise = simplex_noise.d2
 
@@ -11,12 +11,11 @@ local function on_player_joined_game(event)
 	local player = game.players[event.player_index]
 	if player.online_time < 1 then
 		player.insert({name = "pistol", count = 1})
-		player.insert({name = "iron-axe", count = 1})
 		player.insert({name = "raw-fish", count = 1})
 		player.insert({name = "firearm-magazine", count = 16})
 		player.insert({name = "iron-plate", count = 32})
 		
-		pos = player.character.surface.find_non_colliding_position("player",{0, -40}, 50, 1)
+		pos = player.character.surface.find_non_colliding_position("character",{0, -40}, 50, 1)
 		game.forces.player.set_spawn_position(pos, player.character.surface)
 		player.teleport(pos, player.character.surface)
 		

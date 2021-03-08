@@ -1,15 +1,15 @@
 --anarchy mode map -- by mewmew --
 
 require "maps.hunger_games_map_intro"
-require "maps.modules.hunger_games"
-require "maps.modules.dynamic_player_spawn"
+require "modules.hunger_games"
+require "modules.dynamic_player_spawn"
 
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
 local event = require 'utils.event' 
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require "maps.tools.map_functions"
+local map_functions = require "tools.map_functions"
 
 local function on_player_joined_game(event)	
 	local player = game.players[event.player_index]
@@ -22,7 +22,6 @@ local function on_player_joined_game(event)
 	end			
 	
 	if player.online_time == 0 then		
-		player.insert{name = 'iron-axe', count = 1}
 		player.insert{name = 'iron-plate', count = 32}		
 	end	
 end
