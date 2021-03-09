@@ -712,7 +712,7 @@ local function on_init()
 	dungeontable.enemy_forces[surface.index] = game.create_force("enemy" .. surface.index)
 	forceshp[game.forces.enemy.index] = 1
 	forceshp[dungeontable.enemy_forces[surface.index].index] = 1
-	BiterHealthBooster.set_surface_activity('dungeons_floor_0', true)
+	BiterHealthBooster.set_surface_activity('dungeons_floor0', true)
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false
