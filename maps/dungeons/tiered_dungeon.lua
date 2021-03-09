@@ -591,6 +591,7 @@ local function on_surface_created(event)
 	dungeontable.enemy_forces[event.surface_index] = force
 	forceshp[force.index] = 1
 	dungeontable.depth[event.surface_index] = 100 * event.surface_index - (dungeontable.original_surface_index * 100)
+	BiterHealthBooster.set_surface_activity(game.surfaces[event.surface_index].name, true)
 end
 
 local function on_player_changed_surface(event)
@@ -711,6 +712,7 @@ local function on_init()
 	dungeontable.enemy_forces[surface.index] = game.create_force("enemy" .. surface.index)
 	forceshp[game.forces.enemy.index] = 1
 	forceshp[dungeontable.enemy_forces[surface.index].index] = 1
+	BiterHealthBooster.set_surface_activity('dungeons_floor_0', true)
 
 	game.forces.player.technologies["land-mine"].enabled = false
 	game.forces.player.technologies["landfill"].enabled = false

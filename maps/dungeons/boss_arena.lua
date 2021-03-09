@@ -523,6 +523,7 @@ local function on_init()
     local arena = game.permissions.create_group('Arena')
     local arena_surface = game.create_surface('dungeons_floor_arena')
     local map_gen_settings = arena_surface.map_gen_settings
+    BiterHealthBooster.set_surface_activity('dungeons_floor_arena', true)
   	map_gen_settings.height = 3
   	map_gen_settings.width = 3
   	arena_surface.map_gen_settings = map_gen_settings
