@@ -65,7 +65,7 @@ end
 local function special_loot(value)
 	local items = {
 		[1] = {item = 'tank-machine-gun', value = 16384},
-    [2] = {item = 'tank-cannon', value = 32728},
+		[2] = {item = 'tank-cannon', value = 32728},
 		[3] = {item = 'artillery-wagon-cannon', value = 65536}
 	}
 	if math_random(1, 20) == 1 then
@@ -138,18 +138,20 @@ function Public.epic_loot_crate(surface, position, special)
 	local dungeontable = DungeonsTable.get_dungeontable()
 	local loot_value = get_loot_value(surface.index, 8) + math_random(512, 1024)
 	local bonus_loot = nil
-	if dungeontable.tiered and loot_value > 32000 and Public.get_dungeon_evolution_factor(surface_index) > 1 then
+	if dungeontable.tiered and loot_value > 32000 and Public.get_dungeon_evolution_factor(surface.index) > 1 then
 		local bonus = special_loot(loot_value)
 		bonus_loot = bonus.loot
-		loot_value = loot_value - bonus.value
+		loot_value = bonus.value
 	end
 	local item_stacks = LootRaffle.roll(loot_value, 48, blacklist(surface.index, special))
 	local container = surface.create_entity({name = "blue-chest", position = position, force = "neutral"})
 	if bonus_loot then
 		container.insert(bonus_loot)
 	end
-	for _, item_stack in pairs(item_stacks) do
-		container.insert(item_stack)
+	if item_stacks then
+		for _, item_stack in pairs(item_stacks) do
+			container.insert(item_stack)
+		end
 	end
 	container.minable = false
 end

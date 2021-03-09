@@ -127,7 +127,7 @@ local function expand(surface, position)
 		force.set_ammo_damage_modifier("biological", damage_mod)
 		force.set_ammo_damage_modifier("artillery-shell", damage_mod)
 		force.set_ammo_damage_modifier("flamethrower", damage_mod)
-		force.set_ammo_damage_modifier("laser-turret", damage_mod)
+		force.set_ammo_damage_modifier("laser", damage_mod)
 	else
 		global.biter_health_boost = 1 + evo
 	end
