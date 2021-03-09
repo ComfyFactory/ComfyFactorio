@@ -225,25 +225,13 @@ local function set_boss_healthbar(health, max_health, healthbar_id)
     rendering.set_color(healthbar_id, {floor(255 - 255 * m), floor(200 * m), 0})
 end
 
-local function on_entity_damaged(event)
-    local biter = event.entity
-    if not (biter and biter.valid) then
+local function try_acid(cause, target)
+    if not cause or not cause.valid then
         return
     end
-    local cause = event.cause
-    if not cause then
-        return
-    end
-
     local biter_health_boost_units = this.biter_health_boost_units
-
-    local unit_number = biter.unit_number
     local cause_unit_number = cause.unit_number
-
-    --Create new health pool
-    local health_pool = biter_health_boost_units[unit_number]
     local cause_health_pool = biter_health_boost_units[cause_unit_number]
-
     if cause_health_pool and cause_health_pool[3] and entity_types[cause.type] then
         if this.acid_nova then
             if acid_lines[cause.name] then
@@ -251,12 +239,28 @@ local function on_entity_damaged(event)
                     this.acid_lines_delay[cause_unit_number] = 0
                 end
                 if this.acid_lines_delay[cause_unit_number] < game.tick then
-                    acid_line(cause.surface, acid_lines[cause.name], cause.position, event.entity.position)
+                    acid_line(cause.surface, acid_lines[cause.name], cause.position, target.position)
                     this.acid_lines_delay[cause_unit_number] = game.tick + 180
                 end
             end
         end
     end
+end
+
+local function on_entity_damaged(event)
+    local biter = event.entity
+    if not (biter and biter.valid) then
+        return
+    end
+    local cause = event.cause
+
+    local biter_health_boost_units = this.biter_health_boost_units
+
+    local unit_number = biter.unit_number
+
+    --Create new health pool
+    local health_pool = biter_health_boost_units[unit_number]
+    try_acid(cause, biter)
 
     if not entity_types[biter.type] then
         return
