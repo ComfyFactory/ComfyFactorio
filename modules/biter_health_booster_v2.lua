@@ -26,6 +26,7 @@ local this = {
     biter_health_boost_count = 0,
     make_normal_unit_mini_bosses = false,
     active_surface = 'nauvis',
+    active_surfaces = {},
     acid_lines_delay = {},
     acid_nova = false,
     boss_spawns_projectiles = false,
@@ -178,6 +179,15 @@ local function clean_table()
     for k, v in pairs(entity_types) do
         if v then
             insert(validTypes, k)
+        end
+    end
+
+    for name, enabled in pairs(this.active_surfaces) do
+        local surface = game.surfaces[name]
+        if surface and surface.valid and enabled then
+            for _, unit in pairs(surface.find_entities_filtered({type = validTypes})) do
+                units_to_delete[unit.unit_number] = nil
+            end
         end
     end
 
@@ -371,6 +381,7 @@ function Public.reset_table()
     this.biter_health_boost_count = 0
     this.make_normal_unit_mini_bosses = false
     this.active_surface = 'nauvis'
+    this.active_surfaces = {}
     this.check_on_entity_died = false
     this.acid_lines_delay = {}
     this.acid_nova = false
@@ -413,12 +424,23 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
 end
 
 --- This sets the active surface that we check and have the script active.
+--- This deletes the list of surfaces if we use multiple, so use it only before setting more of them.
 ---@param string
 function Public.set_active_surface(str)
     if str and type(str) == 'string' then
+        this.active_surfaces = {}
         this.active_surface = str
     end
     return this.active_surface
+end
+
+--- This sets if this surface is active, when we using multiple surfaces. The default active surface does not need to be added again
+---@param string, boolean
+function Public.set_surface_activity(name, value)
+    if name and type(name) == 'string' and type(value) == 'boolean' then
+        this.active_surfaces[name] = value
+    end
+    return this.active_surfaces
 end
 
 --- Enables that biter bosses (units with health bars) spawns acid on death.
