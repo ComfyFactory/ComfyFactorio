@@ -399,7 +399,7 @@ local vote_to_free = function(player, griefer)
     return
 end
 
-local jail = function(player, griefer, msg)
+local jail = function(player, griefer, msg, raised)
     player = player or 'script'
     if jailed[griefer] then
         return false
@@ -426,7 +426,9 @@ local jail = function(player, griefer, msg)
     end
 
     jailed[griefer] = {jailed = true, actor = player, reason = msg}
-    set_data(jailed_data_set, griefer, {jailed = true, actor = player, reason = msg})
+    if not raised then
+        set_data(jailed_data_set, griefer, {jailed = true, actor = player, reason = msg})
+    end
 
     Utils.print_to(nil, message)
     Utils.action_warning_embed('{Jailed}', message)
@@ -641,9 +643,9 @@ Server.on_data_set_changed(
     function(data)
         if data and data.value then
             if data.value.jailed and data.value.actor then
-                jail(data.value.actor, data.key)
+                jail(data.value.actor, data.key, data.value.reason, true)
             end
-        else
+        elseif data then
             free('script', data.key)
         end
     end
