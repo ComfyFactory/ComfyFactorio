@@ -15,8 +15,10 @@ local votefree = {}
 local settings = {
     playtime_for_vote = 25920000, -- 5 days
     playtime_for_instant_jail = 103680000, -- 20 days
-    votejail_count = 5
+    votejail_count = 5,
+    valid_surface = 'nauvis'
 }
+
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
@@ -213,6 +215,12 @@ local teleport_player_to_gulag = function(player, action)
         end
 
         local surface = game.surfaces[p_data.fallback_surface_index]
+        if not surface or not surface.valid then
+            if settings.valid_surface then
+                surface = game.surfaces[settings.valid_surface]
+            end
+        end
+
         local p = p_data.position
         local p_group = game.permissions.get_group(p_data.p_group_id)
         p_group.add_player(player)
@@ -662,6 +670,11 @@ function Public.required_playtime_for_instant_jail(value)
         settings.playtime_for_instant_jail = value
     end
     return settings.playtime_for_instant_jail
+end
+
+function Public.set_valid_surface(value)
+    settings.valid_surface = value or 'nauvis'
+    return settings.valid_surface
 end
 
 function Public.required_playtime_for_vote(value)

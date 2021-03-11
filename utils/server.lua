@@ -35,6 +35,10 @@ Global.register(
     end
 )
 
+--- Jail dataset.
+local jailed_data_set = 'jailed'
+
+--- Web panel framework.
 local discord_tag = '[DISCORD]'
 local discord_raw_tag = '[DISCORD-RAW]'
 local discord_bold_tag = '[DISCORD-BOLD]'
@@ -918,6 +922,7 @@ Event.add(
             return
         end
         if cmd == 'ban' then
+            Public.set_data(jailed_data_set, player.name, nil) -- this is added here since we don't want to clutter the jail dataset.
             if player then
                 Public.to_banned_embed(table.concat {player.name .. ' banned ' .. reason})
                 return

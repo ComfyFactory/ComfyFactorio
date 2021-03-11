@@ -36,6 +36,7 @@ local Misc = require 'commands.misc'
 local Modifiers = require 'player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Reset = require 'functions.soft_reset'
+local JailData = require 'utils.datastore.jail_data'
 
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
@@ -152,6 +153,8 @@ function Public.reset_map()
     if this.winter_mode then
         surface.daytime = 0.45
     end
+
+    JailData.set_valid_surface(tostring(surface.name))
 
     Explosives.set_surface_whitelist({[surface.name] = true})
 

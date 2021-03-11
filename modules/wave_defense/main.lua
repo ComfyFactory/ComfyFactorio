@@ -178,12 +178,9 @@ local function get_spawn_pos()
     ::retry::
 
     local initial_position = WD.get('spawn_position')
-    debug_print(serpent.block('initial_pos - x:' .. initial_position.x .. ' y:' .. initial_position.y))
 
     local located_position = find_initial_spot(surface, initial_position)
-    debug_print(serpent.block('located_position - x:' .. located_position.x .. ' y:' .. located_position.y))
     local valid_position = surface.find_non_colliding_position('behemoth-biter', located_position, 32, 1)
-    debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
     local debug = WD.get('debug')
     if debug then
         if valid_position then
