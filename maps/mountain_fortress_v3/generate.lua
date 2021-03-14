@@ -4,7 +4,7 @@ local Loot = require 'maps.mountain_fortress_v3.loot'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'.heavy_functions
+local Terrain = require 'maps.mountain_fortress_v3.terrain'
 
 local Public = {}
 
@@ -15,6 +15,7 @@ local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
 local regen_decoratives = false
+local generate_map = Terrain.heavy_functions
 local wintery_type = {
     ['simple-entity'] = true,
     ['tree'] = true,
@@ -398,7 +399,7 @@ local function map_gen_action(data)
     local state = data.y
 
     if state < 32 then
-        local shape = Terrain
+        local shape = generate_map
         if shape == nil then
             return false
         end
@@ -476,7 +477,7 @@ local map_gen_action_token = Token.register(map_gen_action)
 -- @param event <table> the event table from on_chunk_generated
 function Public.schedule_chunk(event)
     local surface = event.surface
-    local shape = Terrain
+    local shape = generate_map
 
     if event.tick < 1 then
         return
@@ -521,7 +522,7 @@ end
 -- @param event <table> the event table from on_chunk_generated
 function Public.do_chunk(event)
     local surface = event.surface
-    local shape = Terrain
+    local shape = generate_map
 
     if not surface.valid then
         return
@@ -571,6 +572,10 @@ local schedule_chunk = Public.schedule_chunk
 
 local function on_chunk(event)
     local force_chunk = WPT.get('force_chunk')
+    local stop_chunk = WPT.get('stop_chunk')
+    if stop_chunk then
+        return
+    end
     if force_chunk then
         do_chunk(event)
     elseif event.tick == 0 then
