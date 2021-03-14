@@ -439,7 +439,6 @@ local function set_locomotive_health()
 
     local function check_health()
         local m = locomotive_health / locomotive_max_health
-        WPT.set('locomotive_health', locomotive_max_health)
         rendering.set_text(WPT.get('health_text'), 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health)
         WPT.set('carriages', locomotive.train.carriages)
         local carriages = WPT.get('carriages')
