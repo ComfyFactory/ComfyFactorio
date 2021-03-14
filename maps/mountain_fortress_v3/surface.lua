@@ -1,7 +1,7 @@
 local Global = require 'utils.global'
 local surface_name = 'mountain_fortress_v3'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local Reset = require 'functions.soft_reset'
+local Reset = require 'maps.mountain_fortress_v3.soft_reset'
 
 local Public = {}
 
@@ -89,7 +89,7 @@ function Public.create_surface()
         this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
-    this.soft_reset_counter = Reset.get_reset_counter()
+    -- this.soft_reset_counter = Reset.get_reset_counter()
 
     if not this.cleared_nauvis then
         local mgs = game.surfaces['nauvis'].map_gen_settings

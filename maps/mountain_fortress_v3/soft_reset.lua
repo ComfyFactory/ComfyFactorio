@@ -27,10 +27,7 @@ local function teleport_players(surface)
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
     for _, player in pairs(game.connected_players) do
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5),
-            surface
-        )
+        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
     end
 end
 
@@ -68,8 +65,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
     end
     this.soft_reset_counter = this.soft_reset_counter + 1
 
-    local new_surface =
-        game.create_surface(this.original_surface_name .. '_' .. tostring(this.soft_reset_counter), map_gen_settings)
+    local new_surface = game.create_surface(this.original_surface_name .. '_' .. tostring(this.soft_reset_counter), map_gen_settings)
     new_surface.request_to_generate_chunks({0, 0}, 0.5)
     new_surface.force_generate_chunk_requests()
 

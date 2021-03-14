@@ -7,6 +7,7 @@ local Score = require 'comfy_panel.score'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
+local SpamProtection = require 'utils.spam_protection'
 
 local score_dataset = 'highscores'
 local score_key = 'mountain_fortress_v3_scores'
@@ -625,6 +626,11 @@ local function on_gui_click(event)
         return
     end
     if frame.name ~= 'Highscore' then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'HighScore Gui Click')
+    if is_spamming then
         return
     end
 

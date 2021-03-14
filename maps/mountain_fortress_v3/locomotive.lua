@@ -259,6 +259,18 @@ function Public.add_player_to_permission_group(player, group, forced)
         not_trusted.set_allows_action(defines.input_action.drop_item, false)
         not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
         not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
+        not_trusted.set_allows_action(defines.input_action.open_train_gui, false)
+        not_trusted.set_allows_action(defines.input_action.open_train_station_gui, false)
+        not_trusted.set_allows_action(defines.input_action.open_trains_gui, false)
+        not_trusted.set_allows_action(defines.input_action.change_train_stop_station, false)
+        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition, false)
+        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition_data, false)
+        not_trusted.set_allows_action(defines.input_action.drag_train_schedule, false)
+        not_trusted.set_allows_action(defines.input_action.drag_train_wait_condition, false)
+        not_trusted.set_allows_action(defines.input_action.go_to_train_station, false)
+        not_trusted.set_allows_action(defines.input_action.remove_train_station, false)
+        not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
+        not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
     end
 
     if enable_permission_group_disconnect then
@@ -439,6 +451,9 @@ local function set_locomotive_health()
 
     local function check_health()
         local m = locomotive_health / locomotive_max_health
+        if locomotive_health > locomotive_max_health then
+            WPT.set('locomotive_health', locomotive_max_health)
+        end
         rendering.set_text(WPT.get('health_text'), 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health)
         WPT.set('carriages', locomotive.train.carriages)
         local carriages = WPT.get('carriages')

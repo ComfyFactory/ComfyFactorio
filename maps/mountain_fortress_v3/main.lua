@@ -109,7 +109,7 @@ function Public.reset_map()
     Reset.enable_mapkeeper(true)
 
     this.active_surface_index = CS.create_surface()
-    this.soft_reset_counter = CS.get_reset_counter()
+    -- this.soft_reset_counter = CS.get_reset_counter()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
