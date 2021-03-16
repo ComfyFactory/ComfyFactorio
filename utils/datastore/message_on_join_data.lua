@@ -19,8 +19,7 @@ local fetch =
             return
         end
         if type(value) == 'table' then
-            local message = string.gsub(value.msg, "{name}", player.name)
-            game.print(message, value.color)
+            game.print('>> ' .. player.name .. ' << ' .. value.msg, value.color) -- we want the player name to be printed.
         end
     end
 )
