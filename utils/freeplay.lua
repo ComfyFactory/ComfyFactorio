@@ -222,7 +222,7 @@ Event.on_init(
     end
 )
 
-Event.on_configuration_changed = function()
+local on_configuration_changed = function()
     this.created_items = this.created_items or created_items()
     this.respawn_items = this.respawn_items or respawn_items()
     this.crashed_ship_items = this.crashed_ship_items or ship_items()
@@ -232,6 +232,8 @@ Event.on_configuration_changed = function()
         this.init_ran = #game.players > 0
     end
 end
+
+Event.on_configuration_changed(on_configuration_changed)
 
 Event.add(defines.events.on_player_created, on_player_created)
 Event.add(defines.events.on_player_respawned, on_player_respawned)

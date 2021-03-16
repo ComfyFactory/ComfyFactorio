@@ -606,10 +606,7 @@ function Public.bottom_button(value)
     end
 end
 
-Event.on_configuration_changed = function()
-    do_whitelist()
-    log('[Autostash] on_configuration_changed was called, rebuilding resource whitelist.')
-end
+Event.on_configuration_changed(do_whitelist)
 
 Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
