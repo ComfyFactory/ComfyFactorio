@@ -79,6 +79,9 @@ local function configuration_changed()
     _LIFECYCLE = 7 -- config_change
     local handlers = event_handlers[configuration_changed_name]
     call_handlers(handlers)
+
+    event_handlers[configuration_changed_name] = nil
+
     _LIFECYCLE = 8 -- Runtime
 end
 
