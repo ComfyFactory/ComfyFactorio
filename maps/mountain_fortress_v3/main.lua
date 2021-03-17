@@ -4,6 +4,7 @@ local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
 local HS = require 'maps.mountain_fortress_v3.highscore'
+local Discord = require 'utils.discord'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Autostash = require 'modules.autostash'
@@ -51,6 +52,16 @@ require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
 require 'modules.wave_defense.main'
 require 'modules.charging_station'
+
+-- Use these settings for live
+-- local send_ping_to_channel = Discord.channel_names.announcements
+-- local role_to_mention = Discord.role_mentions.mtn_fortress
+-- Use these settings for testing
+-- bot-lounge
+-- local send_ping_to_channel = Discord.channel_names.bot_quarters
+-- dev
+local send_ping_to_channel = Discord.channel_names.dev
+local role_to_mention = Discord.role_mentions.test_role
 
 local Public = {}
 local raise_event = script.raise_event
@@ -254,6 +265,8 @@ function Public.reset_map()
     this.force_chunk = true
     this.market_announce = game.tick + 1200
     this.game_lost = false
+
+    Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
 end
 
 local is_locomotive_valid = function()
