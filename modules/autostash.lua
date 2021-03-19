@@ -394,6 +394,31 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
     end
 end
 
+local priority = {
+    ['coal'] = 1,
+    ['iron-ore'] = 2,
+    ['copper-ore'] = 3,
+    ['stone'] = 4
+}
+
+local function switch_key_val(tbl)
+    local t = {}
+    for name, count in pairs(tbl) do
+        if priority[name] then
+            t[#t + 1] = {name = name, count = count, priority = priority[name]}
+        end
+    end
+
+    table.sort(
+        t,
+        function(a, b)
+            return a.priority > b.priority
+        end
+    )
+
+    return t
+end
+
 local function auto_stash(player, event)
     local button = event.button
     local ctrl = event.control
@@ -451,7 +476,11 @@ local function auto_stash(player, event)
         end
     end
 
-    for name, count in pairs(inventory.get_contents()) do
+    local getIndexInventory = switch_key_val(inventory.get_contents())
+
+    for i = #getIndexInventory, 1, -1 do
+        local name = getIndexInventory[i].name
+        local count = getIndexInventory[i].count
         local is_resource = this.whitelist[name]
 
         if not inventory.find_item_stack(name).grid and not hotbar_items[name] then
@@ -542,6 +571,7 @@ end
 
 local function do_whitelist()
     local resources = game.entity_prototypes
+    local items = game.item_prototypes
     this.whitelist = {}
     for k, _ in pairs(resources) do
         if resources[k] and resources[k].type == 'resource' and resources[k].mineable_properties then
@@ -552,6 +582,13 @@ local function do_whitelist()
                 local r = resources[k].mineable_properties.products[2].name
                 this.whitelist[r] = true
             end
+        end
+    end
+
+    for k, _ in pairs(items) do
+        if items[k] and items[k].group.name == 'resource-refining' then
+            local r = items[k].name
+            this.whitelist[r] = true
         end
     end
 end

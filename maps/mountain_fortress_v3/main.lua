@@ -54,7 +54,7 @@ require 'modules.wave_defense.main'
 require 'modules.charging_station'
 
 -- Use these settings for live
-local send_ping_to_channel = Discord.channel_names.announcements
+local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
 -- Use these settings for testing
 -- bot-lounge

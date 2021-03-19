@@ -3,6 +3,7 @@ return {
     --- The names of the discord channels that can be referenced by name.
     -- See features.server.to_discord_named
     channel_names = {
+        mtn_channel = 'mount-fortress',
         bot_quarters = 'bot-quarters',
         announcements = 'announcements',
         mod_lounge = 'mods-lounge',
