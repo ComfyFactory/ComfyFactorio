@@ -1,8 +1,18 @@
 local public = {}
+local Global = require 'utils.global'
+
+local this = {}
+
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
 
 public.init = function()
-   if global.this == nil then
-      global.this = {}
+   if this == nil then
+      this = {}
    end
 end
 
@@ -12,11 +22,11 @@ rand_range - Return random integer within the range.
 @param stop - Stop range.
 --]]
 public.rand_range = function(start, stop)
-   if not global.this.rng then
-      global.this.rng = game.create_random_generator()
+   if not this.rng then
+      this.rng = game.create_random_generator()
    end
 
-   return global.this.rng(start, stop)
+   return this.rng(start, stop)
 end
 
 --[[
