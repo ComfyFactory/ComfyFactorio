@@ -46,9 +46,12 @@ public.set_blueprint_hook = function(name, hook)
         return
     end
 
-    local token = Token.register(hook)
-
-    this._bps[name].hook = token
+    if hook and type(hook) ~= 'number' then
+        local token = Token.register(hook)
+        this._bps[name].hook = token
+    else
+        this._bps[name].hook = hook
+    end
 end
 
 --[[

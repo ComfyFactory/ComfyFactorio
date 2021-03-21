@@ -115,25 +115,8 @@ end
 
 local function _do_job_entity(surf, layer)
     local hook = layer.hook
-    if not hook then
-        return
-    end
-    local func = Token.get(hook)
-    if not func then
-        return
-    end
-    func = Token.get(func)
-    if not func then
-        return
-    end
     local deps = layer.deps
-    if not deps then
-        return
-    end
-    local func2 = Token.get(deps)
-    if not func2 then
-        return
-    end
+
     for _, object in pairs(layer.cache) do
         if object.name == 'character' or object.name == 'gun-turret' then
             if not surf.can_place_entity(object) then
@@ -147,7 +130,13 @@ local function _do_job_entity(surf, layer)
         end
 
         if hook then
-            func(ent, func2)
+            local funcDeps = Token.get(deps)
+            local func = Token.get(hook)
+            if deps == nil then
+                func(ent, deps)
+            else
+                func(ent, funcDeps)
+            end
         end
 
         ::continue::

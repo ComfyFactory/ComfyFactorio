@@ -2,7 +2,6 @@ local Global = require('utils.global')
 local Event = require('utils.event')
 local Server = require('utils.server')
 local MapFuntions = require('tools.map_functions')
-local TimersFunctions = require('planet_prison.mod.timers')
 local CommonFunctions = require('planet_prison.mod.common')
 local LayersFunctions = require('planet_prison.mod.layers')
 local AIFunctions = require('planet_prison.mod.ai')
@@ -104,8 +103,7 @@ local set_noise_hostile_hook =
 
 local set_neutral_to_entity =
     Token.register(
-    function(data)
-        local entity = data.entity
+    function(entity)
         entity.force = 'neutral'
     end
 )
@@ -155,7 +153,12 @@ local industrial_zone_layers = {
         type = 'LuaEntity',
         name = 'scrap',
         objects = {
-            'crash-site-spaceship-wreck-medium-1'
+            'crash-site-spaceship-wreck-small-1',
+            'crash-site-spaceship-wreck-small-2',
+            'crash-site-spaceship-wreck-small-3',
+            'crash-site-spaceship-wreck-small-4',
+            'crash-site-spaceship-wreck-small-5',
+            'crash-site-spaceship-wreck-small-6'
         },
         elevation = 0.5,
         resolution = 0.1,
@@ -268,7 +271,6 @@ local function init_game()
     LayersFunctions.init()
     Blueprints.init()
     AIFunctions.init()
-    TimersFunctions.init()
     ClaimsFunctions.init(MapConfig.claim_markers, MapConfig.claim_max_distance)
 
     local map = pick_map()
@@ -296,16 +298,23 @@ local function init_game()
     LayersFunctions.set_collision_mask({'water-tile'})
 
     for _, layer in pairs(preset) do
-        local token = Token.register(layer.hook)
         LayersFunctions.add_noise_layer(layer.type, layer.name, layer.objects, layer.elevation, layer.resolution)
         if layer.hook ~= nil then
-            LayersFunctions.add_noise_layer_hook(layer.name, token)
+            if layer.hook and type(layer.hook) == 'number' then
+                LayersFunctions.add_noise_layer_hook(layer.name, layer.hook)
+            else
+                local token = Token.register(layer.hook)
+                LayersFunctions.add_noise_layer_hook(layer.name, token)
+            end
         end
 
-        local token2 = Token.register(layer.deps)
-
         if layer.deps ~= nil then
-            LayersFunctions.add_noise_layer_dependency(layer.name, token2)
+            if layer.deps and type(layer.deps) == 'number' then
+                LayersFunctions.add_noise_layer_dependency(layer.name, layer.deps)
+            else
+                local token = Token.register(layer.deps)
+                LayersFunctions.add_noise_layer_dependency(layer.name, token)
+            end
         end
     end
 
@@ -917,10 +926,6 @@ local function on_tick()
     if (game.tick + 1) % 100 == 0 then
         AfkFunctions.on_inactive_players(90, kill_player)
     end
-
-    if (game.tick + 1) % 60 == 0 then
-        TimersFunctions.do_job()
-    end
 end
 
 local function make_ore_patch(e)
@@ -946,9 +951,20 @@ local function on_chunk_generated(e)
     LayersFunctions.push_chunk(e.position)
 end
 
+local valid_ents = {
+    ['crash-site-spaceship-wreck-small-1'] = true,
+    ['crash-site-spaceship-wreck-small-2'] = true,
+    ['crash-site-spaceship-wreck-small-3'] = true,
+    ['crash-site-spaceship-wreck-small-4'] = true,
+    ['crash-site-spaceship-wreck-small-5'] = true,
+    ['crash-site-spaceship-wreck-small-6'] = true
+}
+
 local function mined_wreckage(e)
-    if e.entity.name ~= 'crash-site-spaceship-wreck-medium-1' then
-        return
+    if e and e.valid then
+        if not valid_ents[e.name] then
+            return
+        end
     end
 
     local candidates = {}
