@@ -406,13 +406,17 @@ local function switch_key_val(tbl)
     for name, count in pairs(tbl) do
         if priority[name] then
             t[#t + 1] = {name = name, count = count, priority = priority[name]}
+        else
+            t[#t + 1] = {name = name, count = count}
         end
     end
 
     table.sort(
         t,
         function(a, b)
-            return a.priority > b.priority
+            if a.priority and b.priority then
+                return a.priority > b.priority
+            end
         end
     )
 
