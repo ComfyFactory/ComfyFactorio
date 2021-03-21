@@ -107,6 +107,9 @@ require 'modules.autostash'
 --![[East VS West Survival PVP, where you breed biters with science flasks]]--
 --require 'maps.biter_hatchery.main'
 
+--![[Fight in a world where everyone are prisoners]]
+--require 'maps.planet_prison'
+
 --![[Chop trees to gain resources]]--
 --require 'maps.choppy'
 --require 'maps.choppy_dx'
@@ -201,7 +204,6 @@ require 'modules.autostash'
 --require 'maps.wave_defense'
 --require 'maps.crossing'
 --require 'maps.anarchy'
---require 'maps.planet_prison'
 --require 'maps.blue_beach'
 --require 'maps.nightfall'
 --require 'maps.pitch_black.main'
