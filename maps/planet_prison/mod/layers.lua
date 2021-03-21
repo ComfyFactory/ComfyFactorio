@@ -123,6 +123,9 @@ local function _do_job_entity(surf, layer)
         return
     end
     func = Token.get(func)
+    if not func then
+        return
+    end
     local deps = layer.deps
     if not deps then
         return
