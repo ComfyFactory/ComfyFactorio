@@ -285,7 +285,9 @@ local function _build_entities(surf, point, entities, hook, args)
 
         if hook then
             local token = Token.get(hook)
-            token(e, args)
+            if token then
+                token(e, args)
+            end
         end
 
         table.insert(_entities, e)

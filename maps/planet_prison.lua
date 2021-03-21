@@ -315,30 +315,11 @@ local function init_game()
     Blueprints.set_blueprint_hook('merchant', init_merchant_bp)
 end
 
-local explode_ship_update =
-    Token.register(
-    function(data)
-        local ship = data.ship
-        local id = data.id
-        local time_left = data.time_left
-        for _, ent in pairs(ship.entities) do
-            if not ent.valid then
-                return false
-            end
-        end
-
-        rendering.set_text(id, CommonFunctions.get_time(time_left))
-        return true
-    end
-)
-
 local explode_ship =
     Token.register(
     function(data)
         local ship = data.ship
-        local id = data.id
         local surface = data.surface
-        local time_left = data.time_left
         for _, ent in pairs(Blueprints.reference_get_entities(ship)) do
             if not ent.valid then
                 goto continue
@@ -356,9 +337,6 @@ local explode_ship =
         local bb = Blueprints.reference_get_bounding_box(ship)
         LayersFunctions.remove_excluding_bounding_box(bb)
         Blueprints.destroy_reference(surface, ship)
-        rendering.destroy(id)
-        Task.set_timeout_in_ticks(60, explode_ship_update, {time_left = time_left, ship = ship})
-        Task.start_queue()
     end
 )
 
@@ -371,22 +349,9 @@ local function do_spawn_point(player)
     LayersFunctions.push_excluding_bounding_box(instance.bb)
 
     local time_left = MapConfig.self_explode
-    local object = {
-        text = CommonFunctions.get_time(time_left),
-        surface = player.surface,
-        color = {
-            r = 255,
-            g = 20,
-            b = 20
-        },
-        target = {
-            x = point.x - 2,
-            y = point.y - 3
-        },
-        scale = 2.0
-    }
 
-    Task.set_timeout_in_ticks(60, explode_ship, {time_left = time_left, ship = instance, id = rendering.draw_text(object), surface = player.surface})
+    Task.set_timeout_in_ticks(60, explode_ship, {time_left = time_left, ship = instance, surface = player.surface})
+    Task.start_queue()
 end
 
 local function get_non_obstructed_position(s, radius)
@@ -573,8 +538,8 @@ local function on_gui_click(e)
         else
             perks.flashlight_enable = true
             if p.character and p.character.valid then
-               p.character.enable_flashlight()
-           end
+                p.character.enable_flashlight()
+            end
         end
     elseif elem.name == 'merchant_find' then
         print_merchant_position(p)
