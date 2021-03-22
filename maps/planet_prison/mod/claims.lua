@@ -1,8 +1,10 @@
-local public = {}
-local common = require('.common')
+local CommonFunctions = require 'maps.planet_prison.mod.common'
 local Global = require 'utils.global'
 
+local Public = {}
 local this = {}
+local insert = table.insert
+local remove = table.remove
 
 Global.register(
     this,
@@ -16,7 +18,7 @@ init - Initialize claim system.
 @param names - Table of entity names that should be used as a marker.
 @param max_distance - Maximal distance allowed between markers
 --]]
-public.init = function(names, max_distance)
+Public.init = function(names, max_distance)
     if type(names) ~= 'table' then
         names = {names}
     end
@@ -27,12 +29,11 @@ public.init = function(names, max_distance)
     this._claim_max_dist = max_distance
 end
 
-local function claim_new_claim(ent, deps)
-    local comm = deps.common
+local function claim_new_claim(ent)
     local point = {
         {
-            x = comm.get_axis(ent.position, 'x'),
-            y = comm.get_axis(ent.position, 'y')
+            x = CommonFunctions.get_axis(ent.position, 'x'),
+            y = CommonFunctions.get_axis(ent.position, 'y')
         }
     }
 
@@ -44,17 +45,16 @@ local function claim_new_claim(ent, deps)
         claims[ent.force.name].collections = {}
     end
 
-    table.insert(claims[ent.force.name].collections, point)
+    insert(claims[ent.force.name].collections, point)
 end
 
-local function claim_on_build_entity(ent, deps)
+local function claim_on_build_entity(ent)
     local max_dist = this._claim_max_dist
     local force = ent.force.name
-    local comm = deps.common
     local data = this._claims_info[force]
 
     if data == nil then
-        claim_new_claim(ent, deps)
+        claim_new_claim(ent)
         return
     end
 
@@ -65,18 +65,18 @@ local function claim_on_build_entity(ent, deps)
 
         for _, point in pairs(points) do
             point = point
-            local dist = comm.get_distance(point, ent.position)
+            local dist = CommonFunctions.get_distance(point, ent.position)
             if max_dist < dist then
                 goto continue
             end
 
             in_range = true
             point = {
-                x = comm.get_axis(ent.position, 'x'),
-                y = comm.get_axis(ent.position, 'y')
+                x = CommonFunctions.get_axis(ent.position, 'x'),
+                y = CommonFunctions.get_axis(ent.position, 'y')
             }
-            table.insert(points, point)
-            data.claims[i] = comm.get_convex_hull(points)
+            insert(points, point)
+            data.claims[i] = CommonFunctions.get_convex_hull(points)
 
             break
             ::continue::
@@ -102,19 +102,18 @@ end
 on_build_entity - Event processing function.
 @param ent - Entity
 --]]
-public.on_built_entity = function(ent)
+Public.on_built_entity = function(ent)
     if not claims_in_markers(ent.name) then
         return
     end
 
     local deps = {
-        common = common
+        CommonFunctions = CommonFunctions
     }
     claim_on_build_entity(ent, deps)
 end
 
-local function claim_on_entity_died(ent, deps)
-    local comm = deps.common
+local function claim_on_entity_died(ent)
     local force = ent.force.name
     local data = this._claims_info[force]
     if data == nil then
@@ -126,17 +125,17 @@ local function claim_on_entity_died(ent, deps)
 
         for j = 1, #points do
             local point = points[j]
-            if comm.positions_equal(point, ent.position) then
-                table.remove(points, j)
+            if CommonFunctions.positions_equal(point, ent.position) then
+                remove(points, j)
 
-                data.claims[i] = comm.get_convex_hull(points)
+                data.claims[i] = CommonFunctions.get_convex_hull(points)
                 break
             end
         end
 
         if #points == 0 then
-            table.remove(data.claims, i)
-            table.remove(data.collections, i)
+            remove(data.claims, i)
+            remove(data.collections, i)
             break
         end
     end
@@ -150,30 +149,26 @@ end
 on_entity_died - Event processing function.
 @param ent - Entity
 --]]
-public.on_entity_died = function(ent)
+Public.on_entity_died = function(ent)
     if not claims_in_markers(ent.name) then
         return
     end
-
-    local deps = {
-        common = common
-    }
-    claim_on_entity_died(ent, deps)
+    claim_on_entity_died(ent)
 end
 
 --[[
 on_player_mined_entity - Event processing function.
 @param ent - Entity
 --]]
-public.on_player_mined_entity = function(ent)
-    public.on_entity_died(ent)
+Public.on_player_mined_entity = function(ent)
+    Public.on_entity_died(ent)
 end
 
 --[[
 on_player_died - Event processing function
 @param player - Player
 --]]
-public.on_player_died = function(player)
+Public.on_player_died = function(player)
     this._claims_info[player.name] = nil
 end
 
@@ -181,7 +176,7 @@ end
 get_claims - Get all claims data points for given force.
 @param f_name - Force name.
 --]]
-public.get_claims = function(f_name)
+Public.get_claims = function(f_name)
     if this._claims_info[f_name] == nil then
         return {}
     end
@@ -215,14 +210,14 @@ end
 set_visibility_to - Specifies who can see the claims and redraws.
 @param name - Name of a player.
 --]]
-public.set_visibility_to = function(name)
+Public.set_visibility_to = function(name)
     for _, p in pairs(this._claims_visible_to) do
         if p == name then
             return
         end
     end
 
-    table.insert(this._claims_visible_to, name)
+    insert(this._claims_visible_to, name)
     claims_update_visiblity()
 end
 
@@ -230,15 +225,15 @@ end
 remove_visibility_from - Remove the claim visibility from the player.
 @param name - Name of a player.
 --]]
-public.remove_visibility_from = function(name)
+Public.remove_visibility_from = function(name)
     for i = 1, #this._claims_visible_to do
         local p = this._claims_visible_to[i]
         if p == name then
-            table.remove(this._claims_visible_to, i)
+            remove(this._claims_visible_to, i)
             claims_update_visiblity()
             break
         end
     end
 end
 
-return public
+return Public

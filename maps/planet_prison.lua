@@ -1,19 +1,26 @@
-local Global = require('utils.global')
-local Event = require('utils.event')
-local Server = require('utils.server')
-local MapFuntions = require('tools.map_functions')
-local CommonFunctions = require('planet_prison.mod.common')
-local LayersFunctions = require('planet_prison.mod.layers')
-local AIFunctions = require('planet_prison.mod.ai')
-local Blueprints = require('planet_prison.mod.bp')
-local AfkFunctions = require('planet_prison.mod.afk')
-local ClaimsFunctions = require('planet_prison.mod.claims')
-local MapConfig = require('planet_prison.config')
+-- map by Cogito
+-- heavily modified by Gerkiz
+
+local Global = require 'utils.global'
+local Event = require 'utils.event'
+local Server = require 'utils.server'
+local MapFuntions = require 'tools.map_functions'
+local CommonFunctions = require 'maps.planet_prison.mod.common'
+local LayersFunctions = require 'maps.planet_prison.mod.layers'
+local AIFunctions = require 'maps.planet_prison.mod.ai'
+local Blueprints = require 'maps.planet_prison.mod.bp'
+local AfkFunctions = require 'maps.planet_prison.mod.afk'
+local Timers = require 'maps.planet_prison.mod.timers'
+local ClaimsFunctions = require 'maps.planet_prison.mod.claims'
+local MapConfig = require 'maps.planet_prison.config'
 local Token = require 'utils.token'
-local Task = require 'utils.task'
 
 local this = {}
+local floor = math.floor
+local ceil = math.ceil
 local Public = {}
+local insert = table.insert
+local remove = table.remove
 
 Global.register(
     this,
@@ -55,6 +62,48 @@ this.maps = {
             },
             ['crude-oil'] = {
                 frequency = 1000,
+                size = 1
+            },
+            ['trees'] = {
+                frequency = 4
+            },
+            ['enemy-base'] = {
+                frequency = 0
+            }
+        }
+    },
+    {
+        name = 'swampy-rivers',
+        height = 1500,
+        width = 1500,
+        water = 1,
+        terrain_segmentation = 6,
+        property_expression_names = {
+            moisture = 0,
+            temperature = 25.
+        },
+        cliff_settings = {
+            richness = 0
+        },
+        starting_area = 'none',
+        autoplace_controls = {
+            ['iron-ore'] = {
+                frequency = 0
+            },
+            ['copper-ore'] = {
+                frequency = 0
+            },
+            ['uranium-ore'] = {
+                frequency = 0
+            },
+            ['stone'] = {
+                frequency = 0
+            },
+            ['coal'] = {
+                frequency = 0
+            },
+            ['crude-oil'] = {
+                frequency = 900,
                 size = 1
             },
             ['trees'] = {
@@ -162,7 +211,92 @@ local industrial_zone_layers = {
         },
         elevation = 0.5,
         resolution = 0.1,
+        hook = set_neutral_to_entity,
+        deps = nil
+    },
+    {
+        type = 'LuaEntity',
+        name = 'walls',
+        objects = {
+            'stone-wall'
+        },
+        elevation = 0.5,
+        resolution = 0.09,
+        hook = set_neutral_to_entity,
+        deps = nil
+    },
+    {
+        type = 'LuaEntity',
+        name = 'hostile',
+        objects = {
+            'character',
+            'gun-turret',
+            'small-biter'
+        },
+        elevation = 0.92,
+        resolution = 0.99,
+        hook = set_noise_hostile_hook,
+        deps = fetch_common
+    },
+    {
+        type = 'LuaEntity',
+        name = 'structures',
+        objects = {
+            'big-electric-pole',
+            'medium-electric-pole'
+        },
+        elevation = 0.9,
+        resolution = 0.9,
+        hook = set_neutral_to_entity,
+        deps = nil
+    }
+}
+
+local swampy_rivers_layers = {
+    {
+        type = 'LuaTile',
+        name = 'speedy_tiles',
+        objects = {
+            'black-refined-concrete'
+        },
+        elevation = 0.3,
+        resolution = 0.2,
         hook = nil,
+        deps = nil
+    },
+    {
+        type = 'LuaTile',
+        name = 'nuclear',
+        objects = {
+            'nuclear-ground'
+        },
+        elevation = 0.2,
+        resolution = 0.4,
+        hook = nil,
+        deps = nil
+    },
+    {
+        type = 'LuaTile',
+        name = 'shallows',
+        objects = {
+            'water-shallow'
+        },
+        elevation = 0.7,
+        resolution = 0.01,
+        hook = nil,
+        deps = nil
+    },
+    {
+        type = 'LuaEntity',
+        name = 'rocky',
+        objects = {
+            'sand-rock-big',
+            'rock-big',
+            'rock-huge'
+        },
+        elevation = 0.5,
+        resolution = 0.1,
+        hook = set_neutral_to_entity,
         deps = nil
     },
     {
@@ -203,7 +337,8 @@ local industrial_zone_layers = {
 }
 
 this.presets = {
-    ['flooded-metropolia'] = industrial_zone_layers
+    ['flooded-metropolia'] = industrial_zone_layers,
+    ['swampy-rivers'] = swampy_rivers_layers
 }
 
 this.entities_cache = nil
@@ -267,10 +402,7 @@ this.bp = {
     merchant = require('planet_prison.bp.merchant')
 }
 local function init_game()
-    CommonFunctions.init()
     LayersFunctions.init()
-    Blueprints.init()
-    AIFunctions.init()
     ClaimsFunctions.init(MapConfig.claim_markers, MapConfig.claim_max_distance)
 
     local map = pick_map()
@@ -324,10 +456,29 @@ local function init_game()
     Blueprints.set_blueprint_hook('merchant', init_merchant_bp)
 end
 
+local explode_ship_update =
+    Token.register(
+    function(data)
+        local id = data.id
+        local time_left = data.time_left
+        local ship = data.ship
+        local time = CommonFunctions.get_time(time_left)
+        for _, ent in pairs(ship.entities) do
+            if not ent.valid then
+                return false
+            end
+        end
+
+        rendering.set_text(id, time)
+        return true
+    end
+)
+
 local explode_ship =
     Token.register(
     function(data)
         local ship = data.ship
+        local id = data.id
         local surface = data.surface
         for _, ent in pairs(Blueprints.reference_get_entities(ship)) do
             if not ent.valid then
@@ -346,6 +497,7 @@ local explode_ship =
         local bb = Blueprints.reference_get_bounding_box(ship)
         LayersFunctions.remove_excluding_bounding_box(bb)
         Blueprints.destroy_reference(surface, ship)
+        rendering.destroy(id)
     end
 )
 
@@ -356,11 +508,30 @@ local function do_spawn_point(player)
     }
     local instance = Blueprints.build(player.surface, 'player_ship', point, player)
     LayersFunctions.push_excluding_bounding_box(instance.bb)
-
     local time_left = MapConfig.self_explode
 
-    Task.set_timeout_in_ticks(60, explode_ship, {time_left = time_left, ship = instance, surface = player.surface})
-    Task.start_queue()
+    local object = {
+        text = CommonFunctions.get_time(time_left),
+        surface = player.surface,
+        color = {
+            r = 255,
+            g = 20,
+            b = 20
+        },
+        target = {
+            x = point.x - 2,
+            y = point.y - 3
+        },
+        scale = 2.0
+    }
+
+    local id = rendering.draw_text(object)
+    local data = {id = id, time_left = time_left, ship = instance, surface = player.surface}
+
+    local timer = Timers.set_timer(time_left, explode_ship)
+    Timers.set_timer_on_update(timer, explode_ship_update)
+    Timers.set_timer_dependency(timer, data)
+    Timers.set_timer_start(timer)
 end
 
 local function get_non_obstructed_position(s, radius)
@@ -702,7 +873,7 @@ local function _get_outer_points(surf, x, y, deps)
         return
     end
 
-    table.insert(points, point)
+    insert(points, point)
 end
 
 local function _calculate_attack_costs(surf, bb)
@@ -791,7 +962,7 @@ local function _create_npc_group(claim, surf)
                 prop.count = 1
             end
 
-            table.insert(stash, prop)
+            insert(stash, prop)
         end
 
         for _, stack in pairs(stash) do
@@ -800,7 +971,7 @@ local function _create_npc_group(claim, surf)
 
         assign_camouflage(agent, CommonFunctions)
 
-        table.insert(agents, agent)
+        insert(agents, agent)
         ::continue::
     end
 
@@ -825,7 +996,7 @@ local function populate_raid_event(surf)
                 agents = _create_npc_group(claim, surf),
                 objects = claim
             }
-            table.insert(groups[p.name], group)
+            insert(groups[p.name], group)
 
             ::continue::
         end
@@ -848,11 +1019,11 @@ local function raid_event(surf)
                             agent.destroy()
                         end
 
-                        table.remove(agents, j)
+                        remove(agents, j)
                     end
 
                     if #agents == 0 then
-                        table.remove(group, i)
+                        remove(group, i)
                     end
                 end
 
@@ -926,6 +1097,9 @@ local function on_tick()
     if (game.tick + 1) % 100 == 0 then
         AfkFunctions.on_inactive_players(90, kill_player)
     end
+    if (game.tick + 1) % 60 == 0 then
+        Timers.do_job()
+    end
 end
 
 local function make_ore_patch(e)
@@ -957,17 +1131,25 @@ local valid_ents = {
     ['crash-site-spaceship-wreck-small-3'] = true,
     ['crash-site-spaceship-wreck-small-4'] = true,
     ['crash-site-spaceship-wreck-small-5'] = true,
-    ['crash-site-spaceship-wreck-small-6'] = true
+    ['crash-site-spaceship-wreck-small-6'] = true,
+    ['sand-rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-huge'] = true
 }
 
 local function mined_wreckage(e)
-    if e and e.valid then
-        if not valid_ents[e.name] then
-            return
-        end
+    local ent = e.entity
+    if not ent.valid then
+        return
+    end
+    if not valid_ents[ent.name] then
+        return
     end
 
+    e.buffer.clear()
+
     local candidates = {}
+
     local chance = CommonFunctions.rand_range(0, 1000)
     for name, attrs in pairs(MapConfig.wreck_loot) do
         local prob = attrs.rare * 100
@@ -976,7 +1158,7 @@ local function mined_wreckage(e)
                 name = name,
                 count = CommonFunctions.rand_range(attrs.count[1], attrs.count[2])
             }
-            table.insert(candidates, cand)
+            insert(candidates, cand)
         end
     end
 
@@ -1225,6 +1407,10 @@ local function on_entity_died(e)
     hostile_death(e)
     character_death(e)
     ClaimsFunctions.on_entity_died(e.entity)
+
+    if valid_ents[e.entity.name] then
+        e.entity.destroy()
+    end
 end
 
 local function merchant_exploit_check(ent)
@@ -1278,15 +1464,15 @@ end
 local function stringify_color(color)
     local r, g, b = color.r, color.g, color.b
     if r <= 1 then
-        r = math.floor(r * 255)
+        r = floor(r * 255)
     end
 
     if g <= 1 then
-        g = math.floor(g * 255)
+        g = floor(g * 255)
     end
 
     if b <= 1 then
-        b = math.floor(b * 255)
+        b = floor(b * 255)
     end
 
     return string.format('%d,%d,%d', r, g, b)
@@ -1358,7 +1544,7 @@ local function on_research_finished(e)
 
     local reward = {
         name = 'coin',
-        count = math.ceil(r.research_unit_count * 3)
+        count = ceil(r.research_unit_count * 3)
     }
     local f = r.force
     for _, player in pairs(f.players) do

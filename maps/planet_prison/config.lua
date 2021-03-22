@@ -1,6 +1,6 @@
-local public = {}
+local Public = {}
 
-public.player_ship_loot = {
+Public.player_ship_loot = {
     {
         name = 'piercing-rounds-magazine',
         count = 35
@@ -35,7 +35,7 @@ public.player_ship_loot = {
     }
 }
 
-public.permission_orbit = {
+Public.permission_orbit = {
     defines.input_action.activate_copy,
     defines.input_action.activate_cut,
     defines.input_action.activate_paste,
@@ -207,19 +207,19 @@ public.permission_orbit = {
     defines.input_action.wire_dragging
 }
 
-public.self_explode = 60 * 60 * 10 -- time until main shipwreck explosion
-public.claim_markers = {
+Public.self_explode = 60 * 60 * 10 -- time until main shipwreck explosion
+Public.claim_markers = {
     'gun-turret',
     'laser-turret',
     'stone-wall'
 }
-public.claim_max_distance = 15
-public.base_costs = {
+Public.claim_max_distance = 15
+Public.base_costs = {
     ['gun-turret'] = 1,
     ['laser-turret'] = 5,
     ['stone-wall'] = 0.1
 }
-public.raid_costs = {
+Public.raid_costs = {
     {
         cost = 1,
         chance = 300,
@@ -302,7 +302,7 @@ public.raid_costs = {
     }
 }
 
-public.wreck_loot = {
+Public.wreck_loot = {
     ['iron-plate'] = {
         rare = 0.1,
         count = {20, 40}
@@ -357,7 +357,7 @@ public.wreck_loot = {
     }
 }
 
-public.technologies = {
+Public.technologies = {
     ['military'] = true,
     ['artillery'] = false,
     ['artillery-shell-range-1'] = false,
@@ -436,7 +436,7 @@ public.technologies = {
     ['atomic-bomb'] = false
 }
 
-public.merchant_offer = {
+Public.merchant_offer = {
     {
         price = {
             {
@@ -776,7 +776,7 @@ public.merchant_offer = {
     }
 }
 
-public.manual =
+Public.manual =
     [[
 [font=heading-1]Planet Prison (1.1.0) - Manual[/font]
 [font=default-bold]You did naughty things and was sent to this planet with a one way ticket. Once an industrial site, turned into non-hospitable planet due to pollution and war. Among other inmates, there are still bandits scavenging through the junk looking for rare items.
@@ -797,7 +797,7 @@ This is an ultimate survival scenario with very hostile environment.
 [font=default-bold]Coins [img=item/coin] are the main medium that you use in the market. You obtain them by researching stuff and pvp activites.[/font]
 
 [font=heading-1]Other[/font]
-[font=default-bold]This scenario was made by cogito123. If you find any bugs/balancing issues, report it to getcomfy.eu/discord. Thanks for playing this map.[/font]
+[font=default-bold]If you find any bugs/balancing issues, report it to getcomfy.eu/discord at #opendev. Thanks for playing this map.[/font]
 ]]
 
-return public
+return Public

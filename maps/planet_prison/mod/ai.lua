@@ -1,7 +1,9 @@
-local public = {}
-local _common = require('.common')
+local CommonFunctions = require 'maps.planet_prison.mod.common'
 
-public.command = {
+local Public = {}
+local remove = table.remove
+
+Public.command = {
     --[[
       @param args nil
    --]]
@@ -19,24 +21,18 @@ public.command = {
     attack_objects = 2
 }
 
---[[
-init - Initialize the module.
---]]
-public.init = function()
-end
-
 local function _get_direction(src, dest)
-    local src_x = _common.get_axis(src, 'x')
-    local src_y = _common.get_axis(src, 'y')
-    local dest_x = _common.get_axis(dest, 'x')
-    local dest_y = _common.get_axis(dest, 'y')
+    local src_x = CommonFunctions.get_axis(src, 'x')
+    local src_y = CommonFunctions.get_axis(src, 'y')
+    local dest_x = CommonFunctions.get_axis(dest, 'x')
+    local dest_y = CommonFunctions.get_axis(dest, 'y')
 
     local step = {
         x = nil,
         y = nil
     }
 
-    local precision = _common.rand_range(1, 10)
+    local precision = CommonFunctions.rand_range(1, 10)
     if dest_x - precision > src_x then
         step.x = 1
     elseif dest_x < src_x - precision then
@@ -53,7 +49,7 @@ local function _get_direction(src, dest)
         step.y = 0
     end
 
-    return _common.direction_lookup[step.x][step.y]
+    return CommonFunctions.direction_lookup[step.x][step.y]
 end
 
 local function _move_to(ent, trgt, min_distance)
@@ -61,7 +57,7 @@ local function _move_to(ent, trgt, min_distance)
         walking = false
     }
 
-    local distance = _common.get_distance(trgt.position, ent.position)
+    local distance = CommonFunctions.get_distance(trgt.position, ent.position)
     if min_distance < distance then
         local dir = _get_direction(ent.position, trgt.position)
         if dir then
@@ -109,7 +105,7 @@ local function _do_job_seek_and_destroy_player(surf)
         end
 
         for _, e in pairs(ents) do
-            if not _move_to(e, player.character, _common.rand_range(5, 10)) then
+            if not _move_to(e, player.character, CommonFunctions.rand_range(5, 10)) then
                 _shoot_at(e, player.character)
             else
                 _shoot_stop(e)
@@ -131,7 +127,7 @@ local function _do_job_attack_objects(surf, args)
     for i = #agents, 1, -1 do
         agent = agents[i]
         if not agent.valid then
-            table.remove(agents, i)
+            remove(agents, i)
             goto continue
         end
 
@@ -155,21 +151,21 @@ local function _do_job_attack_objects(surf, args)
         }
         closest = surf.find_entities_filtered(query)
         if #closest ~= 0 then
-            target = _common.get_closest_neighbour(agent.position, closest)
+            target = CommonFunctions.get_closest_neighbour(agent.position, closest)
         else
             if #objects == 0 then
                 _shoot_stop(agent)
                 goto continue
             end
 
-            target = _common.get_closest_neighbour(agent.position, objects)
+            target = CommonFunctions.get_closest_neighbour(agent.position, objects)
         end
 
         if target == nil or not target.valid then
             goto continue
         end
 
-        if not _move_to(agent, target, _common.rand_range(5, 15)) then
+        if not _move_to(agent, target, CommonFunctions.rand_range(5, 15)) then
             _shoot_at(agent, target)
         else
             _shoot_stop(agent)
@@ -184,16 +180,16 @@ do_job - Perform non-stateful operation on all enemy "character" entities.
 @param surf - LuaSurface, on which everything is happening.
 @param command - Command to perform on all non-player controllable characters.
 --]]
-public.do_job = function(surf, command, args)
+Public.do_job = function(surf, command, args)
     if args == nil then
         args = {}
     end
 
-    if command == public.command.seek_and_destroy_player then
+    if command == Public.command.seek_and_destroy_player then
         _do_job_seek_and_destroy_player(surf)
-    elseif command == public.command.attack_objects then
+    elseif command == Public.command.attack_objects then
         _do_job_attack_objects(surf, args)
     end
 end
 
-return public
+return Public

@@ -1,9 +1,14 @@
-local public = {}
-local _common = require('.common')
+local CommonFunctions = require 'maps.planet_prison.mod.common'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 
-local this = {}
+local this = {
+    _bps = {}
+}
+
+local Public = {}
+local insert = table.insert
+local remove = table.remove
 
 Global.register(
     this,
@@ -12,16 +17,12 @@ Global.register(
     end
 )
 
-public.init = function()
-    this._bps = {}
-end
-
 --[[
 push_blueprint - Pushes blueprint into a list.
 @param name - Handle of a blueprint.
 @param bp - Blueprint in JSON format.
 --]]
-public.push_blueprint = function(name, bp)
+Public.push_blueprint = function(name, bp)
     local entry = {
         bp = game.json_to_table(bp).blueprint,
         hook = nil,
@@ -35,7 +36,7 @@ set_blueprint_hook - Set callback to a blueprint.
 @param name - Handle of a blueprint
 @param hook - Callback that will be called after blueprint is placed.
 --]]
-public.set_blueprint_hook = function(name, hook)
+Public.set_blueprint_hook = function(name, hook)
     if name == nil then
         log('bp.set_blueprint_hook: name is nil')
         return
@@ -58,7 +59,7 @@ end
 get_references - Get all references of the blueprint on the map.
 @param name - Blueprint handle.
 --]]
-public.get_references = function(name)
+Public.get_references = function(name)
     if name == nil then
         log('bp.get_references: name is nil')
         return {}
@@ -77,7 +78,7 @@ end
 get_references - Gets opaque object representing bp references.
 @param name - Blueprint handle.
 --]]
-public.get_references = function(name)
+Public.get_references = function(name)
     if name == nil then
         log('bp.get_references: name is nil')
         return
@@ -96,7 +97,7 @@ end
 reference_get_bounding_box - Return bounding box from the reference.
 @param reference - Valid reference object fetched from get_references.
 --]]
-public.reference_get_bounding_box = function(reference)
+Public.reference_get_bounding_box = function(reference)
     return reference.bb
 end
 
@@ -104,7 +105,7 @@ end
 reference_get_entities - Return references to entities.
 @param reference - Valid reference object fetched from get_references.
 --]]
-public.reference_get_entities = function(reference)
+Public.reference_get_entities = function(reference)
     return reference.entities
 end
 
@@ -112,7 +113,7 @@ end
 reference_get_timestamp - Return timestamp of a reference
 @param reference - Valid reference object fetched from get_references.
 --]]
-public.reference_get_timestamp = function(reference)
+Public.reference_get_timestamp = function(reference)
     return reference.timestamp
 end
 
@@ -125,7 +126,7 @@ meet the query rules.
 unlinked.
 @return An array of unlinked references.
 --]]
-public.unlink_references_filtered = function(name, query)
+Public.unlink_references_filtered = function(name, query)
     if name == nil then
         log('bp.get_references: name is nil')
         return
@@ -146,8 +147,8 @@ public.unlink_references_filtered = function(name, query)
             end
         end
 
-        table.insert(refs, ref)
-        table.remove(object.refs, i)
+        insert(refs, ref)
+        remove(object.refs, i)
         ::continue::
     end
 
@@ -163,7 +164,7 @@ meet the query rules.
 @param query.timestamp - If reference is older that submitted timestamp, it will be
 removed.
 --]]
-public.destroy_references_filtered = function(surf, name, query)
+Public.destroy_references_filtered = function(surf, name, query)
     if name == nil then
         log('bp.get_references: name is nil')
         return
@@ -192,12 +193,12 @@ public.destroy_references_filtered = function(surf, name, query)
         local tiles = {}
         for _, tile in pairs(ref.tiles) do
             tile.name = 'concrete'
-            table.insert(tiles, tile)
+            insert(tiles, tile)
         end
 
         surf.set_tiles(tiles)
 
-        table.remove(object.refs, i)
+        remove(object.refs, i)
         ::continue::
     end
 end
@@ -207,8 +208,8 @@ destroy_references - Destroys all references of blueprint on the map
 @param surf - Surface on which blueprints are placed.
 @param name - Blueprint handle.
 --]]
-public.destroy_references = function(surf, name)
-    public.destroy_references_filtered(surf, name, {})
+Public.destroy_references = function(surf, name)
+    Public.destroy_references_filtered(surf, name, {})
 end
 
 local _bp_destroy_reference = function(surf, ref)
@@ -225,7 +226,7 @@ local _bp_destroy_reference = function(surf, ref)
         end
 
         tile.name = 'concrete'
-        table.insert(tiles, tile)
+        insert(tiles, tile)
         ::continue::
     end
 
@@ -237,13 +238,13 @@ destroy_reference - Destroys reference of a blueprint at given surface.
 @param surf - Surface on which blueprints are placed.
 @param reference - Any valid reference.
 --]]
-public.destroy_reference = function(surf, reference)
+Public.destroy_reference = function(surf, reference)
     for _, meta in pairs(this._bps) do
         for i = 1, #meta.refs do
             local ref = meta.refs[i]
             if reference.id == ref.id then
                 _bp_destroy_reference(surf, ref)
-                table.remove(meta.refs, i)
+                remove(meta.refs, i)
                 return
             end
         end
@@ -253,7 +254,7 @@ end
 local function _build_tiles(surf, point, tiles)
     local _tiles = {}
 
-    local get_axis = _common.get_axis
+    local get_axis = CommonFunctions.get_axis
     for _, tile in pairs(tiles) do
         local _tile = {
             name = tile.name,
@@ -262,7 +263,7 @@ local function _build_tiles(surf, point, tiles)
                 y = get_axis(tile.position, 'y') + get_axis(point, 'y')
             }
         }
-        table.insert(_tiles, _tile)
+        insert(_tiles, _tile)
     end
 
     surf.set_tiles(_tiles)
@@ -272,7 +273,7 @@ end
 local function _build_entities(surf, point, entities, hook, args)
     local _entities = {}
 
-    local get_axis = _common.get_axis
+    local get_axis = CommonFunctions.get_axis
     for _, ent in pairs(entities) do
         local ent_info = {
             position = {
@@ -281,9 +282,18 @@ local function _build_entities(surf, point, entities, hook, args)
             },
             name = ent.name
         }
+
         local e = surf.create_entity(ent_info)
         if not e or not e.valid then
             goto continue
+        end
+
+        if ent.fill then
+            e.insert({name = ent.fill.name, count = ent.fill.count})
+        end
+
+        if ent.revoke_minable then
+            e.minable = false
         end
 
         if hook then
@@ -293,7 +303,7 @@ local function _build_entities(surf, point, entities, hook, args)
             end
         end
 
-        table.insert(_entities, e)
+        insert(_entities, e)
         ::continue::
     end
 
@@ -307,7 +317,7 @@ build - Place blueprint at given point.
 @param point - Position at which place blueprint.
 @param args - If hook was set, this will be argument passed.
 --]]
-public.build = function(surf, name, point, args)
+Public.build = function(surf, name, point, args)
     if surf == nil then
         log('bp.build: surf is nil')
         return
@@ -334,8 +344,8 @@ public.build = function(surf, name, point, args)
     local tiles = object.bp.tiles
     if tiles and #tiles > 0 then
         instance.tiles = _build_tiles(surf, point, tiles)
-        local bb = _common.create_bounding_box_by_points(instance.tiles)
-        table.insert(bbs, bb)
+        local bb = CommonFunctions.create_bounding_box_by_points(instance.tiles)
+        insert(bbs, bb)
 
         local query = {
             name = 'character',
@@ -352,8 +362,8 @@ public.build = function(surf, name, point, args)
     local entities = object.bp.entities
     if entities and #entities > 0 then
         instance.entities = _build_entities(surf, point, entities, object.hook, args)
-        local bb = _common.create_bounding_box_by_points(instance.entities)
-        table.insert(bbs, bb)
+        local bb = CommonFunctions.create_bounding_box_by_points(instance.entities)
+        insert(bbs, bb)
 
         local query = {
             name = 'character',
@@ -376,11 +386,11 @@ public.build = function(surf, name, point, args)
         end
     end
 
-    instance.bb = _common.merge_bounding_boxes(bbs)
+    instance.bb = CommonFunctions.merge_bounding_boxes(bbs)
     instance.id = game.tick
-    table.insert(object.refs, instance)
+    insert(object.refs, instance)
 
     return instance
 end
 
-return public
+return Public
