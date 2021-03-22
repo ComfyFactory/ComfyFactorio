@@ -270,7 +270,7 @@ local function _build_tiles(surf, point, tiles)
     return _tiles
 end
 
-local function _build_entities(surf, point, entities, hook, args)
+local function _build_entities(surf, point, entities, hook, player)
     local _entities = {}
 
     local get_axis = CommonFunctions.get_axis
@@ -296,10 +296,15 @@ local function _build_entities(surf, point, entities, hook, args)
             e.minable = false
         end
 
+        if ent.operable then
+            e.operable = false
+        end
+
         if hook then
             local token = Token.get(hook)
             if token then
-                token(e, args)
+                local data = {player = player, entity = e}
+                token(data)
             end
         end
 
