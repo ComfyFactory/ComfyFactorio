@@ -1289,6 +1289,7 @@ end
 
 local function on_chunk_charted(e)
     local f_perks = this.perks[e.force.name]
+    game.forces.neutral.clear_chart()
 
     if not f_perks then
         return
