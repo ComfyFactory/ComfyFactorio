@@ -10,10 +10,10 @@ local LayersFunctions = require('planet_prison.mod.layers')
 local AIFunctions = require('planet_prison.mod.ai')
 local Blueprints = require('planet_prison.mod.bp')
 local AfkFunctions = require('planet_prison.mod.afk')
+local Timers = require('planet_prison.mod.timers')
 local ClaimsFunctions = require('planet_prison.mod.claims')
 local MapConfig = require('planet_prison.config')
 local Token = require 'utils.token'
-local Task = require 'utils.task'
 
 local this = {}
 local Public = {}
@@ -154,14 +154,6 @@ local set_neutral_to_entity =
     end
 )
 
-local set_neutral_and_not_mineable_to_entity =
-    Token.register(
-    function(entity)
-        entity.force = 'neutral'
-        entity.minable = false
-    end
-)
-
 local fetch_common =
     Token.register(
     function()
@@ -227,7 +219,7 @@ local industrial_zone_layers = {
         },
         elevation = 0.5,
         resolution = 0.09,
-        hook = set_neutral_and_not_mineable_to_entity,
+        hook = set_neutral_to_entity,
         deps = nil
     },
     {
@@ -312,7 +304,7 @@ local swampy_rivers_layers = {
         },
         elevation = 0.5,
         resolution = 0.09,
-        hook = set_neutral_and_not_mineable_to_entity,
+        hook = set_neutral_to_entity,
         deps = nil
     },
     {
@@ -407,10 +399,7 @@ this.bp = {
     merchant = require('planet_prison.bp.merchant')
 }
 local function init_game()
-    CommonFunctions.init()
     LayersFunctions.init()
-    Blueprints.init()
-    AIFunctions.init()
     ClaimsFunctions.init(MapConfig.claim_markers, MapConfig.claim_max_distance)
 
     local map = pick_map()
@@ -464,10 +453,29 @@ local function init_game()
     Blueprints.set_blueprint_hook('merchant', init_merchant_bp)
 end
 
+local explode_ship_update =
+    Token.register(
+    function(data)
+        local id = data.id
+        local time_left = data.time_left
+        local ship = data.ship
+        local time = CommonFunctions.get_time(time_left)
+        for _, ent in pairs(ship.entities) do
+            if not ent.valid then
+                return false
+            end
+        end
+
+        rendering.set_text(id, time)
+        return true
+    end
+)
+
 local explode_ship =
     Token.register(
     function(data)
         local ship = data.ship
+        local id = data.id
         local surface = data.surface
         for _, ent in pairs(Blueprints.reference_get_entities(ship)) do
             if not ent.valid then
@@ -486,6 +494,7 @@ local explode_ship =
         local bb = Blueprints.reference_get_bounding_box(ship)
         LayersFunctions.remove_excluding_bounding_box(bb)
         Blueprints.destroy_reference(surface, ship)
+        rendering.destroy(id)
     end
 )
 
@@ -516,8 +525,10 @@ local function do_spawn_point(player)
     local id = rendering.draw_text(object)
     local data = {id = id, time_left = time_left, ship = instance, surface = player.surface}
 
-    Task.set_timeout_in_ticks(time_left, explode_ship, data)
-    Task.start_queue()
+    local timer = Timers.set_timer(time_left, explode_ship)
+    Timers.set_timer_on_update(timer, explode_ship_update)
+    Timers.set_timer_dependency(timer, data)
+    Timers.set_timer_start(timer)
 end
 
 local function get_non_obstructed_position(s, radius)
@@ -1083,6 +1094,9 @@ local function on_tick()
     if (game.tick + 1) % 100 == 0 then
         AfkFunctions.on_inactive_players(90, kill_player)
     end
+    if (game.tick + 1) % 60 == 0 then
+        Timers.do_job()
+    end
 end
 
 local function make_ore_patch(e)
@@ -1114,7 +1128,10 @@ local valid_ents = {
     ['crash-site-spaceship-wreck-small-3'] = true,
     ['crash-site-spaceship-wreck-small-4'] = true,
     ['crash-site-spaceship-wreck-small-5'] = true,
-    ['crash-site-spaceship-wreck-small-6'] = true
+    ['crash-site-spaceship-wreck-small-6'] = true,
+    ['sand-rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-huge'] = true
 }
 
 local function mined_wreckage(e)

@@ -1,6 +1,9 @@
 local Global = require('utils.global')
+local Token = require 'utils.token'
 
-local this = {}
+local this = {
+    timers = {}
+}
 
 Global.register(
     this,
@@ -11,19 +14,15 @@ Global.register(
 
 local Public = {}
 
-Public.init = function()
-    this.timers = {}
-end
-
 --[[
 set_timer - Sets a timer.
-@param left - Time left on the timer in ticks.
+@param time_left - Time time_left on the timer in ticks.
 @param hook - Action executed after timer is elapsed.
 --]]
-Public.set_timer = function(left, hook)
+Public.set_timer = function(time_left, hook)
     local id = game.tick
     local entry = {
-        left = left,
+        time_left = time_left,
         hook_finish = hook,
         hook_update = nil,
         deps = nil,
@@ -80,12 +79,15 @@ Public.do_job = function()
             goto continue
         end
 
-        entry.left = entry.left - (game.tick - entry.last_update)
-        if entry.left > 0 then
+        entry.time_left = entry.time_left - (game.tick - entry.last_update)
+        if entry.time_left > 0 then
             entry.last_update = game.tick
 
             if entry.hook_update ~= nil then
-                if not entry.hook_update(entry.left, entry.deps) then
+                local func = Token.get(entry.hook_update)
+                local data = entry.deps
+                data.time_left = entry.time_left
+                if not func(data) then
                     goto premature_finish
                 end
             end
@@ -94,7 +96,9 @@ Public.do_job = function()
         end
 
         ::premature_finish::
-        entry.hook_finish(entry.deps)
+        local func = Token.get(entry.hook_finish)
+        local data = entry.deps
+        func(data)
         this.timers[id] = nil
 
         ::continue::

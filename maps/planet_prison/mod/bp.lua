@@ -3,7 +3,9 @@ local _common = require('.common')
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 
-local this = {}
+local this = {
+    _bps = {}
+}
 
 Global.register(
     this,
@@ -11,10 +13,6 @@ Global.register(
         this = tbl
     end
 )
-
-public.init = function()
-    this._bps = {}
-end
 
 --[[
 push_blueprint - Pushes blueprint into a list.
@@ -281,9 +279,18 @@ local function _build_entities(surf, point, entities, hook, args)
             },
             name = ent.name
         }
+
         local e = surf.create_entity(ent_info)
         if not e or not e.valid then
             goto continue
+        end
+
+        if ent.fill then
+            e.insert({name = ent.fill.name, count = ent.fill.count})
+        end
+
+        if ent.revoke_minable then
+            e.minable = false
         end
 
         if hook then

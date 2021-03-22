@@ -19,12 +19,6 @@ public.command = {
     attack_objects = 2
 }
 
---[[
-init - Initialize the module.
---]]
-public.init = function()
-end
-
 local function _get_direction(src, dest)
     local src_x = _common.get_axis(src, 'x')
     local src_y = _common.get_axis(src, 'y')

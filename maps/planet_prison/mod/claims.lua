@@ -1,5 +1,5 @@
 local public = {}
-local common = require('.common')
+local CommonFunctions = require('maps.planet_prison.mod.common')
 local Global = require 'utils.global'
 
 local this = {}
@@ -27,12 +27,11 @@ public.init = function(names, max_distance)
     this._claim_max_dist = max_distance
 end
 
-local function claim_new_claim(ent, deps)
-    local comm = deps.common
+local function claim_new_claim(ent)
     local point = {
         {
-            x = comm.get_axis(ent.position, 'x'),
-            y = comm.get_axis(ent.position, 'y')
+            x = CommonFunctions.get_axis(ent.position, 'x'),
+            y = CommonFunctions.get_axis(ent.position, 'y')
         }
     }
 
@@ -47,14 +46,13 @@ local function claim_new_claim(ent, deps)
     table.insert(claims[ent.force.name].collections, point)
 end
 
-local function claim_on_build_entity(ent, deps)
+local function claim_on_build_entity(ent)
     local max_dist = this._claim_max_dist
     local force = ent.force.name
-    local comm = deps.common
     local data = this._claims_info[force]
 
     if data == nil then
-        claim_new_claim(ent, deps)
+        claim_new_claim(ent)
         return
     end
 
@@ -65,18 +63,18 @@ local function claim_on_build_entity(ent, deps)
 
         for _, point in pairs(points) do
             point = point
-            local dist = comm.get_distance(point, ent.position)
+            local dist = CommonFunctions.get_distance(point, ent.position)
             if max_dist < dist then
                 goto continue
             end
 
             in_range = true
             point = {
-                x = comm.get_axis(ent.position, 'x'),
-                y = comm.get_axis(ent.position, 'y')
+                x = CommonFunctions.get_axis(ent.position, 'x'),
+                y = CommonFunctions.get_axis(ent.position, 'y')
             }
             table.insert(points, point)
-            data.claims[i] = comm.get_convex_hull(points)
+            data.claims[i] = CommonFunctions.get_convex_hull(points)
 
             break
             ::continue::
@@ -108,13 +106,12 @@ public.on_built_entity = function(ent)
     end
 
     local deps = {
-        common = common
+        CommonFunctions = CommonFunctions
     }
     claim_on_build_entity(ent, deps)
 end
 
-local function claim_on_entity_died(ent, deps)
-    local comm = deps.common
+local function claim_on_entity_died(ent)
     local force = ent.force.name
     local data = this._claims_info[force]
     if data == nil then
@@ -126,10 +123,10 @@ local function claim_on_entity_died(ent, deps)
 
         for j = 1, #points do
             local point = points[j]
-            if comm.positions_equal(point, ent.position) then
+            if CommonFunctions.positions_equal(point, ent.position) then
                 table.remove(points, j)
 
-                data.claims[i] = comm.get_convex_hull(points)
+                data.claims[i] = CommonFunctions.get_convex_hull(points)
                 break
             end
         end
@@ -154,11 +151,7 @@ public.on_entity_died = function(ent)
     if not claims_in_markers(ent.name) then
         return
     end
-
-    local deps = {
-        common = common
-    }
-    claim_on_entity_died(ent, deps)
+    claim_on_entity_died(ent)
 end
 
 --[[
