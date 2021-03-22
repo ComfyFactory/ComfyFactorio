@@ -1,18 +1,18 @@
 -- map by Cogito
 -- heavily modified by Gerkiz
 
-local Global = require('utils.global')
-local Event = require('utils.event')
-local Server = require('utils.server')
-local MapFuntions = require('tools.map_functions')
-local CommonFunctions = require('planet_prison.mod.common')
-local LayersFunctions = require('planet_prison.mod.layers')
-local AIFunctions = require('planet_prison.mod.ai')
-local Blueprints = require('planet_prison.mod.bp')
-local AfkFunctions = require('planet_prison.mod.afk')
-local Timers = require('planet_prison.mod.timers')
-local ClaimsFunctions = require('planet_prison.mod.claims')
-local MapConfig = require('planet_prison.config')
+local Global = require 'utils.global'
+local Event = require 'utils.event'
+local Server = require 'utils.server'
+local MapFuntions = require 'tools.map_functions'
+local CommonFunctions = require 'maps.planet_prison.mod.common'
+local LayersFunctions = require 'maps.planet_prison.mod.layers'
+local AIFunctions = require 'maps.planet_prison.mod.ai'
+local Blueprints = require 'maps.planet_prison.mod.bp'
+local AfkFunctions = require 'maps.planet_prison.mod.afk'
+local Timers = require 'maps.planet_prison.mod.timers'
+local ClaimsFunctions = require 'maps.planet_prison.mod.claims'
+local MapConfig = require 'maps.planet_prison.config'
 local Token = require 'utils.token'
 
 local this = {}

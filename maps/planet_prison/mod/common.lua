@@ -1,4 +1,4 @@
-local public = {}
+local Public = {}
 local Global = require 'utils.global'
 
 local this = {}
@@ -15,12 +15,8 @@ rand_range - Return random integer within the range.
 @param start - Start range.
 @param stop - Stop range.
 --]]
-public.rand_range = function(start, stop)
-    if not this.rng then
-        this.rng = game.create_random_generator()
-    end
-
-    return this.rng(start, stop)
+Public.rand_range = function(start, stop)
+    return math.random(start, stop)
 end
 
 --[[
@@ -30,7 +26,7 @@ for_bounding_box_extra - Execute function per every position within bb with para
 @param func - User supplied callback that will be executed.
 @param args - User supplied arguments.
 --]]
-public.for_bounding_box_extra = function(surf, bb, func, args)
+Public.for_bounding_box_extra = function(surf, bb, func, args)
     for x = bb.left_top.x, bb.right_bottom.x do
         for y = bb.left_top.y, bb.right_bottom.y do
             func(surf, x, y, args)
@@ -44,7 +40,7 @@ for_bounding_box - Execute function per every position within bb.
 @param bb - BoundingBox
 @param func - User supplied callback that will be executed.
 --]]
-public.for_bounding_box = function(surf, bb, func)
+Public.for_bounding_box = function(surf, bb, func)
     for x = bb.left_top.x, bb.right_bottom.x do
         for y = bb.left_top.y, bb.right_bottom.y do
             func(surf, x, y)
@@ -71,9 +67,9 @@ get_axis - Extract axis value from any point format.
 @param point - Table with or without explicity axis members.
 @param axis - Single character string describing the axis.
 --]]
-public.get_axis = function(point, axis)
+Public.get_axis = function(point, axis)
     if point.position then
-        return public.get_axis(point.position, axis)
+        return Public.get_axis(point.position, axis)
     end
 
     if point[axis] then
@@ -81,7 +77,7 @@ public.get_axis = function(point, axis)
     end
 
     if safe_get(point, 'target') then
-        return public.get_axis(point.target, axis)
+        return Public.get_axis(point.target, axis)
     end
 
     if #point ~= 2 then
@@ -102,12 +98,12 @@ get_close_random_position - Gets randomized close position to origin,
                 point for calculation.
 @param radius - Radius space.
 --]]
-public.get_close_random_position = function(origin, radius)
-    local x = public.get_axis(origin, 'x')
-    local y = public.get_axis(origin, 'y')
+Public.get_close_random_position = function(origin, radius)
+    local x = Public.get_axis(origin, 'x')
+    local y = Public.get_axis(origin, 'y')
 
-    x = public.rand_range(x - radius, x + radius)
-    y = public.rand_range(y - radius, y + radius)
+    x = Public.rand_range(x - radius, x + radius)
+    y = Public.rand_range(y - radius, y + radius)
 
     return {x = x, y = y}
 end
@@ -117,9 +113,9 @@ get_distance - Returns distance in tiles between 2 points.
 @param a - Position, first point.
 @param b - Position, second point.
 --]]
-public.get_distance = function(a, b)
-    local h = (public.get_axis(a, 'x') - public.get_axis(b, 'x')) ^ 2
-    local v = (public.get_axis(a, 'y') - public.get_axis(b, 'y')) ^ 2
+Public.get_distance = function(a, b)
+    local h = (Public.get_axis(a, 'x') - Public.get_axis(b, 'x')) ^ 2
+    local v = (Public.get_axis(a, 'y') - Public.get_axis(b, 'y')) ^ 2
 
     return math.sqrt(h + v)
 end
@@ -129,9 +125,9 @@ point_in_bounding_box - Check whatever point is within bb.
 @param point - Position
 @param bb - BoundingBox
 --]]
-public.point_in_bounding_box = function(point, bb)
-    local x = public.get_axis(point, 'x')
-    local y = public.get_axis(point, 'y')
+Public.point_in_bounding_box = function(point, bb)
+    local x = Public.get_axis(point, 'x')
+    local y = Public.get_axis(point, 'y')
 
     if bb.left_top.x <= x and bb.right_bottom.x >= x and bb.left_top.y <= y and bb.right_bottom.y >= y then
         return true
@@ -140,7 +136,7 @@ public.point_in_bounding_box = function(point, bb)
     return false
 end
 
-public.direction_lookup = {
+Public.direction_lookup = {
     [-1] = {
         [1] = defines.direction.southwest,
         [0] = defines.direction.west,
@@ -162,11 +158,11 @@ get_readable_direction - Return readable direction from point a to b.
 @param a - Position A
 @param b - Position B
 --]]
-public.get_readable_direction = function(a, b)
-    local a_x = public.get_axis(a, 'x')
-    local a_y = public.get_axis(a, 'y')
-    local b_x = public.get_axis(b, 'x')
-    local b_y = public.get_axis(b, 'y')
+Public.get_readable_direction = function(a, b)
+    local a_x = Public.get_axis(a, 'x')
+    local a_y = Public.get_axis(a, 'y')
+    local b_x = Public.get_axis(b, 'x')
+    local b_y = Public.get_axis(b, 'y')
     local h, v
 
     if a_x < b_x then
@@ -195,7 +191,7 @@ public.get_readable_direction = function(a, b)
         [defines.direction.east] = 'east',
         [defines.direction.northeast] = 'north-east'
     }
-    return mapping[public.direction_lookup[h][v]]
+    return mapping[Public.direction_lookup[h][v]]
 end
 
 --[[
@@ -203,15 +199,15 @@ create_bounding_box_by_points - Construct a BoundingBox using points
 from any array of objects such as bounding boxes.
 @param objects - Array of objects.
 --]]
-public.create_bounding_box_by_points = function(objects)
+Public.create_bounding_box_by_points = function(objects)
     local box = {
         left_top = {
-            x = public.get_axis(objects[1], 'x'),
-            y = public.get_axis(objects[1], 'y')
+            x = Public.get_axis(objects[1], 'x'),
+            y = Public.get_axis(objects[1], 'y')
         },
         right_bottom = {
-            x = public.get_axis(objects[1], 'x'),
-            y = public.get_axis(objects[1], 'y')
+            x = Public.get_axis(objects[1], 'x'),
+            y = Public.get_axis(objects[1], 'y')
         }
     }
 
@@ -235,8 +231,8 @@ public.create_bounding_box_by_points = function(objects)
                 box.right_bottom.y = bb.right_bottom.y
             end
         else
-            local x = public.get_axis(object, 'x')
-            local y = public.get_axis(object, 'y')
+            local x = Public.get_axis(object, 'x')
+            local y = Public.get_axis(object, 'y')
 
             if box.left_top.x > x then
                 box.left_top.x = x
@@ -264,7 +260,7 @@ enlare_bounding_box - Performs enlargement operation on the bounding box.
 @param bb - BoundingBox
 @param size - By how many tiles to enlarge.
 --]]
-public.enlarge_bounding_box = function(bb, size)
+Public.enlarge_bounding_box = function(bb, size)
     bb.left_top.x = bb.left_top.x - size
     bb.left_top.y = bb.left_top.y - size
     bb.right_bottom.x = bb.right_bottom.x + size
@@ -276,7 +272,7 @@ merge_bounding_boxes - Merge array of BoundingBox objects into a single
 object.
 @param bbs - Array of BoundingBox objects.
 --]]
-public.merge_bounding_boxes = function(bbs)
+Public.merge_bounding_boxes = function(bbs)
     if bbs == nil then
         log('common.merge_bounding_boxes: bbs is nil')
         return
@@ -323,7 +319,7 @@ end
 get_time - Return strigified time of a tick.
 @param ticks - Just a ticks.
 --]]
-public.get_time = function(ticks)
+Public.get_time = function(ticks)
     local seconds = math.floor((ticks / 60) % 60)
     local minutes = math.floor((ticks / 60 / 60) % 60)
     local hours = math.floor(ticks / 60 / 60 / 60)
@@ -345,13 +341,13 @@ polygon_insert - Append vertex in clockwise order.
 @param vertex - Point to insert,
 @param vertices - Tables of vertices.
 --]]
-public.polygon_append_vertex = function(vertices, vertex)
+Public.polygon_append_vertex = function(vertices, vertex)
     table.insert(vertices, vertex)
 
     local x_avg, y_avg = 0, 0
     for _, v in pairs(vertices) do
-        x_avg = x_avg + public.get_axis(v, 'x')
-        y_avg = y_avg + public.get_axis(v, 'y')
+        x_avg = x_avg + Public.get_axis(v, 'x')
+        y_avg = y_avg + Public.get_axis(v, 'y')
     end
     x_avg = x_avg / #vertices
     y_avg = y_avg / #vertices
@@ -360,13 +356,13 @@ public.polygon_append_vertex = function(vertices, vertex)
     for i = 1, #vertices, 1 do
         for j = 1, #vertices - i do
             local v = vertices[j]
-            delta_x = public.get_axis(v, 'x') - x_avg
-            delta_y = public.get_axis(v, 'y') - y_avg
+            delta_x = Public.get_axis(v, 'x') - x_avg
+            delta_y = Public.get_axis(v, 'y') - y_avg
             rad1 = ((math.atan2(delta_x, delta_y) * (180 / 3.14)) + 360) % 360
 
             v = vertices[j + 1]
-            delta_x = public.get_axis(v, 'x') - x_avg
-            delta_y = public.get_axis(v, 'y') - y_avg
+            delta_x = Public.get_axis(v, 'x') - x_avg
+            delta_y = Public.get_axis(v, 'y') - y_avg
             rad2 = ((math.atan2(delta_x, delta_y) * (180 / 3.14)) + 360) % 360
             if rad1 > rad2 then
                 vertices[j], vertices[j + 1] = vertices[j + 1], vertices[j]
@@ -380,16 +376,16 @@ positions_equal - Checks if given positions are equal.
 @param a - Position a
 @param b - Position b
 --]]
-public.positions_equal = function(a, b)
-    local p1 = public.get_axis(a, 'x')
-    local p2 = public.get_axis(b, 'x')
+Public.positions_equal = function(a, b)
+    local p1 = Public.get_axis(a, 'x')
+    local p2 = Public.get_axis(b, 'x')
 
     if p1 ~= p2 then
         return false
     end
 
-    p1 = public.get_axis(a, 'y')
-    p2 = public.get_axis(b, 'y')
+    p1 = Public.get_axis(a, 'y')
+    p2 = Public.get_axis(b, 'y')
 
     if p1 ~= p2 then
         return false
@@ -411,15 +407,15 @@ end
 deepcopy - Makes a deep copy of an object.
 @param orig - Object to copy.
 --]]
-public.deepcopy = function(orig)
+Public.deepcopy = function(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == 'table' then
         copy = {}
         for orig_key, orig_value in next, orig, nil do
-            copy[public.deepcopy(orig_key)] = public.deepcopy(orig_value)
+            copy[Public.deepcopy(orig_key)] = Public.deepcopy(orig_value)
         end
-        setmetatable(copy, public.deepcopy(getmetatable(orig)))
+        setmetatable(copy, Public.deepcopy(getmetatable(orig)))
     else -- number, string, boolean, etc
         copy = orig
     end
@@ -428,15 +424,15 @@ end
 
 local function convex_hull_turn(a, b, c)
     local x1, x2, x3, y1, y2, y3
-    x1 = public.get_axis(a, 'x')
-    x2 = public.get_axis(b, 'x')
+    x1 = Public.get_axis(a, 'x')
+    x2 = Public.get_axis(b, 'x')
 
-    y1 = public.get_axis(a, 'y')
-    y2 = public.get_axis(b, 'y')
+    y1 = Public.get_axis(a, 'y')
+    y2 = Public.get_axis(b, 'y')
 
     if c then
-        x3 = public.get_axis(c, 'x')
-        y3 = public.get_axis(c, 'y')
+        x3 = Public.get_axis(c, 'x')
+        y3 = Public.get_axis(c, 'y')
         return (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1)
     end
 
@@ -447,27 +443,27 @@ end
 convex_hull - Generate convex hull out of given vertices.
 @param vertices - Table of positions.
 --]]
-public.get_convex_hull = function(_vertices)
+Public.get_convex_hull = function(_vertices)
     if #_vertices == 0 then
         return {}
     end
 
-    local vertices = public.deepcopy(_vertices)
+    local vertices = Public.deepcopy(_vertices)
 
     -- Get the lowest point
     local v, y1, y2, x1, x2, lowest_index
     local lowest = vertices[1]
     for i = 2, #vertices do
         v = vertices[i]
-        y1 = public.get_axis(v, 'y')
-        y2 = public.get_axis(lowest, 'y')
+        y1 = Public.get_axis(v, 'y')
+        y2 = Public.get_axis(lowest, 'y')
 
         if y1 < y2 then
             lowest = v
             lowest_index = i
         elseif y1 == y2 then
-            x1 = public.get_axis(v, 'x')
-            x2 = public.get_axis(lowest, 'x')
+            x1 = Public.get_axis(v, 'x')
+            x2 = Public.get_axis(lowest, 'x')
             if x1 < x2 then
                 lowest = v
                 lowest_index = i
@@ -476,8 +472,8 @@ public.get_convex_hull = function(_vertices)
     end
 
     table.remove(vertices, lowest_index)
-    x1 = public.get_axis(lowest, 'x')
-    y1 = public.get_axis(lowest, 'y')
+    x1 = Public.get_axis(lowest, 'x')
+    y1 = Public.get_axis(lowest, 'y')
 
     -- Sort by angle to horizontal axis.
     local rad1, rad2, dist1, dist2
@@ -486,20 +482,20 @@ public.get_convex_hull = function(_vertices)
     while i <= #vertices do
         while j <= #vertices - i do
             v = vertices[j]
-            x2 = public.get_axis(v, 'x')
-            y2 = public.get_axis(v, 'y')
+            x2 = Public.get_axis(v, 'x')
+            y2 = Public.get_axis(v, 'y')
             rad1 = (math.atan2(y2 - y1, x2 - x1) * (180 / 3.14) + 320) % 360
 
             v = vertices[j + 1]
-            x2 = public.get_axis(v, 'x')
-            y2 = public.get_axis(v, 'y')
+            x2 = Public.get_axis(v, 'x')
+            y2 = Public.get_axis(v, 'y')
             rad2 = (math.atan2(y2 - y1, x2 - x1) * (180 / 3.14) + 320) % 360
 
             if rad1 > rad2 then
                 vertices[j + 1], vertices[j] = vertices[j], vertices[j + 1]
             elseif rad1 == rad2 then
-                dist1 = public.get_distance(lowest, vertices[j])
-                dist2 = public.get_distance(lowest, vertices[j + 1])
+                dist1 = Public.get_distance(lowest, vertices[j])
+                dist2 = Public.get_distance(lowest, vertices[j + 1])
                 if dist1 > dist2 then
                     table.remove(vertices, j + 1)
                 else
@@ -543,14 +539,14 @@ get_closest_neighbour - Return object whose is closest to given position.
 @param position - Position, origin point
 @param object - Table of objects that have any sort of position datafield.
 --]]
-public.get_closest_neighbour = function(position, objects)
+Public.get_closest_neighbour = function(position, objects)
     local closest = objects[1]
-    local min_dist = public.get_distance(position, closest)
+    local min_dist = Public.get_distance(position, closest)
 
     local object, dist
     for i = #objects, 1, -1 do
         object = objects[i]
-        dist = public.get_distance(position, object)
+        dist = Public.get_distance(position, object)
         if dist < min_dist then
             closest = object
             min_dist = dist
@@ -560,4 +556,4 @@ public.get_closest_neighbour = function(position, objects)
     return closest
 end
 
-return public
+return Public

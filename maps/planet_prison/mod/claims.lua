@@ -1,5 +1,5 @@
-local public = {}
-local CommonFunctions = require('maps.planet_prison.mod.common')
+local Public = {}
+local CommonFunctions = require 'maps.planet_prison.mod.common'
 local Global = require 'utils.global'
 
 local this = {}
@@ -16,7 +16,7 @@ init - Initialize claim system.
 @param names - Table of entity names that should be used as a marker.
 @param max_distance - Maximal distance allowed between markers
 --]]
-public.init = function(names, max_distance)
+Public.init = function(names, max_distance)
     if type(names) ~= 'table' then
         names = {names}
     end
@@ -100,7 +100,7 @@ end
 on_build_entity - Event processing function.
 @param ent - Entity
 --]]
-public.on_built_entity = function(ent)
+Public.on_built_entity = function(ent)
     if not claims_in_markers(ent.name) then
         return
     end
@@ -147,7 +147,7 @@ end
 on_entity_died - Event processing function.
 @param ent - Entity
 --]]
-public.on_entity_died = function(ent)
+Public.on_entity_died = function(ent)
     if not claims_in_markers(ent.name) then
         return
     end
@@ -158,15 +158,15 @@ end
 on_player_mined_entity - Event processing function.
 @param ent - Entity
 --]]
-public.on_player_mined_entity = function(ent)
-    public.on_entity_died(ent)
+Public.on_player_mined_entity = function(ent)
+    Public.on_entity_died(ent)
 end
 
 --[[
 on_player_died - Event processing function
 @param player - Player
 --]]
-public.on_player_died = function(player)
+Public.on_player_died = function(player)
     this._claims_info[player.name] = nil
 end
 
@@ -174,7 +174,7 @@ end
 get_claims - Get all claims data points for given force.
 @param f_name - Force name.
 --]]
-public.get_claims = function(f_name)
+Public.get_claims = function(f_name)
     if this._claims_info[f_name] == nil then
         return {}
     end
@@ -208,7 +208,7 @@ end
 set_visibility_to - Specifies who can see the claims and redraws.
 @param name - Name of a player.
 --]]
-public.set_visibility_to = function(name)
+Public.set_visibility_to = function(name)
     for _, p in pairs(this._claims_visible_to) do
         if p == name then
             return
@@ -223,7 +223,7 @@ end
 remove_visibility_from - Remove the claim visibility from the player.
 @param name - Name of a player.
 --]]
-public.remove_visibility_from = function(name)
+Public.remove_visibility_from = function(name)
     for i = 1, #this._claims_visible_to do
         local p = this._claims_visible_to[i]
         if p == name then
@@ -234,4 +234,4 @@ public.remove_visibility_from = function(name)
     end
 end
 
-return public
+return Public

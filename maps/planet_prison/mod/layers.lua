@@ -1,6 +1,6 @@
-local public = {}
-local _common = require('.common')
-local _simplex = require('.simplex_noise')
+local Public = {}
+local CommonFunctions = require 'maps.planet_prison.mod.common'
+local SimplexFunctions = require 'maps.planet_prison.mod.simplex_noise'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
 
@@ -13,18 +13,18 @@ Global.register(
     end
 )
 
-public.init = function()
+Public.init = function()
     this._grid = {}
     this._exclusions = {}
     this._layers = {}
     this._collision_mask = {}
-    _simplex.init()
+    SimplexFunctions.init()
 end
 --[[
 push_chunk - Pushes chunk position into a grid for later processing.
 @param chunk - ChunkPosition
 --]]
-public.push_chunk = function(chunk)
+Public.push_chunk = function(chunk)
     table.insert(this._grid, chunk)
 end
 
@@ -32,7 +32,7 @@ end
 add_excluding_bounding_box - Pushes bounding box into exclusion list.
 @param bb - BoundindBox.
 --]]
-public.push_excluding_bounding_box = function(bb)
+Public.push_excluding_bounding_box = function(bb)
     table.insert(this._exclusions, bb)
 end
 
@@ -40,7 +40,7 @@ end
 remove_ecluding_bounding_box - Removes bounding box from exclusion list.
 @param bb - BoundingBox to get rid of.
 --]]
-public.remove_excluding_bounding_box = function(bb)
+Public.remove_excluding_bounding_box = function(bb)
     for i = 1, #this._exclusions do
         local box = this._exclusions[i]
         if box == bb then
@@ -58,7 +58,7 @@ add_noise_layer - Add noise layer that will be applied onto the grid.
 @param resolution - Resolution of a layer [0f - 1f]
 @param elevation - Layer visibility [0f - 1f)
 --]]
-public.add_noise_layer = function(type, name, objects, elevation, resolution)
+Public.add_noise_layer = function(type, name, objects, elevation, resolution)
     local layer = {
         type = type,
         name = name,
@@ -78,7 +78,7 @@ add_noise_layer_hook - Execute callback on created object.
 @param name - Name of the layer.
 @param hook - Callback that will be called with an object argument.
 --]]
-public.add_noise_layer_hook = function(name, hook)
+Public.add_noise_layer_hook = function(name, hook)
     for _, layer in pairs(this._layers) do
         if layer.name == name then
             layer.hook = hook
@@ -92,7 +92,7 @@ add_noise_layer_dependency - Adds dependency to the layer. It can be any
 lua variable. This dependency then is injected into hook.
 @param deps - Dependencies, any variable.
 --]]
-public.add_noise_layer_dependency = function(name, deps)
+Public.add_noise_layer_dependency = function(name, deps)
     for _, layer in pairs(this._layers) do
         if layer.name == name then
             layer.deps = deps
@@ -105,7 +105,7 @@ end
 set_collision_mask - Set which tiles should be ignored.
 @param mask - Table of collision masks.
 --]]
-public.set_collision_mask = function(mask)
+Public.set_collision_mask = function(mask)
     this._collision_mask = mask
 end
 
@@ -150,13 +150,13 @@ local function _do_job(surf, x, y)
     }
 
     for _, exclusion in pairs(this._exclusions) do
-        if _common.point_in_bounding_box(point, exclusion) then
+        if CommonFunctions.point_in_bounding_box(point, exclusion) then
             return
         end
     end
 
     for _, layer in pairs(this._layers) do
-        local ret = _simplex.get(point, layer.resolution)
+        local ret = SimplexFunctions.get(point, layer.resolution)
         if ret >= layer.elevation then
             local tile = surf.get_tile(point)
             for _, mask in pairs(this._collision_mask) do
@@ -167,7 +167,7 @@ local function _do_job(surf, x, y)
 
             local object_name = layer.objects[1]
             if #layer.objects > 1 then
-                local index = _common.rand_range(1, #layer.objects)
+                local index = CommonFunctions.rand_range(1, #layer.objects)
                 object_name = layer.objects[index]
             end
 
@@ -187,14 +187,14 @@ end
 do_job - Do a single step propagation of a layers.
 @param surf - LuaSurface, onto which action is taken.
 --]]
-public.do_job = function(surf)
+Public.do_job = function(surf)
     if #this._grid <= 0 then
         return
     end
 
     local chunk = table.remove(this._grid)
-    local x = _common.get_axis(chunk, 'x')
-    local y = _common.get_axis(chunk, 'y')
+    local x = CommonFunctions.get_axis(chunk, 'x')
+    local y = CommonFunctions.get_axis(chunk, 'y')
 
     chunk = {
         left_top = {
@@ -207,7 +207,7 @@ public.do_job = function(surf)
         }
     }
 
-    _common.for_bounding_box(surf, chunk, _do_job)
+    CommonFunctions.for_bounding_box(surf, chunk, _do_job)
 
     for _, layer in pairs(this._layers) do
         local cache = layer.cache
@@ -223,4 +223,4 @@ public.do_job = function(surf)
     end
 end
 
-return public
+return Public

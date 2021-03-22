@@ -1,4 +1,4 @@
-local Global = require('utils.global')
+local Global = require 'utils.global'
 local Token = require 'utils.token'
 
 local this = {
