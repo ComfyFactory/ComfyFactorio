@@ -797,7 +797,7 @@ This is an ultimate survival scenario with very hostile environment.
 [font=default-bold]Coins [img=item/coin] are the main medium that you use in the market. You obtain them by researching stuff and pvp activites.[/font]
 
 [font=heading-1]Other[/font]
-[font=default-bold]This scenario was made by cogito123. If you find any bugs/balancing issues, report it to getcomfy.eu/discord. Thanks for playing this map.[/font]
+[font=default-bold]If you find any bugs/balancing issues, report it to getcomfy.eu/discord at #opendev. Thanks for playing this map.[/font]
 ]]
 
 return public
