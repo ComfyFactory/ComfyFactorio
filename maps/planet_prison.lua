@@ -14,6 +14,7 @@ local Timers = require 'maps.planet_prison.mod.timers'
 local ClaimsFunctions = require 'maps.planet_prison.mod.claims'
 local MapConfig = require 'maps.planet_prison.config'
 local Token = require 'utils.token'
+require 'modules.thirst'
 
 local this = {}
 local floor = math.floor
@@ -74,8 +75,8 @@ this.maps = {
     },
     {
         name = 'swampy-rivers',
-        height = 1500,
-        width = 1500,
+        height = 2500,
+        width = 2500,
         water = 1,
         terrain_segmentation = 6,
         property_expression_names = {
@@ -115,6 +116,15 @@ this.maps = {
         }
     }
 }
+
+local function assign_perks(player)
+    this.perks[player.name] = {
+        flashlight_enable = true,
+        minimap = false,
+        chat_global = true
+    }
+    return this.perks[player.name]
+end
 
 local assign_camouflage = function(ent, common)
     local shade = common.rand_range(20, 200)
@@ -315,7 +325,8 @@ local swampy_rivers_layers = {
         name = 'hostile',
         objects = {
             'character',
-            'gun-turret'
+            'gun-turret',
+            'small-biter'
         },
         elevation = 0.92,
         resolution = 0.99,
@@ -358,14 +369,19 @@ local function find_force(name)
     return nil
 end
 
-local function init_player_ship_bp(entity, player)
-    entity.force = player.force
-    if entity.name == 'crash-site-chest-1' then
-        for _, stack in pairs(MapConfig.player_ship_loot) do
-            entity.insert(stack)
+local init_player_ship_bp =
+    Token.register(
+    function(data)
+        local player = data.player
+        local entity = data.entity
+        entity.force = player.force
+        if entity.name == 'crash-site-chest-1' then
+            for _, stack in pairs(MapConfig.player_ship_loot) do
+                entity.insert(stack)
+            end
         end
     end
-end
+)
 
 this.events = {
     merchant = {
@@ -377,18 +393,23 @@ this.events = {
         offer = MapConfig.merchant_offer
     }
 }
-local function init_merchant_bp(entity, _)
-    entity.force = 'merchant'
-    entity.rotatable = false
-    entity.minable = false
-    if entity.name ~= 'market' then
-        entity.operable = false
-    else
-        for _, entry in pairs(this.events.merchant.offer) do
-            entity.add_market_item(entry)
+
+local init_merchant_bp =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        entity.force = 'merchant'
+        entity.rotatable = false
+        entity.minable = false
+        if entity.name ~= 'market' then
+            entity.operable = false
+        else
+            for _, entry in pairs(this.events.merchant.offer) do
+                entity.add_market_item(entry)
+            end
         end
     end
-end
+)
 
 local function create_orbit_group()
     local orbit = game.permissions.create_group('orbit')
@@ -424,7 +445,7 @@ local function init_game()
     create_orbit_group()
     game.map_settings.pollution.enabled = false
     game.map_settings.enemy_evolution.enabled = false
-    game.difficulty_settings.technology_price_multiplier = 0.1
+    game.difficulty_settings.technology_price_multiplier = 0.3
     game.difficulty_settings.research_queue_setting = 'always'
 
     LayersFunctions.set_collision_mask({'water-tile'})
@@ -593,6 +614,9 @@ end
 
 local function draw_common_gui(player)
     local perks = this.perks[player.name]
+    if not perks then
+        perks = assign_perks(player)
+    end
     local chat_type = 'Global chat'
     if not perks.chat_global then
         chat_type = 'NAP chat'
@@ -635,10 +659,13 @@ end
 local function print_merchant_position(player)
     local position = this.events.merchant.position
     local perks = this.perks[player.name]
-    if not perks.minimap then
-        player.print(string.format('>> You were able to spot him %s from your location', CommonFunctions.get_readable_direction(player.position, position)))
-    else
+    if not perks then
+        perks = assign_perks(player)
+    end
+    if perks and perks.minimap then
         player.print(string.format('>> You received a broadcast with [gps=%d,%d] coordinates', position.x, position.y))
+    else
+        player.print(string.format('>> You were able to spot him %s from your location', CommonFunctions.get_readable_direction(player.position, position)))
     end
 end
 
@@ -696,6 +723,9 @@ local function on_gui_click(e)
     local elem = e.element
     local p = game.players[e.player_index]
     local perks = this.perks[p.name]
+    if not perks then
+        perks = assign_perks(p)
+    end
 
     if not elem.valid then
         return
@@ -756,13 +786,28 @@ local function init_player(p)
     this.perks[p.name] = nil
     p.teleport(position, 'arena')
     --p.name = get_random_name() --player name is read only
-    p.force = game.create_force(p.name)
+    local pf = game.forces[p.force.name]
+    if not pf then
+        p.force = game.create_force(p.name)
+    else
+        p.force = pf
+    end
     p.force.set_friend('neutral', true)
     this.perks[p.name] = {
         flashlight_enable = true,
         minimap = false,
         chat_global = true
     }
+
+    for i = 1, 7 do
+        p.force.technologies['inserter-capacity-bonus-' .. i].enabled = false
+        p.force.technologies['inserter-capacity-bonus-' .. i].researched = false
+    end
+
+    if not p.character or not p.character.valid then
+        p.set_controller({type = defines.controllers.god})
+        p.create_character()
+    end
 
     local merch = find_force('merchant')
     if merch then
@@ -1189,7 +1234,15 @@ local function on_player_died(e)
 
     local p = game.players[index]
     ClaimsFunctions.on_player_died(p)
-    game.merge_forces(p.name, 'neutral')
+    ClaimsFunctions.clear_player_base(p)
+
+    if game.forces[p.name] then
+        game.merge_forces(p.name, 'neutral')
+    end
+    if p.connected then
+        return
+    end
+    game.remove_offline_players({p})
 end
 
 local function on_player_respawned(e)
@@ -1455,6 +1508,9 @@ local function on_market_item_purchased(e)
     local m = e.market
     local o = m.get_market_items()[e.offer_index].offer
     local perks = this.perks[p.name]
+    if not perks then
+        perks = assign_perks(p)
+    end
 
     if o.effect_description == 'Construct a GPS receiver' then
         perks.minimap = true
@@ -1513,7 +1569,10 @@ local function on_console_chat(e)
         for _, peer in pairs(game.players) do
             if peer.name ~= p.name then
                 local perks = this.perks[peer.name]
-                if perks.minimap then
+                if not perks then
+                    perks = assign_perks(peer)
+                end
+                if perks and perks.minimap then
                     peer.print(msg)
                 else
                     peer.print(filter_out_gps(msg))
@@ -1526,7 +1585,10 @@ local function on_console_chat(e)
                 local peer = f.players[1]
                 if peer.name ~= p.name then
                     local perks = this.perks[peer.name]
-                    if perks.minimap then
+                    if not perks then
+                        perks = assign_perks(peer)
+                    end
+                    if perks and perks.minimap then
                         peer.print(msg)
                     else
                         peer.print(filter_out_gps(msg))

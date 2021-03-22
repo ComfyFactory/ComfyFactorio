@@ -84,7 +84,7 @@ local function claim_on_build_entity(ent)
     end
 
     if not in_range then
-        claim_new_claim(ent, deps)
+        claim_new_claim(ent)
     end
 end
 
@@ -170,6 +170,23 @@ on_player_died - Event processing function
 --]]
 Public.on_player_died = function(player)
     this._claims_info[player.name] = nil
+end
+
+Public.clear_player_base = function(player)
+    if not player or not player.valid then
+        return
+    end
+
+    local position = player.position
+    local x, y = position.x, position.y
+    local entities = player.surface.find_entities_filtered {force = player.force, area = {{x - 50, y - 50}, {x + 50, y + 50}}}
+
+    for i = 1, #entities do
+        local e = entities[i]
+        if e and e.valid then
+            e.destroy()
+        end
+    end
 end
 
 --[[
