@@ -1,10 +1,12 @@
-local Public = {}
 local CommonFunctions = require 'maps.planet_prison.mod.common'
 local SimplexFunctions = require 'maps.planet_prison.mod.simplex_noise'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
 
+local Public = {}
 local this = {}
+local insert = table.insert
+local remove = table.remove
 
 Global.register(
     this,
@@ -25,7 +27,7 @@ push_chunk - Pushes chunk position into a grid for later processing.
 @param chunk - ChunkPosition
 --]]
 Public.push_chunk = function(chunk)
-    table.insert(this._grid, chunk)
+    insert(this._grid, chunk)
 end
 
 --[[
@@ -33,7 +35,7 @@ add_excluding_bounding_box - Pushes bounding box into exclusion list.
 @param bb - BoundindBox.
 --]]
 Public.push_excluding_bounding_box = function(bb)
-    table.insert(this._exclusions, bb)
+    insert(this._exclusions, bb)
 end
 
 --[[
@@ -44,7 +46,7 @@ Public.remove_excluding_bounding_box = function(bb)
     for i = 1, #this._exclusions do
         local box = this._exclusions[i]
         if box == bb then
-            table.remove(this._exclusions, i)
+            remove(this._exclusions, i)
             break
         end
     end
@@ -70,7 +72,7 @@ Public.add_noise_layer = function(type, name, objects, elevation, resolution)
         deps = nil
     }
 
-    table.insert(this._layers, layer)
+    insert(this._layers, layer)
 end
 
 --[[
@@ -175,7 +177,7 @@ local function _do_job(surf, x, y)
                 name = object_name,
                 position = point
             }
-            table.insert(layer.cache, object)
+            insert(layer.cache, object)
 
             break
             ::continue::
@@ -192,7 +194,7 @@ Public.do_job = function(surf)
         return
     end
 
-    local chunk = table.remove(this._grid)
+    local chunk = remove(this._grid)
     local x = CommonFunctions.get_axis(chunk, 'x')
     local y = CommonFunctions.get_axis(chunk, 'y')
 

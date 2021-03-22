@@ -1,10 +1,12 @@
 -- Original implementation taken from here https://github.com/thenumbernine/lua-simplexnoise/blob/master/2d.lua
 
-local Public = {}
 local Global = require 'utils.global'
 local CommonFunctions = require 'maps.planet_prison.mod.common'
 
+local Public = {}
 local this = {}
+local sqrt = math.sqrt
+local floor = math.floor
 
 Global.register(
     this,
@@ -309,11 +311,11 @@ Public.get = function(pos, resolution)
     local x = (CommonFunctions.get_axis(pos, 'x') + this.seed) * resolution
     local y = (CommonFunctions.get_axis(pos, 'y') + this.seed) * resolution
     local n0, n1, n2
-    local F2 = 0.5 * (math.sqrt(3.0) - 1.0)
+    local F2 = 0.5 * (sqrt(3.0) - 1.0)
     local s = (x + y) * F2
-    local i = math.floor(x + s)
-    local j = math.floor(y + s)
-    local G2 = (3.0 - math.sqrt(3.0)) / 6.0
+    local i = floor(x + s)
+    local j = floor(y + s)
+    local G2 = (3.0 - sqrt(3.0)) / 6.0
     local t = (i + j) * G2
     local X0 = i - t
     local Y0 = j - t

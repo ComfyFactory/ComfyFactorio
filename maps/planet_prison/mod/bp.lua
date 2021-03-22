@@ -1,4 +1,3 @@
-local Public = {}
 local CommonFunctions = require 'maps.planet_prison.mod.common'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
@@ -6,6 +5,10 @@ local Token = require 'utils.token'
 local this = {
     _bps = {}
 }
+
+local Public = {}
+local insert = table.insert
+local remove = table.remove
 
 Global.register(
     this,
@@ -144,8 +147,8 @@ Public.unlink_references_filtered = function(name, query)
             end
         end
 
-        table.insert(refs, ref)
-        table.remove(object.refs, i)
+        insert(refs, ref)
+        remove(object.refs, i)
         ::continue::
     end
 
@@ -190,12 +193,12 @@ Public.destroy_references_filtered = function(surf, name, query)
         local tiles = {}
         for _, tile in pairs(ref.tiles) do
             tile.name = 'concrete'
-            table.insert(tiles, tile)
+            insert(tiles, tile)
         end
 
         surf.set_tiles(tiles)
 
-        table.remove(object.refs, i)
+        remove(object.refs, i)
         ::continue::
     end
 end
@@ -223,7 +226,7 @@ local _bp_destroy_reference = function(surf, ref)
         end
 
         tile.name = 'concrete'
-        table.insert(tiles, tile)
+        insert(tiles, tile)
         ::continue::
     end
 
@@ -241,7 +244,7 @@ Public.destroy_reference = function(surf, reference)
             local ref = meta.refs[i]
             if reference.id == ref.id then
                 _bp_destroy_reference(surf, ref)
-                table.remove(meta.refs, i)
+                remove(meta.refs, i)
                 return
             end
         end
@@ -252,7 +255,7 @@ local function _build_tiles(surf, point, tiles)
     local _tiles = {}
 
     local get_axis = CommonFunctions.get_axis
-    fmaps.planet_prison.modor _, ile in pairs(tiles) do
+    for _, tile in pairs(tiles) do
         local _tile = {
             name = tile.name,
             position = {
@@ -260,7 +263,7 @@ local function _build_tiles(surf, point, tiles)
                 y = get_axis(tile.position, 'y') + get_axis(point, 'y')
             }
         }
-        table.insert(_tiles, _tile)
+        insert(_tiles, _tile)
     end
 
     surf.set_tiles(_tiles)
@@ -271,7 +274,7 @@ local function _build_entities(surf, point, entities, hook, args)
     local _entities = {}
 
     local get_axis = CommonFunctions.get_axis
-    fmaps.planet_prison.modor _, nt in pairs(entities) do
+    for _, ent in pairs(entities) do
         local ent_info = {
             position = {
                 x = get_axis(ent.position, 'x') + get_axis(point, 'x'),
@@ -300,7 +303,7 @@ local function _build_entities(surf, point, entities, hook, args)
             end
         end
 
-        table.insert(_entities, e)
+        insert(_entities, e)
         ::continue::
     end
 
@@ -341,8 +344,8 @@ Public.build = function(surf, name, point, args)
     local tiles = object.bp.tiles
     if tiles and #tiles > 0 then
         instance.tiles = _build_tiles(surf, point, tiles)
-        local bb = CommonFunctions.create_bounding_box_by_points(imaps.planet_prison.modnstance tiles)
-       table.insert(bbs, bb)
+        local bb = CommonFunctions.create_bounding_box_by_points(instance.tiles)
+        insert(bbs, bb)
 
         local query = {
             name = 'character',
@@ -359,8 +362,8 @@ Public.build = function(surf, name, point, args)
     local entities = object.bp.entities
     if entities and #entities > 0 then
         instance.entities = _build_entities(surf, point, entities, object.hook, args)
-        local bb = CommonFunctions.create_bounding_box_by_points(imaps.planet_prison.modnstance entities)
-       table.insert(bbs, bb)
+        local bb = CommonFunctions.create_bounding_box_by_points(instance.entities)
+        insert(bbs, bb)
 
         local query = {
             name = 'character',
@@ -383,9 +386,9 @@ Public.build = function(surf, name, point, args)
         end
     end
 
-    instance.bb = CommonFunctions.merge_bounding_boxes(bbs
-    imaps.planet_prison.modnstance.id  game.tick
-    table.insert(object.refs, instance)
+    instance.bb = CommonFunctions.merge_bounding_boxes(bbs)
+    instance.id = game.tick
+    insert(object.refs, instance)
 
     return instance
 end

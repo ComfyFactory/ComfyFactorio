@@ -1,5 +1,7 @@
-local Public = {}
 local CommonFunctions = require 'maps.planet_prison.mod.common'
+
+local Public = {}
+local remove = table.remove
 
 Public.command = {
     --[[
@@ -125,7 +127,7 @@ local function _do_job_attack_objects(surf, args)
     for i = #agents, 1, -1 do
         agent = agents[i]
         if not agent.valid then
-            table.remove(agents, i)
+            remove(agents, i)
             goto continue
         end
 

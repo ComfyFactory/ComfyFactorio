@@ -1,8 +1,10 @@
-local Public = {}
 local CommonFunctions = require 'maps.planet_prison.mod.common'
 local Global = require 'utils.global'
 
+local Public = {}
 local this = {}
+local insert = table.insert
+local remove = table.remove
 
 Global.register(
     this,
@@ -43,7 +45,7 @@ local function claim_new_claim(ent)
         claims[ent.force.name].collections = {}
     end
 
-    table.insert(claims[ent.force.name].collections, point)
+    insert(claims[ent.force.name].collections, point)
 end
 
 local function claim_on_build_entity(ent)
@@ -73,7 +75,7 @@ local function claim_on_build_entity(ent)
                 x = CommonFunctions.get_axis(ent.position, 'x'),
                 y = CommonFunctions.get_axis(ent.position, 'y')
             }
-            table.insert(points, point)
+            insert(points, point)
             data.claims[i] = CommonFunctions.get_convex_hull(points)
 
             break
@@ -124,7 +126,7 @@ local function claim_on_entity_died(ent)
         for j = 1, #points do
             local point = points[j]
             if CommonFunctions.positions_equal(point, ent.position) then
-                table.remove(points, j)
+                remove(points, j)
 
                 data.claims[i] = CommonFunctions.get_convex_hull(points)
                 break
@@ -132,8 +134,8 @@ local function claim_on_entity_died(ent)
         end
 
         if #points == 0 then
-            table.remove(data.claims, i)
-            table.remove(data.collections, i)
+            remove(data.claims, i)
+            remove(data.collections, i)
             break
         end
     end
@@ -215,7 +217,7 @@ Public.set_visibility_to = function(name)
         end
     end
 
-    table.insert(this._claims_visible_to, name)
+    insert(this._claims_visible_to, name)
     claims_update_visiblity()
 end
 
@@ -227,7 +229,7 @@ Public.remove_visibility_from = function(name)
     for i = 1, #this._claims_visible_to do
         local p = this._claims_visible_to[i]
         if p == name then
-            table.remove(this._claims_visible_to, i)
+            remove(this._claims_visible_to, i)
             claims_update_visiblity()
             break
         end

@@ -16,8 +16,11 @@ local MapConfig = require 'maps.planet_prison.config'
 local Token = require 'utils.token'
 
 local this = {}
+local floor = math.floor
+local ceil = math.ceil
 local Public = {}
 local insert = table.insert
+local remove = table.remove
 
 Global.register(
     this,
@@ -1016,11 +1019,11 @@ local function raid_event(surf)
                             agent.destroy()
                         end
 
-                        table.remove(agents, j)
+                        remove(agents, j)
                     end
 
                     if #agents == 0 then
-                        table.remove(group, i)
+                        remove(group, i)
                     end
                 end
 
@@ -1142,6 +1145,9 @@ local function mined_wreckage(e)
     if not valid_ents[ent.name] then
         return
     end
+
+    e.buffer.clear()
+
     local candidates = {}
 
     local chance = CommonFunctions.rand_range(0, 1000)
@@ -1401,6 +1407,10 @@ local function on_entity_died(e)
     hostile_death(e)
     character_death(e)
     ClaimsFunctions.on_entity_died(e.entity)
+
+    if valid_ents[e.entity.name] then
+        e.entity.destroy()
+    end
 end
 
 local function merchant_exploit_check(ent)
@@ -1454,15 +1464,15 @@ end
 local function stringify_color(color)
     local r, g, b = color.r, color.g, color.b
     if r <= 1 then
-        r = math.floor(r * 255)
+        r = floor(r * 255)
     end
 
     if g <= 1 then
-        g = math.floor(g * 255)
+        g = floor(g * 255)
     end
 
     if b <= 1 then
-        b = math.floor(b * 255)
+        b = floor(b * 255)
     end
 
     return string.format('%d,%d,%d', r, g, b)
@@ -1534,7 +1544,7 @@ local function on_research_finished(e)
 
     local reward = {
         name = 'coin',
-        count = math.ceil(r.research_unit_count * 3)
+        count = ceil(r.research_unit_count * 3)
     }
     local f = r.force
     for _, player in pairs(f.players) do

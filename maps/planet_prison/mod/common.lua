@@ -1,7 +1,13 @@
-local Public = {}
 local Global = require 'utils.global'
 
+local Public = {}
 local this = {}
+local insert = table.insert
+local remove = table.remove
+local random = math.random
+local sqrt = math.sqrt
+local floor = math.floor
+local atan2 = math.atan2
 
 Global.register(
     this,
@@ -16,7 +22,7 @@ rand_range - Return random integer within the range.
 @param stop - Stop range.
 --]]
 Public.rand_range = function(start, stop)
-    return math.random(start, stop)
+    return random(start, stop)
 end
 
 --[[
@@ -117,7 +123,7 @@ Public.get_distance = function(a, b)
     local h = (Public.get_axis(a, 'x') - Public.get_axis(b, 'x')) ^ 2
     local v = (Public.get_axis(a, 'y') - Public.get_axis(b, 'y')) ^ 2
 
-    return math.sqrt(h + v)
+    return sqrt(h + v)
 end
 
 --[[
@@ -320,9 +326,9 @@ get_time - Return strigified time of a tick.
 @param ticks - Just a ticks.
 --]]
 Public.get_time = function(ticks)
-    local seconds = math.floor((ticks / 60) % 60)
-    local minutes = math.floor((ticks / 60 / 60) % 60)
-    local hours = math.floor(ticks / 60 / 60 / 60)
+    local seconds = floor((ticks / 60) % 60)
+    local minutes = floor((ticks / 60 / 60) % 60)
+    local hours = floor(ticks / 60 / 60 / 60)
 
     local time
     if hours > 0 then
@@ -342,7 +348,7 @@ polygon_insert - Append vertex in clockwise order.
 @param vertices - Tables of vertices.
 --]]
 Public.polygon_append_vertex = function(vertices, vertex)
-    table.insert(vertices, vertex)
+    insert(vertices, vertex)
 
     local x_avg, y_avg = 0, 0
     for _, v in pairs(vertices) do
@@ -358,12 +364,12 @@ Public.polygon_append_vertex = function(vertices, vertex)
             local v = vertices[j]
             delta_x = Public.get_axis(v, 'x') - x_avg
             delta_y = Public.get_axis(v, 'y') - y_avg
-            rad1 = ((math.atan2(delta_x, delta_y) * (180 / 3.14)) + 360) % 360
+            rad1 = ((atan2(delta_x, delta_y) * (180 / 3.14)) + 360) % 360
 
             v = vertices[j + 1]
             delta_x = Public.get_axis(v, 'x') - x_avg
             delta_y = Public.get_axis(v, 'y') - y_avg
-            rad2 = ((math.atan2(delta_x, delta_y) * (180 / 3.14)) + 360) % 360
+            rad2 = ((atan2(delta_x, delta_y) * (180 / 3.14)) + 360) % 360
             if rad1 > rad2 then
                 vertices[j], vertices[j + 1] = vertices[j + 1], vertices[j]
             end
@@ -471,7 +477,7 @@ Public.get_convex_hull = function(_vertices)
         end
     end
 
-    table.remove(vertices, lowest_index)
+    remove(vertices, lowest_index)
     x1 = Public.get_axis(lowest, 'x')
     y1 = Public.get_axis(lowest, 'y')
 
@@ -484,12 +490,12 @@ Public.get_convex_hull = function(_vertices)
             v = vertices[j]
             x2 = Public.get_axis(v, 'x')
             y2 = Public.get_axis(v, 'y')
-            rad1 = (math.atan2(y2 - y1, x2 - x1) * (180 / 3.14) + 320) % 360
+            rad1 = (atan2(y2 - y1, x2 - x1) * (180 / 3.14) + 320) % 360
 
             v = vertices[j + 1]
             x2 = Public.get_axis(v, 'x')
             y2 = Public.get_axis(v, 'y')
-            rad2 = (math.atan2(y2 - y1, x2 - x1) * (180 / 3.14) + 320) % 360
+            rad2 = (atan2(y2 - y1, x2 - x1) * (180 / 3.14) + 320) % 360
 
             if rad1 > rad2 then
                 vertices[j + 1], vertices[j] = vertices[j], vertices[j + 1]
@@ -497,9 +503,9 @@ Public.get_convex_hull = function(_vertices)
                 dist1 = Public.get_distance(lowest, vertices[j])
                 dist2 = Public.get_distance(lowest, vertices[j + 1])
                 if dist1 > dist2 then
-                    table.remove(vertices, j + 1)
+                    remove(vertices, j + 1)
                 else
-                    table.remove(vertices, j)
+                    remove(vertices, j)
                 end
             end
 
@@ -524,13 +530,13 @@ Public.get_convex_hull = function(_vertices)
         point = vertices[i]
 
         while #stack > 1 and convex_hull_turn(point, rev(stack, 1), rev(stack)) >= 0 do
-            table.remove(stack)
+            remove(stack)
         end
 
-        table.insert(stack, point)
+        insert(stack, point)
     end
 
-    table.insert(stack, lowest)
+    insert(stack, lowest)
     return stack
 end
 
