@@ -786,7 +786,7 @@ local function init_player(p)
     this.perks[p.name] = nil
     p.teleport(position, 'arena')
     --p.name = get_random_name() --player name is read only
-    local pf = game.forces[p.force.name]
+    local pf = game.forces[p.name]
     if not pf then
         p.force = game.create_force(p.name)
     else
@@ -1121,7 +1121,9 @@ local function cause_event(s)
 end
 
 local function kill_player(p)
-    p.character.die()
+    if p.character and p.character.valid then
+        p.character.die()
+    end
 end
 
 local function on_tick()
@@ -1667,5 +1669,18 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_tick, on_tick_reset)
 Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+
+local gmeta = getmetatable(_ENV)
+if not gmeta then
+    gmeta = {}
+    setmetatable(_ENV, gmeta)
+end
+gmeta.__newindex = function(_, n, v)
+    log('Desync warning: attempt to write to undeclared var ' .. n)
+    global[n] = v
+end
+gmeta.__index = function(_, n)
+    return global[n]
+end
 
 return Public
