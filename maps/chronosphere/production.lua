@@ -1,5 +1,7 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Rand = require 'maps.chronosphere.random'
+local Balance = require 'maps.chronosphere.balance'
+local Difficulty = require 'modules.difficulty_vote'
 
 local Public = {}
 local List = require 'maps.chronosphere.production_list'
@@ -14,6 +16,15 @@ local function roll_assembler()
         end
     end
     return Rand.raffle(choices.types, choices.weights)
+end
+
+function Public.calculate_factory_level(xp, whole_level)
+  local base = Balance.factory_level(Difficulty.get().difficulty_vote_value) -- 750 -> 1000 -> 2333
+  local level = (xp / base)^(1 / 2)
+  if whole_level then
+    return math.floor(level)
+  end
+  return level
 end
 
 local function total_avg_level()
@@ -67,10 +78,10 @@ function Public.register_train_assembler(entity, id)
 end
 
 local function levelup_train_factory(id)
-    local production = Chrono_table.get_production_table()
-    local xp = production.experience[id]
-    local level = math.floor((xp / 1000) ^ (1 / 2))
-    production.train_assemblers[id].tier = level
+  local production = Chrono_table.get_production_table()
+  local xp = production.experience[id]
+  local level = Public.calculate_factory_level(xp, true)
+  production.train_assemblers[id].tier = level
 end
 
 local function flying_text(surface, position, text, color)
