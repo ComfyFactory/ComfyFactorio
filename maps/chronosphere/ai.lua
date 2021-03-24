@@ -441,18 +441,14 @@ local function prepare_biters()
 end
 
 function Public.perform_rogue_attack()
-    local objective = Chrono_table.get_table()
-    local surface = game.surfaces[objective.active_surface_index]
-    local group = create_attack_group(surface, 0.2)
-    if not group or not group.valid then
-        return
-    end
-    local target = generate_side_attack_target(surface, group.position)
-    if not target or not target.valid then
-        return
-    end
-    attack_check(group, target, false)
-    --if _DEBUG then game.print(game.tick ..": sending rogue attack") end
+  local objective = Chrono_table.get_table()
+	local surface = game.surfaces[objective.active_surface_index]
+	local group = create_attack_group(surface, 0.15)
+  if not group or not group.valid then return end
+  local target = generate_side_attack_target(surface, group.position)
+  if not target or not target.valid then return end
+  attack_check(group, target, false)
+  --if _DEBUG then game.print(game.tick ..": sending rogue attack") end
 end
 
 function Public.perform_main_attack()

@@ -68,23 +68,26 @@ local function process_tile(p, seed, tiles, entities, treasure, factories)
 end
 
 local function normal_chunk(surface, left_top)
-    local tiles = {}
-    local entities = {}
-    local treasure = {}
-    local factories = {}
-    local seed = surface.map_gen_settings.seed
-    for y = 0, 31, 1 do
-        for x = 0, 31, 1 do
-            local p = {x = left_top.x + x, y = left_top.y + y}
-            process_tile(p, seed, tiles, entities, treasure, factories)
-        end
-    end
-    surface.set_tiles(tiles, true)
-    Functions.spawn_treasures(surface, treasure)
-    Functions.spawn_entities(surface, entities)
-    for _, pos in pairs(factories) do
-        Specials.production_factory(surface, pos)
-    end
+  local tiles = {}
+	local entities = {}
+	local treasure = {}
+  local factories = {}
+	local seed = surface.map_gen_settings.seed
+  for y = 0, 31, 1 do
+		for x = 0, 31, 1 do
+			local p = {x = left_top.x + x, y = left_top.y + y}
+			process_tile(p, seed, tiles, entities, treasure, factories)
+		end
+	end
+  surface.set_tiles(tiles, true)
+  if random(1, 60) == 1 then
+    Functions.build_blueprint(surface, left_top, random(4, 6), "neutral")
+  end
+  Functions.spawn_treasures(surface, treasure)
+  Functions.spawn_entities(surface, entities)
+  for _, pos in pairs(factories) do
+    Specials.production_factory(surface, pos)
+  end
 end
 
 local function empty_chunk(surface, left_top)
